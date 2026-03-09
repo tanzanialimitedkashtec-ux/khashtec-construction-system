@@ -85,18 +85,28 @@ app.use('/api/notifications', notificationRoutes);
 // Database health check
 app.get('/api/db-health', async (req, res) => {
     try {
-        const db = require('./database/kashtec-database');
-        const stats = db.getDatabaseStats();
-        res.status(200).json({
-            status: 'OK',
-            database: 'Connected',
-            collections: Object.keys(stats.collections).length,
-            timestamp: new Date().toISOString()
-        });
+        const db = require('./database/config/database');
+        const health = await db.healthCheck();
+        
+        if (health.status === 'connected') {
+            res.status(200).json({
+                status: 'OK',
+                database: 'Connected',
+                timestamp: health.timestamp,
+                environment: process.env.NODE_ENV
+            });
+        } else {
+            res.status(503).json({
+                status: 'ERROR',
+                database: health.status,
+                message: health.error || 'Database connection failed',
+                timestamp: health.timestamp
+            });
+        }
     } catch (error) {
         res.status(500).json({
             status: 'ERROR',
-            message: 'Database connection failed',
+            message: 'Database health check failed',
             error: error.message,
             timestamp: new Date().toISOString()
         });
