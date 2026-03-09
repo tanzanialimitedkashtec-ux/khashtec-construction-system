@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KASHTEC Notification System</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #1e3c72 0%, #2c3e50 100%);
+            color: #ffffff;
+            min-height: 100vh;
+        }
+        
+        .notification-container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .header h1 {
+            color: #4CAF50;
+            font-size: 2.5em;
+            margin: 0;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .controls {
+            background: rgba(255,255,255,255,0.1);
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,255,0.2);
+        }
+        
+        .control-group {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            justify-content: center;
+            margin-bottom: 15px;
+        }
+        
+        .btn {
+            background: linear-gradient(45deg, #4CAF50, #45a049);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+            background: linear-gradient(45deg, #45a049, #4CAF50);
+        }
+        
+        .btn.success { background: linear-gradient(45deg, #4CAF50, #45a049); }
+        .btn.info { background: linear-gradient(45deg, #2196F3, #1976D2); }
+        .btn.warning { background: linear-gradient(45deg, #FF9800, #F57C00); }
+        .btn.error { background: linear-gradient(45deg, #f44336, #d32f2f); }
+        
+        .notifications {
+            background: rgba(255,255,255,255,0.05);
+            border-radius: 10px;
+            padding: 20px;
+            max-height: 500px;
+            overflow-y: auto;
+            border: 1px solid rgba(255,255,255,255,0.1);
+        }
+        
+        .notification-item {
+            background: rgba(255,255,255,255,0.05);
+            border-left: 4px solid #4CAF50;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 5px;
+            transition: all 0.3s ease;
+            animation: slideIn 0.3s ease;
+        }
+        
+        .notification-item.success { border-left-color: #4CAF50; }
+        .notification-item.info { border-left-color: #2196F3; }
+        .notification-item.warning { border-left-color: #FF9800; }
+        .notification-item.error { border-left-color: #f44336; }
+        .notification-item.update { border-left-color: #FF9800; }
+        
+        .notification-item:hover {
+            transform: translateX(5px);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+        
+        .notification-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+        
+        .notification-title {
+            font-weight: 600;
+            font-size: 16px;
+            color: #ffffff;
+        }
+        
+        .notification-time {
+            font-size: 12px;
+            color: #b0b0b0;
+            background: rgba(255,255,255,255,0.1);
+            padding: 4px 8px;
+            border-radius: 4px;
+        }
+        
+        .notification-message {
+            color: #e0e0e0;
+            line-height: 1.5;
+        }
+        
+        .clear-btn {
+            background: linear-gradient(45deg, #f44336, #d32f2f);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            margin-top: 15px;
+            width: 100%;
+            transition: all 0.3s ease;
+        }
+        
+        .clear-btn:hover {
+            background: linear-gradient(45deg, #d32f2f, #f44336);
+            transform: translateY(-2px);
+        }
+        
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .stat-card {
+            background: rgba(255,255,255,255,0.05);
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            border: 1px solid rgba(255,255,255,255,0.1);
+        }
+        
+        .stat-number {
+            font-size: 24px;
+            font-weight: bold;
+            color: #4CAF50;
+        }
+        
+        .stat-label {
+            font-size: 12px;
+            color: #b0b0b0;
+            margin-top: 5px;
+        }
+        
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: #b0b0b0;
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+    <div class="notification-container">
+        <div class="header">
+            <h1>🔔 KASHTEC Notification System</h1>
+        </div>
+        
+        <div class="controls">
+            <div class="control-group">
+                <button class="btn info" onclick="testNotification()">🧪 Test Notification</button>
+                <button class="btn success" onclick="showSystemStatus()">📊 System Status</button>
+                <button class="btn warning" onclick="showHistory()">📜 Show History</button>
+                <button class="btn error" onclick="clearNotifications()">🗑️ Clear All</button>
+            </div>
+            <div class="control-group">
+                <button class="btn info" onclick="sendCustomNotification()">💬 Send Custom</button>
+                <button class="btn success" onclick="exportNotifications()">📤 Export</button>
+                <button class="btn warning" onclick="refreshNotifications()">🔄 Refresh</button>
+            </div>
+        </div>
+        
+        <div class="stats" id="stats">
+            <div class="stat-card">
+                <div class="stat-number" id="totalCount">0</div>
+                <div class="stat-label">Total Notifications</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="todayCount">0</div>
+                <div class="stat-label">Today</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="successCount">0</div>
+                <div class="stat-label">Success</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="errorCount">0</div>
+                <div class="stat-label">Errors</div>
+            </div>
+        </div>
+        
+        <div class="notifications" id="notifications">
+            <div class="empty-state">No notifications yet. Click "Test Notification" to get started.</div>
+        </div>
+    </div>
+
+    <script>
+        let notifications = [];
+        
+        // Load notifications from localStorage
+        function loadNotifications() {
+            const stored = localStorage.getItem('kashtec_notifications');
+            if (stored) {
+                notifications = JSON.parse(stored);
+            }
+            updateDisplay();
+        }
+        
+        // Save notifications to localStorage
+        function saveNotifications() {
+            localStorage.setItem('kashtec_notifications', JSON.stringify(notifications));
+        }
+        
+        // Add new notification
+        function addNotification(title, message, type = 'info') {
+            const notification = {
+                id: Date.now(),
+                title: title,
+                message: message,
+                type: type,
+                timestamp: new Date().toISOString()
+            };
+            
+            notifications.unshift(notification);
+            if (notifications.length > 50) {
+                notifications = notifications.slice(0, 50);
+            }
+            
+            saveNotifications();
+            updateDisplay();
+            
+            // Show browser notification if permitted
+            if ("Notification" in window && Notification.permission === "granted") {
+                new Notification(title, {
+                    body: message,
+                    icon: '/favicon.ico'
+                });
+            }
+        }
+        
+        // Update display
+        function updateDisplay() {
+            const container = document.getElementById('notifications');
+            const stats = updateStats();
+            
+            if (notifications.length === 0) {
+                container.innerHTML = '<div class="empty-state">No notifications yet. Click "Test Notification" to get started.</div>';
+                return;
+            }
+            
+            container.innerHTML = notifications.map(notif => `
+                <div class="notification-item ${notif.type}">
+                    <div class="notification-header">
+                        <div class="notification-title">${getIcon(notif.type)} ${notif.title}</div>
+                        <div class="notification-time">${formatTime(notif.timestamp)}</div>
+                    </div>
+                    <div class="notification-message">${notif.message}</div>
+                </div>
+            `).join('');
+        }
+        
+        // Update statistics
+        function updateStats() {
+            const now = new Date();
+            const today = now.toDateString();
+            
+            const totalCount = notifications.length;
+            const todayCount = notifications.filter(n => new Date(n.timestamp).toDateString() === today).length;
+            const successCount = notifications.filter(n => n.type === 'success').length;
+            const errorCount = notifications.filter(n => n.type === 'error').length;
+            
+            document.getElementById('totalCount').textContent = totalCount;
+            document.getElementById('todayCount').textContent = todayCount;
+            document.getElementById('successCount').textContent = successCount;
+            document.getElementById('errorCount').textContent = errorCount;
+            
+            return { totalCount, todayCount, successCount, errorCount };
+        }
+        
+        // Get icon for type
+        function getIcon(type) {
+            const icons = {
+                info: 'ℹ️',
+                success: '✅',
+                warning: '⚠️',
+                error: '❌',
+                update: '🔄'
+            };
+            return icons[type] || '📢';
+        }
+        
+        // Format time
+        function formatTime(timestamp) {
+            const date = new Date(timestamp);
+            const now = new Date();
+            const diff = now - date;
+            
+            if (diff < 60000) return 'Just now';
+            if (diff < 3600000) return Math.floor(diff / 60000) + ' minutes ago';
+            if (diff < 86400000) return Math.floor(diff / 3600000) + ' hours ago';
+            return Math.floor(diff / 86400000) + ' days ago';
+        }
+        
+        // Control functions
+        function testNotification() {
+            addNotification('Test Notification', 'This is a test notification from the KASHTEC system!', 'info');
+        }
+        
+        function showSystemStatus() {
+            addNotification('System Status', 'All systems are operational and running smoothly.', 'success');
+        }
+        
+        function showHistory() {
+            if (notifications.length === 0) {
+                addNotification('History', 'No notifications to display in history.', 'warning');
+                return;
+            }
+            
+            const recent = notifications.slice(0, 10);
+            addNotification('Recent History', `Showing ${recent.length} most recent notifications.`, 'info');
+        }
+        
+        function clearNotifications() {
+            if (confirm('Are you sure you want to clear all notifications?')) {
+                notifications = [];
+                saveNotifications();
+                updateDisplay();
+                addNotification('Cleared', 'All notifications have been cleared.', 'success');
+            }
+        }
+        
+        function sendCustomNotification() {
+            const title = prompt('Enter notification title:');
+            const message = prompt('Enter notification message:');
+            const type = prompt('Enter type (info/success/warning/error):', 'info');
+            
+            if (title && message) {
+                addNotification(title, message, type);
+            }
+        }
+        
+        function exportNotifications() {
+            if (notifications.length === 0) {
+                addNotification('Export', 'No notifications to export.', 'warning');
+                return;
+            }
+            
+            const dataStr = JSON.stringify(notifications, null, 2);
+            const blob = new Blob([dataStr], {type: 'application/json'});
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'kashtec-notifications-' + new Date().toISOString().split('T')[0] + '.json';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            
+            addNotification('Export Complete', `Exported ${notifications.length} notifications to file.`, 'success');
+        }
+        
+        function refreshNotifications() {
+            loadNotifications();
+            addNotification('Refreshed', 'Notification display has been refreshed.', 'info');
+        }
+        
+        // Request notification permission
+        if ("Notification" in window && Notification.permission === "default") {
+            Notification.requestPermission();
+        }
+        
+        // Auto-refresh every 30 seconds
+        setInterval(loadNotifications, 30000);
+        
+        // Initial load
+        loadNotifications();
+    </script>
+</body>
+</html>

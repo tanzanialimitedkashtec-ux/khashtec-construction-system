@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KASHTEC Tanzania Limited</title>
+<link rel="stylesheet" href="styles.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+
+<body>
+
+<header>
+    <h1>KASHTEC Tanzania Ltd</h1>
+    <nav>
+        <a href="#about">About</a>
+        <a href="#services">Services</a>
+        <a href="#projects">Projects</a>
+        <a href="#management">Management</a>
+        <a href="#account" title="Open Account" id="registerNav"><i class="fas fa-user-plus"></i></a>
+        <a href="#login" title="Login" id="loginNav" class="hidden"><i class="fas fa-sign-in-alt"></i></a>
+        <a href="#customerPortal" title="Customer Portal" id="portalNav" class="hidden"><i class="fas fa-user"></i></a>
+        <a href="#contact">Contact</a>
+    </nav>
+</header>
+
+<section class="hero">
+    <div class="container">
+        <h2>Building & Civil Works Contractors</h2>
+        <p>Real Estate | Project Management | Construction Claims Management</p>
+        <a href="#about" class="btn">Learn More</a>
+    </div>
+</section>
+
+<section id="about">
+    <div class="container">
+        <h2>About KASHTEC</h2>
+        <p>KASHTEC Tanzania Limited, incorporated on 19th September 2022, is a multidisciplinary and fast-growing construction company dedicated to serving as a one-stop center for Building, Civil Works Contracting, and Real Estate Development projects.</p>
+
+        <div class="card">
+            <h3>Vision</h3>
+            <p>To become an effective and competent partner in fostering the construction industry in Tanzania and provide world class services.</p>
+        </div>
+
+        <div class="card">
+            <h3>Mission</h3>
+            <ul>
+                <li>Offer comprehensive solutions in real estate, building and civil works.</li>
+                <li>Provide expert project and claims management support.</li>
+                <li>Ensure efficiency, cost-effectiveness and excellence.</li>
+            </ul>
+        </div>
+
+        <div class="card">
+            <h3>Core Values</h3>
+            <ul>
+                <li>Integrity</li>
+                <li>Quality</li>
+                <li>Innovation</li>
+                <li>Professionalism</li>
+                <li>Sustainability</li>
+            </ul>
+        </div>
+    </div>
+</section>
+
+<section id="services">
+    <div class="container">
+        <h2>Our Services</h2>
+        <ul>
+            <li>Design and Build of Residential & Commercial Buildings</li>
+            <li>Civil Works (Roads, Bridges, Culverts)</li>
+            <li>Real Estate Development</li>
+            <li>Construction Claims Management</li>
+            <li>Professional Training</li>
+            <li>Petroleum Tank Installation</li>
+            <li>Telecommunication Towers Installation</li>
+        </ul>
+    </div>
+</section>
+
+<section id="projects">
+    <div class="container">
+        <h2>Major Projects</h2>
+        <div class="card">
+            <h3>Dar es Salaam Port Modernization Project</h3>
+            <p>Subcontract works under DP World – EDECS Engineering including manpower supply, concrete pavement works and equipment rental.</p>
+        </div>
+
+        <div class="card">
+            <h3>Residential Buildings – Kinondoni & Goba</h3>
+            <p>Main and sub-contractor roles in residential building developments in Dar es Salaam.</p>
+        </div>
+
+        <div class="card">
+            <h3>Fukayosi Real Estate Project – Bagamoyo</h3>
+            <p>Commercial & Residential Real Estate Project under KASHTEC Estate Projects.</p>
+        </div>
+    </div>
+</section>
+
+<section id="management">
+    <div class="container">
+        <h2>Management Team</h2>
+        <p><strong>Managing Director:</strong> Eng. K. M. Kayungilo (PMI-CP, Reg. PE Eng, MIET)</p>
+        <p>Experienced Construction Projects Manager with 15+ years in roads, bridges and multistorey buildings.</p>
+
+        <button onclick="toggleHSE()">View HSE Policy</button>
+        <div id="hse" class="hidden">
+            <div class="card">
+                <h3>Health, Safety & Environment (HSE)</h3>
+                <ul>
+                    <li>Provide proper PPE and safety equipment.</li>
+                    <li>Conduct regular safety training and toolbox talks.</li>
+                    <li>Comply with environmental and safety regulations.</li>
+                    <li>Promote safe and healthy working environment.</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section id="account">
+    <div class="container">
+        <h2>Open Account</h2>
+        <p>Join KASHTEC Tanzania Limited and access our professional construction services</p>
+        
+        <form id="accountForm" onsubmit="return submitAccountForm()">
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="fullName">Full Name *</label>
+                    <input type="text" id="fullName" name="fullName" required>
+                </div>
+                <div class="form-group">
+                    <label for="email">Gmail Address *</label>
+                    <input type="email" id="email" name="email" required>
+                </div>
+            </div>
+            
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="phone">Phone Number *</label>
+                    <input type="tel" id="phone" name="phone" required>
+                </div>
+                <div class="form-group">
+                    <label for="location">Location *</label>
+                    <input type="text" id="location" name="location" placeholder="City/Region, Tanzania" required>
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label for="profileImage">Profile Image</label>
+                <input type="file" id="profileImage" name="profileImage" accept="image/*">
+                <small>Optional: Upload your profile picture</small>
+            </div>
+            
+            <div class="form-group">
+                <label for="serviceType">Service Type *</label>
+                <select id="serviceType" name="serviceType" onchange="toggleServiceDescription()" required>
+                    <option value="">Select a service...</option>
+                    <optgroup label="Building Works">
+                        <option value="design-build-single">Design and Build of Single and Multistorey Buildings</option>
+                        <option value="offices">Offices (Commercial Buildings)</option>
+                        <option value="residential">Residential Buildings</option>
+                        <option value="external-works">Associated External Works</option>
+                    </optgroup>
+                    <optgroup label="Civil Works">
+                        <option value="roads-construction">Roads Construction</option>
+                        <option value="bridges-construction">Bridges Construction</option>
+                        <option value="box-culverts">Box Culverts</option>
+                        <option value="pipe-culverts">Pipe Culverts</option>
+                    </optgroup>
+                    <optgroup label="Maintenance">
+                        <option value="rehabilitation">Rehabilitation and General Maintenance</option>
+                        <option value="maintenance-facilities">Maintenance of Constructed Facilities</option>
+                        <option value="repair-upgrading">Repair and Upgrading Works</option>
+                    </optgroup>
+                    <optgroup label="Specialized Services">
+                        <option value="plumbing-water">Plumbing and Water Supply Systems</option>
+                        <option value="petroleum-tanks">Installation of Petroleum Tanks and Tank Farms Works</option>
+                        <option value="telecom-towers">Installation of Telecommunication Towers</option>
+                    </optgroup>
+                    <option value="custom">Custom Service Description</option>
+                </select>
+            </div>
+            
+            <div class="form-group" id="customServiceGroup" style="display: none;">
+                <label for="customService">Describe Your Required Service *</label>
+                <textarea id="customService" name="customService" rows="4" placeholder="Please describe the specific service you need..."></textarea>
+            </div>
+            
+            <div class="form-group">
+                <label for="additionalInfo">Additional Information</label>
+                <textarea id="additionalInfo" name="additionalInfo" rows="3" placeholder="Any additional details about your project or requirements..."></textarea>
+            </div>
+            
+            <button type="submit" class="btn">Register</button>
+        </form>
+    </div>
+</section>
+
+<section id="login" class="hidden">
+    <div class="container">
+        <div class="login-container">
+            <h2>Customer Login</h2>
+            <p>Access your KASHTEC customer portal</p>
+            
+            <form id="loginForm" onsubmit="return handleLogin()">
+                <div class="form-group">
+                    <label for="loginEmail">Email Address *</label>
+                    <input type="email" id="loginEmail" name="loginEmail" required placeholder="Enter your email">
+                </div>
+                
+                <div class="form-group">
+                    <label for="loginPassword">Password *</label>
+                    <input type="password" id="loginPassword" name="loginPassword" required placeholder="Enter your password">
+                </div>
+                
+                <div class="form-group">
+                    <label>
+                        <input type="checkbox" id="rememberMe" name="rememberMe">
+                        Remember me
+                    </label>
+                </div>
+                
+                <button type="submit" class="btn">Login</button>
+                
+                <div class="login-links">
+                    <a href="#" onclick="showForgotPassword()">Forgot Password?</a>
+                    <span> | </span>
+                    <a href="#" onclick="showAccountSection()">Don't have an account? Register</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</section>
+
+<section id="customerPortal" class="hidden">
+    <div class="container">
+        <div class="portal-header">
+            <h2>Customer Portal</h2>
+            <p>Welcome to your KASHTEC dashboard</p>
+            <button onclick="handleLogout()" class="btn logout-btn">Logout</button>
+        </div>
+        
+        <div class="portal-content">
+            <div class="user-info card">
+                <h3>Your Information</h3>
+                <div id="userDetails">
+                    <p><strong>Name:</strong> <span id="portalUserName">Loading...</span></p>
+                    <p><strong>Email:</strong> <span id="portalUserEmail">Loading...</span></p>
+                    <p><strong>Phone:</strong> <span id="portalUserPhone">Loading...</span></p>
+                    <p><strong>Location:</strong> <span id="portalUserLocation">Loading...</span></p>
+                    <p><strong>Service:</strong> <span id="portalUserService">Loading...</span></p>
+                </div>
+            </div>
+            
+            <div class="portal-actions">
+                <div class="card">
+                    <h3>Quick Actions</h3>
+                    <button class="portal-btn" onclick="viewProjects()">View My Projects</button>
+                    <button class="portal-btn" onclick="requestService()">Request New Service</button>
+                    <button class="portal-btn" onclick="updateProfile()">Update Profile</button>
+                    <button class="portal-btn" onclick="viewInvoices()">View Invoices</button>
+                </div>
+                
+                <div class="card">
+                    <h3>Account Status</h3>
+                    <div class="status-item">
+                        <span>Account Status:</span>
+                        <span class="status-active">Active</span>
+                    </div>
+                    <div class="status-item">
+                        <span>Member Since:</span>
+                        <span id="memberSince">Loading...</span>
+                    </div>
+                    <div class="status-item">
+                        <span>Last Login:</span>
+                        <span id="lastLogin">Loading...</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section id="contact">
+    <div class="container">
+        <h2>Contact Us</h2>
+        <p><strong>Address:</strong> P.O Box 77088, Ubungo External, Mshikamano St, Dar es Salaam</p>
+        <p><strong>Phone:</strong> +255 739 417 181</p>
+        <p><strong>Email:</strong> kashtectz@gmail.com</p>
+
+        <form onsubmit="return submitForm()">
+            <input type="text" placeholder="Your Name" required style="width:100%;padding:10px;margin:10px 0;">
+            <input type="email" placeholder="Your Email" required style="width:100%;padding:10px;margin:10px 0;">
+            <textarea placeholder="Your Message" required style="width:100%;padding:10px;margin:10px 0;"></textarea>
+            <button type="submit">Send Message</button>
+        </form>
+    </div>
+</section>
+
+<footer>
+    <p>&copy; 2026 KASHTEC Tanzania Limited | All Rights Reserved</p>
+</footer>
+
+<script src="script.js"></script>
+
+</body>
+</html>
