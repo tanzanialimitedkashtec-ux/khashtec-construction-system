@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>KASHTEC Construction Management System</title>
     
     <!-- Include Database System -->
@@ -101,6 +101,186 @@ button.action{
 
 .hidden{
     display:none;
+}
+
+/* Mobile Responsive Styles */
+@media (max-width: 768px) {
+    body {
+        font-size: 14px;
+    }
+    
+    header {
+        padding: 10px 15px;
+        font-size: 16px;
+        position: sticky;
+        top: 0;
+        z-index: 1000;
+    }
+    
+    .container {
+        flex-direction: column;
+        height: auto;
+        min-height: 100vh;
+    }
+    
+    .sidebar {
+        width: 100%;
+        padding: 15px;
+        position: sticky;
+        top: 50px;
+        z-index: 999;
+        max-height: 200px;
+        overflow-y: auto;
+    }
+    
+    .sidebar h3 {
+        font-size: 16px;
+        margin-bottom: 10px;
+    }
+    
+    .sidebar button {
+        padding: 10px 12px;
+        font-size: 13px;
+        margin-bottom: 5px;
+    }
+    
+    .content {
+        padding: 20px 15px;
+        font-size: 14px;
+    }
+    
+    .card {
+        padding: 15px;
+        margin-bottom: 15px;
+        border-left-width: 3px;
+    }
+    
+    input, select, textarea {
+        padding: 10px;
+        font-size: 14px;
+        margin: 6px 0;
+    }
+    
+    button.action {
+        padding: 10px 15px;
+        font-size: 13px;
+        margin: 3px;
+    }
+    
+    .login-box {
+        width: 90%;
+        max-width: 300px;
+        margin: 20px auto;
+        padding: 20px;
+    }
+    
+    /* Tables for mobile */
+    table {
+        font-size: 12px;
+        width: 100%;
+        display: block;
+        overflow-x: auto;
+        white-space: nowrap;
+    }
+    
+    th, td {
+        padding: 8px 4px;
+        min-width: 80px;
+    }
+    
+    /* Hide some columns on very small screens */
+    @media (max-width: 480px) {
+        .hide-mobile {
+            display: none;
+        }
+        
+        .sidebar {
+            max-height: 150px;
+        }
+        
+        header {
+            font-size: 14px;
+            padding: 8px 12px;
+        }
+        
+        .content {
+            padding: 15px 10px;
+            font-size: 13px;
+        }
+        
+        .card {
+            padding: 12px;
+        }
+        
+        input, select, textarea {
+            font-size: 13px;
+            padding: 8px;
+        }
+        
+        button.action {
+            font-size: 12px;
+            padding: 8px 12px;
+        }
+    }
+}
+
+/* Tablet Styles */
+@media (min-width: 769px) and (max-width: 1024px) {
+    .sidebar {
+        width: 220px;
+        padding: 15px;
+    }
+    
+    .content {
+        padding: 25px 20px;
+    }
+    
+    .card {
+        padding: 20px;
+    }
+}
+
+/* Mobile Menu Toggle */
+.mobile-menu-toggle {
+    display: none;
+    background: #0b3d91;
+    color: white;
+    border: none;
+    padding: 10px 15px;
+    cursor: pointer;
+    font-size: 16px;
+    border-radius: 4px;
+    margin: 5px;
+}
+
+.mobile-menu-close {
+    display: none;
+    background: #e74c3c;
+    color: white;
+    border: none;
+    padding: 5px 10px;
+    cursor: pointer;
+    font-size: 12px;
+    border-radius: 4px;
+    margin-bottom: 10px;
+}
+
+@media (max-width: 768px) {
+    .mobile-menu-toggle {
+        display: inline-block;
+    }
+    
+    .mobile-menu-close {
+        display: block;
+    }
+    
+    .sidebar.mobile-hidden {
+        display: none;
+    }
+    
+    .sidebar.mobile-visible {
+        display: block;
+    }
 }
 
 .login-box{
@@ -1755,6 +1935,7 @@ background: #f8f9fa;
 <body>
 
 <header>
+    <button class="mobile-menu-toggle" onclick="toggleMobileMenu()">☰ Menu</button>
     <h2>KASHTEC Construction Management System</h2>
 </header>
 
@@ -1777,6 +1958,7 @@ background: #f8f9fa;
 <div id="systemPage" class="container hidden">
 
     <div class="sidebar">
+        <button class="mobile-menu-close" onclick="toggleMobileMenu()">✕ Close</button>
         <h3 id="userRole"></h3>
         <div id="menu"></div>
         <button onclick="logout()">Logout</button>
@@ -1808,6 +1990,35 @@ function login(){
 function logout(){
     location.reload();
 }
+
+function toggleMobileMenu() {
+    const sidebar = document.querySelector('.sidebar');
+    if (sidebar.classList.contains('mobile-hidden')) {
+        sidebar.classList.remove('mobile-hidden');
+        sidebar.classList.add('mobile-visible');
+    } else {
+        sidebar.classList.remove('mobile-visible');
+        sidebar.classList.add('mobile-hidden');
+    }
+}
+
+// Initialize mobile sidebar as hidden on small screens
+window.addEventListener('DOMContentLoaded', function() {
+    if (window.innerWidth <= 768) {
+        const sidebar = document.querySelector('.sidebar');
+        sidebar.classList.add('mobile-hidden');
+    }
+});
+
+// Handle window resize
+window.addEventListener('resize', function() {
+    const sidebar = document.querySelector('.sidebar');
+    if (window.innerWidth > 768) {
+        sidebar.classList.remove('mobile-hidden', 'mobile-visible');
+    } else {
+        sidebar.classList.add('mobile-hidden');
+    }
+});
 
 function loadMenu(){
     const menu = document.getElementById("menu");
