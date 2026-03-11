@@ -17,21 +17,21 @@ source = "kashtec-construction-system"
 [env]
 NODE_ENV = "production"
 PORT = "${PORT:-3000}"
-DATABASE_URL = "${MYSQL_PUBLIC_URL}"
-JWT_SECRET = "${JWT_SECRET}"
+DATABASE_URL = "${DATABASE_URL}"
+JWT_SECRET = "${JWT_SECRET:-kashtec-secret-key-2024}"
 GITHUB_TOKEN = "${GITHUB_TOKEN}"
 
-# Database Configuration
-DB_HOST = "${MYSQLHOST}"
-DB_USER = "${MYSQLUSER}"
+# Database Configuration (Railway provides these automatically)
+DB_HOST = "${RAILWAY_PRIVATE_DOMAIN}"
+DB_USER = "${MYSQLUSER:-root}"
 DB_PASSWORD = "${MYSQLPASSWORD}"
-DB_NAME = "${MYSQLDATABASE}"
-DB_PORT = "${MYSQLPORT}"
+DB_NAME = "${MYSQLDATABASE:-railway}"
+DB_PORT = "${MYSQLPORT:-3306}"
 
 # Application Configuration
 APP_NAME = "KASHTEC Construction Management System"
 APP_VERSION = "1.0.0"
-APP_URL = "${APP_URL}"
+APP_URL = "https://${RAILWAY_PUBLIC_DOMAIN}"
 
 # Security Configuration
 BCRYPT_ROUNDS = "12"
