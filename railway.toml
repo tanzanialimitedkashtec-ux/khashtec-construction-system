@@ -12,7 +12,7 @@ healthcheckRetries = 3
 
 [[services]]
 name = "api"
-source = "."
+source = "kashtec-construction-system"
 
 [env]
 NODE_ENV = "production"
