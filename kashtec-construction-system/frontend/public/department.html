@@ -104,13 +104,45 @@ button.action{
 }
 
 .login-box{
-    width:250px;
+    width:280px;
     margin:40px auto;
     background:white;
-    padding:20px;
-    box-shadow:0 0 10px rgba(0,0,0,0.2);
-    font-size: 12px;
-    border-radius: 2px;
+    padding:25px;
+    border-radius:8px;
+    box-shadow:0 4px 8px rgba(0,0,0,0.1);
+}
+
+.login-box select{
+    width:100%;
+    padding:10px;
+    margin:10px 0;
+    border:1px solid #ddd;
+    border-radius:4px;
+    background:white;
+}
+
+.login-box input[type="password"]{
+    width:100%;
+    padding:10px;
+    margin:10px 0;
+    border:1px solid #ddd;
+    border-radius:4px;
+    font-size:14px;
+}
+
+.login-box input[type="password"]:focus{
+    border-color:#0b3d91;
+    outline:none;
+    box-shadow:0 0 5px rgba(11,61,145,0.2);
+}
+
+#passwordHint{
+    background:#f8f9fa;
+    padding:8px;
+    border-radius:4px;
+    border-left:4px solid #0b3d91;
+    font-family:monospace;
+    margin:8px 0;
 }
 
 /* Enhanced Form Styles */
@@ -1760,7 +1792,7 @@ background: #f8f9fa;
 
 <div id="loginPage" class="login-box">
     <h3>Login</h3>
-    <select id="roleSelect">
+    <select id="roleSelect" onchange="updatePasswordPlaceholder()">
         <option value="">Select Role</option>
         <option value="MD">Managing Director</option>
         <option value="ADMIN">Director of Administration</option>
@@ -1771,6 +1803,8 @@ background: #f8f9fa;
         <option value="REALESTATE">Real Estate Manager</option>
         <option value="ASSISTANT">Admin Assistant</option>
     </select>
+    <input type="password" id="passwordInput" placeholder="Enter password" style="width: 100%; margin: 10px 0; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+    <div id="passwordHint" style="font-size: 12px; color: #666; margin-bottom: 10px;"></div>
     <button class="action" onclick="login()">Login</button>
 </div>
 
@@ -1792,16 +1826,68 @@ background: #f8f9fa;
 
 let currentRole = "";
 
+// Role-based passwords (for demo purposes)
+const rolePasswords = {
+    "MD": "admin123",
+    "ADMIN": "admin123", 
+    "HR": "hr123",
+    "HSE": "hse123",
+    "FINANCE": "finance123",
+    "PROJECT": "project123",
+    "REALESTATE": "realestate123",
+    "ASSISTANT": "assistant123"
+};
+
+// Role descriptions for password hints
+const roleDescriptions = {
+    "MD": "Managing Director",
+    "ADMIN": "Director of Administration",
+    "HR": "HR Manager", 
+    "HSE": "HSE Manager",
+    "FINANCE": "Finance Manager",
+    "PROJECT": "Project Manager",
+    "REALESTATE": "Real Estate Manager",
+    "ASSISTANT": "Admin Assistant"
+};
+
+function updatePasswordPlaceholder(){
+    const role = document.getElementById("roleSelect").value;
+    const passwordInput = document.getElementById("passwordInput");
+    const passwordHint = document.getElementById("passwordHint");
+    
+    if(role === ""){
+        passwordInput.placeholder = "Select a role first";
+        passwordHint.textContent = "";
+    } else {
+        passwordInput.placeholder = `Enter password for ${roleDescriptions[role]}`;
+        passwordHint.textContent = `Default password: ${rolePasswords[role]}`;
+    }
+}
+
 function login(){
     const role = document.getElementById("roleSelect").value;
+    const password = document.getElementById("passwordInput").value;
+    
     if(role === ""){
         customAlert("Please select a role from the dropdown menu.", "Role Required", "error");
         return;
     }
+    
+    if(password === ""){
+        customAlert("Please enter your password.", "Password Required", "error");
+        return;
+    }
+    
+    // Validate password
+    if(password !== rolePasswords[role]){
+        customAlert("Invalid password. Please check your credentials.", "Authentication Failed", "error");
+        return;
+    }
+    
     currentRole = role;
     document.getElementById("loginPage").classList.add("hidden");
     document.getElementById("systemPage").classList.remove("hidden");
-    document.getElementById("userRole").innerText = role + " Dashboard";
+    document.getElementById("userRole").innerText = roleDescriptions[role] + " Dashboard";
     loadMenu();
 }
 
