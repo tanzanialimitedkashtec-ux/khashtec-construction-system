@@ -136,15 +136,6 @@ button.action{
     box-shadow:0 0 5px rgba(11,61,145,0.2);
 }
 
-#passwordHint{
-    background:#f8f9fa;
-    padding:8px;
-    border-radius:4px;
-    border-left:4px solid #0b3d91;
-    font-family:monospace;
-    margin:8px 0;
-}
-
 /* Enhanced Form Styles */
 .form-row {
     display: flex;
@@ -1804,7 +1795,6 @@ background: #f8f9fa;
         <option value="ASSISTANT">Admin Assistant</option>
     </select>
     <input type="password" id="passwordInput" placeholder="Enter password" style="width: 100%; margin: 10px 0; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
-    <div id="passwordHint" style="font-size: 12px; color: #666; margin-bottom: 10px;"></div>
     <button class="action" onclick="login()">Login</button>
 </div>
 
@@ -1853,14 +1843,11 @@ const roleDescriptions = {
 function updatePasswordPlaceholder(){
     const role = document.getElementById("roleSelect").value;
     const passwordInput = document.getElementById("passwordInput");
-    const passwordHint = document.getElementById("passwordHint");
     
     if(role === ""){
         passwordInput.placeholder = "Select a role first";
-        passwordHint.textContent = "";
     } else {
         passwordInput.placeholder = `Enter password for ${roleDescriptions[role]}`;
-        passwordHint.textContent = `Default password: ${rolePasswords[role]}`;
     }
 }
 
