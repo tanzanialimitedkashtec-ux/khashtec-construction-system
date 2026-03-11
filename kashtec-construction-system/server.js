@@ -12,6 +12,7 @@ const employeeRoutes = require('./backend/routes/employees');
 const projectRoutes = require('./backend/routes/projects');
 const documentRoutes = require('./backend/routes/documents');
 const notificationRoutes = require('./backend/routes/notifications');
+const apiRoutes = require('./backend/routes/api');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -81,6 +82,7 @@ app.use('/api/employees', employeeRoutes);
 app.use('/api/projects', projectRoutes);
 app.use('/api/documents', documentRoutes);
 app.use('/api/notifications', notificationRoutes);
+app.use('/api', apiRoutes);
 
 // Database health check
 app.get('/api/db-health', async (req, res) => {
