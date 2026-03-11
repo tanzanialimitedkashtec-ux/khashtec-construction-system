@@ -17,16 +17,16 @@ source = "kashtec-construction-system"
 [env]
 NODE_ENV = "production"
 PORT = "${PORT:-3000}"
-DATABASE_URL = "${DATABASE_URL}"
+DATABASE_URL = "${MYSQL_PUBLIC_URL}"
 JWT_SECRET = "${JWT_SECRET}"
 GITHUB_TOKEN = "${GITHUB_TOKEN}"
 
 # Database Configuration
-DB_HOST = "${DB_HOST}"
-DB_USER = "${DB_USER}"
-DB_PASSWORD = "${DB_PASSWORD}"
-DB_NAME = "${DB_NAME}"
-DB_PORT = "${DB_PORT:-3306}"
+DB_HOST = "${MYSQLHOST}"
+DB_USER = "${MYSQLUSER}"
+DB_PASSWORD = "${MYSQLPASSWORD}"
+DB_NAME = "${MYSQLDATABASE}"
+DB_PORT = "${MYSQLPORT}"
 
 # Application Configuration
 APP_NAME = "KASHTEC Construction Management System"

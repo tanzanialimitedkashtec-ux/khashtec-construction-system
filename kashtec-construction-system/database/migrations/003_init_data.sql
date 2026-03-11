@@ -1,6 +1,6 @@
 -- Initialize database with sample data for frontend testing
 
-USE kashtec_db;
+USE railway;
 
 -- Insert sample users if they don't exist
 INSERT IGNORE INTO users (id, name, email, phone, location, service_type, role, department, password, status) VALUES

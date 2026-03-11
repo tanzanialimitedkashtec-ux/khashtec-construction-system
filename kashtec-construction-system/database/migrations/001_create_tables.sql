@@ -1,7 +1,7 @@
--- Create kashtec_db database
-CREATE DATABASE IF NOT EXISTS kashtec_db CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+-- Create railway database
+CREATE DATABASE IF NOT EXISTS railway CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
-USE kashtec_db;
+USE railway;
 
 -- Users table
 CREATE TABLE IF NOT EXISTS users (
