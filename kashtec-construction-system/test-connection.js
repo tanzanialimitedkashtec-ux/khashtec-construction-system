@@ -70,13 +70,25 @@ async function testBackendAPI() {
     console.log('\n=== BACKEND API TEST ===');
     
     try {
-        const response = await fetch('http://localhost:3000/api/health');
+        // Try to connect with a timeout
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 5000);
+        
+        const response = await fetch('http://localhost:3000/api/health', {
+            signal: controller.signal
+        });
+        
+        clearTimeout(timeoutId);
         const data = await response.json();
         
         console.log('✅ Backend API is running');
         console.log('📊 Health check response:', data);
         return true;
     } catch (error) {
+        if (error.name === 'AbortError') {
+            console.log('⏰ Backend API test timeout (server might be starting up)');
+            return false;
+        }
         console.error('❌ Backend API test failed:', error.message);
         return false;
     }
