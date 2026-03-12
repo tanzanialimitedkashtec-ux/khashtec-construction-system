@@ -70,7 +70,7 @@ async function testBackendAPI() {
     console.log('\n=== BACKEND API TEST ===');
     
     try {
-        const response = await fetch('http://localhost:8080/api/health');
+        const response = await fetch('http://localhost:3000/api/health');
         const data = await response.json();
         
         console.log('✅ Backend API is running');
