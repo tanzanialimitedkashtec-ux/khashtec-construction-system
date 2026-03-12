@@ -181,7 +181,7 @@ CREATE TABLE IF NOT EXISTS ppe_issuance (
   issuance_number VARCHAR(50) UNIQUE,
   employee_id INT,
   ppe_type ENUM('Helmet', 'Gloves', 'Boots', 'Vest', 'Goggles', 'Mask', 'Harness', 'Ear Plugs', 'Other') NOT NULL,
-  condition ENUM('New', 'Good', 'Replacement') DEFAULT 'New'
+  condition ENUM('New', 'Good', 'Replacement') DEFAULT 'New',
   issue_date DATE,
   return_date DATE,
   issued_by INT,
