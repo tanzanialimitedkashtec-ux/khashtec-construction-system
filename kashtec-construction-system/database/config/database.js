@@ -10,12 +10,25 @@ class Database {
 
     async connect() {
         try {
+            // Debug environment variables
+            console.log('🔍 Database Environment Variables:');
+            console.log('DATABASE_URL:', process.env.DATABASE_URL ? 'SET' : 'NOT SET');
+            console.log('DB_HOST:', process.env.DB_HOST || 'NOT SET');
+            console.log('DB_USER:', process.env.DB_USER || 'NOT SET');
+            console.log('DB_NAME:', process.env.DB_NAME || 'NOT SET');
+            console.log('DB_PORT:', process.env.DB_PORT || 'NOT SET');
+            
             // Use Railway's DATABASE_URL or individual DB credentials
             const databaseUrl = process.env.DATABASE_URL;
             
             if (databaseUrl) {
+                console.log('🔗 Using DATABASE_URL connection');
                 // Parse DATABASE_URL format: mysql://user:password@host:port/database
                 const url = new URL(databaseUrl);
+                console.log('📍 Connecting to:', url.hostname + ':' + (url.port || 3306));
+                console.log('👤 User:', url.username);
+                console.log('💾 Database:', url.pathname.substring(1));
+                
                 this.pool = mysql.createPool({
                     host: url.hostname,
                     port: url.port || 3306,
@@ -26,9 +39,17 @@ class Database {
                     connectionLimit: 10,
                     queueLimit: 0,
                     enableKeepAlive: true,
-                    keepAliveInitialDelay: 0
+                    keepAliveInitialDelay: 0,
+                    ssl: {
+                        rejectUnauthorized: false
+                    }
                 });
             } else {
+                console.log('🔧 Using individual environment variables');
+                console.log('📍 Connecting to:', process.env.DB_HOST + ':' + (process.env.DB_PORT || 3306));
+                console.log('👤 User:', process.env.DB_USER);
+                console.log('💾 Database:', process.env.DB_NAME);
+                
                 // Fallback to individual environment variables
                 this.pool = mysql.createPool({
                     host: process.env.DB_HOST || 'localhost',
@@ -40,11 +61,15 @@ class Database {
                     connectionLimit: 10,
                     queueLimit: 0,
                     enableKeepAlive: true,
-                    keepAliveInitialDelay: 0
+                    keepAliveInitialDelay: 0,
+                    ssl: {
+                        rejectUnauthorized: false
+                    }
                 });
             }
 
             // Test connection
+            console.log('🔌 Testing database connection...');
             const connection = await this.pool.getConnection();
             await connection.ping();
             connection.release();
@@ -54,6 +79,7 @@ class Database {
             return true;
         } catch (error) {
             console.error('❌ Database connection failed:', error.message);
+            console.error('🔍 Full error:', error);
             this.isConnected = false;
             return false;
         }
