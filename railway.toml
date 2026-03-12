@@ -17,16 +17,16 @@ source = "kashtec-construction-system"
 [env]
 NODE_ENV = "production"
 PORT = "${PORT:-3000}"
-DATABASE_URL = "${MYSQL_PUBLIC_URL}"
+DATABASE_URL = "mysql://root:LzDEYGJIiYfVRSTnBrufpsSwRIDnZRvz@centerbeam.proxy.rlwy.net:11044/railway"
 JWT_SECRET = "${JWT_SECRET:-kashtec-secret-key-2024}"
 GITHUB_TOKEN = "${GITHUB_TOKEN}"
 
-# Database Configuration (Railway MySQL Variables)
-DB_HOST = "${MYSQLHOST}"
-DB_USER = "${MYSQLUSER}"
-DB_PASSWORD = "${MYSQLPASSWORD}"
-DB_NAME = "${MYSQLDATABASE}"
-DB_PORT = "${MYSQLPORT}"
+# Database Configuration (Direct Connection)
+DB_HOST = "centerbeam.proxy.rlwy.net"
+DB_USER = "root"
+DB_PASSWORD = "LzDEYGJIiYfVRSTnBrufpsSwRIDnZRvz"
+DB_NAME = "railway"
+DB_PORT = "11044"
 
 # Application Configuration
 APP_NAME = "KASHTEC Construction Management System"
