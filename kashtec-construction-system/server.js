@@ -120,11 +120,29 @@ app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'frontend/public/department.html'));
 });
 
-// Handle client-side routing
+// Handle client-side routing - serve frontend files
+app.use(express.static(path.join(__dirname, 'frontend/public')));
+
+// API routes for any unmatched /api/* requests
+app.use('/api/*', (req, res, next) => {
+    // Forward to API routes
+    req.url = req.url.replace('/api', '');
+    app._router.handle(req, res, next);
+});
+
+// Catch-all handler for any other requests
 app.get('*', (req, res) => {
+    // If it's an API request, return 404
     if (req.path.startsWith('/api')) {
-        return res.status(404).json({ error: 'API endpoint not found' });
+        return res.status(404).json({ 
+            error: 'API endpoint not found',
+            path: req.path,
+            method: req.method,
+            timestamp: new Date().toISOString()
+        });
     }
+    
+    // For non-API requests, serve the frontend
     res.sendFile(path.join(__dirname, 'frontend/public/department.html'));
 });
 
