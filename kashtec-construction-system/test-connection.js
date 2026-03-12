@@ -70,9 +70,9 @@ async function testBackendAPI() {
     console.log('\n=== BACKEND API TEST ===');
     
     try {
-        // Try to connect with a timeout
+        // Try to connect with a longer timeout for Railway deployment
         const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 5000);
+        const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 seconds timeout
         
         const response = await fetch('http://localhost:3000/api/health', {
             signal: controller.signal
@@ -88,9 +88,13 @@ async function testBackendAPI() {
         if (error.name === 'AbortError') {
             console.log('⏰ Backend API test timeout (server might be starting up)');
             return false;
+        } else if (error.code === 'ECONNREFUSED') {
+            console.log('⏰ Backend API not ready yet (server starting up)');
+            return false;
+        } else {
+            console.error('❌ Backend API test failed:', error.message);
+            return false;
         }
-        console.error('❌ Backend API test failed:', error.message);
-        return false;
     }
 }
 
