@@ -1,6 +1,5 @@
 [build]
 builder = "NIXPACKS"
-buildCommand = "npm install"
 
 [deploy]
 startCommand = "npm start"
@@ -22,3 +21,4 @@ handler = "http"
 
 [env]
 NODE_ENV = "production"
+PORT = "${PORT:-3000}"
