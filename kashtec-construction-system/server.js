@@ -296,12 +296,16 @@ console.log(`🔍 Configured PORT: ${PORT}`);
 console.log(`🔍 PORT type: ${typeof PORT}`);
 
 const server = app.listen(PORT, '0.0.0.0', () => {
+    const baseUrl = config.NODE_ENV === 'production' 
+        ? `https://${process.env.RAILWAY_PUBLIC_DOMAIN || 'your-app.railway.app'}`
+        : `http://localhost:${PORT}`;
+    
     console.log(`
 🚀 ${config.APP_NAME}
 🌍 Environment: ${config.NODE_ENV}
 📍 Server running on port ${PORT}
-🏠 URL: http://localhost:${PORT}
-📊 Health check: http://localhost:${PORT}/api/health
+🏠 URL: ${baseUrl}
+📊 Health check: ${baseUrl}/api/health
 🕒 Started at: ${new Date().toLocaleString()}
 🔍 Debug: Server bound to 0.0.0.0:${PORT}
 🌐 External access should be available
