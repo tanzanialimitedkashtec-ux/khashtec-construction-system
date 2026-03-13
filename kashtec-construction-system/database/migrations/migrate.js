@@ -4,94 +4,72 @@ async function runMigrations() {
   try {
     console.log('🔄 Running database migrations...');
     
-    // Read migration files
+    // Read the consolidated migration file
     const fs = require('fs').promises;
     const path = require('path');
     
-    // Step 1: Create tables
-    console.log('📝 Step 1: Creating database tables...');
-    const tableMigrationPath = path.join(__dirname, '../../database/migrations/001_create_tables.sql');
-    const tableSQL = await fs.readFile(tableMigrationPath, 'utf8');
+    console.log('📝 Reading complete database schema...');
+    const migrationPath = path.join(__dirname, '../../database/migrations/001_create_tables.sql');
+    const migrationSQL = await fs.readFile(migrationPath, 'utf8');
     
-    const tableStatements = tableSQL.split(';').filter(stmt => stmt.trim().length > 0);
-    console.log(`📝 Found ${tableStatements.length} table creation statements`);
+    // Split SQL file by semicolons and execute each statement
+    const statements = migrationSQL.split(';').filter(stmt => stmt.trim().length > 0);
+    console.log(`📝 Found ${statements.length} SQL statements to execute`);
     
-    for (let i = 0; i < tableStatements.length; i++) {
-      const statement = tableStatements[i].trim();
+    let successCount = 0;
+    let skippedCount = 0;
+    
+    for (let i = 0; i < statements.length; i++) {
+      const statement = statements[i].trim();
       if (!statement) continue;
       
       try {
         // Use query for all statements to avoid prepared statement issues
         await db.query(statement);
-        console.log(`✅ Migration ${i + 1}/${tableStatements.length} executed successfully`);
+        console.log(`✅ Statement ${i + 1}/${statements.length} executed successfully`);
+        successCount++;
       } catch (error) {
-        // Ignore "already exists" and "Duplicate entry" errors
-        if (!error.message.includes('already exists') && 
-            !error.message.includes('Duplicate entry') &&
-            !error.message.includes('Table') && 
-            !error.message.includes('Column') &&
-            !error.message.includes('command is not supported')) {
-          console.error(`❌ Migration ${i + 1} error:`, error.message);
-          console.error(`🔍 Failed statement:`, statement);
+        // Ignore known errors
+        if (error.message.includes('already exists') || 
+            error.message.includes('Duplicate entry') ||
+            error.message.includes('This command is not supported in the prepared statement protocol yet')) {
+          console.log(`⚠️  Statement ${i + 1} skipped (known issue): ${error.message}`);
+          skippedCount++;
         } else {
-          console.log(`⚠️  Migration ${i + 1} skipped (known issue):`, error.message);
+          console.error(`❌ Statement ${i + 1} error: ${error.message}`);
+          console.error(`🔍 Failed statement: ${statement.substring(0, 100)}...`);
         }
       }
     }
     
-    // Step 2: Insert seed data
-    console.log('📝 Step 2: Inserting seed data...');
+    console.log(`\n📊 Migration Summary:`);
+    console.log(`✅ Successfully executed: ${successCount}`);
+    console.log(`⚠️  Skipped (known issues): ${skippedCount}`);
+    console.log(`📝 Total statements: ${statements.length}`);
+    
+    // Verify database
+    console.log('\n📝 Step 3: Verifying database...');
     try {
-      const seedMigrationPath = path.join(__dirname, '../../database/migrations/004_seed_data.sql');
-      const seedSQL = await fs.readFile(seedMigrationPath, 'utf8');
+      const [tables] = await db.query('SHOW TABLES');
+      console.log(`📊 Database now has ${tables.length} tables`);
       
-      const seedStatements = seedSQL.split(';').filter(stmt => stmt.trim().length > 0);
-      console.log(`📝 Found ${seedStatements.length} seed data statements`);
+      // Check users table
+      const [userCount] = await db.query('SELECT COUNT(*) as count FROM users');
+      console.log(`👥 Users table has ${userCount[0].count} records`);
       
-      for (let i = 0; i < seedStatements.length; i++) {
-        const statement = seedStatements[i].trim();
-        if (!statement) continue;
-        
-        try {
-          await db.execute(statement, []);
-          console.log(`✅ Seed data ${i + 1}/${seedStatements.length} inserted successfully`);
-        } catch (error) {
-          if (!error.message.includes('Duplicate entry')) {
-            console.log(`⚠️  Seed data ${i + 1} skipped (already exists):`, error.message);
-          } else {
-            console.error(`❌ Seed data ${i + 1} error:`, error.message);
-          }
-        }
-      }
-    } catch (error) {
-      console.error('❌ Seed data error:', error.message);
+      console.log('✅ All migrations completed successfully');
+      process.exit(0);
+    } catch (verifyError) {
+      console.log('📊 Could not verify database:', verifyError.message);
+      console.log('✅ All migrations completed successfully');
+      process.exit(0);
     }
     
-    // Step 3: Verify database
-    console.log('📝 Step 3: Verifying database...');
-    try {
-      const [rows] = await db.execute('SELECT COUNT(*) as count FROM information_schema.tables WHERE table_schema = ?', [process.env.DB_NAME || 'railway']);
-      console.log(`📊 Database now has ${rows[0].count} tables`);
-      
-      // Test a simple query
-      const [testUsers] = await db.execute('SELECT COUNT(*) as user_count FROM users');
-      console.log(`👥 Users table has ${testUsers[0].user_count} records`);
-      
-    } catch (error) {
-      console.log('📊 Could not verify database:', error.message);
-    }
-    
-    console.log('✅ All migrations completed successfully');
-    process.exit(0);
   } catch (error) {
     console.error('❌ Migration failed:', error);
     process.exit(1);
   }
 }
 
-// Run migrations if this file is executed directly
-if (require.main === module) {
-  runMigrations();
-}
-
-module.exports = { runMigrations };
+// Run migrations
+runMigrations();

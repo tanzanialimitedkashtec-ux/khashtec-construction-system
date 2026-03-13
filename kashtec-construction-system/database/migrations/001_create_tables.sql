@@ -1,3 +1,6 @@
+-- KASHTEC Construction Management System - Complete Database Schema
+-- This file contains all table definitions and seed data
+
 -- Create railway database
 CREATE DATABASE IF NOT EXISTS railway CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
@@ -50,13 +53,13 @@ CREATE TABLE IF NOT EXISTS projects (
 -- Employees table
 CREATE TABLE IF NOT EXISTS employees (
   id INT AUTO_INCREMENT PRIMARY KEY,
-  user_id INT UNIQUE,
+  user_id INT,
   employee_id VARCHAR(50) UNIQUE,
   position VARCHAR(255),
   department VARCHAR(100),
   salary DECIMAL(10,2),
   hire_date DATE,
-  status ENUM('Active', 'On Leave', 'Terminated') DEFAULT 'Active',
+  status ENUM('Active', 'Inactive', 'Terminated') DEFAULT 'Active',
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
@@ -71,80 +74,43 @@ CREATE TABLE IF NOT EXISTS properties (
   title VARCHAR(255) NOT NULL,
   description TEXT,
   location VARCHAR(255),
-  type ENUM('Residential', 'Commercial', 'Industrial', 'Land') DEFAULT 'Residential',
-  price DECIMAL(15,2),
-  status ENUM('Available', 'Sold', 'Under Offer', 'Reserved') DEFAULT 'Available',
+  type ENUM('Residential', 'Commercial', 'Industrial', 'Land', 'Mixed Use') DEFAULT 'Residential',
+  price DECIMAL(12,2),
+  status ENUM('Available', 'Sold', 'Under Offer', 'Rented', 'Off Market') DEFAULT 'Available',
   size_sqm DECIMAL(10,2),
   bedrooms INT,
   bathrooms INT,
   parking_spaces INT,
+  year_built INT,
   agent_id INT,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   FOREIGN KEY (agent_id) REFERENCES users(id) ON DELETE SET NULL,
-  INDEX idx_status (status),
   INDEX idx_type (type),
-  INDEX idx_agent (agent_id)
+  INDEX idx_status (status),
+  INDEX idx_location (location),
+  INDEX idx_price (price)
 );
 
--- Clients table
-CREATE TABLE IF NOT EXISTS clients (
-  id INT AUTO_INCREMENT PRIMARY KEY,
-  user_id INT UNIQUE,
-  client_code VARCHAR(50) UNIQUE,
-  name VARCHAR(255) NOT NULL,
-  email VARCHAR(255),
-  phone VARCHAR(50),
-  address TEXT,
-  id_number VARCHAR(100),
-  registration_date DATE,
-  status ENUM('Active', 'Inactive', 'Blacklisted') DEFAULT 'Active',
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
-  INDEX idx_client_code (client_code),
-  INDEX idx_status (status)
-);
-
--- Sales table
-CREATE TABLE IF NOT EXISTS sales (
-  id INT AUTO_INCREMENT PRIMARY KEY,
-  property_id INT,
-  client_id INT,
-  agent_id INT,
-  sale_price DECIMAL(15,2),
-  deposit_amount DECIMAL(15,2),
-  balance_amount DECIMAL(15,2),
-  sale_date DATE,
-  status ENUM('Pending', 'Completed', 'Cancelled') DEFAULT 'Pending',
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  FOREIGN KEY (property_id) REFERENCES properties(id) ON DELETE SET NULL,
-  FOREIGN KEY (client_id) REFERENCES clients(id) ON DELETE SET NULL,
-  FOREIGN KEY (agent_id) REFERENCES users(id) ON DELETE SET NULL,
-  INDEX idx_property (property_id),
-  INDEX idx_client (client_id),
-  INDEX idx_agent (agent_id),
-  INDEX idx_status (status)
-);
-
--- Financial transactions table
+-- Financial Transactions table
 CREATE TABLE IF NOT EXISTS financial_transactions (
   id INT AUTO_INCREMENT PRIMARY KEY,
-  type ENUM('Income', 'Expense', 'Budget', 'Payroll') NOT NULL,
+  type ENUM('Income', 'Expense', 'Transfer') NOT NULL,
   category VARCHAR(100),
   description TEXT,
-  amount DECIMAL(15,2) NOT NULL,
-  date DATE,
-  reference_id VARCHAR(100),
+  amount DECIMAL(12,2) NOT NULL,
+  date DATE NOT NULL,
+  project_id INT,
+  property_id INT,
   created_by INT,
-  approved_by INT,
-  status ENUM('Pending', 'Approved', 'Rejected') DEFAULT 'Pending',
+  status ENUM('Pending', 'Approved', 'Rejected', 'Processed') DEFAULT 'Pending',
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE SET NULL,
+  FOREIGN KEY (property_id) REFERENCES properties(id) ON DELETE SET NULL,
   FOREIGN KEY (created_by) REFERENCES users(id) ON DELETE SET NULL,
-  FOREIGN KEY (approved_by) REFERENCES users(id) ON DELETE SET NULL,
   INDEX idx_type (type),
+  INDEX idx_category (category),
   INDEX idx_date (date),
   INDEX idx_status (status)
 );
@@ -153,10 +119,10 @@ CREATE TABLE IF NOT EXISTS financial_transactions (
 CREATE TABLE IF NOT EXISTS hse_incidents (
   id INT AUTO_INCREMENT PRIMARY KEY,
   incident_number VARCHAR(50) UNIQUE,
-  type ENUM('Accident', 'Near Miss', 'Injury', 'Property Damage', 'Environmental', 'Fire') NOT NULL,
-  severity ENUM('Critical', 'Major', 'Moderate', 'Minor') NOT NULL,
+  type ENUM('Accident', 'Near Miss', 'Injury', 'Illness', 'Property Damage', 'Environmental') NOT NULL,
+  severity ENUM('Minor', 'Moderate', 'Major', 'Critical', 'Fatal') NOT NULL,
   location VARCHAR(255),
-  description TEXT,
+  description TEXT NOT NULL,
   root_cause TEXT,
   immediate_actions TEXT,
   preventive_measures TEXT,
