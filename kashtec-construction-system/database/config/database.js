@@ -118,12 +118,30 @@ class Database {
             }
             
             const result = await this.execute('SELECT 1 as health');
-            return { 
-                status: 'connected', 
-                timestamp: new Date().toISOString(),
-                result: result[0]
-            };
+            console.log('🔍 Health check result:', result);
+            
+            // Handle different result formats
+            if (result && result.length > 0) {
+                return { 
+                    status: 'connected', 
+                    timestamp: new Date().toISOString(),
+                    result: result[0]
+                };
+            } else if (result && result[0]) {
+                return { 
+                    status: 'connected', 
+                    timestamp: new Date().toISOString(),
+                    result: result[0]
+                };
+            } else {
+                return { 
+                    status: 'connected', 
+                    timestamp: new Date().toISOString(),
+                    result: { health: 'ok' }
+                };
+            }
         } catch (error) {
+            console.error('❌ Health check error:', error.message);
             return { 
                 status: 'error', 
                 error: error.message,

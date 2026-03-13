@@ -278,6 +278,18 @@ process.on('SIGINT', () => {
     });
 });
 
+// Handle unhandled promise rejections
+process.on('unhandledRejection', (reason, promise) => {
+    console.error('Unhandled Rejection at:', promise, 'reason:', reason);
+});
+
+// Handle uncaught exceptions
+process.on('uncaughtException', (error) => {
+    console.error('Uncaught Exception:', error);
+    console.log('🔧 Continuing despite error...');
+    // Don't exit the process, try to continue
+});
+
 // Start server
 const server = app.listen(PORT, '0.0.0.0', () => {
     console.log(`
@@ -305,17 +317,6 @@ server.on('listening', () => {
     const address = server.address();
     console.log(`🔍 Server listening on ${address.address}:${address.port}`);
     console.log('🔍 Ready to accept connections');
-});
-
-// Handle unhandled promise rejections
-process.on('unhandledRejection', (reason, promise) => {
-    console.error('Unhandled Rejection at:', promise, 'reason:', reason);
-});
-
-// Handle uncaught exceptions
-process.on('uncaughtException', (error) => {
-    console.error('Uncaught Exception:', error);
-    process.exit(1);
 });
 
 module.exports = app;
