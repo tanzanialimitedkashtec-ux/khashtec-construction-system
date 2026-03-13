@@ -6,6 +6,9 @@ const path = require('path');
 const fs = require('fs');
 require('dotenv').config();
 
+// Import environment configuration
+const config = require('./config/environment');
+
 // Import routes
 const authRoutes = require('./backend/routes/auth');
 const employeeRoutes = require('./backend/routes/employees');
@@ -15,7 +18,7 @@ const notificationRoutes = require('./backend/routes/notifications');
 const apiRoutes = require('./backend/routes/api');
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = config.PORT;
 
 // Security middleware
 app.use(helmet({
@@ -41,7 +44,7 @@ app.use('/api/', limiter);
 
 // CORS configuration
 app.use(cors({
-    origin: process.env.CORS_ORIGIN || '*',
+    origin: config.CORS_ORIGIN,
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization']
@@ -220,8 +223,8 @@ process.on('SIGINT', () => {
 // Start server
 const server = app.listen(PORT, '0.0.0.0', () => {
     console.log(`
-🚀 KASHTEC Construction Management System
-🌍 Environment: ${process.env.NODE_ENV || 'development'}
+🚀 ${config.APP_NAME}
+🌍 Environment: ${config.NODE_ENV}
 📍 Server running on port ${PORT}
 🏠 URL: http://localhost:${PORT}
 📊 Health check: http://localhost:${PORT}/api/health
