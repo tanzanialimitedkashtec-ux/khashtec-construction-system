@@ -186,15 +186,9 @@ CREATE TABLE IF NOT EXISTS file_uploads (
   INDEX idx_category (category)
 );
 
--- Insert sample data
-INSERT IGNORE INTO users (id, name, email, phone, location, service_type, role, department, password, status) VALUES
-(1, 'John Michael', 'john.michael@kashtec.co.tz', '+255 754 123 001', 'Dar es Salaam', 'Management', 'Managing Director', 'Management', 'admin123', 'Active'),
-(2, 'Mary Johnson', 'mary.johnson@kashtec.co.tz', '+255 754 123 002', 'Dar es Salaam', 'Management', 'HR Manager', 'Human Resources', 'admin123', 'Active'),
-(3, 'Robert Kim', 'robert.kim@kashtec.co.tz', '+255 754 123 003', 'Dar es Salaam', 'Management', 'Finance Manager', 'Finance', 'admin123', 'Active'),
-(4, 'Sarah Wilson', 'sarah.wilson@kashtec.co.tz', '+255 754 123 004', 'Dar es Salaam', 'Management', 'Project Manager', 'Project Management', 'admin123', 'Active'),
-(5, 'David Brown', 'david.brown@kashtec.co.tz', '+255 754 123 005', 'Dar es Salaam', 'Management', 'Real Estate Manager', 'Real Estate', 'admin123', 'Active'),
-(6, 'Lisa Davis', 'lisa.davis@kashtec.co.tz', '+255 754 123 006', 'Dar es Salaam', 'Management', 'HSE Manager', 'Health & Safety', 'admin123', 'Active'),
-(7, 'James Miller', 'james.miller@kashtec.co.tz', '+255 754 123 007', 'Dar es Salaam', 'Management', 'Office Assistant', 'Administrative', 'admin123', 'Active');
+-- Create admin user (minimal columns to avoid conflicts)
+INSERT IGNORE INTO users (name, email, password, role, status) VALUES
+('Admin User', 'admin@kashtec.co.tz', 'admin123', 'Managing Director', 'Active');
 
 -- Insert sample projects
 INSERT IGNORE INTO projects (name, description, location, start_date, end_date, status, budget, manager_id) VALUES
