@@ -69,6 +69,10 @@ async function testDatabaseConnection() {
 async function testBackendAPI() {
     console.log('\n=== BACKEND API TEST ===');
     
+    // Wait a moment for server to start (Railway deployment)
+    console.log('⏰ Waiting 3 seconds for server to start...');
+    await new Promise(resolve => setTimeout(resolve, 3000));
+    
     try {
         // Try to connect with a longer timeout for Railway deployment
         const controller = new AbortController();

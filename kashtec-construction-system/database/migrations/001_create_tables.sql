@@ -147,7 +147,7 @@ CREATE TABLE IF NOT EXISTS ppe_issuance (
   issuance_number VARCHAR(50) UNIQUE,
   employee_id INT,
   ppe_type ENUM('Helmet', 'Gloves', 'Boots', 'Vest', 'Goggles', 'Mask', 'Harness', 'Ear Plugs', 'Other') NOT NULL,
-  condition ENUM('New', 'Good', 'Replacement') DEFAULT 'New',
+  ppe_condition ENUM('New', 'Good', 'Replacement') DEFAULT 'New',
   issue_date DATE,
   return_date DATE,
   issued_by INT,
@@ -186,14 +186,14 @@ CREATE TABLE IF NOT EXISTS file_uploads (
 );
 
 -- Insert sample data
-INSERT IGNORE INTO users (name, email, phone, location, service_type, role, department, password) VALUES
-('Managing Director', 'md@kashtec.co.tz', '+255 22 123 4567', 'Executive Floor', 'Management', 'Managing Director', 'Management', 'admin123'),
-('HR Manager', 'hr@kashtec.co.tz', '+255 22 123 4568', '2nd Floor', 'Management', 'HR Manager', 'Human Resources', 'admin123'),
-('Finance Manager', 'finance@kashtec.co.tz', '+255 22 123 4569', '3rd Floor', 'Management', 'Finance Manager', 'Finance', 'admin123'),
-('Project Manager', 'projects@kashtec.co.tz', '+255 22 123 4570', 'Site Office', 'Management', 'Project Manager', 'Project Management', 'admin123'),
-('Real Estate Manager', 'realestate@kashtec.co.tz', '+255 22 123 4571', 'Ground Floor', 'Management', 'Real Estate Manager', 'Real Estate', 'admin123'),
-('HSE Manager', 'hse@kashtec.co.tz', '+255 22 123 4572', 'Site Office', 'Management', 'HSE Manager', 'Health & Safety', 'admin123'),
-('Office Assistant', 'admin@kashtec.co.tz', '+255 22 123 4573', 'Reception', 'Management', 'Office Assistant', 'Administrative', 'admin123');
+INSERT IGNORE INTO users (id, name, email, phone, location, service_type, role, department, password, status) VALUES
+(1, 'John Michael', 'john.michael@kashtec.co.tz', '+255 754 123 001', 'Dar es Salaam', 'Management', 'Managing Director', 'Management', 'admin123', 'Active'),
+(2, 'Mary Johnson', 'mary.johnson@kashtec.co.tz', '+255 754 123 002', 'Dar es Salaam', 'Management', 'HR Manager', 'Human Resources', 'admin123', 'Active'),
+(3, 'Robert Kim', 'robert.kim@kashtec.co.tz', '+255 754 123 003', 'Dar es Salaam', 'Management', 'Finance Manager', 'Finance', 'admin123', 'Active'),
+(4, 'Sarah Wilson', 'sarah.wilson@kashtec.co.tz', '+255 754 123 004', 'Dar es Salaam', 'Management', 'Project Manager', 'Project Management', 'admin123', 'Active'),
+(5, 'David Brown', 'david.brown@kashtec.co.tz', '+255 754 123 005', 'Dar es Salaam', 'Management', 'Real Estate Manager', 'Real Estate', 'admin123', 'Active'),
+(6, 'Lisa Davis', 'lisa.davis@kashtec.co.tz', '+255 754 123 006', 'Dar es Salaam', 'Management', 'HSE Manager', 'Health & Safety', 'admin123', 'Active'),
+(7, 'James Miller', 'james.miller@kashtec.co.tz', '+255 754 123 007', 'Dar es Salaam', 'Management', 'Office Assistant', 'Administrative', 'admin123', 'Active');
 
 -- Insert sample projects
 INSERT IGNORE INTO projects (name, description, location, start_date, end_date, status, budget, manager_id) VALUES
