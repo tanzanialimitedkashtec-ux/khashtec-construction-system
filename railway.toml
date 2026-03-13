@@ -11,7 +11,7 @@ healthcheckInterval = 15
 healthcheckRetries = 10
 
 [[services]]
-name = "kashtec-web"
+name = "khashtec-construction-system"
 source = "kashtec-construction-system"
 
 [services.ports]
