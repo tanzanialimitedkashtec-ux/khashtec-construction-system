@@ -239,7 +239,24 @@ const server = app.listen(PORT, '0.0.0.0', () => {
 🏠 URL: http://localhost:${PORT}
 📊 Health check: http://localhost:${PORT}/api/health
 🕒 Started at: ${new Date().toLocaleString()}
+🔍 Debug: Server bound to 0.0.0.0:${PORT}
+🌐 External access should be available
     `);
+});
+
+// Add server error handling
+server.on('error', (error) => {
+    console.error('❌ Server error:', error);
+    if (error.code === 'EADDRINUSE') {
+        console.error(`❌ Port ${PORT} is already in use`);
+    }
+});
+
+// Log when server is actually listening
+server.on('listening', () => {
+    const address = server.address();
+    console.log(`🔍 Server listening on ${address.address}:${address.port}`);
+    console.log('🔍 Ready to accept connections');
 });
 
 // Handle unhandled promise rejections
