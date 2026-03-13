@@ -1,7 +1,8 @@
 // ===== API SERVICE =====
 class ApiService {
     constructor() {
-        this.baseURL = 'http://localhost:3000/api';
+        // Use current origin for API calls (works for both local and Railway)
+        this.baseURL = window.location.origin + '/api';
         this.token = localStorage.getItem('token') || null;
     }
 

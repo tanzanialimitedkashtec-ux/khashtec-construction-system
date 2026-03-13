@@ -50,12 +50,12 @@ class Database {
                 console.log('👤 User:', process.env.DB_USER);
                 console.log('💾 Database:', process.env.DB_NAME);
                 
-                // Fallback to individual environment variables
+                // Use Railway environment variables only
                 this.pool = mysql.createPool({
-                    host: process.env.DB_HOST || 'localhost',
+                    host: process.env.DB_HOST,
                     port: process.env.DB_PORT || 3306,
-                    user: process.env.DB_USER || 'root',
-                    password: process.env.DB_PASSWORD || '',
+                    user: process.env.DB_USER,
+                    password: process.env.DB_PASSWORD,
                     database: process.env.DB_NAME || 'kashtec_db',
                     waitForConnections: true,
                     connectionLimit: 10,

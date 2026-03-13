@@ -9,7 +9,7 @@ const jwt = require('jsonwebtoken');
 const db = require('../config/database');
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT;
 
 // Middleware
 app.use(helmet());
