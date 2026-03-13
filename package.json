@@ -4,10 +4,10 @@
   "description": "KASHTEC Tanzania Limited - Construction Management System",
   "main": "index.html",
   "scripts": {
-    "start": "npx serve -s kashtec-construction-system/frontend/public -l ${PORT:-3000} --host 0.0.0.0",
-    "dev": "npx serve -s kashtec-construction-system/frontend/public -l 3000 --host 0.0.0.0",
+    "start": "npx serve -s kashtec-construction-system/frontend/public -l ${PORT:-3000}",
+    "dev": "npx serve -s kashtec-construction-system/frontend/public -l 3000",
     "build": "echo 'Static site - no build needed'",
-    "serve": "npx serve -s kashtec-construction-system/frontend/public -l ${PORT:-3000} --host 0.0.0.0"
+    "serve": "npx serve -s kashtec-construction-system/frontend/public -l ${PORT:-3000}"
   },
   "keywords": ["construction", "management", "static", "frontend", "kashtec", "railway"],
   "author": "KASHTEC Tanzania Limited",
