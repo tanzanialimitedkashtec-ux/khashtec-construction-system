@@ -128,9 +128,29 @@ app.get('/api/db-health', async (req, res) => {
     }
 });
 
-// Serve frontend application
+// Serve frontend application - Railway compatible
 app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, 'frontend/public/department.html'));
+    try {
+        res.sendFile(path.join(__dirname, 'frontend/public/department.html'));
+    } catch (error) {
+        console.error('Error serving frontend:', error);
+        res.status(500).json({
+            error: 'Frontend not available',
+            message: 'Unable to serve frontend files',
+            timestamp: new Date().toISOString()
+        });
+    }
+});
+
+// Railway root health check
+app.get('/_health', (req, res) => {
+    res.status(200).json({
+        status: 'OK',
+        service: 'KASHTEC Construction Management System',
+        timestamp: new Date().toISOString(),
+        port: PORT,
+        environment: process.env.NODE_ENV
+    });
 });
 
 // Handle client-side routing - serve frontend files
@@ -157,6 +177,34 @@ app.get('*', (req, res) => {
     
     // For non-API requests, serve the frontend
     res.sendFile(path.join(__dirname, 'frontend/public/department.html'));
+});
+
+// Railway-specific catch-all handler (must be last)
+app.use('*', (req, res, next) => {
+    // Log the request for debugging
+    console.log(`🔍 Railway request: ${req.method} ${req.path}`);
+    
+    // If it's an API request that wasn't handled
+    if (req.path.startsWith('/api')) {
+        return res.status(404).json({ 
+            error: 'API endpoint not found',
+            path: req.path,
+            method: req.method,
+            timestamp: new Date().toISOString()
+        });
+    }
+    
+    // For any other request, try to serve the frontend
+    try {
+        res.sendFile(path.join(__dirname, 'frontend/public/department.html'));
+    } catch (error) {
+        console.error('Error serving fallback frontend:', error);
+        res.status(500).json({
+            error: 'Service unavailable',
+            message: 'Unable to process request',
+            timestamp: new Date().toISOString()
+        });
+    }
 });
 
 // Error handling middleware
