@@ -1,5 +1,6 @@
 -- KASHTEC Construction Management System - Complete Database Schema
 -- This file contains all table definitions and seed data
+-- Version: 2.0 - Fixed SQL syntax errors
 
 -- Create railway database
 CREATE DATABASE IF NOT EXISTS railway CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
