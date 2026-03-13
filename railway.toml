@@ -1,8 +1,9 @@
 [build]
 builder = "NIXPACKS"
+buildCommand = "npm install"
 
 [deploy]
-startCommand = "npm run migrate && npm start"
+startCommand = "node server.js"
 restartPolicyType = "ON_FAILURE"
 restartPolicyMaxRetries = 3
 healthcheckPath = "/_health"
