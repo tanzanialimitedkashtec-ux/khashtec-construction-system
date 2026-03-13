@@ -50,6 +50,14 @@ BCRYPT_ROUNDS = "12"
 JWT_EXPIRE = "7d"
 CORS_ORIGIN = "${CORS_ORIGIN:-*}"
 
+# Frontend Database Configuration
+FRONTEND_DATABASE_URL = "mysql://root:LzDEYGJIiYfVRSTnBrufpsSwRIDnZRvz@centerbeam.proxy.rlwy.net:11044/railway"
+FRONTEND_DB_HOST = "centerbeam.proxy.rlwy.net"
+FRONTEND_DB_USER = "root"
+FRONTEND_DB_PASSWORD = "LzDEYGJIiYfVRSTnBrufpsSwRIDnZRvz"
+FRONTEND_DB_NAME = "railway"
+FRONTEND_DB_PORT = "11044"
+
 # File Upload Configuration
 MAX_FILE_SIZE = "10485760"
 UPLOAD_PATH = "./uploads"
