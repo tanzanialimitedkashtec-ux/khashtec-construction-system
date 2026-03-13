@@ -2,13 +2,13 @@
 builder = "NIXPACKS"
 
 [deploy]
-startCommand = "npm run test-connection && npm run migrate && npm start"
+startCommand = "npm run migrate && npm start"
 restartPolicyType = "ON_FAILURE"
 restartPolicyMaxRetries = 3
 healthcheckPath = "/api/health"
-healthcheckTimeout = 30
-healthcheckInterval = 60
-healthcheckRetries = 3
+healthcheckTimeout = 60
+healthcheckInterval = 30
+healthcheckRetries = 5
 
 [[services]]
 name = "kashtec-web"
