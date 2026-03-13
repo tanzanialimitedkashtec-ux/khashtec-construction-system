@@ -291,6 +291,10 @@ process.on('uncaughtException', (error) => {
 });
 
 // Start server
+console.log(`🔍 Railway PORT environment variable: ${process.env.PORT}`);
+console.log(`🔍 Configured PORT: ${PORT}`);
+console.log(`🔍 PORT type: ${typeof PORT}`);
+
 const server = app.listen(PORT, '0.0.0.0', () => {
     console.log(`
 🚀 ${config.APP_NAME}
