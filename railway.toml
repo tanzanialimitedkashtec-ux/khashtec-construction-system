@@ -3,17 +3,17 @@ builder = "NIXPACKS"
 buildCommand = "npm install"
 
 [deploy]
-startCommand = "node server.js"
+startCommand = "npm start"
 restartPolicyType = "ON_FAILURE"
 restartPolicyMaxRetries = 3
-healthcheckPath = "/_health"
+healthcheckPath = "/"
 healthcheckTimeout = 30
 healthcheckInterval = 15
 healthcheckRetries = 10
 
 [[services]]
 name = "khashtec-construction-system"
-source = "kashtec-construction-system"
+source = "."
 
 [services.ports]
 [services.ports.http]
@@ -22,55 +22,3 @@ handler = "http"
 
 [env]
 NODE_ENV = "production"
-PORT = "${PORT:-3000}"
-
-# MySQL Database Configuration (Railway Variables)
-MYSQL_DATABASE = "railway"
-MYSQL_ROOT_PASSWORD = "LzDEYGJIiYfVRSTnBrufpsSwRIDnZRvz"
-MYSQLUSER = "root"
-RAILWAY_TCP_PROXY_DOMAIN = "${RAILWAY_TCP_PROXY_DOMAIN}"
-RAILWAY_TCP_PROXY_PORT = "${RAILWAY_TCP_PROXY_PORT}"
-RAILWAY_PRIVATE_DOMAIN = "${RAILWAY_PRIVATE_DOMAIN}"
-
-# Database URL (Using Railway Variables)
-DATABASE_URL = "mysql://root:LzDEYGJIiYfVRSTnBrufpsSwRIDnZRvz@centerbeam.proxy.rlwy.net:11044/railway"
-PUBLIC_URL = "mysql://${MYSQLUSER}:${MYSQL_ROOT_PASSWORD}@${RAILWAY_TCP_PROXY_DOMAIN}:${RAILWAY_TCP_PROXY_PORT}/${MYSQL_DATABASE}"
-MYSQL_URL = "mysql://${MYSQLUSER}:${MYSQL_ROOT_PASSWORD}@${RAILWAY_PRIVATE_DOMAIN}:3306/${MYSQL_DATABASE}"
-
-# Legacy Database Variables (for compatibility)
-DB_HOST = "${RAILWAY_TCP_PROXY_DOMAIN}"
-DB_USER = "${MYSQLUSER}"
-DB_PASSWORD = "${MYSQL_ROOT_PASSWORD}"
-DB_NAME = "${MYSQL_DATABASE}"
-DB_PORT = "${RAILWAY_TCP_PROXY_PORT}"
-
-# Security Configuration
-JWT_SECRET = "${JWT_SECRET:-kashtec-secret-key-2024}"
-GITHUB_TOKEN = "${GITHUB_TOKEN}"
-BCRYPT_ROUNDS = "12"
-JWT_EXPIRE = "7d"
-CORS_ORIGIN = "${CORS_ORIGIN:-*}"
-
-# Frontend Database Configuration
-FRONTEND_DATABASE_URL = "mysql://root:LzDEYGJIiYfVRSTnBrufpsSwRIDnZRvz@centerbeam.proxy.rlwy.net:11044/railway"
-FRONTEND_DB_HOST = "centerbeam.proxy.rlwy.net"
-FRONTEND_DB_USER = "root"
-FRONTEND_DB_PASSWORD = "LzDEYGJIiYfVRSTnBrufpsSwRIDnZRvz"
-FRONTEND_DB_NAME = "railway"
-FRONTEND_DB_PORT = "11044"
-
-# File Upload Configuration
-MAX_FILE_SIZE = "10485760"
-UPLOAD_PATH = "./uploads"
-
-# Notification Configuration
-ENABLE_EMAIL_NOTIFICATIONS = "false"
-SMTP_HOST = "${SMTP_HOST}"
-SMTP_PORT = "${SMTP_PORT:-587}"
-SMTP_USER = "${SMTP_USER}"
-SMTP_PASS = "${SMTP_PASS}"
-
-# GitHub Integration
-GITHUB_REPO = "${GITHUB_REPO}"
-GITHUB_BRANCH = "${GITHUB_BRANCH:-main}"
-AUTO_PUSH_ENABLED = "${AUTO_PUSH_ENABLED:-true}"

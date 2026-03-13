@@ -1,0 +1,22 @@
+{
+  "name": "kashtec-construction-system",
+  "version": "1.0.0",
+  "description": "KASHTEC Tanzania Limited - Construction Management System",
+  "main": "index.html",
+  "scripts": {
+    "start": "npx serve -s kashtec-construction-system/frontend/public -l 3000",
+    "dev": "npx serve -s kashtec-construction-system/frontend/public -l 3000",
+    "build": "echo 'Static site - no build needed'",
+    "serve": "npx serve -s kashtec-construction-system/frontend/public -l 3000"
+  },
+  "keywords": ["construction", "management", "static", "frontend", "kashtec", "railway"],
+  "author": "KASHTEC Tanzania Limited",
+  "license": "MIT",
+  "dependencies": {
+    "serve": "^14.2.0"
+  },
+  "devDependencies": {},
+  "engines": {
+    "node": ">=14.0.0"
+  }
+}
