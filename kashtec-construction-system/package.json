@@ -5,7 +5,7 @@
   "main": "server.js",
   "scripts": {
     "start": "node server.js"
-  }
+  },
   "keywords": ["construction", "management", "nodejs", "mysql", "kashtec", "railway"],
   "author": "KASHTEC Tanzania Limited",
   "license": "MIT",
