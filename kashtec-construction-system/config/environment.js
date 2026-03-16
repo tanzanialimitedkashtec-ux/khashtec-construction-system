@@ -11,7 +11,7 @@ const DB_PORT = process.env.DB_PORT || "11044";
 
 // Application Configuration
 const NODE_ENV = process.env.NODE_ENV || "production";
-const PORT = process.env.PORT || "3000";
+const PORT = process.env.PORT || 3000;
 const JWT_SECRET = process.env.JWT_SECRET || "kashtec-secret-key-2024";
 const GITHUB_TOKEN = process.env.GITHUB_TOKEN; // Use environment variable only
 
