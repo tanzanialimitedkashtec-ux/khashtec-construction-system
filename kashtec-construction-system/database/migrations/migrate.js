@@ -4,10 +4,33 @@ async function runMigrations() {
   try {
     console.log('🔄 Running database migrations...');
     
-    // Read the consolidated migration file
+    // First, try emergency fix
+    console.log('📝 Running emergency fix...');
     const fs = require('fs').promises;
     const path = require('path');
     
+    try {
+      const emergencyPath = path.join(__dirname, 'emergency_fix.sql');
+      const emergencySQL = await fs.readFile(emergencyPath, 'utf8');
+      const emergencyStatements = emergencySQL.split(';').filter(stmt => {
+        const trimmed = stmt.trim();
+        return trimmed.length > 0 && !trimmed.startsWith('--');
+      });
+      
+      console.log(`📝 Found ${emergencyStatements.length} emergency statements`);
+      for (const statement of emergencyStatements) {
+        try {
+          await db.execute(statement);
+          console.log('✅ Emergency statement executed');
+        } catch (error) {
+          console.log('⚠️  Emergency statement skipped:', error.message);
+        }
+      }
+    } catch (err) {
+      console.log('⚠️  Emergency fix file not found, continuing with main migration');
+    }
+    
+    // Then run main migration
     console.log('📝 Reading complete database schema...');
     const migrationPath = path.join(__dirname, '../../database/migrations/001_create_tables.sql');
     const migrationSQL = await fs.readFile(migrationPath, 'utf8');
@@ -33,7 +56,7 @@ async function runMigrations() {
       
       try {
         // Use query for all statements to avoid prepared statement issues
-        await db.query(statement);
+        await db.execute(statement);
         console.log(`✅ Statement ${i + 1}/${statements.length} executed successfully`);
         successCount++;
       } catch (error) {
