@@ -1,11 +1,6 @@
 -- KASHTEC Construction Management System - Complete Database Schema
 -- This file contains all table definitions and seed data
--- Version: 2.0 - Fixed SQL syntax errors
-
--- Database already exists in Railway environment, skip creation
--- CREATE DATABASE IF NOT EXISTS railway CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-
--- USE railway; -- Already connected to railway database in Railway environment
+-- Version: 3.0 - Railway Compatible (NO unsupported commands)
 
 -- Users table
 CREATE TABLE IF NOT EXISTS users (
@@ -42,13 +37,15 @@ CREATE TABLE IF NOT EXISTS projects (
   budget DECIMAL(15,2),
   actual_cost DECIMAL(15,2),
   manager_id INT,
-  created_by INT,
+  client_id INT,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   FOREIGN KEY (manager_id) REFERENCES users(id) ON DELETE SET NULL,
-  FOREIGN KEY (created_by) REFERENCES users(id) ON DELETE SET NULL,
+  FOREIGN KEY (client_id) REFERENCES users(id) ON DELETE SET NULL,
   INDEX idx_status (status),
-  INDEX idx_manager (manager_id)
+  INDEX idx_manager (manager_id),
+  INDEX idx_client (client_id),
+  INDEX idx_dates (start_date, end_date)
 );
 
 -- Employees table
@@ -145,7 +142,6 @@ CREATE TABLE IF NOT EXISTS hse_incidents (
 -- PPE Issuance table
 CREATE TABLE IF NOT EXISTS ppe_issuance (
   id INT AUTO_INCREMENT PRIMARY KEY,
-  issuance_number VARCHAR(50) UNIQUE,
   employee_id INT,
   ppe_type ENUM('Helmet', 'Gloves', 'Boots', 'Vest', 'Goggles', 'Mask', 'Harness', 'Ear Plugs', 'Other') NOT NULL,
   ppe_condition ENUM('New', 'Good', 'Replacement') DEFAULT 'New',
@@ -186,15 +182,68 @@ CREATE TABLE IF NOT EXISTS file_uploads (
   INDEX idx_category (category)
 );
 
--- Create admin user first (minimal columns to avoid conflicts)
+-- Documents table
+CREATE TABLE IF NOT EXISTS documents (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  title VARCHAR(255) NOT NULL,
+  description TEXT,
+  file_path VARCHAR(500),
+  file_name VARCHAR(255),
+  file_size INT,
+  file_type VARCHAR(100),
+  category ENUM('Contract', 'Plan', 'Report', 'Invoice', 'Permit', 'Certificate', 'Other') DEFAULT 'Other',
+  project_id INT,
+  uploaded_by INT,
+  status ENUM('Draft', 'Pending', 'Approved', 'Rejected') DEFAULT 'Draft',
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE,
+  FOREIGN KEY (uploaded_by) REFERENCES users(id) ON DELETE SET NULL,
+  INDEX idx_project (project_id),
+  INDEX idx_uploaded_by (uploaded_by),
+  INDEX idx_category (category),
+  INDEX idx_status (status)
+);
+
+-- Notifications table
+CREATE TABLE IF NOT EXISTS notifications (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  title VARCHAR(255) NOT NULL,
+  message TEXT NOT NULL,
+  type ENUM('Info', 'Warning', 'Error', 'Success') DEFAULT 'Info',
+  recipient_id INT,
+  sender_id INT,
+  related_type VARCHAR(100),
+  related_id INT,
+  is_read BOOLEAN DEFAULT FALSE,
+  priority ENUM('Low', 'Medium', 'High', 'Urgent') DEFAULT 'Medium',
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (recipient_id) REFERENCES users(id) ON DELETE CASCADE,
+  FOREIGN KEY (sender_id) REFERENCES users(id) ON DELETE SET NULL,
+  INDEX idx_recipient (recipient_id),
+  INDEX idx_sender (sender_id),
+  INDEX idx_read (is_read),
+  INDEX idx_priority (priority),
+  INDEX idx_created (created_at)
+);
+
+-- PPE (Personal Protective Equipment) table
+CREATE TABLE IF NOT EXISTS ppe_inventory (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  item_name VARCHAR(255) NOT NULL,
+  ppe_type ENUM('Helmet', 'Gloves', 'Boots', 'Vest', 'Goggles', 'Mask', 'Harness', 'Ear Plugs', 'Other') NOT NULL,
+  quantity INT DEFAULT 0,
+  min_quantity INT DEFAULT 5,
+  condition ENUM('New', 'Good', 'Worn', 'Damaged') DEFAULT 'Good',
+  last_inspected DATE,
+  storage_location VARCHAR(255),
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  INDEX idx_type (ppe_type),
+  INDEX idx_condition (condition),
+  INDEX idx_quantity (quantity)
+);
+
+-- Insert admin user (only if not exists)
 INSERT IGNORE INTO users (name, email, password, role, status) VALUES
 ('Admin User', 'admin@kashtec.co.tz', 'admin123', 'Managing Director', 'Active');
-
--- Get admin user ID for foreign key references
-SET @admin_id = (SELECT id FROM users WHERE email = 'admin@kashtec.co.tz' LIMIT 1);
-
--- Insert sample projects with valid manager_id
-INSERT IGNORE INTO projects (name, description, location, start_date, end_date, status, budget, manager_id) VALUES
-('Masaki Complex', 'Luxury residential complex with modern amenities', 'Masaki, Dar es Salaam', '2024-01-15', '2024-12-31', 'In Progress', 500000000.00, @admin_id),
-('Kigamboni Plaza', 'Commercial shopping center development', 'Kigamboni, Dar es Salaam', '2024-02-01', '2025-06-30', 'Planning', 800000000.00, @admin_id),
-('Mikochi Industrial', 'Industrial warehouse construction', 'Mikocheni, Dar es Salaam', '2023-11-01', '2024-08-31', 'Completed', 300000000.00, @admin_id);

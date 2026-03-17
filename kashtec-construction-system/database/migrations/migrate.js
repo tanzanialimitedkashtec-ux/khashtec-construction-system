@@ -52,8 +52,21 @@ async function runMigrations() {
     try {
       const [rows] = await db.execute('SHOW TABLES');
       console.log('📊 Raw table rows:', rows);
+      console.log('📊 Number of tables:', rows.length);
+      
+      // List all table names
       const tableNames = rows.map(table => Object.values(table)[0]);
-      console.log(`📊 Database now has ${rows.length} tables: ${tableNames.join(', ')}`);
+      console.log(`📊 Tables created: ${tableNames.join(', ')}`);
+      
+      // Check if critical tables exist
+      const criticalTables = ['users', 'projects', 'documents', 'notifications'];
+      const missingTables = criticalTables.filter(table => !tableNames.includes(table));
+      
+      if (missingTables.length > 0) {
+        console.log(`⚠️  Missing critical tables: ${missingTables.join(', ')}`);
+      } else {
+        console.log('✅ All critical tables created successfully');
+      }
       
       // Check users table
       try {

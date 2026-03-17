@@ -116,13 +116,35 @@ app.get('/api/tables', async (req, res) => {
     }
 });
 
-// API Routes
-app.use('/api/auth', authRoutes);
-app.use('/api/employees', employeeRoutes);
-app.use('/api/projects', projectRoutes);
-app.use('/api/documents', documentRoutes);
-app.use('/api/notifications', notificationRoutes);
-app.use('/api', apiRoutes);
+// Global error handler for async functions
+const asyncHandler = (fn) => (req, res, next) => {
+    Promise.resolve(fn(req, res, next)).catch(next);
+};
+
+// API Routes with error handling
+app.use('/api/auth', asyncHandler(async (req, res, next) => {
+    return authRoutes(req, res, next);
+}));
+
+app.use('/api/employees', asyncHandler(async (req, res, next) => {
+    return employeeRoutes(req, res, next);
+}));
+
+app.use('/api/projects', asyncHandler(async (req, res, next) => {
+    return projectRoutes(req, res, next);
+}));
+
+app.use('/api/documents', asyncHandler(async (req, res, next) => {
+    return documentRoutes(req, res, next);
+}));
+
+app.use('/api/notifications', asyncHandler(async (req, res, next) => {
+    return notificationRoutes(req, res, next);
+}));
+
+app.use('/api', asyncHandler(async (req, res, next) => {
+    return apiRoutes(req, res, next);
+}));
 
 // Database health check
 app.get('/api/db-health', async (req, res) => {
