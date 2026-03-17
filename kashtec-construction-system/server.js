@@ -64,7 +64,7 @@ if (!fs.existsSync(uploadsDir)) {
     fs.mkdirSync(uploadsDir, { recursive: true });
 }
 
-// Health check endpoint for Railway
+// Simple health check endpoint for Railway (no database dependency)
 app.get('/api/health', (req, res) => {
     res.status(200).json({
         status: 'OK',
@@ -87,6 +87,11 @@ app.get('/health', (req, res) => {
         timestamp: new Date().toISOString(),
         service: 'KASHTEC Construction Management System'
     });
+});
+
+// Simple ping endpoint for Railway
+app.get('/ping', (req, res) => {
+    res.status(200).send('pong');
 });
 
 // API Routes
