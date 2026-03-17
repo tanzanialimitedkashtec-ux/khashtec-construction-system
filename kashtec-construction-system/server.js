@@ -131,7 +131,7 @@ app.get('/api/db-health', async (req, res) => {
 // Serve frontend application - Railway compatible
 app.get('/', (req, res) => {
     try {
-        res.sendFile(path.join(__dirname, 'frontend/public/department.html'));
+        res.sendFile(path.join(__dirname, 'frontend/public/index.html'));
     } catch (error) {
         console.error('Error serving frontend:', error);
         res.status(500).json({
@@ -176,7 +176,7 @@ app.get('*', (req, res) => {
     }
     
     // For non-API requests, serve the frontend
-    res.sendFile(path.join(__dirname, 'frontend/public/department.html'));
+    res.sendFile(path.join(__dirname, 'frontend/public/index.html'));
 });
 
 // Railway-specific catch-all handler (must be last)
@@ -196,7 +196,7 @@ app.use('*', (req, res, next) => {
     
     // For any other request, try to serve the frontend
     try {
-        res.sendFile(path.join(__dirname, 'frontend/public/department.html'));
+        res.sendFile(path.join(__dirname, 'frontend/public/index.html'));
     } catch (error) {
         console.error('Error serving fallback frontend:', error);
         res.status(500).json({
