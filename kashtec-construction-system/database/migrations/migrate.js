@@ -50,9 +50,10 @@ async function runMigrations() {
     // Verify database
     console.log('\n📝 Step 3: Verifying database...');
     try {
-      const [tables] = await db.execute('SHOW TABLES');
-      const tableNames = tables.map(table => Object.values(table)[0]);
-      console.log(`📊 Database now has ${tables.length} tables: ${tableNames.join(', ')}`);
+      const [rows] = await db.execute('SHOW TABLES');
+      console.log('📊 Raw table rows:', rows);
+      const tableNames = rows.map(table => Object.values(table)[0]);
+      console.log(`📊 Database now has ${rows.length} tables: ${tableNames.join(', ')}`);
       
       // Check users table
       try {
