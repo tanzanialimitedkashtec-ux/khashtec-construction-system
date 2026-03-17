@@ -54,8 +54,12 @@ async function runMigrations() {
       console.log(`📊 Database now has ${tables.length} tables`);
       
       // Check users table
-      const [userCount] = await db.query('SELECT COUNT(*) as count FROM users');
-      console.log(`👥 Users table has ${userCount[0].count} records`);
+      try {
+        const [userCount] = await db.query('SELECT COUNT(*) as count FROM users');
+        console.log(`👥 Users table has ${userCount[0]?.count || 0} records`);
+      } catch (userError) {
+        console.log('👥 Users table check skipped:', userError.message);
+      }
       
       console.log('✅ All migrations completed successfully');
       process.exit(0);
