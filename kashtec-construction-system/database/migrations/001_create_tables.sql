@@ -186,12 +186,15 @@ CREATE TABLE IF NOT EXISTS file_uploads (
   INDEX idx_category (category)
 );
 
--- Create admin user (minimal columns to avoid conflicts)
+-- Create admin user first (minimal columns to avoid conflicts)
 INSERT IGNORE INTO users (name, email, password, role, status) VALUES
 ('Admin User', 'admin@kashtec.co.tz', 'admin123', 'Managing Director', 'Active');
 
--- Insert sample projects
+-- Get admin user ID for foreign key references
+SET @admin_id = (SELECT id FROM users WHERE email = 'admin@kashtec.co.tz' LIMIT 1);
+
+-- Insert sample projects with valid manager_id
 INSERT IGNORE INTO projects (name, description, location, start_date, end_date, status, budget, manager_id) VALUES
-('Masaki Complex', 'Luxury residential complex with modern amenities', 'Masaki, Dar es Salaam', '2024-01-15', '2024-12-31', 'In Progress', 500000000.00, 4),
-('Kigamboni Plaza', 'Commercial shopping center development', 'Kigamboni, Dar es Salaam', '2024-02-01', '2025-06-30', 'Planning', 800000000.00, 4),
-('Mikochi Industrial', 'Industrial warehouse construction', 'Mikocheni, Dar es Salaam', '2023-11-01', '2024-08-31', 'Completed', 300000000.00, 4);
+('Masaki Complex', 'Luxury residential complex with modern amenities', 'Masaki, Dar es Salaam', '2024-01-15', '2024-12-31', 'In Progress', 500000000.00, @admin_id),
+('Kigamboni Plaza', 'Commercial shopping center development', 'Kigamboni, Dar es Salaam', '2024-02-01', '2025-06-30', 'Planning', 800000000.00, @admin_id),
+('Mikochi Industrial', 'Industrial warehouse construction', 'Mikocheni, Dar es Salaam', '2023-11-01', '2024-08-31', 'Completed', 300000000.00, @admin_id);

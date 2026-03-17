@@ -116,60 +116,13 @@ app.get('/api/tables', async (req, res) => {
     }
 });
 
-// API Routes with error handling
-app.use('/api/auth', (req, res, next) => {
-    try {
-        return authRoutes(req, res, next);
-    } catch (error) {
-        console.error('❌ Auth route error:', error);
-        res.status(500).json({ error: 'Internal server error', message: error.message });
-    }
-});
-
-app.use('/api/employees', (req, res, next) => {
-    try {
-        return employeeRoutes(req, res, next);
-    } catch (error) {
-        console.error('❌ Employees route error:', error);
-        res.status(500).json({ error: 'Internal server error', message: error.message });
-    }
-});
-
-app.use('/api/projects', (req, res, next) => {
-    try {
-        return projectRoutes(req, res, next);
-    } catch (error) {
-        console.error('❌ Projects route error:', error);
-        res.status(500).json({ error: 'Internal server error', message: error.message });
-    }
-});
-
-app.use('/api/documents', (req, res, next) => {
-    try {
-        return documentRoutes(req, res, next);
-    } catch (error) {
-        console.error('❌ Documents route error:', error);
-        res.status(500).json({ error: 'Internal server error', message: error.message });
-    }
-});
-
-app.use('/api/notifications', (req, res, next) => {
-    try {
-        return notificationRoutes(req, res, next);
-    } catch (error) {
-        console.error('❌ Notifications route error:', error);
-        res.status(500).json({ error: 'Internal server error', message: error.message });
-    }
-});
-
-app.use('/api', (req, res, next) => {
-    try {
-        return apiRoutes(req, res, next);
-    } catch (error) {
-        console.error('❌ API route error:', error);
-        res.status(500).json({ error: 'Internal server error', message: error.message });
-    }
-});
+// API Routes
+app.use('/api/auth', authRoutes);
+app.use('/api/employees', employeeRoutes);
+app.use('/api/projects', projectRoutes);
+app.use('/api/documents', documentRoutes);
+app.use('/api/notifications', notificationRoutes);
+app.use('/api', apiRoutes);
 
 // Database health check
 app.get('/api/db-health', async (req, res) => {
@@ -279,6 +232,24 @@ app.use('*', (req, res, next) => {
             timestamp: new Date().toISOString()
         });
     }
+});
+
+// Async error handling middleware
+app.use((error, req, res, next) => {
+    console.error('❌ Async error caught:', error);
+    
+    // Don't send error details in production
+    const isDev = process.env.NODE_ENV === 'development';
+    
+    res.status(error.status || 500).json({
+        error: {
+            message: isDev ? error.message : 'Internal Server Error',
+            stack: isDev ? error.stack : undefined,
+            timestamp: new Date().toISOString(),
+            path: req.path,
+            method: req.method
+        }
+    });
 });
 
 // Error handling middleware
