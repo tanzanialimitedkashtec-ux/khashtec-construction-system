@@ -51,7 +51,7 @@ async function runMigrations() {
     console.log('\n📝 Step 3: Verifying database...');
     try {
       const [rows] = await db.execute('SHOW TABLES');
-      console.log('📊 Raw table rows:', rows);
+      console.log('📊 Raw table rows:', JSON.stringify(rows, null, 2));
       console.log('📊 Number of tables:', rows.length);
       
       // List all table names

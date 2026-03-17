@@ -6,6 +6,15 @@ const path = require('path');
 const fs = require('fs');
 require('dotenv').config();
 
+// Global error protection
+process.on('uncaughtException', err => {
+  console.error('❌ Uncaught Exception:', err);
+});
+
+process.on('unhandledRejection', err => {
+  console.error('❌ Unhandled Rejection:', err);
+});
+
 // Import environment configuration
 const config = require('./config/environment');
 
@@ -87,6 +96,24 @@ app.get('/health', (req, res) => {
         timestamp: new Date().toISOString(),
         service: 'KASHTEC Construction Management System'
     });
+});
+
+// Debug route to check database tables
+app.get('/debug/db', async (req, res) => {
+  try {
+    const db = require('./database/config/database');
+    const [tables] = await db.execute('SHOW TABLES');
+    console.log('🔍 DEBUG - Tables found:', tables);
+    res.json({
+      success: true,
+      tableCount: tables.length,
+      tables: tables.map(table => Object.values(table)[0]),
+      raw: tables
+    });
+  } catch (err) {
+    console.error('🔥 DEBUG ERROR:', err);
+    res.status(500).json({ error: err.message });
+  }
 });
 
 // Simple ping endpoint for Railway
