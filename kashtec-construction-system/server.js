@@ -218,9 +218,20 @@ app.get('/api/db-health', async (req, res) => {
     }
 });
 
-// Root route for Railway health check
+// Root route for Railway health check - SIMPLE VERSION
 app.get("/", (req, res) => {
-  res.send("KASHTEC API is running 🚀");
+  console.log("🔍 Root route accessed");
+  res.status(200).send("KASHTEC API is running 🚀");
+});
+
+// Simple test route (no database)
+app.get("/test", (req, res) => {
+  console.log("🔍 Test route accessed");
+  res.status(200).json({
+    status: "OK",
+    message: "Test route working",
+    timestamp: new Date().toISOString()
+  });
 });
 
 // Serve frontend application - Railway compatible
