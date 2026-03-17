@@ -102,16 +102,30 @@ app.get('/health', (req, res) => {
 app.get('/debug/db', async (req, res) => {
   try {
     const db = require('./database/config/database');
-    const [tables] = await db.execute('SHOW TABLES');
-    console.log('🔍 DEBUG - Tables found:', tables);
+    const [rows] = await db.execute('SHOW TABLES');
+    console.log('🔍 DEBUG - Tables found:', rows);
+    console.log('🔍 DEBUG - Type:', typeof rows);
+    console.log('🔍 DEBUG - Is array?', Array.isArray(rows));
     res.json({
       success: true,
-      tableCount: tables.length,
-      tables: tables.map(table => Object.values(table)[0]),
-      raw: tables
+      tableCount: rows.length,
+      tables: Array.isArray(rows) ? rows.map(table => Object.values(table)[0]) : [],
+      raw: rows
     });
   } catch (err) {
     console.error('🔥 DEBUG ERROR:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Safe debug route
+app.get('/debug/tables', async (req, res) => {
+  try {
+    const db = require('./database/config/database');
+    const [rows] = await db.execute('SHOW TABLES');
+    console.log("📊 Tables:", rows);
+    res.json(rows);
+  } catch (err) {
     res.status(500).json({ error: err.message });
   }
 });

@@ -13,8 +13,16 @@ async function runMigrations() {
     const migrationSQL = await fs.readFile(migrationPath, 'utf8');
     
     // Split SQL file by semicolons and execute each statement
-    const statements = migrationSQL.split(';').filter(stmt => stmt.trim().length > 0);
+    const statements = migrationSQL.split(';').filter(stmt => {
+      const trimmed = stmt.trim();
+      return trimmed.length > 0 && !trimmed.startsWith('--');
+    });
     console.log(`📝 Found ${statements.length} SQL statements to execute`);
+    
+    // Log each statement for debugging
+    statements.forEach((stmt, i) => {
+      console.log(`📝 Statement ${i + 1}: ${stmt.substring(0, 100)}...`);
+    });
     
     let successCount = 0;
     let skippedCount = 0;
@@ -51,21 +59,27 @@ async function runMigrations() {
     console.log('\n📝 Step 3: Verifying database...');
     try {
       const [rows] = await db.execute('SHOW TABLES');
-      console.log('📊 Raw table rows:', JSON.stringify(rows, null, 2));
+      console.log('📊 Raw table rows:', rows);
+      console.log('📊 Type of rows:', typeof rows);
+      console.log('📊 Is array?', Array.isArray(rows));
       console.log('📊 Number of tables:', rows.length);
       
-      // List all table names
-      const tableNames = rows.map(table => Object.values(table)[0]);
-      console.log(`📊 Tables created: ${tableNames.join(', ')}`);
-      
-      // Check if critical tables exist
-      const criticalTables = ['users', 'projects', 'documents', 'notifications'];
-      const missingTables = criticalTables.filter(table => !tableNames.includes(table));
-      
-      if (missingTables.length > 0) {
-        console.log(`⚠️  Missing critical tables: ${missingTables.join(', ')}`);
+      // Make sure rows is an array before mapping
+      if (Array.isArray(rows)) {
+        const tableNames = rows.map(table => Object.values(table)[0]);
+        console.log(`📊 Tables created: ${tableNames.join(', ')}`);
+        
+        // Check if critical tables exist
+        const criticalTables = ['users', 'projects', 'documents', 'notifications'];
+        const missingTables = criticalTables.filter(table => !tableNames.includes(table));
+        
+        if (missingTables.length > 0) {
+          console.log(`⚠️  Missing critical tables: ${missingTables.join(', ')}`);
+        } else {
+          console.log('✅ All critical tables created successfully');
+        }
       } else {
-        console.log('✅ All critical tables created successfully');
+        console.log('❌ Rows is not an array:', rows);
       }
       
       // Check users table
