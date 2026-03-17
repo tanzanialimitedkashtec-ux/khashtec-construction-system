@@ -4,7 +4,8 @@
   "description": "KASHTEC Tanzania Limited - Construction Management System",
   "main": "server.js",
   "scripts": {
-    "start": "node server.js"
+    "start": "node server.js",
+    "migrate": "mysql -u root -p kashtec_construction < database/migrations/001_create_tables.sql"
   },
   "keywords": ["construction", "management", "nodejs", "mysql", "kashtec", "railway"],
   "author": "KASHTEC Tanzania Limited",
