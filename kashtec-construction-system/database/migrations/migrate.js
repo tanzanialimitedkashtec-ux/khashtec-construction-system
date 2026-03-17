@@ -50,12 +50,13 @@ async function runMigrations() {
     // Verify database
     console.log('\n📝 Step 3: Verifying database...');
     try {
-      const [tables] = await db.query('SHOW TABLES');
-      console.log(`📊 Database now has ${tables.length} tables`);
+      const [tables] = await db.execute('SHOW TABLES');
+      const tableNames = tables.map(table => Object.values(table)[0]);
+      console.log(`📊 Database now has ${tables.length} tables: ${tableNames.join(', ')}`);
       
       // Check users table
       try {
-        const [userCount] = await db.query('SELECT COUNT(*) as count FROM users');
+        const [userCount] = await db.execute('SELECT COUNT(*) as count FROM users');
         console.log(`👥 Users table has ${userCount[0]?.count || 0} records`);
       } catch (userError) {
         console.log('👥 Users table check skipped:', userError.message);

@@ -2,10 +2,10 @@
 -- This file contains all table definitions and seed data
 -- Version: 2.0 - Fixed SQL syntax errors
 
--- Create railway database
-CREATE DATABASE IF NOT EXISTS railway CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+-- Database already exists in Railway environment, skip creation
+-- CREATE DATABASE IF NOT EXISTS railway CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
-USE railway;
+-- USE railway; -- Already connected to railway database in Railway environment
 
 -- Users table
 CREATE TABLE IF NOT EXISTS users (

@@ -94,6 +94,24 @@ app.get('/ping', (req, res) => {
     res.status(200).send('pong');
 });
 
+// Table verification endpoint
+app.get('/api/tables', async (req, res) => {
+    try {
+        const db = require('./database/config/database');
+        const [tables] = await db.execute('SHOW TABLES');
+        res.status(200).json({
+            success: true,
+            tables: tables.map(table => Object.values(table)[0]),
+            count: tables.length
+        });
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            error: error.message
+        });
+    }
+});
+
 // API Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/employees', employeeRoutes);
