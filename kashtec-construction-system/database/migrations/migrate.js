@@ -10,7 +10,10 @@ async function runMigrations() {
     
     console.log('📝 Reading complete database schema...');
     const migrationPath = path.join(__dirname, '../../database/migrations/001_create_tables.sql');
+    console.log('📝 Migration path:', migrationPath);
     const migrationSQL = await fs.readFile(migrationPath, 'utf8');
+    console.log('📝 SQL file length:', migrationSQL.length);
+    console.log('📝 SQL file preview:', migrationSQL.substring(0, 200) + '...');
     
     // Split SQL file by semicolons and execute each statement
     const statements = migrationSQL.split(';').filter(stmt => {

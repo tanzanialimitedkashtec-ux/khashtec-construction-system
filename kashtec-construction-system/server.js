@@ -402,20 +402,24 @@ process.on('SIGINT', () => {
     });
 });
 
-// Start server - MUST use Railway's PORT
-const RAILWAY_PORT = process.env.PORT || 3000;
+// Start server - MUST use Railway's PORT ONLY
+const RAILWAY_PORT = process.env.PORT;
 console.log('🔍 Railway PORT from env:', process.env.PORT);
 console.log('🔍 Using PORT:', RAILWAY_PORT);
 
-const server = app.listen(RAILWAY_PORT, '0.0.0.0', () => {
+if (!RAILWAY_PORT) {
+    console.error('❌ RAILWAY_PORT is undefined! Using 3000 as fallback');
+}
+
+const server = app.listen(RAILWAY_PORT || 3000, '0.0.0.0', () => {
     console.log(`
 🚀 ${config.APP_NAME}
 🌍 Environment: ${config.NODE_ENV}
-📍 Server running on port ${RAILWAY_PORT}
-🏠 URL: http://localhost:${RAILWAY_PORT}
-📊 Health check: http://localhost:${RAILWAY_PORT}/api/health
+📍 Server running on port ${RAILWAY_PORT || 3000}
+🏠 URL: http://localhost:${RAILWAY_PORT || 3000}
+📊 Health check: http://localhost:${RAILWAY_PORT || 3000}/api/health
 🕒 Started at: ${new Date().toLocaleString()}
-🔍 Debug: Server bound to 0.0.0.0:${RAILWAY_PORT}
+🔍 Debug: Server bound to 0.0.0.0:${RAILWAY_PORT || 3000}
 🌐 External access should be available
     `);
 });
