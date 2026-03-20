@@ -218,7 +218,7 @@ app.get('/api/db-health', async (req, res) => {
     }
 });
 
-// Root route for Railway health check
+// Root route for Railway health check - MUST be first
 app.get("/", (req, res) => {
   console.log("🔍 Root route accessed");
   res.status(200).json({
@@ -273,8 +273,10 @@ app.use('/api/*', (req, res, next) => {
     app._router.handle(req, res, next);
 });
 
-// Catch-all handler for any other requests
+// Catch-all handler for any other requests - MUST be last
 app.get('*', (req, res) => {
+    console.log(`🔍 Catch-all route accessed: ${req.path}`);
+    
     // If it's an API request, return 404
     if (req.path.startsWith('/api')) {
         return res.status(404).json({ 
