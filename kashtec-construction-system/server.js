@@ -218,10 +218,14 @@ app.get('/api/db-health', async (req, res) => {
     }
 });
 
-// Root route for Railway health check - SIMPLE VERSION
+// Root route for Railway health check
 app.get("/", (req, res) => {
   console.log("🔍 Root route accessed");
-  res.status(200).send("KASHTEC API is running 🚀");
+  res.status(200).json({
+    status: 'OK',
+    message: 'KASHTEC API is running',
+    timestamp: new Date().toISOString()
+  });
 });
 
 // Simple test route (no database)
@@ -402,24 +406,21 @@ process.on('SIGINT', () => {
     });
 });
 
-// Start server - MUST use Railway's PORT ONLY
-const RAILWAY_PORT = process.env.PORT;
-console.log('🔍 Railway PORT from env:', process.env.PORT);
-console.log('🔍 Using PORT:', RAILWAY_PORT);
+// Start server - Handle Railway port properly
+const RAILWAY_PORT = process.env.PORT || process.env.RAILWAY_PORT || 3000;
+console.log('🔍 Environment PORT:', process.env.PORT);
+console.log('🔍 Railway PORT:', process.env.RAILWAY_PORT);
+console.log('🔍 Final PORT:', RAILWAY_PORT);
 
-if (!RAILWAY_PORT) {
-    console.error('❌ RAILWAY_PORT is undefined! Using 3000 as fallback');
-}
-
-const server = app.listen(RAILWAY_PORT || 3000, '0.0.0.0', () => {
+const server = app.listen(RAILWAY_PORT, '0.0.0.0', () => {
     console.log(`
 🚀 ${config.APP_NAME}
 🌍 Environment: ${config.NODE_ENV}
-📍 Server running on port ${RAILWAY_PORT || 3000}
-🏠 URL: http://localhost:${RAILWAY_PORT || 3000}
-📊 Health check: http://localhost:${RAILWAY_PORT || 3000}/api/health
+📍 Server running on port ${RAILWAY_PORT}
+🏠 URL: http://localhost:${RAILWAY_PORT}
+📊 Health check: http://localhost:${RAILWAY_PORT}/test
 🕒 Started at: ${new Date().toLocaleString()}
-🔍 Debug: Server bound to 0.0.0.0:${RAILWAY_PORT || 3000}
+🔍 Debug: Server bound to 0.0.0.0:${RAILWAY_PORT}
 🌐 External access should be available
     `);
 });

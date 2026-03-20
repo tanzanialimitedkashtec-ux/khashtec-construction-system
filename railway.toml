@@ -6,7 +6,7 @@ builder = "NIXPACKS"
 
 [deploy]
 
-startCommand = "npm run migrate && node simple-server.js"
+startCommand = "npm run migrate && npm start"
 
 restartPolicyType = "ON_FAILURE"
 
