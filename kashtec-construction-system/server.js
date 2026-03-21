@@ -444,8 +444,51 @@ async function runMigrations() {
     }
 }
 
-// Start server after migrations
+// Auto-create database tables
+async function createDatabaseTables() {
+    try {
+        console.log('🔧 Creating database tables automatically...');
+        const db = require('./config/database');
+        
+        // Read and execute the SQL file directly
+        const fs = require('fs');
+        const path = require('path');
+        const sqlFile = path.join(__dirname, 'database', 'migrations', '001_create_tables.sql');
+        
+        if (fs.existsSync(sqlFile)) {
+            const sqlContent = fs.readFileSync(sqlFile, 'utf8');
+            
+            // Split SQL content by semicolons and execute each statement
+            const statements = sqlContent.split(';').filter(stmt => stmt.trim().length > 0);
+            
+            for (const statement of statements) {
+                try {
+                    await db.execute(statement.trim());
+                    console.log('✅ Executed SQL statement successfully');
+                } catch (error) {
+                    // Ignore duplicate table errors
+                    if (!error.message.includes('already exists') && !error.message.includes('Duplicate entry')) {
+                        console.error('❌ SQL Error:', error.message);
+                    }
+                }
+            }
+            
+            console.log('✅ All database tables created successfully');
+        } else {
+            console.error('❌ SQL file not found:', sqlFile);
+        }
+        
+        // Close database connection
+        await db.end();
+    } catch (error) {
+        console.error('❌ Database table creation error:', error);
+    }
+}
+
+// Start server after migrations and table creation
 runMigrations().then(() => {
+    return createDatabaseTables();
+}).then(() => {
     const server = app.listen(SERVER_PORT, '0.0.0.0', () => {
         console.log(`
 🚀 ${config.APP_NAME}
