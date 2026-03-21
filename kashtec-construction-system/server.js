@@ -94,12 +94,14 @@ app.get('/api/health', (req, res) => {
     });
 });
 
-// Root health check for Railway
+// Root health check for Railway - simple version without database dependency
 app.get('/health', (req, res) => {
     res.status(200).json({
         status: 'OK',
         timestamp: new Date().toISOString(),
-        service: 'KASHTEC Construction Management System'
+        service: 'KASHTEC Construction Management System',
+        port: SERVER_PORT,
+        environment: process.env.NODE_ENV || 'unknown'
     });
 });
 

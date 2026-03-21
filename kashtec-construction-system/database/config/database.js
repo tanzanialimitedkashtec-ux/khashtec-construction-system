@@ -136,7 +136,7 @@ class Database {
 // Create singleton instance
 const db = new Database();
 
-// Auto-connect on module load
-db.connect().catch(console.error);
+// Don't auto-connect on module load - let server start first
+// db.connect().catch(console.error);
 
 module.exports = db;
