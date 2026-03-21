@@ -147,18 +147,21 @@ function handleLogin() {
     // First test API connectivity
     if (typeof apiService !== 'undefined') {
         console.log('🧪 Testing API connectivity before login...');
+        showNotification('Testing connection to authentication server...', 'info', 3000);
+        
         apiService.testAuthAPI()
             .then(testResponse => {
                 console.log('✅ API connectivity test passed:', testResponse);
+                showNotification('Connection successful! Processing login...', 'info', 2000);
                 proceedWithLogin();
             })
             .catch(testError => {
                 console.error('❌ API connectivity test failed:', testError);
-                alert('API connectivity test failed. Please check the console for details.');
+                showNotification(`Connection failed: ${testError.message}. Please check your internet connection and try again.`, 'error', 8000);
             });
     } else {
         console.error('❌ apiService is not defined');
-        alert('API service not loaded. Please refresh the page.');
+        showNotification('Authentication service not loaded. Please refresh the page and try again.', 'error', 6000);
         return false;
     }
     
@@ -172,10 +175,17 @@ function proceedWithLogin() {
     var password = document.getElementById("loginPassword").value;
     var role = document.getElementById("loginRole").value;
     
-    console.log('📝 Form data:', { email, password, role });
+    console.log('📝 Form data:', { email, password: '***', role });
     
     if (!email || !password || !role) {
-        alert("Please enter email, password, and select role");
+        showNotification('Please fill in all fields: email, password, and select your role', 'warning', 5000);
+        return false;
+    }
+    
+    // Validate email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+        showNotification('Please enter a valid email address', 'warning', 5000);
         return false;
     }
     
@@ -183,65 +193,103 @@ function proceedWithLogin() {
     var loginBtn = document.getElementById("loginBtn");
     if (loginBtn) {
         loginBtn.disabled = true;
-        loginBtn.textContent = "Logging in...";
+        loginBtn.textContent = "Authenticating...";
+        loginBtn.style.opacity = '0.7';
         console.log('🔄 Login button disabled and loading state set');
     } else {
         console.error('❌ Login button not found');
+        showNotification('Login button error. Please refresh the page.', 'error', 5000);
         return false;
     }
     
     // Use ApiService to login to backend
     console.log('🌐 Calling apiService.login...');
+    showNotification('Authenticating with database...', 'info', 3000);
+    
     try {
         apiService.login(email, password, role)
             .then(response => {
                 console.log('✅ Login API response:', response);
-                alert("Login successful! Welcome to KASHTEC System.");
-                
-                // Show appropriate dashboard based on role
-                if (role === 'admin') {
-                    showAdminDashboard();
-                } else if (role === 'hr') {
-                    showHRDashboard();
-                } else if (role === 'project_manager') {
-                    showProjectManagerDashboard();
-                } else if (role === 'finance') {
-                    showFinanceDashboard();
-                } else if (role === 'realestate') {
-                    showRealEstateDashboard();
-                } else if (role === 'hse') {
-                    showHSEDashboard();
-                } else {
-                    showCustomerPortal();
-                }
                 
                 // Reset button state
                 if (loginBtn) {
                     loginBtn.disabled = false;
                     loginBtn.textContent = "Login";
+                    loginBtn.style.opacity = '1';
                     console.log('✅ Login button reset to normal state');
                 }
+                
+                // Show success notification
+                showNotification(`Login successful! Welcome to KASHTEC System, ${response.user.department_name || role}!`, 'success', 6000);
+                
+                // Store user session
+                localStorage.setItem('kashtec_current_user', JSON.stringify(response.user));
+                localStorage.setItem('kashtec_auth_token', response.token);
+                
+                // Show appropriate dashboard based on role
+                setTimeout(() => {
+                    if (role === 'MD' || role === 'Managing Director') {
+                        showAdminDashboard();
+                    } else if (role === 'ADMIN' || role === 'Director of Administration') {
+                        showAdminDashboard();
+                    } else if (role === 'HR' || role === 'HR Manager') {
+                        showHRDashboard();
+                    } else if (role === 'PROJECT' || role === 'Project Manager') {
+                        showProjectManagerDashboard();
+                    } else if (role === 'FINANCE' || role === 'Finance Manager') {
+                        showFinanceDashboard();
+                    } else if (role === 'REALESTATE' || role === 'Real Estate Manager') {
+                        showRealEstateDashboard();
+                    } else if (role === 'HSE' || role === 'HSE Manager') {
+                        showHSEDashboard();
+                    } else if (role === 'ASSISTANT' || role === 'Admin Assistant') {
+                        showAdminDashboard();
+                    } else {
+                        showCustomerPortal();
+                    }
+                }, 1000);
+                
             })
             .catch(error => {
                 console.error('❌ Login API error:', error);
-                alert("Login failed: " + error.message);
                 
                 // Reset button state on error
                 if (loginBtn) {
                     loginBtn.disabled = false;
                     loginBtn.textContent = "Login";
+                    loginBtn.style.opacity = '1';
                     console.log('✅ Login button reset after error');
                 }
+                
+                // Show specific error messages
+                let errorMessage = 'Login failed. ';
+                if (error.message.includes('No account found')) {
+                    errorMessage = 'No account found with this email. Please check your credentials or contact administrator.';
+                } else if (error.message.includes('Incorrect password')) {
+                    errorMessage = 'Incorrect password. Please verify your password and try again.';
+                } else if (error.message.includes('Invalid credentials')) {
+                    errorMessage = 'Invalid credentials. Please check your email, password, and role selection.';
+                } else if (error.message.includes('network') || error.message.includes('fetch')) {
+                    errorMessage = 'Network error. Please check your internet connection and try again.';
+                } else if (error.message.includes('CORS')) {
+                    errorMessage = 'Security error. Please contact system administrator.';
+                } else {
+                    errorMessage = `Login failed: ${error.message}`;
+                }
+                
+                showNotification(errorMessage, 'error', 8000);
             });
     } catch (error) {
         console.error('❌ Login function error:', error);
-        alert("Login error: " + error.message);
         
         // Reset button state on error
         if (loginBtn) {
             loginBtn.disabled = false;
             loginBtn.textContent = "Login";
+            loginBtn.style.opacity = '1';
         }
+        
+        showNotification(`Login system error: ${error.message}. Please try again or contact support.`, 'error', 8000);
     }
     
     return false;
@@ -332,6 +380,121 @@ function viewInvoices() {
 
 function showForgotPassword() {
     alert("Password reset functionality will be implemented soon. For now, please use the default password: password123");
+}
+
+// Custom Notification System
+function showNotification(message, type = 'info', duration = 5000) {
+    // Remove any existing notifications
+    const existingNotification = document.querySelector('.custom-notification');
+    if (existingNotification) {
+        existingNotification.remove();
+    }
+
+    // Create notification element
+    const notification = document.createElement('div');
+    notification.className = `custom-notification ${type}`;
+    notification.innerHTML = `
+        <div class="notification-content">
+            <span class="notification-icon">${getNotificationIcon(type)}</span>
+            <span class="notification-message">${message}</span>
+            <button class="notification-close" onclick="this.parentElement.parentElement.remove()">×</button>
+        </div>
+    `;
+
+    // Add styles
+    notification.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        z-index: 10000;
+        min-width: 300px;
+        max-width: 500px;
+        padding: 15px;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        animation: slideIn 0.3s ease-out;
+        font-family: Arial, sans-serif;
+    `;
+
+    // Set colors based on type
+    const colors = {
+        success: { bg: '#d4edda', border: '#c3e6cb', text: '#155724', icon: '✅' },
+        error: { bg: '#f8d7da', border: '#f5c6cb', text: '#721c24', icon: '❌' },
+        warning: { bg: '#fff3cd', border: '#ffeaa7', text: '#856404', icon: '⚠️' },
+        info: { bg: '#d1ecf1', border: '#bee5eb', text: '#0c5460', icon: 'ℹ️' }
+    };
+
+    const color = colors[type] || colors.info;
+    notification.style.backgroundColor = color.bg;
+    notification.style.border = `1px solid ${color.border}`;
+    notification.style.color = color.text;
+
+    // Add CSS animation if not already added
+    if (!document.querySelector('#notification-styles')) {
+        const style = document.createElement('style');
+        style.id = 'notification-styles';
+        style.textContent = `
+            @keyframes slideIn {
+                from { transform: translateX(100%); opacity: 0; }
+                to { transform: translateX(0); opacity: 1; }
+            }
+            @keyframes slideOut {
+                from { transform: translateX(0); opacity: 1; }
+                to { transform: translateX(100%); opacity: 0; }
+            }
+            .custom-notification.success { border-left: 4px solid #28a745; }
+            .custom-notification.error { border-left: 4px solid #dc3545; }
+            .custom-notification.warning { border-left: 4px solid #ffc107; }
+            .custom-notification.info { border-left: 4px solid #17a2b8; }
+            .notification-content {
+                display: flex;
+                align-items: center;
+                gap: 10px;
+            }
+            .notification-icon {
+                font-size: 18px;
+                flex-shrink: 0;
+            }
+            .notification-message {
+                flex: 1;
+                font-weight: 500;
+            }
+            .notification-close {
+                background: none;
+                border: none;
+                font-size: 20px;
+                cursor: pointer;
+                opacity: 0.7;
+                padding: 0;
+                margin-left: 10px;
+            }
+            .notification-close:hover {
+                opacity: 1;
+            }
+        `;
+        document.head.appendChild(style);
+    }
+
+    // Add to page
+    document.body.appendChild(notification);
+
+    // Auto remove after duration
+    setTimeout(() => {
+        if (notification.parentElement) {
+            notification.style.animation = 'slideOut 0.3s ease-out';
+            setTimeout(() => notification.remove(), 300);
+        }
+    }, duration);
+}
+
+function getNotificationIcon(type) {
+    const icons = {
+        success: '✅',
+        error: '❌',
+        warning: '⚠️',
+        info: 'ℹ️'
+    };
+    return icons[type] || icons.info;
 }
 
 // Check if user is already logged in on page load

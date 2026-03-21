@@ -123,74 +123,94 @@ router.post('/login', async (req, res) => {
         }
 
         // Find user by email and role
-        const db = require('../../database/config/database');
+        let db;
+        try {
+            db = require('../../database/config/database');
+            console.log('✅ Database connection established');
+        } catch (dbError) {
+            console.error('❌ Database connection failed:', dbError);
+            return res.status(500).json({
+                error: 'Database connection failed',
+                message: 'Unable to connect to authentication database. Please try again later.'
+            });
+        }
+        
         console.log('🔍 Querying authentication table for:', email);
         
-        const [authRows] = await db.execute(
-            'SELECT id, email, password_hash, role, department_name, manager_name, status FROM authentication WHERE email = ? AND status = ?',
-            [email, 'Active']
-        );
+        try {
+            const [authRows] = await db.execute(
+                'SELECT id, email, password_hash, role, department_name, manager_name, status FROM authentication WHERE email = ? AND status = ?',
+                [email, 'Active']
+            );
+            
+            console.log('📊 Authentication query result:', authRows);
         
-        console.log('📊 Authentication query result:', authRows);
-        
-        if (authRows.length === 0) {
-            console.log('❌ No authentication record found for:', email);
-            return res.status(401).json({
-                error: 'Invalid credentials',
-                message: 'No account found with this email'
-            });
-        }
-        
-        const authUser = authRows[0];
-        console.log('👤 Found authentication record:', { id: authUser.id, email: authUser.email, role: authUser.role });
-        
-        // Check password
-        const isValidPassword = await bcrypt.compare(password, authUser.password_hash);
-        console.log('🔐 Password comparison result:', { isValid: isValidPassword, providedPassword: password });
-        
-        if (!isValidPassword) {
-            console.log('❌ Password mismatch for:', email);
-            return res.status(401).json({
-                error: 'Invalid credentials',
-                message: 'Incorrect password'
-            });
-        }
-        
-        // Generate JWT token
-        const token = jwt.sign(
-            { 
-                id: authUser.id,
-                email: authUser.email,
-                role: authUser.role,
-                department_name: authUser.department_name,
-                manager_name: authUser.manager_name
-            },
-            process.env.JWT_SECRET || 'fallback-secret-key',
-            { expiresIn: process.env.JWT_EXPIRE || '7d' }
-        );
-        
-        // Update last login
-        await db.execute(
-            'UPDATE authentication SET last_login = NOW() WHERE email = ?',
-            [email]
-        );
-        
-        console.log('🎫 JWT token generated for:', email);
-        
-        const response = {
-            message: 'Login successful',
-            token,
-            user: {
-                id: authUser.id,
-                email: authUser.email,
-                role: authUser.role,
-                department_name: authUser.department_name,
-                manager_name: authUser.manager_name
+            if (authRows.length === 0) {
+                console.log('❌ No authentication record found for:', email);
+                return res.status(401).json({
+                    error: 'Invalid credentials',
+                    message: 'No account found with this email'
+                });
             }
-        };
-        
-        console.log('✅ Sending login response:', response);
-        res.json(response);
+            
+            const authUser = authRows[0];
+            console.log('👤 Found authentication record:', { id: authUser.id, email: authUser.email, role: authUser.role });
+            
+            // Check password
+            const isValidPassword = await bcrypt.compare(password, authUser.password_hash);
+            console.log('🔐 Password comparison result:', { isValid: isValidPassword, providedPassword: password });
+            
+            if (!isValidPassword) {
+                console.log('❌ Password mismatch for:', email);
+                return res.status(401).json({
+                    error: 'Invalid credentials',
+                    message: 'Incorrect password'
+                });
+            }
+            
+            // Generate JWT token
+            const token = jwt.sign(
+                { 
+                    id: authUser.id,
+                    email: authUser.email,
+                    role: authUser.role,
+                    department_name: authUser.department_name,
+                    manager_name: authUser.manager_name
+                },
+                process.env.JWT_SECRET || 'fallback-secret-key',
+                { expiresIn: process.env.JWT_EXPIRE || '7d' }
+            );
+            
+            // Update last login
+            await db.execute(
+                'UPDATE authentication SET last_login = NOW() WHERE email = ?',
+                [email]
+            );
+            
+            console.log('🎫 JWT token generated for:', email);
+            
+            const response = {
+                message: 'Login successful',
+                token,
+                user: {
+                    id: authUser.id,
+                    email: authUser.email,
+                    role: authUser.role,
+                    department_name: authUser.department_name,
+                    manager_name: authUser.manager_name
+                }
+            };
+            
+            console.log('✅ Sending login response:', response);
+            res.json(response);
+            
+        } catch (queryError) {
+            console.error('❌ Database query error:', queryError);
+            return res.status(500).json({
+                error: 'Database query failed',
+                message: 'Authentication query failed. Please try again later.'
+            });
+        }
 
     } catch (error) {
         console.error('❌ Login error:', error);
