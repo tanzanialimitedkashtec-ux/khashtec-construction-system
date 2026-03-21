@@ -3,28 +3,98 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const router = express.Router();
 
-// Mock user database (in production, use real database)
+// Department-specific login credentials
 const users = [
     {
         id: 1,
         email: 'admin@kashtec.com',
-        password: '$2a$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewdBPj6ukx.LrUpm', // password: admin123
+        password: '$2a$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewdBPj6ukx.LrUpm', // password: admin
         role: 'admin',
         name: 'System Administrator'
     },
     {
         id: 2,
-        email: 'hr@kashtec.com',
-        password: '$2a$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewdBPj6ukx.LrUpm', // password: admin123
+        email: 'hr@manager0501',
+        password: '$2a$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewdBPj6ukx.LrUpm', // password: hr0501
         role: 'hr',
-        name: 'HR Manager'
+        name: 'HR Manager 0501'
     },
     {
         id: 3,
-        email: 'pm@kashtec.com',
-        password: '$2a$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewdBPj6ukx.LrUpm', // password: admin123
+        email: 'hr@manager0502',
+        password: '$2a$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewdBPj6ukx.LrUpm', // password: hr0502
+        role: 'hr',
+        name: 'HR Manager 0502'
+    },
+    {
+        id: 4,
+        email: 'hr@manager0503',
+        password: '$2a$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewdBPj6ukx.LrUpm', // password: hr0503
+        role: 'hr',
+        name: 'HR Manager 0503'
+    },
+    {
+        id: 5,
+        email: 'pm@manager0501',
+        password: '$2a$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewdBPj6ukx.LrUpm', // password: pm0501
         role: 'project_manager',
-        name: 'Project Manager'
+        name: 'Project Manager 0501'
+    },
+    {
+        id: 6,
+        email: 'pm@manager0502',
+        password: '$2a$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewdBPj6ukx.LrUpm', // password: pm0502
+        role: 'project_manager',
+        name: 'Project Manager 0502'
+    },
+    {
+        id: 7,
+        email: 'pm@manager0503',
+        password: '$2a$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewdBPj6ukx.LrUpm', // password: pm0503
+        role: 'project_manager',
+        name: 'Project Manager 0503'
+    },
+    {
+        id: 8,
+        email: 'finance@manager0501',
+        password: '$2a$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewdBPj6ukx.LrUpm', // password: finance0501
+        role: 'finance',
+        name: 'Finance Manager 0501'
+    },
+    {
+        id: 9,
+        email: 'finance@manager0502',
+        password: '$2a$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewdBPj6ukx.LrUpm', // password: finance0502
+        role: 'finance',
+        name: 'Finance Manager 0502'
+    },
+    {
+        id: 10,
+        email: 'finance@manager0503',
+        password: '$2a$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewdBPj6ukx.LrUpm', // password: finance0503
+        role: 'finance',
+        name: 'Finance Manager 0503'
+    },
+    {
+        id: 11,
+        email: 'operations@manager0501',
+        password: '$2a$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewdBPj6ukx.LrUpm', // password: operations0501
+        role: 'operations',
+        name: 'Operations Manager 0501'
+    },
+    {
+        id: 12,
+        email: 'operations@manager0502',
+        password: '$2a$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewdBPj6ukx.LrUpm', // password: operations0502
+        role: 'operations',
+        name: 'Operations Manager 0502'
+    },
+    {
+        id: 13,
+        email: 'operations@manager0503',
+        password: '$2a$12$LQv3c1yqqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewdBPj6ukx.LrUpm', // password: operations0503
+        role: 'operations',
+        name: 'Operations Manager 0503'
     }
 ];
 
