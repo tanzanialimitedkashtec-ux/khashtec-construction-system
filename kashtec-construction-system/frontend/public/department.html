@@ -4675,6 +4675,27 @@ function trackPpeIssuance(){
         <form id="ppeForm" onsubmit="return savePpeIssuance()">
             <div class="form-row">
                 <div class="form-group">
+                    <label>Email Address *</label>
+                    <input type="email" id="loginEmail" placeholder="Enter your email" required>
+                </div>
+                <div class="form-group">
+                    <label>Password *</label>
+                    <input type="password" id="loginPassword" placeholder="Enter your password" required>
+                </div>
+                <div class="form-group">
+                    <label>Role *</label>
+                    <select id="loginRole" required>
+                        <option value="">Select Role</option>
+                        <option value="admin">Administrator</option>
+                        <option value="hr">HR Manager</option>
+                        <option value="project_manager">Project Manager</option>
+                        <option value="finance">Finance Manager</option>
+                        <option value="operations">Operations Manager</option>
+                    </select>
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
                     <label>Issuance ID</label>
                     <input type="text" id="issuanceId" placeholder="PPE-2026-001" readonly>
                 </div>
@@ -4885,7 +4906,7 @@ function markSafetyViolations(){
                     </select>
                 </div>
                 <div class="form-group">
-                    <>Action Deadline *</label>
+                    <label>Action Deadline *</label>
                     <input type="date" id="actionDeadline" required>
                 </div>
             </div>
