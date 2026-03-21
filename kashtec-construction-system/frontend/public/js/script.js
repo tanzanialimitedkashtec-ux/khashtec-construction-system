@@ -144,49 +144,47 @@ function updateNavigation(state) {
 function handleLogin() {
     var email = document.getElementById("loginEmail").value;
     var password = document.getElementById("loginPassword").value;
-    var rememberMe = document.getElementById("rememberMe").checked;
+    var role = document.getElementById("loginRole").value;
     
-    if (!email || !password) {
-        alert("Please enter both email and password");
+    if (!email || !password || !role) {
+        alert("Please enter email, password, and select role");
         return false;
     }
     
-    // Retrieve user from sessionStorage
-    var userData = sessionStorage.getItem('kashtec_user_' + email);
+    // Show loading state
+    var loginBtn = document.getElementById("loginBtn");
+    loginBtn.disabled = true;
+    loginBtn.textContent = "Logging in...";
     
-    if (!userData) {
-        alert("No account found with this email. Please register first.");
-        return false;
-    }
-    
-    var user = JSON.parse(userData);
-    
-    // Simple password check (in real app, use proper hashing)
-    if (password !== user.password) {
-        alert("Incorrect password. Try again or use default password: password123");
-        return false;
-    }
-    
-    // Update last login
-    user.lastLogin = new Date().toLocaleString();
-    sessionStorage.setItem('kashtec_user_' + email, JSON.stringify(user));
-    
-    // Set current user
-    sessionStorage.setItem('kashtec_current_user', JSON.stringify(user));
-    
-    if (rememberMe) {
-        sessionStorage.setItem('kashtec_remember_email', email);
-    } else {
-        sessionStorage.removeItem('kashtec_remember_email');
-    }
-    
-    alert("Login successful! Welcome to your customer portal.");
-    
-    // Show customer portal
-    showCustomerPortal();
-    
-    // Reset login form
-    document.getElementById("loginForm").reset();
+    // Use ApiService to login to backend
+    apiService.login(email, password, role)
+        .then(response => {
+            console.log('Login successful:', response);
+            alert("Login successful! Welcome to KASHTEC System.");
+            
+            // Show appropriate dashboard based on role
+            if (role === 'admin') {
+                showAdminDashboard();
+            } else if (role === 'hr') {
+                showHRDashboard();
+            } else if (role === 'project_manager') {
+                showProjectManagerDashboard();
+            } else {
+                showCustomerPortal();
+            }
+            
+            // Reset login form
+            document.getElementById("loginForm").reset();
+        })
+        .catch(error => {
+            console.error('Login failed:', error);
+            alert("Login failed: " + error.message);
+        })
+        .finally(() => {
+            // Reset button state
+            loginBtn.disabled = false;
+            loginBtn.textContent = "Login";
+        });
     
     return false;
 }

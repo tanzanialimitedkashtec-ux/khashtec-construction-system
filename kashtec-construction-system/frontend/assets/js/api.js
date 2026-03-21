@@ -65,19 +65,19 @@ class ApiService {
     }
 
     // ===== AUTHENTICATION METHODS =====
-    async login(username, password, role) {
+    async login(email, password, role) {
         try {
             const response = await fetch(`${this.baseURL}/auth/login`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ username, password, role })
+                body: JSON.stringify({ email, password, role })
             });
 
             const result = await response.json();
             
-            if (result.success) {
+            if (result.token) {  // Check for token instead of success
                 this.token = result.token;
                 this.currentUser = result.user;
                 
