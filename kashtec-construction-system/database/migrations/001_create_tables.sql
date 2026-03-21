@@ -250,14 +250,14 @@ CREATE TABLE IF NOT EXISTS authentication (
 
 -- Insert department authentication records with bcrypt-hashed passwords
 INSERT INTO authentication (department_code, email, password_hash, role, department_name, manager_name, status) VALUES
-('MD', 'md@kashtec.com', '$2a$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewdBPj6ukx.LrUpm', 'Managing Director', 'Managing Director Office', 'Dr. John Smith', 'Active'),
-('ADMIN', 'admin@kashtec.com', '$2a$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewdBPj6ukx.LrUpm', 'Director of Administration', 'Administration', 'Director of Administration', 'Active'),
-('HR', 'hr@manager0501', '$2a$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewdBPj6ukx.LrUpm', 'HR Manager', 'Human Resources', 'HR Manager', 'Active'),
-('HSE', 'hse@manager0501', '$2a$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewdBPj6ukx.LrUpm', 'HSE Manager', 'Health & Safety', 'HSE Manager', 'Active'),
-('FINANCE', 'finance@manager0501', '$2a$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewdBPj6ukx.LrUpm', 'Finance Manager', 'Finance', 'Finance Manager', 'Active'),
-('PROJECT', 'pm@manager0501', '$2a$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewdBPj6ukx.LrUpm', 'Project Manager', 'Project Management', 'Project Manager', 'Active'),
-('REALESTATE', 'realestate@manager0501', '$2a$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewdBPj6ukx.LrUpm', 'Real Estate Manager', 'Real Estate', 'Real Estate Manager', 'Active'),
-('ASSISTANT', 'assistant@kashtec.com', '$2a$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewdBPj6ukx.LrUpm', 'Admin Assistant', 'Administration', 'Admin Assistant', 'Active');
+('MD', 'md@kashtec.com', '$2a$12$XhtyjBmSQhLUiujs5z8eJOcqttKbz8ETU.EFoK2W7z.GsGdbGk2zS', 'Managing Director', 'Managing Director Office', 'Dr. John Smith', 'Active'),
+('ADMIN', 'admin@kashtec.com', '$2a$12$SfQ9DSzkHjfdTehs/TK74uc4O23wu67DMN4gjJQeTA65OSULeXkNK', 'Director of Administration', 'Administration', 'Director of Administration', 'Active'),
+('HR', 'hr@manager0501', '$2a$12$u4hD21O0QZtvEvbIvdJjh..2QiVqgRl8DknMbNVqC1KBFRvrxH0Mi', 'HR Manager', 'Human Resources', 'HR Manager', 'Active'),
+('HSE', 'hse@manager0501', '$2a$12$WWPko/z72pyYTbUln8Xi3etvBABCFnLF0LrJJQTSKJzTQyxFkWAxG', 'HSE Manager', 'Health & Safety', 'HSE Manager', 'Active'),
+('FINANCE', 'finance@manager0501', '$2a$12$nh9qCec.Nvna8qmCiB0tre2oMGNEFE5XPcZEWQSrfj4QyQGipufm6', 'Finance Manager', 'Finance', 'Finance Manager', 'Active'),
+('PROJECT', 'pm@manager0501', '$2a$12$ra/f342th7SdNvMcQQpLtOCYrLhT2p2eoiRvM3mEdFCi/Dq/hL6E6', 'Project Manager', 'Project Management', 'Project Manager', 'Active'),
+('REALESTATE', 'realestate@manager0501', '$2a$12$RUiTHJSgb6D0WEE9eEgV/O7g67aIi6r4JwI9ibzVAGrn7RTIFNJZW', 'Real Estate Manager', 'Real Estate', 'Real Estate Manager', 'Active'),
+('ASSISTANT', 'assistant@kashtec.com', '$2a$12$rA44utD7vBN.8JKXKoHugOo9hEcnNGi4WXrP8Zk4HanG9FpFzvZ/2', 'Admin Assistant', 'Administration', 'Admin Assistant', 'Active');
 
 -- Office Portal table for department management
 CREATE TABLE IF NOT EXISTS office_portal (
