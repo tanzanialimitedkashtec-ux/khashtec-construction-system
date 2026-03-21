@@ -339,6 +339,20 @@ window.onload = function() {
     var currentUser = localStorage.getItem('kashtec_current_user');
     var rememberEmail = localStorage.getItem('kashtec_remember_email');
     
+    // Add event listeners to replace inline handlers
+    var loginBtn = document.getElementById("loginBtn");
+    if (loginBtn) {
+        loginBtn.addEventListener('click', handleLogin);
+        console.log('✅ Login button event listener attached');
+    }
+    
+    var logoutBtn = document.querySelector('button[onclick="logout()"]');
+    if (logoutBtn) {
+        logoutBtn.removeAttribute('onclick');
+        logoutBtn.addEventListener('click', handleLogout);
+        console.log('✅ Logout button event listener attached');
+    }
+    
     if (currentUser) {
         showCustomerPortal();
     } else {
