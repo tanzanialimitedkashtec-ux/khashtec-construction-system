@@ -141,6 +141,20 @@ function updateNavigation(state) {
     }
 }
 
+function testLogin() {
+    console.log('🧪 Test function called');
+    alert('Test function works! handleLogin function is ' + (typeof handleLogin));
+    
+    // Test if handleLogin function exists
+    if (typeof handleLogin === 'function') {
+        console.log('✅ handleLogin function exists and is callable');
+        alert('✅ handleLogin function is available!');
+    } else {
+        console.error('❌ handleLogin function not found');
+        alert('❌ handleLogin function not found!');
+    }
+}
+
 function handleLogin() {
     console.log('🔍 handleLogin function called');
     
