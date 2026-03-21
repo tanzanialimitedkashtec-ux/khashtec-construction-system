@@ -227,6 +227,31 @@ CREATE TABLE IF NOT EXISTS notifications (
   INDEX idx_created (created_at)
 );
 
+-- Office Portal table for department management
+CREATE TABLE IF NOT EXISTS office_portal (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  department_name VARCHAR(255) NOT NULL,
+  department_code VARCHAR(50) UNIQUE NOT NULL,
+  manager_email VARCHAR(255),
+  description TEXT,
+  settings JSON,
+  status ENUM('Active', 'Inactive', 'Maintenance') DEFAULT 'Active',
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  INDEX idx_department_code (department_code),
+  INDEX idx_status (status)
+);
+
+-- Insert initial office portal data
+INSERT INTO office_portal (department_name, department_code, manager_email, description, settings, status) VALUES
+('Human Resources', 'HR', 'hr@manager0501', 'HR Department manages employee relations, recruitment, training, and compliance', '{"theme": "blue", "notifications": true}', 'Active'),
+('Project Management', 'PM', 'pm@manager0501', 'Project Management oversees all construction projects, timelines, and resource allocation', '{"theme": "green", "notifications": true}', 'Active'),
+('Finance', 'FINANCE', 'finance@manager0501', 'Finance Department handles budgeting, accounting, and financial reporting', '{"theme": "orange", "notifications": true}', 'Active'),
+('Operations', 'OPS', 'operations@manager0501', 'Operations Department manages daily operations, logistics, and field coordination', '{"theme": "purple", "notifications": true}', 'Active'),
+('Real Estate', 'REALESTATE', 'realestate@manager0501', 'Real Estate Department handles property acquisitions, sales, and facility management', '{"theme": "red", "notifications": true}', 'Active'),
+('Health & Safety', 'HSE', 'hse@manager0501', 'HSE Department ensures workplace safety, compliance, and incident reporting', '{"theme": "yellow", "notifications": true}', 'Active'),
+('Administration', 'ADMIN', 'admin@kashtec.com', 'System Administration provides IT support, user management, and system configuration', '{"theme": "gray", "notifications": true}', 'Active');
+
 -- PPE (Personal Protective Equipment) table
 CREATE TABLE IF NOT EXISTS ppe_inventory (
   id INT AUTO_INCREMENT PRIMARY KEY,
