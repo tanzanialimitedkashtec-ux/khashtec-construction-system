@@ -448,7 +448,7 @@ async function runMigrations() {
 async function createDatabaseTables() {
     try {
         console.log('🔧 Creating database tables automatically...');
-        const db = require('./config/database.js');
+        const db = require('./config/database');
         
         // Read and execute the SQL file directly
         const fs = require('fs');
