@@ -413,21 +413,18 @@ process.on('SIGINT', () => {
     });
 });
 
-// Start server - Handle Railway port properly
-const RAILWAY_PORT = process.env.PORT || process.env.RAILWAY_PORT || 3000;
-console.log('🔍 Environment PORT:', process.env.PORT);
-console.log('🔍 Railway PORT:', process.env.RAILWAY_PORT);
-console.log('🔍 Final PORT:', RAILWAY_PORT);
+// Start server - Railway compatible configuration
+const SERVER_PORT = process.env.PORT || 3000;
 
-const server = app.listen(RAILWAY_PORT, '0.0.0.0', () => {
+const server = app.listen(SERVER_PORT, () => {
     console.log(`
 🚀 ${config.APP_NAME}
 🌍 Environment: ${config.NODE_ENV}
-📍 Server running on port ${RAILWAY_PORT}
-🏠 URL: http://localhost:${RAILWAY_PORT}
-📊 Health check: http://localhost:${RAILWAY_PORT}/test
+📍 Server running on port ${SERVER_PORT}
+🏠 URL: http://localhost:${SERVER_PORT}
+📊 Health check: http://localhost:${SERVER_PORT}/health
 🕒 Started at: ${new Date().toLocaleString()}
-🔍 Debug: Server bound to 0.0.0.0:${RAILWAY_PORT}
+🔍 Debug: Server ready for connections
 🌐 External access should be available
     `);
 });
@@ -436,7 +433,7 @@ const server = app.listen(RAILWAY_PORT, '0.0.0.0', () => {
 server.on('error', (error) => {
     console.error('❌ Server error:', error);
     if (error.code === 'EADDRINUSE') {
-        console.error(`❌ Port ${RAILWAY_PORT} is already in use`);
+        console.error(`❌ Port ${SERVER_PORT} is already in use`);
     }
 });
 
