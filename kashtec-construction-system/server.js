@@ -448,7 +448,7 @@ async function runMigrations() {
 async function createAuthenticationTable() {
     try {
         console.log('🔧 Creating authentication table directly...');
-        const db = require('./config/database');
+        const db = require('./database/config/database');
         
         // Create authentication table
         const createAuthTableSQL = `
