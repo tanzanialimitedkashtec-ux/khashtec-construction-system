@@ -5,7 +5,8 @@
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
-    "migrate": "node database/migrations/migrate.js"
+    "migrate": "node database/migrations/migrate.js",
+    "seed": "node database/seeds/seed.js"
   },
   "keywords": ["construction", "management", "nodejs", "mysql", "kashtec", "railway"],
   "author": "KASHTEC Tanzania Limited",
