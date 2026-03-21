@@ -481,20 +481,6 @@ runMigrations().then(() => {
     process.exit(1);
 });
 
-// Log when server is actually listening
-server.on('listening', () => {
-    if (server) {
-        const address = server.address();
-        console.log('🔍 Server listening on ' + address.address + ':' + address.port);
-        console.log('🔍 Ready to accept connections');
-    } else {
-        console.error('❌ Server variable is undefined in listening event');
-    }
-    const address = server.address();
-    console.log(`🔍 Server listening on ${address.address}:${address.port}`);
-    console.log('🔍 Ready to accept connections');
-});
-
 // Handle unhandled promise rejections
 process.on('unhandledRejection', (reason, promise) => {
     console.error('Unhandled Rejection at:', promise, 'reason:', reason);
