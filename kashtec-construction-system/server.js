@@ -75,16 +75,16 @@ if (!fs.existsSync(uploadsDir)) {
 
 // Root route - serve main frontend page
 app.get('/', (req, res) => {
-    console.log('🏠 Root route accessed, serving index.html');
-    const indexPath = path.join(__dirname, 'frontend/public/index.html');
-    console.log('📁 Index path:', indexPath);
+    console.log('🏠 Root route accessed, serving department.html');
+    const departmentPath = path.join(__dirname, 'frontend/public/department.html');
+    console.log('📁 Department path:', departmentPath);
     
     // Check if file exists
-    if (require('fs').existsSync(indexPath)) {
-        res.sendFile(indexPath);
+    if (require('fs').existsSync(departmentPath)) {
+        res.sendFile(departmentPath);
     } else {
-        console.error('❌ index.html not found at:', indexPath);
-        res.status(404).send('Frontend not found - index.html missing');
+        console.error('❌ department.html not found at:', departmentPath);
+        res.status(404).send('Frontend not found - department.html missing');
     }
 });
 
