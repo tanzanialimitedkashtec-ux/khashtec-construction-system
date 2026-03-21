@@ -1,7 +1,8 @@
 // ===== API SERVICE =====
 class ApiService {
     constructor() {
-        this.baseURL = 'http://localhost:3000/api';
+        // Use dynamic base URL - works in both development and production
+        this.baseURL = window.location.origin + '/api';
         this.token = localStorage.getItem('token') || null;
     }
 
