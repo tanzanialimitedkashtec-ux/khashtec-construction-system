@@ -417,8 +417,8 @@ const server = app.listen(SERVER_PORT, () => {
 🚀 ${config.APP_NAME}
 🌍 Environment: ${config.NODE_ENV}
 📍 Server running on port ${SERVER_PORT}
-🏠 URL: http://localhost:${SERVER_PORT}
-📊 Health check: http://localhost:${SERVER_PORT}/health
+🏠 URL: http://0.0.0.0:${SERVER_PORT}
+📊 Health check: http://0.0.0.0:${SERVER_PORT}/health
 🕒 Started at: ${new Date().toLocaleString()}
 🔍 Debug: Server ready for connections
 🌐 External access should be available

@@ -3,12 +3,12 @@ class ApiService {
     constructor() {
         // Use dynamic base URL - works in both development and production
         this.baseURL = window.location.origin + '/api';
-        this.token = localStorage.getItem('token') || null;
+        this.token = sessionStorage.getItem('kashtec_token') || null;
     }
 
     setToken(token) {
         this.token = token;
-        localStorage.setItem('token', token);
+        sessionStorage.setItem('kashtec_token', token);
     }
 
     async request(endpoint, options = {}) {
