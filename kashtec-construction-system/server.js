@@ -423,8 +423,31 @@ if (!SERVER_PORT) {
     process.exit(1);
 }
 
-const server = app.listen(SERVER_PORT, '0.0.0.0', () => {
-    console.log(`
+// Auto-run migrations on startup for Railway
+async function runMigrations() {
+    try {
+        console.log('🔄 Running database migrations...');
+        const { exec } = require('child_process');
+        await new Promise((resolve, reject) => {
+            exec('node database/migrations/migrate.js', (error, stdout, stderr) => {
+                if (error) {
+                    console.error('❌ Migration failed:', error);
+                    reject(error);
+                } else {
+                    console.log('✅ Migrations completed');
+                    resolve();
+                }
+            });
+        });
+    } catch (error) {
+        console.error('❌ Migration error:', error);
+    }
+}
+
+// Start server after migrations
+runMigrations().then(() => {
+    const server = app.listen(SERVER_PORT, '0.0.0.0', () => {
+        console.log(`
 🚀 ${config.APP_NAME}
 🌍 Environment: ${config.NODE_ENV}
 📍 Server running on port ${SERVER_PORT}
@@ -433,22 +456,26 @@ const server = app.listen(SERVER_PORT, '0.0.0.0', () => {
 🕒 Started at: ${new Date().toLocaleString()}
 🔍 Debug: Server ready for connections
 🌐 External access should be available
-    `);
-    
-    // Test health endpoint immediately
-    console.log('🧪 Testing health endpoint...');
-    fetch(`http://0.0.0.0:${SERVER_PORT}/health`)
-        .then(response => response.text())
-        .then(result => console.log('✅ Health check result:', result))
-        .catch(err => console.log('❌ Health check failed:', err.message));
-});
+        `);
+        
+        // Test health endpoint immediately
+        console.log('🧪 Testing health endpoint...');
+        fetch(`http://0.0.0.0:${SERVER_PORT}/health`)
+            .then(response => response.text())
+            .then(result => console.log('✅ Health check result:', result))
+            .catch(err => console.log('❌ Health check failed:', err.message));
+    });
 
-// Add server error handling
-server.on('error', (error) => {
-    console.error('❌ Server error:', error);
-    if (error.code === 'EADDRINUSE') {
-        console.error(`❌ Port ${SERVER_PORT} is already in use`);
-    }
+    // Add server error handling
+    server.on('error', (error) => {
+        console.error('❌ Server error:', error);
+        if (error.code === 'EADDRINUSE') {
+            console.error(`❌ Port ${SERVER_PORT} is already in use`);
+        }
+    });
+}).catch(error => {
+    console.error('❌ Failed to start server:', error);
+    process.exit(1);
 });
 
 // Log when server is actually listening
