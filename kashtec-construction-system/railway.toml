@@ -10,4 +10,3 @@ restartPolicyMaxRetries = 10
 
 [service]
 name = "web"
-port = 3000

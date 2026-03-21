@@ -410,7 +410,7 @@ process.on('SIGINT', () => {
 });
 
 // Start server - Railway compatible configuration
-const SERVER_PORT = process.env.PORT || 3000;
+const SERVER_PORT = process.env.PORT;
 
 const server = app.listen(SERVER_PORT, '0.0.0.0', () => {
     console.log(`
