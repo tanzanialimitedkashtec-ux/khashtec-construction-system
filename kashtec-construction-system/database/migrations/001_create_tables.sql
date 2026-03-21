@@ -227,6 +227,38 @@ CREATE TABLE IF NOT EXISTS notifications (
   INDEX idx_created (created_at)
 );
 
+-- Authentication table for department login
+CREATE TABLE IF NOT EXISTS authentication (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  department_code VARCHAR(50) UNIQUE NOT NULL,
+  email VARCHAR(255) NOT NULL,
+  password_hash VARCHAR(255) NOT NULL,
+  role VARCHAR(100) NOT NULL,
+  department_name VARCHAR(255) NOT NULL,
+  manager_name VARCHAR(255),
+  status ENUM('Active', 'Inactive', 'Suspended') DEFAULT 'Active',
+  last_login TIMESTAMP NULL,
+  login_attempts INT DEFAULT 0,
+  locked_until TIMESTAMP NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  INDEX idx_email (email),
+  INDEX idx_department_code (department_code),
+  INDEX idx_status (status),
+  INDEX idx_role (role)
+);
+
+-- Insert department authentication records with bcrypt-hashed passwords
+INSERT INTO authentication (department_code, email, password_hash, role, department_name, manager_name, status) VALUES
+('MD', 'md@kashtec.com', '$2a$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewdBPj6ukx.LrUpm', 'Managing Director', 'Managing Director Office', 'Dr. John Smith', 'Active'),
+('ADMIN', 'admin@kashtec.com', '$2a$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewdBPj6ukx.LrUpm', 'Director of Administration', 'Administration', 'Director of Administration', 'Active'),
+('HR', 'hr@manager0501', '$2a$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewdBPj6ukx.LrUpm', 'HR Manager', 'Human Resources', 'HR Manager', 'Active'),
+('HSE', 'hse@manager0501', '$2a$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewdBPj6ukx.LrUpm', 'HSE Manager', 'Health & Safety', 'HSE Manager', 'Active'),
+('FINANCE', 'finance@manager0501', '$2a$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewdBPj6ukx.LrUpm', 'Finance Manager', 'Finance', 'Finance Manager', 'Active'),
+('PROJECT', 'pm@manager0501', '$2a$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewdBPj6ukx.LrUpm', 'Project Manager', 'Project Management', 'Project Manager', 'Active'),
+('REALESTATE', 'realestate@manager0501', '$2a$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewdBPj6ukx.LrUpm', 'Real Estate Manager', 'Real Estate', 'Real Estate Manager', 'Active'),
+('ASSISTANT', 'assistant@kashtec.com', '$2a$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewdBPj6ukx.LrUpm', 'Admin Assistant', 'Administration', 'Admin Assistant', 'Active');
+
 -- Office Portal table for department management
 CREATE TABLE IF NOT EXISTS office_portal (
   id INT AUTO_INCREMENT PRIMARY KEY,
