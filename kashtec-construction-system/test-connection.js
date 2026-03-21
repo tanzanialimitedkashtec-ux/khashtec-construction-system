@@ -78,7 +78,7 @@ async function testBackendAPI() {
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 seconds timeout
         
-        const response = await fetch('http://localhost:3000/api/health', {
+        const response = await fetch(`${process.env.RAILWAY_URL || 'http://localhost:3000'}/api/health`, {
             signal: controller.signal
         });
         
