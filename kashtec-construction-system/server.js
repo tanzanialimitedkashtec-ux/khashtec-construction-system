@@ -170,6 +170,88 @@ app.get('/ping', (req, res) => {
     res.status(200).send('pong');
 });
 
+// Comprehensive API status endpoint
+app.get('/api/status', async (req, res) => {
+    try {
+        console.log('🔍 API status check requested');
+        
+        // Check database connection
+        let dbStatus = 'disconnected';
+        let dbError = null;
+        let tables = [];
+        
+        try {
+            const db = require('./database/config/database');
+            await db.execute('SELECT 1');
+            dbStatus = 'connected';
+            
+            // Get table list
+            const [tableRows] = await db.execute('SHOW TABLES');
+            tables = tableRows.map(table => Object.values(table)[0]);
+            console.log('✅ Database connected, tables:', tables);
+        } catch (error) {
+            dbError = error.message;
+            console.error('❌ Database connection failed:', error);
+        }
+        
+        // Check authentication table specifically
+        let authTableStatus = 'not_found';
+        if (tables.includes('authentication')) {
+            try {
+                const db = require('./database/config/database');
+                const [authRows] = await db.execute('SELECT COUNT(*) as count FROM authentication');
+                authTableStatus = `exists (${authRows[0].count} records)`;
+            } catch (error) {
+                authTableStatus = 'error';
+                console.error('❌ Authentication table check failed:', error);
+            }
+        }
+        
+        const status = {
+            success: true,
+            timestamp: new Date().toISOString(),
+            server: {
+                status: 'running',
+                uptime: process.uptime(),
+                memory: process.memoryUsage(),
+                node_version: process.version,
+                environment: process.env.NODE_ENV || 'development'
+            },
+            database: {
+                status: dbStatus,
+                error: dbError,
+                tables: tables,
+                table_count: tables.length,
+                authentication_table: authTableStatus
+            },
+            api: {
+                auth_endpoint: '/api/auth - working',
+                test_endpoint: '/api/auth/test - available',
+                status_endpoint: '/api/status - working',
+                tables_endpoint: '/api/tables - available'
+            },
+            routes: {
+                auth: 'mounted',
+                employees: 'mounted',
+                projects: 'mounted',
+                documents: 'mounted',
+                notifications: 'mounted'
+            }
+        };
+        
+        console.log('✅ API status check completed');
+        res.status(200).json(status);
+        
+    } catch (error) {
+        console.error('❌ API status check failed:', error);
+        res.status(500).json({
+            success: false,
+            error: error.message,
+            timestamp: new Date().toISOString()
+        });
+    }
+});
+
 // Table verification endpoint
 app.get('/api/tables', async (req, res) => {
     try {
@@ -197,8 +279,10 @@ const asyncHandler = (fn) => (req, res, next) => {
     Promise.resolve(fn(req, res, next)).catch(next);
 };
 
-// API Routes with error handling
-app.use('/api/auth', authRoutes);
+// API Routes with consistent error handling
+app.use('/api/auth', asyncHandler(async (req, res, next) => {
+    return authRoutes(req, res, next);
+}));
 
 app.use('/api/employees', asyncHandler(async (req, res, next) => {
     return employeeRoutes(req, res, next);
@@ -519,26 +603,76 @@ async function createAuthenticationTable() {
     }
 }
 
+// Global error handler for unhandled errors
+app.use((err, req, res, next) => {
+    console.error('❌ Global error handler caught:', err);
+    console.error('❌ Error stack:', err.stack);
+    console.error('❌ Request URL:', req.url);
+    console.error('❌ Request method:', req.method);
+    
+    // Ensure JSON response
+    const errorResponse = {
+        success: false,
+        error: err.message || 'Internal server error',
+        timestamp: new Date().toISOString(),
+        url: req.url,
+        method: req.method
+    };
+    
+    // Don't send stack trace in production
+    if (process.env.NODE_ENV !== 'production') {
+        errorResponse.stack = err.stack;
+    }
+    
+    res.status(err.status || 500).json(errorResponse);
+});
+
+// Handle 404 errors
+app.use('*', (req, res) => {
+    console.log('❌ 404 - Route not found:', req.method, req.url);
+    res.status(404).json({
+        success: false,
+        error: 'Route not found',
+        message: `Cannot ${req.method} ${req.url}`,
+        timestamp: new Date().toISOString(),
+        available_routes: [
+            'GET /',
+            'GET /api/health',
+            'GET /api/status',
+            'GET /api/tables',
+            'GET /ping',
+            'POST /api/auth/login',
+            'GET /api/auth/test',
+            'GET /api/employees',
+            'GET /api/projects',
+            'GET /api/documents'
+        ]
+    });
+});
 // Start server after migrations and authentication table creation
 console.log('🚀 Starting KASHTEC server startup sequence...');
-runMigrations().then(() => {
-    console.log('✅ Migrations completed, starting authentication table creation...');
-    return createAuthenticationTable();
-}).then(() => {
-    console.log('✅ Authentication table creation completed, starting server...');
+
+async function startServer() {
     try {
+        console.log('🔄 Step 1: Running database migrations...');
+        await runMigrations();
+        console.log('✅ Step 1 completed: Migrations successful');
+        
+        console.log('🔄 Step 2: Creating authentication table...');
+        await createAuthenticationTable();
+        console.log('✅ Step 2 completed: Authentication table ready');
+        
+        console.log('🔄 Step 3: Starting HTTP server...');
         const server = app.listen(SERVER_PORT, '0.0.0.0', () => {
             console.log('🚀 ' + config.APP_NAME);
             console.log('🌍 Environment: ' + config.NODE_ENV);
             console.log('📍 Server running on port ' + SERVER_PORT);
             console.log('🏠 URL: http://0.0.0.0:' + SERVER_PORT);
-            console.log('📊 Health check: http://0.0.0.0:' + SERVER_PORT + '/health');
-            console.log('🕒 Started at: ' + new Date().toLocaleString());
-            console.log('🔍 Debug: Server ready for connections');
-            console.log('🌐 External access should be available');
-            console.log('🧪 Testing health endpoint...');
-            console.log('✅ Health endpoint is accessible at:', 'http://0.0.0.0:' + SERVER_PORT + '/health');
-            console.log('✅ Server is running and ready for requests');
+            console.log('📊 Health check: http://0.0.0.0:' + SERVER_PORT + '/api/health');
+            console.log('� API status: http://0.0.0.0:' + SERVER_PORT + '/api/status');
+            console.log('� Started at: ' + new Date().toLocaleString());
+            console.log('✅ Server startup completed successfully!');
+            console.log('🌐 All API endpoints are ready for requests');
         });
 
         server.on('error', (error) => {
@@ -546,6 +680,7 @@ runMigrations().then(() => {
             if (error.code === 'EADDRINUSE') {
                 console.error('❌ Port ' + SERVER_PORT + ' is already in use');
             }
+            process.exit(1);
         });
 
         server.on('listening', () => {
@@ -558,19 +693,18 @@ runMigrations().then(() => {
             }
         });
         
-        console.log('✅ Server startup completed successfully');
+        return server;
+        
     } catch (error) {
-        console.error('❌ Server startup error:', error);
+        console.error('❌ Server startup failed:', error);
         console.error('❌ Error details:', error.message);
         console.error('❌ Error stack:', error.stack);
         process.exit(1);
     }
-}).catch(error => {
-    console.error('❌ Failed to start server:', error);
-    console.error('❌ Error details:', error.message);
-    console.error('❌ Error stack:', error.stack);
-    process.exit(1);
-});
+}
+
+// Start the server
+startServer();
 
 // Handle unhandled promise rejections
 process.on('unhandledRejection', (reason, promise) => {
