@@ -335,23 +335,41 @@ function showForgotPassword() {
 }
 
 // Check if user is already logged in on page load
-window.onload = function() {
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('🔍 DOM Content Loaded, initializing event listeners...');
+    
     var currentUser = localStorage.getItem('kashtec_current_user');
     var rememberEmail = localStorage.getItem('kashtec_remember_email');
     
     // Add event listeners to replace inline handlers
     var loginBtn = document.getElementById("loginBtn");
+    console.log('🔍 Login button element (DOMContentLoaded):', loginBtn);
+    
     if (loginBtn) {
-        loginBtn.addEventListener('click', handleLogin);
-        console.log('✅ Login button event listener attached');
+        loginBtn.addEventListener('click', function(e) {
+            console.log('🖱️ Login button clicked!', e);
+            e.preventDefault();
+            handleLogin();
+        });
+        console.log('✅ Login button event listener attached (DOMContentLoaded)');
+        
+        // Test if button is clickable
+        loginBtn.addEventListener('mouseover', function() {
+            console.log('🖱️ Mouse over login button');
+        });
+    } else {
+        console.error('❌ Login button not found in DOMContentLoaded!');
     }
     
     var logoutBtn = document.querySelector('button[onclick="logout()"]');
     if (logoutBtn) {
         logoutBtn.removeAttribute('onclick');
         logoutBtn.addEventListener('click', handleLogout);
-        console.log('✅ Logout button event listener attached');
+        console.log('✅ Logout button event listener attached (DOMContentLoaded)');
     }
+    
+    // Test handleLogin function availability
+    console.log('🔍 handleLogin function exists:', typeof handleLogin);
     
     if (currentUser) {
         showCustomerPortal();
@@ -364,5 +382,21 @@ window.onload = function() {
             document.getElementById("loginEmail").value = rememberEmail;
             document.getElementById("rememberMe").checked = true;
         }
+    }
+});
+
+// Fallback for window.onload in case DOMContentLoaded doesn't work
+window.onload = function() {
+    console.log('🔍 Window loaded, checking for missed elements...');
+    
+    var loginBtn = document.getElementById("loginBtn");
+    if (loginBtn && !loginBtn.hasAttribute('data-listener-attached')) {
+        loginBtn.addEventListener('click', function(e) {
+            console.log('🖱️ Login button clicked (window.onload)!', e);
+            e.preventDefault();
+            handleLogin();
+        });
+        loginBtn.setAttribute('data-listener-attached', 'true');
+        console.log('✅ Login button event listener attached (window.onload fallback)');
     }
 };
