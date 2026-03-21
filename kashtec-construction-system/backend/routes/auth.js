@@ -101,16 +101,21 @@ const users = [
 // Login endpoint
 router.post('/login', async (req, res) => {
     try {
+        console.log('🔐 Login request received:', req.body);
         const { email, password, role } = req.body;
 
         // Validate input
         if (!email || !password || !role) {
+            console.log('❌ Missing required fields:', { email: !!email, password: !!password, role: !!role });
             return res.status(400).json({
                 error: 'Email, password, and role are required'
             });
         }
 
         // Find user by email and role
+        const db = require('../config/database');
+        console.log('🔍 Querying authentication table for:', email);
+        
         const [authRows] = await db.execute(
             'SELECT id, email, password_hash, role, department_name, manager_name, status FROM authentication WHERE email = ? AND status = ?',
             [email, 'Active']
@@ -127,10 +132,11 @@ router.post('/login', async (req, res) => {
         }
         
         const authUser = authRows[0];
-        console.log('👤 Found authentication record:', authUser);
+        console.log('👤 Found authentication record:', { id: authUser.id, email: authUser.email, role: authUser.role });
         
         // Check password
         const isValidPassword = await bcrypt.compare(password, authUser.password_hash);
+        console.log('🔐 Password comparison result:', { isValid: isValidPassword, providedPassword: password });
         
         if (!isValidPassword) {
             console.log('❌ Password mismatch for:', email);
@@ -161,7 +167,7 @@ router.post('/login', async (req, res) => {
         
         console.log('🎫 JWT token generated for:', email);
         
-        res.json({
+        const response = {
             message: 'Login successful',
             token,
             user: {
@@ -171,13 +177,26 @@ router.post('/login', async (req, res) => {
                 department_name: authUser.department_name,
                 manager_name: authUser.manager_name
             }
-        });
+        };
+        
+        console.log('✅ Sending login response:', response);
+        res.json(response);
 
     } catch (error) {
-        console.error('Login error:', error);
-        res.status(500).json({
-            error: 'Internal server error'
-        });
+        console.error('❌ Login error:', error);
+        console.error('❌ Error stack:', error.stack);
+        
+        // Ensure we always send JSON response
+        try {
+            res.status(500).json({
+                error: 'Internal server error',
+                message: 'Login failed due to server error',
+                details: error.message
+            });
+        } catch (jsonError) {
+            console.error('❌ Failed to send JSON response:', jsonError);
+            res.status(500).end('{"error": "Internal server error"}');
+        }
     }
 });
 

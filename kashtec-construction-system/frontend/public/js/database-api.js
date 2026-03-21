@@ -16,16 +16,49 @@ class DatabaseAPI {
         };
 
         try {
-            const response = await fetch(url, config);
-            const data = await response.json();
+            console.log('🌐 Making API request to:', url);
+            console.log('📤 Request config:', config);
             
+            const response = await fetch(url, config);
+            console.log('📥 Response status:', response.status);
+            console.log('📥 Response headers:', response.headers);
+            
+            // Check if response is ok before parsing JSON
             if (!response.ok) {
-                throw new Error(data.error || `HTTP error! status: ${response.status}`);
+                const errorText = await response.text();
+                console.error('❌ HTTP Error Response:', errorText);
+                
+                // Try to parse as JSON, fallback to text
+                try {
+                    const errorJson = JSON.parse(errorText);
+                    throw new Error(errorJson.error || errorJson.message || `HTTP error! status: ${response.status}`);
+                } catch {
+                    throw new Error(errorText || `HTTP error! status: ${response.status}`);
+                }
+            }
+            
+            // Parse JSON response
+            const text = await response.text();
+            console.log('📄 Raw response text:', text);
+            
+            if (!text) {
+                throw new Error('Empty response from server');
+            }
+            
+            let data;
+            try {
+                data = JSON.parse(text);
+                console.log('✅ Parsed JSON response:', data);
+            } catch (parseError) {
+                console.error('❌ JSON Parse Error:', parseError);
+                console.error('❌ Response text that failed to parse:', text);
+                throw new Error('Invalid JSON response from server');
             }
             
             return data;
         } catch (error) {
-            console.error('API Request Error:', error);
+            console.error('❌ API Request Error:', error);
+            console.error('❌ Error details:', error.message);
             throw error;
         }
     }
