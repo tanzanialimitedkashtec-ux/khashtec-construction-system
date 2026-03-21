@@ -518,7 +518,7 @@ process.on('SIGINT', () => {
 });
 
 // Start server - Railway compatible configuration
-const SERVER_PORT = process.env.PORT;
+const SERVER_PORT = config.PORT;
 
 console.log('🔍 Starting server configuration:');
 console.log('📍 PORT from environment:', SERVER_PORT);
@@ -669,8 +669,8 @@ async function startServer() {
             console.log('📍 Server running on port ' + SERVER_PORT);
             console.log('🏠 URL: http://0.0.0.0:' + SERVER_PORT);
             console.log('📊 Health check: http://0.0.0.0:' + SERVER_PORT + '/api/health');
-            console.log('� API status: http://0.0.0.0:' + SERVER_PORT + '/api/status');
-            console.log('� Started at: ' + new Date().toLocaleString());
+            console.log('🔍 API status: http://0.0.0.0:' + SERVER_PORT + '/api/status');
+            console.log('🕒 Started at: ' + new Date().toLocaleString());
             console.log('✅ Server startup completed successfully!');
             console.log('🌐 All API endpoints are ready for requests');
         });
