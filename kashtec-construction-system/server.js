@@ -492,9 +492,6 @@ async function createAuthenticationTable() {
         
         await db.execute(insertAuthSQL);
         console.log('✅ Authentication records inserted successfully');
-        
-        // Close database connection
-        await db.end();
     } catch (error) {
         console.error('❌ Authentication table creation error:', error);
     }
