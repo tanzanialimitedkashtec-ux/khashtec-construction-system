@@ -9,7 +9,7 @@ async function runMigrations() {
     const path = require('path');
     
     console.log('📝 Reading complete database schema...');
-    const migrationPath = path.join(__dirname, '../../database/migrations/001_create_tables.sql');
+    const migrationPath = path.join(__dirname, '001_create_tables.sql');
     console.log('📝 Migration path:', migrationPath);
     const migrationSQL = await fs.readFile(migrationPath, 'utf8');
     console.log('📝 SQL file length:', migrationSQL.length);
