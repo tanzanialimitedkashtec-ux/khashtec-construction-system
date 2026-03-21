@@ -264,15 +264,7 @@ app.get('/_health', (req, res) => {
     });
 });
 
-// Handle client-side routing - serve frontend files
-app.use(express.static(path.join(__dirname, 'frontend/public')));
-
-// API routes for any unmatched /api/* requests
-app.use('/api/*', (req, res, next) => {
-    // Forward to API routes
-    req.url = req.url.replace('/api', '');
-    app._router.handle(req, res, next);
-});
+// API routes are already handled above - no need for duplicate routing
 
 // Catch-all handler for any other requests - MUST be last
 app.get('*', (req, res) => {
