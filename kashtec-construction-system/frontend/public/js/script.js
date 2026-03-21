@@ -142,9 +142,13 @@ function updateNavigation(state) {
 }
 
 function handleLogin() {
+    console.log('🔍 handleLogin function called');
+    
     var email = document.getElementById("loginEmail").value;
     var password = document.getElementById("loginPassword").value;
     var role = document.getElementById("loginRole").value;
+    
+    console.log('📝 Form data:', { email, password, role });
     
     if (!email || !password || !role) {
         alert("Please enter email, password, and select role");
@@ -153,38 +157,79 @@ function handleLogin() {
     
     // Show loading state
     var loginBtn = document.getElementById("loginBtn");
-    loginBtn.disabled = true;
-    loginBtn.textContent = "Logging in...";
+    if (loginBtn) {
+        loginBtn.disabled = true;
+        loginBtn.textContent = "Logging in...";
+        console.log('🔄 Login button disabled and loading state set');
+    } else {
+        console.error('❌ Login button not found');
+        return false;
+    }
     
-    // Use ApiService to login to backend
-    apiService.login(email, password, role)
-        .then(response => {
-            console.log('Login successful:', response);
-            alert("Login successful! Welcome to KASHTEC System.");
-            
-            // Show appropriate dashboard based on role
-            if (role === 'admin') {
-                showAdminDashboard();
-            } else if (role === 'hr') {
-                showHRDashboard();
-            } else if (role === 'project_manager') {
-                showProjectManagerDashboard();
-            } else {
-                showCustomerPortal();
-            }
-            
-            // Reset login form
-            document.getElementById("loginForm").reset();
-        })
-        .catch(error => {
-            console.error('Login failed:', error);
-            alert("Login failed: " + error.message);
-        })
-        .finally(() => {
-            // Reset button state
+    // Check if apiService exists
+    if (typeof apiService === 'undefined') {
+        console.error('❌ apiService is not defined');
+        alert('API service not loaded. Please refresh the page.');
+        if (loginBtn) {
             loginBtn.disabled = false;
             loginBtn.textContent = "Login";
-        });
+        }
+        return false;
+    }
+    
+    // Use ApiService to login to backend
+    console.log('🌐 Calling apiService.login...');
+    try {
+        apiService.login(email, password, role)
+            .then(response => {
+                console.log('✅ Login API response:', response);
+                alert("Login successful! Welcome to KASHTEC System.");
+                
+                // Show appropriate dashboard based on role
+                if (role === 'admin') {
+                    showAdminDashboard();
+                } else if (role === 'hr') {
+                    showHRDashboard();
+                } else if (role === 'project_manager') {
+                    showProjectManagerDashboard();
+                } else if (role === 'finance') {
+                    showFinanceDashboard();
+                } else if (role === 'realestate') {
+                    showRealEstateDashboard();
+                } else if (role === 'hse') {
+                    showHSEDashboard();
+                } else {
+                    showCustomerPortal();
+                }
+                
+                // Reset button state
+                if (loginBtn) {
+                    loginBtn.disabled = false;
+                    loginBtn.textContent = "Login";
+                    console.log('✅ Login button reset to normal state');
+                }
+            })
+            .catch(error => {
+                console.error('❌ Login API error:', error);
+                alert("Login failed: " + error.message);
+                
+                // Reset button state on error
+                if (loginBtn) {
+                    loginBtn.disabled = false;
+                    loginBtn.textContent = "Login";
+                    console.log('✅ Login button reset after error');
+                }
+            });
+    } catch (error) {
+        console.error('❌ Login function error:', error);
+        alert("Login error: " + error.message);
+        
+        // Reset button state on error
+        if (loginBtn) {
+            loginBtn.disabled = false;
+            loginBtn.textContent = "Login";
+        }
+    }
     
     return false;
 }
