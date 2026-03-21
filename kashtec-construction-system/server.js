@@ -501,9 +501,12 @@ async function createAuthenticationTable() {
 }
 
 // Start server after migrations and authentication table creation
+console.log('🚀 Starting KASHTEC server startup sequence...');
 runMigrations().then(() => {
+    console.log('✅ Migrations completed, starting authentication table creation...');
     return createAuthenticationTable();
 }).then(() => {
+    console.log('✅ Authentication table creation completed, starting server...');
     const server = app.listen(SERVER_PORT, '0.0.0.0', () => {
         console.log('🚀 ' + config.APP_NAME);
         console.log('🌍 Environment: ' + config.NODE_ENV);
