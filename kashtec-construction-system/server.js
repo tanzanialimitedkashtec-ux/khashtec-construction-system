@@ -75,7 +75,17 @@ if (!fs.existsSync(uploadsDir)) {
 
 // Root route - serve main frontend page
 app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, 'frontend/public/index.html'));
+    console.log('🏠 Root route accessed, serving index.html');
+    const indexPath = path.join(__dirname, 'frontend/public/index.html');
+    console.log('📁 Index path:', indexPath);
+    
+    // Check if file exists
+    if (require('fs').existsSync(indexPath)) {
+        res.sendFile(indexPath);
+    } else {
+        console.error('❌ index.html not found at:', indexPath);
+        res.status(404).send('Frontend not found - index.html missing');
+    }
 });
 
 // Simple health check endpoint for Railway (no database dependency)
@@ -404,6 +414,15 @@ process.on('SIGINT', () => {
 // Start server - Railway compatible configuration
 const SERVER_PORT = process.env.PORT;
 
+console.log('🔍 Starting server configuration:');
+console.log('📍 PORT from environment:', SERVER_PORT);
+console.log('🔍 Node environment:', process.env.NODE_ENV);
+
+if (!SERVER_PORT) {
+    console.error('❌ ERROR: PORT environment variable is not set!');
+    process.exit(1);
+}
+
 const server = app.listen(SERVER_PORT, '0.0.0.0', () => {
     console.log(`
 🚀 ${config.APP_NAME}
@@ -415,6 +434,13 @@ const server = app.listen(SERVER_PORT, '0.0.0.0', () => {
 🔍 Debug: Server ready for connections
 🌐 External access should be available
     `);
+    
+    // Test health endpoint immediately
+    console.log('🧪 Testing health endpoint...');
+    fetch(`http://0.0.0.0:${SERVER_PORT}/health`)
+        .then(response => response.text())
+        .then(result => console.log('✅ Health check result:', result))
+        .catch(err => console.log('❌ Health check failed:', err.message));
 });
 
 // Add server error handling
