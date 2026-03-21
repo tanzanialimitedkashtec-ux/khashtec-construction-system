@@ -174,9 +174,7 @@ const asyncHandler = (fn) => (req, res, next) => {
 };
 
 // API Routes with error handling
-app.use('/api/auth', asyncHandler(async (req, res, next) => {
-    return authRoutes(req, res, next);
-}));
+app.use('/api/auth', authRoutes);
 
 app.use('/api/employees', asyncHandler(async (req, res, next) => {
     return employeeRoutes(req, res, next);
