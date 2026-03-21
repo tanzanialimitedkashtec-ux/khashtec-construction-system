@@ -91,17 +91,30 @@ class DatabaseAPI {
 
     // Login method
     async login(email, password, role) {
-        console.log(' Database API Login attempt:', { email, role });
+        console.log('🔐 Database API Login attempt:', { email, role });
         try {
             const response = await this.post('/auth/login', {
                 email,
                 password,
                 role
             });
-            console.log(' Database API Login response:', response);
+            console.log('✅ Database API Login response:', response);
             return response;
         } catch (error) {
-            console.error(' Database API Login error:', error);
+            console.error('❌ Database API Login error:', error);
+            throw error;
+        }
+    }
+
+    // Test method to verify API connectivity
+    async testAuthAPI() {
+        console.log('🧪 Testing API connectivity...');
+        try {
+            const response = await this.get('/auth/test');
+            console.log('✅ API test response:', response);
+            return response;
+        } catch (error) {
+            console.error('❌ API test error:', error);
             throw error;
         }
     }

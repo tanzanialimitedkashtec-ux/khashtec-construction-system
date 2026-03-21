@@ -144,6 +144,30 @@ function updateNavigation(state) {
 function handleLogin() {
     console.log('🔍 handleLogin function called');
     
+    // First test API connectivity
+    if (typeof apiService !== 'undefined') {
+        console.log('🧪 Testing API connectivity before login...');
+        apiService.testAuthAPI()
+            .then(testResponse => {
+                console.log('✅ API connectivity test passed:', testResponse);
+                proceedWithLogin();
+            })
+            .catch(testError => {
+                console.error('❌ API connectivity test failed:', testError);
+                alert('API connectivity test failed. Please check the console for details.');
+            });
+    } else {
+        console.error('❌ apiService is not defined');
+        alert('API service not loaded. Please refresh the page.');
+        return false;
+    }
+    
+    return false;
+}
+
+function proceedWithLogin() {
+    console.log('🚀 Proceeding with login process...');
+    
     var email = document.getElementById("loginEmail").value;
     var password = document.getElementById("loginPassword").value;
     var role = document.getElementById("loginRole").value;
@@ -163,17 +187,6 @@ function handleLogin() {
         console.log('🔄 Login button disabled and loading state set');
     } else {
         console.error('❌ Login button not found');
-        return false;
-    }
-    
-    // Check if apiService exists
-    if (typeof apiService === 'undefined') {
-        console.error('❌ apiService is not defined');
-        alert('API service not loaded. Please refresh the page.');
-        if (loginBtn) {
-            loginBtn.disabled = false;
-            loginBtn.textContent = "Login";
-        }
         return false;
     }
     

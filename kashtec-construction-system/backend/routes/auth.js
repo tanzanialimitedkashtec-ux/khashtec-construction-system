@@ -98,6 +98,16 @@ const users = [
     }
 ];
 
+// Test endpoint to verify API is working
+router.get('/test', (req, res) => {
+    console.log('🧪 Auth test endpoint accessed');
+    res.json({
+        message: 'Auth API is working',
+        timestamp: new Date().toISOString(),
+        status: 'OK'
+    });
+});
+
 // Login endpoint
 router.post('/login', async (req, res) => {
     try {
@@ -113,7 +123,7 @@ router.post('/login', async (req, res) => {
         }
 
         // Find user by email and role
-        const db = require('../config/database');
+        const db = require('../../database/config/database');
         console.log('🔍 Querying authentication table for:', email);
         
         const [authRows] = await db.execute(
