@@ -56,6 +56,23 @@ class DatabaseAPI {
         return this.request(endpoint, { method: 'DELETE' });
     }
 
+    // Login method
+    async login(email, password, role) {
+        console.log(' Database API Login attempt:', { email, role });
+        try {
+            const response = await this.post('/auth/login', {
+                email,
+                password,
+                role
+            });
+            console.log(' Database API Login response:', response);
+            return response;
+        } catch (error) {
+            console.error(' Database API Login error:', error);
+            throw error;
+        }
+    }
+
     // Users
     async getUsers() {
         return this.get('/users');
@@ -113,8 +130,8 @@ class DatabaseAPI {
     }
 }
 
-// Create global instance
-window.dbAPI = new DatabaseAPI();
+// Create global apiService instance
+window.apiService = new DatabaseAPI();
 
 // Utility functions for UI
 window.DatabaseUI = {
