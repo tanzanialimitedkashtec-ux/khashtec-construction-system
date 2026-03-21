@@ -111,42 +111,65 @@ router.post('/login', async (req, res) => {
         }
 
         // Find user by email and role
-        const user = users.find(u => u.email === email && u.role === role);
+        const [authRows] = await db.execute(
+            'SELECT id, email, password_hash, role, department_name, manager_name, status FROM authentication WHERE email = ? AND status = ?',
+            [email, 'Active']
+        );
         
-        if (!user) {
+        console.log('📊 Authentication query result:', authRows);
+        
+        if (authRows.length === 0) {
+            console.log('❌ No authentication record found for:', email);
             return res.status(401).json({
-                error: 'Invalid credentials'
+                error: 'Invalid credentials',
+                message: 'No account found with this email'
             });
         }
-
+        
+        const authUser = authRows[0];
+        console.log('👤 Found authentication record:', authUser);
+        
         // Check password
-        const isValidPassword = await bcrypt.compare(password, user.password);
+        const isValidPassword = await bcrypt.compare(password, authUser.password_hash);
         
         if (!isValidPassword) {
+            console.log('❌ Password mismatch for:', email);
             return res.status(401).json({
-                error: 'Invalid credentials'
+                error: 'Invalid credentials',
+                message: 'Incorrect password'
             });
         }
-
+        
         // Generate JWT token
         const token = jwt.sign(
             { 
-                userId: user.id, 
-                email: user.email, 
-                role: user.role 
+                id: authUser.id,
+                email: authUser.email,
+                role: authUser.role,
+                department_name: authUser.department_name,
+                manager_name: authUser.manager_name
             },
             process.env.JWT_SECRET || 'fallback-secret-key',
             { expiresIn: process.env.JWT_EXPIRE || '7d' }
         );
-
+        
+        // Update last login
+        await db.execute(
+            'UPDATE authentication SET last_login = NOW() WHERE email = ?',
+            [email]
+        );
+        
+        console.log('🎫 JWT token generated for:', email);
+        
         res.json({
             message: 'Login successful',
             token,
             user: {
-                id: user.id,
-                email: user.email,
-                name: user.name,
-                role: user.role
+                id: authUser.id,
+                email: authUser.email,
+                role: authUser.role,
+                department_name: authUser.department_name,
+                manager_name: authUser.manager_name
             }
         });
 
