@@ -1783,7 +1783,8 @@ background: #f8f9fa;
 
 <div id="loginPage" class="login-box">
     <h3>Login</h3>
-    <select id="roleSelect" onchange="updatePasswordPlaceholder()">
+    <input type="email" id="loginEmail" placeholder="Enter your email" style="width: 100%; margin: 10px 0; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+    <select id="loginRole" onchange="updatePasswordPlaceholder()">
         <option value="">Select Role</option>
         <option value="MD">Managing Director</option>
         <option value="ADMIN">Director of Administration</option>
@@ -1794,8 +1795,8 @@ background: #f8f9fa;
         <option value="REALESTATE">Real Estate Manager</option>
         <option value="ASSISTANT">Admin Assistant</option>
     </select>
-    <input type="password" id="passwordInput" placeholder="Enter password" style="width: 100%; margin: 10px 0; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
-    <button class="action" onclick="handleLogin()">Login</button>
+    <input type="password" id="loginPassword" placeholder="Enter password" style="width: 100%; margin: 10px 0; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+    <button id="loginBtn" class="action" onclick="handleLogin()">Login</button>
 </div>
 
 <div id="systemPage" class="container hidden">
