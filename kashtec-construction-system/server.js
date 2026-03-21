@@ -412,7 +412,7 @@ process.on('SIGINT', () => {
 // Start server - Railway compatible configuration
 const SERVER_PORT = process.env.PORT || 3000;
 
-const server = app.listen(SERVER_PORT, () => {
+const server = app.listen(SERVER_PORT, '0.0.0.0', () => {
     console.log(`
 🚀 ${config.APP_NAME}
 🌍 Environment: ${config.NODE_ENV}
