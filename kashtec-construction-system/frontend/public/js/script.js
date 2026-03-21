@@ -144,48 +144,16 @@ function updateNavigation(state) {
 function handleLogin() {
     console.log('🔍 handleLogin function called');
     
-    // First test API connectivity
-    if (typeof apiService !== 'undefined') {
-        console.log('🧪 Testing API connectivity before login...');
-        showNotification('Testing connection to authentication server...', 'info', 3000);
-        
-        apiService.testAuthAPI()
-            .then(testResponse => {
-                console.log('✅ API connectivity test passed:', testResponse);
-                showNotification('Connection successful! Processing login...', 'info', 2000);
-                proceedWithLogin();
-            })
-            .catch(testError => {
-                console.error('❌ API connectivity test failed:', testError);
-                showNotification(`Connection failed: ${testError.message}. Please check your internet connection and try again.`, 'error', 8000);
-            });
-    } else {
-        console.error('❌ apiService is not defined');
-        showNotification('Authentication service not loaded. Please refresh the page and try again.', 'error', 6000);
-        return false;
-    }
-    
-    return false;
-}
-
-function proceedWithLogin() {
-    console.log('🚀 Proceeding with login process...');
-    
+    // Get form values
     var email = document.getElementById("loginEmail").value;
     var password = document.getElementById("loginPassword").value;
     var role = document.getElementById("loginRole").value;
     
     console.log('📝 Form data:', { email, password: '***', role });
     
+    // Validate input
     if (!email || !password || !role) {
         showNotification('Please fill in all fields: email, password, and select your role', 'warning', 5000);
-        return false;
-    }
-    
-    // Validate email format
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-        showNotification('Please enter a valid email address', 'warning', 5000);
         return false;
     }
     
@@ -195,110 +163,84 @@ function proceedWithLogin() {
         loginBtn.disabled = true;
         loginBtn.textContent = "Authenticating...";
         loginBtn.style.opacity = '0.7';
-        console.log('🔄 Login button disabled and loading state set');
-    } else {
-        console.error('❌ Login button not found');
-        showNotification('Login button error. Please refresh the page.', 'error', 5000);
-        return false;
     }
     
-    // Use ApiService to login to backend
-    console.log('🌐 Calling apiService.login...');
-    showNotification('Authenticating with database...', 'info', 3000);
+    // Direct API call without testing first
+    console.log('🌐 Direct login attempt...');
+    showNotification('Authenticating...', 'info', 3000);
     
-    try {
-        apiService.login(email, password, role)
-            .then(response => {
-                console.log('✅ Login API response:', response);
-                
-                // Reset button state
-                if (loginBtn) {
-                    loginBtn.disabled = false;
-                    loginBtn.textContent = "Login";
-                    loginBtn.style.opacity = '1';
-                    console.log('✅ Login button reset to normal state');
-                }
-                
-                // Show success notification
-                showNotification(`Login successful! Welcome to KASHTEC System, ${response.user.department_name || role}!`, 'success', 6000);
-                
-                // Store user session
-                localStorage.setItem('kashtec_current_user', JSON.stringify(response.user));
-                localStorage.setItem('kashtec_auth_token', response.token);
-                
-                // Show appropriate dashboard based on role
-                setTimeout(() => {
-                    if (role === 'MD' || role === 'Managing Director') {
-                        showAdminDashboard();
-                    } else if (role === 'ADMIN' || role === 'Director of Administration') {
-                        showAdminDashboard();
-                    } else if (role === 'HR' || role === 'HR Manager') {
-                        showHRDashboard();
-                    } else if (role === 'PROJECT' || role === 'Project Manager') {
-                        showProjectManagerDashboard();
-                    } else if (role === 'FINANCE' || role === 'Finance Manager') {
-                        showFinanceDashboard();
-                    } else if (role === 'REALESTATE' || role === 'Real Estate Manager') {
-                        showRealEstateDashboard();
-                    } else if (role === 'HSE' || role === 'HSE Manager') {
-                        showHSEDashboard();
-                    } else if (role === 'ASSISTANT' || role === 'Admin Assistant') {
-                        showAdminDashboard();
-                    } else {
-                        showCustomerPortal();
-                    }
-                }, 1000);
-                
-            })
-            .catch(error => {
-                console.error('❌ Login API error:', error);
-                
-                // Reset button state on error
-                if (loginBtn) {
-                    loginBtn.disabled = false;
-                    loginBtn.textContent = "Login";
-                    loginBtn.style.opacity = '1';
-                    console.log('✅ Login button reset after error');
-                }
-                
-                // Show specific error messages
-                let errorMessage = 'Login failed. ';
-                if (error.message.includes('No account found')) {
-                    errorMessage = 'No account found with this email. Please check your credentials or contact administrator.';
-                } else if (error.message.includes('Incorrect password')) {
-                    errorMessage = 'Incorrect password. Please verify your password and try again.';
-                } else if (error.message.includes('Invalid credentials')) {
-                    errorMessage = 'Invalid credentials. Please check your email, password, and role selection.';
-                } else if (error.message.includes('network') || error.message.includes('fetch')) {
-                    errorMessage = 'Network error. Please check your internet connection and try again.';
-                } else if (error.message.includes('CORS')) {
-                    errorMessage = 'Security error. Please contact system administrator.';
+    apiService.login(email, password, role)
+        .then(response => {
+            console.log('✅ Login successful:', response);
+            
+            // Reset button
+            if (loginBtn) {
+                loginBtn.disabled = false;
+                loginBtn.textContent = "Login";
+                loginBtn.style.opacity = '1';
+            }
+            
+            // Show success
+            showNotification(`Welcome ${response.user.department_name || role}! Login successful.`, 'success', 6000);
+            
+            // Store session
+            localStorage.setItem('kashtec_current_user', JSON.stringify(response.user));
+            localStorage.setItem('kashtec_auth_token', response.token);
+            
+            // Redirect to dashboard
+            setTimeout(() => {
+                // Simple dashboard routing
+                if (role.includes('Managing Director') || role.includes('Director') || role.includes('Admin')) {
+                    showAdminDashboard();
+                } else if (role.includes('HR')) {
+                    showHRDashboard();
+                } else if (role.includes('Project')) {
+                    showProjectManagerDashboard();
+                } else if (role.includes('Finance')) {
+                    showFinanceDashboard();
+                } else if (role.includes('Real Estate')) {
+                    showRealEstateDashboard();
+                } else if (role.includes('HSE')) {
+                    showHSEDashboard();
                 } else {
-                    errorMessage = `Login failed: ${error.message}`;
+                    showCustomerPortal();
                 }
-                
-                showNotification(errorMessage, 'error', 8000);
-            });
-    } catch (error) {
-        console.error('❌ Login function error:', error);
-        
-        // Reset button state on error
-        if (loginBtn) {
-            loginBtn.disabled = false;
-            loginBtn.textContent = "Login";
-            loginBtn.style.opacity = '1';
-        }
-        
-        showNotification(`Login system error: ${error.message}. Please try again or contact support.`, 'error', 8000);
-    }
+            }, 1500);
+            
+        })
+        .catch(error => {
+            console.error('❌ Login failed:', error);
+            
+            // Reset button
+            if (loginBtn) {
+                loginBtn.disabled = false;
+                loginBtn.textContent = "Login";
+                loginBtn.style.opacity = '1';
+            }
+            
+            // Show error
+            let errorMsg = 'Login failed. ';
+            if (error.message.includes('No account found')) {
+                errorMsg = 'Email not found. Check your credentials.';
+            } else if (error.message.includes('Incorrect password')) {
+                errorMsg = 'Wrong password. Try again.';
+            } else if (error.message.includes('network') || error.message.includes('fetch')) {
+                errorMsg = 'Network error. Check internet connection.';
+            } else {
+                errorMsg = error.message || 'Unknown error occurred.';
+            }
+            
+            showNotification(errorMsg, 'error', 8000);
+        });
     
     return false;
 }
 
 function handleLogout() {
     if (confirm("Are you sure you want to logout?")) {
-        sessionStorage.removeItem('kashtec_current_user');
-        alert("You have been logged out successfully.");
+        localStorage.removeItem('kashtec_current_user');
+        localStorage.removeItem('kashtec_auth_token');
+        showNotification('You have been logged out successfully.', 'info', 3000);
         showLoginSection();
     }
 }
