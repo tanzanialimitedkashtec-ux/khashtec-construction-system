@@ -448,7 +448,7 @@ async function runMigrations() {
 async function createDatabaseTables() {
     try {
         console.log('🔧 Creating database tables automatically...');
-        const db = require('./config/database');
+        const db = require('./config/database.js');
         
         // Read and execute the SQL file directly
         const fs = require('fs');
@@ -490,29 +490,33 @@ runMigrations().then(() => {
     return createDatabaseTables();
 }).then(() => {
     const server = app.listen(SERVER_PORT, '0.0.0.0', () => {
-        console.log(`
-🚀 ${config.APP_NAME}
-🌍 Environment: ${config.NODE_ENV}
-📍 Server running on port ${SERVER_PORT}
-🏠 URL: http://0.0.0.0:${SERVER_PORT}
-📊 Health check: http://0.0.0.0:${SERVER_PORT}/health
-🕒 Started at: ${new Date().toLocaleString()}
-🔍 Debug: Server ready for connections
-🌐 External access should be available
-        `);
-        
-        // Test health endpoint immediately
+        console.log('🚀 ' + config.APP_NAME);
+        console.log('🌍 Environment: ' + config.NODE_ENV);
+        console.log('📍 Server running on port ' + SERVER_PORT);
+        console.log('🏠 URL: http://0.0.0.0:' + SERVER_PORT);
+        console.log('📊 Health check: http://0.0.0.0:' + SERVER_PORT + '/health');
+        console.log('🕒 Started at: ' + new Date().toLocaleString());
+        console.log('🔍 Debug: Server ready for connections');
+        console.log('🌐 External access should be available');
         console.log('🧪 Testing health endpoint...');
-        // Simple test without fetch to avoid reference error
-        console.log('✅ Health endpoint is accessible at:', `http://0.0.0.0:${SERVER_PORT}/health`);
+        console.log('✅ Health endpoint is accessible at:', 'http://0.0.0.0:' + SERVER_PORT + '/health');
         console.log('✅ Server is running and ready for requests');
     });
 
-    // Add server error handling
     server.on('error', (error) => {
         console.error('❌ Server error:', error);
         if (error.code === 'EADDRINUSE') {
-            console.error(`❌ Port ${SERVER_PORT} is already in use`);
+            console.error('❌ Port ' + SERVER_PORT + ' is already in use');
+        }
+    });
+
+    server.on('listening', () => {
+        if (server) {
+            const address = server.address();
+            console.log('🔍 Server listening on ' + address.address + ':' + address.port);
+            console.log('🔍 Ready to accept connections');
+        } else {
+            console.error('❌ Server variable is undefined in listening event');
         }
     });
 }).catch(error => {
@@ -522,6 +526,13 @@ runMigrations().then(() => {
 
 // Log when server is actually listening
 server.on('listening', () => {
+    if (server) {
+        const address = server.address();
+        console.log('🔍 Server listening on ' + address.address + ':' + address.port);
+        console.log('🔍 Ready to accept connections');
+    } else {
+        console.error('❌ Server variable is undefined in listening event');
+    }
     const address = server.address();
     console.log(`🔍 Server listening on ${address.address}:${address.port}`);
     console.log('🔍 Ready to accept connections');
