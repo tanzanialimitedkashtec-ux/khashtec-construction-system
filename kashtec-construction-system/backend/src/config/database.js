@@ -12,16 +12,13 @@ const db = mysql.createPool({
   waitForConnections: true,
   connectionLimit: 10,
   queueLimit: 0,
-  acquireTimeout: 60000,
-  timeout: 60000,
-  reconnect: true,
   charset: 'utf8mb4'
 });
 
 // Test database connection
 db.getConnection()
   .then(connection => {
-    console.log('✅ Database connected successfully to kashtec_db');
+    console.log('✅ Database connected successfully to', process.env.DB_NAME || 'kashtec_db');
     connection.release();
   })
   .catch(error => {
