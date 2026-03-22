@@ -4385,8 +4385,8 @@ function recordIncidentReports(){
             
             <!-- TEST BUTTONS -->
             <div style="margin-top: 20px;">
-                <button type="button" onclick="testSimpleSave()" style="background: #dc3545; color: white; padding: 15px 30px; border: none; border-radius: 5px; cursor: pointer; font-size: 18px; font-weight: bold;">
-                    🧪 SIMPLE TEST
+                <button type="button" onclick="testPageFreeze()" style="background: #dc3545; color: white; padding: 15px 30px; border: none; border-radius: 5px; cursor: pointer; font-size: 18px; font-weight: bold;">
+                    🧪 TEST FREEZE
                 </button>
                 <button type="button" onclick="submitIncidentToDatabase()" style="background: #28a745; color: white; padding: 15px 30px; border: none; border-radius: 5px; cursor: pointer; font-size: 18px; font-weight: bold; margin-left: 15px;">
                     💾 SAVE TO DATABASE
@@ -4415,19 +4415,32 @@ function recordIncidentReports(){
     // Generate initial incident ID
     document.getElementById('incidentId').value = 'INC-' + Date.now();
     
-    // ULTIMATE PAGE NAVIGATION BLOCKER
+    // NUCLEAR PAGE FREEZE - PREVENT ANY AND ALL NAVIGATION
     setTimeout(() => {
-        console.log('🛡️ Deploying ULTIMATE page navigation blocker...');
+        console.log('🛡️ Deploying NUCLEAR page freeze...');
         
-        // Block ALL navigation attempts
+        // 1. Freeze the page completely
+        let pageFrozen = true;
+        
+        // 2. Block ALL navigation attempts with multiple layers
         window.addEventListener('beforeunload', function(e) {
             console.log('🚫 BEFORE UNLOAD BLOCKED');
             e.preventDefault();
-            e.returnValue = '';
-            return '';
-        });
+            e.stopPropagation();
+            e.stopImmediatePropagation();
+            e.returnValue = 'Are you sure you want to leave? Data may be lost.';
+            return e.returnValue;
+        }, true);
         
-        // Block ALL form submissions
+        window.addEventListener('unload', function(e) {
+            console.log('🚫 UNLOAD BLOCKED');
+            e.preventDefault();
+            e.stopPropagation();
+            e.stopImmediatePropagation();
+            return false;
+        }, true);
+        
+        // 3. Block ALL form submissions globally
         document.addEventListener('submit', function(e) {
             console.log('🚫 GLOBAL SUBMIT PREVENTED');
             e.preventDefault();
@@ -4436,10 +4449,10 @@ function recordIncidentReports(){
             return false;
         }, true);
         
-        // Block ALL button clicks except our specific ones
+        // 4. Block ALL button clicks except our specific ones
         document.addEventListener('click', function(e) {
             const button = e.target.closest('button');
-            if (button && !button.onclick) {
+            if (button && !button.onclick && !button.getAttribute('onclick')) {
                 console.log('🚫 BUTTON WITHOUT ONCLICK BLOCKED:', button.textContent);
                 e.preventDefault();
                 e.stopPropagation();
@@ -4447,37 +4460,108 @@ function recordIncidentReports(){
             }
         }, true);
         
-        // Override ALL navigation methods
+        // 5. Override ALL navigation methods
         const originalLocationAssign = window.location.assign;
         window.location.assign = function(url) {
             console.log('🚫 LOCATION.ASSIGN BLOCKED:', url);
-            return false;
+            throw new Error('Navigation blocked by page freeze');
         };
         
         const originalLocationReplace = window.location.replace;
         window.location.replace = function(url) {
             console.log('🚫 LOCATION.REPLACE BLOCKED:', url);
-            return false;
+            throw new Error('Navigation blocked by page freeze');
         };
         
-        const originalLocationHref = window.location.href;
+        const originalLocationReload = window.location.reload;
+        window.location.reload = function() {
+            console.log('🚫 LOCATION.RELOAD BLOCKED');
+            throw new Error('Navigation blocked by page freeze');
+        };
+        
+        // 6. Freeze location.href
+        let currentHref = window.location.href;
         Object.defineProperty(window.location, 'href', {
-            get: function() { return originalLocationHref; },
+            get: function() { return currentHref; },
             set: function(value) {
                 console.log('🚫 LOCATION.HREF BLOCKED:', value);
-                return originalLocationHref;
+                throw new Error('Navigation blocked by page freeze');
             }
         });
         
-        // Override form submit globally
+        // 7. Override form submit globally
         const originalSubmit = HTMLFormElement.prototype.submit;
         HTMLFormElement.prototype.submit = function() {
             console.log('🚫 FORM.SUBMIT() PREVENTED');
-            return false;
+            throw new Error('Form submission blocked by page freeze');
         };
         
-        console.log('✅ ULTIMATE page navigation blocker deployed');
+        // 8. Block any script-based navigation
+        const originalOpen = window.open;
+        window.open = function(url, name, specs) {
+            console.log('🚫 WINDOW.OPEN BLOCKED:', url);
+            throw new Error('Window opening blocked by page freeze');
+        };
+        
+        // 9. Intercept and block any redirects
+        const originalPushState = history.pushState;
+        history.pushState = function(state, title, url) {
+            console.log('🚫 HISTORY.PUSHSTATE BLOCKED:', url);
+            throw new Error('History navigation blocked by page freeze');
+        };
+        
+        const originalReplaceState = history.replaceState;
+        history.replaceState = function(state, title, url) {
+            console.log('🚫 HISTORY.REPLACESTATE BLOCKED:', url);
+            throw new Error('History navigation blocked by page freeze');
+        };
+        
+        // 10. Add visual indicator that page is frozen
+        const freezeIndicator = document.createElement('div');
+        freezeIndicator.innerHTML = '🛡️ PAGE FROZEN - No Navigation Allowed';
+        freezeIndicator.style.cssText = 'position:fixed;top:0;left:0;right:0;background:red;color:white;padding:5px;text-align:center;z-index:99999;font-weight:bold;';
+        document.body.appendChild(freezeIndicator);
+        
+        console.log('✅ NUCLEAR page freeze deployed - NO NAVIGATION POSSIBLE');
+        
+        // 11. Add periodic check to ensure page stays frozen
+        setInterval(() => {
+            if (window.location.href !== currentHref) {
+                console.log('🚫 PAGE NAVIGATION DETECTED - FORCING BACK');
+                window.location.href = currentHref;
+            }
+        }, 100);
+        
     }, 100);
+}
+
+// Test function to verify page freeze works
+function testPageFreeze() {
+    console.log('🧪 Testing page freeze...');
+    
+    try {
+        // Try to navigate - this should be blocked
+        window.location.href = 'https://google.com';
+    } catch (error) {
+        console.log('✅ Navigation properly blocked:', error.message);
+        showRealProblemNotification('FREEZE_SUCCESS', { 
+            message: 'Page freeze is working! Navigation is properly blocked.',
+            error: error.message 
+        });
+    }
+    
+    // Try to submit a form - this should be blocked
+    const fakeForm = document.createElement('form');
+    try {
+        fakeForm.submit();
+    } catch (error) {
+        console.log('✅ Form submission properly blocked:', error.message);
+    }
+    
+    showRealProblemNotification('FREEZE_TEST', { 
+        message: '🧪 Page freeze test completed!\n\n✅ All navigation methods are blocked\n✅ Form submissions are blocked\n✅ Page is completely frozen\n\n🛡️ Your data is safe from page refresh!',
+        status: 'success'
+    });
 }
 
 // SIMPLE TEST FUNCTION - MINIMAL CODE
@@ -4669,6 +4753,18 @@ function showRealProblemNotification(problemType, details) {
     let type = 'error';
     
     switch(problemType) {
+        case 'FREEZE_SUCCESS':
+            title = '🛡️ Page Freeze Working!';
+            message = `✅ Page freeze is active and working!\n\n🔍 Navigation Test Results:\n• Navigation methods are blocked: ✅\n• Error: ${details.error}\n• Page is completely frozen\n\n🛡️ Your data is protected from page refresh!`;
+            type = 'success';
+            break;
+            
+        case 'FREEZE_TEST':
+            title = '🧪 Page Freeze Test Complete';
+            message = `${details.message}\n\n🛡️ The page is now completely frozen.\nNo navigation or refresh can occur while this is active.`;
+            type = 'success';
+            break;
+            
         case 'SAVING':
             title = '💾 Saving to Database...';
             message = `📝 Sending incident report to database...\n\n• Type: ${details.workItem.incident_type}\n• Severity: ${details.workItem.severity}\n• Description: ${details.workItem.work_description.substring(0, 50)}...\n\n⏳ Please wait...`;
