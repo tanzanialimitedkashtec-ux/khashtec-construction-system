@@ -4335,7 +4335,7 @@ function recordIncidentReports(){
         <h3>Record Incident Reports</h3>
         <p><strong>HSE Authority:</strong> Document workplace incidents, accidents, and near-misses for Return on Experience (REX)</p>
         
-        <!-- Remove form entirely and use div with manual submission -->
+        <!-- SIMPLE TEST FORM - NO FORM TAGS -->
         <div id="incidentForm">
             <div class="form-row">
                 <div class="form-group">
@@ -4345,23 +4345,6 @@ function recordIncidentReports(){
                 <div class="form-group">
                     <label>Incident Date *</label>
                     <input type="datetime-local" id="incidentDate" required>
-                </div>
-            </div>
-            
-            <div class="form-row">
-                <div class="form-group">
-                    <label>Project *</label>
-                    <select id="project" required>
-                        <option value="">Select Project</option>
-                        <option value="road-construction">Road Construction - Highway A1</option>
-                        <option value="building-project">Building Project - City Center</option>
-                        <option value="bridge-construction">Bridge Construction - River Cross</option>
-                        <option value="infrastructure">Infrastructure Development</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label>Location *</label>
-                    <input type="text" id="location" placeholder="Specific site location" required>
                 </div>
             </div>
             
@@ -4400,9 +4383,12 @@ function recordIncidentReports(){
                 <input type="text" id="reportedBy" placeholder="HSE Manager Name" required>
             </div>
             
-            <!-- Manual Submit Buttons - NO FORM SUBMISSION -->
+            <!-- TEST BUTTONS -->
             <div style="margin-top: 20px;">
-                <button type="button" onclick="submitIncidentToDatabase()" style="background: #28a745; color: white; padding: 15px 30px; border: none; border-radius: 5px; cursor: pointer; font-size: 18px; font-weight: bold;">
+                <button type="button" onclick="testSimpleSave()" style="background: #dc3545; color: white; padding: 15px 30px; border: none; border-radius: 5px; cursor: pointer; font-size: 18px; font-weight: bold;">
+                    🧪 SIMPLE TEST
+                </button>
+                <button type="button" onclick="submitIncidentToDatabase()" style="background: #28a745; color: white; padding: 15px 30px; border: none; border-radius: 5px; cursor: pointer; font-size: 18px; font-weight: bold; margin-left: 15px;">
                     💾 SAVE TO DATABASE
                 </button>
                 <button type="button" onclick="clearIncidentForm()" style="background: #6c757d; color: white; padding: 15px 30px; border: none; border-radius: 5px; cursor: pointer; font-size: 18px; margin-left: 15px;">
@@ -4429,11 +4415,19 @@ function recordIncidentReports(){
     // Generate initial incident ID
     document.getElementById('incidentId').value = 'INC-' + Date.now();
     
-    // AGGRESSIVE FORM PREVENTION
+    // ULTIMATE PAGE NAVIGATION BLOCKER
     setTimeout(() => {
-        console.log('🛡️ Deploying aggressive form prevention...');
+        console.log('🛡️ Deploying ULTIMATE page navigation blocker...');
         
-        // Prevent any form submission on the entire page
+        // Block ALL navigation attempts
+        window.addEventListener('beforeunload', function(e) {
+            console.log('🚫 BEFORE UNLOAD BLOCKED');
+            e.preventDefault();
+            e.returnValue = '';
+            return '';
+        });
+        
+        // Block ALL form submissions
         document.addEventListener('submit', function(e) {
             console.log('🚫 GLOBAL SUBMIT PREVENTED');
             e.preventDefault();
@@ -4442,28 +4436,77 @@ function recordIncidentReports(){
             return false;
         }, true);
         
-        // Prevent any button click that could submit
+        // Block ALL button clicks except our specific ones
         document.addEventListener('click', function(e) {
-            if (e.target.tagName === 'BUTTON' || e.target.type === 'submit') {
-                console.log('🚫 BUTTON CLICK INTERCEPTED:', e.target.textContent);
-                // Allow our specific buttons, prevent others
-                if (!e.target.onclick && e.target.type === 'submit') {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    return false;
-                }
+            const button = e.target.closest('button');
+            if (button && !button.onclick) {
+                console.log('🚫 BUTTON WITHOUT ONCLICK BLOCKED:', button.textContent);
+                e.preventDefault();
+                e.stopPropagation();
+                return false;
             }
         }, true);
         
-        // Override form.submit globally
-        const originalSubmit = HTMLFormElement.prototype.submit;
-        HTMLFormElement.prototype.submit = function() {
-            console.log('🚫 FORM.SUBJECT() PREVENTED');
+        // Override ALL navigation methods
+        const originalLocationAssign = window.location.assign;
+        window.location.assign = function(url) {
+            console.log('🚫 LOCATION.ASSIGN BLOCKED:', url);
             return false;
         };
         
-        console.log('✅ Aggressive form prevention deployed');
-    }, 500);
+        const originalLocationReplace = window.location.replace;
+        window.location.replace = function(url) {
+            console.log('🚫 LOCATION.REPLACE BLOCKED:', url);
+            return false;
+        };
+        
+        const originalLocationHref = window.location.href;
+        Object.defineProperty(window.location, 'href', {
+            get: function() { return originalLocationHref; },
+            set: function(value) {
+                console.log('🚫 LOCATION.HREF BLOCKED:', value);
+                return originalLocationHref;
+            }
+        });
+        
+        // Override form submit globally
+        const originalSubmit = HTMLFormElement.prototype.submit;
+        HTMLFormElement.prototype.submit = function() {
+            console.log('🚫 FORM.SUBMIT() PREVENTED');
+            return false;
+        };
+        
+        console.log('✅ ULTIMATE page navigation blocker deployed');
+    }, 100);
+}
+
+// SIMPLE TEST FUNCTION - MINIMAL CODE
+function testSimpleSave() {
+    console.log('🧪 SIMPLE TEST - No database, just test if page refreshes');
+    
+    try {
+        // Get form values
+        const incidentType = document.getElementById('incidentType').value;
+        const severityLevel = document.getElementById('severityLevel').value;
+        const incidentDescription = document.getElementById('incidentDescription').value;
+        const reportedBy = document.getElementById('reportedBy').value;
+        
+        console.log('📝 Test values:', { incidentType, severityLevel, incidentDescription, reportedBy });
+        
+        if (!incidentType || !severityLevel || !incidentDescription || !reportedBy) {
+            customAlert('Please fill in all required fields for the test.', "Test Validation", "error");
+            return;
+        }
+        
+        // Show test message
+        customAlert(`🧪 SIMPLE TEST SUCCESS!\n\n✅ Form values captured\n✅ No page refresh occurred\n✅ Function completed successfully\n\n📝 Data captured:\n• Type: ${incidentType}\n• Severity: ${severityLevel}\n• Description: ${incidentDescription.substring(0, 50)}...\n• Reported by: ${reportedBy}\n\n🎉 This proves the page refresh issue is NOT from this function!`, "Test Success!", "success");
+        
+        console.log('✅ SIMPLE TEST COMPLETED - No page refresh!');
+        
+    } catch (error) {
+        console.error('❌ Test error:', error);
+        customAlert(`Test error: ${error.message}`, "Test Error", "error");
+    }
 }
 
 // NEW: Direct database submission function - NO FORM INVOLVED
