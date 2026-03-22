@@ -19,6 +19,8 @@ router.get('/:department', async (req, res) => {
 // Create new work item
 router.post('/:department', async (req, res) => {
     try {
+        console.log('🔍 Received work request:', req.params.department, req.body);
+        
         const { department } = req.params;
         const {
             work_type,
@@ -35,8 +37,11 @@ router.post('/:department', async (req, res) => {
             affected_department, deadline // Admin
         } = req.body;
         
+        console.log('📝 Extracted data:', { work_type, work_title, work_description, priority });
+        
         // Validate required fields
         if (!work_type || !work_title || !work_description) {
+            console.log('❌ Validation failed - missing required fields');
             return res.status(400).json({
                 error: 'Work type, title, and description are required'
             });
@@ -49,7 +54,7 @@ router.post('/:department', async (req, res) => {
         
         // Common fields for all departments
         fields.push('department_code', 'work_type', 'work_title', 'work_description', 'priority', 'submitted_by', 'submitted_date');
-        values.push(department.toUpperCase(), work_type, work_title, work_description, priority, req.user?.email || 'System', new Date());
+        values.push(department.toUpperCase(), work_type, work_title, work_description, priority, 'System', new Date());
         
         // Add department-specific fields
         if (department === 'finance' && amount !== undefined) {
@@ -120,7 +125,12 @@ router.post('/:department', async (req, res) => {
         const placeholders = fields.map(() => '?').join(', ');
         query = `INSERT INTO ${department}_work (${fields.join(', ')}) VALUES (${placeholders})`;
         
+        console.log('🔨 Executing query:', query);
+        console.log('📊 With values:', values);
+        
         const [result] = await db.execute(query, values);
+        
+        console.log('✅ Database insert result:', result);
         
         // Return the created work item
         const [newWorkItem] = await db.execute(
@@ -128,13 +138,15 @@ router.post('/:department', async (req, res) => {
             [result.insertId]
         );
         
+        console.log('📋 Retrieved new work item:', newWorkItem[0]);
+        
         res.status(201).json({
             message: `${department} work item created successfully`,
             workItem: newWorkItem[0]
         });
         
     } catch (error) {
-        console.error('Error creating work item:', error);
+        console.error('❌ Error creating work item:', error);
         res.status(500).json({ 
             error: 'Failed to create work item',
             details: error.message 
