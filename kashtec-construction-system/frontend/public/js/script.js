@@ -401,13 +401,24 @@ async function rejectPolicy(policyId) {
         const currentUser = sessionManager.getCurrentUser() || {};
         const rejectedBy = currentUser.email || 'HR Manager';
         
-        // Get rejection reason from user
-        const rejectionReason = prompt('Please enter rejection reason:');
-        if (!rejectionReason) {
+        // Show custom rejection modal instead of prompt
+        showRejectionModal('Policy Rejection', 'Please enter rejection reason:', (rejectionReason) => {
+            if (!rejectionReason) {
                 showNotification('Rejection cancelled', 'info', 2000);
                 return;
-        }
-        
+            }
+            
+            // Process rejection
+            processPolicyRejection(policyId, rejectionReason, rejectedBy);
+        });
+    } catch (error) {
+        console.error('❌ Error rejecting policy:', error);
+        showNotification('Error rejecting policy: ' + error.message, 'error', 5000);
+    }
+}
+
+async function processPolicyRejection(policyId, rejectionReason, rejectedBy) {
+    try {
         // Show loading notification
         showNotification('Rejecting policy...', 'info', 2000);
         
@@ -441,7 +452,7 @@ async function rejectPolicy(policyId) {
         }
         
     } catch (error) {
-        console.error('❌ Error rejecting policy:', error);
+        console.error('❌ Error processing policy rejection:', error);
         showNotification('Error rejecting policy: ' + error.message, 'error', 5000);
     }
 }
@@ -454,13 +465,24 @@ async function requestPolicyRevision(policyId) {
         const currentUser = sessionManager.getCurrentUser() || {};
         const requestedBy = currentUser.email || 'HR Manager';
         
-        // Get revision request from user
-        const revisionRequest = prompt('Please enter revision request details:');
-        if (!revisionRequest) {
+        // Show custom revision modal instead of prompt
+        showRevisionModal('Policy Revision Request', 'Please enter revision request details:', (revisionRequest) => {
+            if (!revisionRequest) {
                 showNotification('Revision request cancelled', 'info', 2000);
                 return;
-        }
-        
+            }
+            
+            // Process revision request
+            processPolicyRevision(policyId, revisionRequest, requestedBy);
+        });
+    } catch (error) {
+        console.error('❌ Error requesting revision:', error);
+        showNotification('Error requesting revision: ' + error.message, 'error', 5000);
+    }
+}
+
+async function processPolicyRevision(policyId, revisionRequest, requestedBy) {
+    try {
         // Show loading notification
         showNotification('Requesting revision...', 'info', 2000);
         
@@ -494,8 +516,302 @@ async function requestPolicyRevision(policyId) {
         }
         
     } catch (error) {
-        console.error('❌ Error requesting revision:', error);
+        console.error('❌ Error processing policy revision:', error);
         showNotification('Error requesting revision: ' + error.message, 'error', 5000);
+    }
+}
+
+// Custom Modal Functions
+function showRejectionModal(title, message, callback) {
+    // Create modal overlay
+    const modalOverlay = document.createElement('div');
+    modalOverlay.className = 'modal-overlay';
+    modalOverlay.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 10000;
+    `;
+    
+    // Create modal content
+    const modalContent = document.createElement('div');
+    modalContent.className = 'modal-content';
+    modalContent.style.cssText = `
+        background: white;
+        padding: 30px;
+        border-radius: 10px;
+        max-width: 500px;
+        width: 90%;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        animation: modalSlideIn 0.3s ease-out;
+    `;
+    
+    modalContent.innerHTML = `
+        <h3 style="margin: 0 0 20px 0; color: #dc3545;">${title}</h3>
+        <p style="margin: 0 0 20px 0; color: #666;">${message}</p>
+        <textarea id="rejectionReason" rows="4" style="
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            font-size: 14px;
+            resize: vertical;
+            box-sizing: border-box;
+        " placeholder="Enter detailed rejection reason..."></textarea>
+        <div style="margin-top: 20px; text-align: right;">
+            <button id="cancelRejection" style="
+                background: #6c757d;
+                color: white;
+                border: none;
+                padding: 10px 20px;
+                margin-right: 10px;
+                border-radius: 5px;
+                cursor: pointer;
+                font-size: 14px;
+            ">Cancel</button>
+            <button id="confirmRejection" style="
+                background: #dc3545;
+                color: white;
+                border: none;
+                padding: 10px 20px;
+                border-radius: 5px;
+                cursor: pointer;
+                font-size: 14px;
+            ">Reject</button>
+        </div>
+    `;
+    
+    // Add animation styles
+    const style = document.createElement('style');
+    style.textContent = `
+        @keyframes modalSlideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        .modal-overlay {
+            animation: fadeIn 0.3s ease-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        #rejectionReason:focus {
+            outline: none;
+            border-color: #dc3545;
+            box-shadow: 0 0 5px rgba(220, 53, 69, 0.3);
+        }
+        #confirmRejection:hover {
+            background: #c82333;
+        }
+        #cancelRejection:hover {
+            background: #5a6268;
+        }
+    `;
+    
+    modalOverlay.appendChild(modalContent);
+    document.head.appendChild(style);
+    document.body.appendChild(modalOverlay);
+    
+    // Add event listeners
+    const confirmBtn = modalContent.querySelector('#confirmRejection');
+    const cancelBtn = modalContent.querySelector('#cancelRejection');
+    const textarea = modalContent.querySelector('#rejectionReason');
+    
+    // Auto-focus textarea
+    setTimeout(() => textarea.focus(), 100);
+    
+    // Handle confirm
+    confirmBtn.addEventListener('click', () => {
+        const reason = textarea.value.trim();
+        if (reason) {
+            callback(reason);
+            closeModal();
+        } else {
+            showNotification('Please enter a rejection reason', 'warning', 3000);
+            textarea.focus();
+        }
+    });
+    
+    // Handle cancel
+    cancelBtn.addEventListener('click', closeModal);
+    
+    // Handle escape key
+    document.addEventListener('keydown', function handleEscape(e) {
+        if (e.key === 'Escape') {
+            closeModal();
+            document.removeEventListener('keydown', handleEscape);
+        }
+    });
+    
+    // Handle overlay click
+    modalOverlay.addEventListener('click', (e) => {
+        if (e.target === modalOverlay) {
+            closeModal();
+        }
+    });
+    
+    function closeModal() {
+        modalOverlay.remove();
+        style.remove();
+    }
+}
+
+function showRevisionModal(title, message, callback) {
+    // Create modal overlay
+    const modalOverlay = document.createElement('div');
+    modalOverlay.className = 'modal-overlay';
+    modalOverlay.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 10000;
+    `;
+    
+    // Create modal content
+    const modalContent = document.createElement('div');
+    modalContent.className = 'modal-content';
+    modalContent.style.cssText = `
+        background: white;
+        padding: 30px;
+        border-radius: 10px;
+        max-width: 500px;
+        width: 90%;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        animation: modalSlideIn 0.3s ease-out;
+    `;
+    
+    modalContent.innerHTML = `
+        <h3 style="margin: 0 0 20px 0; color: #ffc107;">${title}</h3>
+        <p style="margin: 0 0 20px 0; color: #666;">${message}</p>
+        <textarea id="revisionRequest" rows="4" style="
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            font-size: 14px;
+            resize: vertical;
+            box-sizing: border-box;
+        " placeholder="Enter detailed revision request..."></textarea>
+        <div style="margin-top: 20px; text-align: right;">
+            <button id="cancelRevision" style="
+                background: #6c757d;
+                color: white;
+                border: none;
+                padding: 10px 20px;
+                margin-right: 10px;
+                border-radius: 5px;
+                cursor: pointer;
+                font-size: 14px;
+            ">Cancel</button>
+            <button id="confirmRevision" style="
+                background: #ffc107;
+                color: #212529;
+                border: none;
+                padding: 10px 20px;
+                border-radius: 5px;
+                cursor: pointer;
+                font-size: 14px;
+                font-weight: bold;
+            ">Request Revision</button>
+        </div>
+    `;
+    
+    // Add animation styles
+    const style = document.createElement('style');
+    style.textContent = `
+        @keyframes modalSlideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        .modal-overlay {
+            animation: fadeIn 0.3s ease-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        #revisionRequest:focus {
+            outline: none;
+            border-color: #ffc107;
+            box-shadow: 0 0 5px rgba(255, 193, 7, 0.3);
+        }
+        #confirmRevision:hover {
+            background: #e0a800;
+        }
+        #cancelRevision:hover {
+            background: #5a6268;
+        }
+    `;
+    
+    modalOverlay.appendChild(modalContent);
+    document.head.appendChild(style);
+    document.body.appendChild(modalOverlay);
+    
+    // Add event listeners
+    const confirmBtn = modalContent.querySelector('#confirmRevision');
+    const cancelBtn = modalContent.querySelector('#cancelRevision');
+    const textarea = modalContent.querySelector('#revisionRequest');
+    
+    // Auto-focus textarea
+    setTimeout(() => textarea.focus(), 100);
+    
+    // Handle confirm
+    confirmBtn.addEventListener('click', () => {
+        const request = textarea.value.trim();
+        if (request) {
+            callback(request);
+            closeModal();
+        } else {
+            showNotification('Please enter revision request details', 'warning', 3000);
+            textarea.focus();
+        }
+    });
+    
+    // Handle cancel
+    cancelBtn.addEventListener('click', closeModal);
+    
+    // Handle escape key
+    document.addEventListener('keydown', function handleEscape(e) {
+        if (e.key === 'Escape') {
+            closeModal();
+            document.removeEventListener('keydown', handleEscape);
+        }
+    });
+    
+    // Handle overlay click
+    modalOverlay.addEventListener('click', (e) => {
+        if (e.target === modalOverlay) {
+            closeModal();
+        }
+    });
+    
+    function closeModal() {
+        modalOverlay.remove();
+        style.remove();
     }
 }
 
@@ -725,13 +1041,24 @@ async function rejectSeniorHire(requestId) {
         const currentUser = sessionManager.getCurrentUser() || {};
         const rejectedBy = currentUser.email || 'HR Manager';
         
-        // Get rejection reason from user
-        const rejectionReason = prompt('Please enter rejection reason:');
-        if (!rejectionReason) {
+        // Show custom rejection modal instead of prompt
+        showRejectionModal('Senior Hiring Rejection', 'Please enter rejection reason:', (rejectionReason) => {
+            if (!rejectionReason) {
                 showNotification('Rejection cancelled', 'info', 2000);
                 return;
-        }
-        
+            }
+            
+            // Process rejection
+            processSeniorHiringRejection(requestId, rejectionReason, rejectedBy);
+        });
+    } catch (error) {
+        console.error('❌ Error rejecting senior hiring request:', error);
+        showNotification('Error rejecting senior hiring request: ' + error.message, 'error', 5000);
+    }
+}
+
+async function processSeniorHiringRejection(requestId, rejectionReason, rejectedBy) {
+    try {
         // Show loading notification
         showNotification('Rejecting senior hiring request...', 'info', 2000);
         
@@ -757,7 +1084,7 @@ async function rejectSeniorHire(requestId) {
         }
         
     } catch (error) {
-        console.error('❌ Error rejecting senior hiring request:', error);
+        console.error('❌ Error processing senior hiring rejection:', error);
         showNotification('Error rejecting senior hiring request: ' + error.message, 'error', 5000);
     }
 }
@@ -770,13 +1097,24 @@ async function requestMoreInfo(requestId) {
         const currentUser = sessionManager.getCurrentUser() || {};
         const requestedBy = currentUser.email || 'HR Manager';
         
-        // Get info request from user
-        const infoRequired = prompt('Please specify information required:');
-        if (!infoRequired) {
+        // Show custom info request modal instead of prompt
+        showInfoRequestModal('Information Request', 'Please specify information required:', (infoRequired) => {
+            if (!infoRequired) {
                 showNotification('Info request cancelled', 'info', 2000);
                 return;
-        }
-        
+            }
+            
+            // Process info request
+            processSeniorHiringInfoRequest(requestId, infoRequired, requestedBy);
+        });
+    } catch (error) {
+        console.error('❌ Error requesting more information:', error);
+        showNotification('Error requesting more information: ' + error.message, 'error', 5000);
+    }
+}
+
+async function processSeniorHiringInfoRequest(requestId, infoRequired, requestedBy) {
+    try {
         // Show loading notification
         showNotification('Requesting more information...', 'info', 2000);
         
@@ -802,8 +1140,155 @@ async function requestMoreInfo(requestId) {
         }
         
     } catch (error) {
-        console.error('❌ Error requesting more information:', error);
+        console.error('❌ Error processing senior hiring info request:', error);
         showNotification('Error requesting more information: ' + error.message, 'error', 5000);
+    }
+}
+
+// Additional custom modal for info requests
+function showInfoRequestModal(title, message, callback) {
+    // Create modal overlay
+    const modalOverlay = document.createElement('div');
+    modalOverlay.className = 'modal-overlay';
+    modalOverlay.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 10000;
+    `;
+    
+    // Create modal content
+    const modalContent = document.createElement('div');
+    modalContent.className = 'modal-content';
+    modalContent.style.cssText = `
+        background: white;
+        padding: 30px;
+        border-radius: 10px;
+        max-width: 500px;
+        width: 90%;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        animation: modalSlideIn 0.3s ease-out;
+    `;
+    
+    modalContent.innerHTML = `
+        <h3 style="margin: 0 0 20px 0; color: #17a2b8;">${title}</h3>
+        <p style="margin: 0 0 20px 0; color: #666;">${message}</p>
+        <textarea id="infoRequest" rows="4" style="
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            font-size: 14px;
+            resize: vertical;
+            box-sizing: border-box;
+        " placeholder="Enter information required..."></textarea>
+        <div style="margin-top: 20px; text-align: right;">
+            <button id="cancelInfoRequest" style="
+                background: #6c757d;
+                color: white;
+                border: none;
+                padding: 10px 20px;
+                margin-right: 10px;
+                border-radius: 5px;
+                cursor: pointer;
+                font-size: 14px;
+            ">Cancel</button>
+            <button id="confirmInfoRequest" style="
+                background: #17a2b8;
+                color: white;
+                border: none;
+                padding: 10px 20px;
+                border-radius: 5px;
+                cursor: pointer;
+                font-size: 14px;
+            ">Request Info</button>
+        </div>
+    `;
+    
+    // Add animation styles
+    const style = document.createElement('style');
+    style.textContent = `
+        @keyframes modalSlideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        .modal-overlay {
+            animation: fadeIn 0.3s ease-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        #infoRequest:focus {
+            outline: none;
+            border-color: #17a2b8;
+            box-shadow: 0 0 5px rgba(23, 162, 184, 0.3);
+        }
+        #confirmInfoRequest:hover {
+            background: #138496;
+        }
+        #cancelInfoRequest:hover {
+            background: #5a6268;
+        }
+    `;
+    
+    modalOverlay.appendChild(modalContent);
+    document.head.appendChild(style);
+    document.body.appendChild(modalOverlay);
+    
+    // Add event listeners
+    const confirmBtn = modalContent.querySelector('#confirmInfoRequest');
+    const cancelBtn = modalContent.querySelector('#cancelInfoRequest');
+    const textarea = modalContent.querySelector('#infoRequest');
+    
+    // Auto-focus textarea
+    setTimeout(() => textarea.focus(), 100);
+    
+    // Handle confirm
+    confirmBtn.addEventListener('click', () => {
+        const info = textarea.value.trim();
+        if (info) {
+            callback(info);
+            closeModal();
+        } else {
+            showNotification('Please enter information required', 'warning', 3000);
+            textarea.focus();
+        }
+    });
+    
+    // Handle cancel
+    cancelBtn.addEventListener('click', closeModal);
+    
+    // Handle escape key
+    document.addEventListener('keydown', function handleEscape(e) {
+        if (e.key === 'Escape') {
+            closeModal();
+            document.removeEventListener('keydown', handleEscape);
+        }
+    });
+    
+    // Handle overlay click
+    modalOverlay.addEventListener('click', (e) => {
+        if (e.target === modalOverlay) {
+            closeModal();
+        }
+    });
+    
+    function closeModal() {
+        modalOverlay.remove();
+        style.remove();
     }
 }
 
@@ -983,13 +1468,24 @@ async function rejectBudget(budgetId) {
         const currentUser = sessionManager.getCurrentUser() || {};
         const rejectedBy = currentUser.email || 'HR Manager';
         
-        // Get rejection reason from user
-        const rejectionReason = prompt('Please enter rejection reason:');
-        if (!rejectionReason) {
+        // Show custom rejection modal instead of prompt
+        showRejectionModal('Budget Rejection', 'Please enter rejection reason:', (rejectionReason) => {
+            if (!rejectionReason) {
                 showNotification('Rejection cancelled', 'info', 2000);
                 return;
-        }
-        
+            }
+            
+            // Process rejection
+            processBudgetRejection(budgetId, rejectionReason, rejectedBy);
+        });
+    } catch (error) {
+        console.error('❌ Error rejecting workforce budget:', error);
+        showNotification('Error rejecting workforce budget: ' + error.message, 'error', 5000);
+    }
+}
+
+async function processBudgetRejection(budgetId, rejectionReason, rejectedBy) {
+    try {
         // Show loading notification
         showNotification('Rejecting workforce budget...', 'info', 2000);
         
@@ -1015,7 +1511,7 @@ async function rejectBudget(budgetId) {
         }
         
     } catch (error) {
-        console.error('❌ Error rejecting workforce budget:', error);
+        console.error('❌ Error processing budget rejection:', error);
         showNotification('Error rejecting workforce budget: ' + error.message, 'error', 5000);
     }
 }
@@ -1028,13 +1524,24 @@ async function modifyBudget(budgetId) {
         const currentUser = sessionManager.getCurrentUser() || {};
         const requestedBy = currentUser.email || 'HR Manager';
         
-        // Get modification request from user
-        const modificationRequest = prompt('Please specify modification required:');
-        if (!modificationRequest) {
+        // Show custom revision modal instead of prompt
+        showRevisionModal('Budget Modification Request', 'Please specify modification required:', (modificationRequest) => {
+            if (!modificationRequest) {
                 showNotification('Modification request cancelled', 'info', 2000);
                 return;
-        }
-        
+            }
+            
+            // Process modification request
+            processBudgetModification(budgetId, modificationRequest, requestedBy);
+        });
+    } catch (error) {
+        console.error('❌ Error requesting budget modification:', error);
+        showNotification('Error requesting budget modification: ' + error.message, 'error', 5000);
+    }
+}
+
+async function processBudgetModification(budgetId, modificationRequest, requestedBy) {
+    try {
         // Show loading notification
         showNotification('Requesting budget modification...', 'info', 2000);
         
@@ -1060,7 +1567,7 @@ async function modifyBudget(budgetId) {
         }
         
     } catch (error) {
-        console.error('❌ Error requesting budget modification:', error);
+        console.error('❌ Error processing budget modification:', error);
         showNotification('Error requesting budget modification: ' + error.message, 'error', 5000);
     }
 }

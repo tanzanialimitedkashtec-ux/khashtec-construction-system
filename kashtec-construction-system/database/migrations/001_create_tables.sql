@@ -501,6 +501,257 @@ CREATE TABLE IF NOT EXISTS workforce_budget_modifications (
   INDEX idx_requested_by (requested_by)
 );
 
+-- Department Work Tables
+CREATE TABLE IF NOT EXISTS hr_work (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  department_code VARCHAR(50) DEFAULT 'HR',
+  work_type ENUM('Employee Registration', 'Worker Account Creation', 'Project Assignment', 'Attendance Tracking', 'Leave Management', 'Contract Management', 'Policy Management', 'Senior Staff Hiring', 'Budget Approval') DEFAULT 'Employee Registration',
+  work_title VARCHAR(255) NOT NULL,
+  work_description TEXT,
+  employee_name VARCHAR(255),
+  employee_email VARCHAR(255),
+  project_name VARCHAR(255),
+  status ENUM('Pending', 'In Progress', 'Completed', 'Rejected', 'Revision Requested') DEFAULT 'Pending',
+  priority ENUM('Low', 'Medium', 'High', 'Critical') DEFAULT 'Medium',
+  submitted_by VARCHAR(255),
+  submitted_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  assigned_to VARCHAR(255),
+  due_date DATE,
+  completion_date TIMESTAMP NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  INDEX idx_status (status),
+  INDEX idx_department (department_code),
+  INDEX idx_work_type (work_type),
+  INDEX idx_submitted_by (submitted_by),
+  INDEX idx_due_date (due_date)
+);
+
+CREATE TABLE IF NOT EXISTS finance_work (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  department_code VARCHAR(50) DEFAULT 'FINANCE',
+  work_type ENUM('Budget Management', 'Financial Reporting', 'Payroll Processing', 'Expense Control', 'Audits', 'Compliance', 'Invoice Processing', 'Budget Approval') DEFAULT 'Budget Management',
+  work_title VARCHAR(255) NOT NULL,
+  work_description TEXT,
+  amount DECIMAL(15,2),
+  vendor_name VARCHAR(255),
+  invoice_number VARCHAR(100),
+  status ENUM('Pending', 'In Progress', 'Completed', 'Rejected', 'Revision Requested') DEFAULT 'Pending',
+  priority ENUM('Low', 'Medium', 'High', 'Critical') DEFAULT 'Medium',
+  submitted_by VARCHAR(255),
+  submitted_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  assigned_to VARCHAR(255),
+  due_date DATE,
+  completion_date TIMESTAMP NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  INDEX idx_status (status),
+  idx_department (department_code),
+  idx_work_type (work_type),
+  idx_submitted_by (submitted_by),
+  idx_due_date (due_date)
+);
+
+CREATE TABLE IF NOT EXISTS hse_work (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  department_code VARCHAR(50) DEFAULT 'HSE',
+  work_type ENUM('Incident Reporting', 'Safety Policy Upload', 'Toolbox Meeting', 'PPE Issuance', 'Safety Violation', 'Inspection Report', 'Safety Training', 'Project Safety Status') DEFAULT 'Incident Reporting',
+  work_title VARCHAR(255) NOT NULL,
+  work_description TEXT,
+  incident_type VARCHAR(100),
+  severity ENUM('Low', 'Medium', 'High', 'Critical') DEFAULT 'Medium',
+  location VARCHAR(255),
+  project_name VARCHAR(255),
+  status ENUM('Pending', 'In Progress', 'Completed', 'Rejected', 'Revision Requested') DEFAULT 'Pending',
+  priority ENUM('Low', 'Medium', 'High', 'Critical') DEFAULT 'Medium',
+  submitted_by VARCHAR(255),
+  submitted_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  assigned_to VARCHAR(255),
+  due_date DATE,
+  completion_date TIMESTAMP NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  INDEX idx_status (status),
+  idx_department (department_code),
+  idx_work_type (work_type),
+  idx_severity (severity),
+  idx_submitted_by (submitted_by),
+  idx_due_date (due_date)
+);
+
+CREATE TABLE IF NOT EXISTS project_work (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  department_code VARCHAR(50) DEFAULT 'PROJECT',
+  work_type ENUM('Project Creation', 'Progress Update', 'Task Assignment', 'Workforce Request', 'Site Report', 'Work Approval', 'Project Completion', 'Resource Management') DEFAULT 'Project Creation',
+  work_title VARCHAR(255) NOT NULL,
+  work_description TEXT,
+  project_name VARCHAR(255) NOT NULL,
+  client_name VARCHAR(255),
+  project_phase ENUM('Planning', 'In Progress', 'Testing', 'Completed', 'On Hold', 'Cancelled') DEFAULT 'Planning',
+  status ENUM('Pending', 'In Progress', 'Completed', 'Rejected', 'Revision Requested') DEFAULT 'Pending',
+  priority ENUM('Low', 'Medium', 'High', 'Critical') DEFAULT 'Medium',
+  submitted_by VARCHAR(255),
+  submitted_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  assigned_to VARCHAR(255),
+  due_date DATE,
+  completion_date TIMESTAMP NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  INDEX idx_status (status),
+  idx_department (department_code),
+  idx_work_type (work_type),
+  idx_project_phase (project_phase),
+  idx_submitted_by (submitted_by),
+  idx_due_date (due_date)
+);
+
+CREATE TABLE IF NOT EXISTS realestate_work (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  department_code VARCHAR(50) DEFAULT 'REALESTATE',
+  work_type ENUM('Property Addition', 'Property Editing', 'Client Registration', 'Sale Recording', 'Payment Tracking', 'Sales Report', 'Property Management', 'Client Communication') DEFAULT 'Property Addition',
+  work_title VARCHAR(255) NOT NULL,
+  work_description TEXT,
+  property_address VARCHAR(255),
+  property_type VARCHAR(100),
+  client_name VARCHAR(255),
+  sale_amount DECIMAL(15,2),
+  status ENUM('Pending', 'In Progress', 'Completed', 'Rejected', 'Revision Requested') DEFAULT 'Pending',
+  priority ENUM('Low', 'Medium', 'High', 'Critical') DEFAULT 'Medium',
+  submitted_by VARCHAR(255),
+  submitted_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  assigned_to VARCHAR(255),
+  due_date DATE,
+  completion_date TIMESTAMP NULL,
+  created_at TIMESTAMP DEFAULT TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  INDEX idx_status (status),
+  idx_department (department_code),
+  idx_work_type (work_type),
+  idx_submitted_by (submitted_by),
+  idx_due_date (due_date)
+);
+
+CREATE TABLE IF NOT EXISTS admin_work (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  department_code VARCHAR(50) DEFAULT 'ADMIN',
+  work_type ENUM('Administrative Operations', 'Compliance Management', 'Staff Oversight', 'Policy Implementation', 'Document Management', 'User Account Management', 'System Administration', 'Department Coordination') DEFAULT 'Administrative Operations',
+  work_title VARCHAR(255) NOT NULL,
+  work_description TEXT,
+  affected_department VARCHAR(100),
+  deadline DATE,
+  status ENUM('Pending', 'In Progress', 'Completed', 'Rejected', 'Revision Requested') DEFAULT 'Pending',
+  priority ENUM('Low', 'Medium', 'High', 'Critical') DEFAULT 'Medium',
+  submitted_by VARCHAR(255),
+  submitted_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  assigned_to VARCHAR(255),
+  due_date DATE,
+  completion_date TIMESTAMP NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  INDEX idx_status (status),
+  idx_department (department_code),
+  idx_work_type (work_type),
+  idx_affected_department (affected_department),
+  idx_submitted_by (submitted_by),
+  idx_due_date (due_date)
+);
+
+-- Work Comments and Actions Tables
+CREATE TABLE IF NOT EXISTS work_comments (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  work_id INT NOT NULL,
+  work_table VARCHAR(50) NOT NULL,
+  comment TEXT NOT NULL,
+  commented_by VARCHAR(255) NOT NULL,
+  commented_by_role VARCHAR(100),
+  comment_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  is_internal BOOLEAN DEFAULT FALSE,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (work_id, work_table) REFERENCES hr_work(id) ON DELETE CASCADE,
+  FOREIGN KEY (work_id, work_table) REFERENCES finance_work(id) ON DELETE CASCADE,
+  FOREIGN KEY (work_id, work_table) REFERENCES hse_work(id) ON DELETE CASCADE,
+  FOREIGN KEY (work_id, work_table) REFERENCES project_work(id) ON DELETE CASCADE,
+  FOREIGN KEY (work_id, work_table) REFERENCES realestate_work(id) ON DELETE CASCADE,
+  FOREIGN KEY (id, work_table) REFERENCES admin_work(id) ON DELETE CASCADE,
+  INDEX idx_work_id (work_id),
+  INDEX idx_work_table (work_table),
+  idx_commented_by (commented_by)
+);
+
+CREATE TABLE IF NOT EXISTS work_actions (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  work_id INT NOT NULL,
+  work_table VARCHAR(50) NOT NULL,
+  action_type ENUM('Created', 'Assigned', 'In Progress', 'Completed', 'Rejected', 'Revision Requested', 'Approved') DEFAULT 'Created',
+  action_description TEXT,
+  action_by VARCHAR(255) NOT NULL,
+  action_by_role VARCHAR(100),
+  action_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  next_action_date TIMESTAMP NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (work_id, work_table) REFERENCES hr_work(id) ON DELETE CASCADE,
+  FOREIGN KEY (work_id, work_table) REFERENCES finance_work(id) ON DELETE CASCADE,
+  FOREIGN KEY (work_id, work_table) REFERENCES hse_work(id) ON DELETE CASCADE,
+  FOREIGN KEY (id, work_table) REFERENCES project_work(id) ON DELETE CASCADE,
+  FOREIGN KEY (id, work_table) REFERENCES realestate_work(id) ON DELETE CASCADE,
+  FOREIGN KEY (id, work_table) REFERENCES admin_work(id) ON DELETE CASCADE,
+  INDEX idx_work_id (work_id),
+  INDEX idx_work_table (work_table),
+  idx_action_type (action_type),
+  idx_action_by (action_by)
+);
+
+CREATE TABLE IF NOT EXISTS work_rejections (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  work_id INT NOT NULL,
+  work_table VARCHAR(50) NOT NULL,
+  rejection_reason TEXT NOT NULL,
+  rejection_details TEXT,
+  rejected_by VARCHAR(255) NOT NULL,
+  rejected_by_role VARCHAR(100),
+  rejection_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  notified_submitter BOOLEAN DEFAULT FALSE,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (work_id, work_table) REFERENCES hr_work(id) ON DELETE CASCADE,
+  FOREIGN KEY (work_id, work_table) REFERENCES finance_work(id) ON DELETE CASCADE,
+  FOREIGN KEY (work_id, work_table) REFERENCES hse_work(id) ON DELETE CASCADE,
+  FOREIGN KEY (id, work_table) REFERENCES project_work(id) ON DELETE CASCADE,
+  FOREIGN KEY (id, work_table) REFERENCES realestate_work(id) ON DELETE CASCADE,
+  FOREIGN KEY (id, work_table) REFERENCES admin_work(id) ON DELETE CASCADE,
+  INDEX idx_work_id (work_id),
+  INDEX idx_work_table (work_table),
+  idx_rejected_by (rejected_by),
+  idx_notified (notified_submitter)
+);
+
+CREATE TABLE IF NOT EXISTS work_revisions (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  work_id INT NOT NULL,
+  work_table VARCHAR(50) NOT NULL,
+  revision_request TEXT NOT NULL,
+  revision_details TEXT,
+  requested_by VARCHAR(255) NOT NULL,
+  requested_by_role VARCHAR(100),
+  request_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  status ENUM('Pending', 'Approved', 'Rejected') DEFAULT 'Pending',
+  response TEXT,
+  response_date TIMESTAMP NULL,
+  responded_by VARCHAR(255),
+  responded_by_role VARCHAR(100),
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (work_id, work_table) REFERENCES hr_work(id) ON DELETE CASCADE,
+  FOREIGN KEY (work_id, work_table) REFERENCES finance_work(id) ON DELETE CASCADE,
+  FOREIGN KEY (id, work_table) REFERENCES hse_work(id) ON DELETE CASCADE,
+  FOREIGN KEY (id, work_table) REFERENCES project_work(id) ON DELETE CASCADE,
+  FOREIGN KEY (id, work_table) REFERENCES realestate_work(id) ON DELETE CASCADE,
+  FOREIGN KEY (id, table) REFERENCES admin_work(id) ON DELETE CASCADE,
+  INDEX idx_work_id (work_id),
+  INDEX idx_work_table (work_table),
+  idx_status (status),
+  idx_requested_by (requested_by),
+  idx_response_date (response_date)
+);
+
 -- Insert admin user (only if not exists)
 INSERT IGNORE INTO users (name, email, password, role, status) VALUES
 ('Admin User', 'admin@kashtec.co.tz', 'admin123', 'Managing Director', 'Active');
@@ -517,3 +768,29 @@ INSERT IGNORE INTO senior_hiring_requests (id, candidate_name, proposed_salary, 
 -- Insert sample workforce budget request
 INSERT IGNORE INTO workforce_budgets (id, budget_period, total_proposed, salaries_wages, training_development, employee_benefits, recruitment_costs, submitted_by, submitted_by_role, current_headcount, justification, status) VALUES
 ('q2-2026-workforce', 'April - June 2026', 61500000.00, 45000000.00, 5000000.00, 8000000.00, 3500000.00, 'Finance Department', 'Finance Manager', 45, 'Budget covers quarterly salaries, training programs, employee benefits, and recruitment costs for expanding project portfolio. Includes 5% increase for cost of living adjustments.', 'Pending');
+
+-- Insert sample department work records
+INSERT IGNORE INTO hr_work (department_code, work_type, work_title, work_description, employee_name, employee_email, project_name, status, priority, submitted_by, submitted_date, due_date) VALUES
+('HR', 'Employee Registration', 'New Employee Registration', 'Register new employee in HR system', 'John Doe', 'john.doe@kashtec.com', 'HR System Setup', 'Completed', 'Medium', 'HR Manager', '2026-03-22', '2026-03-25'),
+('HR', 'Policy Management', 'Policy Approval Required', 'Approve recruitment policy for digital platform', 'HR Manager', 'hr@manager0501', 'Digital Recruitment Policy', 'Pending', 'High', 'HR Manager', '2026-03-22', '2026-03-23'),
+('HR', 'Senior Staff Hiring', 'Project Manager Position', 'Hire experienced project manager', 'Eng. Michael K. Johnson', 'michael.johnson@kashtec.com', 'Project Management', 'Pending', 'High', 'HR Manager', '2026-03-22', '2026-03-24');
+
+INSERT IGNORE INTO finance_work (department_code, work_type, work_title, work_description, amount, vendor_name, invoice_number, status, priority, submitted_by, submitted_date, due_date) VALUES
+('FINANCE', 'Budget Management', 'Q2 2026 Workforce Budget', 'Approve quarterly workforce budget allocations', 61500000.00, 'Finance Department', 'BUD-2026-Q2', 'Pending', 'High', 'Finance Manager', '2026-03-22', '2026-03-25'),
+('FINANCE', 'Financial Reporting', 'Monthly Financial Report', 'Generate monthly financial statements for management', 0, 'Finance Department', 'FR-2026-03', 'In Progress', 'Medium', 'Finance Manager', '2026-03-22', '2026-03-23');
+
+INSERT IGNORE INTO hse_work (department_code, work_type, work_title, work_description, incident_type, severity, location, project_name, status, priority, submitted_by, submitted_date, due_date) VALUES
+('HSE', 'Incident Reporting', 'Safety Incident Report', 'Report workplace safety incident', 'Near Miss', 'Medium', 'Construction Site A', 'Building A', 'Pending', 'High', 'HSE Manager', '2026-03-22', '2026-03-23'),
+('HSE', 'Safety Policy Upload', 'New Safety Policy', 'Upload updated safety procedures', 'Policy Update', 'High', 'All Sites', 'Company Wide', 'Pending', 'High', 'HSE Manager', '2026-03-22', '2026-03-24');
+
+INSERT IGNORE INTO project_work (department_code, work_type, work_title, work_description, project_name, client_name, project_phase, status, priority, submitted_by, submitted_date, due_date) VALUES
+('PROJECT', 'Project Creation', 'New Building Project', 'Start construction of new office building', 'Office Building Project', 'ABC Corporation', 'Planning', 'Pending', 'High', 'Project Manager', '2026-03-22', '2026-04-01'),
+('PROJECT', 'Workforce Request', 'Additional Workers', 'Request 5 additional workers for construction', 'Office Building Project', 'ABC Corporation', 'In Progress', 'Pending', 'Medium', 'Project Manager', '2026-03-22', '2026-03-25');
+
+INSERT IGNORE INTO realestate_work (department_code, work_type, work_title, work_description, property_address, property_type, client_name, sale_amount, status, priority, submitted_by, submitted_date, due_date) VALUES
+('REALESTATE', 'Property Addition', 'New Property Listing', 'Add commercial property to portfolio', '123 Main Street', 'Commercial', 'XYZ Company', 500000000.00, 'Pending', 'Medium', 'Real Estate Manager', '2026-03-22', '2026-03-30'),
+('REALESTATE', 'Client Registration', 'New Client Registration', 'Register new client in system', '456 Oak Avenue', 'Residential', 'John Smith', 0, 'Completed', 'Low', 'Real Estate Manager', '2026-03-22', '2026-03-23');
+
+INSERT IGNORE INTO admin_work (department_code, work_type, work_title, work_description, affected_department, deadline, status, priority, submitted_by, submitted_date, due_date) VALUES
+('ADMIN', 'Administrative Operations', 'System Update', 'Update system security protocols', 'All Departments', '2026-03-25', 'Pending', 'High', 'Admin', '2026-03-22', '2026-03-25'),
+('ADMIN', 'Compliance Management', 'Compliance Audit', 'Annual compliance audit preparation', 'All Departments', '2026-03-30', 'In Progress', 'High', 'Admin', '2026-03-22', '2026-03-30');
