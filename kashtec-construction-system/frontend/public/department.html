@@ -10451,46 +10451,6 @@ function filterPpeRecords() {
     customAlert('Filtering PPE records based on search criteria...\n\nRecords will be filtered by selected criteria and displayed.', "Filter Records", "info");
 }
 
-// Replace localStorage with secureStorage for security
-document.addEventListener('DOMContentLoaded', () => {
-    // Migrate existing localStorage data to secure database
-    if (typeof window.migrateFromLocalStorage === 'function') {
-        window.migrateFromLocalStorage().then(() => {
-            console.log('Data migration completed successfully');
-        }).catch(error => {
-            console.error('Data migration failed:', error);
-        });
-    }
-    
-    // Replace localStorage references with secureStorage
-    const originalLocalStorage = window.localStorage;
-    
-    // Override localStorage methods
-    window.localStorage = {
-        getItem: function(key) {
-            return window.secureStorage.getItem(key);
-        },
-        setItem: function(key, value) {
-            return window.secureStorage.setItem(key, value);
-        },
-        removeItem: function(key) {
-            return window.secureStorage.removeItem(key);
-        },
-        clear: function() {
-            return window.dbAdapter.clearAll();
-        },
-        get length() {
-            return window.dbAdapter.getStats().then(stats => Object.keys(stats).length);
-        },
-        key: function(index) {
-            console.warn('localStorage.key() is not fully supported in secure database mode');
-            return null;
-        }
-    };
-    
-    console.log('Secure database system activated - localStorage replaced with IndexedDB');
-});
-
 </script>
 
 <!-- Include Login Functions -->
