@@ -5397,37 +5397,447 @@ function saveIncidentReport() {
     return false;
 }
 
-// Test function to verify API connectivity
-function testAPIConnectivity() {
-    console.log('🧪 Testing API connectivity...');
-    
-    // Test basic API endpoint
-    fetch('/api/work/test')
-        .then(response => response.json())
-        .then(data => {
-            console.log('✅ Basic API test successful:', data);
+// Automatic Problem Detection System
+class ProblemDetector {
+    constructor() {
+        this.issues = [];
+        this.testResults = {};
+    }
+
+    async runFullDiagnostic() {
+        console.log('🔍 Starting automatic problem detection...');
+        this.issues = [];
+        this.testResults = {};
+        
+        // Test 1: API Connectivity
+        await this.testAPIConnectivity();
+        
+        // Test 2: Database Connection
+        await this.testDatabaseConnection();
+        
+        // Test 3: Form Validation
+        await this.testFormValidation();
+        
+        // Test 4: Network Status
+        await this.testNetworkStatus();
+        
+        // Test 5: Server Configuration
+        await this.testServerConfiguration();
+        
+        // Generate Report
+        this.generateDiagnosticReport();
+    }
+
+    async testAPIConnectivity() {
+        try {
+            console.log('📡 Testing API connectivity...');
+            const response = await fetch('/api/work/test');
+            const data = await response.json();
             
-            // Test database connection
-            return fetch('/api/work/test-db');
-        })
-        .then(response => response.json())
-        .then(data => {
-            console.log('✅ Database connection test successful:', data);
-            customAlert('API connectivity test passed!\n\n✅ Basic API working\n✅ Database connected\n\nThe system should be able to save data.', "API Test Successful", "success");
-        })
-        .catch(error => {
+            this.testResults.api = {
+                status: 'success',
+                data: data,
+                responseCode: response.status
+            };
+            console.log('✅ API connectivity test passed:', data);
+        } catch (error) {
+            this.testResults.api = {
+                status: 'failed',
+                error: error.message
+            };
+            this.issues.push({
+                type: 'API_CONNECTIVITY',
+                severity: 'critical',
+                message: `API connectivity failed: ${error.message}`,
+                solution: 'Check if server is running and routes are properly mounted'
+            });
             console.error('❌ API connectivity test failed:', error);
-            customAlert(`API connectivity test failed: ${error.message}\n\nThis explains why forms cannot save data to database.`, "API Test Failed", "error");
+        }
+    }
+
+    async testDatabaseConnection() {
+        try {
+            console.log('💾 Testing database connection...');
+            const response = await fetch('/api/work/test-db');
+            const data = await response.json();
+            
+            if (data.error) {
+                throw new Error(data.error);
+            }
+            
+            this.testResults.database = {
+                status: 'success',
+                data: data
+            };
+            console.log('✅ Database connection test passed:', data);
+        } catch (error) {
+            this.testResults.database = {
+                status: 'failed',
+                error: error.message
+            };
+            this.issues.push({
+                type: 'DATABASE_CONNECTION',
+                severity: 'critical',
+                message: `Database connection failed: ${error.message}`,
+                solution: 'Check database credentials, connection string, and database server status'
+            });
+            console.error('❌ Database connection test failed:', error);
+        }
+    }
+
+    async testFormValidation() {
+        try {
+            console.log('📝 Testing form validation...');
+            
+            // Check if form elements exist
+            const form = document.getElementById('incidentForm');
+            const incidentType = document.getElementById('incidentType');
+            const severityLevel = document.getElementById('severityLevel');
+            const incidentDescription = document.getElementById('incidentDescription');
+            
+            if (!form) {
+                this.issues.push({
+                    type: 'FORM_VALIDATION',
+                    severity: 'high',
+                    message: 'Incident form not found in DOM',
+                    solution: 'Ensure the form is properly loaded in the page'
+                });
+            }
+            
+            if (!incidentType || !severityLevel || !incidentDescription) {
+                this.issues.push({
+                    type: 'FORM_VALIDATION',
+                    severity: 'high',
+                    message: 'Required form elements missing',
+                    solution: 'Check form HTML structure and element IDs'
+                });
+            }
+            
+            this.testResults.formValidation = {
+                status: form && incidentType && severityLevel && incidentDescription ? 'success' : 'failed',
+                elements: {
+                    form: !!form,
+                    incidentType: !!incidentType,
+                    severityLevel: !!severityLevel,
+                    incidentDescription: !!incidentDescription
+                }
+            };
+            
+            console.log('✅ Form validation test completed:', this.testResults.formValidation);
+        } catch (error) {
+            this.testResults.formValidation = {
+                status: 'failed',
+                error: error.message
+            };
+            this.issues.push({
+                type: 'FORM_VALIDATION',
+                severity: 'high',
+                message: `Form validation error: ${error.message}`,
+                solution: 'Check form structure and JavaScript execution'
+            });
+        }
+    }
+
+    async testNetworkStatus() {
+        try {
+            console.log('🌐 Testing network status...');
+            
+            // Test basic fetch to server root
+            const response = await fetch('/');
+            const serverRunning = response.ok;
+            
+            this.testResults.network = {
+                status: serverRunning ? 'success' : 'failed',
+                serverResponse: response.status,
+                serverRunning: serverRunning
+            };
+            
+            if (!serverRunning) {
+                this.issues.push({
+                    type: 'NETWORK_STATUS',
+                    severity: 'critical',
+                    message: 'Server not responding to basic requests',
+                    solution: 'Check if server is running and accessible'
+                });
+            }
+            
+            console.log('✅ Network status test completed:', this.testResults.network);
+        } catch (error) {
+            this.testResults.network = {
+                status: 'failed',
+                error: error.message
+            };
+            this.issues.push({
+                type: 'NETWORK_STATUS',
+                severity: 'critical',
+                message: `Network error: ${error.message}`,
+                solution: 'Check network connection and server accessibility'
+            });
+        }
+    }
+
+    async testServerConfiguration() {
+        try {
+            console.log('⚙️ Testing server configuration...');
+            
+            // Test multiple API endpoints to see if routes are mounted
+            const endpoints = [
+                '/api/health',
+                '/api/status',
+                '/api/work/test'
+            ];
+            
+            const results = {};
+            for (const endpoint of endpoints) {
+                try {
+                    const response = await fetch(endpoint);
+                    results[endpoint] = {
+                        status: response.status,
+                        ok: response.ok
+                    };
+                } catch (error) {
+                    results[endpoint] = {
+                        status: 'error',
+                        error: error.message
+                    };
+                }
+            }
+            
+            this.testResults.serverConfig = results;
+            
+            // Check if critical endpoints are working
+            if (!results['/api/work/test'] || !results['/api/work/test'].ok) {
+                this.issues.push({
+                    type: 'SERVER_CONFIGURATION',
+                    severity: 'critical',
+                    message: 'Work API routes not properly mounted',
+                    solution: 'Check server.js route mounting and work.js file existence'
+                });
+            }
+            
+            console.log('✅ Server configuration test completed:', this.testResults.serverConfig);
+        } catch (error) {
+            this.testResults.serverConfig = {
+                status: 'failed',
+                error: error.message
+            };
+            this.issues.push({
+                type: 'SERVER_CONFIGURATION',
+                severity: 'critical',
+                message: `Server configuration error: ${error.message}`,
+                solution: 'Check server startup and route configuration'
+            });
+        }
+    }
+
+    generateDiagnosticReport() {
+        console.log('📋 Generating diagnostic report...');
+        
+        const criticalIssues = this.issues.filter(i => i.severity === 'critical');
+        const highIssues = this.issues.filter(i => i.severity === 'high');
+        
+        let report = '🔍 AUTOMATIC PROBLEM DETECTION REPORT\n';
+        report += '=' .repeat(50) + '\n\n';
+        
+        if (criticalIssues.length > 0) {
+            report += '🚨 CRITICAL ISSUES FOUND:\n';
+            criticalIssues.forEach((issue, index) => {
+                report += `${index + 1}. ${issue.type}\n`;
+                report += `   Problem: ${issue.message}\n`;
+                report += `   Solution: ${issue.solution}\n\n`;
+            });
+        }
+        
+        if (highIssues.length > 0) {
+            report += '⚠️  HIGH PRIORITY ISSUES:\n';
+            highIssues.forEach((issue, index) => {
+                report += `${index + 1}. ${issue.type}\n`;
+                report += `   Problem: ${issue.message}\n`;
+                report += `   Solution: ${issue.solution}\n\n`;
+            });
+        }
+        
+        if (this.issues.length === 0) {
+            report += '✅ No issues detected! System should be working properly.\n';
+            report += 'If forms still don\'t work, the issue might be:\n';
+            report += '- JavaScript execution errors\n';
+            report += '- Form submission event handling\n';
+            report += '- Browser security restrictions\n';
+        }
+        
+        report += '\n📊 TEST RESULTS SUMMARY:\n';
+        Object.keys(this.testResults).forEach(key => {
+            const result = this.testResults[key];
+            const status = result.status === 'success' ? '✅' : '❌';
+            report += `${status} ${key.toUpperCase()}: ${result.status}\n`;
         });
+        
+        report += '\n🔧 RECOMMENDED ACTIONS:\n';
+        if (criticalIssues.length > 0) {
+            report += '1. Fix all critical issues first\n';
+            report += '2. Restart server if needed\n';
+            report += '3. Check database connection\n';
+        } else if (highIssues.length > 0) {
+            report += '1. Fix high priority issues\n';
+            report += '2. Verify form structure\n';
+        } else {
+            report += '1. Check browser console for JavaScript errors\n';
+            report += '2. Test form submission manually\n';
+            report += '3. Verify form event handlers\n';
+        }
+        
+        // Display in console
+        console.log(report);
+        
+        // Show as alert to user
+        customAlert(report, "Problem Detection Report", criticalIssues.length > 0 ? "error" : highIssues.length > 0 ? "warning" : "success");
+        
+        // Store results for later reference
+        window.lastDiagnosticReport = {
+            timestamp: new Date().toISOString(),
+            issues: this.issues,
+            testResults: this.testResults,
+            report: report
+        };
+    }
 }
 
-// Add test button to the page (you can call this function from browser console)
-function addTestButton() {
-    const testButton = document.createElement('button');
-    testButton.textContent = 'Test API Connectivity';
-    testButton.onclick = testAPIConnectivity;
-    testButton.style.cssText = 'position:fixed;top:10px;right:10px;z-index:9999;background:#007bff;color:white;padding:10px;border:none;border-radius:5px;cursor:pointer;';
-    document.body.appendChild(testButton);
+// Global detector instance
+window.problemDetector = new ProblemDetector();
+
+// Auto-run diagnostic on page load
+setTimeout(() => {
+    console.log('🚀 Running automatic problem detection...');
+    window.problemDetector.runFullDiagnostic();
+}, 2000);
+
+// Add diagnostic button to page
+function addDiagnosticButton() {
+    const button = document.createElement('button');
+    button.textContent = '🔍 Run Problem Detection';
+    button.onclick = () => window.problemDetector.runFullDiagnostic();
+    button.style.cssText = `
+        position: fixed;
+        top: 10px;
+        left: 10px;
+        z-index: 9999;
+        background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
+        color: white;
+        padding: 12px 20px;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        font-weight: bold;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        transition: transform 0.2s;
+    `;
+    button.onmouseover = () => button.style.transform = 'scale(1.05)';
+    button.onmouseout = () => button.style.transform = 'scale(1)';
+    document.body.appendChild(button);
+}
+
+// Add diagnostic button automatically
+setTimeout(addDiagnosticButton, 1000);
+
+// Enhanced saveIncidentReport with automatic error detection
+function saveIncidentReport() {
+    console.log('🚀 Enhanced saveIncidentReport called');
+    
+    // Validate required fields
+    const incidentType = document.getElementById('incidentType').value;
+    const severityLevel = document.getElementById('severityLevel').value;
+    const incidentDescription = document.getElementById('incidentDescription').value;
+    
+    if (!incidentType || !severityLevel || !incidentDescription) {
+        console.log('❌ Form validation failed');
+        customAlert('Please fill in all required fields:\n\n• Incident Type\n• Severity Level\n• Incident Description', "Validation Error", "error");
+        return false;
+    }
+    
+    const workItem = {
+        work_type: 'Incident Reporting',
+        work_title: `Incident Report - ${incidentType}`,
+        work_description: incidentDescription,
+        incident_type: incidentType,
+        severity: severityLevel,
+        priority: severityLevel === 'critical' ? 'Critical' : 
+                  severityLevel === 'major' ? 'High' : 'Medium',
+        due_date: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+        assigned_to: 'HSE Manager',
+        submitted_by: 'HSE Manager'
+    };
+    
+    console.log('📝 Sending work item:', workItem);
+    
+    // Show loading message
+    customAlert('Recording incident report...', "Processing", "info");
+    
+    // Send data to backend API with enhanced error handling
+    fetch('/api/work/hse', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(workItem)
+    })
+    .then(response => {
+        console.log('📡 API Response status:', response.status);
+        
+        if (!response.ok) {
+            // Handle HTTP errors
+            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+        
+        return response.json();
+    })
+    .then(data => {
+        console.log('📊 API Response data:', data);
+        
+        if (data.error) {
+            throw new Error(data.error);
+        }
+        
+        // Success message
+        customAlert(`Incident report recorded successfully!\n\nID: ${data.workItem.id}\nType: ${workItem.incident_type}\nSeverity: ${workItem.severity}\nPriority: ${workItem.priority}\nAssigned to: ${workItem.assigned_to}\n\n✅ Incident has been saved to database and assigned for follow-up.`, "Incident Recorded", "success");
+        
+        // Reset form
+        document.getElementById('incidentForm').reset();
+        
+        // Generate new incident ID
+        document.getElementById('incidentId').value = 'INC-' + Date.now();
+        
+        return false;
+    })
+    .catch(error => {
+        console.error('❌ Error recording incident:', error);
+        
+        // Enhanced error analysis
+        let errorMessage = error.message;
+        let userMessage = `Failed to record incident: ${errorMessage}`;
+        
+        // Analyze error type and provide specific guidance
+        if (errorMessage.includes('Failed to fetch') || errorMessage.includes('NetworkError')) {
+            userMessage += '\n\n🔧 Possible causes:\n• Server not running\n• Network connection issue\n• CORS configuration problem\n\n💡 Try: Check if server is running and accessible';
+        } else if (errorMessage.includes('404')) {
+            userMessage += '\n\n🔧 Possible causes:\n• API route not found\n• Server routing issue\n\n💡 Try: Check server configuration and route mounting';
+        } else if (errorMessage.includes('500')) {
+            userMessage += '\n\n🔧 Possible causes:\n• Database connection error\n• Server internal error\n\n💡 Try: Check server logs and database connection';
+        } else if (errorMessage.includes('database') || errorMessage.includes('SQL')) {
+            userMessage += '\n\n🔧 Possible causes:\n• Database connection failed\n• SQL query error\n• Database table missing\n\n💡 Try: Check database credentials and table structure';
+        }
+        
+        customAlert(userMessage, "Recording Error", "error");
+        
+        // Auto-run diagnostic if error occurs
+        setTimeout(() => {
+            console.log('🔍 Auto-running diagnostic due to error...');
+            window.problemDetector.runFullDiagnostic();
+        }, 1000);
+        
+        return false;
+    });
+    
+    return false;
 }
 
 function saveSafetyPolicy() {
