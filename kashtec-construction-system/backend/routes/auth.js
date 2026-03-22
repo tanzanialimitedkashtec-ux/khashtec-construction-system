@@ -161,8 +161,24 @@ router.post('/login', async (req, res) => {
             console.log('📊 Table check is array:', Array.isArray(tableCheck));
             console.log('📊 Table check length:', tableCheck ? tableCheck.length : 'undefined');
             
+            // SHOW TABLES returns an array of objects, each object has a column named like the table
             if (!tableCheck || !Array.isArray(tableCheck) || tableCheck.length === 0) {
                 console.error('❌ Authentication table does not exist');
+                return res.status(500).json({
+                    error: 'Authentication table not found',
+                    message: 'The authentication table has not been created. Please contact the system administrator.',
+                    details: 'Table authentication does not exist in database'
+                });
+            }
+            
+            // Check if any row contains the authentication table
+            const tableExists = tableCheck.some(row => {
+                const tableName = row['Tables_in_railway'] || row['Tables_in_' + process.env.DB_NAME] || Object.values(row)[0];
+                return tableName === 'authentication';
+            });
+            
+            if (!tableExists) {
+                console.error('❌ Authentication table not found in results');
                 return res.status(500).json({
                     error: 'Authentication table not found',
                     message: 'The authentication table has not been created. Please contact the system administrator.',
