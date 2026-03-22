@@ -4335,7 +4335,8 @@ function recordIncidentReports(){
         <h3>Record Incident Reports</h3>
         <p><strong>HSE Authority:</strong> Document workplace incidents, accidents, and near-misses for Return on Experience (REX)</p>
         
-        <form id="incidentForm" onsubmit="return false;">
+        <!-- Remove form entirely and use div with manual submission -->
+        <div id="incidentForm">
             <div class="form-row">
                 <div class="form-group">
                     <label>Incident ID</label>
@@ -4399,16 +4400,16 @@ function recordIncidentReports(){
                 <input type="text" id="reportedBy" placeholder="HSE Manager Name" required>
             </div>
             
-            <!-- Manual Submit Buttons -->
+            <!-- Manual Submit Buttons - NO FORM SUBMISSION -->
             <div style="margin-top: 20px;">
-                <button type="button" onclick="manualSubmitIncident()" style="background: #28a745; color: white; padding: 12px 24px; border: none; border-radius: 5px; cursor: pointer; font-size: 16px;">
-                    📝 Submit Incident Report
+                <button type="button" onclick="submitIncidentToDatabase()" style="background: #28a745; color: white; padding: 15px 30px; border: none; border-radius: 5px; cursor: pointer; font-size: 18px; font-weight: bold;">
+                    💾 SAVE TO DATABASE
                 </button>
-                <button type="button" onclick="resetIncidentForm()" style="background: #6c757d; color: white; padding: 12px 24px; border: none; border-radius: 5px; cursor: pointer; font-size: 16px; margin-left: 10px;">
-                    🔄 Reset Form
+                <button type="button" onclick="clearIncidentForm()" style="background: #6c757d; color: white; padding: 15px 30px; border: none; border-radius: 5px; cursor: pointer; font-size: 18px; margin-left: 15px;">
+                    🔄 CLEAR FORM
                 </button>
             </div>
-        </form>
+        </div>
         
         <div class="recent-incidents">
             <h4>Recent Incidents</h4>
@@ -4427,6 +4428,161 @@ function recordIncidentReports(){
     
     // Generate initial incident ID
     document.getElementById('incidentId').value = 'INC-' + Date.now();
+    
+    // AGGRESSIVE FORM PREVENTION
+    setTimeout(() => {
+        console.log('🛡️ Deploying aggressive form prevention...');
+        
+        // Prevent any form submission on the entire page
+        document.addEventListener('submit', function(e) {
+            console.log('🚫 GLOBAL SUBMIT PREVENTED');
+            e.preventDefault();
+            e.stopPropagation();
+            e.stopImmediatePropagation();
+            return false;
+        }, true);
+        
+        // Prevent any button click that could submit
+        document.addEventListener('click', function(e) {
+            if (e.target.tagName === 'BUTTON' || e.target.type === 'submit') {
+                console.log('🚫 BUTTON CLICK INTERCEPTED:', e.target.textContent);
+                // Allow our specific buttons, prevent others
+                if (!e.target.onclick && e.target.type === 'submit') {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    return false;
+                }
+            }
+        }, true);
+        
+        // Override form.submit globally
+        const originalSubmit = HTMLFormElement.prototype.submit;
+        HTMLFormElement.prototype.submit = function() {
+            console.log('🚫 FORM.SUBJECT() PREVENTED');
+            return false;
+        };
+        
+        console.log('✅ Aggressive form prevention deployed');
+    }, 500);
+}
+
+// NEW: Direct database submission function - NO FORM INVOLVED
+function submitIncidentToDatabase() {
+    console.log('🚀 submitIncidentToDatabase called - DIRECT DATABASE SAVE');
+    
+    try {
+        // Validate required fields
+        const incidentType = document.getElementById('incidentType').value;
+        const severityLevel = document.getElementById('severityLevel').value;
+        const incidentDescription = document.getElementById('incidentDescription').value;
+        const reportedBy = document.getElementById('reportedBy').value;
+        
+        console.log('📝 Form values:', { incidentType, severityLevel, incidentDescription, reportedBy });
+        
+        if (!incidentType || !severityLevel || !incidentDescription || !reportedBy) {
+            console.log('❌ Validation failed - missing required fields');
+            customAlert('Please fill in all required fields:\n\n• Incident Type\n• Severity Level\n• Incident Description\n• Reported By', "Validation Error", "error");
+            return;
+        }
+        
+        const workItem = {
+            work_type: 'Incident Reporting',
+            work_title: `Incident Report - ${incidentType}`,
+            work_description: incidentDescription,
+            incident_type: incidentType,
+            severity: severityLevel,
+            priority: severityLevel === 'critical' || severityLevel === 'fatal' ? 'Critical' : 
+                      severityLevel === 'major' ? 'High' : 'Medium',
+            due_date: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], // 7 days from now
+            assigned_to: 'HSE Manager',
+            submitted_by: reportedBy
+        };
+        
+        console.log('📝 Sending work item to database:', workItem);
+        
+        // Show loading message
+        customAlert('💾 Saving incident report to database...', "Processing", "info");
+        
+        // Get the current origin for absolute URLs
+        const baseUrl = window.location.origin;
+        console.log('📍 Using server:', baseUrl);
+        
+        // Send data to backend API - NO FORM INVOLVED
+        fetch(`${baseUrl}/api/work/hse`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(workItem)
+        })
+        .then(response => {
+            console.log('📡 Database response status:', response.status);
+            
+            if (!response.ok) {
+                throw new Error(`Server responded with ${response.status}: ${response.statusText}`);
+            }
+            
+            return response.json();
+        })
+        .then(data => {
+            console.log('📊 Database save result:', data);
+            
+            if (data.error) {
+                throw new Error(data.error);
+            }
+            
+            // Success message with database confirmation
+            customAlert(`✅ Incident report saved to database!\n\n📋 Details:\n• ID: ${data.workItem.id}\n• Type: ${workItem.incident_type}\n• Severity: ${workItem.severity}\n• Priority: ${workItem.priority}\n• Assigned to: ${workItem.assigned_to}\n• Submitted by: ${workItem.submitted_by}\n• Date: ${new Date().toLocaleString()}\n\n🎉 Data successfully stored in MySQL database!\n💾 Table: hse_work\n\n🚫 NO PAGE REFRESH - DATA SAVED SUCCESSFULLY!`, "DATABASE SAVE SUCCESS!", "success");
+            
+            // Clear form
+            clearIncidentForm();
+            
+            // Verify data was saved
+            setTimeout(() => {
+                console.log('🔍 Verifying data was saved...');
+                fetch(`${baseUrl}/api/work/hse`)
+                    .then(response => response.json())
+                    .then(items => {
+                        console.log(`✅ Verification: Found ${items.length} items in database`);
+                        const savedItem = items.find(item => item.id === data.workItem.id);
+                        if (savedItem) {
+                            console.log('✅ Data verification successful - item found in database');
+                        }
+                    })
+                    .catch(error => {
+                        console.log('⚠️ Could not verify data, but save appeared successful');
+                    });
+            }, 1000);
+            
+        })
+        .catch(error => {
+            console.error('❌ Failed to save to database:', error);
+            customAlert(`❌ Failed to save to database: ${error.message}\n\nPlease check:\n• Server is running\n• Network connection is stable\n• Try again in a moment`, "Database Error", "error");
+        });
+        
+    } catch (error) {
+        console.error('❌ Unexpected error:', error);
+        customAlert(`System error: ${error.message}\n\nPlease try again or contact support.`, "Error", "error");
+    }
+}
+
+// Clear form function
+function clearIncidentForm() {
+    console.log('🔄 Clearing incident form');
+    
+    // Clear all form fields
+    const fields = ['incidentType', 'severityLevel', 'incidentDescription', 'reportedBy', 'incidentDate', 'project', 'location'];
+    fields.forEach(fieldId => {
+        const field = document.getElementById(fieldId);
+        if (field) {
+            field.value = '';
+        }
+    });
+    
+    // Generate new incident ID
+    document.getElementById('incidentId').value = 'INC-' + Date.now();
+    
+    console.log('✅ Form cleared successfully');
 }
 
 // Manual submission function - completely bypasses form behavior
