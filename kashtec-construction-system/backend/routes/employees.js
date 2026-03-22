@@ -1,194 +1,220 @@
 const express = require('express');
 const router = express.Router();
-
-// Mock employee data (in production, use real database)
-let employees = [
-    {
-        id: 1,
-        fullName: 'John Smith',
-        gmail: 'john.smith@kashtec.com',
-        phone: '+255 712 345 678',
-        department: 'Construction',
-        jobCategory: 'Project Manager',
-        status: 'active',
-        registrationDate: '2024-01-15',
-        profileImage: 'https://picsum.photos/seed/johnsmith/80/80.jpg'
-    },
-    {
-        id: 2,
-        fullName: 'Sarah Johnson',
-        gmail: 'sarah.johnson@kashtec.com',
-        phone: '+255 713 456 789',
-        department: 'HR',
-        jobCategory: 'HR Manager',
-        status: 'active',
-        registrationDate: '2024-01-20',
-        profileImage: 'https://picsum.photos/seed/sarahjohnson/80/80.jpg'
-    }
-];
+const db = require('../config/database');
 
 // Get all employees
-router.get('/', (req, res) => {
-    const { department, status, search } = req.query;
-    
-    let filteredEmployees = employees;
-    
-    if (department) {
-        filteredEmployees = filteredEmployees.filter(emp => 
-            emp.department.toLowerCase() === department.toLowerCase()
-        );
+router.get('/', async (req, res) => {
+    try {
+        const [employees] = await db.execute('SELECT * FROM employees ORDER BY registration_date DESC');
+        res.json(employees);
+    } catch (error) {
+        console.error('Error fetching employees:', error);
+        res.status(500).json({ error: 'Failed to fetch employees' });
     }
-    
-    if (status) {
-        filteredEmployees = filteredEmployees.filter(emp => 
-            emp.status.toLowerCase() === status.toLowerCase()
-        );
-    }
-    
-    if (search) {
-        const searchTerm = search.toLowerCase();
-        filteredEmployees = filteredEmployees.filter(emp => 
-            emp.fullName.toLowerCase().includes(searchTerm) ||
-            emp.gmail.toLowerCase().includes(searchTerm) ||
-            emp.department.toLowerCase().includes(searchTerm)
-        );
-    }
-    
-    res.json({
-        employees: filteredEmployees,
-        total: filteredEmployees.length
-    });
-});
-
-// Get employee by ID
-router.get('/:id', (req, res) => {
-    const employee = employees.find(emp => emp.id === parseInt(req.params.id));
-    
-    if (!employee) {
-        return res.status(404).json({
-            error: 'Employee not found'
-        });
-    }
-    
-    res.json(employee);
 });
 
 // Create new employee
-router.post('/', (req, res) => {
-    const { fullName, gmail, phone, department, jobCategory, status = 'active' } = req.body;
+router.post('/', async (req, res) => {
+    const { fullName, gmail, phone, department, jobCategory, status = 'active', nida, passport, contract } = req.body;
     
     // Validate input
-    if (!fullName || !gmail || !phone || !department || !jobCategory) {
+    if (!fullName || !gmail || !phone || !department || !jobCategory || !nida || !contract) {
         return res.status(400).json({
             error: 'All required fields must be provided'
         });
     }
     
-    // Check if employee already exists
-    const existingEmployee = employees.find(emp => emp.gmail === gmail);
-    if (existingEmployee) {
-        return res.status(409).json({
-            error: 'Employee with this email already exists'
+    try {
+        // Check if employee already exists
+        const [existingEmployees] = await db.execute(
+            'SELECT id FROM employees WHERE gmail = ? OR nida = ?',
+            [gmail, nida]
+        );
+        
+        if (existingEmployees.length > 0) {
+            return res.status(409).json({
+                error: 'Employee with this email or NIDA number already exists'
+            });
+        }
+        
+        // Create new employee
+        const [result] = await db.execute(
+            `INSERT INTO employees (full_name, gmail, phone, department, job_category, status, nida, passport, contract_type, registration_date, profile_image)
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, CURDATE(), ?)`,
+            [
+                fullName,
+                gmail,
+                phone,
+                department,
+                jobCategory,
+                status,
+                nida,
+                passport || null,
+                contract,
+                `https://picsum.photos/seed/${fullName.replace(/\s/g, '')}/80/80.jpg`
+            ]
+        );
+        
+        // Return the created employee
+        const [newEmployee] = await db.execute(
+            'SELECT * FROM employees WHERE id = ?',
+            [result.insertId]
+        );
+        
+        res.status(201).json({
+            message: 'Employee created successfully',
+            employee: newEmployee[0],
+            id: result.insertId
+        });
+        
+    } catch (error) {
+        console.error('Error creating employee:', error);
+        res.status(500).json({ 
+            error: 'Failed to create employee',
+            details: error.message 
         });
     }
-    
-    // Create new employee
-    const newEmployee = {
-        id: employees.length + 1,
-        fullName,
-        gmail,
-        phone,
-        department,
-        jobCategory,
-        status,
-        registrationDate: new Date().toISOString().split('T')[0],
-        profileImage: `https://picsum.photos/seed/${fullName.replace(/\s/g, '')}/80/80.jpg`
-    };
-    
-    employees.push(newEmployee);
-    
-    res.status(201).json({
-        message: 'Employee created successfully',
-        employee: newEmployee
-    });
+});
+
+// Get employee by ID
+router.get('/:id', async (req, res) => {
+    try {
+        const [employees] = await db.execute('SELECT * FROM employees WHERE id = ?', [req.params.id]);
+        
+        if (employees.length === 0) {
+            return res.status(404).json({ error: 'Employee not found' });
+        }
+        
+        res.json(employees[0]);
+    } catch (error) {
+        console.error('Error fetching employee:', error);
+        res.status(500).json({ error: 'Failed to fetch employee' });
+    }
 });
 
 // Update employee
-router.put('/:id', (req, res) => {
-    const employeeIndex = employees.findIndex(emp => emp.id === parseInt(req.params.id));
+router.put('/:id', async (req, res) => {
+    const { fullName, gmail, phone, department, jobCategory, status, nida, passport, contract } = req.body;
     
-    if (employeeIndex === -1) {
-        return res.status(404).json({
-            error: 'Employee not found'
+    try {
+        // Check if employee exists
+        const [existingEmployees] = await db.execute('SELECT id FROM employees WHERE id = ?', [req.params.id]);
+        
+        if (existingEmployees.length === 0) {
+            return res.status(404).json({ error: 'Employee not found' });
+        }
+        
+        // Build dynamic update query
+        const updates = [];
+        const values = [];
+        
+        if (fullName) {
+            updates.push('full_name = ?');
+            values.push(fullName);
+        }
+        if (gmail) {
+            updates.push('gmail = ?');
+            values.push(gmail);
+        }
+        if (phone) {
+            updates.push('phone = ?');
+            values.push(phone);
+        }
+        if (department) {
+            updates.push('department = ?');
+            values.push(department);
+        }
+        if (jobCategory) {
+            updates.push('job_category = ?');
+            values.push(jobCategory);
+        }
+        if (status) {
+            updates.push('status = ?');
+            values.push(status);
+        }
+        if (nida) {
+            updates.push('nida = ?');
+            values.push(nida);
+        }
+        if (passport !== undefined) {
+            updates.push('passport = ?');
+            values.push(passport);
+        }
+        if (contract) {
+            updates.push('contract_type = ?');
+            values.push(contract);
+        }
+        
+        if (updates.length === 0) {
+            return res.status(400).json({ error: 'No valid fields to update' });
+        }
+        
+        values.push(req.params.id);
+        
+        await db.execute(
+            `UPDATE employees SET ${updates.join(', ')} WHERE id = ?`,
+            values
+        );
+        
+        // Return updated employee
+        const [updatedEmployee] = await db.execute('SELECT * FROM employees WHERE id = ?', [req.params.id]);
+        
+        res.json({
+            message: 'Employee updated successfully',
+            employee: updatedEmployee[0]
         });
+        
+    } catch (error) {
+        console.error('Error updating employee:', error);
+        res.status(500).json({ error: 'Failed to update employee' });
     }
-    
-    const { fullName, gmail, phone, department, jobCategory, status } = req.body;
-    
-    // Update employee
-    employees[employeeIndex] = {
-        ...employees[employeeIndex],
-        ...(fullName && { fullName }),
-        ...(gmail && { gmail }),
-        ...(phone && { phone }),
-        ...(department && { department }),
-        ...(jobCategory && { jobCategory }),
-        ...(status && { status })
-    };
-    
-    res.json({
-        message: 'Employee updated successfully',
-        employee: employees[employeeIndex]
-    });
 });
 
 // Delete employee
-router.delete('/:id', (req, res) => {
-    const employeeIndex = employees.findIndex(emp => emp.id === parseInt(req.params.id));
-    
-    if (employeeIndex === -1) {
-        return res.status(404).json({
-            error: 'Employee not found'
-        });
+router.delete('/:id', async (req, res) => {
+    try {
+        const [result] = await db.execute('DELETE FROM employees WHERE id = ?', [req.params.id]);
+        
+        if (result.affectedRows === 0) {
+            return res.status(404).json({ error: 'Employee not found' });
+        }
+        
+        res.json({ message: 'Employee deleted successfully' });
+        
+    } catch (error) {
+        console.error('Error deleting employee:', error);
+        res.status(500).json({ error: 'Failed to delete employee' });
     }
-    
-    const deletedEmployee = employees.splice(employeeIndex, 1)[0];
-    
-    res.json({
-        message: 'Employee deleted successfully',
-        employee: deletedEmployee
-    });
 });
 
 // Get employee statistics
-router.get('/stats/overview', (req, res) => {
-    const totalEmployees = employees.length;
-    const activeEmployees = employees.filter(emp => emp.status === 'active').length;
-    const inactiveEmployees = employees.filter(emp => emp.status === 'inactive').length;
-    
-    // Department breakdown
-    const departmentStats = {};
-    employees.forEach(emp => {
-        departmentStats[emp.department] = (departmentStats[emp.department] || 0) + 1;
-    });
-    
-    // Job category breakdown
-    const jobStats = {};
-    employees.forEach(emp => {
-        jobStats[emp.jobCategory] = (jobStats[emp.jobCategory] || 0) + 1;
-    });
-    
-    res.json({
-        total: totalEmployees,
-        active: activeEmployees,
-        inactive: inactiveEmployees,
-        departments: departmentStats,
-        jobCategories: jobStats,
-        recentRegistrations: employees
-            .filter(emp => emp.registrationDate)
-            .sort((a, b) => new Date(b.registrationDate) - new Date(a.registrationDate))
-            .slice(0, 5)
-    });
+router.get('/stats/overview', async (req, res) => {
+    try {
+        const [totalEmployees] = await db.execute('SELECT COUNT(*) as total FROM employees');
+        const [activeEmployees] = await db.execute('SELECT COUNT(*) as active FROM employees WHERE status = "active"');
+        const [inactiveEmployees] = await db.execute('SELECT COUNT(*) as inactive FROM employees WHERE status = "inactive"');
+        
+        // Department breakdown
+        const [departmentStats] = await db.execute('SELECT department, COUNT(*) as count FROM employees GROUP BY department');
+        
+        // Job category breakdown
+        const [jobStats] = await db.execute('SELECT job_category, COUNT(*) as count FROM employees GROUP BY job_category');
+        
+        // Recent registrations
+        const [recentRegistrations] = await db.execute('SELECT * FROM employees ORDER BY registration_date DESC LIMIT 5');
+        
+        res.json({
+            total: totalEmployees[0].total,
+            active: activeEmployees[0].active,
+            inactive: inactiveEmployees[0].inactive,
+            departments: departmentStats,
+            jobCategories: jobStats,
+            recentRegistrations: recentRegistrations
+        });
+    } catch (error) {
+        console.error('Error fetching employee statistics:', error);
+        res.status(500).json({ error: 'Failed to fetch employee statistics' });
+    }
 });
 
 module.exports = router;

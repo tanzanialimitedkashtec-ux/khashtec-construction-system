@@ -3621,67 +3621,73 @@ function getResponsibilities(department, position) {
 }
 
 function saveEmployee() {
-    // Handle file uploads
-    const agreementFile = document.getElementById('empAgreement').files[0];
-    const cvFile = document.getElementById('empCV').files[0];
-    const profileFile = document.getElementById('empProfile').files[0];
+    // Get form values
+    const employee = {
+        fullName: document.getElementById('empFullName').value,
+        phone: document.getElementById('empPhone').value,
+        gmail: document.getElementById('empGmail').value,
+        nida: document.getElementById('empNIDA').value,
+        passport: document.getElementById('empPassport').value,
+        contract: document.getElementById('empContract').value,
+        jobCategory: document.getElementById('empJobCategory').value,
+        department: document.getElementById('empDepartment').value,
+        status: 'active'
+    };
     
-    // Convert files to base64 for storage
-    const filePromises = [];
-    
-    if (agreementFile) {
-        filePromises.push(fileToBase64(agreementFile).then(data => ({ type: 'agreement', data, name: agreementFile.name })));
-    }
-    if (cvFile) {
-        filePromises.push(fileToBase64(cvFile).then(data => ({ type: 'cv', data, name: cvFile.name })));
-    }
-    if (profileFile) {
-        filePromises.push(fileToBase64(profileFile).then(data => ({ type: 'profile', data, name: profileFile.name })));
+    // Validate required fields
+    if (!employee.fullName || !employee.phone || !employee.gmail || !employee.nida || !employee.contract || !employee.jobCategory || !employee.department) {
+        customAlert('Please fill in all required fields marked with *', "Validation Error", "error");
+        return false;
     }
     
-    Promise.all(filePromises).then(files => {
-        const employee = {
-            id: 'EMP-' + Date.now(),
-            fullName: document.getElementById('empFullName').value,
-            phone: document.getElementById('empPhone').value,
-            gmail: document.getElementById('empGmail').value,
-            nida: document.getElementById('empNIDA').value,
-            passport: document.getElementById('empPassport').value,
-            contract: document.getElementById('empContract').value,
-            jobCategory: document.getElementById('empJobCategory').value,
-            department: document.getElementById('empDepartment').value,
-            registrationDate: new Date().toLocaleString(),
-            files: files,
-            profileImage: null
-        };
-        
-        // Set profile image if uploaded
-        const profileFileData = files.find(f => f.type === 'profile');
-        if (profileFileData) {
-            employee.profileImage = profileFileData.data;
-        } else {
-            employee.profileImage = `https://picsum.photos/seed/${employee.fullName}/80/80.jpg`;
+    // Show loading message
+    customAlert('Registering employee...', "Processing", "info");
+    
+    // Send data to backend API
+    fetch('/api/employees', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${sessionManager.getToken()}`
+        },
+        body: JSON.stringify(employee)
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.error) {
+            throw new Error(data.error);
         }
         
-        // Save to secure storage
-        const employees = JSON.parse(localStorage.getItem('kashtec_employees') || '[]');
-        employees.push(employee);
-        localStorage.setItem('kashtec_employees', JSON.stringify(employees));
+        // Handle file uploads separately if needed
+        const agreementFile = document.getElementById('empAgreement').files[0];
+        const cvFile = document.getElementById('empCV').files[0];
+        const profileFile = document.getElementById('empProfile').files[0];
         
-        // Automatically assign to Office Portal
-        const portalAssigned = assignToOfficePortal(employee, 'Employee');
+        let fileUploadMessage = '';
+        if (agreementFile || cvFile || profileFile) {
+            fileUploadMessage = `\n📄 Files ready for upload: ${[agreementFile, cvFile, profileFile].filter(f => f).length} file(s)`;
+        }
         
-        const portalMessage = portalAssigned ? '\n✅ Automatically added to Office Portal' : '';
-        
-        customAlert(`Employee ${employee.fullName} registered successfully!${portalMessage}\n\nJob Category: ${employee.jobCategory}\nDepartment: ${employee.department}\nContract: ${employee.contract}\n\n📄 Files uploaded: ${files.length}`, "Employee Registered", "success");
+        // Success message
+        customAlert(`Employee ${employee.fullName} registered successfully!${fileUploadMessage}\n\n📋 Details:\n• ID: ${data.id}\n• Department: ${employee.department}\n• Job Category: ${employee.jobCategory}\n• Contract: ${employee.contract}\n• Status: ${employee.status}\n\n✅ Employee has been added to the database.`, "Employee Registered", "success");
         
         // Reset form
         document.getElementById('employeeForm').reset();
+        
+        // Optionally refresh employee list if visible
+        if (typeof viewAllEmployees === 'function') {
+            setTimeout(() => viewAllEmployees(), 1000);
+        }
+        
         return false;
-    }).catch(error => {
-        console.error('Error processing files:', error);
-        customAlert('Error processing uploaded files. Please try again.', "Upload Error", "error");
+    })
+    .catch(error => {
+        console.error('Error registering employee:', error);
+        customAlert(`Failed to register employee: ${error.message}\n\nPlease check:\n• All fields are filled correctly\n• Email address is unique\n• Network connection is stable`, "Registration Error", "error");
+        return false;
     });
+    
+    return false; // Prevent form submission
 }
 
 // Helper function to convert file to base64
