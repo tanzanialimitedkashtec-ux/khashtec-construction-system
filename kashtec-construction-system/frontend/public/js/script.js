@@ -231,13 +231,40 @@ function handleLogin() {
                 document.getElementById("loginPage").classList.add("hidden");
                 document.getElementById("systemPage").classList.remove("hidden");
                 
-                // Set user role and load appropriate menu
+                // Map full role names to short codes for menu system
+                const roleMap = {
+                    'Managing Director': 'MD',
+                    'Director of Administration': 'ADMIN', 
+                    'HR Manager': 'HR',
+                    'HSE Manager': 'HSE',
+                    'Finance Manager': 'FINANCE',
+                    'Project Manager': 'PROJECT',
+                    'Real Estate Manager': 'REALESTATE',
+                    'Admin Assistant': 'ASSISTANT'
+                };
+                
+                // Set currentRole for menu system
+                window.currentRole = roleMap[role] || role;
+                
+                // Set user role display
                 document.getElementById("userRole").innerText = role + " Dashboard";
+                
+                console.log('🔍 Setting currentRole:', window.currentRole, 'from role:', role);
                 
                 // Load menu based on role
                 if (typeof loadMenu === 'function') {
                     loadMenu();
                 }
+                
+                // Show welcome content
+                showContent(`<div class="card">
+                    <h3>Welcome to ${role} Dashboard</h3>
+                    <p>Please select an option from the menu to get started.</p>
+                    <div style="margin-top: 20px; padding: 15px; background: #f8f9fa; border-radius: 5px;">
+                        <h4>Quick Start:</h4>
+                        <p>Choose a function from the left menu to manage your department operations.</p>
+                    </div>
+                </div>`);
                 
                 showNotification(`Welcome ${response.user.department_name || role}!`, 'success', 3000);
             }, 1500);
