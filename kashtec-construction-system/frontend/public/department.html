@@ -3449,6 +3449,177 @@ function registerEmployee(){
     }, 100);
 }
 
+// UTILITY FUNCTION TO CONVERT ALL FORMS TO MANUAL SUBMISSION
+function convertAllFormsToManual() {
+    console.log('🔧 Converting all forms to manual submission...');
+    
+    // Find all forms with onsubmit handlers
+    const forms = document.querySelectorAll('form[onsubmit]');
+    console.log(`📋 Found ${forms.length} forms with onsubmit handlers`);
+    
+    forms.forEach((form, index) => {
+        const formId = form.id || `form-${index}`;
+        const onsubmitHandler = form.getAttribute('onsubmit');
+        
+        console.log(`🔄 Converting form: ${formId}`);
+        console.log(`📝 Original onsubmit: ${onsubmitHandler}`);
+        
+        // Extract function name from onsubmit handler
+        const functionName = onsubmitHandler.match(/return\s+(\w+)\(\)/);
+        if (functionName && functionName[1]) {
+            const originalFunction = functionName[1];
+            
+            // Create manual version of the function
+            const manualFunctionName = `${originalFunction}Manually`;
+            
+            // Check if manual function already exists
+            if (typeof window[manualFunctionName] === 'function') {
+                console.log(`✅ Manual function ${manualFunctionName} already exists`);
+            } else {
+                console.log(`⚠️ Manual function ${manualFunctionName} needs to be created`);
+            }
+            
+            // Replace form with div
+            const formDiv = document.createElement('div');
+            formDiv.id = formId;
+            formDiv.innerHTML = form.innerHTML;
+            
+            // Find submit button and convert to manual
+            const submitButton = formDiv.querySelector('button[type="submit"], input[type="submit"]');
+            if (submitButton) {
+                submitButton.removeAttribute('type');
+                submitButton.setAttribute('type', 'button');
+                submitButton.setAttribute('onclick', `${manualFunctionName}()`);
+                submitButton.style.background = '#28a745';
+                submitButton.style.color = 'white';
+                submitButton.style.padding = '15px 30px';
+                submitButton.style.border = 'none';
+                submitButton.style.borderRadius = '5px';
+                submitButton.style.cursor = 'pointer';
+                submitButton.style.fontSize = '18px';
+                submitButton.style.fontWeight = 'bold';
+                console.log(`🔄 Converted submit button to manual: ${manualFunctionName}()`);
+            }
+            
+            // Replace form with div
+            form.parentNode.replaceChild(formDiv, form);
+            
+            console.log(`✅ Converted form ${formId} to manual submission`);
+        }
+    });
+    
+    console.log('🎉 Form conversion completed');
+}
+
+// CREATE MANUAL VERSIONS OF COMMON FORM FUNCTIONS
+function createManualFormFunctions() {
+    console.log('🛠️ Creating manual form functions...');
+    
+    // Manual login function
+    if (typeof handleLogin === 'function' && typeof handleLoginManually !== 'function') {
+        window.handleLoginManually = function() {
+            console.log('🔐 Manual login called');
+            return handleLogin();
+        };
+    }
+    
+    // Manual assignment function
+    if (typeof saveAssignment === 'function' && typeof saveAssignmentManually !== 'function') {
+        window.saveAssignmentManually = function() {
+            console.log('👥 Manual assignment called');
+            try {
+                const result = saveAssignment();
+                if (result !== false) {
+                    // Clear form if successful
+                    const assignForm = document.getElementById('assignForm');
+                    if (assignForm) {
+                        assignForm.reset();
+                    }
+                }
+                return result;
+            } catch (error) {
+                console.error('❌ Assignment error:', error);
+                showRealProblemNotification('SYSTEM_ERROR', { error: error.message });
+                return false;
+            }
+        };
+    }
+    
+    // Manual attendance function
+    if (typeof saveAttendance === 'function' && typeof saveAttendanceManually !== 'function') {
+        window.saveAttendanceManually = function() {
+            console.log('📅 Manual attendance called');
+            try {
+                const result = saveAttendance();
+                if (result !== false) {
+                    // Clear form if successful
+                    const attendanceForm = document.getElementById('attendanceForm');
+                    if (attendanceForm) {
+                        attendanceForm.reset();
+                    }
+                }
+                return result;
+            } catch (error) {
+                console.error('❌ Attendance error:', error);
+                showRealProblemNotification('SYSTEM_ERROR', { error: error.message });
+                return false;
+            }
+        };
+    }
+    
+    // Manual worker account function
+    if (typeof saveWorkerAccount === 'function' && typeof saveWorkerAccountManually !== 'function') {
+        window.saveWorkerAccountManually = function() {
+            console.log('👷 Manual worker account called');
+            try {
+                const result = saveWorkerAccount();
+                if (result !== false) {
+                    // Clear form if successful
+                    const workerForm = document.getElementById('workerAccountForm');
+                    if (workerForm) {
+                        workerForm.reset();
+                    }
+                }
+                return result;
+            } catch (error) {
+                console.error('❌ Worker account error:', error);
+                showRealProblemNotification('SYSTEM_ERROR', { error: error.message });
+                return false;
+            }
+        };
+    }
+    
+    // Manual leave request function
+    if (typeof saveLeaveRequest === 'function' && typeof saveLeaveRequestManually !== 'function') {
+        window.saveLeaveRequestManually = function() {
+            console.log('🏖️ Manual leave request called');
+            try {
+                const result = saveLeaveRequest();
+                if (result !== false) {
+                    // Clear form if successful
+                    const leaveForm = document.getElementById('leaveForm');
+                    if (leaveForm) {
+                        leaveForm.reset();
+                    }
+                }
+                return result;
+            } catch (error) {
+                console.error('❌ Leave request error:', error);
+                showRealProblemNotification('SYSTEM_ERROR', { error: error.message });
+                return false;
+            }
+        };
+    }
+    
+    console.log('✅ Manual form functions created');
+}
+
+// Apply form conversion when page loads
+setTimeout(() => {
+    createManualFormFunctions();
+    convertAllFormsToManual();
+}, 500);
+
 // Manual employee registration function - NO FORM SUBMISSION
 function saveEmployeeManually() {
     console.log('👤 saveEmployeeManually called - DIRECT EMPLOYEE SAVE');
