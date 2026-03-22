@@ -5330,33 +5330,54 @@ function viewProjectSafetyStatus(){
 
 // HSE Helper Functions
 function saveIncidentReport() {
-    const incident = {
-        id: document.getElementById('incidentId').value || 'INC-' + Date.now(),
-        date: document.getElementById('incidentDate').value,
-        project: document.getElementById('incidentProject').value,
-        type: document.getElementById('incidentType').value,
+    const workItem = {
+        work_type: 'Incident Reporting',
+        work_title: `Incident Report - ${document.getElementById('incidentType').value}`,
+        work_description: document.getElementById('incidentDescription').value,
+        incident_type: document.getElementById('incidentType').value,
         severity: document.getElementById('severityLevel').value,
-        location: document.getElementById('incidentLocation').value,
-        persons: document.getElementById('personsInvolved').value,
-        description: document.getElementById('incidentDescription').value,
-        immediateActions: document.getElementById('immediateActions').value,
-        rootCause: document.getElementById('rootCause').value,
-        preventiveMeasures: document.getElementById('preventiveMeasures').value,
-        witnesses: document.getElementById('witnesses').value,
-        evidence: document.getElementById('incidentEvidence').files.length,
-        reportedBy: document.getElementById('reportedBy').value,
-        followUp: document.getElementById('followUpRequired').value,
-        recordedDate: new Date().toLocaleString()
+        priority: document.getElementById('severityLevel').value === 'critical' ? 'Critical' : 
+                  document.getElementById('severityLevel').value === 'major' ? 'High' : 'Medium',
+        due_date: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], // 7 days from now
+        assigned_to: 'HSE Manager',
+        submitted_by: sessionManager.getCurrentUser()?.name || 'HSE Manager'
     };
     
-    // Save to localStorage
-    const incidents = JSON.parse(localStorage.getItem('kashtec_incidents') || '[]');
-    incidents.push(incident);
-    localStorage.setItem('kashtec_incidents', JSON.stringify(incidents));
+    // Show loading message
+    customAlert('Recording incident report...', "Processing", "info");
     
-    customAlert(`Incident recorded successfully!\n\nID: ${incident.id}\nType: ${incident.type}\nSeverity: ${incident.severity}\nProject: ${incident.project}\n\nReturn on Experience (REX) documented for future prevention.`, "Incident Recorded", "success");
+    // Send data to backend API
+    fetch('/api/work/hse', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${sessionManager.getToken()}`
+        },
+        body: JSON.stringify(workItem)
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.error) {
+            throw new Error(data.error);
+        }
+        
+        // Success message
+        customAlert(`Incident report recorded successfully!\n\nID: ${data.workItem.id}\nType: ${workItem.incident_type}\nSeverity: ${workItem.severity}\nPriority: ${workItem.priority}\nAssigned to: ${workItem.assigned_to}\n\n✅ Incident has been saved to database and assigned for follow-up.`, "Incident Recorded", "success");
+        
+        // Reset form
+        document.getElementById('incidentForm').reset();
+        
+        // Generate new incident ID
+        document.getElementById('incidentId').value = 'INC-' + Date.now();
+        
+        return false;
+    })
+    .catch(error => {
+        console.error('Error recording incident:', error);
+        customAlert(`Failed to record incident: ${error.message}\n\nPlease check:\n• All required fields are filled\n• Network connection is stable\n• You are properly authenticated`, "Recording Error", "error");
+        return false;
+    });
     
-    document.getElementById('incidentForm').reset();
     return false;
 }
 

@@ -28,6 +28,7 @@ const apiRoutes = require('./backend/routes/api');
 const policyRoutes = require('./backend/routes/policies');
 const seniorHiringRoutes = require('./backend/routes/seniorHiring');
 const workforceBudgetRoutes = require('./backend/routes/workforceBudget');
+const workRoutes = require('./backend/routes/work');
 
 const app = express();
 const PORT = config.PORT;
@@ -313,6 +314,10 @@ app.use('/api/senior-hiring', asyncHandler(async (req, res, next) => {
 
 app.use('/api/workforce-budget', asyncHandler(async (req, res, next) => {
     return workforceBudgetRoutes(req, res, next);
+}));
+
+app.use('/api/work', asyncHandler(async (req, res, next) => {
+    return workRoutes(req, res, next);
 }));
 
 app.use('/api', asyncHandler(async (req, res, next) => {
