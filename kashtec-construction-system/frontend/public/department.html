@@ -4431,12 +4431,9 @@ function recordIncidentReports(){
 
 // Manual submission function - completely bypasses form behavior
 function manualSubmitIncident() {
-    console.log('🚀 manualSubmitIncident called - COMPLETELY MANUAL SUBMISSION');
+    console.log('🚀 manualSubmitIncident called - SAVING TO DATABASE');
     
     try {
-        // First, test API connectivity
-        testAPIConnectivityBeforeSubmission();
-        
         // Validate required fields
         const incidentType = document.getElementById('incidentType').value;
         const severityLevel = document.getElementById('severityLevel').value;
@@ -4464,116 +4461,55 @@ function manualSubmitIncident() {
             submitted_by: reportedBy
         };
         
-        console.log('📝 Sending work item:', workItem);
+        console.log('📝 Sending work item to database:', workItem);
         
         // Show loading message
-        customAlert('Recording incident report...', "Processing", "info");
+        customAlert('Saving incident report to database...', "Processing", "info");
         
-        // Send data to backend API using fetch with detailed error handling
-        sendDataToBackend(workItem);
+        // Get the current origin for absolute URLs
+        const baseUrl = window.location.origin;
+        console.log('📍 Using server:', baseUrl);
+        
+        // Send data to backend API
+        fetch(`${baseUrl}/api/work/hse`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(workItem)
+        })
+        .then(response => {
+            console.log('📡 Database response status:', response.status);
+            
+            if (!response.ok) {
+                throw new Error(`Server responded with ${response.status}: ${response.statusText}`);
+            }
+            
+            return response.json();
+        })
+        .then(data => {
+            console.log('📊 Database save result:', data);
+            
+            if (data.error) {
+                throw new Error(data.error);
+            }
+            
+            // Success message
+            customAlert(`✅ Incident report saved to database!\n\nID: ${data.workItem.id}\nType: ${workItem.incident_type}\nSeverity: ${workItem.severity}\nPriority: ${workItem.priority}\nAssigned to: ${workItem.assigned_to}\n\n🎉 Data successfully stored in MySQL database!`, "Success!", "success");
+            
+            // Reset form
+            resetIncidentForm();
+            
+        })
+        .catch(error => {
+            console.error('❌ Failed to save to database:', error);
+            customAlert(`❌ Failed to save to database: ${error.message}\n\nPlease check:\n• Server is running\n• Network connection is stable\n• Try again in a moment`, "Database Error", "error");
+        });
         
     } catch (error) {
-        console.error('❌ Unexpected error in manualSubmitIncident:', error);
-        customAlert(`Unexpected error: ${error.message}\n\nPlease try again or contact support.`, "System Error", "error");
+        console.error('❌ Unexpected error:', error);
+        customAlert(`System error: ${error.message}\n\nPlease try again or contact support.`, "Error", "error");
     }
-}
-
-// Test API connectivity before submission
-function testAPIConnectivityBeforeSubmission() {
-    console.log('🔍 Testing API connectivity before submission...');
-    
-    // Get the current origin for absolute URLs
-    const baseUrl = window.location.origin;
-    console.log('📍 Base URL:', baseUrl);
-    
-    // Test basic server connectivity
-    fetch(`${baseUrl}/api/health`)
-        .then(response => {
-            console.log('✅ Basic server connectivity test - Status:', response.status);
-            return response.json();
-        })
-        .then(data => {
-            console.log('✅ Server health check passed:', data);
-        })
-        .catch(error => {
-            console.error('❌ Server connectivity test failed:', error);
-            customAlert('Server connectivity issue detected. Please check if the server is running.', "Connection Error", "error");
-        });
-    
-    // Test work API endpoint
-    fetch(`${baseUrl}/api/work/test`)
-        .then(response => {
-            console.log('✅ Work API connectivity test - Status:', response.status);
-            return response.json();
-        })
-        .then(data => {
-            console.log('✅ Work API test passed:', data);
-        })
-        .catch(error => {
-            console.error('❌ Work API connectivity test failed:', error);
-            customAlert('Work API connectivity issue detected. Please check the API routes.', "API Error", "error");
-        });
-}
-
-// Send data to backend with comprehensive error handling
-function sendDataToBackend(workItem) {
-    console.log('📡 Sending data to backend:', workItem);
-    
-    // Get the current origin for absolute URLs
-    const baseUrl = window.location.origin;
-    console.log('📍 Using base URL:', baseUrl);
-    
-    fetch(`${baseUrl}/api/work/hse`, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json'
-        },
-        body: JSON.stringify(workItem)
-    })
-    .then(response => {
-        console.log('📡 API Response status:', response.status);
-        console.log('📡 API Response headers:', response.headers);
-        
-        // Check if response is ok
-        if (!response.ok) {
-            console.error('❌ HTTP Error:', response.status, response.statusText);
-            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-        }
-        
-        return response.json();
-    })
-    .then(data => {
-        console.log('📊 API Response data:', data);
-        
-        if (data.error) {
-            console.error('❌ API returned error:', data.error);
-            throw new Error(data.error);
-        }
-        
-        // Success message
-        customAlert(`Incident report recorded successfully!\n\nID: ${data.workItem.id}\nType: ${workItem.incident_type}\nSeverity: ${workItem.severity}\nPriority: ${workItem.priority}\nAssigned to: ${workItem.assigned_to}\n\n✅ Incident has been saved to database and assigned for follow-up.`, "Incident Recorded", "success");
-        
-        // Reset form
-        resetIncidentForm();
-        
-    })
-    .catch(error => {
-        console.error('❌ Error recording incident:', error);
-        
-        // Provide detailed error information
-        let errorMessage = `Failed to record incident: ${error.message}`;
-        
-        if (error.message.includes('Failed to fetch')) {
-            errorMessage += '\n\nPossible causes:\n• Server is not running\n• Network connectivity issue\n• CORS policy blocking request';
-        } else if (error.message.includes('404')) {
-            errorMessage += '\n\nPossible causes:\n• API endpoint not found\n• Work routes not properly mounted';
-        } else if (error.message.includes('500')) {
-            errorMessage += '\n\nPossible causes:\n• Database connection issue\n• Server internal error\n• Invalid data format';
-        }
-        
-        customAlert(errorMessage, "Recording Error", "error");
-    });
 }
 
 // Reset form function
@@ -4591,85 +4527,6 @@ function resetIncidentForm() {
         console.log('✅ Form reset completed');
     }
 }
-
-// Add a debug function to test API manually
-function debugAPIConnection() {
-    console.log('🔧 Starting comprehensive API debug...');
-    
-    // Get the current origin for absolute URLs
-    const baseUrl = window.location.origin;
-    console.log('📍 Base URL for debugging:', baseUrl);
-    
-    // Test 1: Basic server connectivity
-    console.log('📡 Test 1: Basic server connectivity');
-    fetch(`${baseUrl}/api/health`)
-        .then(response => {
-            console.log('✅ Server health - Status:', response.status);
-            return response.json();
-        })
-        .then(data => {
-            console.log('✅ Server health data:', data);
-        })
-        .catch(error => {
-            console.error('❌ Server health failed:', error);
-        });
-    
-    // Test 2: Work API test endpoint
-    console.log('📡 Test 2: Work API test endpoint');
-    fetch(`${baseUrl}/api/work/test`)
-        .then(response => {
-            console.log('✅ Work API test - Status:', response.status);
-            return response.json();
-        })
-        .then(data => {
-            console.log('✅ Work API test data:', data);
-        })
-        .catch(error => {
-            console.error('❌ Work API test failed:', error);
-        });
-    
-    // Test 3: Database connection test
-    console.log('📡 Test 3: Database connection test');
-    fetch(`${baseUrl}/api/work/test-db`)
-        .then(response => {
-            console.log('✅ Database test - Status:', response.status);
-            return response.json();
-        })
-        .then(data => {
-            console.log('✅ Database test data:', data);
-        })
-        .catch(error => {
-            console.error('❌ Database test failed:', error);
-        });
-    
-    // Test 4: HSE department endpoint
-    console.log('📡 Test 4: HSE department endpoint');
-    fetch(`${baseUrl}/api/work/hse`)
-        .then(response => {
-            console.log('✅ HSE endpoint - Status:', response.status);
-            return response.json();
-        })
-        .then(data => {
-            console.log('✅ HSE endpoint data:', data);
-        })
-        .catch(error => {
-            console.error('❌ HSE endpoint failed:', error);
-        });
-}
-
-// Add debug button to the page
-function addDebugButton() {
-    const debugButton = document.createElement('button');
-    debugButton.textContent = '🔧 Debug API';
-    debugButton.onclick = debugAPIConnection;
-    debugButton.style.cssText = 'position:fixed;top:10px;left:10px;z-index:9999;background:#dc3545;color:white;padding:10px;border:none;border-radius:5px;cursor:pointer;';
-    document.body.appendChild(debugButton);
-}
-
-// Auto-add debug button when page loads
-setTimeout(() => {
-    addDebugButton();
-}, 1000);
 
 function uploadSafetyPolicies(){
     showContent(`<div class="card">
