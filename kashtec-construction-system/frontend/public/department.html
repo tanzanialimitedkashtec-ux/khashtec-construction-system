@@ -4335,7 +4335,7 @@ function recordIncidentReports(){
         <h3>Record Incident Reports</h3>
         <p><strong>HSE Authority:</strong> Document workplace incidents, accidents, and near-misses for Return on Experience (REX)</p>
         
-        <form id="incidentForm" onsubmit="return saveIncidentReport()">
+        <form id="incidentForm">
             <div class="form-row">
                 <div class="form-group">
                     <label>Incident ID</label>
@@ -5328,19 +5328,25 @@ function viewProjectSafetyStatus(){
     </div>`);
 }
 
-// Add event listener to prevent default form submission
+// Add multiple layers of form submission prevention
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('🚀 DOM loaded, setting up form event listeners');
+    console.log('🚀 DOM loaded, setting up comprehensive form protection');
     
     // Find the incident form
     const incidentForm = document.getElementById('incidentForm');
     if (incidentForm) {
-        console.log('✅ Incident form found, adding event listener');
+        console.log('✅ Incident form found, adding multiple protection layers');
         
+        // Method 1: Remove the onsubmit attribute and add our own
+        incidentForm.removeAttribute('onsubmit');
+        console.log('🔧 Removed onsubmit attribute');
+        
+        // Method 2: Add submit event listener
         incidentForm.addEventListener('submit', function(event) {
-            console.log('📝 Form submit event triggered');
+            console.log('📝 Form submit event triggered - PREVENTING!');
             event.preventDefault();
             event.stopPropagation();
+            event.stopImmediatePropagation();
             
             console.log('🔒 Default form submission prevented');
             
@@ -5351,11 +5357,35 @@ document.addEventListener('DOMContentLoaded', function() {
             return false;
         });
         
-        console.log('✅ Form event listener added successfully');
+        // Method 3: Intercept all button clicks in the form
+        const submitButtons = incidentForm.querySelectorAll('button[type="submit"], input[type="submit"]');
+        submitButtons.forEach(button => {
+            button.addEventListener('click', function(event) {
+                console.log('🔘 Submit button clicked - PREVENTING!');
+                event.preventDefault();
+                event.stopPropagation();
+                
+                // Call the save function directly
+                saveIncidentReport();
+                return false;
+            });
+        });
+        
+        console.log('✅ Multiple form protection layers added successfully');
     } else {
         console.log('❌ Incident form not found');
     }
 });
+
+// Also add a global form submission catcher
+window.addEventListener('submit', function(event) {
+    if (event.target && event.target.id === 'incidentForm') {
+        console.log('🌐 Global form submit catcher - PREVENTING!');
+        event.preventDefault();
+        event.stopPropagation();
+        return false;
+    }
+}, true); // Use capture phase
 
 // HSE Helper Functions
 function saveIncidentReport() {
