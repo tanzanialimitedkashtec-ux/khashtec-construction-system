@@ -333,7 +333,6 @@ CREATE TABLE IF NOT EXISTS policy_revisions (
   response TEXT,
   response_date TIMESTAMP NULL,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  FOREIGN KEY (policy_id) REFERENCES policies(id) ON DELETE CASCADE,
   INDEX idx_policy_id (policy_id),
   INDEX idx_status (status),
   INDEX idx_requested_by (requested_by)
@@ -348,7 +347,6 @@ CREATE TABLE IF NOT EXISTS policy_rejections (
   rejection_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   notified_department BOOLEAN DEFAULT FALSE,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  FOREIGN KEY (policy_id) REFERENCES policies(id) ON DELETE CASCADE,
   INDEX idx_policy_id (policy_id),
   INDEX idx_rejected_by (rejected_by),
   INDEX idx_notified (notified_department)
@@ -388,7 +386,6 @@ CREATE TABLE IF NOT EXISTS senior_hiring_approvals (
   comments TEXT,
   final_decision ENUM('Approved', 'Rejected', 'More Info Required') DEFAULT 'Approved',
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  FOREIGN KEY (request_id) REFERENCES senior_hiring_requests(id) ON DELETE CASCADE,
   INDEX idx_request_id (request_id),
   INDEX idx_approved_by (approved_by),
   INDEX idx_decision (final_decision)
@@ -403,7 +400,6 @@ CREATE TABLE IF NOT EXISTS senior_hiring_rejections (
   rejection_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   notified_hr BOOLEAN DEFAULT FALSE,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  FOREIGN KEY (request_id) REFERENCES senior_hiring_requests(id) ON DELETE CASCADE,
   INDEX idx_request_id (request_id),
   INDEX idx_rejected_by (rejected_by),
   INDEX idx_notified (notified_hr)
@@ -420,7 +416,6 @@ CREATE TABLE IF NOT EXISTS senior_hiring_info_requests (
   response TEXT,
   response_date TIMESTAMP NULL,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  FOREIGN KEY (request_id) REFERENCES senior_hiring_requests(id) ON DELETE CASCADE,
   INDEX idx_request_id (request_id),
   INDEX idx_status (status),
   INDEX idx_requested_by (requested_by)
@@ -463,7 +458,6 @@ CREATE TABLE IF NOT EXISTS workforce_budget_approvals (
   final_decision ENUM('Approved', 'Rejected', 'Modification Required') DEFAULT 'Approved',
   approved_amount DECIMAL(15,2),
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  FOREIGN KEY (budget_id) REFERENCES workforce_budgets(id) ON DELETE CASCADE,
   INDEX idx_budget_id (budget_id),
   INDEX idx_approved_by (approved_by),
   INDEX idx_decision (final_decision)
@@ -478,7 +472,6 @@ CREATE TABLE IF NOT EXISTS workforce_budget_rejections (
   rejection_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   notified_finance BOOLEAN DEFAULT FALSE,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  FOREIGN KEY (budget_id) REFERENCES workforce_budgets(id) ON DELETE CASCADE,
   INDEX idx_budget_id (budget_id),
   INDEX idx_rejected_by (rejected_by),
   INDEX idx_notified (notified_finance)
@@ -495,7 +488,6 @@ CREATE TABLE IF NOT EXISTS workforce_budget_modifications (
   response TEXT,
   response_date TIMESTAMP NULL,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  FOREIGN KEY (budget_id) REFERENCES workforce_budgets(id) ON DELETE CASCADE,
   INDEX idx_budget_id (budget_id),
   INDEX idx_status (status),
   INDEX idx_requested_by (requested_by)
