@@ -2,13 +2,44 @@ const express = require('express');
 const router = express.Router();
 const db = require('../src/config/database');
 
+// Test endpoint to verify API is working
+router.get('/test', (req, res) => {
+    console.log('🧪 Test endpoint accessed');
+    res.json({ 
+        message: 'Work API is working!',
+        timestamp: new Date().toISOString(),
+        database: 'connected'
+    });
+});
+
+// Test database connection
+router.get('/test-db', async (req, res) => {
+    try {
+        console.log('🔍 Testing database connection...');
+        const [result] = await db.execute('SELECT 1 as test');
+        console.log('✅ Database connection successful:', result);
+        res.json({ 
+            message: 'Database connection successful',
+            result: result
+        });
+    } catch (error) {
+        console.error('❌ Database connection failed:', error);
+        res.status(500).json({ 
+            error: 'Database connection failed',
+            details: error.message 
+        });
+    }
+});
+
 // Get all work items for a specific department
 router.get('/:department', async (req, res) => {
     try {
         const { department } = req.params;
+        console.log(`📋 Fetching ${department} work items`);
         const [workItems] = await db.execute(
             `SELECT * FROM ${department}_work ORDER BY submitted_date DESC`
         );
+        console.log(`📊 Found ${workItems.length} ${department} work items`);
         res.json(workItems);
     } catch (error) {
         console.error(`Error fetching ${department} work items:`, error);

@@ -5397,6 +5397,39 @@ function saveIncidentReport() {
     return false;
 }
 
+// Test function to verify API connectivity
+function testAPIConnectivity() {
+    console.log('🧪 Testing API connectivity...');
+    
+    // Test basic API endpoint
+    fetch('/api/work/test')
+        .then(response => response.json())
+        .then(data => {
+            console.log('✅ Basic API test successful:', data);
+            
+            // Test database connection
+            return fetch('/api/work/test-db');
+        })
+        .then(response => response.json())
+        .then(data => {
+            console.log('✅ Database connection test successful:', data);
+            customAlert('API connectivity test passed!\n\n✅ Basic API working\n✅ Database connected\n\nThe system should be able to save data.', "API Test Successful", "success");
+        })
+        .catch(error => {
+            console.error('❌ API connectivity test failed:', error);
+            customAlert(`API connectivity test failed: ${error.message}\n\nThis explains why forms cannot save data to database.`, "API Test Failed", "error");
+        });
+}
+
+// Add test button to the page (you can call this function from browser console)
+function addTestButton() {
+    const testButton = document.createElement('button');
+    testButton.textContent = 'Test API Connectivity';
+    testButton.onclick = testAPIConnectivity;
+    testButton.style.cssText = 'position:fixed;top:10px;right:10px;z-index:9999;background:#007bff;color:white;padding:10px;border:none;border-radius:5px;cursor:pointer;';
+    document.body.appendChild(testButton);
+}
+
 function saveSafetyPolicy() {
     const policy = {
         id: 'POL-' + Date.now(),
