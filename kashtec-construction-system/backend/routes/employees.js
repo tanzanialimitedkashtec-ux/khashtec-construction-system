@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const db = require('../src/config/database');
+const db = require('../config/database');
 
 // Get all employees
 router.get('/', async (req, res) => {
