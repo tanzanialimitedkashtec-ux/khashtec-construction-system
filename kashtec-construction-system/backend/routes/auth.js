@@ -129,9 +129,16 @@ router.post('/login', async (req, res) => {
             db = require('../../database/config/database');
             console.log('✅ Database module loaded successfully');
             
-            // Test the connection
-            await db.execute('SELECT 1');
-            console.log('✅ Database connection established');
+            // Test the connection with a simple query
+            console.log('🧪 Testing database connection...');
+            const testResult = await db.execute('SELECT 1 as test');
+            console.log('✅ Database connection test result:', testResult);
+            
+            if (!testResult || !Array.isArray(testResult)) {
+                throw new Error('Database connection test failed - invalid result');
+            }
+            
+            console.log('✅ Database connection established and working');
         } catch (dbError) {
             console.error('❌ Database connection failed:', dbError);
             console.error('❌ Error details:', dbError.message);
@@ -144,6 +151,27 @@ router.post('/login', async (req, res) => {
             });
         }
         
+        // Also test if the authentication table exists
+        try {
+            console.log('🔍 Checking if authentication table exists...');
+            const tableCheck = await db.execute('SHOW TABLES LIKE "authentication"');
+            console.log('📊 Table check result:', tableCheck);
+            
+            if (!tableCheck || !Array.isArray(tableCheck) || tableCheck[0].length === 0) {
+                console.error('❌ Authentication table does not exist');
+                return res.status(500).json({
+                    error: 'Authentication table not found',
+                    message: 'The authentication table has not been created. Please contact the system administrator.',
+                    details: 'Table authentication does not exist in database'
+                });
+            }
+            
+            console.log('✅ Authentication table exists');
+        } catch (tableError) {
+            console.error('❌ Table check failed:', tableError);
+            // Continue anyway - the main query will fail if table doesn't exist
+        }
+        
         console.log('🔍 Querying authentication table for:', email);
         
         try {
@@ -151,12 +179,31 @@ router.post('/login', async (req, res) => {
             console.log('📝 Query:', 'SELECT id, email, password_hash, role, department_name, manager_name, status FROM authentication WHERE email = ? AND status = ?');
             console.log('📝 Parameters:', [email, 'Active']);
             
-            const [authRows] = await db.execute(
+            const queryResult = await db.execute(
                 'SELECT id, email, password_hash, role, department_name, manager_name, status FROM authentication WHERE email = ? AND status = ?',
                 [email, 'Active']
             );
             
-            console.log('📊 Authentication query result:', authRows);
+            console.log('📊 Query result type:', typeof queryResult);
+            console.log('📊 Query result:', queryResult);
+            
+            // Check if queryResult is valid
+            if (!queryResult || !Array.isArray(queryResult)) {
+                console.error('❌ Invalid query result:', queryResult);
+                throw new Error('Database query returned invalid result');
+            }
+            
+            const [authRows] = queryResult;
+            console.log('📊 Auth rows extracted:', authRows);
+            console.log('📊 Auth rows type:', typeof authRows);
+            console.log('📊 Auth rows length:', authRows ? authRows.length : 'undefined');
+            
+            // Check if authRows is valid
+            if (!authRows || !Array.isArray(authRows)) {
+                console.error('❌ Invalid authRows:', authRows);
+                throw new Error('Database query returned invalid rows array');
+            }
+            
             console.log('📊 Query successful, rows found:', authRows.length);
         
             if (authRows.length === 0) {
