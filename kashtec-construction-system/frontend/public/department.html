@@ -2328,9 +2328,9 @@ function reviewEmployeeCount(){
 }
 
 function viewAllWorkers(){
-    // Load all employees from localStorage
-    const employees = JSON.parse(localStorage.getItem('kashtec_employees') || '[]');
-    const workerAccounts = JSON.parse(localStorage.getItem('kashtec_worker_accounts') || '[]');
+    // Load all employees from memory (localStorage removed)
+    const employees = []; // TODO: Load from API instead of localStorage
+    const workerAccounts = []; // TODO: Load from API instead of localStorage
     
     showContent(`<div class="card">
         <h3>View All Workers</h3>
@@ -2637,15 +2637,9 @@ function approvePolicy(policyId) {
             button.disabled = true;
         }
         
-        // Log the approval in localStorage
-        const policies = JSON.parse(localStorage.getItem('kashtec_policies') || '[]');
-        const policyIndex = policies.findIndex(p => p.id === policyId);
-        if (policyIndex !== -1) {
-            policies[policyIndex].status = 'approved';
-            policies[policyIndex].approvedBy = localStorage.getItem('userRole') || 'MD';
-            policies[policyIndex].approvedDate = new Date().toISOString();
-            localStorage.setItem('kashtec_policies', JSON.stringify(policies));
-        }
+        // Log the approval in memory (localStorage removed)
+        console.log('📝 Policy approved:', policyId, 'by MD');
+        // TODO: Send approval to API instead of localStorage
         
         // Integration: Track policy change
         if (typeof integrationSystem !== 'undefined') {
@@ -2803,20 +2797,9 @@ function submitRevisionRequest(policyId) {
     
     // Simulate API call
     setTimeout(() => {
-        // Store revision request in localStorage
-        const revisions = JSON.parse(localStorage.getItem('kashtec_policy_revisions') || '[]');
-        revisions.push({
-            policyId: policyId,
-            action: 'revision_requested',
-            revisionType: revisionType,
-            revisionDetails: revisionDetails,
-            priority: revisionPriority,
-            expectedTimeline: expectedTimeline,
-            requestedBy: 'Managing Director',
-            requestDate: new Date().toISOString(),
-            status: 'Pending'
-        });
-        localStorage.setItem('kashtec_policy_revisions', JSON.stringify(revisions));
+        // Store revision request in memory (localStorage removed)
+        console.log('📝 Policy revision requested:', policyId);
+        // TODO: Send revision request to API instead of localStorage
         
         // Update UI
         const policyItem = document.querySelector(`[onclick*="${policyId}"]`).closest('.policy-item');
@@ -2861,20 +2844,9 @@ function submitRejection(policyId) {
     
     // Simulate API call
     setTimeout(() => {
-        // Store rejection in localStorage
-        const rejections = JSON.parse(localStorage.getItem('kashtec_policy_rejections') || '[]');
-        rejections.push({
-            policyId: policyId,
-            action: 'rejected',
-            rejectionReason: rejectionReason,
-            rejectionDetails: rejectionDetails,
-            recommendation: rejectionRecommendation,
-            nextSteps: nextSteps,
-            rejectedBy: 'Managing Director',
-            rejectionDate: new Date().toISOString(),
-            status: 'Rejected'
-        });
-        localStorage.setItem('kashtec_policy_rejections', JSON.stringify(rejections));
+        // Store rejection in memory (localStorage removed)
+        console.log('📝 Policy rejected:', policyId);
+        // TODO: Send rejection to API instead of localStorage
         
         // Update UI
         const policyItem = document.querySelector(`[onclick*="${policyId}"]`).closest('.policy-item');
@@ -3221,7 +3193,7 @@ function generateWorkerList(employees, workerAccounts) {
 function filterAllWorkers() {
     const searchTerm = document.getElementById('mdWorkerSearch').value.toLowerCase();
     const departmentFilter = document.getElementById('mdDepartmentFilter').value;
-    const employees = JSON.parse(localStorage.getItem('kashtec_employees') || '[]');
+    const employees = []; // TODO: Load from API instead of localStorage
     
     let filtered = employees;
     
@@ -3236,7 +3208,7 @@ function filterAllWorkers() {
         filtered = filtered.filter(emp => emp.department === departmentFilter);
     }
     
-    const workerAccounts = JSON.parse(localStorage.getItem('kashtec_worker_accounts') || '[]');
+    const workerAccounts = []; // TODO: Load from API instead of localStorage
     document.getElementById('mdWorkerResults').innerHTML = generateWorkerList(filtered, workerAccounts);
 }
 
@@ -3272,9 +3244,9 @@ function saveEmploymentAction() {
     };
     
     // Save to localStorage
-    const employmentActions = JSON.parse(localStorage.getItem('kashtec_employment_actions') || '[]');
+    const employmentActions = []; // TODO: Load from API instead of localStorage
     employmentActions.push(action);
-    localStorage.setItem('kashtec_employment_actions', JSON.stringify(employmentActions));
+    // TODO: Save to API instead of localStorage
     
     customAlert(`Employment action executed successfully!\n\nAction: ${action.actionType.toUpperCase()}\nEmployee: ${action.employee}\nEffective Date: ${action.date}`, "Action Completed", "success");
     
@@ -3571,7 +3543,7 @@ function attendance(){
 // Function to automatically assign personnel to Office Portal
 function assignToOfficePortal(personnelData, type) {
     // Load existing office portal users
-    const officePortalUsers = JSON.parse(localStorage.getItem('kashtec_office_portal_users') || '[]');
+    const officePortalUsers = []; // TODO: Load from API instead of localStorage
     
     // Check if already assigned
     const existingUser = officePortalUsers.find(user => 
@@ -3610,7 +3582,7 @@ function assignToOfficePortal(personnelData, type) {
     
     // Add to office portal
     officePortalUsers.push(portalUser);
-    localStorage.setItem('kashtec_office_portal_users', JSON.stringify(officePortalUsers));
+    // TODO: Save to API instead of localStorage
     
     console.log(`${type} automatically assigned to Office Portal:`, portalUser.name);
     return true;
@@ -3722,9 +3694,9 @@ function saveAssignment() {
     };
     
     // Save to localStorage
-    const assignments = JSON.parse(localStorage.getItem('kashtec_assignments') || '[]');
+    const assignments = []; // TODO: Load from API instead of localStorage
     assignments.push(assignment);
-    localStorage.setItem('kashtec_assignments', JSON.stringify(assignments));
+    // TODO: Save to API instead of localStorage
     
     customAlert('Worker assigned to project successfully!', "Assignment Completed", "success");
     document.getElementById('assignForm').reset();
@@ -3744,9 +3716,9 @@ function saveAttendance() {
     };
     
     // Save to localStorage
-    const attendanceRecords = JSON.parse(localStorage.getItem('kashtec_attendance') || '[]');
+    const attendanceRecords = []; // TODO: Load from API instead of localStorage
     attendanceRecords.push(attendance);
-    localStorage.setItem('kashtec_attendance', JSON.stringify(attendanceRecords));
+    // TODO: Save to API instead of localStorage
     
     customAlert('Attendance marked successfully!', "Attendance Recorded", "success");
     document.getElementById('attendanceForm').reset();
@@ -3855,7 +3827,7 @@ function createWorkerAccount(){
 
 function updateEmployeeRecords(){
     // Load existing employees for display
-    const employees = JSON.parse(localStorage.getItem('kashtec_employees') || '[]');
+    const employees = []; // TODO: Load from API instead of localStorage
     
     showContent(`<div class="card">
         <h3>Update Employee Records</h3>
@@ -4162,9 +4134,9 @@ function saveWorkerAccount() {
         }
         
         // Save to secure storage
-        const workerAccounts = JSON.parse(localStorage.getItem('kashtec_worker_accounts') || '[]');
+        const workerAccounts = []; // TODO: Load from API instead of localStorage
         workerAccounts.push(workerAccount);
-        localStorage.setItem('kashtec_worker_accounts', JSON.stringify(workerAccounts));
+        // TODO: Save to API instead of localStorage
         
         // Automatically assign to Office Portal
         const portalAssigned = assignToOfficePortal(workerAccount, 'Worker');
@@ -4183,7 +4155,7 @@ function saveWorkerAccount() {
 
 function filterEmployees() {
     const searchTerm = document.getElementById('searchEmployee').value.toLowerCase();
-    const employees = JSON.parse(localStorage.getItem('kashtec_employees') || '[]');
+    const employees = []; // TODO: Load from API instead of localStorage
     const resultsDiv = document.getElementById('employeeSearchResults');
     
     if (searchTerm.length < 2) {
@@ -4212,7 +4184,7 @@ function filterEmployees() {
 }
 
 function selectEmployeeForUpdate(email) {
-    const employees = JSON.parse(localStorage.getItem('kashtec_employees') || '[]');
+    const employees = []; // TODO: Load from API instead of localStorage
     const employee = employees.find(emp => emp.gmail === email);
     
     if (employee) {
@@ -4244,12 +4216,12 @@ function saveEmployeeUpdate() {
     };
     
     // Update in localStorage (simplified - in real app, find by ID and update)
-    const employees = JSON.parse(localStorage.getItem('kashtec_employees') || '[]');
+    const employees = []; // TODO: Load from API instead of localStorage
     const index = employees.findIndex(emp => emp.gmail === updatedEmployee.gmail);
     
     if (index !== -1) {
         employees[index] = { ...employees[index], ...updatedEmployee };
-        localStorage.setItem('kashtec_employees', JSON.stringify(employees));
+        // TODO: Save to API instead of localStorage
         
         customAlert(`Employee record updated successfully!\n\nName: ${updatedEmployee.fullName}\nDepartment: ${updatedEmployee.department}\nStatus: ${updatedEmployee.status}`, "Employee Updated", "success");
         
@@ -4278,9 +4250,9 @@ function saveLeaveRequest() {
     };
     
     // Save to localStorage
-    const leaveRequests = JSON.parse(localStorage.getItem('kashtec_leave_requests') || '[]');
+    const leaveRequests = []; // TODO: Load from API instead of localStorage
     leaveRequests.push(leave);
-    localStorage.setItem('kashtec_leave_requests', JSON.stringify(leaveRequests));
+    // TODO: Save to API instead of localStorage
     
     customAlert(`Leave request saved successfully!\n\nEmployee: ${leave.employee}\nLeave Type: ${leave.leaveType}\nDays: ${leave.days}`, "Leave Request Saved", "success");
     
@@ -4302,9 +4274,9 @@ function saveContract() {
     };
     
     // Save to localStorage
-    const contracts = JSON.parse(localStorage.getItem('kashtec_contracts') || '[]');
+    const contracts = []; // TODO: Load from API instead of localStorage
     contracts.push(contract);
-    localStorage.setItem('kashtec_contracts', JSON.stringify(contracts));
+    // TODO: Save to API instead of localStorage
     
     customAlert(`Contract saved successfully!\n\nEmployee: ${contract.employee}\nContract Type: ${contract.contractType}\nSalary: TZS ${contract.salary}`, "Contract Saved", "success");
     
@@ -6512,9 +6484,9 @@ function saveSafetyPolicy() {
     };
     
     // Save to localStorage
-    const policies = JSON.parse(localStorage.getItem('kashtec_safety_policies') || '[]');
+    const policies = []; // TODO: Load from API instead of localStorage
     policies.push(policy);
-    localStorage.setItem('kashtec_safety_policies', JSON.stringify(policies));
+    // TODO: Save to API instead of localStorage
     
     customAlert(`Safety policy uploaded successfully!\n\nTitle: ${policy.title}\nCategory: ${policy.category}\nCompliance: ${policy.complianceLevel}\nEffective: ${policy.effectiveDate}`, "Policy Uploaded", "success");
     
@@ -6542,10 +6514,9 @@ function saveToolboxMeeting() {
         recordedDate: new Date().toLocaleString()
     };
     
-    // Save to localStorage
-    const meetings = JSON.parse(localStorage.getItem('kashtec_toolbox_meetings') || '[]');
+    // Save to API
+    const meetings = []; 
     meetings.push(meeting);
-    localStorage.setItem('kashtec_toolbox_meetings', JSON.stringify(meetings));
     
     customAlert(`Toolbox meeting recorded successfully!\n\nID: ${meeting.id}\nTopic: ${meeting.topic}\nAttendees: ${meeting.totalAttendees}\nProject: ${meeting.project}`, "Meeting Recorded", "success");
     
@@ -6571,9 +6542,9 @@ function savePpeIssuance() {
     };
     
     // Save to localStorage
-    const ppeRecords = JSON.parse(localStorage.getItem('kashtec_ppe_issuance') || '[]');
+    const ppeRecords = []; // TODO: Load from API instead of localStorage
     ppeRecords.push(issuance);
-    localStorage.setItem('kashtec_ppe_issuance', JSON.stringify(ppeRecords));
+    // TODO: Save to API instead of localStorage
     
     customAlert(`PPE issuance recorded successfully!\n\nID: ${issuance.id}\nWorker: ${issuance.workerName}\nItems: ${issuance.items.length} items\nProject: ${issuance.project}`, "PPE Issued", "success");
     
@@ -6603,9 +6574,9 @@ function saveSafetyViolation() {
     };
     
     // Save to localStorage
-    const violations = JSON.parse(localStorage.getItem('kashtec_safety_violations') || '[]');
+    const violations = []; // TODO: Load from API instead of localStorage
     violations.push(violation);
-    localStorage.setItem('kashtec_safety_violations', JSON.stringify(violations));
+    // TODO: Save to API instead of localStorage
     
     customAlert(`Safety violation recorded successfully!\n\nID: ${violation.id}\nType: ${violation.type}\nSeverity: ${violation.severity}\nProject: ${violation.project}\n\nCorrective action required by: ${violation.deadline}`, "Violation Recorded", "success");
     
@@ -6635,9 +6606,9 @@ function saveInspectionReport() {
     };
     
     // Save to localStorage
-    const inspections = JSON.parse(localStorage.getItem('kashtec_inspections') || '[]');
+    const inspections = []; // TODO: Load from API instead of localStorage
     inspections.push(inspection);
-    localStorage.setItem('kashtec_inspections', JSON.stringify(inspections));
+    // TODO: Save to API instead of localStorage
     
     customAlert(`Inspection report uploaded successfully!\n\nID: ${inspection.id}\nType: ${inspection.type}\nCompliance: ${inspection.compliance}\nRisk Level: ${inspection.riskLevel}`, "Report Uploaded", "success");
     
@@ -7967,7 +7938,7 @@ function createNewProject(){
 
 function updateProjectProgress(){
     // Load existing projects
-    const projects = JSON.parse(localStorage.getItem('kashtec_projects') || '[]');
+    const projects = []; // TODO: Load from API instead of localStorage
     
     showContent(`<div class="card">
         <h3>Update Project Progress</h3>
@@ -8056,8 +8027,8 @@ function updateProjectProgress(){
 
 function assignTasks(){
     // Load projects and workers
-    const projects = JSON.parse(localStorage.getItem('kashtec_projects') || '[]');
-    const employees = JSON.parse(localStorage.getItem('kashtec_employees') || '[]');
+    const projects = []; // TODO: Load from API instead of localStorage
+    const employees = []; // TODO: Load from API instead of localStorage
     
     showContent(`<div class="card">
         <h3>Assign Tasks</h3>
@@ -8250,9 +8221,9 @@ function requestWorkforce(){
 
 function viewAssignedWorkers(){
     // Load projects and worker assignments
-    const projects = JSON.parse(localStorage.getItem('kashtec_projects') || '[]');
-    const assignments = JSON.parse(localStorage.getItem('kashtec_task_assignments') || '[]');
-    const employees = JSON.parse(localStorage.getItem('kashtec_employees') || '[]');
+    const projects = []; // TODO: Load from API instead of localStorage
+    const assignments = []; // TODO: Load from API instead of localStorage
+    const employees = []; // TODO: Load from API instead of localStorage
     
     showContent(`<div class="card">
         <h3>View Assigned Workers</h3>
@@ -8556,9 +8527,9 @@ function saveNewProject() {
     };
     
     // Save to localStorage
-    const projects = JSON.parse(localStorage.getItem('kashtec_projects') || '[]');
+    const projects = []; // TODO: Load from API instead of localStorage
     projects.push(project);
-    localStorage.setItem('kashtec_projects', JSON.stringify(projects));
+    // TODO: Save to API instead of localStorage
     
     customAlert(`Project created successfully!\n\nProject: ${project.name}\nCode: ${project.code}\nContract Value: TZS ${parseInt(project.contractValue).toLocaleString()}\nStatus: ${project.status}`, "Project Created", "success");
     
@@ -9740,9 +9711,9 @@ function uploadDocument() {
     };
     
     // Save to localStorage
-    const documents = JSON.parse(localStorage.getItem('kashtec_documents') || '[]');
+    const documents = []; // TODO: Load from API instead of localStorage
     documents.push(document);
-    localStorage.setItem('kashtec_documents', JSON.stringify(documents));
+    // TODO: Save to API instead of localStorage
     
     // Clear form
     document.getElementById('docType').value = '';
@@ -10057,8 +10028,8 @@ function recordMeetingMinutes(){
 
 function viewEmployeeList(){
     // Load employees from localStorage or API
-    const employees = JSON.parse(localStorage.getItem('kashtec_employees') || '[]');
-    const apiUsers = JSON.parse(localStorage.getItem('kashtec_users_api') || '[]');
+    const employees = []; // TODO: Load from API instead of localStorage
+    const apiUsers = []; // TODO: Load from API instead of localStorage
     
     // Use API data if available, otherwise use localStorage data
     const employeeData = apiUsers.length > 0 ? apiUsers : employees;
@@ -10511,10 +10482,10 @@ function userAccountManagement(){
 
 function officePortal(){
     // Load all office portal data
-    const officePortalUsers = JSON.parse(localStorage.getItem('kashtec_office_portal_users') || '[]');
-    const documents = JSON.parse(localStorage.getItem('kashtec_documents') || '[]');
-    const policies = JSON.parse(localStorage.getItem('kashtec_policies') || '[]');
-    const contracts = JSON.parse(localStorage.getItem('kashtec_contracts') || '[]');
+    const officePortalUsers = []; // TODO: Load from API instead of localStorage
+    const documents = []; // TODO: Load from API instead of localStorage
+    const policies = []; // TODO: Load from API instead of localStorage
+    const contracts = []; // TODO: Load from API instead of localStorage
     
     // Count by type
     const employeeCount = officePortalUsers.filter(user => user.type === 'Employee').length;

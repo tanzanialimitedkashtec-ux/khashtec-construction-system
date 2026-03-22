@@ -62,8 +62,8 @@ class KashtecNotificationSystem {
         // Log notification
         this.logNotification(notification);
 
-        // Store notification in localStorage for web interface
-        this.storeNotification(notification);
+        // NOTE: localStorage removed - notifications stored in memory only
+        console.log('📝 Notification stored in memory (no localStorage)');
 
         return notification;
     }
@@ -160,20 +160,6 @@ class KashtecNotificationSystem {
         }
     }
 
-    storeNotification(notification) {
-        // Store in localStorage format for web interface
-        try {
-            const existingNotifications = JSON.parse(localStorage.getItem('kashtec_notifications') || '[]');
-            existingNotifications.unshift(notification);
-            
-            // Keep only last 50 notifications
-            const recentNotifications = existingNotifications.slice(0, 50);
-            localStorage.setItem('kashtec_notifications', JSON.stringify(recentNotifications));
-        } catch (error) {
-            console.error('Error storing notification:', error.message);
-        }
-    }
-
     // Git-specific notifications
     notifyGitCommit(hash, message, branch = 'main') {
         this.show(
@@ -263,11 +249,8 @@ class KashtecNotificationSystem {
     // Clear notifications
     clearNotifications() {
         this.notifications = [];
-        try {
-            localStorage.removeItem('kashtec_notifications');
-        } catch (error) {
-            console.error('Error clearing notifications:', error.message);
-        }
+        // NOTE: localStorage removed - only memory notifications cleared
+        console.log('📝 Memory notifications cleared (no localStorage to clear)');
     }
 
     // Export notifications
