@@ -4893,6 +4893,54 @@ function clearEmployeeForm() {
     console.log('✅ Employee form cleared');
 }
 
+// AUTOMATIC STARTUP DIAGNOSTIC
+function runStartupDiagnostic() {
+    console.log('🔍 Running startup diagnostic...');
+    
+    const baseUrl = window.location.origin;
+    
+    // Quick health check
+    fetch(`${baseUrl}/api/health`)
+        .then(response => {
+            if (response.ok) {
+                return response.json();
+            } else {
+                throw new Error(`Health check failed: ${response.status}`);
+            }
+        })
+        .then(healthData => {
+            console.log('✅ Startup diagnostic passed:', healthData);
+            
+            // Show a subtle success indicator
+            const diagnosticIndicator = document.createElement('div');
+            diagnosticIndicator.innerHTML = '🟢 System Online';
+            diagnosticIndicator.style.cssText = 'position:fixed;bottom:10px;right:10px;background:#28a745;color:white;padding:5px 10px;border-radius:5px;font-size:12px;z-index:9998;';
+            document.body.appendChild(diagnosticIndicator);
+            
+            // Remove after 5 seconds
+            setTimeout(() => {
+                if (diagnosticIndicator.parentNode) {
+                    diagnosticIndicator.parentNode.removeChild(diagnosticIndicator);
+                }
+            }, 5000);
+            
+        })
+        .catch(error => {
+            console.error('❌ Startup diagnostic failed:', error);
+            
+            // Show error indicator
+            const diagnosticIndicator = document.createElement('div');
+            diagnosticIndicator.innerHTML = '🔴 System Error';
+            diagnosticIndicator.style.cssText = 'position:fixed;bottom:10px;right:10px;background:#dc3545;color:white;padding:5px 10px;border-radius:5px;font-size:12px;z-index:9998;';
+            document.body.appendChild(diagnosticIndicator);
+        });
+}
+
+// Run diagnostic when page loads
+setTimeout(() => {
+    runStartupDiagnostic();
+}, 2000);
+
 // Test server connection
 function testServerConnection() {
     console.log('🔗 Testing server connection...');
