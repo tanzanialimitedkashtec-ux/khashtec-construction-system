@@ -313,12 +313,38 @@ function handleLogin() {
 }
 
 function handleLogout() {
-    if (confirm("Are you sure you want to logout?")) {
-        localStorage.removeItem('kashtec_current_user');
-        localStorage.removeItem('kashtec_auth_token');
-        showNotification('You have been logged out successfully.', 'info', 3000);
-        showLoginSection();
-    }
+    // Show custom confirmation notification instead of alert
+    showNotification('Logging out...', 'info', 2000);
+    
+    // Clear session data
+    localStorage.removeItem('kashtec_current_user');
+    localStorage.removeItem('kashtec_auth_token');
+    
+    // Reset current role
+    currentRole = "";
+    
+    // Show logout success message
+    setTimeout(() => {
+        // Hide system page and show login page
+        document.getElementById("systemPage").classList.add("hidden");
+        document.getElementById("loginPage").classList.remove("hidden");
+        
+        // Clear form fields
+        document.getElementById("loginEmail").value = "";
+        document.getElementById("loginPassword").value = "";
+        document.getElementById("loginRole").value = "";
+        
+        // Reset login button
+        const loginBtn = document.getElementById("loginBtn");
+        if (loginBtn) {
+            loginBtn.disabled = false;
+            loginBtn.textContent = "Login";
+            loginBtn.style.opacity = '1';
+        }
+        
+        // Show logout success notification
+        showNotification('You have been logged out successfully. Please login again.', 'success', 4000);
+    }, 1000);
 }
 
 function loadUserData() {
