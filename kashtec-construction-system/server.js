@@ -593,7 +593,12 @@ async function createAuthenticationTable() {
             ('PROJECT', 'pm@manager0501', '$2a$12$QprpmBaruPb.D9tbcPYm8Or/gOfC2fwwk47WYcCktc8sC1/N/wN8G', 'Project Manager', 'Project Management', 'Project Manager', 'Active'),
             ('REALESTATE', 'realestate@manager0501', '$2a$12$zrRcx9zjrBEG.8yn0a7AyesG4QWpjRtc4DcnhLAFkVpTTi9KlEDM6', 'Real Estate Manager', 'Real Estate', 'Real Estate Manager', 'Active'),
             ('ASSISTANT', 'assistant@kashtec.com', '$2a$12$aYCuS6B19FTYsARmSIOwe.iuG93uq7HTsQhW/cuh8BawFb9HPn./S', 'Admin Assistant', 'Administration', 'Admin Assistant', 'Active')
-            ON DUPLICATE KEY UPDATE status = 'Active'
+            ON DUPLICATE KEY UPDATE 
+                password_hash = VALUES(password_hash),
+                role = VALUES(role),
+                department_name = VALUES(department_name),
+                manager_name = VALUES(manager_name),
+                status = 'Active'
         `;
         
         await db.execute(insertAuthSQL);
