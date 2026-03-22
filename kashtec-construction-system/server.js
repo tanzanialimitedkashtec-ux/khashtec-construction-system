@@ -585,14 +585,14 @@ async function createAuthenticationTable() {
         // Insert authentication records
         const insertAuthSQL = `
             INSERT INTO authentication (department_code, email, password_hash, role, department_name, manager_name, status) VALUES
-            ('MD', 'md@kashtec.com', '$2a$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewdBPj6ukx.LrUpm', 'Managing Director', 'Managing Director Office', 'Dr. John Smith', 'Active'),
-            ('ADMIN', 'admin@kashtec.com', '$2a$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewdBPj6ukx.LrUpm', 'Director of Administration', 'Administration', 'Director of Administration', 'Active'),
-            ('HR', 'hr@manager0501', '$2a$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewdBPj6ukx.LrUpm', 'HR Manager', 'Human Resources', 'HR Manager', 'Active'),
-            ('HSE', 'hse@manager0501', '$2a$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewdBPj6ukx.LrUpm', 'HSE Manager', 'Health & Safety', 'HSE Manager', 'Active'),
-            ('FINANCE', 'finance@manager0501', '$2a$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewdBPj6ukx.LrUpm', 'Finance Manager', 'Finance', 'Finance Manager', 'Active'),
-            ('PROJECT', 'pm@manager0501', '$2a$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewdBPj6ukx.LrUpm', 'Project Manager', 'Project Management', 'Project Manager', 'Active'),
-            ('REALESTATE', 'realestate@manager0501', '$2a$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewdBPj6ukx.LrUpm', 'Real Estate Manager', 'Real Estate', 'Real Estate Manager', 'Active'),
-            ('ASSISTANT', 'assistant@kashtec.com', '$2a$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewdBPj6ukx.LrUpm', 'Admin Assistant', 'Administration', 'Admin Assistant', 'Active')
+            ('MD', 'md@kashtec.com', '$2a$12$pkTstU3up/l5NQlFpHKTI.OkXHOAbbWzjel7kSuLF/gfyva/v7vti', 'Managing Director', 'Managing Director Office', 'Dr. John Smith', 'Active'),
+            ('ADMIN', 'admin@kashtec.com', '$2a$12$u6PW.jhy0/RN6xCBD8IcAupzxxeogxf3sheaeQm1RUevCl.BStPmq', 'Director of Administration', 'Administration', 'Director of Administration', 'Active'),
+            ('HR', 'hr@manager0501', '$2a$12$AFEzay0Y3Bk8j1VTLuHVjOIf/zVCfj0S9jlJkKQuBX7wFViBPe8Mm', 'HR Manager', 'Human Resources', 'HR Manager', 'Active'),
+            ('HSE', 'hse@manager0501', '$2a$12$Ju7KnyHUC7aYlQdPyygjPuly4JAxNkgau61OD0DBFo8Twk4YuadC2', 'HSE Manager', 'Health & Safety', 'HSE Manager', 'Active'),
+            ('FINANCE', 'finance@manager0501', '$2a$12$zxzP5s/IBL1f4niPlxi.mO54LXkZy9KSEfbXP83ceHMfscxqyXKdC', 'Finance Manager', 'Finance', 'Finance Manager', 'Active'),
+            ('PROJECT', 'pm@manager0501', '$2a$12$QprpmBaruPb.D9tbcPYm8Or/gOfC2fwwk47WYcCktc8sC1/N/wN8G', 'Project Manager', 'Project Management', 'Project Manager', 'Active'),
+            ('REALESTATE', 'realestate@manager0501', '$2a$12$zrRcx9zjrBEG.8yn0a7AyesG4QWpjRtc4DcnhLAFkVpTTi9KlEDM6', 'Real Estate Manager', 'Real Estate', 'Real Estate Manager', 'Active'),
+            ('ASSISTANT', 'assistant@kashtec.com', '$2a$12$aYCuS6B19FTYsARmSIOwe.iuG93uq7HTsQhW/cuh8BawFb9HPn./S', 'Admin Assistant', 'Administration', 'Admin Assistant', 'Active')
             ON DUPLICATE KEY UPDATE status = 'Active'
         `;
         
