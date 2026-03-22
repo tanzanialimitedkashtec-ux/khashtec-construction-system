@@ -4395,7 +4395,10 @@ function recordIncidentReports(){
             
             <!-- TEST BUTTONS -->
             <div style="margin-top: 20px;">
-                <button type="button" onclick="testPageFreeze()" style="background: #dc3545; color: white; padding: 15px 30px; border: none; border-radius: 5px; cursor: pointer; font-size: 18px; font-weight: bold;">
+                <button type="button" onclick="testServerConnection()" style="background: #ffc107; color: black; padding: 15px 30px; border: none; border-radius: 5px; cursor: pointer; font-size: 18px; font-weight: bold;">
+                    🔗 Test Connection
+                </button>
+                <button type="button" onclick="testPageFreeze()" style="background: #dc3545; color: white; padding: 15px 30px; border: none; border-radius: 5px; cursor: pointer; font-size: 18px; font-weight: bold; margin-left: 15px;">
                     🧪 TEST FREEZE
                 </button>
                 <button type="button" onclick="submitIncidentToDatabase()" style="background: #28a745; color: white; padding: 15px 30px; border: none; border-radius: 5px; cursor: pointer; font-size: 18px; font-weight: bold; margin-left: 15px;">
@@ -4890,13 +4893,95 @@ function clearEmployeeForm() {
     console.log('✅ Employee form cleared');
 }
 
-// Add NO_HANDLER notification type
+// Test server connection
+function testServerConnection() {
+    console.log('🔗 Testing server connection...');
+    
+    const baseUrl = window.location.origin;
+    console.log('📍 Testing server:', baseUrl);
+    
+    // Show loading message
+    showRealProblemNotification('TESTING_CONNECTION', {
+        message: '🔗 Testing server connection...\n\n📡 Testing endpoints:\n• API Health Check\n• Work API Test\n• Database Connection\n\n⏳ Please wait...'
+    });
+    
+    // Test 1: API Health Check
+    fetch(`${baseUrl}/api/health`)
+        .then(response => {
+            console.log('📡 Health check response:', response.status);
+            if (!response.ok) {
+                throw new Error(`Health check failed: ${response.status}`);
+            }
+            return response.json();
+        })
+        .then(healthData => {
+            console.log('✅ Health check success:', healthData);
+            
+            // Test 2: Work API Test
+            return fetch(`${baseUrl}/api/work/test`);
+        })
+        .then(response => {
+            console.log('📡 Work API test response:', response.status);
+            if (!response.ok) {
+                throw new Error(`Work API test failed: ${response.status}`);
+            }
+            return response.json();
+        })
+        .then(workData => {
+            console.log('✅ Work API test success:', workData);
+            
+            // Test 3: Database Connection
+            return fetch(`${baseUrl}/api/db-health`);
+        })
+        .then(response => {
+            console.log('📡 Database health response:', response.status);
+            if (!response.ok) {
+                throw new Error(`Database health check failed: ${response.status}`);
+            }
+            return response.json();
+        })
+        .then(dbData => {
+            console.log('✅ Database health success:', dbData);
+            
+            // All tests passed
+            showRealProblemNotification('CONNECTION_SUCCESS', {
+                message: `🎉 All server connections successful!\n\n✅ API Health Check: Working\n✅ Work API Test: Working\n✅ Database Connection: Working\n\n📊 Server Details:\n• Environment: ${healthData.environment || 'Unknown'}\n• Database: ${dbData.database || 'Connected'}\n• Timestamp: ${new Date().toLocaleString()}\n\n🚀 Ready to save data to database!`,
+                serverStatus: 'healthy',
+                databaseStatus: 'connected'
+            });
+        })
+        .catch(error => {
+            console.error('❌ Connection test failed:', error);
+            
+            // Analyze the error
+            const problemType = analyzeRealProblem(error);
+            showRealProblemNotification(problemType, {
+                error: error.message,
+                originalError: error,
+                testType: 'server_connection'
+            });
+        });
+}
+
+// Add connection test notifications
 function showRealProblemNotification(problemType, details) {
     let title = '';
     let message = '';
     let type = 'error';
     
     switch(problemType) {
+        case 'TESTING_CONNECTION':
+            title = '🔗 Testing Connection';
+            message = details.message;
+            type = 'info';
+            break;
+            
+        case 'CONNECTION_SUCCESS':
+            title = '🎉 Connection Successful!';
+            message = details.message;
+            type = 'success';
+            break;
+            
         case 'NO_HANDLER':
             title = '⚠️ Button Not Configured';
             message = `❌ This button has no action handler!\n\n🔍 Real Problem:\n• Button: "${details.buttonText}"\n• No onclick function assigned\n• This is a system configuration issue\n\n🛠️ Solutions:\n• Contact developer to add handler\n• Use a different button\n• Check if this feature is implemented\n\n📝 Button text: ${details.buttonText}`;
