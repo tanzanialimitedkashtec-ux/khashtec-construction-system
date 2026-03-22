@@ -324,6 +324,16 @@ app.use('/api', asyncHandler(async (req, res, next) => {
     return apiRoutes(req, res, next);
 }));
 
+// Simple API health check
+app.get('/api/health', (req, res) => {
+    res.status(200).json({
+        status: 'OK',
+        message: 'API is running',
+        timestamp: new Date().toISOString(),
+        environment: process.env.NODE_ENV || 'development'
+    });
+});
+
 // Database health check
 app.get('/api/db-health', async (req, res) => {
     try {

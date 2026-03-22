@@ -4482,8 +4482,12 @@ function manualSubmitIncident() {
 function testAPIConnectivityBeforeSubmission() {
     console.log('🔍 Testing API connectivity before submission...');
     
+    // Get the current origin for absolute URLs
+    const baseUrl = window.location.origin;
+    console.log('📍 Base URL:', baseUrl);
+    
     // Test basic server connectivity
-    fetch('/api/health')
+    fetch(`${baseUrl}/api/health`)
         .then(response => {
             console.log('✅ Basic server connectivity test - Status:', response.status);
             return response.json();
@@ -4497,7 +4501,7 @@ function testAPIConnectivityBeforeSubmission() {
         });
     
     // Test work API endpoint
-    fetch('/api/work/test')
+    fetch(`${baseUrl}/api/work/test`)
         .then(response => {
             console.log('✅ Work API connectivity test - Status:', response.status);
             return response.json();
@@ -4515,7 +4519,11 @@ function testAPIConnectivityBeforeSubmission() {
 function sendDataToBackend(workItem) {
     console.log('📡 Sending data to backend:', workItem);
     
-    fetch('/api/work/hse', {
+    // Get the current origin for absolute URLs
+    const baseUrl = window.location.origin;
+    console.log('📍 Using base URL:', baseUrl);
+    
+    fetch(`${baseUrl}/api/work/hse`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -4588,9 +4596,13 @@ function resetIncidentForm() {
 function debugAPIConnection() {
     console.log('🔧 Starting comprehensive API debug...');
     
+    // Get the current origin for absolute URLs
+    const baseUrl = window.location.origin;
+    console.log('📍 Base URL for debugging:', baseUrl);
+    
     // Test 1: Basic server connectivity
     console.log('📡 Test 1: Basic server connectivity');
-    fetch('/api/health')
+    fetch(`${baseUrl}/api/health`)
         .then(response => {
             console.log('✅ Server health - Status:', response.status);
             return response.json();
@@ -4604,7 +4616,7 @@ function debugAPIConnection() {
     
     // Test 2: Work API test endpoint
     console.log('📡 Test 2: Work API test endpoint');
-    fetch('/api/work/test')
+    fetch(`${baseUrl}/api/work/test`)
         .then(response => {
             console.log('✅ Work API test - Status:', response.status);
             return response.json();
@@ -4618,7 +4630,7 @@ function debugAPIConnection() {
     
     // Test 3: Database connection test
     console.log('📡 Test 3: Database connection test');
-    fetch('/api/work/test-db')
+    fetch(`${baseUrl}/api/work/test-db`)
         .then(response => {
             console.log('✅ Database test - Status:', response.status);
             return response.json();
@@ -4632,7 +4644,7 @@ function debugAPIConnection() {
     
     // Test 4: HSE department endpoint
     console.log('📡 Test 4: HSE department endpoint');
-    fetch('/api/work/hse')
+    fetch(`${baseUrl}/api/work/hse`)
         .then(response => {
             console.log('✅ HSE endpoint - Status:', response.status);
             return response.json();
