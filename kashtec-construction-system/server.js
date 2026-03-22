@@ -385,20 +385,6 @@ app.get("/test", (req, res) => {
   });
 });
 
-// Serve frontend application - Railway compatible
-app.get('/app', (req, res) => {
-    try {
-        res.sendFile(path.join(__dirname, 'frontend/public/index.html'));
-    } catch (error) {
-        console.error('Error serving frontend:', error);
-        res.status(500).json({
-            error: 'Frontend not available',
-            message: 'Unable to serve frontend files',
-            timestamp: new Date().toISOString()
-        });
-    }
-});
-
 // Railway root health check
 app.get('/_health', (req, res) => {
     res.status(200).json({
@@ -426,8 +412,13 @@ app.get('*', (req, res) => {
         });
     }
     
-    // For non-API requests, serve the frontend
-    res.sendFile(path.join(__dirname, 'frontend/public/index.html'));
+    // For non-API requests, return 404 since index.html was deleted
+    res.status(404).json({
+        error: 'Page not found',
+        message: 'The requested resource is not available',
+        path: req.path,
+        timestamp: new Date().toISOString()
+    });
 });
 
 // Railway-specific catch-all handler (must be last)
@@ -445,17 +436,13 @@ app.use('*', (req, res, next) => {
         });
     }
     
-    // For any other request, try to serve the frontend
-    try {
-        res.sendFile(path.join(__dirname, 'frontend/public/index.html'));
-    } catch (error) {
-        console.error('Error serving fallback frontend:', error);
-        res.status(500).json({
-            error: 'Service unavailable',
-            message: 'Unable to process request',
-            timestamp: new Date().toISOString()
-        });
-    }
+    // For any other request, return 404 since index.html was deleted
+    res.status(404).json({
+        error: 'Page not found',
+        message: 'The requested resource is not available',
+        path: req.path,
+        timestamp: new Date().toISOString()
+    });
 });
 
 // Async error handling middleware
