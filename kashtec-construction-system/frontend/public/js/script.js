@@ -151,14 +151,14 @@ function updatePasswordPlaceholder() {
         console.log('📝 Selected role:', selectedRole);
         
         var placeholders = {
-            'MD': 'admin',
-            'ADMIN': 'admin',
-            'HR': 'hr0501',
-            'HSE': 'hse0501',
-            'FINANCE': 'finance0501',
-            'PROJECT': 'pm0501',
-            'REALESTATE': 'realestate0501',
-            'ASSISTANT': 'admin'
+            'Managing Director': 'admin',
+            'Director of Administration': 'admin',
+            'HR Manager': 'hr0501',
+            'HSE Manager': 'hse0501',
+            'Finance Manager': 'finance0501',
+            'Project Manager': 'pm0501',
+            'Real Estate Manager': 'realestate0501',
+            'Admin Assistant': 'admin'
         };
         
         passwordInput.placeholder = placeholders[selectedRole] || 'Enter password';
@@ -284,6 +284,7 @@ function handleLogin() {
         showNotification('Login error: ' + (error.message || 'Unknown error'), 'error', 5000);
     }
     
+    // Return false to prevent form submission and page reload
     return false;
 }
 

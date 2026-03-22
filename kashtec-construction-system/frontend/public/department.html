@@ -1783,20 +1783,22 @@ background: #f8f9fa;
 
 <div id="loginPage" class="login-box">
     <h3>Login</h3>
-    <input type="email" id="loginEmail" placeholder="Enter your email" style="width: 100%; margin: 10px 0; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
-    <select id="loginRole" onchange="updatePasswordPlaceholder()">
-        <option value="">Select Role</option>
-        <option value="MD">Managing Director</option>
-        <option value="ADMIN">Director of Administration</option>
-        <option value="HR">HR Manager</option>
-        <option value="HSE">HSE Manager</option>
-        <option value="FINANCE">Finance Manager</option>
-        <option value="PROJECT">Project Manager</option>
-        <option value="REALESTATE">Real Estate Manager</option>
-        <option value="ASSISTANT">Admin Assistant</option>
-    </select>
-    <input type="password" id="loginPassword" placeholder="Enter password" style="width: 100%; margin: 10px 0; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
-    <button id="loginBtn" class="action">Login</button>
+    <form id="loginForm" onsubmit="return handleLogin()">
+        <input type="email" id="loginEmail" placeholder="Enter your email" style="width: 100%; margin: 10px 0; padding: 8px; border: 1px solid #ddd; border-radius: 4px;" required>
+        <select id="loginRole" onchange="updatePasswordPlaceholder()" required>
+            <option value="">Select Role</option>
+            <option value="Managing Director">Managing Director</option>
+            <option value="Director of Administration">Director of Administration</option>
+            <option value="HR Manager">HR Manager</option>
+            <option value="HSE Manager">HSE Manager</option>
+            <option value="Finance Manager">Finance Manager</option>
+            <option value="Project Manager">Project Manager</option>
+            <option value="Real Estate Manager">Real Estate Manager</option>
+            <option value="Admin Assistant">Admin Assistant</option>
+        </select>
+        <input type="password" id="loginPassword" placeholder="Enter password" style="width: 100%; margin: 10px 0; padding: 8px; border: 1px solid #ddd; border-radius: 4px;" required>
+        <button type="submit" id="loginBtn" class="action">Login</button>
+    </form>
     
     <!-- Test Credentials (remove in production) -->
     <div style="margin-top: 15px; padding: 10px; background: #f8f9fa; border-radius: 4px; font-size: 12px; color: #666;">
