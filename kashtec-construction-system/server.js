@@ -556,9 +556,18 @@ async function createAuthenticationTable() {
         console.log('🔧 Creating authentication table directly...');
         const db = require('./database/config/database');
         
+        // First, drop the existing table to ensure clean recreation
+        try {
+            console.log('🗑️ Dropping existing authentication table...');
+            await db.execute('DROP TABLE IF EXISTS authentication');
+            console.log('✅ Existing authentication table dropped');
+        } catch (dropError) {
+            console.log('ℹ️ No existing table to drop:', dropError.message);
+        }
+        
         // Create authentication table
         const createAuthTableSQL = `
-            CREATE TABLE IF NOT EXISTS authentication (
+            CREATE TABLE authentication (
                 id INT AUTO_INCREMENT PRIMARY KEY,
                 department_code VARCHAR(50) UNIQUE NOT NULL,
                 email VARCHAR(255) NOT NULL,
@@ -582,7 +591,7 @@ async function createAuthenticationTable() {
         await db.execute(createAuthTableSQL);
         console.log('✅ Authentication table created successfully');
         
-        // Insert authentication records
+        // Insert authentication records with correct hashes
         const insertAuthSQL = `
             INSERT INTO authentication (department_code, email, password_hash, role, department_name, manager_name, status) VALUES
             ('MD', 'md@kashtec.com', '$2a$12$pkTstU3up/l5NQlFpHKTI.OkXHOAbbWzjel7kSuLF/gfyva/v7vti', 'Managing Director', 'Managing Director Office', 'Dr. John Smith', 'Active'),
@@ -593,16 +602,15 @@ async function createAuthenticationTable() {
             ('PROJECT', 'pm@manager0501', '$2a$12$QprpmBaruPb.D9tbcPYm8Or/gOfC2fwwk47WYcCktc8sC1/N/wN8G', 'Project Manager', 'Project Management', 'Project Manager', 'Active'),
             ('REALESTATE', 'realestate@manager0501', '$2a$12$zrRcx9zjrBEG.8yn0a7AyesG4QWpjRtc4DcnhLAFkVpTTi9KlEDM6', 'Real Estate Manager', 'Real Estate', 'Real Estate Manager', 'Active'),
             ('ASSISTANT', 'assistant@kashtec.com', '$2a$12$aYCuS6B19FTYsARmSIOwe.iuG93uq7HTsQhW/cuh8BawFb9HPn./S', 'Admin Assistant', 'Administration', 'Admin Assistant', 'Active')
-            ON DUPLICATE KEY UPDATE 
-                password_hash = VALUES(password_hash),
-                role = VALUES(role),
-                department_name = VALUES(department_name),
-                manager_name = VALUES(manager_name),
-                status = 'Active'
         `;
         
         await db.execute(insertAuthSQL);
-        console.log('✅ Authentication records inserted successfully');
+        console.log('✅ Authentication records with correct hashes inserted successfully');
+        
+        // Verify the HR record has the correct hash
+        const verifyQuery = await db.execute('SELECT email, password_hash FROM authentication WHERE email = ?', ['hr@manager0501']);
+        console.log('🔍 Verification - HR record:', verifyQuery[0]);
+        
     } catch (error) {
         console.error('❌ Authentication table creation error:', error);
     }
