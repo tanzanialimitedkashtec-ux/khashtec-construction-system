@@ -808,6 +808,264 @@ async function requestMoreInfo(requestId) {
     }
 }
 
+// Workforce Budget Functions
+async function loadWorkforceBudgets() {
+    try {
+        console.log('🔍 Loading workforce budget requests...');
+        
+        const response = await fetch('/api/workforce-budget', {
+                headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('kashtec_auth_token')}`
+                }
+        });
+        
+        const budgets = await response.json();
+        
+        if (response.ok) {
+                console.log('📊 Workforce budget requests loaded:', budgets.length);
+                displayWorkforceBudgets(budgets);
+        } else {
+                showNotification('Failed to load workforce budget requests', 'error', 5000);
+        }
+        
+    } catch (error) {
+        console.error('❌ Error loading workforce budget requests:', error);
+        showNotification('Error loading workforce budget requests: ' + error.message, 'error', 5000);
+    }
+}
+
+function displayWorkforceBudgets(budgets) {
+    let html = `<div class="card">
+        <h3>Approve Workforce Budget</h3>
+        <p><strong>High-Level Authority:</strong> Review and approve annual workforce budget allocations</p>
+        
+        <div class="budget-section">
+            <h4>Workforce Budget Proposals</h4>`;
+    
+    if (budgets.length === 0) {
+        html += '<p>No workforce budget requests pending approval.</p>';
+    } else {
+        budgets.forEach(budget => {
+                const statusClass = budget.status.toLowerCase().replace(' ', '-');
+                const statusColor = {
+                        'pending': '#ffc107',
+                        'approved': '#28a745',
+                        'rejected': '#dc3545',
+                        'modification-requested': '#17a2b8'
+                }[statusClass] || '#6c757d';
+                
+                html += `
+                        <div class="budget-proposal">
+                                <h5>${budget.budget_period}</h5>
+                                <div class="budget-overview">
+                                        <div class="budget-row">
+                                                <span class="budget-category">Salaries & Wages:</span>
+                                                <span class="budget-amount">TZS ${budget.salaries_wages.toLocaleString()}</span>
+                                        </div>
+                                        <div class="budget-row">
+                                                <span class="budget-category">Training & Development:</span>
+                                                <span class="budget-amount">TZS ${budget.training_development.toLocaleString()}</span>
+                                        </div>
+                                        <div class="budget-row">
+                                                <span class="budget-category">Employee Benefits:</span>
+                                                <span class="budget-amount">TZS ${budget.employee_benefits.toLocaleString()}</span>
+                                        </div>
+                                        <div class="budget-row">
+                                                <span class="budget-category">Recruitment Costs:</span>
+                                                <span class="budget-amount">TZS ${budget.recruitment_costs.toLocaleString()}</span>
+                                        </div>
+                                        <div class="budget-row total">
+                                                <span class="budget-category">Total Proposed:</span>
+                                                <span class="budget-amount">TZS ${budget.total_proposed.toLocaleString()}</span>
+                                        </div>
+                                </div>
+                                
+                                <div class="budget-details">
+                                        <div class="form-group">
+                                                <label>Submitted By</label>
+                                                <input type="text" value="${budget.submitted_by}" readonly>
+                                        </div>
+                                        <div class="form-row">
+                                                <div class="form-group">
+                                                        <label>Budget Period</label>
+                                                        <input type="text" value="${budget.budget_period}" readonly>
+                                                </div>
+                                                <div class="form-group">
+                                                        <label>Current Headcount</label>
+                                                        <input type="text" value="${budget.current_headcount}" readonly>
+                                                </div>
+                                        </div>
+                                        <div class="form-group">
+                                                <label>Justification</label>
+                                                <textarea rows="4" readonly>${budget.justification}</textarea>
+                                        </div>
+                                </div>
+                                
+                                <div class="budget-actions">
+                                        <button class="action" onclick="approveBudget('${budget.id}')" style="background: #28a745;">Approve Budget</button>
+                                        <button class="action" onclick="modifyBudget('${budget.id}')" style="background: #ffc107;">Request Modification</button>
+                                        <button class="action" onclick="rejectBudget('${budget.id}')" style="background: #dc3545;">Reject Budget</button>
+                                </div>
+                        </div>
+                `;
+        });
+    }
+    
+    html += `
+            </div>
+            
+            <div class="approval-summary">
+                <h4>Budget Approval Authority</h4>
+                <div class="authority-item">
+                        <span>✅ Can approve workforce budgets up to TZS 100M</span>
+                </div>
+                <div class="authority-item">
+                        <span>✅ Can modify budget allocations</span>
+                </div>
+                <div class="authority-item">
+                        <span>✅ Final authority on workforce spending</span>
+                </div>
+            </div>
+        </div>
+    </div>`;
+    
+    showContent(html);
+}
+
+async function approveBudget(budgetId) {
+    try {
+        console.log('✅ Approving workforce budget:', budgetId);
+        
+        // Get current user
+        const currentUser = JSON.parse(localStorage.getItem('kashtec_current_user') || '{}');
+        const approvedBy = currentUser.email || 'HR Manager';
+        
+        // Get comments from user
+        const comments = prompt('Enter approval comments (optional):');
+        
+        // Get approved amount from user
+        const approvedAmount = prompt('Enter approved amount (leave empty to use proposed):');
+        
+        // Show loading notification
+        showNotification('Approving workforce budget...', 'info', 2000);
+        
+        // Call API
+        const response = await fetch(`/api/workforce-budget/${budgetId}/approve`, {
+                method: 'POST',
+                headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${localStorage.getItem('kashtec_auth_token')}`
+                },
+                body: JSON.stringify({ approvedBy, comments, approvedAmount })
+        });
+        
+        const result = await response.json();
+        
+        if (response.ok) {
+                showNotification('Workforce budget approved successfully!', 'success', 4000);
+                
+                // Refresh budgets list
+                setTimeout(() => loadWorkforceBudgets(), 2000);
+        } else {
+                showNotification('Failed to approve workforce budget: ' + result.error, 'error', 5000);
+        }
+        
+    } catch (error) {
+        console.error('❌ Error approving workforce budget:', error);
+        showNotification('Error approving workforce budget: ' + error.message, 'error', 5000);
+    }
+}
+
+async function rejectBudget(budgetId) {
+    try {
+        console.log('❌ Rejecting workforce budget:', budgetId);
+        
+        // Get current user
+        const currentUser = JSON.parse(localStorage.getItem('kashtec_current_user') || '{}');
+        const rejectedBy = currentUser.email || 'HR Manager';
+        
+        // Get rejection reason from user
+        const rejectionReason = prompt('Please enter rejection reason:');
+        if (!rejectionReason) {
+                showNotification('Rejection cancelled', 'info', 2000);
+                return;
+        }
+        
+        // Show loading notification
+        showNotification('Rejecting workforce budget...', 'info', 2000);
+        
+        // Call API
+        const response = await fetch(`/api/workforce-budget/${budgetId}/reject`, {
+                method: 'POST',
+                headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${localStorage.getItem('kashtec_auth_token')}`
+                },
+                body: JSON.stringify({ rejectionReason, rejectedBy })
+        });
+        
+        const result = await response.json();
+        
+        if (response.ok) {
+                showNotification('Workforce budget rejected successfully!', 'warning', 4000);
+                
+                // Refresh budgets list
+                setTimeout(() => loadWorkforceBudgets(), 2000);
+        } else {
+                showNotification('Failed to reject workforce budget: ' + result.error, 'error', 5000);
+        }
+        
+    } catch (error) {
+        console.error('❌ Error rejecting workforce budget:', error);
+        showNotification('Error rejecting workforce budget: ' + error.message, 'error', 5000);
+    }
+}
+
+async function modifyBudget(budgetId) {
+    try {
+        console.log('🔄 Requesting modification for workforce budget:', budgetId);
+        
+        // Get current user
+        const currentUser = JSON.parse(localStorage.getItem('kashtec_current_user') || '{}');
+        const requestedBy = currentUser.email || 'HR Manager';
+        
+        // Get modification request from user
+        const modificationRequest = prompt('Please specify modification required:');
+        if (!modificationRequest) {
+                showNotification('Modification request cancelled', 'info', 2000);
+                return;
+        }
+        
+        // Show loading notification
+        showNotification('Requesting budget modification...', 'info', 2000);
+        
+        // Call API
+        const response = await fetch(`/api/workforce-budget/${budgetId}/modify`, {
+                method: 'POST',
+                headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${localStorage.getItem('kashtec_auth_token')}`
+                },
+                body: JSON.stringify({ modificationRequest, requestedBy })
+        });
+        
+        const result = await response.json();
+        
+        if (response.ok) {
+                showNotification('Budget modification requested successfully!', 'info', 4000);
+                
+                // Refresh budgets list
+                setTimeout(() => loadWorkforceBudgets(), 2000);
+        } else {
+                showNotification('Failed to request budget modification: ' + result.error, 'error', 5000);
+        }
+        
+    } catch (error) {
+        console.error('❌ Error requesting budget modification:', error);
+        showNotification('Error requesting budget modification: ' + error.message, 'error', 5000);
+    }
+}
+
 function loadUserData() {
     var currentUser = sessionStorage.getItem('kashtec_current_user');
     

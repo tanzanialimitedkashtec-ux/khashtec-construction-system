@@ -426,6 +426,81 @@ CREATE TABLE IF NOT EXISTS senior_hiring_info_requests (
   INDEX idx_requested_by (requested_by)
 );
 
+-- Workforce Budget Tables
+CREATE TABLE IF NOT EXISTS workforce_budgets (
+  id VARCHAR(50) PRIMARY KEY,
+  budget_period VARCHAR(100) NOT NULL,
+  total_proposed DECIMAL(15,2) NOT NULL,
+  salaries_wages DECIMAL(15,2) NOT NULL,
+  training_development DECIMAL(15,2) NOT NULL,
+  employee_benefits DECIMAL(15,2) NOT NULL,
+  recruitment_costs DECIMAL(15,2) NOT NULL,
+  submitted_by VARCHAR(255) NOT NULL,
+  submitted_by_role VARCHAR(100),
+  submission_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  status ENUM('Pending', 'Approved', 'Rejected', 'Modification Requested') DEFAULT 'Pending',
+  approved_by VARCHAR(255),
+  approved_date TIMESTAMP,
+  rejection_reason TEXT,
+  modification_request TEXT,
+  current_headcount INT DEFAULT 0,
+  justification TEXT,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  INDEX idx_status (status),
+  INDEX idx_submitted_by (submitted_by),
+  INDEX idx_period (budget_period),
+  INDEX idx_date (submission_date)
+);
+
+CREATE TABLE IF NOT EXISTS workforce_budget_approvals (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  budget_id VARCHAR(50) NOT NULL,
+  approved_by VARCHAR(255) NOT NULL,
+  approved_by_role VARCHAR(100),
+  approval_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  comments TEXT,
+  final_decision ENUM('Approved', 'Rejected', 'Modification Required') DEFAULT 'Approved',
+  approved_amount DECIMAL(15,2),
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (budget_id) REFERENCES workforce_budgets(id) ON DELETE CASCADE,
+  INDEX idx_budget_id (budget_id),
+  INDEX idx_approved_by (approved_by),
+  INDEX idx_decision (final_decision)
+);
+
+CREATE TABLE IF NOT EXISTS workforce_budget_rejections (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  budget_id VARCHAR(50) NOT NULL,
+  rejection_reason TEXT NOT NULL,
+  rejected_by VARCHAR(255) NOT NULL,
+  rejected_by_role VARCHAR(100),
+  rejection_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  notified_finance BOOLEAN DEFAULT FALSE,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (budget_id) REFERENCES workforce_budgets(id) ON DELETE CASCADE,
+  INDEX idx_budget_id (budget_id),
+  INDEX idx_rejected_by (rejected_by),
+  INDEX idx_notified (notified_finance)
+);
+
+CREATE TABLE IF NOT EXISTS workforce_budget_modifications (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  budget_id VARCHAR(50) NOT NULL,
+  modification_request TEXT NOT NULL,
+  requested_by VARCHAR(255) NOT NULL,
+  requested_by_role VARCHAR(100),
+  request_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  status ENUM('Pending', 'Approved', 'Rejected') DEFAULT 'Pending',
+  response TEXT,
+  response_date TIMESTAMP NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (budget_id) REFERENCES workforce_budgets(id) ON DELETE CASCADE,
+  INDEX idx_budget_id (budget_id),
+  INDEX idx_status (status),
+  INDEX idx_requested_by (requested_by)
+);
+
 -- Insert admin user (only if not exists)
 INSERT IGNORE INTO users (name, email, password, role, status) VALUES
 ('Admin User', 'admin@kashtec.co.tz', 'admin123', 'Managing Director', 'Active');
@@ -438,3 +513,7 @@ INSERT IGNORE INTO policies (id, title, description, submitted_by, submitted_by_
 INSERT IGNORE INTO senior_hiring_requests (id, candidate_name, proposed_salary, department, experience, hr_recommendation, position_level, requested_by, requested_by_role, status) VALUES
 ('proj-manager-001', 'Eng. Michael K. Johnson', 'TZS 3,500,000/month', 'Projects Department', 'Highly qualified candidate with extensive experience in large-scale construction projects. Proven track record in project delivery and team management.', 'Manager', 'HR Department', 'HR Manager', 'Pending'),
 ('finance-manager-001', 'Sarah M. Kimario', 'TZS 2,800,000/month', 'Finance Department', 'Qualified candidate with CPA certification and experience in construction industry finance. Strong analytical skills and leadership capabilities.', 'Manager', 'HR Department', 'HR Manager', 'Pending');
+
+-- Insert sample workforce budget request
+INSERT IGNORE INTO workforce_budgets (id, budget_period, total_proposed, salaries_wages, training_development, employee_benefits, recruitment_costs, submitted_by, submitted_by_role, current_headcount, justification, status) VALUES
+('q2-2026-workforce', 'April - June 2026', 61500000.00, 45000000.00, 5000000.00, 8000000.00, 3500000.00, 'Finance Department', 'Finance Manager', 45, 'Budget covers quarterly salaries, training programs, employee benefits, and recruitment costs for expanding project portfolio. Includes 5% increase for cost of living adjustments.', 'Pending');
