@@ -4505,7 +4505,29 @@ function testSimpleSave() {
         
     } catch (error) {
         console.error('❌ Test error:', error);
-        customAlert(`Test error: ${error.message}`, "Test Error", "error");
+        
+        // DETAILED ERROR ANALYSIS FOR TEST FUNCTION
+        let errorMessage = '';
+        let problemType = '';
+        let solution = '';
+        
+        if (error.message.includes('getElementById')) {
+            problemType = 'FORM ELEMENT ERROR';
+            errorMessage = 'Cannot find form element';
+            solution = '• Make sure you are on the incident form page\n• Refresh the page and try again\n• Ensure form loaded completely';
+        } else if (error.message.includes('value')) {
+            problemType = 'FORM VALUE ERROR';
+            errorMessage = 'Cannot read form field value';
+            solution = '• Fill all required fields before testing\n• Check that form fields are accessible\n• Try selecting different values';
+        } else {
+            problemType = 'TEST FUNCTION ERROR';
+            errorMessage = error.message;
+            solution = '• Refresh the page and try again\n• Check browser console for details\n• Contact support if problem persists';
+        }
+        
+        const detailedMessage = `🧪 TEST ERROR - ${problemType}\n\n❌ ${errorMessage}\n\n🔧 SOLUTION:\n${solution}\n\n📋 ERROR DETAILS:\n• Error: ${error.message}\n• Time: ${new Date().toLocaleString()}\n• Function: testSimpleSave()\n\n💡 This helps identify why the test failed!`;
+        
+        customAlert(detailedMessage, "TEST ERROR - DIAGNOSTIC REPORT", "error");
     }
 }
 
@@ -4600,7 +4622,57 @@ function submitIncidentToDatabase() {
         })
         .catch(error => {
             console.error('❌ Failed to save to database:', error);
-            customAlert(`❌ Failed to save to database: ${error.message}\n\nPlease check:\n• Server is running\n• Network connection is stable\n• Try again in a moment`, "Database Error", "error");
+            
+            // ANALYZE THE SPECIFIC ERROR AND PROVIDE DETAILED NOTIFICATION
+            let errorMessage = '';
+            let problemType = '';
+            let solution = '';
+            
+            // Check for specific error types
+            if (error.message.includes('Failed to fetch')) {
+                problemType = 'NETWORK CONNECTION ERROR';
+                errorMessage = 'Cannot connect to the server';
+                solution = '• Check internet connection\n• Verify server is running\n• Try again in 30 seconds\n• Contact IT if problem persists';
+            } else if (error.message.includes('400')) {
+                problemType = 'VALIDATION ERROR';
+                errorMessage = 'Form data is incomplete or invalid';
+                solution = '• Fill all required fields marked with *\n• Check for valid data format\n• Ensure no special characters in text fields';
+            } else if (error.message.includes('404')) {
+                problemType = 'API ENDPOINT NOT FOUND';
+                errorMessage = 'Server API route is missing or incorrect';
+                solution = '• Server may need restart\n• API routes may be misconfigured\n• Contact developer immediately';
+            } else if (error.message.includes('500')) {
+                problemType = 'SERVER DATABASE ERROR';
+                errorMessage = 'Database operation failed on server';
+                solution = '• Database connection may be down\n• Database table may not exist\n• Server needs immediate attention\n• Contact database administrator';
+            } else if (error.message.includes('timeout')) {
+                problemType = 'REQUEST TIMEOUT';
+                errorMessage = 'Server took too long to respond';
+                solution = '• Server may be overloaded\n• Try again with smaller data\n• Check server performance\n• Contact system administrator';
+            } else if (error.message.includes('ENOTFOUND') || error.message.includes('network')) {
+                problemType = 'DNS/NETWORK ERROR';
+                errorMessage = 'Cannot find server address';
+                solution = '• Check server URL is correct\n• Verify DNS settings\n• Check network connectivity\n• Contact network administrator';
+            } else {
+                problemType = 'UNKNOWN SYSTEM ERROR';
+                errorMessage = error.message;
+                solution = '• Try refreshing the page\n• Clear browser cache\n• Try again later\n• Contact support with error details';
+            }
+            
+            // Create detailed notification message
+            const detailedMessage = `🚨 ${problemType}\n\n❌ ${errorMessage}\n\n🔧 SOLUTION:\n${solution}\n\n📋 ERROR DETAILS:\n• Error: ${error.message}\n• Time: ${new Date().toLocaleString()}\n• Action: Save incident to database\n• Department: HSE\n\n💡 This message helps identify the exact problem for quick resolution!`;
+            
+            // Show detailed error notification
+            customAlert(detailedMessage, "DATABASE SAVE ERROR - DIAGNOSTIC REPORT", "error");
+            
+            // Also log to console for debugging
+            console.log('📊 ERROR ANALYSIS:', {
+                type: problemType,
+                message: errorMessage,
+                solution: solution,
+                originalError: error.message,
+                timestamp: new Date().toISOString()
+            });
         });
         
     } catch (error) {

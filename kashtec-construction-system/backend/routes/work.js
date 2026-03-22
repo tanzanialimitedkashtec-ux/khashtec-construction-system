@@ -51,6 +51,9 @@ router.get('/:department', async (req, res) => {
 router.post('/:department', async (req, res) => {
     try {
         console.log('🔍 Received work request:', req.params.department, req.body);
+        console.log('📋 Request headers:', req.headers);
+        console.log('🌐 Request URL:', req.url);
+        console.log('📝 Request method:', req.method);
         
         const { department } = req.params;
         const {
@@ -68,13 +71,14 @@ router.post('/:department', async (req, res) => {
             affected_department, deadline // Admin
         } = req.body;
         
-        console.log('📝 Extracted data:', { work_type, work_title, work_description, priority });
+        console.log('📝 Extracted data:', { work_type, work_title, work_description, priority, incident_type, severity });
         
         // Validate required fields
         if (!work_type || !work_title || !work_description) {
             console.log('❌ Validation failed - missing required fields');
             return res.status(400).json({
-                error: 'Work type, title, and description are required'
+                error: 'Work type, title, and description are required',
+                received: { work_type, work_title, work_description }
             });
         }
         

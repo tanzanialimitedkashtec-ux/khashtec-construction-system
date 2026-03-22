@@ -337,29 +337,23 @@ app.get('/api/health', (req, res) => {
 // Database health check
 app.get('/api/db-health', async (req, res) => {
     try {
-        const db = require('./database/config/database');
-        const health = await db.healthCheck();
+        const db = require('./backend/src/config/database');
         
-        if (health.status === 'connected') {
-            res.status(200).json({
-                status: 'OK',
-                database: 'Connected',
-                timestamp: health.timestamp,
-                environment: process.env.NODE_ENV
-            });
-        } else {
-            res.status(503).json({
-                status: 'ERROR',
-                database: health.status,
-                message: health.error || 'Database connection failed',
-                timestamp: health.timestamp
-            });
-        }
+        // Simple database connection test
+        const [result] = await db.execute('SELECT 1 as test');
+        
+        res.status(200).json({
+            status: 'OK',
+            database: 'Connected',
+            timestamp: new Date().toISOString(),
+            environment: process.env.NODE_ENV,
+            result: result
+        });
     } catch (error) {
         res.status(500).json({
             status: 'ERROR',
-            message: 'Database health check failed',
-            error: error.message,
+            database: 'Connection failed',
+            message: error.message,
             timestamp: new Date().toISOString()
         });
     }
