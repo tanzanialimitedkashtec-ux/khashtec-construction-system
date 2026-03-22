@@ -347,6 +347,227 @@ function handleLogout() {
     }, 1000);
 }
 
+// HR Policy Management Functions
+async function approvePolicy(policyId) {
+    try {
+        console.log('✅ Approving policy:', policyId);
+        
+        // Get current user
+        const currentUser = JSON.parse(localStorage.getItem('kashtec_current_user') || '{}');
+        const approvedBy = currentUser.email || 'HR Manager';
+        
+        // Show loading notification
+        showNotification('Approving policy...', 'info', 2000);
+        
+        // Call API
+        const response = await fetch(`/api/policies/${policyId}/approve`, {
+                method: 'POST',
+                headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${localStorage.getItem('kashtec_auth_token')}`
+                },
+                body: JSON.stringify({ approvedBy })
+        });
+        
+        const result = await response.json();
+        
+        if (response.ok) {
+                showNotification('Policy approved successfully!', 'success', 4000);
+                
+                // Update UI to show approved status
+                const policyElement = document.querySelector(`[data-policy-id="${policyId}"]`);
+                if (policyElement) {
+                        policyElement.classList.add('approved');
+                        policyElement.querySelector('.status-badge').textContent = 'Approved';
+                        policyElement.querySelector('.status-badge').style.background = '#28a745';
+                }
+                
+                // Refresh policies list
+                setTimeout(() => loadPolicies(), 2000);
+        } else {
+                showNotification('Failed to approve policy: ' + result.error, 'error', 5000);
+        }
+        
+    } catch (error) {
+        console.error('❌ Error approving policy:', error);
+        showNotification('Error approving policy: ' + error.message, 'error', 5000);
+    }
+}
+
+async function rejectPolicy(policyId) {
+    try {
+        console.log('❌ Rejecting policy:', policyId);
+        
+        // Get current user
+        const currentUser = JSON.parse(localStorage.getItem('kashtec_current_user') || '{}');
+        const rejectedBy = currentUser.email || 'HR Manager';
+        
+        // Get rejection reason from user
+        const rejectionReason = prompt('Please enter rejection reason:');
+        if (!rejectionReason) {
+                showNotification('Rejection cancelled', 'info', 2000);
+                return;
+        }
+        
+        // Show loading notification
+        showNotification('Rejecting policy...', 'info', 2000);
+        
+        // Call API
+        const response = await fetch(`/api/policies/${policyId}/reject`, {
+                method: 'POST',
+                headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${localStorage.getItem('kashtec_auth_token')}`
+                },
+                body: JSON.stringify({ rejectionReason, rejectedBy })
+        });
+        
+        const result = await response.json();
+        
+        if (response.ok) {
+                showNotification('Policy rejected successfully!', 'warning', 4000);
+                
+                // Update UI to show rejected status
+                const policyElement = document.querySelector(`[data-policy-id="${policyId}"]`);
+                if (policyElement) {
+                        policyElement.classList.add('rejected');
+                        policyElement.querySelector('.status-badge').textContent = 'Rejected';
+                        policyElement.querySelector('.status-badge').style.background = '#dc3545';
+                }
+                
+                // Refresh policies list
+                setTimeout(() => loadPolicies(), 2000);
+        } else {
+                showNotification('Failed to reject policy: ' + result.error, 'error', 5000);
+        }
+        
+    } catch (error) {
+        console.error('❌ Error rejecting policy:', error);
+        showNotification('Error rejecting policy: ' + error.message, 'error', 5000);
+    }
+}
+
+async function requestPolicyRevision(policyId) {
+    try {
+        console.log('🔄 Requesting revision for policy:', policyId);
+        
+        // Get current user
+        const currentUser = JSON.parse(localStorage.getItem('kashtec_current_user') || '{}');
+        const requestedBy = currentUser.email || 'HR Manager';
+        
+        // Get revision request from user
+        const revisionRequest = prompt('Please enter revision request details:');
+        if (!revisionRequest) {
+                showNotification('Revision request cancelled', 'info', 2000);
+                return;
+        }
+        
+        // Show loading notification
+        showNotification('Requesting revision...', 'info', 2000);
+        
+        // Call API
+        const response = await fetch(`/api/policies/${policyId}/revision`, {
+                method: 'POST',
+                headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${localStorage.getItem('kashtec_auth_token')}`
+                },
+                body: JSON.stringify({ revisionRequest, requestedBy })
+        });
+        
+        const result = await response.json();
+        
+        if (response.ok) {
+                showNotification('Revision requested successfully!', 'info', 4000);
+                
+                // Update UI to show revision requested status
+                const policyElement = document.querySelector(`[data-policy-id="${policyId}"]`);
+                if (policyElement) {
+                        policyElement.classList.add('revision-requested');
+                        policyElement.querySelector('.status-badge').textContent = 'Revision Requested';
+                        policyElement.querySelector('.status-badge').style.background = '#ffc107';
+                }
+                
+                // Refresh policies list
+                setTimeout(() => loadPolicies(), 2000);
+        } else {
+                showNotification('Failed to request revision: ' + result.error, 'error', 5000);
+        }
+        
+    } catch (error) {
+        console.error('❌ Error requesting revision:', error);
+        showNotification('Error requesting revision: ' + error.message, 'error', 5000);
+    }
+}
+
+async function loadPolicies() {
+    try {
+        console.log('🔍 Loading policies...');
+        
+        const response = await fetch('/api/policies', {
+                headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('kashtec_auth_token')}`
+                }
+        });
+        
+        const policies = await response.json();
+        
+        if (response.ok) {
+                console.log('📋 Policies loaded:', policies.length);
+                displayPolicies(policies);
+        } else {
+                showNotification('Failed to load policies', 'error', 5000);
+        }
+        
+    } catch (error) {
+        console.error('❌ Error loading policies:', error);
+        showNotification('Error loading policies: ' + error.message, 'error', 5000);
+    }
+}
+
+function displayPolicies(policies) {
+    let html = '<div class="card"><h3>Policy Management</h3>';
+    
+    if (policies.length === 0) {
+        html += '<p>No policies found.</p>';
+    } else {
+        html += '<div class="policy-list">';
+        
+        policies.forEach(policy => {
+                const statusClass = policy.status.toLowerCase().replace(' ', '-');
+                const statusColor = {
+                        'pending': '#ffc107',
+                        'approved': '#28a745',
+                        'rejected': '#dc3545',
+                        'revision-requested': '#17a2b8'
+                }[statusClass] || '#6c757d';
+                
+                html += `
+                        <div class="policy-item" data-policy-id="${policy.id}">
+                                <h5>${policy.title}</h5>
+                                <p>${policy.description}</p>
+                                <div class="policy-details">
+                                        <span><strong>Submitted by:</strong> ${policy.submitted_by}</span>
+                                        <span><strong>Date:</strong> ${policy.submission_date}</span>
+                                        <span><strong>Impact:</strong> ${policy.impact}</span>
+                                        <span class="status-badge" style="background: ${statusColor}; color: white; padding: 2px 8px; border-radius: 4px; font-size: 12px;">${policy.status}</span>
+                                </div>
+                                <div class="policy-actions">
+                                        <button class="action" onclick="approvePolicy('${policy.id}')" style="background: #28a745;">Approve Policy</button>
+                                        <button class="action" onclick="requestPolicyRevision('${policy.id}')" style="background: #ffc107;">Request Revision</button>
+                                        <button class="action" onclick="rejectPolicy('${policy.id}')" style="background: #dc3545;">Reject</button>
+                                </div>
+                        </div>
+                `;
+        });
+        
+        html += '</div>';
+    }
+    
+    html += '</div>';
+    showContent(html);
+}
+
 function loadUserData() {
     var currentUser = sessionStorage.getItem('kashtec_current_user');
     

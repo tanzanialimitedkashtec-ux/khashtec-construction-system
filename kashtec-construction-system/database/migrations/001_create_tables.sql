@@ -301,6 +301,63 @@ CREATE TABLE IF NOT EXISTS ppe_inventory (
   INDEX idx_quantity (quantity)
 );
 
+-- Policy Management Tables
+CREATE TABLE IF NOT EXISTS policies (
+  id VARCHAR(50) PRIMARY KEY,
+  title VARCHAR(255) NOT NULL,
+  description TEXT,
+  submitted_by VARCHAR(255) NOT NULL,
+  submitted_by_role VARCHAR(100),
+  submission_date DATE DEFAULT CURRENT_DATE,
+  impact ENUM('Low', 'Medium', 'High', 'Critical') DEFAULT 'Medium',
+  status ENUM('Pending', 'Approved', 'Rejected', 'Revision Requested') DEFAULT 'Pending',
+  approved_by VARCHAR(255),
+  approved_date DATE,
+  rejection_reason TEXT,
+  revision_request TEXT,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  INDEX idx_status (status),
+  INDEX idx_submitted_by (submitted_by),
+  INDEX idx_date (submission_date)
+);
+
+CREATE TABLE IF NOT EXISTS policy_revisions (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  policy_id VARCHAR(50) NOT NULL,
+  revision_request TEXT NOT NULL,
+  requested_by VARCHAR(255) NOT NULL,
+  requested_by_role VARCHAR(100),
+  request_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  status ENUM('Pending', 'Approved', 'Rejected') DEFAULT 'Pending',
+  response TEXT,
+  response_date TIMESTAMP NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (policy_id) REFERENCES policies(id) ON DELETE CASCADE,
+  INDEX idx_policy_id (policy_id),
+  INDEX idx_status (status),
+  INDEX idx_requested_by (requested_by)
+);
+
+CREATE TABLE IF NOT EXISTS policy_rejections (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  policy_id VARCHAR(50) NOT NULL,
+  rejection_reason TEXT NOT NULL,
+  rejected_by VARCHAR(255) NOT NULL,
+  rejected_by_role VARCHAR(100),
+  rejection_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  notified_department BOOLEAN DEFAULT FALSE,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (policy_id) REFERENCES policies(id) ON DELETE CASCADE,
+  INDEX idx_policy_id (policy_id),
+  INDEX idx_rejected_by (rejected_by),
+  INDEX idx_notified (notified_department)
+);
+
 -- Insert admin user (only if not exists)
 INSERT IGNORE INTO users (name, email, password, role, status) VALUES
 ('Admin User', 'admin@kashtec.co.tz', 'admin123', 'Managing Director', 'Active');
+
+-- Insert sample policy for HR to approve
+INSERT IGNORE INTO policies (id, title, description, submitted_by, submitted_by_role, impact, status) VALUES
+('digital-recruitment', 'Digital Recruitment Platform Policy', 'Implementation of online job portal and digital application system', 'HR Department', 'HR Manager', 'High', 'Pending');

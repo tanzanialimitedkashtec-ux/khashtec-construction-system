@@ -25,6 +25,7 @@ const projectRoutes = require('./backend/routes/projects');
 const documentRoutes = require('./backend/routes/documents');
 const notificationRoutes = require('./backend/routes/notifications');
 const apiRoutes = require('./backend/routes/api');
+const policyRoutes = require('./backend/routes/policies');
 
 const app = express();
 const PORT = config.PORT;
@@ -298,6 +299,10 @@ app.use('/api/documents', asyncHandler(async (req, res, next) => {
 
 app.use('/api/notifications', asyncHandler(async (req, res, next) => {
     return notificationRoutes(req, res, next);
+}));
+
+app.use('/api/policies', asyncHandler(async (req, res, next) => {
+    return policyRoutes(req, res, next);
 }));
 
 app.use('/api', asyncHandler(async (req, res, next) => {
