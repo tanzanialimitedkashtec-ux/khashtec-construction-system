@@ -622,13 +622,13 @@ CREATE TABLE IF NOT EXISTS realestate_work (
   assigned_to VARCHAR(255),
   due_date DATE,
   completion_date TIMESTAMP NULL,
-  created_at TIMESTAMP DEFAULT TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   INDEX idx_status (status),
-  idx_department (department_code),
-  idx_work_type (work_type),
-  idx_submitted_by (submitted_by),
-  idx_due_date (due_date)
+  INDEX idx_department (department_code),
+  INDEX idx_work_type (work_type),
+  INDEX idx_submitted_by (submitted_by),
+  INDEX idx_due_date (due_date)
 );
 
 CREATE TABLE IF NOT EXISTS admin_work (
@@ -667,15 +667,9 @@ CREATE TABLE IF NOT EXISTS work_comments (
   comment_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   is_internal BOOLEAN DEFAULT FALSE,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  FOREIGN KEY (work_id, work_table) REFERENCES hr_work(id) ON DELETE CASCADE,
-  FOREIGN KEY (work_id, work_table) REFERENCES finance_work(id) ON DELETE CASCADE,
-  FOREIGN KEY (work_id, work_table) REFERENCES hse_work(id) ON DELETE CASCADE,
-  FOREIGN KEY (work_id, work_table) REFERENCES project_work(id) ON DELETE CASCADE,
-  FOREIGN KEY (work_id, work_table) REFERENCES realestate_work(id) ON DELETE CASCADE,
-  FOREIGN KEY (id, work_table) REFERENCES admin_work(id) ON DELETE CASCADE,
   INDEX idx_work_id (work_id),
   INDEX idx_work_table (work_table),
-  idx_commented_by (commented_by)
+  INDEX idx_commented_by (commented_by)
 );
 
 CREATE TABLE IF NOT EXISTS work_actions (
@@ -689,16 +683,10 @@ CREATE TABLE IF NOT EXISTS work_actions (
   action_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   next_action_date TIMESTAMP NULL,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  FOREIGN KEY (work_id, work_table) REFERENCES hr_work(id) ON DELETE CASCADE,
-  FOREIGN KEY (work_id, work_table) REFERENCES finance_work(id) ON DELETE CASCADE,
-  FOREIGN KEY (work_id, work_table) REFERENCES hse_work(id) ON DELETE CASCADE,
-  FOREIGN KEY (id, work_table) REFERENCES project_work(id) ON DELETE CASCADE,
-  FOREIGN KEY (id, work_table) REFERENCES realestate_work(id) ON DELETE CASCADE,
-  FOREIGN KEY (id, work_table) REFERENCES admin_work(id) ON DELETE CASCADE,
   INDEX idx_work_id (work_id),
   INDEX idx_work_table (work_table),
-  idx_action_type (action_type),
-  idx_action_by (action_by)
+  INDEX idx_action_type (action_type),
+  INDEX idx_action_by (action_by)
 );
 
 CREATE TABLE IF NOT EXISTS work_rejections (
@@ -712,16 +700,10 @@ CREATE TABLE IF NOT EXISTS work_rejections (
   rejection_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   notified_submitter BOOLEAN DEFAULT FALSE,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  FOREIGN KEY (work_id, work_table) REFERENCES hr_work(id) ON DELETE CASCADE,
-  FOREIGN KEY (work_id, work_table) REFERENCES finance_work(id) ON DELETE CASCADE,
-  FOREIGN KEY (work_id, work_table) REFERENCES hse_work(id) ON DELETE CASCADE,
-  FOREIGN KEY (id, work_table) REFERENCES project_work(id) ON DELETE CASCADE,
-  FOREIGN KEY (id, work_table) REFERENCES realestate_work(id) ON DELETE CASCADE,
-  FOREIGN KEY (id, work_table) REFERENCES admin_work(id) ON DELETE CASCADE,
   INDEX idx_work_id (work_id),
   INDEX idx_work_table (work_table),
-  idx_rejected_by (rejected_by),
-  idx_notified (notified_submitter)
+  INDEX idx_rejected_by (rejected_by),
+  INDEX idx_notified (notified_submitter)
 );
 
 CREATE TABLE IF NOT EXISTS work_revisions (
@@ -739,17 +721,11 @@ CREATE TABLE IF NOT EXISTS work_revisions (
   responded_by VARCHAR(255),
   responded_by_role VARCHAR(100),
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  FOREIGN KEY (work_id, work_table) REFERENCES hr_work(id) ON DELETE CASCADE,
-  FOREIGN KEY (work_id, work_table) REFERENCES finance_work(id) ON DELETE CASCADE,
-  FOREIGN KEY (id, work_table) REFERENCES hse_work(id) ON DELETE CASCADE,
-  FOREIGN KEY (id, work_table) REFERENCES project_work(id) ON DELETE CASCADE,
-  FOREIGN KEY (id, work_table) REFERENCES realestate_work(id) ON DELETE CASCADE,
-  FOREIGN KEY (id, table) REFERENCES admin_work(id) ON DELETE CASCADE,
   INDEX idx_work_id (work_id),
   INDEX idx_work_table (work_table),
-  idx_status (status),
-  idx_requested_by (requested_by),
-  idx_response_date (response_date)
+  INDEX idx_status (status),
+  INDEX idx_requested_by (requested_by),
+  INDEX idx_response_date (response_date)
 );
 
 -- Insert admin user (only if not exists)

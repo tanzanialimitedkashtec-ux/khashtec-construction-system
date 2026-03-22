@@ -3149,10 +3149,17 @@ function requestMoreInfo(hireId) {
 }
 
 function rejectSeniorHire(hireId) {
-    customPrompt('Please provide reason for rejection:', '', 'Rejection Reason', function(reason) {
-        if (reason) {
-            customAlert(`Senior staff hire ${hireId} rejected.\n\nReason: ${reason}\n\nHR department has been notified.`, "Hire Rejected", "error");
-        }
+    showRejectModal(hireId, 'Senior Staff Hiring', function(formData) {
+        console.log('Rejecting senior hire:', formData);
+        
+        customAlert(`Senior staff hire ${hireId} rejected.\n\nReason: ${formData.rejectionReason}\nDetails: ${formData.rejectionDetails}\n\nHR department has been notified.`, "Hire Rejected", "error");
+        
+        // API call would go here
+        // fetch('/api/senior-hiring/reject', {
+        //     method: 'POST',
+        //     headers: { 'Content-Type': 'application/json' },
+        //     body: JSON.stringify({ ...formData, hireId })
+        // });
     });
 }
 
@@ -3165,10 +3172,17 @@ function modifyBudget(budgetId) {
 }
 
 function rejectBudget(budgetId) {
-    customPrompt('Please provide reason for rejection:', '', 'Budget Rejection Reason', function(reason) {
-        if (reason) {
-            customAlert(`Workforce budget ${budgetId} rejected.\n\nReason: ${reason}\n\nFinance department has been notified.`, "Budget Rejected", "error");
-        }
+    showRejectModal(budgetId, 'Workforce Budget', function(formData) {
+        console.log('Rejecting budget:', formData);
+        
+        customAlert(`Workforce budget ${budgetId} rejected.\n\nReason: ${formData.rejectionReason}\nDetails: ${formData.rejectionDetails}\n\nFinance department has been notified.`, "Budget Rejected", "error");
+        
+        // API call would go here
+        // fetch('/api/workforce-budget/reject', {
+        //     method: 'POST',
+        //     headers: { 'Content-Type': 'application/json' },
+        //     body: JSON.stringify({ ...formData, budgetId })
+        // });
     });
 }
 
@@ -6526,10 +6540,17 @@ function approveExpense(expenseId) {
 }
 
 function rejectExpense(expenseId) {
-    customPrompt('Please provide reason for rejection:', '', 'Rejection Reason', function(reason) {
-        if (reason) {
-            customAlert(`Expense ${expenseId} rejected.\n\nReason: ${reason}\n\nSubmitter has been notified.`, "Expense Rejected", "error");
-        }
+    showRejectModal(expenseId, 'Expense Report', function(formData) {
+        console.log('Rejecting expense:', formData);
+        
+        customAlert(`Expense ${expenseId} rejected.\n\nReason: ${formData.rejectionReason}\nDetails: ${formData.rejectionDetails}\n\nSubmitter has been notified.`, "Expense Rejected", "error");
+        
+        // API call would go here
+        // fetch('/api/finance/reject-expense', {
+        //     method: 'POST',
+        //     headers: { 'Content-Type': 'application/json' },
+        //     body: JSON.stringify({ ...formData, expenseId })
+        // });
     });
 }
 
@@ -7597,18 +7618,36 @@ function approveWork(workId) {
 }
 
 function requestRework(workId) {
-    customPrompt('Please specify rework requirements:', '', 'Rework Requirements', function(reason) {
-        if (reason) {
-            customAlert(`Work ${workId} sent for rework.\n\nReason: ${reason}\n\nWorker has been notified.`, "Rework Requested", "warning");
-        }
+    showRevisionModal(workId, 'Work Item', function(formData) {
+        // Here you would normally send this data to your backend API
+        console.log('Requesting rework:', formData);
+        
+        // Show success message
+        customAlert(`Work ${workId} sent for rework.\n\nType: ${formData.revisionType}\nDetails: ${formData.revisionDetails}\nPriority: ${formData.revisionPriority}\n\nWorker has been notified.`, "Rework Requested", "warning");
+        
+        // In a real application, you would make an API call here:
+        // fetch('/api/work/request-revision', {
+        //     method: 'POST',
+        //     headers: { 'Content-Type': 'application/json' },
+        //     body: JSON.stringify(formData)
+        // });
     });
 }
 
 function rejectWork(workId) {
-    customPrompt('Please provide rejection reason:', '', 'Rejection Reason', function(reason) {
-        if (reason) {
-            customAlert(`Work ${workId} rejected.\n\nReason: ${reason}\n\nHR has been notified for performance review.`, "Work Rejected", "error");
-        }
+    showRejectModal(workId, 'Work Item', function(formData) {
+        // Here you would normally send this data to your backend API
+        console.log('Rejecting work:', formData);
+        
+        // Show success message
+        customAlert(`Work ${workId} rejected successfully.\n\nReason: ${formData.rejectionReason}\nDetails: ${formData.rejectionDetails}\n\nSubmitter has been notified.`, "Work Rejected", "error");
+        
+        // In a real application, you would make an API call here:
+        // fetch('/api/work/reject', {
+        //     method: 'POST',
+        //     headers: { 'Content-Type': 'application/json' },
+        //     body: JSON.stringify(formData)
+        // });
     });
 }
 
@@ -10457,6 +10496,388 @@ function filterPpeRecords() {
 </script>
 
 <!-- Session Manager - Secure Session Management -->
+<!-- Custom Modal Styles -->
+<style>
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.7);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10000;
+    animation: fadeIn 0.3s ease;
+}
+
+.modal-content {
+    background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+    border-radius: 20px;
+    padding: 30px;
+    max-width: 600px;
+    width: 90%;
+    max-height: 80vh;
+    overflow-y: auto;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    animation: slideIn 0.3s ease;
+    border: 1px solid #e9ecef;
+}
+
+.modal-header {
+    text-align: center;
+    margin-bottom: 25px;
+    padding-bottom: 15px;
+    border-bottom: 2px solid #e9ecef;
+}
+
+.modal-header h2 {
+    color: #2c3e50;
+    margin: 0 0 10px 0;
+    font-size: 24px;
+    font-weight: 600;
+}
+
+.modal-header p {
+    color: #6c757d;
+    margin: 0;
+    font-size: 14px;
+}
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 8px;
+    color: #495057;
+    font-weight: 500;
+    font-size: 14px;
+}
+
+.form-group textarea,
+.form-group select,
+.form-group input {
+    width: 100%;
+    padding: 12px 16px;
+    border: 2px solid #e9ecef;
+    border-radius: 10px;
+    font-size: 14px;
+    transition: all 0.3s ease;
+    box-sizing: border-box;
+}
+
+.form-group textarea:focus,
+.form-group select:focus,
+.form-group input:focus {
+    outline: none;
+    border-color: #007bff;
+    box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+}
+
+.form-group textarea {
+    resize: vertical;
+    min-height: 100px;
+}
+
+.modal-footer {
+    display: flex;
+    gap: 15px;
+    justify-content: flex-end;
+    margin-top: 25px;
+    padding-top: 20px;
+    border-top: 1px solid #e9ecef;
+}
+
+.btn {
+    padding: 12px 24px;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.btn-cancel {
+    background-color: #6c757d;
+    color: white;
+}
+
+.btn-cancel:hover {
+    background-color: #5a6268;
+    transform: translateY(-2px);
+}
+
+.btn-submit {
+    background-color: #dc3545;
+    color: white;
+}
+
+.btn-submit:hover {
+    background-color: #c82333;
+    transform: translateY(-2px);
+}
+
+.btn-revision {
+    background-color: #ffc107;
+    color: #212529;
+}
+
+.btn-revision:hover {
+    background-color: #e0a800;
+    transform: translateY(-2px);
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes slideIn {
+    from { 
+        transform: translateY(-50px);
+        opacity: 0;
+    }
+    to { 
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+.error-message {
+    color: #dc3545;
+    font-size: 12px;
+    margin-top: 5px;
+    display: none;
+}
+
+.form-group.error textarea,
+.form-group.error input {
+    border-color: #dc3545;
+}
+</style>
+
+<!-- Custom Modal Functions -->
+<script>
+function showRejectModal(workId, workType, callback) {
+    const modal = document.createElement('div');
+    modal.className = 'modal-overlay';
+    modal.innerHTML = `
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Reject Work Item</h2>
+                <p>Work ID: ${workId} | Type: ${workType}</p>
+            </div>
+            <form id="rejectForm">
+                <div class="form-group">
+                    <label for="rejectionReason">Rejection Reason *</label>
+                    <select id="rejectionReason" required>
+                        <option value="">Select a reason</option>
+                        <option value="incomplete">Incomplete Information</option>
+                        <option value="incorrect">Incorrect Information</option>
+                        <option value="procedural">Procedural Issues</option>
+                        <option value="quality">Quality Standards Not Met</option>
+                        <option value="timeline">Timeline Issues</option>
+                        <option value="budget">Budget Constraints</option>
+                        <option value="other">Other</option>
+                    </select>
+                    <div class="error-message">Please select a rejection reason</div>
+                </div>
+                <div class="form-group">
+                    <label for="rejectionDetails">Detailed Explanation *</label>
+                    <textarea id="rejectionDetails" placeholder="Please provide detailed explanation for rejection..." required></textarea>
+                    <div class="error-message">Please provide detailed explanation</div>
+                </div>
+                <div class="form-group">
+                    <label for="rejectionRecommendation">Recommendations for Improvement</label>
+                    <textarea id="rejectionRecommendation" placeholder="Suggestions for improving this work item..."></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="notifySubmitter">Notify Submitter</label>
+                    <select id="notifySubmitter">
+                        <option value="immediately">Immediately</option>
+                        <option value="daily">Daily Summary</option>
+                        <option value="weekly">Weekly Summary</option>
+                    </select>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-cancel" onclick="closeModal()">Cancel</button>
+                    <button type="submit" class="btn btn-submit">Reject Work Item</button>
+                </div>
+            </form>
+        </div>
+    `;
+    
+    document.body.appendChild(modal);
+    
+    // Add form submission handler
+    document.getElementById('rejectForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        // Validate form
+        let isValid = true;
+        const rejectionReason = document.getElementById('rejectionReason');
+        const rejectionDetails = document.getElementById('rejectionDetails');
+        
+        // Reset error states
+        document.querySelectorAll('.form-group').forEach(group => {
+            group.classList.remove('error');
+            group.querySelector('.error-message').style.display = 'none';
+        });
+        
+        if (!rejectionReason.value) {
+            rejectionReason.parentElement.classList.add('error');
+            rejectionReason.parentElement.querySelector('.error-message').style.display = 'block';
+            isValid = false;
+        }
+        
+        if (!rejectionDetails.value.trim()) {
+            rejectionDetails.parentElement.classList.add('error');
+            rejectionDetails.parentElement.querySelector('.error-message').style.display = 'block';
+            isValid = false;
+        }
+        
+        if (isValid) {
+            const formData = {
+                workId: workId,
+                workType: workType,
+                rejectionReason: rejectionReason.value,
+                rejectionDetails: rejectionDetails.value,
+                rejectionRecommendation: document.getElementById('rejectionRecommendation').value,
+                notifySubmitter: document.getElementById('notifySubmitter').value
+            };
+            
+            callback(formData);
+            closeModal();
+        }
+    });
+    
+    // Close modal on overlay click
+    modal.addEventListener('click', function(e) {
+        if (e.target === modal) {
+            closeModal();
+        }
+    });
+}
+
+function showRevisionModal(workId, workType, callback) {
+    const modal = document.createElement('div');
+    modal.className = 'modal-overlay';
+    modal.innerHTML = `
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Request Revision</h2>
+                <p>Work ID: ${workId} | Type: ${workType}</p>
+            </div>
+            <form id="revisionForm">
+                <div class="form-group">
+                    <label for="revisionType">Revision Type *</label>
+                    <select id="revisionType" required>
+                        <option value="">Select revision type</option>
+                        <option value="minor">Minor Changes</option>
+                        <option value="major">Major Changes</option>
+                        <option value="clarification">Clarification Needed</option>
+                        <option value="additional">Additional Information</option>
+                        <option value="format">Format Changes</option>
+                    </select>
+                    <div class="error-message">Please select revision type</div>
+                </div>
+                <div class="form-group">
+                    <label for="revisionDetails">Revision Request *</label>
+                    <textarea id="revisionDetails" placeholder="Please specify what needs to be revised..." required></textarea>
+                    <div class="error-message">Please provide revision details</div>
+                </div>
+                <div class="form-group">
+                    <label for="revisionPriority">Priority Level</label>
+                    <select id="revisionPriority">
+                        <option value="low">Low</option>
+                        <option value="medium" selected>Medium</option>
+                        <option value="high">High</option>
+                        <option value="urgent">Urgent</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="expectedTimeline">Expected Completion Date</label>
+                    <input type="date" id="expectedTimeline" min="${new Date().toISOString().split('T')[0]}">
+                </div>
+                <div class="form-group">
+                    <label for="revisionNotes">Additional Notes</label>
+                    <textarea id="revisionNotes" placeholder="Any additional instructions or context..."></textarea>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-cancel" onclick="closeModal()">Cancel</button>
+                    <button type="submit" class="btn btn-revision">Request Revision</button>
+                </div>
+            </form>
+        </div>
+    `;
+    
+    document.body.appendChild(modal);
+    
+    // Add form submission handler
+    document.getElementById('revisionForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        // Validate form
+        let isValid = true;
+        const revisionType = document.getElementById('revisionType');
+        const revisionDetails = document.getElementById('revisionDetails');
+        
+        // Reset error states
+        document.querySelectorAll('.form-group').forEach(group => {
+            group.classList.remove('error');
+            group.querySelector('.error-message').style.display = 'none';
+        });
+        
+        if (!revisionType.value) {
+            revisionType.parentElement.classList.add('error');
+            revisionType.parentElement.querySelector('.error-message').style.display = 'block';
+            isValid = false;
+        }
+        
+        if (!revisionDetails.value.trim()) {
+            revisionDetails.parentElement.classList.add('error');
+            revisionDetails.parentElement.querySelector('.error-message').style.display = 'block';
+            isValid = false;
+        }
+        
+        if (isValid) {
+            const formData = {
+                workId: workId,
+                workType: workType,
+                revisionType: revisionType.value,
+                revisionDetails: revisionDetails.value,
+                revisionPriority: document.getElementById('revisionPriority').value,
+                expectedTimeline: document.getElementById('expectedTimeline').value,
+                revisionNotes: document.getElementById('revisionNotes').value
+            };
+            
+            callback(formData);
+            closeModal();
+        }
+    });
+    
+    // Close modal on overlay click
+    modal.addEventListener('click', function(e) {
+        if (e.target === modal) {
+            closeModal();
+        }
+    });
+}
+
+function closeModal() {
+    const modal = document.querySelector('.modal-overlay');
+    if (modal) {
+        modal.remove();
+    }
+}
+</script>
+
 <script src="js/sessionManager.js"></script>
 
 <!-- Include Login Functions -->
