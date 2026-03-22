@@ -3330,7 +3330,8 @@ function manageDocuments(){
 function registerEmployee(){
     showContent(`<div class="card">
         <h3>Register New Employee</h3>
-        <form id="employeeForm" onsubmit="return saveEmployee()">
+        <!-- Remove form tag and use div with manual submission -->
+        <div id="employeeForm">
             <div class="form-row">
                 <div class="form-group">
                     <label>Full Name *</label>
@@ -3419,9 +3420,180 @@ function registerEmployee(){
                 <small>Upload passport size photo</small>
             </div>
             
-            <button type="submit" class="action">Register Employee</button>
-        </form>
+            <!-- Manual Submit Buttons - NO FORM SUBMISSION -->
+            <div style="margin-top: 20px;">
+                <button type="button" onclick="saveEmployeeManually()" style="background: #28a745; color: white; padding: 15px 30px; border: none; border-radius: 5px; cursor: pointer; font-size: 18px; font-weight: bold;">
+                    👤 Register Employee
+                </button>
+                <button type="button" onclick="clearEmployeeForm()" style="background: #6c757d; color: white; padding: 15px 30px; border: none; border-radius: 5px; cursor: pointer; font-size: 18px; margin-left: 15px;">
+                    🔄 Clear Form
+                </button>
+            </div>
+        </div>
     </div>`);
+    
+    // Apply the same page freeze protection
+    setTimeout(() => {
+        console.log('🛡️ Applying page freeze to employee registration...');
+        
+        // Block form submissions on this page
+        document.addEventListener('submit', function(e) {
+            console.log('🚫 Employee form submission prevented');
+            e.preventDefault();
+            e.stopPropagation();
+            e.stopImmediatePropagation();
+            return false;
+        }, true);
+        
+        console.log('✅ Employee registration page protected');
+    }, 100);
+}
+
+// Manual employee registration function - NO FORM SUBMISSION
+function saveEmployeeManually() {
+    console.log('👤 saveEmployeeManually called - DIRECT EMPLOYEE SAVE');
+    
+    try {
+        // Get form values
+        const employee = {
+            fullName: document.getElementById('empFullName').value,
+            phone: document.getElementById('empPhone').value,
+            gmail: document.getElementById('empGmail').value,
+            nida: document.getElementById('empNIDA').value,
+            passport: document.getElementById('empPassport').value,
+            contract: document.getElementById('empContract').value,
+            jobCategory: document.getElementById('empJobCategory').value,
+            department: document.getElementById('empDepartment').value,
+            status: 'active'
+        };
+        
+        console.log('📝 Employee data:', employee);
+        
+        // Validate required fields
+        if (!employee.fullName || !employee.phone || !employee.gmail || !employee.nida || !employee.contract || !employee.jobCategory || !employee.department) {
+            console.log('❌ Validation failed - missing required fields');
+            showRealProblemNotification('VALIDATION_ERROR', {
+                missingFields: {
+                    fullName: !employee.fullName,
+                    phone: !employee.phone,
+                    gmail: !employee.gmail,
+                    nida: !employee.nida,
+                    contract: !employee.contract,
+                    jobCategory: !employee.jobCategory,
+                    department: !employee.department
+                }
+            });
+            return;
+        }
+        
+        // Show loading message
+        showRealProblemNotification('SAVING', { 
+            message: 'Registering employee...',
+            employee: employee 
+        });
+        
+        // Get the current origin for absolute URLs
+        const baseUrl = window.location.origin;
+        console.log('📍 Using server:', baseUrl);
+        
+        // Send data to backend API - NO FORM INVOLVED
+        fetch(`${baseUrl}/api/employees`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${sessionManager.getToken()}`
+            },
+            body: JSON.stringify(employee)
+        })
+        .then(response => {
+            console.log('📡 Employee registration response status:', response.status);
+            
+            if (!response.ok) {
+                // Parse error response to get real problem
+                return response.json().then(errorData => {
+                    throw new Error(`HTTP ${response.status}: ${errorData.error || response.statusText}`);
+                });
+            }
+            
+            return response.json();
+        })
+        .then(data => {
+            console.log('📊 Employee registration result:', data);
+            
+            if (data.error) {
+                throw new Error(data.error);
+            }
+            
+            // Handle file uploads separately if needed
+            const agreementFile = document.getElementById('empAgreement').files[0];
+            const cvFile = document.getElementById('empCV').files[0];
+            const profileFile = document.getElementById('empProfile').files[0];
+            
+            let fileUploadMessage = '';
+            if (agreementFile || cvFile || profileFile) {
+                fileUploadMessage = `\n📄 Files ready for upload: ${[agreementFile, cvFile, profileFile].filter(f => f).length} file(s)`;
+            }
+            
+            // Success message
+            showRealProblemNotification('SUCCESS', {
+                message: `Employee ${employee.fullName} registered successfully!${fileUploadMessage}\n\n📋 Details:\n• ID: ${data.id}\n• Department: ${employee.department}\n• Job Category: ${employee.jobCategory}\n• Contract: ${employee.contract}\n• Status: ${employee.status}\n\n✅ Employee has been added to the database.\n🚫 NO PAGE REFRESH - EMPLOYEE SAVED SUCCESSFULLY!`,
+                employee: employee,
+                data: data
+            });
+            
+            // Clear form
+            clearEmployeeForm();
+            
+            // Optionally refresh employee list if visible
+            if (typeof viewAllEmployees === 'function') {
+                setTimeout(() => viewAllEmployees(), 1000);
+            }
+            
+        })
+        .catch(error => {
+            console.error('❌ Failed to register employee:', error);
+            
+            // Analyze the error to show real problem
+            const problemType = analyzeRealProblem(error);
+            showRealProblemNotification(problemType, { 
+                error: error.message,
+                originalError: error,
+                employee: employee 
+            });
+        });
+        
+    } catch (error) {
+        console.error('❌ Unexpected error:', error);
+        showRealProblemNotification('SYSTEM_ERROR', { 
+            error: error.message,
+            stack: error.stack 
+        });
+    }
+}
+
+// Clear employee form function
+function clearEmployeeForm() {
+    console.log('🔄 Clearing employee form');
+    
+    // Clear all form fields
+    const fields = ['empFullName', 'empPhone', 'empGmail', 'empNIDA', 'empPassport', 'empContract', 'empJobCategory', 'empDepartment'];
+    fields.forEach(fieldId => {
+        const field = document.getElementById(fieldId);
+        if (field) {
+            field.value = '';
+        }
+    });
+    
+    // Clear file inputs
+    const fileFields = ['empAgreement', 'empCV', 'empProfile'];
+    fileFields.forEach(fieldId => {
+        const field = document.getElementById(fieldId);
+        if (field) {
+            field.value = '';
+        }
+    });
+    
+    console.log('✅ Employee form cleared successfully');
 }
 
 function assignWorker(){
