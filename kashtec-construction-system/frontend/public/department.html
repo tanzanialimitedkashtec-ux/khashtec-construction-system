@@ -4249,14 +4249,55 @@ function saveLeaveRequest() {
         requestedDate: new Date().toLocaleString()
     };
     
-    // Save to localStorage
-    const leaveRequests = []; // TODO: Load from API instead of localStorage
-    leaveRequests.push(leave);
-    // TODO: Save to API instead of localStorage
+    // Validate required fields
+    if (!leave.employee || !leave.leaveType || !leave.startDate || !leave.endDate || !leave.days) {
+        customAlert('Please fill in all required fields:\n\n• Employee\n• Leave Type\n• Start Date\n• End Date\n• Days', "Validation Error", "error");
+        return false;
+    }
     
-    customAlert(`Leave request saved successfully!\n\nEmployee: ${leave.employee}\nLeave Type: ${leave.leaveType}\nDays: ${leave.days}`, "Leave Request Saved", "success");
+    // Prepare work item for HR department
+    const workItem = {
+        work_type: 'Leave Request',
+        work_title: `Leave Request - ${leave.leaveType}`,
+        work_description: `Leave request for ${leave.employee}\n\nReason: ${leave.reason}\nDuration: ${leave.days} days\nFrom: ${leave.startDate}\nTo: ${leave.endDate}`,
+        priority: leave.status === 'urgent' ? 'High' : 'Medium',
+        due_date: leave.startDate,
+        assigned_to: 'HR Manager',
+        submitted_by: 'HR Manager'
+    };
     
-    document.getElementById('leaveForm').reset();
+    // Show loading message
+    customAlert('Processing leave request...', "Processing", "info");
+    
+    // Send data to backend API
+    fetch('/api/work/hr', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+        },
+        body: JSON.stringify(workItem)
+    })
+    .then(response => {
+        console.log('📡 Leave API Response status:', response.status);
+        return response.json();
+    })
+    .then(data => {
+        console.log('📊 Leave API Response data:', data);
+        
+        if (data.error) {
+            throw new Error(data.error);
+        }
+        
+        customAlert(`Leave request saved successfully!\n\nEmployee: ${leave.employee}\nLeave Type: ${leave.leaveType}\nDays: ${leave.days}\nRequest ID: ${data.id}\n\n🎉 Leave request saved to database!`, "Leave Request Saved", "success");
+        
+        document.getElementById('leaveForm').reset();
+    })
+    .catch(error => {
+        console.error('❌ Error saving leave request:', error);
+        customAlert(`Failed to save leave request: ${error.message}\n\nPlease check:\n• All required fields are filled\n• Network connection is stable\n• Server is running properly`, "Save Error", "error");
+    });
+    
     return false;
 }
 
@@ -4273,14 +4314,55 @@ function saveContract() {
         createdDate: new Date().toLocaleString()
     };
     
-    // Save to localStorage
-    const contracts = []; // TODO: Load from API instead of localStorage
-    contracts.push(contract);
-    // TODO: Save to API instead of localStorage
+    // Validate required fields
+    if (!contract.employee || !contract.contractType || !contract.startDate || !contract.salary) {
+        customAlert('Please fill in all required fields:\n\n• Employee\n• Contract Type\n• Start Date\n• Salary', "Validation Error", "error");
+        return false;
+    }
     
-    customAlert(`Contract saved successfully!\n\nEmployee: ${contract.employee}\nContract Type: ${contract.contractType}\nSalary: TZS ${contract.salary}`, "Contract Saved", "success");
+    // Prepare work item for HR department
+    const workItem = {
+        work_type: 'Contract Management',
+        work_title: `Contract - ${contract.contractType}`,
+        work_description: `Contract for ${contract.employee}\n\nType: ${contract.contractType}\nSalary: TZS ${contract.salary}\nStart: ${contract.startDate}\nEnd: ${contract.endDate}\nTerms: ${contract.terms}\nStatus: ${contract.status}`,
+        priority: contract.status === 'urgent' ? 'High' : 'Medium',
+        due_date: contract.startDate,
+        assigned_to: 'HR Manager',
+        submitted_by: 'HR Manager'
+    };
     
-    document.getElementById('contractForm').reset();
+    // Show loading message
+    customAlert('Processing contract...', "Processing", "info");
+    
+    // Send data to backend API
+    fetch('/api/work/hr', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+        },
+        body: JSON.stringify(workItem)
+    })
+    .then(response => {
+        console.log('📡 Contract API Response status:', response.status);
+        return response.json();
+    })
+    .then(data => {
+        console.log('📊 Contract API Response data:', data);
+        
+        if (data.error) {
+            throw new Error(data.error);
+        }
+        
+        customAlert(`Contract saved successfully!\n\nEmployee: ${contract.employee}\nContract Type: ${contract.contractType}\nSalary: TZS ${contract.salary}\nContract ID: ${data.id}\n\n🎉 Contract saved to database!`, "Contract Saved", "success");
+        
+        document.getElementById('contractForm').reset();
+    })
+    .catch(error => {
+        console.error('❌ Error saving contract:', error);
+        customAlert(`Failed to save contract: ${error.message}\n\nPlease check:\n• All required fields are filled\n• Network connection is stable\n• Server is running properly`, "Save Error", "error");
+    });
+    
     return false;
 }
 
@@ -4822,16 +4904,51 @@ function saveEmployeeManual() {
             employeeData: { fullName, phone, email, department }
         });
         
-        // Simulate employee registration (replace with actual API call)
-        setTimeout(() => {
+        // Send employee data to backend API
+        fetch('/api/employees', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            },
+            body: JSON.stringify({
+                fullName: fullName,
+                gmail: email,
+                phone: phone,
+                department: department,
+                jobCategory: jobCategory,
+                nida: nida,
+                passport: document.getElementById('empPassport')?.value || '',
+                contract: contract
+            })
+        })
+        .then(response => {
+            console.log('📡 Employee API Response status:', response.status);
+            return response.json();
+        })
+        .then(data => {
+            console.log('📊 Employee API Response data:', data);
+            
+            if (data.error) {
+                throw new Error(data.error);
+            }
+            
+            // Success message
             showRealProblemNotification('SUCCESS', {
-                message: `✅ Employee registered successfully!\n\n📋 Details:\n• Name: ${fullName}\n• Email: ${email}\n• Department: ${department}\n• Job Category: ${jobCategory}\n• Contract: ${contract}\n\n🎉 Employee added to system without page refresh!`,
-                employeeId: 'EMP-' + Date.now()
+                message: `✅ Employee registered successfully!\n\n📋 Details:\n• Name: ${fullName}\n• Email: ${email}\n• Department: ${department}\n• Job Category: ${jobCategory}\n• Contract: ${contract}\n• Employee ID: ${data.id}\n\n🎉 Employee saved to database without page refresh!`,
+                employeeId: data.id
             });
             
             // Clear form
             clearEmployeeForm();
-        }, 1500);
+        })
+        .catch(error => {
+            console.error('❌ Error registering employee:', error);
+            showRealProblemNotification('SYSTEM_ERROR', {
+                error: error.message,
+                message: `Failed to register employee: ${error.message}\n\nPlease check:\n• All required fields are filled\n• Network connection is stable\n• Server is running properly\n• Email and NIDA are unique`
+            });
+        });
         
     } catch (error) {
         console.error('❌ Error saving employee:', error);
@@ -6483,14 +6600,55 @@ function saveSafetyPolicy() {
         uploadDate: new Date().toLocaleString()
     };
     
-    // Save to localStorage
-    const policies = []; // TODO: Load from API instead of localStorage
-    policies.push(policy);
-    // TODO: Save to API instead of localStorage
+    // Validate required fields
+    if (!policy.category || !policy.title || !policy.description || !policy.effectiveDate) {
+        customAlert('Please fill in all required fields:\n\n• Category\n• Title\n• Description\n• Effective Date', "Validation Error", "error");
+        return false;
+    }
     
-    customAlert(`Safety policy uploaded successfully!\n\nTitle: ${policy.title}\nCategory: ${policy.category}\nCompliance: ${policy.complianceLevel}\nEffective: ${policy.effectiveDate}`, "Policy Uploaded", "success");
+    // Prepare work item for HSE department
+    const workItem = {
+        work_type: 'Safety Policy',
+        work_title: `Safety Policy - ${policy.title}`,
+        work_description: `Safety Policy: ${policy.title}\n\nCategory: ${policy.category}\nDescription: ${policy.description}\nCompliance Level: ${policy.complianceLevel}\nApplicable To: ${policy.applicableTo}\nTraining Required: ${policy.training.join(', ')}\nEffective Date: ${policy.effectiveDate}\nReview Date: ${policy.reviewDate}\nUploaded By: ${policy.uploadedBy}`,
+        priority: policy.complianceLevel === 'critical' ? 'High' : 'Medium',
+        due_date: policy.effectiveDate,
+        assigned_to: 'HSE Manager',
+        submitted_by: 'HSE Manager'
+    };
     
-    document.getElementById('policyForm').reset();
+    // Show loading message
+    customAlert('Uploading safety policy...', "Processing", "info");
+    
+    // Send data to backend API
+    fetch('/api/work/hse', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+        },
+        body: JSON.stringify(workItem)
+    })
+    .then(response => {
+        console.log('📡 Safety Policy API Response status:', response.status);
+        return response.json();
+    })
+    .then(data => {
+        console.log('📊 Safety Policy API Response data:', data);
+        
+        if (data.error) {
+            throw new Error(data.error);
+        }
+        
+        customAlert(`Safety policy uploaded successfully!\n\nTitle: ${policy.title}\nCategory: ${policy.category}\nCompliance: ${policy.complianceLevel}\nEffective: ${policy.effectiveDate}\nPolicy ID: ${data.id}\n\n🎉 Safety policy saved to database!`, "Policy Uploaded", "success");
+        
+        document.getElementById('policyForm').reset();
+    })
+    .catch(error => {
+        console.error('❌ Error uploading safety policy:', error);
+        customAlert(`Failed to upload safety policy: ${error.message}\n\nPlease check:\n• All required fields are filled\n• Network connection is stable\n• Server is running properly`, "Upload Error", "error");
+    });
+    
     return false;
 }
 
@@ -6514,13 +6672,55 @@ function saveToolboxMeeting() {
         recordedDate: new Date().toLocaleString()
     };
     
-    // Save to API
-    const meetings = []; 
-    meetings.push(meeting);
+    // Validate required fields
+    if (!meeting.date || !meeting.project || !meeting.topic || !meeting.conductedBy) {
+        customAlert('Please fill in all required fields:\n\n• Date\n• Project\n• Topic\n• Conducted By', "Validation Error", "error");
+        return false;
+    }
     
-    customAlert(`Toolbox meeting recorded successfully!\n\nID: ${meeting.id}\nTopic: ${meeting.topic}\nAttendees: ${meeting.totalAttendees}\nProject: ${meeting.project}`, "Meeting Recorded", "success");
+    // Prepare work item for HSE department
+    const workItem = {
+        work_type: 'Toolbox Meeting',
+        work_title: `Toolbox Meeting - ${meeting.topic}`,
+        work_description: `Toolbox Meeting: ${meeting.topic}\n\nDate: ${meeting.date}\nProject: ${meeting.project}\nDuration: ${meeting.duration}\nConducted By: ${meeting.conductedBy}\nAttendees: ${meeting.attendees} (${meeting.totalAttendees})\nKey Points: ${meeting.keyPoints}\nIssues: ${meeting.issues}\nActions: ${meeting.actions}\nMaterials: ${meeting.materials}\nPhotos: ${meeting.photos}\nRecorded By: ${meeting.recordedBy}`,
+        priority: 'Medium',
+        due_date: meeting.date,
+        assigned_to: 'HSE Manager',
+        submitted_by: 'HSE Manager'
+    };
     
-    document.getElementById('toolboxForm').reset();
+    // Show loading message
+    customAlert('Recording toolbox meeting...', "Processing", "info");
+    
+    // Send data to backend API
+    fetch('/api/work/hse', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+        },
+        body: JSON.stringify(workItem)
+    })
+    .then(response => {
+        console.log('📡 Toolbox Meeting API Response status:', response.status);
+        return response.json();
+    })
+    .then(data => {
+        console.log('📊 Toolbox Meeting API Response data:', data);
+        
+        if (data.error) {
+            throw new Error(data.error);
+        }
+        
+        customAlert(`Toolbox meeting recorded successfully!\n\nID: ${meeting.id}\nTopic: ${meeting.topic}\nAttendees: ${meeting.totalAttendees}\nProject: ${meeting.project}\nMeeting ID: ${data.id}\n\n🎉 Toolbox meeting saved to database!`, "Meeting Recorded", "success");
+        
+        document.getElementById('toolboxForm').reset();
+    })
+    .catch(error => {
+        console.error('❌ Error recording toolbox meeting:', error);
+        customAlert(`Failed to record toolbox meeting: ${error.message}\n\nPlease check:\n• All required fields are filled\n• Network connection is stable\n• Server is running properly`, "Recording Error", "error");
+    });
+    
     return false;
 }
 
