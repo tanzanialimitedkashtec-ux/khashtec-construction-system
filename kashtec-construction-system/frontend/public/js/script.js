@@ -225,24 +225,21 @@ function handleLogin() {
             localStorage.setItem('kashtec_current_user', JSON.stringify(response.user));
             localStorage.setItem('kashtec_auth_token', response.token);
             
-            // Redirect to dashboard
+            // Redirect to system page
             setTimeout(() => {
-                // Simple dashboard routing
-                if (role.includes('Managing Director') || role.includes('Director') || role.includes('Admin')) {
-                    showAdminDashboard();
-                } else if (role.includes('HR')) {
-                    showHRDashboard();
-                } else if (role.includes('Project')) {
-                    showProjectManagerDashboard();
-                } else if (role.includes('Finance')) {
-                    showFinanceDashboard();
-                } else if (role.includes('Real Estate')) {
-                    showRealEstateDashboard();
-                } else if (role.includes('HSE')) {
-                    showHSEDashboard();
-                } else {
-                    showCustomerPortal();
+                // Hide login page and show system page
+                document.getElementById("loginPage").classList.add("hidden");
+                document.getElementById("systemPage").classList.remove("hidden");
+                
+                // Set user role and load appropriate menu
+                document.getElementById("userRole").innerText = role + " Dashboard";
+                
+                // Load menu based on role
+                if (typeof loadMenu === 'function') {
+                    loadMenu();
                 }
+                
+                showNotification(`Welcome ${response.user.department_name || role}!`, 'success', 3000);
             }, 1500);
             
         })
