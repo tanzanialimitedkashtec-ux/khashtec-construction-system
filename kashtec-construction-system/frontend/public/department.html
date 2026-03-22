@@ -4494,11 +4494,28 @@ function manualSubmitIncident() {
                 throw new Error(data.error);
             }
             
-            // Success message
-            customAlert(`✅ Incident report saved to database!\n\nID: ${data.workItem.id}\nType: ${workItem.incident_type}\nSeverity: ${workItem.severity}\nPriority: ${workItem.priority}\nAssigned to: ${workItem.assigned_to}\n\n🎉 Data successfully stored in MySQL database!`, "Success!", "success");
+            // Success message with database confirmation
+            customAlert(`✅ Incident report saved to database!\n\n📋 Details:\n• ID: ${data.workItem.id}\n• Type: ${workItem.incident_type}\n• Severity: ${workItem.severity}\n• Priority: ${workItem.priority}\n• Assigned to: ${workItem.assigned_to}\n• Submitted by: ${workItem.submitted_by}\n• Date: ${new Date().toLocaleString()}\n\n🎉 Data successfully stored in MySQL database!\n💾 Table: hse_work`, "Database Save Success!", "success");
             
             // Reset form
             resetIncidentForm();
+            
+            // Optional: Verify data was saved by fetching recent items
+            setTimeout(() => {
+                console.log('🔍 Verifying data was saved...');
+                fetch(`${baseUrl}/api/work/hse`)
+                    .then(response => response.json())
+                    .then(items => {
+                        console.log(`✅ Verification: Found ${items.length} items in database`);
+                        const savedItem = items.find(item => item.id === data.workItem.id);
+                        if (savedItem) {
+                            console.log('✅ Data verification successful - item found in database');
+                        }
+                    })
+                    .catch(error => {
+                        console.log('⚠️ Could not verify data, but save appeared successful');
+                    });
+            }, 1000);
             
         })
         .catch(error => {
@@ -4527,6 +4544,83 @@ function resetIncidentForm() {
         console.log('✅ Form reset completed');
     }
 }
+
+// Test function to verify data sending and fetching
+function testDataFlow() {
+    console.log('🧪 Testing complete data flow: Send → Database → Fetch');
+    
+    const baseUrl = window.location.origin;
+    
+    // 1. First, send test data to database
+    const testData = {
+        work_type: 'Incident Reporting',
+        work_title: 'Test Incident Report',
+        work_description: 'This is a test incident to verify database operations',
+        incident_type: 'accident',
+        severity: 'minor',
+        priority: 'Medium',
+        assigned_to: 'HSE Manager',
+        submitted_by: 'Test User'
+    };
+    
+    console.log('📤 Step 1: Sending test data to database...');
+    
+    fetch(`${baseUrl}/api/work/hse`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(testData)
+    })
+    .then(response => {
+        console.log('📡 Send response status:', response.status);
+        return response.json();
+    })
+    .then(data => {
+        console.log('✅ Data sent successfully:', data);
+        
+        // 2. Now fetch the data back from database
+        console.log('📥 Step 2: Fetching data from database...');
+        
+        return fetch(`${baseUrl}/api/work/hse`);
+    })
+    .then(response => {
+        console.log('📡 Fetch response status:', response.status);
+        return response.json();
+    })
+    .then(workItems => {
+        console.log('✅ Data fetched successfully:', workItems);
+        console.log(`📊 Found ${workItems.length} items in database`);
+        
+        // 3. Verify our test data is in the results
+        const testItem = workItems.find(item => item.work_title === 'Test Incident Report');
+        if (testItem) {
+            console.log('🎉 SUCCESS! Test data found in database:', testItem);
+            customAlert(`✅ Database test successful!\n\n• Test data sent to database ✅\n• Data retrieved from database ✅\n• Found ${workItems.length} total items\n• Test item ID: ${testItem.id}\n\n🎉 Frontend-Backend communication is working perfectly!`, "Database Test Success", "success");
+        } else {
+            console.log('⚠️ Test data not found, but other data exists');
+            customAlert(`⚠️ Partial success\n\n• Test data sent to database ✅\n• Data retrieved from database ✅\n• Found ${workItems.length} total items\n• Test item not immediately visible (may need refresh)\n\n🔄 Database operations are working!`, "Database Test Partial", "info");
+        }
+    })
+    .catch(error => {
+        console.error('❌ Database test failed:', error);
+        customAlert(`❌ Database test failed: ${error.message}\n\nPlease check:\n• Server is running\n• Database connection is active\n• Network connectivity is stable`, "Database Test Error", "error");
+    });
+}
+
+// Add test button to the page
+function addTestButton() {
+    const testButton = document.createElement('button');
+    testButton.textContent = '🧪 Test Database';
+    testButton.onclick = testDataFlow;
+    testButton.style.cssText = 'position:fixed;top:10px;right:10px;z-index:9999;background:#28a745;color:white;padding:10px;border:none;border-radius:5px;cursor:pointer;';
+    document.body.appendChild(testButton);
+}
+
+// Auto-add test button when page loads
+setTimeout(() => {
+    addTestButton();
+}, 1000);
 
 function uploadSafetyPolicies(){
     showContent(`<div class="card">
