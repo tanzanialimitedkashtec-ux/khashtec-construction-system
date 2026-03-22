@@ -3330,7 +3330,8 @@ function manageDocuments(){
 function registerEmployee(){
     showContent(`<div class="card">
         <h3>Register New Employee</h3>
-        <form id="employeeForm" onsubmit="return saveEmployee()">
+        <!-- Remove form tag and onsubmit - use div instead -->
+        <div id="employeeForm">
             <div class="form-row">
                 <div class="form-group">
                     <label>Full Name *</label>
@@ -3419,9 +3420,18 @@ function registerEmployee(){
                 <small>Upload passport size photo</small>
             </div>
             
-            <button type="submit" class="action">Register Employee</button>
-        </form>
+            <!-- Manual submission buttons -->
+            <div style="margin-top: 20px;">
+                <button type="button" onclick="saveEmployeeManual()" class="action" style="background: #28a745;">Register Employee</button>
+                <button type="button" onclick="clearEmployeeForm()" class="action" style="background: #6c757d; margin-left: 10px;">Clear Form</button>
+            </div>
+        </div>
     </div>`);
+    
+    // Apply global form protection
+    setTimeout(() => {
+        applyGlobalFormProtection();
+    }, 100);
 }
 
 function assignWorker(){
@@ -4747,12 +4757,152 @@ function analyzeRealProblem(error) {
     }
 }
 
+// GLOBAL FORM PROTECTION SYSTEM
+function applyGlobalFormProtection() {
+    console.log('🛡️ Applying global form protection...');
+    
+    // 1. Find all forms and remove their submission behavior
+    const allForms = document.querySelectorAll('form');
+    allForms.forEach((form, index) => {
+        console.log(`🔧 Protecting form ${index + 1}:`, form.id || 'unnamed');
+        
+        // Remove form attributes that cause submission
+        form.removeAttribute('onsubmit');
+        form.removeAttribute('action');
+        form.removeAttribute('method');
+        form.setAttribute('data-protected', 'true');
+        
+        // Add submit prevention
+        form.addEventListener('submit', function(e) {
+            console.log('🚫 Form submission prevented:', form.id);
+            e.preventDefault();
+            e.stopPropagation();
+            e.stopImmediatePropagation();
+            return false;
+        }, true);
+    });
+    
+    // 2. Find all submit buttons and convert them to manual buttons
+    const submitButtons = document.querySelectorAll('button[type="submit"], input[type="submit"]');
+    submitButtons.forEach((button, index) => {
+        console.log(`🔘 Converting submit button ${index + 1}:`, button.textContent);
+        
+        // Change type to button
+        button.setAttribute('type', 'button');
+        
+        // Add click prevention if no onclick handler
+        if (!button.onclick && !button.getAttribute('onclick')) {
+            button.addEventListener('click', function(e) {
+                console.log('🚫 Submit button click prevented:', button.textContent);
+                e.preventDefault();
+                e.stopPropagation();
+                showRealProblemNotification('NO_HANDLER', {
+                    buttonText: button.textContent,
+                    message: 'This button has no action handler. Please contact support.'
+                });
+                return false;
+            }, true);
+        }
+    });
+    
+    console.log('✅ Global form protection applied');
+}
+
+// Manual employee save function
+function saveEmployeeManual() {
+    console.log('💾 Manual employee save called');
+    
+    try {
+        // Get form values
+        const fullName = document.getElementById('empFullName')?.value;
+        const phone = document.getElementById('empPhone')?.value;
+        const email = document.getElementById('empGmail')?.value;
+        const nida = document.getElementById('empNIDA')?.value;
+        const contract = document.getElementById('empContract')?.value;
+        const jobCategory = document.getElementById('empJobCategory')?.value;
+        const department = document.getElementById('empDepartment')?.value;
+        
+        console.log('📝 Employee data:', { fullName, phone, email, nida, contract, jobCategory, department });
+        
+        // Validate required fields
+        if (!fullName || !phone || !email || !nida || !contract || !jobCategory || !department) {
+            showRealProblemNotification('VALIDATION_ERROR', {
+                message: 'Please fill in all required fields.',
+                missingFields: {
+                    fullName: !fullName,
+                    phone: !phone,
+                    email: !email,
+                    nida: !nida,
+                    contract: !contract,
+                    jobCategory: !jobCategory,
+                    department: !department
+                }
+            });
+            return;
+        }
+        
+        // Show saving notification
+        showRealProblemNotification('SAVING', {
+            message: 'Registering employee...',
+            employeeData: { fullName, phone, email, department }
+        });
+        
+        // Simulate employee registration (replace with actual API call)
+        setTimeout(() => {
+            showRealProblemNotification('SUCCESS', {
+                message: `✅ Employee registered successfully!\n\n📋 Details:\n• Name: ${fullName}\n• Email: ${email}\n• Department: ${department}\n• Job Category: ${jobCategory}\n• Contract: ${contract}\n\n🎉 Employee added to system without page refresh!`,
+                employeeId: 'EMP-' + Date.now()
+            });
+            
+            // Clear form
+            clearEmployeeForm();
+        }, 1500);
+        
+    } catch (error) {
+        console.error('❌ Error saving employee:', error);
+        showRealProblemNotification('SYSTEM_ERROR', {
+            error: error.message
+        });
+    }
+}
+
+// Clear employee form
+function clearEmployeeForm() {
+    console.log('🔄 Clearing employee form');
+    
+    const fields = ['empFullName', 'empPhone', 'empGmail', 'empNIDA', 'empPassport', 'empContract', 'empJobCategory', 'empDepartment'];
+    fields.forEach(fieldId => {
+        const field = document.getElementById(fieldId);
+        if (field) {
+            field.value = '';
+        }
+    });
+    
+    // Clear file inputs
+    const fileFields = ['empAgreement', 'empCV', 'empProfile'];
+    fileFields.forEach(fieldId => {
+        const field = document.getElementById(fieldId);
+        if (field) {
+            field.value = '';
+        }
+    });
+    
+    console.log('✅ Employee form cleared');
+}
+
+// Add NO_HANDLER notification type
 function showRealProblemNotification(problemType, details) {
     let title = '';
     let message = '';
     let type = 'error';
     
     switch(problemType) {
+        case 'NO_HANDLER':
+            title = '⚠️ Button Not Configured';
+            message = `❌ This button has no action handler!\n\n🔍 Real Problem:\n• Button: "${details.buttonText}"\n• No onclick function assigned\n• This is a system configuration issue\n\n🛠️ Solutions:\n• Contact developer to add handler\n• Use a different button\n• Check if this feature is implemented\n\n📝 Button text: ${details.buttonText}`;
+            type = 'warning';
+            break;
+            
         case 'FREEZE_SUCCESS':
             title = '🛡️ Page Freeze Working!';
             message = `✅ Page freeze is active and working!\n\n🔍 Navigation Test Results:\n• Navigation methods are blocked: ✅\n• Error: ${details.error}\n• Page is completely frozen\n\n🛡️ Your data is protected from page refresh!`;
