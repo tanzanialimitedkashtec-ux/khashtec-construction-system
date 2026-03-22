@@ -5328,6 +5328,86 @@ function viewProjectSafetyStatus(){
     </div>`);
 }
 
+// Add immediate form interception (runs before DOM loaded)
+(function() {
+    console.log('🚀 Immediate form protection script executing');
+    
+    // Override the original recordIncidentReports function to add protection
+    const originalRecordIncidentReports = window.recordIncidentReports;
+    window.recordIncidentReports = function() {
+        console.log('🔧 recordIncidentReports called, adding form protection');
+        
+        // Call original function
+        const result = originalRecordIncidentReports.call(this);
+        
+        // Wait a moment for DOM to update, then add protection
+        setTimeout(() => {
+            const incidentForm = document.getElementById('incidentForm');
+            if (incidentForm) {
+                console.log('🛡️ Adding immediate form protection');
+                
+                // Remove all form attributes that could cause submission
+                incidentForm.removeAttribute('onsubmit');
+                incidentForm.removeAttribute('action');
+                incidentForm.removeAttribute('method');
+                incidentForm.setAttribute('data-protected', 'true');
+                
+                // Override the submit method
+                incidentForm.submit = function() {
+                    console.log('🚫 Form.submit() called - PREVENTING!');
+                    return false;
+                };
+                
+                // Add submit event listener with maximum priority
+                incidentForm.addEventListener('submit', function(event) {
+                    console.log('🛑 Form submit event - PREVENTING!');
+                    event.preventDefault();
+                    event.stopPropagation();
+                    event.stopImmediatePropagation();
+                    
+                    // Call save function
+                    saveIncidentReport();
+                    return false;
+                }, true); // Use capture phase
+                
+                // Find and override all buttons
+                const allButtons = incidentForm.querySelectorAll('button, input[type="submit"]');
+                allButtons.forEach((button, index) => {
+                    console.log(`🔘 Overriding button ${index + 1}`);
+                    button.addEventListener('click', function(clickEvent) {
+                        console.log('🔘 Button clicked - PREVENTING default!');
+                        clickEvent.preventDefault();
+                        clickEvent.stopPropagation();
+                        clickEvent.stopImmediatePropagation();
+                        
+                        // Call save function
+                        saveIncidentReport();
+                        return false;
+                    }, true);
+                    
+                    // Override onclick if it exists
+                    if (button.onclick) {
+                        const originalOnclick = button.onclick;
+                        button.onclick = function(e) {
+                            console.log('🔘 Button onclick overridden');
+                            e.preventDefault();
+                            e.stopPropagation();
+                            saveIncidentReport();
+                            return false;
+                        };
+                    }
+                });
+                
+                console.log('✅ Immediate form protection applied');
+            } else {
+                console.log('❌ Form not found for immediate protection');
+            }
+        }, 100);
+        
+        return result;
+    };
+})();
+
 // Add multiple layers of form submission prevention
 document.addEventListener('DOMContentLoaded', function() {
     console.log('🚀 DOM loaded, setting up comprehensive form protection');
@@ -5339,9 +5419,17 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Method 1: Remove the onsubmit attribute and add our own
         incidentForm.removeAttribute('onsubmit');
-        console.log('🔧 Removed onsubmit attribute');
+        incidentForm.removeAttribute('action');
+        incidentForm.removeAttribute('method');
+        console.log('🔧 Removed form attributes');
         
-        // Method 2: Add submit event listener
+        // Method 2: Override the submit method
+        incidentForm.submit = function() {
+            console.log('🚫 Native form.submit() called - PREVENTING!');
+            return false;
+        };
+        
+        // Method 3: Add submit event listener
         incidentForm.addEventListener('submit', function(event) {
             console.log('📝 Form submit event triggered - PREVENTING!');
             event.preventDefault();
@@ -5355,20 +5443,22 @@ document.addEventListener('DOMContentLoaded', function() {
             console.log('📊 saveIncidentReport returned:', result);
             
             return false;
-        });
+        }, true); // Use capture phase
         
-        // Method 3: Intercept all button clicks in the form
-        const submitButtons = incidentForm.querySelectorAll('button[type="submit"], input[type="submit"]');
-        submitButtons.forEach(button => {
+        // Method 4: Intercept all button clicks in the form
+        const submitButtons = incidentForm.querySelectorAll('button[type="submit"], input[type="submit"], button');
+        submitButtons.forEach((button, index) => {
+            console.log(`🔘 Adding protection to button ${index + 1}`);
             button.addEventListener('click', function(event) {
                 console.log('🔘 Submit button clicked - PREVENTING!');
                 event.preventDefault();
                 event.stopPropagation();
+                event.stopImmediatePropagation();
                 
                 // Call the save function directly
                 saveIncidentReport();
                 return false;
-            });
+            }, true);
         });
         
         console.log('✅ Multiple form protection layers added successfully');
@@ -5383,9 +5473,27 @@ window.addEventListener('submit', function(event) {
         console.log('🌐 Global form submit catcher - PREVENTING!');
         event.preventDefault();
         event.stopPropagation();
+        event.stopImmediatePropagation();
         return false;
     }
 }, true); // Use capture phase
+
+// Global click catcher for any form-related clicks
+window.addEventListener('click', function(event) {
+    const target = event.target;
+    const form = target.closest('#incidentForm');
+    
+    if (form && (target.tagName === 'BUTTON' || target.type === 'submit')) {
+        console.log('🌐 Global click catcher - PREVENTING form submission!');
+        event.preventDefault();
+        event.stopPropagation();
+        event.stopImmediatePropagation();
+        
+        // Call save function
+        saveIncidentReport();
+        return false;
+    }
+}, true);
 
 // HSE Helper Functions
 function saveIncidentReport() {
