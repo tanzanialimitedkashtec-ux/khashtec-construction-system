@@ -133,8 +133,10 @@ router.post('/login', async (req, res) => {
             console.log('🧪 Testing database connection...');
             const testResult = await db.execute('SELECT 1 as test');
             console.log('✅ Database connection test result:', testResult);
+            console.log('📊 Test result type:', typeof testResult);
+            console.log('📊 Test result is array:', Array.isArray(testResult));
             
-            if (!testResult || !Array.isArray(testResult)) {
+            if (!testResult || !Array.isArray(testResult) || testResult.length === 0) {
                 throw new Error('Database connection test failed - invalid result');
             }
             
@@ -156,8 +158,10 @@ router.post('/login', async (req, res) => {
             console.log('🔍 Checking if authentication table exists...');
             const tableCheck = await db.execute('SHOW TABLES LIKE "authentication"');
             console.log('📊 Table check result:', tableCheck);
+            console.log('📊 Table check is array:', Array.isArray(tableCheck));
+            console.log('📊 Table check length:', tableCheck ? tableCheck.length : 'undefined');
             
-            if (!tableCheck || !Array.isArray(tableCheck) || tableCheck[0].length === 0) {
+            if (!tableCheck || !Array.isArray(tableCheck) || tableCheck.length === 0) {
                 console.error('❌ Authentication table does not exist');
                 return res.status(500).json({
                     error: 'Authentication table not found',
@@ -179,29 +183,21 @@ router.post('/login', async (req, res) => {
             console.log('📝 Query:', 'SELECT id, email, password_hash, role, department_name, manager_name, status FROM authentication WHERE email = ? AND status = ?');
             console.log('📝 Parameters:', [email, 'Active']);
             
-            const queryResult = await db.execute(
+            // The database.execute() method already returns just the rows array
+            const authRows = await db.execute(
                 'SELECT id, email, password_hash, role, department_name, manager_name, status FROM authentication WHERE email = ? AND status = ?',
                 [email, 'Active']
             );
             
-            console.log('📊 Query result type:', typeof queryResult);
-            console.log('📊 Query result:', queryResult);
-            
-            // Check if queryResult is valid
-            if (!queryResult || !Array.isArray(queryResult)) {
-                console.error('❌ Invalid query result:', queryResult);
-                throw new Error('Database query returned invalid result');
-            }
-            
-            const [authRows] = queryResult;
-            console.log('📊 Auth rows extracted:', authRows);
             console.log('📊 Auth rows type:', typeof authRows);
+            console.log('📊 Auth rows:', authRows);
+            console.log('📊 Auth rows is array:', Array.isArray(authRows));
             console.log('📊 Auth rows length:', authRows ? authRows.length : 'undefined');
             
             // Check if authRows is valid
             if (!authRows || !Array.isArray(authRows)) {
                 console.error('❌ Invalid authRows:', authRows);
-                throw new Error('Database query returned invalid rows array');
+                throw new Error('Database query returned invalid result format');
             }
             
             console.log('📊 Query successful, rows found:', authRows.length);
