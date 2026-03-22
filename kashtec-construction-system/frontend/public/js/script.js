@@ -65,9 +65,9 @@ function submitAccountForm() {
         lastLogin: new Date().toLocaleString()
     };
     
-    // Save user to localStorage
-    localStorage.setItem('kashtec_user_' + email, JSON.stringify(userData));
-    localStorage.setItem('kashtec_current_user', JSON.stringify(userData));
+    // Save user to session
+    sessionManager.set('kashtec_user_' + email, JSON.stringify(userData));
+    sessionManager.setCurrentUser(userData);
     
     // Automatically add to Office Portal directory
     addToOfficePortal(userData);
@@ -222,8 +222,8 @@ function handleLogin() {
             showNotification(`Welcome ${response.user.department_name || role}! Login successful.`, 'success', 6000);
             
             // Store session
-            localStorage.setItem('kashtec_current_user', JSON.stringify(response.user));
-            localStorage.setItem('kashtec_auth_token', response.token);
+            sessionManager.setAuthToken(response.token);
+            sessionManager.setCurrentUser(response.user);
             
             // Redirect to system page
             setTimeout(() => {
@@ -317,8 +317,7 @@ function handleLogout() {
     showNotification('Logging out...', 'info', 2000);
     
     // Clear session data
-    localStorage.removeItem('kashtec_current_user');
-    localStorage.removeItem('kashtec_auth_token');
+    sessionManager.removeCurrentSession();
     
     // Reset current role
     currentRole = "";
@@ -353,7 +352,7 @@ async function approvePolicy(policyId) {
         console.log('✅ Approving policy:', policyId);
         
         // Get current user
-        const currentUser = JSON.parse(localStorage.getItem('kashtec_current_user') || '{}');
+        const currentUser = sessionManager.getCurrentUser() || {};
         const approvedBy = currentUser.email || 'HR Manager';
         
         // Show loading notification
@@ -364,7 +363,7 @@ async function approvePolicy(policyId) {
                 method: 'POST',
                 headers: {
                         'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${localStorage.getItem('kashtec_auth_token')}`
+                        'Authorization': `Bearer ${sessionManager.getAuthToken()}`
                 },
                 body: JSON.stringify({ approvedBy })
         });
@@ -399,7 +398,7 @@ async function rejectPolicy(policyId) {
         console.log('❌ Rejecting policy:', policyId);
         
         // Get current user
-        const currentUser = JSON.parse(localStorage.getItem('kashtec_current_user') || '{}');
+        const currentUser = sessionManager.getCurrentUser() || {};
         const rejectedBy = currentUser.email || 'HR Manager';
         
         // Get rejection reason from user
@@ -417,7 +416,7 @@ async function rejectPolicy(policyId) {
                 method: 'POST',
                 headers: {
                         'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${localStorage.getItem('kashtec_auth_token')}`
+                        'Authorization': `Bearer ${sessionManager.getAuthToken()}`
                 },
                 body: JSON.stringify({ rejectionReason, rejectedBy })
         });
@@ -452,7 +451,7 @@ async function requestPolicyRevision(policyId) {
         console.log('🔄 Requesting revision for policy:', policyId);
         
         // Get current user
-        const currentUser = JSON.parse(localStorage.getItem('kashtec_current_user') || '{}');
+        const currentUser = sessionManager.getCurrentUser() || {};
         const requestedBy = currentUser.email || 'HR Manager';
         
         // Get revision request from user
@@ -470,7 +469,7 @@ async function requestPolicyRevision(policyId) {
                 method: 'POST',
                 headers: {
                         'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${localStorage.getItem('kashtec_auth_token')}`
+                        'Authorization': `Bearer ${sessionManager.getAuthToken()}`
                 },
                 body: JSON.stringify({ revisionRequest, requestedBy })
         });
@@ -506,7 +505,7 @@ async function loadPolicies() {
         
         const response = await fetch('/api/policies', {
                 headers: {
-                        'Authorization': `Bearer ${localStorage.getItem('kashtec_auth_token')}`
+                        'Authorization': `Bearer ${sessionManager.getAuthToken()}`
                 }
         });
         
@@ -575,7 +574,7 @@ async function loadSeniorHiringRequests() {
         
         const response = await fetch('/api/senior-hiring', {
                 headers: {
-                        'Authorization': `Bearer ${localStorage.getItem('kashtec_auth_token')}`
+                        'Authorization': `Bearer ${sessionManager.getAuthToken()}`
                 }
         });
         
@@ -682,7 +681,7 @@ async function approveSeniorHire(requestId) {
         console.log('✅ Approving senior hiring request:', requestId);
         
         // Get current user
-        const currentUser = JSON.parse(localStorage.getItem('kashtec_current_user') || '{}');
+        const currentUser = sessionManager.getCurrentUser() || {};
         const approvedBy = currentUser.email || 'HR Manager';
         
         // Get comments from user
@@ -696,7 +695,7 @@ async function approveSeniorHire(requestId) {
                 method: 'POST',
                 headers: {
                         'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${localStorage.getItem('kashtec_auth_token')}`
+                        'Authorization': `Bearer ${sessionManager.getAuthToken()}`
                 },
                 body: JSON.stringify({ approvedBy, comments })
         });
@@ -723,7 +722,7 @@ async function rejectSeniorHire(requestId) {
         console.log('❌ Rejecting senior hiring request:', requestId);
         
         // Get current user
-        const currentUser = JSON.parse(localStorage.getItem('kashtec_current_user') || '{}');
+        const currentUser = sessionManager.getCurrentUser() || {};
         const rejectedBy = currentUser.email || 'HR Manager';
         
         // Get rejection reason from user
@@ -741,7 +740,7 @@ async function rejectSeniorHire(requestId) {
                 method: 'POST',
                 headers: {
                         'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${localStorage.getItem('kashtec_auth_token')}`
+                        'Authorization': `Bearer ${sessionManager.getAuthToken()}`
                 },
                 body: JSON.stringify({ rejectionReason, rejectedBy })
         });
@@ -768,7 +767,7 @@ async function requestMoreInfo(requestId) {
         console.log('🔄 Requesting more info for senior hiring request:', requestId);
         
         // Get current user
-        const currentUser = JSON.parse(localStorage.getItem('kashtec_current_user') || '{}');
+        const currentUser = sessionManager.getCurrentUser() || {};
         const requestedBy = currentUser.email || 'HR Manager';
         
         // Get info request from user
@@ -786,7 +785,7 @@ async function requestMoreInfo(requestId) {
                 method: 'POST',
                 headers: {
                         'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${localStorage.getItem('kashtec_auth_token')}`
+                        'Authorization': `Bearer ${sessionManager.getAuthToken()}`
                 },
                 body: JSON.stringify({ infoRequired, requestedBy })
         });
@@ -815,7 +814,7 @@ async function loadWorkforceBudgets() {
         
         const response = await fetch('/api/workforce-budget', {
                 headers: {
-                        'Authorization': `Bearer ${localStorage.getItem('kashtec_auth_token')}`
+                        'Authorization': `Bearer ${sessionManager.getAuthToken()}`
                 }
         });
         
@@ -937,7 +936,7 @@ async function approveBudget(budgetId) {
         console.log('✅ Approving workforce budget:', budgetId);
         
         // Get current user
-        const currentUser = JSON.parse(localStorage.getItem('kashtec_current_user') || '{}');
+        const currentUser = sessionManager.getCurrentUser() || {};
         const approvedBy = currentUser.email || 'HR Manager';
         
         // Get comments from user
@@ -954,7 +953,7 @@ async function approveBudget(budgetId) {
                 method: 'POST',
                 headers: {
                         'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${localStorage.getItem('kashtec_auth_token')}`
+                        'Authorization': `Bearer ${sessionManager.getAuthToken()}`
                 },
                 body: JSON.stringify({ approvedBy, comments, approvedAmount })
         });
@@ -981,7 +980,7 @@ async function rejectBudget(budgetId) {
         console.log('❌ Rejecting workforce budget:', budgetId);
         
         // Get current user
-        const currentUser = JSON.parse(localStorage.getItem('kashtec_current_user') || '{}');
+        const currentUser = sessionManager.getCurrentUser() || {};
         const rejectedBy = currentUser.email || 'HR Manager';
         
         // Get rejection reason from user
@@ -999,7 +998,7 @@ async function rejectBudget(budgetId) {
                 method: 'POST',
                 headers: {
                         'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${localStorage.getItem('kashtec_auth_token')}`
+                        'Authorization': `Bearer ${sessionManager.getAuthToken()}`
                 },
                 body: JSON.stringify({ rejectionReason, rejectedBy })
         });
@@ -1026,7 +1025,7 @@ async function modifyBudget(budgetId) {
         console.log('🔄 Requesting modification for workforce budget:', budgetId);
         
         // Get current user
-        const currentUser = JSON.parse(localStorage.getItem('kashtec_current_user') || '{}');
+        const currentUser = sessionManager.getCurrentUser() || {};
         const requestedBy = currentUser.email || 'HR Manager';
         
         // Get modification request from user
@@ -1044,7 +1043,7 @@ async function modifyBudget(budgetId) {
                 method: 'POST',
                 headers: {
                         'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${localStorage.getItem('kashtec_auth_token')}`
+                        'Authorization': `Bearer ${sessionManager.getAuthToken()}`
                 },
                 body: JSON.stringify({ modificationRequest, requestedBy })
         });
