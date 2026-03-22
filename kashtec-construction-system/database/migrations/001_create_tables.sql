@@ -354,6 +354,78 @@ CREATE TABLE IF NOT EXISTS policy_rejections (
   INDEX idx_notified (notified_department)
 );
 
+-- Senior Staff Hiring Tables
+CREATE TABLE IF NOT EXISTS senior_hiring_requests (
+  id VARCHAR(50) PRIMARY KEY,
+  candidate_name VARCHAR(255) NOT NULL,
+  proposed_salary VARCHAR(50) NOT NULL,
+  department VARCHAR(100) NOT NULL,
+  experience TEXT,
+  hr_recommendation TEXT,
+  position_level ENUM('Senior', 'Manager', 'Director') DEFAULT 'Senior',
+  requested_by VARCHAR(255) NOT NULL,
+  requested_by_role VARCHAR(100),
+  request_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  status ENUM('Pending', 'Approved', 'Rejected', 'More Info Requested') DEFAULT 'Pending',
+  approved_by VARCHAR(255),
+  approved_date TIMESTAMP,
+  rejection_reason TEXT,
+  more_info_request TEXT,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  INDEX idx_status (status),
+  INDEX idx_requested_by (requested_by),
+  INDEX idx_department (department),
+  INDEX idx_date (request_date)
+);
+
+CREATE TABLE IF NOT EXISTS senior_hiring_approvals (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  request_id VARCHAR(50) NOT NULL,
+  approved_by VARCHAR(255) NOT NULL,
+  approved_by_role VARCHAR(100),
+  approval_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  comments TEXT,
+  final_decision ENUM('Approved', 'Rejected', 'More Info Required') DEFAULT 'Approved',
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (request_id) REFERENCES senior_hiring_requests(id) ON DELETE CASCADE,
+  INDEX idx_request_id (request_id),
+  INDEX idx_approved_by (approved_by),
+  INDEX idx_decision (final_decision)
+);
+
+CREATE TABLE IF NOT EXISTS senior_hiring_rejections (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  request_id VARCHAR(50) NOT NULL,
+  rejection_reason TEXT NOT NULL,
+  rejected_by VARCHAR(255) NOT NULL,
+  rejected_by_role VARCHAR(100),
+  rejection_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  notified_hr BOOLEAN DEFAULT FALSE,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (request_id) REFERENCES senior_hiring_requests(id) ON DELETE CASCADE,
+  INDEX idx_request_id (request_id),
+  INDEX idx_rejected_by (rejected_by),
+  INDEX idx_notified (notified_hr)
+);
+
+CREATE TABLE IF NOT EXISTS senior_hiring_info_requests (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  request_id VARCHAR(50) NOT NULL,
+  info_required TEXT NOT NULL,
+  requested_by VARCHAR(255) NOT NULL,
+  requested_by_role VARCHAR(100),
+  request_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  status ENUM('Pending', 'Provided', 'Closed') DEFAULT 'Pending',
+  response TEXT,
+  response_date TIMESTAMP NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (request_id) REFERENCES senior_hiring_requests(id) ON DELETE CASCADE,
+  INDEX idx_request_id (request_id),
+  INDEX idx_status (status),
+  INDEX idx_requested_by (requested_by)
+);
+
 -- Insert admin user (only if not exists)
 INSERT IGNORE INTO users (name, email, password, role, status) VALUES
 ('Admin User', 'admin@kashtec.co.tz', 'admin123', 'Managing Director', 'Active');
@@ -361,3 +433,8 @@ INSERT IGNORE INTO users (name, email, password, role, status) VALUES
 -- Insert sample policy for HR to approve
 INSERT IGNORE INTO policies (id, title, description, submitted_by, submitted_by_role, impact, status) VALUES
 ('digital-recruitment', 'Digital Recruitment Platform Policy', 'Implementation of online job portal and digital application system', 'HR Department', 'HR Manager', 'High', 'Pending');
+
+-- Insert sample senior hiring requests
+INSERT IGNORE INTO senior_hiring_requests (id, candidate_name, proposed_salary, department, experience, hr_recommendation, position_level, requested_by, requested_by_role, status) VALUES
+('proj-manager-001', 'Eng. Michael K. Johnson', 'TZS 3,500,000/month', 'Projects Department', 'Highly qualified candidate with extensive experience in large-scale construction projects. Proven track record in project delivery and team management.', 'Manager', 'HR Department', 'HR Manager', 'Pending'),
+('finance-manager-001', 'Sarah M. Kimario', 'TZS 2,800,000/month', 'Finance Department', 'Qualified candidate with CPA certification and experience in construction industry finance. Strong analytical skills and leadership capabilities.', 'Manager', 'HR Department', 'HR Manager', 'Pending');

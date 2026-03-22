@@ -568,6 +568,246 @@ function displayPolicies(policies) {
     showContent(html);
 }
 
+// Senior Staff Hiring Functions
+async function loadSeniorHiringRequests() {
+    try {
+        console.log('🔍 Loading senior hiring requests...');
+        
+        const response = await fetch('/api/senior-hiring', {
+                headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('kashtec_auth_token')}`
+                }
+        });
+        
+        const requests = await response.json();
+        
+        if (response.ok) {
+                console.log('📋 Senior hiring requests loaded:', requests.length);
+                displaySeniorHiringRequests(requests);
+        } else {
+                showNotification('Failed to load senior hiring requests', 'error', 5000);
+        }
+        
+    } catch (error) {
+        console.error('❌ Error loading senior hiring requests:', error);
+        showNotification('Error loading senior hiring requests: ' + error.message, 'error', 5000);
+    }
+}
+
+function displaySeniorHiringRequests(requests) {
+    let html = `<div class="card">
+        <h3>Approve Senior Staff Hiring</h3>
+        <p><strong>High-Level Authority:</strong> Approve hiring decisions for senior positions (Manager level and above)</p>
+        
+        <div class="hiring-section">
+            <h4>Senior Staff Hiring Requests Pending Approval</h4>`;
+    
+    if (requests.length === 0) {
+        html += '<p>No senior hiring requests pending approval.</p>';
+    } else {
+        requests.forEach(request => {
+                const statusClass = request.status.toLowerCase().replace(' ', '-');
+                const statusColor = {
+                        'pending': '#ffc107',
+                        'approved': '#28a745',
+                        'rejected': '#dc3545',
+                        'more-info-requested': '#17a2b8'
+                }[statusClass] || '#6c757d';
+                
+                html += `
+                        <div class="hiring-request">
+                                <h5>${request.position_level} Position</h5>
+                                <div class="candidate-info">
+                                        <div class="form-row">
+                                                <div class="form-group">
+                                                        <label>Candidate Name</label>
+                                                        <input type="text" value="${request.candidate_name}" readonly>
+                                                </div>
+                                                <div class="form-group">
+                                                        <label>Proposed Salary</label>
+                                                        <input type="text" value="${request.proposed_salary}" readonly>
+                                                </div>
+                                        </div>
+                                        <div class="form-row">
+                                                <div class="form-group">
+                                                        <label>Department</label>
+                                                        <input type="text" value="${request.department}" readonly>
+                                                </div>
+                                                <div class="form-group">
+                                                        <label>Experience</label>
+                                                        <input type="text" value="${request.experience}" readonly>
+                                                </div>
+                                        </div>
+                                        <div class="form-group">
+                                                <label>HR Recommendation</label>
+                                                <textarea rows="3" readonly>${request.hr_recommendation}</textarea>
+                                        </div>
+                                </div>
+                                <div class="hiring-actions">
+                                        <button class="action" onclick="approveSeniorHire('${request.id}')" style="background: #28a745;">Approve Hiring</button>
+                                        <button class="action" onclick="requestMoreInfo('${request.id}')" style="background: #ffc107;">Request More Info</button>
+                                        <button class="action" onclick="rejectSeniorHire('${request.id}')" style="background: #dc3545;">Reject Hiring</button>
+                                </div>
+                        </div>
+                `;
+        });
+    }
+    
+    html += `
+            </div>
+            
+            <div class="approval-summary">
+                <h4>Senior Hiring Authority</h4>
+                <div class="authority-item">
+                        <span>✅ Can approve all senior staff hires</span>
+                </div>
+                <div class="authority-item">
+                        <span>✅ Can approve manager-level positions and above</span>
+                </div>
+                <div class="authority-item">
+                        <span>✅ Final authority on senior recruitment</span>
+                </div>
+                <div class="authority-item restriction">
+                        <span>❌ Cannot directly register workers (HR function)</span>
+                </div>
+            </div>
+        </div>
+    </div>`;
+    
+    showContent(html);
+}
+
+async function approveSeniorHire(requestId) {
+    try {
+        console.log('✅ Approving senior hiring request:', requestId);
+        
+        // Get current user
+        const currentUser = JSON.parse(localStorage.getItem('kashtec_current_user') || '{}');
+        const approvedBy = currentUser.email || 'HR Manager';
+        
+        // Get comments from user
+        const comments = prompt('Enter approval comments (optional):');
+        
+        // Show loading notification
+        showNotification('Approving senior hiring request...', 'info', 2000);
+        
+        // Call API
+        const response = await fetch(`/api/senior-hiring/${requestId}/approve`, {
+                method: 'POST',
+                headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${localStorage.getItem('kashtec_auth_token')}`
+                },
+                body: JSON.stringify({ approvedBy, comments })
+        });
+        
+        const result = await response.json();
+        
+        if (response.ok) {
+                showNotification('Senior hiring request approved successfully!', 'success', 4000);
+                
+                // Refresh requests list
+                setTimeout(() => loadSeniorHiringRequests(), 2000);
+        } else {
+                showNotification('Failed to approve senior hiring request: ' + result.error, 'error', 5000);
+        }
+        
+    } catch (error) {
+        console.error('❌ Error approving senior hiring request:', error);
+        showNotification('Error approving senior hiring request: ' + error.message, 'error', 5000);
+    }
+}
+
+async function rejectSeniorHire(requestId) {
+    try {
+        console.log('❌ Rejecting senior hiring request:', requestId);
+        
+        // Get current user
+        const currentUser = JSON.parse(localStorage.getItem('kashtec_current_user') || '{}');
+        const rejectedBy = currentUser.email || 'HR Manager';
+        
+        // Get rejection reason from user
+        const rejectionReason = prompt('Please enter rejection reason:');
+        if (!rejectionReason) {
+                showNotification('Rejection cancelled', 'info', 2000);
+                return;
+        }
+        
+        // Show loading notification
+        showNotification('Rejecting senior hiring request...', 'info', 2000);
+        
+        // Call API
+        const response = await fetch(`/api/senior-hiring/${requestId}/reject`, {
+                method: 'POST',
+                headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${localStorage.getItem('kashtec_auth_token')}`
+                },
+                body: JSON.stringify({ rejectionReason, rejectedBy })
+        });
+        
+        const result = await response.json();
+        
+        if (response.ok) {
+                showNotification('Senior hiring request rejected successfully!', 'warning', 4000);
+                
+                // Refresh requests list
+                setTimeout(() => loadSeniorHiringRequests(), 2000);
+        } else {
+                showNotification('Failed to reject senior hiring request: ' + result.error, 'error', 5000);
+        }
+        
+    } catch (error) {
+        console.error('❌ Error rejecting senior hiring request:', error);
+        showNotification('Error rejecting senior hiring request: ' + error.message, 'error', 5000);
+    }
+}
+
+async function requestMoreInfo(requestId) {
+    try {
+        console.log('🔄 Requesting more info for senior hiring request:', requestId);
+        
+        // Get current user
+        const currentUser = JSON.parse(localStorage.getItem('kashtec_current_user') || '{}');
+        const requestedBy = currentUser.email || 'HR Manager';
+        
+        // Get info request from user
+        const infoRequired = prompt('Please specify information required:');
+        if (!infoRequired) {
+                showNotification('Info request cancelled', 'info', 2000);
+                return;
+        }
+        
+        // Show loading notification
+        showNotification('Requesting more information...', 'info', 2000);
+        
+        // Call API
+        const response = await fetch(`/api/senior-hiring/${requestId}/request-info`, {
+                method: 'POST',
+                headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${localStorage.getItem('kashtec_auth_token')}`
+                },
+                body: JSON.stringify({ infoRequired, requestedBy })
+        });
+        
+        const result = await response.json();
+        
+        if (response.ok) {
+                showNotification('Information request sent successfully!', 'info', 4000);
+                
+                // Refresh requests list
+                setTimeout(() => loadSeniorHiringRequests(), 2000);
+        } else {
+                showNotification('Failed to request more information: ' + result.error, 'error', 5000);
+        }
+        
+    } catch (error) {
+        console.error('❌ Error requesting more information:', error);
+        showNotification('Error requesting more information: ' + error.message, 'error', 5000);
+    }
+}
+
 function loadUserData() {
     var currentUser = sessionStorage.getItem('kashtec_current_user');
     

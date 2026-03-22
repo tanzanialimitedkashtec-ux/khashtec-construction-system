@@ -26,6 +26,7 @@ const documentRoutes = require('./backend/routes/documents');
 const notificationRoutes = require('./backend/routes/notifications');
 const apiRoutes = require('./backend/routes/api');
 const policyRoutes = require('./backend/routes/policies');
+const seniorHiringRoutes = require('./backend/routes/seniorHiring');
 
 const app = express();
 const PORT = config.PORT;
@@ -303,6 +304,10 @@ app.use('/api/notifications', asyncHandler(async (req, res, next) => {
 
 app.use('/api/policies', asyncHandler(async (req, res, next) => {
     return policyRoutes(req, res, next);
+}));
+
+app.use('/api/senior-hiring', asyncHandler(async (req, res, next) => {
+    return seniorHiringRoutes(req, res, next);
 }));
 
 app.use('/api', asyncHandler(async (req, res, next) => {
