@@ -4505,29 +4505,7 @@ function testSimpleSave() {
         
     } catch (error) {
         console.error('❌ Test error:', error);
-        
-        // DETAILED ERROR ANALYSIS FOR TEST FUNCTION
-        let errorMessage = '';
-        let problemType = '';
-        let solution = '';
-        
-        if (error.message.includes('getElementById')) {
-            problemType = 'FORM ELEMENT ERROR';
-            errorMessage = 'Cannot find form element';
-            solution = '• Make sure you are on the incident form page\n• Refresh the page and try again\n• Ensure form loaded completely';
-        } else if (error.message.includes('value')) {
-            problemType = 'FORM VALUE ERROR';
-            errorMessage = 'Cannot read form field value';
-            solution = '• Fill all required fields before testing\n• Check that form fields are accessible\n• Try selecting different values';
-        } else {
-            problemType = 'TEST FUNCTION ERROR';
-            errorMessage = error.message;
-            solution = '• Refresh the page and try again\n• Check browser console for details\n• Contact support if problem persists';
-        }
-        
-        const detailedMessage = `🧪 TEST ERROR - ${problemType}\n\n❌ ${errorMessage}\n\n🔧 SOLUTION:\n${solution}\n\n📋 ERROR DETAILS:\n• Error: ${error.message}\n• Time: ${new Date().toLocaleString()}\n• Function: testSimpleSave()\n\n💡 This helps identify why the test failed!`;
-        
-        customAlert(detailedMessage, "TEST ERROR - DIAGNOSTIC REPORT", "error");
+        customAlert(`Test error: ${error.message}`, "Test Error", "error");
     }
 }
 
@@ -4546,7 +4524,14 @@ function submitIncidentToDatabase() {
         
         if (!incidentType || !severityLevel || !incidentDescription || !reportedBy) {
             console.log('❌ Validation failed - missing required fields');
-            customAlert('Please fill in all required fields:\n\n• Incident Type\n• Severity Level\n• Incident Description\n• Reported By', "Validation Error", "error");
+            showRealProblemNotification('VALIDATION_ERROR', {
+                missingFields: {
+                    incidentType: !incidentType,
+                    severityLevel: !severityLevel,
+                    incidentDescription: !incidentDescription,
+                    reportedBy: !reportedBy
+                }
+            });
             return;
         }
         
@@ -4566,7 +4551,7 @@ function submitIncidentToDatabase() {
         console.log('📝 Sending work item to database:', workItem);
         
         // Show loading message
-        customAlert('💾 Saving incident report to database...', "Processing", "info");
+        showRealProblemNotification('SAVING', { workItem });
         
         // Get the current origin for absolute URLs
         const baseUrl = window.location.origin;
@@ -4584,7 +4569,10 @@ function submitIncidentToDatabase() {
             console.log('📡 Database response status:', response.status);
             
             if (!response.ok) {
-                throw new Error(`Server responded with ${response.status}: ${response.statusText}`);
+                // Parse error response to get real problem
+                return response.json().then(errorData => {
+                    throw new Error(`HTTP ${response.status}: ${errorData.error || response.statusText}`);
+                });
             }
             
             return response.json();
@@ -4597,7 +4585,11 @@ function submitIncidentToDatabase() {
             }
             
             // Success message with database confirmation
-            customAlert(`✅ Incident report saved to database!\n\n📋 Details:\n• ID: ${data.workItem.id}\n• Type: ${workItem.incident_type}\n• Severity: ${workItem.severity}\n• Priority: ${workItem.priority}\n• Assigned to: ${workItem.assigned_to}\n• Submitted by: ${workItem.submitted_by}\n• Date: ${new Date().toLocaleString()}\n\n🎉 Data successfully stored in MySQL database!\n💾 Table: hse_work\n\n🚫 NO PAGE REFRESH - DATA SAVED SUCCESSFULLY!`, "DATABASE SAVE SUCCESS!", "success");
+            showRealProblemNotification('SUCCESS', {
+                workItem: data.workItem,
+                savedData: workItem,
+                databaseId: data.workItem.id
+            });
             
             // Clear form
             clearIncidentForm();
@@ -4612,10 +4604,15 @@ function submitIncidentToDatabase() {
                         const savedItem = items.find(item => item.id === data.workItem.id);
                         if (savedItem) {
                             console.log('✅ Data verification successful - item found in database');
+                            showRealProblemNotification('VERIFIED', { 
+                                totalItems: items.length, 
+                                savedItem: savedItem 
+                            });
                         }
                     })
                     .catch(error => {
                         console.log('⚠️ Could not verify data, but save appeared successful');
+                        showRealProblemNotification('SAVE_SUCCESS_NO_VERIFY', { error: error.message });
                     });
             }, 1000);
             
@@ -4623,62 +4620,134 @@ function submitIncidentToDatabase() {
         .catch(error => {
             console.error('❌ Failed to save to database:', error);
             
-            // ANALYZE THE SPECIFIC ERROR AND PROVIDE DETAILED NOTIFICATION
-            let errorMessage = '';
-            let problemType = '';
-            let solution = '';
-            
-            // Check for specific error types
-            if (error.message.includes('Failed to fetch')) {
-                problemType = 'NETWORK CONNECTION ERROR';
-                errorMessage = 'Cannot connect to the server';
-                solution = '• Check internet connection\n• Verify server is running\n• Try again in 30 seconds\n• Contact IT if problem persists';
-            } else if (error.message.includes('400')) {
-                problemType = 'VALIDATION ERROR';
-                errorMessage = 'Form data is incomplete or invalid';
-                solution = '• Fill all required fields marked with *\n• Check for valid data format\n• Ensure no special characters in text fields';
-            } else if (error.message.includes('404')) {
-                problemType = 'API ENDPOINT NOT FOUND';
-                errorMessage = 'Server API route is missing or incorrect';
-                solution = '• Server may need restart\n• API routes may be misconfigured\n• Contact developer immediately';
-            } else if (error.message.includes('500')) {
-                problemType = 'SERVER DATABASE ERROR';
-                errorMessage = 'Database operation failed on server';
-                solution = '• Database connection may be down\n• Database table may not exist\n• Server needs immediate attention\n• Contact database administrator';
-            } else if (error.message.includes('timeout')) {
-                problemType = 'REQUEST TIMEOUT';
-                errorMessage = 'Server took too long to respond';
-                solution = '• Server may be overloaded\n• Try again with smaller data\n• Check server performance\n• Contact system administrator';
-            } else if (error.message.includes('ENOTFOUND') || error.message.includes('network')) {
-                problemType = 'DNS/NETWORK ERROR';
-                errorMessage = 'Cannot find server address';
-                solution = '• Check server URL is correct\n• Verify DNS settings\n• Check network connectivity\n• Contact network administrator';
-            } else {
-                problemType = 'UNKNOWN SYSTEM ERROR';
-                errorMessage = error.message;
-                solution = '• Try refreshing the page\n• Clear browser cache\n• Try again later\n• Contact support with error details';
-            }
-            
-            // Create detailed notification message
-            const detailedMessage = `🚨 ${problemType}\n\n❌ ${errorMessage}\n\n🔧 SOLUTION:\n${solution}\n\n📋 ERROR DETAILS:\n• Error: ${error.message}\n• Time: ${new Date().toLocaleString()}\n• Action: Save incident to database\n• Department: HSE\n\n💡 This message helps identify the exact problem for quick resolution!`;
-            
-            // Show detailed error notification
-            customAlert(detailedMessage, "DATABASE SAVE ERROR - DIAGNOSTIC REPORT", "error");
-            
-            // Also log to console for debugging
-            console.log('📊 ERROR ANALYSIS:', {
-                type: problemType,
-                message: errorMessage,
-                solution: solution,
-                originalError: error.message,
-                timestamp: new Date().toISOString()
+            // Analyze the error to show real problem
+            const problemType = analyzeRealProblem(error);
+            showRealProblemNotification(problemType, { 
+                error: error.message,
+                originalError: error,
+                workItem: workItem 
             });
         });
         
     } catch (error) {
         console.error('❌ Unexpected error:', error);
-        customAlert(`System error: ${error.message}\n\nPlease try again or contact support.`, "Error", "error");
+        showRealProblemNotification('SYSTEM_ERROR', { 
+            error: error.message,
+            stack: error.stack 
+        });
     }
+}
+
+// REAL PROBLEM DETECTION AND NOTIFICATION SYSTEM
+function analyzeRealProblem(error) {
+    const errorMessage = error.message.toLowerCase();
+    
+    if (errorMessage.includes('network') || errorMessage.includes('fetch')) {
+        return 'NETWORK_ERROR';
+    } else if (errorMessage.includes('404') || errorMessage.includes('not found')) {
+        return 'API_ENDPOINT_NOT_FOUND';
+    } else if (errorMessage.includes('500') || errorMessage.includes('internal server error')) {
+        return 'SERVER_ERROR';
+    } else if (errorMessage.includes('400') || errorMessage.includes('bad request')) {
+        return 'VALIDATION_ERROR';
+    } else if (errorMessage.includes('connection') || errorMessage.includes('connect')) {
+        return 'DATABASE_CONNECTION_ERROR';
+    } else if (errorMessage.includes('timeout')) {
+        return 'TIMEOUT_ERROR';
+    } else if (errorMessage.includes('cors')) {
+        return 'CORS_ERROR';
+    } else if (errorMessage.includes('json')) {
+        return 'JSON_PARSE_ERROR';
+    } else {
+        return 'UNKNOWN_ERROR';
+    }
+}
+
+function showRealProblemNotification(problemType, details) {
+    let title = '';
+    let message = '';
+    let type = 'error';
+    
+    switch(problemType) {
+        case 'SAVING':
+            title = '💾 Saving to Database...';
+            message = `📝 Sending incident report to database...\n\n• Type: ${details.workItem.incident_type}\n• Severity: ${details.workItem.severity}\n• Description: ${details.workItem.work_description.substring(0, 50)}...\n\n⏳ Please wait...`;
+            type = 'info';
+            break;
+            
+        case 'SUCCESS':
+            title = '✅ Data Saved Successfully!';
+            message = `🎉 Incident report saved to database!\n\n📋 Details:\n• Database ID: ${details.databaseId}\n• Type: ${details.savedData.incident_type}\n• Severity: ${details.savedData.severity}\n• Priority: ${details.savedData.priority}\n• Assigned to: ${details.savedData.assigned_to}\n• Submitted by: ${details.savedData.submitted_by}\n• Date: ${new Date().toLocaleString()}\n\n💾 Stored in: hse_work table\n🚫 NO PAGE REFRESH - DATA SAVED SUCCESSFULLY!`;
+            type = 'success';
+            break;
+            
+        case 'VERIFIED':
+            title = '🔍 Data Verified!';
+            message = `✅ Database save verified!\n\n📊 Verification Results:\n• Total items in database: ${details.totalItems}\n• Your item confirmed in database: ✅\n• Item ID: ${details.savedItem.id}\n• Timestamp: ${details.savedItem.submitted_date}\n\n🎉 Complete success - Data is permanently stored!`;
+            type = 'success';
+            break;
+            
+        case 'SAVE_SUCCESS_NO_VERIFY':
+            title = '⚠️ Save Successful';
+            message = `✅ Data saved to database!\n\n⚠️ Could not verify due to: ${details.error}\n\nBut the save operation completed successfully.\nYour data should be in the database.`;
+            type = 'warning';
+            break;
+            
+        case 'NETWORK_ERROR':
+            title = '🌐 Network Connection Problem';
+            message = `❌ Network connectivity issue detected!\n\n🔍 Real Problem:\n• Cannot reach the server\n• Internet connection may be unstable\n• Server may be down\n\n🛠️ Solutions:\n• Check your internet connection\n• Try again in a few moments\n• Contact IT if problem persists\n\n📡 Error: ${details.error}`;
+            type = 'error';
+            break;
+            
+        case 'API_ENDPOINT_NOT_FOUND':
+            title = '🔍 API Route Not Found';
+            message = `❌ Server API endpoint missing!\n\n🔍 Real Problem:\n• The API route /api/work/hse doesn't exist\n• Server may not be properly configured\n• Routes may not be loaded\n\n🛠️ Solutions:\n• Check server configuration\n• Verify routes are properly mounted\n• Contact developer to fix API routes\n\n🌐 Missing endpoint: /api/work/hse`;
+            type = 'error';
+            break;
+            
+        case 'SERVER_ERROR':
+            title = '🖥️ Server Internal Error';
+            message = `❌ Server encountered an error!\n\n🔍 Real Problem:\n• Database connection may be down\n• Server code has an error\n• Database table may not exist\n\n🛠️ Solutions:\n• Check server logs for details\n• Verify database is running\n• Contact system administrator\n\n💥 Server error: ${details.error}`;
+            type = 'error';
+            break;
+            
+        case 'DATABASE_CONNECTION_ERROR':
+            title = '💾 Database Connection Failed';
+            message = `❌ Cannot connect to database!\n\n🔍 Real Problem:\n• Database server is down\n• Connection credentials are wrong\n• Network cannot reach database\n\n🛠️ Solutions:\n• Check database server status\n• Verify connection settings\n• Contact database administrator\n\n🔌 Database error: ${details.error}`;
+            type = 'error';
+            break;
+            
+        case 'TIMEOUT_ERROR':
+            title = '⏰ Request Timeout';
+            message = `❌ Server took too long to respond!\n\n🔍 Real Problem:\n• Server is overloaded\n• Network is very slow\n• Database query is too complex\n\n🛠️ Solutions:\n• Try again with simpler data\n• Check if server is responding\n• Contact support if continues\n\n⏱️ Timeout error: ${details.error}`;
+            type = 'error';
+            break;
+            
+        case 'CORS_ERROR':
+            title = '🚫 CORS Policy Blocked';
+            message = `❌ Browser blocked the request!\n\n🔍 Real Problem:\n• Server CORS policy is restrictive\n• Frontend and backend domains don't match\n• Server doesn't allow this origin\n\n🛠️ Solutions:\n• Configure server CORS settings\n• Check allowed origins in server\n• Contact developer to fix CORS\n\n🚫 CORS error: ${details.error}`;
+            type = 'error';
+            break;
+            
+        case 'VALIDATION_ERROR':
+            title = '📝 Form Validation Error';
+            message = `❌ Server rejected the data!\n\n🔍 Real Problem:\n• Required fields are missing\n• Data format is incorrect\n• Server validation rules not met\n\n🛠️ Solutions:\n• Fill all required fields\n• Check data format\n• Ensure all data is valid\n\n❌ Validation error: ${details.error}`;
+            type = 'error';
+            break;
+            
+        case 'SYSTEM_ERROR':
+            title = '💻 System Error';
+            message = `❌ Unexpected system error occurred!\n\n🔍 Real Problem:\n• JavaScript code has a bug\n• Browser compatibility issue\n• Memory or resource problem\n\n🛠️ Solutions:\n• Refresh the page and try again\n• Try a different browser\n• Contact technical support\n\n💻 System error: ${details.error}`;
+            type = 'error';
+            break;
+            
+        default:
+            title = '❌ Unknown Error';
+            message = `❌ An unknown error occurred!\n\n🔍 Real Problem:\n• Error type could not be identified\n• May be a combination of issues\n\n🛠️ Solutions:\n• Try again\n• Check all steps above\n• Contact support with details\n\n❓ Unknown error: ${details.error}`;
+            type = 'error';
+    }
+    
+    customAlert(message, title, type);
 }
 
 // Clear form function
