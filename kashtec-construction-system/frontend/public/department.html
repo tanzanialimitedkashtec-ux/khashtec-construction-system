@@ -4335,7 +4335,7 @@ function recordIncidentReports(){
         <h3>Record Incident Reports</h3>
         <p><strong>HSE Authority:</strong> Document workplace incidents, accidents, and near-misses for Return on Experience (REX)</p>
         
-        <form id="incidentForm">
+        <form id="incidentForm" onsubmit="return false;">
             <div class="form-row">
                 <div class="form-group">
                     <label>Incident ID</label>
@@ -4350,94 +4350,64 @@ function recordIncidentReports(){
             <div class="form-row">
                 <div class="form-group">
                     <label>Project *</label>
-                    <select id="incidentProject" required>
+                    <select id="project" required>
                         <option value="">Select Project</option>
-                        <option value="proj001">Masaki Residential Complex</option>
-                        <option value="proj002">Kigamboni Commercial Plaza</option>
-                        <option value="proj003">Mikochi Industrial Park</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label>Incident Type *</label>
-                    <select id="incidentType" required>
-                        <option value="">Select Incident Type</option>
-                        <option value="accident">Accident</option>
-                        <option value="near-miss">Near Miss</option>
-                        <option value="injury">Injury</option>
-                        <option value="property-damage">Property Damage</option>
-                        <option value="environmental">Environmental Incident</option>
-                        <option value="fire">Fire</option>
-                    </select>
-                </div>
-            </div>
-            
-            <div class="form-row">
-                <div class="form-group">
-                    <label>Severity Level *</label>
-                    <select id="severityLevel" required>
-                        <option value="">Select Severity</option>
-                        <option value="critical">Critical</option>
-                        <option value="major">Major</option>
-                        <option value="moderate">Moderate</option>
-                        <option value="minor">Minor</option>
+                        <option value="road-construction">Road Construction - Highway A1</option>
+                        <option value="building-project">Building Project - City Center</option>
+                        <option value="bridge-construction">Bridge Construction - River Cross</option>
+                        <option value="infrastructure">Infrastructure Development</option>
                     </select>
                 </div>
                 <div class="form-group">
                     <label>Location *</label>
-                    <input type="text" id="incidentLocation" placeholder="e.g., Site A - Foundation Area" required>
+                    <input type="text" id="location" placeholder="Specific site location" required>
                 </div>
-            </div>
-            
-            <div class="form-group">
-                <label>Persons Involved</label>
-                <input type="text" id="personsInvolved" placeholder="Names of workers/contractors involved">
-            </div>
-            
-            <div class="form-group">
-                <label>Description of Incident *</label>
-                <textarea id="incidentDescription" rows="4" placeholder="Detailed description of what happened..." required></textarea>
-            </div>
-            
-            <div class="form-group">
-                <label>Immediate Actions Taken</label>
-                <textarea id="immediateActions" rows="3" placeholder="Emergency response and immediate corrective actions..."></textarea>
-            </div>
-            
-            <div class="form-group">
-                <label>Root Cause Analysis</label>
-                <textarea id="rootCause" rows="3" placeholder="Investigation findings and root cause analysis..."></textarea>
-            </div>
-            
-            <div class="form-group">
-                <label>Preventive Measures</label>
-                <textarea id="preventiveMeasures" rows="3" placeholder="Actions to prevent recurrence..."></textarea>
-            </div>
-            
-            <div class="form-group">
-                <label>Witnesses</label>
-                <input type="text" id="witnesses" placeholder="Names and contact of witnesses">
-            </div>
-            
-            <div class="form-group">
-                <label>Attach Evidence</label>
-                <input type="file" id="incidentEvidence" accept=".pdf,.jpg,.png,.mp4" multiple>
             </div>
             
             <div class="form-row">
                 <div class="form-group">
-                    <label>Reported By *</label>
-                    <input type="text" id="reportedBy" placeholder="HSE Manager Name" required>
+                    <label>Incident Type *</label>
+                    <select id="incidentType" required>
+                        <option value="">Select Type</option>
+                        <option value="accident">Accident</option>
+                        <option value="injury">Injury</option>
+                        <option value="near-miss">Near Miss</option>
+                        <option value="property-damage">Property Damage</option>
+                        <option value="environmental">Environmental Incident</option>
+                        <option value="equipment-failure">Equipment Failure</option>
+                    </select>
                 </div>
                 <div class="form-group">
-                    <label>Follow-up Required</label>
-                    <select id="followUpRequired">
-                        <option value="yes">Yes</option>
-                        <option value="no">No</option>
+                    <label>Severity Level *</label>
+                    <select id="severityLevel" required>
+                        <option value="">Select Severity</option>
+                        <option value="minor">Minor</option>
+                        <option value="major">Major</option>
+                        <option value="critical">Critical</option>
+                        <option value="fatal">Fatal</option>
                     </select>
                 </div>
             </div>
             
-            <button type="submit" class="action">Record Incident</button>
+            <div class="form-group">
+                <label>Incident Description *</label>
+                <textarea id="incidentDescription" rows="4" placeholder="Detailed description of what happened..." required></textarea>
+            </div>
+            
+            <div class="form-group">
+                <label>Reported By *</label>
+                <input type="text" id="reportedBy" placeholder="HSE Manager Name" required>
+            </div>
+            
+            <!-- Manual Submit Buttons -->
+            <div style="margin-top: 20px;">
+                <button type="button" onclick="manualSubmitIncident()" style="background: #28a745; color: white; padding: 12px 24px; border: none; border-radius: 5px; cursor: pointer; font-size: 16px;">
+                    📝 Submit Incident Report
+                </button>
+                <button type="button" onclick="resetIncidentForm()" style="background: #6c757d; color: white; padding: 12px 24px; border: none; border-radius: 5px; cursor: pointer; font-size: 16px; margin-left: 10px;">
+                    🔄 Reset Form
+                </button>
+            </div>
         </form>
         
         <div class="recent-incidents">
@@ -4454,6 +4424,99 @@ function recordIncidentReports(){
             </div>
         </div>
     </div>`);
+    
+    // Generate initial incident ID
+    document.getElementById('incidentId').value = 'INC-' + Date.now();
+}
+
+// Manual submission function - completely bypasses form behavior
+function manualSubmitIncident() {
+    console.log('🚀 manualSubmitIncident called - COMPLETELY MANUAL SUBMISSION');
+    
+    try {
+        // Validate required fields
+        const incidentType = document.getElementById('incidentType').value;
+        const severityLevel = document.getElementById('severityLevel').value;
+        const incidentDescription = document.getElementById('incidentDescription').value;
+        const reportedBy = document.getElementById('reportedBy').value;
+        
+        console.log('📝 Form values:', { incidentType, severityLevel, incidentDescription, reportedBy });
+        
+        if (!incidentType || !severityLevel || !incidentDescription || !reportedBy) {
+            console.log('❌ Validation failed - missing required fields');
+            customAlert('Please fill in all required fields:\n\n• Incident Type\n• Severity Level\n• Incident Description\n• Reported By', "Validation Error", "error");
+            return;
+        }
+        
+        const workItem = {
+            work_type: 'Incident Reporting',
+            work_title: `Incident Report - ${incidentType}`,
+            work_description: incidentDescription,
+            incident_type: incidentType,
+            severity: severityLevel,
+            priority: severityLevel === 'critical' || severityLevel === 'fatal' ? 'Critical' : 
+                      severityLevel === 'major' ? 'High' : 'Medium',
+            due_date: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], // 7 days from now
+            assigned_to: 'HSE Manager',
+            submitted_by: reportedBy
+        };
+        
+        console.log('📝 Sending work item:', workItem);
+        
+        // Show loading message
+        customAlert('Recording incident report...', "Processing", "info");
+        
+        // Send data to backend API using fetch
+        fetch('/api/work/hse', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(workItem)
+        })
+        .then(response => {
+            console.log('📡 API Response status:', response.status);
+            return response.json();
+        })
+        .then(data => {
+            console.log('📊 API Response data:', data);
+            
+            if (data.error) {
+                throw new Error(data.error);
+            }
+            
+            // Success message
+            customAlert(`Incident report recorded successfully!\n\nID: ${data.workItem.id}\nType: ${workItem.incident_type}\nSeverity: ${workItem.severity}\nPriority: ${workItem.priority}\nAssigned to: ${workItem.assigned_to}\n\n✅ Incident has been saved to database and assigned for follow-up.`, "Incident Recorded", "success");
+            
+            // Reset form
+            resetIncidentForm();
+            
+        })
+        .catch(error => {
+            console.error('❌ Error recording incident:', error);
+            customAlert(`Failed to record incident: ${error.message}\n\nPlease check:\n• All required fields are filled\n• Network connection is stable\n• Server is running properly`, "Recording Error", "error");
+        });
+        
+    } catch (error) {
+        console.error('❌ Unexpected error in manualSubmitIncident:', error);
+        customAlert(`Unexpected error: ${error.message}\n\nPlease try again or contact support.`, "System Error", "error");
+    }
+}
+
+// Reset form function
+function resetIncidentForm() {
+    console.log('🔄 Resetting incident form');
+    
+    // Reset all form fields
+    const form = document.getElementById('incidentForm');
+    if (form) {
+        form.reset();
+        
+        // Generate new incident ID
+        document.getElementById('incidentId').value = 'INC-' + Date.now();
+        
+        console.log('✅ Form reset completed');
+    }
 }
 
 function uploadSafetyPolicies(){
