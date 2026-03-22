@@ -546,10 +546,10 @@ CREATE TABLE IF NOT EXISTS finance_work (
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   INDEX idx_status (status),
-  idx_department (department_code),
-  idx_work_type (work_type),
-  idx_submitted_by (submitted_by),
-  idx_due_date (due_date)
+  INDEX idx_department (department_code),
+  INDEX idx_work_type (work_type),
+  INDEX idx_submitted_by (submitted_by),
+  INDEX idx_due_date (due_date)
 );
 
 CREATE TABLE IF NOT EXISTS hse_work (
@@ -572,11 +572,11 @@ CREATE TABLE IF NOT EXISTS hse_work (
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   INDEX idx_status (status),
-  idx_department (department_code),
-  idx_work_type (work_type),
-  idx_severity (severity),
-  idx_submitted_by (submitted_by),
-  idx_due_date (due_date)
+  INDEX idx_department (department_code),
+  INDEX idx_work_type (work_type),
+  INDEX idx_severity (severity),
+  INDEX idx_submitted_by (submitted_by),
+  INDEX idx_due_date (due_date)
 );
 
 CREATE TABLE IF NOT EXISTS project_work (
@@ -598,11 +598,11 @@ CREATE TABLE IF NOT EXISTS project_work (
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   INDEX idx_status (status),
-  idx_department (department_code),
-  idx_work_type (work_type),
-  idx_project_phase (project_phase),
-  idx_submitted_by (submitted_by),
-  idx_due_date (due_date)
+  INDEX idx_department (department_code),
+  INDEX idx_work_type (work_type),
+  INDEX idx_project_phase (project_phase),
+  INDEX idx_submitted_by (submitted_by),
+  INDEX idx_due_date (due_date)
 );
 
 CREATE TABLE IF NOT EXISTS realestate_work (
@@ -649,11 +649,11 @@ CREATE TABLE IF NOT EXISTS admin_work (
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   INDEX idx_status (status),
-  idx_department (department_code),
-  idx_work_type (work_type),
-  idx_affected_department (affected_department),
-  idx_submitted_by (submitted_by),
-  idx_due_date (due_date)
+  INDEX idx_department (department_code),
+  INDEX idx_work_type (work_type),
+  INDEX idx_affected_department (affected_department),
+  INDEX idx_submitted_by (submitted_by),
+  INDEX idx_due_date (due_date)
 );
 
 -- Work Comments and Actions Tables
