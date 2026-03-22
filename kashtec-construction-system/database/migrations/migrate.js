@@ -63,15 +63,29 @@ async function runMigrations() {
     // Verify database
     console.log('\n📝 Step 3: Verifying database...');
     try {
-      const [rows] = await db.execute('SHOW TABLES');
-      console.log('📊 Raw table rows:', rows);
-      console.log('📊 Type of rows:', typeof rows);
-      console.log('📊 Is array?', Array.isArray(rows));
-      console.log('📊 Number of tables:', rows.length);
+      const tables = await db.execute('SHOW TABLES');
+      console.log('📊 Raw table rows:', tables);
+      console.log('📊 Type of rows:', typeof tables);
+      console.log('📊 Is array?', Array.isArray(tables));
       
-      // Make sure rows is an array before mapping
-      if (Array.isArray(rows)) {
-        const tableNames = rows.map(table => Object.values(table)[0]);
+      // Handle different MySQL2 result formats
+      let tableNames = [];
+      if (Array.isArray(tables)) {
+        // MySQL2 returns array of objects for SHOW TABLES
+        tableNames = tables.map(table => {
+          // Get the table name from whatever column name MySQL2 uses
+          const tableName = table[`Tables_in_${process.env.DB_NAME || 'railway'}`] || 
+                          table[`Tables_in_railway`] || 
+                          Object.values(table)[0];
+          return tableName;
+        });
+      } else {
+        console.log('❌ Tables result is not an array:', tables);
+      }
+      
+      console.log('📊 Number of tables:', tableNames.length);
+      
+      if (tableNames.length > 0) {
         console.log(`📊 Tables created: ${tableNames.join(', ')}`);
         
         // Check if critical tables exist
@@ -83,8 +97,6 @@ async function runMigrations() {
         } else {
           console.log('✅ All critical tables created successfully');
         }
-      } else {
-        console.log('❌ Rows is not an array:', rows);
       }
       
       // Check users table
