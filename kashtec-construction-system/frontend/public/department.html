@@ -3693,13 +3693,55 @@ function saveAssignment() {
         assignmentDate: new Date().toLocaleString()
     };
     
-    // Save to localStorage
-    const assignments = []; // TODO: Load from API instead of localStorage
-    assignments.push(assignment);
-    // TODO: Save to API instead of localStorage
+    // Validate required fields
+    if (!assignment.employee || !assignment.project || !assignment.role || !assignment.startDate) {
+        customAlert('Please fill in all required fields:\n\n• Employee\n• Project\n• Role\n• Start Date', "Validation Error", "error");
+        return false;
+    }
     
-    customAlert('Worker assigned to project successfully!', "Assignment Completed", "success");
-    document.getElementById('assignForm').reset();
+    // Prepare work item for HR department
+    const workItem = {
+        work_type: 'Worker Assignment',
+        work_title: `Project Assignment - ${assignment.employee}`,
+        work_description: `Worker Assignment for ${assignment.employee}\n\nProject: ${assignment.project}\nRole: ${assignment.role}\nStart Date: ${assignment.startDate}\nEnd Date: ${assignment.endDate}\nNotes: ${assignment.notes}\nAssignment Date: ${assignment.assignmentDate}`,
+        priority: 'Medium',
+        due_date: assignment.startDate,
+        assigned_to: 'HR Manager',
+        submitted_by: 'HR Manager'
+    };
+    
+    // Show loading message
+    customAlert('Assigning worker to project...', "Processing", "info");
+    
+    // Send data to backend API
+    fetch('/api/work/hr', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+        },
+        body: JSON.stringify(workItem)
+    })
+    .then(response => {
+        console.log('📡 Assignment API Response status:', response.status);
+        return response.json();
+    })
+    .then(data => {
+        console.log('📊 Assignment API Response data:', data);
+        
+        if (data.error) {
+            throw new Error(data.error);
+        }
+        
+        customAlert(`Worker assigned to project successfully!\n\nEmployee: ${assignment.employee}\nProject: ${assignment.project}\nRole: ${assignment.role}\nAssignment ID: ${data.id}\n\n🎉 Assignment saved to database!`, "Assignment Completed", "success");
+        
+        document.getElementById('assignForm').reset();
+    })
+    .catch(error => {
+        console.error('❌ Error assigning worker:', error);
+        customAlert(`Failed to assign worker: ${error.message}\n\nPlease check:\n• All required fields are filled\n• Network connection is stable\n• Server is running properly`, "Assignment Error", "error");
+    });
+    
     return false;
 }
 
@@ -3715,13 +3757,55 @@ function saveAttendance() {
         timestamp: new Date().toLocaleString()
     };
     
-    // Save to localStorage
-    const attendanceRecords = []; // TODO: Load from API instead of localStorage
-    attendanceRecords.push(attendance);
-    // TODO: Save to API instead of localStorage
+    // Validate required fields
+    if (!attendance.date || !attendance.employee || !attendance.checkIn || !attendance.status) {
+        customAlert('Please fill in all required fields:\n\n• Date\n• Employee\n• Check In\n• Status', "Validation Error", "error");
+        return false;
+    }
     
-    customAlert('Attendance marked successfully!', "Attendance Recorded", "success");
-    document.getElementById('attendanceForm').reset();
+    // Prepare work item for HR department
+    const workItem = {
+        work_type: 'Attendance Management',
+        work_title: `Attendance - ${attendance.employee}`,
+        work_description: `Attendance Record for ${attendance.employee}\n\nDate: ${attendance.date}\nCheck In: ${attendance.checkIn}\nCheck Out: ${attendance.checkOut}\nStatus: ${attendance.status}\nNotes: ${attendance.notes}\nMarked By: ${attendance.markedBy}\nTimestamp: ${attendance.timestamp}`,
+        priority: 'Medium',
+        due_date: attendance.date,
+        assigned_to: 'HR Manager',
+        submitted_by: 'HR Manager'
+    };
+    
+    // Show loading message
+    customAlert('Marking attendance...', "Processing", "info");
+    
+    // Send data to backend API
+    fetch('/api/work/hr', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+        },
+        body: JSON.stringify(workItem)
+    })
+    .then(response => {
+        console.log('📡 Attendance API Response status:', response.status);
+        return response.json();
+    })
+    .then(data => {
+        console.log('📊 Attendance API Response data:', data);
+        
+        if (data.error) {
+            throw new Error(data.error);
+        }
+        
+        customAlert(`Attendance marked successfully!\n\nEmployee: ${attendance.employee}\nDate: ${attendance.date}\nStatus: ${attendance.status}\nAttendance ID: ${data.id}\n\n🎉 Attendance saved to database!`, "Attendance Recorded", "success");
+        
+        document.getElementById('attendanceForm').reset();
+    })
+    .catch(error => {
+        console.error('❌ Error marking attendance:', error);
+        customAlert(`Failed to mark attendance: ${error.message}\n\nPlease check:\n• All required fields are filled\n• Network connection is stable\n• Server is running properly`, "Recording Error", "error");
+    });
+    
     return false;
 }
 
@@ -6741,14 +6825,55 @@ function savePpeIssuance() {
         recordedDate: new Date().toLocaleString()
     };
     
-    // Save to localStorage
-    const ppeRecords = []; // TODO: Load from API instead of localStorage
-    ppeRecords.push(issuance);
-    // TODO: Save to API instead of localStorage
+    // Validate required fields
+    if (!issuance.date || !issuance.workerName || !issuance.project || issuance.items.length === 0) {
+        customAlert('Please fill in all required fields:\n\n• Date\n• Worker Name\n• Project\n• At least one PPE item', "Validation Error", "error");
+        return false;
+    }
     
-    customAlert(`PPE issuance recorded successfully!\n\nID: ${issuance.id}\nWorker: ${issuance.workerName}\nItems: ${issuance.items.length} items\nProject: ${issuance.project}`, "PPE Issued", "success");
+    // Prepare work item for HSE department
+    const workItem = {
+        work_type: 'PPE Issuance',
+        work_title: `PPE Issuance - ${issuance.workerName}`,
+        work_description: `PPE Issuance for ${issuance.workerName}\n\nDate: ${issuance.date}\nProject: ${issuance.project}\nDepartment: ${issuance.department}\nItems: ${issuance.items.map(item => `${item.type} (${item.quantity})`).join(', ')}\nCondition: ${issuance.condition}\nReturn Date: ${issuance.returnDate}\nIssued By: ${issuance.issuedBy}\nSignature: ${issuance.signature}\nRecorded By: ${issuance.recordedBy}`,
+        priority: 'Medium',
+        due_date: issuance.returnDate || issuance.date,
+        assigned_to: 'HSE Manager',
+        submitted_by: 'HSE Manager'
+    };
     
-    document.getElementById('ppeForm').reset();
+    // Show loading message
+    customAlert('Recording PPE issuance...', "Processing", "info");
+    
+    // Send data to backend API
+    fetch('/api/work/hse', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+        },
+        body: JSON.stringify(workItem)
+    })
+    .then(response => {
+        console.log('📡 PPE Issuance API Response status:', response.status);
+        return response.json();
+    })
+    .then(data => {
+        console.log('📊 PPE Issuance API Response data:', data);
+        
+        if (data.error) {
+            throw new Error(data.error);
+        }
+        
+        customAlert(`PPE issuance recorded successfully!\n\nID: ${issuance.id}\nWorker: ${issuance.workerName}\nItems: ${issuance.items.length} items\nProject: ${issuance.project}\nPPE ID: ${data.id}\n\n🎉 PPE issuance saved to database!`, "PPE Issued", "success");
+        
+        document.getElementById('ppeForm').reset();
+    })
+    .catch(error => {
+        console.error('❌ Error recording PPE issuance:', error);
+        customAlert(`Failed to record PPE issuance: ${error.message}\n\nPlease check:\n• All required fields are filled\n• Network connection is stable\n• Server is running properly`, "Recording Error", "error");
+    });
+    
     return false;
 }
 
@@ -6773,14 +6898,55 @@ function saveSafetyViolation() {
         recordedDate: new Date().toLocaleString()
     };
     
-    // Save to localStorage
-    const violations = []; // TODO: Load from API instead of localStorage
-    violations.push(violation);
-    // TODO: Save to API instead of localStorage
+    // Validate required fields
+    if (!violation.date || !violation.project || !violation.type || !violation.severity || !violation.description) {
+        customAlert('Please fill in all required fields:\n\n• Date\n• Project\n• Type\n• Severity\n• Description', "Validation Error", "error");
+        return false;
+    }
     
-    customAlert(`Safety violation recorded successfully!\n\nID: ${violation.id}\nType: ${violation.type}\nSeverity: ${violation.severity}\nProject: ${violation.project}\n\nCorrective action required by: ${violation.deadline}`, "Violation Recorded", "success");
+    // Prepare work item for HSE department
+    const workItem = {
+        work_type: 'Safety Violation',
+        work_title: `Safety Violation - ${violation.type}`,
+        work_description: `Safety Violation Report\n\nDate: ${violation.date}\nProject: ${violation.project}\nType: ${violation.type}\nSeverity: ${violation.severity}\nLocation: ${violation.location}\nViolators: ${violation.violators}\nDescription: ${violation.description}\nImmediate Action: ${violation.immediateAction}\nCorrective Action: ${violation.correctiveAction}\nDeadline: ${violation.deadline}\nWitnesses: ${violation.witnesses}\nEvidence Files: ${violation.evidence}\nReported By: ${violation.reportedBy}\nFollow Up Required: ${violation.followUp}\nRecorded By: ${violation.recordedBy}`,
+        priority: violation.severity === 'critical' ? 'High' : violation.severity === 'major' ? 'Medium' : 'Low',
+        due_date: violation.deadline,
+        assigned_to: 'HSE Manager',
+        submitted_by: 'HSE Manager'
+    };
     
-    document.getElementById('violationForm').reset();
+    // Show loading message
+    customAlert('Recording safety violation...', "Processing", "info");
+    
+    // Send data to backend API
+    fetch('/api/work/hse', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+        },
+        body: JSON.stringify(workItem)
+    })
+    .then(response => {
+        console.log('📡 Safety Violation API Response status:', response.status);
+        return response.json();
+    })
+    .then(data => {
+        console.log('📊 Safety Violation API Response data:', data);
+        
+        if (data.error) {
+            throw new Error(data.error);
+        }
+        
+        customAlert(`Safety violation recorded successfully!\n\nID: ${violation.id}\nType: ${violation.type}\nSeverity: ${violation.severity}\nProject: ${violation.project}\nCorrective action required by: ${violation.deadline}\nViolation ID: ${data.id}\n\n🎉 Safety violation saved to database!`, "Violation Recorded", "success");
+        
+        document.getElementById('violationForm').reset();
+    })
+    .catch(error => {
+        console.error('❌ Error recording safety violation:', error);
+        customAlert(`Failed to record safety violation: ${error.message}\n\nPlease check:\n• All required fields are filled\n• Network connection is stable\n• Server is running properly`, "Recording Error", "error");
+    });
+    
     return false;
 }
 
@@ -6805,14 +6971,55 @@ function saveInspectionReport() {
         uploadDate: new Date().toLocaleString()
     };
     
-    // Save to localStorage
-    const inspections = []; // TODO: Load from API instead of localStorage
-    inspections.push(inspection);
-    // TODO: Save to API instead of localStorage
+    // Validate required fields
+    if (!inspection.date || !inspection.project || !inspection.type || !inspection.inspector || !inspection.compliance) {
+        customAlert('Please fill in all required fields:\n\n• Date\n• Project\n• Type\n• Inspector\n• Compliance Status', "Validation Error", "error");
+        return false;
+    }
     
-    customAlert(`Inspection report uploaded successfully!\n\nID: ${inspection.id}\nType: ${inspection.type}\nCompliance: ${inspection.compliance}\nRisk Level: ${inspection.riskLevel}`, "Report Uploaded", "success");
+    // Prepare work item for HSE department
+    const workItem = {
+        work_type: 'Inspection Report',
+        work_title: `Inspection Report - ${inspection.type}`,
+        work_description: `Inspection Report\n\nDate: ${inspection.date}\nProject: ${inspection.project}\nType: ${inspection.type}\nInspector: ${inspection.inspector} (License: ${inspection.license})\nAreas: ${inspection.areas.join(', ')}\nFindings: ${inspection.findings}\nCompliance: ${inspection.compliance}\nRisk Level: ${inspection.riskLevel}\nRecommendations: ${inspection.recommendations}\nFollow Up Date: ${inspection.followUpDate}\nNext Inspection: ${inspection.nextInspection}\nDocuments: ${inspection.document}\nPhotos: ${inspection.photos}\nUploaded By: ${inspection.uploadedBy}`,
+        priority: inspection.riskLevel === 'high' ? 'High' : inspection.riskLevel === 'medium' ? 'Medium' : 'Low',
+        due_date: inspection.followUpDate || inspection.date,
+        assigned_to: 'HSE Manager',
+        submitted_by: 'HSE Manager'
+    };
     
-    document.getElementById('inspectionForm').reset();
+    // Show loading message
+    customAlert('Uploading inspection report...', "Processing", "info");
+    
+    // Send data to backend API
+    fetch('/api/work/hse', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+        },
+        body: JSON.stringify(workItem)
+    })
+    .then(response => {
+        console.log('📡 Inspection Report API Response status:', response.status);
+        return response.json();
+    })
+    .then(data => {
+        console.log('📊 Inspection Report API Response data:', data);
+        
+        if (data.error) {
+            throw new Error(data.error);
+        }
+        
+        customAlert(`Inspection report uploaded successfully!\n\nID: ${inspection.id}\nType: ${inspection.type}\nCompliance: ${inspection.compliance}\nRisk Level: ${inspection.riskLevel}\nInspection ID: ${data.id}\n\n🎉 Inspection report saved to database!`, "Report Uploaded", "success");
+        
+        document.getElementById('inspectionForm').reset();
+    })
+    .catch(error => {
+        console.error('❌ Error uploading inspection report:', error);
+        customAlert(`Failed to upload inspection report: ${error.message}\n\nPlease check:\n• All required fields are filled\n• Network connection is stable\n• Server is running properly`, "Upload Error", "error");
+    });
+    
     return false;
 }
 
