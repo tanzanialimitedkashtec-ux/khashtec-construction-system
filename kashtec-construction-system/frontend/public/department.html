@@ -5568,11 +5568,13 @@ class AutoProblemDetector {
     async testFormSubmission() {
         try {
             const testData = {
-                work_type: 'Test Submission',
+                work_type: 'Incident Reporting', // This must match the ENUM exactly
                 work_title: 'Auto Detection Test',
                 work_description: 'This is a test to verify form submission capability',
                 submitted_by: 'Auto Detector'
             };
+            
+            console.log('📝 Testing form submission with data:', testData);
             
             const response = await fetch('/api/work/hse', {
                 method: 'POST',
@@ -5583,6 +5585,8 @@ class AutoProblemDetector {
             });
             
             const data = await response.json();
+            
+            console.log('📡 Form submission response:', response.status, data);
             
             if (response.ok && !data.error) {
                 this.testResults.formSubmission = {
@@ -5603,7 +5607,7 @@ class AutoProblemDetector {
                 }
                 
             } else {
-                throw new Error(data.error || 'Form submission failed');
+                throw new Error(data.error || `HTTP ${response.status}: ${response.statusText}`);
             }
             
         } catch (error) {
@@ -5617,7 +5621,7 @@ class AutoProblemDetector {
                 category: 'Form Submission',
                 problem: 'Cannot submit forms to database',
                 details: error.message,
-                solution: 'Check API endpoints, database table structure, and request format'
+                solution: 'Check API endpoints, database table structure, and request format. Verify work_type matches ENUM values in database.'
             });
             
             console.error('❌ Form Submission Test Failed:', error);
@@ -5664,7 +5668,7 @@ class AutoProblemDetector {
     async testAuthentication() {
         try {
             const currentUser = sessionManager?.getCurrentUser();
-            const token = sessionManager?.getToken();
+            const token = sessionManager?.getAuthToken();
             
             if (currentUser && token) {
                 this.testResults.authentication = {
