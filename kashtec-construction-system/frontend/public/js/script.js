@@ -141,8 +141,45 @@ function updateNavigation(state) {
     }
 }
 
+function updatePasswordPlaceholder() {
+    console.log('🔄 updatePasswordPlaceholder() called');
+    var roleSelect = document.getElementById("loginRole");
+    var passwordInput = document.getElementById("loginPassword");
+    
+    if (roleSelect && passwordInput) {
+        var selectedRole = roleSelect.value;
+        console.log('📝 Selected role:', selectedRole);
+        
+        var placeholders = {
+            'MD': 'admin',
+            'ADMIN': 'admin',
+            'HR': 'hr0501',
+            'HSE': 'hse0501',
+            'FINANCE': 'finance0501',
+            'PROJECT': 'pm0501',
+            'REALESTATE': 'realestate0501',
+            'ASSISTANT': 'admin'
+        };
+        
+        passwordInput.placeholder = placeholders[selectedRole] || 'Enter password';
+        console.log('🔤 Password placeholder updated to:', passwordInput.placeholder);
+    } else {
+        console.error('❌ Could not find role select or password input');
+    }
+}
+
 function handleLogin() {
     console.log('🔍 handleLogin function called');
+    
+    // Test if apiService is available
+    console.log('🔍 apiService available:', typeof window.apiService);
+    console.log('🔍 apiService object:', window.apiService);
+    
+    if (!window.apiService) {
+        console.error('❌ apiService not found!');
+        showNotification('API service not loaded. Please refresh the page.', 'error', 5000);
+        return false;
+    }
     
     // Get form values
     var email = document.getElementById("loginEmail").value;
@@ -169,7 +206,8 @@ function handleLogin() {
     console.log('🌐 Direct login attempt...');
     showNotification('Authenticating...', 'info', 3000);
     
-    apiService.login(email, password, role)
+    try {
+        apiService.login(email, password, role)
         .then(response => {
             console.log('✅ Login successful:', response);
             
@@ -232,6 +270,19 @@ function handleLogin() {
             
             showNotification(errorMsg, 'error', 8000);
         });
+    } catch (error) {
+        console.error('❌ Login error:', error);
+        
+        // Reset button
+        if (loginBtn) {
+            loginBtn.disabled = false;
+            loginBtn.textContent = "Login";
+            loginBtn.style.opacity = '1';
+        }
+        
+        // Show error
+        showNotification('Login error: ' + (error.message || 'Unknown error'), 'error', 5000);
+    }
     
     return false;
 }
@@ -449,11 +500,18 @@ document.addEventListener('DOMContentLoaded', function() {
     // Add event listeners to replace inline handlers
     var loginBtn = document.getElementById("loginBtn");
     console.log('🔍 Login button element (DOMContentLoaded):', loginBtn);
+    console.log('🔍 Login button exists:', !!loginBtn);
+    console.log('🔍 Login button type:', loginBtn ? loginBtn.tagName : 'null');
+    console.log('🔍 Login button class:', loginBtn ? loginBtn.className : 'null');
     
     if (loginBtn) {
         loginBtn.addEventListener('click', function(e) {
             console.log('🖱️ Login button clicked!', e);
+            console.log('🖱️ Event type:', e.type);
+            console.log('🖱️ Event target:', e.target);
+            console.log('🖱️ Current target:', e.currentTarget);
             e.preventDefault();
+            e.stopPropagation();
             handleLogin();
         });
         console.log('✅ Login button event listener attached (DOMContentLoaded)');
@@ -462,8 +520,13 @@ document.addEventListener('DOMContentLoaded', function() {
         loginBtn.addEventListener('mouseover', function() {
             console.log('🖱️ Mouse over login button');
         });
+        
+        // Test if button is focusable
+        loginBtn.addEventListener('focus', function() {
+            console.log('🎯 Login button focused');
+        });
     } else {
-        console.error('❌ Login button not found in DOMContentLoaded!');
+        console.error('❌ Login button not found during DOMContentLoaded');
     }
     
     var logoutBtn = document.querySelector('button[onclick="logout()"]');
