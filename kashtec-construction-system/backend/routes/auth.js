@@ -125,25 +125,39 @@ router.post('/login', async (req, res) => {
         // Find user by email and role
         let db;
         try {
+            console.log('🔍 Attempting database connection...');
             db = require('../../database/config/database');
+            console.log('✅ Database module loaded successfully');
+            
+            // Test the connection
+            await db.execute('SELECT 1');
             console.log('✅ Database connection established');
         } catch (dbError) {
             console.error('❌ Database connection failed:', dbError);
+            console.error('❌ Error details:', dbError.message);
+            console.error('❌ Error code:', dbError.code);
+            console.error('❌ Error stack:', dbError.stack);
             return res.status(500).json({
                 error: 'Database connection failed',
-                message: 'Unable to connect to authentication database. Please try again later.'
+                message: 'Unable to connect to authentication database. Please try again later.',
+                details: dbError.message
             });
         }
         
         console.log('🔍 Querying authentication table for:', email);
         
         try {
+            console.log('🔍 Executing authentication query...');
+            console.log('📝 Query:', 'SELECT id, email, password_hash, role, department_name, manager_name, status FROM authentication WHERE email = ? AND status = ?');
+            console.log('📝 Parameters:', [email, 'Active']);
+            
             const [authRows] = await db.execute(
                 'SELECT id, email, password_hash, role, department_name, manager_name, status FROM authentication WHERE email = ? AND status = ?',
                 [email, 'Active']
             );
             
             console.log('📊 Authentication query result:', authRows);
+            console.log('📊 Query successful, rows found:', authRows.length);
         
             if (authRows.length === 0) {
                 console.log('❌ No authentication record found for:', email);
@@ -206,9 +220,25 @@ router.post('/login', async (req, res) => {
             
         } catch (queryError) {
             console.error('❌ Database query error:', queryError);
+            console.error('❌ Query error details:', queryError.message);
+            console.error('❌ Query error code:', queryError.code);
+            console.error('❌ Query error stack:', queryError.stack);
+            console.error('❌ Query that failed:', 'SELECT id, email, password_hash, role, department_name, manager_name, status FROM authentication WHERE email = ? AND status = ?');
+            console.error('❌ Query parameters:', [email, 'Active']);
+            
+            // Check if it's a table doesn't exist error
+            if (queryError.message.includes('Table') && queryError.message.includes("doesn't exist")) {
+                return res.status(500).json({
+                    error: 'Authentication table not found',
+                    message: 'The authentication table has not been created. Please contact the system administrator.',
+                    details: 'Table authentication does not exist in database'
+                });
+            }
+            
             return res.status(500).json({
                 error: 'Database query failed',
-                message: 'Authentication query failed. Please try again later.'
+                message: 'Authentication query failed. Please try again later.',
+                details: queryError.message
             });
         }
 
