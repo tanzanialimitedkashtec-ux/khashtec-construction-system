@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const db = require('../config/database');
+const db = require('../src/config/database');
 
 // Test endpoint to verify API is working
 router.get('/test', (req, res) => {
