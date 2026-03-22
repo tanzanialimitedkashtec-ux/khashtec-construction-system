@@ -243,13 +243,13 @@ function handleLogin() {
                     'Admin Assistant': 'ASSISTANT'
                 };
                 
-                // Set currentRole for menu system
-                window.currentRole = roleMap[role] || role;
+                // Set global currentRole for menu system (not window.currentRole)
+                currentRole = roleMap[role] || role;
                 
                 // Set user role display
                 document.getElementById("userRole").innerText = role + " Dashboard";
                 
-                console.log('🔍 Setting currentRole:', window.currentRole, 'from role:', role);
+                console.log('🔍 Setting currentRole:', currentRole, 'from role:', role);
                 
                 // Load menu based on role
                 if (typeof loadMenu === 'function') {
