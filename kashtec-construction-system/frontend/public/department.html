@@ -5328,73 +5328,115 @@ function viewProjectSafetyStatus(){
     </div>`);
 }
 
+// Add event listener to prevent default form submission
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('🚀 DOM loaded, setting up form event listeners');
+    
+    // Find the incident form
+    const incidentForm = document.getElementById('incidentForm');
+    if (incidentForm) {
+        console.log('✅ Incident form found, adding event listener');
+        
+        incidentForm.addEventListener('submit', function(event) {
+            console.log('📝 Form submit event triggered');
+            event.preventDefault();
+            event.stopPropagation();
+            
+            console.log('🔒 Default form submission prevented');
+            
+            // Call the save function
+            const result = saveIncidentReport();
+            console.log('📊 saveIncidentReport returned:', result);
+            
+            return false;
+        });
+        
+        console.log('✅ Form event listener added successfully');
+    } else {
+        console.log('❌ Incident form not found');
+    }
+});
+
 // HSE Helper Functions
 function saveIncidentReport() {
-    // Validate required fields
-    const incidentType = document.getElementById('incidentType').value;
-    const severityLevel = document.getElementById('severityLevel').value;
-    const incidentDescription = document.getElementById('incidentDescription').value;
+    console.log('🚀 saveIncidentReport function called');
     
-    if (!incidentType || !severityLevel || !incidentDescription) {
-        customAlert('Please fill in all required fields:\n\n• Incident Type\n• Severity Level\n• Incident Description', "Validation Error", "error");
-        return false;
-    }
-    
-    const workItem = {
-        work_type: 'Incident Reporting',
-        work_title: `Incident Report - ${incidentType}`,
-        work_description: incidentDescription,
-        incident_type: incidentType,
-        severity: severityLevel,
-        priority: severityLevel === 'critical' ? 'Critical' : 
-                  severityLevel === 'major' ? 'High' : 'Medium',
-        due_date: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], // 7 days from now
-        assigned_to: 'HSE Manager',
-        submitted_by: 'HSE Manager'
-    };
-    
-    console.log('📝 Sending work item:', workItem);
-    
-    // Show loading message
-    customAlert('Recording incident report...', "Processing", "info");
-    
-    // Send data to backend API (without authentication for testing)
-    fetch('/api/work/hse', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(workItem)
-    })
-    .then(response => {
-        console.log('📡 API Response status:', response.status);
-        return response.json();
-    })
-    .then(data => {
-        console.log('📊 API Response data:', data);
+    try {
+        // Validate required fields
+        const incidentType = document.getElementById('incidentType').value;
+        const severityLevel = document.getElementById('severityLevel').value;
+        const incidentDescription = document.getElementById('incidentDescription').value;
         
-        if (data.error) {
-            throw new Error(data.error);
+        console.log('📝 Form values:', { incidentType, severityLevel, incidentDescription });
+        
+        if (!incidentType || !severityLevel || !incidentDescription) {
+            console.log('❌ Validation failed - missing required fields');
+            customAlert('Please fill in all required fields:\n\n• Incident Type\n• Severity Level\n• Incident Description', "Validation Error", "error");
+            return false;
         }
         
-        // Success message
-        customAlert(`Incident report recorded successfully!\n\nID: ${data.workItem.id}\nType: ${workItem.incident_type}\nSeverity: ${workItem.severity}\nPriority: ${workItem.priority}\nAssigned to: ${workItem.assigned_to}\n\n✅ Incident has been saved to database and assigned for follow-up.`, "Incident Recorded", "success");
+        const workItem = {
+            work_type: 'Incident Reporting',
+            work_title: `Incident Report - ${incidentType}`,
+            work_description: incidentDescription,
+            incident_type: incidentType,
+            severity: severityLevel,
+            priority: severityLevel === 'critical' ? 'Critical' : 
+                      severityLevel === 'major' ? 'High' : 'Medium',
+            due_date: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], // 7 days from now
+            assigned_to: 'HSE Manager',
+            submitted_by: 'HSE Manager'
+        };
         
-        // Reset form
-        document.getElementById('incidentForm').reset();
+        console.log('📝 Sending work item:', workItem);
         
-        // Generate new incident ID
-        document.getElementById('incidentId').value = 'INC-' + Date.now();
+        // Show loading message
+        customAlert('Recording incident report...', "Processing", "info");
         
+        // Send data to backend API (without authentication for testing)
+        fetch('/api/work/hse', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(workItem)
+        })
+        .then(response => {
+            console.log('📡 API Response status:', response.status);
+            return response.json();
+        })
+        .then(data => {
+            console.log('📊 API Response data:', data);
+            
+            if (data.error) {
+                throw new Error(data.error);
+            }
+            
+            // Success message
+            customAlert(`Incident report recorded successfully!\n\nID: ${data.workItem.id}\nType: ${workItem.incident_type}\nSeverity: ${workItem.severity}\nPriority: ${workItem.priority}\nAssigned to: ${workItem.assigned_to}\n\n✅ Incident has been saved to database and assigned for follow-up.`, "Incident Recorded", "success");
+            
+            // Reset form
+            document.getElementById('incidentForm').reset();
+            
+            // Generate new incident ID
+            document.getElementById('incidentId').value = 'INC-' + Date.now();
+            
+            return false;
+        })
+        .catch(error => {
+            console.error('❌ Error recording incident:', error);
+            customAlert(`Failed to record incident: ${error.message}\n\nPlease check:\n• All required fields are filled\n• Network connection is stable\n• Server is running properly`, "Recording Error", "error");
+            return false;
+        });
+        
+        console.log('✅ Function completed, returning false to prevent form submission');
         return false;
-    })
-    .catch(error => {
-        console.error('❌ Error recording incident:', error);
-        customAlert(`Failed to record incident: ${error.message}\n\nPlease check:\n• All required fields are filled\n• Network connection is stable\n• Server is running properly`, "Recording Error", "error");
+        
+    } catch (error) {
+        console.error('❌ Unexpected error in saveIncidentReport:', error);
+        customAlert(`Unexpected error: ${error.message}\n\nPlease try again or contact support.`, "System Error", "error");
         return false;
-    });
-    
-    return false;
+    }
 }
 
 // Test function to verify API connectivity
