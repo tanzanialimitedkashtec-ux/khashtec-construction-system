@@ -5859,22 +5859,22 @@ function saveEmployeeManual() {
         // Get form values
         const fullName = document.getElementById('empFullName')?.value;
         const phone = document.getElementById('empPhone')?.value;
-        const email = document.getElementById('empGmail')?.value;
+        const gmail = document.getElementById('empGmail')?.value;
         const nida = document.getElementById('empNIDA')?.value;
         const contract = document.getElementById('empContract')?.value;
         const jobCategory = document.getElementById('empJobCategory')?.value;
         const department = document.getElementById('empDepartment')?.value;
         
-        console.log('📝 Employee data:', { fullName, phone, email, nida, contract, jobCategory, department });
+        console.log('📝 Employee data:', { fullName, phone, gmail, nida, contract, jobCategory, department });
         
         // Validate required fields
-        if (!fullName || !phone || !email || !nida || !contract || !jobCategory || !department) {
+        if (!fullName || !phone || !gmail || !nida || !contract || !jobCategory || !department) {
             showRealProblemNotification('VALIDATION_ERROR', {
                 message: 'Please fill in all required fields.',
                 missingFields: {
                     fullName: !fullName,
                     phone: !phone,
-                    email: !email,
+                    gmail: !gmail,
                     nida: !nida,
                     contract: !contract,
                     jobCategory: !jobCategory,
@@ -5960,7 +5960,7 @@ function saveEmployeeManual() {
             
             // Success message
             showRealProblemNotification('SUCCESS', {
-                message: `✅ Employee registered successfully!\n\n📋 Details:\n• Name: ${fullName}\n• Email: ${email}\n• Department: ${department}\n• Job Category: ${jobCategory}\n• Contract: ${contract}\n• Employee ID: ${data.id}\n\n🎉 Employee saved to database without page refresh!`,
+                message: `✅ Employee registered successfully!\n\n📋 Details:\n• Name: ${fullName}\n• Email: ${gmail}\n• Department: ${department}\n• Job Category: ${jobCategory}\n• Contract: ${contract}\n• Employee ID: ${data.id}\n\n🎉 Employee saved to database without page refresh!`,
                 employeeId: data.id
             });
             
