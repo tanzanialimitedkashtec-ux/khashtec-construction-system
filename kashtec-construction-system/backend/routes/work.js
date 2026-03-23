@@ -213,6 +213,14 @@ router.post('/:department', async (req, res) => {
                 additionalFields.push('severity');
                 additionalValues.push(severity);
             }
+            if (location) {
+                additionalFields.push('location');
+                additionalValues.push(location);
+            }
+            if (project_name) {
+                additionalFields.push('project_name');
+                additionalValues.push(project_name);
+            }
         }
         
         if (department === 'projects') {
