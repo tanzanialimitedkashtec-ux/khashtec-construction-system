@@ -134,7 +134,7 @@ router.post('/', upload.single('file'), async (req, res) => {
             // This is a work item submission from frontend forms
             console.log('🔄 Processing work item submission...');
             
-            const db = require('../../../database/config/database');
+            const db = require('../../database/config/database');
             const {
                 work_type,
                 work_title,
