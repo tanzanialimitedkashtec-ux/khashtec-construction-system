@@ -4829,77 +4829,7 @@ function submitIncidentToDatabase() {
             // Clear form
             clearIncidentForm();
             
-            // Simple Network Connectivity Test
-function testNetworkConnectivity() {
-    console.log('🌐 Testing basic network connectivity...');
-    
-    // Test if we can reach the server at all
-    const testUrls = [
-        window.location.origin + '/api/health',
-        '/api/health',
-        window.location.href + 'api/health'
-    ];
-    
-    let testIndex = 0;
-    
-    function testNextUrl() {
-        if (testIndex >= testUrls.length) {
-            customAlert('❌ All connection tests failed!\n\nThe server appears to be unreachable.\n\nPlease check:\n• Server is running\n• Correct URL/Port\n• Network connection\n• Firewall settings', "Connection Failed", "error");
-            return;
-        }
-        
-        const url = testUrls[testIndex];
-        console.log(`🧪 Testing URL ${testIndex + 1}: ${url}`);
-        
-        fetch(url)
-            .then(response => {
-                console.log(`✅ URL ${testIndex + 1} responded with status: ${response.status}`);
-                if (response.ok) {
-                    return response.json();
-                } else {
-                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-                }
-            })
-            .then(data => {
-                console.log(`✅ URL ${testIndex + 1} success:`, data);
-                customAlert(`✅ Server reachable!\n\nSuccessfully connected via:\n${url}\n\nServer response: ${data.message || 'OK'}`, "Connection Success", "success");
-            })
-            .catch(error => {
-                console.log(`❌ URL ${testIndex + 1} failed:`, error.message);
-                testIndex++;
-                testNextUrl();
-            });
-    }
-    
-    testNextUrl();
-}
-
-// Add network test button
-function addNetworkTestButton() {
-    const netBtn = document.createElement('button');
-    netBtn.innerHTML = '🌐 TEST NETWORK';
-    netBtn.style.cssText = `
-        position: fixed;
-        top: 60px;
-        left: 10px;
-        z-index: 9999;
-        background: #4CAF50;
-        color: white;
-        padding: 10px 15px;
-        border: none;
-        border-radius: 5px;
-        cursor: pointer;
-        font-weight: bold;
-        box-shadow: 0 2px 10px rgba(0,0,0,0.3);
-    `;
-    netBtn.onclick = testNetworkConnectivity;
-    document.body.appendChild(netBtn);
-}
-
-// Auto-add network test button when page loads
-setTimeout(addNetworkTestButton, 3500);
-
-// Comprehensive API Debug Function
+            // Comprehensive API Debug Function
 function debugAPIConnection() {
     console.log('🔍 Starting comprehensive API debug...');
     
@@ -4918,7 +4848,39 @@ function debugAPIConnection() {
         .then(data => {
             console.log('✅ Health check successful:', data);
             
-            // Test 3: Try work API test
+            // Test 3: Try simple GET test
+            console.log('🧪 Testing simple GET endpoint...');
+            return fetch('/api/test');
+        })
+        .then(response => {
+            console.log('📡 GET test response status:', response.status);
+            return response.json();
+        })
+        .then(data => {
+            console.log('✅ GET test successful:', data);
+            
+            // Test 4: Try simple POST test
+            console.log('🧪 Testing simple POST endpoint...');
+            return fetch('/api/test', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                },
+                body: JSON.stringify({
+                    test: 'Debug data from frontend',
+                    timestamp: new Date().toISOString()
+                })
+            });
+        })
+        .then(response => {
+            console.log('📡 POST test response status:', response.status);
+            return response.json();
+        })
+        .then(data => {
+            console.log('✅ POST test successful:', data);
+            
+            // Test 5: Try work API test
             console.log('🧪 Testing work API...');
             return fetch('/api/work/test', {
                 method: 'POST',
@@ -4940,7 +4902,7 @@ function debugAPIConnection() {
         .then(data => {
             console.log('✅ Work API test successful:', data);
             
-            // Test 4: Try actual HSE submission
+            // Test 6: Try actual HSE submission
             console.log('🧪 Testing actual HSE submission...');
             return fetch('/api/work/hse', {
                 method: 'POST',
@@ -4966,34 +4928,15 @@ function debugAPIConnection() {
         })
         .then(data => {
             console.log('✅ HSE API test successful:', data);
-            customAlert('✅ All API tests passed!\n\nThe API is working correctly.\nCheck console for detailed logs.', "API Debug Success", "success");
+            customAlert('✅ All API tests passed!\n\nThe API is working correctly.\nData should be saving to database.\nCheck console for detailed logs.', "API Debug Success", "success");
         })
         .catch(error => {
             console.error('❌ API test failed:', error);
-            console.error('❌ Full error details:', {
+            console.error('❌ Error details:', {
                 message: error.message,
-                name: error.name,
-                stack: error.stack,
-                response: error.response,
-                status: error.response?.status,
-                statusText: error.response?.statusText,
-                url: error.response?.url
+                stack: error.stack
             });
-            
-            // Try to get more specific error information
-            if (error.message.includes('fetch')) {
-                customAlert(`❌ Network Error!\n\nCannot connect to server.\n\nPossible causes:\n• Server is not running\n• Wrong URL/Port\n• Network connection issue\n• CORS policy blocking\n\nError: ${error.message}`, "Network Error", "error");
-            } else if (error.message.includes('JSON')) {
-                customAlert(`❌ Data Format Error!\n\nServer response is not valid JSON.\n\nError: ${error.message}\n\nCheck server logs for details.`, "Data Error", "error");
-            } else if (error.response?.status === 404) {
-                customAlert(`❌ API Not Found!\n\nThe API endpoint doesn't exist.\n\nStatus: ${error.response.status}\nURL: ${error.response.url}\n\nCheck if server routes are properly configured.`, "404 Error", "error");
-            } else if (error.response?.status === 500) {
-                customAlert(`❌ Server Error!\n\nInternal server error occurred.\n\nStatus: ${error.response.status}\nError: ${error.message}\n\nCheck server logs for database/connection issues.`, "500 Error", "error");
-            } else if (error.response?.status === 400) {
-                customAlert(`❌ Bad Request!\n\nInvalid data sent to server.\n\nStatus: ${error.response.status}\nError: ${error.message}\n\nCheck if required fields are missing.`, "400 Error", "error");
-            } else {
-                customAlert(`❌ Unknown Error!\n\nError: ${error.message}\n\nCheck browser console (F12) for detailed debug information.`, "System Error", "error");
-            }
+            customAlert(`❌ API test failed!\n\nError: ${error.message}\n\nCheck console for detailed debug information.`, "API Debug Failed", "error");
         });
 }
 

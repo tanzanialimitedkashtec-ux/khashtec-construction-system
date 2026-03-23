@@ -63,7 +63,7 @@ app.use(cors({
     allowedHeaders: ['Content-Type', 'Authorization']
 }));
 
-// CSP headers to allow inline scripts
+// CSP headers to allow inline scripts and API calls
 app.use((req, res, next) => {
     res.setHeader('Content-Security-Policy', 
         "default-src 'self'; " +
@@ -72,7 +72,7 @@ app.use((req, res, next) => {
         "style-src 'self' 'unsafe-inline'; " +
         "img-src 'self' data: https:; " +
         "font-src 'self'; " +
-        "connect-src 'self' https:;"
+        "connect-src 'self' ws: wss: https:;"
     );
     next();
 });
@@ -331,6 +331,27 @@ app.get('/api/health', (req, res) => {
         message: 'API is running',
         timestamp: new Date().toISOString(),
         environment: process.env.NODE_ENV || 'development'
+    });
+});
+
+// Simple test endpoint to verify API is working
+app.get('/api/test', (req, res) => {
+    res.status(200).json({
+        message: 'API test endpoint working',
+        timestamp: new Date().toISOString(),
+        method: req.method,
+        url: req.url,
+        headers: req.headers
+    });
+});
+
+// Simple POST test endpoint
+app.post('/api/test', (req, res) => {
+    res.status(200).json({
+        message: 'API POST test endpoint working',
+        timestamp: new Date().toISOString(),
+        receivedData: req.body,
+        headers: req.headers
     });
 });
 
