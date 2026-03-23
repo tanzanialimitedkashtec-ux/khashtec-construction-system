@@ -6,7 +6,7 @@ const db = require('../../database/config/database');
 router.get('/', async (req, res) => {
     try {
         console.log('🔍 Fetching senior hiring requests...');
-        const [requests] = await db.execute('SELECT * FROM senior_hiring_approvals ORDER BY request_date DESC');
+        const [requests] = await db.execute('SELECT * FROM senior_hiring_approvals ORDER BY approval_date DESC');
         console.log('📋 Senior hiring requests found:', requests.length);
         res.json(requests);
     } catch (error) {
