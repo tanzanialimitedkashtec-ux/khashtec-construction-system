@@ -11,7 +11,7 @@ router.post('/test-simple', async (req, res) => {
         // Test a simple static query
         const [result] = await db.execute(
             'INSERT INTO hse_work (department_code, work_type, work_title, work_description, priority, status, submitted_by, submitted_date) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
-            ['hse', 'Test', 'Test Incident', 'Test description', 'Medium', 'pending', 'Test User', '2026-03-23']
+            ['hse', 'Incident Reporting', 'Test Incident', 'Test description', 'Medium', 'pending', 'Test User', '2026-03-23']
         );
         
         console.log('✅ Simple test successful:', result);
