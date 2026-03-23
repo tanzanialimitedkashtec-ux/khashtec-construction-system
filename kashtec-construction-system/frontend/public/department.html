@@ -7707,7 +7707,29 @@ async function testKashTecAPI() {
         });
         
         console.log('✅ API test successful:', testResult);
-        alert('API test successful! Data can be sent to backend.');
+        
+        // Verify all endpoints
+        console.log('🔍 Verifying all API endpoints...');
+        const endpointResults = await KashTecAPI.verifyAllEndpoints();
+        
+        const successfulEndpoints = endpointResults.filter(r => r.success);
+        const failedEndpoints = endpointResults.filter(r => !r.success);
+        
+        console.log(`✅ ${successfulEndpoints.length} endpoints working`);
+        console.log(`❌ ${failedEndpoints.length} endpoints failed`);
+        
+        if (failedEndpoints.length > 0) {
+            console.log('Failed endpoints:', failedEndpoints);
+        }
+        
+        const message = `API test successful! 
+
+✅ Data can be sent to backend
+✅ ${successfulEndpoints.length}/${endpointResults.length} endpoints working
+
+${failedEndpoints.length > 0 ? `❌ ${failedEndpoints.length} endpoints failed:\n` + failedEndpoints.map(e => `- ${e.name}: ${e.error || e.status}`).join('\n') : 'All endpoints are working correctly!'}`;
+        
+        alert(message);
         
     } catch (error) {
         console.error('❌ API test failed:', error);

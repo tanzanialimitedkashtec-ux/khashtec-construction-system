@@ -540,6 +540,95 @@ function handleApiError(error, customMessage = 'Operation failed') {
     customAlert(`${customMessage}: ${errorMessage}`, 'Error', 'error');
 }
 
+// ===== ENDPOINT VERIFICATION =====
+
+// Verify all API endpoints are properly mapped
+async function verifyAllEndpoints() {
+    console.log('🔍 Verifying all API endpoints...');
+    
+    const endpoints = [
+        // Authentication
+        { method: 'POST', path: '/auth/login', name: 'Login' },
+        
+        // Department Work Endpoints
+        { method: 'POST', path: '/hr/work', name: 'HR Work Creation' },
+        { method: 'GET', path: '/hr/work', name: 'HR Work List' },
+        { method: 'POST', path: '/finance/work', name: 'Finance Work Creation' },
+        { method: 'GET', path: '/finance/work', name: 'Finance Work List' },
+        { method: 'POST', path: '/hse/work', name: 'HSE Work Creation' },
+        { method: 'GET', path: '/hse/work', name: 'HSE Work List' },
+        { method: 'POST', path: '/project/work', name: 'Project Work Creation' },
+        { method: 'GET', path: '/project/work', name: 'Project Work List' },
+        { method: 'POST', path: '/realestate/work', name: 'Real Estate Work Creation' },
+        { method: 'GET', path: '/realestate/work', name: 'Real Estate Work List' },
+        { method: 'POST', path: '/admin/work', name: 'Admin Work Creation' },
+        { method: 'GET', path: '/admin/work', name: 'Admin Work List' },
+        
+        // Data Endpoints
+        { method: 'GET', path: '/departments/all', name: 'All Department Data' },
+        { method: 'GET', path: '/stats', name: 'Department Statistics' },
+        { method: 'GET', path: '/dashboard/stats', name: 'Dashboard Statistics' },
+        
+        // Employee Management
+        { method: 'GET', path: '/employees', name: 'Employee List' },
+        { method: 'POST', path: '/employees', name: 'Employee Creation' },
+        
+        // Project Management
+        { method: 'GET', path: '/projects', name: 'Project List' },
+        { method: 'POST', path: '/projects', name: 'Project Creation' }
+    ];
+    
+    const results = [];
+    
+    for (const endpoint of endpoints) {
+        try {
+            const url = `${API_BASE_URL}${endpoint.path}`;
+            console.log(`🔍 Testing ${endpoint.name}: ${endpoint.method} ${url}`);
+            
+            const options = {
+                method: endpoint.method,
+                headers: { 'Content-Type': 'application/json' }
+            };
+            
+            // Add test data for POST requests
+            if (endpoint.method === 'POST') {
+                options.body = JSON.stringify({
+                    test: true,
+                    timestamp: new Date().toISOString()
+                });
+            }
+            
+            const response = await fetch(url, options);
+            
+            results.push({
+                name: endpoint.name,
+                path: endpoint.path,
+                method: endpoint.method,
+                status: response.status,
+                success: response.status < 400,
+                url: url
+            });
+            
+            console.log(`${endpoint.name}: ${response.status} ${response.statusText}`);
+            
+        } catch (error) {
+            results.push({
+                name: endpoint.name,
+                path: endpoint.path,
+                method: endpoint.method,
+                status: 'ERROR',
+                success: false,
+                error: error.message,
+                url: `${API_BASE_URL}${endpoint.path}`
+            });
+            
+            console.error(`${endpoint.name}: ERROR - ${error.message}`);
+        }
+    }
+    
+    return results;
+}
+
 // ===== UTILITY FUNCTIONS =====
 function generateId(prefix = 'ID') {
     return `${prefix}${Date.now().toString().slice(-6)}`;
@@ -610,6 +699,7 @@ const KashTecAPI = {
     // General
     getAllDepartmentData: getAllDepartmentData,
     getDashboardStats: getDashboardStats,
+    verifyAllEndpoints: verifyAllEndpoints,
     
     // Utility
     handleApiError: handleApiError,
