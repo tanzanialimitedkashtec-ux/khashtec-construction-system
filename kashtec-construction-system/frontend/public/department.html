@@ -2959,21 +2959,49 @@ function submitRejection(policyId) {
     
     // Validation
     if (!rejectionReason || !rejectionDetails || !nextSteps) {
-        showNotification('Validation Error', 'Please fill in all required fields', 'error');
+        showRealProblemNotification('VALIDATION_ERROR', {
+            message: 'Please fill in all required fields for policy rejection.',
+            missingFields: {
+                rejectionReason: !rejectionReason,
+                rejectionDetails: !rejectionDetails,
+                nextSteps: !nextSteps
+            }
+        });
         return;
     }
     
-    // Show loading state
-    const submitButton = event.target || event.srcElement;
-    const originalText = submitButton.innerText;
-    submitButton.innerText = 'Rejecting...';
-    submitButton.disabled = true;
+    // Show loading notification
+    showRealProblemNotification('SAVING', {
+        message: `Rejecting policy ${policyId}...`,
+        policyId: policyId,
+        rejectionReason: rejectionReason
+    });
     
-    // Simulate API call
-    setTimeout(() => {
-        // Store rejection in memory (localStorage removed)
-        console.log('📝 Policy rejected:', policyId);
-        // TODO: Send rejection to API instead of localStorage
+    // Send rejection to backend API
+    fetch(`/api/policies/${policyId}/reject`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+        },
+        body: JSON.stringify({
+            rejectionReason: rejectionReason,
+            rejectionDetails: rejectionDetails,
+            rejectedBy: 'Managing Director',
+            recommendation: rejectionRecommendation,
+            nextSteps: nextSteps
+        })
+    })
+    .then(response => {
+        console.log('📡 Policy Rejection API Response status:', response.status);
+        return response.json();
+    })
+    .then(data => {
+        console.log('📊 Policy Rejection API Response data:', data);
+        
+        if (data.error) {
+            throw new Error(data.error);
+        }
         
         // Update UI
         const policyItem = document.querySelector(`[onclick*="${policyId}"]`).closest('.policy-item');
@@ -2989,13 +3017,56 @@ function submitRejection(policyId) {
             btn.style.opacity = '0.5';
         });
         
-        // Close modal and show success message
-        closeModal();
-        showNotification('Policy Rejected', `Policy ${policyId} has been rejected. HR department has been notified with detailed feedback.`, 'error');
+        // Show detailed success notification
+        showRealProblemNotification('SUCCESS', {
+            message: `✅ Policy rejected successfully!\n\n📋 Details:\n• Policy ID: ${policyId}\n• Rejection Reason: ${rejectionReason}\n• Rejected by: Managing Director\n• Status: Rejected\n• Database ID: ${data.id || policyId}\n\n🎉 Policy rejection saved to database without page refresh!`,
+            policyId: policyId,
+            rejectionReason: rejectionReason,
+            timestamp: new Date().toLocaleString()
+        });
         
-        submitButton.innerText = originalText;
-        submitButton.disabled = false;
-    }, 1500);
+        // Close modal
+        closeModal();
+        
+    })
+    .catch(error => {
+        console.error('❌ Error rejecting policy:', error);
+        
+        // Determine specific error cause
+        let errorCause = 'Unknown error occurred';
+        let troubleshooting = '';
+        
+        if (error.message.includes('NetworkError') || error.message.includes('fetch')) {
+            errorCause = 'Network connection failed';
+            troubleshooting = '• Check internet connection\n• Verify server is running\n• Try again in a moment';
+        } else if (error.message.includes('400')) {
+            errorCause = 'Invalid rejection data';
+            troubleshooting = '• Fill all required fields correctly\n• Check rejection reason selection\n• Verify rejection details\n• Ensure next steps are specified';
+        } else if (error.message.includes('404')) {
+            errorCause = 'Policy not found';
+            troubleshooting = '• Policy ID may not exist\n• Check policy list\n• Verify policy is still active';
+        } else if (error.message.includes('500')) {
+            errorCause = 'Server internal error';
+            troubleshooting = '• Database connection issue\n• Server configuration problem\n• Contact system administrator';
+        } else if (error.message.includes('database') || error.message.includes('SQL')) {
+            errorCause = 'Database operation failed';
+            troubleshooting = '• Database connection issue\n• Policy rejections table might not exist\n• Contact system administrator';
+        }
+        
+        // Show detailed error notification
+        showRealProblemNotification('SYSTEM_ERROR', {
+            error: error.message,
+            cause: errorCause,
+            troubleshooting: troubleshooting,
+            message: `❌ Policy rejection failed!\n\n🔍 Error Cause: ${errorCause}\n\n🛠️ Troubleshooting:\n${troubleshooting}\n\n📝 Technical Details:\n${error.message}\n\n💡 Please fix the issue and try again.`,
+            policyId: policyId,
+            rejectionReason: rejectionReason || 'Unknown',
+            timestamp: new Date().toLocaleString()
+        });
+        
+        // Close modal
+        closeModal();
+    });
 }
 
 function closeModal() {

@@ -123,42 +123,88 @@ router.post('/:id/approve', async (req, res) => {
 // Reject policy
 router.post('/:id/reject', async (req, res) => {
     try {
+        console.log('❌ Policy rejection request received');
+        console.log('📋 Request headers:', req.headers);
+        console.log('📝 Request body:', req.body);
+        console.log('📂 Policy ID parameter:', req.params.id);
+        
         const { rejectionReason, rejectedBy } = req.body;
         const policyId = req.params.id;
         
         console.log('❌ Rejecting policy:', policyId, 'by:', rejectedBy, 'reason:', rejectionReason);
         
+        // Validate input
+        if (!policyId || !rejectionReason || !rejectedBy) {
+            console.log('❌ Validation failed - missing required fields');
+            return res.status(400).json({ 
+                error: 'Missing policy ID, rejection reason, or rejectedBy field',
+                received: { policyId, rejectionReason, rejectedBy }
+            });
+        }
+        
+        // Check if policy exists
+        const [existingPolicies] = await db.execute('SELECT * FROM policies WHERE id = ?', [policyId]);
+        
+        if (existingPolicies.length === 0) {
+            console.log('❌ Policy not found:', policyId);
+            return res.status(404).json({ 
+                error: 'Policy not found',
+                policyId: policyId
+            });
+        }
+        
+        const policy = existingPolicies[0];
+        console.log('📋 Current policy status:', policy.status);
+        
+        console.log('✅ Validation passed, rejecting policy...');
+        
         // Update policy status
-        await db.execute(
-                'UPDATE policies SET status = ?, rejection_reason = ?, approved_by = ? WHERE id = ?',
-                ['Rejected', rejectionReason, rejectedBy, policyId]
+        const [result] = await db.execute(
+            'UPDATE policies SET status = ?, rejection_reason = ?, approved_by = ? WHERE id = ?',
+            ['Rejected', rejectionReason, rejectedBy, policyId]
         );
+        
+        console.log('✅ Database update result:', result);
+        console.log('📊 Rows affected:', result.affectedRows);
         
         // Add to rejection table
-        await db.execute(
-                'INSERT INTO policy_rejections (policy_id, rejection_reason, rejected_by, rejected_by_role) VALUES (?, ?, ?, ?)',
-                [policyId, rejectionReason, rejectedBy, 'HR Manager']
+        const [rejectionResult] = await db.execute(
+            'INSERT INTO policy_rejections (policy_id, rejection_reason, rejected_by, rejected_by_role) VALUES (?, ?, ?, ?)',
+            [policyId, rejectionReason, rejectedBy, 'Managing Director']
         );
         
-        // Get policy details for notification
-        const [policies] = await db.execute('SELECT * FROM policies WHERE id = ?', [policyId]);
-        const policy = policies[0];
+        console.log('✅ Rejection record created:', rejectionResult);
+        console.log('📋 Rejection ID:', rejectionResult.insertId);
+        
+        // Get updated policy details for response
+        const [updatedPolicies] = await db.execute('SELECT * FROM policies WHERE id = ?', [policyId]);
+        const updatedPolicy = updatedPolicies[0];
+        
+        console.log('📋 Updated policy details:', updatedPolicy);
         
         // Send notification to submitting department
         console.log('📧 Sending rejection notification to:', policy.submitted_by);
         
         res.json({ 
-                message: 'Policy rejected successfully',
-                policy: {
-                        ...policy,
-                        status: 'Rejected',
-                        rejection_reason: rejectionReason,
-                        approved_by: rejectedBy
-                }
+            message: 'Policy rejected successfully',
+            id: rejectionResult.insertId,
+            policy: {
+                ...updatedPolicy,
+                status: 'Rejected',
+                rejection_reason: rejectionReason,
+                approved_by: rejectedBy
+            }
         });
+        
+        console.log('✅ Policy rejection completed successfully!');
+        
     } catch (error) {
         console.error('❌ Error rejecting policy:', error);
-        res.status(500).json({ error: 'Failed to reject policy' });
+        console.error('❌ Error stack:', error.stack);
+        res.status(500).json({ 
+            error: 'Failed to reject policy',
+            details: error.message 
+        });
     }
 });
 
