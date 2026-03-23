@@ -9,11 +9,20 @@ router.post('/test-simple', async (req, res) => {
         console.log('📊 Request body:', req.body);
         
         // Test a simple static query
-        const [result] = await db.execute(
+        const dbResult = await db.execute(
             'INSERT INTO hse_work (department_code, work_type, work_title, work_description, priority, status, submitted_by, submitted_date) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
             ['hse', 'Incident Reporting', 'Test Incident', 'Test description', 'Medium', 'pending', 'Test User', '2026-03-23']
         );
         
+        console.log('🔍 DB Result type:', typeof dbResult);
+        console.log('🔍 DB Result isArray:', Array.isArray(dbResult));
+        console.log('🔍 DB Result:', dbResult);
+        
+        if (!Array.isArray(dbResult) || dbResult.length === 0) {
+            throw new Error('Database returned invalid result');
+        }
+        
+        const result = dbResult[0];
         console.log('✅ Simple test successful:', result);
         res.json({
             message: 'Simple test successful',
