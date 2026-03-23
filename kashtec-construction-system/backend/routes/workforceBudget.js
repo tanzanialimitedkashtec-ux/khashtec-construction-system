@@ -7,8 +7,17 @@ router.get('/', async (req, res) => {
     try {
         console.log('🔍 Fetching workforce budget requests...');
         const [budgets] = await db.execute('SELECT * FROM workforce_budget_approvals ORDER BY approval_date DESC');
-        console.log('📊 Workforce budget requests found:', budgets.length);
-        res.json(budgets || []);
+        console.log('📊 Workforce budget requests found:', budgets);
+        console.log('📊 Budgets type:', typeof budgets);
+        console.log('📊 Budgets is array:', Array.isArray(budgets));
+        
+        // Handle undefined or null results
+        if (!budgets || !Array.isArray(budgets)) {
+            console.log('⚠️ Budgets is not an array, returning empty array');
+            return res.json([]);
+        }
+        
+        res.json(budgets);
     } catch (error) {
         console.error('❌ Error fetching workforce budget requests:', error);
         // Return empty array instead of error for better frontend handling

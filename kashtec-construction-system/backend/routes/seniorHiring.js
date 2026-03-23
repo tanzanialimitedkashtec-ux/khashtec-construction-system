@@ -7,8 +7,17 @@ router.get('/', async (req, res) => {
     try {
         console.log('🔍 Fetching senior hiring requests... (v2)');
         const [requests] = await db.execute('SELECT * FROM senior_hiring_approvals ORDER BY approval_date DESC');
-        console.log('📋 Senior hiring requests found:', requests.length);
-        res.json(requests || []);
+        console.log('📋 Senior hiring requests found:', requests);
+        console.log('📋 Requests type:', typeof requests);
+        console.log('📋 Requests is array:', Array.isArray(requests));
+        
+        // Handle undefined or null results
+        if (!requests || !Array.isArray(requests)) {
+            console.log('⚠️ Requests is not an array, returning empty array');
+            return res.json([]);
+        }
+        
+        res.json(requests);
     } catch (error) {
         console.error('❌ Error fetching senior hiring requests:', error);
         // Return empty array instead of error for better frontend handling
