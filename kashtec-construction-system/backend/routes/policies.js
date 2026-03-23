@@ -1,17 +1,42 @@
 const express = require('express');
 const router = express.Router();
-const db = require('../../database/config/database');
+const db = require('../src/config/database');
 
 // Get all policies
 router.get('/', async (req, res) => {
     try {
         console.log('🔍 Fetching all policies...');
+        console.log('📋 Request URL:', req.url);
+        console.log('📝 Request method:', req.method);
+        console.log('🌐 Request headers:', req.headers);
+        
+        // Test database connection first
+        console.log('🧪 Testing database connection...');
+        const [testResult] = await db.execute('SELECT 1 as test');
+        console.log('✅ Database connection test passed:', testResult);
+        
+        // Query policies table
+        console.log('🔍 Querying policies table...');
         const [policies] = await db.execute('SELECT * FROM policies ORDER BY submission_date DESC');
         console.log('📋 Policies found:', policies.length);
+        console.log('📊 Policies data:', policies);
+        
         res.json(policies);
     } catch (error) {
         console.error('❌ Error fetching policies:', error);
-        res.status(500).json({ error: 'Failed to fetch policies' });
+        console.error('❌ Error stack:', error.stack);
+        console.error('❌ Error details:', {
+            message: error.message,
+            code: error.code,
+            errno: error.errno,
+            sqlState: error.sqlState,
+            sqlMessage: error.sqlMessage
+        });
+        res.status(500).json({ 
+            error: 'Failed to fetch policies',
+            details: error.message,
+            stack: error.stack
+        });
     }
 });
 

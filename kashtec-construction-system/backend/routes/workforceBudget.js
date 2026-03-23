@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const db = require('../../database/config/database');
+const db = require('../src/config/database');
 
 // Get all workforce budget requests
 router.get('/', async (req, res) => {

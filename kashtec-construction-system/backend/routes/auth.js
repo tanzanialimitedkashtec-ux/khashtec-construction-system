@@ -126,7 +126,7 @@ router.post('/login', async (req, res) => {
         let db;
         try {
             console.log('🔍 Attempting database connection...');
-            db = require('../../database/config/database');
+            db = require('../src/config/database');
             console.log('✅ Database module loaded successfully');
             
             // Test the connection with a simple query
