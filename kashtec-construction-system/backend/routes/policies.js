@@ -235,9 +235,18 @@ router.post('/:id/revision', async (req, res) => {
         }
         
         // Check if policy exists
-        const [existingPolicies] = await db.execute('SELECT * FROM hse_work WHERE id = ?', [policyId]);
+        let existingPolicies;
+        try {
+            [existingPolicies] = await db.execute('SELECT * FROM hse_work WHERE id = ?', [policyId]);
+        } catch (error) {
+            console.error('❌ Database error checking policy:', error);
+            return res.status(500).json({ 
+                error: 'Database error while checking policy',
+                details: error.message
+            });
+        }
         
-        if (existingPolicies.length === 0) {
+        if (!existingPolicies || existingPolicies.length === 0) {
             console.log('❌ Policy not found:', policyId);
             return res.status(404).json({ 
                 error: 'Policy not found',
