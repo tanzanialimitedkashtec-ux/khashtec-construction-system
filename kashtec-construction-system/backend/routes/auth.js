@@ -126,7 +126,7 @@ router.post('/login', async (req, res) => {
         let db;
         try {
             console.log('🔍 Attempting database connection...');
-            db = require('../src/config/database');
+            db = require('../../database/config/database');
             console.log('✅ Database module loaded successfully');
             
             // Test the connection with a simple query
@@ -158,70 +158,26 @@ router.post('/login', async (req, res) => {
             console.log('🔍 Checking if authentication table exists...');
             const tableCheck = await db.execute('SHOW TABLES LIKE "authentication"');
             console.log('📊 Table check result:', tableCheck);
+            console.log('📊 Table check is array:', Array.isArray(tableCheck));
+            console.log('📊 Table check length:', tableCheck ? tableCheck.length : 'undefined');
             
             // SHOW TABLES returns an array of objects, each object has a column named like the table
             if (!tableCheck || !Array.isArray(tableCheck) || tableCheck.length === 0) {
-                console.error(' Authentication table does not exist');
-                console.log(' Attempting to create authentication table automatically...');
-                
-                try {
-                    // Create authentication table
-                    const createAuthTableSQL = `
-                        CREATE TABLE authentication (
-                            id INT AUTO_INCREMENT PRIMARY KEY,
-                            department_code VARCHAR(50) UNIQUE NOT NULL,
-                            email VARCHAR(255) NOT NULL,
-                            password_hash VARCHAR(255) NOT NULL,
-                            role VARCHAR(100) NOT NULL,
-                            department_name VARCHAR(255) NOT NULL,
-                            manager_name VARCHAR(255),
-                            status ENUM('Active', 'Inactive', 'Suspended') DEFAULT 'Active',
-                            last_login TIMESTAMP NULL,
-                            login_attempts INT DEFAULT 0,
-                            locked_until TIMESTAMP NULL,
-                            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-                            INDEX idx_email (email),
-                            INDEX idx_department_code (department_code),
-                            INDEX idx_status (status),
-                            INDEX idx_role (role)
-                        )
-                    `;
-                    
-                    await db.execute(createAuthTableSQL);
-                    console.log(' Authentication table created successfully');
-                    
-                    // Insert default HR account
-                    const bcrypt = require('bcryptjs');
-                    const hrPasswordHash = await bcrypt.hash('hr0501', 12);
-                    
-                    const insertAuthSQL = `
-                        INSERT INTO authentication (department_code, email, password_hash, role, department_name, manager_name, status) 
-                        VALUES (?, ?, ?, ?, ?, ?, ?)
-                    `;
-                    
-                    await db.execute(insertAuthSQL, ['hr', 'hr@manager0501', hrPasswordHash, 'HR Manager', 'Human Resources', 'HR Manager', 'Active']);
-                    console.log(' Default HR account created successfully');
-                    
-                } catch (createError) {
-                    console.error(' Failed to create authentication table:', createError);
-                    return res.status(500).json({
-                        error: 'Authentication table not found and auto-creation failed',
-                        message: 'The authentication table has not been created and auto-creation failed. Please contact the system administrator.',
-                        details: createError.message,
-                        auto_creation_error: true
-                    });
-                }
-            } else {
-                console.log(' Authentication table exists');
+                console.error('❌ Authentication table does not exist');
+                return res.status(500).json({
+                    error: 'Authentication table not found',
+                    message: 'The authentication table has not been created. Please contact the system administrator.',
+                    details: 'Table authentication does not exist in database'
+                });
             }
+            
+            // Check if any row contains the authentication table
             const tableExists = tableCheck.some(row => {
                 const tableName = row['Tables_in_railway'] || row['Tables_in_' + process.env.DB_NAME] || Object.values(row)[0];
                 return tableName === 'authentication';
             });
             
             if (!tableExists) {
-                console.error(' Authentication table not found in results');
                 console.error('❌ Authentication table not found in results');
                 return res.status(500).json({
                     error: 'Authentication table not found',

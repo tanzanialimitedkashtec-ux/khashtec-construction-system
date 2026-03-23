@@ -1,55 +1,17 @@
 const express = require('express');
 const router = express.Router();
-const db = require('../src/config/database');
+const db = require('../../database/config/database');
 
 // Get all workforce budget requests
 router.get('/', async (req, res) => {
     try {
         console.log('🔍 Fetching workforce budget requests...');
-        console.log('📋 Request URL:', req.url);
-        console.log('📝 Request method:', req.method);
-        console.log('🌐 Request headers:', req.headers);
-        
-        // Test database connection first
-        console.log('🧪 Testing database connection...');
-        const [testResult] = await db.execute('SELECT 1 as test');
-        console.log('✅ Database connection test passed:', testResult);
-        
-        // Check if workforce_budgets table exists
-        console.log('🔍 Checking if workforce_budgets table exists...');
-        const [tableCheck] = await db.execute('SHOW TABLES LIKE "workforce_budgets"');
-        console.log('📊 Table check result:', tableCheck);
-        
-        if (tableCheck.length === 0) {
-            console.log('❌ workforce_budgets table does not exist');
-            return res.status(404).json({ 
-                error: 'Workforce budget requests table not found',
-                details: 'The workforce_budgets table may not have been created during migration'
-            });
-        }
-        
-        // Query workforce_budgets table
-        console.log('🔍 Querying workforce_budgets table...');
         const [budgets] = await db.execute('SELECT * FROM workforce_budgets ORDER BY submission_date DESC');
-        console.log('� Workforce budget requests found:', budgets.length);
-        console.log('📊 Budgets data:', budgets);
-        
+        console.log('📊 Workforce budget requests found:', budgets.length);
         res.json(budgets);
     } catch (error) {
         console.error('❌ Error fetching workforce budget requests:', error);
-        console.error('❌ Error stack:', error.stack);
-        console.error('❌ Error details:', {
-            message: error.message,
-            code: error.code,
-            errno: error.errno,
-            sqlState: error.sqlState,
-            sqlMessage: error.sqlMessage
-        });
-        res.status(500).json({ 
-            error: 'Failed to fetch workforce budget requests',
-            details: error.message,
-            stack: error.stack
-        });
+        res.status(500).json({ error: 'Failed to fetch workforce budget requests' });
     }
 });
 

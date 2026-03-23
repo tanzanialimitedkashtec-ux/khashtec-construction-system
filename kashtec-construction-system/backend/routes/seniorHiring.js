@@ -1,55 +1,17 @@
 const express = require('express');
 const router = express.Router();
-const db = require('../src/config/database');
+const db = require('../../database/config/database');
 
 // Get all senior hiring requests
 router.get('/', async (req, res) => {
     try {
         console.log('🔍 Fetching senior hiring requests...');
-        console.log('📋 Request URL:', req.url);
-        console.log('📝 Request method:', req.method);
-        console.log('🌐 Request headers:', req.headers);
-        
-        // Test database connection first
-        console.log('🧪 Testing database connection...');
-        const [testResult] = await db.execute('SELECT 1 as test');
-        console.log('✅ Database connection test passed:', testResult);
-        
-        // Check if senior_hiring_requests table exists
-        console.log('🔍 Checking if senior_hiring_requests table exists...');
-        const [tableCheck] = await db.execute('SHOW TABLES LIKE "senior_hiring_requests"');
-        console.log('📊 Table check result:', tableCheck);
-        
-        if (tableCheck.length === 0) {
-            console.log('❌ senior_hiring_requests table does not exist');
-            return res.status(404).json({ 
-                error: 'Senior hiring requests table not found',
-                details: 'The senior_hiring_requests table may not have been created during migration'
-            });
-        }
-        
-        // Query senior_hiring_requests table
-        console.log('🔍 Querying senior_hiring_requests table...');
         const [requests] = await db.execute('SELECT * FROM senior_hiring_requests ORDER BY request_date DESC');
         console.log('📋 Senior hiring requests found:', requests.length);
-        console.log('📊 Requests data:', requests);
-        
         res.json(requests);
     } catch (error) {
         console.error('❌ Error fetching senior hiring requests:', error);
-        console.error('❌ Error stack:', error.stack);
-        console.error('❌ Error details:', {
-            message: error.message,
-            code: error.code,
-            errno: error.errno,
-            sqlState: error.sqlState,
-            sqlMessage: error.sqlMessage
-        });
-        res.status(500).json({ 
-            error: 'Failed to fetch senior hiring requests',
-            details: error.message,
-            stack: error.stack
-        });
+        res.status(500).json({ error: 'Failed to fetch senior hiring requests' });
     }
 });
 
