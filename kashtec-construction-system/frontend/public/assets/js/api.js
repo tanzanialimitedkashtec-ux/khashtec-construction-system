@@ -553,6 +553,76 @@ function formatDateTime(date = new Date()) {
     return date.toLocaleString();
 }
 
+// ===== KASHTEC API OBJECT =====
+// Global API object for frontend usage
+const KashTecAPI = {
+    // Authentication
+    login: apiLogin,
+    getAuthToken: getAuthToken,
+    getCurrentUser: getCurrentUser,
+    
+    // Employees
+    getEmployees: getEmployees,
+    createEmployee: createEmployee,
+    updateEmployee: updateEmployee,
+    deleteEmployee: deleteEmployee,
+    
+    // Properties
+    getProperties: getProperties,
+    createProperty: createProperty,
+    updateProperty: updateProperty,
+    deleteProperty: deleteProperty,
+    
+    // Clients
+    getClients: getClients,
+    createClient: createClient,
+    updateClient: updateClient,
+    
+    // Projects
+    getProjects: getProjects,
+    createProject: createProject,
+    updateProject: updateProject,
+    
+    // HR Department
+    createHRWork: createHRWork,
+    getHRWork: getHRWork,
+    
+    // Finance Department
+    createFinanceWork: createFinanceWork,
+    getFinanceWork: getFinanceWork,
+    
+    // HSE Department
+    createHSEWork: createHSEWork,
+    getHSEWork: getHSEWork,
+    
+    // Project Department
+    createProjectWork: createProjectWork,
+    getProjectWork: getProjectWork,
+    
+    // Real Estate Department
+    createRealEstateWork: createRealEstateWork,
+    getRealEstateWork: getRealEstateWork,
+    
+    // Admin Department
+    createAdminWork: createAdminWork,
+    getAdminWork: getAdminWork,
+    
+    // General
+    getAllDepartmentData: getAllDepartmentData,
+    getDashboardStats: getDashboardStats,
+    
+    // Utility
+    handleApiError: handleApiError,
+    generateId: generateId,
+    formatDate: formatDate,
+    formatDateTime: formatDateTime
+};
+
+// Make KashTecAPI globally available
+if (typeof window !== 'undefined') {
+    window.KashTecAPI = KashTecAPI;
+}
+
 // Export for use in other scripts
 if (typeof module !== 'undefined' && module.exports) {
     module.exports = {

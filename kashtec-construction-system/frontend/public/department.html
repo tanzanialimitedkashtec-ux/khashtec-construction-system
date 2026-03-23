@@ -7683,14 +7683,46 @@ function testAPIConnectivity() {
         });
 }
 
-// Add test button to the page (you can call this function from browser console)
-function addTestButton() {
-    const testButton = document.createElement('button');
-    testButton.textContent = 'Test API Connectivity';
-    testButton.onclick = testAPIConnectivity;
-    testButton.style.cssText = 'position:fixed;top:10px;right:10px;z-index:9999;background:#007bff;color:white;padding:10px;border:none;border-radius:5px;cursor:pointer;';
-    document.body.appendChild(testButton);
+// Simple API test function
+async function testKashTecAPI() {
+    console.log('🧪 Testing KashTecAPI...');
+    try {
+        // Test if KashTecAPI object exists
+        if (typeof KashTecAPI === 'undefined') {
+            throw new Error('KashTecAPI is not defined');
+        }
+        
+        console.log('✅ KashTecAPI object found:', Object.keys(KashTecAPI));
+        
+        // Test API connectivity
+        const testResult = await KashTecAPI.createHRWork({
+            work_type: 'API Test',
+            work_title: 'Test Connection',
+            work_description: 'Testing API connectivity',
+            employee_name: 'Test User',
+            project_name: 'API Test',
+            priority: 'Low',
+            submitted_by: 'System Test',
+            due_date: new Date().toISOString().split('T')[0]
+        });
+        
+        console.log('✅ API test successful:', testResult);
+        alert('API test successful! Data can be sent to backend.');
+        
+    } catch (error) {
+        console.error('❌ API test failed:', error);
+        alert(`API test failed: ${error.message}\n\nThis explains why forms cannot save data to database.`);
+    }
 }
+
+// Add test button to page
+document.addEventListener('DOMContentLoaded', function() {
+    const testButton = document.createElement('button');
+    testButton.textContent = '🧪 Test API';
+    testButton.style.cssText = 'position:fixed;top:10px;right:10px;z-index:9999;background:#28a745;color:white;padding:5px 10px;border:none;border-radius:3px;cursor:pointer;font-size:12px;';
+    testButton.onclick = testKashTecAPI;
+    document.body.appendChild(testButton);
+});
 
 function saveSafetyPolicy() {
     const policy = {
