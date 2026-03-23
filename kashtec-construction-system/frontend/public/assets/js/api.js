@@ -1,7 +1,10 @@
 // ===== API SERVICE FOR KASHTEC CONSTRUCTION SYSTEM =====
 // This file replaces all localStorage usage with secure database API calls
 
-const API_BASE_URL = 'http://localhost:3000/api';
+// Dynamic API base URL - works in both development and production
+const API_BASE_URL = window.location.origin === 'http://localhost:3000' || window.location.origin === 'https://localhost:3000'
+    ? 'http://localhost:3000/api'
+    : `${window.location.origin}/api`;
 
 // ===== AUTHENTICATION =====
 async function login(username, password, role) {

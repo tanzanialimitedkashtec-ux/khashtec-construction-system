@@ -4853,6 +4853,49 @@ function manageLeaveContracts(){
     </div>`);
 }
 
+// ===== API CONNECTION TEST =====
+
+// Test API connection
+async function testAPIConnection() {
+    console.log('🔍 Testing API Connection...');
+    
+    try {
+        // Test 1: Get all department data
+        const allData = await KashTecAPI.getAllDepartmentData();
+        console.log('✅ All department data:', allData);
+        
+        // Test 2: Create a test HR work record
+        const testResult = await KashTecAPI.createHRWork({
+            work_type: 'API Test',
+            work_title: 'Test API Connection',
+            work_description: 'Testing API connectivity',
+            employee_name: 'Test User',
+            employee_email: 'test@kashtec.com',
+            project_name: 'API Test',
+            priority: 'Low',
+            submitted_by: 'API Tester',
+            due_date: '2026-12-31'
+        });
+        console.log('✅ Test HR work created:', testResult);
+        
+        customAlert('API connection test successful! Data is being sent to the backend.', 'Success', 'success');
+        
+    } catch (error) {
+        console.error('❌ API connection test failed:', error);
+        customAlert(`API connection failed: ${error.message}`, 'Error', 'error');
+    }
+}
+
+// Add test button to the page (for debugging)
+document.addEventListener('DOMContentLoaded', function() {
+    // Add a small test button in the corner for debugging
+    const testButton = document.createElement('button');
+    testButton.innerHTML = '🧪 Test API';
+    testButton.style.cssText = 'position:fixed;top:10px;right:10px;z-index:9999;background:#007bff;color:white;padding:5px 10px;border:none;border-radius:3px;cursor:pointer;font-size:12px;';
+    testButton.onclick = testAPIConnection;
+    document.body.appendChild(testButton);
+});
+
 // Additional helper functions
 function saveWorkerAccount() {
     // Handle file uploads
@@ -4900,20 +4943,34 @@ function saveWorkerAccount() {
             workerAccount.profileImage = `https://picsum.photos/seed/${workerAccount.fullName}/80/80.jpg`;
         }
         
-        // Save to secure storage
-        const workerAccounts = []; // TODO: Load from API
-        workerAccounts.push(workerAccount);
-        // TODO: Save to API
-        
-        // Automatically assign to Office Portal
-        const portalAssigned = assignToOfficePortal(workerAccount, 'Worker');
-        
-        const portalMessage = portalAssigned ? '\n✅ Automatically added to Office Portal' : '';
-        
-        customAlert(`Worker account created successfully!${portalMessage}\n\nEmployee ID: ${workerAccount.empID}\nName: ${workerAccount.fullName}\nEmail: ${workerAccount.email}\nAccount Type: ${workerAccount.accountType}\n\n📄 Files uploaded: ${files.length}`, "Worker Account Created", "success");
-        
-        document.getElementById('workerAccountForm').reset();
-        return false;
+        // Save to API
+        KashTecAPI.createHRWork({
+            work_type: 'Worker Account Creation',
+            work_title: `Create Worker Account - ${workerAccount.fullName}`,
+            work_description: `Created worker account for ${workerAccount.fullName} in ${workerAccount.department} department`,
+            employee_name: workerAccount.fullName,
+            employee_email: workerAccount.email,
+            project_name: 'Account Creation',
+            priority: 'Medium',
+            submitted_by: getCurrentUser()?.name || 'System',
+            due_date: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0] // 7 days from now
+        }).then(result => {
+            console.log('Worker account created successfully:', result);
+            
+            // Automatically assign to Office Portal
+            const portalAssigned = assignToOfficePortal(workerAccount, 'Worker');
+            
+            const portalMessage = portalAssigned ? '\n✅ Automatically added to Office Portal' : '';
+            
+            customAlert(`Worker account created successfully!${portalMessage}\n\nEmployee ID: ${workerAccount.empID}\nName: ${workerAccount.fullName}\nEmail: ${workerAccount.email}\nAccount Type: ${workerAccount.accountType}\n\n📄 Files uploaded: ${files.length}`, "Worker Account Created", "success");
+            
+            document.getElementById('workerAccountForm').reset();
+            return false;
+        }).catch(error => {
+            console.error('Error creating worker account:', error);
+            customAlert('Failed to create worker account. Please try again.', "Error", "error");
+            return false;
+        });
     }).catch(error => {
         console.error('Error processing files:', error);
         customAlert('Error processing uploaded files. Please try again.', "Upload Error", "error");
