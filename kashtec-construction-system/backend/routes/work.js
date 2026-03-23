@@ -256,8 +256,14 @@ router.post('/:department', async (req, res) => {
         console.log('🔍 baseValues:', baseValues);
         console.log('🔍 additionalValues:', additionalValues);
         
-        const allFields = baseFields.concat(additionalFields);
-        const allValues = baseValues.concat(additionalValues);
+        // Ensure arrays are properly initialized
+        const safeBaseFields = Array.isArray(baseFields) ? baseFields : [];
+        const safeAdditionalFields = Array.isArray(additionalFields) ? additionalFields : [];
+        const safeBaseValues = Array.isArray(baseValues) ? baseValues : [];
+        const safeAdditionalValues = Array.isArray(additionalValues) ? additionalValues : [];
+        
+        const allFields = safeBaseFields.concat(safeAdditionalFields);
+        const allValues = safeBaseValues.concat(safeAdditionalValues);
         
         console.log('🔍 allFields:', allFields);
         console.log('🔍 allValues:', allValues);
