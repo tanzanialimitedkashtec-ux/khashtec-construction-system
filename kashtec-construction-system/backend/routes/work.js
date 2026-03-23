@@ -269,6 +269,13 @@ router.post('/:department', async (req, res) => {
         console.log('🔍 allValues:', allValues);
         
         // Build INSERT query
+        console.log('🔍 allFields type:', typeof allFields);
+        console.log('🔍 allFields isArray:', Array.isArray(allFields));
+        
+        if (!Array.isArray(allFields) || allFields.length === 0) {
+            throw new Error('allFields is not a valid array');
+        }
+        
         query = `
             INSERT INTO ${department}_work (
                 ${allFields.join(', ')}
