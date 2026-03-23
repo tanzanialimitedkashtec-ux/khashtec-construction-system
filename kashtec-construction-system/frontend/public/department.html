@@ -7822,7 +7822,7 @@ function saveSafetyPolicy() {
     
     // Prepare work item for HSE department
     const workItem = {
-        work_type: 'Safety Policy',
+        work_type: 'Safety Policy Upload',
         work_title: `Safety Policy - ${policy.title}`,
         work_description: `Safety Policy: ${policy.title}\n\nCategory: ${policy.category}\nDescription: ${policy.description}\nCompliance Level: ${policy.complianceLevel}\nApplicable To: ${policy.applicableTo}\nTraining Required: ${policy.training.join(', ')}\nEffective Date: ${policy.effectiveDate}\nReview Date: ${policy.reviewDate}\nUploaded By: ${policy.uploadedBy}`,
         priority: policy.complianceLevel === 'critical' ? 'High' : 'Medium',
@@ -7930,7 +7930,7 @@ function saveToolboxMeeting() {
     const workItem = {
         work_type: 'Toolbox Meeting',
         work_title: `Toolbox Meeting - ${meeting.topic}`,
-        work_description: `Toolbox Meeting: ${meeting.topic}\n\nDate: ${meeting.date}\nProject: ${meeting.project}\nDuration: ${meeting.duration}\nConducted By: ${meeting.conductedBy}\nAttendees: ${meeting.attendees} (${meeting.totalAttendees})\nKey Points: ${meeting.keyPoints}\nIssues: ${meeting.issues}\nActions: ${meeting.actions}\nMaterials: ${meeting.materials}\nPhotos: ${meeting.photos}\nRecorded By: ${meeting.recordedBy}`,
+        work_description: `Toolbox Meeting Details:\n\nTopic: ${meeting.topic}\nProject: ${meeting.project}\nDate: ${meeting.date}\nDuration: ${meeting.duration}\nKey Points: ${meeting.keyPoints}\nAttendees: ${meeting.totalAttendees}\nConducted By: ${meeting.conductedBy}\nIssues Raised: ${meeting.issues}\nAction Items: ${meeting.actions}`,
         priority: 'Medium',
         due_date: meeting.date,
         assigned_to: 'HSE Manager',
@@ -8145,7 +8145,7 @@ function saveInspectionReport() {
     const workItem = {
         work_type: 'Inspection Report',
         work_title: `Inspection Report - ${inspection.type}`,
-        work_description: `Inspection Report\n\nDate: ${inspection.date}\nProject: ${inspection.project}\nType: ${inspection.type}\nInspector: ${inspection.inspector} (License: ${inspection.license})\nAreas: ${inspection.areas.join(', ')}\nFindings: ${inspection.findings}\nCompliance: ${inspection.compliance}\nRisk Level: ${inspection.riskLevel}\nRecommendations: ${inspection.recommendations}\nFollow Up Date: ${inspection.followUpDate}\nNext Inspection: ${inspection.nextInspection}\nDocuments: ${inspection.document}\nPhotos: ${inspection.photos}\nUploaded By: ${inspection.uploadedBy}`,
+        work_description: `Inspection Report\n\nDate: ${inspection.date}\nProject: ${inspection.project}\nType: ${inspection.type}\nInspector: ${inspection.inspector} (${inspection.license})\nAreas Inspected: ${inspection.areas.join(', ')}\nFindings: ${inspection.findings}\nCompliance Status: ${inspection.compliance}\nRisk Level: ${inspection.riskLevel}\nRecommendations: ${inspection.recommendations}\nFollow-up Date: ${inspection.followUpDate}\nNext Inspection: ${inspection.nextInspection}\nDocuments: ${inspection.document} files\nPhotos: ${inspection.photos} files\nUploaded By: ${inspection.uploadedBy}`,
         priority: inspection.riskLevel === 'high' ? 'High' : inspection.riskLevel === 'medium' ? 'Medium' : 'Low',
         due_date: inspection.followUpDate || inspection.date,
         assigned_to: 'HSE Manager',

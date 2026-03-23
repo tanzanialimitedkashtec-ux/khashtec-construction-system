@@ -19,7 +19,9 @@ class Database {
             console.log('DB_PORT:', process.env.DB_PORT || 'NOT SET');
             
             // Use Railway's DATABASE_URL or individual DB credentials
-            const databaseUrl = process.env.DATABASE_URL;
+            const databaseUrl = process.env.DATABASE_URL && !process.env.DATABASE_URL.includes('${') 
+                ? process.env.DATABASE_URL 
+                : "mysql://root:LzDEYGJIiYfVRSTnBrufpsSwRIDnZRvz@centerbeam.proxy.rlwy.net:11044/railway";
             
             if (databaseUrl) {
                 console.log('🔗 Using DATABASE_URL connection');
@@ -52,11 +54,11 @@ class Database {
                 
                 // Fallback to individual environment variables
                 this.pool = mysql.createPool({
-                    host: process.env.DB_HOST || 'localhost',
-                    port: process.env.DB_PORT || 3306,
-                    user: process.env.DB_USER || 'root',
-                    password: process.env.DB_PASSWORD || '',
-                    database: process.env.DB_NAME || 'kashtec_db',
+                    host: process.env.DB_HOST || "centerbeam.proxy.rlwy.net",
+                    port: process.env.DB_PORT || 11044,
+                    user: process.env.DB_USER || "root",
+                    password: process.env.DB_PASSWORD || "LzDEYGJIiYfVRSTnBrufpsSwRIDnZRvz",
+                    database: process.env.DB_NAME || "railway",
                     waitForConnections: true,
                     connectionLimit: 10,
                     queueLimit: 0,
