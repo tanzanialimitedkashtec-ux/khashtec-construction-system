@@ -3311,48 +3311,492 @@ function approveRecruitmentPolicies(){
 }
 
 function approveSeniorHire(hireId) {
-    customAlert(`Senior staff hire ${hireId} approved!\n\nHR department may proceed with employment contract preparation.`, "Hire Approved", "success");
+    // Show confirmation dialog
+    const confirmApproval = confirm(`Are you sure you want to approve this senior hiring request?\n\nHire ID: ${hireId}\n\nOnce approved, HR department may proceed with employment contract preparation.`);
+    
+    if (confirmApproval) {
+        // Show loading notification
+        showRealProblemNotification('SAVING', {
+            message: `Approving senior hiring request ${hireId}...`,
+            hireId: hireId
+        });
+        
+        // Send approval to backend API
+        fetch(`/api/senior-hiring/${hireId}/approve`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            },
+            body: JSON.stringify({
+                approvedBy: 'Managing Director',
+                comments: 'Approved by MD - proceed with HR onboarding'
+            })
+        })
+        .then(response => {
+            console.log('📡 Senior Hiring Approval API Response status:', response.status);
+            return response.json();
+        })
+        .then(data => {
+            console.log('📊 Senior Hiring Approval API Response data:', data);
+            
+            if (data.error) {
+                throw new Error(data.error);
+            }
+            
+            // Show detailed success notification
+            showRealProblemNotification('SUCCESS', {
+                message: `✅ Senior hiring request approved successfully!\n\n📋 Details:\n• Hire ID: ${hireId}\n• Approved by: Managing Director\n• Status: Approved\n• Database ID: ${data.id || hireId}\n\n🎉 Senior hiring request saved to database without page refresh!`,
+                hireId: hireId,
+                approvedBy: 'Managing Director',
+                timestamp: new Date().toLocaleString()
+            });
+        })
+        .catch(error => {
+            console.error('❌ Error approving senior hiring:', error);
+            
+            // Determine specific error cause
+            let errorCause = 'Unknown error occurred';
+            let troubleshooting = '';
+            
+            if (error.message.includes('NetworkError') || error.message.includes('fetch')) {
+                errorCause = 'Network connection failed';
+                troubleshooting = '• Check internet connection\n• Verify server is running\n• Try again in a moment';
+            } else if (error.message.includes('400')) {
+                errorCause = 'Invalid approval data';
+                troubleshooting = '• Hire ID is valid\n• Approver information is correct\n• Check request format';
+            } else if (error.message.includes('404')) {
+                errorCause = 'Senior hiring request not found';
+                troubleshooting = '• Hire ID may not exist\n• Check hiring request list\n• Verify request is still pending';
+            } else if (error.message.includes('500')) {
+                errorCause = 'Server internal error';
+                troubleshooting = '• Database connection issue\n• Server configuration problem\n• Contact system administrator';
+            } else if (error.message.includes('database') || error.message.includes('SQL')) {
+                errorCause = 'Database operation failed';
+                troubleshooting = '• Database connection issue\n• Senior hiring tables might not exist\n• Contact system administrator';
+            }
+            
+            // Show detailed error notification
+            showRealProblemNotification('SYSTEM_ERROR', {
+                error: error.message,
+                cause: errorCause,
+                troubleshooting: troubleshooting,
+                message: `❌ Senior hiring approval failed!\n\n🔍 Error Cause: ${errorCause}\n\n🛠️ Troubleshooting:\n${troubleshooting}\n\n📝 Technical Details:\n${error.message}\n\n💡 Please fix the issue and try again.`,
+                hireId: hireId,
+                timestamp: new Date().toLocaleString()
+            });
+        });
+    }
 }
 
 function requestMoreInfo(hireId) {
-    customAlert(`Additional information requested for hire ${hireId}.\n\nHR department to provide more details within 3 days.`, "Information Requested", "warning");
+    // Show confirmation dialog
+    const confirmRequest = confirm(`Are you sure you want to request more information for this senior hiring request?\n\nHire ID: ${hireId}\n\nThis will send a notification to the HR department.`);
+    
+    if (confirmRequest) {
+        // Show loading notification
+        showRealProblemNotification('SAVING', {
+            message: `Requesting more information for senior hiring ${hireId}...`,
+            hireId: hireId
+        });
+        
+        // Send info request to backend API
+        fetch(`/api/senior-hiring/${hireId}/info-request`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            },
+            body: JSON.stringify({
+                requestedBy: 'Managing Director',
+                comments: 'Additional information requested by MD for review'
+            })
+        })
+        .then(response => {
+            console.log('📡 Senior Hiring Info Request API Response status:', response.status);
+            return response.json();
+        })
+        .then(data => {
+            console.log('📊 Senior Hiring Info Request API Response data:', data);
+            
+            if (data.error) {
+                throw new Error(data.error);
+            }
+            
+            // Show detailed success notification
+            showRealProblemNotification('SUCCESS', {
+                message: `✅ Information request submitted successfully!\n\n📋 Details:\n• Hire ID: ${hireId}\n• Requested by: Managing Director\n• Status: Information Requested\n• Database ID: ${data.id || hireId}\n\n🎉 Information request saved to database without page refresh!`,
+                hireId: hireId,
+                requestedBy: 'Managing Director',
+                timestamp: new Date().toLocaleString()
+            });
+        })
+        .catch(error => {
+            console.error('❌ Error requesting more information:', error);
+            
+            // Determine specific error cause
+            let errorCause = 'Unknown error occurred';
+            let troubleshooting = '';
+            
+            if (error.message.includes('NetworkError') || error.message.includes('fetch')) {
+                errorCause = 'Network connection failed';
+                troubleshooting = '• Check internet connection\n• Verify server is running\n• Try again in a moment';
+            } else if (error.message.includes('400')) {
+                errorCause = 'Invalid request data';
+                troubleshooting = '• Hire ID is valid\n• Requester information is correct\n• Check request format';
+            } else if (error.message.includes('404')) {
+                errorCause = 'Senior hiring request not found';
+                troubleshooting = '• Hire ID may not exist\n• Check hiring request list\n• Verify request is still pending';
+            } else if (error.message.includes('500')) {
+                errorCause = 'Server internal error';
+                troubleshooting = '• Database connection issue\n• Server configuration problem\n• Contact system administrator';
+            } else if (error.message.includes('database') || error.message.includes('SQL')) {
+                errorCause = 'Database operation failed';
+                troubleshooting = '• Database connection issue\n• Senior hiring tables might not exist\n• Contact system administrator';
+            }
+            
+            // Show detailed error notification
+            showRealProblemNotification('SYSTEM_ERROR', {
+                error: error.message,
+                cause: errorCause,
+                troubleshooting: troubleshooting,
+                message: `❌ Information request failed!\n\n🔍 Error Cause: ${errorCause}\n\n🛠️ Troubleshooting:\n${troubleshooting}\n\n📝 Technical Details:\n${error.message}\n\n💡 Please fix the issue and try again.`,
+                hireId: hireId,
+                timestamp: new Date().toLocaleString()
+            });
+        });
+    }
 }
 
 function rejectSeniorHire(hireId) {
+    // Show rejection modal
     showRejectModal(hireId, 'Senior Staff Hiring', function(formData) {
         console.log('Rejecting senior hire:', formData);
         
-        customAlert(`Senior staff hire ${hireId} rejected.\n\nReason: ${formData.rejectionReason}\nDetails: ${formData.rejectionDetails}\n\nHR department has been notified.`, "Hire Rejected", "error");
+        // Show loading notification
+        showRealProblemNotification('SAVING', {
+            message: `Rejecting senior hiring request ${hireId}...`,
+            hireId: hireId
+        });
         
-        // API call would go here
-        // fetch('/api/senior-hiring/reject', {
-        //     method: 'POST',
-        //     headers: { 'Content-Type': 'application/json' },
-        //     body: JSON.stringify({ ...formData, hireId })
-        // });
+        // Send rejection to backend API
+        fetch(`/api/senior-hiring/${hireId}/reject`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            },
+            body: JSON.stringify({
+                rejectionReason: formData.rejectionReason,
+                rejectionDetails: formData.rejectionDetails,
+                rejectedBy: 'Managing Director'
+            })
+        })
+        .then(response => {
+            console.log('📡 Senior Hiring Rejection API Response status:', response.status);
+            return response.json();
+        })
+        .then(data => {
+            console.log('📊 Senior Hiring Rejection API Response data:', data);
+            
+            if (data.error) {
+                throw new Error(data.error);
+            }
+            
+            // Show detailed success notification
+            showRealProblemNotification('SUCCESS', {
+                message: `✅ Senior hiring request rejected successfully!\n\n📋 Details:\n• Hire ID: ${hireId}\n• Rejection Reason: ${formData.rejectionReason}\n• Rejected by: Managing Director\n• Status: Rejected\n• Database ID: ${data.id || hireId}\n\n🎉 Senior hiring request saved to database without page refresh!`,
+                hireId: hireId,
+                rejectionReason: formData.rejectionReason,
+                timestamp: new Date().toLocaleString()
+            });
+            
+            // Close modal
+            closeModal();
+        })
+        .catch(error => {
+            console.error('❌ Error rejecting senior hiring:', error);
+            
+            // Determine specific error cause
+            let errorCause = 'Unknown error occurred';
+            let troubleshooting = '';
+            
+            if (error.message.includes('NetworkError') || error.message.includes('fetch')) {
+                errorCause = 'Network connection failed';
+                troubleshooting = '• Check internet connection\n• Verify server is running\n• Try again in a moment';
+            } else if (error.message.includes('400')) {
+                errorCause = 'Invalid rejection data';
+                troubleshooting = '• Fill all required fields correctly\n• Check rejection reason selection\n• Verify rejection details\n• Ensure rejection details are provided';
+            } else if (error.message.includes('404')) {
+                errorCause = 'Senior hiring request not found';
+                troubleshooting = '• Hire ID may not exist\n• Check hiring request list\n• Verify request is still pending';
+            } else if (error.message.includes('500')) {
+                errorCause = 'Server internal error';
+                troubleshooting = '• Database connection issue\n• Server configuration problem\n• Contact system administrator';
+            } else if (error.message.includes('database') || error.message.includes('SQL')) {
+                errorCause = 'Database operation failed';
+                troubleshooting = '• Database connection issue\n• Senior hiring tables might not exist\n• Contact system administrator';
+            }
+            
+            // Show detailed error notification
+            showRealProblemNotification('SYSTEM_ERROR', {
+                error: error.message,
+                cause: errorCause,
+                troubleshooting: troubleshooting,
+                message: `❌ Senior hiring rejection failed!\n\n🔍 Error Cause: ${errorCause}\n\n🛠️ Troubleshooting:\n${troubleshooting}\n\n📝 Technical Details:\n${error.message}\n\n💡 Please fix the issue and try again.`,
+                hireId: hireId,
+                rejectionReason: formData.rejectionReason || 'Unknown',
+                timestamp: new Date().toLocaleString()
+            });
+            
+            // Close modal
+            closeModal();
+        });
     });
 }
 
 function approveBudget(budgetId) {
-    customAlert(`Workforce budget ${budgetId} approved!\n\nFinance department may proceed with budget implementation.`, "Budget Approved", "success");
+    // Show confirmation dialog
+    const confirmApproval = confirm(`Are you sure you want to approve this workforce budget request?\n\nBudget ID: ${budgetId}\n\nOnce approved, Finance department may proceed with budget implementation.`);
+    
+    if (confirmApproval) {
+        // Show loading notification
+        showRealProblemNotification('SAVING', {
+            message: `Approving workforce budget ${budgetId}...`,
+            budgetId: budgetId
+        });
+        
+        // Send approval to backend API
+        fetch(`/api/workforce-budget/${budgetId}/approve`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            },
+            body: JSON.stringify({
+                approvedBy: 'Managing Director',
+                comments: 'Approved by MD - proceed with budget implementation'
+            })
+        })
+        .then(response => {
+            console.log('📡 Workforce Budget Approval API Response status:', response.status);
+            return response.json();
+        })
+        .then(data => {
+            console.log('📊 Workforce Budget Approval API Response data:', data);
+            
+            if (data.error) {
+                throw new Error(data.error);
+            }
+            
+            // Show detailed success notification
+            showRealProblemNotification('SUCCESS', {
+                message: `✅ Workforce budget approved successfully!\n\n📋 Details:\n• Budget ID: ${budgetId}\n• Approved by: Managing Director\n• Status: Approved\n• Database ID: ${data.id || budgetId}\n\n🎉 Workforce budget request saved to database without page refresh!`,
+                budgetId: budgetId,
+                approvedBy: 'Managing Director',
+                timestamp: new Date().toLocaleString()
+            });
+        })
+        .catch(error => {
+            console.error('❌ Error approving workforce budget:', error);
+            
+            // Determine specific error cause
+            let errorCause = 'Unknown error occurred';
+            let troubleshooting = '';
+            
+            if (error.message.includes('NetworkError') || error.message.includes('fetch')) {
+                errorCause = 'Network connection failed';
+                troubleshooting = '• Check internet connection\n• Verify server is running\n• Try again in a moment';
+            } else if (error.message.includes('400')) {
+                errorCause = 'Invalid approval data';
+                troubleshooting = '• Budget ID is valid\n• Approver information is correct\n• Check request format';
+            } else if (error.message.includes('404')) {
+                errorCause = 'Workforce budget request not found';
+                troubleshooting = '• Budget ID may not exist\n• Check budget request list\n• Verify request is still pending';
+            } else if (error.message.includes('500')) {
+                errorCause = 'Server internal error';
+                troubleshooting = '• Database connection issue\n• Server configuration problem\n• Contact system administrator';
+            } else if (error.message.includes('database') || error.message.includes('SQL')) {
+                errorCause = 'Database operation failed';
+                troubleshooting = '• Database connection issue\n• Workforce budget tables might not exist\n• Contact system administrator';
+            }
+            
+            // Show detailed error notification
+            showRealProblemNotification('SYSTEM_ERROR', {
+                error: error.message,
+                cause: errorCause,
+                troubleshooting: troubleshooting,
+                message: `❌ Workforce budget approval failed!\n\n🔍 Error Cause: ${errorCause}\n\n🛠️ Troubleshooting:\n${troubleshooting}\n\n📝 Technical Details:\n${error.message}\n\n💡 Please fix the issue and try again.`,
+                budgetId: budgetId,
+                timestamp: new Date().toLocaleString()
+            });
+        });
+    }
 }
 
 function modifyBudget(budgetId) {
-    customAlert(`Modification requested for budget ${budgetId}.\n\nFinance department to submit revised proposal.`, "Budget Modification Requested", "warning");
+    // Show confirmation dialog
+    const confirmModification = confirm(`Are you sure you want to request modification for this workforce budget?\n\nBudget ID: ${budgetId}\n\nThis will send a notification to Finance department.`);
+    
+    if (confirmModification) {
+        // Show loading notification
+        showRealProblemNotification('SAVING', {
+            message: `Requesting modification for workforce budget ${budgetId}...`,
+            budgetId: budgetId
+        });
+        
+        // Send modification request to backend API
+        fetch(`/api/workforce-budget/${budgetId}/modify`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            },
+            body: JSON.stringify({
+                requestedBy: 'Managing Director',
+                comments: 'Modification requested by MD for review and revision'
+            })
+        })
+        .then(response => {
+            console.log('📡 Workforce Budget Modification API Response status:', response.status);
+            return response.json();
+        })
+        .then(data => {
+            console.log('📊 Workforce Budget Modification API Response data:', data);
+            
+            if (data.error) {
+                throw new Error(data.error);
+            }
+            
+            // Show detailed success notification
+            showRealProblemNotification('SUCCESS', {
+                message: `✅ Budget modification requested successfully!\n\n📋 Details:\n• Budget ID: ${budgetId}\n• Requested by: Managing Director\n• Status: Modification Requested\n• Database ID: ${data.id || budgetId}\n\n🎉 Budget modification request saved to database without page refresh!`,
+                budgetId: budgetId,
+                requestedBy: 'Managing Director',
+                timestamp: new Date().toLocaleString()
+            });
+        })
+        .catch(error => {
+            console.error('❌ Error requesting budget modification:', error);
+            
+            // Determine specific error cause
+            let errorCause = 'Unknown error occurred';
+            let troubleshooting = '';
+            
+            if (error.message.includes('NetworkError') || error.message.includes('fetch')) {
+                errorCause = 'Network connection failed';
+                troubleshooting = '• Check internet connection\n• Verify server is running\n• Try again in a moment';
+            } else if (error.message.includes('400')) {
+                errorCause = 'Invalid modification data';
+                troubleshooting = '• Budget ID is valid\n• Requester information is correct\n• Check request format';
+            } else if (error.message.includes('404')) {
+                errorCause = 'Workforce budget request not found';
+                troubleshooting = '• Budget ID may not exist\n• Check budget request list\n• Verify request is still active';
+            } else if (error.message.includes('500')) {
+                errorCause = 'Server internal error';
+                troubleshooting = '• Database connection issue\n• Server configuration problem\n• Contact system administrator';
+            } else if (error.message.includes('database') || error.message.includes('SQL')) {
+                errorCause = 'Database operation failed';
+                troubleshooting = '• Database connection issue\n• Workforce budget tables might not exist\n• Contact system administrator';
+            }
+            
+            // Show detailed error notification
+            showRealProblemNotification('SYSTEM_ERROR', {
+                error: error.message,
+                cause: errorCause,
+                troubleshooting: troubleshooting,
+                message: `❌ Budget modification request failed!\n\n🔍 Error Cause: ${errorCause}\n\n🛠️ Troubleshooting:\n${troubleshooting}\n\n📝 Technical Details:\n${error.message}\n\n💡 Please fix the issue and try again.`,
+                budgetId: budgetId,
+                timestamp: new Date().toLocaleString()
+            });
+        });
+    }
 }
 
 function rejectBudget(budgetId) {
+    // Show rejection modal
     showRejectModal(budgetId, 'Workforce Budget', function(formData) {
         console.log('Rejecting budget:', formData);
         
-        customAlert(`Workforce budget ${budgetId} rejected.\n\nReason: ${formData.rejectionReason}\nDetails: ${formData.rejectionDetails}\n\nFinance department has been notified.`, "Budget Rejected", "error");
+        // Show loading notification
+        showRealProblemNotification('SAVING', {
+            message: `Rejecting workforce budget ${budgetId}...`,
+            budgetId: budgetId
+        });
         
-        // API call would go here
-        // fetch('/api/workforce-budget/reject', {
-        //     method: 'POST',
-        //     headers: { 'Content-Type': 'application/json' },
-        //     body: JSON.stringify({ ...formData, budgetId })
-        // });
+        // Send rejection to backend API
+        fetch(`/api/workforce-budget/${budgetId}/reject`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            },
+            body: JSON.stringify({
+                rejectionReason: formData.rejectionReason,
+                rejectionDetails: formData.rejectionDetails,
+                rejectedBy: 'Managing Director'
+            })
+        })
+        .then(response => {
+            console.log('📡 Workforce Budget Rejection API Response status:', response.status);
+            return response.json();
+        })
+        .then(data => {
+            console.log('📊 Workforce Budget Rejection API Response data:', data);
+            
+            if (data.error) {
+                throw new Error(data.error);
+            }
+            
+            // Show detailed success notification
+            showRealProblemNotification('SUCCESS', {
+                message: `✅ Workforce budget rejected successfully!\n\n📋 Details:\n• Budget ID: ${budgetId}\n• Rejection Reason: ${formData.rejectionReason}\n• Rejected by: Managing Director\n• Status: Rejected\n• Database ID: ${data.id || budgetId}\n\n🎉 Workforce budget request saved to database without page refresh!`,
+                budgetId: budgetId,
+                rejectionReason: formData.rejectionReason,
+                timestamp: new Date().toLocaleString()
+            });
+            
+            // Close modal
+            closeModal();
+        })
+        .catch(error => {
+            console.error('❌ Error rejecting workforce budget:', error);
+            
+            // Determine specific error cause
+            let errorCause = 'Unknown error occurred';
+            let troubleshooting = '';
+            
+            if (error.message.includes('NetworkError') || error.message.includes('fetch')) {
+                errorCause = 'Network connection failed';
+                troubleshooting = '• Check internet connection\n• Verify server is running\n• Try again in a moment';
+            } else if (error.message.includes('400')) {
+                errorCause = 'Invalid rejection data';
+                troubleshooting = '• Fill all required fields correctly\n• Check rejection reason selection\n• Verify rejection details\n• Ensure rejection details are provided';
+            } else if (error.message.includes('404')) {
+                errorCause = 'Workforce budget request not found';
+                troubleshooting = '• Budget ID may not exist\n• Check budget request list\n• Verify request is still active';
+            } else if (error.message.includes('500')) {
+                errorCause = 'Server internal error';
+                troubleshooting = '• Database connection issue\n• Server configuration problem\n• Contact system administrator';
+            } else if (error.message.includes('database') || error.message.includes('SQL')) {
+                errorCause = 'Database operation failed';
+                troubleshooting = '• Database connection issue\n• Workforce budget tables might not exist\n• Contact system administrator';
+            }
+            
+            // Show detailed error notification
+            showRealProblemNotification('SYSTEM_ERROR', {
+                error: error.message,
+                cause: errorCause,
+                troubleshooting: troubleshooting,
+                message: `❌ Workforce budget rejection failed!\n\n🔍 Error Cause: ${errorCause}\n\n🛠️ Troubleshooting:\n${troubleshooting}\n\n📝 Technical Details:\n${error.message}\n\n💡 Please fix the issue and try again.`,
+                budgetId: budgetId,
+                rejectionReason: formData.rejectionReason || 'Unknown',
+                timestamp: new Date().toLocaleString()
+            });
+            
+            // Close modal
+            closeModal();
+        });
     });
 }
 
@@ -12496,7 +12940,82 @@ function rejectSeniorHire(hireId) {
 }
 
 function approveSeniorHire(hireId) {
-    customAlert(`Senior staff hire ${hireId} approved!\n\nHR department may proceed with employment contract preparation.`, "Hire Approved", "success");
+    // Show confirmation dialog
+    const confirmApproval = confirm(`Are you sure you want to approve this senior hiring request?\n\nHire ID: ${hireId}\n\nOnce approved, HR department may proceed with employment contract preparation.`);
+    
+    if (confirmApproval) {
+        // Show loading notification
+        showRealProblemNotification('SAVING', {
+            message: `Approving senior hiring request ${hireId}...`,
+            hireId: hireId
+        });
+        
+        // Send approval to backend API
+        fetch(`/api/senior-hiring/${hireId}/approve`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            },
+            body: JSON.stringify({
+                approvedBy: 'Managing Director',
+                comments: 'Approved by MD - proceed with HR onboarding'
+            })
+        })
+        .then(response => {
+            console.log('📡 Senior Hiring Approval API Response status:', response.status);
+            return response.json();
+        })
+        .then(data => {
+            console.log('📊 Senior Hiring Approval API Response data:', data);
+            
+            if (data.error) {
+                throw new Error(data.error);
+            }
+            
+            // Show detailed success notification
+            showRealProblemNotification('SUCCESS', {
+                message: `✅ Senior hiring request approved successfully!\n\n📋 Details:\n• Hire ID: ${hireId}\n• Approved by: Managing Director\n• Status: Approved\n• Database ID: ${data.id || hireId}\n\n🎉 Senior hiring request saved to database without page refresh!`,
+                hireId: hireId,
+                approvedBy: 'Managing Director',
+                timestamp: new Date().toLocaleString()
+            });
+        })
+        .catch(error => {
+            console.error('❌ Error approving senior hiring:', error);
+            
+            // Determine specific error cause
+            let errorCause = 'Unknown error occurred';
+            let troubleshooting = '';
+            
+            if (error.message.includes('NetworkError') || error.message.includes('fetch')) {
+                errorCause = 'Network connection failed';
+                troubleshooting = '• Check internet connection\n• Verify server is running\n• Try again in a moment';
+            } else if (error.message.includes('400')) {
+                errorCause = 'Invalid approval data';
+                troubleshooting = '• Hire ID is valid\n• Approver information is correct\n• Check request format';
+            } else if (error.message.includes('404')) {
+                errorCause = 'Senior hiring request not found';
+                troubleshooting = '• Hire ID may not exist\n• Check hiring request list\n• Verify request is still pending';
+            } else if (error.message.includes('500')) {
+                errorCause = 'Server internal error';
+                troubleshooting = '• Database connection issue\n• Server configuration problem\n• Contact system administrator';
+            } else if (error.message.includes('database') || error.message.includes('SQL')) {
+                errorCause = 'Database operation failed';
+                troubleshooting = '• Database connection issue\n• Senior hiring tables might not exist\n• Contact system administrator';
+            }
+            
+            // Show detailed error notification
+            showRealProblemNotification('SYSTEM_ERROR', {
+                error: error.message,
+                cause: errorCause,
+                troubleshooting: troubleshooting,
+                message: `❌ Senior hiring approval failed!\n\n🔍 Error Cause: ${errorCause}\n\n🛠️ Troubleshooting:\n${troubleshooting}\n\n📝 Technical Details:\n${error.message}\n\n💡 Please fix the issue and try again.`,
+                hireId: hireId,
+                timestamp: new Date().toLocaleString()
+            });
+        });
+    }
 }
 
 function approveBudget(budgetId) {
