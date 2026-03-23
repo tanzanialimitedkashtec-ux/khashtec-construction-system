@@ -314,9 +314,15 @@ router.post('/:id/revision', async (req, res) => {
         }
         
         // Check if policy exists
+        console.log('🔍 Looking for policy with ID:', policyId);
+        console.log('🔍 Policy ID type:', typeof policyId);
+        console.log('🔍 Policy ID value:', JSON.stringify(policyId));
+        
         let existingPolicies;
         try {
             [existingPolicies] = await db.execute('SELECT * FROM hse_work WHERE id = ?', [policyId]);
+            console.log('📊 Query result:', existingPolicies);
+            console.log('📊 Result length:', existingPolicies ? existingPolicies.length : 'undefined/null');
         } catch (error) {
             console.error('❌ Database error checking policy:', error);
             return res.status(500).json({ 
@@ -340,7 +346,7 @@ router.post('/:id/revision', async (req, res) => {
         
         // Update policy status
         const [result] = await db.execute(
-            'UPDATE policies SET status = ?, revision_request = ? WHERE id = ?',
+            'UPDATE hse_work SET status = ?, revision_request = ? WHERE id = ?',
             ['Revision Requested', revisionRequest, policyId]
         );
         
