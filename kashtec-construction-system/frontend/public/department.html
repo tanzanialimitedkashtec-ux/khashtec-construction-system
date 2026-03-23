@@ -5249,9 +5249,46 @@ function saveEmployeeManual() {
                 stack: error.stack,
                 name: error.name
             });
+            
+            // Determine specific error cause
+            let errorCause = 'Unknown error occurred';
+            let troubleshooting = '';
+            
+            if (error.message.includes('NetworkError') || error.message.includes('fetch')) {
+                errorCause = 'Network connection failed';
+                troubleshooting = '• Check internet connection\n• Verify server is running\n• Try again in a moment';
+            } else if (error.message.includes('400')) {
+                errorCause = 'Invalid employee data';
+                troubleshooting = '• Fill all required fields correctly\n• Check email format\n• Verify phone number format\n• Ensure NIDA is valid';
+            } else if (error.message.includes('409')) {
+                errorCause = 'Employee already exists';
+                troubleshooting = '• Email or NIDA already registered\n• Use different email or NIDA\n• Check if employee already exists';
+            } else if (error.message.includes('404')) {
+                errorCause = 'Employee API endpoint not found';
+                troubleshooting = '• Server routing issue\n• Contact system administrator';
+            } else if (error.message.includes('500')) {
+                errorCause = 'Server internal error';
+                troubleshooting = '• Database connection issue\n• Server configuration problem\n• Contact system administrator';
+            } else if (error.message.includes('validation') || error.message.includes('required')) {
+                errorCause = 'Form validation failed';
+                troubleshooting = '• Fill all required fields\n• Check field formats\n• Ensure email is valid\n• Verify NIDA format';
+            } else if (error.message.includes('database') || error.message.includes('SQL')) {
+                errorCause = 'Database operation failed';
+                troubleshooting = '• Database connection issue\n• Employees table might not exist\n• Contact system administrator';
+            } else if (error.message.includes('duplicate') || error.message.includes('unique')) {
+                errorCause = 'Duplicate employee record';
+                troubleshooting = '• Employee with this email already exists\n• Employee with this NIDA already exists\n• Use unique identifiers';
+            }
+            
+            // Show detailed error notification
             showRealProblemNotification('SYSTEM_ERROR', {
                 error: error.message,
-                message: `Failed to register employee: ${error.message}\n\nPlease check:\n• All required fields are filled\n• Network connection is stable\n• Server is running properly\n• Email and NIDA are unique\n• Check browser console for detailed error`
+                cause: errorCause,
+                troubleshooting: troubleshooting,
+                message: `❌ Employee registration failed!\n\n🔍 Error Cause: ${errorCause}\n\n🛠️ Troubleshooting:\n${troubleshooting}\n\n📝 Technical Details:\n${error.message}\n\n💡 Please fix the issue and try again.`,
+                employeeName: fullName || 'Unknown',
+                employeeEmail: email || 'Not provided',
+                timestamp: new Date().toLocaleString()
             });
         });
         
@@ -6830,8 +6867,14 @@ function saveIncidentReport() {
                 throw new Error(data.error);
             }
             
-            // Success message
-            customAlert(`Incident report recorded successfully!\n\nID: ${data.workItem.id}\nType: ${workItem.incident_type}\nSeverity: ${workItem.severity}\nPriority: ${workItem.priority}\nAssigned to: ${workItem.assigned_to}\n\n✅ Incident has been saved to database and assigned for follow-up.`, "Incident Recorded", "success");
+            // Show detailed success notification
+            showRealProblemNotification('SUCCESS', {
+                message: `✅ Incident report recorded successfully!\n\n📋 Details:\n• Incident ID: ${data.id}\n• Type: ${workItem.incident_type}\n• Severity: ${workItem.severity}\n• Priority: ${workItem.priority}\n• Assigned to: ${workItem.assigned_to}\n• Due Date: ${workItem.due_date}\n\n🎉 Incident saved to database without page refresh!`,
+                incidentId: data.id,
+                incidentType: workItem.incident_type,
+                severity: workItem.severity,
+                timestamp: new Date().toLocaleString()
+            });
             
             // Reset form
             document.getElementById('incidentForm').reset();
@@ -6843,7 +6886,41 @@ function saveIncidentReport() {
         })
         .catch(error => {
             console.error('❌ Error recording incident:', error);
-            customAlert(`Failed to record incident: ${error.message}\n\nPlease check:\n• All required fields are filled\n• Network connection is stable\n• Server is running properly`, "Recording Error", "error");
+            
+            // Determine specific error cause
+            let errorCause = 'Unknown error occurred';
+            let troubleshooting = '';
+            
+            if (error.message.includes('NetworkError') || error.message.includes('fetch')) {
+                errorCause = 'Network connection failed';
+                troubleshooting = '• Check internet connection\n• Verify server is running\n• Try again in a moment';
+            } else if (error.message.includes('400')) {
+                errorCause = 'Invalid incident data';
+                troubleshooting = '• Fill all required fields correctly\n• Check incident type selection\n• Verify severity level\n• Ensure description is provided';
+            } else if (error.message.includes('404')) {
+                errorCause = 'HSE API endpoint not found';
+                troubleshooting = '• Server routing issue\n• Contact system administrator';
+            } else if (error.message.includes('500')) {
+                errorCause = 'Server internal error';
+                troubleshooting = '• Database connection issue\n• Server configuration problem\n• Contact system administrator';
+            } else if (error.message.includes('validation') || error.message.includes('required')) {
+                errorCause = 'Form validation failed';
+                troubleshooting = '• Fill all required fields\n• Check field formats\n• Ensure incident type is selected\n• Verify severity level';
+            } else if (error.message.includes('database') || error.message.includes('SQL')) {
+                errorCause = 'Database operation failed';
+                troubleshooting = '• Database connection issue\n• HSE work table might not exist\n• Contact system administrator';
+            }
+            
+            // Show detailed error notification
+            showRealProblemNotification('SYSTEM_ERROR', {
+                error: error.message,
+                cause: errorCause,
+                troubleshooting: troubleshooting,
+                message: `❌ Incident report failed!\n\n🔍 Error Cause: ${errorCause}\n\n🛠️ Troubleshooting:\n${troubleshooting}\n\n📝 Technical Details:\n${error.message}\n\n💡 Please fix the issue and try again.`,
+                incidentType: incidentType || 'Unknown',
+                severity: severityLevel || 'Not specified',
+                timestamp: new Date().toLocaleString()
+            });
             return false;
         });
         
@@ -10416,7 +10493,13 @@ function uploadDocument() {
             throw new Error(data.error);
         }
         
-        customAlert(`Document uploaded successfully!\n\nDocument: ${docTitle}\nType: ${docType}\nDepartment: ${docDepartment}\nFile: ${docFile.name}\nDocument ID: ${data.id}\n\n🎉 Document saved to database!`, "Upload Successful", "success");
+        // Show detailed success notification
+        showRealProblemNotification('SUCCESS', {
+            message: `✅ Document uploaded successfully!\n\n📋 Details:\n• Title: ${docTitle}\n• Type: ${docType}\n• Department: ${docDepartment}\n• File: ${docFile.name}\n• Priority: ${docPriority}\n• Document ID: ${data.id}\n• Status: ${data.status || 'pending'}\n\n🎉 Document saved to database without page refresh!`,
+            documentId: data.id,
+            fileName: docFile.name,
+            uploadDate: new Date().toLocaleString()
+        });
         
         // Clear form
         document.getElementById('docType').value = '';
@@ -10431,7 +10514,40 @@ function uploadDocument() {
     })
     .catch(error => {
         console.error('❌ Error uploading document:', error);
-        customAlert(`Failed to upload document: ${error.message}\n\nPlease check:\n• All required fields are filled\n• File is selected\n• Network connection is stable\n• Server is running properly`, "Upload Error", "error");
+        
+        // Determine specific error cause
+        let errorCause = 'Unknown error occurred';
+        let troubleshooting = '';
+        
+        if (error.message.includes('NetworkError') || error.message.includes('fetch')) {
+            errorCause = 'Network connection failed';
+            troubleshooting = '• Check internet connection\n• Verify server is running\n• Try again in a moment';
+        } else if (error.message.includes('400')) {
+            errorCause = 'Invalid request data';
+            troubleshooting = '• Fill all required fields\n• Select a valid file\n• Check file size limits';
+        } else if (error.message.includes('404')) {
+            errorCause = 'API endpoint not found';
+            troubleshooting = '• Server routing issue\n• Contact system administrator';
+        } else if (error.message.includes('500')) {
+            errorCause = 'Server internal error';
+            troubleshooting = '• Database connection issue\n• Server configuration problem\n• Contact system administrator';
+        } else if (error.message.includes('validation') || error.message.includes('required')) {
+            errorCause = 'Form validation failed';
+            troubleshooting = '• Fill all required fields\n• Check field formats\n• Ensure file is selected';
+        } else if (error.message.includes('database') || error.message.includes('SQL')) {
+            errorCause = 'Database operation failed';
+            troubleshooting = '• Database connection issue\n• Table might not exist\n• Contact system administrator';
+        }
+        
+        // Show detailed error notification
+        showRealProblemNotification('SYSTEM_ERROR', {
+            error: error.message,
+            cause: errorCause,
+            troubleshooting: troubleshooting,
+            message: `❌ Document upload failed!\n\n🔍 Error Cause: ${errorCause}\n\n🛠️ Troubleshooting:\n${troubleshooting}\n\n📝 Technical Details:\n${error.message}\n\n💡 Please fix the issue and try again.`,
+            fileName: docFile?.name || 'No file selected',
+            timestamp: new Date().toLocaleString()
+        });
     });
 }
 
