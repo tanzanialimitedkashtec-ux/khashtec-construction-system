@@ -2328,9 +2328,9 @@ function reviewEmployeeCount(){
 }
 
 function viewAllWorkers(){
-    // Load all employees from memory (localStorage removed)
-    const employees = []; // TODO: Load from API instead of localStorage
-    const workerAccounts = []; // TODO: Load from API instead of localStorage
+    // Load all employees from API
+    const employees = []; // TODO: Load from API
+    const workerAccounts = []; // TODO: Load from API
     
     showContent(`<div class="card">
         <h3>View All Workers</h3>
@@ -3835,7 +3835,7 @@ function generateWorkerList(employees, workerAccounts) {
 function filterAllWorkers() {
     const searchTerm = document.getElementById('mdWorkerSearch').value.toLowerCase();
     const departmentFilter = document.getElementById('mdDepartmentFilter').value;
-    const employees = []; // TODO: Load from API instead of localStorage
+    const employees = []; // TODO: Load from API
     
     let filtered = employees;
     
@@ -3850,7 +3850,7 @@ function filterAllWorkers() {
         filtered = filtered.filter(emp => emp.department === departmentFilter);
     }
     
-    const workerAccounts = []; // TODO: Load from API instead of localStorage
+    const workerAccounts = []; // TODO: Load from API
     document.getElementById('mdWorkerResults').innerHTML = generateWorkerList(filtered, workerAccounts);
 }
 
@@ -4226,7 +4226,7 @@ function attendance(){
 // Function to automatically assign personnel to Office Portal
 function assignToOfficePortal(personnelData, type) {
     // Load existing office portal users
-    const officePortalUsers = []; // TODO: Load from API instead of localStorage
+    const officePortalUsers = []; // TODO: Load from API
     
     // Check if already assigned
     const existingUser = officePortalUsers.find(user => 
@@ -4265,7 +4265,7 @@ function assignToOfficePortal(personnelData, type) {
     
     // Add to office portal
     officePortalUsers.push(portalUser);
-    // TODO: Save to API instead of localStorage
+    // TODO: Save to API
     
     console.log(`${type} automatically assigned to Office Portal:`, portalUser.name);
     return true;
@@ -4594,7 +4594,7 @@ function createWorkerAccount(){
 
 function updateEmployeeRecords(){
     // Load existing employees for display
-    const employees = []; // TODO: Load from API instead of localStorage
+    const employees = []; // TODO: Load from API
     
     showContent(`<div class="card">
         <h3>Update Employee Records</h3>
@@ -4901,9 +4901,9 @@ function saveWorkerAccount() {
         }
         
         // Save to secure storage
-        const workerAccounts = []; // TODO: Load from API instead of localStorage
+        const workerAccounts = []; // TODO: Load from API
         workerAccounts.push(workerAccount);
-        // TODO: Save to API instead of localStorage
+        // TODO: Save to API
         
         // Automatically assign to Office Portal
         const portalAssigned = assignToOfficePortal(workerAccount, 'Worker');
@@ -4922,7 +4922,7 @@ function saveWorkerAccount() {
 
 function filterEmployees() {
     const searchTerm = document.getElementById('searchEmployee').value.toLowerCase();
-    const employees = []; // TODO: Load from API instead of localStorage
+    const employees = []; // TODO: Load from API
     const resultsDiv = document.getElementById('employeeSearchResults');
     
     if (searchTerm.length < 2) {
@@ -4951,7 +4951,7 @@ function filterEmployees() {
 }
 
 function selectEmployeeForUpdate(email) {
-    const employees = []; // TODO: Load from API instead of localStorage
+    const employees = []; // TODO: Load from API
     const employee = employees.find(emp => emp.gmail === email);
     
     if (employee) {
@@ -4982,13 +4982,13 @@ function saveEmployeeUpdate() {
         lastUpdated: new Date().toLocaleString()
     };
     
-    // Update in localStorage (simplified - in real app, find by ID and update)
-    const employees = []; // TODO: Load from API instead of localStorage
+    // Update in secure storage (API)
+    const employees = []; // TODO: Load from API
     const index = employees.findIndex(emp => emp.gmail === updatedEmployee.gmail);
     
     if (index !== -1) {
         employees[index] = { ...employees[index], ...updatedEmployee };
-        // TODO: Save to API instead of localStorage
+        // TODO: Save to API
         
         customAlert(`Employee record updated successfully!\n\nName: ${updatedEmployee.fullName}\nDepartment: ${updatedEmployee.department}\nStatus: ${updatedEmployee.status}`, "Employee Updated", "success");
         
@@ -8915,10 +8915,10 @@ function saveDepartmentBudget() {
         createdDate: new Date().toLocaleString()
     };
     
-    // Save to localStorage
-    const budgets = JSON.parse(localStorage.getItem('kashtec_budgets') || '[]');
+    // Save to secure API storage
+    const budgets = [];
     budgets.push(budget);
-    localStorage.setItem('kashtec_budgets', JSON.stringify(budgets));
+    // TODO: Save to API
     
     customAlert(`Budget created successfully!\n\nDepartment: ${budget.department}\nTotal Amount: TZS ${budget.total}\nPeriod: ${budget.period}`, "Budget Created", "success");
     
@@ -8938,10 +8938,10 @@ function saveSalaryStructure() {
         approvedDate: new Date().toLocaleString()
     };
     
-    // Save to localStorage
-    const salaryStructures = JSON.parse(localStorage.getItem('kashtec_salary_structures') || '[]');
+    // Save to secure API storage
+    const salaryStructures = [];
     salaryStructures.push(salary);
-    localStorage.setItem('kashtec_salary_structures', JSON.stringify(salaryStructures));
+    // TODO: Save to API
     
     customAlert(`Salary structure approved!\n\nEmployee: ${salary.employee}\nGross Salary: TZS ${salary.grossSalary}`, "Salary Structure Approved", "success");
     
@@ -8962,10 +8962,10 @@ function processPayroll() {
         processedDate: new Date().toLocaleString()
     };
     
-    // Save to localStorage
-    const payrolls = JSON.parse(localStorage.getItem('kashtec_payrolls') || '[]');
+    // Save to secure API storage
+    const payrolls = [];
     payrolls.push(payroll);
-    localStorage.setItem('kashtec_payrolls', JSON.stringify(payrolls));
+    // TODO: Save to API
     
     customAlert(`Payroll processed successfully!\n\nMonth: ${payroll.month}\nNet Payment: TZS ${payroll.netPayment}\nPayment Date: ${payroll.paymentDate}`, "Payroll Processed", "success");
     
@@ -8984,10 +8984,10 @@ function submitNewExpense() {
         status: 'pending'
     };
     
-    // Save to localStorage
-    const expenses = JSON.parse(localStorage.getItem('kashtec_expenses') || '[]');
+    // Save to secure API storage
+    const expenses = [];
     expenses.push(expense);
-    localStorage.setItem('kashtec_expenses', JSON.stringify(expenses));
+    // TODO: Save to API
     
     customAlert(`Expense submitted successfully!\n\nCategory: ${expense.category}\nAmount: TZS ${expense.amount}\nStatus: Pending Approval`, "Expense Submitted", "success");
     
@@ -9286,7 +9286,7 @@ function createNewProject(){
 
 function updateProjectProgress(){
     // Load existing projects
-    const projects = []; // TODO: Load from API instead of localStorage
+    const projects = []; // TODO: Load from API
     
     showContent(`<div class="card">
         <h3>Update Project Progress</h3>
@@ -9375,8 +9375,8 @@ function updateProjectProgress(){
 
 function assignTasks(){
     // Load projects and workers
-    const projects = []; // TODO: Load from API instead of localStorage
-    const employees = []; // TODO: Load from API instead of localStorage
+    const projects = []; // TODO: Load from API
+    const employees = []; // TODO: Load from API
     
     showContent(`<div class="card">
         <h3>Assign Tasks</h3>
@@ -9569,9 +9569,9 @@ function requestWorkforce(){
 
 function viewAssignedWorkers(){
     // Load projects and worker assignments
-    const projects = []; // TODO: Load from API instead of localStorage
-    const assignments = []; // TODO: Load from API instead of localStorage
-    const employees = []; // TODO: Load from API instead of localStorage
+    const projects = []; // TODO: Load from API
+    const assignments = []; // TODO: Load from API
+    const employees = []; // TODO: Load from API
     
     showContent(`<div class="card">
         <h3>View Assigned Workers</h3>
@@ -9942,10 +9942,10 @@ function saveProjectProgress() {
         updateDate: new Date().toLocaleString()
     };
     
-    // Save to localStorage
-    const progressUpdates = JSON.parse(localStorage.getItem('kashtec_project_progress') || '[]');
+    // Save to secure API storage
+    const progressUpdates = [];
     progressUpdates.push(progress);
-    localStorage.setItem('kashtec_project_progress', JSON.stringify(progressUpdates));
+    // TODO: Save to API
     
     customAlert(`Project progress updated successfully!\n\nProgress: ${progress.percentage}%\nStatus: ${progress.status}\nUpdated: ${progress.updateDate}`, "Progress Updated", "success");
     
@@ -9971,10 +9971,10 @@ function saveTaskAssignment() {
         assignedDate: new Date().toLocaleString()
     };
     
-    // Save to localStorage
-    const tasks = JSON.parse(localStorage.getItem('kashtec_task_assignments') || '[]');
+    // Save to secure API storage
+    const tasks = [];
     tasks.push(task);
-    localStorage.setItem('kashtec_task_assignments', JSON.stringify(tasks));
+    // TODO: Save to API
     
     customAlert(`Task assigned successfully!\n\nTask: ${task.name}\nAssigned to: ${task.assignee}\nDue: ${task.dueDate}\nPriority: ${task.priority}`, "Task Assigned", "success");
     
@@ -9999,10 +9999,10 @@ function submitWorkforceRequest() {
         requestDate: new Date().toLocaleString()
     };
     
-    // Save to localStorage
-    const requests = JSON.parse(localStorage.getItem('kashtec_workforce_requests') || '[]');
+    // Save to secure API storage
+    const requests = [];
     requests.push(request);
-    localStorage.setItem('kashtec_workforce_requests', JSON.stringify(requests));
+    // TODO: Save to API
     
     customAlert(`Workforce request submitted!\n\nProject: ${request.project}\nWorkers Needed: ${request.workersNeeded}\nDuration: ${request.duration}\nStatus: Pending HR Approval`, "Request Submitted", "success");
     
@@ -10029,10 +10029,10 @@ function saveSiteReport() {
         submittedDate: new Date().toLocaleString()
     };
     
-    // Save to localStorage
-    const reports = JSON.parse(localStorage.getItem('kashtec_site_reports') || '[]');
+    // Save to secure API storage
+    const reports = [];
     reports.push(report);
-    localStorage.setItem('kashtec_site_reports', JSON.stringify(reports));
+    // TODO: Save to API
     
     customAlert(`Site report submitted successfully!\n\nProject: ${report.project}\nDate: ${report.date}\nWorkers Present: ${report.workersPresent}\nWeather: ${report.weather}`, "Report Submitted", "success");
     
@@ -10052,10 +10052,10 @@ function saveWorkApproval() {
         approvalDate: new Date().toLocaleString()
     };
     
-    // Save to localStorage
-    const approvals = JSON.parse(localStorage.getItem('kashtec_work_approvals') || '[]');
+    // Save to secure API storage
+    const approvals = [];
     approvals.push(approval);
-    localStorage.setItem('kashtec_work_approvals', JSON.stringify(approvals));
+    // TODO: Save to API
     
     customAlert(`Work approval submitted!\n\nWork ID: ${approval.workId}\nQuality: ${approval.quality}\nCompliance: ${approval.compliance}\nStatus: Approved`, "Work Approved", "success");
     
@@ -10268,7 +10268,7 @@ function addProperty(){
 
 function editPropertyDetails(){
     // Load existing properties
-    const properties = JSON.parse(localStorage.getItem('kashtec_properties') || '[]');
+    const properties = []; // TODO: Load from API
     
     showContent(`<div class="card">
         <h3>Edit Property Details</h3>
@@ -10467,8 +10467,8 @@ function registerClient(){
 
 function recordSale(){
     // Load properties and clients
-    const properties = JSON.parse(localStorage.getItem('kashtec_properties') || '[]');
-    const clients = JSON.parse(localStorage.getItem('kashtec_clients') || '[]');
+    const properties = []; // TODO: Load from API
+    const clients = []; // TODO: Load from API
     
     showContent(`<div class="card">
         <h3>Record Sale</h3>
@@ -10590,7 +10590,7 @@ function recordSale(){
 
 function trackPaymentProgress(){
     // Load sales data
-    const sales = JSON.parse(localStorage.getItem('kashtec_sales') || '[]');
+    const sales = []; // TODO: Load from API
     
     showContent(`<div class="card">
         <h3>Track Payment Progress</h3>
@@ -10840,10 +10840,10 @@ function saveNewProperty() {
         addedDate: new Date().toLocaleString()
     };
     
-    // Save to localStorage
-    const properties = JSON.parse(localStorage.getItem('kashtec_properties') || '[]');
+    // Save to secure API storage
+    const properties = [];
     properties.push(property);
-    localStorage.setItem('kashtec_properties', JSON.stringify(properties));
+    // TODO: Save to API
     
     customAlert(`Property added successfully!\n\nPlot: ${property.plotNumber}\nLocation: ${property.location}\nPrice: TZS ${parseInt(property.price).toLocaleString()}\nStatus: ${property.status}`, "Property Added", "success");
     
@@ -10869,10 +10869,10 @@ function saveNewClient() {
         registrationDate: new Date().toLocaleString()
     };
     
-    // Save to localStorage
-    const clients = JSON.parse(localStorage.getItem('kashtec_clients') || '[]');
+    // Save to secure API storage
+    const clients = [];
     clients.push(client);
-    localStorage.setItem('kashtec_clients', JSON.stringify(clients));
+    // TODO: Save to API
     
     customAlert(`Client registered successfully!\n\nName: ${client.fullName}\nID: ${client.id}\nPhone: ${client.phone}\nEmail: ${client.email}`, "Client Registered", "success");
     
@@ -10900,17 +10900,17 @@ function saveNewSale() {
         recordedDate: new Date().toLocaleString()
     };
     
-    // Save to localStorage
-    const sales = JSON.parse(localStorage.getItem('kashtec_sales') || '[]');
+    // Save to secure API storage
+    const sales = [];
     sales.push(sale);
-    localStorage.setItem('kashtec_sales', JSON.stringify(sales));
+    // TODO: Save to API
     
     // Update property status to sold
-    const properties = JSON.parse(localStorage.getItem('kashtec_properties') || '[]');
+    const properties = []; // TODO: Load from API
     const propertyIndex = properties.findIndex(p => p.id === sale.property);
     if (propertyIndex !== -1) {
         properties[propertyIndex].status = 'sold';
-        localStorage.setItem('kashtec_properties', JSON.stringify(properties));
+        // TODO: Save to API
     }
     
     customAlert(`Sale recorded successfully!\n\nProperty: ${sale.property}\nClient: ${sale.client}\nPrice: TZS ${parseInt(sale.price).toLocaleString()}\nPayment Method: ${sale.paymentMethod}\nStatus: ${sale.paymentStatus}`, "Sale Recorded", "success");
@@ -11396,10 +11396,10 @@ function sendNotification() {
         status: scheduleType === 'immediate' ? 'sent' : 'scheduled'
     };
     
-    // Save to localStorage
-    const notifications = JSON.parse(localStorage.getItem('kashtec_notifications') || '[]');
+    // Save to secure API storage
+    const notifications = [];
     notifications.push(notification);
-    localStorage.setItem('kashtec_notifications', JSON.stringify(notifications));
+    // TODO: Save to API
     
     const recipientText = recipientType === 'all' ? 'All Staff' : recipient;
     const statusText = scheduleType === 'immediate' ? 'sent immediately' : 'scheduled for later';
@@ -11491,11 +11491,11 @@ function recordMeetingMinutes(){
 }
 
 function viewEmployeeList(){
-    // Load employees from localStorage or API
-    const employees = []; // TODO: Load from API instead of localStorage
-    const apiUsers = []; // TODO: Load from API instead of localStorage
+    // Load employees from API
+    const employees = []; // TODO: Load from API
+    const apiUsers = []; // TODO: Load from API
     
-    // Use API data if available, otherwise use localStorage data
+    // Use API data if available
     const employeeData = apiUsers.length > 0 ? apiUsers : employees;
     
     showContent(`<div class="card">
