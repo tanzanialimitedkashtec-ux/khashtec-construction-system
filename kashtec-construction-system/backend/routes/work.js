@@ -34,7 +34,28 @@ router.get('/test-db', async (req, res) => {
 // Get all work items for a specific department
 router.get('/:department', async (req, res) => {
     try {
-        const { department } = req.params;
+        let department = req.params.department;
+        
+        // Fix department detection for GET requests too
+        if (department === 'work') {
+            const originalUrl = req.originalUrl || req.url;
+            console.log('🔍 Original URL (GET):', originalUrl);
+            
+            if (originalUrl.includes('/api/hse/')) {
+                department = 'hse';
+            } else if (originalUrl.includes('/api/hr/')) {
+                department = 'hr';
+            } else if (originalUrl.includes('/api/finance/')) {
+                department = 'finance';
+            } else if (originalUrl.includes('/api/project/')) {
+                department = 'projects';
+            } else if (originalUrl.includes('/api/realestate/')) {
+                department = 'realestate';
+            } else if (originalUrl.includes('/api/admin/')) {
+                department = 'admin';
+            }
+        }
+        
         console.log(`📋 Fetching ${department} work items`);
         const [workItems] = await db.execute(
             `SELECT * FROM ${department}_work ORDER BY submitted_date DESC`
@@ -42,8 +63,8 @@ router.get('/:department', async (req, res) => {
         console.log(`📊 Found ${workItems.length} ${department} work items`);
         res.json(workItems);
     } catch (error) {
-        console.error(`Error fetching ${department} work items:`, error);
-        res.status(500).json({ error: `Failed to fetch ${department} work items` });
+        console.error(`Error fetching work items:`, error);
+        res.status(500).json({ error: `Failed to fetch work items` });
     }
 });
 
@@ -57,7 +78,32 @@ router.post('/:department', async (req, res) => {
         console.log('📂 Department parameter:', req.params.department);
         console.log('📊 Request body:', req.body);
         
-        const { department } = req.params;
+        // Fix department detection
+        let department = req.params.department;
+        
+        // If department is "work", we need to determine the actual department from the route
+        if (department === 'work') {
+            // Check the original URL to determine the actual department
+            const originalUrl = req.originalUrl || req.url;
+            console.log('🔍 Original URL:', originalUrl);
+            
+            if (originalUrl.includes('/api/hse/')) {
+                department = 'hse';
+            } else if (originalUrl.includes('/api/hr/')) {
+                department = 'hr';
+            } else if (originalUrl.includes('/api/finance/')) {
+                department = 'finance';
+            } else if (originalUrl.includes('/api/project/')) {
+                department = 'projects';
+            } else if (originalUrl.includes('/api/realestate/')) {
+                department = 'realestate';
+            } else if (originalUrl.includes('/api/admin/')) {
+                department = 'admin';
+            }
+        }
+        
+        console.log('✅ Determined department:', department);
+        
         const {
             work_type,
             work_title,
