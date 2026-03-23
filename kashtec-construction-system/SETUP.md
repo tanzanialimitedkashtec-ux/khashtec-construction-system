@@ -81,7 +81,7 @@ The system uses the following main tables:
 
 ## Frontend Integration
 
-Update the frontend JavaScript modules to use these API endpoints instead of localStorage:
+Update the frontend JavaScript modules to use these API endpoints instead of browser storage:
 
 ```javascript
 // Example API call
@@ -93,7 +93,7 @@ async function createEmployee(employeeData) {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization': `Bearer ${localStorage.getItem('token')}`
+                'Authorization': `Bearer ${sessionStorage.getItem('kashtec_token')}`
             },
             body: JSON.stringify(employeeData)
         });

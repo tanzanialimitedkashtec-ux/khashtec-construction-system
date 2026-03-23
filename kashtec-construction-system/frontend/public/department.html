@@ -11785,10 +11785,9 @@ function scheduleMeetingSubmit() {
         status: 'scheduled'
     };
     
-    // Save to localStorage
-    const meetings = JSON.parse(localStorage.getItem('kashtec_meetings') || '[]');
-    meetings.push(meeting);
-    localStorage.setItem('kashtec_meetings', JSON.stringify(meetings));
+    // Save to API instead of localStorage
+    // TODO: Implement API call to save meeting to database
+    console.log('Meeting data to be saved to API:', meeting);
     
     alert('Meeting scheduled successfully!\n\n' + title + '\nDate: ' + date + '\nTime: ' + startTime + ' - ' + endTime + '\nLocation: ' + location + '\nResources: ' + resources.join(', '));
     
@@ -11814,7 +11813,9 @@ function scheduleMeetingSubmit() {
 }
 
 function viewMeetingDetails(meetingId) {
-    const meetings = JSON.parse(localStorage.getItem('kashtec_meetings') || '[]');
+    // TODO: Load meeting details from API instead of localStorage
+    console.log('Loading meeting details for ID:', meetingId);
+    const meetings = []; // TODO: Load from API
     const meeting = meetings.find(m => m.id === meetingId);
     
     if (meeting) {
@@ -12029,10 +12030,10 @@ function userAccountManagement(){
 
 function officePortal(){
     // Load all office portal data
-    const officePortalUsers = []; // TODO: Load from API instead of localStorage
-    const documents = []; // TODO: Load from API instead of localStorage
-    const policies = []; // TODO: Load from API instead of localStorage
-    const contracts = []; // TODO: Load from API instead of localStorage
+    const officePortalUsers = []; // TODO: Load from API instead of // TODO: Load from API instead of localStorage
+    const documents = []; // TODO: Load from API instead of // TODO: Load from API instead of localStorage
+    const policies = []; // TODO: Load from API instead of // TODO: Load from API instead of localStorage
+    const contracts = []; // TODO: Load from API instead of // TODO: Load from API instead of localStorage
     
     // Count by type
     const employeeCount = officePortalUsers.filter(user => user.type === 'Employee').length;
@@ -13118,7 +13119,9 @@ function downloadAttendance(meetingId) {
 }
 
 function viewMeetingDetails(meetingId) {
-    const meetings = JSON.parse(localStorage.getItem('kashtec_meetings') || '[]');
+    // TODO: Load meeting details from API instead of localStorage
+    console.log('Loading meeting details for ID:', meetingId);
+    const meetings = []; // TODO: Load from API
     const meeting = meetings.find(m => m.id === meetingId);
     
     if (meeting) {

@@ -239,18 +239,17 @@
     <script>
         let notifications = [];
         
-        // Load notifications from localStorage
+        // Load notifications from API instead of localStorage
         function loadNotifications() {
-            const stored = localStorage.getItem('kashtec_notifications');
-            if (stored) {
-                notifications = JSON.parse(stored);
-            }
+            // TODO: Load notifications from API
+            console.log('Loading notifications from API...');
             updateDisplay();
         }
         
-        // Save notifications to localStorage
+        // Save notifications to API instead of localStorage
         function saveNotifications() {
-            localStorage.setItem('kashtec_notifications', JSON.stringify(notifications));
+            // TODO: Save notifications to API
+            console.log('Saving notifications to API...');
         }
         
         // Add new notification

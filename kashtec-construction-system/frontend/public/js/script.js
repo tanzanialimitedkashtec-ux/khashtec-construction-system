@@ -1770,8 +1770,9 @@ function getNotificationIcon(type) {
 document.addEventListener('DOMContentLoaded', function() {
     console.log('🔍 DOM Content Loaded, initializing event listeners...');
     
-    var currentUser = localStorage.getItem('kashtec_current_user');
-    var rememberEmail = localStorage.getItem('kashtec_remember_email');
+    // TODO: Load user data from API instead of localStorage
+    var currentUser = sessionStorage.getItem('kashtec_user') || null;
+    var rememberEmail = sessionStorage.getItem('kashtec_remember_email') || null;
     
     // Add event listeners to replace inline handlers
     var loginBtn = document.getElementById("loginBtn");
