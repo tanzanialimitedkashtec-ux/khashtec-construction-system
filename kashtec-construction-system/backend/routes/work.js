@@ -114,7 +114,7 @@ router.post('/:department', async (req, res) => {
             submitted_by,
             // Department-specific fields
             amount, // Finance
-            incident_type, severity, // HSE
+            incident_type, severity, location, // HSE
             project_name, client_name, // Project
             property_name, property_type, // Real Estate
             affected_systems, // Admin
