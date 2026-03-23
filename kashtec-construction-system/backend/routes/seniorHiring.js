@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const db = require('../../database/config/database');
+const db = require('../../../database/config/database');
 
 // Get all senior hiring requests
 router.get('/', async (req, res) => {

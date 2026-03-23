@@ -389,7 +389,7 @@ app.post('/api/test', (req, res) => {
 // Database health check
 app.get('/api/db-health', async (req, res) => {
     try {
-        const db = require('./backend/src/config/database');
+        const db = require('./database/config/database');
         
         // Simple database connection test
         const [result] = await db.execute('SELECT 1 as test');
