@@ -7,30 +7,30 @@ const db = require('../../database/config/database');
 // Get all policies
 router.get('/', async (req, res) => {
     try {
-        console.log('🔍 Fetching all policies...');
-        const [policies] = await db.execute('SELECT * FROM policies ORDER BY submission_date DESC');
-        console.log('📋 Policies found:', policies.length);
-        res.json(policies);
+        console.log('🔍 Fetching all HSE work records...');
+        const [hseWork] = await db.execute('SELECT * FROM policies ORDER BY submitted_date DESC');
+        console.log('📋 HSE Work records found:', hseWork.length);
+        res.json(hseWork);
     } catch (error) {
-        console.error('❌ Error fetching policies:', error);
-        res.status(500).json({ error: 'Failed to fetch policies' });
+        console.error('❌ Error fetching HSE work:', error);
+        res.status(500).json({ error: 'Failed to fetch HSE work records' });
     }
 });
 
-// Get policy by ID
+// Get HSE work record by ID
 router.get('/:id', async (req, res) => {
     try {
-        console.log('🔍 Fetching policy:', req.params.id);
-        const [policies] = await db.execute('SELECT * FROM policies WHERE id = ?', [req.params.id]);
+        console.log('🔍 Fetching HSE work record:', req.params.id);
+        const [hseWork] = await db.execute('SELECT * FROM policies WHERE id = ?', [req.params.id]);
         
-        if (policies.length === 0) {
-                return res.status(404).json({ error: 'Policy not found' });
+        if (hseWork.length === 0) {
+                return res.status(404).json({ error: 'HSE work record not found' });
         }
         
-        res.json(policies[0]);
+        res.json(hseWork[0]);
     } catch (error) {
-        console.error('❌ Error fetching policy:', error);
-        res.status(500).json({ error: 'Failed to fetch policy' });
+        console.error('❌ Error fetching HSE work record:', error);
+        res.status(500).json({ error: 'Failed to fetch HSE work record' });
     }
 });
 
@@ -346,14 +346,12 @@ router.get('/departments/all', async (req, res) => {
             admin: await getDepartmentWork('admin_work', 'ADMIN')
         };
         
-        // Get policies, senior hiring, and workforce budgets
-        const [policies] = await db.execute('SELECT * FROM policies ORDER BY submission_date DESC');
+        // Get senior hiring and workforce budgets
         const [seniorHiring] = await db.execute('SELECT * FROM senior_hiring_requests ORDER BY request_date DESC');
         const [workforceBudgets] = await db.execute('SELECT * FROM workforce_budgets ORDER BY submission_date DESC');
         
         res.json({
             departments,
-            policies,
             seniorHiring,
             workforceBudgets,
             timestamp: new Date().toISOString()
@@ -781,7 +779,7 @@ router.put('/work/:tableName/:id/status', async (req, res) => {
         const { status, assigned_to, completion_date } = req.body;
         
         // Validate table name
-        const validTables = ['hr_work', 'finance_work', 'hse_work', 'project_work', 'realestate_work', 'admin_work'];
+        const validTables = ['hr_work', 'finance_work', 'policies', 'project_work', 'realestate_work', 'admin_work'];
         if (!validTables.includes(tableName)) {
             return res.status(400).json({ error: 'Invalid table name' });
         }
@@ -820,7 +818,6 @@ router.get('/stats', async (req, res) => {
             project: await getDepartmentStats('project_work'),
             realestate: await getDepartmentStats('realestate_work'),
             admin: await getDepartmentStats('admin_work'),
-            policies: await getPolicyStats(),
             seniorHiring: await getSeniorHiringStats(),
             workforceBudgets: await getWorkforceBudgetStats()
         };
