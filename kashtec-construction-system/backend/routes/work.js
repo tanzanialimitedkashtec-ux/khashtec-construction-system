@@ -290,6 +290,20 @@ router.post('/:department', async (req, res) => {
         console.log('📊 Query values:', values);
         
         // Execute the query
+        console.log('🔍 Preparing to execute query...');
+        console.log('🔍 Query type:', typeof query);
+        console.log('🔍 Values type:', typeof values);
+        console.log('🔍 Values isArray:', Array.isArray(values));
+        console.log('🔍 Values length:', values ? values.length : 'undefined');
+        
+        if (!query || typeof query !== 'string') {
+            throw new Error('Invalid query: query is not a string');
+        }
+        
+        if (!Array.isArray(values)) {
+            throw new Error('Invalid values: values is not an array');
+        }
+        
         const [result] = await db.execute(query, values);
         console.log('✅ Work item created successfully:', result);
         
