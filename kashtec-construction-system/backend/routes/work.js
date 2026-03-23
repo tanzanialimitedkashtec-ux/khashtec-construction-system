@@ -71,7 +71,7 @@ router.post('/:department', async (req, res) => {
             affected_department, deadline // Admin
         } = req.body;
         
-        console.log('📝 Extracted data:', { work_type, work_title, work_description, priority, incident_type, severity });
+        console.log('📝 Extracted data:', { work_type, work_title, work_description, priority, incident_type, severity, project_name, client_name });
         
         // Validate required fields
         if (!work_type || !work_title || !work_description) {
@@ -82,19 +82,22 @@ router.post('/:department', async (req, res) => {
             });
         }
         
-        // Build the INSERT query dynamically based on department
-        let query = '';
+        console.log('✅ Validation passed, building query for department:', department);
+        
+        // Build dynamic query based on department
+        let query;
         let values = [];
-        let fields = [];
         
-        // Common fields for all departments
-        fields.push('department_code', 'work_type', 'work_title', 'work_description', 'priority', 'submitted_by', 'submitted_date');
-        values.push(department.toUpperCase(), work_type, work_title, work_description, priority, 'System', new Date());
+        // Common fields
+        const fields = ['work_type', 'work_title', 'work_description', 'priority', 'due_date', 'assigned_to', 'submitted_by'];
+        values = [work_type, work_title, work_description, priority, due_date, assigned_to, req.body.submitted_by || 'System'];
         
-        // Add department-specific fields
-        if (department === 'finance' && amount !== undefined) {
-            fields.push('amount');
-            values.push(amount);
+        // Department-specific fields
+        if (department === 'finance') {
+            if (amount) {
+                fields.push('amount');
+                values.push(amount);
+            }
         }
         
         if (department === 'hse') {
@@ -108,7 +111,7 @@ router.post('/:department', async (req, res) => {
             }
         }
         
-        if (department === 'project') {
+        if (department === 'projects' || department === 'project') {
             if (project_name) {
                 fields.push('project_name');
                 values.push(project_name);
@@ -177,11 +180,17 @@ router.post('/:department', async (req, res) => {
         
         res.status(201).json({
             message: `${department} work item created successfully`,
-            workItem: newWorkItem[0]
+            workItem: newWorkItem[0],
+            id: result.insertId
         });
         
     } catch (error) {
         console.error('❌ Error creating work item:', error);
+        console.error('❌ Error details:', {
+            message: error.message,
+            stack: error.stack,
+            code: error.code
+        });
         res.status(500).json({ 
             error: 'Failed to create work item',
             details: error.message 

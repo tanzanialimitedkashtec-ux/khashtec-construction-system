@@ -10397,7 +10397,7 @@ function uploadDocument() {
     customAlert('Uploading document...', "Processing", "info");
     
     // Send data to backend API
-    fetch('/api/documents', {
+    fetch('/api/documents/json', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',

@@ -3,6 +3,7 @@ const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
 const router = express.Router();
+const db = require('../src/config/database');
 
 // Configure multer for file uploads
 const storage = multer.diskStorage({
@@ -120,6 +121,57 @@ router.get('/:id', (req, res) => {
     }
     
     res.json(document);
+});
+
+// Upload new document (JSON-based for frontend compatibility)
+router.post('/json', async (req, res) => {
+    console.log('🔍 Document JSON upload request received');
+    console.log('📋 Request body:', req.body);
+    
+    try {
+        const { work_type, work_title, work_description, priority, due_date, assigned_to, submitted_by } = req.body;
+        
+        // Validate input
+        if (!work_type || !work_title || !work_description) {
+            console.log('❌ Validation failed - missing required fields');
+            return res.status(400).json({
+                error: 'Work type, title, and description are required'
+            });
+        }
+        
+        console.log('✅ Creating document record...');
+        
+        // Insert document record into database
+        const [result] = await db.execute(
+            `INSERT INTO documents (work_type, work_title, work_description, priority, due_date, assigned_to, submitted_by, created_date, status)
+             VALUES (?, ?, ?, ?, ?, ?, ?, CURDATE(), 'pending')`,
+            [work_type, work_title, work_description, priority, due_date, assigned_to, submitted_by]
+        );
+        
+        console.log('✅ Document record created successfully:', result);
+        console.log('🆔 New document ID:', result.insertId);
+        
+        // Return the created document
+        const [newDocument] = await db.execute(
+            'SELECT * FROM documents WHERE id = ?',
+            [result.insertId]
+        );
+        
+        console.log('📋 Retrieved new document:', newDocument[0]);
+        
+        res.status(201).json({
+            message: 'Document uploaded successfully',
+            document: newDocument[0],
+            id: result.insertId
+        });
+        
+    } catch (error) {
+        console.error('❌ Error uploading document:', error);
+        res.status(500).json({ 
+            error: 'Failed to upload document',
+            details: error.message 
+        });
+    }
 });
 
 // Upload new document
