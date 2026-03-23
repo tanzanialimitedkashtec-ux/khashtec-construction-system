@@ -15,28 +15,52 @@ router.get('/', async (req, res) => {
 
 // Create new employee
 router.post('/', async (req, res) => {
+    console.log('🔍 Employee registration request received');
+    console.log('📋 Request body:', req.body);
+    console.log('📋 Request headers:', req.headers);
+    console.log('🌐 Request URL:', req.url);
+    console.log('📝 Request method:', req.method);
+    
     const { fullName, gmail, phone, department, jobCategory, status = 'active', nida, passport, contract } = req.body;
+    
+    console.log('📝 Extracted employee data:', { fullName, gmail, phone, department, jobCategory, status, nida, passport, contract });
     
     // Validate input
     if (!fullName || !gmail || !phone || !department || !jobCategory || !nida || !contract) {
+        console.log('❌ Validation failed - missing required fields');
+        console.log('📝 Missing fields:', {
+            fullName: !fullName,
+            gmail: !gmail,
+            phone: !phone,
+            department: !department,
+            jobCategory: !jobCategory,
+            nida: !nida,
+            contract: !contract
+        });
         return res.status(400).json({
-            error: 'All required fields must be provided'
+            error: 'All required fields must be provided',
+            received: { fullName, gmail, phone, department, jobCategory, nida, contract }
         });
     }
     
     try {
+        console.log('🔍 Checking if employee already exists...');
         // Check if employee already exists
         const [existingEmployees] = await db.execute(
             'SELECT id FROM employees WHERE gmail = ? OR nida = ?',
             [gmail, nida]
         );
         
+        console.log('📊 Existing employees check result:', existingEmployees);
+        
         if (existingEmployees.length > 0) {
+            console.log('❌ Employee already exists');
             return res.status(409).json({
                 error: 'Employee with this email or NIDA number already exists'
             });
         }
         
+        console.log('✅ Creating new employee...');
         // Create new employee
         const [result] = await db.execute(
             `INSERT INTO employees (full_name, gmail, phone, department, job_category, status, nida, passport, contract_type, registration_date, profile_image)
@@ -49,17 +73,22 @@ router.post('/', async (req, res) => {
                 jobCategory,
                 status,
                 nida,
-                passport || null,
+                passport || '',
                 contract,
-                `https://picsum.photos/seed/${fullName.replace(/\s/g, '')}/80/80.jpg`
+                ''
             ]
         );
+        
+        console.log('✅ Employee created successfully:', result);
+        console.log('🆔 New employee ID:', result.insertId);
         
         // Return the created employee
         const [newEmployee] = await db.execute(
             'SELECT * FROM employees WHERE id = ?',
             [result.insertId]
         );
+        
+        console.log('📋 Retrieved new employee:', newEmployee[0]);
         
         res.status(201).json({
             message: 'Employee created successfully',
@@ -68,7 +97,12 @@ router.post('/', async (req, res) => {
         });
         
     } catch (error) {
-        console.error('Error creating employee:', error);
+        console.error('❌ Error creating employee:', error);
+        console.error('❌ Error details:', {
+            message: error.message,
+            stack: error.stack,
+            code: error.code
+        });
         res.status(500).json({ 
             error: 'Failed to create employee',
             details: error.message 
