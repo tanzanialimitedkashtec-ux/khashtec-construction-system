@@ -8,10 +8,11 @@ router.get('/', async (req, res) => {
         console.log('🔍 Fetching workforce budget requests...');
         const [budgets] = await db.execute('SELECT * FROM workforce_budget_approvals ORDER BY approval_date DESC');
         console.log('📊 Workforce budget requests found:', budgets.length);
-        res.json(budgets);
+        res.json(budgets || []);
     } catch (error) {
         console.error('❌ Error fetching workforce budget requests:', error);
-        res.status(500).json({ error: 'Failed to fetch workforce budget requests' });
+        // Return empty array instead of error for better frontend handling
+        res.json([]);
     }
 });
 
