@@ -35,36 +35,88 @@ router.get('/:id', async (req, res) => {
 // Approve policy
 router.post('/:id/approve', async (req, res) => {
     try {
+        console.log('🔍 Policy approval request received');
+        console.log('📋 Request headers:', req.headers);
+        console.log('📝 Request body:', req.body);
+        console.log('📂 Policy ID parameter:', req.params.id);
+        
         const { approvedBy } = req.body;
         const policyId = req.params.id;
         
         console.log('✅ Approving policy:', policyId, 'by:', approvedBy);
         
+        // Validate input
+        if (!policyId || !approvedBy) {
+            console.log('❌ Validation failed - missing policy ID or approvedBy');
+            return res.status(400).json({ 
+                error: 'Missing policy ID or approvedBy field',
+                received: { policyId, approvedBy }
+            });
+        }
+        
+        // Check if policy exists and is pending
+        const [existingPolicies] = await db.execute('SELECT * FROM policies WHERE id = ?', [policyId]);
+        
+        if (existingPolicies.length === 0) {
+            console.log('❌ Policy not found:', policyId);
+            return res.status(404).json({ 
+                error: 'Policy not found',
+                policyId: policyId
+            });
+        }
+        
+        const policy = existingPolicies[0];
+        console.log('📋 Current policy status:', policy.status);
+        
+        if (policy.status !== 'Pending') {
+            console.log('❌ Policy already processed:', policy.status);
+            return res.status(400).json({ 
+                error: 'Policy is not in pending status',
+                currentStatus: policy.status,
+                policyId: policyId
+            });
+        }
+        
+        console.log('✅ Validation passed, updating policy status...');
+        
         // Update policy status
-        await db.execute(
-                'UPDATE policies SET status = ?, approved_by = ?, approved_date = CURDATE() WHERE id = ?',
-                ['Approved', approvedBy, policyId]
+        const [result] = await db.execute(
+            'UPDATE policies SET status = ?, approved_by = ?, approved_date = CURDATE() WHERE id = ?',
+            ['Approved', approvedBy, policyId]
         );
         
-        // Get policy details for notification
-        const [policies] = await db.execute('SELECT * FROM policies WHERE id = ?', [policyId]);
-        const policy = policies[0];
+        console.log('✅ Database update result:', result);
+        console.log('📊 Rows affected:', result.affectedRows);
+        
+        // Get updated policy details for response
+        const [updatedPolicies] = await db.execute('SELECT * FROM policies WHERE id = ?', [policyId]);
+        const updatedPolicy = updatedPolicies[0];
+        
+        console.log('📋 Updated policy details:', updatedPolicy);
         
         // Send notification to submitting department
         console.log('📧 Sending approval notification to:', policy.submitted_by);
         
         res.json({ 
-                message: 'Policy approved successfully',
-                policy: {
-                        ...policy,
-                        status: 'Approved',
-                        approved_by: approvedBy,
-                        approved_date: new Date().toISOString().split('T')[0]
-                }
+            message: 'Policy approved successfully',
+            id: updatedPolicy.id,
+            policy: {
+                ...updatedPolicy,
+                status: 'Approved',
+                approved_by: approvedBy,
+                approved_date: new Date().toISOString().split('T')[0]
+            }
         });
+        
+        console.log('✅ Policy approval completed successfully!');
+        
     } catch (error) {
         console.error('❌ Error approving policy:', error);
-        res.status(500).json({ error: 'Failed to approve policy' });
+        console.error('❌ Error stack:', error.stack);
+        res.status(500).json({ 
+            error: 'Failed to approve policy',
+            details: error.message 
+        });
     }
 });
 

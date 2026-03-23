@@ -2628,39 +2628,97 @@ function approvePolicy(policyId) {
     const confirmApproval = confirm(`Are you sure you want to approve this recruitment policy?\n\nPolicy ID: ${policyId}\n\nOnce approved, this policy will be implemented by the HR department.`);
     
     if (confirmApproval) {
-        // Find the policy button and update it
-        const button = document.querySelector(`button[onclick="approvePolicy('${policyId}')"]`);
-        if (button) {
-            button.innerText = 'Approved';
-            button.style.background = '#28a745';
-            button.style.opacity = '0.5';
-            button.disabled = true;
-        }
+        // Show loading notification
+        showRealProblemNotification('SAVING', {
+            message: `Approving policy ${policyId}...`,
+            policyId: policyId
+        });
         
-        // Log the approval in memory (localStorage removed)
-        console.log('📝 Policy approved:', policyId, 'by MD');
-        // TODO: Send approval to API instead of localStorage
-        
-        // Integration: Track policy change
-        if (typeof integrationSystem !== 'undefined') {
-            trackPolicyChange(policyId, 'approved', `Policy approved by ${integrationSystem.currentRole}`);
+        // Send approval to backend API
+        fetch(`/api/policies/${policyId}/approve`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            },
+            body: JSON.stringify({
+                approvedBy: 'Managing Director'
+            })
+        })
+        .then(response => {
+            console.log('📡 Policy Approval API Response status:', response.status);
+            return response.json();
+        })
+        .then(data => {
+            console.log('📊 Policy Approval API Response data:', data);
             
-            // Notify relevant departments
-            sendDepartmentMessage('Human Resources', `Policy ${policyId} has been approved`, 'normal');
-            sendDepartmentMessage('Management', `Policy ${policyId} approved - ready for implementation`, 'normal');
+            if (data.error) {
+                throw new Error(data.error);
+            }
             
-            // Update role status
-            updateRoleStatus('active', 'Approved policy');
+            // Find the policy button and update it
+            const button = document.querySelector(`button[onclick="approvePolicy('${policyId}')"]`);
+            if (button) {
+                button.innerText = 'Approved';
+                button.style.background = '#28a745';
+                button.style.opacity = '0.5';
+                button.disabled = true;
+            }
             
-            // Show success notification
-            integrationSystem.showNotification('Policy Approved Successfully!', `Policy ${policyId} has been approved and is now active. HR department has been notified to implement this policy.`, 'success');
-        } else {
-            // Fallback notification
-            alert('Policy Approved Successfully!\n\nPolicy ' + policyId + ' has been approved and is now active. HR department has been notified to implement this policy.');
-        }
-        
-        // Log the action
-        console.log('Policy approved:', policyId);
+            // Show detailed success notification
+            showRealProblemNotification('SUCCESS', {
+                message: `✅ Policy approved successfully!\n\n📋 Details:\n• Policy ID: ${policyId}\n• Approved by: Managing Director\n• Status: Approved\n• Database ID: ${data.id || policyId}\n\n🎉 Policy saved to database without page refresh!`,
+                policyId: policyId,
+                approvedBy: 'Managing Director',
+                timestamp: new Date().toLocaleString()
+            });
+            
+            // Integration: Track policy change
+            if (typeof integrationSystem !== 'undefined') {
+                trackPolicyChange(policyId, 'approved', `Policy approved by ${integrationSystem.currentRole}`);
+                
+                // Notify relevant departments
+                sendDepartmentMessage('Human Resources', `Policy ${policyId} has been approved`, 'normal');
+                sendDepartmentMessage('Management', `Policy ${policyId} approved - ready for implementation`, 'normal');
+                
+                // Update role status
+                updateRoleStatus('active', 'Approved policy');
+            }
+        })
+        .catch(error => {
+            console.error('❌ Error approving policy:', error);
+            
+            // Determine specific error cause
+            let errorCause = 'Unknown error occurred';
+            let troubleshooting = '';
+            
+            if (error.message.includes('NetworkError') || error.message.includes('fetch')) {
+                errorCause = 'Network connection failed';
+                troubleshooting = '• Check internet connection\n• Verify server is running\n• Try again in a moment';
+            } else if (error.message.includes('400')) {
+                errorCause = 'Invalid approval data';
+                troubleshooting = '• Policy ID is valid\n• Approver information is correct\n• Check request format';
+            } else if (error.message.includes('404')) {
+                errorCause = 'Policy not found';
+                troubleshooting = '• Policy ID may not exist\n• Check policy list\n• Verify policy is still pending';
+            } else if (error.message.includes('500')) {
+                errorCause = 'Server internal error';
+                troubleshooting = '• Database connection issue\n• Server configuration problem\n• Contact system administrator';
+            } else if (error.message.includes('database') || error.message.includes('SQL')) {
+                errorCause = 'Database operation failed';
+                troubleshooting = '• Database connection issue\n• Policies table might not exist\n• Contact system administrator';
+            }
+            
+            // Show detailed error notification
+            showRealProblemNotification('SYSTEM_ERROR', {
+                error: error.message,
+                cause: errorCause,
+                troubleshooting: troubleshooting,
+                message: `❌ Policy approval failed!\n\n🔍 Error Cause: ${errorCause}\n\n🛠️ Troubleshooting:\n${troubleshooting}\n\n📝 Technical Details:\n${error.message}\n\n💡 Please fix the issue and try again.`,
+                policyId: policyId,
+                timestamp: new Date().toLocaleString()
+            });
+        });
     }
 }
 
