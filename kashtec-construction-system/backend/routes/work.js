@@ -197,8 +197,16 @@ router.post('/:department', async (req, res) => {
         }
         
         // Combine all fields and values
+        console.log('🔍 baseFields:', baseFields);
+        console.log('🔍 additionalFields:', additionalFields);
+        console.log('🔍 baseValues:', baseValues);
+        console.log('🔍 additionalValues:', additionalValues);
+        
         const allFields = baseFields.concat(additionalFields);
         const allValues = baseValues.concat(additionalValues);
+        
+        console.log('🔍 allFields:', allFields);
+        console.log('🔍 allValues:', allValues);
         
         // Build INSERT query
         query = `
