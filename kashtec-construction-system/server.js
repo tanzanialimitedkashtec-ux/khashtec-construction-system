@@ -314,6 +314,30 @@ app.use('/api/policies', asyncHandler(async (req, res, next) => {
     return policyRoutes(req, res, next);
 }));
 
+app.use('/api/hr', asyncHandler(async (req, res, next) => {
+    return policyRoutes(req, res, next);
+}));
+
+app.use('/api/finance', asyncHandler(async (req, res, next) => {
+    return policyRoutes(req, res, next);
+}));
+
+app.use('/api/hse', asyncHandler(async (req, res, next) => {
+    return policyRoutes(req, res, next);
+}));
+
+app.use('/api/project', asyncHandler(async (req, res, next) => {
+    return policyRoutes(req, res, next);
+}));
+
+app.use('/api/realestate', asyncHandler(async (req, res, next) => {
+    return policyRoutes(req, res, next);
+}));
+
+app.use('/api/admin', asyncHandler(async (req, res, next) => {
+    return policyRoutes(req, res, next);
+}));
+
 app.use('/api/senior-hiring', asyncHandler(async (req, res, next) => {
     return seniorHiringRoutes(req, res, next);
 }));
@@ -351,12 +375,13 @@ app.get('/api/test', (req, res) => {
     });
 });
 
-// Simple POST test endpoint
+// Test POST endpoint
 app.post('/api/test', (req, res) => {
     res.status(200).json({
         message: 'API POST test endpoint working',
         timestamp: new Date().toISOString(),
-        receivedData: req.body,
+        method: req.method,
+        body: req.body,
         headers: req.headers
     });
 });

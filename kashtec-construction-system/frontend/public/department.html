@@ -4860,11 +4860,37 @@ async function testAPIConnection() {
     console.log('🔍 Testing API Connection...');
     
     try {
-        // Test 1: Get all department data
+        // Test 1: Basic API connectivity
+        console.log('📡 Testing basic API connectivity...');
+        const healthResponse = await fetch(`${window.location.origin}/api/health`);
+        const healthData = await healthResponse.json();
+        console.log('✅ API Health Check:', healthData);
+        
+        // Test 2: Test endpoint
+        console.log('📡 Testing test endpoint...');
+        const testResponse = await fetch(`${window.location.origin}/api/test`);
+        const testData = await testResponse.json();
+        console.log('✅ Test Endpoint:', testData);
+        
+        // Test 3: Test POST endpoint
+        console.log('📡 Testing POST endpoint...');
+        const postResponse = await fetch(`${window.location.origin}/api/test`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ test: 'data', timestamp: new Date().toISOString() })
+        });
+        const postData = await postResponse.json();
+        console.log('✅ POST Test Endpoint:', postData);
+        
+        // Test 4: Get all department data
+        console.log('📡 Testing department data endpoint...');
         const allData = await KashTecAPI.getAllDepartmentData();
         console.log('✅ All department data:', allData);
         
-        // Test 2: Create a test HR work record
+        // Test 5: Create a test HR work record
+        console.log('📡 Testing HR work creation...');
         const testResult = await KashTecAPI.createHRWork({
             work_type: 'API Test',
             work_title: 'Test API Connection',
@@ -4878,11 +4904,11 @@ async function testAPIConnection() {
         });
         console.log('✅ Test HR work created:', testResult);
         
-        customAlert('API connection test successful! Data is being sent to the backend.', 'Success', 'success');
+        customAlert('✅ API connection test successful! All endpoints are working and data is being sent to the backend.', 'Success', 'success');
         
     } catch (error) {
         console.error('❌ API connection test failed:', error);
-        customAlert(`API connection failed: ${error.message}`, 'Error', 'error');
+        customAlert(`❌ API connection failed: ${error.message}\n\nCheck browser console for more details.`, 'Error', 'error');
     }
 }
 
