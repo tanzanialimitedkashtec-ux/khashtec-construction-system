@@ -5912,23 +5912,25 @@ function saveEmployeeManual() {
         .then(data => {
             console.log('✅ Employees API is reachable:', data);
             
-            // Now send employee data to backend API
-            console.log('📤 Sending employee data to backend...');
-            return fetch('/api/employees', {
+            // Now send employee data to backend HR department API
+            console.log('📤 Sending employee data to HR department API...');
+            return fetch('/api/hr/hr', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                     'Accept': 'application/json'
                 },
                 body: JSON.stringify({
-                    fullName: fullName,
-                    gmail: email,
-                    phone: phone,
-                    department: department,
-                    jobCategory: jobCategory,
-                    nida: nida,
-                    passport: document.getElementById('empPassport')?.value || '',
-                    contract: contract
+                    work_type: 'Employee Registration',
+                    work_title: `Employee Registration - ${fullName}`,
+                    work_description: `Register new employee: ${fullName}\nEmail: ${gmail}\nPhone: ${phone}\nDepartment: ${department}\nJob Category: ${jobCategory}\nContract: ${contract}\nNIDA: ${nida}`,
+                    employee_name: fullName, // Required field
+                    employee_email: gmail, // Required field  
+                    project_name: 'General Staff', // Required field
+                    priority: 'Medium',
+                    due_date: new Date(Date.now() + 1 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], // 1 day from now
+                    assigned_to: 'HR Manager',
+                    submitted_by: 'HR Manager'
                 })
             });
         })
@@ -7561,6 +7563,8 @@ function saveIncidentReport() {
             work_description: incidentDescription,
             incident_type: incidentType,
             severity: severityLevel,
+            location: document.getElementById('incidentLocation')?.value || 'Construction Site', // Required field
+            project_name: document.getElementById('incidentProject')?.value || 'Building A', // Required field
             priority: severityLevel === 'critical' ? 'Critical' : 
                       severityLevel === 'major' ? 'High' : 'Medium',
             due_date: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], // 7 days from now
@@ -7573,8 +7577,8 @@ function saveIncidentReport() {
         // Show loading message
         customAlert('Recording incident report...', "Processing", "info");
         
-        // Send data to backend API (without authentication for testing)
-        fetch('/api/hse/work', {
+        // Send data to backend API
+        fetch('/api/hse/hse', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -9264,14 +9268,63 @@ function saveDepartmentBudget() {
         createdDate: new Date().toLocaleString()
     };
     
-    // Save to secure API storage
-    const budgets = [];
-    budgets.push(budget);
-    // TODO: Save to API
+    // Validate required fields
+    if (!budget.department || !budget.period || !budget.startDate || !budget.endDate || !budget.total) {
+        customAlert('Please fill in all required fields:\n\n• Department\n• Budget Period\n• Start Date\n• End Date\n• Total Budget Amount', "Validation Error", "error");
+        return false;
+    }
     
-    customAlert(`Budget created successfully!\n\nDepartment: ${budget.department}\nTotal Amount: TZS ${budget.total}\nPeriod: ${budget.period}`, "Budget Created", "success");
+    // Prepare work item for Finance department
+    const workItem = {
+        work_type: 'Budget Management',
+        work_title: `Budget - ${budget.department} (${budget.period})`,
+        work_description: `Budget Request:\n\nDepartment: ${budget.department}\nPeriod: ${budget.period}\nStart Date: ${budget.startDate}\nEnd Date: ${budget.endDate}\nTotal Amount: TZS ${budget.total}\n\nBreakdown:\n• Salaries: TZS ${budget.salaries}\n• Supplies: TZS ${budget.supplies}\n• Equipment: TZS ${budget.equipment}\n• Training: TZS ${budget.training}\n• Travel: TZS ${budget.travel}\n• Miscellaneous: TZS ${budget.misc}\n\nJustification: ${budget.justification}`,
+        amount: budget.total, // Required field
+        vendor_name: 'Internal Budget', // Required field
+        invoice_number: `BUD-${Date.now()}`, // Required field
+        priority: 'High',
+        due_date: budget.startDate,
+        assigned_to: 'Finance Manager',
+        submitted_by: 'Finance Manager'
+    };
     
-    document.getElementById('budgetForm').reset();
+    // Show loading message
+    customAlert('Creating budget...', "Processing", "info");
+    
+    // Send data to backend Finance API
+    fetch('/api/finance/finance', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+        },
+        body: JSON.stringify(workItem)
+    })
+    .then(response => {
+        console.log('📡 Budget API Response status:', response.status);
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+        return response.json();
+    })
+    .then(data => {
+        console.log('📊 Budget API Response data:', data);
+        
+        if (data.error) {
+            throw new Error(data.error);
+        }
+        
+        customAlert(`Budget created successfully!\n\nDepartment: ${budget.department}\nTotal Amount: TZS ${budget.total}\nPeriod: ${budget.period}\nBudget ID: ${data.id}\n\n🎉 Budget saved to database!`, "Budget Created", "success");
+        
+        document.getElementById('budgetForm').reset();
+        return false;
+    })
+    .catch(error => {
+        console.error('❌ Error creating budget:', error);
+        customAlert(`Error creating budget: ${error.message}`, "Error", "error");
+        return false;
+    });
+    
     return false;
 }
 
@@ -10234,19 +10287,20 @@ function saveNewProject() {
         work_type: 'Project Creation',
         work_title: `New Project - ${project.name}`,
         work_description: `New Project Created\n\nProject Name: ${project.name}\nProject Code: ${project.code}\nClient: ${project.client}\nType: ${project.type}\nStart Date: ${project.startDate}\nEnd Date: ${project.endDate}\nContract Value: TZS ${project.contractValue}\nManager: ${project.manager}\nDescription: ${project.description}\nDeliverables: ${project.deliverables}\nLocation: ${project.location}\nPriority: ${project.priority}\nStatus: ${project.status}\nCreated Date: ${project.createdDate}`,
+        project_name: project.name, // Required field
+        client_name: project.client, // Required field
+        project_phase: 'planning', // Required field
         priority: project.priority === 'critical' ? 'High' : project.priority === 'high' ? 'Medium' : 'Low',
         due_date: project.startDate,
         assigned_to: 'Project Manager',
-        submitted_by: 'Project Manager',
-        project_name: project.name,
-        client_name: project.client
+        submitted_by: 'Project Manager'
     };
     
     // Show loading message
     customAlert('Creating new project...', "Processing", "info");
     
     // Send data to backend API
-    fetch('/api/project/work', {
+    fetch('/api/project/project', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -11189,14 +11243,64 @@ function saveNewProperty() {
         addedDate: new Date().toLocaleString()
     };
     
-    // Save to secure API storage
-    const properties = [];
-    properties.push(property);
-    // TODO: Save to API
+    // Validate required fields
+    if (!property.plotNumber || !property.type || !property.location || !property.area || !property.price || !property.status) {
+        customAlert('Please fill in all required fields:\n\n• Plot Number\n• Property Type\n• Location\n• Area\n• Price\n• Status', "Validation Error", "error");
+        return false;
+    }
     
-    customAlert(`Property added successfully!\n\nPlot: ${property.plotNumber}\nLocation: ${property.location}\nPrice: TZS ${parseInt(property.price).toLocaleString()}\nStatus: ${property.status}`, "Property Added", "success");
+    // Prepare work item for Real Estate department
+    const workItem = {
+        work_type: 'Property Management',
+        work_title: `New Property - ${property.plotNumber}`,
+        work_description: `New Property Added\n\nPlot Number: ${property.plotNumber}\nProperty Type: ${property.type}\nLocation: ${property.location}\nArea: ${property.area} sqm\nPrice: TZS ${parseInt(property.price).toLocaleString()}\nStatus: ${property.status}\nTP Number: ${property.tpNumber}\nDescription: ${property.description}\nUtilities: ${property.utilities.join(', ')}\nZoning: ${property.zoning}\nAdded By: ${property.addedBy}\nAdded Date: ${property.addedDate}`,
+        property_name: property.plotNumber, // Required field
+        property_type: property.type, // Required field
+        client_name: 'Available for Sale', // Required field
+        sale_amount: property.price, // Required field
+        priority: 'Medium',
+        due_date: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], // 30 days from now
+        assigned_to: 'Real Estate Manager',
+        submitted_by: 'Real Estate Manager'
+    };
     
-    document.getElementById('propertyForm').reset();
+    // Show loading message
+    customAlert('Adding new property...', "Processing", "info");
+    
+    // Send data to backend Real Estate API
+    fetch('/api/realestate/realestate', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+        },
+        body: JSON.stringify(workItem)
+    })
+    .then(response => {
+        console.log('📡 Property API Response status:', response.status);
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+        return response.json();
+    })
+    .then(data => {
+        console.log('📊 Property API Response data:', data);
+        
+        if (data.error) {
+            throw new Error(data.error);
+        }
+        
+        customAlert(`Property added successfully!\n\nPlot: ${property.plotNumber}\nLocation: ${property.location}\nPrice: TZS ${parseInt(property.price).toLocaleString()}\nStatus: ${property.status}\nProperty ID: ${data.id}\n\n🎉 Property saved to database!`, "Property Added", "success");
+        
+        document.getElementById('propertyForm').reset();
+        return false;
+    })
+    .catch(error => {
+        console.error('❌ Error adding property:', error);
+        customAlert(`Error adding property: ${error.message}`, "Error", "error");
+        return false;
+    });
+    
     return false;
 }
 
