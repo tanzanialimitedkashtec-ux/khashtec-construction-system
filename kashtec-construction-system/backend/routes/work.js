@@ -304,19 +304,32 @@ router.post('/:department', async (req, res) => {
             throw new Error('Invalid values: values is not an array');
         }
         
-        const [result] = await db.execute(query, values);
-        console.log('✅ Work item created successfully:', result);
-        
-        // Return success response
-        res.status(201).json({
-            message: 'Work item created successfully',
-            id: result.insertId,
-            department,
-            work_type,
-            work_title,
-            status,
-            created_at: new Date().toISOString()
-        });
+        try {
+            const dbResult = await db.execute(query, values);
+            console.log('🔍 Database result type:', typeof dbResult);
+            console.log('🔍 Database result isArray:', Array.isArray(dbResult));
+            
+            if (!Array.isArray(dbResult) || dbResult.length === 0) {
+                throw new Error('Database query returned invalid result');
+            }
+            
+            const [result] = dbResult;
+            console.log('✅ Work item created successfully:', result);
+            
+            // Return success response
+            res.status(201).json({
+                message: 'Work item created successfully',
+                id: result.insertId,
+                department,
+                work_type,
+                work_title,
+                status,
+                created_at: new Date().toISOString()
+            });
+        } catch (dbError) {
+            console.error('❌ Database execution error:', dbError);
+            throw new Error(`Database query failed: ${dbError.message}`);
+        }
         
     } catch (error) {
         console.error('❌ Error creating work item:', error);
