@@ -256,11 +256,11 @@ router.post('/:department', async (req, res) => {
         console.log('🔍 baseValues:', baseValues);
         console.log('🔍 additionalValues:', additionalValues);
         
-        // Ensure arrays are properly initialized
+        // Ensure arrays are properly initialized and convert undefined to null
         const safeBaseFields = Array.isArray(baseFields) ? baseFields : [];
         const safeAdditionalFields = Array.isArray(additionalFields) ? additionalFields : [];
-        const safeBaseValues = Array.isArray(baseValues) ? baseValues : [];
-        const safeAdditionalValues = Array.isArray(additionalValues) ? additionalValues : [];
+        const safeBaseValues = Array.isArray(baseValues) ? baseValues.map(val => val === undefined ? null : val) : [];
+        const safeAdditionalValues = Array.isArray(additionalValues) ? additionalValues.map(val => val === undefined ? null : val) : [];
         
         const allFields = safeBaseFields.concat(safeAdditionalFields);
         const allValues = safeBaseValues.concat(safeAdditionalValues);
