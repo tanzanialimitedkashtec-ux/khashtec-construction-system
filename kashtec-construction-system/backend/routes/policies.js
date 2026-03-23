@@ -59,9 +59,18 @@ router.post('/:id/approve', async (req, res) => {
         }
         
         // Check if policy exists and is pending
-        const [existingPolicies] = await db.execute('SELECT * FROM hse_work WHERE id = ?', [policyId]);
+        let existingPolicies;
+        try {
+            [existingPolicies] = await db.execute('SELECT * FROM hse_work WHERE id = ?', [policyId]);
+        } catch (error) {
+            console.error('❌ Database error checking policy:', error);
+            return res.status(500).json({ 
+                error: 'Database error while checking policy',
+                details: error.message
+            });
+        }
         
-        if (existingPolicies.length === 0) {
+        if (!existingPolicies || existingPolicies.length === 0) {
             console.log('❌ Policy not found:', policyId);
             return res.status(404).json({ 
                 error: 'Policy not found',
@@ -84,16 +93,43 @@ router.post('/:id/approve', async (req, res) => {
         console.log('✅ Validation passed, updating policy status...');
         
         // Update policy status
-        const [result] = await db.execute(
-            'UPDATE hse_work SET status = ?, approved_by = ?, approved_date = CURDATE() WHERE id = ?',
-            ['Approved', approvedBy, policyId]
-        );
+        let result;
+        try {
+            [result] = await db.execute(
+                'UPDATE hse_work SET status = ?, approved_by = ?, approved_date = CURDATE() WHERE id = ?',
+                ['Approved', approvedBy, policyId]
+            );
+        } catch (error) {
+            console.error('❌ Database error updating policy:', error);
+            return res.status(500).json({ 
+                error: 'Database error while updating policy',
+                details: error.message
+            });
+        }
         
         console.log('✅ Database update result:', result);
         console.log('📊 Rows affected:', result.affectedRows);
         
         // Get updated policy details for response
-        const [updatedPolicies] = await db.execute('SELECT * FROM hse_work WHERE id = ?', [policyId]);
+        let updatedPolicies;
+        try {
+            [updatedPolicies] = await db.execute('SELECT * FROM hse_work WHERE id = ?', [policyId]);
+        } catch (error) {
+            console.error('❌ Database error fetching updated policy:', error);
+            return res.status(500).json({ 
+                error: 'Database error while fetching updated policy',
+                details: error.message
+            });
+        }
+        
+        if (!updatedPolicies || updatedPolicies.length === 0) {
+            console.error('❌ Updated policy not found after update:', policyId);
+            return res.status(500).json({ 
+                error: 'Updated policy not found after update',
+                policyId: policyId
+            });
+        }
+        
         const updatedPolicy = updatedPolicies[0];
         
         console.log('📋 Updated policy details:', updatedPolicy);
@@ -147,9 +183,18 @@ router.post('/:id/reject', async (req, res) => {
         }
         
         // Check if policy exists
-        const [existingPolicies] = await db.execute('SELECT * FROM hse_work WHERE id = ?', [policyId]);
+        let existingPolicies;
+        try {
+            [existingPolicies] = await db.execute('SELECT * FROM hse_work WHERE id = ?', [policyId]);
+        } catch (error) {
+            console.error('❌ Database error checking policy:', error);
+            return res.status(500).json({ 
+                error: 'Database error while checking policy',
+                details: error.message
+            });
+        }
         
-        if (existingPolicies.length === 0) {
+        if (!existingPolicies || existingPolicies.length === 0) {
             console.log('❌ Policy not found:', policyId);
             return res.status(404).json({ 
                 error: 'Policy not found',
@@ -163,25 +208,59 @@ router.post('/:id/reject', async (req, res) => {
         console.log('✅ Validation passed, rejecting policy...');
         
         // Update policy status
-        const [result] = await db.execute(
-            'UPDATE policies SET status = ?, rejection_reason = ?, approved_by = ? WHERE id = ?',
-            ['Rejected', rejectionReason, rejectedBy, policyId]
-        );
+        let result;
+        try {
+            [result] = await db.execute(
+                'UPDATE hse_work SET status = ?, rejection_reason = ?, approved_by = ? WHERE id = ?',
+                ['Rejected', rejectionReason, rejectedBy, policyId]
+            );
+        } catch (error) {
+            console.error('❌ Database error updating policy:', error);
+            return res.status(500).json({ 
+                error: 'Database error while updating policy',
+                details: error.message
+            });
+        }
         
         console.log('✅ Database update result:', result);
         console.log('📊 Rows affected:', result.affectedRows);
         
         // Add to rejection table
-        const [rejectionResult] = await db.execute(
-            'INSERT INTO policy_rejections (policy_id, rejection_reason, rejected_by, rejected_by_role) VALUES (?, ?, ?, ?)',
-            [policyId, rejectionReason, rejectedBy, 'Managing Director']
-        );
+        let rejectionResult;
+        try {
+            [rejectionResult] = await db.execute(
+                'INSERT INTO policy_rejections (policy_id, rejection_reason, rejected_by, rejected_by_role) VALUES (?, ?, ?, ?)',
+                [policyId, rejectionReason, rejectedBy, 'Managing Director']
+            );
+        } catch (error) {
+            console.error('❌ Database error adding to rejection table:', error);
+            // Don't fail the whole operation if rejection table insert fails
+            console.warn('⚠️ Policy was rejected but rejection record failed to save');
+        }
         
         console.log('✅ Rejection record created:', rejectionResult);
         console.log('📋 Rejection ID:', rejectionResult.insertId);
         
         // Get updated policy details for response
-        const [updatedPolicies] = await db.execute('SELECT * FROM hse_work WHERE id = ?', [policyId]);
+        let updatedPolicies;
+        try {
+            [updatedPolicies] = await db.execute('SELECT * FROM hse_work WHERE id = ?', [policyId]);
+        } catch (error) {
+            console.error('❌ Database error fetching updated policy:', error);
+            return res.status(500).json({ 
+                error: 'Database error while fetching updated policy',
+                details: error.message
+            });
+        }
+        
+        if (!updatedPolicies || updatedPolicies.length === 0) {
+            console.error('❌ Updated policy not found after update:', policyId);
+            return res.status(500).json({ 
+                error: 'Updated policy not found after update',
+                policyId: policyId
+            });
+        }
+        
         const updatedPolicy = updatedPolicies[0];
         
         console.log('📋 Updated policy details:', updatedPolicy);
