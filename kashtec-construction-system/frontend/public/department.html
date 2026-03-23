@@ -3906,7 +3906,7 @@ function saveEmploymentAction() {
     customAlert('Processing employment action...', "Processing", "info");
     
     // Send data to backend API
-    fetch('/api/work/hr', {
+    fetch('/api/hr/work', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -4397,7 +4397,7 @@ function saveAssignment() {
     customAlert('Assigning worker to project...', "Processing", "info");
     
     // Send data to backend API
-    fetch('/api/work/hr', {
+    fetch('/api/hr/work', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -4461,7 +4461,7 @@ function saveAttendance() {
     customAlert('Marking attendance...', "Processing", "info");
     
     // Send data to backend API
-    fetch('/api/work/hr', {
+    fetch('/api/hr/work', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -5120,7 +5120,7 @@ function saveLeaveRequest() {
     customAlert('Processing leave request...', "Processing", "info");
     
     // Send data to backend API
-    fetch('/api/work/hr', {
+    fetch('/api/hr/work', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -5185,7 +5185,7 @@ function saveContract() {
     customAlert('Processing contract...', "Processing", "info");
     
     // Send data to backend API
-    fetch('/api/work/hr', {
+    fetch('/api/hr/work', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -5559,7 +5559,7 @@ function submitIncidentToDatabase() {
         console.log('📍 Using server:', baseUrl);
         
         // Send data to backend API - NO FORM INVOLVED
-        fetch(`${baseUrl}/api/work/hse`, {
+        fetch(`${baseUrl}/api/hse/work`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -5670,7 +5670,7 @@ function debugAPIConnection() {
             
             // Test 6: Try actual HSE submission
             console.log('🧪 Testing actual HSE submission...');
-            return fetch('/api/work/hse', {
+            return fetch('/api/hse/work', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -5734,7 +5734,7 @@ setTimeout(addDebugButton, 3000);
 // Test function to verify data was saved
             setTimeout(() => {
                 console.log('🔍 Verifying data was saved...');
-                fetch(`${baseUrl}/api/work/hse`)
+                fetch(`${baseUrl}/api/hse/work`)
                     .then(response => response.json())
                     .then(items => {
                         console.log(`✅ Verification: Found ${items.length} items in database`);
@@ -6237,7 +6237,7 @@ function showRealProblemNotification(problemType, details) {
             
         case 'API_ENDPOINT_NOT_FOUND':
             title = '🔍 API Route Not Found';
-            message = `❌ Server API endpoint missing!\n\n🔍 Real Problem:\n• The API route /api/work/hse doesn't exist\n• Server may not be properly configured\n• Routes may not be loaded\n\n🛠️ Solutions:\n• Check server configuration\n• Verify routes are properly mounted\n• Contact developer to fix API routes\n\n🌐 Missing endpoint: /api/work/hse`;
+            message = `❌ Server API endpoint missing!\n\n🔍 Real Problem:\n• The API route /api/hse/work doesn't exist\n• Server may not be properly configured\n• Routes may not be loaded\n\n🛠️ Solutions:\n• Check server configuration\n• Verify routes are properly mounted\n• Contact developer to fix API routes\n\n🌐 Missing endpoint: /api/hse/work`;
             type = 'error';
             break;
             
@@ -6347,7 +6347,7 @@ function manualSubmitIncident() {
         console.log('📍 Using server:', baseUrl);
         
         // Send data to backend API
-        fetch(`${baseUrl}/api/work/hse`, {
+        fetch(`${baseUrl}/api/hse/work`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -6379,7 +6379,7 @@ function manualSubmitIncident() {
             // Optional: Verify data was saved by fetching recent items
             setTimeout(() => {
                 console.log('🔍 Verifying data was saved...');
-                fetch(`${baseUrl}/api/work/hse`)
+                fetch(`${baseUrl}/api/hse/work`)
                     .then(response => response.json())
                     .then(items => {
                         console.log(`✅ Verification: Found ${items.length} items in database`);
@@ -6441,7 +6441,7 @@ function testDataFlow() {
     
     console.log('📤 Step 1: Sending test data to database...');
     
-    fetch(`${baseUrl}/api/work/hse`, {
+    fetch(`${baseUrl}/api/hse/work`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'
@@ -6458,7 +6458,7 @@ function testDataFlow() {
         // 2. Now fetch the data back from database
         console.log('📥 Step 2: Fetching data from database...');
         
-        return fetch(`${baseUrl}/api/work/hse`);
+        return fetch(`${baseUrl}/api/hse/work`);
     })
     .then(response => {
         console.log('📡 Fetch response status:', response.status);
@@ -7574,7 +7574,7 @@ function saveIncidentReport() {
         customAlert('Recording incident report...', "Processing", "info");
         
         // Send data to backend API (without authentication for testing)
-        fetch('/api/work/hse', {
+        fetch('/api/hse/work', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -7783,7 +7783,7 @@ function saveSafetyPolicy() {
     customAlert('Uploading safety policy...', "Processing", "info");
     
     // Send data to backend API
-    fetch('/api/work/hse', {
+    fetch('/api/hse/work', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -7855,7 +7855,7 @@ function saveToolboxMeeting() {
     customAlert('Recording toolbox meeting...', "Processing", "info");
     
     // Send data to backend API
-    fetch('/api/work/hse', {
+    fetch('/api/hse/work', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -7924,7 +7924,7 @@ function savePpeIssuance() {
     customAlert('Recording PPE issuance...', "Processing", "info");
     
     // Send data to backend API
-    fetch('/api/work/hse', {
+    fetch('/api/hse/work', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -7997,7 +7997,7 @@ function saveSafetyViolation() {
     customAlert('Recording safety violation...', "Processing", "info");
     
     // Send data to backend API
-    fetch('/api/work/hse', {
+    fetch('/api/hse/work', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -8070,7 +8070,7 @@ function saveInspectionReport() {
     customAlert('Uploading inspection report...', "Processing", "info");
     
     // Send data to backend API
-    fetch('/api/work/hse', {
+    fetch('/api/hse/work', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -10034,7 +10034,7 @@ function saveNewProject() {
     customAlert('Creating new project...', "Processing", "info");
     
     // Send data to backend API
-    fetch('/api/work/projects', {
+    fetch('/api/project/work', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
