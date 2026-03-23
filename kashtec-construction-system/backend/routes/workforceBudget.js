@@ -6,7 +6,7 @@ const db = require('../../database/config/database');
 router.get('/', async (req, res) => {
     try {
         console.log('🔍 Fetching workforce budget requests...');
-        const [budgets] = await db.execute('SELECT * FROM workforce_budgets ORDER BY submission_date DESC');
+        const [budgets] = await db.execute('SELECT * FROM workforce_budget_approvals ORDER BY submission_date DESC');
         console.log('📊 Workforce budget requests found:', budgets.length);
         res.json(budgets);
     } catch (error) {

@@ -1912,7 +1912,7 @@ function loadPolicies() {
 }
 
 function loadPoliciesFromBackend() {
-    fetch('/api/hse/policies')
+    fetch('/api/policies')
         .then(response => response.json())
         .then(data => {
             console.log('📋 Policies loaded:', data);
@@ -1970,7 +1970,7 @@ function loadSeniorHiringRequests() {
 }
 
 function loadHiringRequestsFromBackend() {
-    fetch('/api/hr/senior-hiring')
+    fetch('/api/senior-hiring')
         .then(response => response.json())
         .then(data => {
             console.log('📋 Hiring requests loaded:', data);
@@ -2029,7 +2029,7 @@ function loadWorkforceBudgets() {
 }
 
 function loadBudgetRequestsFromBackend() {
-    fetch('/api/finance/workforce-budget')
+    fetch('/api/workforce-budget')
         .then(response => response.json())
         .then(data => {
             console.log('📋 Budget requests loaded:', data);
