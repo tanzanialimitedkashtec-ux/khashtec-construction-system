@@ -5,13 +5,14 @@ const db = require('../../database/config/database');
 // Get all senior hiring requests
 router.get('/', async (req, res) => {
     try {
-        console.log('🔍 Fetching senior hiring requests...');
+        console.log('🔍 Fetching senior hiring requests... (v2)');
         const [requests] = await db.execute('SELECT * FROM senior_hiring_approvals ORDER BY approval_date DESC');
         console.log('📋 Senior hiring requests found:', requests.length);
-        res.json(requests);
+        res.json(requests || []);
     } catch (error) {
         console.error('❌ Error fetching senior hiring requests:', error);
-        res.status(500).json({ error: 'Failed to fetch senior hiring requests' });
+        // Return empty array instead of error for better frontend handling
+        res.json([]);
     }
 });
 
