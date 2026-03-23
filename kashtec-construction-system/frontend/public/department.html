@@ -9157,14 +9157,104 @@ function saveSalaryStructure() {
         approvedDate: new Date().toLocaleString()
     };
     
-    // Save to localStorage
-    const salaryStructures = JSON.parse(localStorage.getItem('kashtec_salary_structures') || '[]');
-    salaryStructures.push(salary);
-    localStorage.setItem('kashtec_salary_structures', JSON.stringify(salaryStructures));
+    // Validate required fields
+    if (!salary.employee || !salary.basicSalary || !salary.grossSalary) {
+        showRealProblemNotification('VALIDATION_ERROR', {
+            message: 'Please fill in all required fields for salary structure.',
+            missingFields: {
+                employee: !salary.employee,
+                basicSalary: !salary.basicSalary,
+                grossSalary: !salary.grossSalary
+            }
+        });
+        return false;
+    }
     
-    customAlert(`Salary structure approved!\n\nEmployee: ${salary.employee}\nGross Salary: TZS ${salary.grossSalary}`, "Salary Structure Approved", "success");
+    // Show loading notification
+    showRealProblemNotification('SAVING', {
+        message: `Processing salary structure for ${salary.employee}...`,
+        employee: salary.employee,
+        grossSalary: salary.grossSalary
+    });
     
-    document.getElementById('salaryForm').reset();
+    // Prepare work item for Finance department
+    const workItem = {
+        work_type: 'Salary Management',
+        work_title: `Salary Structure - ${salary.employee}`,
+        work_description: `Salary structure for ${salary.employee}\n\nBasic Salary: TZS ${salary.basicSalary}\nHousing: TZS ${salary.housingAllowance}\nTransport: TZS ${salary.transportAllowance}\nMedical: TZS ${salary.medicalAllowance}\nOther: TZS ${salary.otherAllowances}\nGross: TZS ${salary.grossSalary}\nApproved: ${salary.approvedDate}`,
+        priority: 'Medium',
+        due_date: new Date().toISOString().split('T')[0],
+        assigned_to: 'Finance Manager',
+        submitted_by: 'Finance Manager'
+    };
+    
+    // Send data to backend API
+    fetch('/api/work/finance', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+        },
+        body: JSON.stringify(workItem)
+    })
+    .then(response => {
+        console.log('📡 Salary Structure API Response status:', response.status);
+        return response.json();
+    })
+    .then(data => {
+        console.log('📊 Salary Structure API Response data:', data);
+        
+        if (data.error) {
+            throw new Error(data.error);
+        }
+        
+        // Show detailed success notification
+        showRealProblemNotification('SUCCESS', {
+            message: `✅ Salary structure approved successfully!\n\n📋 Details:\n• Employee: ${salary.employee}\n• Gross Salary: TZS ${salary.grossSalary}\n• Basic Salary: TZS ${salary.basicSalary}\n• Approved Date: ${salary.approvedDate}\n• Database ID: ${data.id}\n\n🎉 Salary structure saved to database without page refresh!`,
+            salaryId: data.id,
+            employee: salary.employee,
+            grossSalary: salary.grossSalary,
+            timestamp: new Date().toLocaleString()
+        });
+        
+        document.getElementById('salaryForm').reset();
+    })
+    .catch(error => {
+        console.error('❌ Error processing salary structure:', error);
+        
+        // Determine specific error cause
+        let errorCause = 'Unknown error occurred';
+        let troubleshooting = '';
+        
+        if (error.message.includes('NetworkError') || error.message.includes('fetch')) {
+            errorCause = 'Network connection failed';
+            troubleshooting = '• Check internet connection\n• Verify server is running\n• Try again in a moment';
+        } else if (error.message.includes('400') || error.message.includes('validation')) {
+            errorCause = 'Invalid salary data';
+            troubleshooting = '• Fill all required fields correctly\n• Check employee name\n• Verify salary amounts\n• Ensure gross salary is valid';
+        } else if (error.message.includes('404')) {
+            errorCause = 'Finance endpoint not found';
+            troubleshooting = '• Server routing issue\n• Contact system administrator\n• Check if Finance API is properly configured';
+        } else if (error.message.includes('500')) {
+            errorCause = 'Server internal error';
+            troubleshooting = '• Database connection issue\n• Server configuration problem\n• Contact system administrator';
+        } else if (error.message.includes('database') || error.message.includes('SQL')) {
+            errorCause = 'Database operation failed';
+            troubleshooting = '• Database connection issue\n• Finance work table might not exist\n• Contact system administrator';
+        }
+        
+        // Show detailed error notification
+        showRealProblemNotification('SYSTEM_ERROR', {
+            error: error.message,
+            cause: errorCause,
+            troubleshooting: troubleshooting,
+            message: `❌ Salary structure approval failed!\n\n🔍 Error Cause: ${errorCause}\n\n🛠️ Troubleshooting:\n${troubleshooting}\n\n📝 Technical Details:\n${error.message}\n\n💡 Please fix the issue and try again.`,
+            employee: salary.employee,
+            grossSalary: salary.grossSalary,
+            timestamp: new Date().toLocaleString()
+        });
+    });
+    
     return false;
 }
 
@@ -9181,14 +9271,104 @@ function processPayroll() {
         processedDate: new Date().toLocaleString()
     };
     
-    // Save to localStorage
-    const payrolls = JSON.parse(localStorage.getItem('kashtec_payrolls') || '[]');
-    payrolls.push(payroll);
-    localStorage.setItem('kashtec_payrolls', JSON.stringify(payrolls));
+    // Validate required fields
+    if (!payroll.month || !payroll.paymentDate || !payroll.payrollType) {
+        showRealProblemNotification('VALIDATION_ERROR', {
+            message: 'Please fill in all required fields for payroll processing.',
+            missingFields: {
+                month: !payroll.month,
+                paymentDate: !payroll.paymentDate,
+                payrollType: !payroll.payrollType
+            }
+        });
+        return false;
+    }
     
-    customAlert(`Payroll processed successfully!\n\nMonth: ${payroll.month}\nNet Payment: TZS ${payroll.netPayment}\nPayment Date: ${payroll.paymentDate}`, "Payroll Processed", "success");
+    // Show loading notification
+    showRealProblemNotification('SAVING', {
+        message: `Processing payroll for ${payroll.month}...`,
+        month: payroll.month,
+        netPayment: payroll.netPayment
+    });
     
-    document.getElementById('payrollProcessForm').reset();
+    // Prepare work item for Finance department
+    const workItem = {
+        work_type: 'Payroll Management',
+        work_title: `Payroll Processing - ${payroll.month}`,
+        work_description: `Payroll processing for ${payroll.month}\n\nType: ${payroll.payrollType}\nTotal Employees: ${payroll.totalEmployees}\nTotal Gross: TZS ${payroll.totalGross}\nTotal Deductions: TZS ${payroll.totalDeductions}\nNet Payment: TZS ${payroll.netPayment}\nPayment Date: ${payroll.paymentDate}\nProcessed by: ${payroll.processedBy}\nProcessed: ${payroll.processedDate}`,
+        priority: 'High',
+        due_date: payroll.paymentDate,
+        assigned_to: 'Finance Manager',
+        submitted_by: 'Finance Manager'
+    };
+    
+    // Send data to backend API
+    fetch('/api/work/finance', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+        },
+        body: JSON.stringify(workItem)
+    })
+    .then(response => {
+        console.log('📡 Payroll Processing API Response status:', response.status);
+        return response.json();
+    })
+    .then(data => {
+        console.log('📊 Payroll Processing API Response data:', data);
+        
+        if (data.error) {
+            throw new Error(data.error);
+        }
+        
+        // Show detailed success notification
+        showRealProblemNotification('SUCCESS', {
+            message: `✅ Payroll processed successfully!\n\n📋 Details:\n• Month: ${payroll.month}\n• Net Payment: TZS ${payroll.netPayment}\n• Payment Date: ${payroll.paymentDate}\n• Total Employees: ${payroll.totalEmployees}\n• Database ID: ${data.id}\n\n🎉 Payroll saved to database without page refresh!`,
+            payrollId: data.id,
+            month: payroll.month,
+            netPayment: payroll.netPayment,
+            timestamp: new Date().toLocaleString()
+        });
+        
+        document.getElementById('payrollProcessForm').reset();
+    })
+    .catch(error => {
+        console.error('❌ Error processing payroll:', error);
+        
+        // Determine specific error cause
+        let errorCause = 'Unknown error occurred';
+        let troubleshooting = '';
+        
+        if (error.message.includes('NetworkError') || error.message.includes('fetch')) {
+            errorCause = 'Network connection failed';
+            troubleshooting = '• Check internet connection\n• Verify server is running\n• Try again in a moment';
+        } else if (error.message.includes('400') || error.message.includes('validation')) {
+            errorCause = 'Invalid payroll data';
+            troubleshooting = '• Fill all required fields correctly\n• Check payroll month\n• Verify payment date\n• Ensure payroll type is valid';
+        } else if (error.message.includes('404')) {
+            errorCause = 'Finance endpoint not found';
+            troubleshooting = '• Server routing issue\n• Contact system administrator\n• Check if Finance API is properly configured';
+        } else if (error.message.includes('500')) {
+            errorCause = 'Server internal error';
+            troubleshooting = '• Database connection issue\n• Server configuration problem\n• Contact system administrator';
+        } else if (error.message.includes('database') || error.message.includes('SQL')) {
+            errorCause = 'Database operation failed';
+            troubleshooting = '• Database connection issue\n• Finance work table might not exist\n• Contact system administrator';
+        }
+        
+        // Show detailed error notification
+        showRealProblemNotification('SYSTEM_ERROR', {
+            error: error.message,
+            cause: errorCause,
+            troubleshooting: troubleshooting,
+            message: `❌ Payroll processing failed!\n\n🔍 Error Cause: ${errorCause}\n\n🛠️ Troubleshooting:\n${troubleshooting}\n\n📝 Technical Details:\n${error.message}\n\n💡 Please fix the issue and try again.`,
+            month: payroll.month,
+            netPayment: payroll.netPayment,
+            timestamp: new Date().toLocaleString()
+        });
+    });
+    
     return false;
 }
 
@@ -9203,14 +9383,105 @@ function submitNewExpense() {
         status: 'pending'
     };
     
-    // Save to localStorage
-    const expenses = JSON.parse(localStorage.getItem('kashtec_expenses') || '[]');
-    expenses.push(expense);
-    localStorage.setItem('kashtec_expenses', JSON.stringify(expenses));
+    // Validate required fields
+    if (!expense.category || !expense.amount || !expense.description || !expense.department) {
+        showRealProblemNotification('VALIDATION_ERROR', {
+            message: 'Please fill in all required fields for expense submission.',
+            missingFields: {
+                category: !expense.category,
+                amount: !expense.amount,
+                description: !expense.description,
+                department: !expense.department
+            }
+        });
+        return false;
+    }
     
-    customAlert(`Expense submitted successfully!\n\nCategory: ${expense.category}\nAmount: TZS ${expense.amount}\nStatus: Pending Approval`, "Expense Submitted", "success");
+    // Show loading notification
+    showRealProblemNotification('SAVING', {
+        message: `Submitting expense for ${expense.department}...`,
+        category: expense.category,
+        amount: expense.amount
+    });
     
-    document.getElementById('newExpenseForm').reset();
+    // Prepare work item for Finance department
+    const workItem = {
+        work_type: 'Expense Management',
+        work_title: `Expense Report - ${expense.category}`,
+        work_description: `Expense submitted for ${expense.department}\n\nCategory: ${expense.category}\nAmount: TZS ${expense.amount}\nDescription: ${expense.description}\nReceipt: ${expense.receipt || 'No receipt'}\nSubmitted: ${expense.submittedDate}\nStatus: ${expense.status}`,
+        priority: 'Medium',
+        due_date: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], // 7 days from now
+        assigned_to: 'Finance Manager',
+        submitted_by: 'Finance Manager'
+    };
+    
+    // Send data to backend API
+    fetch('/api/work/finance', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+        },
+        body: JSON.stringify(workItem)
+    })
+    .then(response => {
+        console.log('📡 Expense Submission API Response status:', response.status);
+        return response.json();
+    })
+    .then(data => {
+        console.log('📊 Expense Submission API Response data:', data);
+        
+        if (data.error) {
+            throw new Error(data.error);
+        }
+        
+        // Show detailed success notification
+        showRealProblemNotification('SUCCESS', {
+            message: `✅ Expense submitted successfully!\n\n📋 Details:\n• Category: ${expense.category}\n• Amount: TZS ${expense.amount}\n• Department: ${expense.department}\n• Status: Pending Approval\n• Database ID: ${data.id}\n\n🎉 Expense saved to database without page refresh!`,
+            expenseId: data.id,
+            category: expense.category,
+            amount: expense.amount,
+            timestamp: new Date().toLocaleString()
+        });
+        
+        document.getElementById('newExpenseForm').reset();
+    })
+    .catch(error => {
+        console.error('❌ Error submitting expense:', error);
+        
+        // Determine specific error cause
+        let errorCause = 'Unknown error occurred';
+        let troubleshooting = '';
+        
+        if (error.message.includes('NetworkError') || error.message.includes('fetch')) {
+            errorCause = 'Network connection failed';
+            troubleshooting = '• Check internet connection\n• Verify server is running\n• Try again in a moment';
+        } else if (error.message.includes('400') || error.message.includes('validation')) {
+            errorCause = 'Invalid expense data';
+            troubleshooting = '• Fill all required fields correctly\n• Check expense category\n• Verify amount format\n• Ensure description is provided';
+        } else if (error.message.includes('404')) {
+            errorCause = 'Finance endpoint not found';
+            troubleshooting = '• Server routing issue\n• Contact system administrator\n• Check if Finance API is properly configured';
+        } else if (error.message.includes('500')) {
+            errorCause = 'Server internal error';
+            troubleshooting = '• Database connection issue\n• Server configuration problem\n• Contact system administrator';
+        } else if (error.message.includes('database') || error.message.includes('SQL')) {
+            errorCause = 'Database operation failed';
+            troubleshooting = '• Database connection issue\n• Finance work table might not exist\n• Contact system administrator';
+        }
+        
+        // Show detailed error notification
+        showRealProblemNotification('SYSTEM_ERROR', {
+            error: error.message,
+            cause: errorCause,
+            troubleshooting: troubleshooting,
+            message: `❌ Expense submission failed!\n\n🔍 Error Cause: ${errorCause}\n\n🛠️ Troubleshooting:\n${troubleshooting}\n\n📝 Technical Details:\n${error.message}\n\n💡 Please fix the issue and try again.`,
+            category: expense.category,
+            amount: expense.amount,
+            timestamp: new Date().toLocaleString()
+        });
+    });
+    
     return false;
 }
 
@@ -10161,14 +10432,104 @@ function saveProjectProgress() {
         updateDate: new Date().toLocaleString()
     };
     
-    // Save to localStorage
-    const progressUpdates = JSON.parse(localStorage.getItem('kashtec_project_progress') || '[]');
-    progressUpdates.push(progress);
-    localStorage.setItem('kashtec_project_progress', JSON.stringify(progressUpdates));
+    // Validate required fields
+    if (!progress.projectId || !progress.percentage || !progress.status) {
+        showRealProblemNotification('VALIDATION_ERROR', {
+            message: 'Please fill in all required fields for project progress.',
+            missingFields: {
+                projectId: !progress.projectId,
+                percentage: !progress.percentage,
+                status: !progress.status
+            }
+        });
+        return false;
+    }
     
-    customAlert(`Project progress updated successfully!\n\nProgress: ${progress.percentage}%\nStatus: ${progress.status}\nUpdated: ${progress.updateDate}`, "Progress Updated", "success");
+    // Show loading notification
+    showRealProblemNotification('SAVING', {
+        message: `Updating progress for project ${progress.projectId}...`,
+        projectId: progress.projectId,
+        percentage: progress.percentage
+    });
     
-    document.getElementById('progressForm').reset();
+    // Prepare work item for Projects department
+    const workItem = {
+        work_type: 'Project Management',
+        work_title: `Progress Update - ${progress.projectId}`,
+        work_description: `Project progress update for ${progress.projectId}\n\nProgress: ${progress.percentage}%\nStatus: ${progress.status}\nReport: ${progress.report}\nCompleted Milestones: ${progress.completedMilestones}\nNext Milestones: ${progress.nextMilestones}\nBudget Used: TZS ${progress.budgetUsed}\nIssues: ${progress.issues}\nUpdated by: ${progress.updatedBy}\nUpdated: ${progress.updateDate}`,
+        priority: 'Medium',
+        due_date: new Date().toISOString().split('T')[0],
+        assigned_to: 'Project Manager',
+        submitted_by: 'Project Manager'
+    };
+    
+    // Send data to backend API
+    fetch('/api/work/projects', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+        },
+        body: JSON.stringify(workItem)
+    })
+    .then(response => {
+        console.log('📡 Project Progress API Response status:', response.status);
+        return response.json();
+    })
+    .then(data => {
+        console.log('📊 Project Progress API Response data:', data);
+        
+        if (data.error) {
+            throw new Error(data.error);
+        }
+        
+        // Show detailed success notification
+        showRealProblemNotification('SUCCESS', {
+            message: `✅ Project progress updated successfully!\n\n📋 Details:\n• Project: ${progress.projectId}\n• Progress: ${progress.percentage}%\n• Status: ${progress.status}\n• Updated: ${progress.updateDate}\n• Database ID: ${data.id}\n\n🎉 Progress saved to database without page refresh!`,
+            progressId: data.id,
+            projectId: progress.projectId,
+            percentage: progress.percentage,
+            timestamp: new Date().toLocaleString()
+        });
+        
+        document.getElementById('progressForm').reset();
+    })
+    .catch(error => {
+        console.error('❌ Error updating project progress:', error);
+        
+        // Determine specific error cause
+        let errorCause = 'Unknown error occurred';
+        let troubleshooting = '';
+        
+        if (error.message.includes('NetworkError') || error.message.includes('fetch')) {
+            errorCause = 'Network connection failed';
+            troubleshooting = '• Check internet connection\n• Verify server is running\n• Try again in a moment';
+        } else if (error.message.includes('400') || error.message.includes('validation')) {
+            errorCause = 'Invalid progress data';
+            troubleshooting = '• Fill all required fields correctly\n• Check project ID\n• Verify progress percentage\n• Ensure status is valid';
+        } else if (error.message.includes('404')) {
+            errorCause = 'Projects endpoint not found';
+            troubleshooting = '• Server routing issue\n• Contact system administrator\n• Check if Projects API is properly configured';
+        } else if (error.message.includes('500')) {
+            errorCause = 'Server internal error';
+            troubleshooting = '• Database connection issue\n• Server configuration problem\n• Contact system administrator';
+        } else if (error.message.includes('database') || error.message.includes('SQL')) {
+            errorCause = 'Database operation failed';
+            troubleshooting = '• Database connection issue\n• Projects work table might not exist\n• Contact system administrator';
+        }
+        
+        // Show detailed error notification
+        showRealProblemNotification('SYSTEM_ERROR', {
+            error: error.message,
+            cause: errorCause,
+            troubleshooting: troubleshooting,
+            message: `❌ Project progress update failed!\n\n🔍 Error Cause: ${errorCause}\n\n🛠️ Troubleshooting:\n${troubleshooting}\n\n📝 Technical Details:\n${error.message}\n\n💡 Please fix the issue and try again.`,
+            projectId: progress.projectId,
+            percentage: progress.percentage,
+            timestamp: new Date().toLocaleString()
+        });
+    });
+    
     return false;
 }
 
