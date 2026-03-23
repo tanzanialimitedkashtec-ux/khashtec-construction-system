@@ -9,20 +9,19 @@ router.post('/test-simple', async (req, res) => {
         console.log('📊 Request body:', req.body);
         
         // Test a simple static query
-        const dbResult = await db.execute(
+        const result = await db.execute(
             'INSERT INTO hse_work (department_code, work_type, work_title, work_description, priority, status, submitted_by, submitted_date) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
             ['hse', 'Incident Reporting', 'Test Incident', 'Test description', 'Medium', 'pending', 'Test User', '2026-03-23']
         );
         
-        console.log('🔍 DB Result type:', typeof dbResult);
-        console.log('🔍 DB Result isArray:', Array.isArray(dbResult));
-        console.log('🔍 DB Result:', dbResult);
+        console.log('🔍 DB Result type:', typeof result);
+        console.log('🔍 DB Result isArray:', Array.isArray(result));
+        console.log('🔍 DB Result:', result);
         
-        if (!Array.isArray(dbResult) || dbResult.length === 0) {
+        if (!result || typeof result !== 'object') {
             throw new Error('Database returned invalid result');
         }
         
-        const result = dbResult[0];
         console.log('✅ Simple test successful:', result);
         res.json({
             message: 'Simple test successful',
@@ -340,15 +339,14 @@ router.post('/:department', async (req, res) => {
         }
         
         try {
-            const dbResult = await db.execute(query, values);
-            console.log('🔍 Database result type:', typeof dbResult);
-            console.log('🔍 Database result isArray:', Array.isArray(dbResult));
+            const result = await db.execute(query, values);
+            console.log('🔍 Database result type:', typeof result);
+            console.log('🔍 Database result:', result);
             
-            if (!Array.isArray(dbResult) || dbResult.length === 0) {
+            if (!result || typeof result !== 'object') {
                 throw new Error('Database query returned invalid result');
             }
             
-            const [result] = dbResult;
             console.log('✅ Work item created successfully:', result);
             
             // Return success response
