@@ -2,6 +2,8 @@ const express = require('express');
 const router = express.Router();
 const db = require('../../database/config/database');
 
+// Railway deployment fix - v2024.03.23 - All policies table references fixed
+
 // ===== POLICIES MANAGEMENT =====
 
 // Get all policies
