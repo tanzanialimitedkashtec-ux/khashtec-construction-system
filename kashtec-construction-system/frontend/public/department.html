@@ -8237,7 +8237,131 @@ function getPpeItems() {
 
 // Additional HSE helper functions
 function viewPolicy(policyId) {
-    customAlert(`Opening safety policy ${policyId}...\n\nFull policy document will be displayed with all sections and compliance requirements.`, "Safety Policy", "info");
+    console.log('🔍 Viewing policy:', policyId);
+    
+    // Show loading message
+    customAlert(`Loading safety policy ${policyId}...`, "Loading Policy", "info");
+    
+    // Fetch policy details from backend
+    fetch(`/api/policies/${policyId}`)
+        .then(response => {
+            console.log('📡 Policy fetch response:', response.status);
+            if (!response.ok) {
+                throw new Error(`Failed to fetch policy: ${response.status}`);
+            }
+            return response.json();
+        })
+        .then(policy => {
+            console.log('📊 Policy data:', policy);
+            
+            if (policy.error) {
+                throw new Error(policy.error);
+            }
+            
+            // Display policy in a modal or new section
+            showPolicyModal(policy);
+        })
+        .catch(error => {
+            console.error('❌ Error viewing policy:', error);
+            customAlert(`Error loading policy: ${error.message}`, "Error", "error");
+        });
+}
+
+function showPolicyModal(policy) {
+    // Create modal to display full policy details
+    const modal = document.createElement('div');
+    modal.className = 'policy-modal';
+    modal.innerHTML = `
+        <div class="modal-content" style="max-width: 800px; max-height: 90vh; overflow-y: auto;">
+            <div class="modal-header">
+                <h3>${policy.work_title || 'Policy Document'}</h3>
+                <button class="modal-close" onclick="this.closest('.policy-modal').remove()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="policy-details">
+                    <p><strong>Policy ID:</strong> ${policy.id}</p>
+                    <p><strong>Type:</strong> ${policy.work_type}</p>
+                    <p><strong>Title:</strong> ${policy.work_title}</p>
+                    <p><strong>Description:</strong></p>
+                    <div style="background: #f5f5f5; padding: 15px; border-radius: 5px; margin: 10px 0; white-space: pre-wrap;">${policy.work_description || 'No description available'}</div>
+                    <p><strong>Status:</strong> <span class="status-badge ${policy.status}">${policy.status}</span></p>
+                    <p><strong>Submitted By:</strong> ${policy.submitted_by}</p>
+                    <p><strong>Submitted Date:</strong> ${new Date(policy.submitted_date).toLocaleDateString()}</p>
+                    ${policy.assigned_to ? `<p><strong>Assigned To:</strong> ${policy.assigned_to}</p>` : ''}
+                    ${policy.due_date ? `<p><strong>Due Date:</strong> ${new Date(policy.due_date).toLocaleDateString()}</p>` : ''}
+                    ${policy.approved_by ? `<p><strong>Approved By:</strong> ${policy.approved_by}</p>` : ''}
+                    ${policy.approved_date ? `<p><strong>Approved Date:</strong> ${new Date(policy.approved_date).toLocaleDateString()}</p>` : ''}
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="action" onclick="this.closest('.policy-modal').remove()">Close</button>
+            </div>
+        </div>
+    `;
+    
+    // Add modal to page
+    document.body.appendChild(modal);
+    
+    // Add modal styling
+    const style = document.createElement('style');
+    style.textContent = `
+        .policy-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.8);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 10000;
+        }
+        .policy-modal .modal-content {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+        }
+        .policy-modal .modal-header {
+            background: #2c3e50;
+            color: white;
+            padding: 15px 20px;
+            border-radius: 8px 8px 0 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .policy-modal .modal-header h3 {
+            margin: 0;
+        }
+        .policy-modal .modal-close {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 24px;
+            cursor: pointer;
+        }
+        .policy-modal .modal-body {
+            padding: 20px;
+        }
+        .policy-modal .modal-footer {
+            background: #f8f9fa;
+            padding: 15px 20px;
+            border-radius: 0 0 8px 8px;
+            text-align: right;
+        }
+        .status-badge {
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        .status-badge.Pending { background: #ffc107; color: #856404; }
+        .status-badge.Approved { background: #28a745; color: white; }
+        .status-badge.Rejected { background: #dc3545; color: white; }
+        .status-badge.Revision\:Requested { background: #17a2b8; color: white; }
+    `;
+    document.head.appendChild(style);
 }
 
 function downloadPolicy(policyId) {
@@ -13001,11 +13125,76 @@ function viewSiteReport(reportId) {
 }
 
 function downloadAttendance(meetingId) {
-    customAlert(`Downloading attendance for meeting ${meetingId}...\n\nAttendance list will be downloaded as Excel file.`, "Download Attendance", "info");
+    customAlert(`Downloading attendance sheet for meeting ${meetingId}...\n\nAttendance list will be downloaded as Excel file.`, "Download Attendance", "info");
 }
 
-function recordReturn(issuanceId) {
-    customAlert(`Recording PPE return for ${issuanceId}...\n\nReturn form will open for condition assessment and restocking.`, "Record Return", "info");
+function downloadPolicy(policyId) {
+    console.log('🔍 Downloading policy:', policyId);
+    
+    // Show loading message
+    customAlert(`Preparing download for safety policy ${policyId}...`, "Preparing Download", "info");
+    
+    // Fetch policy details from backend
+    fetch(`/api/policies/${policyId}`)
+        .then(response => {
+            console.log('📡 Policy fetch response:', response.status);
+            if (!response.ok) {
+                throw new Error(`Failed to fetch policy: ${response.status}`);
+            }
+            return response.json();
+        })
+        .then(policy => {
+            console.log('📊 Policy data for download:', policy);
+            
+            if (policy.error) {
+                throw new Error(policy.error);
+            }
+            
+            // Generate PDF content
+            generatePolicyPDF(policy);
+        })
+        .catch(error => {
+            console.error('❌ Error downloading policy:', error);
+            customAlert(`Error preparing download: ${error.message}`, "Error", "error");
+        });
+}
+
+function generatePolicyPDF(policy) {
+    // Create PDF content using jsPDF or similar library
+    // For now, create a text file download as fallback
+    const content = `
+POLICY DOCUMENT
+================
+
+Policy ID: ${policy.id}
+Type: ${policy.work_type}
+Title: ${policy.work_title}
+Description: ${policy.work_description || 'No description available'}
+
+Status: ${policy.status}
+Submitted By: ${policy.submitted_by}
+Submitted Date: ${new Date(policy.submitted_date).toLocaleDateString()}
+${policy.assigned_to ? `Assigned To: ${policy.assigned_to}` : ''}
+${policy.due_date ? `Due Date: ${new Date(policy.due_date).toLocaleDateString()}` : ''}
+${policy.approved_by ? `Approved By: ${policy.approved_by}` : ''}
+${policy.approved_date ? `Approved Date: ${new Date(policy.approved_date).toLocaleDateString()}` : ''}
+
+================
+Generated on: ${new Date().toLocaleDateString()}
+    `.trim();
+    
+    // Create downloadable file
+    const blob = new Blob([content], { type: 'text/plain' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `Policy_${policy.id}_${policy.work_title.replace(/[^a-zA-Z0-9]/g, '_')}.txt`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    window.URL.revokeObjectURL(url);
+    
+    customAlert(`Download Complete`, `Policy downloaded: ${policy.work_title}\n\nPolicy ID: ${policy.id}\n\nFile has been downloaded to your device.`, 'success', 3000);
 }
 
 function viewViolationDetails(violationId) {
