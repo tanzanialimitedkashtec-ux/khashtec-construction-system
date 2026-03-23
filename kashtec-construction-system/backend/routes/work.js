@@ -50,10 +50,12 @@ router.get('/:department', async (req, res) => {
 // Create new work item
 router.post('/:department', async (req, res) => {
     try {
-        console.log('🔍 Received work request:', req.params.department, req.body);
+        console.log('🔍 Work request received');
         console.log('📋 Request headers:', req.headers);
         console.log('🌐 Request URL:', req.url);
         console.log('📝 Request method:', req.method);
+        console.log('📂 Department parameter:', req.params.department);
+        console.log('📊 Request body:', req.body);
         
         const { department } = req.params;
         const {
@@ -63,134 +65,173 @@ router.post('/:department', async (req, res) => {
             priority = 'Medium',
             due_date,
             assigned_to,
+            submitted_by,
             // Department-specific fields
             amount, // Finance
             incident_type, severity, // HSE
             project_name, client_name, // Project
-            property_address, property_type, sale_amount, // Real Estate
-            affected_department, deadline // Admin
+            property_name, property_type, // Real Estate
+            affected_systems, // Admin
+            // Additional fields
+            status = 'pending'
         } = req.body;
         
-        console.log('📝 Extracted data:', { work_type, work_title, work_description, priority, incident_type, severity, project_name, client_name });
+        console.log('📝 Extracted data:', {
+            work_type,
+            work_title,
+            work_description,
+            priority,
+            due_date,
+            assigned_to,
+            submitted_by,
+            department_specific: {
+                amount,
+                incident_type,
+                severity,
+                project_name,
+                client_name,
+                property_name,
+                property_type,
+                affected_systems
+            }
+        });
         
         // Validate required fields
         if (!work_type || !work_title || !work_description) {
             console.log('❌ Validation failed - missing required fields');
-            return res.status(400).json({
-                error: 'Work type, title, and description are required',
+            return res.status(400).json({ 
+                error: 'Missing required fields: work_type, work_title, work_description',
                 received: { work_type, work_title, work_description }
             });
         }
         
-        console.log('✅ Validation passed, building query for department:', department);
+        // Validate department
+        const validDepartments = ['hr', 'hse', 'finance', 'projects', 'realestate', 'admin'];
+        if (!validDepartments.includes(department)) {
+            console.log('❌ Invalid department:', department);
+            return res.status(400).json({ 
+                error: 'Invalid department',
+                valid_departments: validDepartments,
+                received: department
+            });
+        }
         
-        // Build dynamic query based on department
-        let query;
+        console.log('✅ Validation passed, proceeding to database insertion...');
+        
+        // Build the query dynamically based on department
+        let query = '';
         let values = [];
         
-        // Common fields
-        const fields = ['work_type', 'work_title', 'work_description', 'priority', 'due_date', 'assigned_to', 'submitted_by'];
-        values = [work_type, work_title, work_description, priority, due_date, assigned_to, req.body.submitted_by || 'System'];
+        // Base fields for all departments
+        const baseFields = [
+            'department_code',
+            'work_type',
+            'work_title', 
+            'work_description',
+            'priority',
+            'due_date',
+            'assigned_to',
+            'submitted_by',
+            'submitted_date',
+            'status'
+        ];
+        
+        const baseValues = [
+            department,
+            work_type,
+            work_title,
+            work_description,
+            priority,
+            due_date,
+            assigned_to,
+            submitted_by,
+            new Date().toISOString().split('T')[0], // submitted_date
+            status
+        ];
         
         // Department-specific fields
-        if (department === 'finance') {
-            if (amount) {
-                fields.push('amount');
-                values.push(amount);
-            }
+        let additionalFields = [];
+        let additionalValues = [];
+        
+        if (department === 'finance' && amount) {
+            additionalFields.push('amount');
+            additionalValues.push(amount);
         }
         
         if (department === 'hse') {
             if (incident_type) {
-                fields.push('incident_type');
-                values.push(incident_type);
+                additionalFields.push('incident_type');
+                additionalValues.push(incident_type);
             }
             if (severity) {
-                fields.push('severity');
-                values.push(severity);
+                additionalFields.push('severity');
+                additionalValues.push(severity);
             }
         }
         
-        if (department === 'projects' || department === 'project') {
+        if (department === 'projects') {
             if (project_name) {
-                fields.push('project_name');
-                values.push(project_name);
+                additionalFields.push('project_name');
+                additionalValues.push(project_name);
             }
             if (client_name) {
-                fields.push('client_name');
-                values.push(client_name);
+                additionalFields.push('client_name');
+                additionalValues.push(client_name);
             }
         }
         
         if (department === 'realestate') {
-            if (property_address) {
-                fields.push('property_address');
-                values.push(property_address);
+            if (property_name) {
+                additionalFields.push('property_name');
+                additionalValues.push(property_name);
             }
             if (property_type) {
-                fields.push('property_type');
-                values.push(property_type);
-            }
-            if (sale_amount) {
-                fields.push('sale_amount');
-                values.push(sale_amount);
+                additionalFields.push('property_type');
+                additionalValues.push(property_type);
             }
         }
         
-        if (department === 'admin') {
-            if (affected_department) {
-                fields.push('affected_department');
-                values.push(affected_department);
-            }
-            if (deadline) {
-                fields.push('deadline');
-                values.push(deadline);
-            }
+        if (department === 'admin' && affected_systems) {
+            additionalFields.push('affected_systems');
+            additionalValues.push(affected_systems);
         }
         
-        // Optional common fields
-        if (assigned_to) {
-            fields.push('assigned_to');
-            values.push(assigned_to);
-        }
+        // Combine all fields and values
+        const allFields = [...baseFields, ...additionalFields];
+        const allValues = [...baseValues, ...additionalValues];
         
-        if (due_date) {
-            fields.push('due_date');
-            values.push(due_date);
-        }
+        // Build INSERT query
+        query = `
+            INSERT INTO ${department}_work (
+                ${allFields.join(', ')}
+            ) VALUES (
+                ${allFields.map(() => '?').join(', ')}
+            )
+        `;
         
-        // Build the query
-        const placeholders = fields.map(() => '?').join(', ');
-        query = `INSERT INTO ${department}_work (${fields.join(', ')}) VALUES (${placeholders})`;
+        values = allValues;
         
-        console.log('🔨 Executing query:', query);
-        console.log('📊 With values:', values);
+        console.log('� Executing query:', query);
+        console.log('📊 Query values:', values);
         
+        // Execute the query
         const [result] = await db.execute(query, values);
+        console.log('✅ Work item created successfully:', result);
         
-        console.log('✅ Database insert result:', result);
-        
-        // Return the created work item
-        const [newWorkItem] = await db.execute(
-            `SELECT * FROM ${department}_work WHERE id = ?`,
-            [result.insertId]
-        );
-        
-        console.log('📋 Retrieved new work item:', newWorkItem[0]);
-        
+        // Return success response
         res.status(201).json({
-            message: `${department} work item created successfully`,
-            workItem: newWorkItem[0],
-            id: result.insertId
+            message: 'Work item created successfully',
+            id: result.insertId,
+            department,
+            work_type,
+            work_title,
+            status,
+            created_at: new Date().toISOString()
         });
         
     } catch (error) {
         console.error('❌ Error creating work item:', error);
-        console.error('❌ Error details:', {
-            message: error.message,
-            stack: error.stack,
-            code: error.code
-        });
+        console.error('❌ Error stack:', error.stack);
         res.status(500).json({ 
             error: 'Failed to create work item',
             details: error.message 

@@ -3,7 +3,6 @@ const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
 const router = express.Router();
-const db = require('../src/config/database');
 
 // Configure multer for file uploads
 const storage = multer.diskStorage({
@@ -123,115 +122,128 @@ router.get('/:id', (req, res) => {
     res.json(document);
 });
 
-// Upload new document (JSON-based for frontend compatibility)
-router.post('/json', async (req, res) => {
-    console.log('🔍 Document JSON upload request received');
-    console.log('📋 Request body:', req.body);
-    
+// Upload new document (JSON version for frontend forms)
+router.post('/', upload.single('file'), async (req, res) => {
     try {
-        const { work_type, work_title, work_description, priority, due_date, assigned_to, submitted_by } = req.body;
+        console.log('📝 Document upload request received');
+        console.log('📋 Request body:', req.body);
+        console.log('📁 File info:', req.file);
         
-        // Validate input
-        if (!work_type || !work_title || !work_description) {
-            console.log('❌ Validation failed - missing required fields');
-            return res.status(400).json({
-                error: 'Work type, title, and description are required'
+        // Handle both file upload and JSON-only submissions
+        if (req.body.work_type && req.body.work_title) {
+            // This is a work item submission from frontend forms
+            console.log('🔄 Processing work item submission...');
+            
+            const db = require('../src/config/database');
+            const {
+                work_type,
+                work_title,
+                work_description,
+                priority = 'Medium',
+                due_date,
+                assigned_to,
+                submitted_by
+            } = req.body;
+            
+            // Insert into admin_work table
+            const query = `
+                INSERT INTO admin_work (
+                    department_code,
+                    work_type,
+                    work_title,
+                    work_description,
+                    priority,
+                    due_date,
+                    assigned_to,
+                    submitted_by,
+                    submitted_date,
+                    status
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, NOW(), 'pending')
+            `;
+            
+            const values = [
+                'admin',
+                work_type,
+                work_title,
+                work_description,
+                priority,
+                due_date,
+                assigned_to,
+                submitted_by
+            ];
+            
+            console.log('🔍 Executing admin work query:', query);
+            console.log('📊 Query values:', values);
+            
+            const [result] = await db.execute(query, values);
+            console.log('✅ Admin work item created:', result);
+            
+            // Return success response
+            res.status(201).json({
+                message: 'Document work item created successfully',
+                id: result.insertId,
+                work_type,
+                work_title,
+                status: 'pending'
             });
-        }
-        
-        console.log('✅ Creating document record...');
-        
-        // Insert document record into database
-        const [result] = await db.execute(
-            `INSERT INTO documents (work_type, work_title, work_description, priority, due_date, assigned_to, submitted_by, created_date, status)
-             VALUES (?, ?, ?, ?, ?, ?, ?, CURDATE(), 'pending')`,
-            [work_type, work_title, work_description, priority, due_date, assigned_to, submitted_by]
-        );
-        
-        console.log('✅ Document record created successfully:', result);
-        console.log('🆔 New document ID:', result.insertId);
-        
-        // Return the created document
-        const [newDocument] = await db.execute(
-            'SELECT * FROM documents WHERE id = ?',
-            [result.insertId]
-        );
-        
-        console.log('📋 Retrieved new document:', newDocument[0]);
-        
-        res.status(201).json({
-            message: 'Document uploaded successfully',
-            document: newDocument[0],
-            id: result.insertId
-        });
-        
-    } catch (error) {
-        console.error('❌ Error uploading document:', error);
-        res.status(500).json({ 
-            error: 'Failed to upload document',
-            details: error.message 
-        });
-    }
-});
-
-// Upload new document
-router.post('/', upload.single('file'), (req, res) => {
-    try {
-        if (!req.file) {
+            
+        } else if (!req.file) {
+            // Traditional file upload without file
             return res.status(400).json({
                 error: 'No file uploaded'
             });
-        }
-        
-        const { title, category, description, uploadedBy } = req.body;
-        
-        // Validate input
-        if (!title || !category || !uploadedBy) {
-            return res.status(400).json({
-                error: 'Title, category, and uploadedBy are required'
+        } else {
+            // Traditional file upload with file
+            const { title, category, description, uploadedBy } = req.body;
+            
+            // Validate input
+            if (!title || !category || !uploadedBy) {
+                return res.status(400).json({
+                    error: 'Title, category, and uploadedBy are required'
+                });
+            }
+            
+            // Get file type
+            const fileExt = path.extname(req.file.originalname).toLowerCase();
+            let fileType = 'Document';
+            
+            if (['.jpg', '.jpeg', '.png', '.gif'].includes(fileExt)) {
+                fileType = 'Image';
+            } else if (fileExt === '.pdf') {
+                fileType = 'PDF';
+            } else if (['.doc', '.docx'].includes(fileExt)) {
+                fileType = 'Word';
+            } else if (['.xls', '.xlsx'].includes(fileExt)) {
+                fileType = 'Excel';
+            } else if (['.ppt', '.pptx'].includes(fileExt)) {
+                fileType = 'PowerPoint';
+            }
+            
+            // Create new document record
+            const newDocument = {
+                id: documents.length + 1,
+                title,
+                type: fileType,
+                category,
+                uploadedBy: parseInt(uploadedBy),
+                uploadedDate: new Date().toISOString().split('T')[0],
+                fileName: req.file.filename,
+                filePath: `/uploads/documents/${req.file.filename}`,
+                size: req.file.size,
+                status: 'active',
+                description: description || ''
+            };
+            
+            documents.push(newDocument);
+            
+            res.status(201).json({
+                message: 'Document uploaded successfully',
+                document: newDocument
             });
         }
         
-        // Get file type
-        const fileExt = path.extname(req.file.originalname).toLowerCase();
-        let fileType = 'Document';
-        
-        if (['.jpg', '.jpeg', '.png', '.gif'].includes(fileExt)) {
-            fileType = 'Image';
-        } else if (fileExt === '.pdf') {
-            fileType = 'PDF';
-        } else if (['.doc', '.docx'].includes(fileExt)) {
-            fileType = 'Word';
-        } else if (['.xls', '.xlsx'].includes(fileExt)) {
-            fileType = 'Excel';
-        } else if (['.ppt', '.pptx'].includes(fileExt)) {
-            fileType = 'PowerPoint';
-        }
-        
-        // Create new document record
-        const newDocument = {
-            id: documents.length + 1,
-            title,
-            type: fileType,
-            category,
-            uploadedBy: parseInt(uploadedBy),
-            uploadedDate: new Date().toISOString().split('T')[0],
-            fileName: req.file.filename,
-            filePath: `/uploads/documents/${req.file.filename}`,
-            size: req.file.size,
-            status: 'active',
-            description: description || ''
-        };
-        
-        documents.push(newDocument);
-        
-        res.status(201).json({
-            message: 'Document uploaded successfully',
-            document: newDocument
-        });
-        
     } catch (error) {
-        console.error('Upload error:', error);
+        console.error('❌ Upload error:', error);
         res.status(500).json({
             error: 'File upload failed',
             details: error.message
