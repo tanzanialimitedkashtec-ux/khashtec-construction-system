@@ -1893,6 +1893,183 @@ function login(){
     loadMenu();
 }
 
+// Missing functions for HR menu items
+function loadPolicies() {
+    showContent(`<div class="card">
+        <h3>Manage Policies</h3>
+        <p><strong>HR Authority:</strong> View and manage company policies</p>
+        
+        <div class="policy-list">
+            <h4>Current Policies</h4>
+            <div id="policyContainer">
+                <div class="loading">Loading policies...</div>
+            </div>
+        </div>
+    </div>`);
+    
+    // Load policies from backend
+    loadPoliciesFromBackend();
+}
+
+function loadPoliciesFromBackend() {
+    fetch('/api/hse/policies')
+        .then(response => response.json())
+        .then(data => {
+            console.log('📋 Policies loaded:', data);
+            const container = document.getElementById('policyContainer');
+            
+            if (!data || !Array.isArray(data)) {
+                container.innerHTML = '<div class="error">No policies found or error loading policies</div>';
+                return;
+            }
+            
+            if (data.length === 0) {
+                container.innerHTML = '<div class="info">No policies available</div>';
+                return;
+            }
+            
+            let html = '<div class="policy-items">';
+            data.forEach(policy => {
+                html += `
+                    <div class="policy-item">
+                        <h5>${policy.work_title || 'Untitled Policy'}</h5>
+                        <p><strong>Type:</strong> ${policy.work_type || 'N/A'}</p>
+                        <p><strong>Status:</strong> <span class="status-${policy.status || 'pending'}">${policy.status || 'Pending'}</span></p>
+                        <p><strong>Created:</strong> ${policy.submitted_date || 'N/A'}</p>
+                        <div class="policy-actions">
+                            <button class="action" onclick="viewPolicy(${policy.id})">View</button>
+                            <button class="action" onclick="downloadPolicy(${policy.id})">Download</button>
+                        </div>
+                    </div>
+                `;
+            });
+            html += '</div>';
+            container.innerHTML = html;
+        })
+        .catch(error => {
+            console.error('❌ Error loading policies:', error);
+            document.getElementById('policyContainer').innerHTML = '<div class="error">Error loading policies: ' + error.message + '</div>';
+        });
+}
+
+function loadSeniorHiringRequests() {
+    showContent(`<div class="card">
+        <h3>Approve Senior Staff Hiring</h3>
+        <p><strong>HR Authority:</strong> Review and approve senior staff hiring requests</p>
+        
+        <div class="hiring-list">
+            <h4>Pending Senior Hiring Requests</h4>
+            <div id="hiringContainer">
+                <div class="loading">Loading hiring requests...</div>
+            </div>
+        </div>
+    </div>`);
+    
+    // Load hiring requests from backend
+    loadHiringRequestsFromBackend();
+}
+
+function loadHiringRequestsFromBackend() {
+    fetch('/api/hr/senior-hiring')
+        .then(response => response.json())
+        .then(data => {
+            console.log('📋 Hiring requests loaded:', data);
+            const container = document.getElementById('hiringContainer');
+            
+            if (!data || !Array.isArray(data)) {
+                container.innerHTML = '<div class="error">No hiring requests found or error loading requests</div>';
+                return;
+            }
+            
+            if (data.length === 0) {
+                container.innerHTML = '<div class="info">No pending senior hiring requests</div>';
+                return;
+            }
+            
+            let html = '<div class="hiring-items">';
+            data.forEach(request => {
+                html += `
+                    <div class="hiring-item">
+                        <h5>${request.work_title || 'Untitled Request'}</h5>
+                        <p><strong>Position:</strong> ${request.position || 'N/A'}</p>
+                        <p><strong>Department:</strong> ${request.department || 'N/A'}</p>
+                        <p><strong>Status:</strong> <span class="status-${request.status || 'pending'}">${request.status || 'Pending'}</span></p>
+                        <div class="hiring-actions">
+                            <button class="action" onclick="approveHiring(${request.id})">Approve</button>
+                            <button class="action" onclick="rejectHiring(${request.id})">Reject</button>
+                            <button class="action" onclick="requestInfo(${request.id})">Request Info</button>
+                        </div>
+                    </div>
+                `;
+            });
+            html += '</div>';
+            container.innerHTML = html;
+        })
+        .catch(error => {
+            console.error('❌ Error loading hiring requests:', error);
+            document.getElementById('hiringContainer').innerHTML = '<div class="error">Error loading hiring requests: ' + error.message + '</div>';
+        });
+}
+
+function loadWorkforceBudgets() {
+    showContent(`<div class="card">
+        <h3>Approve Workforce Budget</h3>
+        <p><strong>HR Authority:</strong> Review and approve workforce budget requests</p>
+        
+        <div class="budget-list">
+            <h4>Pending Budget Requests</h4>
+            <div id="budgetContainer">
+                <div class="loading">Loading budget requests...</div>
+            </div>
+        </div>
+    </div>`);
+    
+    // Load budget requests from backend
+    loadBudgetRequestsFromBackend();
+}
+
+function loadBudgetRequestsFromBackend() {
+    fetch('/api/finance/workforce-budget')
+        .then(response => response.json())
+        .then(data => {
+            console.log('📋 Budget requests loaded:', data);
+            const container = document.getElementById('budgetContainer');
+            
+            if (!data || !Array.isArray(data)) {
+                container.innerHTML = '<div class="error">No budget requests found or error loading requests</div>';
+                return;
+            }
+            
+            if (data.length === 0) {
+                container.innerHTML = '<div class="info">No pending budget requests</div>';
+                return;
+            }
+            
+            let html = '<div class="budget-items">';
+            data.forEach(request => {
+                html += `
+                    <div class="budget-item">
+                        <h5>${request.work_title || 'Untitled Request'}</h5>
+                        <p><strong>Department:</strong> ${request.department || 'N/A'}</p>
+                        <p><strong>Amount:</strong> TZS ${request.amount ? parseInt(request.amount).toLocaleString() : 'N/A'}</p>
+                        <p><strong>Status:</strong> <span class="status-${request.status || 'pending'}">${request.status || 'Pending'}</span></p>
+                        <div class="budget-actions">
+                            <button class="action" onclick="approveBudget(${request.id})">Approve</button>
+                            <button class="action" onclick="rejectBudget(${request.id})">Reject</button>
+                            <button class="action" onclick="modifyBudget(${request.id})">Modify</button>
+                        </div>
+                    </div>
+                `;
+            });
+            html += '</div>';
+            container.innerHTML = html;
+        })
+        .catch(error => {
+            console.error('❌ Error loading budget requests:', error);
+            document.getElementById('budgetContainer').innerHTML = '<div class="error">Error loading budget requests: ' + error.message + '</div>';
+        });
+}
+
 function logout(){
     location.reload();
 }

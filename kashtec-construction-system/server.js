@@ -197,7 +197,7 @@ app.get('/api/status', async (req, res) => {
             
             // Get table list
             const [tableRows] = await db.execute('SHOW TABLES');
-            tables = tableRows.map(table => Object.values(table)[0]);
+            tables = Array.from(tableRows).map(table => Object.values(table)[0]);
             console.log('✅ Database connected, tables:', tables);
         } catch (error) {
             dbError = error.message;
