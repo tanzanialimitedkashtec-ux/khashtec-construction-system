@@ -5083,7 +5083,15 @@ function saveContract() {
     
     // Validate required fields
     if (!contract.employee || !contract.contractType || !contract.startDate || !contract.salary) {
-        customAlert('Please fill in all required fields:\n\n• Employee\n• Contract Type\n• Start Date\n• Salary', "Validation Error", "error");
+        showRealProblemNotification('VALIDATION_ERROR', {
+            message: 'Please fill in all required fields for contract.',
+            missingFields: {
+                employee: !contract.employee,
+                contractType: !contract.contractType,
+                startDate: !contract.startDate,
+                salary: !contract.salary
+            }
+        });
         return false;
     }
     
@@ -5098,8 +5106,12 @@ function saveContract() {
         submitted_by: 'HR Manager'
     };
     
-    // Show loading message
-    customAlert('Processing contract...', "Processing", "info");
+    // Show loading notification
+    showRealProblemNotification('SAVING', {
+        message: `Saving contract for ${contract.employee}...`,
+        contractType: contract.contractType,
+        employee: contract.employee
+    });
     
     // Send data to backend API
     fetch('/api/work/hr', {
@@ -5121,13 +5133,57 @@ function saveContract() {
             throw new Error(data.error);
         }
         
-        customAlert(`Contract saved successfully!\n\nEmployee: ${contract.employee}\nContract Type: ${contract.contractType}\nSalary: TZS ${contract.salary}\nContract ID: ${data.id}\n\n🎉 Contract saved to database!`, "Contract Saved", "success");
+        // Show detailed success notification
+        showRealProblemNotification('SUCCESS', {
+            message: `✅ Contract saved successfully!\n\n📋 Details:\n• Employee: ${contract.employee}\n• Contract Type: ${contract.contractType}\n• Salary: TZS ${contract.salary}\n• Start Date: ${contract.startDate}\n• End Date: ${contract.endDate}\n• Status: ${contract.status}\n• Database ID: ${data.id}\n\n🎉 Contract saved to database without page refresh!`,
+            contractId: data.id,
+            employee: contract.employee,
+            contractType: contract.contractType,
+            timestamp: new Date().toLocaleString()
+        });
         
         document.getElementById('contractForm').reset();
     })
     .catch(error => {
         console.error('❌ Error saving contract:', error);
-        customAlert(`Failed to save contract: ${error.message}\n\nPlease check:\n• All required fields are filled\n• Network connection is stable\n• Server is running properly`, "Save Error", "error");
+        
+        // Determine specific error cause
+        let errorCause = 'Unknown error occurred';
+        let troubleshooting = '';
+        
+        if (error.message.includes('NetworkError') || error.message.includes('fetch')) {
+            errorCause = 'Network connection failed';
+            troubleshooting = '• Check internet connection\n• Verify server is running\n• Try again in a moment';
+        } else if (error.message.includes('400')) {
+            errorCause = 'Invalid contract data';
+            troubleshooting = '• Fill all required fields correctly\n• Check employee name\n• Verify contract type\n• Ensure salary is valid\n• Check start date format';
+        } else if (error.message.includes('404')) {
+            errorCause = 'HR endpoint not found';
+            troubleshooting = '• Server routing issue\n• Contact system administrator\n• Check if HR API is properly configured';
+        } else if (error.message.includes('500')) {
+            errorCause = 'Server internal error';
+            troubleshooting = '• Database connection issue\n• Server configuration problem\n• Contact system administrator';
+        } else if (error.message.includes('validation') || error.message.includes('required')) {
+            errorCause = 'Form validation failed';
+            troubleshooting = '• Fill all required fields\n• Check field formats\n• Ensure employee exists\n• Verify contract type is valid';
+        } else if (error.message.includes('database') || error.message.includes('SQL')) {
+            errorCause = 'Database operation failed';
+            troubleshooting = '• Database connection issue\n• HR work table might not exist\n• Contact system administrator';
+        } else if (error.message.includes('duplicate') || error.message.includes('unique')) {
+            errorCause = 'Duplicate contract record';
+            troubleshooting = '• Contract for this employee already exists\n• Use different employee name or contract ID\n• Check existing contracts';
+        }
+        
+        // Show detailed error notification
+        showRealProblemNotification('SYSTEM_ERROR', {
+            error: error.message,
+            cause: errorCause,
+            troubleshooting: troubleshooting,
+            message: `❌ Contract saving failed!\n\n🔍 Error Cause: ${errorCause}\n\n🛠️ Troubleshooting:\n${troubleshooting}\n\n📝 Technical Details:\n${error.message}\n\n💡 Please fix the issue and try again.`,
+            employee: contract.employee,
+            contractType: contract.contractType,
+            timestamp: new Date().toLocaleString()
+        });
     });
     
     return false;
