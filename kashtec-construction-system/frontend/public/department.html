@@ -7835,7 +7835,7 @@ function saveSafetyPolicy() {
     customAlert('Uploading safety policy...', "Processing", "info");
     
     // Send data to backend API
-    fetch('/api/hse/work', {
+    fetch('/api/hse/hse', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',

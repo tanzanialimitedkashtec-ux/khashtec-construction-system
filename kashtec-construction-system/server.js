@@ -268,7 +268,7 @@ app.get('/api/tables', async (req, res) => {
         const db = require('./database/config/database');
         const [rows] = await db.execute('SHOW TABLES');
         console.log('📊 Raw table rows from API:', rows);
-        const tableNames = rows.map(table => Object.values(table)[0]);
+        const tableNames = Array.from(rows).map(table => Object.values(table)[0]);
         res.status(200).json({
             success: true,
             tables: tableNames,
