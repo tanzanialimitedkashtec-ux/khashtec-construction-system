@@ -7825,6 +7825,8 @@ function saveSafetyPolicy() {
         work_type: 'Safety Policy Upload',
         work_title: `Safety Policy - ${policy.title}`,
         work_description: `Safety Policy: ${policy.title}\n\nCategory: ${policy.category}\nDescription: ${policy.description}\nCompliance Level: ${policy.complianceLevel}\nApplicable To: ${policy.applicableTo}\nTraining Required: ${policy.training.join(', ')}\nEffective Date: ${policy.effectiveDate}\nReview Date: ${policy.reviewDate}\nUploaded By: ${policy.uploadedBy}`,
+        incident_type: 'Policy Update', // Required for HSE department
+        severity: policy.complianceLevel === 'critical' ? 'Critical' : 'Medium', // Required for HSE department
         priority: policy.complianceLevel === 'critical' ? 'High' : 'Medium',
         due_date: policy.effectiveDate,
         assigned_to: 'HSE Manager',
