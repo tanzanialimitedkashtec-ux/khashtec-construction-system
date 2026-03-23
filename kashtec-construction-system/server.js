@@ -314,28 +314,29 @@ app.use('/api/policies', asyncHandler(async (req, res, next) => {
     return policyRoutes(req, res, next);
 }));
 
+// Mount department-specific routes to their correct handlers
 app.use('/api/hr', asyncHandler(async (req, res, next) => {
-    return policyRoutes(req, res, next);
+    return workRoutes(req, res, next); // Use workRoutes for HR department
 }));
 
 app.use('/api/finance', asyncHandler(async (req, res, next) => {
-    return policyRoutes(req, res, next);
+    return workRoutes(req, res, next); // Use workRoutes for Finance department
 }));
 
 app.use('/api/hse', asyncHandler(async (req, res, next) => {
-    return policyRoutes(req, res, next);
+    return workRoutes(req, res, next); // Use workRoutes for HSE department
 }));
 
 app.use('/api/project', asyncHandler(async (req, res, next) => {
-    return policyRoutes(req, res, next);
+    return workRoutes(req, res, next); // Use workRoutes for Project department
 }));
 
 app.use('/api/realestate', asyncHandler(async (req, res, next) => {
-    return policyRoutes(req, res, next);
+    return workRoutes(req, res, next); // Use workRoutes for Real Estate department
 }));
 
 app.use('/api/admin', asyncHandler(async (req, res, next) => {
-    return policyRoutes(req, res, next);
+    return workRoutes(req, res, next); // Use workRoutes for Admin department
 }));
 
 app.use('/api/senior-hiring', asyncHandler(async (req, res, next) => {
