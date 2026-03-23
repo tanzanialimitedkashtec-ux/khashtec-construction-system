@@ -8,7 +8,7 @@ const db = require('../../database/config/database');
 router.get('/', async (req, res) => {
     try {
         console.log('🔍 Fetching all HSE work records...');
-        const [hseWork] = await db.execute('SELECT * FROM policies ORDER BY submitted_date DESC');
+        const [hseWork] = await db.execute('SELECT * FROM hse_work ORDER BY submitted_date DESC');
         console.log('📋 HSE Work records found:', hseWork.length);
         res.json(hseWork);
     } catch (error) {
@@ -21,7 +21,7 @@ router.get('/', async (req, res) => {
 router.get('/:id', async (req, res) => {
     try {
         console.log('🔍 Fetching HSE work record:', req.params.id);
-        const [hseWork] = await db.execute('SELECT * FROM policies WHERE id = ?', [req.params.id]);
+        const [hseWork] = await db.execute('SELECT * FROM hse_work WHERE id = ?', [req.params.id]);
         
         if (hseWork.length === 0) {
                 return res.status(404).json({ error: 'HSE work record not found' });
@@ -57,7 +57,7 @@ router.post('/:id/approve', async (req, res) => {
         }
         
         // Check if policy exists and is pending
-        const [existingPolicies] = await db.execute('SELECT * FROM policies WHERE id = ?', [policyId]);
+        const [existingPolicies] = await db.execute('SELECT * FROM hse_work WHERE id = ?', [policyId]);
         
         if (existingPolicies.length === 0) {
             console.log('❌ Policy not found:', policyId);
@@ -83,7 +83,7 @@ router.post('/:id/approve', async (req, res) => {
         
         // Update policy status
         const [result] = await db.execute(
-            'UPDATE policies SET status = ?, approved_by = ?, approved_date = CURDATE() WHERE id = ?',
+            'UPDATE hse_work SET status = ?, approved_by = ?, approved_date = CURDATE() WHERE id = ?',
             ['Approved', approvedBy, policyId]
         );
         
@@ -91,7 +91,7 @@ router.post('/:id/approve', async (req, res) => {
         console.log('📊 Rows affected:', result.affectedRows);
         
         // Get updated policy details for response
-        const [updatedPolicies] = await db.execute('SELECT * FROM policies WHERE id = ?', [policyId]);
+        const [updatedPolicies] = await db.execute('SELECT * FROM hse_work WHERE id = ?', [policyId]);
         const updatedPolicy = updatedPolicies[0];
         
         console.log('📋 Updated policy details:', updatedPolicy);
@@ -145,7 +145,7 @@ router.post('/:id/reject', async (req, res) => {
         }
         
         // Check if policy exists
-        const [existingPolicies] = await db.execute('SELECT * FROM policies WHERE id = ?', [policyId]);
+        const [existingPolicies] = await db.execute('SELECT * FROM hse_work WHERE id = ?', [policyId]);
         
         if (existingPolicies.length === 0) {
             console.log('❌ Policy not found:', policyId);
@@ -179,7 +179,7 @@ router.post('/:id/reject', async (req, res) => {
         console.log('📋 Rejection ID:', rejectionResult.insertId);
         
         // Get updated policy details for response
-        const [updatedPolicies] = await db.execute('SELECT * FROM policies WHERE id = ?', [policyId]);
+        const [updatedPolicies] = await db.execute('SELECT * FROM hse_work WHERE id = ?', [policyId]);
         const updatedPolicy = updatedPolicies[0];
         
         console.log('📋 Updated policy details:', updatedPolicy);
@@ -233,7 +233,7 @@ router.post('/:id/revision', async (req, res) => {
         }
         
         // Check if policy exists
-        const [existingPolicies] = await db.execute('SELECT * FROM policies WHERE id = ?', [policyId]);
+        const [existingPolicies] = await db.execute('SELECT * FROM hse_work WHERE id = ?', [policyId]);
         
         if (existingPolicies.length === 0) {
             console.log('❌ Policy not found:', policyId);
@@ -267,7 +267,7 @@ router.post('/:id/revision', async (req, res) => {
         console.log('📋 Revision ID:', revisionResult.insertId);
         
         // Get updated policy details for response
-        const [updatedPolicies] = await db.execute('SELECT * FROM policies WHERE id = ?', [policyId]);
+        const [updatedPolicies] = await db.execute('SELECT * FROM hse_work WHERE id = ?', [policyId]);
         const updatedPolicy = updatedPolicies[0];
         
         console.log('📋 Updated policy details:', updatedPolicy);
@@ -858,7 +858,7 @@ async function getPolicyStats() {
                 SUM(CASE WHEN status = 'Approved' THEN 1 ELSE 0 END) as approved,
                 SUM(CASE WHEN status = 'Rejected' THEN 1 ELSE 0 END) as rejected,
                 SUM(CASE WHEN status = 'Revision Requested' THEN 1 ELSE 0 END) as revisionRequested
-            FROM policies`
+            FROM hse_work`
         );
         return stats[0];
     } catch (error) {
