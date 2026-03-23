@@ -4301,44 +4301,24 @@ function saveEmployee() {
     
     // Validate required fields
     if (!employee.fullName || !employee.phone || !employee.gmail || !employee.nida || !employee.contract || !employee.jobCategory || !employee.department) {
-        showRealProblemNotification('VALIDATION_ERROR', {
-            message: 'Please fill in all required fields for employee registration.',
-            missingFields: {
-                fullName: !employee.fullName,
-                phone: !employee.phone,
-                gmail: !employee.gmail,
-                nida: !employee.nida,
-                contract: !employee.contract,
-                jobCategory: !employee.jobCategory,
-                department: !employee.department
-            }
-        });
+        customAlert('Please fill in all required fields marked with *', "Validation Error", "error");
         return false;
     }
     
-    // Show loading notification
-    showRealProblemNotification('SAVING', {
-        message: `Registering employee ${employee.fullName}...`,
-        employee: employee.fullName,
-        department: employee.department
-    });
+    // Show loading message
+    customAlert('Registering employee...', "Processing", "info");
     
     // Send data to backend API
     fetch('/api/employees', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
-            'Accept': 'application/json'
+            'Authorization': `Bearer ${sessionManager.getToken()}`
         },
         body: JSON.stringify(employee)
     })
-    .then(response => {
-        console.log('📡 Employee Registration API Response status:', response.status);
-        return response.json();
-    })
+    .then(response => response.json())
     .then(data => {
-        console.log('📊 Employee Registration API Response data:', data);
-        
         if (data.error) {
             throw new Error(data.error);
         }
@@ -4353,64 +4333,8 @@ function saveEmployee() {
             fileUploadMessage = `\n📄 Files ready for upload: ${[agreementFile, cvFile, profileFile].filter(f => f).length} file(s)`;
         }
         
-        // Show detailed success notification
-        showRealProblemNotification('SUCCESS', {
-            message: `✅ Employee registered successfully!${fileUploadMessage}\n\n📋 Details:\n• ID: ${data.id}\n• Name: ${employee.fullName}\n• Department: ${employee.department}\n• Job Category: ${employee.jobCategory}\n• Contract: ${employee.contract}\n• Status: ${employee.status}\n• Database ID: ${data.id}\n\n🎉 Employee has been added to the database without page refresh!`,
-            employeeId: data.id,
-            employeeName: employee.fullName,
-            department: employee.department,
-            timestamp: new Date().toLocaleString()
-        });
-        
-        document.getElementById('employeeForm').reset();
-    })
-    .catch(error => {
-        console.error('❌ Error registering employee:', error);
-        
-        // Determine specific error cause
-        let errorCause = 'Unknown error occurred';
-        let troubleshooting = '';
-        
-        if (error.message.includes('NetworkError') || error.message.includes('fetch')) {
-            errorCause = 'Network connection failed';
-            troubleshooting = '• Check internet connection\n• Verify server is running\n• Try again in a moment';
-        } else if (error.message.includes('400')) {
-            errorCause = 'Invalid employee data';
-            troubleshooting = '• Fill all required fields correctly\n• Check phone number format\n• Verify email format\n• Ensure NIDA number is valid';
-        } else if (error.message.includes('401')) {
-            errorCause = 'Authentication required';
-            troubleshooting = '• Authentication has been removed\n• Try again without authentication\n• Contact system administrator';
-        } else if (error.message.includes('403')) {
-            errorCause = 'Access forbidden';
-            troubleshooting = '• Access restrictions have been removed\n• Try again\n• Contact system administrator';
-        } else if (error.message.includes('404')) {
-            errorCause = 'Employee endpoint not found';
-            troubleshooting = '• Server routing issue\n• Contact system administrator\n• Check if API is properly configured';
-        } else if (error.message.includes('500')) {
-            errorCause = 'Server internal error';
-            troubleshooting = '• Database connection issue\n• Server configuration problem\n• Contact system administrator';
-        } else if (error.message.includes('database') || error.message.includes('SQL')) {
-            errorCause = 'Database operation failed';
-            troubleshooting = '• Database connection issue\n• Employee table might not exist\n• Contact system administrator';
-        } else if (error.message.includes('duplicate') || error.message.includes('unique')) {
-            errorCause = 'Duplicate employee record';
-            troubleshooting = '• Employee with this NIDA already exists\n• Use different NIDA number\n• Check existing employees';
-        }
-        
-        // Show detailed error notification
-        showRealProblemNotification('SYSTEM_ERROR', {
-            error: error.message,
-            cause: errorCause,
-            troubleshooting: troubleshooting,
-            message: `❌ Employee registration failed!\n\n🔍 Error Cause: ${errorCause}\n\n🛠️ Troubleshooting:\n${troubleshooting}\n\n📝 Technical Details:\n${error.message}\n\n💡 Please fix the issue and try again.`,
-            employeeName: employee.fullName,
-            department: employee.department,
-            timestamp: new Date().toLocaleString()
-        });
-    });
-    
-    return false;
-}
+        // Success message
+        customAlert(`Employee ${employee.fullName} registered successfully!${fileUploadMessage}\n\n📋 Details:\n• ID: ${data.id}\n• Department: ${employee.department}\n• Job Category: ${employee.jobCategory}\n• Contract: ${employee.contract}\n• Status: ${employee.status}\n\n✅ Employee has been added to the database.`, "Employee Registered", "success");
         
         // Reset form
         document.getElementById('employeeForm').reset();
