@@ -165,41 +165,87 @@ router.post('/:id/reject', async (req, res) => {
 // Request revision
 router.post('/:id/revision', async (req, res) => {
     try {
+        console.log('🔄 Policy revision request received');
+        console.log('📋 Request headers:', req.headers);
+        console.log('📝 Request body:', req.body);
+        console.log('📂 Policy ID parameter:', req.params.id);
+        
         const { revisionRequest, requestedBy } = req.body;
         const policyId = req.params.id;
         
-        console.log('🔄 Requesting revision for policy:', policyId, 'by:', requestedBy);
+        console.log('✅ Requesting revision for policy:', policyId, 'by:', requestedBy);
+        
+        // Validate input
+        if (!policyId || !revisionRequest || !requestedBy) {
+            console.log('❌ Validation failed - missing required fields');
+            return res.status(400).json({ 
+                error: 'Missing policy ID, revision request, or requestedBy field',
+                received: { policyId, revisionRequest, requestedBy }
+            });
+        }
+        
+        // Check if policy exists
+        const [existingPolicies] = await db.execute('SELECT * FROM policies WHERE id = ?', [policyId]);
+        
+        if (existingPolicies.length === 0) {
+            console.log('❌ Policy not found:', policyId);
+            return res.status(404).json({ 
+                error: 'Policy not found',
+                policyId: policyId
+            });
+        }
+        
+        const policy = existingPolicies[0];
+        console.log('📋 Current policy status:', policy.status);
+        
+        console.log('✅ Validation passed, creating revision request...');
         
         // Update policy status
-        await db.execute(
-                'UPDATE policies SET status = ?, revision_request = ? WHERE id = ?',
-                ['Revision Requested', revisionRequest, policyId]
+        const [result] = await db.execute(
+            'UPDATE policies SET status = ?, revision_request = ? WHERE id = ?',
+            ['Revision Requested', revisionRequest, policyId]
         );
+        
+        console.log('✅ Database update result:', result);
+        console.log('📊 Rows affected:', result.affectedRows);
         
         // Add to revision table
-        await db.execute(
-                'INSERT INTO policy_revisions (policy_id, revision_request, requested_by, requested_by_role) VALUES (?, ?, ?, ?)',
-                [policyId, revisionRequest, requestedBy, 'HR Manager']
+        const [revisionResult] = await db.execute(
+            'INSERT INTO policy_revisions (policy_id, revision_request, requested_by, requested_by_role) VALUES (?, ?, ?, ?)',
+            [policyId, revisionRequest, requestedBy, 'HR Manager']
         );
         
-        // Get policy details for notification
-        const [policies] = await db.execute('SELECT * FROM policies WHERE id = ?', [policyId]);
-        const policy = policies[0];
+        console.log('✅ Revision record created:', revisionResult);
+        console.log('📋 Revision ID:', revisionResult.insertId);
+        
+        // Get updated policy details for response
+        const [updatedPolicies] = await db.execute('SELECT * FROM policies WHERE id = ?', [policyId]);
+        const updatedPolicy = updatedPolicies[0];
+        
+        console.log('📋 Updated policy details:', updatedPolicy);
         
         // Send notification to submitting department
-        console.log('📧 Sending revision request notification to:', policy.submitted_by);
+        console.log('📧 Sending revision notification to:', policy.submitted_by);
         
         res.json({ 
-                message: 'Revision requested successfully',
-                policy: {
-                        ...policy,
-                        status: 'Revision Requested',
-                        revision_request: revisionRequest
-                }
+            message: 'Revision requested successfully',
+            id: revisionResult.insertId,
+            policy: {
+                ...updatedPolicy,
+                status: 'Revision Requested',
+                revision_request: revisionRequest
+            }
         });
+        
+        console.log('✅ Policy revision request completed successfully!');
+        
     } catch (error) {
         console.error('❌ Error requesting revision:', error);
-        res.status(500).json({ error: 'Failed to request revision' });
+        console.error('❌ Error stack:', error.stack);
+        res.status(500).json({ 
+            error: 'Failed to request revision',
+            details: error.message 
+        });
     }
 });
 

@@ -2843,21 +2843,47 @@ function submitRevisionRequest(policyId) {
     
     // Validation
     if (!revisionType || !revisionDetails || !revisionPriority || !expectedTimeline) {
-        showNotification('Validation Error', 'Please fill in all required fields', 'error');
+        showRealProblemNotification('VALIDATION_ERROR', {
+            message: 'Please fill in all required fields for revision request.',
+            missingFields: {
+                revisionType: !revisionType,
+                revisionDetails: !revisionDetails,
+                revisionPriority: !revisionPriority,
+                expectedTimeline: !expectedTimeline
+            }
+        });
         return;
     }
     
-    // Show loading state
-    const submitButton = event.target || event.srcElement;
-    const originalText = submitButton.innerText;
-    submitButton.innerText = 'Submitting...';
-    submitButton.disabled = true;
+    // Show loading notification
+    showRealProblemNotification('SAVING', {
+        message: `Submitting revision request for policy ${policyId}...`,
+        policyId: policyId,
+        revisionType: revisionType
+    });
     
-    // Simulate API call
-    setTimeout(() => {
-        // Store revision request in memory (localStorage removed)
-        console.log('📝 Policy revision requested:', policyId);
-        // TODO: Send revision request to API instead of localStorage
+    // Send revision request to backend API
+    fetch(`/api/policies/${policyId}/revision`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+        },
+        body: JSON.stringify({
+            revisionRequest: `Type: ${revisionType}\n\nDetails: ${revisionDetails}\nPriority: ${revisionPriority}\nExpected Timeline: ${expectedTimeline}`,
+            requestedBy: 'HR Manager'
+        })
+    })
+    .then(response => {
+        console.log('📡 Policy Revision API Response status:', response.status);
+        return response.json();
+    })
+    .then(data => {
+        console.log('📊 Policy Revision API Response data:', data);
+        
+        if (data.error) {
+            throw new Error(data.error);
+        }
         
         // Update UI
         const policyItem = document.querySelector(`[onclick*="${policyId}"]`).closest('.policy-item');
@@ -2873,13 +2899,56 @@ function submitRevisionRequest(policyId) {
             btn.style.opacity = '0.5';
         });
         
-        // Close modal and show success message
-        closeModal();
-        showNotification('Revision Request Submitted', `Revision request for policy ${policyId} has been submitted to HR department. Expected review completion: ${expectedTimeline}`, 'warning');
+        // Show detailed success notification
+        showRealProblemNotification('SUCCESS', {
+            message: `✅ Revision request submitted successfully!\n\n📋 Details:\n• Policy ID: ${policyId}\n• Revision Type: ${revisionType}\n• Priority: ${revisionPriority}\n• Expected Review: ${expectedTimeline}\n• Requested by: HR Manager\n• Status: Revision Requested\n• Database ID: ${data.id || policyId}\n\n🎉 Revision request saved to database without page refresh!`,
+            policyId: policyId,
+            revisionType: revisionType,
+            timestamp: new Date().toLocaleString()
+        });
         
-        submitButton.innerText = originalText;
-        submitButton.disabled = false;
-    }, 1500);
+        // Close modal
+        closeModal();
+        
+    })
+    .catch(error => {
+        console.error('❌ Error requesting revision:', error);
+        
+        // Determine specific error cause
+        let errorCause = 'Unknown error occurred';
+        let troubleshooting = '';
+        
+        if (error.message.includes('NetworkError') || error.message.includes('fetch')) {
+            errorCause = 'Network connection failed';
+            troubleshooting = '• Check internet connection\n• Verify server is running\n• Try again in a moment';
+        } else if (error.message.includes('400')) {
+            errorCause = 'Invalid revision data';
+            troubleshooting = '• Fill all required fields correctly\n• Check revision type selection\n• Verify expected timeline\n• Ensure details are provided';
+        } else if (error.message.includes('404')) {
+            errorCause = 'Policy not found';
+            troubleshooting = '• Policy ID may not exist\n• Check policy list\n• Verify policy is still active';
+        } else if (error.message.includes('500')) {
+            errorCause = 'Server internal error';
+            troubleshooting = '• Database connection issue\n• Server configuration problem\n• Contact system administrator';
+        } else if (error.message.includes('database') || error.message.includes('SQL')) {
+            errorCause = 'Database operation failed';
+            troubleshooting = '• Database connection issue\n• Policy revisions table might not exist\n• Contact system administrator';
+        }
+        
+        // Show detailed error notification
+        showRealProblemNotification('SYSTEM_ERROR', {
+            error: error.message,
+            cause: errorCause,
+            troubleshooting: troubleshooting,
+            message: `❌ Revision request failed!\n\n🔍 Error Cause: ${errorCause}\n\n🛠️ Troubleshooting:\n${troubleshooting}\n\n📝 Technical Details:\n${error.message}\n\n💡 Please fix the issue and try again.`,
+            policyId: policyId,
+            revisionType: revisionType || 'Unknown',
+            timestamp: new Date().toLocaleString()
+        });
+        
+        // Close modal
+        closeModal();
+    });
 }
 
 function submitRejection(policyId) {
