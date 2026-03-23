@@ -400,7 +400,44 @@ router.post('/hr/work', async (req, res) => {
         });
     } catch (error) {
         console.error('❌ Error creating HR work:', error);
-        res.status(500).json({ error: 'Failed to create HR work record' });
+        console.error('❌ Error details:', {
+            message: error.message,
+            code: error.code,
+            errno: error.errno,
+            sqlState: error.sqlState,
+            sqlMessage: error.sqlMessage
+        });
+        
+        // Provide specific error information
+        let errorMessage = 'Failed to create HR work record';
+        let statusCode = 500;
+        
+        if (error.code === 'ER_NO_SUCH_TABLE') {
+            errorMessage = `Database table 'hr_work' does not exist. Please run database migrations.`;
+            statusCode = 500;
+        } else if (error.code === 'ER_BAD_NULL_ERROR') {
+            errorMessage = 'Required field is missing. Please check all required fields are provided.';
+            statusCode = 400;
+        } else if (error.code === 'ER_DUP_ENTRY') {
+            errorMessage = 'Duplicate entry. This record may already exist.';
+            statusCode = 409;
+        } else if (error.code === 'ECONNREFUSED') {
+            errorMessage = 'Database connection refused. Please check database server is running.';
+            statusCode = 503;
+        } else if (error.code === 'ENOTFOUND') {
+            errorMessage = 'Database host not found. Please check database configuration.';
+            statusCode = 503;
+        }
+        
+        res.status(statusCode).json({ 
+            error: errorMessage,
+            technical: error.message,
+            code: error.code,
+            details: {
+                sqlState: error.sqlState,
+                errno: error.errno
+            }
+        });
     }
 });
 
@@ -480,7 +517,44 @@ router.post('/hse/work', async (req, res) => {
         });
     } catch (error) {
         console.error('❌ Error creating HSE work:', error);
-        res.status(500).json({ error: 'Failed to create HSE work record' });
+        console.error('❌ Error details:', {
+            message: error.message,
+            code: error.code,
+            errno: error.errno,
+            sqlState: error.sqlState,
+            sqlMessage: error.sqlMessage
+        });
+        
+        // Provide specific error information
+        let errorMessage = 'Failed to create HSE work record';
+        let statusCode = 500;
+        
+        if (error.code === 'ER_NO_SUCH_TABLE') {
+            errorMessage = `Database table 'hse_work' does not exist. Please run database migrations.`;
+            statusCode = 500;
+        } else if (error.code === 'ER_BAD_NULL_ERROR') {
+            errorMessage = 'Required field is missing. Please check all required fields are provided.';
+            statusCode = 400;
+        } else if (error.code === 'ER_DUP_ENTRY') {
+            errorMessage = 'Duplicate entry. This record may already exist.';
+            statusCode = 409;
+        } else if (error.code === 'ECONNREFUSED') {
+            errorMessage = 'Database connection refused. Please check database server is running.';
+            statusCode = 503;
+        } else if (error.code === 'ENOTFOUND') {
+            errorMessage = 'Database host not found. Please check database configuration.';
+            statusCode = 503;
+        }
+        
+        res.status(statusCode).json({ 
+            error: errorMessage,
+            technical: error.message,
+            code: error.code,
+            details: {
+                sqlState: error.sqlState,
+                errno: error.errno
+            }
+        });
     }
 });
 

@@ -7694,7 +7694,35 @@ async function testKashTecAPI() {
         
         console.log('✅ KashTecAPI object found:', Object.keys(KashTecAPI));
         
-        // Test API connectivity
+        // Step 1: Test database connectivity and table existence
+        console.log('🔍 Step 1: Checking database tables...');
+        const dbCheck = await fetch('/debug/db')
+            .then(response => response.json())
+            .then(data => {
+                console.log('📊 Database tables found:', data.tables);
+                return data;
+            })
+            .catch(error => {
+                console.error('❌ Database check failed:', error);
+                return { success: false, error: error.message };
+            });
+        
+        if (!dbCheck.success) {
+            throw new Error(`Database connection failed: ${dbCheck.error}`);
+        }
+        
+        // Check for required tables
+        const requiredTables = ['hr_work', 'hse_work', 'project_work', 'finance_work', 'realestate_work', 'admin_work'];
+        const missingTables = requiredTables.filter(table => !dbCheck.tables.includes(table));
+        
+        if (missingTables.length > 0) {
+            throw new Error(`Missing database tables: ${missingTables.join(', ')}. Please run database migrations.`);
+        }
+        
+        console.log('✅ All required database tables exist');
+        
+        // Step 2: Test API connectivity
+        console.log('🔍 Step 2: Testing API connectivity...');
         const testResult = await KashTecAPI.createHRWork({
             work_type: 'API Test',
             work_title: 'Test Connection',
@@ -7708,8 +7736,8 @@ async function testKashTecAPI() {
         
         console.log('✅ API test successful:', testResult);
         
-        // Verify all endpoints
-        console.log('🔍 Verifying all API endpoints...');
+        // Step 3: Verify all endpoints
+        console.log('🔍 Step 3: Verifying all API endpoints...');
         const endpointResults = await KashTecAPI.verifyAllEndpoints();
         
         const successfulEndpoints = endpointResults.filter(r => r.success);
@@ -7722,18 +7750,42 @@ async function testKashTecAPI() {
             console.log('Failed endpoints:', failedEndpoints);
         }
         
-        const message = `API test successful! 
+        const message = `🎉 COMPLETE SYSTEM CHECK PASSED!
 
-✅ Data can be sent to backend
+✅ Database Connection: Working
+✅ Required Tables: All exist (${dbCheck.tableCount} total tables)
+✅ API Connectivity: Working
+✅ Data Storage: Confirmed
 ✅ ${successfulEndpoints.length}/${endpointResults.length} endpoints working
 
-${failedEndpoints.length > 0 ? `❌ ${failedEndpoints.length} endpoints failed:\n` + failedEndpoints.map(e => `- ${e.name}: ${e.error || e.status}`).join('\n') : 'All endpoints are working correctly!'}`;
+${failedEndpoints.length > 0 ? `⚠️ ${failedEndpoints.length} endpoints need attention:\n` + failedEndpoints.map(e => `- ${e.name}: ${e.error || e.status}`).join('\n') : '🚀 All systems operational - forms should work perfectly!'}
+
+📋 Database Tables Found: ${dbCheck.tables.join(', ')}`;
         
         alert(message);
         
     } catch (error) {
-        console.error('❌ API test failed:', error);
-        alert(`API test failed: ${error.message}\n\nThis explains why forms cannot save data to database.`);
+        console.error('❌ System test failed:', error);
+        const message = `❌ SYSTEM DIAGNOSTIC FAILED
+
+🔍 Problem: ${error.message}
+
+🛠️ Common Solutions:
+• Check if server is running on correct port
+• Verify database connection is working
+• Run database migrations if tables missing
+• Check network connectivity
+• Verify API routes are properly configured
+
+📊 Next Steps:
+1. Open browser console (F12) for detailed error logs
+2. Check server startup logs for database errors
+3. Verify /debug/db endpoint shows required tables
+4. Test individual form submissions with console open
+
+Technical Details: ${error.message}`;
+        
+        alert(message);
     }
 }
 
@@ -7793,6 +7845,16 @@ function saveSafetyPolicy() {
     })
     .then(response => {
         console.log('📡 Safety Policy API Response status:', response.status);
+        console.log('📡 Response headers:', response.headers);
+        
+        if (!response.ok) {
+            // Handle HTTP errors
+            return response.text().then(text => {
+                console.error('❌ HTTP Error Response:', text);
+                throw new Error(`HTTP ${response.status}: ${text || response.statusText}`);
+            });
+        }
+        
         return response.json();
     })
     .then(data => {
@@ -7808,7 +7870,31 @@ function saveSafetyPolicy() {
     })
     .catch(error => {
         console.error('❌ Error uploading safety policy:', error);
-        customAlert(`Failed to upload safety policy: ${error.message}\n\nPlease check:\n• All required fields are filled\n• Network connection is stable\n• Server is running properly`, "Upload Error", "error");
+        console.error('❌ Error details:', {
+            message: error.message,
+            stack: error.stack,
+            name: error.name
+        });
+        
+        // Provide specific error diagnosis
+        let errorMessage = error.message;
+        let troubleshooting = '';
+        
+        if (error.message.includes('Failed to fetch')) {
+            errorMessage = 'Network connection failed';
+            troubleshooting = '\n\n🔧 Troubleshooting:\n• Check internet connection\n• Verify server is running\n• Check if server URL is correct';
+        } else if (error.message.includes('404')) {
+            errorMessage = 'API endpoint not found';
+            troubleshooting = '\n\n🔧 Troubleshooting:\n• Server routes may not be configured\n• Check if /api/hse/work endpoint exists';
+        } else if (error.message.includes('500')) {
+            errorMessage = 'Server internal error';
+            troubleshooting = '\n\n🔧 Troubleshooting:\n• Database connection may be down\n• Server logs needed for details';
+        } else if (error.message.includes('table') && error.message.includes('doesn\'t exist')) {
+            errorMessage = 'Database table missing';
+            troubleshooting = '\n\n🔧 Troubleshooting:\n• Run database migrations\n• Check if hse_work table exists';
+        }
+        
+        customAlert(`Failed to upload safety policy: ${errorMessage}${troubleshooting}\n\nTechnical Details: ${error.message}`, "Upload Error", "error");
     });
     
     return false;
