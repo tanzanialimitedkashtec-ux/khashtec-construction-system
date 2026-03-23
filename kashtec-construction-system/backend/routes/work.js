@@ -2,40 +2,6 @@ const express = require('express');
 const router = express.Router();
 const db = require('../../database/config/database');
 
-// Simple test endpoint for debugging
-router.post('/test-simple', async (req, res) => {
-    try {
-        console.log('🧪 Simple test endpoint accessed');
-        console.log('📊 Request body:', req.body);
-        
-        // Test a simple static query
-        const result = await db.execute(
-            'INSERT INTO hse_work (department_code, work_type, work_title, work_description, priority, status, submitted_by, submitted_date) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
-            ['hse', 'Incident Reporting', 'Test Incident', 'Test description', 'Medium', 'pending', 'Test User', '2026-03-23']
-        );
-        
-        console.log('🔍 DB Result type:', typeof result);
-        console.log('🔍 DB Result isArray:', Array.isArray(result));
-        console.log('🔍 DB Result:', result);
-        
-        if (!result || typeof result !== 'object') {
-            throw new Error('Database returned invalid result');
-        }
-        
-        console.log('✅ Simple test successful:', result);
-        res.json({
-            message: 'Simple test successful',
-            id: result.insertId
-        });
-    } catch (error) {
-        console.error('❌ Simple test error:', error);
-        res.status(500).json({
-            error: 'Simple test failed',
-            details: error.message
-        });
-    }
-});
-
 // Test endpoint to verify API is working
 router.get('/test', (req, res) => {
     console.log('🧪 Test endpoint accessed');
