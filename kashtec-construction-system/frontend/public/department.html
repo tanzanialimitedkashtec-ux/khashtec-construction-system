@@ -3243,14 +3243,55 @@ function saveEmploymentAction() {
         timestamp: new Date().toLocaleString()
     };
     
-    // Save to localStorage
-    const employmentActions = []; // TODO: Load from API instead of localStorage
-    employmentActions.push(action);
-    // TODO: Save to API instead of localStorage
+    // Validate required fields
+    if (!action.employee || !action.actionType || !action.date) {
+        customAlert('Please fill in all required fields:\n\n• Employee\n• Action Type\n• Date', "Validation Error", "error");
+        return false;
+    }
     
-    customAlert(`Employment action executed successfully!\n\nAction: ${action.actionType.toUpperCase()}\nEmployee: ${action.employee}\nEffective Date: ${action.date}`, "Action Completed", "success");
+    // Prepare work item for HR department
+    const workItem = {
+        work_type: 'Employment Action',
+        work_title: `Employment Action - ${action.actionType}`,
+        work_description: `Employment Action for ${action.employee}\n\nAction Type: ${action.actionType}\nDate: ${action.date}\nReason: ${action.reason}\nDetails: ${action.details}\nSuspension Days: ${action.suspensionDays}\nFinal Payment Date: ${action.finalPaymentDate}\nMD Notes: ${action.mdNotes}\nExecuted By: ${action.executedBy}\nTimestamp: ${action.timestamp}`,
+        priority: action.actionType === 'termination' ? 'High' : action.actionType === 'suspension' ? 'Medium' : 'Low',
+        due_date: action.date,
+        assigned_to: 'HR Manager',
+        submitted_by: 'Managing Director'
+    };
     
-    document.getElementById('employmentActionForm').reset();
+    // Show loading message
+    customAlert('Processing employment action...', "Processing", "info");
+    
+    // Send data to backend API
+    fetch('/api/work/hr', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+        },
+        body: JSON.stringify(workItem)
+    })
+    .then(response => {
+        console.log('📡 Employment Action API Response status:', response.status);
+        return response.json();
+    })
+    .then(data => {
+        console.log('📊 Employment Action API Response data:', data);
+        
+        if (data.error) {
+            throw new Error(data.error);
+        }
+        
+        customAlert(`Employment action executed successfully!\n\nAction: ${action.actionType.toUpperCase()}\nEmployee: ${action.employee}\nEffective Date: ${action.date}\nAction ID: ${data.id}\n\n🎉 Employment action saved to database!`, "Action Completed", "success");
+        
+        document.getElementById('employmentActionForm').reset();
+    })
+    .catch(error => {
+        console.error('❌ Error processing employment action:', error);
+        customAlert(`Failed to process employment action: ${error.message}\n\nPlease check:\n• All required fields are filled\n• Network connection is stable\n• Server is running properly`, "Processing Error", "error");
+    });
+    
     return false;
 }
 
@@ -9114,14 +9155,57 @@ function saveNewProject() {
         createdDate: new Date().toLocaleString()
     };
     
-    // Save to localStorage
-    const projects = []; // TODO: Load from API instead of localStorage
-    projects.push(project);
-    // TODO: Save to API instead of localStorage
+    // Validate required fields
+    if (!project.name || !project.code || !project.client || !project.startDate || !project.manager) {
+        customAlert('Please fill in all required fields:\n\n• Project Name\n• Project Code\n• Client Name\n• Start Date\n• Project Manager', "Validation Error", "error");
+        return false;
+    }
     
-    customAlert(`Project created successfully!\n\nProject: ${project.name}\nCode: ${project.code}\nContract Value: TZS ${parseInt(project.contractValue).toLocaleString()}\nStatus: ${project.status}`, "Project Created", "success");
+    // Prepare work item for Projects department
+    const workItem = {
+        work_type: 'Project Creation',
+        work_title: `New Project - ${project.name}`,
+        work_description: `New Project Created\n\nProject Name: ${project.name}\nProject Code: ${project.code}\nClient: ${project.client}\nType: ${project.type}\nStart Date: ${project.startDate}\nEnd Date: ${project.endDate}\nContract Value: TZS ${project.contractValue}\nManager: ${project.manager}\nDescription: ${project.description}\nDeliverables: ${project.deliverables}\nLocation: ${project.location}\nPriority: ${project.priority}\nStatus: ${project.status}\nCreated Date: ${project.createdDate}`,
+        priority: project.priority === 'critical' ? 'High' : project.priority === 'high' ? 'Medium' : 'Low',
+        due_date: project.startDate,
+        assigned_to: 'Project Manager',
+        submitted_by: 'Project Manager',
+        project_name: project.name,
+        client_name: project.client
+    };
     
-    document.getElementById('projectForm').reset();
+    // Show loading message
+    customAlert('Creating new project...', "Processing", "info");
+    
+    // Send data to backend API
+    fetch('/api/work/projects', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+        },
+        body: JSON.stringify(workItem)
+    })
+    .then(response => {
+        console.log('📡 Project Creation API Response status:', response.status);
+        return response.json();
+    })
+    .then(data => {
+        console.log('📊 Project Creation API Response data:', data);
+        
+        if (data.error) {
+            throw new Error(data.error);
+        }
+        
+        customAlert(`Project created successfully!\n\nProject: ${project.name}\nCode: ${project.code}\nContract Value: TZS ${parseInt(project.contractValue).toLocaleString()}\nStatus: ${project.status}\nProject ID: ${data.id}\n\n🎉 Project saved to database!`, "Project Created", "success");
+        
+        document.getElementById('projectForm').reset();
+    })
+    .catch(error => {
+        console.error('❌ Error creating project:', error);
+        customAlert(`Failed to create project: ${error.message}\n\nPlease check:\n• All required fields are filled\n• Network connection is stable\n• Server is running properly`, "Creation Error", "error");
+    });
+    
     return false;
 }
 
@@ -10280,7 +10364,7 @@ function uploadDocument() {
     const docPriority = document.getElementById('docPriority').value;
     
     if (!docType || !docTitle || !docDepartment || !docFile) {
-        alert('Please fill all required fields and select a file');
+        customAlert('Please fill all required fields and select a file:\n\n• Document Type\n• Document Title\n• Department\n• File', "Validation Error", "error");
         return;
     }
     
@@ -10298,23 +10382,57 @@ function uploadDocument() {
         status: 'pending'
     };
     
-    // Save to localStorage
-    const documents = []; // TODO: Load from API instead of localStorage
-    documents.push(document);
-    // TODO: Save to API instead of localStorage
+    // Prepare work item for Admin department
+    const workItem = {
+        work_type: 'Document Upload',
+        work_title: `Document Upload - ${docTitle}`,
+        work_description: `Document Uploaded\n\nTitle: ${docTitle}\nType: ${docType}\nDepartment: ${docDepartment}\nDescription: ${docDescription}\nFile: ${docFile.name} (${(docFile.size / 1024).toFixed(2)} KB)\nPriority: ${docPriority}\nUploaded By: ${document.uploadedBy}\nUpload Date: ${document.uploadDate}\nStatus: ${document.status}`,
+        priority: docPriority === 'urgent' ? 'High' : docPriority === 'important' ? 'Medium' : 'Low',
+        due_date: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], // 7 days from now
+        assigned_to: 'Admin Assistant',
+        submitted_by: 'Admin Assistant'
+    };
     
-    // Clear form
-    document.getElementById('docType').value = '';
-    document.getElementById('docTitle').value = '';
-    document.getElementById('docDepartment').value = '';
-    document.getElementById('docDescription').value = '';
-    document.getElementById('docFile').value = '';
-    document.getElementById('docPriority').value = 'normal';
+    // Show loading message
+    customAlert('Uploading document...', "Processing", "info");
     
-    alert('Document uploaded successfully!\n\nDocument: ' + docTitle + '\nType: ' + docType + '\nDepartment: ' + docDepartment + '\n\nStatus: Pending approval');
-    
-    // Refresh the upload list
-    uploadDocs();
+    // Send data to backend API
+    fetch('/api/documents', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+        },
+        body: JSON.stringify(workItem)
+    })
+    .then(response => {
+        console.log('📡 Document Upload API Response status:', response.status);
+        return response.json();
+    })
+    .then(data => {
+        console.log('📊 Document Upload API Response data:', data);
+        
+        if (data.error) {
+            throw new Error(data.error);
+        }
+        
+        customAlert(`Document uploaded successfully!\n\nDocument: ${docTitle}\nType: ${docType}\nDepartment: ${docDepartment}\nFile: ${docFile.name}\nDocument ID: ${data.id}\n\n🎉 Document saved to database!`, "Upload Successful", "success");
+        
+        // Clear form
+        document.getElementById('docType').value = '';
+        document.getElementById('docTitle').value = '';
+        document.getElementById('docDepartment').value = '';
+        document.getElementById('docDescription').value = '';
+        document.getElementById('docFile').value = '';
+        document.getElementById('docPriority').value = 'normal';
+        
+        // Refresh the upload list
+        uploadDocs();
+    })
+    .catch(error => {
+        console.error('❌ Error uploading document:', error);
+        customAlert(`Failed to upload document: ${error.message}\n\nPlease check:\n• All required fields are filled\n• File is selected\n• Network connection is stable\n• Server is running properly`, "Upload Error", "error");
+    });
 }
 
 function editDocuments(){
