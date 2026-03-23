@@ -5124,26 +5124,65 @@ function saveEmployeeManual() {
             employeeData: { fullName, phone, email, department }
         });
         
-        // Send employee data to backend API
+        // First test if employees API is reachable
+        console.log('🧪 Testing employees API endpoint...');
         fetch('/api/employees', {
-            method: 'POST',
+            method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
                 'Accept': 'application/json'
-            },
-            body: JSON.stringify({
-                fullName: fullName,
-                gmail: email,
-                phone: phone,
-                department: department,
-                jobCategory: jobCategory,
-                nida: nida,
-                passport: document.getElementById('empPassport')?.value || '',
-                contract: contract
-            })
+            }
+        })
+        .then(response => {
+            console.log('📡 Employees API test response status:', response.status);
+            if (response.status === 404) {
+                throw new Error('Employees API endpoint not found (404)');
+            }
+            if (response.status >= 500) {
+                throw new Error('Server error on employees API (500+)');
+            }
+            return response.json();
+        })
+        .then(data => {
+            console.log('✅ Employees API is reachable:', data);
+            
+            // Now send employee data to backend API
+            console.log('📤 Sending employee data to backend...');
+            return fetch('/api/employees', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                },
+                body: JSON.stringify({
+                    fullName: fullName,
+                    gmail: email,
+                    phone: phone,
+                    department: department,
+                    jobCategory: jobCategory,
+                    nida: nida,
+                    passport: document.getElementById('empPassport')?.value || '',
+                    contract: contract
+                })
+            });
         })
         .then(response => {
             console.log('📡 Employee API Response status:', response.status);
+            console.log('📡 Employee API Response headers:', [...response.headers.entries()]);
+            
+            if (response.status === 404) {
+                throw new Error('Employee registration endpoint not found (404)');
+            }
+            if (response.status === 400) {
+                throw new Error('Invalid employee data (400) - Check all required fields');
+            }
+            if (response.status === 409) {
+                throw new Error('Employee with this email or NIDA already exists (409)');
+            }
+            if (response.status >= 500) {
+                throw new Error('Server error during employee registration (500+)');
+            }
+            
             return response.json();
         })
         .then(data => {
@@ -5164,16 +5203,22 @@ function saveEmployeeManual() {
         })
         .catch(error => {
             console.error('❌ Error registering employee:', error);
+            console.error('❌ Full error details:', {
+                message: error.message,
+                stack: error.stack,
+                name: error.name
+            });
             showRealProblemNotification('SYSTEM_ERROR', {
                 error: error.message,
-                message: `Failed to register employee: ${error.message}\n\nPlease check:\n• All required fields are filled\n• Network connection is stable\n• Server is running properly\n• Email and NIDA are unique`
+                message: `Failed to register employee: ${error.message}\n\nPlease check:\n• All required fields are filled\n• Network connection is stable\n• Server is running properly\n• Email and NIDA are unique\n• Check browser console for detailed error`
             });
         });
         
     } catch (error) {
         console.error('❌ Error saving employee:', error);
         showRealProblemNotification('SYSTEM_ERROR', {
-            error: error.message
+            error: error.message,
+            message: `Unexpected error: ${error.message}\n\nPlease check browser console for details.`
         });
     }
 }
