@@ -6091,7 +6091,7 @@ function saveEmployeeManual() {
             
             // Now send employee data to backend HR department API
             console.log('📤 Sending employee data to HR department API...');
-            return fetch('/api/hr/hr', {
+            return fetch('/api/hr/work', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -7758,7 +7758,7 @@ function saveIncidentReport() {
         customAlert('Recording incident report...', "Processing", "info");
         
         // Send data to backend API
-        fetch('/api/hse/hse', {
+        fetch('/api/hse/work', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -8021,7 +8021,7 @@ function saveSafetyPolicy() {
     customAlert('Uploading safety policy...', "Processing", "info");
     
     // Send data to backend API
-    fetch('/api/hse/hse', {
+    fetch('/api/hse/work', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -9472,7 +9472,7 @@ function saveDepartmentBudget() {
     customAlert('Creating budget...', "Processing", "info");
     
     // Send data to backend Finance API
-    fetch('/api/finance/finance', {
+    fetch('/api/finance/work', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -10480,7 +10480,7 @@ function saveNewProject() {
     customAlert('Creating new project...', "Processing", "info");
     
     // Send data to backend API
-    fetch('/api/project/project', {
+    fetch('/api/project/work', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -11448,7 +11448,7 @@ function saveNewProperty() {
     customAlert('Adding new property...', "Processing", "info");
     
     // Send data to backend Real Estate API
-    fetch('/api/realestate/realestate', {
+    fetch('/api/realestate/work', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
