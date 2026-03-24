@@ -7739,11 +7739,14 @@ function saveIncidentReport() {
             work_title: `Incident Report - ${incidentType}`,
             work_description: incidentDescription,
             incident_type: incidentType,
-            severity: severityLevel,
+            severity: severityLevel === 'critical' ? 'Critical' : 
+                      severityLevel === 'major' ? 'High' : 
+                      severityLevel === 'minor' ? 'Low' : 'Medium',
             location: document.getElementById('incidentLocation')?.value || 'Construction Site', // Required field
             project_name: document.getElementById('incidentProject')?.value || 'Building A', // Required field
             priority: severityLevel === 'critical' ? 'Critical' : 
-                      severityLevel === 'major' ? 'High' : 'Medium',
+                      severityLevel === 'major' ? 'High' : 
+                      severityLevel === 'minor' ? 'Low' : 'Medium',
             due_date: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], // 7 days from now
             assigned_to: 'HSE Manager',
             submitted_by: 'HSE Manager'
