@@ -30,6 +30,7 @@ const seniorHiringRoutes = require('./backend/routes/seniorHiring');
 const workforceBudgetRoutes = require('./backend/routes/workforceBudget');
 const workRoutes = require('./backend/routes/work');
 const scheduleMeetingsRoutes = require('./backend/routes/scheduleMeetings');
+const workerAccountRoutes = require('./backend/routes/workerAccounts');
 
 const app = express();
 const PORT = config.PORT;
@@ -299,6 +300,10 @@ app.use('/api/employees', asyncHandler(async (req, res, next) => {
     return employeeRoutes(req, res, next);
 }));
 
+app.use('/api/worker-accounts', asyncHandler(async (req, res, next) => {
+    return workerAccountRoutes(req, res, next);
+}));
+
 app.use('/api/projects', asyncHandler(async (req, res, next) => {
     return projectRoutes(req, res, next);
 }));
@@ -544,6 +549,14 @@ app.use('*', (req, res) => {
                 'POST /api/auth/login',
                 'GET /api/auth/test',
                 'GET /api/employees',
+                'POST /api/employees',
+                'GET /api/worker-accounts',
+                'POST /api/worker-accounts',
+                'GET /api/worker-accounts/:id',
+                'PUT /api/worker-accounts/:id',
+                'DELETE /api/worker-accounts/:id',
+                'GET /api/worker-accounts/department/:department',
+                'GET /api/worker-accounts/stats/overview',
                 'GET /api/projects',
                 'GET /api/documents',
                 'GET /api/meetings',

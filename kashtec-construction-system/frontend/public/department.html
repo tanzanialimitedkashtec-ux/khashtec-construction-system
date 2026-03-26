@@ -5130,22 +5130,25 @@ function saveWorkerAccount() {
         submitButton.textContent = 'Creating Account...';
         submitButton.disabled = true;
         
-        // Send data to users API
+        // Send data to worker accounts API
         console.log('📤 Creating worker account via API...');
-        fetch('/api/users', {
+        fetch('/api/worker-accounts', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
                 'Accept': 'application/json'
             },
             body: JSON.stringify({
-                name: fullName,
-                email: email,
-                phone: phone,
-                location: department, // using department as location
-                role: accountType.toLowerCase(), // using account type as role
+                employeeId: empID,
+                fullName: fullName,
+                workEmail: email,
+                phoneNumber: phone,
                 department: department,
-                password: password
+                jobTitle: jobTitle,
+                accountType: accountType,
+                accessLevel: accessLevel,
+                temporaryPassword: password,
+                accountNotes: notes || ''
             })
         })
         .then(response => {

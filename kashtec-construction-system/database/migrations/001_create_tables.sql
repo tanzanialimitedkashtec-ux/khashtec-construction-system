@@ -775,6 +775,35 @@ CREATE TABLE IF NOT EXISTS schedule_meetings (
   INDEX idx_created_by (created_by)
 );
 
+-- Worker Accounts table
+CREATE TABLE IF NOT EXISTS worker_accounts (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  employee_id VARCHAR(50) NOT NULL UNIQUE,
+  full_name VARCHAR(255) NOT NULL,
+  work_email VARCHAR(255) NOT NULL UNIQUE,
+  phone_number VARCHAR(20) NOT NULL,
+  department ENUM('projects', 'admin', 'finance', 'hr', 'hse', 'realestate') NOT NULL,
+  job_title VARCHAR(255) NOT NULL,
+  account_type ENUM('staff', 'worker', 'contractor') NOT NULL,
+  access_level ENUM('basic', 'standard', 'supervisor') NOT NULL,
+  temporary_password VARCHAR(255) NOT NULL,
+  account_notes TEXT,
+  profile_picture VARCHAR(255),
+  id_document VARCHAR(255),
+  contract_document VARCHAR(255),
+  status ENUM('active', 'inactive', 'suspended', 'terminated') DEFAULT 'active',
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  created_by INT,
+  INDEX idx_employee_id (employee_id),
+  INDEX idx_work_email (work_email),
+  INDEX idx_department (department),
+  INDEX idx_account_type (account_type),
+  INDEX idx_status (status),
+  INDEX idx_created_by (created_by),
+  FOREIGN KEY (created_by) REFERENCES users(id) ON DELETE SET NULL
+);
+
 -- Insert admin user (only if not exists)
 INSERT IGNORE INTO users (name, email, password, role, status) VALUES
 ('Admin User', 'admin@kashtec.co.tz', 'admin123', 'Managing Director', 'Active');
