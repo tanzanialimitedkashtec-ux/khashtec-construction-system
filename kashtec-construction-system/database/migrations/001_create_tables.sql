@@ -579,7 +579,7 @@ CREATE TABLE IF NOT EXISTS hse_work (
   INDEX idx_due_date (due_date)
 );
 
-CREATE TABLE IF NOT EXISTS project_work (
+CREATE TABLE IF NOT EXISTS projects_work (
   id INT AUTO_INCREMENT PRIMARY KEY,
   department_code VARCHAR(50) DEFAULT 'PROJECT',
   work_type ENUM('Project Creation', 'Progress Update', 'Task Assignment', 'Workforce Request', 'Site Report', 'Work Approval', 'Project Completion', 'Resource Management') DEFAULT 'Project Creation',
