@@ -6032,6 +6032,7 @@ function saveEmployeeManual() {
         const phone = document.getElementById('empPhone')?.value;
         const gmail = document.getElementById('empGmail')?.value;
         const nida = document.getElementById('empNIDA')?.value;
+        const passport = document.getElementById('empPassport')?.value;
         const contract = document.getElementById('empContract')?.value;
         const jobCategory = document.getElementById('empJobCategory')?.value;
         const department = document.getElementById('empDepartment')?.value;
@@ -6058,7 +6059,7 @@ function saveEmployeeManual() {
         // Show saving notification
         showRealProblemNotification('SAVING', {
             message: 'Registering employee...',
-            employeeData: { fullName, phone, email, department }
+            employeeData: { fullName, phone, gmail, department }
         });
         
         // First test if employees API is reachable
@@ -6098,6 +6099,7 @@ function saveEmployeeManual() {
                     department: department,
                     jobCategory: jobCategory,
                     nida: nida,
+                    passport: passport || '',
                     contract: contract
                 })
             });
@@ -6182,7 +6184,7 @@ function saveEmployeeManual() {
                 troubleshooting: troubleshooting,
                 message: `❌ Employee registration failed!\n\n🔍 Error Cause: ${errorCause}\n\n🛠️ Troubleshooting:\n${troubleshooting}\n\n📝 Technical Details:\n${error.message}\n\n💡 Please fix the issue and try again.`,
                 employeeName: fullName || 'Unknown',
-                employeeEmail: email || 'Not provided',
+                employeeEmail: gmail || 'Not provided',
                 timestamp: new Date().toLocaleString()
             });
         });
