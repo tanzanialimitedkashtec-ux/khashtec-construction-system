@@ -791,10 +791,6 @@ async function startServer() {
         await createAuthenticationTable();
         console.log('✅ Step 2 completed: Authentication table ready');
         
-        console.log('🔄 Step 2.5: Creating HR work table...');
-        await createHRWorkTable();
-        console.log('✅ Step 2.5 completed: HR work table ready');
-        
         console.log('🔄 Step 3: Starting HTTP server...');
         const server = app.listen(SERVER_PORT, '0.0.0.0', () => {
             console.log('🚀 ' + config.APP_NAME);
