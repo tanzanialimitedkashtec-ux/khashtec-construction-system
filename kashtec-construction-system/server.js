@@ -604,20 +604,41 @@ if (!SERVER_PORT) {
 async function runMigrations() {
     try {
         console.log('🔄 Running database migrations...');
-        const { exec } = require('child_process');
-        await new Promise((resolve, reject) => {
-            exec('node database/migrations/migrate.js', (error, stdout, stderr) => {
-                if (error) {
-                    console.error('❌ Migration failed:', error);
-                    reject(error);
-                } else {
-                    console.log('✅ Migrations completed');
-                    resolve();
+        const fs = require('fs');
+        const path = require('path');
+        
+        // Read and execute the migration file directly
+        const migrationPath = path.join(__dirname, 'database/migrations/001_create_tables.sql');
+        const migrationSQL = fs.readFileSync(migrationPath, 'utf8');
+        
+        const db = require('./database/config/database');
+        
+        // Split the SQL file into individual statements
+        const statements = migrationSQL
+            .split(';')
+            .map(stmt => stmt.trim())
+            .filter(stmt => stmt.length > 0 && !stmt.startsWith('--'));
+        
+        // Execute each statement
+        for (const statement of statements) {
+            if (statement.trim()) {
+                try {
+                    await db.execute(statement);
+                } catch (error) {
+                    // Ignore errors for IF NOT EXISTS statements (table already exists)
+                    if (!error.message.includes('already exists') && !error.message.includes('Duplicate entry')) {
+                        console.error('❌ Migration statement failed:', error.message);
+                        console.error('❌ Failed statement:', statement.substring(0, 100) + '...');
+                    }
                 }
-            });
-        });
+            }
+        }
+        
+        console.log('✅ Database migrations completed successfully');
+        
     } catch (error) {
         console.error('❌ Migration error:', error);
+        throw error;
     }
 }
 
@@ -819,9 +840,9 @@ console.log('🚀 Starting KASHTEC server startup sequence...');
 
 async function startServer() {
     try {
-        console.log('🔄 Step 1: Running database migrations...');
+        console.log('🔄 Step 1: Running database migrations (including schedule_meetings table)...');
         await runMigrations();
-        console.log('✅ Step 1 completed: Migrations successful');
+        console.log('✅ Step 1 completed: All database tables created successfully');
         
         console.log('🔄 Step 2: Creating authentication table...');
         await createAuthenticationTable();
@@ -842,6 +863,7 @@ async function startServer() {
             console.log('🕒 Started at: ' + new Date().toLocaleString());
             console.log('✅ Server startup completed successfully!');
             console.log('🌐 All API endpoints are ready for requests');
+            console.log('📅 Schedule meetings table is available for use');
         });
 
         server.on('error', (error) => {

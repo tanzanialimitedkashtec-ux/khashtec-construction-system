@@ -747,6 +747,34 @@ CREATE TABLE IF NOT EXISTS work_revisions (
   INDEX idx_response_date (response_date)
 );
 
+-- Schedule Meeting table
+CREATE TABLE IF NOT EXISTS schedule_meetings (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  meeting_title VARCHAR(255) NOT NULL,
+  meeting_type ENUM('board', 'management', 'department', 'project', 'client', 'training', 'general') NOT NULL,
+  meeting_date DATE NOT NULL,
+  start_time TIME NOT NULL,
+  end_time TIME NOT NULL,
+  location VARCHAR(255),
+  organizing_department ENUM('management', 'hr', 'finance', 'projects', 'operations', 'realestate') NOT NULL,
+  expected_attendees INT DEFAULT 1,
+  meeting_description TEXT,
+  projector_required BOOLEAN DEFAULT FALSE,
+  whiteboard_required BOOLEAN DEFAULT FALSE,
+  refreshments_required BOOLEAN DEFAULT FALSE,
+  parking_required BOOLEAN DEFAULT FALSE,
+  status ENUM('Scheduled', 'Confirmed', 'Cancelled', 'Completed', 'Postponed') DEFAULT 'Scheduled',
+  created_by INT,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  FOREIGN KEY (created_by) REFERENCES users(id) ON DELETE SET NULL,
+  INDEX idx_meeting_date (meeting_date),
+  INDEX idx_meeting_type (meeting_type),
+  INDEX idx_department (organizing_department),
+  INDEX idx_status (status),
+  INDEX idx_created_by (created_by)
+);
+
 -- Insert admin user (only if not exists)
 INSERT IGNORE INTO users (name, email, password, role, status) VALUES
 ('Admin User', 'admin@kashtec.co.tz', 'admin123', 'Managing Director', 'Active');

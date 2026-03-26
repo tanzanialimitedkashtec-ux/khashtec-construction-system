@@ -6083,8 +6083,8 @@ function saveEmployeeManual() {
         .then(data => {
             console.log('✅ Employees API is reachable:', data);
             
-            // Now send employee data to backend employees API
-            console.log('📤 Sending employee data to employees API...');
+            // Now send employee data to backend employee API
+            console.log('📤 Sending employee data to employee API...');
             return fetch('/api/employees', {
                 method: 'POST',
                 headers: {
@@ -6097,9 +6097,8 @@ function saveEmployeeManual() {
                     phone: phone,
                     department: department,
                     jobCategory: jobCategory,
-                    contract: contract,
                     nida: nida,
-                    status: 'active'
+                    contract: contract
                 })
             });
         })
