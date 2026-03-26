@@ -677,7 +677,54 @@ async function createAuthenticationTable() {
         console.log('🔍 Verification - HR record:', verifyQuery[0]);
         
     } catch (error) {
-        console.error('❌ Authentication table creation error:', error);
+        console.error('❌ Authentication table creation failed:', error);
+        throw error;
+    }
+}
+
+// Create HR work table directly if it doesn't exist
+async function createHRWorkTable() {
+    try {
+        console.log('🔧 Creating hr_work table directly...');
+        const db = require('./database/config/database');
+        
+        const createHRWorkTableSQL = `
+            CREATE TABLE IF NOT EXISTS hr_work (
+              id INT AUTO_INCREMENT PRIMARY KEY,
+              department_code VARCHAR(50) DEFAULT 'HR',
+              work_type ENUM('Employee Registration', 'Worker Account Creation', 'Project Assignment', 'Attendance Tracking', 'Leave Management', 'Contract Management', 'Policy Management', 'Senior Staff Hiring', 'Budget Approval') DEFAULT 'Employee Registration',
+              work_title VARCHAR(255) NOT NULL,
+              work_description TEXT,
+              employee_name VARCHAR(255),
+              employee_email VARCHAR(255),
+              project_name VARCHAR(255),
+              status ENUM('Pending', 'In Progress', 'Completed', 'Rejected', 'Revision Requested') DEFAULT 'Pending',
+              priority ENUM('Low', 'Medium', 'High', 'Critical') DEFAULT 'Medium',
+              submitted_by VARCHAR(255),
+              submitted_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+              assigned_to VARCHAR(255),
+              due_date DATE,
+              completion_date TIMESTAMP NULL,
+              approved_by VARCHAR(255),
+              approved_date DATE,
+              rejection_reason TEXT,
+              revision_request TEXT,
+              created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+              updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+              INDEX idx_status (status),
+              INDEX idx_department (department_code),
+              INDEX idx_work_type (work_type),
+              INDEX idx_submitted_by (submitted_by),
+              INDEX idx_due_date (due_date)
+            )
+        `;
+        
+        await db.execute(createHRWorkTableSQL);
+        console.log('✅ HR work table created successfully');
+        
+    } catch (error) {
+        console.error('❌ HR work table creation failed:', error);
+        throw error;
     }
 }
 
@@ -739,6 +786,10 @@ async function startServer() {
         console.log('🔄 Step 2: Creating authentication table...');
         await createAuthenticationTable();
         console.log('✅ Step 2 completed: Authentication table ready');
+        
+        console.log('🔄 Step 2.5: Creating HR work table...');
+        await createHRWorkTable();
+        console.log('✅ Step 2.5 completed: HR work table ready');
         
         console.log('🔄 Step 3: Starting HTTP server...');
         const server = app.listen(SERVER_PORT, '0.0.0.0', () => {
