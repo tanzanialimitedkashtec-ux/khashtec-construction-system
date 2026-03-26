@@ -66,6 +66,25 @@ CREATE TABLE IF NOT EXISTS employees (
   INDEX idx_status (status)
 );
 
+-- Employee details table for personal information
+CREATE TABLE IF NOT EXISTS employee_details (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  employee_id INT,
+  full_name VARCHAR(255) NOT NULL,
+  gmail VARCHAR(255) UNIQUE NOT NULL,
+  phone VARCHAR(50),
+  nida VARCHAR(50) UNIQUE,
+  passport VARCHAR(50),
+  contract_type VARCHAR(100),
+  profile_image VARCHAR(255),
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  FOREIGN KEY (employee_id) REFERENCES employees(id) ON DELETE CASCADE,
+  INDEX idx_gmail (gmail),
+  INDEX idx_nida (nida),
+  INDEX idx_employee_id (employee_id)
+);
+
 -- Properties table
 CREATE TABLE IF NOT EXISTS properties (
   id INT AUTO_INCREMENT PRIMARY KEY,

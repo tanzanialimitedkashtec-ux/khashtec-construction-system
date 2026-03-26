@@ -5534,14 +5534,8 @@ function recordIncidentReports(){
             return false;
         }, true);
         
-        // 3. Block ALL form submissions globally
-        document.addEventListener('submit', function(e) {
-            console.log('🚫 GLOBAL SUBMIT PREVENTED');
-            e.preventDefault();
-            e.stopPropagation();
-            e.stopImmediatePropagation();
-            return false;
-        }, true);
+        // 3. Allow form submissions to proceed normally
+        // Removed global submit prevention to allow proper data saving
         
         // 4. Block ALL button clicks except our specific ones
         document.addEventListener('click', function(e) {

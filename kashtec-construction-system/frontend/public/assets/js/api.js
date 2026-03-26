@@ -61,6 +61,13 @@ async function apiCall(endpoint, method = 'GET', data = null) {
         const response = await fetch(`${API_BASE_URL}${endpoint}`, config);
         
         if (!response.ok) {
+            if (response.status === 401 || response.status === 403) {
+                // Clear stored auth data and redirect to login
+                sessionStorage.removeItem('kashtec_token');
+                sessionStorage.removeItem('kashtec_user');
+                window.location.reload(); // This will redirect to login
+                throw new Error('Authentication expired. Please login again.');
+            }
             throw new Error(`HTTP error! status: ${response.status}`);
         }
         
@@ -81,6 +88,28 @@ async function getAllDepartmentData() {
 // Get department statistics
 async function getDepartmentStats() {
     return await apiCall('/stats');
+}
+
+// ===== EMPLOYEE MANAGEMENT API =====
+
+// Create new employee
+async function createEmployee(employeeData) {
+    return await apiCall('/employees', 'POST', employeeData);
+}
+
+// Get all employees
+async function getEmployees() {
+    return await apiCall('/employees');
+}
+
+// Update employee
+async function updateEmployee(id, employeeData) {
+    return await apiCall(`/employees/${id}`, 'PUT', employeeData);
+}
+
+// Delete employee
+async function deleteEmployee(id) {
+    return await apiCall(`/employees/${id}`, 'DELETE');
 }
 
 // ===== HR DEPARTMENT API =====
@@ -231,24 +260,6 @@ async function getProjects() {
         }));
     } catch (error) {
         console.error('Error getting projects:', error);
-        return { success: false, data: [] };
-    }
-}
-
-// Employees
-async function getEmployees() {
-    try {
-        const hrWork = await getHRWork();
-        return hrWork.map(work => ({
-            id: work.id,
-            name: work.employee_name,
-            email: work.employee_email,
-            department: 'HR',
-            position: work.work_type,
-            status: work.status
-        }));
-    } catch (error) {
-        console.error('Error getting employees:', error);
         return { success: false, data: [] };
     }
 }

@@ -734,6 +734,40 @@ async function createHRWorkTable() {
     }
 }
 
+// Create employee_details table for personal information
+async function createEmployeeDetailsTable() {
+    try {
+        console.log('🔧 Creating employee_details table directly...');
+        const db = require('./database/config/database');
+        
+        const createEmployeeDetailsTableSQL = `
+            CREATE TABLE IF NOT EXISTS employee_details (
+              id INT AUTO_INCREMENT PRIMARY KEY,
+              employee_id INT,
+              full_name VARCHAR(255) NOT NULL,
+              gmail VARCHAR(255) UNIQUE NOT NULL,
+              phone VARCHAR(50),
+              nida VARCHAR(50) UNIQUE,
+              passport VARCHAR(50),
+              contract_type VARCHAR(100),
+              profile_image VARCHAR(255),
+              created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+              updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+              INDEX idx_gmail (gmail),
+              INDEX idx_nida (nida),
+              INDEX idx_employee_id (employee_id)
+            )
+        `;
+        
+        await db.execute(createEmployeeDetailsTableSQL);
+        console.log('✅ Employee details table created successfully');
+        
+    } catch (error) {
+        console.error('❌ Employee details table creation failed:', error);
+        throw error;
+    }
+}
+
 // Global error handler for unhandled errors
 app.use((err, req, res, next) => {
     console.error('❌ Global error handler caught:', err);
@@ -793,7 +827,11 @@ async function startServer() {
         await createAuthenticationTable();
         console.log('✅ Step 2 completed: Authentication table ready');
         
-        console.log('🔄 Step 3: Starting HTTP server...');
+        console.log('🔄 Step 3: Creating employee details table...');
+        await createEmployeeDetailsTable();
+        console.log('✅ Step 3 completed: Employee details table ready');
+        
+        console.log('🔄 Step 4: Starting HTTP server...');
         const server = app.listen(SERVER_PORT, '0.0.0.0', () => {
             console.log('🚀 ' + config.APP_NAME);
             console.log('🌍 Environment: ' + config.NODE_ENV);

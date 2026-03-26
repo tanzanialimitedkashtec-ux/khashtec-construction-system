@@ -5,7 +5,9 @@ const db = require('../../database/config/database');
 // Get all employees
 router.get('/', async (req, res) => {
     try {
-        const [employees] = await db.execute('SELECT * FROM employees ORDER BY hire_date DESC');
+        const [employees] = await db.execute(
+            'SELECT e.*, ed.full_name, ed.gmail, ed.phone, ed.nida, ed.passport, ed.contract_type FROM employees e LEFT JOIN employee_details ed ON e.id = ed.employee_id ORDER BY e.hire_date DESC'
+        );
         res.json(employees);
     } catch (error) {
         console.error('Error fetching employees:', error);
@@ -45,15 +47,15 @@ router.post('/', async (req, res) => {
     
     try {
         console.log('🔍 Checking if employee already exists...');
-        // Check if employee already exists
+        // Check if employee already exists in employee_details
         const [existingEmployees] = await db.execute(
-            'SELECT id FROM employees WHERE gmail = ? OR nida = ?',
+            'SELECT id FROM employee_details WHERE gmail = ? OR nida = ?',
             [gmail, nida]
         );
         
         console.log('📊 Existing employees check result:', existingEmployees);
         
-        if (existingEmployees.length > 0) {
+        if (existingEmployees && existingEmployees.length > 0) {
             console.log('❌ Employee already exists');
             return res.status(409).json({
                 error: 'Employee with this email or NIDA number already exists'
@@ -61,39 +63,56 @@ router.post('/', async (req, res) => {
         }
         
         console.log('✅ Creating new employee...');
-        // Create new employee
-        const [result] = await db.execute(
-            `INSERT INTO employees (full_name, gmail, phone, department, job_category, status, nida, passport, contract_type, registration_date, profile_image)
-             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, CURDATE(), ?)`,
+        // Generate unique employee ID
+        const employeeId = 'EMP' + Date.now();
+        
+        // Create employee record first
+        const employeeResult = await db.execute(
+            `INSERT INTO employees (employee_id, position, department, salary, hire_date, status)
+             VALUES (?, ?, ?, ?, CURDATE(), ?)`,
             [
-                fullName,
-                gmail,
-                phone,
+                employeeId,
+                jobCategory, // using jobCategory as position
                 department,
-                jobCategory,
-                status,
-                nida,
-                passport || '',
-                contract,
-                ''
+                0, // default salary, can be updated later
+                status || 'Active'
             ]
         );
         
-        console.log('✅ Employee created successfully:', result);
-        console.log('🆔 New employee ID:', result.insertId);
+        console.log('✅ Employee record created:', employeeResult);
         
-        // Return the created employee
-        const [newEmployee] = await db.execute(
-            'SELECT * FROM employees WHERE id = ?',
-            [result.insertId]
+        // Create employee details record
+        const detailsResult = await db.execute(
+            `INSERT INTO employee_details (employee_id, full_name, gmail, phone, nida, passport, contract_type, profile_image)
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+            [
+                employeeResult.insertId,
+                fullName,
+                gmail,
+                phone,
+                nida,
+                passport || '',
+                contract,
+                '' // empty profile image for now
+            ]
         );
         
-        console.log('📋 Retrieved new employee:', newEmployee[0]);
+        console.log('✅ Employee details created:', detailsResult);
+        console.log('🆔 New employee ID:', employeeResult.insertId);
+        
+        // Return the created employee with details
+        const employeeQuery = await db.execute(
+            'SELECT e.*, ed.full_name, ed.gmail, ed.phone, ed.nida, ed.passport, ed.contract_type FROM employees e LEFT JOIN employee_details ed ON e.id = ed.employee_id WHERE e.id = ?',
+            [employeeResult.insertId]
+        );
+        
+        const newEmployee = employeeQuery[0];
+        console.log('📋 Retrieved new employee:', newEmployee);
         
         res.status(201).json({
             message: 'Employee created successfully',
-            employee: newEmployee[0],
-            id: result.insertId
+            employee: newEmployee,
+            id: employeeResult.insertId
         });
         
     } catch (error) {

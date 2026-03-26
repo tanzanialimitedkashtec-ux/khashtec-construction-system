@@ -172,16 +172,91 @@ router.post('/:department', async (req, res) => {
             });
         }
         
-        // Validate department
         const validDepartments = ['hr', 'hse', 'finance', 'projects', 'realestate', 'admin'];
         if (!validDepartments.includes(department)) {
             console.log('❌ Invalid department:', department);
             return res.status(400).json({ 
                 error: 'Invalid department',
-                valid_departments: validDepartments,
-                received: department
+                department
             });
         }
+        
+        // Map frontend work types to database ENUM values
+        const getMappedWorkType = (department, workType) => {
+            const mappings = {
+                'hr': {
+                    'Attendance Management': 'Attendance Tracking',
+                    'Employee Registration': 'Employee Registration',
+                    'Worker Account Creation': 'Worker Account Creation',
+                    'Project Assignment': 'Project Assignment',
+                    'Leave Management': 'Leave Management',
+                    'Contract Management': 'Contract Management',
+                    'Policy Management': 'Policy Management',
+                    'Senior Staff Hiring': 'Senior Staff Hiring',
+                    'Budget Approval': 'Budget Approval'
+                },
+                'hse': {
+                    'Incident Reporting': 'Incident Reporting',
+                    'Safety Policy Upload': 'Safety Policy Upload',
+                    'Toolbox Meeting': 'Toolbox Meeting',
+                    'PPE Issuance': 'PPE Issuance',
+                    'Safety Violation': 'Safety Violation',
+                    'Inspection Report': 'Inspection Report',
+                    'Safety Training': 'Safety Training',
+                    'Project Safety Status': 'Project Safety Status'
+                },
+                'finance': {
+                    'Budget Management': 'Budget Management',
+                    'Financial Reporting': 'Financial Reporting',
+                    'Payroll Processing': 'Payroll Processing',
+                    'Expense Control': 'Expense Control',
+                    'Audits': 'Audits',
+                    'Compliance': 'Compliance',
+                    'Invoice Processing': 'Invoice Processing',
+                    'Budget Approval': 'Budget Approval'
+                },
+                'projects': {
+                    'Project Creation': 'Project Creation',
+                    'Project Assignment': 'Project Assignment',
+                    'Progress Update': 'Progress Update',
+                    'Task Assignment': 'Task Assignment',
+                    'Workforce Request': 'Workforce Request',
+                    'Site Report': 'Site Report',
+                    'Work Approval': 'Work Approval',
+                    'Project Completion': 'Project Completion',
+                    'Resource Management': 'Resource Management'
+                },
+                'realestate': {
+                    'Property Management': 'Property Management',
+                    'Property Addition': 'Property Addition',
+                    'Property Editing': 'Property Editing',
+                    'Client Registration': 'Client Registration',
+                    'Sale Recording': 'Sale Recording',
+                    'Payment Tracking': 'Payment Tracking',
+                    'Sales Report': 'Sales Report',
+                    'Client Communication': 'Client Communication'
+                },
+                'admin': {
+                    'Administrative Operations': 'Administrative Operations',
+                    'Compliance Management': 'Compliance Management',
+                    'Staff Oversight': 'Staff Oversight',
+                    'Policy Implementation': 'Policy Implementation',
+                    'Document Management': 'Document Management',
+                    'User Account Management': 'User Account Management',
+                    'System Administration': 'System Administration',
+                    'Department Coordination': 'Department Coordination'
+                }
+            };
+            
+            return mappings[department]?.[workType] || workType;
+        };
+        
+        const mapped_work_type = getMappedWorkType(department, work_type);
+        console.log('🔄 Mapped work type:', work_type, '->', mapped_work_type);
+        console.log('🔍 Department:', department);
+        console.log('🔍 Original work_type length:', work_type ? work_type.length : 'undefined');
+        console.log('🔍 Mapped work_type length:', mapped_work_type ? mapped_work_type.length : 'undefined');
+        console.log('🔍 Mapped work_type chars:', mapped_work_type ? mapped_work_type.split('').map(c => `${c}(${c.charCodeAt(0)})`).join(' ') : 'undefined');
         
         console.log('✅ Validation passed, proceeding to database insertion...');
         
@@ -205,7 +280,7 @@ router.post('/:department', async (req, res) => {
         
         const baseValues = [
             department,
-            work_type,
+            mapped_work_type,
             work_title,
             work_description,
             priority,
@@ -272,7 +347,7 @@ router.post('/:department', async (req, res) => {
         
         if (department === 'realestate') {
             if (property_name) {
-                additionalFields.push('property_name');
+                additionalFields.push('property_address');
                 additionalValues.push(property_name);
             }
             if (property_type) {
@@ -339,7 +414,7 @@ router.post('/:department', async (req, res) => {
                 message: 'Work item created successfully',
                 id: result.insertId,
                 department,
-                work_type,
+                work_type: mapped_work_type,
                 work_title,
                 status,
                 created_at: new Date().toISOString()
