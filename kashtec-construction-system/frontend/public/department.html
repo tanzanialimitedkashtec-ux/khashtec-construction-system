@@ -6083,25 +6083,23 @@ function saveEmployeeManual() {
         .then(data => {
             console.log('✅ Employees API is reachable:', data);
             
-            // Now send employee data to backend HR department API
-            console.log('📤 Sending employee data to HR department API...');
-            return fetch('/api/hr/work', {
+            // Now send employee data to backend employees API
+            console.log('📤 Sending employee data to employees API...');
+            return fetch('/api/employees', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                     'Accept': 'application/json'
                 },
                 body: JSON.stringify({
-                    work_type: 'Employee Registration',
-                    work_title: `Employee Registration - ${fullName}`,
-                    work_description: `Register new employee: ${fullName}\nEmail: ${gmail}\nPhone: ${phone}\nDepartment: ${department}\nJob Category: ${jobCategory}\nContract: ${contract}\nNIDA: ${nida}`,
-                    employee_name: fullName, // Required field
-                    employee_email: gmail, // Required field  
-                    project_name: 'General Staff', // Required field
-                    priority: 'Medium',
-                    due_date: new Date(Date.now() + 1 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], // 1 day from now
-                    assigned_to: 'HR Manager',
-                    submitted_by: 'HR Manager'
+                    fullName: fullName,
+                    gmail: gmail,
+                    phone: phone,
+                    department: department,
+                    jobCategory: jobCategory,
+                    contract: contract,
+                    nida: nida,
+                    status: 'active'
                 })
             });
         })

@@ -217,7 +217,7 @@ router.post('/:department', async (req, res) => {
                 },
                 'projects': {
                     'Project Creation': 'Project Creation',
-                    'Project Assignment': 'Project Assignment',
+                    'Project Assignment': 'Task Assignment', // Map to Task Assignment since Project Assignment doesn't exist
                     'Progress Update': 'Progress Update',
                     'Task Assignment': 'Task Assignment',
                     'Workforce Request': 'Workforce Request',
