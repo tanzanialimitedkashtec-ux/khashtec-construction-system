@@ -328,11 +328,11 @@ app.use('/api/hse', asyncHandler(async (req, res, next) => {
     return workRoutes(req, res, next); // Use workRoutes for HSE department
 }));
 
-app.use('/api/project', asyncHandler(async (req, res, next) => {
+app.use('/api/project/work', asyncHandler(async (req, res, next) => {
     return workRoutes(req, res, next); // Use workRoutes for Project department
 }));
 
-app.use('/api/project/work', asyncHandler(async (req, res, next) => {
+app.use('/api/project', asyncHandler(async (req, res, next) => {
     return workRoutes(req, res, next); // Use workRoutes for Project department
 }));
 
