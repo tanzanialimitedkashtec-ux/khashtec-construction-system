@@ -4672,7 +4672,7 @@ function saveAttendance() {
 function createWorkerAccount(){
     showContent(`<div class="card">
         <h3>Create Worker Account</h3>
-        <form id="workerAccountForm" onsubmit="return saveWorkerAccount()">
+        <form id="workerAccountForm" onsubmit="event.preventDefault(); saveWorkerAccount(); return false;">
             <div class="form-row">
                 <div class="form-group">
                     <label>Employee ID *</label>
@@ -5101,83 +5101,121 @@ document.addEventListener('DOMContentLoaded', function() {
 
 // Additional helper functions
 function saveWorkerAccount() {
-    // Handle file uploads
-    const profileFile = document.getElementById('workerProfile').files[0];
-    const idFile = document.getElementById('workerID').files[0];
-    const contractFile = document.getElementById('workerContract').files[0];
+    console.log('💾 Saving worker account...');
     
-    // Convert files to base64 for storage
-    const filePromises = [];
-    
-    if (profileFile) {
-        filePromises.push(fileToBase64(profileFile).then(data => ({ type: 'profile', data, name: profileFile.name })));
-    }
-    if (idFile) {
-        filePromises.push(fileToBase64(idFile).then(data => ({ type: 'id', data, name: idFile.name })));
-    }
-    if (contractFile) {
-        filePromises.push(fileToBase64(contractFile).then(data => ({ type: 'contract', data, name: contractFile.name })));
-    }
-    
-    Promise.all(filePromises).then(files => {
-        const workerAccount = {
-            id: 'WRK-' + Date.now(),
-            empID: document.getElementById('workerEmpID').value,
-            fullName: document.getElementById('workerFullName').value,
-            email: document.getElementById('workerEmail').value,
-            phone: document.getElementById('workerPhone').value,
-            department: document.getElementById('workerDepartment').value,
-            jobTitle: document.getElementById('workerJobTitle').value,
-            accountType: document.getElementById('workerAccountType').value,
-            accessLevel: document.getElementById('workerAccessLevel').value,
-            password: document.getElementById('workerPassword').value,
-            notes: document.getElementById('workerNotes').value,
-            createdDate: new Date().toLocaleString(),
-            status: 'active',
-            files: files,
-            profileImage: null
-        };
+    try {
+        // Get form values
+        const empID = document.getElementById('workerEmpID')?.value;
+        const fullName = document.getElementById('workerFullName')?.value;
+        const email = document.getElementById('workerEmail')?.value;
+        const phone = document.getElementById('workerPhone')?.value;
+        const department = document.getElementById('workerDepartment')?.value;
+        const jobTitle = document.getElementById('workerJobTitle')?.value;
+        const accountType = document.getElementById('workerAccountType')?.value;
+        const accessLevel = document.getElementById('workerAccessLevel')?.value;
+        const password = document.getElementById('workerPassword')?.value;
+        const notes = document.getElementById('workerNotes')?.value;
         
-        // Set profile image if uploaded
-        const profileFileData = files.find(f => f.type === 'profile');
-        if (profileFileData) {
-            workerAccount.profileImage = profileFileData.data;
-        } else {
-            workerAccount.profileImage = `https://picsum.photos/seed/${workerAccount.fullName}/80/80.jpg`;
+        console.log('📝 Worker account data:', { empID, fullName, email, phone, department, jobTitle, accountType, accessLevel });
+        
+        // Validate required fields
+        if (!empID || !fullName || !email || !phone || !department || !jobTitle || !accountType || !accessLevel || !password) {
+            customAlert('Please fill in all required fields.', "Validation Error", "error");
+            return false;
         }
         
-        // Save to API
-        KashTecAPI.createHRWork({
-            work_type: 'Worker Account Creation',
-            work_title: `Create Worker Account - ${workerAccount.fullName}`,
-            work_description: `Created worker account for ${workerAccount.fullName} in ${workerAccount.department} department`,
-            employee_name: workerAccount.fullName,
-            employee_email: workerAccount.email,
-            project_name: 'Account Creation',
-            priority: 'Medium',
-            submitted_by: getCurrentUser()?.name || 'System',
-            due_date: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0] // 7 days from now
-        }).then(result => {
-            console.log('Worker account created successfully:', result);
+        // Show loading state
+        const submitButton = document.querySelector('#workerAccountForm button[type="submit"]');
+        const originalText = submitButton.textContent;
+        submitButton.textContent = 'Creating Account...';
+        submitButton.disabled = true;
+        
+        // Send data to users API
+        console.log('📤 Creating worker account via API...');
+        fetch('/api/users', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            },
+            body: JSON.stringify({
+                name: fullName,
+                email: email,
+                phone: phone,
+                location: department, // using department as location
+                role: accountType.toLowerCase(), // using account type as role
+                department: department,
+                password: password
+            })
+        })
+        .then(response => {
+            console.log('📡 Worker account API response status:', response.status);
             
-            // Automatically assign to Office Portal
-            const portalAssigned = assignToOfficePortal(workerAccount, 'Worker');
+            if (response.status === 400) {
+                throw new Error('Invalid worker data - Check all required fields');
+            }
+            if (response.status === 409) {
+                throw new Error('Worker with this email already exists');
+            }
+            if (response.status >= 500) {
+                throw new Error('Server error during worker account creation');
+            }
             
-            const portalMessage = portalAssigned ? '\n✅ Automatically added to Office Portal' : '';
+            return response.json();
+        })
+        .then(data => {
+            console.log('📊 Worker account API response:', data);
             
-            customAlert(`Worker account created successfully!${portalMessage}\n\nEmployee ID: ${workerAccount.empID}\nName: ${workerAccount.fullName}\nEmail: ${workerAccount.email}\nAccount Type: ${workerAccount.accountType}\n\n📄 Files uploaded: ${files.length}`, "Worker Account Created", "success");
+            if (data.success === false) {
+                throw new Error(data.error || 'Failed to create worker account');
+            }
             
+            // Success message
+            customAlert(`✅ Worker account created successfully!\n\n📋 Details:\n• Employee ID: ${empID}\n• Name: ${fullName}\n• Email: ${email}\n• Department: ${department}\n• Job Title: ${jobTitle}\n• Account Type: ${accountType}\n• Access Level: ${accessLevel}\n\n🎉 Worker account saved to database!`, "Worker Account Created", "success");
+            
+            // Clear form
             document.getElementById('workerAccountForm').reset();
+            
+            // Reset button
+            submitButton.textContent = originalText;
+            submitButton.disabled = false;
+            
             return false;
-        }).catch(error => {
-            console.error('Error creating worker account:', error);
-            customAlert('Failed to create worker account. Please try again.', "Error", "error");
+        })
+        .catch(error => {
+            console.error('❌ Error creating worker account:', error);
+            
+            // Reset button
+            submitButton.textContent = originalText;
+            submitButton.disabled = false;
+            
+            // Determine specific error cause
+            let errorMessage = error.message;
+            
+            if (error.message.includes('NetworkError') || error.message.includes('fetch')) {
+                errorMessage = 'Network connection failed. Please check internet connection and try again.';
+            } else if (error.message.includes('400')) {
+                errorMessage = 'Invalid worker data. Please fill all required fields correctly.';
+            } else if (error.message.includes('409')) {
+                errorMessage = 'Worker with this email already exists. Please use a different email.';
+            } else if (error.message.includes('404')) {
+                errorMessage = 'Worker account API endpoint not found. Please contact system administrator.';
+            } else if (error.message.includes('500')) {
+                errorMessage = 'Server internal error. Please try again later or contact support.';
+            }
+            
+            customAlert(`❌ Failed to create worker account!\n\n🔍 Error: ${errorMessage}\n\n💡 Please fix the issue and try again.`, "Account Creation Failed", "error");
+            
             return false;
         });
-    }).catch(error => {
-        console.error('Error processing files:', error);
-        customAlert('Error processing uploaded files. Please try again.', "Upload Error", "error");
-    });
+        
+    } catch (error) {
+        console.error('❌ Error saving worker account:', error);
+        customAlert(`Unexpected error: ${error.message}\n\nPlease check browser console for details.`, "System Error", "error");
+        return false;
+    }
+    
+    return false; // Always prevent form submission
 }
 
 function filterEmployees() {

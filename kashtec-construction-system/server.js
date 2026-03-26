@@ -320,7 +320,7 @@ const { authenticateToken } = require('./backend/src/middleware/auth');
 
 // Mount department-specific routes to their correct handlers
 app.use('/api/hr', authenticateToken, asyncHandler(async (req, res, next) => {
-    return workRoutes(req, res, next); // Use workRoutes for HR department
+    return employeeRoutes(req, res, next); // Use employeeRoutes for HR department
 }));
 
 app.use('/api/finance', authenticateToken, asyncHandler(async (req, res, next) => {
