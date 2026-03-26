@@ -335,6 +335,10 @@ app.use('/api/project/work', authenticateToken, asyncHandler(async (req, res, ne
     return workRoutes(req, res, next); // Use workRoutes for Project department
 }));
 
+app.use('/api/project', authenticateToken, asyncHandler(async (req, res, next) => {
+    return workRoutes(req, res, next); // Use workRoutes for Project department
+}));
+
 app.use('/api/realestate', authenticateToken, asyncHandler(async (req, res, next) => {
     return workRoutes(req, res, next); // Use workRoutes for Real Estate department
 }));
@@ -521,7 +525,7 @@ app.use((err, req, res, next) => {
     });
 });
 
-// Main 404 handler (consolidated from multiple handlers)
+// 404 handler
 app.use('*', (req, res) => {
     console.log('❌ 404 - Route not found:', req.method, req.url);
     
@@ -533,6 +537,55 @@ app.use('*', (req, res) => {
             timestamp: new Date().toISOString(),
             available_routes: [
                 'GET /',
+                'GET /api/health',
+                'GET /api/status',
+                'GET /api/tables',
+                'GET /ping',
+                'POST /api/auth/login',
+                'GET /api/auth/test',
+                'GET /api/employees',
+                'GET /api/projects',
+                'GET /api/documents',
+                'GET /api/meetings',
+                'POST /api/meetings',
+                'GET /api/meetings/upcoming',
+                'GET /api/meetings/department/:department',
+                'GET /api/meetings/:id',
+                'PUT /api/meetings/:id',
+                'DELETE /api/meetings/:id',
+                'PATCH /api/meetings/:id/status'
+            ]
+        });
+    }
+    
+    // For non-API requests, return 404 HTML page
+    res.status(404).send(`
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <title>Page Not Found - KASHTEC</title>
+            <style>
+                body { font-family: Arial, sans-serif; text-align: center; padding: 50px; }
+                .container { max-width: 600px; margin: 0 auto; }
+                .logo { font-size: 2em; color: #0b3d91; margin-bottom: 20px; }
+                .error-code { font-size: 4em; color: #dc3545; margin: 20px 0; }
+                .message { color: #666; margin: 20px 0; }
+                .btn { background: #0b3d91; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; }
+            </style>
+        </head>
+        <body>
+            <div class="container">
+                <div class="logo">🏗️ KASHTEC</div>
+                <div class="error-code">404</div>
+                <h1>Page Not Found</h1>
+                <p class="message">The page you're looking for doesn't exist or has been moved.</p>
+                <a href="/" class="btn">Go to Dashboard</a>
+            </div>
+        </body>
+        </html>
+    `);
+});
+
 // Graceful shutdown
 process.on('SIGTERM', () => {
     console.log('SIGTERM received, shutting down gracefully');
