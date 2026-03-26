@@ -31,6 +31,26 @@ router.get('/test-db', async (req, res) => {
     }
 });
 
+// Test HR table existence
+router.get('/test-hr-table', async (req, res) => {
+    try {
+        console.log('🔍 Testing hr_work table existence...');
+        const [result] = await db.execute('SHOW TABLES LIKE "hr_work"');
+        console.log('✅ HR table check result:', result);
+        res.json({ 
+            message: 'HR table check successful',
+            exists: result.length > 0,
+            result: result
+        });
+    } catch (error) {
+        console.error('❌ HR table check failed:', error);
+        res.status(500).json({ 
+            error: 'HR table check failed',
+            details: error.message 
+        });
+    }
+});
+
 // Get all work items for a specific department
 router.get('/:department', async (req, res) => {
     try {
