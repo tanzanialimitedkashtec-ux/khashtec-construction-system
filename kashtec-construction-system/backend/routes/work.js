@@ -115,6 +115,7 @@ router.post('/:department', async (req, res) => {
             // Department-specific fields
             amount, // Finance
             incident_type, severity, location, // HSE
+            employee_name, employee_email, // HR
             project_name, client_name, // Project
             property_name, property_type, // Real Estate
             affected_systems, // Admin
@@ -216,6 +217,21 @@ router.post('/:department', async (req, res) => {
             if (location) {
                 additionalFields.push('location');
                 additionalValues.push(location);
+            }
+            if (project_name) {
+                additionalFields.push('project_name');
+                additionalValues.push(project_name);
+            }
+        }
+        
+        if (department === 'hr') {
+            if (employee_name) {
+                additionalFields.push('employee_name');
+                additionalValues.push(employee_name);
+            }
+            if (employee_email) {
+                additionalFields.push('employee_email');
+                additionalValues.push(employee_email);
             }
             if (project_name) {
                 additionalFields.push('project_name');
