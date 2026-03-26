@@ -332,6 +332,10 @@ app.use('/api/project', asyncHandler(async (req, res, next) => {
     return workRoutes(req, res, next); // Use workRoutes for Project department
 }));
 
+app.use('/api/project/work', asyncHandler(async (req, res, next) => {
+    return workRoutes(req, res, next); // Use workRoutes for Project department
+}));
+
 app.use('/api/realestate', asyncHandler(async (req, res, next) => {
     return workRoutes(req, res, next); // Use workRoutes for Real Estate department
 }));
