@@ -1,4 +1,5 @@
 const express = require('express');
+// Debug: HR department support added - deployment v2.1
 const cors = require('cors');
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
