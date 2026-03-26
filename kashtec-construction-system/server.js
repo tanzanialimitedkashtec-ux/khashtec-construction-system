@@ -822,9 +822,9 @@ console.log('🚀 Starting KASHTEC server startup sequence...');
 
 async function startServer() {
     try {
-        console.log('🔄 Step 1: Running database migrations (including schedule_meetings table)...');
+        console.log('🔄 Step 1: Running database migrations (including schedule_meetings and worker_accounts tables)...');
         await runMigrations();
-        console.log('✅ Step 1 completed: All database tables created successfully');
+        console.log('✅ Step 1 completed: All database tables created successfully (including worker_accounts table)');
         
         console.log('🔄 Step 2: Creating authentication table...');
         await createAuthenticationTable();
@@ -846,6 +846,7 @@ async function startServer() {
             console.log('✅ Server startup completed successfully!');
             console.log('🌐 All API endpoints are ready for requests');
             console.log('📅 Schedule meetings table is available for use');
+            console.log('👷 Worker accounts table is available for use');
         });
 
         server.on('error', (error) => {
