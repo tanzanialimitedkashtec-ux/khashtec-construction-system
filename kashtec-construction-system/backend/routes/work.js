@@ -286,12 +286,6 @@ router.post('/:department', async (req, res) => {
             additionalValues.push(affected_systems);
         }
         
-        // Combine all fields and values
-        console.log('🔍 baseFields:', baseFields);
-        console.log('🔍 additionalFields:', additionalFields);
-        console.log('🔍 baseValues:', baseValues);
-        console.log('🔍 additionalValues:', additionalValues);
-        
         // Ensure arrays are properly initialized and convert undefined to null
         const safeBaseFields = Array.isArray(baseFields) ? baseFields : [];
         const safeAdditionalFields = Array.isArray(additionalFields) ? additionalFields : [];
@@ -300,17 +294,6 @@ router.post('/:department', async (req, res) => {
         
         const allFields = safeBaseFields.concat(safeAdditionalFields);
         const allValues = safeBaseValues.concat(safeAdditionalValues);
-        
-        console.log('🔍 allFields:', allFields);
-        console.log('🔍 allValues:', allValues);
-        
-        // Build INSERT query
-        console.log('🔍 allFields type:', typeof allFields);
-        console.log('🔍 allFields isArray:', Array.isArray(allFields));
-        
-        if (!Array.isArray(allFields) || allFields.length === 0) {
-            throw new Error('allFields is not a valid array');
-        }
         
         query = `
             INSERT INTO ${department}_work (

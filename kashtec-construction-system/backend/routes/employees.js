@@ -5,7 +5,7 @@ const db = require('../../database/config/database');
 // Get all employees
 router.get('/', async (req, res) => {
     try {
-        const [employees] = await db.execute('SELECT * FROM employees ORDER BY registration_date DESC');
+        const [employees] = await db.execute('SELECT * FROM employees ORDER BY hire_date DESC');
         res.json(employees);
     } catch (error) {
         console.error('Error fetching employees:', error);

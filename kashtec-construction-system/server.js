@@ -1,5 +1,4 @@
 const express = require('express');
-// Debug: HR department support added - deployment v2.1
 const cors = require('cors');
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
@@ -315,32 +314,35 @@ app.use('/api/policies', asyncHandler(async (req, res, next) => {
     return policyRoutes(req, res, next);
 }));
 
+// Import authentication middleware
+const { authenticateToken } = require('./backend/src/middleware/auth');
+
 // Mount department-specific routes to their correct handlers
-app.use('/api/hr', asyncHandler(async (req, res, next) => {
+app.use('/api/hr', authenticateToken, asyncHandler(async (req, res, next) => {
     return workRoutes(req, res, next); // Use workRoutes for HR department
 }));
 
-app.use('/api/finance', asyncHandler(async (req, res, next) => {
+app.use('/api/finance', authenticateToken, asyncHandler(async (req, res, next) => {
     return workRoutes(req, res, next); // Use workRoutes for Finance department
 }));
 
-app.use('/api/hse', asyncHandler(async (req, res, next) => {
+app.use('/api/hse', authenticateToken, asyncHandler(async (req, res, next) => {
     return workRoutes(req, res, next); // Use workRoutes for HSE department
 }));
 
-app.use('/api/project/work', asyncHandler(async (req, res, next) => {
+app.use('/api/project/work', authenticateToken, asyncHandler(async (req, res, next) => {
     return workRoutes(req, res, next); // Use workRoutes for Project department
 }));
 
-app.use('/api/project', asyncHandler(async (req, res, next) => {
+app.use('/api/project', authenticateToken, asyncHandler(async (req, res, next) => {
     return workRoutes(req, res, next); // Use workRoutes for Project department
 }));
 
-app.use('/api/realestate', asyncHandler(async (req, res, next) => {
+app.use('/api/realestate', authenticateToken, asyncHandler(async (req, res, next) => {
     return workRoutes(req, res, next); // Use workRoutes for Real Estate department
 }));
 
-app.use('/api/admin', asyncHandler(async (req, res, next) => {
+app.use('/api/admin', authenticateToken, asyncHandler(async (req, res, next) => {
     return workRoutes(req, res, next); // Use workRoutes for Admin department
 }));
 
@@ -352,7 +354,7 @@ app.use('/api/workforce-budget', asyncHandler(async (req, res, next) => {
     return workforceBudgetRoutes(req, res, next);
 }));
 
-app.use('/api/work', asyncHandler(async (req, res, next) => {
+app.use('/api/work', authenticateToken, asyncHandler(async (req, res, next) => {
     return workRoutes(req, res, next);
 }));
 
