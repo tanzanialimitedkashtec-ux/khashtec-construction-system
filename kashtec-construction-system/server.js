@@ -29,6 +29,7 @@ const policyRoutes = require('./backend/routes/policies');
 const seniorHiringRoutes = require('./backend/routes/seniorHiring');
 const workforceBudgetRoutes = require('./backend/routes/workforceBudget');
 const workRoutes = require('./backend/routes/work');
+const scheduleMeetingsRoutes = require('./backend/routes/scheduleMeetings');
 
 const app = express();
 const PORT = config.PORT;
@@ -334,10 +335,6 @@ app.use('/api/project/work', authenticateToken, asyncHandler(async (req, res, ne
     return workRoutes(req, res, next); // Use workRoutes for Project department
 }));
 
-app.use('/api/project', authenticateToken, asyncHandler(async (req, res, next) => {
-    return workRoutes(req, res, next); // Use workRoutes for Project department
-}));
-
 app.use('/api/realestate', authenticateToken, asyncHandler(async (req, res, next) => {
     return workRoutes(req, res, next); // Use workRoutes for Real Estate department
 }));
@@ -356,6 +353,10 @@ app.use('/api/workforce-budget', asyncHandler(async (req, res, next) => {
 
 app.use('/api/work', authenticateToken, asyncHandler(async (req, res, next) => {
     return workRoutes(req, res, next);
+}));
+
+app.use('/api/meetings', authenticateToken, asyncHandler(async (req, res, next) => {
+    return scheduleMeetingsRoutes(req, res, next);
 }));
 
 app.use('/api', asyncHandler(async (req, res, next) => {
@@ -499,27 +500,12 @@ app.use('*', (req, res, next) => {
     });
 });
 
-// Async error handling middleware
-app.use((error, req, res, next) => {
-    console.error('❌ Async error caught:', error);
-    
-    // Don't send error details in production
-    const isDev = process.env.NODE_ENV === 'development';
-    
-    res.status(error.status || 500).json({
-        error: {
-            message: isDev ? error.message : 'Internal Server Error',
-            stack: isDev ? error.stack : undefined,
-            timestamp: new Date().toISOString(),
-            path: req.path,
-            method: req.method
-        }
-    });
-});
-
-// Error handling middleware
+// Main error handling middleware (consolidated from multiple handlers)
 app.use((err, req, res, next) => {
-    console.error('Error:', err.stack);
+    console.error('❌ Error caught:', err);
+    console.error('❌ Error stack:', err.stack);
+    console.error('❌ Request URL:', req.url);
+    console.error('❌ Request method:', req.method);
     
     // Don't send error details in production
     const isDev = process.env.NODE_ENV === 'development';
@@ -528,49 +514,25 @@ app.use((err, req, res, next) => {
         error: {
             message: isDev ? err.message : 'Internal Server Error',
             stack: isDev ? err.stack : undefined,
-            timestamp: new Date().toISOString()
+            timestamp: new Date().toISOString(),
+            path: req.path,
+            method: req.method
         }
     });
 });
 
-// 404 handler
-app.use((req, res) => {
+// Main 404 handler (consolidated from multiple handlers)
+app.use('*', (req, res) => {
+    console.log('❌ 404 - Route not found:', req.method, req.url);
+    
     if (req.path.startsWith('/api')) {
         return res.status(404).json({ 
             error: 'API endpoint not found',
             path: req.path,
             method: req.method,
-            timestamp: new Date().toISOString()
-        });
-    }
-    
-    res.status(404).send(`
-        <!DOCTYPE html>
-        <html>
-        <head>
-            <title>Page Not Found - KASHTEC</title>
-            <style>
-                body { font-family: Arial, sans-serif; text-align: center; padding: 50px; }
-                .container { max-width: 600px; margin: 0 auto; }
-                .logo { font-size: 2em; color: #0b3d91; margin-bottom: 20px; }
-                .error-code { font-size: 4em; color: #dc3545; margin: 20px 0; }
-                .message { color: #666; margin: 20px 0; }
-                .btn { background: #0b3d91; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; }
-            </style>
-        </head>
-        <body>
-            <div class="container">
-                <div class="logo">🏗️ KASHTEC</div>
-                <div class="error-code">404</div>
-                <h1>Page Not Found</h1>
-                <p class="message">The page you're looking for doesn't exist or has been moved.</p>
-                <a href="/" class="btn">Go to Dashboard</a>
-            </div>
-        </body>
-        </html>
-    `);
-});
-
+            timestamp: new Date().toISOString(),
+            available_routes: [
+                'GET /',
 // Graceful shutdown
 process.on('SIGTERM', () => {
     console.log('SIGTERM received, shutting down gracefully');
@@ -789,52 +751,6 @@ async function createEmployeeDetailsTable() {
     }
 }
 
-// Global error handler for unhandled errors
-app.use((err, req, res, next) => {
-    console.error('❌ Global error handler caught:', err);
-    console.error('❌ Error stack:', err.stack);
-    console.error('❌ Request URL:', req.url);
-    console.error('❌ Request method:', req.method);
-    
-    // Ensure JSON response
-    const errorResponse = {
-        success: false,
-        error: err.message || 'Internal server error',
-        timestamp: new Date().toISOString(),
-        url: req.url,
-        method: req.method
-    };
-    
-    // Don't send stack trace in production
-    if (process.env.NODE_ENV !== 'production') {
-        errorResponse.stack = err.stack;
-    }
-    
-    res.status(err.status || 500).json(errorResponse);
-});
-
-// Handle 404 errors
-app.use('*', (req, res) => {
-    console.log('❌ 404 - Route not found:', req.method, req.url);
-    res.status(404).json({
-        success: false,
-        error: 'Route not found',
-        message: `Cannot ${req.method} ${req.url}`,
-        timestamp: new Date().toISOString(),
-        available_routes: [
-            'GET /',
-            'GET /api/health',
-            'GET /api/status',
-            'GET /api/tables',
-            'GET /ping',
-            'POST /api/auth/login',
-            'GET /api/auth/test',
-            'GET /api/employees',
-            'GET /api/projects',
-            'GET /api/documents'
-        ]
-    });
-});
 // Start server after migrations and authentication table creation
 console.log('🚀 Starting KASHTEC server startup sequence...');
 
