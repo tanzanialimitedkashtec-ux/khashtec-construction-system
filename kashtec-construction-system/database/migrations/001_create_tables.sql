@@ -582,7 +582,7 @@ CREATE TABLE IF NOT EXISTS hse_work (
 CREATE TABLE IF NOT EXISTS projects_work (
   id INT AUTO_INCREMENT PRIMARY KEY,
   department_code VARCHAR(50) DEFAULT 'PROJECT',
-  work_type ENUM('Project Creation', 'Progress Update', 'Task Assignment', 'Workforce Request', 'Site Report', 'Work Approval', 'Project Completion', 'Resource Management') DEFAULT 'Project Creation',
+  work_type ENUM('Project Creation', 'Project Assignment', 'Progress Update', 'Task Assignment', 'Workforce Request', 'Site Report', 'Work Approval', 'Project Completion', 'Resource Management') DEFAULT 'Project Creation',
   work_title VARCHAR(255) NOT NULL,
   work_description TEXT,
   project_name VARCHAR(255) NOT NULL,
