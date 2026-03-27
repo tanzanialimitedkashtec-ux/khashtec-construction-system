@@ -328,6 +328,10 @@ app.use('/api/hr', authenticateToken, asyncHandler(async (req, res, next) => {
     return employeeRoutes(req, res, next); // Use employeeRoutes for HR department
 }));
 
+app.use('/api/hr/work', authenticateToken, asyncHandler(async (req, res, next) => {
+    return workRoutes(req, res, next); // Use workRoutes for HR work items
+}));
+
 app.use('/api/finance', authenticateToken, asyncHandler(async (req, res, next) => {
     return workRoutes(req, res, next); // Use workRoutes for Finance department
 }));

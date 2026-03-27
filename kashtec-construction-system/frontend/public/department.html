@@ -5136,7 +5136,8 @@ function saveWorkerAccount() {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'Accept': 'application/json'
+                'Accept': 'application/json',
+                'Authorization': `Bearer ${sessionManager.getToken()}`
             },
             body: JSON.stringify({
                 employeeId: empID,
@@ -6105,12 +6106,13 @@ function saveEmployeeManual() {
         
         // First test if employees API is reachable
         console.log('🧪 Testing employees API endpoint...');
-        fetch('/api/employees', {
-            method: 'GET',
+        fetch('/api/hr/work', {
+            method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'Accept': 'application/json'
-            }
+                'Accept': 'application/json',
+                'Authorization': `Bearer ${sessionManager.getToken()}`
+            },
         })
         .then(response => {
             console.log('📡 Employees API test response status:', response.status);
