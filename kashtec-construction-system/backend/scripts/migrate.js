@@ -56,6 +56,27 @@ async function runMigration() {
         await db.execute(workerAssignmentsSQL);
         console.log('✅ Worker assignments table created successfully');
         
+        // Update HR work table ENUM to include Employment Action
+        console.log('🔧 Updating HR work table ENUM for Employment Action...');
+        try {
+            await db.execute(`
+                ALTER TABLE hr_work 
+                MODIFY COLUMN work_type ENUM(
+                    'Employee Registration', 'Worker Account Creation', 'Project Assignment', 
+                    'Attendance Tracking', 'Leave Management', 'Contract Management', 
+                    'Policy Management', 'Senior Staff Hiring', 'Budget Approval', 'Employment Action'
+                ) DEFAULT 'Employee Registration'
+            `);
+            console.log('✅ HR work table ENUM updated successfully');
+        } catch (error) {
+            // ENUM might already exist, that's okay
+            if (error.message.includes('Duplicate entry') || error.message.includes('already exists')) {
+                console.log('📋 HR work table ENUM already includes Employment Action');
+            } else {
+                console.warn('⚠️ Could not update HR work table ENUM:', error.message);
+            }
+        }
+        
         // Insert sample data
         console.log('📝 Inserting sample worker assignment data...');
         const sampleDataSQL = `

@@ -516,7 +516,7 @@ CREATE TABLE IF NOT EXISTS workforce_budget_modifications (
 CREATE TABLE IF NOT EXISTS hr_work (
   id INT AUTO_INCREMENT PRIMARY KEY,
   department_code VARCHAR(50) DEFAULT 'HR',
-  work_type ENUM('Employee Registration', 'Worker Account Creation', 'Project Assignment', 'Attendance Tracking', 'Leave Management', 'Contract Management', 'Policy Management', 'Senior Staff Hiring', 'Budget Approval') DEFAULT 'Employee Registration',
+  work_type ENUM('Employee Registration', 'Worker Account Creation', 'Project Assignment', 'Attendance Tracking', 'Leave Management', 'Contract Management', 'Policy Management', 'Senior Staff Hiring', 'Budget Approval', 'Employment Action') DEFAULT 'Employee Registration',
   work_title VARCHAR(255) NOT NULL,
   work_description TEXT,
   employee_name VARCHAR(255),
