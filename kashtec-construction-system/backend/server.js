@@ -261,6 +261,10 @@ app.use('/api/project/work', workRoutes);
 app.use('/api/realestate/work', workRoutes);
 app.use('/api/admin/work', workRoutes);
 
+// ===== POLICIES ROUTES =====
+const policiesRoutes = require('./routes/policies');
+app.use('/api/policies', policiesRoutes);
+
 // ===== OFFICE PORTAL ROUTES =====
 app.post('/api/office-portal/users', async (req, res) => {
     try {
