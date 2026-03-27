@@ -8317,7 +8317,8 @@ function saveToolboxMeeting() {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
-            'Accept': 'application/json'
+            'Accept': 'application/json',
+            'Authorization': `Bearer ${sessionManager.getAuthToken()}`
         },
         body: JSON.stringify(workItem)
     })
