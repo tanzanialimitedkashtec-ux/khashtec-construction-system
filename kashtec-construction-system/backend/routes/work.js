@@ -164,12 +164,12 @@ router.post('/', async (req, res) => {
             mapped_work_type,
             work_title,
             work_description,
-            priority,
-            due_date,
-            assigned_to,
-            submitted_by,
+            priority || 'Medium',
+            due_date || null,
+            assigned_to || null,
+            submitted_by || null,
             new Date().toISOString().split('T')[0], // submitted_date
-            status
+            status || 'pending'
         ];
         
         // HR-specific fields
