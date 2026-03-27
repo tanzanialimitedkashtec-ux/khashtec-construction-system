@@ -216,6 +216,11 @@ async function getPolicyRevisions(id) {
     return await apiCall(`/policies/${id}/revisions`);
 }
 
+// Get policy rejections
+async function getPolicyRejections(id) {
+    return await apiCall(`/policies/${id}/rejections`);
+}
+
 // ===== SENIOR HIRING API =====
 
 // Create senior hiring request

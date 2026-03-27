@@ -6426,13 +6426,31 @@ function showRealProblemNotification(problemType, details) {
             
         case 'SAVING':
             title = '💾 Saving to Database...';
-            message = `📝 Sending incident report to database...\n\n• Type: ${details.workItem.incident_type}\n• Severity: ${details.workItem.severity}\n• Description: ${details.workItem.work_description.substring(0, 50)}...\n\n⏳ Please wait...`;
+            if (details.workItem) {
+                // HSE incident saving
+                message = `📝 Sending incident report to database...\n\n• Type: ${details.workItem.incident_type}\n• Severity: ${details.workItem.severity}\n• Description: ${details.workItem.work_description.substring(0, 50)}...\n\n⏳ Please wait...`;
+            } else if (details.employeeData) {
+                // Employee registration
+                message = `📝 Registering employee to database...\n\n• Name: ${details.employeeData.fullName}\n• Department: ${details.employeeData.department}\n• Email: ${details.employeeData.gmail}\n\n⏳ Please wait...`;
+            } else {
+                // Generic saving
+                message = `📝 Saving data to database...\n\n${details.message || 'Processing your request...'}\n\n⏳ Please wait...`;
+            }
             type = 'info';
             break;
             
         case 'SUCCESS':
             title = '✅ Data Saved Successfully!';
-            message = `🎉 Incident report saved to database!\n\n📋 Details:\n• Database ID: ${details.databaseId}\n• Type: ${details.savedData.incident_type}\n• Severity: ${details.savedData.severity}\n• Priority: ${details.savedData.priority}\n• Assigned to: ${details.savedData.assigned_to}\n• Submitted by: ${details.savedData.submitted_by}\n• Date: ${new Date().toLocaleString()}\n\n💾 Stored in: hse_work table\n🚫 NO PAGE REFRESH - DATA SAVED SUCCESSFULLY!`;
+            if (details.savedData && details.savedData.incident_type) {
+                // HSE incident success
+                message = `🎉 Incident report saved to database!\n\n📋 Details:\n• Database ID: ${details.databaseId}\n• Type: ${details.savedData.incident_type}\n• Severity: ${details.savedData.severity}\n• Priority: ${details.savedData.priority}\n• Assigned to: ${details.savedData.assigned_to}\n• Submitted by: ${details.savedData.submitted_by}\n• Date: ${new Date().toLocaleString()}\n\n💾 Stored in: hse_work table\n🚫 NO PAGE REFRESH - DATA SAVED SUCCESSFULLY!`;
+            } else if (details.employeeData) {
+                // Employee registration success
+                message = `🎉 Employee registered successfully!\n\n📋 Details:\n• Name: ${details.employeeData.fullName}\n• Department: ${details.employeeData.department}\n• Email: ${details.employeeData.gmail}\n• Database ID: ${details.databaseId}\n• Date: ${new Date().toLocaleString()}\n\n💾 Stored in: employees table\n🚫 NO PAGE REFRESH - DATA SAVED SUCCESSFULLY!`;
+            } else {
+                // Generic success
+                message = `🎉 Data saved successfully!\n\n📋 Details:\n• Database ID: ${details.databaseId}\n• Date: ${new Date().toLocaleString()}\n\n💾 Data saved to database\n🚫 NO PAGE REFRESH - DATA SAVED SUCCESSFULLY!`;
+            }
             type = 'success';
             break;
             
