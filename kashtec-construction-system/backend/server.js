@@ -437,3 +437,12 @@ app.listen(PORT, () => {
     console.log(`KASHTEC Server running on port ${PORT}`);
     console.log('Database connected and ready for connections');
 });
+
+// Health check endpoint for Railway
+app.get('/health', (req, res) => {
+    res.status(200).json({
+        status: 'healthy',
+        timestamp: new Date().toISOString(),
+        uptime: process.uptime()
+    });
+});
