@@ -1912,7 +1912,8 @@ function loadPolicies() {
 }
 
 function loadPoliciesFromBackend() {
-    fetch('/api/policies')
+    const baseUrl = window.location.origin;
+    fetch(`${baseUrl}/api/policies`)
         .then(response => response.json())
         .then(data => {
             console.log('📋 Policies loaded:', data);
@@ -1970,7 +1971,8 @@ function loadSeniorHiringRequests() {
 }
 
 function loadHiringRequestsFromBackend() {
-    fetch('/api/senior-hiring')
+    const baseUrl = window.location.origin;
+    fetch(`${baseUrl}/api/senior-hiring`)
         .then(response => response.json())
         .then(data => {
             console.log('📋 Hiring requests loaded:', data);
@@ -2029,7 +2031,8 @@ function loadWorkforceBudgets() {
 }
 
 function loadBudgetRequestsFromBackend() {
-    fetch('/api/workforce-budget')
+    const baseUrl = window.location.origin;
+    fetch(`${baseUrl}/api/workforce-budget`)
         .then(response => response.json())
         .then(data => {
             console.log('📋 Budget requests loaded:', data);
@@ -4083,7 +4086,8 @@ function saveEmploymentAction() {
     customAlert('Processing employment action...', "Processing", "info");
     
     // Send data to backend API
-    fetch('/api/hr/work', {
+    const baseUrl = window.location.origin;
+    fetch(`${baseUrl}/api/hr/work`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -4487,7 +4491,8 @@ function saveEmployee() {
     customAlert('Registering employee...', "Processing", "info");
     
     // Send data to backend API
-    fetch('/api/employees', {
+    const baseUrl = window.location.origin;
+    fetch(`${baseUrl}/api/employees`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -4575,7 +4580,8 @@ function saveAssignment() {
     customAlert('Assigning worker to project...', "Processing", "info");
     
     // Send data to backend API
-    fetch('/api/hr/work', {
+    const baseUrl = window.location.origin;
+    fetch(`${baseUrl}/api/hr/work`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -4640,7 +4646,8 @@ function saveAttendance() {
     customAlert('Marking attendance...', "Processing", "info");
     
     // Send data to backend API
-    fetch('/api/hr/work', {
+    const baseUrl = window.location.origin;
+    fetch(`${baseUrl}/api/hr/work`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -5135,7 +5142,8 @@ function saveWorkerAccount() {
         
         // Send data to worker accounts API
         console.log('📤 Creating worker account via API...');
-        fetch('/api/worker-accounts', {
+        const baseUrl = window.location.origin;
+    fetch(`${baseUrl}/api/worker-accounts`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -5350,7 +5358,8 @@ function saveLeaveRequest() {
     customAlert('Processing leave request...', "Processing", "info");
     
     // Send data to backend API
-    fetch('/api/hr/work', {
+    const baseUrl = window.location.origin;
+    fetch(`${baseUrl}/api/hr/work`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -5416,7 +5425,8 @@ function saveContract() {
     customAlert('Processing contract...', "Processing", "info");
     
     // Send data to backend API
-    fetch('/api/hr/work', {
+    const baseUrl = window.location.origin;
+    fetch(`${baseUrl}/api/hr/work`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -7871,7 +7881,8 @@ function saveIncidentReport() {
         customAlert('Recording incident report...', "Processing", "info");
         
         // Send data to backend API
-        fetch('/api/hse/work', {
+        const baseUrl = window.location.origin;
+    fetch(`${baseUrl}/api/hse/work`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -8134,7 +8145,8 @@ function saveSafetyPolicy() {
     customAlert('Uploading safety policy...', "Processing", "info");
     
     // Send data to backend API
-    fetch('/api/hse/work', {
+    const baseUrl = window.location.origin;
+    fetch(`${baseUrl}/api/hse/work`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -8240,7 +8252,8 @@ function saveToolboxMeeting() {
     customAlert('Recording toolbox meeting...', "Processing", "info");
     
     // Send data to backend API
-    fetch('/api/hse/work', {
+    const baseUrl = window.location.origin;
+    fetch(`${baseUrl}/api/hse/work`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -8309,7 +8322,8 @@ function savePpeIssuance() {
     customAlert('Recording PPE issuance...', "Processing", "info");
     
     // Send data to backend API
-    fetch('/api/hse/work', {
+    const baseUrl = window.location.origin;
+    fetch(`${baseUrl}/api/hse/work`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -8382,7 +8396,8 @@ function saveSafetyViolation() {
     customAlert('Recording safety violation...', "Processing", "info");
     
     // Send data to backend API
-    fetch('/api/hse/work', {
+    const baseUrl = window.location.origin;
+    fetch(`${baseUrl}/api/hse/work`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -8455,7 +8470,8 @@ function saveInspectionReport() {
     customAlert('Uploading inspection report...', "Processing", "info");
     
     // Send data to backend API
-    fetch('/api/hse/work', {
+    const baseUrl = window.location.origin;
+    fetch(`${baseUrl}/api/hse/work`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -9585,7 +9601,8 @@ function saveDepartmentBudget() {
     customAlert('Creating budget...', "Processing", "info");
     
     // Send data to backend Finance API
-    fetch('/api/finance/work', {
+    const baseUrl = window.location.origin;
+    fetch(`${baseUrl}/api/finance/work`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -10593,7 +10610,8 @@ function saveNewProject() {
     customAlert('Creating new project...', "Processing", "info");
     
     // Send data to backend API
-    fetch('/api/project/work', {
+    const baseUrl = window.location.origin;
+    fetch(`${baseUrl}/api/project/work`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -11561,7 +11579,8 @@ function saveNewProperty() {
     customAlert('Adding new property...', "Processing", "info");
     
     // Send data to backend Real Estate API
-    fetch('/api/realestate/work', {
+    const baseUrl = window.location.origin;
+    fetch(`${baseUrl}/api/realestate/work`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
