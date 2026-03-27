@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KASHTEC Frontend Debug Solution</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .test-section { margin: 20px 0; padding: 15px; border: 1px solid #ddd; border-radius: 5px; }
+        .success { background-color: #d4edda; border-color: #c3e6cb; }
+        .error { background-color: #f8d7da; border-color: #f5c6cb; }
+        button { padding: 10px 20px; margin: 5px; cursor: pointer; }
+        pre { background: #f4f4f4; padding: 10px; overflow-x: auto; }
+    </style>
+</head>
+<body>
+    <h1>🔧 KASHTEC Frontend API Debug Solution</h1>
+    
+    <div class="test-section">
+        <h2>1. Test Worker Account Creation (No Auth Required)</h2>
+        <button onclick="testWorkerAccount()">Test Worker Account API</button>
+        <div id="workerResult"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>2. Test Authentication</h2>
+        <button onclick="testLogin()">Test Login</button>
+        <div id="loginResult"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>3. Test HR Work API (Auth Required)</h2>
+        <button onclick="testHRWork()">Test HR Work API</button>
+        <div id="hrWorkResult"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>4. Test All Department APIs</h2>
+        <button onclick="testAllDepartments()">Test All Departments</button>
+        <div id="allDepartmentsResult"></div>
+    </div>
+
+    <script>
+        let authToken = null;
+        
+        // Simple session manager
+        const sessionManager = {
+            getToken: () => authToken,
+            setToken: (token) => { authToken = token; }
+        };
+        
+        async function testWorkerAccount() {
+            const resultDiv = document.getElementById('workerResult');
+            resultDiv.innerHTML = '<p>🔄 Testing worker account API...</p>';
+            
+            try {
+                const response = await fetch('/api/worker-accounts', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        employeeId: 'DEBUG001',
+                        fullName: 'Debug Test Worker',
+                        workEmail: 'debug@test.com',
+                        phoneNumber: '+1234567890',
+                        department: 'admin',
+                        jobTitle: 'Debug Engineer',
+                        accountType: 'staff',
+                        accessLevel: 'basic',
+                        temporaryPassword: 'debug123'
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    resultDiv.innerHTML = `
+                        <div class="success">
+                            <h3>✅ Worker Account API Working!</h3>
+                            <p><strong>Status:</strong> ${response.status}</p>
+                            <p><strong>Response:</strong></p>
+                            <pre>${JSON.stringify(data, null, 2)}</pre>
+                        </div>
+                    `;
+                } else {
+                    resultDiv.innerHTML = `
+                        <div class="error">
+                            <h3>❌ Worker Account API Failed</h3>
+                            <p><strong>Status:</strong> ${response.status}</p>
+                            <p><strong>Error:</strong></p>
+                            <pre>${JSON.stringify(data, null, 2)}</pre>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="error">
+                        <h3>❌ Network Error</h3>
+                        <pre>${error.message}</pre>
+                    </div>
+                `;
+            }
+        }
+        
+        async function testLogin() {
+            const resultDiv = document.getElementById('loginResult');
+            resultDiv.innerHTML = '<p>🔄 Testing login...</p>';
+            
+            try {
+                const response = await fetch('/api/auth/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        email: 'hse@manager0501',
+                        password: 'hse0501'
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok && data.token) {
+                    sessionManager.setToken(data.token);
+                    resultDiv.innerHTML = `
+                        <div class="success">
+                            <h3>✅ Login Successful!</h3>
+                            <p><strong>Token:</strong> ${data.token.substring(0, 50)}...</p>
+                            <p><strong>User:</strong> ${data.user.email} (${data.user.role})</p>
+                            <p>Now you can test authenticated APIs!</p>
+                        </div>
+                    `;
+                } else {
+                    resultDiv.innerHTML = `
+                        <div class="error">
+                            <h3>❌ Login Failed</h3>
+                            <pre>${JSON.stringify(data, null, 2)}</pre>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="error">
+                        <h3>❌ Network Error</h3>
+                        <pre>${error.message}</pre>
+                    </div>
+                `;
+            }
+        }
+        
+        async function testHRWork() {
+            const resultDiv = document.getElementById('hrWorkResult');
+            
+            if (!authToken) {
+                resultDiv.innerHTML = `
+                    <div class="error">
+                        <h3>❌ Authentication Required</h3>
+                        <p>Please login first using the "Test Login" button above.</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            resultDiv.innerHTML = '<p>🔄 Testing HR Work API...</p>';
+            
+            try {
+                const response = await fetch('/api/hr/work', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+                        'Authorization': `Bearer ${authToken}`
+                    },
+                    body: JSON.stringify({
+                        work_type: 'Employee Registration',
+                        work_title: 'Debug Test Employee',
+                        work_description: 'Debug test description',
+                        employee_name: 'Debug Employee',
+                        employee_email: 'debug@employee.com',
+                        submitted_by: 'HR Manager'
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    resultDiv.innerHTML = `
+                        <div class="success">
+                            <h3>✅ HR Work API Working!</h3>
+                            <p><strong>Status:</strong> ${response.status}</p>
+                            <p><strong>Response:</strong></p>
+                            <pre>${JSON.stringify(data, null, 2)}</pre>
+                        </div>
+                    `;
+                } else {
+                    resultDiv.innerHTML = `
+                        <div class="error">
+                            <h3>❌ HR Work API Failed</h3>
+                            <p><strong>Status:</strong> ${response.status}</p>
+                            <p><strong>Error:</strong></p>
+                            <pre>${JSON.stringify(data, null, 2)}</pre>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="error">
+                        <h3>❌ Network Error</h3>
+                        <pre>${error.message}</pre>
+                    </div>
+                `;
+            }
+        }
+        
+        async function testAllDepartments() {
+            const resultDiv = document.getElementById('allDepartmentsResult');
+            resultDiv.innerHTML = '<p>🔄 Testing all department APIs...</p>';
+            
+            if (!authToken) {
+                resultDiv.innerHTML = `
+                    <div class="error">
+                        <h3>❌ Authentication Required</h3>
+                        <p>Please login first using the "Test Login" button above.</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            const departments = [
+                { name: 'HR', url: '/api/hr/work' },
+                { name: 'Finance', url: '/api/finance/work' },
+                { name: 'HSE', url: '/api/hse/work' },
+                { name: 'Projects', url: '/api/project/work' },
+                { name: 'Real Estate', url: '/api/realestate/work' },
+                { name: 'Admin', url: '/api/admin/work' }
+            ];
+            
+            let results = '<h3>📊 Department API Test Results:</h3>';
+            
+            for (const dept of departments) {
+                try {
+                    const response = await fetch(dept.url, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Accept': 'application/json',
+                            'Authorization': `Bearer ${authToken}`
+                        },
+                        body: JSON.stringify({
+                            work_type: 'Test Action',
+                            work_title: `Debug Test for ${dept.name}`,
+                            work_description: `Debug test for ${dept.name} department`,
+                            submitted_by: 'Debug User'
+                        })
+                    });
+                    
+                    const status = response.ok ? '✅' : '❌';
+                    const statusText = response.status;
+                    
+                    results += `<p><strong>${status} ${dept.name}:</strong> ${statusText}</p>`;
+                } catch (error) {
+                    results += `<p><strong>❌ ${dept.name}:</strong> Network Error - ${error.message}</p>`;
+                }
+            }
+            
+            resultDiv.innerHTML = `<div class="test-section">${results}</div>`;
+        }
+        
+        // Auto-test worker account on page load
+        window.addEventListener('load', () => {
+            setTimeout(testWorkerAccount, 1000);
+        });
+    </script>
+</body>
+</html>

@@ -6106,13 +6106,12 @@ function saveEmployeeManual() {
         
         // First test if employees API is reachable
         console.log('🧪 Testing employees API endpoint...');
-        fetch('/api/hr/work', {
-            method: 'POST',
+        fetch('/api/employees', {
+            method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
-                'Accept': 'application/json',
-                'Authorization': `Bearer ${sessionManager.getToken()}`
-            },
+                'Accept': 'application/json'
+            }
         })
         .then(response => {
             console.log('📡 Employees API test response status:', response.status);
@@ -11744,19 +11743,39 @@ function uploadDocs(){
 }
 
 function uploadDocument() {
-    const docType = document.getElementById('docType').value;
-    const docTitle = document.getElementById('docTitle').value;
-    const docDepartment = document.getElementById('docDepartment').value;
-    const docDescription = document.getElementById('docDescription').value;
-    const docFile = document.getElementById('docFile').files[0];
-    const docPriority = document.getElementById('docPriority').value;
+    // Check if DOM is ready
+    if (document.readyState === 'loading') {
+        console.error('❌ DOM not ready yet, please wait');
+        return;
+    }
+    
+    // Check if required elements exist
+    const docTypeElement = document.getElementById('docType');
+    const docTitleElement = document.getElementById('docTitle');
+    const docDepartmentElement = document.getElementById('docDepartment');
+    const docDescriptionElement = document.getElementById('docDescription');
+    const docFileElement = document.getElementById('docFile');
+    const docPriorityElement = document.getElementById('docPriority');
+    
+    if (!docTypeElement || !docTitleElement || !docDepartmentElement || !docFileElement) {
+        console.error('❌ Required DOM elements not found');
+        customAlert('Document upload form not ready. Please try again.', "Form Error", "error");
+        return;
+    }
+    
+    const docType = docTypeElement.value;
+    const docTitle = docTitleElement.value;
+    const docDepartment = docDepartmentElement.value;
+    const docDescription = docDescriptionElement ? docDescriptionElement.value : '';
+    const docFile = docFileElement.files[0];
+    const docPriority = docPriorityElement ? docPriorityElement.value : 'medium';
     
     if (!docType || !docTitle || !docDepartment || !docFile) {
         customAlert('Please fill all required fields and select a file:\n\n• Document Type\n• Document Title\n• Department\n• File', "Validation Error", "error");
         return;
     }
     
-    const document = {
+    const documentData = {
         id: 'DOC-' + Date.now(),
         type: docType,
         title: docTitle,
@@ -11774,7 +11793,7 @@ function uploadDocument() {
     const workItem = {
         work_type: 'Document Upload',
         work_title: `Document Upload - ${docTitle}`,
-        work_description: `Document Uploaded\n\nTitle: ${docTitle}\nType: ${docType}\nDepartment: ${docDepartment}\nDescription: ${docDescription}\nFile: ${docFile.name} (${(docFile.size / 1024).toFixed(2)} KB)\nPriority: ${docPriority}\nUploaded By: ${document.uploadedBy}\nUpload Date: ${document.uploadDate}\nStatus: ${document.status}`,
+        work_description: `Document Uploaded\n\nTitle: ${docTitle}\nType: ${docType}\nDepartment: ${docDepartment}\nDescription: ${docDescription}\nFile: ${docFile.name} (${(docFile.size / 1024).toFixed(2)} KB)\nPriority: ${docPriority}\nUploaded By: ${documentData.uploadedBy}\nUpload Date: ${documentData.uploadDate}\nStatus: ${documentData.status}`,
         priority: docPriority === 'urgent' ? 'High' : docPriority === 'important' ? 'Medium' : 'Low',
         due_date: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], // 7 days from now
         assigned_to: 'Admin Assistant',
