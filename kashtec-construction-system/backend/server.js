@@ -268,6 +268,11 @@ app.use('/api/policies', policiesRoutes);
 // Debug: Log all mounted routes
 console.log('🔍 Routes mounted:');
 console.log('  - /api/policies/* -> policies routes');
+console.log('  - /api/senior-hiring/* -> senior hiring routes');
+
+// ===== SENIOR HIRING ROUTES =====
+const seniorHiringRoutes = require('./routes/seniorHiring');
+app.use('/api/senior-hiring', seniorHiringRoutes);
 
 // ===== OFFICE PORTAL ROUTES =====
 app.post('/api/office-portal/users', async (req, res) => {
