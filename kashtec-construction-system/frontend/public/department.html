@@ -5111,6 +5111,14 @@ document.addEventListener('DOMContentLoaded', function() {
 
 // Additional helper functions
 function saveWorkerAccount() {
+    // Prevent multiple submissions
+    if (window.workerAccountSubmitting) {
+        console.log('⚠️ Worker account submission already in progress');
+        return false;
+    }
+    
+    window.workerAccountSubmitting = true;
+    
     console.log('💾 Saving worker account...');
     
     try {
@@ -5131,6 +5139,7 @@ function saveWorkerAccount() {
         // Validate required fields
         if (!empID || !fullName || !email || !phone || !department || !jobTitle || !accountType || !accessLevel || !password) {
             customAlert('Please fill in all required fields.', "Validation Error", "error");
+            window.workerAccountSubmitting = false;
             return false;
         }
         
@@ -5228,13 +5237,16 @@ function saveWorkerAccount() {
             }
             
             customAlert(`❌ Failed to create worker account!\n\n🔍 Error: ${errorMessage}\n\n💡 Please fix the issue and try again.`, "Account Creation Failed", "error");
-            
-            return false;
+        })
+        .finally(() => {
+            // Reset submission flag
+            window.workerAccountSubmitting = false;
         });
         
     } catch (error) {
         console.error('❌ Error saving worker account:', error);
         customAlert(`Unexpected error: ${error.message}\n\nPlease check browser console for details.`, "System Error", "error");
+        window.workerAccountSubmitting = false;
         return false;
     }
     
