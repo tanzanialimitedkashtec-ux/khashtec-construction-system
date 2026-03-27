@@ -6,7 +6,7 @@ const path = require('path');
 const fs = require('fs').promises;
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-const db = require('../config/database');
+const db = require('../database/config/database');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -251,6 +251,15 @@ app.post('/api/clients', async (req, res) => {
         res.status(500).json({ error: 'Failed to create client' });
     }
 });
+
+// ===== WORK ASSIGNMENT ROUTES =====
+const workRoutes = require('./routes/work');
+app.use('/api/hr/work', workRoutes);
+app.use('/api/hse/work', workRoutes);
+app.use('/api/finance/work', workRoutes);
+app.use('/api/project/work', workRoutes);
+app.use('/api/realestate/work', workRoutes);
+app.use('/api/admin/work', workRoutes);
 
 // ===== OFFICE PORTAL ROUTES =====
 app.post('/api/office-portal/users', async (req, res) => {

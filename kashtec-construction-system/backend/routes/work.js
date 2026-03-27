@@ -88,6 +88,151 @@ router.get('/:department', async (req, res) => {
     }
 });
 
+// Direct work assignment endpoint for HR department
+router.post('/', async (req, res) => {
+    try {
+        console.log('🔍 Direct HR work assignment request received');
+        console.log('📊 Request body:', req.body);
+        
+        const department = 'hr'; // Fixed for HR department
+        
+        const {
+            work_type,
+            work_title,
+            work_description,
+            priority = 'Medium',
+            due_date,
+            assigned_to,
+            submitted_by,
+            // HR-specific fields
+            employee_name,
+            employee_email,
+            project_name,
+            // Additional fields
+            status = 'pending'
+        } = req.body;
+        
+        // Validate required fields
+        if (!work_type || !work_title || !work_description) {
+            console.log('❌ Validation failed - missing required fields');
+            return res.status(400).json({ 
+                error: 'Missing required fields: work_type, work_title, work_description',
+                received: { work_type, work_title, work_description }
+            });
+        }
+        
+        // Map frontend work types to database ENUM values
+        const getMappedWorkType = (workType) => {
+            const mappings = {
+                'Attendance Management': 'Attendance Tracking',
+                'Employee Registration': 'Employee Registration',
+                'Worker Account Creation': 'Worker Account Creation',
+                'Project Assignment': 'Project Assignment',
+                'Leave Management': 'Leave Management',
+                'Contract Management': 'Contract Management',
+                'Policy Management': 'Policy Management',
+                'Senior Staff Hiring': 'Senior Staff Hiring',
+                'Budget Approval': 'Budget Approval'
+            };
+            
+            return mappings[workType] || workType;
+        };
+        
+        const mapped_work_type = getMappedWorkType(work_type);
+        console.log('🔄 Mapped work type:', work_type, '->', mapped_work_type);
+        
+        // Build the query for HR department
+        let query = '';
+        let values = [];
+        
+        // Base fields
+        const baseFields = [
+            'department_code',
+            'work_type',
+            'work_title', 
+            'work_description',
+            'priority',
+            'due_date',
+            'assigned_to',
+            'submitted_by',
+            'submitted_date',
+            'status'
+        ];
+        
+        const baseValues = [
+            department,
+            mapped_work_type,
+            work_title,
+            work_description,
+            priority,
+            due_date,
+            assigned_to,
+            submitted_by,
+            new Date().toISOString().split('T')[0], // submitted_date
+            status
+        ];
+        
+        // HR-specific fields
+        let additionalFields = [];
+        let additionalValues = [];
+        
+        if (employee_name) {
+            additionalFields.push('employee_name');
+            additionalValues.push(employee_name);
+        }
+        if (employee_email) {
+            additionalFields.push('employee_email');
+            additionalValues.push(employee_email);
+        }
+        if (project_name) {
+            additionalFields.push('project_name');
+            additionalValues.push(project_name);
+        }
+        
+        const allFields = baseFields.concat(additionalFields);
+        const allValues = baseValues.concat(additionalValues);
+        
+        query = `
+            INSERT INTO hr_work (
+                ${allFields.join(', ')}
+            ) VALUES (
+                ${allFields.map(() => '?').join(', ')}
+            )
+        `;
+        
+        values = allValues;
+        
+        console.log('🔍 Executing query:', query);
+        console.log('📊 Query values:', values);
+        
+        try {
+            const result = await db.execute(query, values);
+            console.log('✅ Work item created successfully:', result);
+            
+            // Return success response
+            res.status(201).json({
+                message: 'Work item created successfully',
+                id: result.insertId,
+                department,
+                work_type: mapped_work_type,
+                work_title,
+                status,
+                created_at: new Date().toISOString()
+            });
+        } catch (dbError) {
+            console.error('❌ Database execution error:', dbError);
+            throw new Error(`Database query failed: ${dbError.message}`);
+        }
+        
+    } catch (error) {
+        console.error('❌ Error creating work item:', error);
+        res.status(500).json({ 
+            error: 'Failed to create work item',
+            details: error.message 
+        });
+    }
+});
+
 // Create new work item
 router.post('/:department', async (req, res) => {
     try {

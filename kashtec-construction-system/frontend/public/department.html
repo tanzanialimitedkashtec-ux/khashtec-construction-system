@@ -5158,11 +5158,19 @@ function saveWorkerAccount() {
         .then(response => {
             console.log('📡 Worker account API response status:', response.status);
             
+            // Handle 409 Conflict as a special case (not an error)
+            if (response.status === 409) {
+                console.log('⚠️ Worker account already exists - showing user notification');
+                customAlert(`⚠️ Worker account already exists!\n\n📋 Details:\n• Email: ${email}\n• Employee ID: ${empID}\n\n💡 This worker account is already registered in the system.\n\nPlease use a different email address or check if the account already exists.`, "Account Already Exists", "warning");
+                
+                // Reset button
+                submitButton.textContent = originalText;
+                submitButton.disabled = false;
+                return false;
+            }
+            
             if (response.status === 400) {
                 throw new Error('Invalid worker data - Check all required fields');
-            }
-            if (response.status === 409) {
-                throw new Error('Worker with this email already exists');
             }
             if (response.status >= 500) {
                 throw new Error('Server error during worker account creation');
