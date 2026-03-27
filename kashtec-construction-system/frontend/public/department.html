@@ -4087,7 +4087,8 @@ function saveEmploymentAction() {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
-            'Accept': 'application/json'
+            'Accept': 'application/json',
+            'Authorization': `Bearer ${sessionManager.getAuthToken()}`
         },
         body: JSON.stringify(workItem)
     })
@@ -4490,7 +4491,7 @@ function saveEmployee() {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${sessionManager.getToken()}`
+            'Authorization': `Bearer ${sessionManager.getAuthToken()}`
         },
         body: JSON.stringify(employee)
     })
@@ -4578,7 +4579,8 @@ function saveAssignment() {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
-            'Accept': 'application/json'
+            'Accept': 'application/json',
+            'Authorization': `Bearer ${sessionManager.getAuthToken()}`
         },
         body: JSON.stringify(workItem)
     })
@@ -4642,7 +4644,8 @@ function saveAttendance() {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
-            'Accept': 'application/json'
+            'Accept': 'application/json',
+            'Authorization': `Bearer ${sessionManager.getAuthToken()}`
         },
         body: JSON.stringify(workItem)
     })
@@ -5137,7 +5140,7 @@ function saveWorkerAccount() {
             headers: {
                 'Content-Type': 'application/json',
                 'Accept': 'application/json',
-                'Authorization': `Bearer ${sessionManager.getToken()}`
+                'Authorization': `Bearer ${sessionManager.getAuthToken()}`
             },
             body: JSON.stringify({
                 employeeId: empID,
@@ -5343,7 +5346,8 @@ function saveLeaveRequest() {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
-            'Accept': 'application/json'
+            'Accept': 'application/json',
+            'Authorization': `Bearer ${sessionManager.getAuthToken()}`
         },
         body: JSON.stringify(workItem)
     })
@@ -5408,7 +5412,8 @@ function saveContract() {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
-            'Accept': 'application/json'
+            'Accept': 'application/json',
+            'Authorization': `Bearer ${sessionManager.getAuthToken()}`
         },
         body: JSON.stringify(workItem)
     })
