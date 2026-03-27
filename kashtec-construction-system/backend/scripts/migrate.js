@@ -91,6 +91,26 @@ async function runMigration() {
             console.log('📋 Policies table already has data');
         }
         
+        // Insert sample workforce budget if table is empty
+        console.log('📝 Checking if workforce budgets table needs sample data...');
+        const [budgetCheck] = await db.execute('SELECT COUNT(*) as count FROM workforce_budgets');
+        
+        if (budgetCheck[0].count === 0) {
+            console.log('📝 Inserting sample workforce budget data...');
+            const sampleBudgetSQL = `
+                INSERT IGNORE INTO workforce_budgets (id, budget_period, total_proposed, salaries_wages, training_development, employee_benefits, recruitment_costs, submitted_by, submitted_by_role, current_headcount, justification) VALUES
+                ('q1-2026-workforce', 'Q1 2026', 50000000.00, 30000000.00, 8000000.00, 7000000.00, 5000000.00, 'Finance Department', 'Finance Manager', 45, 'Q1 budget covering salaries and operational costs for first quarter'),
+                ('q2-2026-workforce', 'Q2 2026', 55000000.00, 32000000.00, 9000000.00, 7500000.00, 6500000.00, 'Finance Department', 'Finance Manager', 48, 'Q2 budget with increased hiring and training initiatives'),
+                ('q3-2026-workforce', 'Q3 2026', 52000000.00, 31000000.00, 8500000.00, 7200000.00, 5300000.00, 'Finance Department', 'Finance Manager', 46, 'Q3 budget adjusted for seasonal workforce changes'),
+                ('q4-2026-workforce', 'Q4 2026', 58000000.00, 33000000.00, 9500000.00, 7800000.00, 7700000.00, 'Finance Department', 'Finance Manager', 50, 'Q4 budget including year-end bonuses and recruitment')
+            `;
+            
+            await db.execute(sampleBudgetSQL);
+            console.log('✅ Sample workforce budget data inserted successfully');
+        } else {
+            console.log('📋 Workforce budgets table already has data');
+        }
+        
         // Verify table creation
         const [verification] = await db.execute(`
             SELECT 

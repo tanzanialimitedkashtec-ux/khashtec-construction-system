@@ -882,6 +882,152 @@ router.get('/workforce-budget', async (req, res) => {
     }
 });
 
+// Approve workforce budget
+router.post('/workforce-budget/:id/approve', async (req, res) => {
+    try {
+        console.log('✅ Approving workforce budget:', req.params.id);
+        const { approvedBy } = req.body;
+        const budgetId = req.params.id;
+        
+        // Check if budget exists
+        const [budgets] = await db.execute('SELECT * FROM workforce_budgets WHERE id = ?', [budgetId]);
+        
+        if (budgets.length === 0) {
+            return res.status(404).json({ error: 'Workforce budget not found' });
+        }
+        
+        const budget = budgets[0];
+        
+        if (budget.status !== 'Pending') {
+            return res.status(400).json({ 
+                error: 'Budget is not in pending status',
+                currentStatus: budget.status
+            });
+        }
+        
+        // Update budget status
+        await db.execute(
+            'UPDATE workforce_budgets SET status = ?, approved_by = ?, approved_date = CURDATE() WHERE id = ?',
+            ['Approved', approvedBy, budgetId]
+        );
+        
+        // Add to approvals table
+        await db.execute(
+            'INSERT INTO workforce_budget_approvals (budget_id, approved_by, approved_by_role, comments, final_decision, approved_amount) VALUES (?, ?, ?, ?, ?, ?)',
+            [budgetId, approvedBy, 'Managing Director', 'Budget approved for implementation', 'Approved', budget.total_proposed]
+        );
+        
+        // Get updated budget details
+        const [updatedBudgets] = await db.execute('SELECT * FROM workforce_budgets WHERE id = ?', [budgetId]);
+        const updatedBudget = updatedBudgets[0];
+        
+        res.json({ 
+            message: 'Workforce budget approved successfully',
+            budget: {
+                ...updatedBudget,
+                status: 'Approved',
+                approved_by: approvedBy,
+                approved_date: new Date().toISOString().split('T')[0]
+            }
+        });
+        
+    } catch (error) {
+        console.error('❌ Error approving workforce budget:', error);
+        res.status(500).json({ error: 'Failed to approve workforce budget' });
+    }
+});
+
+// Reject workforce budget
+router.post('/workforce-budget/:id/reject', async (req, res) => {
+    try {
+        console.log('❌ Rejecting workforce budget:', req.params.id);
+        const { rejectionReason, rejectedBy } = req.body;
+        const budgetId = req.params.id;
+        
+        // Check if budget exists
+        const [budgets] = await db.execute('SELECT * FROM workforce_budgets WHERE id = ?', [budgetId]);
+        
+        if (budgets.length === 0) {
+            return res.status(404).json({ error: 'Workforce budget not found' });
+        }
+        
+        // Update budget status
+        await db.execute(
+            'UPDATE workforce_budgets SET status = ?, rejection_reason = ?, approved_by = ? WHERE id = ?',
+            ['Rejected', rejectionReason, rejectedBy, budgetId]
+        );
+        
+        // Add to rejections table
+        await db.execute(
+            'INSERT INTO workforce_budget_rejections (budget_id, rejection_reason, rejected_by, rejected_by_role) VALUES (?, ?, ?, ?)',
+            [budgetId, rejectionReason, rejectedBy, 'Managing Director']
+        );
+        
+        // Get updated budget details
+        const [updatedBudgets] = await db.execute('SELECT * FROM workforce_budgets WHERE id = ?', [budgetId]);
+        const updatedBudget = updatedBudgets[0];
+        
+        res.json({ 
+            message: 'Workforce budget rejected successfully',
+            budget: {
+                ...updatedBudget,
+                status: 'Rejected',
+                rejection_reason: rejectionReason,
+                approved_by: rejectedBy
+            }
+        });
+        
+    } catch (error) {
+        console.error('❌ Error rejecting workforce budget:', error);
+        res.status(500).json({ error: 'Failed to reject workforce budget' });
+    }
+});
+
+// Request budget modification
+router.post('/workforce-budget/:id/modification', async (req, res) => {
+    try {
+        console.log('🔄 Requesting budget modification:', req.params.id);
+        const { modificationRequest, requestedBy } = req.body;
+        const budgetId = req.params.id;
+        
+        // Check if budget exists
+        const [budgets] = await db.execute('SELECT * FROM workforce_budgets WHERE id = ?', [budgetId]);
+        
+        if (budgets.length === 0) {
+            return res.status(404).json({ error: 'Workforce budget not found' });
+        }
+        
+        // Update budget status
+        await db.execute(
+            'UPDATE workforce_budgets SET status = ?, modification_request = ? WHERE id = ?',
+            ['Modification Requested', modificationRequest, budgetId]
+        );
+        
+        // Add to modifications table
+        await db.execute(
+            'INSERT INTO workforce_budget_modifications (budget_id, modification_request, requested_by, requested_by_role) VALUES (?, ?, ?, ?)',
+            [budgetId, modificationRequest, requestedBy, 'Finance Manager']
+        );
+        
+        // Get updated budget details
+        const [updatedBudgets] = await db.execute('SELECT * FROM workforce_budgets WHERE id = ?', [budgetId]);
+        const updatedBudget = updatedBudgets[0];
+        
+        res.json({ 
+            message: 'Budget modification requested successfully',
+            budget: {
+                ...updatedBudget,
+                status: 'Modification Requested',
+                modification_request: modificationRequest
+            }
+        });
+        
+    } catch (error) {
+        console.error('❌ Error requesting budget modification:', error);
+        res.status(500).json({ error: 'Failed to request budget modification' });
+    }
+});
+
 // ===== WORK STATUS UPDATES =====
 
 // Update work status for any department
