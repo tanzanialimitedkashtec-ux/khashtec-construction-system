@@ -72,6 +72,25 @@ async function runMigration() {
         await db.execute(sampleDataSQL);
         console.log('✅ Sample data inserted successfully');
         
+        // Insert sample policy if policies table is empty
+        console.log('📝 Checking if policies table needs sample data...');
+        const [policyCheck] = await db.execute('SELECT COUNT(*) as count FROM policies');
+        
+        if (policyCheck[0].count === 0) {
+            console.log('📝 Inserting sample policy data...');
+            const samplePolicySQL = `
+                INSERT IGNORE INTO policies (id, title, description, submitted_by, submitted_by_role, impact, status) VALUES
+                ('digital-recruitment', 'Digital Recruitment Platform Policy', 'Implementation of online job portal and digital application system', 'HR Department', 'HR Manager', 'High', 'Pending'),
+                ('safety-manual', 'Construction Safety Manual 2026', 'Updated safety procedures and guidelines for all construction sites', 'HSE Department', 'HSE Manager', 'Critical', 'Pending'),
+                ('remote-work', 'Remote Work Policy', 'Guidelines for remote work and flexible scheduling options', 'HR Department', 'HR Manager', 'Medium', 'Pending')
+            `;
+            
+            await db.execute(samplePolicySQL);
+            console.log('✅ Sample policy data inserted successfully');
+        } else {
+            console.log('📋 Policies table already has data');
+        }
+        
         // Verify table creation
         const [verification] = await db.execute(`
             SELECT 
