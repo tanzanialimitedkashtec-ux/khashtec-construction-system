@@ -830,7 +830,8 @@ async function loadPolicies() {
     try {
         console.log('🔍 Loading policies...');
         
-        const response = await fetch('/api/policies', {
+        const baseUrl = window.location.origin;
+        const response = await fetch(`${baseUrl}/api/policies`, {
                 headers: {
                         'Authorization': `Bearer ${sessionManager.getAuthToken()}`
                 }
@@ -839,10 +840,17 @@ async function loadPolicies() {
         const policies = await response.json();
         
         if (response.ok) {
-                console.log('📋 Policies loaded:', policies.length);
-                displayPolicies(policies);
+                console.log('📋 Policies loaded:', policies);
+                // Check if policies is an array before processing
+                if (Array.isArray(policies)) {
+                    displayPolicies(policies);
+                } else {
+                    console.warn('⚠️ Policies data is not an array:', policies);
+                    displayPolicies([]); // Show empty state
+                }
         } else {
-                showNotification('Failed to load policies', 'error', 5000);
+                console.error('❌ Failed to load policies:', policies);
+                showNotification('Failed to load policies: ' + (policies.error || 'Unknown error'), 'error', 5000);
         }
         
     } catch (error) {
@@ -853,6 +861,12 @@ async function loadPolicies() {
 
 function displayPolicies(policies) {
     let html = '<div class="card"><h3>Policy Management</h3>';
+    
+    // Ensure policies is an array
+    if (!Array.isArray(policies)) {
+        console.warn('⚠️ displayPolicies received non-array data:', policies);
+        policies = [];
+    }
     
     if (policies.length === 0) {
         html += '<p>No policies found.</p>';
@@ -899,7 +913,8 @@ async function loadSeniorHiringRequests() {
     try {
         console.log('🔍 Loading senior hiring requests...');
         
-        const response = await fetch('/api/senior-hiring', {
+        const baseUrl = window.location.origin;
+        const response = await fetch(`${baseUrl}/api/senior-hiring`, {
                 headers: {
                         'Authorization': `Bearer ${sessionManager.getAuthToken()}`
                 }
@@ -1308,7 +1323,8 @@ async function loadWorkforceBudgets() {
     try {
         console.log('🔍 Loading workforce budget requests...');
         
-        const response = await fetch('/api/workforce-budget', {
+        const baseUrl = window.location.origin;
+        const response = await fetch(`${baseUrl}/api/workforce-budget`, {
                 headers: {
                         'Authorization': `Bearer ${sessionManager.getAuthToken()}`
                 }
