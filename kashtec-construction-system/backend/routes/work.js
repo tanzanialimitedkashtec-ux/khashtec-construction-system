@@ -799,4 +799,177 @@ router.get('/:department/stats', async (req, res) => {
     }
 });
 
+// Worker Assignments Routes
+// Get all worker assignments
+router.get('/assignments', async (req, res) => {
+    try {
+        console.log('📋 Fetching worker assignments...');
+        
+        const [assignments] = await db.execute(`
+            SELECT * FROM worker_assignments 
+            ORDER BY created_at DESC
+        `);
+        
+        console.log('✅ Worker assignments fetched:', assignments.length);
+        res.json(assignments);
+        
+    } catch (error) {
+        console.error('❌ Error fetching worker assignments:', error);
+        res.status(500).json({ error: 'Failed to fetch worker assignments' });
+    }
+});
+
+// Create new worker assignment
+router.post('/assignments', async (req, res) => {
+    try {
+        console.log('📝 Creating new worker assignment...');
+        console.log('📊 Request body:', req.body);
+        
+        const {
+            employee_id,
+            employee_name,
+            project_id,
+            project_name,
+            role_in_project,
+            start_date,
+            end_date,
+            assignment_notes,
+            assigned_by = 'HR Manager',
+            assigned_by_role = 'HR Manager'
+        } = req.body;
+        
+        // Validate required fields
+        if (!employee_id || !employee_name || !project_id || !project_name || !role_in_project || !start_date) {
+            console.log('❌ Validation failed - missing required fields');
+            return res.status(400).json({ 
+                error: 'Missing required fields',
+                required: ['employee_id', 'employee_name', 'project_id', 'project_name', 'role_in_project', 'start_date'],
+                received: { employee_id, employee_name, project_id, project_name, role_in_project, start_date }
+            });
+        }
+        
+        // Insert new assignment
+        const [result] = await db.execute(`
+            INSERT INTO worker_assignments (
+                employee_id, employee_name, project_id, project_name, role_in_project,
+                start_date, end_date, assignment_notes, assigned_by, assigned_by_role
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        `, [
+            employee_id,
+            employee_name,
+            project_id,
+            project_name,
+            role_in_project,
+            start_date,
+            end_date || null,
+            assignment_notes || null,
+            assigned_by,
+            assigned_by_role
+        ]);
+        
+        console.log('✅ Worker assignment created successfully:', result);
+        
+        res.status(201).json({
+            message: 'Worker assignment created successfully',
+            id: result.insertId,
+            employee_id,
+            employee_name,
+            project_id,
+            project_name,
+            role_in_project,
+            start_date,
+            end_date,
+            assignment_notes,
+            status: 'Active',
+            assigned_by,
+            assigned_by_role,
+            created_at: new Date().toISOString()
+        });
+        
+    } catch (error) {
+        console.error('❌ Error creating worker assignment:', error);
+        res.status(500).json({ 
+            error: 'Failed to create worker assignment',
+            details: error.message 
+        });
+    }
+});
+
+// Update worker assignment
+router.put('/assignments/:id', async (req, res) => {
+    try {
+        const { id } = req.params;
+        const {
+            employee_name,
+            project_name,
+            role_in_project,
+            start_date,
+            end_date,
+            assignment_notes,
+            status
+        } = req.body;
+        
+        console.log('📝 Updating worker assignment:', id);
+        
+        const [result] = await db.execute(`
+            UPDATE worker_assignments SET
+                employee_name = ?, project_name = ?, role_in_project = ?,
+                start_date = ?, end_date = ?, assignment_notes = ?, status = ?,
+                updated_at = CURRENT_TIMESTAMP
+            WHERE id = ?
+        `, [
+            employee_name,
+            project_name,
+            role_in_project,
+            start_date,
+            end_date || null,
+            assignment_notes || null,
+            status || 'Active',
+            id
+        ]);
+        
+        if (result.affectedRows === 0) {
+            return res.status(404).json({ error: 'Worker assignment not found' });
+        }
+        
+        console.log('✅ Worker assignment updated successfully');
+        res.json({
+            message: 'Worker assignment updated successfully',
+            id: parseInt(id),
+            updated_at: new Date().toISOString()
+        });
+        
+    } catch (error) {
+        console.error('❌ Error updating worker assignment:', error);
+        res.status(500).json({ error: 'Failed to update worker assignment' });
+    }
+});
+
+// Delete worker assignment
+router.delete('/assignments/:id', async (req, res) => {
+    try {
+        const { id } = req.params;
+        
+        console.log('🗑️ Deleting worker assignment:', id);
+        
+        const [result] = await db.execute(`
+            DELETE FROM worker_assignments WHERE id = ?
+        `, [id]);
+        
+        if (result.affectedRows === 0) {
+            return res.status(404).json({ error: 'Worker assignment not found' });
+        }
+        
+        console.log('✅ Worker assignment deleted successfully');
+        res.json({
+            message: 'Worker assignment deleted successfully',
+            id: parseInt(id)
+        });
+        
+    } catch (error) {
+        console.error('❌ Error deleting worker assignment:', error);
+        res.status(500).json({ error: 'Failed to delete worker assignment' });
+    }
+});
+
 module.exports = router;

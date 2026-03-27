@@ -4549,46 +4549,63 @@ function fileToBase64(file) {
 }
 
 function saveAssignment() {
-    const assignment = {
-        employee: document.getElementById('assignEmployee').value,
-        project: document.getElementById('assignProject').value,
-        role: document.getElementById('assignRole').value,
-        startDate: document.getElementById('assignStartDate').value,
-        endDate: document.getElementById('assignEndDate').value,
-        notes: document.getElementById('assignNotes').value,
-        assignmentDate: new Date().toLocaleString()
-    };
-    
-    // Validate required fields
-    if (!assignment.employee || !assignment.project || !assignment.role || !assignment.startDate) {
-        customAlert('Please fill in all required fields:\n\n• Employee\n• Project\n• Role\n• Start Date', "Validation Error", "error");
+    // Prevent multiple submissions
+    if (window.assignmentSubmitting) {
+        console.log('⚠️ Assignment submission already in progress');
         return false;
     }
     
-    // Prepare work item for HR department
-    const workItem = {
-        work_type: 'Worker Assignment',
-        work_title: `Project Assignment - ${assignment.employee}`,
-        work_description: `Worker Assignment for ${assignment.employee}\n\nProject: ${assignment.project}\nRole: ${assignment.role}\nStart Date: ${assignment.startDate}\nEnd Date: ${assignment.endDate}\nNotes: ${assignment.notes}\nAssignment Date: ${assignment.assignmentDate}`,
-        priority: 'Medium',
-        due_date: assignment.startDate,
-        assigned_to: 'HR Manager',
-        submitted_by: 'HR Manager'
+    window.assignmentSubmitting = true;
+    
+    // Get form values
+    const employeeSelect = document.getElementById('assignEmployee');
+    const projectSelect = document.getElementById('assignProject');
+    const roleInput = document.getElementById('assignRole');
+    const startDateInput = document.getElementById('assignStartDate');
+    const endDateInput = document.getElementById('assignEndDate');
+    const notesInput = document.getElementById('assignNotes');
+    
+    // Extract employee name from option text
+    const employeeOption = employeeSelect.options[employeeSelect.selectedIndex];
+    const employeeName = employeeOption ? employeeOption.text.split(' - ')[0] : '';
+    
+    // Extract project name from option text
+    const projectOption = projectSelect.options[projectSelect.selectedIndex];
+    const projectName = projectOption ? projectOption.text : '';
+    
+    const assignment = {
+        employee_id: employeeSelect.value,
+        employee_name: employeeName,
+        project_id: projectSelect.value,
+        project_name: projectName,
+        role_in_project: roleInput.value,
+        start_date: startDateInput.value,
+        end_date: endDateInput.value || null,
+        assignment_notes: notesInput.value,
+        assigned_by: 'HR Manager',
+        assigned_by_role: 'HR Manager'
     };
+    
+    // Validate required fields
+    if (!assignment.employee_id || !assignment.project_id || !assignment.role_in_project || !assignment.start_date) {
+        customAlert('Please fill in all required fields:\n\n• Employee\n• Project\n• Role\n• Start Date', "Validation Error", "error");
+        window.assignmentSubmitting = false;
+        return false;
+    }
     
     // Show loading message
     customAlert('Assigning worker to project...', "Processing", "info");
     
-    // Send data to backend API
+    // Send data to worker assignments API
     const baseUrl = window.location.origin;
-    fetch(`${baseUrl}/api/hr/work`, {
+    fetch(`${baseUrl}/api/work/assignments`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
             'Accept': 'application/json',
             'Authorization': `Bearer ${sessionManager.getAuthToken()}`
         },
-        body: JSON.stringify(workItem)
+        body: JSON.stringify(assignment)
     })
     .then(response => {
         console.log('📡 Assignment API Response status:', response.status);
@@ -4601,13 +4618,17 @@ function saveAssignment() {
             throw new Error(data.error);
         }
         
-        customAlert(`Worker assigned to project successfully!\n\nEmployee: ${assignment.employee}\nProject: ${assignment.project}\nRole: ${assignment.role}\nAssignment ID: ${data.id}\n\n🎉 Assignment saved to database!`, "Assignment Completed", "success");
+        customAlert(`Worker assigned to project successfully!\n\nEmployee: ${assignment.employee_name}\nProject: ${assignment.project_name}\nRole: ${assignment.role_in_project}\nAssignment ID: ${data.id}\n\n🎉 Assignment saved to database!`, "Assignment Completed", "success");
         
         document.getElementById('assignForm').reset();
     })
     .catch(error => {
         console.error('❌ Error assigning worker:', error);
         customAlert(`Failed to assign worker: ${error.message}\n\nPlease check:\n• All required fields are filled\n• Network connection is stable\n• Server is running properly`, "Assignment Error", "error");
+    })
+    .finally(() => {
+        // Reset submission flag
+        window.assignmentSubmitting = false;
     });
     
     return false;
