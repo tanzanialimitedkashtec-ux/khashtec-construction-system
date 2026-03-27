@@ -265,6 +265,10 @@ app.use('/api/admin/work', workRoutes);
 const policiesRoutes = require('./routes/policies');
 app.use('/api/policies', policiesRoutes);
 
+// Debug: Log all mounted routes
+console.log('🔍 Routes mounted:');
+console.log('  - /api/policies/* -> policies routes');
+
 // ===== OFFICE PORTAL ROUTES =====
 app.post('/api/office-portal/users', async (req, res) => {
     try {
