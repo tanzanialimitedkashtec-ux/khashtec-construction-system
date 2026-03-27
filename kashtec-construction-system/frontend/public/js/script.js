@@ -114,15 +114,26 @@ function showCustomerPortal() {
 }
 
 function hideAllSections() {
-    document.getElementById("account").classList.add("hidden");
-    document.getElementById("login").classList.add("hidden");
-    document.getElementById("customerPortal").classList.add("hidden");
+    var account = document.getElementById("account");
+    var login = document.getElementById("login");
+    var customerPortal = document.getElementById("customerPortal");
+    
+    // Check if elements exist before trying to use them
+    if (account) account.classList.add("hidden");
+    if (login) login.classList.add("hidden");
+    if (customerPortal) customerPortal.classList.add("hidden");
 }
 
 function updateNavigation(state) {
     var registerNav = document.getElementById("registerNav");
     var loginNav = document.getElementById("loginNav");
     var portalNav = document.getElementById("portalNav");
+    
+    // Check if elements exist before trying to use them
+    if (!registerNav || !loginNav || !portalNav) {
+        console.warn('Navigation elements not found, skipping update');
+        return;
+    }
     
     // Hide all navigation items first
     registerNav.classList.add("hidden");

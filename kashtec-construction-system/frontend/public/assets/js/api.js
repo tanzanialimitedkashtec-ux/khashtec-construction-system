@@ -211,6 +211,11 @@ async function requestPolicyRevision(id, revisionRequest, requestedBy) {
     return await apiCall(`/policies/${id}/revision`, 'POST', { revisionRequest, requestedBy });
 }
 
+// Get policy revisions
+async function getPolicyRevisions(id) {
+    return await apiCall(`/policies/${id}/revisions`);
+}
+
 // ===== SENIOR HIRING API =====
 
 // Create senior hiring request
