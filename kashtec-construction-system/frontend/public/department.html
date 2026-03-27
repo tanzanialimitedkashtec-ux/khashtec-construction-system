@@ -6389,6 +6389,8 @@ function testServerConnection() {
 
 // Add connection test notifications
 function showRealProblemNotification(problemType, details) {
+    console.log('🔍 showRealProblemNotification called with:', problemType, details);
+    
     let title = '';
     let message = '';
     let type = 'error';
@@ -6426,15 +6428,19 @@ function showRealProblemNotification(problemType, details) {
             
         case 'SAVING':
             title = '💾 Saving to Database...';
-            if (details.workItem) {
+            console.log('🔍 SAVING case - details:', details);
+            console.log('🔍 SAVING case - details.workItem:', details.workItem);
+            console.log('🔍 SAVING case - details.employeeData:', details.employeeData);
+            
+            if (details && details.workItem) {
                 // HSE incident saving
                 message = `📝 Sending incident report to database...\n\n• Type: ${details.workItem.incident_type}\n• Severity: ${details.workItem.severity}\n• Description: ${details.workItem.work_description.substring(0, 50)}...\n\n⏳ Please wait...`;
-            } else if (details.employeeData) {
+            } else if (details && details.employeeData) {
                 // Employee registration
                 message = `📝 Registering employee to database...\n\n• Name: ${details.employeeData.fullName}\n• Department: ${details.employeeData.department}\n• Email: ${details.employeeData.gmail}\n\n⏳ Please wait...`;
             } else {
                 // Generic saving
-                message = `📝 Saving data to database...\n\n${details.message || 'Processing your request...'}\n\n⏳ Please wait...`;
+                message = `📝 Saving data to database...\n\n${details ? details.message || 'Processing your request...' : 'Processing your request...'}\n\n⏳ Please wait...`;
             }
             type = 'info';
             break;
