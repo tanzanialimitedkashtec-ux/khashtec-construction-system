@@ -5326,6 +5326,14 @@ function cancelUpdate() {
 }
 
 function saveLeaveRequest() {
+    // Prevent multiple submissions
+    if (window.leaveSubmitting) {
+        console.log('⚠️ Leave request submission already in progress');
+        return false;
+    }
+    
+    window.leaveSubmitting = true;
+    
     const leave = {
         employee: document.getElementById('leaveEmployee').value,
         leaveType: document.getElementById('leaveType').value,
@@ -5340,6 +5348,7 @@ function saveLeaveRequest() {
     // Validate required fields
     if (!leave.employee || !leave.leaveType || !leave.startDate || !leave.endDate || !leave.days) {
         customAlert('Please fill in all required fields:\n\n• Employee\n• Leave Type\n• Start Date\n• End Date\n• Days', "Validation Error", "error");
+        window.leaveSubmitting = false;
         return false;
     }
     
@@ -5386,12 +5395,24 @@ function saveLeaveRequest() {
     .catch(error => {
         console.error('❌ Error saving leave request:', error);
         customAlert(`Failed to save leave request: ${error.message}\n\nPlease check:\n• All required fields are filled\n• Network connection is stable\n• Server is running properly`, "Save Error", "error");
+    })
+    .finally(() => {
+        // Reset submission flag
+        window.leaveSubmitting = false;
     });
     
     return false;
 }
 
 function saveContract() {
+    // Prevent multiple submissions
+    if (window.contractSubmitting) {
+        console.log('⚠️ Contract submission already in progress');
+        return false;
+    }
+    
+    window.contractSubmitting = true;
+    
     const contract = {
         employee: document.getElementById('contractEmployee').value,
         contractType: document.getElementById('contractType').value,
@@ -5407,6 +5428,7 @@ function saveContract() {
     // Validate required fields
     if (!contract.employee || !contract.contractType || !contract.startDate || !contract.salary) {
         customAlert('Please fill in all required fields:\n\n• Employee\n• Contract Type\n• Start Date\n• Salary', "Validation Error", "error");
+        window.contractSubmitting = false;
         return false;
     }
     
@@ -5453,6 +5475,10 @@ function saveContract() {
     .catch(error => {
         console.error('❌ Error saving contract:', error);
         customAlert(`Failed to save contract: ${error.message}\n\nPlease check:\n• All required fields are filled\n• Network connection is stable\n• Server is running properly`, "Save Error", "error");
+    })
+    .finally(() => {
+        // Reset submission flag
+        window.contractSubmitting = false;
     });
     
     return false;
