@@ -270,8 +270,16 @@ router.post('/', upload.single('file'), async (req, res) => {
                 const result = await db.execute(query, values);
                 console.log('🔍 Query result type:', typeof result);
                 console.log('🔍 Query result is array:', Array.isArray(result));
+                console.log('🔍 Query result:', result);
                 
-                const [insertResult] = result;
+                // MySQL2 returns [rows, fields] or just rows depending on configuration
+                let insertResult;
+                if (Array.isArray(result)) {
+                    insertResult = result[0]; // First element is usually the rows/result
+                } else {
+                    insertResult = result; // Use result directly if it's not an array
+                }
+                
                 console.log('🔍 Insert result:', insertResult);
                 console.log('✅ Admin work item created:', insertResult);
                 
