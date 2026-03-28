@@ -269,10 +269,15 @@ app.use('/api/policies', policiesRoutes);
 const scheduleMeetingsRoutes = require('./routes/scheduleMeetings');
 app.use('/api/schedule-meetings', scheduleMeetingsRoutes);
 
+// ===== MEETING MINUTES ROUTES =====
+const meetingMinutesRoutes = require('./routes/meetingMinutes');
+app.use('/api/meeting-minutes', meetingMinutesRoutes);
+
 // Debug: Log all mounted routes
 console.log('🔍 Routes mounted:');
 console.log('  - /api/policies/* -> policies routes');
 console.log('  - /api/schedule-meetings/* -> schedule meetings routes');
+console.log('  - /api/meeting-minutes/* -> meeting minutes routes');
 console.log('  - /api/senior-hiring/* -> senior hiring routes');
 
 // ===== SENIOR HIRING ROUTES =====
