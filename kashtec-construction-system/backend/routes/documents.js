@@ -258,17 +258,42 @@ router.post('/', upload.single('file'), async (req, res) => {
                 });
             }
             
-            const [result] = await db.execute(query, values);
-            console.log('✅ Admin work item created:', result);
-            
-            // Return success response
-            res.status(201).json({
-                message: 'Document work item created successfully',
-                id: result.insertId,
-                work_type,
-                work_title,
-                status: 'pending'
-            });
+            try {
+                console.log('🔍 About to execute database query...');
+                console.log('🔍 Query:', query);
+                console.log('🔍 Values:', values);
+                console.log('🔍 Values type:', typeof values);
+                console.log('🔍 Values is array:', Array.isArray(values));
+                console.log('🔍 Values length:', values ? values.length : 'null');
+                
+                // Try to execute query with detailed error handling
+                const result = await db.execute(query, values);
+                console.log('🔍 Query result type:', typeof result);
+                console.log('🔍 Query result is array:', Array.isArray(result));
+                
+                const [insertResult] = result;
+                console.log('🔍 Insert result:', insertResult);
+                console.log('✅ Admin work item created:', insertResult);
+                
+                // Return success response
+                res.status(201).json({
+                    message: 'Document work item created successfully',
+                    id: insertResult.insertId,
+                    work_type,
+                    work_title,
+                    status: 'pending'
+                });
+            } catch (dbError) {
+                console.error('❌ Database error details:', {
+                    message: dbError.message,
+                    stack: dbError.stack,
+                    code: dbError.code,
+                    errno: dbError.errno,
+                    sqlState: dbError.sqlState,
+                    sqlMessage: dbError.sqlMessage
+                });
+                throw dbError;
+            }
             
         } else if (!req.file) {
             // Traditional file upload without file
