@@ -271,6 +271,13 @@ router.post('/', upload.single('file'), async (req, res) => {
 
 // Update document
 router.put('/:id', (req, res) => {
+    // Ensure documents array exists
+    if (!documents || !Array.isArray(documents)) {
+        return res.status(500).json({
+            error: 'Document storage not initialized'
+        });
+    }
+    
     const documentIndex = documents.findIndex(doc => doc.id === parseInt(req.params.id));
     
     if (documentIndex === -1) {
@@ -279,11 +286,19 @@ router.put('/:id', (req, res) => {
         });
     }
     
+    // Ensure the document exists before spreading
+    const existingDocument = documents[documentIndex];
+    if (!existingDocument) {
+        return res.status(404).json({
+            error: 'Document not found at index'
+        });
+    }
+    
     const { title, category, description, status } = req.body;
     
-    // Update document
+    // Update document with safe spread
     documents[documentIndex] = {
-        ...documents[documentIndex],
+        ...existingDocument,
         ...(title && { title }),
         ...(category && { category }),
         ...(description !== undefined && { description }),
@@ -298,6 +313,13 @@ router.put('/:id', (req, res) => {
 
 // Delete document
 router.delete('/:id', (req, res) => {
+    // Ensure documents array exists
+    if (!documents || !Array.isArray(documents)) {
+        return res.status(500).json({
+            error: 'Document storage not initialized'
+        });
+    }
+    
     const documentIndex = documents.findIndex(doc => doc.id === parseInt(req.params.id));
     
     if (documentIndex === -1) {
@@ -306,7 +328,15 @@ router.delete('/:id', (req, res) => {
         });
     }
     
-    const deletedDocument = documents.splice(documentIndex, 1)[0];
+    // Safe splice with check
+    const deletedDocuments = documents.splice(documentIndex, 1);
+    const deletedDocument = deletedDocuments.length > 0 ? deletedDocuments[0] : null;
+    
+    if (!deletedDocument) {
+        return res.status(404).json({
+            error: 'Document could not be deleted'
+        });
+    }
     
     // Delete actual file
     const filePath = path.join(__dirname, '../../uploads/documents', deletedDocument.fileName);
