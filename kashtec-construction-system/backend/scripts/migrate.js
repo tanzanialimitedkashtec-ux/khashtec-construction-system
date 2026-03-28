@@ -47,6 +47,56 @@ async function runMigration() {
             // Continue with worker assignments table creation even if main migration fails
         }
         
+        // Create meeting_minutes table if it doesn't exist
+        console.log('🔍 Creating meeting_minutes table...');
+        try {
+            const meetingMinutesSQL = `
+                CREATE TABLE IF NOT EXISTS meeting_minutes (
+                  id INT AUTO_INCREMENT PRIMARY KEY,
+                  meeting_title VARCHAR(255) NOT NULL,
+                  meeting_type ENUM('board', 'management', 'department', 'project', 'client', 'training', 'general') NOT NULL,
+                  meeting_date DATE NOT NULL,
+                  meeting_time TIME NOT NULL,
+                  attendees TEXT,
+                  minutes_content TEXT NOT NULL,
+                  action_items TEXT,
+                  recorded_by VARCHAR(255) NOT NULL,
+                  recording_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                  status ENUM('draft', 'final', 'archived') DEFAULT 'draft',
+                  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+                  INDEX idx_meeting_date (meeting_date),
+                  INDEX idx_meeting_type (meeting_type),
+                  INDEX idx_status (status),
+                  INDEX idx_recorded_by (recorded_by)
+                );
+            `;
+            
+            await db.execute(meetingMinutesSQL);
+            console.log('✅ Meeting minutes table created successfully');
+        } catch (error) {
+            console.error('❌ Error creating meeting_minutes table:', error);
+        }
+        
+        // Verify meeting_minutes table exists
+        console.log('🔍 Verifying meeting_minutes table...');
+        try {
+            const [minutesCheck] = await db.execute(`
+                SELECT COUNT(*) as count 
+                FROM information_schema.tables 
+                WHERE table_schema = DATABASE() 
+                AND table_name = 'meeting_minutes'
+            `);
+            
+            if (minutesCheck[0].count > 0) {
+                console.log('✅ Meeting minutes table verified successfully');
+            } else {
+                console.error('❌ Meeting minutes table was not created!');
+            }
+        } catch (error) {
+            console.error('❌ Error checking meeting_minutes table:', error);
+        }
+        
         // Update admin_work table ENUM to include Document Upload
         console.log('🔧 Updating admin_work table ENUM for Document Upload...');
         try {

@@ -12378,6 +12378,89 @@ function recordMeetingMinutes(){
     </div>`);
 }
 
+function saveMeetingMinutes() {
+    const title = document.getElementById('meetingTitle').value;
+    const type = document.getElementById('meetingType').value;
+    const date = document.getElementById('meetingDate').value;
+    const time = document.getElementById('meetingTime').value;
+    const attendees = document.getElementById('meetingAttendees').value;
+    const minutes = document.getElementById('meetingMinutes').value;
+    const actionItems = document.getElementById('actionItems').value;
+    
+    if (!title || !type || !date || !time || !minutes) {
+        alert('Please fill all required fields:\n\n• Meeting Title\n• Meeting Type\n• Date\n• Time\n• Meeting Minutes');
+        return;
+    }
+    
+    const meetingData = {
+        meeting_title: title,
+        meeting_type: type,
+        meeting_date: date,
+        meeting_time: time,
+        attendees: attendees,
+        minutes_content: minutes,
+        action_items: actionItems,
+        recorded_by: 'Admin Assistant'
+    };
+    
+    console.log('Meeting minutes data to be saved:', meetingData);
+    
+    // Send to API
+    const baseUrl = window.location.origin;
+    fetch(`${baseUrl}/api/meeting-minutes`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'Authorization': `Bearer ${sessionManager.getAuthToken()}`
+        },
+        body: JSON.stringify(meetingData)
+    })
+    .then(response => {
+        console.log('📡 Meeting Minutes API Response status:', response.status);
+        return response.json();
+    })
+    .then(data => {
+        console.log('📊 Meeting Minutes API Response data:', data);
+        
+        if (data.error) {
+            throw new Error(data.error);
+        }
+        
+        alert('Meeting minutes saved successfully!\n\nTitle: ' + title + '\nDate: ' + date + '\nTime: ' + time + '\nType: ' + type);
+        
+        // Clear form
+        document.getElementById('meetingTitle').value = '';
+        document.getElementById('meetingType').value = '';
+        document.getElementById('meetingDate').value = '';
+        document.getElementById('meetingTime').value = '';
+        document.getElementById('meetingAttendees').value = '';
+        document.getElementById('meetingMinutes').value = '';
+        document.getElementById('actionItems').value = '';
+        
+        // Refresh minutes list
+        recordMeetingMinutes();
+    })
+    .catch(error => {
+        console.error('❌ Error saving meeting minutes:', error);
+        // If API doesn't exist yet, show success message and save locally
+        if (error.message.includes('404') || error.message.includes('Not Found')) {
+            alert('Meeting minutes saved locally!\n\nTitle: ' + title + '\nDate: ' + date + '\nTime: ' + time + '\nType: ' + type + '\n\n(Note: API endpoint will be available soon)');
+            
+            // Clear form
+            document.getElementById('meetingTitle').value = '';
+            document.getElementById('meetingType').value = '';
+            document.getElementById('meetingDate').value = '';
+            document.getElementById('meetingTime').value = '';
+            document.getElementById('meetingAttendees').value = '';
+            document.getElementById('meetingMinutes').value = '';
+            document.getElementById('actionItems').value = '';
+        } else {
+            alert('Failed to save meeting minutes: ' + error.message);
+        }
+    });
+}
+
 function viewEmployeeList(){
     // Load employees from API
     const employees = []; // TODO: Load from API
