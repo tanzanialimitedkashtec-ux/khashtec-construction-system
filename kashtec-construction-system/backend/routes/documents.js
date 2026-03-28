@@ -174,6 +174,24 @@ router.post('/', upload.single('file'), async (req, res) => {
             
             console.log('🔍 Executing admin work query:', query);
             console.log('📊 Query values:', values);
+            console.log('🔍 Work type value being inserted:', work_type);
+            console.log('🔍 Work type value length:', work_type ? work_type.length : 'null');
+            
+            // Check if work_type is valid before inserting
+            const validWorkTypes = [
+                'Administrative Operations', 'Compliance Management', 'Staff Oversight', 
+                'Policy Implementation', 'Document Management', 'Document Upload', 
+                'User Account Management', 'System Administration', 'Department Coordination'
+            ];
+            
+            if (!validWorkTypes.includes(work_type)) {
+                console.error('❌ Invalid work_type:', work_type);
+                console.error('❌ Valid work types:', validWorkTypes);
+                return res.status(400).json({
+                    error: 'Invalid work type',
+                    details: `Work type "${work_type}" is not valid. Valid types: ${validWorkTypes.join(', ')}`
+                });
+            }
             
             const [result] = await db.execute(query, values);
             console.log('✅ Admin work item created:', result);
