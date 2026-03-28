@@ -56,6 +56,22 @@ async function runMigration() {
         await db.execute(workerAssignmentsSQL);
         console.log('✅ Worker assignments table created successfully');
         
+        // Verify table was created
+        console.log('🔍 Verifying worker assignments table...');
+        const [tableCheck] = await db.execute(`
+            SELECT COUNT(*) as count 
+            FROM information_schema.tables 
+            WHERE table_schema = DATABASE() 
+            AND table_name = 'worker_assignments'
+        `);
+        
+        if (tableCheck[0].count > 0) {
+            console.log('✅ Worker assignments table verified successfully');
+        } else {
+            console.error('❌ Worker assignments table was not created!');
+            throw new Error('Table creation verification failed');
+        }
+        
         // Update HR work table ENUM to include Employment Action
         console.log('🔧 Updating HR work table ENUM for Employment Action...');
         try {
@@ -92,6 +108,17 @@ async function runMigration() {
         
         await db.execute(sampleDataSQL);
         console.log('✅ Sample data inserted successfully');
+        
+        // Verify sample data was inserted
+        console.log('🔍 Verifying sample worker assignment data...');
+        const [dataCheck] = await db.execute('SELECT COUNT(*) as count FROM worker_assignments');
+        
+        if (dataCheck[0].count > 0) {
+            console.log(`✅ Sample data verified: ${dataCheck[0].count} worker assignments found`);
+        } else {
+            console.error('❌ No sample data was inserted!');
+            throw new Error('Sample data insertion verification failed');
+        }
         
         // Insert sample policy if policies table is empty
         console.log('📝 Checking if policies table needs sample data...');
