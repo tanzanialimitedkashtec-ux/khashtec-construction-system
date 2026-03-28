@@ -47,6 +47,27 @@ async function runMigration() {
             // Continue with worker assignments table creation even if main migration fails
         }
         
+        // Update admin_work table ENUM to include Document Upload
+        console.log('🔧 Updating admin_work table ENUM for Document Upload...');
+        try {
+            await db.execute(`
+                ALTER TABLE admin_work 
+                MODIFY COLUMN work_type ENUM(
+                    'Administrative Operations', 'Compliance Management', 'Staff Oversight', 
+                    'Policy Implementation', 'Document Management', 'Document Upload', 
+                    'User Account Management', 'System Administration', 'Department Coordination'
+                ) DEFAULT 'Administrative Operations'
+            `);
+            console.log('✅ Admin work table ENUM updated successfully');
+        } catch (error) {
+            // ENUM might already exist, that's okay
+            if (error.message.includes('Duplicate entry') || error.message.includes('already exists')) {
+                console.log('📋 Admin work table ENUM already includes Document Upload');
+            } else {
+                console.warn('⚠️ Could not update admin work table ENUM:', error.message);
+            }
+        }
+        
         // Create workforce_budgets table if it doesn't exist
         console.log('🔍 Creating workforce_budgets table...');
         try {
