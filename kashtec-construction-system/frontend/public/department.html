@@ -12551,28 +12551,70 @@ function scheduleMeetingSubmit() {
         status: 'scheduled'
     };
     
-    // Save to API instead of localStorage
-    // TODO: Implement API call to save meeting to database
+    // Save to API
     console.log('Meeting data to be saved to API:', meeting);
     
-    alert('Meeting scheduled successfully!\n\n' + title + '\nDate: ' + date + '\nTime: ' + startTime + ' - ' + endTime + '\nLocation: ' + location + '\nResources: ' + resources.join(', '));
+    // Prepare data for API
+    const apiData = {
+        meeting_title: meeting.title,
+        meeting_type: meeting.type,
+        meeting_date: meeting.date,
+        start_time: meeting.startTime,
+        end_time: meeting.endTime,
+        location: meeting.location,
+        organizing_department: meeting.department,
+        expected_attendees: meeting.attendeeCount,
+        meeting_description: meeting.description,
+        projector_required: meeting.resources.includes('Projector'),
+        whiteboard_required: meeting.resources.includes('Whiteboard'),
+        refreshments_required: meeting.resources.includes('Refreshments'),
+        parking_required: meeting.resources.includes('Parking'),
+        created_by: meeting.scheduledBy
+    };
     
-    // Clear form
-    document.getElementById('meetingTitle').value = '';
-    document.getElementById('meetingType').value = '';
-    document.getElementById('meetingDate').value = '';
-    document.getElementById('meetingStartTime').value = '';
-    document.getElementById('meetingEndTime').value = '';
-    document.getElementById('meetingLocation').value = '';
-    document.getElementById('meetingDepartment').value = '';
-    document.getElementById('attendeeCount').value = '';
-    document.getElementById('meetingDescription').value = '';
-    
-    // Uncheck all resources
-    document.getElementById('projector').checked = false;
-    document.getElementById('whiteboard').checked = false;
-    document.getElementById('refreshments').checked = false;
-    document.getElementById('parking').checked = false;
+    // Send to API
+    const baseUrl = window.location.origin;
+    fetch(`${baseUrl}/api/schedule-meetings`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'Authorization': `Bearer ${sessionManager.getAuthToken()}`
+        },
+        body: JSON.stringify(apiData)
+    })
+    .then(response => {
+        console.log('📡 Meeting API Response status:', response.status);
+        return response.json();
+    })
+    .then(data => {
+        console.log('📊 Meeting API Response data:', data);
+        
+        if (data.error) {
+            throw new Error(data.error);
+        }
+        
+        alert('Meeting scheduled successfully!\n\n' + title + '\nDate: ' + date + '\nTime: ' + startTime + ' - ' + endTime + '\nLocation: ' + location + '\nResources: ' + resources.join(', '));
+        
+        // Clear form
+        document.getElementById('meetingTitle').value = '';
+        document.getElementById('meetingType').value = '';
+        document.getElementById('meetingDate').value = '';
+        document.getElementById('meetingStartTime').value = '';
+        document.getElementById('meetingEndTime').value = '';
+        document.getElementById('meetingLocation').value = '';
+        document.getElementById('meetingDepartment').value = '';
+        document.getElementById('attendeeCount').value = '';
+        document.getElementById('meetingDescription').value = '';
+        document.getElementById('projector').checked = false;
+        document.getElementById('whiteboard').checked = false;
+        document.getElementById('refreshments').checked = false;
+        document.getElementById('parking').checked = false;
+    })
+    .catch(error => {
+        console.error('❌ Error scheduling meeting:', error);
+        alert('Failed to schedule meeting: ' + error.message);
+    });
     
     // Refresh meetings list
     scheduleMeeting();
