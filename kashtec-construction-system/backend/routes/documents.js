@@ -210,34 +210,6 @@ router.post('/', upload.single('file'), async (req, res) => {
             // This is a work item submission from frontend forms
             console.log('🔄 Processing work item submission...');
             
-            // TEMPORARY: Bypass database to isolate error
-            console.log('🔧 TEMPORARY: Bypassing database operations to isolate error');
-            
-            const {
-                work_type,
-                work_title,
-                work_description,
-                priority = 'Medium',
-                due_date,
-                assigned_to,
-                submitted_by
-            } = req.body;
-            
-            console.log('🔍 Extracted work_type:', work_type);
-            console.log('🔍 Extracted work_title:', work_title);
-            console.log('🔍 Extracted priority:', priority);
-            
-            // TEMPORARY: Return success without database operations
-            console.log('🔧 TEMPORARY: Returning success without database insert');
-            return res.status(201).json({
-                message: 'Document work item created successfully (TEMP)',
-                id: 'temp-' + Date.now(),
-                work_type,
-                work_title,
-                status: 'pending'
-            });
-            
-            /* ORIGINAL CODE (commented out temporarily)
             const db = require('../../database/config/database');
             const {
                 work_type,
@@ -301,7 +273,6 @@ router.post('/', upload.single('file'), async (req, res) => {
                 });
             }
             
-            // Execute query with simple parameter binding
             const [result] = await db.execute(query, values);
             console.log('✅ Admin work item created:', result);
             
@@ -313,7 +284,6 @@ router.post('/', upload.single('file'), async (req, res) => {
                 work_title,
                 status: 'pending'
             });
-            */
             
         } else if (!req.file) {
             // Traditional file upload without file
