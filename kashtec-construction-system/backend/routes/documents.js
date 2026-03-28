@@ -193,7 +193,7 @@ router.post('/', upload.single('file'), async (req, res) => {
         // Handle both file upload and JSON-only submissions
         if (req.body.work_type && req.body.work_title) {
             // This is a work item submission from frontend forms
-            console.log('🔄 Processing work item submission...');
+            console.log('🔄 Processing document submission...');
             
             const db = require('../../database/config/database');
             const {
@@ -210,63 +210,45 @@ router.post('/', upload.single('file'), async (req, res) => {
             console.log('🔍 Extracted work_title:', work_title);
             console.log('🔍 Extracted priority:', priority);
             
-            // Insert into admin_work table
+            // Insert into documents table (proper document storage)
             const query = `
-                INSERT INTO admin_work (
-                    department_code,
-                    work_type,
-                    work_title,
-                    work_description,
-                    priority,
-                    due_date,
-                    assigned_to,
-                    submitted_by,
-                    submitted_date,
+                INSERT INTO documents (
+                    title,
+                    description,
+                    file_path,
+                    file_name,
+                    file_size,
+                    file_type,
+                    category,
+                    uploaded_by,
                     status
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, NOW(), 'pending')
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
             `;
             
+            // Extract file info from work_description
+            const fileMatch = work_description.match(/File: ([^\n]+)/);
+            const fileName = fileMatch ? fileMatch[1].trim() : 'Unknown file';
+            const fileSizeMatch = work_description.match(/\(([\d.]+)\s*KB\)/);
+            const fileSize = fileSizeMatch ? parseFloat(fileSizeMatch[1]) * 1024 : 0;
+            const typeMatch = work_description.match(/Type: ([^\n]+)/);
+            const fileType = typeMatch ? typeMatch[1].trim() : 'Unknown';
+            
             const values = [
-                'admin',
-                work_type,
                 work_title,
                 work_description,
-                priority,
-                due_date,
-                assigned_to,
-                submitted_by
+                `/uploads/documents/${fileName}`, // file_path
+                fileName, // file_name
+                fileSize, // file_size
+                fileType, // file_type
+                'Other', // category (default)
+                submitted_by || 1, // uploaded_by (user ID)
+                'Pending' // status
             ];
             
-            console.log('🔍 Executing admin work query:', query);
-            console.log('📊 Query values:', values);
-            console.log('🔍 Work type value being inserted:', work_type);
-            console.log('🔍 Work type value length:', work_type ? work_type.length : 'null');
-            
-            // Check if work_type is valid before inserting
-            const validWorkTypes = [
-                'Administrative Operations', 'Compliance Management', 'Staff Oversight', 
-                'Policy Implementation', 'Document Management', 'Document Upload', 
-                'User Account Management', 'System Administration', 'Department Coordination'
-            ];
-            
-            if (!validWorkTypes.includes(work_type)) {
-                console.error('❌ Invalid work_type:', work_type);
-                console.error('❌ Valid work types:', validWorkTypes);
-                return res.status(400).json({
-                    error: 'Invalid work type',
-                    details: `Work type "${work_type}" is not valid. Valid types: ${validWorkTypes.join(', ')}`
-                });
-            }
+            console.log('🔍 Executing documents table query:', query);
+            console.log('� Query values:', values);
             
             try {
-                console.log('🔍 About to execute database query...');
-                console.log('🔍 Query:', query);
-                console.log('🔍 Values:', values);
-                console.log('🔍 Values type:', typeof values);
-                console.log('🔍 Values is array:', Array.isArray(values));
-                console.log('🔍 Values length:', values ? values.length : 'null');
-                
-                // Try to execute query with detailed error handling
                 const result = await db.execute(query, values);
                 console.log('🔍 Query result type:', typeof result);
                 console.log('🔍 Query result is array:', Array.isArray(result));
@@ -281,15 +263,14 @@ router.post('/', upload.single('file'), async (req, res) => {
                 }
                 
                 console.log('🔍 Insert result:', insertResult);
-                console.log('✅ Admin work item created:', insertResult);
+                console.log('✅ Document created:', insertResult);
                 
                 // Return success response
                 res.status(201).json({
-                    message: 'Document work item created successfully',
+                    message: 'Document uploaded successfully',
                     id: insertResult.insertId,
-                    work_type,
-                    work_title,
-                    status: 'pending'
+                    title: work_title,
+                    status: 'Pending'
                 });
             } catch (dbError) {
                 console.error('❌ Database error details:', {
