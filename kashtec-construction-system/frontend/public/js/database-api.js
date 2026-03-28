@@ -2,6 +2,7 @@
 class DatabaseAPI {
     constructor() {
         this.baseURL = window.location.origin + '/api';
+        this.isProduction = window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1';
     }
 
     // Generic request method
@@ -16,8 +17,25 @@ class DatabaseAPI {
         };
 
         try {
-            console.log('🌐 Making API request to:', url);
-            console.log('📤 Request config:', config);
+            if (!this.isProduction) {
+                console.log('🌐 Making API request to:', url);
+                
+                // Create a safe version of config for logging (mask sensitive data)
+                const safeConfig = { ...config };
+                if (safeConfig.body) {
+                    try {
+                        const bodyObj = JSON.parse(safeConfig.body);
+                        if (bodyObj.password) {
+                            bodyObj.password = '***';
+                        }
+                        safeConfig.body = JSON.stringify(bodyObj);
+                    } catch (e) {
+                        // If parsing fails, mask the entire body for safety
+                        safeConfig.body = '[REQUEST BODY - HIDDEN FOR SECURITY]';
+                    }
+                }
+                console.log('📤 Request config:', safeConfig);
+            }
             
             const response = await fetch(url, config);
             console.log('📥 Response status:', response.status);
@@ -91,14 +109,24 @@ class DatabaseAPI {
 
     // Login method
     async login(email, password, role) {
-        console.log('🔐 Database API Login attempt:', { email, role });
+        if (!this.isProduction) {
+            console.log('🔐 Database API Login attempt:', { email, role });
+        }
         try {
             const response = await this.post('/auth/login', {
                 email,
                 password,
                 role
             });
-            console.log('✅ Database API Login response:', response);
+            
+            if (!this.isProduction) {
+                // Create a safe version of response for logging (mask sensitive data)
+                const safeResponse = { ...response };
+                if (safeResponse.token) {
+                    safeResponse.token = safeResponse.token.substring(0, 20) + '...[TOKEN_HIDDEN_FOR_SECURITY]';
+                }
+                console.log('✅ Database API Login response:', safeResponse);
+            }
             return response;
         } catch (error) {
             console.error('❌ Database API Login error:', error);
