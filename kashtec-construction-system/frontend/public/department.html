@@ -12010,7 +12010,7 @@ function uploadDocument() {
     
     // Prepare work item for Admin department
     const workItem = {
-        work_type: 'Document Upload',
+        work_type: 'Document Management', // Temporary fix - use existing ENUM value
         work_title: `Document Upload - ${docTitle}`,
         work_description: `Document Uploaded\n\nTitle: ${docTitle}\nType: ${docType}\nDepartment: ${docDepartment}\nDescription: ${docDescription}\nFile: ${docFile.name} (${(docFile.size / 1024).toFixed(2)} KB)\nPriority: ${docPriority}\nUploaded By: ${documentData.uploadedBy}\nUpload Date: ${documentData.uploadDate}\nStatus: ${documentData.status}`,
         priority: docPriority === 'urgent' ? 'High' : docPriority === 'important' ? 'Medium' : 'Low',
