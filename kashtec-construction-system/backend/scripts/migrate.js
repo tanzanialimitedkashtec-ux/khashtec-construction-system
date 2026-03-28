@@ -23,6 +23,49 @@ async function runMigration() {
         await db.connect();
         console.log('✅ Database connected successfully');
         
+        // Run main migration file first
+        console.log('🔍 Running main migration file...');
+        try {
+            const migrationPath = path.join(__dirname, '../database/migrations/001_create_tables.sql');
+            const migrationSQL = fs.readFileSync(migrationPath, 'utf8');
+            
+            // Split SQL into individual statements and execute them
+            const statements = migrationSQL
+                .split(';')
+                .map(stmt => stmt.trim())
+                .filter(stmt => stmt.length > 0 && !stmt.startsWith('--'));
+            
+            for (const statement of statements) {
+                if (statement.trim()) {
+                    await db.execute(statement);
+                }
+            }
+            
+            console.log('✅ Main migration executed successfully');
+        } catch (error) {
+            console.error('❌ Error executing main migration:', error);
+            // Continue with worker assignments table creation even if main migration fails
+        }
+        
+        // Verify policies table exists
+        console.log('🔍 Verifying policies table...');
+        try {
+            const [policiesCheck] = await db.execute(`
+                SELECT COUNT(*) as count 
+                FROM information_schema.tables 
+                WHERE table_schema = DATABASE() 
+                AND table_name = 'policies'
+            `);
+            
+            if (policiesCheck[0].count > 0) {
+                console.log('✅ Policies table verified successfully');
+            } else {
+                console.error('❌ Policies table was not created!');
+            }
+        } catch (error) {
+            console.error('❌ Error checking policies table:', error);
+        }
+        
         // Direct worker assignments table creation SQL
         const workerAssignmentsSQL = `
             CREATE TABLE IF NOT EXISTS worker_assignments (
