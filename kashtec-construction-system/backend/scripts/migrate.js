@@ -47,6 +47,37 @@ async function runMigration() {
             // Continue with worker assignments table creation even if main migration fails
         }
         
+        // Create policies table if it doesn't exist
+        console.log('🔍 Creating policies table...');
+        try {
+            const policiesTableSQL = `
+                CREATE TABLE IF NOT EXISTS policies (
+                  id VARCHAR(50) PRIMARY KEY,
+                  title VARCHAR(255) NOT NULL,
+                  description TEXT,
+                  submitted_by VARCHAR(255) NOT NULL,
+                  submitted_by_role VARCHAR(100),
+                  submission_date DATE DEFAULT CURRENT_DATE,
+                  impact ENUM('Low', 'Medium', 'High', 'Critical') DEFAULT 'Medium',
+                  status ENUM('Pending', 'Approved', 'Rejected', 'Revision Requested') DEFAULT 'Pending',
+                  approved_by VARCHAR(255),
+                  approved_date DATE,
+                  rejection_reason TEXT,
+                  revision_request TEXT,
+                  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+                  INDEX idx_status (status),
+                  INDEX idx_submitted_by (submitted_by),
+                  INDEX idx_date (submission_date)
+                );
+            `;
+            
+            await db.execute(policiesTableSQL);
+            console.log('✅ Policies table created successfully');
+        } catch (error) {
+            console.error('❌ Error creating policies table:', error);
+        }
+        
         // Verify policies table exists
         console.log('🔍 Verifying policies table...');
         try {
