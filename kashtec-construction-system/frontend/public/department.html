@@ -12245,24 +12245,63 @@ function sendNotification() {
         status: scheduleType === 'immediate' ? 'sent' : 'scheduled'
     };
     
-    // Save to secure API storage
-    const notifications = [];
-    notifications.push(notification);
-    // TODO: Save to API
+    // Save to API
+    console.log('Notification data to be saved to API:', notification);
     
-    const recipientText = recipientType === 'all' ? 'All Staff' : recipient;
-    const statusText = scheduleType === 'immediate' ? 'sent immediately' : 'scheduled for later';
+    // Prepare data for API
+    const apiData = {
+        title: notification.title,
+        message: notification.message,
+        type: notification.priority === 'urgent' ? 'error' : notification.priority === 'important' ? 'warning' : 'info',
+        category: 'internal'
+    };
     
-    alert('Notification ' + statusText + '!\n\nTitle: ' + title + '\nTo: ' + recipientText + '\nPriority: ' + priority);
+    // Choose API endpoint based on recipient type
+    let apiUrl = `${window.location.origin}/api/notifications`;
+    if (notification.recipientType === 'all') {
+        apiUrl = `${window.location.origin}/api/notifications/broadcast`;
+    }
     
-    // Clear form
-    document.getElementById('recipientType').value = '';
-    document.getElementById('recipientSelect').value = '';
-    document.getElementById('notifTitle').value = '';
-    document.getElementById('notifMessage').value = '';
-    document.getElementById('notifPriority').value = 'normal';
-    document.getElementById('scheduleType').value = 'immediate';
-    document.getElementById('recipientGroup').style.display = 'none';
+    // Send to API
+    fetch(apiUrl, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'Authorization': `Bearer ${sessionManager.getAuthToken()}`
+        },
+        body: JSON.stringify(apiData)
+    })
+    .then(response => {
+        console.log('📡 Notification API Response status:', response.status);
+        return response.json();
+    })
+    .then(data => {
+        console.log('📊 Notification API Response data:', data);
+        
+        if (data.error) {
+            throw new Error(data.error);
+        }
+        
+        const recipientText = notification.recipientType === 'all' ? 'All Staff' : notification.recipient;
+        const statusText = notification.scheduleType === 'immediate' ? 'sent immediately' : 'scheduled for later';
+        
+        alert('Notification ' + statusText + '!\n\nTitle: ' + notification.title + '\nTo: ' + recipientText + '\nPriority: ' + notification.priority);
+        
+        // Clear form
+        document.getElementById('recipientType').value = '';
+        document.getElementById('recipientSelect').value = '';
+        document.getElementById('notifTitle').value = '';
+        document.getElementById('notifMessage').value = '';
+        document.getElementById('notifPriority').value = 'normal';
+        document.getElementById('scheduleType').value = 'immediate';
+        document.getElementById('recipientGroup').style.display = 'none';
+        document.getElementById('scheduleGroup').style.display = 'none';
+    })
+    .catch(error => {
+        console.error('❌ Error sending notification:', error);
+        alert('Failed to send notification: ' + error.message);
+    });
     
     // Refresh notifications list
     sendNotifications();
