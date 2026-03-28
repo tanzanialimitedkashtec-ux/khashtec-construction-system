@@ -118,34 +118,6 @@ async function runMigration() {
             }
         }
         
-        // Verify admin_work table ENUM includes Document Upload
-        console.log('🔍 Verifying admin_work table ENUM includes Document Upload...');
-        try {
-            const [enumCheck] = await db.execute(`
-                SELECT COLUMN_TYPE 
-                FROM INFORMATION_SCHEMA.COLUMNS 
-                WHERE TABLE_SCHEMA = DATABASE() 
-                AND TABLE_NAME = 'admin_work' 
-                AND COLUMN_NAME = 'work_type'
-            `);
-            
-            if (enumCheck.length > 0) {
-                const enumDef = enumCheck[0].COLUMN_TYPE;
-                console.log('📋 Admin work ENUM definition:', enumDef);
-                
-                if (enumDef.includes('Document Upload')) {
-                    console.log('✅ Admin work table ENUM verified - Document Upload is included');
-                } else {
-                    console.error('❌ Admin work table ENUM does NOT include Document Upload!');
-                    console.error('❌ Current ENUM:', enumDef);
-                }
-            } else {
-                console.error('❌ Could not find admin_work.work_type column');
-            }
-        } catch (error) {
-            console.error('❌ Error checking admin_work ENUM:', error);
-        }
-        
         // Create workforce_budgets table if it doesn't exist
         console.log('🔍 Creating workforce_budgets table...');
         try {
