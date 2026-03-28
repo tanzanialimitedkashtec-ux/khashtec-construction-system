@@ -233,6 +233,24 @@ router.post('/', upload.single('file'), async (req, res) => {
             const typeMatch = work_description.match(/Type: ([^\n]+)/);
             const fileType = typeMatch ? typeMatch[1].trim() : 'Unknown';
             
+            // Convert user name to user ID (uploaded_by should be integer)
+            let uploadedById = 1; // Default to admin user ID
+            if (submitted_by) {
+                // Try to find user ID from authentication table
+                try {
+                    const [userRows] = await db.execute(
+                        'SELECT id FROM authentication WHERE role = ? OR department_name = ? LIMIT 1',
+                        [submitted_by, submitted_by]
+                    );
+                    if (userRows && userRows.length > 0) {
+                        uploadedById = userRows[0].id;
+                    }
+                } catch (userError) {
+                    console.log('⚠️ Could not find user ID, using default:', userError.message);
+                    uploadedById = 1; // Fallback to admin
+                }
+            }
+            
             const values = [
                 work_title,
                 work_description,
@@ -241,7 +259,7 @@ router.post('/', upload.single('file'), async (req, res) => {
                 fileSize, // file_size
                 fileType, // file_type
                 'Other', // category (default)
-                submitted_by || 1, // uploaded_by (user ID)
+                uploadedById, // uploaded_by (user ID as integer)
                 'Pending' // status
             ];
             
