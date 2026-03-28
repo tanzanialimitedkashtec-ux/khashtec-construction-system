@@ -47,6 +47,61 @@ async function runMigration() {
             // Continue with worker assignments table creation even if main migration fails
         }
         
+        // Create workforce_budgets table if it doesn't exist
+        console.log('🔍 Creating workforce_budgets table...');
+        try {
+            const workforceBudgetsSQL = `
+                CREATE TABLE IF NOT EXISTS workforce_budgets (
+                  id VARCHAR(50) PRIMARY KEY,
+                  budget_period VARCHAR(100) NOT NULL,
+                  total_proposed DECIMAL(15,2) NOT NULL,
+                  salaries_wages DECIMAL(15,2) NOT NULL,
+                  training_development DECIMAL(15,2) NOT NULL,
+                  employee_benefits DECIMAL(15,2) NOT NULL,
+                  recruitment_costs DECIMAL(15,2) NOT NULL,
+                  submitted_by VARCHAR(255) NOT NULL,
+                  submitted_by_role VARCHAR(100),
+                  submission_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                  status ENUM('Pending', 'Approved', 'Rejected', 'Modification Requested') DEFAULT 'Pending',
+                  approved_by VARCHAR(255),
+                  approved_date TIMESTAMP,
+                  rejection_reason TEXT,
+                  modification_request TEXT,
+                  current_headcount INT DEFAULT 0,
+                  justification TEXT,
+                  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+                  INDEX idx_status (status),
+                  INDEX idx_department (submitted_by),
+                  INDEX idx_period (budget_period)
+                );
+            `;
+            
+            await db.execute(workforceBudgetsSQL);
+            console.log('✅ Workforce budgets table created successfully');
+        } catch (error) {
+            console.error('❌ Error creating workforce_budgets table:', error);
+        }
+        
+        // Verify workforce_budgets table exists
+        console.log('🔍 Verifying workforce_budgets table...');
+        try {
+            const [budgetsCheck] = await db.execute(`
+                SELECT COUNT(*) as count 
+                FROM information_schema.tables 
+                WHERE table_schema = DATABASE() 
+                AND table_name = 'workforce_budgets'
+            `);
+            
+            if (budgetsCheck[0].count > 0) {
+                console.log('✅ Workforce budgets table verified successfully');
+            } else {
+                console.error('❌ Workforce budgets table was not created!');
+            }
+        } catch (error) {
+            console.error('❌ Error checking workforce_budgets table:', error);
+        }
+        
         // Create policies table if it doesn't exist
         console.log('🔍 Creating policies table...');
         try {
