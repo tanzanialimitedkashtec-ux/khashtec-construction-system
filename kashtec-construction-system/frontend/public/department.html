@@ -5304,6 +5304,64 @@ function filterEmployees() {
     }
 }
 
+function filterEmployeesByDept() {
+    const deptSelect = document.activeElement; // Get the select element that triggered this
+    const selectedDept = deptSelect.value;
+    
+    // Sample employee data (TODO: Load from API)
+    const employees = [
+        { fullName: 'John Doe', gmail: 'john@kashtec.com', department: 'management', jobCategory: 'Director', phone: '+255 123 456 789' },
+        { fullName: 'Jane Smith', gmail: 'jane@kashtec.com', department: 'hr', jobCategory: 'HR Manager', phone: '+255 123 456 790' },
+        { fullName: 'Mike Johnson', gmail: 'mike@kashtec.com', department: 'finance', jobCategory: 'Finance Manager', phone: '+255 123 456 791' },
+        { fullName: 'Sarah Wilson', gmail: 'sarah@kashtec.com', department: 'projects', jobCategory: 'Project Manager', phone: '+255 123 456 792' },
+        { fullName: 'David Brown', gmail: 'david@kashtec.com', department: 'operations', jobCategory: 'Operations Manager', phone: '+255 123 456 793' },
+        { fullName: 'Lisa Anderson', gmail: 'lisa@kashtec.com', department: 'realestate', jobCategory: 'Real Estate Manager', phone: '+255 123 456 794' }
+    ];
+    
+    const employeeListDiv = document.querySelector('.employee-list');
+    if (!employeeListDiv) {
+        console.error('Employee list div not found');
+        return;
+    }
+    
+    // Filter employees by department
+    const filteredEmployees = selectedDept 
+        ? employees.filter(emp => emp.department === selectedDept)
+        : employees; // Show all if no department selected
+    
+    // Generate HTML for filtered employees
+    let html = '';
+    if (filteredEmployees.length === 0) {
+        html = '<div class="no-results">No employees found in this department</div>';
+    } else {
+        filteredEmployees.forEach(emp => {
+            html += `
+                <div class="employee-item">
+                    <div class="employee-info">
+                        <h4>${emp.fullName}</h4>
+                        <p><strong>Department:</strong> ${emp.department}</p>
+                        <p><strong>Position:</strong> ${emp.jobCategory}</p>
+                        <p><strong>Email:</strong> ${emp.gmail}</p>
+                        <p><strong>Phone:</strong> ${emp.phone}</p>
+                    </div>
+                    <div class="employee-actions">
+                        <button class="action" onclick="viewEmployeeDetails('${emp.gmail}')">View Details</button>
+                        <button class="action" onclick="editEmployee('${emp.gmail}')">Edit</button>
+                    </div>
+                </div>
+            `;
+        });
+    }
+    
+    employeeListDiv.innerHTML = html;
+    
+    // Update results count
+    const resultsDiv = document.querySelector('.search-results');
+    if (resultsDiv) {
+        resultsDiv.innerHTML = `<p>Found ${filteredEmployees.length} employee${filteredEmployees.length !== 1 ? 's' : ''} ${selectedDept ? 'in ' + selectedDept : 'across all departments'}</p>`;
+    }
+}
+
 function selectEmployeeForUpdate(email) {
     const employees = []; // TODO: Load from API
     const employee = employees.find(emp => emp.gmail === email);
