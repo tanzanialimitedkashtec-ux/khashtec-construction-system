@@ -29,8 +29,8 @@ const policyRoutes = require('./backend/routes/policies');
 const seniorHiringRoutes = require('./backend/routes/seniorHiring');
 const workforceBudgetRoutes = require('./backend/routes/workforceBudget');
 const workRoutes = require('./backend/routes/work');
+const scheduleMeetingsRoutes = require('./backend/routes/scheduleMeetings');
 const workerAccountRoutes = require('./backend/routes/workerAccounts');
-const scheduleMeetingsRoutes = require('./routes/scheduleMeetings');
 
 const app = express();
 const PORT = config.PORT;
