@@ -12316,8 +12316,13 @@ function sendNotification() {
     
     // Choose API endpoint based on recipient type
     let apiUrl = `${window.location.origin}/api/notifications`;
-    if (notification.recipientType === 'all') {
+    
+    if (notification.recipientType !== 'individual') {
+        // Use broadcast for department, role, and all staff notifications
         apiUrl = `${window.location.origin}/api/notifications/broadcast`;
+    } else {
+        // For individual notifications, add userId (using recipient as userId for now)
+        apiData.userId = notification.recipient;
     }
     
     // Send to API
