@@ -301,6 +301,7 @@ router.post('/', upload.single('file'), async (req, res) => {
                 });
             }
             
+            // Execute query with simple parameter binding
             const [result] = await db.execute(query, values);
             console.log('✅ Admin work item created:', result);
             
