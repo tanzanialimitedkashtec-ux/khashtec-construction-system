@@ -1,31 +1,27 @@
 const fs = require('fs');
 const path = require('path');
 const mysql = require('mysql2/promise');
-require('dotenv').config();
 
-// Database configuration using pool (same as main app)
-const db = mysql.createPool({
+// Database configuration
+const dbConfig = {
     host: process.env.DB_HOST || 'localhost',
     user: process.env.DB_USER || 'root',
     password: process.env.DB_PASSWORD || '',
     database: process.env.DB_NAME || 'railway',
-    port: process.env.DB_PORT || 3306,
-    waitForConnections: true,
-    connectionLimit: 10,
-    queueLimit: 0,
     charset: 'utf8mb4'
-});
+};
+
+// Create database connection
+const db = mysql.createConnection(dbConfig);
 
 async function runMigration() {
     try {
         console.log('🚀 Starting Worker Assignments Migration...');
         console.log('📅 Migration Date:', new Date().toISOString());
         
-        // Test database connection (pool doesn't need explicit connect)
-        console.log('🔍 Testing database connection...');
-        const connection = await db.getConnection();
+        // Connect to database
+        await db.connect();
         console.log('✅ Database connected successfully');
-        connection.release(); // Release the connection back to the pool
         
         // Run main migration file first
         console.log('🔍 Running main migration file...');

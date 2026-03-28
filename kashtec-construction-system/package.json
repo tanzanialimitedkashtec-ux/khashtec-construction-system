@@ -2,11 +2,11 @@
   "name": "kashtec-construction-system",
   "version": "1.0.0",
   "description": "KASHTEC Tanzania Limited - Construction Management System",
-  "main": "backend/server.js",
+  "main": "server.js",
   "scripts": {
-    "start": "cd backend && npm start",
-    "migrate": "cd backend && npm run migrate",
-    "seed": "cd backend && npm run seed"
+    "start": "node server.js",
+    "migrate": "node database/migrations/migrate.js",
+    "seed": "node database/seeds/seed.js"
   },
   "keywords": ["construction", "management", "nodejs", "mysql", "kashtec", "railway"],
   "author": "KASHTEC Tanzania Limited",
