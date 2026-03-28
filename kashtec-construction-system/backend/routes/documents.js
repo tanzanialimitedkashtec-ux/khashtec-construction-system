@@ -183,21 +183,6 @@ router.post('/test-upload', (req, res) => {
 // Upload new document (JSON version for frontend forms)
 router.post('/', upload.single('file'), async (req, res) => {
     try {
-        console.log('📝 DOCUMENT UPLOAD ROUTE STARTED');
-        console.log('📝 Request method:', req.method);
-        console.log('📝 Request URL:', req.url);
-        console.log('📝 Request headers:', req.headers);
-        console.log('📝 Content-Type:', req.get('Content-Type'));
-        
-        // IMMEDIATE TEST: Try simple response
-        console.log('🧪 IMMEDIATE TEST: Returning simple response');
-        return res.status(200).json({
-            message: 'IMMEDIATE TEST - Route reached successfully',
-            timestamp: new Date().toISOString(),
-            method: req.method,
-            url: req.url
-        });
-        
         console.log('📝 Document upload request received');
         console.log('📋 Request body:', req.body);
         console.log('📁 File info:', req.file);
