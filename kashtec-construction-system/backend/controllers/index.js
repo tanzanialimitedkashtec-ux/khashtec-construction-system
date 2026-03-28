@@ -173,7 +173,20 @@ class OfficePortalController {
             const updates = req.body;
             
             const connection = await db.getConnection();
-            await connection.query('UPDATE office_portal_users SET ? WHERE id = ?', [updates, id]);
+            
+            // Build dynamic UPDATE query
+            const updateFields = [];
+            const updateValues = [];
+            
+            Object.keys(updates).forEach(key => {
+                updateFields.push(`${key} = ?`);
+                updateValues.push(updates[key]);
+            });
+            
+            const updateQuery = `UPDATE office_portal_users SET ${updateFields.join(', ')} WHERE id = ?`;
+            updateValues.push(id);
+            
+            await connection.query(updateQuery, updateValues);
             connection.release();
             
             res.json({ 
@@ -452,7 +465,20 @@ class EmployeeController {
             const updates = req.body;
             
             const connection = await db.getConnection();
-            await connection.query('UPDATE employees SET ? WHERE id = ?', [updates, id]);
+            
+            // Build dynamic UPDATE query
+            const updateFields = [];
+            const updateValues = [];
+            
+            Object.keys(updates).forEach(key => {
+                updateFields.push(`${key} = ?`);
+                updateValues.push(updates[key]);
+            });
+            
+            const updateQuery = `UPDATE employees SET ${updateFields.join(', ')} WHERE id = ?`;
+            updateValues.push(id);
+            
+            await connection.query(updateQuery, updateValues);
             connection.release();
             
             res.json({ 
