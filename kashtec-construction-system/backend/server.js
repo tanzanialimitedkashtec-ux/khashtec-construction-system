@@ -265,9 +265,14 @@ app.use('/api/admin/work', workRoutes);
 const policiesRoutes = require('./routes/policies');
 app.use('/api/policies', policiesRoutes);
 
+// ===== SCHEDULE MEETINGS ROUTES =====
+const scheduleMeetingsRoutes = require('./routes/scheduleMeetings');
+app.use('/api/schedule-meetings', scheduleMeetingsRoutes);
+
 // Debug: Log all mounted routes
 console.log('🔍 Routes mounted:');
 console.log('  - /api/policies/* -> policies routes');
+console.log('  - /api/schedule-meetings/* -> schedule meetings routes');
 console.log('  - /api/senior-hiring/* -> senior hiring routes');
 
 // ===== SENIOR HIRING ROUTES =====
