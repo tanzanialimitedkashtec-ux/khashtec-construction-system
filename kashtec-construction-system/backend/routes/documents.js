@@ -128,6 +128,9 @@ router.post('/', upload.single('file'), async (req, res) => {
         console.log('📝 Document upload request received');
         console.log('📋 Request body:', req.body);
         console.log('📁 File info:', req.file);
+        console.log('🔍 Request method:', req.method);
+        console.log('🔍 Request URL:', req.url);
+        console.log('🔍 Content-Type:', req.get('Content-Type'));
         
         // Handle both file upload and JSON-only submissions
         if (req.body.work_type && req.body.work_title) {
@@ -144,6 +147,10 @@ router.post('/', upload.single('file'), async (req, res) => {
                 assigned_to,
                 submitted_by
             } = req.body;
+            
+            console.log('🔍 Extracted work_type:', work_type);
+            console.log('🔍 Extracted work_title:', work_title);
+            console.log('🔍 Extracted priority:', priority);
             
             // Insert into admin_work table
             const query = `
@@ -212,16 +219,9 @@ router.post('/', upload.single('file'), async (req, res) => {
             });
         } else {
             // Traditional file upload with file
-            const { title, category, description, uploadedBy } = req.body;
+            console.log('🔄 Processing traditional file upload...');
             
-            // Validate input
-            if (!title || !category || !uploadedBy) {
-                return res.status(400).json({
-                    error: 'Title, category, and uploadedBy are required'
-                });
-            }
-            
-            // Get file type
+            const { title, category, description, uploadedBy = 'Admin Assistant' } = req.body;
             const fileExt = path.extname(req.file.originalname).toLowerCase();
             let fileType = 'Document';
             
@@ -237,27 +237,33 @@ router.post('/', upload.single('file'), async (req, res) => {
                 fileType = 'PowerPoint';
             }
             
-            // Create new document record
+            // Create document record
             const newDocument = {
                 id: documents.length + 1,
-                title,
+                title: title || req.file.originalname,
+                category: category || 'General',
+                description: description || '',
                 type: fileType,
-                category,
                 uploadedBy: parseInt(uploadedBy),
                 uploadedDate: new Date().toISOString().split('T')[0],
                 fileName: req.file.filename,
                 filePath: `/uploads/documents/${req.file.filename}`,
                 size: req.file.size,
-                status: 'active',
-                description: description || ''
+                status: 'pending'
             };
             
-            documents.push(newDocument);
-            
-            res.status(201).json({
-                message: 'Document uploaded successfully',
-                document: newDocument
-            });
+            // Safe array push with validation
+            if (Array.isArray(documents)) {
+                documents.push(newDocument);
+                console.log('✅ Document uploaded successfully:', newDocument);
+                
+                res.status(201).json({
+                    message: 'Document uploaded successfully',
+                    document: newDocument
+                });
+            } else {
+                throw new Error('Documents array not initialized');
+            }
         }
         
     } catch (error) {
