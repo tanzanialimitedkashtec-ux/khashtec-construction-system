@@ -37,6 +37,39 @@ const upload = multer({
     }
 });
 
+// Test endpoint to isolate the issue
+router.get('/test-upload', (req, res) => {
+    try {
+        console.log('🧪 Test upload endpoint accessed');
+        console.log('🔍 Documents array exists:', !!documents);
+        console.log('🔍 Documents array type:', typeof documents);
+        console.log('🔍 Documents array length:', documents ? documents.length : 'undefined');
+        
+        // Test safe array operations
+        if (Array.isArray(documents)) {
+            console.log('✅ Documents array is valid array');
+            res.json({ 
+                message: 'Upload test endpoint working',
+                documentsCount: documents.length,
+                status: 'success'
+            });
+        } else {
+            console.log('❌ Documents array is not a valid array');
+            res.status(500).json({ 
+                error: 'Documents array not initialized',
+                type: typeof documents,
+                isArray: Array.isArray(documents)
+            });
+        }
+    } catch (error) {
+        console.error('❌ Test endpoint error:', error);
+        res.status(500).json({ 
+            error: 'Test endpoint failed',
+            details: error.message
+        });
+    }
+});
+
 // Mock document data (in production, use real database)
 let documents = [
     {
@@ -120,6 +153,31 @@ router.get('/:id', (req, res) => {
     }
     
     res.json(document);
+});
+
+// Test POST endpoint to isolate the issue
+router.post('/test-upload', (req, res) => {
+    try {
+        console.log('🧪 Test POST upload endpoint accessed');
+        console.log('📋 Request body:', req.body);
+        console.log('📁 File info:', req.file);
+        console.log('🔍 Content-Type:', req.get('Content-Type'));
+        
+        // Simple test without any database operations
+        res.json({ 
+            message: 'Test POST upload endpoint working',
+            receivedBody: !!req.body,
+            receivedFile: !!req.file,
+            contentType: req.get('Content-Type'),
+            status: 'success'
+        });
+    } catch (error) {
+        console.error('❌ Test POST endpoint error:', error);
+        res.status(500).json({ 
+            error: 'Test POST endpoint failed',
+            details: error.message
+        });
+    }
 });
 
 // Upload new document (JSON version for frontend forms)
