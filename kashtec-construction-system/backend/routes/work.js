@@ -119,7 +119,7 @@ router.post('/assignments', async (req, res) => {
         }
         
         // Insert new assignment
-        const [result] = await db.execute(`
+        const result = await db.execute(`
             INSERT INTO worker_assignments (
                 employee_id, employee_name, project_id, project_name, role_in_project,
                 start_date, end_date, assignment_notes, status, assigned_by, assigned_by_role
@@ -138,11 +138,14 @@ router.post('/assignments', async (req, res) => {
             assigned_by_role
         ]);
         
+        // Handle different result formats from db.execute()
+        const insertId = Array.isArray(result) ? result[0].insertId : result.insertId;
         console.log('✅ Worker assignment created successfully:', result);
+        console.log('✅ Insert ID:', insertId);
         
         res.status(201).json({
             message: 'Worker assignment created successfully',
-            assignment_id: result.insertId,
+            assignment_id: insertId,
             data: {
                 employee_id,
                 employee_name,
