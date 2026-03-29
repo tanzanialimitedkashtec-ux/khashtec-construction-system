@@ -268,8 +268,8 @@ app.use('/api/policies', policiesRoutes);
 // ===== SCHEDULE MEETINGS ROUTES =====
 console.log('🔍 Loading schedule meetings routes...');
 try {
-    const scheduleMeetingsRoutes = require('./routes/scheduleMeetings');
-    console.log('✅ Schedule meetings routes loaded successfully');
+    const scheduleMeetingsRoutes = require('./routes/scheduleMeetings_simple');
+    console.log('✅ Schedule meetings routes loaded successfully (simplified version)');
     app.use('/api/schedule-meetings', scheduleMeetingsRoutes);
     console.log('✅ Schedule meetings routes mounted at /api/schedule-meetings');
 } catch (error) {
