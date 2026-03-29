@@ -108,7 +108,7 @@ router.post('/', async (req, res) => {
         
         res.status(201).json({
             message: 'Notification created successfully',
-            notification: newNotification[0]
+            notification: Array.isArray(newNotification) ? newNotification[0] : newNotification
         });
     } catch (error) {
         console.error('Error creating notification:', error);
