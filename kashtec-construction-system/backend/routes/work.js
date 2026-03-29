@@ -515,8 +515,20 @@ router.post('/:department', async (req, res) => {
         const allFields = safeBaseFields.concat(safeAdditionalFields);
         const allValues = safeBaseValues.concat(safeAdditionalValues);
         
+        // Map departments to correct tables
+        const departmentTableMap = {
+            'hr': 'hr_work',
+            'hse': 'hse_work', 
+            'finance': 'finance_work',
+            'project': 'project_work',
+            'realestate': 'realestate_work',
+            'admin': 'admin_work'
+        };
+        
+        const tableName = departmentTableMap[department] || 'admin_work';
+        
         query = `
-            INSERT INTO ${department}_work (
+            INSERT INTO ${tableName} (
                 ${allFields.join(', ')}
             ) VALUES (
                 ${allFields.map(() => '?').join(', ')}
