@@ -328,16 +328,20 @@ router.post('/broadcast', async (req, res) => {
             new Date() // created_at
         ]);
         
-        // Insert all notifications
-        const [result] = await db.execute(
-            `INSERT INTO notifications (title, message, type, user_id, category, is_read, created_at) 
-             VALUES ?`,
-            [notifications]
-        );
+        // Insert all notifications using proper parameter binding
+        let affectedRows = 0;
+        for (const notification of notifications) {
+            const [result] = await db.execute(
+                `INSERT INTO notifications (title, message, type, user_id, category, is_read, created_at) 
+                 VALUES (?, ?, ?, ?, ?, ?, ?)`,
+                notification
+            );
+            affectedRows += result.affectedRows;
+        }
         
         res.status(201).json({
             message: `Broadcast notification sent to ${users.length} users`,
-            count: result.affectedRows
+            count: affectedRows
         });
     } catch (error) {
         console.error('Error sending broadcast notification:', error);
