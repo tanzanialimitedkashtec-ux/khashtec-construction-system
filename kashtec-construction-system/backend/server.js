@@ -97,15 +97,30 @@ app.post('/api/employees', async (req, res) => {
         console.log('📝 Request body:', req.body);
         
         const connection = await db.getConnection();
-        const { full_name, phone, email, position, department, job_category, contract, salary, hire_date, status } = req.body;
+        
+        // Map frontend field names to database field names
+        const {
+            fullName: full_name,
+            phone,
+            gmail: email,
+            position,
+            department,
+            job_category,
+            contract,
+            salary,
+            hire_date,
+            status,
+            nida,
+            passport
+        } = req.body;
         
         console.log('🔍 Extracted employee data:', { full_name, phone, email, position, department });
         
         const emp_id = `EMP${Date.now().toString().slice(-6)}`;
         
         await connection.query(
-            'INSERT INTO employees (emp_id, full_name, phone, email, position, department, job_category, contract, salary, hire_date, status, created_by) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
-            [emp_id, full_name, phone, email, position, department, job_category, contract, salary, hire_date, status, req.user?.id || 'system']
+            'INSERT INTO employees (emp_id, full_name, phone, email, position, department, job_category, contract, salary, hire_date, status, nida, passport, created_by) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+            [emp_id, full_name, phone, email, position, department, job_category, contract, salary, hire_date, status, nida, passport, req.user?.id || 'system']
         );
         
         // Automatically assign to office portal
@@ -169,7 +184,8 @@ app.post('/api/employees', async (req, res) => {
         res.status(201).json({ message: 'Employee created successfully', emp_id });
     } catch (error) {
         console.error('❌ Employee creation error:', error);
-        res.status(500).json({ error: 'Failed to create employee' });
+        console.error('❌ Full error details:', error.stack);
+        res.status(500).json({ error: 'Failed to create employee', details: error.message });
     }
 });
 
