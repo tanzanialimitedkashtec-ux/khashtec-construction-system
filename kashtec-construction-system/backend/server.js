@@ -280,11 +280,23 @@ try {
 const meetingMinutesRoutes = require('./routes/meetingMinutes');
 app.use('/api/meeting-minutes', meetingMinutesRoutes);
 
+// ===== NOTIFICATIONS ROUTES =====
+console.log('🔍 Loading notifications routes...');
+try {
+    const notificationsRoutes = require('./routes/notifications');
+    console.log('✅ Notifications routes loaded successfully');
+    app.use('/api/notifications', notificationsRoutes);
+    console.log('✅ Notifications routes mounted at /api/notifications');
+} catch (error) {
+    console.error('❌ Error loading notifications routes:', error);
+}
+
 // Debug: Log all mounted routes
 console.log('🔍 Routes mounted:');
 console.log('  - /api/policies/* -> policies routes');
 console.log('  - /api/schedule-meetings/* -> schedule meetings routes');
 console.log('  - /api/meeting-minutes/* -> meeting minutes routes');
+console.log('  - /api/notifications/* -> notifications routes');
 console.log('  - /api/senior-hiring/* -> senior hiring routes');
 
 // ===== SENIOR HIRING ROUTES =====
