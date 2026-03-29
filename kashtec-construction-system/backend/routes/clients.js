@@ -1,6 +1,15 @@
 const express = require('express');
 const router = express.Router();
-const db = require('../../database/config/database');
+
+// Add this at the very top to test if the file loads
+console.log('🚀 Clients route file is being loaded...');
+
+try {
+    const db = require('../../database/config/database');
+    console.log('✅ Database connection loaded successfully');
+} catch (error) {
+    console.error('❌ Database connection failed:', error);
+}
 
 // Test endpoint to verify route is working
 router.get('/test', (req, res) => {
@@ -9,6 +18,15 @@ router.get('/test', (req, res) => {
         message: 'Clients API is working!',
         timestamp: new Date().toISOString(),
         database: 'connected'
+    });
+});
+
+// Root endpoint test
+router.get('/', (req, res) => {
+    console.log('🏠 Clients root endpoint accessed');
+    res.json({ 
+        message: 'Clients API root endpoint',
+        available_endpoints: ['GET /test', 'POST /', 'GET /:id', 'PUT /:id', 'DELETE /:id']
     });
 });
 

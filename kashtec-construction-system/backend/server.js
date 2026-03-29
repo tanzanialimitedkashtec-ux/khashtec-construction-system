@@ -268,8 +268,19 @@ try {
     console.log('✅ Clients routes loaded successfully');
     app.use('/api/clients', clientsRoutes);
     console.log('✅ Clients routes mounted at /api/clients');
+    
+    // Add a direct test endpoint to verify mounting
+    app.get('/api/clients-status', (req, res) => {
+        res.json({ 
+            status: 'Clients routes are mounted',
+            timestamp: new Date().toISOString(),
+            endpoints: ['/api/clients/test', '/api/clients/', '/api/clients/:id']
+        });
+    });
+    
 } catch (error) {
     console.error('❌ Error loading clients routes:', error);
+    console.error('❌ Full error stack:', error.stack);
 }
 
 // ===== POLICIES ROUTES =====
