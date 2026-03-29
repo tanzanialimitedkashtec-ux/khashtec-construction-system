@@ -89,221 +89,27 @@ app.post('/api/auth/login', async (req, res) => {
 });
 
 // ===== EMPLOYEE ROUTES =====
-console.log('🔍 Setting up employee routes...');
+console.log('🔍 Mounting employee routes from routes/employees.js...');
 
-app.post('/api/employees', async (req, res) => {
-    try {
-        console.log('👨‍💼 Employee registration request received');
-        console.log('📝 Request body:', req.body);
-        
-        // Map frontend field names to database field names
-        const {
-            fullName: full_name,
-            phone,
-            gmail: email,
-            position,
-            department,
-            job_category,
-            contract: contract_type,
-            salary,
-            hire_date,
-            status,
-            nida,
-            passport
-        } = req.body;
-        
-        console.log('🔍 Extracted employee data:', { full_name, phone, email, position, department });
-        
-        const emp_id = `EMP${Date.now().toString().slice(-6)}`;
-        
-        try {
-            // 1. Insert into employees table (work info)
-            console.log('🔍 Inserting into employees table...');
-            const employeeResult = await db.execute(
-                'INSERT INTO employees (employee_id, position, department, salary, hire_date, status) VALUES (?, ?, ?, ?, ?, ?)',
-                [emp_id, position, department, salary || 0, hire_date || new Date().toISOString().split('T')[0], status || 'Active']
-            );
-            
-            const employeeDbId = Array.isArray(employeeResult) ? employeeResult[0].insertId : employeeResult.insertId;
-            console.log('✅ Employee record created:', employeeDbId);
-            
-            // 2. Insert into employee_details table (personal info)
-            console.log('🔍 Inserting into employee_details table...');
-            const detailsResult = await db.execute(
-                'INSERT INTO employee_details (employee_id, full_name, gmail, phone, nida, passport, contract_type) VALUES (?, ?, ?, ?, ?, ?, ?)',
-                [employeeDbId, full_name, email, phone, nida, passport, contract_type]
-            );
-            
-            console.log('✅ Employee details created:', employeeDbId);
-            
-            // Automatically assign to office portal
-            try {
-                // Map position to portal role
-                const roleMapping = {
-                    'Managing Director': 'Administrator',
-                    'Director': 'Administrator',
-                    'Manager': 'Manager',
-                    'Supervisor': 'Supervisor',
-                    'Engineer': 'Professional',
-                    'Accountant': 'Professional',
-                    'HR Manager': 'HR Staff',
-                    'Safety Officer': 'Safety Staff',
-                    'Project Manager': 'Project Staff',
-                    'Sales Agent': 'Sales Staff',
-                    'Administrative Assistant': 'Admin Staff'
-                };
-                
-                const portalRole = roleMapping[position] || 'Staff';
-                const accessLevel = getAccessLevel(position);
-                
-                // Check if user already exists in portal
-                const existingResult = await db.execute(
-                    'SELECT id FROM office_portal_users WHERE email = ?',
-                    [email]
-                );
-                const existing = Array.isArray(existingResult) ? existingResult[0] : existingResult;
-                
-                if (existing.length === 0) {
-                    await db.execute(
-                        'INSERT INTO office_portal_users (id, name, email, phone, role, department, employee_id, position, service_type, location, registration_date, status, profile_image, access_level, created_at, assigned_by) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
-                        [
-                            `USR-${Date.now()}`,
-                            full_name,
-                            email,
-                            phone,
-                            portalRole,
-                            department,
-                            emp_id,
-                            position,
-                            'Internal Services',
-                            'Main Office',
-                            new Date().toLocaleDateString(),
-                            'Active',
-                            `https://picsum.photos/seed/${email}/200/200.jpg`,
-                            accessLevel,
-                            new Date().toISOString(),
-                            'System'
-                        ]
-                    );
-                    
-                    console.log('Employee automatically assigned to office portal:', full_name);
-                }
-            } catch (portalError) {
-                console.error('Portal assignment error:', portalError);
-                // Don't fail the employee creation if portal assignment fails
-            }
-            
-            console.log('✅ Employee created successfully:', emp_id);
-            res.status(201).json({ message: 'Employee created successfully', emp_id, employeeDbId });
-            
-        } catch (innerError) {
-            console.error('❌ Database operation error:', innerError);
-            throw innerError;
-        }
-        
-    } catch (error) {
-        console.error('❌ Employee creation error:', error);
-        console.error('❌ Full error details:', error.stack);
-        res.status(500).json({ error: 'Failed to create employee', details: error.message });
-    }
-});
-
-function getAccessLevel(position) {
-    const accessLevels = {
-        'Managing Director': 'Full Access',
-        'Director': 'Full Access',
-        'Manager': 'High Access',
-        'Supervisor': 'Medium Access',
-        'Engineer': 'Medium Access',
-        'Accountant': 'Medium Access',
-        'HR Manager': 'High Access',
-        'Safety Officer': 'Medium Access',
-        'Project Manager': 'High Access',
-        'Sales Agent': 'Low Access',
-        'Administrative Assistant': 'Medium Access'
-    };
+try {
+    const employeesRoutes = require('./routes/employees');
+    console.log('✅ Employees routes loaded successfully');
+    app.use('/api/employees', employeesRoutes);
+    console.log('✅ Employees routes mounted at /api/employees');
     
-    return accessLevels[position] || 'Basic Access';
-}
-
-app.get('/api/employees', async (req, res) => {
-    try {
-        console.log('📋 Fetching all employees...');
-        const connection = await db.getConnection();
-        const [employees] = await connection.query('SELECT * FROM employees ORDER BY created_at DESC');
-        connection.release();
-        console.log('✅ Employees retrieved successfully:', employees.length);
-        res.json(employees);
-    } catch (error) {
-        console.error('❌ Fetch employees error:', error);
-        res.status(500).json({ error: 'Failed to fetch employees' });
-    }
-});
-
-// Add a test endpoint for employees
-app.get('/api/employees-test', (req, res) => {
-    console.log('🧪 Employees test endpoint accessed');
-    res.json({ 
-        message: 'Employees API is working!',
-        timestamp: new Date().toISOString(),
-        database: 'connected'
-    });
-});
-
-// Add a direct employees test endpoint as backup
-app.post('/api/employees-direct-test', async (req, res) => {
-    try {
-        console.log('🧪 Direct employees test endpoint accessed');
-        console.log('📝 Request body:', req.body);
-        
-        const { fullName, phone, gmail, position, department, contract, nida } = req.body;
-        
-        console.log('🔍 Extracted employee data:', { fullName, phone, gmail, position, department });
-        
-        // Test database connection
-        try {
-            const testResult = await db.execute('SELECT 1 as test');
-            console.log('✅ Database connection test successful:', testResult);
-        } catch (dbError) {
-            console.error('❌ Database connection test failed:', dbError);
-            return res.status(500).json({ error: 'Database connection failed', details: dbError.message });
-        }
-        
-        // Test employees table structure
-        try {
-            const tableResult = await db.execute('DESCRIBE employees');
-            console.log('✅ Employees table structure:', tableResult);
-        } catch (tableError) {
-            console.error('❌ Employees table check failed:', tableError);
-            return res.status(500).json({ error: 'Employees table issue', details: tableError.message });
-        }
-        
-        // Test employee_details table structure
-        try {
-            const detailsResult = await db.execute('DESCRIBE employee_details');
-            console.log('✅ Employee_details table structure:', detailsResult);
-        } catch (detailsError) {
-            console.error('❌ Employee_details table check failed:', detailsError);
-            return res.status(500).json({ error: 'Employee_details table issue', details: detailsError.message });
-        }
-        
-        // Simulate employee creation
-        const emp_id = `EMP${Date.now().toString().slice(-6)}`;
-        
-        console.log('✅ Direct employee test created:', emp_id);
-        res.status(201).json({ 
-            message: 'Direct employee test successful', 
-            emp_id,
-            received_data: req.body 
+    // Add a test endpoint to verify mounting
+    app.get('/api/employees-status', (req, res) => {
+        res.json({ 
+            status: 'Employees routes are mounted from routes/employees.js',
+            timestamp: new Date().toISOString(),
+            endpoints: ['/api/employees/', '/api/employees/test']
         });
-        
-    } catch (error) {
-        console.error('❌ Direct employee test error:', error);
-        res.status(500).json({ error: 'Direct employee test failed', details: error.message });
-    }
-});
-
-console.log('✅ Employee routes setup complete');
+    });
+    
+} catch (error) {
+    console.error('❌ Error loading employees routes:', error);
+    console.error('❌ Full error stack:', error.stack);
+}
 
 // ===== CLIENT ROUTES =====
 app.post('/api/clients', async (req, res) => {
