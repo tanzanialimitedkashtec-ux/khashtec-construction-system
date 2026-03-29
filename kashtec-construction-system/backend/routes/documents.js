@@ -246,7 +246,7 @@ router.post('/', upload.single('file'), async (req, res) => {
             const validWorkTypes = [
                 'Administrative Operations', 'Compliance Management', 'Staff Oversight', 
                 'Policy Implementation', 'Document Management', 'Document Upload', 
-                'Project Creation', 'Safety Policy Upload', 'Toolbox Meeting', 'PPE Issuance', 'Safety Violation', 'Inspection Report', 'Budget Management', 'Expense Report', 'User Account Management', 'System Administration', 'Department Coordination'
+                'Project Creation', 'Safety Policy Upload', 'Toolbox Meeting', 'PPE Issuance', 'Safety Violation', 'Inspection Report', 'Budget Management', 'Expense Report', 'Property Management', 'User Account Management', 'System Administration', 'Department Coordination'
             ];
             
             if (!validWorkTypes.includes(work_type)) {
