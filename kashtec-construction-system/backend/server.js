@@ -106,6 +106,81 @@ try {
         });
     });
     
+// Add a comprehensive employee test endpoint
+app.post('/api/employees-direct-test', async (req, res) => {
+    try {
+        console.log('🧪 Direct employees test endpoint accessed');
+        console.log('📝 Request body:', req.body);
+        
+        // Test database connection
+        try {
+            const testResult = await db.execute('SELECT 1 as test');
+            console.log('✅ Database connection test successful:', testResult);
+        } catch (dbError) {
+            console.error('❌ Database connection test failed:', dbError);
+            return res.status(500).json({ error: 'Database connection failed', details: dbError.message });
+        }
+        
+        // Test employees table structure
+        try {
+            const tableResult = await db.execute('DESCRIBE employees');
+            console.log('✅ Employees table structure:', tableResult);
+        } catch (tableError) {
+            console.error('❌ Employees table check failed:', tableError);
+            return res.status(500).json({ error: 'Employees table issue', details: tableError.message });
+        }
+        
+        // Test employee_details table structure
+        try {
+            const detailsResult = await db.execute('DESCRIBE employee_details');
+            console.log('✅ Employee_details table structure:', detailsResult);
+        } catch (detailsError) {
+            console.error('❌ Employee_details table check failed:', detailsError);
+            return res.status(500).json({ error: 'Employee_details table issue', details: detailsError.message });
+        }
+        
+        // Test simple insert without foreign key
+        try {
+            console.log('🧪 Testing simple employee insert...');
+            const emp_id = `EMP${Date.now().toString().slice(-6)}`;
+            const simpleResult = await db.execute(
+                'INSERT INTO employees (employee_id, position, department, salary, hire_date, status) VALUES (?, ?, ?, ?, CURDATE(), ?)',
+                [emp_id, 'Test Position', 'Test Department', 0, 'Active']
+            );
+            console.log('✅ Simple employee insert successful:', simpleResult);
+            
+            // Get the insert ID
+            const employeeDbId = Array.isArray(simpleResult) ? simpleResult[0].insertId : simpleResult.insertId;
+            console.log('✅ Employee DB ID:', employeeDbId);
+            
+            // Test simple employee_details insert
+            const detailsResult = await db.execute(
+                'INSERT INTO employee_details (employee_id, full_name, gmail, phone, nida, passport, contract_type) VALUES (?, ?, ?, ?, ?, ?, ?)',
+                [employeeDbId, 'Test Name', 'test@example.com', '+1234567890', '123456789', '', 'temporary']
+            );
+            console.log('✅ Simple employee_details insert successful:', detailsResult);
+            
+            // Clean up test data
+            await db.execute('DELETE FROM employee_details WHERE employee_id = ?', [employeeDbId]);
+            await db.execute('DELETE FROM employees WHERE id = ?', [employeeDbId]);
+            console.log('✅ Test data cleaned up');
+            
+        } catch (insertError) {
+            console.error('❌ Employee insert test failed:', insertError);
+            return res.status(500).json({ error: 'Employee insert test failed', details: insertError.message });
+        }
+        
+        res.status(201).json({ 
+            message: 'Direct employee test successful - all database operations work', 
+            test_results: 'Database connection, table structure, and inserts all work correctly'
+        });
+        
+    } catch (error) {
+        console.error('❌ Direct employee test error:', error);
+        res.status(500).json({ error: 'Direct employee test failed', details: error.message });
+    }
+});
+
 } catch (error) {
     console.error('❌ Error loading employees routes:', error);
     console.error('❌ Full error stack:', error.stack);
@@ -130,24 +205,24 @@ try {
     });
     
 } catch (error) {
-    console.error('❌ Error loading clients routes:', error);
-    console.error('❌ Full error stack:', error.stack);
+    console.error(' Error loading clients routes:', error);
+    console.error(' Full error stack:', error.stack);
 }
 
 // Add a direct clients test endpoint as backup
 app.post('/api/clients-direct-test', async (req, res) => {
     try {
-        console.log('🧪 Direct clients test endpoint accessed');
-        console.log('📝 Request body:', req.body);
+        console.log(' Direct clients test endpoint accessed');
+        console.log(' Request body:', req.body);
         
         const { type, full_name, company_name, phone, email, nida, tin, address, property_interest, budget_range, notes } = req.body;
         
-        console.log('🔍 Extracted client data:', { full_name, phone, email, type });
+        console.log(' Extracted client data:', { full_name, phone, email, type });
         
         // Simulate client creation
         const clientId = `CLT${Date.now().toString().slice(-6)}`;
         
-        console.log('✅ Direct client test created:', clientId);
+        console.log(' Direct client test created:', clientId);
         res.status(201).json({ 
             message: 'Direct client test successful', 
             clientId,
@@ -155,18 +230,19 @@ app.post('/api/clients-direct-test', async (req, res) => {
         });
         
     } catch (error) {
-        console.error('❌ Direct client test error:', error);
+        console.error(' Direct client test error:', error);
         res.status(500).json({ error: 'Direct client test failed', details: error.message });
     }
 });
 
 // ===== PROPERTIES ROUTES =====
-console.log('🔍 Loading properties routes...');
+console.log(' Loading properties routes...');
+
 try {
     const propertiesRoutes = require('./routes/properties');
-    console.log('✅ Properties routes loaded successfully');
+    console.log(' Properties routes loaded successfully');
     app.use('/api/properties', propertiesRoutes);
-    console.log('✅ Properties routes mounted at /api/properties');
+    console.log(' Properties routes mounted at /api/properties');
     
     // Add a direct test endpoint to verify mounting
     app.get('/api/properties-status', (req, res) => {
@@ -178,8 +254,8 @@ try {
     });
     
 } catch (error) {
-    console.error('❌ Error loading properties routes:', error);
-    console.error('❌ Full error stack:', error.stack);
+    console.error(' Error loading properties routes:', error);
+    console.error(' Full error stack:', error.stack);
 }
 
 // ===== POLICIES ROUTES =====
@@ -187,6 +263,8 @@ const policiesRoutes = require('./routes/policies');
 app.use('/api/policies', policiesRoutes);
 
 // ===== SCHEDULE MEETINGS ROUTES =====
+console.log(' Loading schedule meetings routes...');
+
 console.log('🔍 Loading schedule meetings routes...');
 console.log('🔍 Current working directory:', process.cwd());
 console.log('🔍 Attempting to load: ./routes/scheduleMeetings_basic');
