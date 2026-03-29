@@ -143,6 +143,18 @@ router.post('/assignments', async (req, res) => {
         console.log('✅ Worker assignment created successfully:', result);
         console.log('✅ Insert ID:', insertId);
         
+        // Verify the data was actually inserted
+        try {
+            const [verification] = await db.execute(
+                'SELECT * FROM worker_assignments WHERE id = ?',
+                [insertId]
+            );
+            console.log('🔍 Verification - Retrieved assignment:', verification);
+            console.log('🔍 Verification - Assignment exists:', verification && verification.length > 0);
+        } catch (verifyError) {
+            console.error('❌ Verification error:', verifyError);
+        }
+        
         res.status(201).json({
             message: 'Worker assignment created successfully',
             assignment_id: insertId,
@@ -185,6 +197,49 @@ router.get('/assignments', async (req, res) => {
     } catch (error) {
         console.error('❌ Error fetching worker assignments:', error);
         res.status(500).json({ error: 'Failed to fetch worker assignments' });
+    }
+});
+
+// Test endpoint to verify worker_assignments table
+router.get('/assignments-test', async (req, res) => {
+    try {
+        console.log('🧪 Testing worker_assignments table...');
+        
+        // Check if table exists
+        const [tableCheck] = await db.execute(`
+            SELECT COUNT(*) as count 
+            FROM information_schema.tables 
+            WHERE table_schema = DATABASE() 
+            AND table_name = 'worker_assignments'
+        `);
+        
+        console.log('🔍 Table exists check:', tableCheck[0].count > 0);
+        
+        if (tableCheck[0].count === 0) {
+            return res.status(404).json({ 
+                error: 'worker_assignments table does not exist',
+                suggestion: 'Run database migrations'
+            });
+        }
+        
+        // Get table structure
+        const [structure] = await db.execute('DESCRIBE worker_assignments');
+        console.log('🔍 Table structure:', structure);
+        
+        // Get all records
+        const [allRecords] = await db.execute('SELECT * FROM worker_assignments ORDER BY id DESC LIMIT 5');
+        console.log('🔍 Recent records:', allRecords);
+        
+        res.json({
+            table_exists: true,
+            table_structure: structure,
+            recent_records: allRecords,
+            total_records: allRecords.length
+        });
+        
+    } catch (error) {
+        console.error('❌ Test endpoint error:', error);
+        res.status(500).json({ error: 'Test failed', details: error.message });
     }
 });
 
