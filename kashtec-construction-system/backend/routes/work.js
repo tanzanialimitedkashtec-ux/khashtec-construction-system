@@ -122,7 +122,7 @@ router.post('/assignments', async (req, res) => {
         const [result] = await db.execute(`
             INSERT INTO worker_assignments (
                 employee_id, employee_name, project_id, project_name, role_in_project,
-                start_date, end_date, assignment_notes, assigned_by, assigned_by_role
+                start_date, end_date, assignment_notes, status, assigned_by, assigned_by_role
             ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         `, [
             employee_id,
@@ -133,6 +133,7 @@ router.post('/assignments', async (req, res) => {
             start_date,
             end_date || null,
             assignment_notes || null,
+            'Active', // Add status column
             assigned_by,
             assigned_by_role
         ]);
