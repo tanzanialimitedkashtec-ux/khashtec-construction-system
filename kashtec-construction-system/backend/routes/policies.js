@@ -572,13 +572,14 @@ router.post('/finance/work', async (req, res) => {
             invoice_number, priority, submitted_by, due_date
         } = req.body;
         
-        const [result] = await db.execute(
+        const resultResult = await db.execute(
             `INSERT INTO finance_work (work_type, work_title, work_description, amount,
              vendor_name, invoice_number, priority, submitted_by, due_date)
              VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
             [work_type, work_title, work_description, amount, vendor_name,
              invoice_number, priority, submitted_by, due_date]
         );
+        const result = Array.isArray(resultResult) ? resultResult[0] : resultResult;
         
         res.json({
             message: 'Finance work record created successfully',
@@ -594,7 +595,8 @@ router.post('/finance/work', async (req, res) => {
 // Get Finance work records
 router.get('/finance/work', async (req, res) => {
     try {
-        const [work] = await db.execute('SELECT * FROM finance_work ORDER BY submitted_date DESC');
+        const workResult = await db.execute('SELECT * FROM finance_work ORDER BY submitted_date DESC');
+        const work = Array.isArray(workResult) ? workResult[0] : workResult;
         res.json(work);
     } catch (error) {
         console.error('❌ Error fetching Finance work:', error);
