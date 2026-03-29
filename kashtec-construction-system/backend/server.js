@@ -283,6 +283,28 @@ try {
     console.error('❌ Full error stack:', error.stack);
 }
 
+// ===== PROPERTIES ROUTES =====
+console.log('🔍 Loading properties routes...');
+try {
+    const propertiesRoutes = require('./routes/properties');
+    console.log('✅ Properties routes loaded successfully');
+    app.use('/api/properties', propertiesRoutes);
+    console.log('✅ Properties routes mounted at /api/properties');
+    
+    // Add a direct test endpoint to verify mounting
+    app.get('/api/properties-status', (req, res) => {
+        res.json({ 
+            status: 'Properties routes are mounted',
+            timestamp: new Date().toISOString(),
+            endpoints: ['/api/properties/test', '/api/properties/', '/api/properties/:id']
+        });
+    });
+    
+} catch (error) {
+    console.error('❌ Error loading properties routes:', error);
+    console.error('❌ Full error stack:', error.stack);
+}
+
 // ===== POLICIES ROUTES =====
 const policiesRoutes = require('./routes/policies');
 app.use('/api/policies', policiesRoutes);

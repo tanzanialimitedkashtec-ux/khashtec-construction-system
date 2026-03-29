@@ -11722,16 +11722,29 @@ function saveNewProperty() {
     // Show loading message
     customAlert('Adding new property...', "Processing", "info");
     
-    // Send data to backend Real Estate API
+    // Send data to backend Properties API
     const baseUrl = window.location.origin;
-    fetch(`${baseUrl}/api/realestate/work`, {
+    fetch(`${baseUrl}/api/properties`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
             'Accept': 'application/json',
             'Authorization': `Bearer ${sessionManager.getAuthToken()}`
         },
-        body: JSON.stringify(workItem)
+        body: JSON.stringify({
+            plotNumber: property.plotNumber,
+            type: property.type,
+            location: property.location,
+            area: property.area,
+            price: property.price,
+            status: property.status,
+            tpNumber: property.tpNumber,
+            description: property.description,
+            utilities: property.utilities,
+            zoning: property.zoning,
+            addedBy: property.addedBy,
+            addedDate: property.addedDate
+        })
     })
     .then(response => {
         console.log('📡 Property API Response status:', response.status);
