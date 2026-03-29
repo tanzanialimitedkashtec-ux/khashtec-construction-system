@@ -250,6 +250,59 @@ app.get('/api/employees-test', (req, res) => {
     });
 });
 
+// Add a direct employees test endpoint as backup
+app.post('/api/employees-direct-test', async (req, res) => {
+    try {
+        console.log('🧪 Direct employees test endpoint accessed');
+        console.log('📝 Request body:', req.body);
+        
+        const { fullName, phone, gmail, position, department, contract, nida } = req.body;
+        
+        console.log('🔍 Extracted employee data:', { fullName, phone, gmail, position, department });
+        
+        // Test database connection
+        try {
+            const testResult = await db.execute('SELECT 1 as test');
+            console.log('✅ Database connection test successful:', testResult);
+        } catch (dbError) {
+            console.error('❌ Database connection test failed:', dbError);
+            return res.status(500).json({ error: 'Database connection failed', details: dbError.message });
+        }
+        
+        // Test employees table structure
+        try {
+            const tableResult = await db.execute('DESCRIBE employees');
+            console.log('✅ Employees table structure:', tableResult);
+        } catch (tableError) {
+            console.error('❌ Employees table check failed:', tableError);
+            return res.status(500).json({ error: 'Employees table issue', details: tableError.message });
+        }
+        
+        // Test employee_details table structure
+        try {
+            const detailsResult = await db.execute('DESCRIBE employee_details');
+            console.log('✅ Employee_details table structure:', detailsResult);
+        } catch (detailsError) {
+            console.error('❌ Employee_details table check failed:', detailsError);
+            return res.status(500).json({ error: 'Employee_details table issue', details: detailsError.message });
+        }
+        
+        // Simulate employee creation
+        const emp_id = `EMP${Date.now().toString().slice(-6)}`;
+        
+        console.log('✅ Direct employee test created:', emp_id);
+        res.status(201).json({ 
+            message: 'Direct employee test successful', 
+            emp_id,
+            received_data: req.body 
+        });
+        
+    } catch (error) {
+        console.error('❌ Direct employee test error:', error);
+        res.status(500).json({ error: 'Direct employee test failed', details: error.message });
+    }
+});
+
 console.log('✅ Employee routes setup complete');
 
 // ===== CLIENT ROUTES =====
