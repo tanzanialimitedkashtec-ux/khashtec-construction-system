@@ -14523,18 +14523,27 @@ function showRejectModal(workId, workType, callback) {
         // Reset error states
         document.querySelectorAll('.form-group').forEach(group => {
             group.classList.remove('error');
-            group.querySelector('.error-message').style.display = 'none';
+            const errorMessage = group.querySelector('.error-message');
+            if (errorMessage) {
+                errorMessage.style.display = 'none';
+            }
         });
         
         if (!rejectionReason.value) {
             rejectionReason.parentElement.classList.add('error');
-            rejectionReason.parentElement.querySelector('.error-message').style.display = 'block';
+            const errorMessage = rejectionReason.parentElement.querySelector('.error-message');
+            if (errorMessage) {
+                errorMessage.style.display = 'block';
+            }
             isValid = false;
         }
         
         if (!rejectionDetails.value.trim()) {
             rejectionDetails.parentElement.classList.add('error');
-            rejectionDetails.parentElement.querySelector('.error-message').style.display = 'block';
+            const errorMessage = rejectionDetails.parentElement.querySelector('.error-message');
+            if (errorMessage) {
+                errorMessage.style.display = 'block';
+            }
             isValid = false;
         }
         
