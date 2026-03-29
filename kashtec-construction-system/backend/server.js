@@ -96,8 +96,6 @@ app.post('/api/employees', async (req, res) => {
         console.log('👨‍💼 Employee registration request received');
         console.log('📝 Request body:', req.body);
         
-        const connection = await db.getConnection();
-        
         // Map frontend field names to database field names
         const {
             fullName: full_name,
@@ -118,29 +116,25 @@ app.post('/api/employees', async (req, res) => {
         
         const emp_id = `EMP${Date.now().toString().slice(-6)}`;
         
-        // Start transaction
-        await connection.beginTransaction();
-        
         try {
             // 1. Insert into employees table (work info)
-            const [employeeResult] = await connection.query(
+            console.log('🔍 Inserting into employees table...');
+            const employeeResult = await db.execute(
                 'INSERT INTO employees (employee_id, position, department, salary, hire_date, status) VALUES (?, ?, ?, ?, ?, ?)',
-                [emp_id, position, department, salary, hire_date, status || 'Active']
+                [emp_id, position, department, salary || 0, hire_date || new Date().toISOString().split('T')[0], status || 'Active']
             );
             
-            const employeeDbId = employeeResult.insertId;
+            const employeeDbId = Array.isArray(employeeResult) ? employeeResult[0].insertId : employeeResult.insertId;
             console.log('✅ Employee record created:', employeeDbId);
             
             // 2. Insert into employee_details table (personal info)
-            await connection.query(
+            console.log('🔍 Inserting into employee_details table...');
+            const detailsResult = await db.execute(
                 'INSERT INTO employee_details (employee_id, full_name, gmail, phone, nida, passport, contract_type) VALUES (?, ?, ?, ?, ?, ?, ?)',
                 [employeeDbId, full_name, email, phone, nida, passport, contract_type]
             );
             
             console.log('✅ Employee details created:', employeeDbId);
-            
-            // Commit transaction
-            await connection.commit();
             
             // Automatically assign to office portal
             try {
@@ -163,13 +157,14 @@ app.post('/api/employees', async (req, res) => {
                 const accessLevel = getAccessLevel(position);
                 
                 // Check if user already exists in portal
-                const [existing] = await connection.query(
+                const existingResult = await db.execute(
                     'SELECT id FROM office_portal_users WHERE email = ?',
                     [email]
                 );
+                const existing = Array.isArray(existingResult) ? existingResult[0] : existingResult;
                 
                 if (existing.length === 0) {
-                    await connection.query(
+                    await db.execute(
                         'INSERT INTO office_portal_users (id, name, email, phone, role, department, employee_id, position, service_type, location, registration_date, status, profile_image, access_level, created_at, assigned_by) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
                         [
                             `USR-${Date.now()}`,
@@ -198,13 +193,11 @@ app.post('/api/employees', async (req, res) => {
                 // Don't fail the employee creation if portal assignment fails
             }
             
-            connection.release();
             console.log('✅ Employee created successfully:', emp_id);
             res.status(201).json({ message: 'Employee created successfully', emp_id, employeeDbId });
             
         } catch (innerError) {
-            // Rollback transaction if any step fails
-            await connection.rollback();
+            console.error('❌ Database operation error:', innerError);
             throw innerError;
         }
         
