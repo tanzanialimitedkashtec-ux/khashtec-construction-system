@@ -106,7 +106,7 @@ app.post('/api/employees', async (req, res) => {
             position,
             department,
             job_category,
-            contract,
+            contract: contract_type,
             salary,
             hire_date,
             status,
@@ -118,70 +118,96 @@ app.post('/api/employees', async (req, res) => {
         
         const emp_id = `EMP${Date.now().toString().slice(-6)}`;
         
-        await connection.query(
-            'INSERT INTO employees (emp_id, full_name, phone, email, position, department, job_category, contract, salary, hire_date, status, nida, passport, created_by) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
-            [emp_id, full_name, phone, email, position, department, job_category, contract, salary, hire_date, status, nida, passport, req.user?.id || 'system']
-        );
+        // Start transaction
+        await connection.beginTransaction();
         
-        // Automatically assign to office portal
         try {
-            // Map position to portal role
-            const roleMapping = {
-                'Managing Director': 'Administrator',
-                'Director': 'Administrator',
-                'Manager': 'Manager',
-                'Supervisor': 'Supervisor',
-                'Engineer': 'Professional',
-                'Accountant': 'Professional',
-                'HR Manager': 'HR Staff',
-                'Safety Officer': 'Safety Staff',
-                'Project Manager': 'Project Staff',
-                'Sales Agent': 'Sales Staff',
-                'Administrative Assistant': 'Admin Staff'
-            };
-            
-            const portalRole = roleMapping[position] || 'Staff';
-            const accessLevel = getAccessLevel(position);
-            
-            // Check if user already exists in portal
-            const [existing] = await connection.query(
-                'SELECT id FROM office_portal_users WHERE email = ?',
-                [email]
+            // 1. Insert into employees table (work info)
+            const [employeeResult] = await connection.query(
+                'INSERT INTO employees (employee_id, position, department, salary, hire_date, status) VALUES (?, ?, ?, ?, ?, ?)',
+                [emp_id, position, department, salary, hire_date, status || 'Active']
             );
             
-            if (existing.length === 0) {
-                await connection.query(
-                    'INSERT INTO office_portal_users (id, name, email, phone, role, department, employee_id, position, service_type, location, registration_date, status, profile_image, access_level, created_at, assigned_by) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
-                    [
-                        `USR-${Date.now()}`,
-                        full_name,
-                        email,
-                        phone,
-                        portalRole,
-                        department,
-                        emp_id,
-                        position,
-                        'Internal Services',
-                        'Main Office',
-                        new Date().toLocaleDateString(),
-                        'Active',
-                        `https://picsum.photos/seed/${email}/200/200.jpg`,
-                        accessLevel,
-                        new Date().toISOString(),
-                        'System'
-                    ]
+            const employeeDbId = employeeResult.insertId;
+            console.log('✅ Employee record created:', employeeDbId);
+            
+            // 2. Insert into employee_details table (personal info)
+            await connection.query(
+                'INSERT INTO employee_details (employee_id, full_name, gmail, phone, nida, passport, contract_type) VALUES (?, ?, ?, ?, ?, ?, ?)',
+                [employeeDbId, full_name, email, phone, nida, passport, contract_type]
+            );
+            
+            console.log('✅ Employee details created:', employeeDbId);
+            
+            // Commit transaction
+            await connection.commit();
+            
+            // Automatically assign to office portal
+            try {
+                // Map position to portal role
+                const roleMapping = {
+                    'Managing Director': 'Administrator',
+                    'Director': 'Administrator',
+                    'Manager': 'Manager',
+                    'Supervisor': 'Supervisor',
+                    'Engineer': 'Professional',
+                    'Accountant': 'Professional',
+                    'HR Manager': 'HR Staff',
+                    'Safety Officer': 'Safety Staff',
+                    'Project Manager': 'Project Staff',
+                    'Sales Agent': 'Sales Staff',
+                    'Administrative Assistant': 'Admin Staff'
+                };
+                
+                const portalRole = roleMapping[position] || 'Staff';
+                const accessLevel = getAccessLevel(position);
+                
+                // Check if user already exists in portal
+                const [existing] = await connection.query(
+                    'SELECT id FROM office_portal_users WHERE email = ?',
+                    [email]
                 );
                 
-                console.log('Employee automatically assigned to office portal:', full_name);
+                if (existing.length === 0) {
+                    await connection.query(
+                        'INSERT INTO office_portal_users (id, name, email, phone, role, department, employee_id, position, service_type, location, registration_date, status, profile_image, access_level, created_at, assigned_by) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+                        [
+                            `USR-${Date.now()}`,
+                            full_name,
+                            email,
+                            phone,
+                            portalRole,
+                            department,
+                            emp_id,
+                            position,
+                            'Internal Services',
+                            'Main Office',
+                            new Date().toLocaleDateString(),
+                            'Active',
+                            `https://picsum.photos/seed/${email}/200/200.jpg`,
+                            accessLevel,
+                            new Date().toISOString(),
+                            'System'
+                        ]
+                    );
+                    
+                    console.log('Employee automatically assigned to office portal:', full_name);
+                }
+            } catch (portalError) {
+                console.error('Portal assignment error:', portalError);
+                // Don't fail the employee creation if portal assignment fails
             }
-        } catch (portalError) {
-            console.error('Portal assignment error:', portalError);
-            // Don't fail the employee creation if portal assignment fails
+            
+            connection.release();
+            console.log('✅ Employee created successfully:', emp_id);
+            res.status(201).json({ message: 'Employee created successfully', emp_id, employeeDbId });
+            
+        } catch (innerError) {
+            // Rollback transaction if any step fails
+            await connection.rollback();
+            throw innerError;
         }
         
-        connection.release();
-        console.log('✅ Employee created successfully:', emp_id);
-        res.status(201).json({ message: 'Employee created successfully', emp_id });
     } catch (error) {
         console.error('❌ Employee creation error:', error);
         console.error('❌ Full error details:', error.stack);
