@@ -336,11 +336,12 @@ router.post('/broadcast', async (req, res) => {
         // Insert all notifications using proper parameter binding
         let affectedRows = 0;
         for (const notification of notifications) {
-            const [result] = await db.execute(
+            const resultResult = await db.execute(
                 `INSERT INTO notifications (title, message, type, user_id, category, is_read, created_at) 
                  VALUES (?, ?, ?, ?, ?, ?, ?)`,
                 notification
             );
+            const result = Array.isArray(resultResult) ? resultResult[0] : resultResult;
             affectedRows += result.affectedRows;
         }
         
