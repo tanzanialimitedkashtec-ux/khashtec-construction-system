@@ -284,7 +284,7 @@ router.post('/', async (req, res) => {
         }
         
         // Insert new meeting
-        const [result] = await db.execute(`
+        const queryResult = await db.execute(`
             INSERT INTO schedule_meetings (
                 meeting_title,
                 meeting_type,
@@ -319,10 +319,11 @@ router.post('/', async (req, res) => {
             created_by || null
         ]);
         
+        const result = Array.isArray(queryResult) ? queryResult[0] : queryResult;
         console.log(`✅ Meeting created successfully with ID: ${result.insertId}`);
         
         // Fetch the created meeting to return complete data
-        const [createdMeeting] = await db.execute(`
+        const createdMeetingResult = await db.execute(`
             SELECT 
                 id,
                 meeting_title,
@@ -340,16 +341,17 @@ router.post('/', async (req, res) => {
                 parking_required,
                 status,
                 created_by,
-                created_at,
-                updated_at
+                created_at
             FROM schedule_meetings 
             WHERE id = ?
         `, [result.insertId]);
         
+        const createdMeeting = Array.isArray(createdMeetingResult) ? createdMeetingResult[0] : createdMeetingResult;
+        
         res.status(201).json({
             success: true,
             message: 'Meeting scheduled successfully',
-            meeting: createdMeeting[0]
+            meeting: createdMeeting
         });
         
     } catch (error) {
