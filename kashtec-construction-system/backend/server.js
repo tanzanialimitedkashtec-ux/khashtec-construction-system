@@ -89,15 +89,22 @@ app.post('/api/auth/login', async (req, res) => {
 });
 
 // ===== EMPLOYEE ROUTES =====
+console.log('🔍 Setting up employee routes...');
+
 app.post('/api/employees', async (req, res) => {
     try {
+        console.log('👨‍💼 Employee registration request received');
+        console.log('📝 Request body:', req.body);
+        
         const connection = await db.getConnection();
         const { full_name, phone, email, position, department, job_category, contract, salary, hire_date, status } = req.body;
+        
+        console.log('🔍 Extracted employee data:', { full_name, phone, email, position, department });
         
         const emp_id = `EMP${Date.now().toString().slice(-6)}`;
         
         await connection.query(
-            'INSERT INTO employees (emp_id, full_name, phone, email, position, department, job_category, contract, salary, hire_date, status, created_by) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+            'INSERT INTO employees (emp_id, full_name, phone, email, position, department, job_category, contract, salary, hire_date, status, created_by) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
             [emp_id, full_name, phone, email, position, department, job_category, contract, salary, hire_date, status, req.user?.id || 'system']
         );
         
@@ -158,10 +165,10 @@ app.post('/api/employees', async (req, res) => {
         }
         
         connection.release();
-        res.json({ success: true, message: 'Employee created successfully and added to Office Portal', emp_id });
-        
+        console.log('✅ Employee created successfully:', emp_id);
+        res.status(201).json({ message: 'Employee created successfully', emp_id });
     } catch (error) {
-        console.error('Employee creation error:', error);
+        console.error('❌ Employee creation error:', error);
         res.status(500).json({ error: 'Failed to create employee' });
     }
 });
@@ -186,49 +193,29 @@ function getAccessLevel(position) {
 
 app.get('/api/employees', async (req, res) => {
     try {
+        console.log('📋 Fetching all employees...');
         const connection = await db.getConnection();
         const [employees] = await connection.query('SELECT * FROM employees ORDER BY created_at DESC');
         connection.release();
+        console.log('✅ Employees retrieved successfully:', employees.length);
         res.json(employees);
     } catch (error) {
-        console.error('Fetch employees error:', error);
+        console.error('❌ Fetch employees error:', error);
         res.status(500).json({ error: 'Failed to fetch employees' });
     }
 });
 
-// ===== PROPERTY ROUTES =====
-app.post('/api/properties', async (req, res) => {
-    try {
-        const connection = await db.getConnection();
-        const { plot_number, type, location, area, price, status, description } = req.body;
-        
-        const propertyId = `PROP${Date.now().toString().slice(-6)}`;
-        
-        await connection.query(
-            'INSERT INTO properties (plot_number, type, location, area, price, status, description, added_by) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
-            [plot_number, type, location, area, price, status, description, req.user?.id || 'system']
-        );
-        
-        connection.release();
-        res.json({ success: true, message: 'Property added successfully', propertyId });
-        
-    } catch (error) {
-        console.error('Property creation error:', error);
-        res.status(500).json({ error: 'Failed to create property' });
-    }
+// Add a test endpoint for employees
+app.get('/api/employees-test', (req, res) => {
+    console.log('🧪 Employees test endpoint accessed');
+    res.json({ 
+        message: 'Employees API is working!',
+        timestamp: new Date().toISOString(),
+        database: 'connected'
+    });
 });
 
-app.get('/api/properties', async (req, res) => {
-    try {
-        const connection = await db.getConnection();
-        const [properties] = await connection.query('SELECT * FROM properties ORDER BY created_at DESC');
-        connection.release();
-        res.json(properties);
-    } catch (error) {
-        console.error('Fetch properties error:', error);
-        res.status(500).json({ error: 'Failed to fetch properties' });
-    }
-});
+console.log('✅ Employee routes setup complete');
 
 // ===== CLIENT ROUTES =====
 app.post('/api/clients', async (req, res) => {
