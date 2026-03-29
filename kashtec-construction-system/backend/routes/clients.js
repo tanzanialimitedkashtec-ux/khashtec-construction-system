@@ -36,27 +36,29 @@ router.post('/', async (req, res) => {
         console.log('👥 Client registration request received');
         console.log('📝 Request body:', req.body);
         
+        // Map frontend field names to database field names
         const {
-            client_id,
-            client_type,
-            full_name,
-            company_name,
-            phone_number,
-            email_address,
-            nida_number,
-            tin_number,
-            physical_address,
-            property_interest,
-            budget_range,
-            additional_notes,
-            registered_by
+            id: client_id,
+            type: client_type,
+            fullName: full_name,
+            companyName: company_name,
+            phone: phone_number,
+            email: email_address,
+            nida: nida_number,
+            tin: tin_number,
+            address: physical_address,
+            propertyInterest: property_interest,
+            budgetRange: budget_range,
+            notes: additional_notes,
+            registeredBy: registered_by
         } = req.body;
         
         // Validate required fields
-        if (!client_id || !client_type || !full_name || !phone_number || !email_address || !nida_number || !physical_address) {
+        if (!client_type || !full_name || !phone_number || !email_address || !nida_number || !physical_address) {
             return res.status(400).json({
                 error: 'Missing required fields',
-                details: 'client_id, client_type, full_name, phone_number, email_address, nida_number, and physical_address are required'
+                details: 'client_type, full_name, phone_number, email_address, nida_number, and physical_address are required',
+                received: { client_type, full_name, phone_number, email_address, nida_number, physical_address }
             });
         }
         
@@ -72,47 +74,37 @@ router.post('/', async (req, res) => {
         `;
         
         const values = [
-            client_id, client_type, full_name, company_name, phone_number,
+            client_id || `CLT${Date.now().toString().slice(-6)}`,
+            client_type, full_name, company_name, phone_number,
             email_address, nida_number, tin_number, physical_address,
-            property_interest, budget_range, additional_notes, registered_by
+            property_interest, budget_range, additional_notes, registered_by || 'system'
         ];
         
-        console.log('🔍 Query:', query);
-        console.log('📊 Values:', values);
+        console.log('🔍 Executing query:', query);
+        console.log('🔍 With values:', values);
         
-        const resultResult = await db.execute(query, values);
-        const result = Array.isArray(resultResult) ? resultResult[0] : resultResult;
+        const result = await db.execute(query, values);
         
-        console.log('✅ Client inserted successfully:', result);
+        console.log('✅ Client created successfully:', result);
         
         res.status(201).json({
             message: 'Client registered successfully',
-            id: result.insertId,
-            client_id: client_id,
-            data: {
-                id: result.insertId,
-                client_id: client_id,
-                client_type: client_type,
-                full_name: full_name,
-                phone_number: phone_number,
-                email_address: email_address
+            clientId: client_id || `CLT${Date.now().toString().slice(-6)}`,
+            clientData: {
+                client_type, full_name, company_name, phone_number, email_address
             }
         });
         
     } catch (error) {
-        console.error('❌ Error registering client:', error);
-        
-        // Check for duplicate client_id
-        if (error.code === 'ER_DUP_ENTRY') {
-            return res.status(409).json({
-                error: 'Client ID already exists',
-                details: 'Please use a different client ID'
-            });
-        }
-        
+        console.error('❌ Error creating client:', error);
+        console.error('❌ Error details:', {
+            message: error.message,
+            stack: error.stack,
+            code: error.code
+        });
         res.status(500).json({ 
-            error: 'Failed to register client',
-            details: error.message 
+            error: 'Failed to create client',
+            details: error.message
         });
     }
 });
@@ -121,20 +113,11 @@ router.post('/', async (req, res) => {
 router.get('/', async (req, res) => {
     try {
         console.log('📋 Fetching all clients...');
-        
-        const clientsResult = await db.execute('SELECT * FROM clients ORDER BY registration_date DESC');
-        const clients = Array.isArray(clientsResult) ? clientsResult[0] : clientsResult;
-        
-        console.log('✅ Clients retrieved successfully:', clients.length);
-        
+        const [clients] = await db.execute('SELECT * FROM clients ORDER BY created_at DESC');
         res.json(clients);
-        
     } catch (error) {
         console.error('❌ Error fetching clients:', error);
-        res.status(500).json({ 
-            error: 'Failed to fetch clients',
-            details: error.message 
-        });
+        res.status(500).json({ error: 'Failed to fetch clients' });
     }
 });
 
@@ -142,24 +125,18 @@ router.get('/', async (req, res) => {
 router.get('/:id', async (req, res) => {
     try {
         const { id } = req.params;
-        console.log('🔍 Fetching client:', id);
+        console.log('🔍 Fetching client with ID:', id);
         
-        const clientResult = await db.execute('SELECT * FROM clients WHERE id = ?', [id]);
-        const clients = Array.isArray(clientResult) ? clientResult[0] : clientResult;
+        const [client] = await db.execute('SELECT * FROM clients WHERE client_id = ?', [id]);
         
-        if (clients.length === 0) {
+        if (client.length === 0) {
             return res.status(404).json({ error: 'Client not found' });
         }
         
-        console.log('✅ Client retrieved successfully:', clients[0]);
-        res.json(clients[0]);
-        
+        res.json(client[0]);
     } catch (error) {
         console.error('❌ Error fetching client:', error);
-        res.status(500).json({ 
-            error: 'Failed to fetch client',
-            details: error.message 
-        });
+        res.status(500).json({ error: 'Failed to fetch client' });
     }
 });
 
@@ -167,35 +144,17 @@ router.get('/:id', async (req, res) => {
 router.put('/:id', async (req, res) => {
     try {
         const { id } = req.params;
-        const updateData = req.body;
+        const updates = req.body;
         
-        console.log('🔄 Updating client:', id);
-        console.log('📝 Update data:', updateData);
+        console.log('🔄 Updating client with ID:', id);
+        console.log('📝 Updates:', updates);
         
-        // Build dynamic update query
-        const updateFields = [];
-        const updateValues = [];
+        const [result] = await db.execute(
+            'UPDATE clients SET ? WHERE client_id = ?',
+            [updates, id]
+        );
         
-        Object.keys(updateData).forEach(key => {
-            if (updateData[key] !== undefined && key !== 'id' && key !== 'client_id') {
-                updateFields.push(`${key} = ?`);
-                updateValues.push(updateData[key]);
-            }
-        });
-        
-        if (updateFields.length === 0) {
-            return res.status(400).json({ error: 'No valid fields to update' });
-        }
-        
-        updateValues.push(id);
-        
-        const updateQuery = `UPDATE clients SET ${updateFields.join(', ')}, updated_at = CURRENT_TIMESTAMP WHERE id = ?`;
-        
-        console.log('🔍 Update query:', updateQuery);
-        console.log('📊 Update values:', updateValues);
-        
-        const resultResult = await db.execute(updateQuery, updateValues);
-        const result = Array.isArray(resultResult) ? resultResult[0] : resultResult;
+        res.json({ message: 'Client updated successfully', changes: result.affectedRows });
         
         console.log('✅ Client updated successfully:', result);
         
