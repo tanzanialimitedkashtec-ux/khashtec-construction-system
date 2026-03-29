@@ -322,8 +322,11 @@ router.post('/broadcast', async (req, res) => {
         const usersResult = await db.execute('SELECT id FROM users');
         const users = Array.isArray(usersResult) ? usersResult[0] : usersResult;
         
+        // Ensure users is an array before mapping
+        const usersArray = Array.isArray(users) ? users : [users];
+        
         // Create notification for each user
-        const notifications = users.map(user => [
+        const notifications = usersArray.map(user => [
             title,
             message,
             type,
@@ -346,7 +349,7 @@ router.post('/broadcast', async (req, res) => {
         }
         
         res.status(201).json({
-            message: `Broadcast notification sent to ${users.length} users`,
+            message: `Broadcast notification sent to ${usersArray.length} users`,
             count: affectedRows
         });
     } catch (error) {
