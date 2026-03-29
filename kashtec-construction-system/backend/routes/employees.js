@@ -81,12 +81,16 @@ router.post('/', async (req, res) => {
         
         console.log('✅ Employee record created:', employeeResult);
         
+        // Handle different result formats from db.execute()
+        const employeeDbId = Array.isArray(employeeResult) ? employeeResult[0].insertId : employeeResult.insertId;
+        console.log('✅ Employee DB ID:', employeeDbId);
+        
         // Create employee details record
         const detailsResult = await db.execute(
             `INSERT INTO employee_details (employee_id, full_name, gmail, phone, nida, passport, contract_type, profile_image)
              VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
             [
-                employeeResult.insertId,
+                employeeDbId,
                 fullName,
                 gmail,
                 phone,
@@ -98,21 +102,21 @@ router.post('/', async (req, res) => {
         );
         
         console.log('✅ Employee details created:', detailsResult);
-        console.log('🆔 New employee ID:', employeeResult.insertId);
+        console.log('🆔 New employee ID:', employeeDbId);
         
         // Return the created employee with details
         const employeeQuery = await db.execute(
             'SELECT e.*, ed.full_name, ed.gmail, ed.phone, ed.nida, ed.passport, ed.contract_type FROM employees e LEFT JOIN employee_details ed ON e.id = ed.employee_id WHERE e.id = ?',
-            [employeeResult.insertId]
+            [employeeDbId]
         );
         
-        const newEmployee = employeeQuery[0];
+        const newEmployee = Array.isArray(employeeQuery) ? employeeQuery[0] : employeeQuery;
         console.log('📋 Retrieved new employee:', newEmployee);
         
         res.status(201).json({
             message: 'Employee created successfully',
             employee: newEmployee,
-            id: employeeResult.insertId
+            id: employeeDbId
         });
         
     } catch (error) {
