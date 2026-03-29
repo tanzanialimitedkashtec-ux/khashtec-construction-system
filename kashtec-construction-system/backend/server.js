@@ -311,10 +311,34 @@ console.log('  - /api/schedule-meetings/* -> schedule meetings routes');
 console.log('  - /api/meeting-minutes/* -> meeting minutes routes');
 console.log('  - /api/notifications/* -> notifications routes');
 console.log('  - /api/senior-hiring/* -> senior hiring routes');
+console.log('  - /api/work/* -> work routes');
+console.log('  - /api/attendance/* -> attendance routes');
 
 // ===== SENIOR HIRING ROUTES =====
 const seniorHiringRoutes = require('./routes/seniorHiring');
 app.use('/api/senior-hiring', seniorHiringRoutes);
+
+// ===== WORK ROUTES =====
+console.log('🔍 Mounting work routes from routes/work.js...');
+try {
+    const workRoutes = require('./routes/work');
+    console.log('✅ Work routes loaded successfully');
+    app.use('/api/work', workRoutes);
+    console.log('✅ Work routes mounted at /api/work');
+} catch (error) {
+    console.error('❌ Error loading work routes:', error);
+}
+
+// ===== ATTENDANCE ROUTES =====
+console.log('🔍 Mounting attendance routes from routes/attendance.js...');
+try {
+    const attendanceRoutes = require('./routes/attendance');
+    console.log('✅ Attendance routes loaded successfully');
+    app.use('/api/attendance', attendanceRoutes);
+    console.log('✅ Attendance routes mounted at /api/attendance');
+} catch (error) {
+    console.error('❌ Error loading attendance routes:', error);
+}
 
 // ===== OFFICE PORTAL ROUTES =====
 app.post('/api/office-portal/users', async (req, res) => {

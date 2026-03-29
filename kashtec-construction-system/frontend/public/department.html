@@ -4638,44 +4638,34 @@ function saveAttendance() {
     const attendance = {
         date: document.getElementById('attDate').value,
         employee: document.getElementById('attEmployee').value,
+        employee_name: document.getElementById('attEmployee').options[document.getElementById('attEmployee').selectedIndex].text,
         checkIn: document.getElementById('attCheckIn').value,
         checkOut: document.getElementById('attCheckOut').value,
         status: document.getElementById('attStatus').value,
         notes: document.getElementById('attNotes').value,
         markedBy: 'HR Manager',
-        timestamp: new Date().toLocaleString()
+        markedByRole: 'HR Manager'
     };
     
     // Validate required fields
-    if (!attendance.date || !attendance.employee || !attendance.checkIn || !attendance.status) {
-        customAlert('Please fill in all required fields:\n\n• Date\n• Employee\n• Check In\n• Status', "Validation Error", "error");
+    if (!attendance.date || !attendance.employee || !attendance.status) {
+        customAlert('Please fill in all required fields:\n\n• Date\n• Employee\n• Status', "Validation Error", "error");
         return false;
     }
-    
-    // Prepare work item for HR department
-    const workItem = {
-        work_type: 'Attendance Management',
-        work_title: `Attendance - ${attendance.employee}`,
-        work_description: `Attendance Record for ${attendance.employee}\n\nDate: ${attendance.date}\nCheck In: ${attendance.checkIn}\nCheck Out: ${attendance.checkOut}\nStatus: ${attendance.status}\nNotes: ${attendance.notes}\nMarked By: ${attendance.markedBy}\nTimestamp: ${attendance.timestamp}`,
-        priority: 'Medium',
-        due_date: attendance.date,
-        assigned_to: 'HR Manager',
-        submitted_by: 'HR Manager'
-    };
     
     // Show loading message
     customAlert('Marking attendance...', "Processing", "info");
     
-    // Send data to backend API
+    // Send data to attendance API
     const baseUrl = window.location.origin;
-    fetch(`${baseUrl}/api/hr/work`, {
+    fetch(`${baseUrl}/api/attendance`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
             'Accept': 'application/json',
             'Authorization': `Bearer ${sessionManager.getAuthToken()}`
         },
-        body: JSON.stringify(workItem)
+        body: JSON.stringify(attendance)
     })
     .then(response => {
         console.log('📡 Attendance API Response status:', response.status);
@@ -4688,13 +4678,17 @@ function saveAttendance() {
             throw new Error(data.error);
         }
         
-        customAlert(`Attendance marked successfully!\n\nEmployee: ${attendance.employee}\nDate: ${attendance.date}\nStatus: ${attendance.status}\nAttendance ID: ${data.id}\n\n🎉 Attendance saved to database!`, "Attendance Recorded", "success");
-        
+        // Success - reset form and show success message
         document.getElementById('attendanceForm').reset();
+        customAlert('Attendance marked successfully!', "Success", "success");
+        
+        // Update today's summary (optional - you can implement this)
+        updateTodayAttendanceSummary();
+        
     })
     .catch(error => {
         console.error('❌ Error marking attendance:', error);
-        customAlert(`Failed to mark attendance: ${error.message}\n\nPlease check:\n• All required fields are filled\n• Network connection is stable\n• Server is running properly`, "Recording Error", "error");
+        customAlert(`Error marking attendance: ${error.message}`, "Error", "error");
     });
     
     return false;
