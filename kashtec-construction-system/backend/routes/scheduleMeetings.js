@@ -26,7 +26,8 @@ router.get('/', (req, res) => {
 router.get('/test-db', async (req, res) => {
     try {
         console.log('🔍 Testing schedule meetings database connection...');
-        const [result] = await db.execute('SELECT 1 as test');
+        const resultResult = await db.execute('SELECT 1 as test');
+        const result = Array.isArray(resultResult) ? resultResult[0] : resultResult;
         console.log('✅ Database connection successful:', result);
         res.json({ 
             message: 'Schedule meetings database connection successful',
@@ -45,7 +46,8 @@ router.get('/test-db', async (req, res) => {
 router.get('/test-table', async (req, res) => {
     try {
         console.log('🔍 Testing schedule_meetings table existence...');
-        const [result] = await db.execute('SHOW TABLES LIKE "schedule_meetings"');
+        const resultResult = await db.execute('SHOW TABLES LIKE "schedule_meetings"');
+        const result = Array.isArray(resultResult) ? resultResult[0] : resultResult;
         console.log('✅ Schedule meetings table check result:', result);
         res.json({ 
             message: 'Schedule meetings table check successful',
@@ -62,10 +64,10 @@ router.get('/test-table', async (req, res) => {
 });
 
 // GET all scheduled meetings
-router.get('/', async (req, res) => {
+router.get('/all', async (req, res) => {
     try {
         console.log('📅 Fetching all scheduled meetings...');
-        const [meetings] = await db.execute(`
+        const meetingsResult = await db.execute(`
             SELECT 
                 id,
                 meeting_title,
@@ -83,11 +85,11 @@ router.get('/', async (req, res) => {
                 parking_required,
                 status,
                 created_by,
-                created_at,
-                updated_at
+                created_at
             FROM schedule_meetings 
             ORDER BY meeting_date ASC, start_time ASC
         `);
+        const meetings = Array.isArray(meetingsResult) ? meetingsResult[0] : meetingsResult;
         
         console.log(`✅ Found ${meetings.length} scheduled meetings`);
         res.json({
