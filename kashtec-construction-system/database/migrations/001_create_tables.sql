@@ -653,7 +653,7 @@ CREATE TABLE IF NOT EXISTS realestate_work (
 CREATE TABLE IF NOT EXISTS admin_work (
   id INT AUTO_INCREMENT PRIMARY KEY,
   department_code VARCHAR(50) DEFAULT 'ADMIN',
-  work_type ENUM('Administrative Operations', 'Compliance Management', 'Staff Oversight', 'Policy Implementation', 'Document Management', 'Document Upload', 'Project Creation', 'Safety Policy Upload', 'Toolbox Meeting', 'PPE Issuance', 'Safety Violation', 'Inspection Report', 'User Account Management', 'System Administration', 'Department Coordination') DEFAULT 'Administrative Operations',
+  work_type ENUM('Administrative Operations', 'Compliance Management', 'Staff Oversight', 'Policy Implementation', 'Document Management', 'Document Upload', 'Project Creation', 'Safety Policy Upload', 'Toolbox Meeting', 'PPE Issuance', 'Safety Violation', 'Inspection Report', 'Budget Management', 'User Account Management', 'System Administration', 'Department Coordination') DEFAULT 'Administrative Operations',
   work_title VARCHAR(255) NOT NULL,
   work_description TEXT,
   affected_department VARCHAR(100),
