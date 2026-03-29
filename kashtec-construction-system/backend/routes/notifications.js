@@ -35,7 +35,8 @@ router.get('/', async (req, res) => {
         
         query += ' ORDER BY created_at DESC';
         
-        const [notifications] = await db.execute(query, params);
+        const notificationsResult = await db.execute(query, params);
+        const notifications = Array.isArray(notificationsResult) ? notificationsResult[0] : notificationsResult;
         
         res.json({
             notifications: notifications || [],
@@ -51,10 +52,11 @@ router.get('/', async (req, res) => {
 // Get notification by ID
 router.get('/:id', async (req, res) => {
     try {
-        const [notifications] = await db.execute(
+        const notificationsResult = await db.execute(
             'SELECT * FROM notifications WHERE id = ?',
             [req.params.id]
         );
+        const notifications = Array.isArray(notificationsResult) ? notificationsResult[0] : notificationsResult;
         
         if (notifications.length === 0) {
             return res.status(404).json({
@@ -90,17 +92,19 @@ router.post('/', async (req, res) => {
         }
         
         // Create new notification
-        const [result] = await db.execute(
+        const resultResult = await db.execute(
             `INSERT INTO notifications (title, message, type, user_id, category, is_read, created_at) 
              VALUES (?, ?, ?, ?, ?, 0, NOW())`,
             [title, message, type, userId, category]
         );
+        const result = Array.isArray(resultResult) ? resultResult[0] : resultResult;
         
         // Get the created notification
-        const [newNotification] = await db.execute(
+        const newNotificationResult = await db.execute(
             'SELECT * FROM notifications WHERE id = ?',
             [result.insertId]
         );
+        const newNotification = Array.isArray(newNotificationResult) ? newNotificationResult[0] : newNotificationResult;
         
         res.status(201).json({
             message: 'Notification created successfully',
@@ -315,7 +319,8 @@ router.post('/broadcast', async (req, res) => {
         }
         
         // Get all unique user IDs from users table
-        const [users] = await db.execute('SELECT id FROM users');
+        const usersResult = await db.execute('SELECT id FROM users');
+        const users = Array.isArray(usersResult) ? usersResult[0] : usersResult;
         
         // Create notification for each user
         const notifications = users.map(user => [
