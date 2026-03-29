@@ -267,14 +267,28 @@ app.use('/api/policies', policiesRoutes);
 
 // ===== SCHEDULE MEETINGS ROUTES =====
 console.log('🔍 Loading schedule meetings routes...');
+console.log('🔍 Current working directory:', process.cwd());
+console.log('🔍 Attempting to load: ./routes/scheduleMeetings_simple');
 try {
     const scheduleMeetingsRoutes = require('./routes/scheduleMeetings_simple');
     console.log('✅ Schedule meetings routes loaded successfully (simplified version)');
+    console.log('🔍 Routes object:', typeof scheduleMeetingsRoutes);
+    console.log('🔍 Routes stack length:', scheduleMeetingsRoutes.stack ? scheduleMeetingsRoutes.stack.length : 'N/A');
     app.use('/api/schedule-meetings', scheduleMeetingsRoutes);
     console.log('✅ Schedule meetings routes mounted at /api/schedule-meetings');
 } catch (error) {
     console.error('❌ Error loading schedule meetings routes:', error);
+    console.error('❌ Error stack:', error.stack);
 }
+
+// Add a simple test endpoint directly to server for debugging
+app.get('/api/schedule-meetings-direct-test', (req, res) => {
+    console.log('🧪 Direct test endpoint accessed');
+    res.json({ 
+        message: 'Direct test endpoint working!',
+        timestamp: new Date().toISOString()
+    });
+});
 
 // ===== MEETING MINUTES ROUTES =====
 const meetingMinutesRoutes = require('./routes/meetingMinutes');
