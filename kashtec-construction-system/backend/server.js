@@ -305,6 +305,32 @@ try {
     console.error('❌ Full error stack:', error.stack);
 }
 
+// Add a direct clients test endpoint as backup
+app.post('/api/clients-direct-test', async (req, res) => {
+    try {
+        console.log('🧪 Direct clients test endpoint accessed');
+        console.log('📝 Request body:', req.body);
+        
+        const { type, full_name, company_name, phone, email, nida, tin, address, property_interest, budget_range, notes } = req.body;
+        
+        console.log('🔍 Extracted client data:', { full_name, phone, email, type });
+        
+        // Simulate client creation
+        const clientId = `CLT${Date.now().toString().slice(-6)}`;
+        
+        console.log('✅ Direct client test created:', clientId);
+        res.status(201).json({ 
+            message: 'Direct client test successful', 
+            clientId,
+            received_data: req.body 
+        });
+        
+    } catch (error) {
+        console.error('❌ Direct client test error:', error);
+        res.status(500).json({ error: 'Direct client test failed', details: error.message });
+    }
+});
+
 // ===== PROPERTIES ROUTES =====
 console.log('🔍 Loading properties routes...');
 try {
