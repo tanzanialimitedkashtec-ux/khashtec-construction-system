@@ -490,6 +490,7 @@ router.post('/:department', async (req, res) => {
                     'Worker Account Creation': 'Worker Account Creation',
                     'Project Assignment': 'Project Assignment',
                     'Leave Management': 'Leave Management',
+                    'Leave Request': 'Leave Management', // Added mapping for Leave Request
                     'Contract Management': 'Contract Management',
                     'Policy Management': 'Policy Management',
                     'Senior Staff Hiring': 'Senior Staff Hiring',
