@@ -8,7 +8,17 @@ router.get('/test', (req, res) => {
     res.json({ 
         message: 'Schedule Meetings API is working!',
         timestamp: new Date().toISOString(),
-        database: 'connected'
+        route: '/api/schedule-meetings/test'
+    });
+});
+
+// Root test endpoint
+router.get('/', (req, res) => {
+    console.log('🧪 Schedule Meetings API root endpoint accessed');
+    res.json({ 
+        message: 'Schedule Meetings API root is working!',
+        timestamp: new Date().toISOString(),
+        route: '/api/schedule-meetings/'
     });
 });
 
