@@ -261,6 +261,10 @@ app.use('/api/project/work', workRoutes);
 app.use('/api/realestate/work', workRoutes);
 app.use('/api/admin/work', workRoutes);
 
+// ===== CLIENTS ROUTES =====
+const clientsRoutes = require('./routes/clients');
+app.use('/api/clients', clientsRoutes);
+
 // ===== POLICIES ROUTES =====
 const policiesRoutes = require('./routes/policies');
 app.use('/api/policies', policiesRoutes);

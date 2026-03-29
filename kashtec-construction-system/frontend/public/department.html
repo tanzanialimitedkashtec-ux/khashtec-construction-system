@@ -11785,34 +11785,33 @@ function saveNewClient() {
         return false;
     }
     
-    // Prepare work item for Real Estate department
-    const workItem = {
-        work_type: 'Client Registration',
-        work_title: `Client Registration - ${client.fullName}`,
-        work_description: `New Client Registration\n\nClient ID: ${client.id}\nType: ${client.type}\nFull Name: ${client.fullName}\nCompany: ${client.companyName}\nPhone: ${client.phone}\nEmail: ${client.email}\nNIDA: ${client.nida}\nTIN: ${client.tin}\nAddress: ${client.address}\nProperty Interest: ${client.propertyInterest}\nBudget Range: ${client.budgetRange}\nNotes: ${client.notes}\nRegistered By: ${client.registeredBy}\nRegistration Date: ${client.registrationDate}`,
-        property_name: client.id, // Required field
-        property_type: 'Client Registration', // Required field
-        client_name: client.fullName, // Required field
-        sale_amount: 0, // Required field
-        priority: 'Medium',
-        due_date: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], // 7 days from now
-        assigned_to: 'Real Estate Manager',
-        submitted_by: 'Real Estate Manager'
-    };
-    
     // Show loading message
     customAlert('Registering client...', "Processing", "info");
     
-    // Send data to backend Real Estate API
+    // Send data to backend Clients API
     const baseUrl = window.location.origin;
-    fetch(`${baseUrl}/api/realestate/work`, {
+    fetch(`${baseUrl}/api/clients`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
             'Accept': 'application/json',
             'Authorization': `Bearer ${sessionManager.getAuthToken()}`
         },
-        body: JSON.stringify(workItem)
+        body: JSON.stringify({
+            client_id: client.id,
+            client_type: client.type,
+            full_name: client.fullName,
+            company_name: client.companyName,
+            phone_number: client.phone,
+            email_address: client.email,
+            nida_number: client.nida,
+            tin_number: client.tin,
+            physical_address: client.address,
+            property_interest: client.propertyInterest,
+            budget_range: client.budgetRange,
+            additional_notes: client.notes,
+            registered_by: client.registeredBy
+        })
     })
     .then(response => {
         console.log('📡 Client API Response status:', response.status);

@@ -512,6 +512,33 @@ CREATE TABLE IF NOT EXISTS workforce_budget_modifications (
   INDEX idx_requested_by (requested_by)
 );
 
+-- Clients Table for Real Estate Department
+CREATE TABLE IF NOT EXISTS clients (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  client_id VARCHAR(50) UNIQUE NOT NULL,
+  client_type ENUM('individual', 'company', 'investor') NOT NULL,
+  full_name VARCHAR(255) NOT NULL,
+  company_name VARCHAR(255),
+  phone_number VARCHAR(50) NOT NULL,
+  email_address VARCHAR(255) NOT NULL,
+  nida_number VARCHAR(50) NOT NULL,
+  tin_number VARCHAR(50),
+  physical_address TEXT NOT NULL,
+  property_interest ENUM('residential', 'commercial', 'investment', 'agricultural'),
+  budget_range ENUM('below-50m', '50m-100m', '100m-500m', 'above-500m'),
+  additional_notes TEXT,
+  registered_by VARCHAR(255) NOT NULL,
+  registration_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  status ENUM('active', 'inactive', 'prospective') DEFAULT 'active',
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  INDEX idx_client_id (client_id),
+  INDEX idx_client_type (client_type),
+  INDEX idx_status (status),
+  INDEX idx_registered_by (registered_by),
+  INDEX idx_registration_date (registration_date)
+);
+
 -- Department Work Tables
 CREATE TABLE IF NOT EXISTS hr_work (
   id INT AUTO_INCREMENT PRIMARY KEY,
