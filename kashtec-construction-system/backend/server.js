@@ -268,10 +268,10 @@ app.use('/api/policies', policiesRoutes);
 // ===== SCHEDULE MEETINGS ROUTES =====
 console.log('🔍 Loading schedule meetings routes...');
 console.log('🔍 Current working directory:', process.cwd());
-console.log('🔍 Attempting to load: ./routes/scheduleMeetings_simple');
+console.log('🔍 Attempting to load: ./routes/scheduleMeetings_basic');
 try {
-    const scheduleMeetingsRoutes = require('./routes/scheduleMeetings_simple');
-    console.log('✅ Schedule meetings routes loaded successfully (simplified version)');
+    const scheduleMeetingsRoutes = require('./routes/scheduleMeetings_basic');
+    console.log('✅ Schedule meetings routes loaded successfully (basic version)');
     console.log('🔍 Routes object:', typeof scheduleMeetingsRoutes);
     console.log('🔍 Routes stack length:', scheduleMeetingsRoutes.stack ? scheduleMeetingsRoutes.stack.length : 'N/A');
     app.use('/api/schedule-meetings', scheduleMeetingsRoutes);
