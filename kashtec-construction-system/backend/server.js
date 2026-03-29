@@ -262,8 +262,15 @@ app.use('/api/realestate/work', workRoutes);
 app.use('/api/admin/work', workRoutes);
 
 // ===== CLIENTS ROUTES =====
-const clientsRoutes = require('./routes/clients');
-app.use('/api/clients', clientsRoutes);
+console.log('🔍 Loading clients routes...');
+try {
+    const clientsRoutes = require('./routes/clients');
+    console.log('✅ Clients routes loaded successfully');
+    app.use('/api/clients', clientsRoutes);
+    console.log('✅ Clients routes mounted at /api/clients');
+} catch (error) {
+    console.error('❌ Error loading clients routes:', error);
+}
 
 // ===== POLICIES ROUTES =====
 const policiesRoutes = require('./routes/policies');

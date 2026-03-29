@@ -2,6 +2,16 @@ const express = require('express');
 const router = express.Router();
 const db = require('../database/connection');
 
+// Test endpoint to verify route is working
+router.get('/test', (req, res) => {
+    console.log('🧪 Clients test endpoint accessed');
+    res.json({ 
+        message: 'Clients API is working!',
+        timestamp: new Date().toISOString(),
+        database: 'connected'
+    });
+});
+
 // Create new client
 router.post('/', async (req, res) => {
     try {
