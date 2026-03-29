@@ -111,49 +111,19 @@ try {
     console.error('❌ Full error stack:', error.stack);
 }
 
-// ===== CLIENT ROUTES =====
-app.post('/api/clients', async (req, res) => {
-    try {
-        const connection = await db.getConnection();
-        const { type, full_name, company_name, phone, email, nida, tin, address, property_interest, budget_range, notes } = req.body;
-        
-        const clientId = `CLT${Date.now().toString().slice(-6)}`;
-        
-        await connection.query(
-            'INSERT INTO clients (type, full_name, company_name, phone, email, nida, tin, address, property_interest, budget_range, notes, registered_by) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
-            [type, full_name, company_name, phone, email, nida, tin, address, property_interest, budget_range, notes, req.user?.id || 'system']
-        );
-        
-        connection.release();
-        res.json({ success: true, message: 'Client registered successfully', clientId });
-        
-    } catch (error) {
-        console.error('Client creation error:', error);
-        res.status(500).json({ error: 'Failed to create client' });
-    }
-});
-
-// ===== WORK ASSIGNMENT ROUTES =====
-const workRoutes = require('./routes/work');
-app.use('/api/hr/work', workRoutes);
-app.use('/api/hse/work', workRoutes);
-app.use('/api/finance/work', workRoutes);
-app.use('/api/project/work', workRoutes);
-app.use('/api/realestate/work', workRoutes);
-app.use('/api/admin/work', workRoutes);
-
 // ===== CLIENTS ROUTES =====
-console.log('🔍 Loading clients routes...');
+console.log('🔍 Mounting client routes from routes/clients.js...');
+
 try {
     const clientsRoutes = require('./routes/clients');
     console.log('✅ Clients routes loaded successfully');
     app.use('/api/clients', clientsRoutes);
     console.log('✅ Clients routes mounted at /api/clients');
     
-    // Add a direct test endpoint to verify mounting
+    // Add a test endpoint to verify mounting
     app.get('/api/clients-status', (req, res) => {
         res.json({ 
-            status: 'Clients routes are mounted',
+            status: 'Clients routes are mounted from routes/clients.js',
             timestamp: new Date().toISOString(),
             endpoints: ['/api/clients/test', '/api/clients/', '/api/clients/:id']
         });
