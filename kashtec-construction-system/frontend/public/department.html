@@ -9933,14 +9933,26 @@ function calculateGrossSalary() {
 }
 
 function calculateTotalBudget() {
-    const salaries = parseFloat(document.getElementById('budgetSalaries').value) || 0;
-    const supplies = parseFloat(document.getElementById('budgetSupplies').value) || 0;
-    const equipment = parseFloat(document.getElementById('budgetEquipment').value) || 0;
-    const training = parseFloat(document.getElementById('budgetTraining').value) || 0;
-    const travel = parseFloat(document.getElementById('budgetTravel').value) || 0;
-    const misc = parseFloat(document.getElementById('budgetMisc').value) || 0;
+    const salariesElement = document.getElementById('budgetSalaries');
+    const suppliesElement = document.getElementById('budgetSupplies');
+    const equipmentElement = document.getElementById('budgetEquipment');
+    const trainingElement = document.getElementById('budgetTraining');
+    const travelElement = document.getElementById('budgetTravel');
+    const miscElement = document.getElementById('budgetMisc');
+    const totalElement = document.getElementById('totalBudget');
+    
+    const salaries = parseFloat(salariesElement ? salariesElement.value : 0) || 0;
+    const supplies = parseFloat(suppliesElement ? suppliesElement.value : 0) || 0;
+    const equipment = parseFloat(equipmentElement ? equipmentElement.value : 0) || 0;
+    const training = parseFloat(trainingElement ? trainingElement.value : 0) || 0;
+    const travel = parseFloat(travelElement ? travelElement.value : 0) || 0;
+    const misc = parseFloat(miscElement ? miscElement.value : 0) || 0;
     
     const total = salaries + supplies + equipment + training + travel + misc;
+    
+    if (salariesElement) salariesElement.value = `TZS ${salaries.toLocaleString()}`;
+    if (totalElement) totalElement.value = `TZS ${total.toLocaleString()}`;
+    
     document.getElementById('totalBudget').value = `TZS ${total.toLocaleString()}`;
 }
 
