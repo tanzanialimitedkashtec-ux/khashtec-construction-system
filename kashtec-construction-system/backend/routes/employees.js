@@ -48,17 +48,25 @@ router.post('/', async (req, res) => {
     try {
         console.log('🔍 Checking if employee already exists...');
         // Check if employee already exists in employee_details
-        const [existingEmployees] = await db.execute(
+        const existingResult = await db.execute(
             'SELECT id FROM employee_details WHERE gmail = ? OR nida = ?',
             [gmail, nida]
         );
         
+        // Handle different result formats from db.execute()
+        const existingEmployees = Array.isArray(existingResult) ? existingResult[0] : existingResult;
         console.log('📊 Existing employees check result:', existingEmployees);
+        console.log('📊 Existing employees length:', existingEmployees ? existingEmployees.length : 0);
         
         if (existingEmployees && existingEmployees.length > 0) {
-            console.log('❌ Employee already exists');
+            console.log('❌ Employee already exists:', existingEmployees[0]);
             return res.status(409).json({
-                error: 'Employee with this email or NIDA number already exists'
+                error: 'Employee with this email or NIDA number already exists',
+                details: {
+                    email: gmail,
+                    nida: nida,
+                    existing_id: existingEmployees[0].id
+                }
             });
         }
         
