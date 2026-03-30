@@ -49,7 +49,7 @@ router.post('/', async (req, res) => {
         console.log('🔍 Checking if employee already exists...');
         // Check if employee already exists in employee_details
         const existingResult = await db.execute(
-            'SELECT id FROM employee_details WHERE gmail = ? OR nida = ?',
+            'SELECT id, full_name FROM employee_details WHERE gmail = ? OR nida = ?',
             [gmail, nida]
         );
         
@@ -65,7 +65,9 @@ router.post('/', async (req, res) => {
                 details: {
                     email: gmail,
                     nida: nida,
-                    existing_id: existingEmployees[0].id
+                    existing_id: existingEmployees[0].id,
+                    existing_name: existingEmployees[0].full_name,
+                    message: `An employee with NIDA ${nida} or email ${gmail} is already registered`
                 }
             });
         }
@@ -337,22 +339,24 @@ router.get('/verify/:id', async (req, res) => {
         console.log('🔍 Verifying employee data in both tables for ID:', employeeId);
         
         // Check employees table
-        const [employeeRecord] = await db.execute('SELECT * FROM employees WHERE id = ?', [employeeId]);
+        const employeeResult = await db.execute('SELECT * FROM employees WHERE id = ?', [employeeId]);
+        const employeeRecord = Array.isArray(employeeResult) ? employeeResult[0] : employeeResult;
         
         // Check employee_details table
-        const [detailsRecord] = await db.execute('SELECT * FROM employee_details WHERE employee_id = ?', [employeeId]);
+        const detailsResult = await db.execute('SELECT * FROM employee_details WHERE employee_id = ?', [employeeId]);
+        const detailsRecord = Array.isArray(detailsResult) ? detailsResult[0] : detailsResult;
         
         const verification = {
             employee_id: employeeId,
             employees_table: {
-                exists: employeeRecord.length > 0,
-                data: employeeRecord.length > 0 ? employeeRecord[0] : null
+                exists: employeeRecord && employeeRecord.length > 0,
+                data: employeeRecord && employeeRecord.length > 0 ? employeeRecord[0] : null
             },
             employee_details_table: {
-                exists: detailsRecord.length > 0,
-                data: detailsRecord.length > 0 ? detailsRecord[0] : null
+                exists: detailsRecord && detailsRecord.length > 0,
+                data: detailsRecord && detailsRecord.length > 0 ? detailsRecord[0] : null
             },
-            both_tables_populated: employeeRecord.length > 0 && detailsRecord.length > 0,
+            both_tables_populated: (employeeRecord && employeeRecord.length > 0) && (detailsRecord && detailsRecord.length > 0),
             timestamp: new Date().toISOString()
         };
         
