@@ -93,24 +93,32 @@ router.post('/', async (req, res) => {
         const employeeDbId = Array.isArray(employeeResult) ? employeeResult[0].insertId : employeeResult.insertId;
         console.log('✅ Employee DB ID:', employeeDbId);
         
-        // Create employee details record
-        const detailsResult = await db.execute(
-            `INSERT INTO employee_details (employee_id, full_name, gmail, phone, nida, passport, contract_type, profile_image)
-             VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-            [
-                employeeDbId,
-                fullName,
-                gmail,
-                phone,
-                nida,
-                passport || '',
-                contract,
-                '' // empty profile image for now
-            ]
-        );
-        
-        console.log('✅ Employee details created:', detailsResult);
-        console.log('🆔 New employee ID:', employeeDbId);
+        // Create employee details record with better error handling
+        try {
+            console.log('🔍 Creating employee details record...');
+            const detailsResult = await db.execute(
+                `INSERT INTO employee_details (employee_id, full_name, gmail, phone, nida, passport, contract_type, profile_image)
+                 VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+                [
+                    employeeDbId,
+                    fullName,
+                    gmail,
+                    phone,
+                    nida,
+                    passport || '',
+                    contract,
+                    '' // empty profile image for now
+                ]
+            );
+            
+            console.log('✅ Employee details created:', detailsResult);
+            console.log('🆔 New employee ID:', employeeDbId);
+            
+        } catch (detailsError) {
+            console.error('❌ Error creating employee details:', detailsError);
+            // Don't fail the entire operation if details fail, but log it
+            console.log('⚠️ Employee created in main table, but details failed');
+        }
         
         // Return the created employee with details
         const employeeQuery = await db.execute(
@@ -279,6 +287,61 @@ router.get('/stats/overview', async (req, res) => {
     } catch (error) {
         console.error('Error fetching employee statistics:', error);
         res.status(500).json({ error: 'Failed to fetch employee statistics' });
+    }
+});
+
+// Verify employee data in both tables
+router.get('/verify/:id', async (req, res) => {
+    try {
+        const employeeId = req.params.id;
+        console.log('🔍 Verifying employee data in both tables for ID:', employeeId);
+        
+        // Check employees table
+        const [employeeRecord] = await db.execute('SELECT * FROM employees WHERE id = ?', [employeeId]);
+        
+        // Check employee_details table
+        const [detailsRecord] = await db.execute('SELECT * FROM employee_details WHERE employee_id = ?', [employeeId]);
+        
+        const verification = {
+            employee_id: employeeId,
+            employees_table: {
+                exists: employeeRecord.length > 0,
+                data: employeeRecord.length > 0 ? employeeRecord[0] : null
+            },
+            employee_details_table: {
+                exists: detailsRecord.length > 0,
+                data: detailsRecord.length > 0 ? detailsRecord[0] : null
+            },
+            both_tables_populated: employeeRecord.length > 0 && detailsRecord.length > 0,
+            timestamp: new Date().toISOString()
+        };
+        
+        console.log('📊 Verification result:', verification);
+        
+        res.json(verification);
+    } catch (error) {
+        console.error('Error verifying employee data:', error);
+        res.status(500).json({ error: 'Failed to verify employee data' });
+    }
+});
+
+// Get all employee details (for debugging)
+router.get('/debug/all-details', async (req, res) => {
+    try {
+        console.log('🔍 Debugging: Fetching all employee_details records');
+        const [allDetails] = await db.execute('SELECT * FROM employee_details ORDER BY created_at DESC LIMIT 10');
+        
+        console.log('📊 Employee details records found:', allDetails.length);
+        
+        res.json({
+            message: 'Employee details debug information',
+            count: allDetails.length,
+            records: allDetails,
+            timestamp: new Date().toISOString()
+        });
+    } catch (error) {
+        console.error('Error debugging employee details:', error);
+        res.status(500).json({ error: 'Failed to debug employee details' });
     }
 });
 
