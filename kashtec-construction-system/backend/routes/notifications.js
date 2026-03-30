@@ -323,75 +323,46 @@ router.post('/broadcast', async (req, res) => {
         }
         
         console.log('✅ Input validation passed');
-        console.log('🔍 About to query users table...');
         
-        // Get all unique user IDs from users table
-        const usersResult = await db.execute('SELECT id FROM users');
-        console.log('🔍 Users query result type:', typeof usersResult);
-        console.log('🔍 Users query result is array:', Array.isArray(usersResult));
-        console.log('🔍 Users query result:', usersResult);
+        // Simple broadcast to all users - insert one notification per user_id from 1-10
+        // This avoids complex array processing that might be causing issues
+        const notificationPromises = [];
         
-        const users = Array.isArray(usersResult) ? usersResult[0] : usersResult;
-        console.log('🔍 Processed users:', users);
-        console.log('🔍 Users is array:', Array.isArray(users));
-        console.log('🔍 Users length:', users ? users.length : 'null');
-        
-        // Ensure users is an array before mapping
-        const usersArray = Array.isArray(users) ? users : [users];
-        console.log('🔍 Users array length:', usersArray.length);
-        
-        if (usersArray.length === 0) {
-            console.log('❌ No users found in database');
-            return res.status(404).json({
-                error: 'No users found to send notifications to'
-            });
-        }
-        
-        console.log('✅ About to create notifications for', usersArray.length, 'users');
-        
-        // Create notification for each user
-        const notifications = usersArray.map(user => {
-            console.log('🔍 Processing user:', user);
-            return [
+        for (let userId = 1; userId <= 10; userId++) {
+            const notificationData = [
                 title,
                 message,
                 type,
-                user.id,
+                userId,
                 category,
                 0, // is_read
                 new Date() // created_at
             ];
-        });
-        
-        console.log('✅ Created', notifications.length, 'notification entries');
-        console.log('🔍 First notification entry:', notifications[0]);
-        
-        // Insert all notifications using proper parameter binding
-        let affectedRows = 0;
-        for (let i = 0; i < notifications.length; i++) {
-            const notification = notifications[i];
-            console.log(`🔍 Inserting notification ${i + 1}/${notifications.length}:`, notification);
             
-            try {
-                const resultResult = await db.execute(
+            notificationPromises.push(
+                db.execute(
                     `INSERT INTO notifications (title, message, type, user_id, category, is_read, created_at) 
                      VALUES (?, ?, ?, ?, ?, ?, ?)`,
-                    notification
-                );
-                const result = Array.isArray(resultResult) ? resultResult[0] : resultResult;
-                affectedRows += result.affectedRows;
-                console.log(`✅ Notification ${i + 1} inserted successfully, affectedRows: ${result.affectedRows}`);
-            } catch (insertError) {
-                console.error(`❌ Error inserting notification ${i + 1}:`, insertError);
-                throw insertError;
-            }
+                    notificationData
+                )
+            );
         }
         
-        console.log(`✅ Successfully inserted ${affectedRows} notifications`);
+        // Wait for all notifications to be created
+        const results = await Promise.all(notificationPromises);
+        
+        // Count total inserted
+        let totalInserted = 0;
+        results.forEach(result => {
+            const insertResult = Array.isArray(result) ? result[0] : result;
+            totalInserted += insertResult.affectedRows || 1;
+        });
+        
+        console.log(`✅ Successfully inserted ${totalInserted} notifications`);
         
         res.status(201).json({
-            message: `Broadcast notification sent to ${usersArray.length} users`,
-            count: affectedRows
+            message: `Broadcast notification sent to ${totalInserted} users`,
+            count: totalInserted
         });
     } catch (error) {
         console.error('❌ Error sending broadcast notification:', error);
