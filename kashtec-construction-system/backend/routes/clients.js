@@ -75,9 +75,18 @@ router.post('/', async (req, res) => {
         
         const values = [
             client_id || `CLT${Date.now().toString().slice(-6)}`,
-            client_type, full_name, company_name, phone_number,
-            email_address, nida_number, tin_number, physical_address,
-            property_interest, budget_range, additional_notes, registered_by || 'system'
+            client_type || 'Individual',
+            full_name, 
+            company_name || '', 
+            phone_number,
+            email_address, 
+            nida_number, 
+            tin_number || '', 
+            physical_address,
+            property_interest || '', 
+            budget_range || '', 
+            additional_notes || '', 
+            registered_by || 'system'
         ];
         
         console.log('🔍 Executing query:', query);
