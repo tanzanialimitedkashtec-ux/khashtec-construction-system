@@ -219,45 +219,22 @@ router.put('/:id', async (req, res) => {
             return res.status(404).json({ error: 'Employee not found' });
         }
         
-        // Build dynamic update query
+        // Build dynamic update query - only update fields that exist in employees table
         const updates = [];
         const values = [];
         
-        if (fullName) {
-            updates.push('full_name = ?');
-            values.push(fullName);
-        }
-        if (gmail) {
-            updates.push('gmail = ?');
-            values.push(gmail);
-        }
-        if (phone) {
-            updates.push('phone = ?');
-            values.push(phone);
-        }
+        // Only update fields that exist in employees table
         if (department) {
             updates.push('department = ?');
             values.push(department);
         }
         if (jobCategory) {
-            updates.push('job_category = ?');
+            updates.push('position = ?'); // Map jobCategory to position field
             values.push(jobCategory);
         }
         if (status) {
             updates.push('status = ?');
             values.push(status);
-        }
-        if (nida) {
-            updates.push('nida = ?');
-            values.push(nida);
-        }
-        if (passport !== undefined) {
-            updates.push('passport = ?');
-            values.push(passport);
-        }
-        if (contract) {
-            updates.push('contract_type = ?');
-            values.push(contract);
         }
         
         if (updates.length === 0) {
