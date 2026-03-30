@@ -4857,11 +4857,11 @@ function updateEmployeeRecords(){
         <div class="employee-list">
             <h4>Existing Employees</h4>
             <div class="search-section">
-                <input type="text" id="searchEmployee" placeholder="Search by name, ID, or department..." onkeyup="filterEmployees()">
+                <input type="text" id="searchEmployee" placeholder="Search by name, ID, or department...">
                 <button class="action" onclick="loadEmployeeForUpdate()">Search Employee</button>
             </div>
             
-            <div id="employeeSearchResults" class="search-results"></div>
+            <div id="employeeSearchResults" class="search-results"><p style="color: #666;">Enter search terms and click "Search Employee" button</p></div>
             
             <div id="updateForm" class="hidden">
                 <form id="updateEmployeeForm" onsubmit="return saveEmployeeUpdate()">
@@ -5425,7 +5425,7 @@ function filterEmployees() {
     );
     
     if (filtered.length === 0) {
-        resultsDiv.innerHTML = '<p style="color: #dc3545;">No employees found</p>';
+        resultsDiv.innerHTML = '<p style="color: #666;">Click "Search Employee" button to search</p>';
     } else {
         let html = '<div style="margin: 10px 0;"><strong>Search Results:</strong></div>';
         filtered.forEach(emp => {
