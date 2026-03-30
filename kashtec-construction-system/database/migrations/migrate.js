@@ -17,40 +17,79 @@ async function runMigrations() {
     console.log('📝 SQL file length:', migrationSQL.length);
     console.log('📝 SQL file preview:', migrationSQL.substring(0, 200) + '...');
     
-    // Split SQL file by semicolons and execute each statement
-    const statements = migrationSQL.split(';').filter(stmt => {
-      const trimmed = stmt.trim();
-      return trimmed.length > 0 && !trimmed.startsWith('--');
-    });
-    console.log(`📝 Found ${statements.length} SQL statements to execute`);
+    // Split SQL file by semicolons with improved parsing
+    const statements = migrationSQL
+      .split(/;\s*(?=(?:[^']*'[^']*')*[^']*$)/) // Split on semicolons not within quotes
+      .map(stmt => stmt.trim())
+      .filter(stmt => {
+        // Filter out empty statements and pure comments
+        if (!stmt || stmt.length === 0) return false;
+        if (stmt.startsWith('--')) return false;
+        if (stmt.match(/^[\s-]*$/)) return false; // Only whitespace or dashes
+        return true;
+      });
     
-    // Log each statement for debugging
-    statements.forEach((stmt, i) => {
-      console.log(`📝 Statement ${i + 1}: ${stmt.substring(0, 100)}...`);
-    });
+    console.log(`📝 Found ${statements.length} SQL statements to execute`);
     
     let successCount = 0;
     let skippedCount = 0;
     
-    for (let i = 0; i < statements.length; i++) {
-      const statement = statements[i].trim();
-      if (!statement) continue;
+    // If we still have too few statements, try a simpler approach
+    if (statements.length < 30) {
+      console.log('⚠️  Too few statements found, trying alternative parsing...');
+      const simpleStatements = migrationSQL
+        .split(';')
+        .map(stmt => stmt.trim())
+        .filter(stmt => stmt.length > 0 && !stmt.startsWith('--'));
+      console.log(`📝 Alternative parsing found ${simpleStatements.length} statements`);
       
-      try {
-        // Use query for all statements to avoid prepared statement issues
-        await db.query(statement);
-        console.log(`✅ Statement ${i + 1}/${statements.length} executed successfully`);
-        successCount++;
-      } catch (error) {
-        // Ignore known errors
-        if (error.message.includes('already exists') || 
-            error.message.includes('Duplicate entry') ||
-            error.message.includes('This command is not supported in the prepared statement protocol yet')) {
-          console.log(`⚠️  Statement ${i + 1} skipped (known issue): ${error.message}`);
-          skippedCount++;
-        } else {
-          console.error(`❌ Statement ${i + 1} error: ${error.message}`);
-          console.error(`🔍 Failed statement: ${statement.substring(0, 100)}...`);
+      // Use the alternative if it found more statements
+      const finalStatements = simpleStatements.length > statements.length ? simpleStatements : statements;
+      
+      for (let i = 0; i < finalStatements.length; i++) {
+        const statement = finalStatements[i].trim();
+        if (!statement) continue;
+        
+        try {
+          // Use query for all statements to avoid prepared statement issues
+          await db.query(statement);
+          console.log(`✅ Statement ${i + 1}/${finalStatements.length} executed successfully`);
+          successCount++;
+        } catch (error) {
+          // Ignore known errors
+          if (error.message.includes('already exists') || 
+              error.message.includes('Duplicate entry') ||
+              error.message.includes('This command is not supported in the prepared statement protocol yet')) {
+            console.log(`⚠️  Statement ${i + 1} skipped (known issue): ${error.message}`);
+            skippedCount++;
+          } else {
+            console.error(`❌ Statement ${i + 1} error: ${error.message}`);
+            console.error(`🔍 Failed statement: ${statement.substring(0, 100)}...`);
+          }
+        }
+      }
+    } else {
+      // Use the original parsing if it found enough statements
+      for (let i = 0; i < statements.length; i++) {
+        const statement = statements[i].trim();
+        if (!statement) continue;
+        
+        try {
+          // Use query for all statements to avoid prepared statement issues
+          await db.query(statement);
+          console.log(`✅ Statement ${i + 1}/${statements.length} executed successfully`);
+          successCount++;
+        } catch (error) {
+          // Ignore known errors
+          if (error.message.includes('already exists') || 
+              error.message.includes('Duplicate entry') ||
+              error.message.includes('This command is not supported in the prepared statement protocol yet')) {
+            console.log(`⚠️  Statement ${i + 1} skipped (known issue): ${error.message}`);
+            skippedCount++;
+          } else {
+            console.error(`❌ Statement ${i + 1} error: ${error.message}`);
+            console.error(`🔍 Failed statement: ${statement.substring(0, 100)}...`);
+          }
         }
       }
     }
@@ -89,7 +128,10 @@ async function runMigrations() {
         console.log(`📊 Tables created: ${tableNames.join(', ')}`);
         
         // Check if critical tables exist
-        const criticalTables = ['users', 'projects', 'documents', 'notifications'];
+        const criticalTables = [
+          'users', 'projects', 'documents', 'notifications', 
+          'leave_requests', 'contracts', 'attendance', 'schedule_meetings'
+        ];
         const missingTables = criticalTables.filter(table => !tableNames.includes(table));
         
         if (missingTables.length > 0) {
@@ -105,6 +147,38 @@ async function runMigrations() {
         console.log(`👥 Users table has ${userCount[0]?.count || 0} records`);
       } catch (userError) {
         console.log('👥 Users table check skipped:', userError.message);
+      }
+      
+      // Check leave_requests table
+      try {
+        const [leaveCount] = await db.execute('SELECT COUNT(*) as count FROM leave_requests');
+        console.log(`📝 Leave requests table has ${leaveCount[0]?.count || 0} records`);
+      } catch (leaveError) {
+        console.log('📝 Leave requests table check skipped:', leaveError.message);
+      }
+      
+      // Check contracts table
+      try {
+        const [contractCount] = await db.execute('SELECT COUNT(*) as count FROM contracts');
+        console.log(`📋 Contracts table has ${contractCount[0]?.count || 0} records`);
+      } catch (contractError) {
+        console.log('📋 Contracts table check skipped:', contractError.message);
+      }
+      
+      // Check attendance table
+      try {
+        const [attendanceCount] = await db.execute('SELECT COUNT(*) as count FROM attendance');
+        console.log(`⏰ Attendance table has ${attendanceCount[0]?.count || 0} records`);
+      } catch (attendanceError) {
+        console.log('⏰ Attendance table check skipped:', attendanceError.message);
+      }
+      
+      // Check schedule_meetings table
+      try {
+        const [meetingCount] = await db.execute('SELECT COUNT(*) as count FROM schedule_meetings');
+        console.log(`📅 Schedule meetings table has ${meetingCount[0]?.count || 0} records`);
+      } catch (meetingError) {
+        console.log('📅 Schedule meetings table check skipped:', meetingError.message);
       }
       
       console.log('✅ All migrations completed successfully');
