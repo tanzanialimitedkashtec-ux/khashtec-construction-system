@@ -312,6 +312,7 @@ console.log('  - /api/meeting-minutes/* -> meeting minutes routes');
 console.log('  - /api/attendance/* -> attendance routes');
 console.log('  - /api/contracts/* -> contracts routes');
 console.log('  - /api/leave-requests/* -> leave requests routes');
+console.log('  - /api/dual-leave-requests/* -> dual leave requests routes');
 console.log('  - /api/personnel/* -> personnel routes');
 console.log('  - /api/senior-hiring/* -> senior hiring routes');
 console.log('  - /api/work/* -> work routes');
@@ -373,6 +374,17 @@ try {
     console.log('✅ Personnel routes mounted at /api/personnel');
 } catch (error) {
     console.error('❌ Error loading personnel routes:', error);
+}
+
+// ===== DUAL LEAVE REQUESTS ROUTES =====
+console.log('🔍 Mounting dual leave requests routes from routes/dualLeaveRequests.js...');
+try {
+    const dualLeaveRequestsRoutes = require('./routes/dualLeaveRequests');
+    console.log('✅ Dual leave requests routes loaded successfully');
+    app.use('/api/dual-leave-requests', dualLeaveRequestsRoutes);
+    console.log('✅ Dual leave requests routes mounted at /api/dual-leave-requests');
+} catch (error) {
+    console.error('❌ Error loading dual leave requests routes:', error);
 }
 
 // ===== OFFICE PORTAL ROUTES =====
