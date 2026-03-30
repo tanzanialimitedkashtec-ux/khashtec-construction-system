@@ -312,6 +312,7 @@ console.log('  - /api/meeting-minutes/* -> meeting minutes routes');
 console.log('  - /api/attendance/* -> attendance routes');
 console.log('  - /api/contracts/* -> contracts routes');
 console.log('  - /api/leave-requests/* -> leave requests routes');
+console.log('  - /api/personnel/* -> personnel routes');
 console.log('  - /api/senior-hiring/* -> senior hiring routes');
 console.log('  - /api/work/* -> work routes');
 
@@ -361,6 +362,17 @@ try {
     console.log('✅ Leave requests routes mounted at /api/leave-requests');
 } catch (error) {
     console.error('❌ Error loading leave requests routes:', error);
+}
+
+// ===== PERSONNEL ROUTES =====
+console.log('🔍 Mounting personnel routes from routes/personnel.js...');
+try {
+    const personnelRoutes = require('./routes/personnel');
+    console.log('✅ Personnel routes loaded successfully');
+    app.use('/api/personnel', personnelRoutes);
+    console.log('✅ Personnel routes mounted at /api/personnel');
+} catch (error) {
+    console.error('❌ Error loading personnel routes:', error);
 }
 
 // ===== OFFICE PORTAL ROUTES =====
