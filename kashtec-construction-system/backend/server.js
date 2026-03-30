@@ -309,10 +309,10 @@ console.log('🔍 Routes mounted:');
 console.log('  - /api/policies/* -> policies routes');
 console.log('  - /api/schedule-meetings/* -> schedule meetings routes');
 console.log('  - /api/meeting-minutes/* -> meeting minutes routes');
-console.log('  - /api/notifications/* -> notifications routes');
+console.log('  - /api/attendance/* -> attendance routes');
+console.log('  - /api/contracts/* -> contracts routes');
 console.log('  - /api/senior-hiring/* -> senior hiring routes');
 console.log('  - /api/work/* -> work routes');
-console.log('  - /api/attendance/* -> attendance routes');
 
 // ===== SENIOR HIRING ROUTES =====
 const seniorHiringRoutes = require('./routes/seniorHiring');
@@ -338,6 +338,17 @@ try {
     console.log('✅ Attendance routes mounted at /api/attendance');
 } catch (error) {
     console.error('❌ Error loading attendance routes:', error);
+}
+
+// ===== CONTRACTS ROUTES =====
+console.log('🔍 Mounting contracts routes from routes/contracts.js...');
+try {
+    const contractsRoutes = require('./routes/contracts');
+    console.log('✅ Contracts routes loaded successfully');
+    app.use('/api/contracts', contractsRoutes);
+    console.log('✅ Contracts routes mounted at /api/contracts');
+} catch (error) {
+    console.error('❌ Error loading contracts routes:', error);
 }
 
 // ===== OFFICE PORTAL ROUTES =====
