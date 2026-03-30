@@ -383,16 +383,136 @@ router.post('/', async (req, res) => {
             const result = await db.execute(query, values);
             console.log('✅ Work item created successfully:', result);
             
-            // Return success response
-            res.status(201).json({
+            const hrWorkId = result.insertId;
+            
+            // Check if this is a leave request or contract management and save to dedicated tables
+            let dualSaveResult = null;
+            
+            if (work_type === 'Leave Management' || work_type === 'Leave Request') {
+                console.log('🔄 Detected leave request, saving to leave_requests table...');
+                try {
+                    // Extract leave request data from the request
+                    const {
+                        employee: employee_id,
+                        employee_name: leave_employee_name,
+                        leaveType: leave_type,
+                        startDate: start_date,
+                        endDate: end_date,
+                        daysRequested: days_requested,
+                        reasonForLeave: reason_for_leave,
+                        approvedBy
+                    } = req.body;
+                    
+                    if (employee_id && leave_type && start_date && days_requested && reason_for_leave) {
+                        const leaveQuery = `
+                            INSERT INTO leave_requests (
+                                employee_id, employee_name, leave_type, start_date, end_date,
+                                days_requested, reason_for_leave, approval_status, approved_by,
+                                approved_date, rejection_reason
+                            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                        `;
+                        
+                        const leaveValues = [
+                            employee_id,
+                            leave_employee_name || employee_name || 'Unknown Employee',
+                            leave_type,
+                            start_date,
+                            end_date || null,
+                            days_requested,
+                            reason_for_leave,
+                            'pending', // approval_status
+                            approvedBy || null,
+                            null, // approved_date
+                            null // rejection_reason
+                        ];
+                        
+                        const leaveResult = await db.execute(leaveQuery, leaveValues);
+                        console.log('✅ Leave request also saved to leave_requests table:', leaveResult);
+                        
+                        dualSaveResult = {
+                            leave_request_id: leaveResult.insertId,
+                            table: 'leave_requests'
+                        };
+                    }
+                } catch (leaveError) {
+                    console.error('❌ Error saving to leave_requests table:', leaveError);
+                    // Continue with response even if dual save fails
+                }
+            }
+            
+            if (work_type === 'Contract Management') {
+                console.log('🔄 Detected contract management, saving to contracts table...');
+                try {
+                    // Extract contract data from the request
+                    const {
+                        employee: employee_id,
+                        employee_name: contract_employee_name,
+                        contract_type,
+                        start_date,
+                        end_date,
+                        salary,
+                        contract_status = 'active',
+                        contract_terms,
+                        contract_document,
+                        created_by
+                    } = req.body;
+                    
+                    if (employee_id && contract_type && start_date && salary) {
+                        const contractQuery = `
+                            INSERT INTO contracts (
+                                employee_id, employee_name, contract_type, start_date, end_date,
+                                salary, contract_status, contract_terms, contract_document, created_by
+                            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                        `;
+                        
+                        const contractValues = [
+                            employee_id,
+                            contract_employee_name || employee_name || 'Unknown Employee',
+                            contract_type,
+                            start_date,
+                            end_date || null,
+                            salary,
+                            contract_status,
+                            contract_terms || null,
+                            contract_document || null,
+                            created_by || 'HR Manager'
+                        ];
+                        
+                        const contractResult = await db.execute(contractQuery, contractValues);
+                        console.log('✅ Contract also saved to contracts table:', contractResult);
+                        
+                        dualSaveResult = {
+                            contract_id: contractResult.insertId,
+                            table: 'contracts'
+                        };
+                    }
+                } catch (contractError) {
+                    console.error('❌ Error saving to contracts table:', contractError);
+                    // Continue with response even if dual save fails
+                }
+            }
+            
+            // Build response with dual save information
+            const response = {
                 message: 'Work item created successfully',
-                id: result.insertId,
+                id: hrWorkId,
                 department,
                 work_type: mapped_work_type,
                 work_title,
                 status,
                 created_at: new Date().toISOString()
-            });
+            };
+            
+            // Add dual save information if applicable
+            if (dualSaveResult) {
+                response.dual_save = {
+                    success: true,
+                    ...dualSaveResult,
+                    message: `Also saved to ${dualSaveResult.table} table`
+                };
+            }
+            
+            res.status(201).json(response);
         } catch (dbError) {
             console.error('❌ Database execution error:', dbError);
             throw new Error(`Database query failed: ${dbError.message}`);
