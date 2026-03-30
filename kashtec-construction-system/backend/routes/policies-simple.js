@@ -28,7 +28,7 @@ router.get('/', (req, res) => {
             },
             {
                 id: 2,
-                title: 'Test Policy 2', 
+                title: 'Test Policy 2',
                 category: 'Safety',
                 status: 'draft',
                 created_date: '2026-03-30'
