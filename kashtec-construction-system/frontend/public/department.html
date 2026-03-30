@@ -5525,7 +5525,8 @@ function selectEmployeeForUpdate(email) {
             
             if (employee) {
                 // Fill the update form with employee data
-                document.getElementById('updateEmpID').value = employee.employee_id || employee.id || 'N/A';
+                // Use database ID for updates (not employee_id)
+                document.getElementById('updateEmpID').value = employee.id || employee.employee_id || 'N/A';
                 document.getElementById('updateFullName').value = employee.full_name || employee.fullName || '';
                 document.getElementById('updatePhone').value = employee.phone || '';
                 document.getElementById('updateGmail').value = employee.gmail || employee.email || '';
@@ -5539,6 +5540,7 @@ function selectEmployeeForUpdate(email) {
                 document.getElementById('employeeSearchResults').innerHTML = '';
                 
                 console.log('✅ Employee data loaded into form');
+                console.log('🆔 Using database ID for update:', employee.id);
             } else {
                 console.error('❌ Employee not found:', email);
                 document.getElementById('employeeSearchResults').innerHTML = '<p style="color: #dc3545;">Employee not found</p>';
@@ -5556,12 +5558,12 @@ function saveEmployeeUpdate() {
     // Get form values
     const employeeId = document.getElementById('updateEmpID').value;
     const updatedEmployee = {
-        full_name: document.getElementById('updateFullName').value,
+        fullName: document.getElementById('updateFullName').value,
         phone: document.getElementById('updatePhone').value,
         gmail: document.getElementById('updateGmail').value,
         department: document.getElementById('updateDepartment').value,
-        job_category: document.getElementById('updateJobCategory').value,
-        contract_type: document.getElementById('updateContract').value,
+        jobCategory: document.getElementById('updateJobCategory').value,
+        contract: document.getElementById('updateContract').value,
         status: document.getElementById('updateStatus').value,
         notes: document.getElementById('updateNotes').value
     };
@@ -5570,7 +5572,7 @@ function saveEmployeeUpdate() {
     console.log('🆔 Employee ID:', employeeId);
     
     // Validate required fields
-    if (!updatedEmployee.full_name || !updatedEmployee.phone || !updatedEmployee.gmail || !updatedEmployee.department || !updatedEmployee.job_category || !updatedEmployee.contract_type || !updatedEmployee.status) {
+    if (!updatedEmployee.fullName || !updatedEmployee.phone || !updatedEmployee.gmail || !updatedEmployee.department || !updatedEmployee.jobCategory || !updatedEmployee.contract || !updatedEmployee.status) {
         customAlert('Please fill in all required fields marked with *', 'Validation Error', 'error');
         return false;
     }
@@ -5602,7 +5604,7 @@ function saveEmployeeUpdate() {
         console.log('✅ Employee updated successfully:', data);
         
         customAlert(
-            `Employee record updated successfully!\n\nName: ${updatedEmployee.full_name}\nDepartment: ${updatedEmployee.department}\nStatus: ${updatedEmployee.status}`, 
+            `Employee record updated successfully!\n\nName: ${updatedEmployee.fullName}\nDepartment: ${updatedEmployee.department}\nStatus: ${updatedEmployee.status}`, 
             "Employee Updated", 
             "success"
         );
