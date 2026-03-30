@@ -43,4 +43,47 @@ router.get('/:id', (req, res) => {
     });
 });
 
+// Approve policy
+router.post('/:id/approve', (req, res) => {
+    console.log('✅ Approving policy:', req.params.id);
+    res.json({
+        message: 'Policy approved successfully',
+        policy_id: req.params.id,
+        status: 'approved',
+        approved_by: 'HR Manager',
+        approved_date: new Date().toISOString(),
+        timestamp: new Date().toISOString()
+    });
+});
+
+// Request revision
+router.post('/:id/revision', (req, res) => {
+    console.log('🔄 Requesting revision for policy:', req.params.id);
+    const { revision_notes } = req.body;
+    res.json({
+        message: 'Policy revision requested successfully',
+        policy_id: req.params.id,
+        status: 'revision_requested',
+        revision_notes: revision_notes || 'Please review and update this policy',
+        requested_by: 'HR Manager',
+        requested_date: new Date().toISOString(),
+        timestamp: new Date().toISOString()
+    });
+});
+
+// Reject policy
+router.post('/:id/reject', (req, res) => {
+    console.log('❌ Rejecting policy:', req.params.id);
+    const { rejection_reason } = req.body;
+    res.json({
+        message: 'Policy rejected successfully',
+        policy_id: req.params.id,
+        status: 'rejected',
+        rejection_reason: rejection_reason || 'Policy does not meet requirements',
+        rejected_by: 'HR Manager',
+        rejected_date: new Date().toISOString(),
+        timestamp: new Date().toISOString()
+    });
+});
+
 module.exports = router;
