@@ -284,6 +284,7 @@ router.post('/', async (req, res) => {
                 'Worker Account Creation': 'Worker Account Creation',
                 'Project Assignment': 'Project Assignment',
                 'Leave Management': 'Leave Management',
+                'Leave Request': 'Leave Management', // Added mapping for Leave Request
                 'Contract Management': 'Contract Management',
                 'Policy Management': 'Policy Management',
                 'Senior Staff Hiring': 'Senior Staff Hiring',
@@ -295,6 +296,24 @@ router.post('/', async (req, res) => {
         
         const mapped_work_type = getMappedWorkType(work_type);
         console.log('🔄 Mapped work type:', work_type, '->', mapped_work_type);
+        console.log('🔍 Work type length:', work_type ? work_type.length : 'undefined');
+        console.log('🔍 Mapped work type length:', mapped_work_type ? mapped_work_type.length : 'undefined');
+        
+        // Validate that mapped_work_type is a valid ENUM value
+        const validWorkTypes = [
+            'Employee Registration', 'Worker Account Creation', 'Project Assignment', 
+            'Attendance Tracking', 'Leave Management', 'Contract Management', 
+            'Policy Management', 'Senior Staff Hiring', 'Budget Approval', 'Employment Action'
+        ];
+        
+        if (!validWorkTypes.includes(mapped_work_type)) {
+            console.log('❌ Invalid work type:', mapped_work_type);
+            return res.status(400).json({
+                error: 'Invalid work_type',
+                details: `Work type "${mapped_work_type}" is not valid`,
+                validOptions: validWorkTypes
+            });
+        }
         
         // Build the query for HR department
         let query = '';
