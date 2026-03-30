@@ -311,6 +311,7 @@ console.log('  - /api/schedule-meetings/* -> schedule meetings routes');
 console.log('  - /api/meeting-minutes/* -> meeting minutes routes');
 console.log('  - /api/attendance/* -> attendance routes');
 console.log('  - /api/contracts/* -> contracts routes');
+console.log('  - /api/dual-contracts/* -> dual contracts routes');
 console.log('  - /api/leave-requests/* -> leave requests routes');
 console.log('  - /api/dual-leave-requests/* -> dual leave requests routes');
 console.log('  - /api/personnel/* -> personnel routes');
@@ -385,6 +386,17 @@ try {
     console.log('✅ Dual leave requests routes mounted at /api/dual-leave-requests');
 } catch (error) {
     console.error('❌ Error loading dual leave requests routes:', error);
+}
+
+// ===== DUAL CONTRACTS ROUTES =====
+console.log('🔍 Mounting dual contracts routes from routes/dualContracts.js...');
+try {
+    const dualContractsRoutes = require('./routes/dualContracts');
+    console.log('✅ Dual contracts routes loaded successfully');
+    app.use('/api/dual-contracts', dualContractsRoutes);
+    console.log('✅ Dual contracts routes mounted at /api/dual-contracts');
+} catch (error) {
+    console.error('❌ Error loading dual contracts routes:', error);
 }
 
 // ===== OFFICE PORTAL ROUTES =====
