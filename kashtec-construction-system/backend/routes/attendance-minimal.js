@@ -14,7 +14,7 @@ router.get('/test', (req, res) => {
 
 // Test POST route
 router.post('/test', (req, res) => {
-    console.log('� POST /api/attendance/test accessed');
+    console.log('📝 POST /api/attendance/test accessed');
     console.log('📊 Request body:', req.body);
     res.json({ 
         message: 'Attendance POST test working!',
