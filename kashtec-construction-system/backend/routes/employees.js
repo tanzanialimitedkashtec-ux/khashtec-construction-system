@@ -212,6 +212,18 @@ router.put('/:id', async (req, res) => {
     console.log('🔄 PUT employee endpoint called - DEBUG VERSION 2');
     const { fullName, gmail, phone, department, jobCategory, status, nida, passport, contract } = req.body;
     
+    console.log('🔍 Received update data:', {
+        fullName,
+        gmail,
+        phone,
+        department,
+        jobCategory,
+        status,
+        nida,
+        passport,
+        contract
+    });
+    
     try {
         // Check if employee exists
         const [existingEmployees] = await db.execute('SELECT id FROM employees WHERE id = ?', [req.params.id]);
