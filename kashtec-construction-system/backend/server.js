@@ -311,6 +311,7 @@ console.log('  - /api/schedule-meetings/* -> schedule meetings routes');
 console.log('  - /api/meeting-minutes/* -> meeting minutes routes');
 console.log('  - /api/attendance/* -> attendance routes');
 console.log('  - /api/contracts/* -> contracts routes');
+console.log('  - /api/leave-requests/* -> leave requests routes');
 console.log('  - /api/senior-hiring/* -> senior hiring routes');
 console.log('  - /api/work/* -> work routes');
 
@@ -349,6 +350,17 @@ try {
     console.log('✅ Contracts routes mounted at /api/contracts');
 } catch (error) {
     console.error('❌ Error loading contracts routes:', error);
+}
+
+// ===== LEAVE REQUESTS ROUTES =====
+console.log('🔍 Mounting leave requests routes from routes/leaveRequests.js...');
+try {
+    const leaveRequestsRoutes = require('./routes/leaveRequests');
+    console.log('✅ Leave requests routes loaded successfully');
+    app.use('/api/leave-requests', leaveRequestsRoutes);
+    console.log('✅ Leave requests routes mounted at /api/leave-requests');
+} catch (error) {
+    console.error('❌ Error loading leave requests routes:', error);
 }
 
 // ===== OFFICE PORTAL ROUTES =====
