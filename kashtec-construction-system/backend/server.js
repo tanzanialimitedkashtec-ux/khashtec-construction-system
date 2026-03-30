@@ -316,11 +316,23 @@ console.log('  - /api/leave-requests/* -> leave requests routes');
 console.log('  - /api/dual-leave-requests/* -> dual leave requests routes');
 console.log('  - /api/personnel/* -> personnel routes');
 console.log('  - /api/senior-hiring/* -> senior hiring routes');
+console.log('  - /api/workforce-budget/* -> workforce budget routes');
 console.log('  - /api/work/* -> work routes');
 
 // ===== SENIOR HIRING ROUTES =====
 const seniorHiringRoutes = require('./routes/seniorHiring');
 app.use('/api/senior-hiring', seniorHiringRoutes);
+
+// ===== WORKFORCE BUDGET ROUTES =====
+console.log('🔍 Mounting workforce budget routes from routes/workforceBudget.js...');
+try {
+    const workforceBudgetRoutes = require('./routes/workforceBudget');
+    console.log('✅ Workforce budget routes loaded successfully');
+    app.use('/api/workforce-budget', workforceBudgetRoutes);
+    console.log('✅ Workforce budget routes mounted at /api/workforce-budget');
+} catch (error) {
+    console.error('❌ Error loading workforce budget routes:', error);
+}
 
 // ===== WORK ROUTES =====
 console.log('🔍 Mounting work routes from routes/work.js...');
