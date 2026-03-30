@@ -5341,7 +5341,21 @@ function loadEmployeeForUpdate() {
             console.log('📊 Employees loaded:', data);
             
             // Handle different response formats
-            const employees = data.employees || data || [];
+            let employees = [];
+            
+            if (Array.isArray(data)) {
+                employees = data;
+            } else if (data.employees && Array.isArray(data.employees)) {
+                employees = data.employees;
+            } else if (data.employee && Array.isArray(data.employee)) {
+                employees = data.employee;
+            } else if (data && typeof data === 'object') {
+                // Single employee object - convert to array
+                employees = [data];
+            } else {
+                employees = [];
+            }
+            
             console.log('📊 Processed employees:', employees);
             
             // Filter employees based on search term
@@ -5490,7 +5504,21 @@ function selectEmployeeForUpdate(email) {
         .then(response => response.json())
         .then(data => {
             // Handle different response formats
-            const employees = data.employees || data || [];
+            let employees = [];
+            
+            if (Array.isArray(data)) {
+                employees = data;
+            } else if (data.employees && Array.isArray(data.employees)) {
+                employees = data.employees;
+            } else if (data.employee && Array.isArray(data.employee)) {
+                employees = data.employee;
+            } else if (data && typeof data === 'object') {
+                // Single employee object - convert to array
+                employees = [data];
+            } else {
+                employees = [];
+            }
+            
             const employee = employees.find(emp => (emp.gmail || emp.email) === email);
             
             console.log('📊 Selected employee:', employee);
