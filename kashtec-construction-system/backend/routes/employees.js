@@ -303,6 +303,61 @@ router.put('/:id', async (req, res) => {
             passport,
             contract
         });
+        
+        // Handle data truncation errors gracefully
+        if (error.code === 'WARN_DATA_TRUNCATED' && error.sqlMessage && error.sqlMessage.includes('status')) {
+            console.log('🔧 Status truncation detected, trying shorter status value...');
+            
+            // Try shorter status values if truncation occurs
+            const shortStatuses = {
+                'Inactive': 'Active',
+                'Terminated': 'Term',
+                'Suspended': 'Susp'
+            };
+            
+            if (status && shortStatuses[status]) {
+                console.log(`🔧 Retrying with shorter status: ${status} -> ${shortStatuses[status]}`);
+                
+                // Retry the update with shorter status
+                const retryUpdates = [];
+                const retryValues = [];
+                
+                if (department) {
+                    retryUpdates.push('department = ?');
+                    retryValues.push(department);
+                }
+                if (jobCategory) {
+                    retryUpdates.push('position = ?');
+                    retryValues.push(jobCategory);
+                }
+                if (status) {
+                    retryUpdates.push('status = ?');
+                    retryValues.push(shortStatuses[status]);
+                }
+                
+                retryValues.push(req.params.id);
+                
+                try {
+                    await db.execute(
+                        `UPDATE employees SET ${retryUpdates.join(', ')} WHERE id = ?`,
+                        retryValues
+                    );
+                    
+                    console.log('✅ Employee updated successfully with shortened status');
+                    
+                    const [updatedEmployee] = await db.execute('SELECT * FROM employees WHERE id = ?', [req.params.id]);
+                    
+                    res.json({
+                        message: 'Employee updated successfully',
+                        employee: updatedEmployee[0]
+                    });
+                    return;
+                } catch (retryError) {
+                    console.error('❌ Retry also failed:', retryError);
+                }
+            }
+        }
+        
         res.status(500).json({ 
             error: 'Failed to update employee', 
             details: error.message 

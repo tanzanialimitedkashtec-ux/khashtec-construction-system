@@ -3,6 +3,7 @@ const router = express.Router();
 
 // Add this at the very top to test if the file loads
 console.log('🚀 Clients route file is being loaded...');
+console.log('🔍 Module exports check:', typeof module.exports);
 
 // Add a simple test endpoint to verify the route is working
 router.get('/test-simple', (req, res) => {
