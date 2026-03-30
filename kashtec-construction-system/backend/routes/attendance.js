@@ -2,6 +2,8 @@ const express = require('express');
 const router = express.Router();
 const db = require('../../database/config/database');
 
+console.log('🚀 Attendance routes module loaded successfully');
+
 // Test endpoint to verify attendance API is working
 router.get('/test', (req, res) => {
     console.log('🧪 Attendance test endpoint accessed');
@@ -158,8 +160,10 @@ router.get('/employee/:employeeId', async (req, res) => {
 // Create new attendance record
 router.post('/', async (req, res) => {
     try {
-        console.log('📝 Creating new attendance record...');
+        console.log('📝 POST /api/attendance accessed - Creating new attendance record...');
         console.log('📊 Request body:', req.body);
+        console.log('📊 Request headers:', req.headers);
+        console.log('📊 Request URL:', req.originalUrl);
         
         const {
             date: attendance_date,
