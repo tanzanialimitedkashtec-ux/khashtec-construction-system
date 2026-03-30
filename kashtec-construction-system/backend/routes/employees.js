@@ -238,6 +238,8 @@ router.put('/:id', async (req, res) => {
         
         // Validate status value before processing
         const validStatuses = ['Active', 'Inactive', 'Terminated'];
+        console.log('🔍 Validating status:', { received: status, valid: validStatuses });
+        
         if (status && !validStatuses.includes(status)) {
             console.log('❌ Invalid status value:', status);
             return res.status(400).json({ 
@@ -246,6 +248,8 @@ router.put('/:id', async (req, res) => {
                 received: status 
             });
         }
+        
+        console.log('✅ Status validation passed:', status);
         
         // Only update fields that exist in employees table
         if (department) {

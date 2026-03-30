@@ -4,6 +4,16 @@ const router = express.Router();
 // Add this at the very top to test if the file loads
 console.log('🚀 Clients route file is being loaded...');
 
+// Add a simple test endpoint to verify the route is working
+router.get('/test-simple', (req, res) => {
+    console.log('🧪 Simple clients test endpoint accessed');
+    res.json({ 
+        message: 'Clients API is working!',
+        timestamp: new Date().toISOString(),
+        status: 'routes_loaded_successfully'
+    });
+});
+
 try {
     const db = require('../../database/config/database');
     console.log('✅ Database connection loaded successfully');
