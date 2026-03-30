@@ -15,30 +15,26 @@ router.get('/test', (req, res) => {
 // Main GET route
 router.get('/', (req, res) => {
     console.log('📝 GET /api/senior-hiring accessed');
-    res.json({ 
-        message: 'Senior hiring main endpoint working!',
-        timestamp: new Date().toISOString(),
-        requests: [
-            {
-                id: 1,
-                candidate_name: 'John Doe',
-                position: 'Senior Developer',
-                department: 'IT',
-                status: 'pending',
-                request_date: '2026-03-30',
-                approval_date: null
-            },
-            {
-                id: 2,
-                candidate_name: 'Jane Smith',
-                position: 'Project Manager',
-                department: 'Projects',
-                status: 'approved',
-                request_date: '2026-03-29',
-                approval_date: '2026-03-30'
-            }
-        ]
-    });
+    res.json([
+        {
+            id: 1,
+            candidate_name: 'John Doe',
+            position: 'Senior Developer',
+            department: 'IT',
+            status: 'pending',
+            request_date: '2026-03-30',
+            approval_date: null
+        },
+        {
+            id: 2,
+            candidate_name: 'Jane Smith',
+            position: 'Project Manager',
+            department: 'Projects',
+            status: 'approved',
+            request_date: '2026-03-29',
+            approval_date: '2026-03-30'
+        }
+    ]);
 });
 
 // GET by ID route

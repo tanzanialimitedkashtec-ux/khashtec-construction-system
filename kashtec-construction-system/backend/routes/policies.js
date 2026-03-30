@@ -15,26 +15,22 @@ router.get('/test', (req, res) => {
 // Main GET route
 router.get('/', (req, res) => {
     console.log('📝 GET /api/policies accessed');
-    res.json({ 
-        message: 'Policies main endpoint working!',
-        timestamp: new Date().toISOString(),
-        policies: [
-            {
-                id: 1,
-                title: 'Test Policy 1',
-                category: 'HR',
-                status: 'active',
-                created_date: '2026-03-30'
-            },
-            {
-                id: 2,
-                title: 'Test Policy 2', 
-                category: 'Safety',
-                status: 'draft',
-                created_date: '2026-03-30'
-            }
-        ]
-    });
+    res.json([
+        {
+            id: 1,
+            title: 'Test Policy 1',
+            category: 'HR',
+            status: 'active',
+            created_date: '2026-03-30'
+        },
+        {
+            id: 2,
+            title: 'Test Policy 2', 
+            category: 'Safety',
+            status: 'draft',
+            created_date: '2026-03-30'
+        }
+    ]);
 });
 
 // GET by ID route
