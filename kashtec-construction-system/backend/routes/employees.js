@@ -96,6 +96,16 @@ router.post('/', async (req, res) => {
         // Create employee details record with better error handling
         try {
             console.log('🔍 Creating employee details record...');
+            console.log('📝 Details data:', {
+                employeeDbId,
+                fullName,
+                gmail,
+                phone,
+                nida,
+                passport: passport || '',
+                contract
+            });
+            
             const detailsResult = await db.execute(
                 `INSERT INTO employee_details (employee_id, full_name, gmail, phone, nida, passport, contract_type, profile_image)
                  VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
@@ -114,10 +124,40 @@ router.post('/', async (req, res) => {
             console.log('✅ Employee details created:', detailsResult);
             console.log('🆔 New employee ID:', employeeDbId);
             
+            // Handle different result formats
+            const detailsDbId = Array.isArray(detailsResult) ? detailsResult[0].insertId : detailsResult.insertId;
+            console.log('✅ Employee details DB ID:', detailsDbId);
+            
         } catch (detailsError) {
             console.error('❌ Error creating employee details:', detailsError);
-            // Don't fail the entire operation if details fail, but log it
-            console.log('⚠️ Employee created in main table, but details failed');
+            console.error('❌ Details error details:', {
+                message: detailsError.message,
+                code: detailsError.code,
+                errno: detailsError.errno,
+                sqlState: detailsError.sqlState,
+                sqlMessage: detailsError.sqlMessage
+            });
+            
+            // Try to insert with minimal data if full insert fails
+            try {
+                console.log('🔄 Attempting minimal employee details insert...');
+                const minimalResult = await db.execute(
+                    `INSERT INTO employee_details (employee_id, full_name, gmail, phone, nida, contract_type)
+                     VALUES (?, ?, ?, ?, ?, ?)`,
+                    [
+                        employeeDbId,
+                        fullName,
+                        gmail,
+                        phone,
+                        nida,
+                        contract
+                    ]
+                );
+                console.log('✅ Minimal employee details created:', minimalResult);
+            } catch (minimalError) {
+                console.error('❌ Even minimal insert failed:', minimalError);
+                console.log('⚠️ Employee created in main table, but details completely failed');
+            }
         }
         
         // Return the created employee with details
