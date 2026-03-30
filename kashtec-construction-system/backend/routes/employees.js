@@ -258,8 +258,28 @@ router.put('/:id', async (req, res) => {
         });
         
     } catch (error) {
-        console.error('Error updating employee:', error);
-        res.status(500).json({ error: 'Failed to update employee' });
+        console.error('❌ Error updating employee:', error);
+        console.error('❌ Error details:', error.message);
+        console.error('❌ Error code:', error.code);
+        console.error('❌ Error errno:', error.errno);
+        console.error('❌ Error sqlState:', error.sqlState);
+        console.error('❌ Error sqlMessage:', error.sqlMessage);
+        console.error('❌ Update data being processed:', {
+            id: req.params.id,
+            fullName,
+            gmail,
+            phone,
+            department,
+            jobCategory,
+            status,
+            nida,
+            passport,
+            contract
+        });
+        res.status(500).json({ 
+            error: 'Failed to update employee', 
+            details: error.message 
+        });
     }
 });
 
