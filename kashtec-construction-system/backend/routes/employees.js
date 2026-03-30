@@ -209,6 +209,7 @@ router.get('/:id', async (req, res) => {
 
 // Update employee
 router.put('/:id', async (req, res) => {
+    console.log('🔄 PUT employee endpoint called - DEBUG VERSION 2');
     const { fullName, gmail, phone, department, jobCategory, status, nida, passport, contract } = req.body;
     
     try {
