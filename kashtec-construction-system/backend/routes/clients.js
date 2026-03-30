@@ -154,8 +154,6 @@ router.put('/:id', async (req, res) => {
             [updates, id]
         );
         
-        res.json({ message: 'Client updated successfully', changes: result.affectedRows });
-        
         console.log('✅ Client updated successfully:', result);
         
         res.json({
