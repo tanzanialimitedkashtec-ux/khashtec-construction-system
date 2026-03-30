@@ -13063,7 +13063,7 @@ function scheduleMeetingSubmit() {
     
     // Send to API - Fixed URL
     const baseUrl = window.location.origin;
-    fetch(`${baseUrl}/api/schedule-meetings`, {
+    fetch(`${baseUrl}/api/schedule-meetings/`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
