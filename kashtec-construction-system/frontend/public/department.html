@@ -5394,7 +5394,7 @@ function loadEmployeeForUpdate() {
                             ID: ${employeeId} | Dept: ${department}<br>
                             Email: ${gmail} | Status: ${status}
                         </div>
-                        <button class="select-btn" onclick="selectEmployeeForUpdate('${emp.gmail || emp.id}')">Select</button>
+                        <button class="select-btn" onclick="event.stopPropagation(); selectEmployeeForUpdate('${emp.gmail || emp.id}')">Select</button>
                     </div>
                 `;
             });
@@ -5551,33 +5551,79 @@ function selectEmployeeForUpdate(email) {
 }
 
 function saveEmployeeUpdate() {
+    console.log('💾 Updating employee record...');
+    
+    // Get form values
+    const employeeId = document.getElementById('updateEmpID').value;
     const updatedEmployee = {
-        fullName: document.getElementById('updateFullName').value,
+        full_name: document.getElementById('updateFullName').value,
         phone: document.getElementById('updatePhone').value,
         gmail: document.getElementById('updateGmail').value,
         department: document.getElementById('updateDepartment').value,
-        jobCategory: document.getElementById('updateJobCategory').value,
-        contract: document.getElementById('updateContract').value,
+        job_category: document.getElementById('updateJobCategory').value,
+        contract_type: document.getElementById('updateContract').value,
         status: document.getElementById('updateStatus').value,
-        notes: document.getElementById('updateNotes').value,
-        lastUpdated: new Date().toLocaleString()
+        notes: document.getElementById('updateNotes').value
     };
     
-    // Update in secure storage (API)
-    const employees = []; // TODO: Load from API
-    const index = employees.findIndex(emp => emp.gmail === updatedEmployee.gmail);
+    console.log('📊 Employee data to update:', updatedEmployee);
+    console.log('🆔 Employee ID:', employeeId);
     
-    if (index !== -1) {
-        employees[index] = { ...employees[index], ...updatedEmployee };
-        // TODO: Save to API
-        
-        customAlert(`Employee record updated successfully!\n\nName: ${updatedEmployee.fullName}\nDepartment: ${updatedEmployee.department}\nStatus: ${updatedEmployee.status}`, "Employee Updated", "success");
-        
-        document.getElementById('updateEmployeeForm').reset();
-        document.getElementById('updateForm').classList.add('hidden');
+    // Validate required fields
+    if (!updatedEmployee.full_name || !updatedEmployee.phone || !updatedEmployee.gmail || !updatedEmployee.department || !updatedEmployee.job_category || !updatedEmployee.contract_type || !updatedEmployee.status) {
+        customAlert('Please fill in all required fields marked with *', 'Validation Error', 'error');
+        return false;
     }
     
-    return false;
+    // Show loading state
+    const submitBtn = document.querySelector('#updateEmployeeForm button[type="submit"]');
+    const originalText = submitBtn.textContent;
+    submitBtn.textContent = 'Updating...';
+    submitBtn.disabled = true;
+    
+    // Update employee via API
+    fetch(`https://khashtec.up.railway.app/api/employees/${employeeId}`, {
+        method: 'PUT',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(updatedEmployee)
+    })
+    .then(response => {
+        console.log('📡 Update response status:', response.status);
+        
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        return response.json();
+    })
+    .then(data => {
+        console.log('✅ Employee updated successfully:', data);
+        
+        customAlert(
+            `Employee record updated successfully!\n\nName: ${updatedEmployee.full_name}\nDepartment: ${updatedEmployee.department}\nStatus: ${updatedEmployee.status}`, 
+            "Employee Updated", 
+            "success"
+        );
+        
+        // Reset form and hide it
+        document.getElementById('updateEmployeeForm').reset();
+        document.getElementById('updateForm').classList.add('hidden');
+        document.getElementById('employeeSearchResults').innerHTML = '';
+        
+    })
+    .catch(error => {
+        console.error('❌ Error updating employee:', error);
+        customAlert(`Failed to update employee: ${error.message}\n\nPlease check the employee ID and try again.`, 'Update Failed', 'error');
+    })
+    .finally(() => {
+        // Restore button state
+        submitBtn.textContent = originalText;
+        submitBtn.disabled = false;
+    });
+    
+    return false; // Prevent form submission
 }
 
 function cancelUpdate() {
