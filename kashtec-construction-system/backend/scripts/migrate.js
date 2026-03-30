@@ -31,13 +31,30 @@ async function runMigration() {
             
             // Split SQL into individual statements and execute them
             const statements = migrationSQL
-                .split(';')
+                .split(/;\s*(?=(?:[^']*'[^']*')*[^']*$)/) // Split on semicolons not within quotes
                 .map(stmt => stmt.trim())
-                .filter(stmt => stmt.length > 0 && !stmt.startsWith('--'));
+                .filter(stmt => {
+                    // Filter out empty statements and pure comments
+                    if (!stmt || stmt.length === 0) return false;
+                    if (stmt.startsWith('--')) return false;
+                    if (stmt.match(/^[\s-]*$/)) return false; // Only whitespace or dashes
+                    return true;
+                });
             
-            for (const statement of statements) {
+            console.log(`📝 Found ${statements.length} SQL statements to execute`);
+            
+            for (let i = 0; i < statements.length; i++) {
+                const statement = statements[i];
                 if (statement.trim()) {
-                    await db.execute(statement);
+                    console.log(`📝 Statement ${i + 1}: \n${statement.substring(0, 100)}...`);
+                    try {
+                        await db.execute(statement);
+                        console.log(`✅ Statement ${i + 1}/${statements.length} executed successfully`);
+                    } catch (stmtError) {
+                        console.error(`❌ Error in statement ${i + 1}:`, stmtError.message);
+                        console.error(`📝 Failed statement: ${statement.substring(0, 200)}...`);
+                        throw stmtError;
+                    }
                 }
             }
             
@@ -47,6 +64,146 @@ async function runMigration() {
             // Continue with worker assignments table creation even if main migration fails
         }
         
+        // Create leave_requests table if it doesn't exist
+        console.log('🔍 Creating leave_requests table...');
+        try {
+            const leaveRequestsSQL = `
+                CREATE TABLE IF NOT EXISTS leave_requests (
+                  id INT AUTO_INCREMENT PRIMARY KEY,
+                  employee_id VARCHAR(50) NOT NULL,
+                  employee_name VARCHAR(255) NOT NULL,
+                  leave_type ENUM('annual', 'sick', 'maternity', 'paternity', 'compassionate', 'study', 'unpaid') NOT NULL,
+                  start_date DATE NOT NULL,
+                  end_date DATE NOT NULL,
+                  days_requested INT NOT NULL,
+                  reason_for_leave TEXT NOT NULL,
+                  approval_status ENUM('pending', 'approved', 'rejected') DEFAULT 'pending',
+                  approved_by VARCHAR(255),
+                  approved_date TIMESTAMP NULL,
+                  rejection_reason TEXT,
+                  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+                  
+                  INDEX idx_employee_id (employee_id),
+                  INDEX idx_leave_type (leave_type),
+                  INDEX idx_start_date (start_date),
+                  INDEX idx_end_date (end_date),
+                  INDEX idx_approval_status (approval_status),
+                  INDEX idx_created_at (created_at)
+                );
+            `;
+            
+            await db.execute(leaveRequestsSQL);
+            console.log('✅ Leave requests table created successfully');
+        } catch (error) {
+            console.error('❌ Error creating leave_requests table:', error);
+        }
+
+        // Create contracts table if it doesn't exist
+        console.log('🔍 Creating contracts table...');
+        try {
+            const contractsSQL = `
+                CREATE TABLE IF NOT EXISTS contracts (
+                  id INT AUTO_INCREMENT PRIMARY KEY,
+                  employee_id VARCHAR(50) NOT NULL,
+                  employee_name VARCHAR(255) NOT NULL,
+                  contract_type ENUM('permanent', 'temporary', 'contract', 'probation', 'internship') NOT NULL,
+                  start_date DATE NOT NULL,
+                  end_date DATE NULL,
+                  salary DECIMAL(12,2) NOT NULL,
+                  contract_status ENUM('active', 'expired', 'terminated', 'renewed') DEFAULT 'active',
+                  contract_terms TEXT,
+                  contract_document VARCHAR(255),
+                  created_by VARCHAR(255),
+                  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+                  
+                  INDEX idx_employee_id (employee_id),
+                  INDEX idx_contract_type (contract_type),
+                  INDEX idx_start_date (start_date),
+                  INDEX idx_end_date (end_date),
+                  INDEX idx_contract_status (contract_status),
+                  INDEX idx_created_at (created_at)
+                );
+            `;
+            
+            await db.execute(contractsSQL);
+            console.log('✅ Contracts table created successfully');
+        } catch (error) {
+            console.error('❌ Error creating contracts table:', error);
+        }
+
+        // Create attendance table if it doesn't exist
+        console.log('🔍 Creating attendance table...');
+        try {
+            const attendanceSQL = `
+                CREATE TABLE IF NOT EXISTS attendance (
+                  id INT AUTO_INCREMENT PRIMARY KEY,
+                  employee_id VARCHAR(50) NOT NULL,
+                  employee_name VARCHAR(255) NOT NULL,
+                  attendance_date DATE NOT NULL,
+                  check_in_time TIME NULL,
+                  check_out_time TIME NULL,
+                  attendance_status ENUM('present', 'absent', 'late', 'sick', 'annual', 'permission') NOT NULL,
+                  notes TEXT NULL,
+                  marked_by VARCHAR(255) NOT NULL,
+                  marked_by_role VARCHAR(100) DEFAULT 'HR Manager',
+                  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+                  
+                  INDEX idx_employee_id (employee_id),
+                  INDEX idx_attendance_date (attendance_date),
+                  INDEX idx_attendance_status (attendance_status),
+                  INDEX idx_marked_by (marked_by),
+                  
+                  UNIQUE KEY unique_employee_date (employee_id, attendance_date)
+                );
+            `;
+            
+            await db.execute(attendanceSQL);
+            console.log('✅ Attendance table created successfully');
+        } catch (error) {
+            console.error('❌ Error creating attendance table:', error);
+        }
+
+        // Create schedule_meetings table if it doesn't exist
+        console.log('🔍 Creating schedule_meetings table...');
+        try {
+            const scheduleMeetingsSQL = `
+                CREATE TABLE IF NOT EXISTS schedule_meetings (
+                  id INT AUTO_INCREMENT PRIMARY KEY,
+                  meeting_title VARCHAR(255) NOT NULL,
+                  meeting_type ENUM('board', 'management', 'department', 'project', 'client', 'training', 'general') NOT NULL,
+                  meeting_date DATE NOT NULL,
+                  start_time TIME NOT NULL,
+                  end_time TIME NOT NULL,
+                  location VARCHAR(255),
+                  organizing_department ENUM('management', 'hr', 'finance', 'projects', 'operations', 'realestate') NOT NULL,
+                  expected_attendees INT DEFAULT 1,
+                  meeting_description TEXT,
+                  projector_required BOOLEAN DEFAULT FALSE,
+                  whiteboard_required BOOLEAN DEFAULT FALSE,
+                  refreshments_required BOOLEAN DEFAULT FALSE,
+                  parking_required BOOLEAN DEFAULT FALSE,
+                  status ENUM('Scheduled', 'Confirmed', 'Cancelled', 'Completed', 'Postponed') DEFAULT 'Scheduled',
+                  created_by INT,
+                  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+                  
+                  INDEX idx_meeting_date (meeting_date),
+                  INDEX idx_meeting_type (meeting_type),
+                  INDEX idx_department (organizing_department),
+                  INDEX idx_status (status),
+                  INDEX idx_created_by (created_by)
+                );
+            `;
+            
+            await db.execute(scheduleMeetingsSQL);
+            console.log('✅ Schedule meetings table created successfully');
+        } catch (error) {
+            console.error('❌ Error creating schedule_meetings table:', error);
+        }
+
         // Create meeting_minutes table if it doesn't exist
         console.log('🔍 Creating meeting_minutes table...');
         try {
@@ -339,6 +496,75 @@ async function runMigration() {
             console.log('📋 Policies table already has data');
         }
         
+        // Insert sample leave requests if table is empty
+        console.log('📝 Checking if leave_requests table needs sample data...');
+        const [leaveCheck] = await db.execute('SELECT COUNT(*) as count FROM leave_requests');
+        
+        if (leaveCheck[0].count === 0) {
+            console.log('📝 Inserting sample leave request data...');
+            const sampleLeaveSQL = `
+                INSERT IGNORE INTO leave_requests (
+                    employee_id, employee_name, leave_type, start_date, end_date, days_requested, 
+                    reason_for_leave, approval_status, approved_by
+                ) VALUES
+                ('emp001', 'John Doe', 'annual', '2026-04-15', '2026-04-19', 5, 'Family vacation planned for Easter holiday', 'pending', NULL),
+                ('emp002', 'Jane Smith', 'sick', '2026-03-25', '2026-03-26', 2, 'Medical appointment and recovery', 'approved', 'HR Manager'),
+                ('emp003', 'Mike Johnson', 'compassionate', '2026-04-01', '2026-04-02', 2, 'Family emergency - attending funeral', 'approved', 'HR Manager'),
+                ('emp004', 'Sarah Wilson', 'study', '2026-05-10', '2026-05-12', 3, 'Professional development course attendance', 'pending', NULL)
+            `;
+            
+            await db.execute(sampleLeaveSQL);
+            console.log('✅ Sample leave request data inserted successfully');
+        } else {
+            console.log('📋 Leave requests table already has data');
+        }
+
+        // Insert sample contracts if table is empty
+        console.log('📝 Checking if contracts table needs sample data...');
+        const [contractCheck] = await db.execute('SELECT COUNT(*) as count FROM contracts');
+        
+        if (contractCheck[0].count === 0) {
+            console.log('📝 Inserting sample contract data...');
+            const sampleContractSQL = `
+                INSERT IGNORE INTO contracts (
+                    employee_id, employee_name, contract_type, start_date, end_date, salary, 
+                    contract_status, contract_terms, created_by
+                ) VALUES
+                ('emp001', 'John Doe', 'permanent', '2025-01-15', NULL, 2500000.00, 'active', 'Full-time permanent employment with standard benefits including health insurance, annual leave, and pension contributions', 'HR Manager'),
+                ('emp002', 'Jane Smith', 'contract', '2025-03-01', '2025-12-31', 2200000.00, 'active', 'Fixed-term contract for project duration with possibility of extension based on performance', 'HR Manager'),
+                ('emp003', 'Mike Johnson', 'probation', '2025-02-01', '2025-05-01', 1800000.00, 'renewed', 'Probation period successfully completed and converted to permanent contract', 'HR Manager'),
+                ('emp004', 'Sarah Wilson', 'temporary', '2025-04-01', '2025-06-30', 2000000.00, 'active', 'Temporary contract for special project with competitive hourly rate and overtime benefits', 'HR Manager')
+            `;
+            
+            await db.execute(sampleContractSQL);
+            console.log('✅ Sample contract data inserted successfully');
+        } else {
+            console.log('📋 Contracts table already has data');
+        }
+
+        // Insert sample attendance if table is empty
+        console.log('📝 Checking if attendance table needs sample data...');
+        const [attendanceCheck] = await db.execute('SELECT COUNT(*) as count FROM attendance');
+        
+        if (attendanceCheck[0].count === 0) {
+            console.log('📝 Inserting sample attendance data...');
+            const sampleAttendanceSQL = `
+                INSERT IGNORE INTO attendance (
+                    employee_id, employee_name, attendance_date, check_in_time, check_out_time, 
+                    attendance_status, notes, marked_by, marked_by_role
+                ) VALUES
+                ('emp001', 'John Doe', CURDATE(), '08:00:00', '17:00:00', 'present', 'Regular work day', 'HR Manager', 'HR Manager'),
+                ('emp002', 'Jane Smith', CURDATE(), '08:30:00', '17:00:00', 'late', 'Traffic delay', 'HR Manager', 'HR Manager'),
+                ('emp003', 'Mike Johnson', CURDATE(), NULL, NULL, 'sick', 'Fever and headache', 'HR Manager', 'HR Manager'),
+                ('emp004', 'Sarah Wilson', CURDATE(), '08:00:00', '16:00:00', 'permission', 'Left early for personal appointment', 'HR Manager', 'HR Manager')
+            `;
+            
+            await db.execute(sampleAttendanceSQL);
+            console.log('✅ Sample attendance data inserted successfully');
+        } else {
+            console.log('📋 Attendance table already has data');
+        }
+
         // Insert sample workforce budget if table is empty
         console.log('📝 Checking if workforce budgets table needs sample data...');
         const [budgetCheck] = await db.execute('SELECT COUNT(*) as count FROM workforce_budgets');

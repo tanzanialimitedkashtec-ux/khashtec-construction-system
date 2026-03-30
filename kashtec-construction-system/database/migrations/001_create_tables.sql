@@ -954,3 +954,80 @@ INSERT IGNORE INTO attendance (
 ('emp002', 'Jane Smith', CURDATE(), '08:30:00', '17:00:00', 'late', 'Traffic delay', 'HR Manager', 'HR Manager'),
 ('emp003', 'Mike Johnson', CURDATE(), NULL, NULL, 'sick', 'Fever and headache', 'HR Manager', 'HR Manager'),
 ('emp004', 'Sarah Wilson', CURDATE(), '08:00:00', '16:00:00', 'permission', 'Left early for personal appointment', 'HR Manager', 'HR Manager');
+
+-- Leave Management Table
+CREATE TABLE IF NOT EXISTS leave_requests (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  employee_id VARCHAR(50) NOT NULL,
+  employee_name VARCHAR(255) NOT NULL,
+  leave_type ENUM('annual', 'sick', 'maternity', 'paternity', 'compassionate', 'study', 'unpaid') NOT NULL,
+  start_date DATE NOT NULL,
+  end_date DATE NOT NULL,
+  days_requested INT NOT NULL,
+  reason_for_leave TEXT NOT NULL,
+  approval_status ENUM('pending', 'approved', 'rejected') DEFAULT 'pending',
+  approved_by VARCHAR(255),
+  approved_date TIMESTAMP NULL,
+  rejection_reason TEXT,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  
+  -- Foreign key relationship to employees table
+  FOREIGN KEY (employee_id) REFERENCES employees(employee_id) ON DELETE CASCADE,
+  
+  -- Indexes for performance
+  INDEX idx_employee_id (employee_id),
+  INDEX idx_leave_type (leave_type),
+  INDEX idx_start_date (start_date),
+  INDEX idx_end_date (end_date),
+  INDEX idx_approval_status (approval_status),
+  INDEX idx_created_at (created_at)
+);
+
+-- Insert sample leave request data
+INSERT IGNORE INTO leave_requests (
+  employee_id, employee_name, leave_type, start_date, end_date, days_requested, 
+  reason_for_leave, approval_status, approved_by
+) VALUES
+('emp001', 'John Doe', 'annual', '2026-04-15', '2026-04-19', 5, 'Family vacation planned for Easter holiday', 'pending', NULL),
+('emp002', 'Jane Smith', 'sick', '2026-03-25', '2026-03-26', 2, 'Medical appointment and recovery', 'approved', 'HR Manager'),
+('emp003', 'Mike Johnson', 'compassionate', '2026-04-01', '2026-04-02', 2, 'Family emergency - attending funeral', 'approved', 'HR Manager'),
+('emp004', 'Sarah Wilson', 'study', '2026-05-10', '2026-05-12', 3, 'Professional development course attendance', 'pending', NULL);
+
+-- Contract Management Table
+CREATE TABLE IF NOT EXISTS contracts (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  employee_id VARCHAR(50) NOT NULL,
+  employee_name VARCHAR(255) NOT NULL,
+  contract_type ENUM('permanent', 'temporary', 'contract', 'probation', 'internship') NOT NULL,
+  start_date DATE NOT NULL,
+  end_date DATE NULL,
+  salary DECIMAL(12,2) NOT NULL,
+  contract_status ENUM('active', 'expired', 'terminated', 'renewed') DEFAULT 'active',
+  contract_terms TEXT,
+  contract_document VARCHAR(255),
+  created_by VARCHAR(255),
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  
+  -- Foreign key relationship to employees table
+  FOREIGN KEY (employee_id) REFERENCES employees(employee_id) ON DELETE CASCADE,
+  
+  -- Indexes for performance
+  INDEX idx_employee_id (employee_id),
+  INDEX idx_contract_type (contract_type),
+  INDEX idx_start_date (start_date),
+  INDEX idx_end_date (end_date),
+  INDEX idx_contract_status (contract_status),
+  INDEX idx_created_at (created_at)
+);
+
+-- Insert sample contract data
+INSERT IGNORE INTO contracts (
+  employee_id, employee_name, contract_type, start_date, end_date, salary, 
+  contract_status, contract_terms, created_by
+) VALUES
+('emp001', 'John Doe', 'permanent', '2025-01-15', NULL, 2500000.00, 'active', 'Full-time permanent employment with standard benefits including health insurance, annual leave, and pension contributions', 'HR Manager'),
+('emp002', 'Jane Smith', 'contract', '2025-03-01', '2025-12-31', 2200000.00, 'active', 'Fixed-term contract for project duration with possibility of extension based on performance', 'HR Manager'),
+('emp003', 'Mike Johnson', 'probation', '2025-02-01', '2025-05-01', 1800000.00, 'renewed', 'Probation period successfully completed and converted to permanent contract', 'HR Manager'),
+('emp004', 'Sarah Wilson', 'temporary', '2025-04-01', '2025-06-30', 2000000.00, 'active', 'Temporary contract for special project with competitive hourly rate and overtime benefits', 'HR Manager');

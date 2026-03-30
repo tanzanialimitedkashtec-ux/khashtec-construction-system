@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const db = require('../../database/config/database');
+const db = require('../database/config/database');
 
 // Test endpoint to verify attendance API is working
 router.get('/test', (req, res) => {
