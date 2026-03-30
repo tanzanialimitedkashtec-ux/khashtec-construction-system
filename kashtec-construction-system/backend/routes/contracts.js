@@ -78,8 +78,10 @@ router.get('/employee/:employeeId', async (req, res) => {
 // Create new contract
 router.post('/', async (req, res) => {
     try {
-        console.log('📝 Creating new contract...');
+        console.log('📝 POST /api/contracts accessed - Creating new contract...');
         console.log('📊 Request body:', req.body);
+        console.log('📊 Request headers:', req.headers);
+        console.log('📊 Request URL:', req.originalUrl);
         
         const {
             employee: employee_id,
