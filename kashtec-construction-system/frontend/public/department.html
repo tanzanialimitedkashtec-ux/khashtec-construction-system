@@ -305,6 +305,59 @@ button.action{
     margin-top: 15px;
 }
 
+.search-results-list {
+    max-height: 300px;
+    overflow-y: auto;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    background: white;
+}
+
+.search-result-item {
+    padding: 12px;
+    border-bottom: 1px solid #eee;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.search-result-item:hover {
+    background-color: #f8f9fa;
+}
+
+.search-result-item:last-child {
+    border-bottom: none;
+}
+
+.employee-info {
+    flex: 1;
+    font-size: 14px;
+    line-height: 1.4;
+}
+
+.employee-info strong {
+    color: #333;
+    display: block;
+    margin-bottom: 2px;
+}
+
+.select-btn {
+    background: #007bff;
+    color: white;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 12px;
+    transition: background-color 0.2s;
+}
+
+.select-btn:hover {
+    background: #0056b3;
+}
+
 .search-result.worker-item {
 padding: 15px 20px;
 border-bottom: 1px solid #eee;
@@ -5268,6 +5321,79 @@ function saveWorkerAccount() {
     return false; // Always prevent form submission
 }
 
+function loadEmployeeForUpdate() {
+    console.log('🔍 Loading employees for update...');
+    
+    const searchTerm = document.getElementById('searchEmployee').value.toLowerCase();
+    const resultsDiv = document.getElementById('employeeSearchResults');
+    
+    if (searchTerm.length < 2) {
+        resultsDiv.innerHTML = '<p style="color: #666;">Enter at least 2 characters to search</p>';
+        return;
+    }
+    
+    resultsDiv.innerHTML = '<p style="color: #666;">Searching...</p>';
+    
+    // Load employees from API
+    fetch('https://khashtec.up.railway.app/api/employees')
+        .then(response => response.json())
+        .then(data => {
+            console.log('📊 Employees loaded:', data);
+            
+            // Handle different response formats
+            const employees = data.employees || data || [];
+            console.log('📊 Processed employees:', employees);
+            
+            // Filter employees based on search term
+            const filteredEmployees = employees.filter(emp => {
+                const fullName = (emp.full_name || emp.fullName || '').toLowerCase();
+                const employeeId = (emp.employee_id || emp.employeeId || '').toLowerCase();
+                const department = (emp.department || '').toLowerCase();
+                const gmail = (emp.gmail || '').toLowerCase();
+                
+                return fullName.includes(searchTerm) || 
+                       employeeId.includes(searchTerm) || 
+                       department.includes(searchTerm) ||
+                       gmail.includes(searchTerm);
+            });
+            
+            console.log('🔍 Filtered employees:', filteredEmployees);
+            
+            if (filteredEmployees.length === 0) {
+                resultsDiv.innerHTML = '<p style="color: #dc3545;">No employees found</p>';
+                return;
+            }
+            
+            // Display search results
+            let resultsHtml = '<div class="search-results-list">';
+            filteredEmployees.forEach(emp => {
+                const fullName = emp.full_name || emp.fullName || 'Unknown';
+                const employeeId = emp.employee_id || emp.employeeId || 'N/A';
+                const department = emp.department || 'N/A';
+                const gmail = emp.gmail || 'N/A';
+                const status = emp.status || 'active';
+                
+                resultsHtml += `
+                    <div class="search-result-item" onclick="selectEmployeeForUpdate('${emp.gmail || emp.id}')">
+                        <div class="employee-info">
+                            <strong>${fullName}</strong><br>
+                            ID: ${employeeId} | Dept: ${department}<br>
+                            Email: ${gmail} | Status: ${status}
+                        </div>
+                        <button class="select-btn" onclick="selectEmployeeForUpdate('${emp.gmail || emp.id}')">Select</button>
+                    </div>
+                `;
+            });
+            resultsHtml += '</div>';
+            
+            resultsDiv.innerHTML = resultsHtml;
+        })
+        .catch(error => {
+            console.error('❌ Error loading employees:', error);
+            resultsDiv.innerHTML = '<p style="color: #dc3545;">Error loading employees. Please try again.</p>';
+        });
+}
+
 function filterEmployees() {
     const searchTerm = document.getElementById('searchEmployee').value.toLowerCase();
     const employees = []; // TODO: Load from API
@@ -5357,22 +5483,43 @@ function filterEmployeesByDept() {
 }
 
 function selectEmployeeForUpdate(email) {
-    const employees = []; // TODO: Load from API
-    const employee = employees.find(emp => emp.gmail === email);
+    console.log('🔄 Selecting employee for update:', email);
     
-    if (employee) {
-        document.getElementById('updateEmpID').value = employee.nida || 'N/A';
-        document.getElementById('updateFullName').value = employee.fullName;
-        document.getElementById('updatePhone').value = employee.phone;
-        document.getElementById('updateGmail').value = employee.gmail;
-        document.getElementById('updateDepartment').value = employee.department;
-        document.getElementById('updateJobCategory').value = employee.jobCategory;
-        document.getElementById('updateContract').value = employee.contract;
-        document.getElementById('updateStatus').value = 'active';
-        
-        document.getElementById('updateForm').classList.remove('hidden');
-        document.getElementById('employeeSearchResults').innerHTML = '';
-    }
+    // Load employees from API to get the selected employee
+    fetch('https://khashtec.up.railway.app/api/employees')
+        .then(response => response.json())
+        .then(data => {
+            // Handle different response formats
+            const employees = data.employees || data || [];
+            const employee = employees.find(emp => (emp.gmail || emp.email) === email);
+            
+            console.log('📊 Selected employee:', employee);
+            
+            if (employee) {
+                // Fill the update form with employee data
+                document.getElementById('updateEmpID').value = employee.employee_id || employee.id || 'N/A';
+                document.getElementById('updateFullName').value = employee.full_name || employee.fullName || '';
+                document.getElementById('updatePhone').value = employee.phone || '';
+                document.getElementById('updateGmail').value = employee.gmail || employee.email || '';
+                document.getElementById('updateDepartment').value = employee.department || '';
+                document.getElementById('updateJobCategory').value = employee.position || employee.jobCategory || '';
+                document.getElementById('updateContract').value = employee.contract_type || employee.contract || '';
+                document.getElementById('updateStatus').value = employee.status || 'active';
+                
+                // Show the update form
+                document.getElementById('updateForm').classList.remove('hidden');
+                document.getElementById('employeeSearchResults').innerHTML = '';
+                
+                console.log('✅ Employee data loaded into form');
+            } else {
+                console.error('❌ Employee not found:', email);
+                document.getElementById('employeeSearchResults').innerHTML = '<p style="color: #dc3545;">Employee not found</p>';
+            }
+        })
+        .catch(error => {
+            console.error('❌ Error loading employee data:', error);
+            document.getElementById('employeeSearchResults').innerHTML = '<p style="color: #dc3545;">Error loading employee data</p>';
+        });
 }
 
 function saveEmployeeUpdate() {
