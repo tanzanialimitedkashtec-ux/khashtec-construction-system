@@ -1,9 +1,7 @@
 const express = require('express');
 const router = express.Router();
 
-// Add this at the very top to test if the file loads
 console.log('🚀 Clients route file is being loaded...');
-console.log('🔍 Module exports check:', typeof module.exports);
 
 // Add a simple test endpoint to verify the route is working
 router.get('/test-simple', (req, res) => {
@@ -14,13 +12,6 @@ router.get('/test-simple', (req, res) => {
         status: 'routes_loaded_successfully'
     });
 });
-
-try {
-    const db = require('../../database/config/database');
-    console.log('✅ Database connection loaded successfully');
-} catch (error) {
-    console.error('❌ Database connection failed:', error);
-}
 
 // Test endpoint to verify route is working
 router.get('/test', (req, res) => {
@@ -47,6 +38,8 @@ router.post('/', async (req, res) => {
         console.log('👥 Client registration request received');
         console.log('📝 Request body:', req.body);
         
+        const db = require('../../database/config/database');
+        
         // Map frontend field names to database field names
         const {
             id: client_id,
@@ -68,15 +61,7 @@ router.post('/', async (req, res) => {
         if (!client_type || !full_name || !phone_number || !email_address || !nida_number || !physical_address) {
             return res.status(400).json({
                 error: 'Missing required fields',
-                details: 'client_type, full_name, phone_number, email_address, nida_number, and physical_address are required',
-                received: { 
-                    client_type: client_type || 'undefined',
-                    full_name: full_name || 'undefined',
-                    phone_number: phone_number || 'undefined',
-                    email_address: email_address || 'undefined',
-                    nida_number: nida_number || 'undefined',
-                    physical_address: physical_address || 'undefined'
-                }
+                details: 'client_type, full_name, phone_number, email_address, nida_number, and physical_address are required'
             });
         }
         
@@ -122,104 +107,9 @@ router.post('/', async (req, res) => {
         
     } catch (error) {
         console.error('❌ Error creating client:', error);
-        console.error('❌ Error details:', {
-            message: error.message,
-            stack: error.stack,
-            code: error.code
-        });
         res.status(500).json({ 
             error: 'Failed to create client',
             details: error.message
-        });
-    }
-});
-
-// Get all clients
-router.get('/', async (req, res) => {
-    try {
-        console.log('📋 Fetching all clients...');
-        const [clients] = await db.execute('SELECT * FROM clients ORDER BY created_at DESC');
-        res.json(clients);
-    } catch (error) {
-        console.error('❌ Error fetching clients:', error);
-        res.status(500).json({ error: 'Failed to fetch clients' });
-    }
-});
-
-// Get client by ID
-router.get('/:id', async (req, res) => {
-    try {
-        const { id } = req.params;
-        console.log('🔍 Fetching client with ID:', id);
-        
-        const [client] = await db.execute('SELECT * FROM clients WHERE client_id = ?', [id]);
-        
-        if (client.length === 0) {
-            return res.status(404).json({ error: 'Client not found' });
-        }
-        
-        res.json(client[0]);
-    } catch (error) {
-        console.error('❌ Error fetching client:', error);
-        res.status(500).json({ error: 'Failed to fetch client' });
-    }
-});
-
-// Update client
-router.put('/:id', async (req, res) => {
-    try {
-        const { id } = req.params;
-        const updates = req.body;
-        
-        console.log('🔄 Updating client with ID:', id);
-        console.log('📝 Updates:', updates);
-        
-        const [result] = await db.execute(
-            'UPDATE clients SET ? WHERE client_id = ?',
-            [updates, id]
-        );
-        
-        console.log('✅ Client updated successfully:', result);
-        
-        res.json({
-            message: 'Client updated successfully',
-            affected_rows: result.affectedRows
-        });
-        
-    } catch (error) {
-        console.error('❌ Error updating client:', error);
-        res.status(500).json({ 
-            error: 'Failed to update client',
-            details: error.message 
-        });
-    }
-});
-
-// Delete client
-router.delete('/:id', async (req, res) => {
-    try {
-        const { id } = req.params;
-        console.log('🗑️ Deleting client:', id);
-        
-        const resultResult = await db.execute('DELETE FROM clients WHERE id = ?', [id]);
-        const result = Array.isArray(resultResult) ? resultResult[0] : resultResult;
-        
-        if (result.affectedRows === 0) {
-            return res.status(404).json({ error: 'Client not found' });
-        }
-        
-        console.log('✅ Client deleted successfully:', result);
-        
-        res.json({
-            message: 'Client deleted successfully',
-            affected_rows: result.affectedRows
-        });
-        
-    } catch (error) {
-        console.error('❌ Error deleting client:', error);
-        res.status(500).json({ 
-            error: 'Failed to delete client',
-            details: error.message 
         });
     }
 });
