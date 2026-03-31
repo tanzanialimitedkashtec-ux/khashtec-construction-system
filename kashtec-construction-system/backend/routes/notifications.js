@@ -324,49 +324,37 @@ router.post('/broadcast', async (req, res) => {
         
         console.log('✅ Input validation passed');
         
-        // Simple broadcast to all users - insert one notification per user_id from 1-10
-        // This avoids complex array processing that might be causing issues
-        const notificationPromises = [];
-        
-        for (let userId = 1; userId <= 10; userId++) {
-            const notificationData = [
-                title,
-                message,
-                type.charAt(0).toUpperCase() + type.slice(1), // Capitalize first letter for ENUM
-                userId, // recipient_id
-                1, // sender_id (default admin user)
-                'system', // related_type
-                null, // related_id
-                0, // is_read
-                'Medium', // priority
-                new Date() // created_at
-            ];
-            
-            notificationPromises.push(
-                db.execute(
-                    `INSERT INTO notifications (title, message, type, recipient_id, sender_id, related_type, related_id, is_read, priority, created_at) 
-                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-                    notificationData
-                )
+        // Simple broadcast - create one notification for the system
+        // This avoids foreign key constraints with missing users
+        try {
+            const result = await db.execute(
+                `INSERT INTO notifications (title, message, type, recipient_id, sender_id, related_type, related_id, is_read, priority, created_at) 
+                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+                [
+                    title,
+                    message,
+                    type.charAt(0).toUpperCase() + type.slice(1), // Capitalize for ENUM
+                    null, // recipient_id - NULL for broadcast
+                    1, // sender_id - default admin
+                    'broadcast', // related_type
+                    null, // related_id
+                    0, // is_read
+                    'Medium', // priority
+                    new Date() // created_at
+                ]
             );
+            
+            console.log(`✅ Successfully created broadcast notification:`, result);
+            
+            res.status(201).json({
+                message: 'Broadcast notification created successfully',
+                notificationId: result.insertId,
+                count: 1
+            });
+        } catch (dbError) {
+            console.error('❌ Database error in broadcast:', dbError);
+            throw dbError;
         }
-        
-        // Wait for all notifications to be created
-        const results = await Promise.all(notificationPromises);
-        
-        // Count total inserted
-        let totalInserted = 0;
-        results.forEach(result => {
-            const insertResult = Array.isArray(result) ? result[0] : result;
-            totalInserted += insertResult.affectedRows || 1;
-        });
-        
-        console.log(`✅ Successfully inserted ${totalInserted} notifications`);
-        
-        res.status(201).json({
-            message: `Broadcast notification sent to ${totalInserted} users`,
-            count: totalInserted
-        });
     } catch (error) {
         console.error('❌ Error sending broadcast notification:', error);
         console.error('❌ Error stack:', error.stack);

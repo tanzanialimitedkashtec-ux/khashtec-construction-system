@@ -12881,7 +12881,7 @@ function loadEmployeeList() {
     console.log('🔄 Loading employee list for admin assistant...');
     
     const baseUrl = window.location.origin;
-    fetch(`${baseUrl}/api/employees`, {
+    fetch(`${baseUrl}/api/employee-details`, {
         method: 'GET',
         headers: {
             'Content-Type': 'application/json',
@@ -12890,14 +12890,14 @@ function loadEmployeeList() {
         }
     })
     .then(response => {
-        console.log('📡 Employee API Response status:', response.status);
+        console.log('📡 Employee Details API Response status:', response.status);
         if (!response.ok) {
             throw new Error(`HTTP ${response.status}: ${response.statusText}`);
         }
         return response.json();
     })
     .then(data => {
-        console.log('📊 Employee API Response data:', data);
+        console.log('📊 Employee Details API Response data:', data);
         
         // Handle both single object and array responses
         let employees = Array.isArray(data) ? data : (data && typeof data === 'object' ? [data] : []);
@@ -12914,7 +12914,27 @@ function loadEmployeeList() {
     })
     .catch(error => {
         console.error('❌ Error loading employee list:', error);
-        document.getElementById('employeeGrid').innerHTML = '<div class="error-message">Error loading employees. Please try again.</div>';
+        // Fallback to employees table if employee-details fails
+        console.log('🔄 Falling back to employees table...');
+        fetch(`${baseUrl}/api/employees`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+                'Authorization': `Bearer ${sessionManager.getAuthToken()}`
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            console.log('📊 Employees API Fallback data:', data);
+            let employees = Array.isArray(data) ? data : (data && typeof data === 'object' ? [data] : []);
+            displayEmployeeList(employees);
+            updateEmployeeStats(employees);
+        })
+        .catch(fallbackError => {
+            console.error('❌ Fallback also failed:', fallbackError);
+            document.getElementById('employeeGrid').innerHTML = '<div class="error-message">Error loading employees. Please try again.</div>';
+        });
     });
 }
 
@@ -12928,49 +12948,59 @@ function displayEmployeeList(employees) {
     
     let html = '';
     employees.forEach(employee => {
-        const statusClass = employee.status === 'Active' ? 'status-active' : 
-                           employee.status === 'Inactive' ? 'status-inactive' : 'status-terminated';
+        // Handle field mapping for both employee_details and employees tables
+        const fullName = employee.fullName || employee.full_name || employee.name || 'N/A';
+        const employeeId = employee.employeeId || employee.employee_id || 'N/A';
+        const department = employee.department || employee.department_name || 'N/A';
+        const position = employee.position || employee.job_title || 'N/A';
+        const email = employee.email || employee.email_address || 'N/A';
+        const phone = employee.phone || employee.phone_number || employee.contact || 'N/A';
+        const hireDate = employee.hireDate || employee.hire_date || employee.date_hired || 'N/A';
+        const status = employee.status || employee.employment_status || 'Active';
+        
+        const statusClass = status === 'Active' ? 'status-active' : 
+                           status === 'Inactive' ? 'status-inactive' : 'status-terminated';
         
         html += `
             <div class="employee-card readonly">
                 <div class="employee-header">
                     <div class="employee-avatar">
-                        <span>${employee.fullName ? employee.fullName.charAt(0).toUpperCase() : 'E'}</span>
+                        <span>${fullName ? fullName.charAt(0).toUpperCase() : 'E'}</span>
                     </div>
                     <div class="employee-basic-info">
-                        <h4>${employee.fullName || 'N/A'}</h4>
-                        <p class="employee-id">${employee.employee_id || 'N/A'}</p>
+                        <h4>${fullName}</h4>
+                        <p class="employee-id">${employeeId}</p>
                     </div>
                     <div class="employee-status">
-                        <span class="status-badge ${statusClass}">${employee.status || 'Unknown'}</span>
+                        <span class="status-badge ${statusClass}">${status}</span>
                     </div>
                 </div>
                 
                 <div class="employee-details">
                     <div class="detail-row">
                         <span class="label">Department:</span>
-                        <span class="value">${employee.department || 'N/A'}</span>
+                        <span class="value">${department}</span>
                     </div>
                     <div class="detail-row">
                         <span class="label">Position:</span>
-                        <span class="value">${employee.position || 'N/A'}</span>
+                        <span class="value">${position}</span>
                     </div>
                     <div class="detail-row">
                         <span class="label">Email:</span>
-                        <span class="value">${employee.email || 'N/A'}</span>
+                        <span class="value">${email}</span>
                     </div>
                     <div class="detail-row">
                         <span class="label">Phone:</span>
-                        <span class="value">${employee.phone || 'N/A'}</span>
+                        <span class="value">${phone}</span>
                     </div>
                     <div class="detail-row">
                         <span class="label">Hire Date:</span>
-                        <span class="value">${employee.hire_date ? new Date(employee.hire_date).toLocaleDateString() : 'N/A'}</span>
+                        <span class="value">${hireDate ? new Date(hireDate).toLocaleDateString() : 'N/A'}</span>
                     </div>
                 </div>
                 
                 <div class="employee-actions">
-                    <button class="action-btn readonly" onclick="viewEmployeeDetails('${employee.id}')" title="View Details">
+                    <button class="action-btn readonly" onclick="viewEmployeeDetails('${employee.id || employee.employee_id}')" title="View Details">
                         👁️ View
                     </button>
                 </div>
@@ -12995,9 +13025,9 @@ function filterEmployeeList() {
     const searchTerm = document.getElementById('employeeSearchInput').value.toLowerCase();
     const departmentFilter = document.getElementById('departmentFilter').value;
     
-    // Reload all employees first
+    // Reload all employees first (try employee-details first)
     const baseUrl = window.location.origin;
-    fetch(`${baseUrl}/api/employees`, {
+    fetch(`${baseUrl}/api/employee-details`, {
         method: 'GET',
         headers: {
             'Content-Type': 'application/json',
@@ -13012,12 +13042,18 @@ function filterEmployeeList() {
         // Apply filters
         if (searchTerm || departmentFilter) {
             employees = employees.filter(employee => {
-                const matchesSearch = !searchTerm || 
-                    (employee.fullName && employee.fullName.toLowerCase().includes(searchTerm)) ||
-                    (employee.department && employee.department.toLowerCase().includes(searchTerm)) ||
-                    (employee.position && employee.position.toLowerCase().includes(searchTerm));
+                // Handle field mapping for both tables
+                const fullName = employee.fullName || employee.full_name || employee.name || '';
+                const department = employee.department || employee.department_name || '';
+                const position = employee.position || employee.job_title || '';
                 
-                const matchesDepartment = !departmentFilter || employee.department === departmentFilter;
+                const matchesSearch = !searchTerm || 
+                    fullName.toLowerCase().includes(searchTerm) ||
+                    department.toLowerCase().includes(searchTerm) ||
+                    position.toLowerCase().includes(searchTerm);
+                
+                const matchesDepartment = !departmentFilter || 
+                    department.toLowerCase() === departmentFilter.toLowerCase();
                 
                 return matchesSearch && matchesDepartment;
             });
@@ -13028,13 +13064,48 @@ function filterEmployeeList() {
     })
     .catch(error => {
         console.error('❌ Error filtering employees:', error);
+        // Fallback to employees table
+        fetch(`${baseUrl}/api/employees`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+                'Authorization': `Bearer ${sessionManager.getAuthToken()}`
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            let employees = Array.isArray(data) ? data : (data && typeof data === 'object' ? [data] : []);
+            
+            // Apply filters
+            if (searchTerm || departmentFilter) {
+                employees = employees.filter(employee => {
+                    const matchesSearch = !searchTerm || 
+                        (employee.fullName && employee.fullName.toLowerCase().includes(searchTerm)) ||
+                        (employee.department && employee.department.toLowerCase().includes(searchTerm)) ||
+                        (employee.position && employee.position.toLowerCase().includes(searchTerm));
+                    
+                    const matchesDepartment = !departmentFilter || employee.department === departmentFilter;
+                    
+                    return matchesSearch && matchesDepartment;
+                });
+            }
+            
+            displayEmployeeList(employees);
+            updateEmployeeStats(employees);
+        })
+        .catch(fallbackError => {
+            console.error('❌ Fallback filter also failed:', fallbackError);
+        });
     });
 }
 
 function viewEmployeeDetails(employeeId) {
     // Show employee details in a modal or expanded view
     const baseUrl = window.location.origin;
-    fetch(`${baseUrl}/api/employees/${employeeId}`, {
+    
+    // Try employee-details endpoint first
+    fetch(`${baseUrl}/api/employee-details/${employeeId}`, {
         method: 'GET',
         headers: {
             'Content-Type': 'application/json',
@@ -13042,7 +13113,12 @@ function viewEmployeeDetails(employeeId) {
             'Authorization': `Bearer ${sessionManager.getAuthToken()}`
         }
     })
-    .then(response => response.json())
+    .then(response => {
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+        return response.json();
+    })
     .then(employee => {
         const detailsHtml = `
             <div class="employee-details-modal">
@@ -13050,18 +13126,18 @@ function viewEmployeeDetails(employeeId) {
                 <div class="details-grid">
                     <div class="detail-section">
                         <h4>Personal Information</h4>
-                        <p><strong>Name:</strong> ${employee.fullName || 'N/A'}</p>
-                        <p><strong>Email:</strong> ${employee.email || 'N/A'}</p>
-                        <p><strong>Phone:</strong> ${employee.phone || 'N/A'}</p>
-                        <p><strong>NIDA:</strong> ${employee.nida || 'N/A'}</p>
+                        <p><strong>Name:</strong> ${employee.fullName || employee.full_name || employee.name || 'N/A'}</p>
+                        <p><strong>Email:</strong> ${employee.email || employee.email_address || 'N/A'}</p>
+                        <p><strong>Phone:</strong> ${employee.phone || employee.phone_number || employee.contact || 'N/A'}</p>
+                        <p><strong>NIDA:</strong> ${employee.nida || employee.nida_number || 'N/A'}</p>
                     </div>
                     <div class="detail-section">
                         <h4>Work Information</h4>
-                        <p><strong>Employee ID:</strong> ${employee.employee_id || 'N/A'}</p>
-                        <p><strong>Department:</strong> ${employee.department || 'N/A'}</p>
-                        <p><strong>Position:</strong> ${employee.position || 'N/A'}</p>
-                        <p><strong>Status:</strong> ${employee.status || 'N/A'}</p>
-                        <p><strong>Hire Date:</strong> ${employee.hire_date ? new Date(employee.hire_date).toLocaleDateString() : 'N/A'}</p>
+                        <p><strong>Employee ID:</strong> ${employee.employeeId || employee.employee_id || 'N/A'}</p>
+                        <p><strong>Department:</strong> ${employee.department || employee.department_name || 'N/A'}</p>
+                        <p><strong>Position:</strong> ${employee.position || employee.job_title || 'N/A'}</p>
+                        <p><strong>Status:</strong> ${employee.status || employee.employment_status || 'N/A'}</p>
+                        <p><strong>Hire Date:</strong> ${employee.hireDate || employee.hire_date || employee.date_hired ? new Date(employee.hireDate || employee.hire_date || employee.date_hired).toLocaleDateString() : 'N/A'}</p>
                     </div>
                 </div>
                 <div class="modal-actions">
@@ -13071,11 +13147,37 @@ function viewEmployeeDetails(employeeId) {
         `;
         
         // Show in a simple alert for now (can be enhanced with a proper modal)
-        customAlert(`Employee Details:\n\nName: ${employee.fullName || 'N/A'}\nDepartment: ${employee.department || 'N/A'}\nPosition: ${employee.position || 'N/A'}\nStatus: ${employee.status || 'N/A'}\n\nThis is read-only view only.`, "Employee Details", "info");
+        const fullName = employee.fullName || employee.full_name || employee.name || 'N/A';
+        const department = employee.department || employee.department_name || 'N/A';
+        const position = employee.position || employee.job_title || 'N/A';
+        const status = employee.status || employee.employment_status || 'N/A';
+        
+        customAlert(`Employee Details:\n\nName: ${fullName}\nDepartment: ${department}\nPosition: ${position}\nStatus: ${status}\n\nThis is read-only view only.`, "Employee Details", "info");
     })
     .catch(error => {
         console.error('❌ Error loading employee details:', error);
-        customAlert('Error loading employee details', "Error", "error");
+        // Fallback to employees table
+        fetch(`${baseUrl}/api/employees/${employeeId}`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+                'Authorization': `Bearer ${sessionManager.getAuthToken()}`
+            }
+        })
+        .then(response => response.json())
+        .then(employee => {
+            const fullName = employee.fullName || 'N/A';
+            const department = employee.department || 'N/A';
+            const position = employee.position || 'N/A';
+            const status = employee.status || 'N/A';
+            
+            customAlert(`Employee Details:\n\nName: ${fullName}\nDepartment: ${department}\nPosition: ${position}\nStatus: ${status}\n\nThis is read-only view only.`, "Employee Details", "info");
+        })
+        .catch(fallbackError => {
+            console.error('❌ Fallback also failed:', fallbackError);
+            customAlert('Error loading employee details', "Error", "error");
+        });
     });
 }
 
