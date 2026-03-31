@@ -11990,6 +11990,8 @@ function saveNewProperty() {
 }
 
 function saveNewClient() {
+    event.preventDefault(); // Prevent form submission
+    
     const client = {
         id: 'CLT-' + Date.now(),
         type: document.getElementById('clientType').value,
@@ -12058,15 +12060,13 @@ function saveNewClient() {
         customAlert(`Client registered successfully!\n\nName: ${client.fullName}\nID: ${client.id}\nPhone: ${client.phone}\nEmail: ${client.email}\nRegistration ID: ${data.id}\n\n🎉 Client saved to database!`, "Client Registered", "success");
         
         document.getElementById('clientForm').reset();
-        return false;
     })
     .catch(error => {
         console.error('❌ Error registering client:', error);
         customAlert(`Error registering client: ${error.message}`, "Error", "error");
-        return false;
     });
     
-    return false;
+    return false; // Always return false to prevent form submission
 }
 
 function saveNewSale() {

@@ -71,8 +71,8 @@ router.post('/', async (req, res) => {
         const query = `INSERT INTO clients (
                 client_id, client_type, full_name, company_name, phone_number, 
                 email_address, nida_number, tin_number, physical_address, 
-                property_interest, budget_range, additional_notes, registered_by
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
+                property_interest, budget_range, additional_notes, registered_by, status
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
         
         const values = [
             client_id || `CLT${Date.now().toString().slice(-6)}`,
@@ -87,7 +87,8 @@ router.post('/', async (req, res) => {
             property_interest || '', 
             budget_range || '', 
             additional_notes || '', 
-            registered_by || 'system'
+            registered_by || 'system',
+            'active'  // Default status for new clients
         ];
         
         console.log('🔍 Executing query:', query);
