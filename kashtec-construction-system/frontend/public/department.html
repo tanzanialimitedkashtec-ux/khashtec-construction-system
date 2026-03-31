@@ -12026,19 +12026,19 @@ function saveNewClient() {
             'Authorization': `Bearer ${sessionManager.getAuthToken()}`
         },
         body: JSON.stringify({
-            client_id: client.id,
-            client_type: client.type,
-            full_name: client.fullName,
-            company_name: client.companyName,
-            phone_number: client.phone,
-            email_address: client.email,
-            nida_number: client.nida,
-            tin_number: client.tin,
-            physical_address: client.address,
-            property_interest: client.propertyInterest,
-            budget_range: client.budgetRange,
-            additional_notes: client.notes,
-            registered_by: client.registeredBy
+            id: client.id,
+            type: client.type,
+            fullName: client.fullName,
+            companyName: client.companyName,
+            phone: client.phone,
+            email: client.email,
+            nida: client.nida,
+            tin: client.tin,
+            address: client.address,
+            propertyInterest: client.propertyInterest,
+            budgetRange: client.budgetRange,
+            notes: client.notes,
+            registeredBy: client.registeredBy
         })
     })
     .then(response => {
