@@ -69,7 +69,14 @@ router.post('/', async (req, res) => {
             return res.status(400).json({
                 error: 'Missing required fields',
                 details: 'client_type, full_name, phone_number, email_address, nida_number, and physical_address are required',
-                received: { client_type, full_name, phone_number, email_address, nida_number, physical_address }
+                received: { 
+                    client_type: client_type || 'undefined',
+                    full_name: full_name || 'undefined',
+                    phone_number: phone_number || 'undefined',
+                    email_address: email_address || 'undefined',
+                    nida_number: nida_number || 'undefined',
+                    physical_address: physical_address || 'undefined'
+                }
             });
         }
         
