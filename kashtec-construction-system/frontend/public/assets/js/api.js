@@ -435,7 +435,16 @@ window.KashTecAPI = {
     // Utilities
     handleApiError,
     validateApiResponse,
-    apiCall
+    apiCall,
+    
+    // Document Management
+    getDocuments,
+    getDocument,
+    createDocument,
+    updateDocument,
+    deleteDocument,
+    downloadDocument,
+    getDocumentStats
 };
 
 async function createTaskAssignment(taskData) {
@@ -528,7 +537,55 @@ async function deleteMeeting(meetingId) {
     return await apiCall(`/meetings/${meetingId}`, 'DELETE');
 }
 
-// ===== OFFICE PORTAL USERS =====
+// ===== DOCUMENT MANAGEMENT API =====
+
+// Get all documents
+async function getDocuments() {
+    return await apiCall('/documents');
+}
+
+// Get document by ID
+async function getDocument(id) {
+    return await apiCall(`/documents/${id}`);
+}
+
+// Create new document
+async function createDocument(documentData) {
+    return await apiCall('/documents', 'POST', documentData);
+}
+
+// Update document
+async function updateDocument(id, documentData) {
+    return await apiCall(`/documents/${id}`, 'PUT', documentData);
+}
+
+// Delete document
+async function deleteDocument(id) {
+    return await apiCall(`/documents/${id}`, 'DELETE');
+}
+
+// Download document
+async function downloadDocument(id) {
+    const token = getAuthToken();
+    const response = await fetch(`${API_BASE_URL}/documents/${id}/download`, {
+        headers: {
+            'Authorization': `Bearer ${token}`
+        }
+    });
+    
+    if (!response.ok) {
+        throw new Error(`Download failed: ${response.statusText}`);
+    }
+    
+    return response.blob();
+}
+
+// Get document statistics
+async function getDocumentStats() {
+    return await apiCall('/documents/stats/overview');
+}
+
+// ===== OFFICE PORTAL USER MANAGEMENT =====
 async function getOfficePortalUsers() {
     return await apiCall('/office-portal/users');
 }

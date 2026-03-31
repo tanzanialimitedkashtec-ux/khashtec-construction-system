@@ -620,6 +620,45 @@ app.get('/api/office-portal/statistics', async (req, res) => {
     }
 });
 
+// ===== DOCUMENTS ROUTES =====
+try {
+    const documentsRoutes = require('./routes/documents');
+    console.log('✅ Documents routes loaded successfully');
+    app.use('/api/documents', documentsRoutes);
+    console.log('✅ Documents routes mounted at /api/documents');
+} catch (error) {
+    console.error('❌ Error loading documents routes:', error);
+}
+
+// ===== EMPLOYEE DETAILS ROUTES =====
+// Add individual employee details endpoint
+app.get('/api/employee-details/:id', async (req, res) => {
+    try {
+        const employeeId = req.params.id;
+        const connection = await db.getConnection();
+        
+        // Try to find employee by different ID fields
+        const [employees] = await connection.query(`
+            SELECT e.*, u.name, u.email, u.phone 
+            FROM employees e 
+            LEFT JOIN users u ON e.user_id = u.id 
+            WHERE e.employee_id = ? OR e.id = ? OR u.email = ?
+            LIMIT 1
+        `, [employeeId, employeeId, employeeId]);
+        
+        connection.release();
+        
+        if (employees.length === 0) {
+            return res.status(404).json({ success: false, error: 'Employee not found' });
+        }
+        
+        res.json({ success: true, data: employees[0] });
+    } catch (error) {
+        console.error('Employee details error:', error);
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
 // Start server
 app.listen(PORT, () => {
     console.log(`KASHTEC Server running on port ${PORT}`);
