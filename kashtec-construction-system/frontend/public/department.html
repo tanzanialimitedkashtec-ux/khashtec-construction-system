@@ -12826,14 +12826,7 @@ function saveMeetingMinutes() {
     });
 }
 
-function viewEmployeeList(){
-    // Load employees from API
-    const employees = []; // TODO: Load from API
-    const apiUsers = []; // TODO: Load from API
-    
-    // Use API data if available
-    const employeeData = apiUsers.length > 0 ? apiUsers : employees;
-    
+function viewEmployeeList() {
     showContent(`<div class="card">
         <h3>View Employee List (Read-Only)</h3>
         <p><strong>Employee Directory:</strong> View complete employee information (read-only access)</p>
@@ -12842,52 +12835,36 @@ function viewEmployeeList(){
             <div class="overview-stats">
                 <div class="stat-item">
                     <span class="stat-label">Total Employees:</span>
-                    <span class="stat-value">${employeeData.length}</span>
+                    <span class="stat-value" id="totalEmployees">0</span>
                 </div>
                 <div class="stat-item">
                     <span class="stat-label">Active Employees:</span>
-                    <span class="stat-value">${employeeData.filter(emp => (emp.status || 'active') === 'active').length}</span>
+                    <span class="stat-value" id="activeEmployees">0</span>
                 </div>
                 <div class="stat-item">
                     <span class="stat-label">Departments:</span>
-                    <span class="stat-value">${[...new Set(employeeData.map(emp => emp.department || 'General'))].length}</span>
+                    <span class="stat-value" id="departmentCount">0</span>
                 </div>
             </div>
         </div>
         
         <div class="employee-directory">
             <div class="search-section">
-                <input type="text" placeholder="Search employees by name, department, or role..." onkeyup="filterEmployees()">
-                <select onchange="filterEmployeesByDept()">
+                <input type="text" id="employeeSearchInput" placeholder="Search employees by name, department, or role..." onkeyup="filterEmployeeList()">
+                <select id="departmentFilter" onchange="filterEmployeeList()">
                     <option value="">All Departments</option>
-                    <option value="management">Management</option>
+                    <option value="admin">Administration</option>
                     <option value="hr">Human Resources</option>
                     <option value="finance">Finance</option>
                     <option value="projects">Projects</option>
-                    <option value="operations">Operations</option>
+                    <option value="engineering">Engineering</option>
+                    <option value="hse">Health & Safety</option>
                     <option value="realestate">Real Estate</option>
                 </select>
             </div>
             
-            <div class="employee-grid">
-                ${employeeData.map(emp => `
-                    <div class="employee-card">
-                        <div class="employee-header">
-                            <h4>${emp.name || emp.fullName || 'Unknown'}</h4>
-                            <span class="employee-role">${emp.role || emp.position || 'N/A'}</span>
-                        </div>
-                        <div class="employee-details">
-                            <p><strong>Department:</strong> ${emp.department || 'General'}</p>
-                            <p><strong>Email:</strong> ${emp.email || 'N/A'}</p>
-                            <p><strong>Phone:</strong> ${emp.phone || 'N/A'}</p>
-                            <p><strong>Status:</strong> <span class="status-badge ${emp.status || 'active'}">${emp.status || 'active'}</span></p>
-                            <p><strong>Employee ID:</strong> ${emp.employeeId || emp.id || 'N/A'}</p>
-                        </div>
-                        <div class="employee-actions">
-                            <button class="action" onclick="viewEmployeeDetails('${emp.id || emp.employeeId}')">View Details</button>
-                        </div>
-                    </div>
-                `).join('')}
+            <div class="employee-grid" id="employeeGrid">
+                <div class="loading-message">Loading employees...</div>
             </div>
         </div>
         
@@ -12895,6 +12872,216 @@ function viewEmployeeList(){
             <p><strong>Note:</strong> This is read-only access. You cannot modify employee information. Contact HR for any changes.</p>
         </div>
     </div>`);
+    
+    // Load employees when the view is displayed
+    loadEmployeeList();
+}
+
+function loadEmployeeList() {
+    console.log('🔄 Loading employee list for admin assistant...');
+    
+    const baseUrl = window.location.origin;
+    fetch(`${baseUrl}/api/employees`, {
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'Authorization': `Bearer ${sessionManager.getAuthToken()}`
+        }
+    })
+    .then(response => {
+        console.log('📡 Employee API Response status:', response.status);
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+        return response.json();
+    })
+    .then(data => {
+        console.log('📊 Employee API Response data:', data);
+        
+        // Handle both single object and array responses
+        let employees = Array.isArray(data) ? data : (data && typeof data === 'object' ? [data] : []);
+        
+        if (employees.length === 0) {
+            document.getElementById('employeeGrid').innerHTML = '<div class="no-employees">No employees found</div>';
+            updateEmployeeStats(employees);
+            return;
+        }
+        
+        displayEmployeeList(employees);
+        updateEmployeeStats(employees);
+        
+    })
+    .catch(error => {
+        console.error('❌ Error loading employee list:', error);
+        document.getElementById('employeeGrid').innerHTML = '<div class="error-message">Error loading employees. Please try again.</div>';
+    });
+}
+
+function displayEmployeeList(employees) {
+    const employeeGrid = document.getElementById('employeeGrid');
+    
+    if (employees.length === 0) {
+        employeeGrid.innerHTML = '<div class="no-employees">No employees found</div>';
+        return;
+    }
+    
+    let html = '';
+    employees.forEach(employee => {
+        const statusClass = employee.status === 'Active' ? 'status-active' : 
+                           employee.status === 'Inactive' ? 'status-inactive' : 'status-terminated';
+        
+        html += `
+            <div class="employee-card readonly">
+                <div class="employee-header">
+                    <div class="employee-avatar">
+                        <span>${employee.fullName ? employee.fullName.charAt(0).toUpperCase() : 'E'}</span>
+                    </div>
+                    <div class="employee-basic-info">
+                        <h4>${employee.fullName || 'N/A'}</h4>
+                        <p class="employee-id">${employee.employee_id || 'N/A'}</p>
+                    </div>
+                    <div class="employee-status">
+                        <span class="status-badge ${statusClass}">${employee.status || 'Unknown'}</span>
+                    </div>
+                </div>
+                
+                <div class="employee-details">
+                    <div class="detail-row">
+                        <span class="label">Department:</span>
+                        <span class="value">${employee.department || 'N/A'}</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="label">Position:</span>
+                        <span class="value">${employee.position || 'N/A'}</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="label">Email:</span>
+                        <span class="value">${employee.email || 'N/A'}</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="label">Phone:</span>
+                        <span class="value">${employee.phone || 'N/A'}</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="label">Hire Date:</span>
+                        <span class="value">${employee.hire_date ? new Date(employee.hire_date).toLocaleDateString() : 'N/A'}</span>
+                    </div>
+                </div>
+                
+                <div class="employee-actions">
+                    <button class="action-btn readonly" onclick="viewEmployeeDetails('${employee.id}')" title="View Details">
+                        👁️ View
+                    </button>
+                </div>
+            </div>
+        `;
+    });
+    
+    employeeGrid.innerHTML = html;
+}
+
+function updateEmployeeStats(employees) {
+    const totalEmployees = employees.length;
+    const activeEmployees = employees.filter(emp => emp.status === 'Active').length;
+    const departments = [...new Set(employees.map(emp => emp.department).filter(dept => dept))].length;
+    
+    document.getElementById('totalEmployees').textContent = totalEmployees;
+    document.getElementById('activeEmployees').textContent = activeEmployees;
+    document.getElementById('departmentCount').textContent = departments;
+}
+
+function filterEmployeeList() {
+    const searchTerm = document.getElementById('employeeSearchInput').value.toLowerCase();
+    const departmentFilter = document.getElementById('departmentFilter').value;
+    
+    // Reload all employees first
+    const baseUrl = window.location.origin;
+    fetch(`${baseUrl}/api/employees`, {
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'Authorization': `Bearer ${sessionManager.getAuthToken()}`
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        let employees = Array.isArray(data) ? data : (data && typeof data === 'object' ? [data] : []);
+        
+        // Apply filters
+        if (searchTerm || departmentFilter) {
+            employees = employees.filter(employee => {
+                const matchesSearch = !searchTerm || 
+                    (employee.fullName && employee.fullName.toLowerCase().includes(searchTerm)) ||
+                    (employee.department && employee.department.toLowerCase().includes(searchTerm)) ||
+                    (employee.position && employee.position.toLowerCase().includes(searchTerm));
+                
+                const matchesDepartment = !departmentFilter || employee.department === departmentFilter;
+                
+                return matchesSearch && matchesDepartment;
+            });
+        }
+        
+        displayEmployeeList(employees);
+        updateEmployeeStats(employees);
+    })
+    .catch(error => {
+        console.error('❌ Error filtering employees:', error);
+    });
+}
+
+function viewEmployeeDetails(employeeId) {
+    // Show employee details in a modal or expanded view
+    const baseUrl = window.location.origin;
+    fetch(`${baseUrl}/api/employees/${employeeId}`, {
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'Authorization': `Bearer ${sessionManager.getAuthToken()}`
+        }
+    })
+    .then(response => response.json())
+    .then(employee => {
+        const detailsHtml = `
+            <div class="employee-details-modal">
+                <h3>Employee Details - Read Only</h3>
+                <div class="details-grid">
+                    <div class="detail-section">
+                        <h4>Personal Information</h4>
+                        <p><strong>Name:</strong> ${employee.fullName || 'N/A'}</p>
+                        <p><strong>Email:</strong> ${employee.email || 'N/A'}</p>
+                        <p><strong>Phone:</strong> ${employee.phone || 'N/A'}</p>
+                        <p><strong>NIDA:</strong> ${employee.nida || 'N/A'}</p>
+                    </div>
+                    <div class="detail-section">
+                        <h4>Work Information</h4>
+                        <p><strong>Employee ID:</strong> ${employee.employee_id || 'N/A'}</p>
+                        <p><strong>Department:</strong> ${employee.department || 'N/A'}</p>
+                        <p><strong>Position:</strong> ${employee.position || 'N/A'}</p>
+                        <p><strong>Status:</strong> ${employee.status || 'N/A'}</p>
+                        <p><strong>Hire Date:</strong> ${employee.hire_date ? new Date(employee.hire_date).toLocaleDateString() : 'N/A'}</p>
+                    </div>
+                </div>
+                <div class="modal-actions">
+                    <button class="action" onclick="closeEmployeeDetails()">Close</button>
+                </div>
+            </div>
+        `;
+        
+        // Show in a simple alert for now (can be enhanced with a proper modal)
+        customAlert(`Employee Details:\n\nName: ${employee.fullName || 'N/A'}\nDepartment: ${employee.department || 'N/A'}\nPosition: ${employee.position || 'N/A'}\nStatus: ${employee.status || 'N/A'}\n\nThis is read-only view only.`, "Employee Details", "info");
+    })
+    .catch(error => {
+        console.error('❌ Error loading employee details:', error);
+        customAlert('Error loading employee details', "Error", "error");
+    });
+}
+
+function closeEmployeeDetails() {
+    // Close the modal (implementation depends on how you want to handle modals)
+    console.log('Closing employee details view');
 }
 
 function scheduleMeeting(){

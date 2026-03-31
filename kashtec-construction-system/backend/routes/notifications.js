@@ -186,7 +186,7 @@ router.put('/read-all', async (req, res) => {
         }
         
         const [result] = await db.execute(
-            'UPDATE notifications SET is_read = 1 WHERE user_id = ? AND is_read = 0',
+            'UPDATE notifications SET is_read = 1 WHERE recipient_id = ? AND is_read = 0',
             [userId]
         );
         
@@ -236,7 +236,7 @@ router.delete('/clear', async (req, res) => {
         }
         
         const [result] = await db.execute(
-            'DELETE FROM notifications WHERE user_id = ?',
+            'DELETE FROM notifications WHERE recipient_id = ?',
             [userId]
         );
         
@@ -260,8 +260,8 @@ router.get('/stats/overview', async (req, res) => {
         const params = [];
         
         if (userId) {
-            baseQuery += ' WHERE user_id = ?';
-            countQuery += ' WHERE user_id = ?';
+            baseQuery += ' WHERE recipient_id = ?';
+            countQuery += ' WHERE recipient_id = ?';
             params.push(userId);
         }
         
@@ -276,19 +276,19 @@ router.get('/stats/overview', async (req, res) => {
         
         // Type breakdown
         const typeQuery = userId 
-            ? 'SELECT type, COUNT(*) as count FROM notifications WHERE user_id = ? GROUP BY type'
+            ? 'SELECT type, COUNT(*) as count FROM notifications WHERE recipient_id = ? GROUP BY type'
             : 'SELECT type, COUNT(*) as count FROM notifications GROUP BY type';
         const [typeStats] = await db.execute(typeQuery, params);
         
-        // Category breakdown
+        // Category breakdown - Note: category field doesn't exist in schema, using type instead
         const categoryQuery = userId
-            ? 'SELECT category, COUNT(*) as count FROM notifications WHERE user_id = ? GROUP BY category'
-            : 'SELECT category, COUNT(*) as count FROM notifications GROUP BY category';
+            ? 'SELECT type as category, COUNT(*) as count FROM notifications WHERE recipient_id = ? GROUP BY type'
+            : 'SELECT type as category, COUNT(*) as count FROM notifications GROUP BY type';
         const [categoryStats] = await db.execute(categoryQuery, params);
         
         // Recent notifications
         const recentQuery = userId
-            ? 'SELECT * FROM notifications WHERE user_id = ? ORDER BY created_at DESC LIMIT 10'
+            ? 'SELECT * FROM notifications WHERE recipient_id = ? ORDER BY created_at DESC LIMIT 10'
             : 'SELECT * FROM notifications ORDER BY created_at DESC LIMIT 10';
         const [recentNotifications] = await db.execute(recentQuery, params);
         
@@ -332,17 +332,20 @@ router.post('/broadcast', async (req, res) => {
             const notificationData = [
                 title,
                 message,
-                type,
-                userId,
-                category,
+                type.charAt(0).toUpperCase() + type.slice(1), // Capitalize first letter for ENUM
+                userId, // recipient_id
+                1, // sender_id (default admin user)
+                'system', // related_type
+                null, // related_id
                 0, // is_read
+                'Medium', // priority
                 new Date() // created_at
             ];
             
             notificationPromises.push(
                 db.execute(
-                    `INSERT INTO notifications (title, message, type, user_id, category, is_read, created_at) 
-                     VALUES (?, ?, ?, ?, ?, ?, ?)`,
+                    `INSERT INTO notifications (title, message, type, recipient_id, sender_id, related_type, related_id, is_read, priority, created_at) 
+                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
                     notificationData
                 )
             );
