@@ -449,6 +449,17 @@ try {
     console.error('❌ Error loading dual contracts routes:', error);
 }
 
+// ===== DOCUMENTS ROUTES =====
+console.log('🔍 Mounting documents routes from routes/documents.js...');
+try {
+    const documentsRoutes = require('./routes/documents');
+    console.log('✅ Documents routes loaded successfully');
+    app.use('/api/documents', documentsRoutes);
+    console.log('✅ Documents routes mounted at /api/documents');
+} catch (error) {
+    console.error('❌ Error loading documents routes:', error);
+}
+
 // ===== OFFICE PORTAL ROUTES =====
 app.post('/api/office-portal/users', async (req, res) => {
     try {

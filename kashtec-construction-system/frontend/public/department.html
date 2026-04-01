@@ -13325,7 +13325,7 @@ function loadEmployeeList() {
     console.log('🔄 Loading employee list for admin assistant...');
     
     const baseUrl = window.location.origin;
-    fetch(`${baseUrl}/api/employee-list`, {
+    fetch(`${baseUrl}/api/employees`, {
         method: 'GET',
         headers: {
             'Content-Type': 'application/json',
@@ -13358,7 +13358,7 @@ function loadEmployeeList() {
     })
     .catch(error => {
         console.error('❌ Error loading employee list:', error);
-        // Fallback to employees table if employee-list fails
+        // Fallback to employees table if employees fails
         console.log('🔄 Falling back to employees table...');
         fetch(`${baseUrl}/api/employees`, {
             method: 'GET',
@@ -13469,9 +13469,9 @@ function filterEmployeeList() {
     const searchTerm = document.getElementById('employeeSearchInput').value.toLowerCase();
     const departmentFilter = document.getElementById('departmentFilter').value;
     
-    // Reload all employees first (try employee-list first)
+    // Reload all employees first (try employees first)
     const baseUrl = window.location.origin;
-    fetch(`${baseUrl}/api/employee-list`, {
+    fetch(`${baseUrl}/api/employees`, {
         method: 'GET',
         headers: {
             'Content-Type': 'application/json',
@@ -13556,8 +13556,8 @@ function viewEmployeeDetails(employeeId) {
     // Try to get employee details using KashTecAPI
     KashTecAPI.getEmployees()
         .then(response => {
-            if (response.success && response.data) {
-                const employee = response.data.find(emp => 
+            if (response && Array.isArray(response)) {
+                const employee = response.find(emp => 
                     emp.id == employeeId || 
                     emp.employee_id == employeeId || 
                     emp.gmail == employeeId
