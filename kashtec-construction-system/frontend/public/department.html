@@ -2984,10 +2984,6 @@ function reviewEmployeeCount(){
 }
 
 function viewAllWorkers(){
-    // Load all employees from API
-    const employees = []; // TODO: Load from API
-    const workerAccounts = []; // TODO: Load from API
-    
     showContent(`<div class="card">
         <h3>View All Workers</h3>
         <p><strong>High-Level Authority:</strong> Complete visibility into all registered workers and staff</p>
@@ -2996,11 +2992,11 @@ function viewAllWorkers(){
             <div class="worker-stats">
                 <div class="stat-item">
                     <span class="stat-label">Total Registered Employees:</span>
-                    <span class="stat-value">${employees.length}</span>
+                    <span class="stat-value" id="totalEmployees">Loading...</span>
                 </div>
                 <div class="stat-item">
                     <span class="stat-label">Active Worker Accounts:</span>
-                    <span class="stat-value">${workerAccounts.length}</span>
+                    <span class="stat-value" id="activeWorkerAccounts">Loading...</span>
                 </div>
                 <div class="stat-item">
                     <span class="stat-label">Departments:</span>
@@ -3025,7 +3021,7 @@ function viewAllWorkers(){
         <div class="worker-list">
             <h4>All Registered Workers</h4>
             <div id="mdWorkerResults" class="worker-results">
-                ${generateWorkerList(employees, workerAccounts)}
+                <div class="loading">Loading workers...</div>
             </div>
         </div>
         
@@ -3045,6 +3041,126 @@ function viewAllWorkers(){
             </div>
         </div>
     </div>`);
+    
+    // Load workers data
+    loadAllWorkersData();
+}
+
+// Load all workers data from API
+function loadAllWorkersData() {
+    const baseUrl = window.location.origin;
+    
+    // Fetch both employees and worker accounts
+    Promise.all([
+        fetch(`${baseUrl}/api/employees`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+                'Authorization': `Bearer ${sessionManager.getAuthToken()}`
+            }
+        }),
+        fetch(`${baseUrl}/api/worker-accounts`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+                'Authorization': `Bearer ${sessionManager.getAuthToken()}`
+            }
+        })
+    ])
+    .then(responses => {
+        if (!responses[0].ok) throw new Error(`Employees API: ${responses[0].status}`);
+        if (!responses[1].ok) throw new Error(`Worker Accounts API: ${responses[1].status}`);
+        return Promise.all([responses[0].json(), responses[1].json()]);
+    })
+    .then(([employeesData, workerAccountsData]) => {
+        console.log('📊 Employees data:', employeesData);
+        console.log('📊 Worker accounts data:', workerAccountsData);
+        
+        const employees = Array.isArray(employeesData) ? employeesData : [];
+        const workerAccounts = Array.isArray(workerAccountsData) ? workerAccountsData : [];
+        
+        // Update statistics
+        document.getElementById('totalEmployees').textContent = employees.length;
+        document.getElementById('activeWorkerAccounts').textContent = workerAccounts.length;
+        
+        // Display workers
+        displayAllWorkers(employees, workerAccounts);
+    })
+    .catch(error => {
+        console.error('❌ Error loading workers data:', error);
+        document.getElementById('mdWorkerResults').innerHTML = 
+            '<div class="error">Failed to load workers data. Please try again.</div>';
+    });
+}
+
+// Display all workers
+function displayAllWorkers(employees, workerAccounts) {
+    const resultsContainer = document.getElementById('mdWorkerResults');
+    
+    if (employees.length === 0 && workerAccounts.length === 0) {
+        resultsContainer.innerHTML = '<div class="no-data">No workers found</div>';
+        return;
+    }
+    
+    // Combine employees and worker accounts
+    const allWorkers = [
+        ...employees.map(emp => ({
+            ...emp,
+            type: 'employee',
+            displayName: emp.full_name || emp.name || 'Unknown',
+            department: emp.department || 'N/A',
+            position: emp.position || emp.job_category || 'N/A',
+            status: emp.status || 'active'
+        })),
+        ...workerAccounts.map(worker => ({
+            ...worker,
+            type: 'worker_account',
+            displayName: worker.full_name || worker.name || 'Unknown',
+            department: worker.department || 'N/A',
+            position: worker.position || worker.job_title || 'N/A',
+            status: worker.status || 'active'
+        }))
+    ];
+    
+    resultsContainer.innerHTML = allWorkers.map(worker => `
+        <div class="worker-item" data-department="${worker.department.toLowerCase()}" data-type="${worker.type}" data-status="${worker.status.toLowerCase()}">
+            <div class="worker-header">
+                <h5>${worker.displayName}</h5>
+                <span class="worker-type ${worker.type}">${worker.type.replace('_', ' ').toUpperCase()}</span>
+            </div>
+            <div class="worker-details">
+                <p><strong>Position:</strong> ${worker.position}</p>
+                <p><strong>Department:</strong> ${worker.department}</p>
+                <p><strong>Status:</strong> <span class="status-${worker.status.toLowerCase()}">${worker.status}</span></p>
+                <p><strong>Email:</strong> ${worker.gmail || worker.email || 'N/A'}</p>
+                <p><strong>Phone:</strong> ${worker.phone || 'N/A'}</p>
+                ${worker.employee_id ? `<p><strong>Employee ID:</strong> ${worker.employee_id}</p>` : ''}
+                ${worker.hire_date ? `<p><strong>Hire Date:</strong> ${new Date(worker.hire_date).toLocaleDateString()}</p>` : ''}
+                ${worker.created_at ? `<p><strong>Account Created:</strong> ${new Date(worker.created_at).toLocaleDateString()}</p>` : ''}
+            </div>
+        </div>
+    `).join('');
+}
+
+// Filter all workers
+function filterAllWorkers() {
+    const searchTerm = document.getElementById('mdWorkerSearch').value.toLowerCase();
+    const departmentFilter = document.getElementById('mdDepartmentFilter').value.toLowerCase();
+    const workerItems = document.querySelectorAll('.worker-item');
+    
+    workerItems.forEach(item => {
+        const department = item.dataset.department;
+        const type = item.dataset.type;
+        const status = item.dataset.status;
+        const text = item.textContent.toLowerCase();
+        
+        const matchesSearch = text.includes(searchTerm);
+        const matchesDepartment = !departmentFilter || department === departmentFilter;
+        
+        item.style.display = matchesSearch && matchesDepartment ? 'block' : 'none';
+    });
 }
 
 function suspendTerminateEmployment(){
