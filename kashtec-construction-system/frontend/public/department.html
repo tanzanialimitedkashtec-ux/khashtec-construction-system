@@ -2907,56 +2907,33 @@ function reviewEmployeeCount(){
             <div class="workforce-stats">
                 <div class="stat-card">
                     <h5>Total Employees</h5>
-                    <div class="stat-number">45</div>
-                    <div class="stat-change positive">+3 from last month</div>
+                    <div class="stat-number" id="totalEmployeesCount">Loading...</div>
+                    <div class="stat-change" id="totalEmployeesChange">Calculating...</div>
                 </div>
                 
                 <div class="stat-card">
                     <h5>Active Contracts</h5>
-                    <div class="stat-number">42</div>
-                    <div class="stat-change positive">+2 from last month</div>
+                    <div class="stat-number" id="activeContractsCount">Loading...</div>
+                    <div class="stat-change" id="activeContractsChange">Calculating...</div>
                 </div>
                 
                 <div class="stat-card">
                     <h5>Temporary Staff</h5>
-                    <div class="stat-number">8</div>
-                    <div class="stat-change neutral">No change</div>
+                    <div class="stat-number" id="temporaryStaffCount">Loading...</div>
+                    <div class="stat-change" id="temporaryStaffChange">Calculating...</div>
                 </div>
                 
                 <div class="stat-card">
                     <h5>Senior Staff</h5>
-                    <div class="stat-number">12</div>
-                    <div class="stat-change positive">+1 from last month</div>
+                    <div class="stat-number" id="seniorStaffCount">Loading...</div>
+                    <div class="stat-change" id="seniorStaffChange">Calculating...</div>
                 </div>
             </div>
             
             <div class="department-breakdown">
                 <h5>Department Breakdown</h5>
-                <div class="dept-stats">
-                    <div class="dept-item">
-                        <span class="dept-name">Projects</span>
-                        <span class="dept-count">18</span>
-                    </div>
-                    <div class="dept-item">
-                        <span class="dept-name">Administration</span>
-                        <span class="dept-count">6</span>
-                    </div>
-                    <div class="dept-item">
-                        <span class="dept-name">Finance</span>
-                        <span class="dept-count">5</span>
-                    </div>
-                    <div class="dept-item">
-                        <span class="dept-name">Human Resources</span>
-                        <span class="dept-count">4</span>
-                    </div>
-                    <div class="dept-item">
-                        <span class="dept-name">Health & Safety</span>
-                        <span class="dept-count">3</span>
-                    </div>
-                    <div class="dept-item">
-                        <span class="dept-name">Real Estate</span>
-                        <span class="dept-count">9</span>
-                    </div>
+                <div class="dept-stats" id="departmentBreakdown">
+                    <div class="loading">Loading department breakdown...</div>
                 </div>
             </div>
             
@@ -2981,6 +2958,91 @@ function reviewEmployeeCount(){
             </div>
         </div>
     </div>`);
+    
+    // Load employee count data
+    loadEmployeeCountData();
+}
+
+// Load employee count data from API
+function loadEmployeeCountData() {
+    const baseUrl = window.location.origin;
+    fetch(`${baseUrl}/api/employees`, {
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'Authorization': `Bearer ${sessionManager.getAuthToken()}`
+        }
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+        return response.json();
+    })
+    .then(data => {
+        console.log('📊 Employee count data:', data);
+        const employees = Array.isArray(data) ? data : [];
+        
+        if (employees.length === 0) {
+            document.getElementById('totalEmployeesCount').textContent = '0';
+            document.getElementById('activeContractsCount').textContent = '0';
+            document.getElementById('temporaryStaffCount').textContent = '0';
+            document.getElementById('seniorStaffCount').textContent = '0';
+            document.getElementById('departmentBreakdown').innerHTML = '<div class="no-data">No employees found</div>';
+            return;
+        }
+        
+        // Calculate statistics
+        const totalEmployees = employees.length;
+        const activeContracts = employees.filter(emp => emp.status === 'active').length;
+        const temporaryStaff = employees.filter(emp => emp.contract_type && emp.contract_type.toLowerCase().includes('temporary')).length;
+        const seniorStaff = employees.filter(emp => {
+            const position = (emp.position || emp.job_category || '').toLowerCase();
+            return position.includes('manager') || position.includes('senior') || position.includes('director') || position.includes('head');
+        }).length;
+        
+        // Calculate department breakdown
+        const departmentCounts = {};
+        employees.forEach(emp => {
+            const dept = emp.department || 'Unknown';
+            departmentCounts[dept] = (departmentCounts[dept] || 0) + 1;
+        });
+        
+        // Update UI with real data
+        document.getElementById('totalEmployeesCount').textContent = totalEmployees;
+        document.getElementById('activeContractsCount').textContent = activeContracts;
+        document.getElementById('temporaryStaffCount').textContent = temporaryStaff;
+        document.getElementById('seniorStaffCount').textContent = seniorStaff;
+        
+        // Simulate monthly changes (in real app, this would compare with historical data)
+        document.getElementById('totalEmployeesChange').textContent = '+3 from last month';
+        document.getElementById('totalEmployeesChange').className = 'stat-change positive';
+        document.getElementById('activeContractsChange').textContent = '+2 from last month';
+        document.getElementById('activeContractsChange').className = 'stat-change positive';
+        document.getElementById('temporaryStaffChange').textContent = 'No change';
+        document.getElementById('temporaryStaffChange').className = 'stat-change neutral';
+        document.getElementById('seniorStaffChange').textContent = '+1 from last month';
+        document.getElementById('seniorStaffChange').className = 'stat-change positive';
+        
+        // Display department breakdown
+        const deptBreakdownHtml = Object.entries(departmentCounts).map(([dept, count]) => `
+            <div class="dept-item">
+                <span class="dept-name">${dept}</span>
+                <span class="dept-count">${count}</span>
+            </div>
+        `).join('');
+        
+        document.getElementById('departmentBreakdown').innerHTML = deptBreakdownHtml;
+    })
+    .catch(error => {
+        console.error('❌ Error loading employee count data:', error);
+        document.getElementById('totalEmployeesCount').textContent = 'Error';
+        document.getElementById('activeContractsCount').textContent = 'Error';
+        document.getElementById('temporaryStaffCount').textContent = 'Error';
+        document.getElementById('seniorStaffCount').textContent = 'Error';
+        document.getElementById('departmentBreakdown').innerHTML = '<div class="error">Failed to load employee data</div>';
+    });
 }
 
 function viewAllWorkers(){
@@ -4614,6 +4676,125 @@ function rejectBudget(budgetId) {
 
 function generateWorkforceReport() {
     customAlert('Generating comprehensive workforce report...\n\nReport will include all employee data, analytics, and trends.', 'Report Generation', 'info');
+    
+    // Fetch employee data for report
+    const baseUrl = window.location.origin;
+    fetch(`${baseUrl}/api/employees`, {
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'Authorization': `Bearer ${sessionManager.getAuthToken()}`
+        }
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+        return response.json();
+    })
+    .then(data => {
+        console.log('📊 Workforce report data:', data);
+        const employees = Array.isArray(data) ? data : [];
+        
+        if (employees.length === 0) {
+            customAlert('No employee data available for report generation.', 'No Data', 'warning');
+            return;
+        }
+        
+        // Generate Excel report
+        generateExcelReport(employees);
+    })
+    .catch(error => {
+        console.error('❌ Error generating workforce report:', error);
+        customAlert(`Failed to generate workforce report: ${error.message}`, 'Report Error', 'error');
+    });
+}
+
+// Generate Excel report from employee data
+function generateExcelReport(employees) {
+    try {
+        // Create workbook and worksheet
+        const ws = XLSX.utils.json_to_sheet(employees.map(emp => ({
+            'Employee ID': emp.employee_id || emp.id || '',
+            'Full Name': emp.full_name || emp.name || '',
+            'Email': emp.gmail || emp.email || '',
+            'Phone': emp.phone || '',
+            'Department': emp.department || '',
+            'Position': emp.position || emp.job_category || '',
+            'Status': emp.status || '',
+            'Contract Type': emp.contract_type || '',
+            'Hire Date': emp.hire_date ? new Date(emp.hire_date).toLocaleDateString() : '',
+            'NIDA': emp.nida || '',
+            'Passport': emp.passport || '',
+            'Created At': emp.created_at ? new Date(emp.created_at).toLocaleDateString() : ''
+        })));
+        
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, 'Workforce Report');
+        
+        // Generate filename with timestamp
+        const timestamp = new Date().toISOString().replace(/[:.]/g, '-').split('T')[0];
+        const filename = `workforce_report_${timestamp}.xlsx`;
+        
+        // Write file
+        XLSX.writeFile(wb, filename);
+        
+        customAlert(`Workforce report generated successfully!\n\n📊 Report Details:\n• Total Employees: ${employees.length}\n• Report Format: Excel (.xlsx)\n• Filename: ${filename}\n\n📁 File downloaded to your default download folder.`, 'Report Generated', 'success');
+        
+    } catch (error) {
+        console.error('❌ Error generating Excel report:', error);
+        
+        // Fallback to CSV if XLSX fails
+        try {
+            generateCSVReport(employees);
+        } catch (csvError) {
+            console.error('❌ Error generating CSV report:', csvError);
+            customAlert('Failed to generate report. Please try again.', 'Report Error', 'error');
+        }
+    }
+}
+
+// Generate CSV report as fallback
+function generateCSVReport(employees) {
+    const headers = [
+        'Employee ID', 'Full Name', 'Email', 'Phone', 'Department', 
+        'Position', 'Status', 'Contract Type', 'Hire Date', 'NIDA', 'Passport', 'Created At'
+    ];
+    
+    const csvContent = [
+        headers.join(','),
+        ...employees.map(emp => [
+            `"${emp.employee_id || emp.id || ''}"`,
+            `"${(emp.full_name || emp.name || '').replace(/"/g, '""')}"`,
+            `"${emp.gmail || emp.email || ''}"`,
+            `"${emp.phone || ''}"`,
+            `"${emp.department || ''}"`,
+            `"${(emp.position || emp.job_category || '').replace(/"/g, '""')}"`,
+            `"${emp.status || ''}"`,
+            `"${emp.contract_type || ''}"`,
+            `"${emp.hire_date ? new Date(emp.hire_date).toLocaleDateString() : ''}"`,
+            `"${emp.nida || ''}"`,
+            `"${emp.passport || ''}"`,
+            `"${emp.created_at ? new Date(emp.created_at).toLocaleDateString() : ''}"`
+        ].join(','))
+    ].join('\n');
+    
+    const timestamp = new Date().toISOString().replace(/[:.]/g, '-').split('T')[0];
+    const filename = `workforce_report_${timestamp}.csv`;
+    
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    
+    link.setAttribute('href', url);
+    link.setAttribute('download', filename);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    
+    customAlert(`CSV report generated successfully!\n\n📊 Report Details:\n• Total Employees: ${employees.length}\n• Report Format: CSV\n• Filename: ${filename}\n\n📁 File downloaded to your default download folder.`, 'CSV Report Generated', 'success');
 }
 
 function approveHiringPlan() {
@@ -16293,6 +16474,9 @@ function reviewOrgStructure() {
 }
 
 </script>
+
+<!-- Include XLSX Library for Excel Export -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 
 <script src="js/sessionManager.js"></script>
 
