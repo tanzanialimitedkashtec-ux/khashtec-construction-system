@@ -469,4 +469,82 @@ router.get('/debug/all-details', async (req, res) => {
     }
 });
 
+// Employee Action Route (Suspend/Terminate/Demote)
+router.post('/action', async (req, res) => {
+    console.log('🔍 Employee action request received');
+    console.log('📋 Request body:', req.body);
+    
+    const { 
+        employeeId, 
+        actionType, 
+        actionDate, 
+        reasonCategory, 
+        actionDetails, 
+        suspensionDays, 
+        finalPaymentDate, 
+        mdNotes,
+        decidedBy 
+    } = req.body;
+    
+    // Validate required fields
+    if (!employeeId || !actionType || !actionDate || !reasonCategory || !actionDetails) {
+        return res.status(400).json({
+            error: 'All required fields must be provided',
+            required: ['employeeId', 'actionType', 'actionDate', 'reasonCategory', 'actionDetails']
+        });
+    }
+    
+    try {
+        const connection = await db.getConnection();
+        
+        // Insert into worker_action table
+        const [result] = await connection.query(`
+            INSERT INTO worker_action 
+            (employee_id, action_type, action_date, reason_category, action_details, 
+             suspension_days, final_payment_date, md_notes, decided_by, decided_date, status)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'executed')
+        `, [
+            employeeId,
+            actionType,
+            actionDate,
+            reasonCategory,
+            actionDetails,
+            suspensionDays || null,
+            finalPaymentDate || null,
+            mdNotes || null,
+            decidedBy || 'Managing Director',
+            new Date().toISOString().split('T')[0]
+        ]);
+        
+        // Update employee status if needed
+        if (actionType === 'suspend') {
+            await connection.query(
+                'UPDATE employees SET status = ? WHERE id = ?',
+                ['suspended', employeeId]
+            );
+        } else if (actionType === 'terminate') {
+            await connection.query(
+                'UPDATE employees SET status = ?, end_date = ? WHERE id = ?',
+                ['terminated', actionDate, employeeId]
+            );
+        }
+        
+        connection.release();
+        
+        res.json({
+            message: 'Employee action executed successfully',
+            actionId: result.insertId,
+            employeeId: employeeId,
+            actionType: actionType,
+            status: 'executed',
+            executedBy: decidedBy || 'Managing Director',
+            executedDate: new Date().toISOString()
+        });
+        
+    } catch (error) {
+        console.error('❌ Error executing employee action:', error);
+        res.status(500).json({ error: 'Failed to execute employee action' });
+    }
+});
+
 module.exports = router;

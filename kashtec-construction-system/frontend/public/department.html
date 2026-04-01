@@ -3059,11 +3059,7 @@ function suspendTerminateEmployment(){
                     <div class="form-group">
                         <label>Employee *</label>
                         <select id="actionEmployee" required>
-                            <option value="">Select Employee</option>
-                            <option value="emp001">John Doe - Senior Engineer</option>
-                            <option value="emp002">Jane Smith - HR Manager</option>
-                            <option value="emp003">Mike Johnson - Project Manager</option>
-                            <option value="emp004">Sarah Wilson - Finance Manager</option>
+                            <option value="">Loading employees...</option>
                         </select>
                     </div>
                     <div class="form-group">
@@ -3142,6 +3138,50 @@ function suspendTerminateEmployment(){
             </div>
         </div>
     </div>`);
+    
+    // Load employees for dropdown
+    loadEmployeesForAction();
+}
+
+// Load employees for employment action dropdown
+function loadEmployeesForAction() {
+    const baseUrl = window.location.origin;
+    fetch(`${baseUrl}/api/employees`, {
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'Authorization': `Bearer ${sessionManager.getAuthToken()}`
+        }
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+        return response.json();
+    })
+    .then(data => {
+        console.log('📊 Employees for action:', data);
+        const employeeSelect = document.getElementById('actionEmployee');
+        const employees = Array.isArray(data) ? data : [];
+        
+        if (employees.length === 0) {
+            employeeSelect.innerHTML = '<option value="">No employees found</option>';
+            return;
+        }
+        
+        employeeSelect.innerHTML = '<option value="">Select Employee</option>' +
+            employees.map(emp => `
+                <option value="${emp.id || emp.employee_id}">
+                    ${emp.full_name || emp.name || 'Unknown'} - ${emp.position || emp.job_category || 'N/A'} (${emp.department || 'N/A'})
+                </option>
+            `).join('');
+    })
+    .catch(error => {
+        console.error('❌ Error loading employees for action:', error);
+        const employeeSelect = document.getElementById('actionEmployee');
+        employeeSelect.innerHTML = '<option value="">Failed to load employees</option>';
+    });
 }
 
 function viewWorkforceReports(){
@@ -4529,51 +4569,42 @@ function updateActionForm() {
 
 function saveEmploymentAction() {
     const action = {
-        employee: document.getElementById('actionEmployee').value,
+        employeeId: document.getElementById('actionEmployee').value,
         actionType: document.getElementById('actionType').value,
-        date: document.getElementById('actionDate').value,
-        reason: document.getElementById('actionReason').value,
-        details: document.getElementById('actionDetails').value,
+        actionDate: document.getElementById('actionDate').value,
+        reasonCategory: document.getElementById('actionReason').value,
+        actionDetails: document.getElementById('actionDetails').value,
         suspensionDays: document.getElementById('suspensionDays').value,
         finalPaymentDate: document.getElementById('finalPaymentDate').value,
         mdNotes: document.getElementById('mdNotes').value,
-        executedBy: 'Managing Director',
-        timestamp: new Date().toLocaleString()
+        decidedBy: 'Managing Director'
     };
     
     // Validate required fields
-    if (!action.employee || !action.actionType || !action.date) {
-        customAlert('Please fill in all required fields:\n\n• Employee\n• Action Type\n• Date', "Validation Error", "error");
+    if (!action.employeeId || !action.actionType || !action.actionDate || !action.reasonCategory || !action.actionDetails) {
+        customAlert('Please fill in all required fields:\n\n• Employee\n• Action Type\n• Effective Date\n• Reason Category\n• Detailed Reason', "Validation Error", "error");
         return false;
     }
-    
-    // Prepare work item for HR department
-    const workItem = {
-        work_type: 'Employment Action',
-        work_title: `Employment Action - ${action.actionType}`,
-        work_description: `Employment Action for ${action.employee}\n\nAction Type: ${action.actionType}\nDate: ${action.date}\nReason: ${action.reason}\nDetails: ${action.details}\nSuspension Days: ${action.suspensionDays}\nFinal Payment Date: ${action.finalPaymentDate}\nMD Notes: ${action.mdNotes}\nExecuted By: ${action.executedBy}\nTimestamp: ${action.timestamp}`,
-        priority: action.actionType === 'termination' ? 'High' : action.actionType === 'suspension' ? 'Medium' : 'Low',
-        due_date: action.date,
-        assigned_to: 'HR Manager',
-        submitted_by: 'Managing Director'
-    };
     
     // Show loading message
     customAlert('Processing employment action...', "Processing", "info");
     
     // Send data to backend API
     const baseUrl = window.location.origin;
-    fetch(`${baseUrl}/api/hr/work`, {
+    fetch(`${baseUrl}/api/employees/action`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
             'Accept': 'application/json',
             'Authorization': `Bearer ${sessionManager.getAuthToken()}`
         },
-        body: JSON.stringify(workItem)
+        body: JSON.stringify(action)
     })
     .then(response => {
         console.log('📡 Employment Action API Response status:', response.status);
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
         return response.json();
     })
     .then(data => {
@@ -4583,9 +4614,11 @@ function saveEmploymentAction() {
             throw new Error(data.error);
         }
         
-        customAlert(`Employment action executed successfully!\n\nAction: ${action.actionType.toUpperCase()}\nEmployee: ${action.employee}\nEffective Date: ${action.date}\nAction ID: ${data.id}\n\n🎉 Employment action saved to database!`, "Action Completed", "success");
+        customAlert(`Employment action executed successfully!\n\nAction: ${action.actionType.toUpperCase()}\nEmployee ID: ${action.employeeId}\nEffective Date: ${action.actionDate}\nAction ID: ${data.actionId}\n\n🎉 Employment action saved to worker_action table!`, "Action Completed", "success");
         
         document.getElementById('employmentActionForm').reset();
+        document.getElementById('suspensionDetails').classList.add('hidden');
+        document.getElementById('terminationDetails').classList.add('hidden');
     })
     .catch(error => {
         console.error('❌ Error processing employment action:', error);
