@@ -2413,45 +2413,80 @@ function loadSeniorHiringRequests() {
 
 function loadHiringRequestsFromBackend() {
     const baseUrl = window.location.origin;
-    fetch(`${baseUrl}/api/senior-hiring`)
-        .then(response => response.json())
-        .then(data => {
-            console.log('📋 Hiring requests loaded:', data);
-            const container = document.getElementById('hiringContainer');
-            
-            if (!data || !Array.isArray(data)) {
-                container.innerHTML = '<div class="error">No hiring requests found or error loading requests</div>';
-                return;
-            }
-            
-            if (data.length === 0) {
-                container.innerHTML = '<div class="info">No pending senior hiring requests</div>';
-                return;
-            }
-            
-            let html = '<div class="hiring-items">';
-            data.forEach(request => {
-                html += `
-                    <div class="hiring-item">
-                        <h5>${request.work_title || 'Untitled Request'}</h5>
-                        <p><strong>Position:</strong> ${request.position || 'N/A'}</p>
-                        <p><strong>Department:</strong> ${request.department || 'N/A'}</p>
-                        <p><strong>Status:</strong> <span class="status-${request.status || 'pending'}">${request.status || 'Pending'}</span></p>
-                        <div class="hiring-actions">
-                            <button class="action" onclick="approveHiring(${request.id})">Approve</button>
-                            <button class="action" onclick="rejectHiring(${request.id})">Reject</button>
-                            <button class="action" onclick="requestInfo(${request.id})">Request Info</button>
+    fetch(`${baseUrl}/api/senior-hiring`, {
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'Authorization': `Bearer ${sessionManager.getAuthToken()}`
+        }
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+        return response.json();
+    })
+    .then(data => {
+        console.log('📊 Senior hiring data:', data);
+        const container = document.getElementById('hiringContainer');
+        
+        if (!data || !Array.isArray(data)) {
+            container.innerHTML = '<div class="error">No hiring requests found or error loading requests</div>';
+            return;
+        }
+        
+        if (data.length === 0) {
+            container.innerHTML = '<div class="info">No pending senior hiring requests</div>';
+            return;
+        }
+        
+        let html = '<div class="hiring-items">';
+        data.forEach(request => {
+            html += `
+                <div class="hiring-item">
+                    <h5>${request.position || 'Position not specified'}</h5>
+                    <div class="candidate-info">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Candidate Name</label>
+                                <input type="text" value="${request.candidate_name || 'N/A'}" readonly>
+                            </div>
+                            <div class="form-group">
+                                <label>Proposed Salary</label>
+                                <input type="text" value="${request.proposed_salary ? 'TZS ' + parseInt(request.proposed_salary).toLocaleString() : 'N/A'}" readonly>
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Department</label>
+                                <input type="text" value="${request.department || 'N/A'}" readonly>
+                            </div>
+                            <div class="form-group">
+                                <label>Experience</label>
+                                <input type="text" value="${request.experience || 'N/A'}" readonly>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>HR Recommendation</label>
+                            <textarea rows="3" readonly>${request.hr_recommendation || 'No recommendation provided'}</textarea>
                         </div>
                     </div>
-                `;
-            });
-            html += '</div>';
-            container.innerHTML = html;
-        })
-        .catch(error => {
-            console.error('❌ Error loading hiring requests:', error);
-            document.getElementById('hiringContainer').innerHTML = '<div class="error">Error loading hiring requests: ' + error.message + '</div>';
+                    <div class="hiring-actions">
+                        <button class="action" onclick="approveSeniorHire('${request.id}')" style="background: #28a745;">Approve Hiring</button>
+                        <button class="action" onclick="requestMoreInfo('${request.id}')" style="background: #ffc107;">Request More Info</button>
+                        <button class="action" onclick="rejectSeniorHire('${request.id}')" style="background: #dc3545;">Reject Hiring</button>
+                    </div>
+                </div>
+            `;
         });
+        html += '</div>';
+        container.innerHTML = html;
+    })
+    .catch(error => {
+        console.error('❌ Error loading hiring requests:', error);
+        document.getElementById('hiringContainer').innerHTML = '<div class="error">Error loading hiring requests: ' + error.message + '</div>';
+    });
 }
 
 function loadWorkforceBudgets() {
