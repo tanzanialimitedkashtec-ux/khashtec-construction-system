@@ -13557,59 +13557,66 @@ function viewEmployeeDetails(employeeId) {
         </div>
     `);
     
-    // Try to get employee details using KashTecAPI
-    if (typeof KashTecAPI === 'undefined') {
-        console.error('❌ KashTecAPI is not defined');
-        customAlert('API service not loaded. Please refresh the page.', 'Error', 'error');
-        return;
-    }
-    
-    KashTecAPI.getEmployees()
-        .then(response => {
-            if (response && Array.isArray(response)) {
-                const employee = response.find(emp => 
-                    emp.id == employeeId || 
-                    emp.employee_id == employeeId || 
-                    emp.gmail == employeeId
-                );
-                
-                if (employee) {
-                    showEmployeeDetailsModal(employee);
-                } else {
-                    // Try individual employee endpoint
-                    return fetch(`${window.location.origin}/api/employees/${employeeId}`, {
-                        method: 'GET',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'Accept': 'application/json',
-                            'Authorization': `Bearer ${KashTecAPI.getAuthToken()}`
-                        }
-                    });
+    // Try to get employee details using direct fetch (same approach as loadEmployeeList)
+    const baseUrl = window.location.origin;
+    fetch(`${baseUrl}/api/employees`, {
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'Authorization': `Bearer ${sessionManager.getAuthToken()}`
+        }
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+        return response.json();
+    })
+    .then(employees => {
+        // Handle both single employee object and array of employees
+        let employeeArray = Array.isArray(employees) ? employees : [employees];
+        
+        const employee = employeeArray.find(emp => 
+            emp.id == employeeId || 
+            emp.employee_id == employeeId || 
+            emp.gmail == employeeId
+        );
+        
+        if (employee) {
+            showEmployeeDetailsModal(employee);
+        } else {
+            // Try individual employee endpoint
+            return fetch(`${window.location.origin}/api/employees/${employeeId}`, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    'Authorization': `Bearer ${sessionManager.getAuthToken()}`
                 }
-            } else {
-                throw new Error('Failed to fetch employees');
-            }
-        })
-        .then(response => {
-            if (response && response.ok) {
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
                 return response.json();
-            }
-            throw new Error('Employee not found');
-        })
-        .then(employee => {
-            if (employee) {
-                showEmployeeDetailsModal(employee);
-            } else {
-                throw new Error('Employee not found');
-            }
-        })
-        .catch(error => {
-            console.error('Error loading employee details:', error);
-            showContent(`
-                <div class="card">
-                    <h3>Employee Details</h3>
-                    <div class="error">
-                        <p>Failed to load employee details</p>
+            })
+            .then(individualEmployee => {
+                if (individualEmployee) {
+                    showEmployeeDetailsModal(individualEmployee);
+                } else {
+                    throw new Error('Employee not found');
+                }
+            });
+        }
+    })
+    .catch(error => {
+        console.error('Error loading employee details:', error);
+        showContent(`
+            <div class="card">
+                <h3>Employee Details</h3>
+                <div class="error">
+                    <p>Failed to load employee details</p>
                         <p>Error: ${error.message}</p>
                         <button class="action" onclick="history.back()">Go Back</button>
                     </div>
