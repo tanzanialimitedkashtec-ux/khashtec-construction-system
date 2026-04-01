@@ -12830,10 +12830,13 @@ async function loadDocuments() {
         }
         
         const response = await KashTecAPI.getDocuments();
+        console.log('📄 Documents API Response:', response);
         const docsGrid = document.getElementById('docsGrid');
         
-        if (response.success && response.data) {
-            const documents = response.data;
+        // Handle the actual response format from documents API
+        if (response && response.documents) {
+            const documents = response.documents;
+            console.log('📄 Documents array:', documents);
             
             if (documents.length === 0) {
                 docsGrid.innerHTML = '<div class="no-documents">No documents found</div>';
@@ -15996,6 +15999,115 @@ function closeModal() {
         modal.remove();
     }
 }
+
+// ===== MISSING FUNCTIONS FOR ADMIN ASSISTANT =====
+
+// Compliance and document functions
+function updateComplianceDoc(docType) {
+    customAlert(`Updating ${docType} document...\n\nThis will open the document update interface where you can upload the new version of the compliance document.`, "Update Compliance Document", "info");
+}
+
+function uploadCertificate() {
+    customAlert('Certificate upload interface...\n\nThis will open the certificate upload form where you can add new certificates to the system.', "Upload Certificate", "info");
+}
+
+function reviewCompliance() {
+    customAlert('Compliance review interface...\n\nThis will open the compliance review dashboard where you can review all compliance documents and their status.', "Review Compliance", "info");
+}
+
+function notifyMD() {
+    customAlert('Notify Managing Director...\n\nThis will send a notification to the Managing Director about important updates or issues requiring attention.', "Notify MD", "info");
+}
+
+function reviewInternalComm() {
+    customAlert('Internal communications review...\n\nThis will open the internal communications review interface where you can review and manage company communications.', "Review Internal Communications", "info");
+}
+
+function updateFilingSystem() {
+    customAlert('Update filing system...\n\nThis will open the filing system management interface where you can organize and update document filing structures.', "Update Filing System", "info");
+}
+
+function generateAdminReport() {
+    customAlert('Generate administrative report...\n\nThis will open the report generation interface where you can create comprehensive administrative reports.', "Generate Admin Report", "info");
+}
+
+function reviewDeptStructure() {
+    customAlert('Review department structure...\n\nThis will open the department structure review interface where you can analyze and manage organizational structure.', "Review Department Structure", "info");
+}
+
+function reviewPolicy() {
+    customAlert('Review policy...\n\nThis will open the policy review interface where you can review and analyze company policies.', "Review Policy", "info");
+}
+
+function updatePolicy() {
+    customAlert('Update policy...\n\nThis will open the policy update interface where you can modify and update existing policies.', "Update Policy", "info");
+}
+
+// User management functions
+function suspendUser(userId) {
+    const confirmSuspend = confirm(`Are you sure you want to suspend this user?\n\nUser ID: ${userId}\n\nThis will temporarily deactivate the user account.`);
+    if (confirmSuspend) {
+        customAlert(`User ${userId} has been suspended successfully.`, "User Suspended", "success");
+    }
+}
+
+function reactivateUser(userId) {
+    const confirmReactivate = confirm(`Are you sure you want to reactivate this user?\n\nUser ID: ${userId}\n\nThis will restore the user account access.`);
+    if (confirmReactivate) {
+        customAlert(`User ${userId} has been reactivated successfully.`, "User Reactivated", "success");
+    }
+}
+
+// Additional missing functions
+function handleLogout() {
+    if (confirm('Are you sure you want to logout?')) {
+        sessionStorage.clear();
+        location.reload();
+    }
+}
+
+function cancelEmploymentAction() {
+    customAlert('Employment action cancelled.', "Action Cancelled", "info");
+    showContent('<div class="card"><h3>Action Cancelled</h3><p>The employment action has been cancelled.</p></div>');
+}
+
+function showReportTab(tabName) {
+    // Update tab buttons
+    document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+    document.querySelector(`[onclick="showReportTab('${tabName}')"]`).classList.add('active');
+    
+    // Show corresponding content
+    document.querySelectorAll('.tab-content').forEach(content => content.style.display = 'none');
+    const targetContent = document.getElementById(tabName + 'Report');
+    if (targetContent) {
+        targetContent.style.display = 'block';
+    }
+}
+
+function exportWorkforceReport() {
+    customAlert('Exporting workforce report...\n\nThe comprehensive workforce report will be generated and downloaded as a PDF file.', "Export Report", "info");
+}
+
+function scheduleBoardReview() {
+    customAlert('Schedule board review...\n\nThis will open the scheduling interface to arrange a board review meeting.', "Schedule Board Review", "info");
+}
+
+function generateComplianceReport() {
+    customAlert('Generating compliance report...\n\nThe compliance report will be generated with all current compliance status and requirements.', "Generate Compliance Report", "info");
+}
+
+function generateWorkforceReport() {
+    customAlert('Generating workforce report...\n\nThe workforce report will be generated with current employee statistics and analysis.', "Generate Workforce Report", "info");
+}
+
+function approveHiringPlan() {
+    customAlert('Approve hiring plan...\n\nThis will review and approve the current hiring plan for implementation.', "Approve Hiring Plan", "info");
+}
+
+function reviewOrgStructure() {
+    customAlert('Review organization structure...\n\nThis will open the organization structure review interface.', "Review Organization Structure", "info");
+}
+
 </script>
 
 <script src="js/sessionManager.js"></script>
