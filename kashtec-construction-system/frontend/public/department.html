@@ -5,9 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>KASHTEC Construction Management System</title>
     
-    <!-- Include API Service -->
-    <script src="assets/js/api.js"></script>
-    
     <style>
 *{
     margin:0;
@@ -12825,6 +12822,13 @@ function editDocuments(){
 // Load documents from API
 async function loadDocuments() {
     try {
+        // Check if KashTecAPI is available
+        if (typeof KashTecAPI === 'undefined') {
+            console.error('❌ KashTecAPI is not defined');
+            document.getElementById('docsGrid').innerHTML = '<div class="error">API service not loaded. Please refresh the page.</div>';
+            return;
+        }
+        
         const response = await KashTecAPI.getDocuments();
         const docsGrid = document.getElementById('docsGrid');
         
@@ -13554,6 +13558,12 @@ function viewEmployeeDetails(employeeId) {
     `);
     
     // Try to get employee details using KashTecAPI
+    if (typeof KashTecAPI === 'undefined') {
+        console.error('❌ KashTecAPI is not defined');
+        customAlert('API service not loaded. Please refresh the page.', 'Error', 'error');
+        return;
+    }
+    
     KashTecAPI.getEmployees()
         .then(response => {
             if (response && Array.isArray(response)) {
@@ -15982,6 +15992,9 @@ function closeModal() {
 </script>
 
 <script src="js/sessionManager.js"></script>
+
+<!-- Include API Service -->
+<script src="assets/js/api.js"></script>
 
 <!-- Include Login Functions -->
 <script src="js/script.js"></script>
