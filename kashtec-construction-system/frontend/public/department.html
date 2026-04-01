@@ -3166,6 +3166,12 @@ function displayAllWorkers(employees, workerAccounts) {
         return;
     }
     
+    console.log('📊 Processing data:', {
+        employeesCount: employees.length,
+        workerAccountsCount: workerAccounts.length,
+        totalWorkers: employees.length + workerAccounts.length
+    });
+    
     // Combine employees and worker accounts
     const allWorkers = [
         ...employees.map(emp => ({
@@ -3186,8 +3192,15 @@ function displayAllWorkers(employees, workerAccounts) {
         }))
     ];
     
+    console.log('📊 Combined workers data:', allWorkers);
+    
+    if (allWorkers.length === 0) {
+        resultsContainer.innerHTML = '<div class="no-data">No workers found</div>';
+        return;
+    }
+    
     resultsContainer.innerHTML = allWorkers.map(worker => `
-        <div class="worker-item" data-department="${worker.department.toLowerCase()}" data-type="${worker.type}" data-status="${worker.status.toLowerCase()}">
+        <div class="worker-item" data-department="${(worker.department || '').toLowerCase()}" data-type="${worker.type}" data-status="${(worker.status || '').toLowerCase()}">
             <div class="worker-header">
                 <h5>${worker.displayName}</h5>
                 <span class="worker-type ${worker.type}">${worker.type.replace('_', ' ').toUpperCase()}</span>
@@ -3195,9 +3208,9 @@ function displayAllWorkers(employees, workerAccounts) {
             <div class="worker-details">
                 <p><strong>Position:</strong> ${worker.position}</p>
                 <p><strong>Department:</strong> ${worker.department}</p>
-                <p><strong>Status:</strong> <span class="status-${worker.status.toLowerCase()}">${worker.status}</span></p>
-                <p><strong>Email:</strong> ${worker.gmail || worker.email || 'N/A'}</p>
-                <p><strong>Phone:</strong> ${worker.phone || 'N/A'}</p>
+                <p><strong>Status:</strong> <span class="status-${(worker.status || '').toLowerCase()}">${worker.status}</span></p>
+                <p><strong>Email:</strong> ${worker.gmail || worker.email || worker.work_email || 'N/A'}</p>
+                <p><strong>Phone:</strong> ${worker.phone || worker.phone_number || 'N/A'}</p>
                 ${worker.employee_id ? `<p><strong>Employee ID:</strong> ${worker.employee_id}</p>` : ''}
                 ${worker.hire_date ? `<p><strong>Hire Date:</strong> ${new Date(worker.hire_date).toLocaleDateString()}</p>` : ''}
                 ${worker.created_at ? `<p><strong>Account Created:</strong> ${new Date(worker.created_at).toLocaleDateString()}</p>` : ''}
