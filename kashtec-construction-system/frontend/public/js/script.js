@@ -51,47 +51,891 @@ function submitAccountForm() {
         return false;
     }
     
-    // Create user object
-    var userData = {
-        fullName: fullName,
-        email: email,
-        phone: phone,
-        location: location,
-        serviceType: selectedService,
-        customService: customService,
-        additionalInfo: additionalInfo,
-        password: "password123", // Default password for demo
-        memberSince: new Date().toLocaleDateString(),
-        lastLogin: new Date().toLocaleString()
-    };
-    
-    // Save user to session
-    sessionManager.set('kashtec_user_' + email, JSON.stringify(userData));
-    sessionManager.setCurrentUser(userData);
-    
-    // Automatically add to Office Portal directory
-    addToOfficePortal(userData);
-    
-    // Create success message
-    var message = "Account Registration Successful!\n\n";
-    message += "Welcome to KASHTEC Tanzania Limited!\n\n";
-    message += "Your account has been created with:\n";
-    message += "Email: " + email + "\n";
-    message += "Default Password: password123\n\n";
-    message += "You can now login to access your customer portal.\n\n";
-    message += "You have been automatically added to the Office Portal directory!";
-    
-    alert(message);
-    
-    // Reset form
-    document.getElementById("accountForm").reset();
-    toggleServiceDescription();
-    
-    // Show login section
-    showLoginSection();
-    
+    // Here you would normally send the data to a server
+    // For now, just show a success message
+    alert("Account request submitted successfully! We will contact you soon.");
     return false;
 }
+
+// ===== PROJECT PROGRESS FUNCTIONS =====
+
+// Load projects into the select dropdown
+async function loadProjects() {
+    try {
+        const response = await ApiService.get('/projects');
+        const projectSelect = document.getElementById('progressProject');
+        
+        if (response.projects && response.projects.length > 0) {
+            projectSelect.innerHTML = '<option value="">Select Project to Update</option>';
+            
+            response.projects.forEach(project => {
+                const option = document.createElement('option');
+                option.value = project.id;
+                option.textContent = `${project.name} - ${project.location}`;
+                projectSelect.appendChild(option);
+            });
+        } else {
+            projectSelect.innerHTML = '<option value="">No projects available</option>';
+        }
+    } catch (error) {
+        console.error('Failed to load projects:', error);
+        const projectSelect = document.getElementById('progressProject');
+        projectSelect.innerHTML = '<option value="">Failed to load projects</option>';
+    }
+}
+
+// Load project details when a project is selected
+async function loadProjectDetails() {
+    const projectSelect = document.getElementById('progressProject');
+    const progressForm = document.getElementById('progressUpdateForm');
+    const projectId = projectSelect.value;
+    
+    if (!projectId) {
+        progressForm.classList.add('hidden');
+        return;
+    }
+    
+    try {
+        const response = await ApiService.get(`/projects/${projectId}`);
+        const project = response;
+        
+        // Show the progress form
+        progressForm.classList.remove('hidden');
+        
+        // Pre-fill current project data
+        if (project.progress !== undefined) {
+            document.getElementById('progressPercentage').value = project.progress;
+        }
+        
+        if (project.status) {
+            document.getElementById('projectStatus').value = project.status;
+        }
+        
+        // Load recent progress updates
+        loadProgressUpdates(projectId);
+        
+    } catch (error) {
+        console.error('Failed to load project details:', error);
+        progressForm.classList.add('hidden');
+        alert('Failed to load project details. Please try again.');
+    }
+}
+
+// Save project progress
+async function saveProjectProgress() {
+    const projectSelect = document.getElementById('progressProject');
+    const projectId = projectSelect.value;
+    
+    if (!projectId) {
+        alert('Please select a project first');
+        return false;
+    }
+    
+    const progressData = {
+        progressPercentage: parseInt(document.getElementById('progressPercentage').value),
+        status: document.getElementById('projectStatus').value,
+        progressReport: document.getElementById('progressReport').value,
+        completedMilestones: document.getElementById('completedMilestones').value,
+        nextMilestones: document.getElementById('nextMilestones').value,
+        budgetUsed: parseFloat(document.getElementById('budgetUsed').value) || 0,
+        issues: document.getElementById('projectIssues').value,
+        updateDate: new Date().toISOString()
+    };
+    
+    try {
+        await ApiService.updateProjectProgress(projectId, progressData);
+        
+        // Reset form
+        document.getElementById('progressForm').reset();
+        
+        // Reload updates
+        loadProgressUpdates(projectId);
+        
+        return false;
+    } catch (error) {
+        console.error('Failed to save project progress:', error);
+        alert('Failed to save project progress. Please try again.');
+        return false;
+    }
+}
+
+// Load recent progress updates
+async function loadProgressUpdates(projectId) {
+    try {
+        const response = await ApiService.getProjectProgressUpdates(projectId);
+        const updateList = document.querySelector('.update-list');
+        
+        if (response.updates && response.updates.length > 0) {
+            updateList.innerHTML = '';
+            
+            response.updates.slice(0, 5).forEach(update => {
+                const updateItem = document.createElement('div');
+                updateItem.className = 'update-item';
+                updateItem.innerHTML = `
+                    <strong>${update.projectName || 'Project'}</strong>
+                    <span>Updated: ${new Date(update.updateDate).toLocaleDateString()}</span>
+                    <span>Progress: ${update.progressPercentage}% (${update.status})</span>
+                `;
+                updateList.appendChild(updateItem);
+            });
+        } else {
+            updateList.innerHTML = '<div class="update-item">No recent updates available</div>';
+        }
+    } catch (error) {
+        console.error('Failed to load progress updates:', error);
+        const updateList = document.querySelector('.update-list');
+        updateList.innerHTML = '<div class="update-item">Failed to load updates</div>';
+    }
+}
+
+// Initialize projects when page loads
+document.addEventListener('DOMContentLoaded', function() {
+    // Load projects if the progress project select exists
+    const projectSelect = document.getElementById('progressProject');
+    if (projectSelect) {
+        loadProjects();
+    }
+    
+    // Load worker assignments if the worker results exist
+    const workerResults = document.getElementById('workerResults');
+    if (workerResults) {
+        loadWorkerAssignments();
+    }
+});
+
+// ===== WORKER ASSIGNMENT FUNCTIONS =====
+
+// Load all worker assignments and stats
+async function loadWorkerAssignments() {
+    try {
+        // Load assignments
+        const assignments = await ApiService.getWorkerAssignments();
+        
+        // Load stats
+        const stats = await ApiService.getWorkerAssignmentStats();
+        
+        // Update stats display
+        updateWorkerStats(stats);
+        
+        // Load projects for filter dropdown
+        await loadProjectsForWorkerFilter();
+        
+        // Display assignments
+        displayWorkerAssignments(assignments);
+        
+        // Update allocation chart
+        updateAllocationChart(assignments);
+        
+    } catch (error) {
+        console.error('Failed to load worker assignments:', error);
+        displayError('workerResults', 'Failed to load worker assignments');
+    }
+}
+
+// Update worker statistics
+function updateWorkerStats(stats) {
+    const statValues = document.querySelectorAll('.stat-value');
+    if (statValues.length >= 3) {
+        statValues[0].textContent = stats.totalAssignedWorkers || 0;
+        statValues[1].textContent = stats.activeProjects || 0;
+        statValues[2].textContent = stats.activeTasks || 0;
+    }
+}
+
+// Load projects for worker filter dropdown
+async function loadProjectsForWorkerFilter() {
+    try {
+        const response = await ApiService.get('/projects');
+        const projectFilter = document.getElementById('projectFilter');
+        
+        if (response.projects && response.projects.length > 0) {
+            // Clear existing options except "All Projects"
+            projectFilter.innerHTML = '<option value="">All Projects</option>';
+            
+            response.projects.forEach(project => {
+                const option = document.createElement('option');
+                option.value = project.id;
+                option.textContent = project.name;
+                projectFilter.appendChild(option);
+            });
+        }
+    } catch (error) {
+        console.error('Failed to load projects for filter:', error);
+    }
+}
+
+// Display worker assignments
+function displayWorkerAssignments(assignments) {
+    const workerResults = document.getElementById('workerResults');
+    
+    if (!assignments || assignments.length === 0) {
+        workerResults.innerHTML = '<div class="no-results">No worker assignments found</div>';
+        return;
+    }
+    
+    workerResults.innerHTML = '';
+    
+    assignments.forEach(assignment => {
+        const assignmentCard = document.createElement('div');
+        assignmentCard.className = 'worker-assignment-card';
+        assignmentCard.innerHTML = `
+            <div class="assignment-header">
+                <h5>${assignment.employee_name}</h5>
+                <span class="status-badge ${assignment.status.toLowerCase()}">${assignment.status}</span>
+            </div>
+            <div class="assignment-details">
+                <div class="detail-row">
+                    <span class="label">Project:</span>
+                    <span class="value">${assignment.project_name}</span>
+                </div>
+                <div class="detail-row">
+                    <span class="label">Role:</span>
+                    <span class="value">${assignment.role_in_project}</span>
+                </div>
+                <div class="detail-row">
+                    <span class="label">Assignment Period:</span>
+                    <span class="value">${formatDate(assignment.start_date)} - ${assignment.end_date ? formatDate(assignment.end_date) : 'Ongoing'}</span>
+                </div>
+                ${assignment.assignment_notes ? `
+                <div class="detail-row">
+                    <span class="label">Notes:</span>
+                    <span class="value">${assignment.assignment_notes}</span>
+                </div>
+                ` : ''}
+                <div class="detail-row">
+                    <span class="label">Assigned By:</span>
+                    <span class="value">${assignment.assigned_by} (${assignment.assigned_by_role})</span>
+                </div>
+            </div>
+        `;
+        workerResults.appendChild(assignmentCard);
+    });
+}
+
+// Update allocation chart
+function updateAllocationChart(assignments) {
+    const allocationChart = document.querySelector('.allocation-chart');
+    
+    if (!allocationChart || !assignments || assignments.length === 0) {
+        return;
+    }
+    
+    // Group assignments by project
+    const projectGroups = {};
+    assignments.forEach(assignment => {
+        if (!projectGroups[assignment.project_name]) {
+            projectGroups[assignment.project_name] = 0;
+        }
+        projectGroups[assignment.project_name]++;
+    });
+    
+    // Clear existing chart
+    allocationChart.innerHTML = '';
+    
+    // Create allocation bars
+    Object.entries(projectGroups).forEach(([projectName, workerCount]) => {
+        const allocationItem = document.createElement('div');
+        allocationItem.className = 'allocation-item';
+        
+        // Calculate percentage based on max workers
+        const maxWorkers = Math.max(...Object.values(projectGroups));
+        const percentage = Math.round((workerCount / maxWorkers) * 100);
+        
+        allocationItem.innerHTML = `
+            <span>${projectName}</span>
+            <div class="allocation-bar">
+                <div class="allocation-fill" style="width: ${percentage}%">${workerCount} workers</div>
+            </div>
+        `;
+        
+        allocationChart.appendChild(allocationItem);
+    });
+}
+
+// Filter assigned workers
+function filterAssignedWorkers() {
+    const searchTerm = document.getElementById('workerSearch').value.toLowerCase();
+    const projectFilter = document.getElementById('projectFilter').value;
+    
+    // Get all assignments and filter them
+    ApiService.getWorkerAssignments().then(assignments => {
+        let filteredAssignments = assignments;
+        
+        // Filter by search term
+        if (searchTerm) {
+            filteredAssignments = filteredAssignments.filter(assignment => 
+                assignment.employee_name.toLowerCase().includes(searchTerm) ||
+                assignment.project_name.toLowerCase().includes(searchTerm) ||
+                assignment.role_in_project.toLowerCase().includes(searchTerm)
+            );
+        }
+        
+        // Filter by project
+        if (projectFilter) {
+            filteredAssignments = filteredAssignments.filter(assignment => 
+                assignment.project_id == projectFilter
+            );
+        }
+        
+        // Display filtered results
+        displayWorkerAssignments(filteredAssignments);
+    }).catch(error => {
+        console.error('Error filtering assignments:', error);
+    });
+}
+
+// Helper function to format dates
+function formatDate(dateString) {
+    if (!dateString) return 'N/A';
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric'
+    });
+}
+
+// Helper function to display errors
+function displayError(elementId, message) {
+    const element = document.getElementById(elementId);
+    if (element) {
+        element.innerHTML = `<div class="error-message">${message}</div>`;
+    }
+}
+
+// ===== DOCUMENT MANAGEMENT FUNCTIONS =====
+
+// Load documents from admin_work table
+async function loadDocuments() {
+    try {
+        // Try to get documents from admin_work table first
+        let documents = [];
+        
+        try {
+            const adminWorkResponse = await ApiService.getAdminWorkDocuments();
+            // Filter for document-related work items
+            documents = adminWorkResponse.filter(item => 
+                item.work_type && (
+                    item.work_type.includes('Document') || 
+                    item.work_type.includes('Policy') ||
+                    item.work_type.includes('Manual')
+                )
+            ).map(item => ({
+                id: item.id,
+                title: item.work_title,
+                type: 'PDF',
+                department: item.department_code || 'admin',
+                uploadedDate: item.submitted_date,
+                status: item.status,
+                description: item.work_description,
+                work_type: item.work_type
+            }));
+        } catch (adminError) {
+            console.log('Failed to load from admin_work, trying documents API:', adminError);
+            
+            // Fallback to documents API
+            const docsResponse = await ApiService.getDocuments();
+            documents = docsResponse.documents || [];
+        }
+        
+        // Display documents
+        displayDocuments(documents);
+        
+    } catch (error) {
+        console.error('Failed to load documents:', error);
+        displayError('docsGrid', 'Failed to load documents');
+    }
+}
+
+// Display documents in the grid
+function displayDocuments(documents) {
+    const docsGrid = document.getElementById('docsGrid');
+    
+    if (!documents || documents.length === 0) {
+        docsGrid.innerHTML = '<div class="no-documents">No documents found</div>';
+        return;
+    }
+    
+    docsGrid.innerHTML = '';
+    
+    documents.forEach(doc => {
+        const docItem = document.createElement('div');
+        docItem.className = 'doc-item';
+        docItem.setAttribute('data-id', doc.id);
+        docItem.setAttribute('data-department', doc.department || 'admin');
+        docItem.setAttribute('data-type', doc.type || 'PDF');
+        
+        docItem.innerHTML = `
+            <div class="doc-info">
+                <h5>${doc.title}</h5>
+                <p>Type: ${doc.type || 'PDF'} | Department: ${doc.department || 'Admin'}</p>
+                <p>Last Updated: ${formatDate(doc.uploadedDate)}</p>
+                <p>Status: ${doc.status || 'active'}</p>
+                ${doc.description ? `<p>Description: ${doc.description}</p>` : ''}
+            </div>
+            <div class="doc-actions">
+                <button class="action edit-btn" onclick="editDoc('${doc.id}')">Edit</button>
+                <button class="action view-btn" onclick="viewDoc('${doc.id}')">View</button>
+                <button class="action download-btn" onclick="downloadDoc('${doc.id}')">Download</button>
+            </div>
+        `;
+        
+        docsGrid.appendChild(docItem);
+    });
+}
+
+// Edit document
+async function editDoc(docId) {
+    try {
+        console.log('Editing document:', docId);
+        
+        // Get document details
+        const doc = await ApiService.getDocument(docId);
+        
+        // Create edit modal
+        const modal = document.createElement('div');
+        modal.className = 'modal';
+        modal.innerHTML = `
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>Edit Document</h3>
+                    <button class="close-btn" onclick="closeModal()">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <form id="editDocForm">
+                        <div class="form-group">
+                            <label>Document Title:</label>
+                            <input type="text" id="editTitle" value="${doc.title || ''}" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Description:</label>
+                            <textarea id="editDescription">${doc.description || ''}</textarea>
+                        </div>
+                        <div class="form-group">
+                            <label>Status:</label>
+                            <select id="editStatus">
+                                <option value="active" ${doc.status === 'active' ? 'selected' : ''}>Active</option>
+                                <option value="inactive" ${doc.status === 'inactive' ? 'selected' : ''}>Inactive</option>
+                                <option value="archived" ${doc.status === 'archived' ? 'selected' : ''}>Archived</option>
+                            </select>
+                        </div>
+                        <div class="form-actions">
+                            <button type="submit" class="action">Save Changes</button>
+                            <button type="button" class="action secondary" onclick="closeModal()">Cancel</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        `;
+        
+        document.body.appendChild(modal);
+        modal.style.display = 'block';
+        
+        // Handle form submission
+        document.getElementById('editDocForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const updateData = {
+                title: document.getElementById('editTitle').value,
+                description: document.getElementById('editDescription').value,
+                status: document.getElementById('editStatus').value
+            };
+            
+            await ApiService.updateDocument(docId, updateData);
+            closeModal();
+            loadDocuments(); // Reload documents
+        });
+        
+    } catch (error) {
+        console.error('Error editing document:', error);
+        alert('Failed to edit document: ' + error.message);
+    }
+}
+
+// View document
+async function viewDoc(docId) {
+    try {
+        console.log('Viewing document:', docId);
+        
+        // Get document details
+        const doc = await ApiService.getDocument(docId);
+        
+        // Create view modal
+        const modal = document.createElement('div');
+        modal.className = 'modal';
+        modal.innerHTML = `
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>View Document</h3>
+                    <button class="close-btn" onclick="closeModal()">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <div class="doc-details">
+                        <h4>${doc.title}</h4>
+                        <p><strong>Type:</strong> ${doc.type || 'PDF'}</p>
+                        <p><strong>Department:</strong> ${doc.department || 'Admin'}</p>
+                        <p><strong>Status:</strong> ${doc.status || 'active'}</p>
+                        <p><strong>Last Updated:</strong> ${formatDate(doc.uploadedDate)}</p>
+                        ${doc.description ? `<p><strong>Description:</strong> ${doc.description}</p>` : ''}
+                        ${doc.work_type ? `<p><strong>Work Type:</strong> ${doc.work_type}</p>` : ''}
+                    </div>
+                    <div class="form-actions">
+                        <button class="action" onclick="downloadDoc('${docId}')">Download</button>
+                        <button class="action secondary" onclick="closeModal()">Close</button>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        document.body.appendChild(modal);
+        modal.style.display = 'block';
+        
+    } catch (error) {
+        console.error('Error viewing document:', error);
+        alert('Failed to view document: ' + error.message);
+    }
+}
+
+// Download document
+async function downloadDoc(docId) {
+    try {
+        console.log('Downloading document:', docId);
+        await ApiService.downloadDocument(docId);
+    } catch (error) {
+        console.error('Error downloading document:', error);
+        alert('Failed to download document: ' + error.message);
+    }
+}
+
+// Filter documents by search
+function filterDocs() {
+    const searchTerm = document.getElementById('docSearchInput').value.toLowerCase();
+    const docItems = document.querySelectorAll('.doc-item');
+    
+    docItems.forEach(item => {
+        const title = item.querySelector('h5').textContent.toLowerCase();
+        const description = item.querySelector('.doc-info').textContent.toLowerCase();
+        
+        if (title.includes(searchTerm) || description.includes(searchTerm)) {
+            item.style.display = 'block';
+        } else {
+            item.style.display = 'none';
+        }
+    });
+}
+
+// Filter documents by department
+function filterDocsByDept() {
+    const deptFilter = document.getElementById('deptFilter').value;
+    const docItems = document.querySelectorAll('.doc-item');
+    
+    docItems.forEach(item => {
+        const department = item.getAttribute('data-department');
+        
+        if (!deptFilter || department === deptFilter) {
+            item.style.display = 'block';
+        } else {
+            item.style.display = 'none';
+        }
+    });
+}
+
+// Close modal
+function closeModal() {
+    const modal = document.querySelector('.modal');
+    if (modal) {
+        modal.remove();
+    }
+}
+
+// Initialize document loading when page loads
+document.addEventListener('DOMContentLoaded', function() {
+    // Previous initializations...
+    const projectSelect = document.getElementById('progressProject');
+    if (projectSelect) {
+        loadProjects();
+    }
+    
+    const workerResults = document.getElementById('workerResults');
+    if (workerResults) {
+        loadWorkerAssignments();
+    }
+    
+    // Load documents if the docs grid exists
+    const docsGrid = document.getElementById('docsGrid');
+    if (docsGrid) {
+        loadDocuments();
+    }
+});
+
+// ===== EMPLOYEE MANAGEMENT FUNCTIONS =====
+
+// Edit employee
+async function editEmployee(employeeId) {
+    try {
+        console.log('Editing employee:', employeeId);
+        
+        // Get employee details
+        const employee = await ApiService.getEmployee(employeeId);
+        
+        // Create edit modal
+        const modal = document.createElement('div');
+        modal.className = 'modal';
+        modal.innerHTML = `
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>Edit Employee</h3>
+                    <button class="close-btn" onclick="closeModal()">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <form id="editEmployeeForm">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Employee ID:</label>
+                                <input type="text" id="editEmployeeId" value="${employee.employee_id || ''}" readonly>
+                            </div>
+                            <div class="form-group">
+                                <label>Position:</label>
+                                <input type="text" id="editPosition" value="${employee.position || ''}" required>
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Department:</label>
+                                <select id="editDepartment" required>
+                                    <option value="admin" ${employee.department === 'admin' ? 'selected' : ''}>Admin</option>
+                                    <option value="hr" ${employee.department === 'hr' ? 'selected' : ''}>Human Resources</option>
+                                    <option value="finance" ${employee.department === 'finance' ? 'selected' : ''}>Finance</option>
+                                    <option value="projects" ${employee.department === 'projects' ? 'selected' : ''}>Projects</option>
+                                    <option value="hse" ${employee.department === 'hse' ? 'selected' : ''}>HSE</option>
+                                    <option value="realestate" ${employee.department === 'realestate' ? 'selected' : ''}>Real Estate</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Status:</label>
+                                <select id="editStatus" required>
+                                    <option value="Active" ${employee.status === 'Active' ? 'selected' : ''}>Active</option>
+                                    <option value="Inactive" ${employee.status === 'Inactive' ? 'selected' : ''}>Inactive</option>
+                                    <option value="Suspended" ${employee.status === 'Suspended' ? 'selected' : ''}>Suspended</option>
+                                    <option value="Terminated" ${employee.status === 'Terminated' ? 'selected' : ''}>Terminated</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Salary (TZS):</label>
+                                <input type="number" id="editSalary" value="${employee.salary || ''}" min="0">
+                            </div>
+                            <div class="form-group">
+                                <label>Hire Date:</label>
+                                <input type="date" id="editHireDate" value="${employee.hire_date || ''}">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>Notes:</label>
+                            <textarea id="editNotes" rows="3">${employee.notes || ''}</textarea>
+                        </div>
+                        <div class="form-actions">
+                            <button type="submit" class="action">Save Changes</button>
+                            <button type="button" class="action secondary" onclick="closeModal()">Cancel</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        `;
+        
+        document.body.appendChild(modal);
+        modal.style.display = 'block';
+        
+        // Handle form submission
+        document.getElementById('editEmployeeForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const updateData = {
+                position: document.getElementById('editPosition').value,
+                department: document.getElementById('editDepartment').value,
+                status: document.getElementById('editStatus').value,
+                salary: parseFloat(document.getElementById('editSalary').value) || 0,
+                hire_date: document.getElementById('editHireDate').value,
+                notes: document.getElementById('editNotes').value
+            };
+            
+            await ApiService.updateEmployee(employeeId, updateData);
+            closeModal();
+            
+            // Reload employee list if it exists
+            const employeeList = document.querySelector('.employee-list');
+            if (employeeList) {
+                loadEmployeeList();
+            }
+        });
+        
+    } catch (error) {
+        console.error('Error editing employee:', error);
+        alert('Failed to edit employee: ' + error.message);
+    }
+}
+
+// View employee details
+async function viewEmployee(employeeId) {
+    try {
+        console.log('Viewing employee:', employeeId);
+        
+        // Get employee details
+        const employee = await ApiService.getEmployee(employeeId);
+        
+        // Create view modal
+        const modal = document.createElement('div');
+        modal.className = 'modal';
+        modal.innerHTML = `
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>Employee Details</h3>
+                    <button class="close-btn" onclick="closeModal()">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <div class="employee-details">
+                        <div class="detail-row">
+                            <span class="label">Employee ID:</span>
+                            <span class="value">${employee.employee_id || 'N/A'}</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="label">Position:</span>
+                            <span class="value">${employee.position || 'N/A'}</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="label">Department:</span>
+                            <span class="value">${employee.department || 'N/A'}</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="label">Status:</span>
+                            <span class="value status-badge ${employee.status?.toLowerCase()}">${employee.status || 'N/A'}</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="label">Salary:</span>
+                            <span class="value">${employee.salary ? Number(employee.salary).toLocaleString('TZS') + ' TZS' : 'N/A'}</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="label">Hire Date:</span>
+                            <span class="value">${formatDate(employee.hire_date)}</span>
+                        </div>
+                        ${employee.full_name ? `
+                        <div class="detail-row">
+                            <span class="label">Full Name:</span>
+                            <span class="value">${employee.full_name}</span>
+                        </div>
+                        ` : ''}
+                        ${employee.gmail ? `
+                        <div class="detail-row">
+                            <span class="label">Email:</span>
+                            <span class="value">${employee.gmail}</span>
+                        </div>
+                        ` : ''}
+                        ${employee.phone ? `
+                        <div class="detail-row">
+                            <span class="label">Phone:</span>
+                            <span class="value">${employee.phone}</span>
+                        </div>
+                        ` : ''}
+                        ${employee.notes ? `
+                        <div class="detail-row">
+                            <span class="label">Notes:</span>
+                            <span class="value">${employee.notes}</span>
+                        </div>
+                        ` : ''}
+                    </div>
+                    <div class="form-actions">
+                        <button class="action" onclick="editEmployee('${employeeId}')">Edit Employee</button>
+                        <button class="action secondary" onclick="closeModal()">Close</button>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        document.body.appendChild(modal);
+        modal.style.display = 'block';
+        
+    } catch (error) {
+        console.error('Error viewing employee:', error);
+        alert('Failed to view employee: ' + error.message);
+    }
+}
+
+// Delete employee
+async function deleteEmployee(employeeId) {
+    try {
+        if (!confirm('Are you sure you want to delete this employee? This action cannot be undone.')) {
+            return;
+        }
+        
+        console.log('Deleting employee:', employeeId);
+        
+        await ApiService.deleteEmployee(employeeId);
+        
+        // Reload employee list if it exists
+        const employeeList = document.querySelector('.employee-list');
+        if (employeeList) {
+            loadEmployeeList();
+        }
+        
+    } catch (error) {
+        console.error('Error deleting employee:', error);
+        alert('Failed to delete employee: ' + error.message);
+    }
+}
+
+// Load employee list (for admin assistant)
+async function loadEmployeeList() {
+    try {
+        console.log('🔄 Loading employee list for admin assistant...');
+        
+        const employees = await ApiService.getEmployees();
+        
+        const employeeList = document.querySelector('.employee-list');
+        if (!employeeList) return;
+        
+        if (!employees || employees.length === 0) {
+            employeeList.innerHTML = '<div class="no-employees">No employees found</div>';
+            return;
+        }
+        
+        employeeList.innerHTML = '';
+        
+        employees.forEach(employee => {
+            const employeeCard = document.createElement('div');
+            employeeCard.className = 'employee-card';
+            employeeCard.innerHTML = `
+                <div class="employee-info">
+                    <h5>${employee.full_name || employee.employee_id}</h5>
+                    <p><strong>ID:</strong> ${employee.employee_id}</p>
+                    <p><strong>Position:</strong> ${employee.position}</p>
+                    <p><strong>Department:</strong> ${employee.department}</p>
+                    <p><strong>Status:</strong> <span class="status-badge ${employee.status?.toLowerCase()}">${employee.status}</span></p>
+                    <p><strong>Hire Date:</strong> ${formatDate(employee.hire_date)}</p>
+                </div>
+                <div class="employee-actions">
+                    <button class="action edit-btn" onclick="editEmployee('${employee.id}')">Edit</button>
+                    <button class="action view-btn" onclick="viewEmployee('${employee.id}')">View</button>
+                    <button class="action delete-btn" onclick="deleteEmployee('${employee.id}')">Delete</button>
+                </div>
+            `;
+            
+            employeeList.appendChild(employeeCard);
+        });
+        
+        console.log('✅ Employee list loaded successfully');
+        
+    } catch (error) {
+        console.error('Failed to load employee list:', error);
+        const employeeList = document.querySelector('.employee-list');
+        if (employeeList) {
+            employeeList.innerHTML = '<div class="error-message">Failed to load employees</div>';
+        }
+    }
+}
+
+// Add missing API methods for employee management
+// Add these to the ApiService class in api.js if not already present
 
 // Authentication and Navigation Functions
 function showLoginSection() {

@@ -263,4 +263,84 @@ router.get('/stats/overview', (req, res) => {
     });
 });
 
+// Update project progress
+router.put('/:id/progress', (req, res) => {
+    const project = projects.find(proj => proj.id === parseInt(req.params.id));
+    
+    if (!project) {
+        return res.status(404).json({
+            success: false,
+            error: 'Project not found'
+        });
+    }
+    
+    const { 
+        progressPercentage, 
+        status, 
+        progressReport, 
+        completedMilestones, 
+        nextMilestones, 
+        budgetUsed, 
+        issues, 
+        updateDate 
+    } = req.body;
+    
+    // Update project progress
+    if (progressPercentage !== undefined) {
+        project.progress = parseInt(progressPercentage);
+    }
+    
+    if (status) {
+        project.status = status;
+    }
+    
+    // Add progress update to history
+    if (!project.progressUpdates) {
+        project.progressUpdates = [];
+    }
+    
+    const progressUpdate = {
+        id: project.progressUpdates.length + 1,
+        progressPercentage: progressPercentage || project.progress,
+        status: status || project.status,
+        progressReport: progressReport || '',
+        completedMilestones: completedMilestones || '',
+        nextMilestones: nextMilestones || '',
+        budgetUsed: budgetUsed || 0,
+        issues: issues || '',
+        updateDate: updateDate || new Date().toISOString(),
+        updatedBy: 'Project Authority'
+    };
+    
+    project.progressUpdates.unshift(progressUpdate); // Add to beginning
+    
+    // Keep only last 10 updates
+    if (project.progressUpdates.length > 10) {
+        project.progressUpdates = project.progressUpdates.slice(0, 10);
+    }
+    
+    res.json({
+        success: true,
+        message: 'Project progress updated successfully',
+        project: project,
+        update: progressUpdate
+    });
+});
+
+// Get project progress updates
+router.get('/:id/progress-updates', (req, res) => {
+    const project = projects.find(proj => proj.id === parseInt(req.params.id));
+    
+    if (!project) {
+        return res.status(404).json({
+            error: 'Project not found'
+        });
+    }
+    
+    res.json({
+        projectName: project.name,
+        updates: project.progressUpdates || []
+    });
+});
+
 module.exports = router;

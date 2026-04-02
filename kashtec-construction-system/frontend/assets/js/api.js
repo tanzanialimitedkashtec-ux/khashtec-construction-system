@@ -232,6 +232,184 @@ class ApiService {
         }
     }
 
+    async updateProjectProgress(projectId, progressData) {
+        try {
+            const response = await this.put(`/projects/${projectId}/progress`, progressData);
+            
+            if (response.success) {
+                NotificationManager.show('Project progress updated successfully!', 'success', 'Success');
+                return response;
+            } else {
+                throw new Error(response.error || 'Failed to update project progress');
+            }
+        } catch (error) {
+            console.error('Project progress update error:', error);
+            NotificationManager.show(error.message, 'error', 'Error');
+            throw error;
+        }
+    }
+
+    async getProjectProgressUpdates(projectId) {
+        try {
+            const response = await this.get(`/projects/${projectId}/progress-updates`);
+            return response;
+        } catch (error) {
+            console.error('Failed to fetch project progress updates:', error);
+            throw error;
+        }
+    }
+
+    // ===== WORKER ASSIGNMENT METHODS =====
+    async getWorkerAssignments() {
+        try {
+            const response = await this.get('/work/assignments');
+            return response;
+        } catch (error) {
+            console.error('Failed to fetch worker assignments:', error);
+            throw error;
+        }
+    }
+
+    async getWorkerAssignmentsByProject(projectId) {
+        try {
+            const response = await this.get(`/work/assignments?project_id=${projectId}`);
+            return response;
+        } catch (error) {
+            console.error('Failed to fetch worker assignments by project:', error);
+            throw error;
+        }
+    }
+
+    async getWorkerAssignmentStats() {
+        try {
+            const assignments = await this.getWorkerAssignments();
+            
+            const stats = {
+                totalAssignedWorkers: assignments.length,
+                activeProjects: new Set(assignments.map(a => a.project_id)).size,
+                activeTasks: assignments.filter(a => a.status === 'Active').length
+            };
+            
+            return stats;
+        } catch (error) {
+            console.error('Failed to fetch worker assignment stats:', error);
+            throw error;
+        }
+    }
+
+    // ===== DOCUMENT METHODS =====
+    async getDocuments() {
+        try {
+            const response = await this.get('/documents');
+            return response;
+        } catch (error) {
+            console.error('Failed to fetch documents:', error);
+            throw error;
+        }
+    }
+
+    async getDocument(id) {
+        try {
+            const response = await this.get(`/documents/${id}`);
+            return response;
+        } catch (error) {
+            console.error('Failed to fetch document:', error);
+            throw error;
+        }
+    }
+
+    async updateDocument(id, documentData) {
+        try {
+            const response = await this.put(`/documents/${id}`, documentData);
+            
+            if (response.message) {
+                NotificationManager.show('Document updated successfully!', 'success', 'Success');
+                return response;
+            } else {
+                throw new Error(response.error || 'Failed to update document');
+            }
+        } catch (error) {
+            console.error('Document update error:', error);
+            NotificationManager.show(error.message, 'error', 'Error');
+            throw error;
+        }
+    }
+
+    async downloadDocument(id) {
+        try {
+            const response = await this.get(`/documents/${id}/download`);
+            
+            // Create download link
+            const downloadUrl = `${this.baseURL}/documents/${id}/download`;
+            const link = document.createElement('a');
+            link.href = downloadUrl;
+            link.download = `document-${id}`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            
+            return response;
+        } catch (error) {
+            console.error('Document download error:', error);
+            throw new Error('Download failed: ' + error.message);
+        }
+    }
+
+    async getAdminWorkDocuments() {
+        try {
+            const response = await this.get('/work/admin');
+            return response;
+        } catch (error) {
+            console.error('Failed to fetch admin work documents:', error);
+            throw error;
+        }
+    }
+
+    // ===== EMPLOYEE MANAGEMENT METHODS =====
+    async getEmployee(id) {
+        try {
+            const response = await this.get(`/employees/${id}`);
+            return response;
+        } catch (error) {
+            console.error('Failed to fetch employee:', error);
+            throw error;
+        }
+    }
+
+    async updateEmployee(id, employeeData) {
+        try {
+            const response = await this.put(`/employees/${id}`, employeeData);
+            
+            if (response.message) {
+                NotificationManager.show('Employee updated successfully!', 'success', 'Success');
+                return response;
+            } else {
+                throw new Error(response.error || 'Failed to update employee');
+            }
+        } catch (error) {
+            console.error('Employee update error:', error);
+            NotificationManager.show(error.message, 'error', 'Error');
+            throw error;
+        }
+    }
+
+    async deleteEmployee(id) {
+        try {
+            const response = await this.delete(`/employees/${id}`);
+            
+            if (response.message) {
+                NotificationManager.show('Employee deleted successfully!', 'success', 'Success');
+                return response;
+            } else {
+                throw new Error(response.error || 'Failed to delete employee');
+            }
+        } catch (error) {
+            console.error('Employee delete error:', error);
+            NotificationManager.show(error.message, 'error', 'Error');
+            throw error;
+        }
+    }
+
     // ===== UTILITY METHODS =====
     getCurrentUser() {
         return this.currentUser;
