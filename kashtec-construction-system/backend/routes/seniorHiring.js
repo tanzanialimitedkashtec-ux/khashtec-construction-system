@@ -65,25 +65,25 @@ router.get('/:id', async (req, res) => {
 
 // Approve senior hiring request
 router.post('/:id/approve', async (req, res) => {
-    console.log('✅ Approving senior hiring request:', req.params.id);
     try {
-        const connection = await db.getConnection();
+        console.log('✅ Approving senior hiring request:', req.params.id);
         const approvedBy = req.body.approved_by || 'Managing Director';
         const approvalDate = new Date().toISOString().split('T')[0];
         
         // Update the senior_hiring_approval table
-        const [result] = await connection.query(`
+        const result = await db.execute(`
             UPDATE senior_hiring_approval 
             SET status = 'approved', approval_date = ?, approved_by = ?
             WHERE id = ?
         `, [approvalDate, approvedBy, req.params.id]);
         
         if (result.affectedRows === 0) {
-            connection.release();
-            return res.status(404).json({ error: 'Senior hiring request not found' });
+            return res.status(404).json({
+                error: 'Senior hiring request not found'
+            });
         }
         
-        connection.release();
+        console.log('✅ Senior hiring approved successfully');
         
         res.json({
             message: 'Senior hiring request approved successfully',
@@ -101,28 +101,27 @@ router.post('/:id/approve', async (req, res) => {
 
 // Request more information
 router.post('/:id/request-info', async (req, res) => {
-    console.log('🔄 Requesting more info for senior hiring request:', req.params.id);
     try {
-        const connection = await db.getConnection();
+        console.log('🔄 Requesting more info for senior hiring request:', req.params.id);
         const { info_request } = req.body;
         const requestedBy = req.body.requested_by || 'Managing Director';
         const requestedDate = new Date().toISOString().split('T')[0];
         
         // Insert into senior_hiring_info_request table
-        const [result] = await connection.query(`
+        const result = await db.execute(`
             INSERT INTO senior_hiring_info_request 
             (hiring_request_id, info_request, requested_by, requested_date, status)
             VALUES (?, ?, ?, ?, 'pending')
         `, [req.params.id, info_request || 'Please provide additional information', requestedBy, requestedDate]);
         
         // Update the main request status
-        await connection.query(`
+        await db.execute(`
             UPDATE senior_hiring_approval 
             SET status = 'info_requested'
             WHERE id = ?
         `, [req.params.id]);
         
-        connection.release();
+        console.log('✅ Senior hiring info request created successfully');
         
         res.json({
             message: 'Information requested successfully',
@@ -143,26 +142,25 @@ router.post('/:id/request-info', async (req, res) => {
 router.post('/:id/reject', async (req, res) => {
     console.log('❌ Rejecting senior hiring request:', req.params.id);
     try {
-        const connection = await db.getConnection();
         const { rejection_reason } = req.body;
         const rejectedBy = req.body.rejected_by || 'Managing Director';
         const rejectedDate = new Date().toISOString().split('T')[0];
         
         // Insert into senior_hiring_rejection table
-        const [result] = await connection.query(`
+        const result = await db.execute(`
             INSERT INTO senior_hiring_rejection 
             (hiring_request_id, rejection_reason, rejected_by, rejected_date)
             VALUES (?, ?, ?, ?)
         `, [req.params.id, rejection_reason || 'Candidate does not meet requirements', rejectedBy, rejectedDate]);
         
         // Update the main request status
-        await connection.query(`
+        await db.execute(`
             UPDATE senior_hiring_approval 
             SET status = 'rejected'
             WHERE id = ?
         `, [req.params.id]);
         
-        connection.release();
+        console.log('✅ Senior hiring rejected successfully');
         
         res.json({
             message: 'Senior hiring request rejected successfully',

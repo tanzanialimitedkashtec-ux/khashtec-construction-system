@@ -588,20 +588,23 @@ app.post('/api/notifications/broadcast', async (req, res) => {
         try {
             const db = require('./database/config/database');
             
-            // Create a simple broadcast notification
-            const result = await db.execute(
-                `INSERT INTO notifications (title, message, type, recipient_id, sender_id, created_at) 
-                 VALUES (?, ?, ?, ?, ?, NOW())`,
-                [
-                    title,
-                    message,
-                    type,
-                    null, // recipient_id - NULL for broadcast
-                    1, // sender_id - default admin
-                ]
-            );
+            // First check if users table has any records, if not use NULL for sender_id
+            const [userCheck] = await db.execute('SELECT COUNT(*) as count FROM users LIMIT 1');
+            const senderId = userCheck[0].count > 0 ? 1 : null; // Use first user ID if exists, otherwise NULL
             
-            console.log('✅ Database broadcast notification created:', result.insertId);
+            // Create a simple broadcast notification with proper foreign key
+            const result = await db.execute(`
+                INSERT INTO notifications (title, message, type, recipient_id, sender_id, created_at) 
+                 VALUES (?, ?, ?, ?, ?, NOW())
+            `, [
+                title,
+                message,
+                type.charAt(0).toUpperCase() + type.slice(1), // Capitalize for ENUM
+                null, // recipient_id - NULL for broadcast
+                senderId // Use valid user ID or NULL
+            ]);
+            
+            console.log('✅ Database broadcast notification created:', result);
             
             res.status(201).json({
                 success: true,
