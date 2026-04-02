@@ -2965,13 +2965,22 @@ function reviewEmployeeCount(){
 
 // Load employee count data from API
 function loadEmployeeCountData() {
+    // Prevent multiple calls
+    if (window.employeeDataLoading) {
+        console.log('📊 Employee data already loading, skipping...');
+        return;
+    }
+    
+    window.employeeDataLoading = true;
+    console.log('📊 Starting employee data load...');
+    
     const baseUrl = window.location.origin;
     fetch(`${baseUrl}/api/employees`, {
         method: 'GET',
         headers: {
             'Content-Type': 'application/json',
             'Accept': 'application/json',
-            'Authorization': `Bearer ${sessionManager.getAuthToken()}`
+            'Authorization': `Bearer ${typeof sessionManager !== 'undefined' ? sessionManager.getAuthToken() : ''}`
         }
     })
     .then(response => {
@@ -2981,8 +2990,8 @@ function loadEmployeeCountData() {
         return response.json();
     })
     .then(data => {
-        console.log('📊 Employee count data:', data);
-        const employees = Array.isArray(data) ? data : [];
+        console.log('📊 Employee count data received:', data);
+        const employees = Array.isArray(data) ? data : [data]; // Handle single object response
         
         if (employees.length === 0) {
             document.getElementById('totalEmployeesCount').textContent = '0';
@@ -3034,6 +3043,14 @@ function loadEmployeeCountData() {
         `).join('');
         
         document.getElementById('departmentBreakdown').innerHTML = deptBreakdownHtml;
+        
+        console.log('✅ Employee data loaded successfully:', {
+            total: totalEmployees,
+            active: activeContracts,
+            temporary: temporaryStaff,
+            senior: seniorStaff,
+            departments: departmentCounts
+        });
     })
     .catch(error => {
         console.error('❌ Error loading employee count data:', error);
@@ -3042,6 +3059,9 @@ function loadEmployeeCountData() {
         document.getElementById('temporaryStaffCount').textContent = 'Error';
         document.getElementById('seniorStaffCount').textContent = 'Error';
         document.getElementById('departmentBreakdown').innerHTML = '<div class="error">Failed to load employee data</div>';
+    })
+    .finally(() => {
+        window.employeeDataLoading = false;
     });
 }
 
