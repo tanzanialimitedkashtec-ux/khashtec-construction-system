@@ -62,6 +62,12 @@ function submitAccountForm() {
 // Load projects into the select dropdown
 async function loadProjects() {
     try {
+        // Ensure ApiService is available
+        if (typeof ApiService === 'undefined') {
+            console.error('ApiService is not defined, waiting for it to load...');
+            await waitForApiService();
+        }
+
         const response = await ApiService.get('/projects');
         const projectSelect = document.getElementById('progressProject');
         
@@ -208,6 +214,12 @@ document.addEventListener('DOMContentLoaded', function() {
 // Load all worker assignments and stats
 async function loadWorkerAssignments() {
     try {
+        // Ensure ApiService is available
+        if (typeof ApiService === 'undefined') {
+            console.error('ApiService is not defined, waiting for it to load...');
+            await waitForApiService();
+        }
+
         // Load assignments
         const assignments = await ApiService.getWorkerAssignments();
         
@@ -408,6 +420,13 @@ function displayError(elementId, message) {
 // Load documents from admin_work table
 async function loadDocuments() {
     try {
+        // Ensure ApiService is available
+        if (typeof ApiService === 'undefined') {
+            console.error('ApiService is not defined, waiting for it to load...');
+            // Wait for ApiService to be available
+            await waitForApiService();
+        }
+        
         // Try to get documents from admin_work table first
         let documents = [];
         
@@ -445,6 +464,25 @@ async function loadDocuments() {
         console.error('Failed to load documents:', error);
         displayError('docsGrid', 'Failed to load documents');
     }
+}
+
+// Helper function to wait for ApiService to be available
+function waitForApiService() {
+    return new Promise((resolve) => {
+        const checkInterval = setInterval(() => {
+            if (typeof ApiService !== 'undefined') {
+                clearInterval(checkInterval);
+                resolve();
+            }
+        }, 100);
+        
+        // Timeout after 5 seconds
+        setTimeout(() => {
+            clearInterval(checkInterval);
+            console.error('ApiService failed to load within timeout');
+            resolve();
+        }, 5000);
+    });
 }
 
 // Display documents in the grid
@@ -674,6 +712,12 @@ document.addEventListener('DOMContentLoaded', function() {
 async function editEmployee(employeeId) {
     try {
         console.log('Editing employee:', employeeId);
+        
+        // Ensure ApiService is available
+        if (typeof ApiService === 'undefined') {
+            console.error('ApiService is not defined, waiting for it to load...');
+            await waitForApiService();
+        }
         
         // Get employee details
         const employee = await ApiService.getEmployee(employeeId);
