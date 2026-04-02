@@ -365,51 +365,6 @@ class ApiService {
         }
     }
 
-    // ===== EMPLOYEE MANAGEMENT METHODS =====
-    async getEmployee(id) {
-        try {
-            const response = await this.get(`/employees/${id}`);
-            return response;
-        } catch (error) {
-            console.error('Failed to fetch employee:', error);
-            throw error;
-        }
-    }
-
-    async updateEmployee(id, employeeData) {
-        try {
-            const response = await this.put(`/employees/${id}`, employeeData);
-            
-            if (response.message) {
-                NotificationManager.show('Employee updated successfully!', 'success', 'Success');
-                return response;
-            } else {
-                throw new Error(response.error || 'Failed to update employee');
-            }
-        } catch (error) {
-            console.error('Employee update error:', error);
-            NotificationManager.show(error.message, 'error', 'Error');
-            throw error;
-        }
-    }
-
-    async deleteEmployee(id) {
-        try {
-            const response = await this.delete(`/employees/${id}`);
-            
-            if (response.message) {
-                NotificationManager.show('Employee deleted successfully!', 'success', 'Success');
-                return response;
-            } else {
-                throw new Error(response.error || 'Failed to delete employee');
-            }
-        } catch (error) {
-            console.error('Employee delete error:', error);
-            NotificationManager.show(error.message, 'error', 'Error');
-            throw error;
-        }
-    }
-
     // ===== UTILITY METHODS =====
     getCurrentUser() {
         return this.currentUser;

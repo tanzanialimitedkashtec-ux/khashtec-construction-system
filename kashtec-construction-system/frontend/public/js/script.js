@@ -62,12 +62,6 @@ function submitAccountForm() {
 // Load projects into the select dropdown
 async function loadProjects() {
     try {
-        // Ensure ApiService is available
-        if (typeof ApiService === 'undefined') {
-            console.error('ApiService is not defined, waiting for it to load...');
-            await waitForApiService();
-        }
-
         const response = await ApiService.get('/projects');
         const projectSelect = document.getElementById('progressProject');
         
@@ -214,12 +208,6 @@ document.addEventListener('DOMContentLoaded', function() {
 // Load all worker assignments and stats
 async function loadWorkerAssignments() {
     try {
-        // Ensure ApiService is available
-        if (typeof ApiService === 'undefined') {
-            console.error('ApiService is not defined, waiting for it to load...');
-            await waitForApiService();
-        }
-
         // Load assignments
         const assignments = await ApiService.getWorkerAssignments();
         
@@ -420,13 +408,6 @@ function displayError(elementId, message) {
 // Load documents from admin_work table
 async function loadDocuments() {
     try {
-        // Ensure ApiService is available
-        if (typeof ApiService === 'undefined') {
-            console.error('ApiService is not defined, waiting for it to load...');
-            // Wait for ApiService to be available
-            await waitForApiService();
-        }
-        
         // Try to get documents from admin_work table first
         let documents = [];
         
@@ -464,25 +445,6 @@ async function loadDocuments() {
         console.error('Failed to load documents:', error);
         displayError('docsGrid', 'Failed to load documents');
     }
-}
-
-// Helper function to wait for ApiService to be available
-function waitForApiService() {
-    return new Promise((resolve) => {
-        const checkInterval = setInterval(() => {
-            if (typeof ApiService !== 'undefined') {
-                clearInterval(checkInterval);
-                resolve();
-            }
-        }, 100);
-        
-        // Timeout after 5 seconds
-        setTimeout(() => {
-            clearInterval(checkInterval);
-            console.error('ApiService failed to load within timeout');
-            resolve();
-        }, 5000);
-    });
 }
 
 // Display documents in the grid
@@ -705,281 +667,6 @@ document.addEventListener('DOMContentLoaded', function() {
         loadDocuments();
     }
 });
-
-// ===== EMPLOYEE MANAGEMENT FUNCTIONS =====
-
-// Edit employee
-async function editEmployee(employeeId) {
-    try {
-        console.log('Editing employee:', employeeId);
-        
-        // Ensure ApiService is available
-        if (typeof ApiService === 'undefined') {
-            console.error('ApiService is not defined, waiting for it to load...');
-            await waitForApiService();
-        }
-        
-        // Get employee details
-        const employee = await ApiService.getEmployee(employeeId);
-        
-        // Create edit modal
-        const modal = document.createElement('div');
-        modal.className = 'modal';
-        modal.innerHTML = `
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h3>Edit Employee</h3>
-                    <button class="close-btn" onclick="closeModal()">&times;</button>
-                </div>
-                <div class="modal-body">
-                    <form id="editEmployeeForm">
-                        <div class="form-row">
-                            <div class="form-group">
-                                <label>Employee ID:</label>
-                                <input type="text" id="editEmployeeId" value="${employee.employee_id || ''}" readonly>
-                            </div>
-                            <div class="form-group">
-                                <label>Position:</label>
-                                <input type="text" id="editPosition" value="${employee.position || ''}" required>
-                            </div>
-                        </div>
-                        <div class="form-row">
-                            <div class="form-group">
-                                <label>Department:</label>
-                                <select id="editDepartment" required>
-                                    <option value="admin" ${employee.department === 'admin' ? 'selected' : ''}>Admin</option>
-                                    <option value="hr" ${employee.department === 'hr' ? 'selected' : ''}>Human Resources</option>
-                                    <option value="finance" ${employee.department === 'finance' ? 'selected' : ''}>Finance</option>
-                                    <option value="projects" ${employee.department === 'projects' ? 'selected' : ''}>Projects</option>
-                                    <option value="hse" ${employee.department === 'hse' ? 'selected' : ''}>HSE</option>
-                                    <option value="realestate" ${employee.department === 'realestate' ? 'selected' : ''}>Real Estate</option>
-                                </select>
-                            </div>
-                            <div class="form-group">
-                                <label>Status:</label>
-                                <select id="editStatus" required>
-                                    <option value="Active" ${employee.status === 'Active' ? 'selected' : ''}>Active</option>
-                                    <option value="Inactive" ${employee.status === 'Inactive' ? 'selected' : ''}>Inactive</option>
-                                    <option value="Suspended" ${employee.status === 'Suspended' ? 'selected' : ''}>Suspended</option>
-                                    <option value="Terminated" ${employee.status === 'Terminated' ? 'selected' : ''}>Terminated</option>
-                                </select>
-                            </div>
-                        </div>
-                        <div class="form-row">
-                            <div class="form-group">
-                                <label>Salary (TZS):</label>
-                                <input type="number" id="editSalary" value="${employee.salary || ''}" min="0">
-                            </div>
-                            <div class="form-group">
-                                <label>Hire Date:</label>
-                                <input type="date" id="editHireDate" value="${employee.hire_date || ''}">
-                            </div>
-                        </div>
-                        <div class="form-group">
-                            <label>Notes:</label>
-                            <textarea id="editNotes" rows="3">${employee.notes || ''}</textarea>
-                        </div>
-                        <div class="form-actions">
-                            <button type="submit" class="action">Save Changes</button>
-                            <button type="button" class="action secondary" onclick="closeModal()">Cancel</button>
-                        </div>
-                    </form>
-                </div>
-            </div>
-        `;
-        
-        document.body.appendChild(modal);
-        modal.style.display = 'block';
-        
-        // Handle form submission
-        document.getElementById('editEmployeeForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            
-            const updateData = {
-                position: document.getElementById('editPosition').value,
-                department: document.getElementById('editDepartment').value,
-                status: document.getElementById('editStatus').value,
-                salary: parseFloat(document.getElementById('editSalary').value) || 0,
-                hire_date: document.getElementById('editHireDate').value,
-                notes: document.getElementById('editNotes').value
-            };
-            
-            await ApiService.updateEmployee(employeeId, updateData);
-            closeModal();
-            
-            // Reload employee list if it exists
-            const employeeList = document.querySelector('.employee-list');
-            if (employeeList) {
-                loadEmployeeList();
-            }
-        });
-        
-    } catch (error) {
-        console.error('Error editing employee:', error);
-        alert('Failed to edit employee: ' + error.message);
-    }
-}
-
-// View employee details
-async function viewEmployee(employeeId) {
-    try {
-        console.log('Viewing employee:', employeeId);
-        
-        // Get employee details
-        const employee = await ApiService.getEmployee(employeeId);
-        
-        // Create view modal
-        const modal = document.createElement('div');
-        modal.className = 'modal';
-        modal.innerHTML = `
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h3>Employee Details</h3>
-                    <button class="close-btn" onclick="closeModal()">&times;</button>
-                </div>
-                <div class="modal-body">
-                    <div class="employee-details">
-                        <div class="detail-row">
-                            <span class="label">Employee ID:</span>
-                            <span class="value">${employee.employee_id || 'N/A'}</span>
-                        </div>
-                        <div class="detail-row">
-                            <span class="label">Position:</span>
-                            <span class="value">${employee.position || 'N/A'}</span>
-                        </div>
-                        <div class="detail-row">
-                            <span class="label">Department:</span>
-                            <span class="value">${employee.department || 'N/A'}</span>
-                        </div>
-                        <div class="detail-row">
-                            <span class="label">Status:</span>
-                            <span class="value status-badge ${employee.status?.toLowerCase()}">${employee.status || 'N/A'}</span>
-                        </div>
-                        <div class="detail-row">
-                            <span class="label">Salary:</span>
-                            <span class="value">${employee.salary ? Number(employee.salary).toLocaleString('TZS') + ' TZS' : 'N/A'}</span>
-                        </div>
-                        <div class="detail-row">
-                            <span class="label">Hire Date:</span>
-                            <span class="value">${formatDate(employee.hire_date)}</span>
-                        </div>
-                        ${employee.full_name ? `
-                        <div class="detail-row">
-                            <span class="label">Full Name:</span>
-                            <span class="value">${employee.full_name}</span>
-                        </div>
-                        ` : ''}
-                        ${employee.gmail ? `
-                        <div class="detail-row">
-                            <span class="label">Email:</span>
-                            <span class="value">${employee.gmail}</span>
-                        </div>
-                        ` : ''}
-                        ${employee.phone ? `
-                        <div class="detail-row">
-                            <span class="label">Phone:</span>
-                            <span class="value">${employee.phone}</span>
-                        </div>
-                        ` : ''}
-                        ${employee.notes ? `
-                        <div class="detail-row">
-                            <span class="label">Notes:</span>
-                            <span class="value">${employee.notes}</span>
-                        </div>
-                        ` : ''}
-                    </div>
-                    <div class="form-actions">
-                        <button class="action" onclick="editEmployee('${employeeId}')">Edit Employee</button>
-                        <button class="action secondary" onclick="closeModal()">Close</button>
-                    </div>
-                </div>
-            </div>
-        `;
-        
-        document.body.appendChild(modal);
-        modal.style.display = 'block';
-        
-    } catch (error) {
-        console.error('Error viewing employee:', error);
-        alert('Failed to view employee: ' + error.message);
-    }
-}
-
-// Delete employee
-async function deleteEmployee(employeeId) {
-    try {
-        if (!confirm('Are you sure you want to delete this employee? This action cannot be undone.')) {
-            return;
-        }
-        
-        console.log('Deleting employee:', employeeId);
-        
-        await ApiService.deleteEmployee(employeeId);
-        
-        // Reload employee list if it exists
-        const employeeList = document.querySelector('.employee-list');
-        if (employeeList) {
-            loadEmployeeList();
-        }
-        
-    } catch (error) {
-        console.error('Error deleting employee:', error);
-        alert('Failed to delete employee: ' + error.message);
-    }
-}
-
-// Load employee list (for admin assistant)
-async function loadEmployeeList() {
-    try {
-        console.log('🔄 Loading employee list for admin assistant...');
-        
-        const employees = await ApiService.getEmployees();
-        
-        const employeeList = document.querySelector('.employee-list');
-        if (!employeeList) return;
-        
-        if (!employees || employees.length === 0) {
-            employeeList.innerHTML = '<div class="no-employees">No employees found</div>';
-            return;
-        }
-        
-        employeeList.innerHTML = '';
-        
-        employees.forEach(employee => {
-            const employeeCard = document.createElement('div');
-            employeeCard.className = 'employee-card';
-            employeeCard.innerHTML = `
-                <div class="employee-info">
-                    <h5>${employee.full_name || employee.employee_id}</h5>
-                    <p><strong>ID:</strong> ${employee.employee_id}</p>
-                    <p><strong>Position:</strong> ${employee.position}</p>
-                    <p><strong>Department:</strong> ${employee.department}</p>
-                    <p><strong>Status:</strong> <span class="status-badge ${employee.status?.toLowerCase()}">${employee.status}</span></p>
-                    <p><strong>Hire Date:</strong> ${formatDate(employee.hire_date)}</p>
-                </div>
-                <div class="employee-actions">
-                    <button class="action edit-btn" onclick="editEmployee('${employee.id}')">Edit</button>
-                    <button class="action view-btn" onclick="viewEmployee('${employee.id}')">View</button>
-                    <button class="action delete-btn" onclick="deleteEmployee('${employee.id}')">Delete</button>
-                </div>
-            `;
-            
-            employeeList.appendChild(employeeCard);
-        });
-        
-        console.log('✅ Employee list loaded successfully');
-        
-    } catch (error) {
-        console.error('Failed to load employee list:', error);
-        const employeeList = document.querySelector('.employee-list');
-        if (employeeList) {
-            employeeList.innerHTML = '<div class="error-message">Failed to load employees</div>';
-        }
-    }
-}
-
-// Add missing API methods for employee management
-// Add these to the ApiService class in api.js if not already present
 
 // Authentication and Navigation Functions
 function showLoginSection() {
