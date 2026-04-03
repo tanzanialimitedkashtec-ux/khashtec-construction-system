@@ -101,58 +101,120 @@ let documents = [
 ];
 
 // Get all documents
-router.get('/', (req, res) => {
-    const { category, type, uploadedBy, search } = req.query;
-    
-    let filteredDocuments = documents;
-    
-    if (category) {
-        filteredDocuments = filteredDocuments.filter(doc => 
-            doc.category.toLowerCase() === category.toLowerCase()
-        );
+router.get('/', async (req, res) => {
+    try {
+        const { category, type, uploadedBy, search } = req.query;
+        
+        // Fetch from admin_work table
+        const db = require('../database/config/database');
+        const [adminWorkItems] = await db.execute(`
+            SELECT * FROM admin_work 
+            ORDER BY submitted_date DESC
+        `);
+        
+        // Transform admin_work data to document format
+        let documents = adminWorkItems.map(item => ({
+            id: item.id,
+            title: item.work_title,
+            description: item.work_description,
+            category: item.work_type || 'general',
+            type: 'PDF', // Default type
+            uploadedBy: item.assigned_to || 1,
+            uploadedDate: item.submitted_date,
+            status: item.status || 'active',
+            fileName: `${item.work_title.replace(/[^a-zA-Z0-9]/g, '_')}.pdf`,
+            filePath: `/uploads/documents/${item.id}`,
+            department: item.department_code || 'admin'
+        }));
+        
+        // Apply filters
+        if (category) {
+            documents = documents.filter(doc => 
+                doc.category.toLowerCase() === category.toLowerCase()
+            );
+        }
+        
+        if (type) {
+            documents = documents.filter(doc => 
+                doc.type.toLowerCase() === type.toLowerCase()
+            );
+        }
+        
+        if (uploadedBy) {
+            documents = documents.filter(doc => 
+                doc.uploadedBy === parseInt(uploadedBy)
+            );
+        }
+        
+        if (search) {
+            const searchTerm = search.toLowerCase();
+            documents = documents.filter(doc => 
+                doc.title.toLowerCase().includes(searchTerm) ||
+                doc.description.toLowerCase().includes(searchTerm) ||
+                doc.category.toLowerCase().includes(searchTerm)
+            );
+        }
+        
+        // Sort by upload date (newest first)
+        documents.sort((a, b) => new Date(b.uploadedDate) - new Date(a.uploadedDate));
+        
+        res.json({
+            documents: documents,
+            total: documents.length
+        });
+        
+    } catch (error) {
+        console.error('Error fetching documents:', error);
+        res.status(500).json({ 
+            error: 'Failed to fetch documents',
+            details: error.message 
+        });
     }
-    
-    if (type) {
-        filteredDocuments = filteredDocuments.filter(doc => 
-            doc.type.toLowerCase() === type.toLowerCase()
-        );
-    }
-    
-    if (uploadedBy) {
-        filteredDocuments = filteredDocuments.filter(doc => 
-            doc.uploadedBy === parseInt(uploadedBy)
-        );
-    }
-    
-    if (search) {
-        const searchTerm = search.toLowerCase();
-        filteredDocuments = filteredDocuments.filter(doc => 
-            doc.title.toLowerCase().includes(searchTerm) ||
-            doc.description.toLowerCase().includes(searchTerm) ||
-            doc.category.toLowerCase().includes(searchTerm)
-        );
-    }
-    
-    // Sort by upload date (newest first)
-    filteredDocuments.sort((a, b) => new Date(b.uploadedDate) - new Date(a.uploadedDate));
-    
-    res.json({
-        documents: filteredDocuments,
-        total: filteredDocuments.length
-    });
 });
 
 // Get document by ID
-router.get('/:id', (req, res) => {
-    const document = documents.find(doc => doc.id === parseInt(req.params.id));
-    
-    if (!document) {
-        return res.status(404).json({
-            error: 'Document not found'
+router.get('/:id', async (req, res) => {
+    try {
+        const docId = req.params.id;
+        
+        // Fetch from admin_work table
+        const db = require('../database/config/database');
+        const [adminWorkItems] = await db.execute(
+            'SELECT * FROM admin_work WHERE id = ?', [docId]
+        );
+        
+        if (adminWorkItems.length === 0) {
+            return res.status(404).json({
+                error: 'Document not found'
+            });
+        }
+        
+        const item = adminWorkItems[0];
+        
+        // Transform admin_work data to document format
+        const document = {
+            id: item.id,
+            title: item.work_title,
+            description: item.work_description,
+            category: item.work_type || 'general',
+            type: 'PDF',
+            uploadedBy: item.assigned_to || 1,
+            uploadedDate: item.submitted_date,
+            status: item.status || 'active',
+            fileName: `${item.work_title.replace(/[^a-zA-Z0-9]/g, '_')}.pdf`,
+            filePath: `/uploads/documents/${item.id}`,
+            department: item.department_code || 'admin'
+        };
+        
+        res.json(document);
+        
+    } catch (error) {
+        console.error('Error fetching document:', error);
+        res.status(500).json({ 
+            error: 'Failed to fetch document',
+            details: error.message 
         });
     }
-    
-    res.json(document);
 });
 
 // Test POST endpoint to isolate the issue
@@ -448,24 +510,40 @@ router.delete('/:id', (req, res) => {
 });
 
 // Download document
-router.get('/:id/download', (req, res) => {
-    const document = documents.find(doc => doc.id === parseInt(req.params.id));
-    
-    if (!document) {
-        return res.status(404).json({
-            error: 'Document not found'
+router.get('/:id/download', async (req, res) => {
+    try {
+        const docId = req.params.id;
+        
+        // Fetch from admin_work table
+        const db = require('../database/config/database');
+        const [adminWorkItems] = await db.execute(
+            'SELECT * FROM admin_work WHERE id = ?', [docId]
+        );
+        
+        if (adminWorkItems.length === 0) {
+            return res.status(404).json({
+                error: 'Document not found'
+            });
+        }
+        
+        const item = adminWorkItems[0];
+        
+        // For admin work items, create a simple text file as placeholder
+        const content = `Document: ${item.work_title}\nDescription: ${item.work_description}\nType: ${item.work_type}\nSubmitted: ${item.submitted_date}\nStatus: ${item.status}\nDepartment: ${item.department_code || 'admin'}`;
+        
+        const fileName = `${item.work_title.replace(/[^a-zA-Z0-9]/g, '_')}.txt`;
+        
+        res.setHeader('Content-Type', 'text/plain');
+        res.setHeader('Content-Disposition', `attachment; filename="${fileName}"`);
+        res.send(content);
+        
+    } catch (error) {
+        console.error('Error downloading document:', error);
+        res.status(500).json({ 
+            error: 'Failed to download document',
+            details: error.message 
         });
     }
-    
-    const filePath = path.join(__dirname, '../../uploads/documents', document.fileName);
-    
-    if (!fs.existsSync(filePath)) {
-        return res.status(404).json({
-            error: 'File not found on server'
-        });
-    }
-    
-    res.download(filePath, document.title + path.extname(document.fileName));
 });
 
 // Get document statistics

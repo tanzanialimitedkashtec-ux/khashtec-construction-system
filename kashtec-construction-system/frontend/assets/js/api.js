@@ -337,9 +337,7 @@ class ApiService {
 
     async downloadDocument(id) {
         try {
-            const response = await this.get(`/documents/${id}/download`);
-            
-            // Create download link
+            // Create download link directly
             const downloadUrl = `${this.baseURL}/documents/${id}/download`;
             const link = document.createElement('a');
             link.href = downloadUrl;
@@ -348,7 +346,7 @@ class ApiService {
             link.click();
             document.body.removeChild(link);
             
-            return response;
+            return { success: true, message: 'Download initiated' };
         } catch (error) {
             console.error('Document download error:', error);
             throw new Error('Download failed: ' + error.message);
