@@ -3179,7 +3179,18 @@ function loadAllWorkersData() {
 
 // Display all workers
 function displayAllWorkers(employees, workerAccounts) {
+    console.log('🎨 displayAllWorkers called with:', {
+        employeesCount: employees.length,
+        workerAccountsCount: workerAccounts.length
+    });
+    
     const resultsContainer = document.getElementById('mdWorkerResults');
+    console.log('🎯 Results container found:', !!resultsContainer);
+    
+    if (!resultsContainer) {
+        console.error('❌ mdWorkerResults container not found!');
+        return;
+    }
     
     if (employees.length === 0 && workerAccounts.length === 0) {
         resultsContainer.innerHTML = '<div class="no-data">No workers found</div>';
@@ -3219,7 +3230,9 @@ function displayAllWorkers(employees, workerAccounts) {
         return;
     }
     
-    resultsContainer.innerHTML = allWorkers.map(worker => `
+    console.log('🎨 Generating HTML for', allWorkers.length, 'workers');
+    
+    const htmlContent = allWorkers.map(worker => `
         <div class="worker-item" data-department="${(worker.department || '').toLowerCase()}" data-type="${worker.type}" data-status="${(worker.status || '').toLowerCase()}">
             <div class="worker-header">
                 <h5>${worker.displayName}</h5>
@@ -3237,6 +3250,10 @@ function displayAllWorkers(employees, workerAccounts) {
             </div>
         </div>
     `).join('');
+    
+    console.log('🎯 Setting HTML content...');
+    resultsContainer.innerHTML = htmlContent;
+    console.log('✅ HTML content set successfully');
 }
 
 // Filter all workers
