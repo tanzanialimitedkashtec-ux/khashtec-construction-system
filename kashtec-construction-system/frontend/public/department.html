@@ -14313,7 +14313,7 @@ function scheduleMeetingSubmit() {
         created_by: meeting.scheduledBy
     };
     
-    // Send to API - Fixed URL
+    // Send to API - Fixed URL typo (added missing 'n')
     const baseUrl = window.location.origin;
     fetch(`${baseUrl}/api/schedule-meetings/`, {
         method: 'POST',
