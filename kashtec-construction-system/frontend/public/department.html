@@ -10962,8 +10962,13 @@ function calculateTotalBudget() {
         
         const total = salaries + supplies + equipment + training + travel + misc;
         
-        // Update individual field displays
-        if (salariesElement) salariesElement.value = `TZS ${salaries.toLocaleString()}`;
+        // Update individual field displays with numeric values only (since they are type="number")
+        if (salariesElement) salariesElement.value = salaries;
+        if (suppliesElement) suppliesElement.value = supplies;
+        if (equipmentElement) equipmentElement.value = equipment;
+        if (trainingElement) trainingElement.value = training;
+        if (travelElement) travelElement.value = travel;
+        if (miscElement) miscElement.value = misc;
         
         // Update total budget display (only if element exists)
         const totalBudgetElement = document.getElementById('totalBudget');
