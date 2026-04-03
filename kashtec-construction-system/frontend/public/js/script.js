@@ -676,7 +676,7 @@ function updateNavigation(state) {
     
     // Check if elements exist before trying to use them
     if (!registerNav || !loginNav || !portalNav) {
-        console.warn('Navigation elements not found, skipping update');
+        // Navigation elements not found in department portal - this is expected
         return;
     }
     

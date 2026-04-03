@@ -8929,7 +8929,7 @@ document.addEventListener('DOMContentLoaded', function() {
         
         console.log('✅ Multiple form protection layers added successfully');
     } else {
-        console.log('❌ Incident form not found');
+        console.log('ℹ️ Incident form not found - may not be visible yet');
     }
 });
 
@@ -16512,8 +16512,7 @@ function reviewOrgStructure() {
 
 </script>
 
-<!-- Include XLSX Library for Excel Export -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<!-- Note: XLSX Library removed due to CSP - using CSV export instead -->
 
 <script src="js/sessionManager.js"></script>
 
