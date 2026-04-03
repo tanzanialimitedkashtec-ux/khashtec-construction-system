@@ -4747,44 +4747,12 @@ function generateWorkforceReport() {
 // Generate Excel report from employee data
 function generateExcelReport(employees) {
     try {
-        // Create workbook and worksheet
-        const ws = XLSX.utils.json_to_sheet(employees.map(emp => ({
-            'Employee ID': emp.employee_id || emp.id || '',
-            'Full Name': emp.full_name || emp.name || '',
-            'Email': emp.gmail || emp.email || '',
-            'Phone': emp.phone || '',
-            'Department': emp.department || '',
-            'Position': emp.position || emp.job_category || '',
-            'Status': emp.status || '',
-            'Contract Type': emp.contract_type || '',
-            'Hire Date': emp.hire_date ? new Date(emp.hire_date).toLocaleDateString() : '',
-            'NIDA': emp.nida || '',
-            'Passport': emp.passport || '',
-            'Created At': emp.created_at ? new Date(emp.created_at).toLocaleDateString() : ''
-        })));
-        
-        const wb = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(wb, ws, 'Workforce Report');
-        
-        // Generate filename with timestamp
-        const timestamp = new Date().toISOString().replace(/[:.]/g, '-').split('T')[0];
-        const filename = `workforce_report_${timestamp}.xlsx`;
-        
-        // Write file
-        XLSX.writeFile(wb, filename);
-        
-        customAlert(`Workforce report generated successfully!\n\n📊 Report Details:\n• Total Employees: ${employees.length}\n• Report Format: Excel (.xlsx)\n• Filename: ${filename}\n\n📁 File downloaded to your default download folder.`, 'Report Generated', 'success');
+        // Generate CSV report instead of Excel (due to CSP restrictions)
+        generateCSVReport(employees);
         
     } catch (error) {
-        console.error('❌ Error generating Excel report:', error);
-        
-        // Fallback to CSV if XLSX fails
-        try {
-            generateCSVReport(employees);
-        } catch (csvError) {
-            console.error('❌ Error generating CSV report:', csvError);
-            customAlert('Failed to generate report. Please try again.', 'Report Error', 'error');
-        }
+        console.error('❌ Error generating report:', error);
+        customAlert('Failed to generate report. Please try again.', 'Report Error', 'error');
     }
 }
 
