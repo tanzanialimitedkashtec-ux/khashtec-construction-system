@@ -19,9 +19,8 @@ async function runMigration() {
         console.log('🚀 Starting Worker Assignments Migration...');
         console.log('📅 Migration Date:', new Date().toISOString());
         
-        // Connect to database
-        await db.connect();
-        console.log('✅ Database connected successfully');
+        // Database connection will be established automatically on first query
+        console.log('✅ Database connection ready');
         
         // Run main migration file first
         console.log('🔍 Running main migration file...');

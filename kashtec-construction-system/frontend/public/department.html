@@ -11949,6 +11949,91 @@ function generateWorkerAssignments(employees, assignments, projects) {
     }).join('');
 }
 
+// Load assigned workers from the database
+async function loadAssignedWorkers() {
+    try {
+        console.log('🔍 Loading assigned workers...');
+        
+        const baseUrl = window.location.origin;
+        const response = await fetch(`${baseUrl}/api/work/assignments`, {
+            headers: {
+                'Authorization': `Bearer ${sessionManager.getAuthToken()}`
+            }
+        });
+        
+        const workers = await response.json();
+        
+        if (response.ok) {
+            console.log('👥 Assigned workers loaded:', workers.length);
+            displayAssignedWorkers(workers);
+            updateWorkerStats(workers);
+        } else {
+            console.error('❌ Failed to load assigned workers:', workers.error);
+            showNotification('Failed to load assigned workers', 'error', 5000);
+        }
+        
+    } catch (error) {
+        console.error('❌ Error loading assigned workers:', error);
+        showNotification('Error loading assigned workers: ' + error.message, 'error', 5000);
+    }
+}
+
+// Display assigned workers in the UI
+function displayAssignedWorkers(workers) {
+    const workerResults = document.getElementById('workerResults');
+    
+    if (!workerResults) {
+        console.warn('⚠️ Worker results container not found');
+        return;
+    }
+    
+    if (workers.length === 0) {
+        workerResults.innerHTML = `
+            <div class="no-workers">
+                <p>No workers currently assigned.</p>
+            </div>
+        `;
+        return;
+    }
+    
+    workerResults.innerHTML = workers.map(worker => `
+        <div class="worker-item">
+            <div class="worker-info">
+                <h5>${worker.employee_name}</h5>
+                <p><strong>Project:</strong> ${worker.project_name}</p>
+                <p><strong>Role:</strong> ${worker.role_in_project}</p>
+                <p><strong>Status:</strong> <span class="status ${worker.status.toLowerCase()}">${worker.status}</span></p>
+                <p><strong>Start Date:</strong> ${new Date(worker.start_date).toLocaleDateString()}</p>
+                ${worker.end_date ? `<p><strong>End Date:</strong> ${new Date(worker.end_date).toLocaleDateString()}</p>` : ''}
+                ${worker.assignment_notes ? `<p><strong>Notes:</strong> ${worker.assignment_notes}</p>` : ''}
+                <p><strong>Assigned By:</strong> ${worker.assigned_by}</p>
+            </div>
+            <div class="worker-actions">
+                <button class="action" onclick="viewWorkerDetails('${worker.id}')">View Details</button>
+                <button class="action" onclick="editAssignment('${worker.id}')">Edit Assignment</button>
+            </div>
+        </div>
+    `).join('');
+}
+
+// Update worker statistics
+function updateWorkerStats(workers) {
+    const totalWorkers = document.querySelector('.stat-value');
+    const activeProjects = new Set(workers.map(w => w.project_id)).size;
+    const activeTasks = workers.filter(w => w.status === 'Active').length;
+    
+    if (totalWorkers) {
+        totalWorkers.textContent = workers.length;
+    }
+    
+    // Update other stats if elements exist
+    const projectStats = document.querySelectorAll('.stat-value')[1];
+    const taskStats = document.querySelectorAll('.stat-value')[2];
+    
+    if (projectStats) projectStats.textContent = activeProjects;
+    if (taskStats) taskStats.textContent = activeTasks;
+}
+
 function filterAssignedWorkers() {
     const searchTerm = document.getElementById('workerSearch').value.toLowerCase();
     const projectFilter = document.getElementById('projectFilter').value;
@@ -15362,6 +15447,9 @@ document.addEventListener('DOMContentLoaded', function() {
             </div>
         </div>
     </div>`);
+    
+    // Load assigned workers data
+    loadAssignedWorkers();
 });
 
 // Edit document - opens document editor
