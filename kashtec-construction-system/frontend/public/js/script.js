@@ -1916,23 +1916,23 @@ function displayWorkforceBudgets(budgets) {
                                 <div class="budget-overview">
                                         <div class="budget-row">
                                                 <span class="budget-category">Salaries & Wages:</span>
-                                                <span class="budget-amount">TZS ${budget.salaries_wages.toLocaleString()}</span>
+                                                <span class="budget-amount">TZS ${(budget.salaries_wages || 0).toLocaleString()}</span>
                                         </div>
                                         <div class="budget-row">
                                                 <span class="budget-category">Training & Development:</span>
-                                                <span class="budget-amount">TZS ${budget.training_development.toLocaleString()}</span>
+                                                <span class="budget-amount">TZS ${(budget.training_development || 0).toLocaleString()}</span>
                                         </div>
                                         <div class="budget-row">
                                                 <span class="budget-category">Employee Benefits:</span>
-                                                <span class="budget-amount">TZS ${budget.employee_benefits.toLocaleString()}</span>
+                                                <span class="budget-amount">TZS ${(budget.employee_benefits || 0).toLocaleString()}</span>
                                         </div>
                                         <div class="budget-row">
                                                 <span class="budget-category">Recruitment Costs:</span>
-                                                <span class="budget-amount">TZS ${budget.recruitment_costs.toLocaleString()}</span>
+                                                <span class="budget-amount">TZS ${(budget.recruitment_costs || 0).toLocaleString()}</span>
                                         </div>
                                         <div class="budget-row total">
                                                 <span class="budget-category">Total Proposed:</span>
-                                                <span class="budget-amount">TZS ${budget.total_proposed.toLocaleString()}</span>
+                                                <span class="budget-amount">TZS ${(budget.total_proposed || 0).toLocaleString()}</span>
                                         </div>
                                 </div>
                                 

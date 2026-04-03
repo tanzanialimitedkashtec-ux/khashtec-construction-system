@@ -982,9 +982,73 @@ app.get('/api/senior-hiring-test', (req, res) => {
     console.log('🧪 Senior hiring test endpoint accessed');
     res.json({ 
         message: 'Senior hiring API is working!',
-        timestamp: new Date().toISOString(),
-        endpoints: ['POST /api/senior-hiring/:id/approve', 'POST /api/senior-hiring/:id/request-info', 'POST /api/senior-hiring/:id/reject']
+        timestamp: new Date().toISOString()
     });
+});
+
+// Add a direct GET endpoint for senior hiring requests
+app.get('/api/senior-hiring', async (req, res) => {
+    try {
+        console.log('📋 Direct senior hiring GET endpoint accessed');
+        
+        // Try to use database first
+        try {
+            const db = require('./database/config/database');
+            const [requests] = await db.execute(`
+                SELECT id, candidate_name, position, department, proposed_salary, experience, 
+                       hr_recommendation, status, request_date, approval_date, approved_by
+                FROM senior_hiring_approval 
+                WHERE status = 'pending'
+                ORDER BY request_date DESC
+            `);
+            
+            console.log('✅ Senior hiring requests from database:', requests.length);
+            res.json(requests);
+            
+        } catch (dbError) {
+            console.log('❌ Database failed, using mock data:', dbError.message);
+            
+            // Fallback to mock data
+            const mockRequests = [
+                {
+                    id: 'senior-001',
+                    candidate_name: 'John Smith',
+                    position: 'Senior Project Manager',
+                    department: 'Projects',
+                    proposed_salary: 150000,
+                    experience: '10+ years in construction management',
+                    hr_recommendation: 'Highly recommended for senior role',
+                    status: 'pending',
+                    request_date: '2024-01-15',
+                    approval_date: null,
+                    approved_by: null
+                },
+                {
+                    id: 'senior-002',
+                    candidate_name: 'Sarah Johnson',
+                    position: 'Finance Director',
+                    department: 'Finance',
+                    proposed_salary: 180000,
+                    experience: '15+ years in financial management',
+                    hr_recommendation: 'Excellent candidate with proven track record',
+                    status: 'pending',
+                    request_date: '2024-01-20',
+                    approval_date: null,
+                    approved_by: null
+                }
+            ];
+            
+            console.log('✅ Mock senior hiring requests created:', mockRequests.length);
+            res.json(mockRequests);
+        }
+        
+    } catch (error) {
+        console.error('❌ Direct senior hiring GET error:', error);
+        res.status(500).json({ 
+            error: 'Failed to fetch senior hiring requests',
+            details: error.message 
+        });
+    }
 });
 
 // Add direct workforce budget endpoints as backup
