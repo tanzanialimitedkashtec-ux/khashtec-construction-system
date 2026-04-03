@@ -6724,6 +6724,10 @@ function recordIncidentReports(){
         document.addEventListener('click', function(e) {
             const button = e.target.closest('button');
             if (button && !button.onclick && !button.getAttribute('onclick')) {
+                // Allow submit buttons that are part of forms with onsubmit handlers
+                if (button.type === 'submit' && button.form && button.form.onsubmit) {
+                    return; // Allow form submit buttons
+                }
                 console.log('🚫 BUTTON WITHOUT ONCLICK BLOCKED:', button.textContent);
                 e.preventDefault();
                 e.stopPropagation();

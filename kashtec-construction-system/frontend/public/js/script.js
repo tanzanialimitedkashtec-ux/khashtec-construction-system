@@ -499,7 +499,7 @@ async function editDoc(docId) {
             
             await KashTecAPI.updateDocument(docId, updateData);
             closeModal();
-            loadDocuments(); // Reload documents
+            // Note: loadDocuments() is now in department.html
         });
         
     } catch (error) {
@@ -631,10 +631,10 @@ document.addEventListener('DOMContentLoaded', function() {
         loadWorkerAssignments();
     }
     
-    // Load documents if the docs grid exists
+    // Note: loadDocuments() is now in department.html
     const docsGrid = document.getElementById('docsGrid');
     if (docsGrid) {
-        loadDocuments();
+        // loadDocuments(); // This is now handled by department.html
     }
 });
 

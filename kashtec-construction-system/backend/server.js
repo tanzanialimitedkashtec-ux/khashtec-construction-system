@@ -1503,44 +1503,6 @@ app.get('/api/schedule-meetings-direct-test', (req, res) => {
 const meetingMinutesRoutes = require('./routes/meetingMinutes');
 app.use('/api/meeting-minutes', meetingMinutesRoutes);
 
-// ===== SCHEDULE MEETINGS DIRECT ENDPOINT =====
-// Add direct POST endpoint for schedule meetings to bypass route loading issues
-app.post('/api/schedule-meetings/', (req, res) => {
-    console.log('📅 Meeting creation request received (direct endpoint)');
-    console.log('📝 Request body:', req.body);
-    
-    try {
-        const meetingData = req.body;
-        
-        // Basic validation
-        if (!meetingData.meeting_title || !meetingData.meeting_date || !meetingData.start_time) {
-            return res.status(400).json({
-                success: false,
-                error: 'Missing required fields: meeting_title, meeting_date, start_time'
-            });
-        }
-        
-        // Return success response
-        res.json({
-            success: true,
-            message: 'Meeting scheduled successfully!',
-            meeting: {
-                id: meetingData.id || 'MTG-' + Date.now(),
-                ...meetingData,
-                createdAt: new Date().toISOString()
-            }
-        });
-        
-    } catch (error) {
-        console.error('❌ Error in meeting creation:', error);
-        res.status(500).json({
-            success: false,
-            error: 'Failed to schedule meeting',
-            details: error.message
-        });
-    }
-});
-
 // ===== NOTIFICATIONS ROUTES =====
 console.log('🔍 Loading notifications routes...');
 try {
