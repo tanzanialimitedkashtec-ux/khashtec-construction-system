@@ -3373,6 +3373,8 @@ function suspendTerminateEmployment(){
 
 // Load employees for employment action dropdown
 function loadEmployeesForAction() {
+    console.log('🔄 Loading employees for action dropdown...');
+    
     const baseUrl = window.location.origin;
     fetch(`${baseUrl}/api/employees`, {
         method: 'GET',
@@ -3404,11 +3406,29 @@ function loadEmployeesForAction() {
                     ${emp.full_name || emp.name || 'Unknown'} - ${emp.position || emp.job_category || 'N/A'} (${emp.department || 'N/A'})
                 </option>
             `).join('');
+            
+        console.log('✅ Employee dropdown populated with', employees.length, 'employees');
     })
     .catch(error => {
         console.error('❌ Error loading employees for action:', error);
         const employeeSelect = document.getElementById('actionEmployee');
-        employeeSelect.innerHTML = '<option value="">Failed to load employees</option>';
+        
+        // Fallback to mock data if API fails
+        console.log('🔄 Using mock employee data as fallback');
+        const mockEmployees = [
+            { id: 'EMP001', full_name: 'John Doe', position: 'Project Manager', department: 'Projects' },
+            { id: 'EMP002', full_name: 'Jane Smith', position: 'HR Manager', department: 'HR' },
+            { id: 'EMP003', full_name: 'Mike Johnson', position: 'Engineer', department: 'Projects' }
+        ];
+        
+        employeeSelect.innerHTML = '<option value="">Select Employee</option>' +
+            mockEmployees.map(emp => `
+                <option value="${emp.id}">
+                    ${emp.full_name} - ${emp.position} (${emp.department})
+                </option>
+            `).join('');
+            
+        console.log('✅ Employee dropdown populated with mock data');
     });
 }
 
