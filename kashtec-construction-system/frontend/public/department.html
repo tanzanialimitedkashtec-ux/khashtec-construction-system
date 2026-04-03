@@ -3160,8 +3160,14 @@ function loadAllWorkersData() {
         console.log('📊 Employees data:', employeesData);
         console.log('📊 Worker accounts data:', workerAccountsData);
         
-        const employees = Array.isArray(employeesData) ? employeesData : [];
-        const workerAccounts = Array.isArray(workerAccountsData) ? workerAccountsData : [];
+        // Handle both single objects and arrays
+        const employees = Array.isArray(employeesData) ? employeesData : 
+                         (employeesData && typeof employeesData === 'object') ? [employeesData] : [];
+        const workerAccounts = Array.isArray(workerAccountsData) ? workerAccountsData :
+                           (workerAccountsData && typeof workerAccountsData === 'object') ? [workerAccountsData] : [];
+        
+        console.log('📊 Processed employees:', employees);
+        console.log('📊 Processed worker accounts:', workerAccounts);
         
         // Update statistics
         document.getElementById('totalEmployees').textContent = employees.length;
