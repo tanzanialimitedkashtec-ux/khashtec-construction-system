@@ -96,19 +96,8 @@ async function loadProjectDetails() {
     }
     
     try {
-        const baseUrl = window.location.origin;
-        const response = await fetch(`${baseUrl}/api/projects/${projectId}`, {
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${sessionManager.getAuthToken()}`
-            }
-        });
-        
-        if (!response.ok) {
-            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-        }
-        
-        const project = await response.json();
+        const response = await ApiService.get(`/projects/${projectId}`);
+        const project = response;
         
         // Show the progress form
         progressForm.classList.remove('hidden');
@@ -154,33 +143,13 @@ async function saveProjectProgress() {
     };
     
     try {
-        const baseUrl = window.location.origin;
-        const response = await fetch(`${baseUrl}/api/projects/${projectId}/progress`, {
-            method: 'PUT',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${sessionManager.getAuthToken()}`
-            },
-            body: JSON.stringify(progressData)
-        });
+        await ApiService.updateProjectProgress(projectId, progressData);
         
-        if (!response.ok) {
-            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-        }
+        // Reset form
+        document.getElementById('progressForm').reset();
         
-        const result = await response.json();
-        
-        if (result.success) {
-            alert('Project progress updated successfully!');
-            
-            // Reset form
-            document.getElementById('progressForm').reset();
-            
-            // Reload updates
-            loadProgressUpdates(projectId);
-        } else {
-            throw new Error(result.error || 'Failed to update progress');
-        }
+        // Reload updates
+        loadProgressUpdates(projectId);
         
         return false;
     } catch (error) {
