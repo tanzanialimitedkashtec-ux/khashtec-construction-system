@@ -2705,7 +2705,14 @@ function loadMenu(){
         addMenu("Financial Management", financialManagement);
         addMenu("Payroll Processing", payrollProcessing);
         addMenu("Expense Control", expenseControl);
-        addMenu("Email Notifications", () => FinanceDepartment.emailNotificationSettings());
+        addMenu("Email Notifications", () => {
+            if (window.FinanceDepartment && typeof window.FinanceDepartment.emailNotificationSettings === 'function') {
+                window.FinanceDepartment.emailNotificationSettings();
+            } else {
+                console.error('FinanceDepartment not available');
+                alert('Finance Department functionality is still loading. Please try again in a moment.');
+            }
+        });
         addMenu("Financial Audits", financeAudits);
         addMenu("Financial Compliance", financeCompliance);
         addMenu("Compliance", financeCompliance);

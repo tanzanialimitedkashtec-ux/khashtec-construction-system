@@ -1009,4 +1009,18 @@ class FinanceDepartment {
 }
 
 // Export for global use
-window.FinanceDepartment = new FinanceDepartment();
+window.FinanceDepartment = FinanceDepartment;
+
+// Immediate instantiation for backward compatibility
+if (!window.financeDepartmentInstance) {
+    window.financeDepartmentInstance = new FinanceDepartment();
+    window.FinanceDepartment = window.financeDepartmentInstance;
+}
+
+// Also instantiate after DOM is ready as backup
+document.addEventListener('DOMContentLoaded', function() {
+    if (!window.financeDepartmentInstance) {
+        window.financeDepartmentInstance = new FinanceDepartment();
+        window.FinanceDepartment = window.financeDepartmentInstance;
+    }
+});
