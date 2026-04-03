@@ -659,6 +659,28 @@ app.get('/api/notifications-test', (req, res) => {
     });
 });
 
+// Add a simple database test endpoint
+app.get('/api/test-db', async (req, res) => {
+    try {
+        console.log('🔍 Testing database connection...');
+        const db = require('./database/config/database');
+        const [result] = await db.execute('SELECT 1 as test');
+        console.log('✅ Database connection successful:', result);
+        res.json({ 
+            status: 'Database connection successful',
+            result: result,
+            timestamp: new Date().toISOString()
+        });
+    } catch (error) {
+        console.error('❌ Database connection failed:', error);
+        res.status(500).json({ 
+            status: 'Database connection failed',
+            error: error.message,
+            timestamp: new Date().toISOString()
+        });
+    }
+});
+
 // Add a direct schedule meetings endpoint as backup
 app.post('/api/schedule-meetings/', async (req, res) => {
     try {
