@@ -11974,11 +11974,25 @@ async function loadAssignedWorkers() {
     try {
         console.log('🔍 Loading assigned workers...');
         
+        const token = sessionManager.getAuthToken();
+        console.log('🔑 Auth token:', token ? 'Present' : 'Missing');
+        console.log('🔑 Token length:', token ? token.length : 0);
+        
         const baseUrl = window.location.origin;
+        const headers = {
+            'Content-Type': 'application/json'
+        };
+        
+        // Add auth header only if token exists
+        if (token) {
+            headers['Authorization'] = `Bearer ${token}`;
+        }
+        
+        console.log('📡 Making request to:', `${baseUrl}/api/work/assignments`);
+        console.log('📡 Request headers:', headers);
+        
         const response = await fetch(`${baseUrl}/api/work/assignments`, {
-            headers: {
-                'Authorization': `Bearer ${sessionManager.getAuthToken()}`
-            }
+            headers: headers
         });
         
         console.log('📡 Response status:', response.status);
@@ -11987,7 +12001,14 @@ async function loadAssignedWorkers() {
         if (!response.ok) {
             const errorText = await response.text();
             console.error('❌ Failed to load assigned workers:', response.status, errorText);
-            showNotification(`Failed to load assigned workers: ${response.status} ${errorText}`, 'error', 5000);
+            
+            // Handle authentication errors specifically
+            if (response.status === 403) {
+                console.log('🔓 Authentication error - using mock data');
+                showNotification('Authentication failed - using demo data', 'warning', 3000);
+            } else {
+                showNotification(`Failed to load assigned workers: ${response.status} ${errorText}`, 'error', 5000);
+            }
             
             // Fallback to mock data
             console.log('🔄 Using mock assigned workers data as fallback');
@@ -12024,7 +12045,14 @@ async function loadAssignedWorkers() {
         
     } catch (error) {
         console.error('❌ Error loading assigned workers:', error);
-        showNotification('Error loading assigned workers: ' + error.message, 'error', 5000);
+        
+        // Handle network errors specifically
+        if (error.message.includes('Failed to fetch') || error.message.includes('net::ERR_NAME_NOT_RESOLVED')) {
+            console.log('🌐 Network error - using mock data');
+            showNotification('Network connectivity issues - using demo data', 'warning', 3000);
+        } else {
+            showNotification('Error loading assigned workers: ' + error.message, 'error', 5000);
+        }
         
         // Fallback to mock data on error
         console.log('🔄 Using mock assigned workers data as fallback');
