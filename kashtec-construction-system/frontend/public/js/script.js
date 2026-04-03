@@ -96,8 +96,19 @@ async function loadProjectDetails() {
     }
     
     try {
-        const response = await ApiService.get(`/projects/${projectId}`);
-        const project = response;
+        const baseUrl = window.location.origin;
+        const response = await fetch(`${baseUrl}/api/projects/${projectId}`, {
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${sessionManager.getAuthToken()}`
+            }
+        });
+        
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+        
+        const project = await response.json();
         
         // Show the progress form
         progressForm.classList.remove('hidden');
@@ -143,13 +154,33 @@ async function saveProjectProgress() {
     };
     
     try {
-        await ApiService.updateProjectProgress(projectId, progressData);
+        const baseUrl = window.location.origin;
+        const response = await fetch(`${baseUrl}/api/projects/${projectId}/progress`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${sessionManager.getAuthToken()}`
+            },
+            body: JSON.stringify(progressData)
+        });
         
-        // Reset form
-        document.getElementById('progressForm').reset();
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
         
-        // Reload updates
-        loadProgressUpdates(projectId);
+        const result = await response.json();
+        
+        if (result.success) {
+            alert('Project progress updated successfully!');
+            
+            // Reset form
+            document.getElementById('progressForm').reset();
+            
+            // Reload updates
+            loadProgressUpdates(projectId);
+        } else {
+            throw new Error(result.error || 'Failed to update progress');
+        }
         
         return false;
     } catch (error) {
