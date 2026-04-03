@@ -765,7 +765,14 @@ app.post('/api/schedule-meetings/', async (req, res) => {
             });
             
         } catch (dbError) {
-            console.log('❌ Database failed, using mock meeting:', dbError.message);
+            console.error('❌ Database failed for meeting creation:', dbError);
+            console.error('❌ Database error details:', {
+                code: dbError.code,
+                errno: dbError.errno,
+                sqlState: dbError.sqlState,
+                sqlMessage: dbError.sqlMessage,
+                message: dbError.message
+            });
             
             // Fallback to mock meeting
             const meetingId = `MTG-${Date.now()}`;
@@ -845,7 +852,14 @@ app.post('/api/senior-hiring/:id/approve', async (req, res) => {
             });
             
         } catch (dbError) {
-            console.log('❌ Database failed, using mock approval:', dbError.message);
+            console.error('❌ Database failed for senior hiring approval:', dbError);
+            console.error('❌ Database error details:', {
+                code: dbError.code,
+                errno: dbError.errno,
+                sqlState: dbError.sqlState,
+                sqlMessage: dbError.sqlMessage,
+                message: dbError.message
+            });
             
             // Fallback to mock approval
             console.log('✅ Mock senior hiring approved:', req.params.id);
