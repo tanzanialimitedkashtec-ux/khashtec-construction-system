@@ -1399,9 +1399,9 @@ console.log(' Loading properties routes...');
 
 try {
     const propertiesRoutes = require('./routes/properties');
-    console.log(' Properties routes loaded successfully');
+    console.log('✅ Properties routes loaded successfully');
     app.use('/api/properties', propertiesRoutes);
-    console.log(' Properties routes mounted at /api/properties');
+    console.log('✅ Properties routes mounted at /api/properties');
     
     // Add a direct test endpoint to verify mounting
     app.get('/api/properties-status', (req, res) => {
@@ -1415,6 +1415,11 @@ try {
 } catch (error) {
     console.error('❌ Error loading properties routes:', error);
     console.error('❌ Full error stack:', error.stack);
+    console.error('❌ Error details:', {
+        message: error.message,
+        code: error.code,
+        errno: error.errno
+    });
 }
 
 // Add a direct properties endpoint as backup (outside the try-catch)
