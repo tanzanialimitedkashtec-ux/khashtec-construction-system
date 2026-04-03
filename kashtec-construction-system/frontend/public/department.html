@@ -11184,9 +11184,115 @@ function createNewProject(){
     </div>`);
 }
 
+// Load projects for progress update from API
+async function loadProjectsForProgressUpdate() {
+    try {
+        console.log('🔍 Loading projects for progress update...');
+        
+        const baseUrl = window.location.origin;
+        const response = await fetch(`${baseUrl}/api/projects`, {
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${sessionManager.getAuthToken()}`
+            }
+        });
+        
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+        
+        const data = await response.json();
+        console.log('📊 Projects loaded:', data.projects);
+        
+        const projectSelect = document.getElementById('progressProject');
+        if (projectSelect) {
+            projectSelect.innerHTML = `
+                <option value="">Select Project to Update</option>
+                ${data.projects.map(project => 
+                    `<option value="${project.id}">${project.name} - ${project.progress || 0}% Complete (${project.status})</option>`
+                ).join('')}
+            `;
+        }
+        
+    } catch (error) {
+        console.error('❌ Error loading projects:', error);
+        
+        // Fallback to mock projects
+        const mockProjects = [
+            {
+                id: 1,
+                name: 'Kigali Tower Complex',
+                progress: 65,
+                status: 'active'
+            },
+            {
+                id: 2,
+                name: 'Dar es Salaam Port Expansion',
+                progress: 40,
+                status: 'active'
+            }
+        ];
+        
+        const projectSelect = document.getElementById('progressProject');
+        if (projectSelect) {
+            projectSelect.innerHTML = `
+                <option value="">Select Project to Update</option>
+                ${mockProjects.map(project => 
+                    `<option value="${project.id}">${project.name} - ${project.progress}% Complete (${project.status})</option>`
+                ).join('')}
+            `;
+        }
+        
+        showNotification('Using demo projects - API unavailable', 'warning', 3000);
+    }
+}
+
+// Load project details when a project is selected
+async function loadProjectDetails() {
+    const projectId = document.getElementById('progressProject').value;
+    
+    if (!projectId) {
+        document.getElementById('progressUpdateForm').classList.add('hidden');
+        return;
+    }
+    
+    try {
+        console.log('🔍 Loading project details for ID:', projectId);
+        
+        const baseUrl = window.location.origin;
+        const response = await fetch(`${baseUrl}/api/projects/${projectId}`, {
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${sessionManager.getAuthToken()}`
+            }
+        });
+        
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+        
+        const project = await response.json();
+        console.log('📊 Project details loaded:', project);
+        
+        // Populate form with current project data
+        document.getElementById('progressPercentage').value = project.progress || 0;
+        document.getElementById('projectStatus').value = project.status || 'active';
+        
+        // Show the form
+        document.getElementById('progressUpdateForm').classList.remove('hidden');
+        
+    } catch (error) {
+        console.error('❌ Error loading project details:', error);
+        showNotification('Error loading project details', 'error', 3000);
+        
+        // Still show form with empty values for demo
+        document.getElementById('progressUpdateForm').classList.remove('hidden');
+    }
+}
+
 function updateProjectProgress(){
-    // Load existing projects
-    const projects = []; // TODO: Load from API
+    // Load existing projects from API
+    loadProjectsForProgressUpdate();
     
     showContent(`<div class="card">
         <h3>Update Project Progress</h3>
@@ -11196,10 +11302,7 @@ function updateProjectProgress(){
             <div class="form-group">
                 <label>Select Project *</label>
                 <select id="progressProject" onchange="loadProjectDetails()">
-                    <option value="">Select Project to Update</option>
-                    ${projects.map(project => 
-                        `<option value="${project.id}">${project.name} - ${project.progress || 0}% Complete</option>`
-                    ).join('')}
+                    <option value="">Loading projects...</option>
                 </select>
             </div>
         </div>
@@ -11832,27 +11935,65 @@ function saveNewProject() {
 }
 
 function saveProjectProgress() {
-    const progress = {
-        projectId: document.getElementById('progressProject').value,
-        percentage: document.getElementById('progressPercentage').value,
+    const projectId = document.getElementById('progressProject').value;
+    
+    if (!projectId) {
+        customAlert('Please select a project', "Error", "error");
+        return false;
+    }
+    
+    const progressData = {
+        progressPercentage: document.getElementById('progressPercentage').value,
         status: document.getElementById('projectStatus').value,
-        report: document.getElementById('progressReport').value,
+        progressReport: document.getElementById('progressReport').value,
         completedMilestones: document.getElementById('completedMilestones').value,
         nextMilestones: document.getElementById('nextMilestones').value,
         budgetUsed: document.getElementById('budgetUsed').value,
         issues: document.getElementById('projectIssues').value,
-        updatedBy: 'Project Manager',
-        updateDate: new Date().toLocaleString()
+        updateDate: new Date().toISOString()
     };
     
-    // Save to secure API storage
-    const progressUpdates = [];
-    progressUpdates.push(progress);
-    // TODO: Save to API
+    // Show loading
+    customAlert('Updating project progress...', "Processing", "info");
     
-    customAlert(`Project progress updated successfully!\n\nProgress: ${progress.percentage}%\nStatus: ${progress.status}\nUpdated: ${progress.updateDate}`, "Progress Updated", "success");
+    // Save to API
+    const baseUrl = window.location.origin;
+    fetch(`${baseUrl}/api/projects/${projectId}/progress`, {
+        method: 'PUT',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${sessionManager.getAuthToken()}`
+        },
+        body: JSON.stringify(progressData)
+    })
+    .then(response => {
+        console.log('📡 Progress update response status:', response.status);
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+        return response.json();
+    })
+    .then(data => {
+        console.log('📊 Progress update response:', data);
+        
+        if (data.success) {
+            customAlert(`Project progress updated successfully!\n\nProject: ID ${projectId}\nProgress: ${progressData.progressPercentage}%\nStatus: ${progressData.status}\nUpdated: ${new Date().toLocaleString()}`, "Progress Updated", "success");
+            
+            // Reset form
+            document.getElementById('progressForm').reset();
+            document.getElementById('progressUpdateForm').classList.add('hidden');
+            
+            // Reload projects to show updated progress
+            loadProjectsForProgressUpdate();
+        } else {
+            throw new Error(data.error || 'Failed to update progress');
+        }
+    })
+    .catch(error => {
+        console.error('❌ Error updating project progress:', error);
+        customAlert(`Error updating project progress: ${error.message}`, "Error", "error");
+    });
     
-    document.getElementById('progressForm').reset();
     return false;
 }
 

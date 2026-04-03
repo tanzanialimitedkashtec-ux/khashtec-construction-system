@@ -102,7 +102,7 @@ try {
         res.json({ 
             status: 'Employees routes are mounted from routes/employees.js',
             timestamp: new Date().toISOString(),
-            endpoints: ['/api/employees/', '/api/employees/test']
+            endpoints: ['GET /api/employees', 'POST /api/employees', 'GET /api/employees/:id', 'PUT /api/employees/:id', 'DELETE /api/employees/:id']
         });
     });
     
