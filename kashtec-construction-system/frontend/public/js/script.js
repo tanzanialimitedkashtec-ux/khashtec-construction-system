@@ -2006,6 +2006,10 @@ async function approveBudget(budgetId) {
         showNotification('Approving workforce budget...', 'info', 2000);
         
         // Call API
+        console.log('🔍 Testing API connectivity...');
+        console.log('🌐 Base URL:', window.location.origin);
+        console.log('📡 Full URL:', `/api/workforce-budget/${budgetId}/approve`);
+        
         const response = await fetch(`/api/workforce-budget/${budgetId}/approve`, {
                 method: 'POST',
                 headers: {
