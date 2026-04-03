@@ -10901,12 +10901,21 @@ function calculateTotalBudget() {
         const travelElement = document.getElementById('budgetTravel');
         const miscElement = document.getElementById('budgetMisc');
         
-        const salaries = parseFloat(salariesElement ? salariesElement.value : 0) || 0;
-        const supplies = parseFloat(suppliesElement ? suppliesElement.value : 0) || 0;
-        const equipment = parseFloat(equipmentElement ? equipmentElement.value : 0) || 0;
-        const training = parseFloat(trainingElement ? trainingElement.value : 0) || 0;
-        const travel = parseFloat(travelElement ? travelElement.value : 0) || 0;
-        const misc = parseFloat(miscElement ? miscElement.value : 0) || 0;
+        // Helper function to parse TZS values
+        const parseTZSValue = (element) => {
+            if (!element) return 0;
+            const value = element.value || '0';
+            // Remove "TZS " prefix and any commas, then parse as number
+            const numericValue = value.replace(/^TZS\s*/, '').replace(/,/g, '');
+            return parseFloat(numericValue) || 0;
+        };
+        
+        const salaries = parseTZSValue(salariesElement);
+        const supplies = parseTZSValue(suppliesElement);
+        const equipment = parseTZSValue(equipmentElement);
+        const training = parseTZSValue(trainingElement);
+        const travel = parseTZSValue(travelElement);
+        const misc = parseTZSValue(miscElement);
         
         const total = salaries + supplies + equipment + training + travel + misc;
         
