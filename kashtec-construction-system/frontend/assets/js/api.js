@@ -377,3 +377,4 @@ class ApiService {
 
 // Export for global use
 window.ApiService = new ApiService();
+window.KashTecAPI = new ApiService(); // Alias for compatibility

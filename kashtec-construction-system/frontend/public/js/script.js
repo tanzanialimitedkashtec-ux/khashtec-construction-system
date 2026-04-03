@@ -404,135 +404,49 @@ function displayError(elementId, message) {
 }
 
 // ===== DOCUMENT MANAGEMENT FUNCTIONS =====
+// Note: loadDocuments function is now in department.html to avoid conflicts
 
-// Load documents from admin_work table
-async function loadDocuments() {
-    try {
-        // Check if ApiService is available
-        if (typeof ApiService === 'undefined') {
-            console.error('❌ ApiService is not available');
-            displayError('docsGrid', 'API service not loaded. Please refresh the page.');
-            return;
-        }
-        
-        // Try to get documents from admin_work table first
-        let documents = [];
-        
-        try {
-            const adminWorkResponse = await ApiService.getAdminWorkDocuments();
-            // Filter for document-related work items
-            documents = adminWorkResponse.filter(item => 
-                item.work_type && (
-                    item.work_type.includes('Document') || 
-                    item.work_type.includes('Policy') ||
-                    item.work_type.includes('Manual')
-                )
-            ).map(item => ({
-                id: item.id,
-                title: item.work_title,
-                type: 'PDF',
-                department: item.department_code || 'admin',
-                uploadedDate: item.submitted_date,
-                status: item.status,
-                description: item.work_description,
-                work_type: item.work_type
-            }));
-        } catch (adminError) {
-            console.log('Failed to load from admin_work, trying documents API:', adminError);
-            
-            // Fallback to documents API
-            try {
-                const docsResponse = await ApiService.getDocuments();
-                documents = docsResponse.documents || [];
-            } catch (docsError) {
-                console.log('Failed to load from documents API, using mock data:', docsError);
-                
-                // Final fallback to mock data
-                documents = [
-                    {
-                        id: '1',
-                        title: 'Project Proposal - Kigali Tower',
-                        type: 'PDF',
-                        department: 'projects',
-                        uploadedDate: '2024-01-15',
-                        status: 'active',
-                        description: 'Initial project proposal for Kigali Tower Complex',
-                        work_type: 'Document Upload'
-                    },
-                    {
-                        id: '2',
-                        title: 'Safety Manual 2024',
-                        type: 'PDF',
-                        department: 'hse',
-                        uploadedDate: '2024-01-20',
-                        status: 'active',
-                        description: 'Updated safety procedures and guidelines',
-                        work_type: 'Policy Upload'
-                    }
-                ];
-            }
-        }
-        
-        // Display documents
-        displayDocuments(documents);
-        
-    } catch (error) {
-        console.error('Failed to load documents:', error);
-        displayError('docsGrid', 'Failed to load documents');
-    }
-}
-
-// Display documents in the grid
+// Display documents function
 function displayDocuments(documents) {
     const docsGrid = document.getElementById('docsGrid');
+    if (!docsGrid) return;
     
     if (!documents || documents.length === 0) {
         docsGrid.innerHTML = '<div class="no-documents">No documents found</div>';
         return;
     }
     
-    docsGrid.innerHTML = '';
-    
-    documents.forEach(doc => {
-        const docItem = document.createElement('div');
-        docItem.className = 'doc-item';
-        docItem.setAttribute('data-id', doc.id);
-        docItem.setAttribute('data-department', doc.department || 'admin');
-        docItem.setAttribute('data-type', doc.type || 'PDF');
-        
-        docItem.innerHTML = `
+    docsGrid.innerHTML = documents.map(doc => `
+        <div class="doc-item" data-id="${doc.id}" data-department="${doc.department}" data-type="${doc.type}">
             <div class="doc-info">
                 <h5>${doc.title}</h5>
-                <p>Type: ${doc.type || 'PDF'} | Department: ${doc.department || 'Admin'}</p>
-                <p>Last Updated: ${formatDate(doc.uploadedDate)}</p>
-                <p>Status: ${doc.status || 'active'}</p>
-                ${doc.description ? `<p>Description: ${doc.description}</p>` : ''}
+                <p>Type: ${doc.type} | Department: ${doc.department}</p>
+                <p>Last Updated: ${new Date(doc.uploadedDate || doc.uploadDate).toLocaleDateString()}</p>
+                <p>Status: ${doc.status || 'Active'}</p>
             </div>
             <div class="doc-actions">
                 <button class="action edit-btn" onclick="editDoc('${doc.id}')">Edit</button>
                 <button class="action view-btn" onclick="viewDoc('${doc.id}')">View</button>
                 <button class="action download-btn" onclick="downloadDoc('${doc.id}')">Download</button>
             </div>
-        `;
-        
-        docsGrid.appendChild(docItem);
-    });
+        </div>
+    `).join('');
 }
 
 // Edit document
 async function editDoc(docId) {
     try {
-        // Check if ApiService is available
-        if (typeof ApiService === 'undefined') {
-            console.error('❌ ApiService is not available');
-            alert('API service not loaded. Please refresh the page.');
+        // Check if KashTecAPI is available
+        if (typeof KashTecAPI === 'undefined') {
+            console.error('❌ KashTecAPI is not available');
+            alert('API service not loaded. Please refresh page.');
             return;
         }
         
         console.log('Editing document:', docId);
         
         // Get document details
-        const doc = await ApiService.getDocument(docId);
+        const doc = await KashTecAPI.getDocument(docId);
         
         // Create edit modal
         const modal = document.createElement('div');
@@ -583,7 +497,7 @@ async function editDoc(docId) {
                 status: document.getElementById('editStatus').value
             };
             
-            await ApiService.updateDocument(docId, updateData);
+            await KashTecAPI.updateDocument(docId, updateData);
             closeModal();
             loadDocuments(); // Reload documents
         });
@@ -597,17 +511,17 @@ async function editDoc(docId) {
 // View document
 async function viewDoc(docId) {
     try {
-        // Check if ApiService is available
-        if (typeof ApiService === 'undefined') {
-            console.error('❌ ApiService is not available');
-            alert('API service not loaded. Please refresh the page.');
+        // Check if KashTecAPI is available
+        if (typeof KashTecAPI === 'undefined') {
+            console.error('❌ KashTecAPI is not available');
+            alert('API service not loaded. Please refresh page.');
             return;
         }
         
         console.log('Viewing document:', docId);
         
         // Get document details
-        const doc = await ApiService.getDocument(docId);
+        const doc = await KashTecAPI.getDocument(docId);
         
         // Create view modal
         const modal = document.createElement('div');
@@ -648,15 +562,15 @@ async function viewDoc(docId) {
 // Download document
 async function downloadDoc(docId) {
     try {
-        // Check if ApiService is available
-        if (typeof ApiService === 'undefined') {
-            console.error('❌ ApiService is not available');
-            alert('API service not loaded. Please refresh the page.');
+        // Check if KashTecAPI is available
+        if (typeof KashTecAPI === 'undefined') {
+            console.error('❌ KashTecAPI is not available');
+            alert('API service not loaded. Please refresh page.');
             return;
         }
         
         console.log('Downloading document:', docId);
-        await ApiService.downloadDocument(docId);
+        await KashTecAPI.downloadDocument(docId);
     } catch (error) {
         console.error('Error downloading document:', error);
         alert('Failed to download document: ' + error.message);
