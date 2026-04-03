@@ -592,6 +592,8 @@ app.post('/api/notifications/broadcast', async (req, res) => {
             const [userCheck] = await db.execute('SELECT COUNT(*) as count FROM users LIMIT 1');
             const senderId = userCheck[0].count > 0 ? 1 : null; // Use first user ID if exists, otherwise NULL
             
+            console.log('👤 User check result:', { userCount: userCheck[0].count, senderId });
+            
             // Create a simple broadcast notification with proper foreign key
             const result = await db.execute(`
                 INSERT INTO notifications (title, message, type, recipient_id, sender_id, created_at) 
@@ -614,7 +616,14 @@ app.post('/api/notifications/broadcast', async (req, res) => {
             });
             
         } catch (dbError) {
-            console.log('❌ Database failed, using mock broadcast:', dbError.message);
+            console.error('❌ Database operation failed:', dbError);
+            console.error('❌ Database error details:', {
+                code: dbError.code,
+                errno: dbError.errno,
+                sqlState: dbError.sqlState,
+                sqlMessage: dbError.sqlMessage,
+                message: dbError.message
+            });
             
             // Fallback to mock notification
             const notificationId = `NOTIF-${Date.now()}`;
