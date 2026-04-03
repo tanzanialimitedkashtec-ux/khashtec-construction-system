@@ -6087,7 +6087,7 @@ function loadEmployeeForUpdate() {
     resultsDiv.innerHTML = '<p style="color: #666;">Searching...</p>';
     
     // Load employees from API
-    fetch('https://khashtec.up.railway.app/api/employees')
+    fetch('/api/employees')
         .then(response => response.json())
         .then(data => {
             console.log('📊 Employees loaded:', data);
@@ -6252,7 +6252,7 @@ function selectEmployeeForUpdate(email) {
     console.log('🔄 Selecting employee for update:', email);
     
     // Load employees from API to get the selected employee
-    fetch('https://khashtec.up.railway.app/api/employees')
+    fetch('/api/employees')
         .then(response => response.json())
         .then(data => {
             // Handle different response formats
@@ -6336,7 +6336,7 @@ function saveEmployeeUpdate() {
     submitBtn.disabled = true;
     
     // Update employee via API
-    fetch(`https://khashtec.up.railway.app/api/employees/${employeeId}`, {
+    fetch(`/api/employees/${employeeId}`, {
         method: 'PUT',
         headers: {
             'Content-Type': 'application/json'
