@@ -10727,6 +10727,17 @@ function saveDepartmentBudget() {
     
     // Send data to backend Finance API
     const baseUrl = window.location.origin;
+    
+    // Check connectivity first
+    if (!navigator.onLine) {
+        customAlert('Offline mode - budget will be saved when connection is restored', "Offline", "warning");
+        return false;
+    }
+    
+    // Add timeout and better error handling
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+    
     fetch(`${baseUrl}/api/finance/work`, {
         method: 'POST',
         headers: {
@@ -10734,7 +10745,8 @@ function saveDepartmentBudget() {
             'Accept': 'application/json',
             'Authorization': `Bearer ${sessionManager.getAuthToken()}`
         },
-        body: JSON.stringify(workItem)
+        body: JSON.stringify(workItem),
+        signal: controller.signal
     })
     .then(response => {
         console.log('📡 Budget API Response status:', response.status);
@@ -10756,8 +10768,24 @@ function saveDepartmentBudget() {
         return false;
     })
     .catch(error => {
+        clearTimeout(timeoutId);
         console.error('❌ Error creating budget:', error);
-        customAlert(`Error creating budget: ${error.message}`, "Error", "error");
+        
+        let errorMessage = 'Failed to create budget';
+        
+        if (error.name === 'AbortError') {
+            errorMessage = 'Request timeout - please check your connection and try again';
+        } else if (error.message.includes('Failed to fetch')) {
+            errorMessage = 'Network error - please check your internet connection';
+        } else if (error.message.includes('HTTP 401')) {
+            errorMessage = 'Authentication required - please log in again';
+        } else if (error.message.includes('HTTP 500')) {
+            errorMessage = 'Server error - please try again later';
+        } else if (error.message) {
+            errorMessage = error.message;
+        }
+        
+        customAlert(`Error creating budget: ${errorMessage}`, "Error", "error");
         return false;
     });
     
@@ -11983,6 +12011,14 @@ async function loadAssignedWorkers() {
         console.log('🔑 Auth token:', token ? 'Present' : 'Missing');
         console.log('🔑 Token length:', token ? token.length : 0);
         
+        // Check if we're having connectivity issues and use fallback immediately
+        if (!navigator.onLine) {
+            console.log('🌐 Offline mode - using mock data');
+            showNotification('Offline mode - using demo data', 'warning', 3000);
+            useMockAssignedWorkers();
+            return;
+        }
+        
         const baseUrl = window.location.origin;
         const headers = {
             'Content-Type': 'application/json'
@@ -11996,10 +12032,16 @@ async function loadAssignedWorkers() {
         console.log('📡 Making request to:', `${baseUrl}/api/work/assignments`);
         console.log('📡 Request headers:', headers);
         
+        // Add timeout to detect connection issues quickly
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 second timeout
+        
         const response = await fetch(`${baseUrl}/api/work/assignments`, {
-            headers: headers
+            headers: headers,
+            signal: controller.signal
         });
         
+        clearTimeout(timeoutId);
         console.log('📡 Response status:', response.status);
         console.log('📡 Response OK:', response.ok);
         
@@ -12008,38 +12050,17 @@ async function loadAssignedWorkers() {
             console.error('❌ Failed to load assigned workers:', response.status, errorText);
             
             // Handle authentication errors specifically
-            if (response.status === 403) {
+            if (response.status === 403 || response.status === 401) {
                 console.log('🔓 Authentication error - using mock data');
                 showNotification('Authentication failed - using demo data', 'warning', 3000);
+            } else if (response.status >= 500) {
+                console.log('🔧 Server error - using mock data');
+                showNotification('Server error - using demo data', 'warning', 3000);
             } else {
                 showNotification(`Failed to load assigned workers: ${response.status} ${errorText}`, 'error', 5000);
             }
             
-            // Fallback to mock data
-            console.log('🔄 Using mock assigned workers data as fallback');
-            const mockWorkers = [
-                {
-                    id: 'W001',
-                    fullName: 'John Smith',
-                    jobCategory: 'Engineer',
-                    department: 'Projects',
-                    projectNames: ['Kigali Tower', 'Road Construction'],
-                    activeTasks: 3,
-                    status: 'active'
-                },
-                {
-                    id: 'W002',
-                    fullName: 'Sarah Johnson',
-                    jobCategory: 'Supervisor',
-                    department: 'Projects',
-                    projectNames: ['Office Building'],
-                    activeTasks: 2,
-                    status: 'active'
-                }
-            ];
-            
-            displayAssignedWorkers(mockWorkers);
-            updateWorkerStats(mockWorkers);
+            useMockAssignedWorkers();
             return;
         }
         
@@ -12052,39 +12073,52 @@ async function loadAssignedWorkers() {
         console.error('❌ Error loading assigned workers:', error);
         
         // Handle network errors specifically
-        if (error.message.includes('Failed to fetch') || error.message.includes('net::ERR_NAME_NOT_RESOLVED')) {
+        if (error.message.includes('Failed to fetch') || error.message.includes('net::ERR_NAME_NOT_RESOLVED') || error.name === 'AbortError') {
             console.log('🌐 Network error - using mock data');
             showNotification('Network connectivity issues - using demo data', 'warning', 3000);
         } else {
             showNotification('Error loading assigned workers: ' + error.message, 'error', 5000);
         }
         
-        // Fallback to mock data on error
-        console.log('🔄 Using mock assigned workers data as fallback');
-        const mockWorkers = [
-            {
-                id: 'W001',
-                fullName: 'John Smith',
-                jobCategory: 'Engineer',
-                department: 'Projects',
-                projectNames: ['Kigali Tower', 'Road Construction'],
-                activeTasks: 3,
-                status: 'active'
-            },
-            {
-                id: 'W002',
-                fullName: 'Sarah Johnson',
-                jobCategory: 'Supervisor',
-                department: 'Projects',
-                projectNames: ['Office Building'],
-                activeTasks: 2,
-                status: 'active'
-            }
-        ];
-        
-        displayAssignedWorkers(mockWorkers);
-        updateWorkerStats(mockWorkers);
+        useMockAssignedWorkers();
     }
+}
+
+// Mock assigned workers data function
+function useMockAssignedWorkers() {
+    console.log('🔄 Using mock assigned workers data');
+    const mockWorkers = [
+        {
+            id: 'W001',
+            fullName: 'John Smith',
+            jobCategory: 'Engineer',
+            department: 'Projects',
+            projectNames: ['Kigali Tower', 'Road Construction'],
+            activeTasks: 3,
+            status: 'active'
+        },
+        {
+            id: 'W002',
+            fullName: 'Sarah Johnson',
+            jobCategory: 'Supervisor',
+            department: 'Projects',
+            projectNames: ['Office Building'],
+            activeTasks: 2,
+            status: 'active'
+        },
+        {
+            id: 'W003',
+            fullName: 'Michael Chen',
+            jobCategory: 'Architect',
+            department: 'Projects',
+            projectNames: ['Shopping Mall Complex'],
+            activeTasks: 4,
+            status: 'active'
+        }
+    ];
+    
+    displayAssignedWorkers(mockWorkers);
+    updateWorkerStats(mockWorkers);
 }
 
 // Display assigned workers in the UI
