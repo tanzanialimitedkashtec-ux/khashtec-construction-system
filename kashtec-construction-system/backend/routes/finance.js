@@ -1,8 +1,35 @@
 const express = require('express');
 const router = express.Router();
 const db = require('../../database/config/database');
+const FinanceEmailService = require('../services/email-service');
 
 console.log('🚀 Finance routes loaded with database connection');
+
+// Initialize email service
+const emailService = new FinanceEmailService();
+
+// Helper function to get finance recipients
+async function getFinanceRecipients(connection) {
+    try {
+        const [users] = await connection.query(`
+            SELECT email, CONCAT(first_name, ' ', last_name) as name 
+            FROM users 
+            WHERE role = 'finance_manager' OR department = 'Finance' OR role = 'admin'
+            AND email IS NOT NULL AND email != ''
+        `);
+        return users.map(user => ({
+            email: user.email,
+            name: user.name || 'Finance Manager'
+        }));
+    } catch (error) {
+        console.error('Error fetching finance recipients:', error);
+        // Fallback to default recipient
+        return [{
+            email: process.env.SMTP_USER || 'finance@kashtec.com',
+            name: 'Finance Manager'
+        }];
+    }
+}
 
 // Test GET route
 router.get('/test', (req, res) => {
@@ -91,6 +118,23 @@ router.post('/budget', async (req, res) => {
         connection.release();
         
         console.log('✅ Budget created successfully:', { budgetId, department, totalBudget });
+        
+        // Send email notifications to finance managers
+        try {
+            const financeRecipients = await getFinanceRecipients(connection);
+            const emailCount = await emailService.notifyBudgetCreation({
+                department,
+                period,
+                totalBudget,
+                startDate,
+                endDate,
+                justification,
+                createdBy
+            }, financeRecipients);
+            console.log(`📧 Email notifications sent: ${emailCount}`);
+        } catch (emailError) {
+            console.error('❌ Failed to send email notifications:', emailError.message);
+        }
         
         res.status(201).json({
             message: 'Budget created successfully',
@@ -201,6 +245,21 @@ router.post('/expense', async (req, res) => {
         
         console.log('✅ Expense submitted successfully:', { expenseId, category, amount });
         
+        // Send email notifications to finance managers
+        try {
+            const financeRecipients = await getFinanceRecipients(connection);
+            const emailCount = await emailService.notifyExpenseSubmission({
+                category,
+                amount,
+                description,
+                department,
+                submittedBy
+            }, financeRecipients);
+            console.log(`📧 Email notifications sent: ${emailCount}`);
+        } catch (emailError) {
+            console.error('❌ Failed to send email notifications:', emailError.message);
+        }
+        
         res.status(201).json({
             message: 'Expense submitted successfully',
             expense_id: expenseId,
@@ -242,6 +301,31 @@ router.put('/expense/:id/approve', async (req, res) => {
             return res.status(404).json({ error: 'Expense not found' });
         }
         
+        // Send email notifications for expense approval
+        try {
+            // Get expense details for email
+            const [expenseDetails] = await connection.query(`
+                SELECT fw.work_description, fw.department, ft.amount, ft.category, fw.submitted_by
+                FROM finance_work fw
+                LEFT JOIN financial_transactions ft ON fw.id = CAST(ft.reference_id AS UNSIGNED)
+                WHERE fw.id = ?
+            `, [req.params.id]);
+            
+            if (expenseDetails.length > 0) {
+                const expenseData = expenseDetails[0];
+                const financeRecipients = await getFinanceRecipients(connection);
+                const emailCount = await emailService.notifyExpenseApproval({
+                    category: expenseData.category,
+                    amount: expenseData.amount,
+                    department: expenseData.department,
+                    description: expenseData.work_description
+                }, financeRecipients);
+                console.log(`📧 Email notifications sent: ${emailCount}`);
+            }
+        } catch (emailError) {
+            console.error('❌ Failed to send email notifications:', emailError.message);
+        }
+        
         res.json({
             message: 'Expense approved successfully',
             expense_id: req.params.id,
@@ -279,6 +363,32 @@ router.put('/expense/:id/reject', async (req, res) => {
         
         if (workResult.affectedRows === 0) {
             return res.status(404).json({ error: 'Expense not found' });
+        }
+        
+        // Send email notifications for expense rejection
+        try {
+            // Get expense details for email
+            const [expenseDetails] = await connection.query(`
+                SELECT fw.work_description, fw.department, ft.amount, ft.category, fw.submitted_by
+                FROM finance_work fw
+                LEFT JOIN financial_transactions ft ON fw.id = CAST(ft.reference_id AS UNSIGNED)
+                WHERE fw.id = ?
+            `, [req.params.id]);
+            
+            if (expenseDetails.length > 0) {
+                const expenseData = expenseDetails[0];
+                const financeRecipients = await getFinanceRecipients(connection);
+                const emailCount = await emailService.notifyExpenseRejection({
+                    category: expenseData.category,
+                    amount: expenseData.amount,
+                    department: expenseData.department,
+                    description: expenseData.work_description,
+                    rejectionReason: rejectionReason
+                }, financeRecipients);
+                console.log(`📧 Email notifications sent: ${emailCount}`);
+            }
+        } catch (emailError) {
+            console.error('❌ Failed to send email notifications:', emailError.message);
         }
         
         res.json({
@@ -389,6 +499,24 @@ router.post('/payroll', async (req, res) => {
         connection.release();
         
         console.log('✅ Payroll processed successfully:', { payrollId, payrollMonth, netPayment });
+        
+        // Send email notifications to finance managers
+        try {
+            const financeRecipients = await getFinanceRecipients(connection);
+            const emailCount = await emailService.notifyPayrollProcessing({
+                payrollMonth,
+                paymentDate,
+                payrollType,
+                totalEmployees,
+                totalGrossPay,
+                totalDeductions,
+                netPayment,
+                processedBy
+            }, financeRecipients);
+            console.log(`📧 Email notifications sent: ${emailCount}`);
+        } catch (emailError) {
+            console.error('❌ Failed to send email notifications:', emailError.message);
+        }
         
         res.status(201).json({
             message: 'Payroll processed successfully',
@@ -512,6 +640,83 @@ router.get('/summary', async (req, res) => {
     } catch (error) {
         console.error('Error generating financial summary:', error);
         res.status(500).json({ error: 'Failed to generate financial summary' });
+    }
+});
+
+// ===== EMAIL NOTIFICATION TESTING =====
+
+// POST - Test email configuration
+router.post('/test-email', async (req, res) => {
+    console.log('📧 POST /api/finance/test-email accessed');
+    try {
+        const success = await emailService.testEmailConfiguration();
+        
+        if (success) {
+            res.json({
+                message: 'Test email sent successfully',
+                timestamp: new Date().toISOString()
+            });
+        } else {
+            res.status(500).json({
+                error: 'Failed to send test email'
+            });
+        }
+    } catch (error) {
+        console.error('Error testing email configuration:', error);
+        res.status(500).json({ error: 'Failed to test email configuration' });
+    }
+});
+
+// POST - Send custom email notification
+router.post('/send-notification', async (req, res) => {
+    console.log('📧 POST /api/finance/send-notification accessed');
+    console.log('📝 Request body:', req.body);
+    
+    const {
+        recipientEmail,
+        recipientName,
+        subject,
+        activityType,
+        activityDetails,
+        amount,
+        department,
+        priority = 'normal'
+    } = req.body;
+    
+    // Validate required fields
+    if (!recipientEmail || !subject || !activityType) {
+        return res.status(400).json({
+            error: 'Missing required fields',
+            required: ['recipientEmail', 'subject', 'activityType']
+        });
+    }
+    
+    try {
+        const success = await emailService.sendFinanceNotification({
+            recipientEmail,
+            recipientName: recipientName || 'Finance Manager',
+            subject,
+            activityType,
+            activityDetails,
+            amount,
+            department,
+            priority
+        });
+        
+        if (success) {
+            res.json({
+                message: 'Email notification sent successfully',
+                recipient: recipientEmail,
+                timestamp: new Date().toISOString()
+            });
+        } else {
+            res.status(500).json({
+                error: 'Failed to send email notification'
+            });
+        }
+    } catch (error) {
+        console.error('Error sending custom notification:', error);
+        res.status(500).json({ error: 'Failed to send email notification' });
     }
 });
 

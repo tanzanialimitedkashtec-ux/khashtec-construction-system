@@ -100,6 +100,106 @@ button.action{
     display:none;
 }
 
+/* Email Notification Settings Styles */
+.notification-settings {
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.settings-section {
+    margin-bottom: 30px;
+    padding: 20px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    border: 1px solid #e9ecef;
+}
+
+.settings-section h4 {
+    margin: 0 0 15px 0;
+    color: #0b3d91;
+    font-size: 18px;
+    font-weight: 600;
+}
+
+.preference-group {
+    margin-bottom: 20px;
+    padding: 15px;
+    background: white;
+    border-radius: 6px;
+    border: 1px solid #dee2e6;
+}
+
+.preference-group label {
+    display: flex;
+    align-items: center;
+    font-weight: 600;
+    margin-bottom: 8px;
+    cursor: pointer;
+}
+
+.preference-group input[type="checkbox"] {
+    margin-right: 10px;
+    width: auto;
+}
+
+.preference-group p {
+    margin: 0;
+    color: #6c757d;
+    font-size: 14px;
+    margin-left: 30px;
+}
+
+.recipient-item {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 15px;
+    align-items: center;
+}
+
+.recipient-item input {
+    flex: 1;
+    margin: 0;
+}
+
+.recipient-item .remove-recipient {
+    background: #dc3545;
+    color: white;
+    border: none;
+    padding: 8px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 12px;
+}
+
+.recipient-item .remove-recipient:hover {
+    background: #c82333;
+}
+
+.settings-actions {
+    display: flex;
+    gap: 15px;
+    justify-content: center;
+    margin-top: 30px;
+}
+
+.success-message {
+    background: #d4edda;
+    color: #155724;
+    padding: 15px;
+    border-radius: 6px;
+    border: 1px solid #c3e6cb;
+    margin-top: 15px;
+}
+
+.error-message {
+    background: #f8d7da;
+    color: #721c24;
+    padding: 15px;
+    border-radius: 6px;
+    border: 1px solid #f5c6cb;
+    margin-top: 15px;
+}
+
 /* Document Management Styles */
 .search-section {
     display: flex;
@@ -2605,8 +2705,9 @@ function loadMenu(){
         addMenu("Financial Management", financialManagement);
         addMenu("Payroll Processing", payrollProcessing);
         addMenu("Expense Control", expenseControl);
-        addMenu("Financial Reporting", financialReporting);
-        addMenu("Audits", financeAudits);
+        addMenu("Email Notifications", () => FinanceDepartment.emailNotificationSettings());
+        addMenu("Financial Audits", financeAudits);
+        addMenu("Financial Compliance", financeCompliance);
         addMenu("Compliance", financeCompliance);
     }
 
