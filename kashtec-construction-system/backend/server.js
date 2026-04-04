@@ -1526,6 +1526,7 @@ app.get('/api/properties-test', (req, res) => {
     res.json({ 
         message: 'Properties API is working!',
         timestamp: new Date().toISOString(),
+        version: 'v2.0-fixed',
         endpoints: ['POST /api/properties', 'GET /api/properties', 'GET /api/properties/:id']
     });
 });
