@@ -1583,8 +1583,31 @@ app.get('/api/properties', async (req, res) => {
 });
 
 // ===== POLICIES ROUTES =====
-const policiesRoutes = require('./routes/policies');
-app.use('/api/policies', policiesRoutes);
+console.log('🔍 Loading policies routes...');
+try {
+    const policiesRoutes = require('./routes/policies');
+    console.log('✅ Policies routes loaded successfully');
+    app.use('/api/policies', policiesRoutes);
+    console.log('✅ Policies routes mounted at /api/policies');
+    
+    // Add a test endpoint to verify mounting
+    app.get('/api/policies-status', (req, res) => {
+        res.json({ 
+            status: 'Policies routes are mounted',
+            timestamp: new Date().toISOString(),
+            endpoints: ['/api/policies/test', '/api/policies/all', '/api/policies/', '/api/policies/:id']
+        });
+    });
+    
+} catch (error) {
+    console.error('❌ Error loading policies routes:', error);
+    console.error('❌ Full error stack:', error.stack);
+    console.error('❌ Error details:', {
+        message: error.message,
+        code: error.code,
+        errno: error.errno
+    });
+}
 
 // ... rest of the code remains the same ...
 // ===== SCHEDULE MEETINGS ROUTES =====
@@ -1615,8 +1638,31 @@ app.get('/api/schedule-meetings-direct-test', (req, res) => {
 });
 
 // ===== MEETING MINUTES ROUTES =====
-const meetingMinutesRoutes = require('./routes/meetingMinutes');
-app.use('/api/meeting-minutes', meetingMinutesRoutes);
+console.log('🔍 Loading meeting minutes routes...');
+try {
+    const meetingMinutesRoutes = require('./routes/meetingMinutes');
+    console.log('✅ Meeting minutes routes loaded successfully');
+    app.use('/api/meeting-minutes', meetingMinutesRoutes);
+    console.log('✅ Meeting minutes routes mounted at /api/meeting-minutes');
+    
+    // Add a test endpoint to verify mounting
+    app.get('/api/meeting-minutes-status', (req, res) => {
+        res.json({ 
+            status: 'Meeting minutes routes are mounted',
+            timestamp: new Date().toISOString(),
+            endpoints: ['/api/meeting-minutes/test', '/api/meeting-minutes/', '/api/meeting-minutes/:id']
+        });
+    });
+    
+} catch (error) {
+    console.error('❌ Error loading meeting minutes routes:', error);
+    console.error('❌ Full error stack:', error.stack);
+    console.error('❌ Error details:', {
+        message: error.message,
+        code: error.code,
+        errno: error.errno
+    });
+}
 
 // ===== NOTIFICATIONS ROUTES =====
 console.log('🔍 Loading notifications routes...');
@@ -1645,8 +1691,31 @@ console.log('  - /api/workforce-budget/* -> workforce budget routes');
 console.log('  - /api/work/* -> work routes');
 
 // ===== SENIOR HIRING ROUTES =====
-const seniorHiringRoutes = require('./routes/seniorHiring');
-app.use('/api/senior-hiring', seniorHiringRoutes);
+console.log('🔍 Loading senior hiring routes...');
+try {
+    const seniorHiringRoutes = require('./routes/seniorHiring');
+    console.log('✅ Senior hiring routes loaded successfully');
+    app.use('/api/senior-hiring', seniorHiringRoutes);
+    console.log('✅ Senior hiring routes mounted at /api/senior-hiring');
+    
+    // Add a test endpoint to verify mounting
+    app.get('/api/senior-hiring-status', (req, res) => {
+        res.json({ 
+            status: 'Senior hiring routes are mounted',
+            timestamp: new Date().toISOString(),
+            endpoints: ['/api/senior-hiring/test', '/api/senior-hiring/requests', '/api/senior-hiring/requests/:id']
+        });
+    });
+    
+} catch (error) {
+    console.error('❌ Error loading senior hiring routes:', error);
+    console.error('❌ Full error stack:', error.stack);
+    console.error('❌ Error details:', {
+        message: error.message,
+        code: error.code,
+        errno: error.errno
+    });
+}
 
 // ===== WORKFORCE BUDGET ROUTES =====
 console.log('🔍 Mounting workforce budget routes from routes/workforceBudget.js...');
@@ -1748,6 +1817,38 @@ try {
 }
 
 // ===== OFFICE PORTAL ROUTES =====
+console.log('🔍 Loading office portal routes...');
+try {
+    const officePortalRoutes = require('./routes/office-portal');
+    console.log('✅ Office portal routes loaded successfully');
+    app.use('/api/office-portal', officePortalRoutes);
+    console.log('✅ Office portal routes mounted at /api/office-portal');
+    
+    // Add a test endpoint to verify mounting
+    app.get('/api/office-portal-status', (req, res) => {
+        res.json({ 
+            status: 'Office portal routes are mounted',
+            timestamp: new Date().toISOString(),
+            endpoints: [
+                '/api/office-portal/users',
+                '/api/office-portal/documents', 
+                '/api/office-portal/policies',
+                '/api/office-portal/contracts',
+                '/api/office-portal/analytics'
+            ]
+        });
+    });
+    
+} catch (error) {
+    console.error('❌ Error loading office portal routes:', error);
+    console.error('❌ Full error stack:', error.stack);
+    console.error('❌ Error details:', {
+        message: error.message,
+        code: error.code,
+        errno: error.errno
+    });
+}
+
 app.post('/api/office-portal/users', async (req, res) => {
     try {
         const connection = await db.getConnection();
