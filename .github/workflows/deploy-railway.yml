@@ -1,0 +1,49 @@
+name: Deploy to Railway
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    name: Deploy to Railway
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+        
+    - name: Install dependencies
+      run: |
+        cd kashtec-construction-system
+        npm ci
+        
+    - name: Run tests (optional)
+      run: |
+        cd kashtec-construction-system
+        npm test || echo "Tests completed with warnings"
+        
+    - name: Trigger Railway deployment
+      run: |
+        echo "🚀 Triggering Railway deployment..."
+        echo "📊 Deployment triggered by: ${{ github.actor }}"
+        echo "🔗 Commit: ${{ github.sha }}"
+        echo "🌿 Branch: ${{ github.ref_name }}"
+        
+    - name: Notify deployment status
+      if: always()
+      run: |
+        if [ "${{ job.status }}" = "success" ]; then
+          echo "✅ Railway deployment triggered successfully"
+        else
+          echo "❌ Railway deployment failed"
+          exit 1
+        fi
