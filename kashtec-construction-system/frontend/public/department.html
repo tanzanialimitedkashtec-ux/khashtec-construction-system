@@ -18,6 +18,19 @@ body{
     font-size: 16px;
 }
 
+/* Screen reader only content */
+.sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}
+
 header{
     background:#0b3d91;
     color:white;
@@ -2449,27 +2462,27 @@ function loadHiringRequestsFromBackend() {
                     <div class="candidate-info">
                         <div class="form-row">
                             <div class="form-group">
-                                <label>Candidate Name</label>
-                                <input type="text" value="${request.candidate_name || 'N/A'}" readonly>
+                                <label for="candidate-name-${request.id}">Candidate Name</label>
+                                <input type="text" id="candidate-name-${request.id}" name="candidate_name" value="${request.candidate_name || 'N/A'}" readonly>
                             </div>
                             <div class="form-group">
-                                <label>Proposed Salary</label>
-                                <input type="text" value="${request.proposed_salary ? 'TZS ' + parseInt(request.proposed_salary).toLocaleString() : 'N/A'}" readonly>
+                                <label for="proposed-salary-${request.id}">Proposed Salary</label>
+                                <input type="text" id="proposed-salary-${request.id}" name="proposed_salary" value="${request.proposed_salary ? 'TZS ' + parseInt(request.proposed_salary).toLocaleString() : 'N/A'}" readonly>
                             </div>
                         </div>
                         <div class="form-row">
                             <div class="form-group">
-                                <label>Department</label>
-                                <input type="text" value="${request.department || 'N/A'}" readonly>
+                                <label for="department-${request.id}">Department</label>
+                                <input type="text" id="department-${request.id}" name="department" value="${request.department || 'N/A'}" readonly>
                             </div>
                             <div class="form-group">
-                                <label>Experience</label>
-                                <input type="text" value="${request.experience || 'N/A'}" readonly>
+                                <label for="experience-${request.id}">Experience</label>
+                                <input type="text" id="experience-${request.id}" name="experience" value="${request.experience || 'N/A'}" readonly>
                             </div>
                         </div>
                         <div class="form-group">
-                            <label>HR Recommendation</label>
-                            <textarea rows="3" readonly>${request.hr_recommendation || 'No recommendation provided'}</textarea>
+                            <label for="hr-recommendation-${request.id}">HR Recommendation</label>
+                            <textarea id="hr-recommendation-${request.id}" name="hr_recommendation" rows="3" readonly>${request.hr_recommendation || 'No recommendation provided'}</textarea>
                         </div>
                     </div>
                     <div class="hiring-actions">
@@ -2854,22 +2867,22 @@ function approveWorkforceBudget(){
                 
                 <div class="budget-details">
                     <div class="form-group">
-                        <label>Submitted By</label>
-                        <input type="text" value="Finance Department" readonly>
+                        <label for="budget-submitted-by">Submitted By</label>
+                        <input type="text" id="budget-submitted-by" name="submitted_by" value="Finance Department" readonly>
                     </div>
                     <div class="form-row">
                         <div class="form-group">
-                            <label>Budget Period</label>
-                            <input type="text" value="April - June 2026" readonly>
+                            <label for="budget-period">Budget Period</label>
+                            <input type="text" id="budget-period" name="budget_period" value="April - June 2026" readonly>
                         </div>
                         <div class="form-group">
-                            <label>Current Headcount</label>
-                            <input type="text" value="45 employees" readonly>
+                            <label for="budget-headcount">Current Headcount</label>
+                            <input type="text" id="budget-headcount" name="current_headcount" value="45 employees" readonly>
                         </div>
                     </div>
                     <div class="form-group">
-                        <label>Justification</label>
-                        <textarea rows="4" readonly>Budget covers quarterly salaries, training programs, employee benefits, and recruitment costs for expanding project portfolio. Includes 5% increase for cost of living adjustments.</textarea>
+                        <label for="budget-justification">Justification</label>
+                        <textarea id="budget-justification" name="justification" rows="4" readonly>Budget covers quarterly salaries, training programs, employee benefits, and recruitment costs for expanding project portfolio. Includes 5% increase for cost of living adjustments.</textarea>
                     </div>
                 </div>
                 
@@ -3087,8 +3100,10 @@ function viewAllWorkers(){
             </div>
             
             <div class="search-section">
-                <input type="text" id="mdWorkerSearch" placeholder="Search workers by name, department, or job..." onkeyup="filterAllWorkers()">
-                <select id="mdDepartmentFilter" onchange="filterAllWorkers()">
+                <label for="mdWorkerSearch" class="sr-only">Search Workers</label>
+                <input type="text" id="mdWorkerSearch" name="worker_search" placeholder="Search workers by name, department, or job..." onkeyup="filterAllWorkers()">
+                <label for="mdDepartmentFilter" class="sr-only">Filter by Department</label>
+                <select id="mdDepartmentFilter" name="department_filter" onchange="filterAllWorkers()">
                     <option value="">All Departments</option>
                     <option value="projects">Projects</option>
                     <option value="admin">Administration</option>
@@ -5021,34 +5036,34 @@ function registerEmployee(){
         <div id="employeeForm">
             <div class="form-row">
                 <div class="form-group">
-                    <label>Full Name *</label>
-                    <input type="text" id="empFullName" placeholder="Enter employee full name" required>
+                    <label for="empFullName">Full Name *</label>
+                    <input type="text" id="empFullName" name="full_name" placeholder="Enter employee full name" required>
                 </div>
                 <div class="form-group">
-                    <label>Phone Number *</label>
-                    <input type="tel" id="empPhone" placeholder="+255 XXX XXX XXX" required>
-                </div>
-            </div>
-            
-            <div class="form-row">
-                <div class="form-group">
-                    <label>Gmail Address *</label>
-                    <input type="email" id="empGmail" placeholder="employee@gmail.com" required>
-                </div>
-                <div class="form-group">
-                    <label>NIDA Number *</label>
-                    <input type="text" id="empNIDA" placeholder="National ID Number" required>
+                    <label for="empPhone">Phone Number *</label>
+                    <input type="tel" id="empPhone" name="phone_number" placeholder="+255 XXX XXX XXX" required>
                 </div>
             </div>
             
             <div class="form-row">
                 <div class="form-group">
-                    <label>Passport Number</label>
-                    <input type="text" id="empPassport" placeholder="Passport Number (if applicable)">
+                    <label for="empGmail">Gmail Address *</label>
+                    <input type="email" id="empGmail" name="gmail_address" placeholder="employee@gmail.com" required>
                 </div>
                 <div class="form-group">
-                    <label>Contract Type *</label>
-                    <select id="empContract" required>
+                    <label for="empNIDA">NIDA Number *</label>
+                    <input type="text" id="empNIDA" name="nida_number" placeholder="National ID Number" required>
+                </div>
+            </div>
+            
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="empPassport">Passport Number</label>
+                    <input type="text" id="empPassport" name="passport_number" placeholder="Passport Number (if applicable)">
+                </div>
+                <div class="form-group">
+                    <label for="empContract">Contract Type *</label>
+                    <select id="empContract" name="contract_type" required>
                         <option value="">Select Contract Type</option>
                         <option value="permanent">Permanent</option>
                         <option value="temporary">Temporary</option>
@@ -5060,8 +5075,8 @@ function registerEmployee(){
             
             <div class="form-row">
                 <div class="form-group">
-                    <label>Job Category *</label>
-                    <select id="empJobCategory" required>
+                    <label for="empJobCategory">Job Category *</label>
+                    <select id="empJobCategory" name="job_category" required>
                         <option value="">Select Job Category</option>
                         <option value="management">Management</option>
                         <option value="engineering">Engineering</option>
