@@ -639,38 +639,48 @@ async function runMigrations() {
         const fs = require('fs');
         const path = require('path');
         
-        // Read and execute the migration file directly
+        // Read and execute migration file directly
         const migrationPath = path.join(__dirname, 'database/migrations/001_create_tables.sql');
         const migrationSQL = fs.readFileSync(migrationPath, 'utf8');
         
         const db = require('./database/config/database');
         
-        // Split the SQL file into individual statements
+        // Split SQL file into individual statements
         const statements = migrationSQL
             .split(';')
             .map(stmt => stmt.trim())
             .filter(stmt => stmt.length > 0 && !stmt.startsWith('--'));
         
-        // Execute each statement
+        let successCount = 0;
+        let errorCount = 0;
+        
+        // Execute each statement with reduced logging
         for (const statement of statements) {
             if (statement.trim()) {
                 try {
                     await db.execute(statement);
+                    successCount++;
                 } catch (error) {
                     // Ignore errors for IF NOT EXISTS statements (table already exists)
                     if (!error.message.includes('already exists') && !error.message.includes('Duplicate entry')) {
-                        console.error('❌ Migration statement failed:', error.message);
-                        console.error('❌ Failed statement:', statement.substring(0, 100) + '...');
+                        errorCount++;
+                        // Only log first few errors to avoid spam
+                        if (errorCount <= 3) {
+                            console.error('❌ Migration statement failed:', error.message);
+                        }
+                    } else {
+                        successCount++;
                     }
                 }
             }
         }
         
-        console.log('✅ Database migrations completed successfully');
+        console.log(`✅ Database migrations completed: ${successCount} successful, ${errorCount} errors`);
         
     } catch (error) {
-        console.error('❌ Migration error:', error);
-        throw error;
+        console.error('❌ Migration error:', error.message);
+        // Don't throw error to allow server to continue
+        console.log('⚠️ Continuing server startup despite migration errors...');
     }
 }
 
