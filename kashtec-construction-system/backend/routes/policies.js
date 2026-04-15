@@ -13,13 +13,38 @@ router.get('/test', (req, res) => {
     });
 });
 
-// Root endpoint test
-router.get('/', (req, res) => {
-    console.log('📝 Policies root endpoint accessed');
-    res.json({ 
-        message: 'Policies API root endpoint',
-        available_endpoints: ['GET /test', 'GET /all', 'POST /', 'GET /:id', 'POST /:id/approve', 'POST /:id/revision', 'POST /:id/reject']
-    });
+// Root endpoint - return all policies (main endpoint)
+router.get('/', async (req, res) => {
+    console.log('?? Policies main endpoint accessed - fetching all policies');
+    try {
+        // Mock policies data for now
+        const policies = [
+            {
+                id: 'digital-recruitment',
+                title: 'Digital Recruitment Policy',
+                category: 'HR',
+                status: 'pending',
+                submitted_by: 'HR Manager',
+                submitted_date: '2026-04-15',
+                description: 'Policy for digital recruitment processes and procedures'
+            },
+            {
+                id: 'safety-protocols',
+                title: 'Workplace Safety Protocols',
+                category: 'HSE',
+                status: 'pending',
+                submitted_by: 'HSE Manager',
+                submitted_date: '2026-04-14',
+                description: 'Updated safety protocols for construction sites'
+            }
+        ];
+        
+        console.log('?? Policies data returned:', policies.length, 'items');
+        res.json(policies);
+    } catch (error) {
+        console.error('?? Error fetching policies:', error);
+        res.status(500).json({ error: 'Failed to fetch policies' });
+    }
 });
 
 // Get all policies
