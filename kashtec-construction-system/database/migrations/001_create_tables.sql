@@ -268,7 +268,7 @@ CREATE TABLE IF NOT EXISTS authentication (
 );
 
 -- Insert department authentication records with bcrypt-hashed passwords
-INSERT INTO authentication (department_code, email, password_hash, role, department_name, manager_name, status) VALUES
+INSERT IGNORE INTO authentication (department_code, email, password_hash, role, department_name, manager_name, status) VALUES
 ('MD', 'md@kashtec.com', '$2a$12$XhtyjBmSQhLUiujs5z8eJOcqttKbz8ETU.EFoK2W7z.GsGdbGk2zS', 'Managing Director', 'Managing Director Office', 'Dr. John Smith', 'Active'),
 ('ADMIN', 'admin@kashtec.com', '$2a$12$SfQ9DSzkHjfdTehs/TK74uc4O23wu67DMN4gjJQeTA65OSULeXkNK', 'Director of Administration', 'Administration', 'Director of Administration', 'Active'),
 ('HR', 'hr@manager0501', '$2a$12$u4hD21O0QZtvEvbIvdJjh..2QiVqgRl8DknMbNVqC1KBFRvrxH0Mi', 'HR Manager', 'Human Resources', 'HR Manager', 'Active'),
@@ -294,7 +294,7 @@ CREATE TABLE IF NOT EXISTS office_portal (
 );
 
 -- Insert initial office portal data
-INSERT INTO office_portal (department_name, department_code, manager_email, description, settings, status) VALUES
+INSERT IGNORE INTO office_portal (department_name, department_code, manager_email, description, settings, status) VALUES
 ('Human Resources', 'HR', 'hr@manager0501', 'HR Department manages employee relations, recruitment, training, and compliance', '{"theme": "blue", "notifications": true}', 'Active'),
 ('Project Management', 'PM', 'pm@manager0501', 'Project Management oversees all construction projects, timelines, and resource allocation', '{"theme": "green", "notifications": true}', 'Active'),
 ('Finance', 'FINANCE', 'finance@manager0501', 'Finance Department handles budgeting, accounting, and financial reporting', '{"theme": "orange", "notifications": true}', 'Active'),
