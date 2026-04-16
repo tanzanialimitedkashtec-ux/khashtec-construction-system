@@ -2503,6 +2503,7 @@ async function runMigrationsOnStartup() {
     try {
         console.log('=== AUTOMATIC DATABASE MIGRATION ===');
         console.log('Running migrations on server startup...');
+        console.log('DEBUG: Migration function called successfully');
         
         const fs = require('fs').promises;
         const path = require('path');
