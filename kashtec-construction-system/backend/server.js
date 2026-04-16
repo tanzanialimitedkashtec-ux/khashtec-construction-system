@@ -2514,19 +2514,32 @@ async function runMigrationsOnStartup() {
         const migrationSQL = await fs.readFile(migrationPath, 'utf8');
         console.log('Migration SQL loaded, length:', migrationSQL.length);
         
-        // Simple approach: split by semicolons and filter comments
-        const statements = migrationSQL
-            .split(';')
-            .map(stmt => stmt.trim())
-            .filter(stmt => {
-                if (!stmt || stmt.length === 0) return false;
-                if (stmt.startsWith('--')) return false;
-                if (stmt.match(/^[\s-]*$/)) return false;
-                return true; // Keep all non-empty, non-comment statements
-            });
+        // Robust parsing: Find all CREATE TABLE and INSERT statements
+        console.log('=== ROBUST MIGRATION PARSING ===');
+        console.log(`SQL file length: ${migrationSQL.length}`);
         
-        console.log(`=== NEW SERVER-SIDE MIGRATION ===`);
-        console.log(`Found ${statements.length} SQL statements to execute`);
+        // Split by semicolons first
+        const rawStatements = migrationSQL.split(';');
+        console.log(`Raw split found ${rawStatements.length} parts`);
+        
+        // Filter and process statements
+        const statements = [];
+        for (let i = 0; i < rawStatements.length; i++) {
+            const stmt = rawStatements[i].trim();
+            
+            // Skip empty and comment-only statements
+            if (!stmt || stmt.length === 0) continue;
+            if (stmt.startsWith('--')) continue;
+            if (stmt.match(/^[\s-]*$/)) continue;
+            
+            // Keep CREATE TABLE and INSERT statements
+            if (stmt.match(/^CREATE\s+TABLE/i) || stmt.match(/^INSERT\s+IGNORE\s+INTO/i)) {
+                statements.push(stmt);
+                console.log(`Found valid statement ${statements.length}: ${stmt.substring(0, 100)}...`);
+            }
+        }
+        
+        console.log(`=== ROBUST MIGRATION: Found ${statements.length} valid statements ===`);
         
         // Log first few statements for debugging
         console.log('First 10 statements:');
@@ -2534,7 +2547,7 @@ async function runMigrationsOnStartup() {
             console.log(`${i + 1}: ${statements[i].substring(0, 150)}...`);
         }
         
-        console.log(`=== MIGRATION DEBUGGING ===`);
+        console.log(`=== MIGRATION EXECUTION ===`);
         
         let successCount = 0;
         let skippedCount = 0;
