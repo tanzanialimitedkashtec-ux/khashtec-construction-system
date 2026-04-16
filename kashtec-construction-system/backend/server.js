@@ -2514,7 +2514,7 @@ async function runMigrationsOnStartup() {
         const migrationSQL = await fs.readFile(migrationPath, 'utf8');
         console.log('Migration SQL loaded, length:', migrationSQL.length);
         
-        // Split SQL statements
+        // Split SQL statements with better parsing
         const statements = migrationSQL
             .split(/;\s*(?=(?:[^']*'[^']*')*[^']*$)/)
             .map(stmt => stmt.trim())
@@ -2522,7 +2522,10 @@ async function runMigrationsOnStartup() {
                 if (!stmt || stmt.length === 0) return false;
                 if (stmt.startsWith('--')) return false;
                 if (stmt.match(/^[\s-]*$/)) return false;
-                return true;
+                // Keep CREATE TABLE, INSERT, and other valid statements
+                if (stmt.match(/^CREATE\s+TABLE|INSERT\s+|UPDATE\s+|DELETE\s+|ALTER\s+|DROP\s+/i)) return true;
+                if (stmt.match(/^--/)) return false;
+                return stmt.length > 10; // Keep substantial statements
             });
         
         console.log(`Found ${statements.length} SQL statements to execute`);
@@ -2565,7 +2568,17 @@ async function runMigrationsOnStartup() {
             tableNames.sort().forEach(table => console.log(`  - ${table}`));
             
             // Check for critical tables
-            const criticalTables = ['users', 'projects', 'hr_work', 'clients', 'properties', 'workforce_budgets'];
+            const criticalTables = [
+                'users', 'projects', 'documents', 'contracts', 'employees', 'employees_details',
+                'hr_work', 'clients', 'properties', 'workforce_budgets', 'authentication',
+                'policies', 'notifications', 'file_uploads', 'financial_transactions',
+                'hse_incidents', 'ppe_issuance', 'schedule_meetings', 'worker_accounts',
+                'senior_hiring_requests', 'senior_hiring_approvals', 'senior_hiring_rejections',
+                'senior_hiring_info_requests', 'workforce_budget_approvals', 'workforce_budget_rejections',
+                'workforce_budget_modifications', 'policy_revisions', 'policy_rejections',
+                'admin_work', 'finance_work', 'hse_work', 'projects_work', 'realestate_work',
+                'work_comments', 'work_actions', 'work_rejections', 'work_revisions'
+            ];
             const missingTables = criticalTables.filter(table => !tableNames.includes(table));
             
             if (missingTables.length > 0) {
