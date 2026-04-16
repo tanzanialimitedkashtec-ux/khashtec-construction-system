@@ -2599,6 +2599,118 @@ async function runMigrationsOnStartup() {
         
         console.log('\n=== MIGRATION COMPLETE ===\n');
         
+        // Fallback: Create missing critical tables directly if they don't exist
+        try {
+            console.log('🔧 Checking and creating missing critical tables...');
+            
+            const criticalTables = [
+                'users', 'projects', 'documents', 'contracts'
+            ];
+            
+            for (const tableName of criticalTables) {
+                try {
+                    await db.query(`SELECT 1 FROM ${tableName} LIMIT 1`);
+                    console.log(`✅ Table ${tableName} already exists`);
+                } catch (error) {
+                    if (error.message.includes("doesn't exist")) {
+                        console.log(`⚠️  Table ${tableName} missing, creating fallback...`);
+                        
+                        // Create basic users table
+                        if (tableName === 'users') {
+                            await db.query(`
+                                CREATE TABLE IF NOT EXISTS users (
+                                    id INT AUTO_INCREMENT PRIMARY KEY,
+                                    name VARCHAR(255) NOT NULL,
+                                    email VARCHAR(255) UNIQUE NOT NULL,
+                                    phone VARCHAR(50),
+                                    location VARCHAR(255),
+                                    service_type VARCHAR(100),
+                                    custom_service TEXT,
+                                    additional_info TEXT,
+                                    password VARCHAR(255) NOT NULL,
+                                    role ENUM('Customer', 'Managing Director', 'HR Manager', 'Finance Manager', 'Project Manager', 'Real Estate Manager', 'HSE Manager', 'Office Assistant', 'Worker') DEFAULT 'Customer',
+                                    department ENUM('Management', 'Human Resources', 'Finance', 'Project Management', 'Real Estate', 'Health & Safety', 'Administrative', 'Workers', 'Clients') DEFAULT 'Clients',
+                                    registration_date DATE DEFAULT CURRENT_DATE,
+                                    status ENUM('Active', 'Inactive', 'Suspended') DEFAULT 'Active',
+                                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                                    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+                                )
+                            `);
+                            console.log('✅ Created fallback users table');
+                        }
+                        
+                        // Create basic projects table
+                        if (tableName === 'projects') {
+                            await db.query(`
+                                CREATE TABLE IF NOT EXISTS projects (
+                                    id INT AUTO_INCREMENT PRIMARY KEY,
+                                    name VARCHAR(255) NOT NULL,
+                                    description TEXT,
+                                    location VARCHAR(255),
+                                    start_date DATE,
+                                    end_date DATE,
+                                    status ENUM('Planning', 'In Progress', 'Completed', 'On Hold', 'Cancelled') DEFAULT 'Planning',
+                                    budget DECIMAL(15,2),
+                                    actual_cost DECIMAL(15,2),
+                                    manager_id INT,
+                                    client_id INT,
+                                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                                    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+                                )
+                            `);
+                            console.log('✅ Created fallback projects table');
+                        }
+                        
+                        // Create basic documents table
+                        if (tableName === 'documents') {
+                            await db.query(`
+                                CREATE TABLE IF NOT EXISTS documents (
+                                    id INT AUTO_INCREMENT PRIMARY KEY,
+                                    title VARCHAR(255) NOT NULL,
+                                    description TEXT,
+                                    file_path VARCHAR(500),
+                                    file_name VARCHAR(255),
+                                    file_size INT,
+                                    file_type VARCHAR(100),
+                                    category ENUM('Contract', 'Plan', 'Report', 'Invoice', 'Permit', 'Certificate', 'Other') DEFAULT 'Other',
+                                    project_id INT,
+                                    uploaded_by INT,
+                                    status ENUM('Draft', 'Pending', 'Approved', 'Rejected') DEFAULT 'Draft',
+                                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                                    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+                                )
+                            `);
+                            console.log('✅ Created fallback documents table');
+                        }
+                        
+                        // Create basic contracts table
+                        if (tableName === 'contracts') {
+                            await db.query(`
+                                CREATE TABLE IF NOT EXISTS contracts (
+                                    id INT AUTO_INCREMENT PRIMARY KEY,
+                                    employee_id INT,
+                                    contract_type VARCHAR(100),
+                                    start_date DATE,
+                                    end_date DATE,
+                                    salary DECIMAL(10,2),
+                                    status ENUM('Active', 'Expired', 'Terminated') DEFAULT 'Active',
+                                    terms TEXT,
+                                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                                    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+                                )
+                            `);
+                            console.log('✅ Created fallback contracts table');
+                        }
+                    }
+                }
+            }
+            
+            console.log('✅ Critical tables fallback creation completed');
+            
+        } catch (fallbackError) {
+            console.error('❌ Fallback table creation failed:', fallbackError);
+        }
+        
     } catch (error) {
         console.error('Migration failed:', error);
         console.log('Continuing server startup despite migration failure...\n');
