@@ -2514,7 +2514,7 @@ async function runMigrationsOnStartup() {
         const migrationSQL = await fs.readFile(migrationPath, 'utf8');
         console.log('Migration SQL loaded, length:', migrationSQL.length);
         
-        // Split SQL statements with better parsing
+        // Split SQL statements with improved parsing for multi-line statements
         const statements = migrationSQL
             .split(/;\s*(?=(?:[^']*'[^']*')*[^']*$)/)
             .map(stmt => stmt.trim())
@@ -2525,10 +2525,17 @@ async function runMigrationsOnStartup() {
                 // Keep CREATE TABLE, INSERT, and other valid statements
                 if (stmt.match(/^CREATE\s+TABLE|INSERT\s+|UPDATE\s+|DELETE\s+|ALTER\s+|DROP\s+/i)) return true;
                 if (stmt.match(/^--/)) return false;
-                return stmt.length > 10; // Keep substantial statements
+                // Keep multi-line statements and complex SQL
+                return stmt.length > 5; // Lower threshold for multi-line statements
             });
         
         console.log(`Found ${statements.length} SQL statements to execute`);
+        
+        // Log first few statements for debugging
+        console.log('First 5 statements:');
+        for (let i = 0; i < Math.min(5, statements.length); i++) {
+            console.log(`${i + 1}: ${statements[i].substring(0, 100)}...`);
+        }
         
         let successCount = 0;
         let skippedCount = 0;
