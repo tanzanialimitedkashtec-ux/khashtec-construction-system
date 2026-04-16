@@ -3,6 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
     <title>KASHTEC Construction Management System</title>
     
     <style>
@@ -3166,10 +3169,34 @@ function loadAllWorkersData() {
             }
         })
     ])
-    .then(responses => {
+    .then(async responses => {
         if (!responses[0].ok) throw new Error(`Employees API: ${responses[0].status}`);
         if (!responses[1].ok) throw new Error(`Worker Accounts API: ${responses[1].status}`);
-        return Promise.all([responses[0].json(), responses[1].json()]);
+        
+        // More robust JSON parsing with multiple fallbacks
+        const parseResponse = async (response) => {
+            try {
+                // Check if response is empty
+                const text = await response.text();
+                if (!text || text.trim() === '') {
+                    console.log('Empty response detected, returning empty array');
+                    return [];
+                }
+                
+                // Try to parse as JSON
+                return JSON.parse(text);
+            } catch (error) {
+                console.warn('JSON parsing failed, returning empty array:', error.message);
+                return [];
+            }
+        };
+        
+        const [employeesData, workerAccountsData] = await Promise.all([
+            parseResponse(responses[0]),
+            parseResponse(responses[1])
+        ]);
+        
+        return [employeesData, workerAccountsData];
     })
     .then(([employeesData, workerAccountsData]) => {
         console.log('📊 Employees data:', employeesData);
@@ -3394,7 +3421,7 @@ function suspendTerminateEmployment(){
 
 // Load employees for employment action dropdown
 function loadEmployeesForAction() {
-    console.log('🔄 Loading employees for action dropdown...');
+    console.log('Loading employees for action dropdown...');
     
     const baseUrl = window.location.origin;
     fetch(`${baseUrl}/api/employees`, {
@@ -3402,14 +3429,26 @@ function loadEmployeesForAction() {
         headers: {
             'Content-Type': 'application/json',
             'Accept': 'application/json',
-            'Authorization': `Bearer ${sessionManager.getAuthToken()}`
+            'Authorization': `Bearer ${sessionManager.getAuthToken()}` // eslint-disable-line no-undef
         }
     })
-    .then(response => {
+    .then(async response => {
         if (!response.ok) {
             throw new Error(`HTTP ${response.status}: ${response.statusText}`);
         }
-        return response.json();
+        
+        // More robust JSON parsing with multiple fallbacks
+        try {
+            const text = await response.text();
+            if (!text || text.trim() === '') {
+                console.log('Empty response detected, returning empty array');
+                return [];
+            }
+            return JSON.parse(text);
+        } catch (error) {
+            console.warn('JSON parsing failed, returning empty array:', error.message);
+            return [];
+        }
     })
     .then(data => {
         console.log('📊 Employees for action:', data);
@@ -3428,14 +3467,19 @@ function loadEmployeesForAction() {
                 </option>
             `).join('');
             
-        console.log('✅ Employee dropdown populated with', employees.length, 'employees');
+        console.log(' Employee dropdown populated with', employees.length, 'employees');
     })
     .catch(error => {
-        console.error('❌ Error loading employees for action:', error);
+        console.error('Error loading employees for action:', error);
         const employeeSelect = document.getElementById('actionEmployee');
         
+        if (!employeeSelect) {
+            console.error('actionEmployee element not found!');
+            return;
+        }
+        
         // Fallback to mock data if API fails
-        console.log('🔄 Using mock employee data as fallback');
+        console.log('Using mock employee data as fallback');
         const mockEmployees = [
             { id: 'EMP001', full_name: 'John Doe', position: 'Project Manager', department: 'Projects' },
             { id: 'EMP002', full_name: 'Jane Smith', position: 'HR Manager', department: 'HR' },
