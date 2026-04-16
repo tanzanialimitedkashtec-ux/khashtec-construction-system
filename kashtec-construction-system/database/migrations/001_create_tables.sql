@@ -1030,4 +1030,54 @@ INSERT IGNORE INTO contracts (
 ('emp001', 'John Doe', 'permanent', '2025-01-15', NULL, 2500000.00, 'active', 'Full-time permanent employment with standard benefits including health insurance, annual leave, and pension contributions', 'HR Manager'),
 ('emp002', 'Jane Smith', 'contract', '2025-03-01', '2025-12-31', 2200000.00, 'active', 'Fixed-term contract for project duration with possibility of extension based on performance', 'HR Manager'),
 ('emp003', 'Mike Johnson', 'probation', '2025-02-01', '2025-05-01', 1800000.00, 'renewed', 'Probation period successfully completed and converted to permanent contract', 'HR Manager'),
-('emp004', 'Sarah Wilson', 'temporary', '2025-04-01', '2025-06-30', 2000000.00, 'active', 'Temporary contract for special project with competitive hourly rate and overtime benefits', 'HR Manager');;
+('emp004', 'Sarah Wilson', 'temporary', '2025-04-01', '2025-06-30', 2000000.00, 'active', 'Temporary contract for special project with competitive hourly rate and overtime benefits', 'HR Manager');
+
+-- Meeting Minutes table
+CREATE TABLE IF NOT EXISTS meeting_minutes (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  meeting_id INT NOT NULL,
+  meeting_title VARCHAR(255) NOT NULL,
+  meeting_date DATE NOT NULL,
+  meeting_type ENUM('board', 'management', 'department', 'project', 'client', 'training', 'general') NOT NULL,
+  location VARCHAR(255),
+  organizing_department ENUM('management', 'hr', 'finance', 'projects', 'operations', 'realestate') NOT NULL,
+  attendees TEXT,
+  minutes_content TEXT NOT NULL,
+  action_items TEXT,
+  decisions_made TEXT,
+  next_steps TEXT,
+  follow_up_date DATE,
+  status ENUM('Draft', 'Pending Review', 'Approved', 'Distributed') DEFAULT 'Draft',
+  prepared_by VARCHAR(255) NOT NULL,
+  reviewed_by VARCHAR(255),
+  approved_by VARCHAR(255),
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  
+  -- Foreign key relationship to schedule_meetings table
+  FOREIGN KEY (meeting_id) REFERENCES schedule_meetings(id) ON DELETE CASCADE,
+  
+  -- Indexes for performance
+  INDEX idx_meeting_id (meeting_id),
+  INDEX idx_meeting_date (meeting_date),
+  INDEX idx_meeting_type (meeting_type),
+  INDEX idx_department (organizing_department),
+  INDEX idx_status (status),
+  INDEX idx_prepared_by (prepared_by),
+  INDEX idx_follow_up_date (follow_up_date)
+);
+
+-- Insert sample meeting minutes data
+INSERT IGNORE INTO meeting_minutes (
+  meeting_id, meeting_title, meeting_date, meeting_type, location, organizing_department,
+  attendees, minutes_content, action_items, decisions_made, next_steps, follow_up_date,
+  status, prepared_by, reviewed_by, approved_by
+) VALUES
+(1, 'Monthly Management Review', CURDATE(), 'management', 'Board Room', 'management',
+  'Dr. John Smith, HR Manager, Finance Manager, Project Manager', 
+  'Monthly review of project progress, financial status, and operational challenges.',
+  '1. Review Q2 budget proposals\n2. Approve new project timeline\n3. Address staffing issues',
+  'Budget approval deferred pending additional information. Project timeline approved with modifications.',
+  'Schedule follow-up meeting for budget review next week. Update project documentation.',
+  DATE_ADD(CURDATE(), INTERVAL 7 DAY),
+  'Draft', 'Admin Assistant', NULL, NULL);

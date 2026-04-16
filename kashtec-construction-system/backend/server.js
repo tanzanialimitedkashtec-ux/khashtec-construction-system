@@ -1612,30 +1612,15 @@ try {
 // ... rest of the code remains the same ...
 // ===== SCHEDULE MEETINGS ROUTES =====
 console.log(' Loading schedule meetings routes...');
-
-console.log('🔍 Loading schedule meetings routes...');
-console.log('🔍 Current working directory:', process.cwd());
-console.log('🔍 Attempting to load: ./routes/scheduleMeetings_basic');
 try {
-    const scheduleMeetingsRoutes = require('./routes/scheduleMeetings_basic');
-    console.log('✅ Schedule meetings routes loaded successfully (basic version)');
-    console.log('🔍 Routes object:', typeof scheduleMeetingsRoutes);
-    console.log('🔍 Routes stack length:', scheduleMeetingsRoutes.stack ? scheduleMeetingsRoutes.stack.length : 'N/A');
+    const scheduleMeetingsRoutes = require('./routes/scheduleMeetings');
+    console.log(' Schedule meetings routes loaded successfully');
     app.use('/api/schedule-meetings', scheduleMeetingsRoutes);
-    console.log('✅ Schedule meetings routes mounted at /api/schedule-meetings');
+    console.log(' Schedule meetings routes mounted at /api/schedule-meetings');
 } catch (error) {
-    console.error('❌ Error loading schedule meetings routes:', error);
-    console.error('❌ Error stack:', error.stack);
+    console.error(' Error loading schedule meetings routes:', error);
+    console.error(' Error stack:', error.stack);
 }
-
-// Add a simple test endpoint directly to server for debugging
-app.get('/api/schedule-meetings-direct-test', (req, res) => {
-    console.log('🧪 Direct test endpoint accessed');
-    res.json({ 
-        message: 'Direct test endpoint working!',
-        timestamp: new Date().toISOString()
-    });
-});
 
 // ===== MEETING MINUTES ROUTES =====
 console.log('🔍 Loading meeting minutes routes...');

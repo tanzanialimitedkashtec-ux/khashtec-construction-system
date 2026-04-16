@@ -30,10 +30,10 @@ class Database {
                 console.log('🔗 Initializing database connection...');
             }
             
-            // Use Railway's DATABASE_URL or individual DB credentials
+            // Use Railway's DATABASE_URL or construct from individual variables
             const databaseUrl = process.env.DATABASE_URL && !process.env.DATABASE_URL.includes('${') 
                 ? process.env.DATABASE_URL 
-                : "mysql://root:LzDEYGJIiYfVRSTnBrufpsSwRIDnZRvz@centerbeam.proxy.rlwy.net:11044/railway";
+                : process.env.MYSQL_URL || `mysql://${process.env.MYSQLUSER}:${process.env.MYSQLPASSWORD}@${process.env.MYSQLHOST}:${process.env.MYSQLPORT}/${process.env.MYSQLDATABASE}`;
             
             if (databaseUrl) {
                 // Parse DATABASE_URL format: mysql://user:password@host:port/database
@@ -61,11 +61,11 @@ class Database {
             } else {
                 // Fallback to individual environment variables
                 this.pool = mysql.createPool({
-                    host: process.env.DB_HOST || "centerbeam.proxy.rlwy.net",
-                    port: process.env.DB_PORT || 11044,
-                    user: process.env.DB_USER || "root",
-                    password: process.env.DB_PASSWORD || "LzDEYGJIiYfVRSTnBrufpsSwRIDnZRvz",
-                    database: process.env.DB_NAME || "railway",
+                    host: process.env.MYSQLHOST || process.env.DB_HOST || "centerbeam.proxy.rlwy.net",
+                    port: process.env.MYSQLPORT || process.env.DB_PORT || 3306,
+                    user: process.env.MYSQLUSER || process.env.DB_USER || "root",
+                    password: process.env.MYSQLPASSWORD || process.env.DB_PASSWORD || "FpJJluFwvIzgsMTsfDZApQLznVVVIzJd",
+                    database: process.env.MYSQLDATABASE || process.env.DB_NAME || "railway",
                     waitForConnections: true,
                     connectionLimit: 5, // Reduced for Railway
                     queueLimit: 0,
