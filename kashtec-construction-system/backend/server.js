@@ -2514,16 +2514,15 @@ async function runMigrationsOnStartup() {
         const migrationSQL = await fs.readFile(migrationPath, 'utf8');
         console.log('Migration SQL loaded, length:', migrationSQL.length);
         
-        // Split SQL statements with improved parsing for multi-line statements
+        // Simple approach: split by semicolons and filter comments
         const statements = migrationSQL
-            .split(/;\s*(?=(?:[^']*'[^']*')*[^']*$)/)
+            .split(';')
             .map(stmt => stmt.trim())
             .filter(stmt => {
                 if (!stmt || stmt.length === 0) return false;
                 if (stmt.startsWith('--')) return false;
                 if (stmt.match(/^[\s-]*$/)) return false;
-                // Keep all substantial statements - remove restrictive filtering
-                return stmt.length > 3; // Very low threshold to catch all statements
+                return true; // Keep all non-empty, non-comment statements
             });
         
         console.log(`Found ${statements.length} SQL statements to execute`);
