@@ -2525,6 +2525,7 @@ async function runMigrationsOnStartup() {
                 return true; // Keep all non-empty, non-comment statements
             });
         
+        console.log(`=== NEW SERVER-SIDE MIGRATION ===`);
         console.log(`Found ${statements.length} SQL statements to execute`);
         
         // Log first few statements for debugging
@@ -2532,6 +2533,8 @@ async function runMigrationsOnStartup() {
         for (let i = 0; i < Math.min(10, statements.length); i++) {
             console.log(`${i + 1}: ${statements[i].substring(0, 150)}...`);
         }
+        
+        console.log(`=== MIGRATION DEBUGGING ===`);
         
         let successCount = 0;
         let skippedCount = 0;
