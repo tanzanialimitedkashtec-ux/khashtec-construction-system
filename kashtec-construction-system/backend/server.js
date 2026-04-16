@@ -2514,32 +2514,84 @@ async function runMigrationsOnStartup() {
         const migrationSQL = await fs.readFile(migrationPath, 'utf8');
         console.log('Migration SQL loaded, length:', migrationSQL.length);
         
-        // Robust parsing: Find all CREATE TABLE and INSERT statements
-        console.log('=== ROBUST MIGRATION PARSING ===');
+        // Character-by-character SQL parsing with state machine
+        console.log('=== STATE MACHINE SQL PARSING ===');
         console.log(`SQL file length: ${migrationSQL.length}`);
         
-        // Split by semicolons first
-        const rawStatements = migrationSQL.split(';');
-        console.log(`Raw split found ${rawStatements.length} parts`);
-        
-        // Filter and process statements
-        const statements = [];
-        for (let i = 0; i < rawStatements.length; i++) {
-            const stmt = rawStatements[i].trim();
+        function splitSqlStatements(sql) {
+            const statements = [];
+            let current = '';
+            let inSingleQuote = false;
+            let inDoubleQuote = false;
+            let inLineComment = false;
+            let inBlockComment = false;
+            let parenLevel = 0;
             
-            // Skip empty and comment-only statements
-            if (!stmt || stmt.length === 0) continue;
-            if (stmt.startsWith('--')) continue;
-            if (stmt.match(/^[\s-]*$/)) continue;
-            
-            // Keep CREATE TABLE and INSERT statements
-            if (stmt.match(/^CREATE\s+TABLE/i) || stmt.match(/^INSERT\s+IGNORE\s+INTO/i)) {
-                statements.push(stmt);
-                console.log(`Found valid statement ${statements.length}: ${stmt.substring(0, 100)}...`);
+            for (let i = 0; i < sql.length; i++) {
+                const char = sql[i];
+                const prevChar = i > 0 ? sql[i - 1] : '';
+                
+                // Handle block comments /* */
+                if (!inLineComment && !inSingleQuote && !inDoubleQuote && char === '/' && i + 1 < sql.length && sql[i + 1] === '*') {
+                    inBlockComment = true;
+                }
+                if (inBlockComment && !inSingleQuote && !inDoubleQuote && char === '*' && i + 1 < sql.length && sql[i + 1] === '/') {
+                    inBlockComment = false;
+                }
+                
+                // Handle line comments --
+                if (!inBlockComment && !inSingleQuote && !inDoubleQuote && char === '-' && i + 1 < sql.length && sql[i + 1] === '-') {
+                    inLineComment = true;
+                }
+                if (inLineComment && (char === '\n' || char === '\r')) {
+                    inLineComment = false;
+                }
+                
+                // Handle string literals
+                if (!inBlockComment && !inLineComment) {
+                    if (char === "'" && !inDoubleQuote && (i === 0 || prevChar !== '\\')) {
+                        inSingleQuote = !inSingleQuote;
+                    } else if (char === '"' && !inSingleQuote && (i === 0 || prevChar !== '\\')) {
+                        inDoubleQuote = !inDoubleQuote;
+                    } else if (char === '(' && !inSingleQuote && !inDoubleQuote) {
+                        parenLevel++;
+                    } else if (char === ')' && !inSingleQuote && !inDoubleQuote) {
+                        parenLevel--;
+                    }
+                }
+                
+                // Split on semicolon when not in any special context
+                if (char === ';' && !inSingleQuote && !inDoubleQuote && !inLineComment && !inBlockComment && parenLevel === 0) {
+                    const statement = current.trim();
+                    if (statement && !statement.startsWith('--') && statement.length > 0) {
+                        statements.push(statement);
+                        if (statements.length <= 10) {
+                            console.log(`Statement ${statements.length}: ${statement.substring(0, 100)}...`);
+                        }
+                    }
+                    current = '';
+                } else if (!inLineComment && !inBlockComment) {
+                    current += char;
+                }
             }
+            
+            // Add final statement if exists
+            const finalStatement = current.trim();
+            if (finalStatement && !finalStatement.startsWith('--') && finalStatement.length > 0) {
+                statements.push(finalStatement);
+            }
+            
+            return statements;
         }
         
-        console.log(`=== ROBUST MIGRATION: Found ${statements.length} valid statements ===`);
+        const statements = splitSqlStatements(migrationSQL);
+        console.log(`=== STATE MACHINE: Found ${statements.length} statements ===`);
+        
+        // Warning if too few CREATE TABLE statements found
+        const createTableCount = statements.filter(stmt => stmt.match(/^CREATE\s+TABLE/i)).length;
+        if (createTableCount < 35) {
+            console.warn(`⚠️  WARNING: Only ${createTableCount} CREATE TABLE statements found! Expected 40+`);
+        }
         
         // Log first few statements for debugging
         console.log('First 10 statements:');
