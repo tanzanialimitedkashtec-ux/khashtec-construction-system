@@ -3455,6 +3455,11 @@ function loadEmployeesForAction() {
         const employeeSelect = document.getElementById('actionEmployee');
         const employees = Array.isArray(data) ? data : [];
         
+        if (!employeeSelect) {
+            console.error('actionEmployee element not found in .then block!');
+            return;
+        }
+        
         if (employees.length === 0) {
             employeeSelect.innerHTML = '<option value="">No employees found</option>';
             return;
