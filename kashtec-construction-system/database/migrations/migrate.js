@@ -1,5 +1,104 @@
 const db = require('../config/database');
 
+/**
+ * State-machine SQL parser that correctly splits a SQL file into individual
+ * statements by tracking quote and comment context, so semicolons inside
+ * string literals or comments are never treated as statement terminators.
+ *
+ * Handles:
+ *  - Single-quoted strings (with \' and '' escape sequences)
+ *  - Double-quoted identifiers
+ *  - Single-line comments  (-- …)
+ *  - Multi-line comments   (/* … *\/)
+ *  - Multi-line CREATE TABLE and INSERT statements
+ */
+function splitSqlStatements(sql) {
+  const statements = [];
+  let current = '';
+  let i = 0;
+
+  while (i < sql.length) {
+    const ch = sql[i];
+
+    // ── Single-line comment ──────────────────────────────────────────────────
+    if (ch === '-' && sql[i + 1] === '-') {
+      // Consume everything up to (but not including) the newline
+      const end = sql.indexOf('\n', i);
+      if (end === -1) {
+        // Comment runs to EOF — discard it
+        break;
+      }
+      // Keep the newline so formatting is preserved; skip the comment text
+      current += '\n';
+      i = end + 1;
+      continue;
+    }
+
+    // ── Block comment ────────────────────────────────────────────────────────
+    if (ch === '/' && sql[i + 1] === '*') {
+      const end = sql.indexOf('*/', i + 2);
+      if (end === -1) {
+        // Unterminated block comment — discard the rest
+        break;
+      }
+      i = end + 2; // skip past '*/'
+      continue;
+    }
+
+    // ── Quoted string (single or double quote) ───────────────────────────────
+    if (ch === "'" || ch === '"') {
+      const quote = ch;
+      current += ch;
+      i++;
+      while (i < sql.length) {
+        const qch = sql[i];
+        if (qch === '\\') {
+          // Backslash escape — consume both characters verbatim
+          current += sql[i] + (sql[i + 1] || '');
+          i += 2;
+        } else if (qch === quote) {
+          current += qch;
+          i++;
+          // Handle doubled-quote escape ('' or "")
+          if (sql[i] === quote) {
+            current += sql[i];
+            i++;
+          } else {
+            break; // End of quoted string
+          }
+        } else {
+          current += qch;
+          i++;
+        }
+      }
+      continue;
+    }
+
+    // ── Statement terminator ─────────────────────────────────────────────────
+    if (ch === ';') {
+      const stmt = current.trim();
+      if (stmt.length > 0) {
+        statements.push(stmt);
+      }
+      current = '';
+      i++;
+      continue;
+    }
+
+    // ── Ordinary character ───────────────────────────────────────────────────
+    current += ch;
+    i++;
+  }
+
+  // Capture any trailing statement that has no terminating semicolon
+  const trailing = current.trim();
+  if (trailing.length > 0) {
+    statements.push(trailing);
+  }
+
+  return statements;
+}
+
 async function runMigrations() {
   try {
     console.log('🔄 Running database migrations...');
@@ -17,83 +116,65 @@ async function runMigrations() {
     console.log('📝 SQL file length:', migrationSQL.length);
     console.log('📝 SQL file preview:', migrationSQL.substring(0, 200) + '...');
     
-    // Split SQL file by semicolons with improved parsing
-    const statements = migrationSQL
-      .split(/;\s*(?=(?:[^']*'[^']*')*[^']*$)/) // Split on semicolons not within quotes
-      .map(stmt => stmt.trim())
-      .filter(stmt => {
-        // Filter out empty statements and pure comments
-        if (!stmt || stmt.length === 0) return false;
-        if (stmt.startsWith('--')) return false;
-        if (stmt.match(/^[\s-]*$/)) return false; // Only whitespace or dashes
-        return true;
-      });
-    
+    // Parse SQL using the state-machine splitter so that semicolons inside
+    // quoted strings and comments are never treated as statement boundaries.
+    const allStatements = splitSqlStatements(migrationSQL);
+
+    // Filter out blank or comment-only fragments that slipped through
+    const statements = allStatements.filter(stmt => {
+      if (!stmt || stmt.length === 0) return false;
+      // Skip lines that are purely comment text (shouldn't happen after
+      // stripping, but guard anyway)
+      if (/^--/.test(stmt)) return false;
+      if (/^[\s\-]*$/.test(stmt)) return false;
+      return true;
+    });
+
+    const createTableCount = statements.filter(s =>
+      /^\s*CREATE\s+TABLE/i.test(s)
+    ).length;
+
     console.log(`📝 Found ${statements.length} SQL statements to execute`);
-    
+    console.log(`📊 CREATE TABLE statements detected: ${createTableCount}`);
+
+    if (createTableCount < 35) {
+      console.warn(
+        `⚠️  Expected ~40 CREATE TABLE statements but only found ${createTableCount}. ` +
+        'The SQL file may have changed or the parser encountered an issue.'
+      );
+    }
+
     let successCount = 0;
     let skippedCount = 0;
-    
-    // If we still have too few statements, try a simpler approach
-    if (statements.length < 30) {
-      console.log('⚠️  Too few statements found, trying alternative parsing...');
-      const simpleStatements = migrationSQL
-        .split(';')
-        .map(stmt => stmt.trim())
-        .filter(stmt => stmt.length > 0 && !stmt.startsWith('--'));
-      console.log(`📝 Alternative parsing found ${simpleStatements.length} statements`);
-      
-      // Use the alternative if it found more statements
-      const finalStatements = simpleStatements.length > statements.length ? simpleStatements : statements;
-      
-      for (let i = 0; i < finalStatements.length; i++) {
-        const statement = finalStatements[i].trim();
-        if (!statement) continue;
-        
-        try {
-          // Use query for all statements to avoid prepared statement issues
-          await db.query(statement);
-          console.log(`✅ Statement ${i + 1}/${finalStatements.length} executed successfully`);
-          successCount++;
-        } catch (error) {
-          // Ignore known errors
-          if (error.message.includes('already exists') || 
-              error.message.includes('Duplicate entry') ||
-              error.message.includes('This command is not supported in the prepared statement protocol yet')) {
-            console.log(`⚠️  Statement ${i + 1} skipped (known issue): ${error.message}`);
-            skippedCount++;
-          } else {
-            console.error(`❌ Statement ${i + 1} error: ${error.message}`);
-            console.error(`🔍 Failed statement: ${statement.substring(0, 100)}...`);
-          }
-        }
-      }
-    } else {
-      // Use the original parsing if it found enough statements
-      for (let i = 0; i < statements.length; i++) {
-        const statement = statements[i].trim();
-        if (!statement) continue;
-        
-        try {
-          // Use query for all statements to avoid prepared statement issues
-          await db.query(statement);
-          console.log(`✅ Statement ${i + 1}/${statements.length} executed successfully`);
-          successCount++;
-        } catch (error) {
-          // Ignore known errors
-          if (error.message.includes('already exists') || 
-              error.message.includes('Duplicate entry') ||
-              error.message.includes('This command is not supported in the prepared statement protocol yet')) {
-            console.log(`⚠️  Statement ${i + 1} skipped (known issue): ${error.message}`);
-            skippedCount++;
-          } else {
-            console.error(`❌ Statement ${i + 1} error: ${error.message}`);
-            console.error(`🔍 Failed statement: ${statement.substring(0, 100)}...`);
-          }
+
+    for (let i = 0; i < statements.length; i++) {
+      const statement = statements[i].trim();
+      if (!statement) continue;
+
+      // Log what kind of statement we're about to run
+      const preview = statement.replace(/\s+/g, ' ').substring(0, 80);
+      console.log(`▶  [${i + 1}/${statements.length}] ${preview}${statement.length > 80 ? '…' : ''}`);
+
+      try {
+        await db.query(statement);
+        console.log(`✅ Statement ${i + 1} executed successfully`);
+        successCount++;
+      } catch (error) {
+        // Ignore benign errors that occur when re-running migrations
+        if (
+          error.message.includes('already exists') ||
+          error.message.includes('Duplicate entry') ||
+          error.message.includes('This command is not supported in the prepared statement protocol yet')
+        ) {
+          console.log(`⚠️  Statement ${i + 1} skipped (known issue): ${error.message}`);
+          skippedCount++;
+        } else {
+          console.error(`❌ Statement ${i + 1} error: ${error.message}`);
+          console.error(`🔍 Failed statement: ${statement.substring(0, 200)}`);
         }
       }
     }
-    
+
     console.log(`\n📊 Migration Summary:`);
     console.log(`✅ Successfully executed: ${successCount}`);
     console.log(`⚠️  Skipped (known issues): ${skippedCount}`);
