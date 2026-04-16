@@ -2523,6 +2523,7 @@ async function runMigrationsOnStartup() {
             let current = '';
             let inSingleQuote = false;
             let inDoubleQuote = false;
+            let inBacktick = false;
             let inLineComment = false;
             let inBlockComment = false;
             let parenLevel = 0;
@@ -2532,36 +2533,38 @@ async function runMigrationsOnStartup() {
                 const prevChar = i > 0 ? sql[i - 1] : '';
                 
                 // Handle block comments /* */
-                if (!inLineComment && !inSingleQuote && !inDoubleQuote && char === '/' && i + 1 < sql.length && sql[i + 1] === '*') {
+                if (!inLineComment && !inSingleQuote && !inDoubleQuote && !inBacktick && char === '/' && i + 1 < sql.length && sql[i + 1] === '*') {
                     inBlockComment = true;
                 }
-                if (inBlockComment && !inSingleQuote && !inDoubleQuote && char === '*' && i + 1 < sql.length && sql[i + 1] === '/') {
+                if (inBlockComment && !inSingleQuote && !inDoubleQuote && !inBacktick && char === '*' && i + 1 < sql.length && sql[i + 1] === '/') {
                     inBlockComment = false;
                 }
                 
                 // Handle line comments --
-                if (!inBlockComment && !inSingleQuote && !inDoubleQuote && char === '-' && i + 1 < sql.length && sql[i + 1] === '-') {
+                if (!inBlockComment && !inSingleQuote && !inDoubleQuote && !inBacktick && char === '-' && i + 1 < sql.length && sql[i + 1] === '-') {
                     inLineComment = true;
                 }
                 if (inLineComment && (char === '\n' || char === '\r')) {
                     inLineComment = false;
                 }
                 
-                // Handle string literals
+                // Handle string literals and identifiers
                 if (!inBlockComment && !inLineComment) {
-                    if (char === "'" && !inDoubleQuote && (i === 0 || prevChar !== '\\')) {
+                    if (char === "'" && !inDoubleQuote && !inBacktick && (i === 0 || prevChar !== '\\')) {
                         inSingleQuote = !inSingleQuote;
-                    } else if (char === '"' && !inSingleQuote && (i === 0 || prevChar !== '\\')) {
+                    } else if (char === '"' && !inSingleQuote && !inBacktick && (i === 0 || prevChar !== '\\')) {
                         inDoubleQuote = !inDoubleQuote;
-                    } else if (char === '(' && !inSingleQuote && !inDoubleQuote) {
+                    } else if (char === '`' && !inSingleQuote && !inDoubleQuote && (i === 0 || prevChar !== '\\')) {
+                        inBacktick = !inBacktick;
+                    } else if (char === '(' && !inSingleQuote && !inDoubleQuote && !inBacktick) {
                         parenLevel++;
-                    } else if (char === ')' && !inSingleQuote && !inDoubleQuote) {
+                    } else if (char === ')' && !inSingleQuote && !inDoubleQuote && !inBacktick) {
                         parenLevel--;
                     }
                 }
                 
                 // Split on semicolon when not in any special context
-                if (char === ';' && !inSingleQuote && !inDoubleQuote && !inLineComment && !inBlockComment && parenLevel === 0) {
+                if (char === ';' && !inSingleQuote && !inDoubleQuote && !inBacktick && !inLineComment && !inBlockComment && parenLevel === 0) {
                     const statement = current.trim();
                     if (statement && !statement.startsWith('--') && statement.length > 0) {
                         statements.push(statement);
