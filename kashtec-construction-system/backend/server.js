@@ -2522,19 +2522,16 @@ async function runMigrationsOnStartup() {
                 if (!stmt || stmt.length === 0) return false;
                 if (stmt.startsWith('--')) return false;
                 if (stmt.match(/^[\s-]*$/)) return false;
-                // Keep CREATE TABLE, INSERT, and other valid statements
-                if (stmt.match(/^CREATE\s+TABLE|INSERT\s+|UPDATE\s+|DELETE\s+|ALTER\s+|DROP\s+/i)) return true;
-                if (stmt.match(/^--/)) return false;
-                // Keep multi-line statements and complex SQL
-                return stmt.length > 5; // Lower threshold for multi-line statements
+                // Keep all substantial statements - remove restrictive filtering
+                return stmt.length > 3; // Very low threshold to catch all statements
             });
         
         console.log(`Found ${statements.length} SQL statements to execute`);
         
         // Log first few statements for debugging
-        console.log('First 5 statements:');
-        for (let i = 0; i < Math.min(5, statements.length); i++) {
-            console.log(`${i + 1}: ${statements[i].substring(0, 100)}...`);
+        console.log('First 10 statements:');
+        for (let i = 0; i < Math.min(10, statements.length); i++) {
+            console.log(`${i + 1}: ${statements[i].substring(0, 150)}...`);
         }
         
         let successCount = 0;
