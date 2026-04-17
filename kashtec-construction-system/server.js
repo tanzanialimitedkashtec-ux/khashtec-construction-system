@@ -1110,9 +1110,18 @@ app.post('/api/meeting-minutes', async (req, res) => {
                 next_meeting_date, next_meeting_time, recorded_by
             ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         `, [
-            minutesId, meeting_title, meeting_type, meeting_date, meeting_time,
-            attendees, meeting_agenda, meeting_notes, action_items,
-            next_meeting_date, next_meeting_time, recorded_by
+            minutesId, 
+            meeting_title || '', 
+            meeting_type || '', 
+            meeting_date || '', 
+            meeting_time || '',
+            attendees || '',
+            meeting_agenda || null, 
+            meeting_notes || null, 
+            action_items || null,
+            next_meeting_date || null, 
+            next_meeting_time || null, 
+            recorded_by || ''
         ]);
 
         res.status(201).json({
