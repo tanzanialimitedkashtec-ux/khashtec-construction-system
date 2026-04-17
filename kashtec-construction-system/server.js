@@ -533,6 +533,449 @@ app.get('/api/site-reports/:id', async (req, res) => {
     }
 });
 
+// Projects API endpoints
+app.post('/api/projects', async (req, res) => {
+    try {
+        const db = require('./database/config/database');
+        const {
+            projectName,
+            projectCode,
+            clientName,
+            projectType,
+            projectStartDate,
+            projectEndDate,
+            contractValue,
+            projectManager,
+            projectDescription,
+            keyDeliverables,
+            siteLocation,
+            priorityLevel
+        } = req.body;
+
+        // Validate required fields
+        if (!projectName || !projectCode || !clientName || !projectType || 
+            !projectStartDate || !projectEndDate || !contractValue || 
+            !projectManager || !projectDescription || !siteLocation || !priorityLevel) {
+            return res.status(400).json({
+                success: false,
+                message: 'Missing required fields'
+            });
+        }
+
+        // Generate project ID
+        const projectId = 'PRJ' + Date.now();
+
+        // Insert project
+        const [result] = await db.execute(`
+            INSERT INTO projects (
+                id, name, description, location, start_date, end_date,
+                status, budget, manager_id, client_name, project_code,
+                project_type, contract_value, key_deliverables, priority_level,
+                created_at, updated_at
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())
+        `, [
+            projectId, projectName, projectDescription, siteLocation,
+            projectStartDate, projectEndDate, 'Planning', contractValue,
+            projectManager, clientName, projectCode, projectType,
+            contractValue, keyDeliverables, priorityLevel
+        ]);
+
+        res.status(201).json({
+            success: true,
+            message: 'Project created successfully',
+            projectId: projectId
+        });
+
+    } catch (error) {
+        console.error('Error creating project:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Failed to create project',
+            error: error.message
+        });
+    }
+});
+
+app.get('/api/projects', async (req, res) => {
+    try {
+        const db = require('./database/config/database');
+        const [projects] = await db.execute(`
+            SELECT id, name, description, location, start_date, end_date,
+                   status, budget, client_name, project_code, project_type,
+                   contract_value, priority_level, created_at, updated_at
+            FROM projects 
+            ORDER BY created_at DESC
+        `);
+
+        res.status(200).json({
+            success: true,
+            projects: projects
+        });
+
+    } catch (error) {
+        console.error('Error fetching projects:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Failed to fetch projects',
+            error: error.message
+        });
+    }
+});
+
+// Task Assignments API endpoints
+app.post('/api/task-assignments', async (req, res) => {
+    try {
+        const db = require('./database/config/database');
+        const {
+            projectId,
+            taskName,
+            assignedTo,
+            taskPriority,
+            taskStartDate,
+            taskDueDate,
+            taskDescription,
+            estimatedHours,
+            requiredSkills,
+            taskMaterials
+        } = req.body;
+
+        // Validate required fields
+        if (!projectId || !taskName || !assignedTo || !taskPriority || 
+            !taskStartDate || !taskDueDate || !taskDescription) {
+            return res.status(400).json({
+                success: false,
+                message: 'Missing required fields'
+            });
+        }
+
+        // Insert task assignment
+        const [result] = await db.execute(`
+            INSERT INTO task_assignments (
+                project_id, task_name, assigned_to, task_priority,
+                start_date, due_date, task_description, estimated_hours,
+                required_skills, materials_equipment, created_by
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        `, [
+            projectId, taskName, assignedTo, taskPriority,
+            taskStartDate, taskDueDate, taskDescription, estimatedHours,
+            requiredSkills, taskMaterials, assignedTo
+        ]);
+
+        res.status(201).json({
+            success: true,
+            message: 'Task assigned successfully',
+            taskId: result.insertId
+        });
+
+    } catch (error) {
+        console.error('Error assigning task:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Failed to assign task',
+            error: error.message
+        });
+    }
+});
+
+app.get('/api/task-assignments', async (req, res) => {
+    try {
+        const db = require('./database/config/database');
+        const { projectId } = req.query;
+
+        let query = `
+            SELECT ta.*, p.name as project_name 
+            FROM task_assignments ta 
+            LEFT JOIN projects p ON ta.project_id = p.id
+            ORDER BY ta.due_date ASC
+        `;
+        let params = [];
+
+        if (projectId) {
+            query += ` WHERE ta.project_id = ?`;
+            params = [projectId];
+        }
+
+        const [tasks] = await db.execute(query, params);
+
+        res.status(200).json({
+            success: true,
+            tasks: tasks
+        });
+
+    } catch (error) {
+        console.error('Error fetching task assignments:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Failed to fetch task assignments',
+            error: error.message
+        });
+    }
+});
+
+// Workforce Requests API endpoints
+app.post('/api/workforce-requests', async (req, res) => {
+    try {
+        const db = require('./database/config/database');
+        const {
+            projectId,
+            requestType,
+            workersNeeded,
+            workDuration,
+            jobCategories,
+            workforceJustification,
+            workforceStartDate,
+            workforceEndDate,
+            specialRequirements
+        } = req.body;
+
+        // Validate required fields
+        if (!projectId || !requestType || !workersNeeded || !workDuration || 
+            !jobCategories || !workforceJustification || !workforceStartDate) {
+            return res.status(400).json({
+                success: false,
+                message: 'Missing required fields'
+            });
+        }
+
+        // Insert workforce request
+        const [result] = await db.execute(`
+            INSERT INTO workforce_requests (
+                project_id, request_type, workers_needed, duration,
+                job_categories, justification, start_date, end_date,
+                special_requirements, requested_by
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        `, [
+            projectId, requestType, workersNeeded, workDuration,
+            jobCategories, workforceJustification, workforceStartDate,
+            workforceEndDate, specialRequirements, 'Current User'
+        ]);
+
+        res.status(201).json({
+            success: true,
+            message: 'Workforce request submitted successfully',
+            requestId: result.insertId
+        });
+
+    } catch (error) {
+        console.error('Error submitting workforce request:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Failed to submit workforce request',
+            error: error.message
+        });
+    }
+});
+
+app.get('/api/workforce-requests', async (req, res) => {
+    try {
+        const db = require('./database/config/database');
+        const { projectId } = req.query;
+
+        let query = `
+            SELECT wr.*, p.name as project_name 
+            FROM workforce_requests wr 
+            LEFT JOIN projects p ON wr.project_id = p.id
+            ORDER BY wr.created_at DESC
+        `;
+        let params = [];
+
+        if (projectId) {
+            query += ` WHERE wr.project_id = ?`;
+            params = [projectId];
+        }
+
+        const [requests] = await db.execute(query, params);
+
+        res.status(200).json({
+            success: true,
+            requests: requests
+        });
+
+    } catch (error) {
+        console.error('Error fetching workforce requests:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Failed to fetch workforce requests',
+            error: error.message
+        });
+    }
+});
+
+// Work Approvals API endpoints
+app.post('/api/work-approvals', async (req, res) => {
+    try {
+        const db = require('./database/config/database');
+        const {
+            workId,
+            projectId,
+            completedBy,
+            completionDate,
+            qualityAssessment,
+            complianceCheck,
+            approvalComments,
+            safetyCompliance,
+            timeCompletion,
+            qualityScore
+        } = req.body;
+
+        // Validate required fields
+        if (!workId || !projectId || !completedBy || !completionDate || 
+            !qualityAssessment || !complianceCheck || !approvalComments) {
+            return res.status(400).json({
+                success: false,
+                message: 'Missing required fields'
+            });
+        }
+
+        // Insert work approval
+        const [result] = await db.execute(`
+            INSERT INTO work_approvals (
+                work_id, project_id, completed_by, completion_date,
+                quality_assessment, compliance_check, approval_comments,
+                safety_compliance, time_completion, quality_score, approved_by
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        `, [
+            workId, projectId, completedBy, completionDate,
+            qualityAssessment, complianceCheck, approvalComments,
+            safetyCompliance, timeCompletion, qualityScore, 'Current User'
+        ]);
+
+        res.status(201).json({
+            success: true,
+            message: 'Work approval submitted successfully',
+            approvalId: result.insertId
+        });
+
+    } catch (error) {
+        console.error('Error submitting work approval:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Failed to submit work approval',
+            error: error.message
+        });
+    }
+});
+
+app.get('/api/work-approvals', async (req, res) => {
+    try {
+        const db = require('./database/config/database');
+        const { projectId } = req.query;
+
+        let query = `
+            SELECT wa.*, p.name as project_name 
+            FROM work_approvals wa 
+            LEFT JOIN projects p ON wa.project_id = p.id
+            ORDER BY wa.created_at DESC
+        `;
+        let params = [];
+
+        if (projectId) {
+            query += ` WHERE wa.project_id = ?`;
+            params = [projectId];
+        }
+
+        const [approvals] = await db.execute(query, params);
+
+        res.status(200).json({
+            success: true,
+            approvals: approvals
+        });
+
+    } catch (error) {
+        console.error('Error fetching work approvals:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Failed to fetch work approvals',
+            error: error.message
+        });
+    }
+});
+
+// Project Progress Updates API endpoints
+app.post('/api/project-progress-updates', async (req, res) => {
+    try {
+        const db = require('./database/config/database');
+        const {
+            projectId,
+            progressPercentage,
+            status,
+            progressReport,
+            completedMilestones,
+            nextMilestones,
+            budgetUsed,
+            issues
+        } = req.body;
+
+        // Validate required fields
+        if (!projectId || !progressPercentage || !status) {
+            return res.status(400).json({
+                success: false,
+                message: 'Missing required fields'
+            });
+        }
+
+        // Insert progress update
+        const [result] = await db.execute(`
+            INSERT INTO project_progress_updates (
+                project_id, progress_percentage, status, progress_report,
+                completed_milestones, next_milestones, budget_used, issues, updated_by
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+        `, [
+            projectId, progressPercentage, status, progressReport,
+            completedMilestones, nextMilestones, budgetUsed, issues, 'Current User'
+        ]);
+
+        res.status(201).json({
+            success: true,
+            message: 'Progress update saved successfully',
+            updateId: result.insertId
+        });
+
+    } catch (error) {
+        console.error('Error saving progress update:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Failed to save progress update',
+            error: error.message
+        });
+    }
+});
+
+app.get('/api/project-progress-updates', async (req, res) => {
+    try {
+        const db = require('./database/config/database');
+        const { projectId } = req.query;
+
+        let query = `
+            SELECT ppu.*, p.name as project_name 
+            FROM project_progress_updates ppu 
+            LEFT JOIN projects p ON ppu.project_id = p.id
+            ORDER BY ppu.update_date DESC
+        `;
+        let params = [];
+
+        if (projectId) {
+            query += ` WHERE ppu.project_id = ?`;
+            params = [projectId];
+        }
+
+        const [updates] = await db.execute(query, params);
+
+        res.status(200).json({
+            success: true,
+            updates: updates
+        });
+
+    } catch (error) {
+        console.error('Error fetching progress updates:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Failed to fetch progress updates',
+            error: error.message
+        });
+    }
+});
+
 // Database health check
 app.get('/api/db-health', async (req, res) => {
     try {

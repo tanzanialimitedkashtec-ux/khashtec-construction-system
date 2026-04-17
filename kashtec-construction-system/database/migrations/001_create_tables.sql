@@ -1106,3 +1106,97 @@ CREATE TABLE IF NOT EXISTS site_reports (
   INDEX idx_created_by (created_by),
   FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE
 );
+
+-- Task Assignments table
+CREATE TABLE IF NOT EXISTS task_assignments (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  project_id VARCHAR(50) NOT NULL,
+  task_name VARCHAR(255) NOT NULL,
+  assigned_to VARCHAR(255) NOT NULL,
+  task_priority ENUM('urgent', 'high', 'medium', 'low') NOT NULL,
+  start_date DATE NOT NULL,
+  due_date DATE NOT NULL,
+  task_description TEXT NOT NULL,
+  estimated_hours DECIMAL(5,2),
+  required_skills VARCHAR(500),
+  materials_equipment TEXT,
+  status ENUM('assigned', 'in-progress', 'completed', 'on-hold', 'cancelled') DEFAULT 'assigned',
+  completion_percentage DECIMAL(5,2) DEFAULT 0,
+  created_by VARCHAR(255),
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  INDEX idx_project_id (project_id),
+  INDEX idx_assigned_to (assigned_to),
+  INDEX idx_status (status),
+  INDEX idx_due_date (due_date),
+  FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE
+);
+
+-- Workforce Requests table
+CREATE TABLE IF NOT EXISTS workforce_requests (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  project_id VARCHAR(50) NOT NULL,
+  request_type ENUM('additional', 'replacement', 'specialized', 'temporary') NOT NULL,
+  workers_needed INT NOT NULL,
+  duration VARCHAR(100) NOT NULL,
+  job_categories TEXT NOT NULL,
+  justification TEXT NOT NULL,
+  start_date DATE NOT NULL,
+  end_date DATE,
+  special_requirements TEXT,
+  status ENUM('pending', 'approved', 'rejected', 'completed') DEFAULT 'pending',
+  requested_by VARCHAR(255),
+  approved_by VARCHAR(255),
+  approval_date TIMESTAMP NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  INDEX idx_project_id (project_id),
+  INDEX idx_status (status),
+  INDEX idx_requested_by (requested_by),
+  FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE
+);
+
+-- Work Approvals table
+CREATE TABLE IF NOT EXISTS work_approvals (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  work_id VARCHAR(50) NOT NULL,
+  project_id VARCHAR(50) NOT NULL,
+  completed_by VARCHAR(255) NOT NULL,
+  completion_date DATE NOT NULL,
+  quality_assessment ENUM('excellent', 'good', 'acceptable', 'poor') NOT NULL,
+  compliance_check ENUM('fully-compliant', 'minor-issues', 'major-issues', 'non-compliant') NOT NULL,
+  approval_comments TEXT NOT NULL,
+  safety_compliance ENUM('compliant', 'minor-violations', 'major-violations') DEFAULT 'compliant',
+  time_completion ENUM('on-time', 'early', 'delayed') DEFAULT 'on-time',
+  quality_score DECIMAL(5,2),
+  status ENUM('pending', 'approved', 'rejected', 'rework-requested') DEFAULT 'pending',
+  approved_by VARCHAR(255),
+  approval_date TIMESTAMP NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  INDEX idx_work_id (work_id),
+  INDEX idx_project_id (project_id),
+  INDEX idx_completed_by (completed_by),
+  INDEX idx_status (status),
+  FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE
+);
+
+-- Project Progress Updates table
+CREATE TABLE IF NOT EXISTS project_progress_updates (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  project_id VARCHAR(50) NOT NULL,
+  progress_percentage DECIMAL(5,2) NOT NULL,
+  status ENUM('on-track', 'at-risk', 'delayed', 'completed', 'on-hold') NOT NULL,
+  progress_report TEXT,
+  completed_milestones VARCHAR(500),
+  next_milestones VARCHAR(500),
+  budget_used DECIMAL(15,2),
+  issues TEXT,
+  update_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_by VARCHAR(255),
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  INDEX idx_project_id (project_id),
+  INDEX idx_update_date (update_date),
+  INDEX idx_updated_by (updated_by),
+  FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE
+);

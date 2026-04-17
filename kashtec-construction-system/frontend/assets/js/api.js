@@ -363,6 +363,115 @@ class ApiService {
         }
     }
 
+    // ===== PROJECTS METHODS =====
+    async createProject(projectData) {
+        try {
+            const response = await this.post('/projects', projectData);
+            return response;
+        } catch (error) {
+            console.error('Failed to create project:', error);
+            throw error;
+        }
+    }
+
+    async getProjects() {
+        try {
+            const response = await this.get('/projects');
+            return response;
+        } catch (error) {
+            console.error('Failed to fetch projects:', error);
+            throw error;
+        }
+    }
+
+    // ===== TASK ASSIGNMENTS METHODS =====
+    async createTaskAssignment(taskData) {
+        try {
+            const response = await this.post('/task-assignments', taskData);
+            return response;
+        } catch (error) {
+            console.error('Failed to create task assignment:', error);
+            throw error;
+        }
+    }
+
+    async getTaskAssignments(projectId = null) {
+        try {
+            const url = projectId ? `/task-assignments?projectId=${projectId}` : '/task-assignments';
+            const response = await this.get(url);
+            return response;
+        } catch (error) {
+            console.error('Failed to fetch task assignments:', error);
+            throw error;
+        }
+    }
+
+    // ===== WORKFORCE REQUESTS METHODS =====
+    async createWorkforceRequest(requestData) {
+        try {
+            const response = await this.post('/workforce-requests', requestData);
+            return response;
+        } catch (error) {
+            console.error('Failed to create workforce request:', error);
+            throw error;
+        }
+    }
+
+    async getWorkforceRequests(projectId = null) {
+        try {
+            const url = projectId ? `/workforce-requests?projectId=${projectId}` : '/workforce-requests';
+            const response = await this.get(url);
+            return response;
+        } catch (error) {
+            console.error('Failed to fetch workforce requests:', error);
+            throw error;
+        }
+    }
+
+    // ===== WORK APPROVALS METHODS =====
+    async createWorkApproval(approvalData) {
+        try {
+            const response = await this.post('/work-approvals', approvalData);
+            return response;
+        } catch (error) {
+            console.error('Failed to create work approval:', error);
+            throw error;
+        }
+    }
+
+    async getWorkApprovals(projectId = null) {
+        try {
+            const url = projectId ? `/work-approvals?projectId=${projectId}` : '/work-approvals';
+            const response = await this.get(url);
+            return response;
+        } catch (error) {
+            console.error('Failed to fetch work approvals:', error);
+            throw error;
+        }
+    }
+
+    // ===== PROJECT PROGRESS UPDATES METHODS =====
+    async createProjectProgressUpdate(progressData) {
+        try {
+            const response = await this.post('/project-progress-updates', progressData);
+            return response;
+        } catch (error) {
+            console.error('Failed to create progress update:', error);
+            throw error;
+        }
+    }
+
+    async getProjectProgressUpdates(projectId = null) {
+        try {
+            const url = projectId ? `/project-progress-updates?projectId=${projectId}` : '/project-progress-updates';
+            const response = await this.get(url);
+            return response;
+        } catch (error) {
+            console.error('Failed to fetch progress updates:', error);
+            throw error;
+        }
+    }
+
     // ===== SITE REPORTS METHODS =====
     async createSiteReport(reportData) {
         try {
