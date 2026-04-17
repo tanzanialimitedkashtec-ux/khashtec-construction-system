@@ -1085,7 +1085,7 @@ INSERT IGNORE INTO meeting_minutes (
 -- Site Reports table
 CREATE TABLE IF NOT EXISTS site_reports (
   id INT AUTO_INCREMENT PRIMARY KEY,
-  project_id VARCHAR(50) NOT NULL,
+  project_id INT NOT NULL,
   report_date DATE NOT NULL,
   weather_conditions ENUM('Sunny', 'Cloudy', 'Rainy', 'Windy') NOT NULL,
   site_supervisor VARCHAR(255) NOT NULL,
@@ -1110,7 +1110,7 @@ CREATE TABLE IF NOT EXISTS site_reports (
 -- Task Assignments table
 CREATE TABLE IF NOT EXISTS task_assignments (
   id INT AUTO_INCREMENT PRIMARY KEY,
-  project_id VARCHAR(50) NOT NULL,
+  project_id INT NOT NULL,
   task_name VARCHAR(255) NOT NULL,
   assigned_to VARCHAR(255) NOT NULL,
   task_priority ENUM('urgent', 'high', 'medium', 'low') NOT NULL,
@@ -1135,7 +1135,7 @@ CREATE TABLE IF NOT EXISTS task_assignments (
 -- Workforce Requests table
 CREATE TABLE IF NOT EXISTS workforce_requests (
   id INT AUTO_INCREMENT PRIMARY KEY,
-  project_id VARCHAR(50) NOT NULL,
+  project_id INT NOT NULL,
   request_type ENUM('additional', 'replacement', 'specialized', 'temporary') NOT NULL,
   workers_needed INT NOT NULL,
   duration VARCHAR(100) NOT NULL,
@@ -1160,7 +1160,7 @@ CREATE TABLE IF NOT EXISTS workforce_requests (
 CREATE TABLE IF NOT EXISTS work_approvals (
   id INT AUTO_INCREMENT PRIMARY KEY,
   work_id VARCHAR(50) NOT NULL,
-  project_id VARCHAR(50) NOT NULL,
+  project_id INT NOT NULL,
   completed_by VARCHAR(255) NOT NULL,
   completion_date DATE NOT NULL,
   quality_assessment ENUM('excellent', 'good', 'acceptable', 'poor') NOT NULL,
@@ -1184,7 +1184,7 @@ CREATE TABLE IF NOT EXISTS work_approvals (
 -- Project Progress Updates table
 CREATE TABLE IF NOT EXISTS project_progress_updates (
   id INT AUTO_INCREMENT PRIMARY KEY,
-  project_id VARCHAR(50) NOT NULL,
+  project_id INT NOT NULL,
   progress_percentage DECIMAL(5,2) NOT NULL,
   status ENUM('on-track', 'at-risk', 'delayed', 'completed', 'on-hold') NOT NULL,
   progress_report TEXT,
