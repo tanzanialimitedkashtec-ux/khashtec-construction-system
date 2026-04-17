@@ -62,7 +62,7 @@ function submitAccountForm() {
 // Load projects into the select dropdown
 async function loadProjects() {
     try {
-        const response = await ApiService.get('/projects');
+        const response = await window.ApiService.get('/projects');
         const projectSelect = document.getElementById('progressProject');
         
         if (response.projects && response.projects.length > 0) {
@@ -156,7 +156,7 @@ async function saveProjectProgress() {
     };
     
     try {
-        await ApiService.updateProjectProgress(projectId, progressData);
+        await window.ApiService.updateProjectProgress(projectId, progressData);
         
         // Reset form
         document.getElementById('progressForm').reset();
@@ -175,7 +175,7 @@ async function saveProjectProgress() {
 // Load recent progress updates
 async function loadProgressUpdates(projectId) {
     try {
-        const response = await ApiService.getProjectProgressUpdates(projectId);
+        const response = await window.ApiService.getProjectProgressUpdates(projectId);
         const updateList = document.querySelector('.update-list');
         
         if (response.updates && response.updates.length > 0) {
@@ -222,10 +222,10 @@ document.addEventListener('DOMContentLoaded', function() {
 async function loadWorkerAssignments() {
     try {
         // Load assignments
-        const assignments = await ApiService.getWorkerAssignments();
+        const assignments = await window.ApiService.getWorkerAssignments();
         
         // Load stats
-        const stats = await ApiService.getWorkerAssignmentStats();
+        const stats = await window.ApiService.getWorkerAssignmentStats();
         
         // Update stats display
         updateWorkerStats(stats);
@@ -258,7 +258,7 @@ function updateWorkerStats(stats) {
 // Load projects for worker filter dropdown
 async function loadProjectsForWorkerFilter() {
     try {
-        const response = await ApiService.get('/projects');
+        const response = await window.ApiService.get('/projects');
         const projectFilter = document.getElementById('projectFilter');
         
         if (response.projects && response.projects.length > 0) {
@@ -371,7 +371,7 @@ function filterAssignedWorkers() {
     const projectFilter = document.getElementById('projectFilter').value;
     
     // Get all assignments and filter them
-    ApiService.getWorkerAssignments().then(assignments => {
+    window.ApiService.getWorkerAssignments().then(assignments => {
         let filteredAssignments = assignments;
         
         // Filter by search term
