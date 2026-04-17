@@ -1275,6 +1275,116 @@ app.get('/api/attendance', async (req, res) => {
     }
 });
 
+// Policy Management API endpoints
+app.post('/api/policies/:policyId/approve', async (req, res) => {
+    try {
+        const db = require('./database/config/database');
+        const { policyId } = req.params;
+        const { approvedBy, comments } = req.body;
+
+        // Update policy status to approved
+        const [result] = await db.execute(`
+            UPDATE company_policies 
+            SET status = 'approved', approved_by = ?, approved_date = NOW(), 
+                approval_comments = ?
+            WHERE policy_id = ?
+        `, [approvedBy, comments, policyId]);
+
+        if (result.affectedRows === 0) {
+            return res.status(404).json({
+                success: false,
+                message: 'Policy not found'
+            });
+        }
+
+        res.status(200).json({
+            success: true,
+            message: 'Policy approved successfully'
+        });
+
+    } catch (error) {
+        console.error('Error approving policy:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Failed to approve policy',
+            error: error.message
+        });
+    }
+});
+
+app.post('/api/policies/:policyId/reject', async (req, res) => {
+    try {
+        const db = require('./database/config/database');
+        const { policyId } = req.params;
+        const { rejectedBy, rejectionReason, details } = req.body;
+
+        // Update policy status to rejected
+        const [result] = await db.execute(`
+            UPDATE company_policies 
+            SET status = 'rejected', rejected_by = ?, rejected_date = NOW(), 
+                rejection_reason = ?, rejection_details = ?
+            WHERE policy_id = ?
+        `, [rejectedBy, rejectionReason, details, policyId]);
+
+        if (result.affectedRows === 0) {
+            return res.status(404).json({
+                success: false,
+                message: 'Policy not found'
+            });
+        }
+
+        res.status(200).json({
+            success: true,
+            message: 'Policy rejected successfully'
+        });
+
+    } catch (error) {
+        console.error('Error rejecting policy:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Failed to reject policy',
+            error: error.message
+        });
+    }
+});
+
+app.post('/api/policies/:policyId/revision', async (req, res) => {
+    try {
+        const db = require('./database/config/database');
+        const { policyId } = req.params;
+        const { requestedBy, revisionRequest, deadline } = req.body;
+
+        // Update policy status to revision requested
+        const [result] = await db.execute(`
+            UPDATE company_policies 
+            SET status = 'revision_requested', revision_requested_by = ?, 
+                revision_request = ?, revision_deadline = ?, 
+                revision_requested_date = NOW()
+            WHERE policy_id = ?
+        `, [requestedBy, revisionRequest, deadline, policyId]);
+
+        if (result.affectedRows === 0) {
+            return res.status(404).json({
+                success: false,
+                message: 'Policy not found'
+            });
+        }
+
+        res.status(200).json({
+            success: true,
+            message: 'Policy revision requested successfully'
+        });
+
+    } catch (error) {
+        console.error('Error requesting policy revision:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Failed to request policy revision',
+            error: error.message
+        });
+    }
+});
+
 // Database health check
 app.get('/api/db-health', async (req, res) => {
     try {
