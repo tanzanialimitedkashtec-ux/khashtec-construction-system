@@ -976,6 +976,111 @@ app.get('/api/project-progress-updates', async (req, res) => {
     }
 });
 
+// Meeting Minutes API endpoints
+app.post('/api/meeting-minutes', async (req, res) => {
+    try {
+        const db = require('./database/config/database');
+        const {
+            meeting_title,
+            meeting_type,
+            meeting_date,
+            meeting_time,
+            attendees,
+            meeting_agenda,
+            meeting_notes,
+            action_items,
+            next_meeting_date,
+            next_meeting_time,
+            recorded_by
+        } = req.body;
+
+        // Validate required fields
+        if (!meeting_title || !meeting_type || !meeting_date || !meeting_time || !attendees) {
+            return res.status(400).json({
+                success: false,
+                message: 'Missing required fields'
+            });
+        }
+
+        // Generate meeting minutes ID
+        const minutesId = 'MIN' + Date.now();
+
+        // Insert meeting minutes
+        const [result] = await db.execute(`
+            INSERT INTO meeting_minutes (
+                id, meeting_title, meeting_type, meeting_date, meeting_time,
+                attendees, meeting_agenda, meeting_notes, action_items,
+                next_meeting_date, next_meeting_time, recorded_by
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        `, [
+            minutesId, meeting_title, meeting_type, meeting_date, meeting_time,
+            attendees, meeting_agenda, meeting_notes, action_items,
+            next_meeting_date, next_meeting_time, recorded_by
+        ]);
+
+        res.status(201).json({
+            success: true,
+            message: 'Meeting minutes saved successfully',
+            minutesId: minutesId
+        });
+
+    } catch (error) {
+        console.error('Error saving meeting minutes:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Failed to save meeting minutes',
+            error: error.message
+        });
+    }
+});
+
+app.get('/api/meeting-minutes', async (req, res) => {
+    try {
+        const db = require('./database/config/database');
+        const [minutes] = await db.execute(`
+            SELECT * FROM meeting_minutes 
+            ORDER BY meeting_date DESC, meeting_time DESC
+        `);
+
+        res.status(200).json({
+            success: true,
+            minutes: minutes
+        });
+
+    } catch (error) {
+        console.error('Error fetching meeting minutes:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Failed to fetch meeting minutes',
+            error: error.message
+        });
+    }
+});
+
+// Admin Work Documents API endpoints
+app.get('/api/admin-work', async (req, res) => {
+    try {
+        const db = require('./database/config/database');
+        const [documents] = await db.execute(`
+            SELECT * FROM admin_work 
+            ORDER BY created_at DESC
+        `);
+
+        res.status(200).json({
+            success: true,
+            documents: documents
+        });
+
+    } catch (error) {
+        console.error('Error fetching admin work documents:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Failed to fetch admin work documents',
+            error: error.message
+        });
+    }
+});
+
 // Database health check
 app.get('/api/db-health', async (req, res) => {
     try {
