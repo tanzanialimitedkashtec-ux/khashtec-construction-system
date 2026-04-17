@@ -175,6 +175,16 @@ async function saveProjectProgress() {
 // Load recent progress updates
 async function loadProgressUpdates(projectId) {
     try {
+        // Check if ApiService is available
+        if (!window.ApiService || !window.ApiService.getProjectProgressUpdates) {
+            console.error('ApiService or getProjectProgressUpdates method not available');
+            const updateList = document.querySelector('.update-list');
+            if (updateList) {
+                updateList.innerHTML = '<div class="update-item">ApiService not loaded</div>';
+            }
+            return;
+        }
+        
         const response = await window.ApiService.getProjectProgressUpdates(projectId);
         const updateList = document.querySelector('.update-list');
         

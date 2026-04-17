@@ -11966,7 +11966,7 @@ function saveNewProject() {
     
     // Send data to backend API
     const baseUrl = window.location.origin;
-    fetch(`${baseUrl}/api/project/work`, {
+    fetch(`${baseUrl}/api/projects`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
