@@ -1394,6 +1394,226 @@ app.post('/api/policies/:policyId/revision', async (req, res) => {
     }
 });
 
+// Senior Hiring Management API endpoints
+app.post('/api/senior-hiring/:requestId/approve', async (req, res) => {
+    try {
+        const db = require('./database/config/database');
+        const { requestId } = req.params;
+        const { approvedBy, comments } = req.body;
+
+        // Update senior hiring request status to approved
+        const [result] = await db.execute(`
+            UPDATE senior_hiring_requests 
+            SET status = 'approved', approved_by = ?, approved_date = NOW(), 
+                approval_comments = ?
+            WHERE request_id = ?
+        `, [approvedBy, comments, requestId]);
+
+        if (result.affectedRows === 0) {
+            return res.status(404).json({
+                success: false,
+                message: 'Senior hiring request not found'
+            });
+        }
+
+        res.status(200).json({
+            success: true,
+            message: 'Senior hiring request approved successfully'
+        });
+
+    } catch (error) {
+        console.error('Error approving senior hiring request:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Failed to approve senior hiring request',
+            error: error.message
+        });
+    }
+});
+
+app.post('/api/senior-hiring/:requestId/reject', async (req, res) => {
+    try {
+        const db = require('./database/config/database');
+        const { requestId } = req.params;
+        const { rejectedBy, rejectionReason, details } = req.body;
+
+        // Update senior hiring request status to rejected
+        const [result] = await db.execute(`
+            UPDATE senior_hiring_requests 
+            SET status = 'rejected', rejected_by = ?, rejected_date = NOW(), 
+                rejection_reason = ?, rejection_details = ?
+            WHERE request_id = ?
+        `, [rejectedBy, rejectionReason, details, requestId]);
+
+        if (result.affectedRows === 0) {
+            return res.status(404).json({
+                success: false,
+                message: 'Senior hiring request not found'
+            });
+        }
+
+        res.status(200).json({
+            success: true,
+            message: 'Senior hiring request rejected successfully'
+        });
+
+    } catch (error) {
+        console.error('Error rejecting senior hiring request:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Failed to reject senior hiring request',
+            error: error.message
+        });
+    }
+});
+
+app.post('/api/senior-hiring/:requestId/request-info', async (req, res) => {
+    try {
+        const db = require('./database/config/database');
+        const { requestId } = req.params;
+        const { requestedBy, infoRequest, deadline } = req.body;
+
+        // Update senior hiring request status to info requested
+        const [result] = await db.execute(`
+            UPDATE senior_hiring_requests 
+            SET status = 'info_requested', info_requested_by = ?, 
+                info_request = ?, info_deadline = ?, 
+                info_requested_date = NOW()
+            WHERE request_id = ?
+        `, [requestedBy, infoRequest, deadline, requestId]);
+
+        if (result.affectedRows === 0) {
+            return res.status(404).json({
+                success: false,
+                message: 'Senior hiring request not found'
+            });
+        }
+
+        res.status(200).json({
+            success: true,
+            message: 'Information requested successfully for senior hiring'
+        });
+
+    } catch (error) {
+        console.error('Error requesting info for senior hiring:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Failed to request information for senior hiring',
+            error: error.message
+        });
+    }
+});
+
+// Workforce Budget Management API endpoints
+app.post('/api/workforce-budget/:budgetId/approve', async (req, res) => {
+    try {
+        const db = require('./database/config/database');
+        const { budgetId } = req.params;
+        const { approvedBy, comments } = req.body;
+
+        // Update workforce budget status to approved
+        const [result] = await db.execute(`
+            UPDATE workforce_budgets 
+            SET status = 'approved', approved_by = ?, approved_date = NOW(), 
+                approval_comments = ?
+            WHERE id = ?
+        `, [approvedBy, comments, budgetId]);
+
+        if (result.affectedRows === 0) {
+            return res.status(404).json({
+                success: false,
+                message: 'Workforce budget not found'
+            });
+        }
+
+        res.status(200).json({
+            success: true,
+            message: 'Workforce budget approved successfully'
+        });
+
+    } catch (error) {
+        console.error('Error approving workforce budget:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Failed to approve workforce budget',
+            error: error.message
+        });
+    }
+});
+
+app.post('/api/workforce-budget/:budgetId/reject', async (req, res) => {
+    try {
+        const db = require('./database/config/database');
+        const { budgetId } = req.params;
+        const { rejectedBy, rejectionReason } = req.body;
+
+        // Update workforce budget status to rejected
+        const [result] = await db.execute(`
+            UPDATE workforce_budgets 
+            SET status = 'rejected', rejected_by = ?, rejected_date = NOW(), 
+                rejection_reason = ?
+            WHERE id = ?
+        `, [rejectedBy, rejectionReason, budgetId]);
+
+        if (result.affectedRows === 0) {
+            return res.status(404).json({
+                success: false,
+                message: 'Workforce budget not found'
+            });
+        }
+
+        res.status(200).json({
+            success: true,
+            message: 'Workforce budget rejected successfully'
+        });
+
+    } catch (error) {
+        console.error('Error rejecting workforce budget:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Failed to reject workforce budget',
+            error: error.message
+        });
+    }
+});
+
+app.post('/api/workforce-budget/:budgetId/modify', async (req, res) => {
+    try {
+        const db = require('./database/config/database');
+        const { budgetId } = req.params;
+        const { requestedBy, modificationRequest, deadline } = req.body;
+
+        // Update workforce budget status to modification requested
+        const [result] = await db.execute(`
+            UPDATE workforce_budgets 
+            SET status = 'modification_requested', modification_requested_by = ?, 
+                modification_request = ?, modification_deadline = ?, 
+                modification_requested_date = NOW()
+            WHERE id = ?
+        `, [requestedBy, modificationRequest, deadline, budgetId]);
+
+        if (result.affectedRows === 0) {
+            return res.status(404).json({
+                success: false,
+                message: 'Workforce budget not found'
+            });
+        }
+
+        res.status(200).json({
+            success: true,
+            message: 'Workforce budget modification requested successfully'
+        });
+
+    } catch (error) {
+        console.error('Error requesting modification for workforce budget:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Failed to request modification for workforce budget',
+            error: error.message
+        });
+    }
+});
+
 // Database health check
 app.get('/api/db-health', async (req, res) => {
     try {
