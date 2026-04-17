@@ -622,6 +622,103 @@ app.get('/api/projects', async (req, res) => {
     }
 });
 
+// Worker Assignments API endpoints
+app.post('/api/work/assignments', async (req, res) => {
+    try {
+        const db = require('./database/config/database');
+        const {
+            employeeId,
+            employeeName,
+            projectId,
+            projectName,
+            roleInProject,
+            startDate,
+            endDate,
+            assignmentNotes
+        } = req.body;
+
+        // Validate required fields
+        if (!employeeId || !employeeName || !projectId || !projectName || !roleInProject || !startDate) {
+            return res.status(400).json({
+                success: false,
+                message: 'Missing required fields'
+            });
+        }
+
+        // Insert worker assignment
+        const [result] = await db.execute(`
+            INSERT INTO worker_assignments (
+                employee_id, 
+                employee_name, 
+                project_id, 
+                project_name, 
+                role_in_project, 
+                start_date, 
+                end_date, 
+                assignment_notes, 
+                created_at
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, NOW())
+        `, [
+            employeeId, employeeName, projectId, projectName, roleInProject,
+            startDate, endDate, assignmentNotes
+        ]);
+
+        res.status(201).json({
+            success: true,
+            message: 'Worker assignment created successfully',
+            assignmentId: result.insertId
+        });
+
+    } catch (error) {
+        console.error('Error creating worker assignment:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Failed to create worker assignment',
+            error: error.message
+        });
+    }
+});
+
+app.get('/api/work/assignments', async (req, res) => {
+    try {
+        const db = require('./database/config/database');
+        const { projectId, employeeId } = req.query;
+
+        let query = `
+            SELECT * FROM worker_assignments 
+            WHERE 1=1
+        `;
+        let params = [];
+
+        if (projectId) {
+            query += ` AND project_id = ?`;
+            params.push(projectId);
+        }
+
+        if (employeeId) {
+            query += ` AND employee_id = ?`;
+            params.push(employeeId);
+        }
+
+        query += ` ORDER BY created_at DESC`;
+
+        const [assignments] = await db.execute(query, params);
+
+        res.status(200).json({
+            success: true,
+            assignments: assignments
+        });
+
+    } catch (error) {
+        console.error('Error fetching worker assignments:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Failed to fetch worker assignments',
+            error: error.message
+        });
+    }
+});
+
 // Task Assignments API endpoints
 app.post('/api/task-assignments', async (req, res) => {
     try {
@@ -1076,6 +1173,103 @@ app.get('/api/admin-work', async (req, res) => {
         res.status(500).json({
             success: false,
             message: 'Failed to fetch admin work documents',
+            error: error.message
+        });
+    }
+});
+
+// Attendance API endpoints
+app.post('/api/attendance', async (req, res) => {
+    try {
+        const db = require('./database/config/database');
+        const {
+            employeeId,
+            attendanceDate,
+            checkInTime,
+            checkOutTime,
+            workHours,
+            overtimeHours,
+            attendanceStatus,
+            notes
+        } = req.body;
+
+        // Validate required fields
+        if (!employeeId || !attendanceDate || !attendanceStatus) {
+            return res.status(400).json({
+                success: false,
+                message: 'Missing required fields'
+            });
+        }
+
+        // Insert attendance record
+        const [result] = await db.execute(`
+            INSERT INTO attendance_records (
+                employee_id, attendance_date, check_in_time, check_out_time,
+                work_hours, overtime_hours, attendance_status, notes, created_at
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, NOW())
+        `, [
+            employeeId, attendanceDate, checkInTime, checkOutTime,
+            workHours, overtimeHours, attendanceStatus, notes
+        ]);
+
+        res.status(201).json({
+            success: true,
+            message: 'Attendance recorded successfully',
+            attendanceId: result.insertId
+        });
+
+    } catch (error) {
+        console.error('Error recording attendance:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Failed to record attendance',
+            error: error.message
+        });
+    }
+});
+
+app.get('/api/attendance', async (req, res) => {
+    try {
+        const db = require('./database/config/database');
+        const { employeeId, dateFrom, dateTo } = req.query;
+
+        let query = `
+            SELECT ar.*, e.full_name as employee_name, e.department 
+            FROM attendance_records ar 
+            LEFT JOIN employees e ON ar.employee_id = e.employee_id
+            WHERE 1=1
+        `;
+        let params = [];
+
+        if (employeeId) {
+            query += ` AND ar.employee_id = ?`;
+            params.push(employeeId);
+        }
+
+        if (dateFrom) {
+            query += ` AND ar.attendance_date >= ?`;
+            params.push(dateFrom);
+        }
+
+        if (dateTo) {
+            query += ` AND ar.attendance_date <= ?`;
+            params.push(dateTo);
+        }
+
+        query += ` ORDER BY ar.attendance_date DESC`;
+
+        const [attendance] = await db.execute(query, params);
+
+        res.status(200).json({
+            success: true,
+            attendance: attendance
+        });
+
+    } catch (error) {
+        console.error('Error fetching attendance:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Failed to fetch attendance',
             error: error.message
         });
     }
