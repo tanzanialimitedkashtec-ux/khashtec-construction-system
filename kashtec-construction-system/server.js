@@ -408,6 +408,131 @@ app.post('/api/test', (req, res) => {
     });
 });
 
+// Site Reports API endpoints
+app.post('/api/site-reports', async (req, res) => {
+    try {
+        const db = require('./database/config/database');
+        const {
+            projectId,
+            reportDate,
+            weatherConditions,
+            siteSupervisor,
+            workersPresent,
+            workCompleted,
+            siteIssues,
+            safetyIncidents,
+            materialsUsed,
+            equipmentUsed,
+            nextDayPlan
+        } = req.body;
+
+        // Validate required fields
+        if (!projectId || !reportDate || !weatherConditions || !siteSupervisor || 
+            !workersPresent || !workCompleted || !nextDayPlan) {
+            return res.status(400).json({
+                success: false,
+                message: 'Missing required fields'
+            });
+        }
+
+        // Insert site report
+        const [result] = await db.execute(`
+            INSERT INTO site_reports (
+                project_id, report_date, weather_conditions, site_supervisor,
+                workers_present, work_completed, site_issues, safety_incidents,
+                materials_used, equipment_used, next_day_plan, status, created_by
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'Submitted', ?)
+        `, [
+            projectId, reportDate, weatherConditions, siteSupervisor,
+            workersPresent, workCompleted, siteIssues, safetyIncidents,
+            materialsUsed, equipmentUsed, nextDayPlan, siteSupervisor
+        ]);
+
+        res.status(201).json({
+            success: true,
+            message: 'Site report submitted successfully',
+            reportId: result.insertId
+        });
+
+    } catch (error) {
+        console.error('Error submitting site report:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Failed to submit site report',
+            error: error.message
+        });
+    }
+});
+
+app.get('/api/site-reports', async (req, res) => {
+    try {
+        const db = require('./database/config/database');
+        const { projectId } = req.query;
+
+        let query = `
+            SELECT sr.*, p.name as project_name 
+            FROM site_reports sr 
+            LEFT JOIN projects p ON sr.project_id = p.id
+            ORDER BY sr.report_date DESC
+        `;
+        let params = [];
+
+        if (projectId) {
+            query += ` WHERE sr.project_id = ?`;
+            params = [projectId];
+        }
+
+        const [reports] = await db.execute(query, params);
+
+        res.status(200).json({
+            success: true,
+            reports: reports
+        });
+
+    } catch (error) {
+        console.error('Error fetching site reports:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Failed to fetch site reports',
+            error: error.message
+        });
+    }
+});
+
+app.get('/api/site-reports/:id', async (req, res) => {
+    try {
+        const db = require('./database/config/database');
+        const reportId = req.params.id;
+
+        const [reports] = await db.execute(`
+            SELECT sr.*, p.name as project_name 
+            FROM site_reports sr 
+            LEFT JOIN projects p ON sr.project_id = p.id
+            WHERE sr.id = ?
+        `, [reportId]);
+
+        if (reports.length === 0) {
+            return res.status(404).json({
+                success: false,
+                message: 'Site report not found'
+            });
+        }
+
+        res.status(200).json({
+            success: true,
+            report: reports[0]
+        });
+
+    } catch (error) {
+        console.error('Error fetching site report:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Failed to fetch site report',
+            error: error.message
+        });
+    }
+});
+
 // Database health check
 app.get('/api/db-health', async (req, res) => {
     try {

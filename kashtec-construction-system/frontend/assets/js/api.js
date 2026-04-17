@@ -363,6 +363,38 @@ class ApiService {
         }
     }
 
+    // ===== SITE REPORTS METHODS =====
+    async createSiteReport(reportData) {
+        try {
+            const response = await this.post('/site-reports', reportData);
+            return response;
+        } catch (error) {
+            console.error('Failed to create site report:', error);
+            throw error;
+        }
+    }
+
+    async getSiteReports(projectId = null) {
+        try {
+            const url = projectId ? `/site-reports?projectId=${projectId}` : '/site-reports';
+            const response = await this.get(url);
+            return response;
+        } catch (error) {
+            console.error('Failed to fetch site reports:', error);
+            throw error;
+        }
+    }
+
+    async getSiteReport(reportId) {
+        try {
+            const response = await this.get(`/site-reports/${reportId}`);
+            return response;
+        } catch (error) {
+            console.error('Failed to fetch site report:', error);
+            throw error;
+        }
+    }
+
     // ===== UTILITY METHODS =====
     getCurrentUser() {
         return this.currentUser;

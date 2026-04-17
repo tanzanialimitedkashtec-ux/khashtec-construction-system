@@ -2407,15 +2407,7 @@ document.addEventListener('DOMContentLoaded', function() {
     
     if (currentUser) {
         showCustomerPortal();
-    } else {
-        // Check if we should show login or account section
-        updateNavigation("register");
-        
-        // Pre-fill email if remembered
-        if (rememberEmail) {
-            document.getElementById("loginEmail").value = rememberEmail;
-            document.getElementById("rememberMe").checked = true;
-        }
+        document.getElementById("rememberMe").checked = true;
     }
 });
 

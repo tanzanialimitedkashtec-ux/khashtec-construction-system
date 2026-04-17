@@ -1081,3 +1081,28 @@ INSERT IGNORE INTO meeting_minutes (
   'Schedule follow-up meeting for budget review next week. Update project documentation.',
   DATE_ADD(CURDATE(), INTERVAL 7 DAY),
   'Draft', 'Admin Assistant', NULL, NULL);
+
+-- Site Reports table
+CREATE TABLE IF NOT EXISTS site_reports (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  project_id VARCHAR(50) NOT NULL,
+  report_date DATE NOT NULL,
+  weather_conditions ENUM('Sunny', 'Cloudy', 'Rainy', 'Windy') NOT NULL,
+  site_supervisor VARCHAR(255) NOT NULL,
+  workers_present INT NOT NULL,
+  work_completed TEXT NOT NULL,
+  site_issues TEXT,
+  safety_incidents TEXT,
+  materials_used VARCHAR(500),
+  equipment_used VARCHAR(500),
+  next_day_plan TEXT NOT NULL,
+  photos_files TEXT,
+  status ENUM('Draft', 'Submitted', 'Reviewed', 'Approved') DEFAULT 'Draft',
+  created_by VARCHAR(255),
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  INDEX idx_project_date (project_id, report_date),
+  INDEX idx_status (status),
+  INDEX idx_created_by (created_by),
+  FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE
+);
