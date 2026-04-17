@@ -41,7 +41,7 @@ class AuthController {
             // Generate JWT token
             const token = jwt.sign(
                 { id: user.username, role: user.role },
-                process.env.JWT_SECRET || 'fallback-secret-key',
+                process.env.JWT_SECRET || 'kashtec-secret-key-2024',
                 { expiresIn: '24h' }
             );
             
@@ -73,7 +73,7 @@ class AuthController {
         const token = authHeader.split(' ')[1];
         
         try {
-            const decoded = jwt.verify(token, process.env.JWT_SECRET || 'fallback-secret-key');
+            const decoded = jwt.verify(token, process.env.JWT_SECRET || 'kashtec-secret-key-2024');
             req.user = decoded;
             next();
         } catch (error) {

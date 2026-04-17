@@ -250,7 +250,7 @@ router.post('/login', async (req, res) => {
                     department_name: authUser.department_name,
                     manager_name: authUser.manager_name
                 },
-                process.env.JWT_SECRET || 'fallback-secret-key',
+                process.env.JWT_SECRET || 'kashtec-secret-key-2024',
                 { expiresIn: process.env.JWT_EXPIRE || '7d' }
             );
             
@@ -360,7 +360,7 @@ router.post('/register', async (req, res) => {
                 email: newUser.email, 
                 role: newUser.role 
             },
-            process.env.JWT_SECRET || 'fallback-secret-key',
+            process.env.JWT_SECRET || 'kashtec-secret-key-2024',
             { expiresIn: process.env.JWT_EXPIRE || '7d' }
         );
 
@@ -394,7 +394,7 @@ router.get('/verify', (req, res) => {
     }
 
     try {
-        const decoded = jwt.verify(token, process.env.JWT_SECRET || 'fallback-secret-key');
+        const decoded = jwt.verify(token, process.env.JWT_SECRET || 'kashtec-secret-key-2024');
         
         const user = users.find(u => u.id === decoded.userId);
         

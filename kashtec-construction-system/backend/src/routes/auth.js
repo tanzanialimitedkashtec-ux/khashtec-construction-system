@@ -93,7 +93,7 @@ router.post('/login', async (req, res) => {
       // Generate JWT token
       const token = jwt.sign(
         { userId: result.user.id, email: result.user.email },
-        process.env.JWT_SECRET || 'fallback_secret',
+        process.env.JWT_SECRET || 'kashtec-secret-key-2024',
         { expiresIn: process.env.JWT_EXPIRES_IN || '7d' }
       );
 

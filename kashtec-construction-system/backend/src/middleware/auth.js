@@ -12,7 +12,7 @@ const authenticateToken = (req, res, next) => {
     });
   }
 
-  jwt.verify(token, process.env.JWT_SECRET || 'fallback_secret', (err, user) => {
+  jwt.verify(token, process.env.JWT_SECRET || 'kashtec-secret-key-2024', (err, user) => {
     if (err) {
       return res.status(403).json({
         success: false,
