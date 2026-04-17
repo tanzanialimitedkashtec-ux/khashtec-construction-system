@@ -15,7 +15,7 @@ CREATE TABLE IF NOT EXISTS users (
   password VARCHAR(255) NOT NULL,
   role ENUM('Customer', 'Managing Director', 'HR Manager', 'Finance Manager', 'Project Manager', 'Real Estate Manager', 'HSE Manager', 'Office Assistant', 'Worker') DEFAULT 'Customer',
   department ENUM('Management', 'Human Resources', 'Finance', 'Project Management', 'Real Estate', 'Health & Safety', 'Administrative', 'Workers', 'Clients') DEFAULT 'Clients',
-  registration_date DATE DEFAULT CURRENT_DATE,
+  registration_date DATE DEFAULT CURRENT_TIMESTAMP,
   status ENUM('Active', 'Inactive', 'Suspended') DEFAULT 'Active',
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
@@ -310,13 +310,13 @@ CREATE TABLE IF NOT EXISTS ppe_inventory (
   ppe_type ENUM('Helmet', 'Gloves', 'Boots', 'Vest', 'Goggles', 'Mask', 'Harness', 'Ear Plugs', 'Other') NOT NULL,
   quantity INT DEFAULT 0,
   min_quantity INT DEFAULT 5,
-  condition ENUM('New', 'Good', 'Worn', 'Damaged') DEFAULT 'Good',
+  item_condition ENUM('New', 'Good', 'Worn', 'Damaged') DEFAULT 'Good',
   last_inspected DATE,
   storage_location VARCHAR(255),
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   INDEX idx_type (ppe_type),
-  INDEX idx_condition (condition),
+  INDEX idx_condition (item_condition),
   INDEX idx_quantity (quantity)
 );
 

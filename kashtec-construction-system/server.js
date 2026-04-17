@@ -772,7 +772,7 @@ async function runMigrations() {
         // Verify key tables exist
         try {
             const [tables] = await db.execute('SHOW TABLES');
-            const tableNames = tables.map(table => Object.values(table)[0]);
+            const tableNames = Array.isArray(tables) ? tables.map(table => Object.values(table)[0]) : [];
             
             console.log(`\nDatabase contains ${tableNames.length} tables:`);
             tableNames.sort().forEach(table => console.log(`  - ${table}`));
