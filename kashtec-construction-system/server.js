@@ -632,55 +632,180 @@ if (!SERVER_PORT) {
     process.exit(1);
 }
 
-// Auto-run migrations on startup for Railway
+// Auto-run database migrations on startup with state machine parser
 async function runMigrations() {
     try {
-        console.log('🔄 Running database migrations...');
-        const fs = require('fs');
+        console.log('=== AUTOMATIC DATABASE MIGRATION ===');
+        console.log('Running migrations on server startup...');
+        console.log('DEBUG: Migration function called successfully');
+        
+        const fs = require('fs').promises;
         const path = require('path');
         
-        // Read and execute migration file directly
-        const migrationPath = path.join(__dirname, 'database/migrations/001_create_tables.sql');
-        const migrationSQL = fs.readFileSync(migrationPath, 'utf8');
+        // Read the migration file
+        const migrationPath = path.resolve(__dirname, 'database/migrations/001_create_tables.sql');
+        console.log('Migration file path:', migrationPath);
+        
+        const migrationSQL = await fs.readFile(migrationPath, 'utf8');
+        console.log('Migration SQL loaded, length:', migrationSQL.length);
+        
+        // Character-by-character SQL parsing with state machine
+        console.log('=== STATE MACHINE SQL PARSING ===');
+        console.log(`SQL file length: ${migrationSQL.length}`);
+        
+        function splitSqlStatements(sql) {
+            const statements = [];
+            let current = '';
+            let inSingleQuote = false;
+            let inDoubleQuote = false;
+            let inBacktick = false;
+            let inLineComment = false;
+            let inBlockComment = false;
+            let parenLevel = 0;
+            
+            for (let i = 0; i < sql.length; i++) {
+                const char = sql[i];
+                const prevChar = i > 0 ? sql[i - 1] : '';
+                
+                // Handle block comments /* */
+                if (!inLineComment && !inSingleQuote && !inDoubleQuote && !inBacktick && char === '/' && i + 1 < sql.length && sql[i + 1] === '*') {
+                    inBlockComment = true;
+                }
+                if (inBlockComment && !inSingleQuote && !inDoubleQuote && !inBacktick && char === '*' && i + 1 < sql.length && sql[i + 1] === '/') {
+                    inBlockComment = false;
+                }
+                
+                // Handle line comments --
+                if (!inBlockComment && !inSingleQuote && !inDoubleQuote && !inBacktick && char === '-' && i + 1 < sql.length && sql[i + 1] === '-') {
+                    inLineComment = true;
+                }
+                if (inLineComment && (char === '\n' || char === '\r')) {
+                    inLineComment = false;
+                }
+                
+                // Handle string literals and identifiers
+                if (!inBlockComment && !inLineComment) {
+                    if (char === "'" && !inDoubleQuote && !inBacktick && (i === 0 || prevChar !== '\\')) {
+                        inSingleQuote = !inSingleQuote;
+                    } else if (char === '"' && !inSingleQuote && !inBacktick && (i === 0 || prevChar !== '\\')) {
+                        inDoubleQuote = !inDoubleQuote;
+                    } else if (char === '`' && !inSingleQuote && !inDoubleQuote && (i === 0 || prevChar !== '\\')) {
+                        inBacktick = !inBacktick;
+                    } else if (char === '(' && !inSingleQuote && !inDoubleQuote && !inBacktick) {
+                        parenLevel++;
+                    } else if (char === ')' && !inSingleQuote && !inDoubleQuote && !inBacktick) {
+                        parenLevel--;
+                    }
+                }
+                
+                // Split on semicolon when not in any special context
+                if (char === ';' && !inSingleQuote && !inDoubleQuote && !inBacktick && !inLineComment && !inBlockComment && parenLevel === 0) {
+                    const statement = current.trim();
+                    if (statement && !statement.startsWith('--') && statement.length > 0) {
+                        statements.push(statement);
+                        if (statements.length <= 10) {
+                            console.log(`Statement ${statements.length}: ${statement.substring(0, 100)}...`);
+                        }
+                    }
+                    current = '';
+                } else if (!inLineComment && !inBlockComment) {
+                    current += char;
+                }
+            }
+            
+            // Add final statement if exists
+            const finalStatement = current.trim();
+            if (finalStatement && !finalStatement.startsWith('--') && finalStatement.length > 0) {
+                statements.push(finalStatement);
+            }
+            
+            return statements;
+        }
+        
+        const statements = splitSqlStatements(migrationSQL);
+        console.log(`=== STATE MACHINE: Found ${statements.length} statements ===`);
+        
+        // Warning if too few CREATE TABLE statements found
+        const createTableCount = statements.filter(stmt => stmt.match(/^CREATE\s+TABLE/i)).length;
+        if (createTableCount < 35) {
+            console.warn(`WARNING: Only ${createTableCount} CREATE TABLE statements found! Expected 40+`);
+        }
+        
+        // Log first few statements for debugging
+        console.log('First 10 statements:');
+        for (let i = 0; i < Math.min(10, statements.length); i++) {
+            console.log(`${i + 1}: ${statements[i].substring(0, 150)}...`);
+        }
+        
+        console.log(`=== MIGRATION EXECUTION ===`);
         
         const db = require('./database/config/database');
-        
-        // Split SQL file into individual statements
-        const statements = migrationSQL
-            .split(';')
-            .map(stmt => stmt.trim())
-            .filter(stmt => stmt.length > 0 && !stmt.startsWith('--'));
-        
         let successCount = 0;
-        let errorCount = 0;
+        let skippedCount = 0;
         
-        // Execute each statement with reduced logging
-        for (const statement of statements) {
-            if (statement.trim()) {
-                try {
-                    await db.execute(statement);
-                    successCount++;
-                } catch (error) {
-                    // Ignore errors for IF NOT EXISTS statements (table already exists)
-                    if (!error.message.includes('already exists') && !error.message.includes('Duplicate entry')) {
-                        errorCount++;
-                        // Only log first few errors to avoid spam
-                        if (errorCount <= 3) {
-                            console.error('❌ Migration statement failed:', error.message);
-                        }
-                    } else {
-                        successCount++;
-                    }
+        // Execute statements
+        for (let i = 0; i < statements.length; i++) {
+            const statement = statements[i].trim();
+            if (!statement) continue;
+            
+            try {
+                await db.execute(statement);
+                console.log(`Migration ${i + 1}/${statements.length}: SUCCESS`);
+                successCount++;
+            } catch (error) {
+                if (error.message.includes('already exists') || 
+                    error.message.includes('Duplicate entry') ||
+                    error.message.includes('This command is not supported in the prepared statement protocol yet')) {
+                    console.log(`Migration ${i + 1}: SKIPPED (${error.message})`);
+                    skippedCount++;
+                } else {
+                    console.error(`Migration ${i + 1}: ERROR - ${error.message}`);
                 }
             }
         }
         
-        console.log(`✅ Database migrations completed: ${successCount} successful, ${errorCount} errors`);
+        console.log('\n=== MIGRATION SUMMARY ===');
+        console.log(`Successfully executed: ${successCount}`);
+        console.log(`Skipped (existing): ${skippedCount}`);
+        console.log(`Total statements: ${statements.length}`);
+        
+        // Verify key tables exist
+        try {
+            const [tables] = await db.execute('SHOW TABLES');
+            const tableNames = tables.map(table => Object.values(table)[0]);
+            
+            console.log(`\nDatabase contains ${tableNames.length} tables:`);
+            tableNames.sort().forEach(table => console.log(`  - ${table}`));
+            
+            // Check for critical tables
+            const criticalTables = [
+                'users', 'projects', 'documents', 'contracts', 'employees', 'employee_details',
+                'hr_work', 'clients', 'properties', 'workforce_budgets', 'authentication',
+                'policies', 'notifications', 'file_uploads', 'financial_transactions',
+                'hse_incidents', 'ppe_issuance', 'schedule_meetings', 'worker_accounts',
+                'senior_hiring_requests', 'senior_hiring_approvals', 'senior_hiring_rejections',
+                'senior_hiring_info_requests', 'workforce_budget_approvals', 'workforce_budget_rejections',
+                'workforce_budget_modifications', 'policy_revisions', 'policy_rejections',
+                'admin_work', 'finance_work', 'hse_work', 'projects_work', 'realestate_work',
+                'work_comments', 'work_actions', 'work_rejections', 'work_revisions'
+            ];
+            const missingTables = criticalTables.filter(table => !tableNames.includes(table));
+            
+            if (missingTables.length > 0) {
+                console.log(`\nWARNING: Missing critical tables: ${missingTables.join(', ')}`);
+            } else {
+                console.log('\nAll critical tables are present!');
+            }
+            
+        } catch (verifyError) {
+            console.log('Could not verify tables:', verifyError.message);
+        }
+        
+        console.log('\n=== MIGRATION COMPLETE ===\n');
         
     } catch (error) {
-        console.error('❌ Migration error:', error.message);
-        // Don't throw error to allow server to continue
-        console.log('⚠️ Continuing server startup despite migration errors...');
+        console.error('Migration failed:', error);
+        console.log('Continuing server startup despite migration failure...\n');
     }
 }
 
