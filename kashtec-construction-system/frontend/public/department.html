@@ -5550,19 +5550,19 @@ function saveAssignment() {
 
 function saveAttendance() {
     const attendance = {
-        date: document.getElementById('attDate').value,
-        employee: document.getElementById('attEmployee').value,
+        employeeId: document.getElementById('attEmployee').value,
         employee_name: document.getElementById('attEmployee').options[document.getElementById('attEmployee').selectedIndex].text,
-        checkIn: document.getElementById('attCheckIn').value,
-        checkOut: document.getElementById('attCheckOut').value,
-        status: document.getElementById('attStatus').value,
+        attendanceDate: document.getElementById('attDate').value,
+        checkInTime: document.getElementById('attCheckIn').value,
+        checkOutTime: document.getElementById('attCheckOut').value,
+        attendanceStatus: document.getElementById('attStatus').value,
         notes: document.getElementById('attNotes').value,
         markedBy: 'HR Manager',
         markedByRole: 'HR Manager'
     };
     
     // Validate required fields
-    if (!attendance.date || !attendance.employee || !attendance.status) {
+    if (!attendance.attendanceDate || !attendance.employeeId || !attendance.attendanceStatus) {
         customAlert('Please fill in all required fields:\n\n• Date\n• Employee\n• Status', "Validation Error", "error");
         return false;
     }

@@ -1212,13 +1212,13 @@ app.post('/api/attendance', async (req, res) => {
 
         // Insert attendance record
         const [result] = await db.execute(`
-            INSERT INTO attendance_records (
-                employee_id, attendance_date, check_in_time, check_out_time,
-                work_hours, overtime_hours, attendance_status, notes, created_at
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, NOW())
+            INSERT INTO attendance (
+                employee_id, employee_name, attendance_date, check_in_time, check_out_time,
+                attendance_status, notes, marked_by, marked_by_role, created_at
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())
         `, [
-            employeeId, attendanceDate, checkInTime, checkOutTime,
-            workHours, overtimeHours, attendanceStatus, notes
+            employeeId, req.body.employee_name || '', attendanceDate, checkInTime, checkOutTime,
+            attendanceStatus, notes, req.body.markedBy || 'HR Manager', req.body.markedByRole || 'HR Manager'
         ]);
 
         res.status(201).json({
@@ -1243,29 +1243,29 @@ app.get('/api/attendance', async (req, res) => {
         const { employeeId, dateFrom, dateTo } = req.query;
 
         let query = `
-            SELECT ar.*, e.full_name as employee_name, e.department 
-            FROM attendance_records ar 
-            LEFT JOIN employees e ON ar.employee_id = e.employee_id
+            SELECT a.*, e.full_name as employee_name, e.department 
+            FROM attendance a 
+            LEFT JOIN employees e ON a.employee_id = e.employee_id
             WHERE 1=1
         `;
         let params = [];
 
         if (employeeId) {
-            query += ` AND ar.employee_id = ?`;
+            query += ` AND a.employee_id = ?`;
             params.push(employeeId);
         }
 
         if (dateFrom) {
-            query += ` AND ar.attendance_date >= ?`;
+            query += ` AND a.attendance_date >= ?`;
             params.push(dateFrom);
         }
 
         if (dateTo) {
-            query += ` AND ar.attendance_date <= ?`;
+            query += ` AND a.attendance_date <= ?`;
             params.push(dateTo);
         }
 
-        query += ` ORDER BY ar.attendance_date DESC`;
+        query += ` ORDER BY a.attendance_date DESC`;
 
         const [attendance] = await db.execute(query, params);
 
