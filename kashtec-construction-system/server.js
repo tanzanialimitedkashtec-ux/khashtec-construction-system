@@ -1397,15 +1397,9 @@ app.post('/api/policies/:policyId/revision', async (req, res) => {
 // Senior Hiring Management API endpoints
 app.post('/api/senior-hiring/:requestId/approve', async (req, res) => {
     try {
-        console.log('🔍 Senior hiring approve endpoint called');
-        console.log('📝 Request ID:', req.params.requestId);
-        console.log('📝 Request body:', req.body);
-        
         const db = require('./database/config/database');
         const { requestId } = req.params;
         const { approvedBy, comments } = req.body;
-
-        console.log('🔍 Extracted fields - requestId:', requestId, 'approvedBy:', approvedBy, 'comments:', comments);
 
         // Update senior hiring request status to approved
         const [result] = await db.execute(`
@@ -1413,8 +1407,6 @@ app.post('/api/senior-hiring/:requestId/approve', async (req, res) => {
             SET status = 'Approved', approved_by = ?, approved_date = NOW()
             WHERE id = ?
         `, [approvedBy, requestId]);
-        
-        console.log('📊 Update result:', result);
 
         if (result.affectedRows === 0) {
             return res.status(404).json({
