@@ -1673,6 +1673,9 @@ app.get('/api/workforce-budget', async (req, res) => {
 // Properties API endpoints
 app.post('/api/properties', async (req, res) => {
     try {
+        console.log('Properties endpoint called');
+        console.log('Request body:', req.body);
+        
         const db = require('./database/config/database');
         const {
             propertyName,
@@ -1686,8 +1689,19 @@ app.post('/api/properties', async (req, res) => {
             contactInfo
         } = req.body;
 
+        console.log('Extracted fields:', {
+            propertyName, propertyType, location, size, value, description, status, owner, contactInfo
+        });
+
         // Validate required fields
         if (!propertyName || !propertyType || !location || !size || !value) {
+            console.log('Validation failed - missing fields:', {
+                propertyName: !!propertyName,
+                propertyType: !!propertyType,
+                location: !!location,
+                size: !!size,
+                value: !!value
+            });
             return res.status(400).json({
                 success: false,
                 message: 'Missing required fields'
@@ -1750,6 +1764,9 @@ app.get('/api/properties', async (req, res) => {
 // Clients API endpoints
 app.post('/api/clients', async (req, res) => {
     try {
+        console.log('Clients endpoint called');
+        console.log('Request body:', req.body);
+        
         const db = require('./database/config/database');
         const {
             clientName,
@@ -1762,8 +1779,17 @@ app.post('/api/clients', async (req, res) => {
             notes
         } = req.body;
 
+        console.log('Extracted fields:', {
+            clientName, companyName, email, phone, address, industry, clientType, notes
+        });
+
         // Validate required fields
         if (!clientName || !email || !phone) {
+            console.log('Validation failed - missing fields:', {
+                clientName: !!clientName,
+                email: !!email,
+                phone: !!phone
+            });
             return res.status(400).json({
                 success: false,
                 message: 'Missing required fields'
