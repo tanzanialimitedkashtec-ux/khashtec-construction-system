@@ -1111,17 +1111,17 @@ app.post('/api/meeting-minutes', async (req, res) => {
             ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         `, [
             minutesId, 
-            meeting_title || '', 
-            meeting_type || '', 
-            meeting_date || '', 
-            meeting_time || '',
-            attendees || '',
-            meeting_agenda || null, 
-            meeting_notes || null, 
-            action_items || null,
-            next_meeting_date || null, 
-            next_meeting_time || null, 
-            recorded_by || ''
+            req.body.meeting_title || '', 
+            req.body.meeting_type || '', 
+            req.body.meeting_date || '', 
+            req.body.meeting_time || '',
+            req.body.attendees || '',
+            req.body.meeting_agenda || null, 
+            req.body.meeting_notes || null, 
+            req.body.action_items || null,
+            req.body.next_meeting_date || null, 
+            req.body.next_meeting_time || null, 
+            req.body.recorded_by || ''
         ]);
 
         res.status(201).json({
