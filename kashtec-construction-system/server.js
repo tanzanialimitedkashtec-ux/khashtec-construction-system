@@ -1654,6 +1654,159 @@ app.get('/api/workforce-budget', async (req, res) => {
     }
 });
 
+// Properties API endpoints
+app.post('/api/properties', async (req, res) => {
+    try {
+        const db = require('./database/config/database');
+        const {
+            propertyName,
+            propertyType,
+            location,
+            size,
+            value,
+            description,
+            status,
+            owner,
+            contactInfo
+        } = req.body;
+
+        // Validate required fields
+        if (!propertyName || !propertyType || !location || !size || !value) {
+            return res.status(400).json({
+                success: false,
+                message: 'Missing required fields'
+            });
+        }
+
+        // Generate property ID
+        const propertyId = 'PROP' + Date.now();
+
+        // Insert property
+        const [result] = await db.execute(`
+            INSERT INTO properties (
+                id, name, type, location, size, value, description,
+                status, owner, contact_info, created_at, updated_at
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())
+        `, [
+            propertyId, propertyName, propertyType, location, size, value,
+            description, status || 'Available', owner, contactInfo
+        ]);
+
+        res.status(201).json({
+            success: true,
+            message: 'Property created successfully',
+            propertyId: propertyId
+        });
+
+    } catch (error) {
+        console.error('Error creating property:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Failed to create property',
+            error: error.message
+        });
+    }
+});
+
+app.get('/api/properties', async (req, res) => {
+    try {
+        const db = require('./database/config/database');
+        const [properties] = await db.execute(`
+            SELECT * FROM properties 
+            ORDER BY created_at DESC
+        `);
+
+        res.status(200).json({
+            success: true,
+            properties: properties
+        });
+
+    } catch (error) {
+        console.error('Error fetching properties:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Failed to fetch properties',
+            error: error.message
+        });
+    }
+});
+
+// Clients API endpoints
+app.post('/api/clients', async (req, res) => {
+    try {
+        const db = require('./database/config/database');
+        const {
+            clientName,
+            companyName,
+            email,
+            phone,
+            address,
+            industry,
+            clientType,
+            notes
+        } = req.body;
+
+        // Validate required fields
+        if (!clientName || !email || !phone) {
+            return res.status(400).json({
+                success: false,
+                message: 'Missing required fields'
+            });
+        }
+
+        // Generate client ID
+        const clientId = 'CLIENT' + Date.now();
+
+        // Insert client
+        const [result] = await db.execute(`
+            INSERT INTO clients (
+                id, name, company_name, email, phone, address,
+                industry, client_type, notes, created_at, updated_at
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())
+        `, [
+            clientId, clientName, companyName, email, phone,
+            address, industry, clientType, notes
+        ]);
+
+        res.status(201).json({
+            success: true,
+            message: 'Client registered successfully',
+            clientId: clientId
+        });
+
+    } catch (error) {
+        console.error('Error creating client:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Failed to register client',
+            error: error.message
+        });
+    }
+});
+
+app.get('/api/clients', async (req, res) => {
+    try {
+        const db = require('./database/config/database');
+        const [clients] = await db.execute(`
+            SELECT * FROM clients 
+            ORDER BY created_at DESC
+        `);
+
+        res.status(200).json({
+            success: true,
+            clients: clients
+        });
+
+    } catch (error) {
+        console.error('Error fetching clients:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Failed to fetch clients',
+            error: error.message
+        });
+    }
+});
+
 // Database health check
 app.get('/api/db-health', async (req, res) => {
     try {
