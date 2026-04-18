@@ -1500,6 +1500,30 @@ app.post('/api/senior-hiring/:requestId/request-info', async (req, res) => {
     }
 });
 
+// GET endpoint for senior hiring requests
+app.get('/api/senior-hiring', async (req, res) => {
+    try {
+        const db = require('./database/config/database');
+        const [requests] = await db.execute(`
+            SELECT * FROM senior_hiring_requests 
+            ORDER BY request_date DESC
+        `);
+
+        res.status(200).json({
+            success: true,
+            requests: requests
+        });
+
+    } catch (error) {
+        console.error('Error fetching senior hiring requests:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Failed to fetch senior hiring requests',
+            error: error.message
+        });
+    }
+});
+
 // Workforce Budget Management API endpoints
 app.post('/api/workforce-budget/:budgetId/approve', async (req, res) => {
     try {
@@ -1601,6 +1625,30 @@ app.post('/api/workforce-budget/:budgetId/modify', async (req, res) => {
         res.status(500).json({
             success: false,
             message: 'Failed to request modification for workforce budget',
+            error: error.message
+        });
+    }
+});
+
+// GET endpoint for workforce budget requests
+app.get('/api/workforce-budget', async (req, res) => {
+    try {
+        const db = require('./database/config/database');
+        const [budgets] = await db.execute(`
+            SELECT * FROM workforce_budgets 
+            ORDER BY submission_date DESC
+        `);
+
+        res.status(200).json({
+            success: true,
+            budgets: budgets
+        });
+
+    } catch (error) {
+        console.error('Error fetching workforce budgets:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Failed to fetch workforce budgets',
             error: error.message
         });
     }
