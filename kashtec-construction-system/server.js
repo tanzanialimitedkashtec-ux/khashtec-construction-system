@@ -2475,6 +2475,73 @@ async function createEmployeeDetailsTable() {
     }
 }
 
+// Create missing properties and clients tables with correct schema
+async function createPropertiesAndClientsTables() {
+    try {
+        console.log('Creating missing properties and clients tables...');
+        const db = require('./database/config/database');
+        
+        // Create properties table
+        const createPropertiesTableSQL = `
+            CREATE TABLE IF NOT EXISTS properties (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                property_name VARCHAR(255) NOT NULL,
+                property_type ENUM('residential', 'commercial', 'industrial', 'agricultural') NOT NULL,
+                location VARCHAR(255) NOT NULL,
+                size DECIMAL(10,2) NOT NULL,
+                value DECIMAL(15,2) NOT NULL,
+                status ENUM('Available', 'Sold', 'Under Offer', 'Rented', 'Off Market') DEFAULT 'Available',
+                description TEXT,
+                owner VARCHAR(255),
+                contact_info VARCHAR(255),
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+                INDEX idx_property_type (property_type),
+                INDEX idx_status (status),
+                INDEX idx_location (location)
+            )
+        `;
+        
+        await db.execute(createPropertiesTableSQL);
+        console.log('Properties table created successfully');
+        
+        // Create clients table
+        const createClientsTableSQL = `
+            CREATE TABLE IF NOT EXISTS clients (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                client_name VARCHAR(255) NOT NULL,
+                client_type ENUM('individual', 'company') DEFAULT 'individual',
+                company_name VARCHAR(255),
+                phone VARCHAR(50) NOT NULL,
+                email VARCHAR(255) NOT NULL,
+                address TEXT,
+                nida_number VARCHAR(50),
+                tin_number VARCHAR(50),
+                property_interest VARCHAR(255),
+                budget_range VARCHAR(100),
+                additional_notes TEXT,
+                registered_by VARCHAR(255),
+                registration_date DATE,
+                status ENUM('Active', 'Inactive', 'Prospective') DEFAULT 'Active',
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+                INDEX idx_client_type (client_type),
+                INDEX idx_status (status),
+                INDEX idx_registered_by (registered_by)
+            )
+        `;
+        
+        await db.execute(createClientsTableSQL);
+        console.log('Clients table created successfully');
+        
+        console.log('Properties and clients tables created successfully');
+        
+    } catch (error) {
+        console.error('Error creating properties and clients tables:', error);
+        throw error;
+    }
+}
+
 // Start server after migrations and authentication table creation
 console.log('🚀 Starting KASHTEC server startup sequence...');
 
@@ -2492,7 +2559,11 @@ async function startServer() {
         await createEmployeeDetailsTable();
         console.log('✅ Step 3 completed: Employee details table ready');
         
-        console.log('🔄 Step 4: Starting HTTP server...');
+        console.log('🔄 Step 4: Creating missing properties and clients tables...');
+        await createPropertiesAndClientsTables();
+        console.log('✅ Step 4 completed: Properties and clients tables ready');
+        
+        console.log('🔄 Step 5: Starting HTTP server...');
         const server = app.listen(SERVER_PORT, '0.0.0.0', () => {
             console.log('🚀 ' + config.APP_NAME);
             console.log('🌍 Environment: ' + config.NODE_ENV);
