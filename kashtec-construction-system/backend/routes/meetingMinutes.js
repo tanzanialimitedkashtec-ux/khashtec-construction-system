@@ -68,10 +68,29 @@ router.post('/', async (req, res) => {
         // Create new meeting minutes
         const [result] = await db.execute(
             `INSERT INTO meeting_minutes (
-                meeting_title, meeting_type, meeting_date, meeting_time, 
-                attendees, minutes_content, action_items, recorded_by, status
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'draft')`,
-            [meeting_title, meeting_type, meeting_date, meeting_time, attendees, minutes_content, action_items, recorded_by]
+                meeting_id, meeting_title, meeting_date, meeting_type, location, 
+                organizing_department, attendees, minutes_content, action_items, 
+                decisions_made, next_steps, follow_up_date, status, prepared_by, 
+                reviewed_by, approved_by
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+            [
+                1, // Default meeting_id (should reference an actual meeting)
+                meeting_title || '', 
+                meeting_date || '', 
+                meeting_type || '',
+                'Conference Room', // Default location
+                'management', // Default organizing department
+                attendees || '',
+                minutes_content || '', // Use minutes_content as minutes_content
+                action_items || null,
+                decisions_made || null,
+                next_steps || null,
+                follow_up_date || null,
+                'Draft', // Default status
+                recorded_by || 'Admin Assistant',
+                null, // reviewed_by
+                null  // approved_by
+            ]
         );
         
         // Get the created meeting minutes
