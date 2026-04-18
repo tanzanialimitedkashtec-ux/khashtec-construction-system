@@ -13167,6 +13167,7 @@ function saveNewProperty() {
     
     // Send data to backend Properties API
     const baseUrl = window.location.origin;
+    console.log('=== DEPLOYMENT VERSION 2.0 - PROPERTIES API CALL ===');
     fetch(`${baseUrl}/api/properties`, {
         method: 'POST',
         headers: {
@@ -13245,6 +13246,7 @@ function saveNewClient() {
     
     // Send data to backend Clients API
     const baseUrl = window.location.origin;
+    console.log('=== DEPLOYMENT VERSION 2.0 - CLIENTS API CALL ===');
     fetch(`${baseUrl}/api/clients`, {
         method: 'POST',
         headers: {
