@@ -11924,25 +11924,25 @@ function approveCompletedWork(){
 function saveNewProject() {
     const project = {
         id: 'PRJ-' + Date.now(),
-        name: document.getElementById('projectName').value,
-        code: document.getElementById('projectCode').value,
-        client: document.getElementById('clientName').value,
-        type: document.getElementById('projectType').value,
-        startDate: document.getElementById('projectStartDate').value,
-        endDate: document.getElementById('projectEndDate').value,
+        projectName: document.getElementById('projectName').value,
+        projectCode: document.getElementById('projectCode').value,
+        clientName: document.getElementById('clientName').value,
+        projectType: document.getElementById('projectType').value,
+        projectStartDate: document.getElementById('projectStartDate').value,
+        projectEndDate: document.getElementById('projectEndDate').value,
         contractValue: document.getElementById('contractValue').value,
-        manager: document.getElementById('projectManager').value,
-        description: document.getElementById('projectDescription').value,
-        deliverables: document.getElementById('keyDeliverables').value,
-        location: document.getElementById('siteLocation').value,
-        priority: document.getElementById('priorityLevel').value,
+        projectManager: document.getElementById('projectManager').value,
+        projectDescription: document.getElementById('projectDescription').value,
+        keyDeliverables: document.getElementById('keyDeliverables').value,
+        siteLocation: document.getElementById('siteLocation').value,
+        priorityLevel: document.getElementById('priorityLevel').value,
         status: 'planning',
         progress: 0,
         createdDate: new Date().toLocaleString()
     };
     
     // Validate required fields
-    if (!project.name || !project.code || !project.client || !project.startDate || !project.manager) {
+    if (!project.projectName || !project.projectCode || !project.clientName || !project.projectStartDate || !project.projectManager) {
         customAlert('Please fill in all required fields:\n\n• Project Name\n• Project Code\n• Client Name\n• Start Date\n• Project Manager', "Validation Error", "error");
         return false;
     }
