@@ -1830,12 +1830,12 @@ app.post('/api/clients', async (req, res) => {
         const [result] = await db.execute(`
             INSERT INTO clients (
                 client_id, client_type, full_name, company_name, phone_number,
-                email_address, physical_address, property_interest, additional_notes,
+                email_address, nida_number, physical_address, property_interest, additional_notes,
                 registered_by, registration_date, status, created_at, updated_at
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), ?, NOW(), NOW())
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), ?, NOW(), NOW())
         `, [
             clientId, clientType || 'individual', clientName, companyName, phone,
-            email, address, industry, notes, 'Admin Assistant', 'active'
+            email, 'NIDA' + Date.now(), address, industry, notes, 'Admin Assistant', 'active'
         ]);
 
         res.status(201).json({
