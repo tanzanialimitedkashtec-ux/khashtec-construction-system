@@ -13137,7 +13137,12 @@ function saveNewProperty() {
     };
     
     // Validate required fields
-    if (!property.propertyName || !property.propertyType || !property.location || !property.size || !property.value || !property.status) {
+    if (!property.propertyName || property.propertyName.trim() === '' ||
+        !property.propertyType || property.propertyType.trim() === '' ||
+        !property.location || property.location.trim() === '' ||
+        !property.size || property.size.trim() === '' ||
+        !property.value || property.value.trim() === '' ||
+        !property.status || property.status.trim() === '') {
         customAlert('Please fill in all required fields:\n\n• Plot Number\n• Property Type\n• Location\n• Area\n• Price\n• Status', "Validation Error", "error");
         return false;
     }
@@ -13170,18 +13175,15 @@ function saveNewProperty() {
             'Authorization': `Bearer ${sessionManager.getAuthToken()}`
         },
         body: JSON.stringify({
-            plotNumber: property.plotNumber,
-            type: property.type,
+            propertyName: property.propertyName,
+            propertyType: property.propertyType,
             location: property.location,
-            area: property.area,
-            price: property.price,
+            size: property.size,
+            value: property.value,
             status: property.status,
-            tpNumber: property.tpNumber,
             description: property.description,
-            utilities: property.utilities,
-            zoning: property.zoning,
-            addedBy: property.addedBy,
-            addedDate: property.addedDate
+            owner: property.owner,
+            contactInfo: property.contactInfo
         })
     })
     .then(response => {
@@ -13228,8 +13230,13 @@ function saveNewClient() {
     };
     
     // Validate required fields
-    if (!client.clientName || !client.phone || !client.email) {
-        customAlert('Please fill in all required fields:\n\n• Full Name\n• Phone Number\n• Email Address', "Validation Error", "error");
+    if (!client.clientName || client.clientName.trim() === '' ||
+        !client.phone || client.phone.trim() === '' ||
+        !client.email || client.email.trim() === '') {
+        customAlert('Please fill in all required fields:\n\n' +
+                    'Full Name\n' +
+                    'Phone Number\n' +
+                    'Email Address', "Validation Error", "error");
         return false;
     }
     
@@ -13246,19 +13253,14 @@ function saveNewClient() {
             'Authorization': `Bearer ${sessionManager.getAuthToken()}`
         },
         body: JSON.stringify({
-            id: client.id,
-            type: client.type,
-            fullName: client.fullName,
+            clientName: client.clientName,
             companyName: client.companyName,
             phone: client.phone,
             email: client.email,
-            nida: client.nida,
-            tin: client.tin,
             address: client.address,
-            propertyInterest: client.propertyInterest,
-            budgetRange: client.budgetRange,
-            notes: client.notes,
-            registeredBy: client.registeredBy
+            industry: client.industry,
+            clientType: client.clientType,
+            notes: client.notes
         })
     })
     .then(response => {
