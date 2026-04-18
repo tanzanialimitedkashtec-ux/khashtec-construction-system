@@ -1080,7 +1080,17 @@ app.get('/api/project-progress-updates', async (req, res) => {
 // Meeting Minutes API endpoints
 app.post('/api/meeting-minutes', async (req, res) => {
     try {
+        console.log('🔍 Meeting minutes endpoint called');
+        console.log('📝 Request body:', req.body);
+        
         const db = require('./database/config/database');
+        
+        // First, let's check if table exists and has the right columns
+        const [tableInfo] = await db.execute(`
+            DESCRIBE meeting_minutes
+        `);
+        console.log('📊 Meeting minutes table structure:', tableInfo);
+        
         const {
             meeting_title,
             meeting_type,
@@ -1094,6 +1104,8 @@ app.post('/api/meeting-minutes', async (req, res) => {
             next_meeting_time,
             recorded_by
         } = req.body;
+
+        console.log('🔍 Extracted fields - meeting_title:', meeting_title, 'meeting_type:', meeting_type);
 
         // Validate required fields
         if (!meeting_title || !meeting_type || !meeting_date || !meeting_time || !attendees) {
