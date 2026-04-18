@@ -13108,23 +13108,19 @@ function generateSalesReport(){
 function saveNewProperty() {
     const property = {
         id: 'PROP-' + Date.now(),
-        plotNumber: document.getElementById('plotNumber').value,
-        type: document.getElementById('propertyType').value,
+        propertyName: document.getElementById('plotNumber').value,
+        propertyType: document.getElementById('propertyType').value,
         location: document.getElementById('propertyLocation').value,
-        area: document.getElementById('propertyArea').value,
-        price: document.getElementById('propertyPrice').value,
+        size: document.getElementById('propertyArea').value,
+        value: document.getElementById('propertyPrice').value,
         status: document.getElementById('propertyStatus').value,
-        surveyPlans: document.getElementById('surveyPlans').files.length,
-        tpNumber: document.getElementById('tpNumber').value,
         description: document.getElementById('propertyDescription').value,
-        utilities: getSelectedUtilities(),
-        zoning: document.getElementById('propertyZoning').value,
-        addedBy: 'Real Estate Manager',
-        addedDate: new Date().toLocaleString()
+        owner: document.getElementById('propertyOwner')?.value || '',
+        contactInfo: document.getElementById('propertyContact')?.value || ''
     };
     
     // Validate required fields
-    if (!property.plotNumber || !property.type || !property.location || !property.area || !property.price || !property.status) {
+    if (!property.propertyName || !property.propertyType || !property.location || !property.size || !property.value || !property.status) {
         customAlert('Please fill in all required fields:\n\n• Plot Number\n• Property Type\n• Location\n• Area\n• Price\n• Status', "Validation Error", "error");
         return false;
     }
@@ -13132,12 +13128,12 @@ function saveNewProperty() {
     // Prepare work item for Real Estate department
     const workItem = {
         work_type: 'Property Management',
-        work_title: `New Property - ${property.plotNumber}`,
-        work_description: `New Property Added\n\nPlot Number: ${property.plotNumber}\nProperty Type: ${property.type}\nLocation: ${property.location}\nArea: ${property.area} sqm\nPrice: TZS ${parseInt(property.price).toLocaleString()}\nStatus: ${property.status}\nTP Number: ${property.tpNumber}\nDescription: ${property.description}\nUtilities: ${property.utilities.join(', ')}\nZoning: ${property.zoning}\nAdded By: ${property.addedBy}\nAdded Date: ${property.addedDate}`,
-        property_name: property.plotNumber, // Required field
-        property_type: property.type, // Required field
+        work_title: `New Property - ${property.propertyName}`,
+        work_description: `New Property Added\n\nPlot Number: ${property.propertyName}\nProperty Type: ${property.propertyType}\nLocation: ${property.location}\nArea: ${property.size} sqm\nPrice: TZS ${parseInt(property.value).toLocaleString()}\nStatus: ${property.status}\nDescription: ${property.description}`,
+        property_name: property.propertyName, // Required field
+        property_type: property.propertyType, // Required field
         client_name: 'Available for Sale', // Required field
-        sale_amount: property.price, // Required field
+        sale_amount: property.value, // Required field
         priority: 'Medium',
         due_date: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], // 30 days from now
         assigned_to: 'Real Estate Manager',
@@ -13204,24 +13200,19 @@ function saveNewClient() {
     
     const client = {
         id: 'CLT-' + Date.now(),
-        type: document.getElementById('clientType').value,
-        fullName: document.getElementById('clientFullName').value,
+        clientName: document.getElementById('clientFullName').value,
         companyName: document.getElementById('companyName').value,
         phone: document.getElementById('clientPhone').value,
         email: document.getElementById('clientEmail').value,
-        nida: document.getElementById('clientNida').value,
-        tin: document.getElementById('clientTin').value,
         address: document.getElementById('clientAddress').value,
-        propertyInterest: document.getElementById('propertyInterest').value,
-        budgetRange: document.getElementById('budgetRange').value,
-        notes: document.getElementById('clientNotes').value,
-        registeredBy: 'Real Estate Manager',
-        registrationDate: new Date().toLocaleString()
+        industry: document.getElementById('propertyInterest').value,
+        clientType: document.getElementById('clientType').value,
+        notes: document.getElementById('clientNotes').value
     };
     
     // Validate required fields
-    if (!client.type || !client.fullName || !client.phone || !client.email || !client.nida || !client.address) {
-        customAlert('Please fill in all required fields:\n\n• Client Type\n• Full Name\n• Phone Number\n• Email Address\n• NIDA Number\n• Physical Address', "Validation Error", "error");
+    if (!client.clientName || !client.phone || !client.email) {
+        customAlert('Please fill in all required fields:\n\n• Full Name\n• Phone Number\n• Email Address', "Validation Error", "error");
         return false;
     }
     
@@ -13267,7 +13258,7 @@ function saveNewClient() {
             throw new Error(data.error);
         }
         
-        customAlert(`Client registered successfully!\n\nName: ${client.fullName}\nID: ${client.id}\nPhone: ${client.phone}\nEmail: ${client.email}\nRegistration ID: ${data.id}\n\n🎉 Client saved to database!`, "Client Registered", "success");
+        customAlert(`Client registered successfully!\n\nName: ${client.clientName}\nID: ${client.id}\nPhone: ${client.phone}\nEmail: ${client.email}\nRegistration ID: ${data.id}\n\n🎉 Client saved to database!`, "Client Registered", "success");
         
         document.getElementById('clientForm').reset();
     })
