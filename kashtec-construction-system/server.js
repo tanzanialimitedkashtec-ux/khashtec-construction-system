@@ -1741,12 +1741,12 @@ app.post('/api/properties', async (req, res) => {
         // Insert property
         const [result] = await db.execute(`
             INSERT INTO properties (
-                id, name, type, location, size, value, description,
-                status, owner, contact_info, created_at, updated_at
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())
+                title, description, location, type, price, status, 
+                size_sqm, created_at, updated_at
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, NOW(), NOW())
         `, [
-            propertyId, propertyName, propertyType, location, size, value,
-            description, status || 'Available', owner, contactInfo
+            propertyName, description, location, propertyType, parseFloat(value), 
+            status || 'Available', parseFloat(size)
         ]);
 
         res.status(201).json({
@@ -1829,12 +1829,13 @@ app.post('/api/clients', async (req, res) => {
         // Insert client
         const [result] = await db.execute(`
             INSERT INTO clients (
-                id, name, company_name, email, phone, address,
-                industry, client_type, notes, created_at, updated_at
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())
+                client_id, client_type, full_name, company_name, phone_number,
+                email_address, physical_address, property_interest, additional_notes,
+                registered_by, registration_date, status, created_at, updated_at
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), ?, NOW(), NOW())
         `, [
-            clientId, clientName, companyName, email, phone,
-            address, industry, clientType, notes
+            clientId, clientType || 'individual', clientName, companyName, phone,
+            email, address, industry, notes, 'Admin Assistant', 'active'
         ]);
 
         res.status(201).json({
