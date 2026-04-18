@@ -318,7 +318,7 @@ router.post('/', async (req, res) => {
             whiteboard_required || false,
             refreshments_required || false,
             parking_required || false,
-            created_by || null
+            parseInt(created_by) || null
         ]);
         
         const result = Array.isArray(queryResult) ? queryResult[0] : queryResult;
