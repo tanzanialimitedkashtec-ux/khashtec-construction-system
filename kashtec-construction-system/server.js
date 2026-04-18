@@ -1404,10 +1404,9 @@ app.post('/api/senior-hiring/:requestId/approve', async (req, res) => {
         // Update senior hiring request status to approved
         const [result] = await db.execute(`
             UPDATE senior_hiring_requests 
-            SET status = 'approved', approved_by = ?, approved_date = NOW(), 
-                approval_comments = ?
-            WHERE request_id = ?
-        `, [approvedBy, comments, requestId]);
+            SET status = 'Approved', approved_by = ?, approved_date = NOW()
+            WHERE id = ?
+        `, [approvedBy, requestId]);
 
         if (result.affectedRows === 0) {
             return res.status(404).json({
@@ -1440,10 +1439,9 @@ app.post('/api/senior-hiring/:requestId/reject', async (req, res) => {
         // Update senior hiring request status to rejected
         const [result] = await db.execute(`
             UPDATE senior_hiring_requests 
-            SET status = 'rejected', rejected_by = ?, rejected_date = NOW(), 
-                rejection_reason = ?, rejection_details = ?
-            WHERE request_id = ?
-        `, [rejectedBy, rejectionReason, details, requestId]);
+            SET status = 'Rejected', rejection_reason = ?
+            WHERE id = ?
+        `, [rejectionReason, requestId]);
 
         if (result.affectedRows === 0) {
             return res.status(404).json({
@@ -1476,11 +1474,9 @@ app.post('/api/senior-hiring/:requestId/request-info', async (req, res) => {
         // Update senior hiring request status to info requested
         const [result] = await db.execute(`
             UPDATE senior_hiring_requests 
-            SET status = 'info_requested', info_requested_by = ?, 
-                info_request = ?, info_deadline = ?, 
-                info_requested_date = NOW()
-            WHERE request_id = ?
-        `, [requestedBy, infoRequest, deadline, requestId]);
+            SET status = 'More Info Requested', more_info_request = ?
+            WHERE id = ?
+        `, [infoRequest, requestId]);
 
         if (result.affectedRows === 0) {
             return res.status(404).json({
@@ -1514,10 +1510,9 @@ app.post('/api/workforce-budget/:budgetId/approve', async (req, res) => {
         // Update workforce budget status to approved
         const [result] = await db.execute(`
             UPDATE workforce_budgets 
-            SET status = 'approved', approved_by = ?, approved_date = NOW(), 
-                approval_comments = ?
+            SET status = 'Approved', approved_by = ?, approved_date = NOW()
             WHERE id = ?
-        `, [approvedBy, comments, budgetId]);
+        `, [approvedBy, budgetId]);
 
         if (result.affectedRows === 0) {
             return res.status(404).json({
@@ -1550,10 +1545,9 @@ app.post('/api/workforce-budget/:budgetId/reject', async (req, res) => {
         // Update workforce budget status to rejected
         const [result] = await db.execute(`
             UPDATE workforce_budgets 
-            SET status = 'rejected', rejected_by = ?, rejected_date = NOW(), 
-                rejection_reason = ?
+            SET status = 'Rejected', rejection_reason = ?
             WHERE id = ?
-        `, [rejectedBy, rejectionReason, budgetId]);
+        `, [rejectionReason, budgetId]);
 
         if (result.affectedRows === 0) {
             return res.status(404).json({
@@ -1586,11 +1580,9 @@ app.post('/api/workforce-budget/:budgetId/modify', async (req, res) => {
         // Update workforce budget status to modification requested
         const [result] = await db.execute(`
             UPDATE workforce_budgets 
-            SET status = 'modification_requested', modification_requested_by = ?, 
-                modification_request = ?, modification_deadline = ?, 
-                modification_requested_date = NOW()
+            SET status = 'Modification Requested', modification_request = ?
             WHERE id = ?
-        `, [requestedBy, modificationRequest, deadline, budgetId]);
+        `, [modificationRequest, budgetId]);
 
         if (result.affectedRows === 0) {
             return res.status(404).json({
