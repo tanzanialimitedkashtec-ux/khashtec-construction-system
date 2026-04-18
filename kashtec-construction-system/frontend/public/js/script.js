@@ -440,11 +440,11 @@ function displayDocuments(documents) {
     }
     
     docsGrid.innerHTML = documents.map(doc => `
-        <div class="doc-item" data-id="${doc.id}" data-department="${doc.department}" data-type="${doc.type}">
+        <div class="doc-item" data-id="${doc.id}" data-department="${doc.affected_department}" data-type="${doc.work_type}">
             <div class="doc-info">
-                <h5>${doc.title}</h5>
-                <p>Type: ${doc.type} | Department: ${doc.department}</p>
-                <p>Last Updated: ${new Date(doc.uploadedDate || doc.uploadDate).toLocaleDateString()}</p>
+                <h5>${doc.work_title}</h5>
+                <p>Type: ${doc.work_type} | Department: ${doc.affected_department || doc.department_code}</p>
+                <p>Last Updated: ${new Date(doc.submitted_date).toLocaleDateString()}</p>
                 <p>Status: ${doc.status || 'Active'}</p>
             </div>
             <div class="doc-actions">
