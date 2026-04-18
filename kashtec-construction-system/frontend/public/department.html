@@ -11979,7 +11979,16 @@ function saveNewProject() {
             'Accept': 'application/json',
             'Authorization': `Bearer ${sessionManager.getAuthToken()}`
         },
-        body: JSON.stringify(workItem)
+        body: JSON.stringify({
+            name: project.projectName,
+            client: project.clientName,
+            location: project.siteLocation,
+            startDate: project.projectStartDate,
+            endDate: project.projectEndDate,
+            budget: project.contractValue,
+            manager: project.projectManager,
+            description: project.projectDescription
+        })
     })
     .then(response => {
         console.log('📡 Project Creation API Response status:', response.status);
