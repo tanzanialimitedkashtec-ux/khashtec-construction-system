@@ -1143,23 +1143,28 @@ app.post('/api/meeting-minutes', async (req, res) => {
         // Insert meeting minutes
         const [result] = await db.execute(`
             INSERT INTO meeting_minutes (
-                id, meeting_title, meeting_type, meeting_date, meeting_time,
-                attendees, meeting_agenda, meeting_notes, action_items,
-                next_meeting_date, next_meeting_time, recorded_by
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                meeting_id, meeting_title, meeting_date, meeting_type, location,
+                organizing_department, attendees, minutes_content, action_items,
+                decisions_made, next_steps, follow_up_date, status, prepared_by,
+                reviewed_by, approved_by
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         `, [
-            minutesId, 
+            1, // Default meeting_id (should reference an actual meeting)
             req.body.meeting_title || '', 
-            req.body.meeting_type || '', 
             req.body.meeting_date || '', 
-            req.body.meeting_time || '',
+            req.body.meeting_type || '',
+            'Conference Room', // Default location
+            'management', // Default organizing department
             req.body.attendees || '',
-            req.body.meeting_agenda || null, 
-            req.body.meeting_notes || null, 
+            req.body.meeting_notes || '', // Use meeting_notes as minutes_content
             req.body.action_items || null,
-            req.body.next_meeting_date || null, 
-            req.body.next_meeting_time || null, 
-            req.body.recorded_by || ''
+            req.body.decisions_made || null,
+            req.body.next_steps || null,
+            req.body.next_meeting_date || null,
+            'Draft', // Default status
+            req.body.recorded_by || 'Admin Assistant',
+            null, // reviewed_by
+            null  // approved_by
         ]);
 
         res.status(201).json({
