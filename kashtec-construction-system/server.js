@@ -627,18 +627,20 @@ app.post('/api/work/assignments', async (req, res) => {
     try {
         const db = require('./database/config/database');
         const {
-            employeeId,
-            employeeName,
-            projectId,
-            projectName,
-            roleInProject,
-            startDate,
-            endDate,
-            assignmentNotes
+            employee_id,
+            employee_name,
+            project_id,
+            project_name,
+            role_in_project,
+            start_date,
+            end_date,
+            assignment_notes,
+            assigned_by,
+            assigned_by_role
         } = req.body;
 
         // Validate required fields
-        if (!employeeId || !employeeName || !projectId || !projectName || !roleInProject || !startDate) {
+        if (!employee_id || !project_id || !role_in_project || !start_date) {
             return res.status(400).json({
                 success: false,
                 message: 'Missing required fields'
@@ -656,11 +658,13 @@ app.post('/api/work/assignments', async (req, res) => {
                 start_date, 
                 end_date, 
                 assignment_notes, 
+                assigned_by,
+                assigned_by_role,
                 created_at
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, NOW())
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())
         `, [
-            employeeId, employeeName, projectId, projectName, roleInProject,
-            startDate, endDate, assignmentNotes
+            employee_id, employee_name, project_id, project_name, role_in_project,
+            start_date, end_date, assignment_notes, assigned_by, assigned_by_role
         ]);
 
         res.status(201).json({
@@ -1192,18 +1196,18 @@ app.post('/api/attendance', async (req, res) => {
     try {
         const db = require('./database/config/database');
         const {
-            employeeId,
-            attendanceDate,
-            checkInTime,
-            checkOutTime,
-            workHours,
-            overtimeHours,
-            attendanceStatus,
-            notes
+            employee_id,
+            attendance_date,
+            check_in_time,
+            check_out_time,
+            attendance_status,
+            notes,
+            marked_by,
+            marked_by_role
         } = req.body;
 
         // Validate required fields
-        if (!employeeId || !attendanceDate || !attendanceStatus) {
+        if (!employee_id || !attendance_date || !attendance_status) {
             return res.status(400).json({
                 success: false,
                 message: 'Missing required fields'
@@ -1215,10 +1219,10 @@ app.post('/api/attendance', async (req, res) => {
             INSERT INTO attendance (
                 employee_id, employee_name, attendance_date, check_in_time, check_out_time,
                 attendance_status, notes, marked_by, marked_by_role, created_at
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())
         `, [
-            employeeId, req.body.employee_name || '', attendanceDate, checkInTime, checkOutTime,
-            attendanceStatus, notes, req.body.markedBy || 'HR Manager', req.body.markedByRole || 'HR Manager'
+            employee_id, req.body.employee_name || '', attendance_date, check_in_time, check_out_time,
+            attendance_status, notes, marked_by, marked_by_role
         ]);
 
         res.status(201).json({
