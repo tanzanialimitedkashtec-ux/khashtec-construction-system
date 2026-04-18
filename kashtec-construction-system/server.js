@@ -1738,6 +1738,36 @@ app.post('/api/properties', async (req, res) => {
         // Generate property ID
         const propertyId = 'PROP' + Date.now();
 
+        // Convert and validate numeric values
+        const parsedPrice = parseFloat(value);
+        const parsedSize = parseFloat(size);
+        
+        console.log('Parsed values:', {
+            originalValue: value,
+            parsedPrice: parsedPrice,
+            originalSize: size,
+            parsedSize: parsedSize,
+            isNaNPrice: isNaN(parsedPrice),
+            isNaNSize: isNaN(parsedSize)
+        });
+        
+        // Validate numeric values
+        if (isNaN(parsedPrice) || parsedPrice <= 0) {
+            console.log('Invalid price value:', value);
+            return res.status(400).json({
+                success: false,
+                message: 'Invalid price value'
+            });
+        }
+        
+        if (isNaN(parsedSize) || parsedSize <= 0) {
+            console.log('Invalid size value:', size);
+            return res.status(400).json({
+                success: false,
+                message: 'Invalid size value'
+            });
+        }
+
         // Insert property
         const [result] = await db.execute(`
             INSERT INTO properties (
@@ -1745,8 +1775,8 @@ app.post('/api/properties', async (req, res) => {
                 size_sqm, created_at, updated_at
             ) VALUES (?, ?, ?, ?, ?, ?, ?, NOW(), NOW())
         `, [
-            propertyName, description, location, propertyType, parseFloat(value), 
-            status || 'Available', parseFloat(size)
+            propertyName, description, location, propertyType, parsedPrice, 
+            status || 'Available', parsedSize
         ]);
 
         res.status(201).json({
@@ -1820,6 +1850,26 @@ app.post('/api/clients', async (req, res) => {
             return res.status(400).json({
                 success: false,
                 message: 'Missing required fields'
+            });
+        }
+        
+        // Validate email format
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(email)) {
+            console.log('Invalid email format:', email);
+            return res.status(400).json({
+                success: false,
+                message: 'Invalid email format'
+            });
+        }
+        
+        // Validate phone format (basic validation)
+        const phoneRegex = /^\+?[0-9\s\-\(\)]+$/;
+        if (!phoneRegex.test(phone)) {
+            console.log('Invalid phone format:', phone);
+            return res.status(400).json({
+                success: false,
+                message: 'Invalid phone format'
             });
         }
 
