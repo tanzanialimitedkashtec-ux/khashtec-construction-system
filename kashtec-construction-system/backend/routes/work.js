@@ -861,9 +861,19 @@ router.post('/:department', async (req, res) => {
         let additionalFields = [];
         let additionalValues = [];
         
-        if (department === 'finance' && amount) {
-            additionalFields.push('amount');
-            additionalValues.push(amount);
+        if (department === 'finance') {
+            if (amount) {
+                additionalFields.push('amount');
+                additionalValues.push(amount);
+            }
+            if (vendor_name) {
+                additionalFields.push('vendor_name');
+                additionalValues.push(vendor_name);
+            }
+            if (invoice_number) {
+                additionalFields.push('invoice_number');
+                additionalValues.push(invoice_number);
+            }
         }
         
         if (department === 'hse') {
