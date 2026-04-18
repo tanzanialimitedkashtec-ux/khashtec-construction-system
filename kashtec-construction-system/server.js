@@ -536,6 +536,9 @@ app.get('/api/site-reports/:id', async (req, res) => {
 // Projects API endpoints
 app.post('/api/projects', async (req, res) => {
     try {
+        console.log('Project creation endpoint called');
+        console.log('Request body:', req.body);
+        
         const db = require('./database/config/database');
         const {
             projectName,
@@ -552,10 +555,29 @@ app.post('/api/projects', async (req, res) => {
             priorityLevel
         } = req.body;
 
+        console.log('Extracted fields:', {
+            projectName, projectCode, clientName, projectType, projectStartDate, 
+            projectEndDate, contractValue, projectManager, projectDescription, 
+            keyDeliverables, siteLocation, priorityLevel
+        });
+
         // Validate required fields
         if (!projectName || !projectCode || !clientName || !projectType || 
             !projectStartDate || !projectEndDate || !contractValue || 
             !projectManager || !projectDescription || !siteLocation || !priorityLevel) {
+            console.log('Project validation failed - missing fields:', {
+                projectName: !!projectName,
+                projectCode: !!projectCode,
+                clientName: !!clientName,
+                projectType: !!projectType,
+                projectStartDate: !!projectStartDate,
+                projectEndDate: !!projectEndDate,
+                contractValue: !!contractValue,
+                projectManager: !!projectManager,
+                projectDescription: !!projectDescription,
+                siteLocation: !!siteLocation,
+                priorityLevel: !!priorityLevel
+            });
             return res.status(400).json({
                 success: false,
                 message: 'Missing required fields'
