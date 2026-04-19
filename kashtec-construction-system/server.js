@@ -2656,6 +2656,17 @@ async function createSeniorHiringTables() {
         await db.execute(createSeniorHiringApprovalTableSQL);
         console.log('Senior hiring approval table created successfully');
         
+        // Insert sample senior hiring requests
+        await db.execute(`
+            INSERT INTO senior_hiring_approval 
+            (candidate_name, position, department, proposed_salary, experience, hr_recommendation, status, request_date) 
+            VALUES 
+            ('John Smith', 'Project Manager', 'Projects', '150000', '10 years in construction management', 'Highly recommended', 'pending', '2026-04-15'),
+            ('Sarah Johnson', 'Senior Engineer', 'Operations', '120000', '8 years in structural engineering', 'Excellent technical skills', 'pending', '2026-04-16'),
+            ('Michael Chen', 'Finance Director', 'Finance', '180000', '12 years in financial management', 'Strong leadership background', 'pending', '2026-04-17')
+        `);
+        console.log('Sample senior hiring requests inserted successfully');
+        
         // Create senior_hiring_info_request table (singular, not plural)
         const createSeniorHiringInfoRequestTableSQL = `
             CREATE TABLE IF NOT EXISTS senior_hiring_info_request (
