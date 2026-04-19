@@ -2542,6 +2542,45 @@ async function createPropertiesAndClientsTables() {
     }
 }
 
+// Create missing worker_assignments table with correct schema
+async function createWorkerAssignmentsTable() {
+    try {
+        console.log('Creating missing worker_assignments table...');
+        const db = require('./database/config/database');
+        
+        // Create worker_assignments table
+        const createWorkerAssignmentsTableSQL = `
+            CREATE TABLE IF NOT EXISTS worker_assignments (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                employee_id VARCHAR(50) NOT NULL,
+                employee_name VARCHAR(255) NOT NULL,
+                project_id VARCHAR(50) NOT NULL,
+                project_name VARCHAR(255) NOT NULL,
+                role_in_project VARCHAR(255) NOT NULL,
+                start_date DATE NOT NULL,
+                end_date DATE NULL,
+                assignment_notes TEXT,
+                status ENUM('Active', 'Completed', 'Transferred', 'On Hold', 'Terminated') DEFAULT 'Active',
+                assigned_by VARCHAR(255) NOT NULL,
+                assigned_by_role VARCHAR(100),
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+                INDEX idx_employee_id (employee_id),
+                INDEX idx_project_id (project_id),
+                INDEX idx_status (status),
+                INDEX idx_start_date (start_date)
+            )
+        `;
+        
+        await db.execute(createWorkerAssignmentsTableSQL);
+        console.log('Worker assignments table created successfully');
+        
+    } catch (error) {
+        console.error('Error creating worker_assignments table:', error);
+        throw error;
+    }
+}
+
 // Start server after migrations and authentication table creation
 console.log('🚀 Starting KASHTEC server startup sequence...');
 
@@ -2563,7 +2602,11 @@ async function startServer() {
         await createPropertiesAndClientsTables();
         console.log('✅ Step 4 completed: Properties and clients tables ready');
         
-        console.log('🔄 Step 5: Starting HTTP server...');
+        console.log('🔄 Step 5: Creating missing worker_assignments table...');
+        await createWorkerAssignmentsTable();
+        console.log('✅ Step 5 completed: Worker assignments table ready');
+        
+        console.log('🔄 Step 6: Starting HTTP server...');
         const server = app.listen(SERVER_PORT, '0.0.0.0', () => {
             console.log('🚀 ' + config.APP_NAME);
             console.log('🌍 Environment: ' + config.NODE_ENV);
