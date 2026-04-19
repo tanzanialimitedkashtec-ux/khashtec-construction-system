@@ -6032,15 +6032,7 @@ async function testAPIConnection() {
     }
 }
 
-// Add test button to the page (for debugging)
-document.addEventListener('DOMContentLoaded', function() {
-    // Add a small test button in the corner for debugging
-    const testButton = document.createElement('button');
-    testButton.innerHTML = '🧪 Test API';
-    testButton.style.cssText = 'position:fixed;top:10px;right:10px;z-index:9999;background:#007bff;color:white;padding:5px 10px;border:none;border-radius:3px;cursor:pointer;font-size:12px;';
-    testButton.onclick = testAPIConnection;
-    document.body.appendChild(testButton);
-});
+// Test buttons removed
 
 // Additional helper functions
 function saveWorkerAccount() {
@@ -7976,19 +7968,9 @@ function testDataFlow() {
     }
 }
 
-// Add test button to the page
-function addTestButton() {
-    const testButton = document.createElement('button');
-    testButton.textContent = '🧪 Test Database';
-    testButton.onclick = testDataFlow;
-    testButton.style.cssText = 'position:fixed;top:10px;right:10px;z-index:9999;background:#28a745;color:white;padding:10px;border:none;border-radius:5px;cursor:pointer;';
-    document.body.appendChild(testButton);
-}
+// Test button function removed
 
-// Auto-add test button when page loads
-setTimeout(() => {
-    addTestButton();
-}, 1000);
+// Test button auto-add removed
 
 function uploadSafetyPolicies(){
     showContent(`<div class="card">
@@ -9286,15 +9268,6 @@ Technical Details: ${error.message}`;
         alert(message);
     }
 }
-
-// Add test button to page
-document.addEventListener('DOMContentLoaded', function() {
-    const testButton = document.createElement('button');
-    testButton.textContent = '🧪 Test API';
-    testButton.style.cssText = 'position:fixed;top:10px;right:10px;z-index:9999;background:#28a745;color:white;padding:5px 10px;border:none;border-radius:3px;cursor:pointer;font-size:12px;';
-    testButton.onclick = testKashTecAPI;
-    document.body.appendChild(testButton);
-});
 
 function saveSafetyPolicy() {
     const policy = {
