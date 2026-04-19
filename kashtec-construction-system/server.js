@@ -2581,6 +2581,50 @@ async function createWorkerAssignmentsTable() {
     }
 }
 
+// Create missing meeting_minutes table with correct schema
+async function createMeetingMinutesTable() {
+    try {
+        console.log('Creating missing meeting_minutes table...');
+        const db = require('./database/config/database');
+        
+        // Create meeting_minutes table
+        const createMeetingMinutesTableSQL = `
+            CREATE TABLE IF NOT EXISTS meeting_minutes (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                meeting_id INT NOT NULL,
+                meeting_title VARCHAR(255) NOT NULL,
+                meeting_date DATE NOT NULL,
+                meeting_type ENUM('board', 'management', 'department', 'project', 'client', 'training', 'general') NOT NULL,
+                location VARCHAR(255),
+                organizing_department ENUM('management', 'hr', 'finance', 'projects', 'operations', 'realestate') NOT NULL,
+                attendees TEXT,
+                minutes_content TEXT NOT NULL,
+                action_items TEXT,
+                decisions_made TEXT,
+                next_steps TEXT,
+                follow_up_date DATE,
+                status ENUM('Draft', 'Pending Review', 'Approved', 'Distributed') DEFAULT 'Draft',
+                prepared_by VARCHAR(255) NOT NULL,
+                reviewed_by VARCHAR(255),
+                approved_by VARCHAR(255),
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+                INDEX idx_meeting_id (meeting_id),
+                INDEX idx_meeting_date (meeting_date),
+                INDEX idx_meeting_type (meeting_type),
+                INDEX idx_status (status)
+            )
+        `;
+        
+        await db.execute(createMeetingMinutesTableSQL);
+        console.log('Meeting minutes table created successfully');
+        
+    } catch (error) {
+        console.error('Error creating meeting_minutes table:', error);
+        throw error;
+    }
+}
+
 // Start server after migrations and authentication table creation
 console.log('🚀 Starting KASHTEC server startup sequence...');
 
@@ -2606,7 +2650,11 @@ async function startServer() {
         await createWorkerAssignmentsTable();
         console.log('✅ Step 5 completed: Worker assignments table ready');
         
-        console.log('🔄 Step 6: Starting HTTP server...');
+        console.log('🔄 Step 6: Creating missing meeting_minutes table...');
+        await createMeetingMinutesTable();
+        console.log('✅ Step 6 completed: Meeting minutes table ready');
+        
+        console.log('🔄 Step 7: Starting HTTP server...');
         const server = app.listen(SERVER_PORT, '0.0.0.0', () => {
             console.log('🚀 ' + config.APP_NAME);
             console.log('🌍 Environment: ' + config.NODE_ENV);
