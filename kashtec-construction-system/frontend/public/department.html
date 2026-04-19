@@ -2945,8 +2945,6 @@ function reviewEmployeeCount(){
             <div class="workforce-actions">
                 <h5>Workforce Management Actions</h5>
                 <button class="action" onclick="generateWorkforceReport()">Generate Full Report</button>
-                <button class="action" onclick="approveHiringPlan()">Approve Hiring Plan</button>
-                <button class="action" onclick="reviewOrgStructure()">Review Organization Structure</button>
             </div>
         </div>
         
@@ -4840,16 +4838,174 @@ function generateWorkforceReport() {
     });
 }
 
-// Generate Excel report from employee data
 function generateExcelReport(employees) {
     try {
-        // Generate CSV report instead of Excel (due to CSP restrictions)
-        generateCSVReport(employees);
+        console.log('Generating comprehensive workforce Excel report...');
+        
+        // Create enhanced Excel report with multiple sections
+        generateEnhancedExcelReport(employees);
         
     } catch (error) {
-        console.error('❌ Error generating report:', error);
-        customAlert('Failed to generate report. Please try again.', 'Report Error', 'error');
+        console.error('Error generating Excel report:', error);
+        // Fallback to CSV if Excel generation fails
+        generateCSVReport(employees);
     }
+}
+
+// Generate enhanced Excel report with multiple sections
+function generateEnhancedExcelReport(employees) {
+    const timestamp = new Date().toISOString().replace(/[:.]/g, '-').split('T')[0];
+    const filename = `workforce_comprehensive_report_${timestamp}.csv`;
+    
+    // Calculate workforce statistics
+    const stats = calculateWorkforceStats(employees);
+    
+    // Create comprehensive report content
+    let reportContent = '';
+    
+    // Add summary section
+    reportContent += 'WORKFORCE COMPREHENSIVE REPORT\n';
+    reportContent += `Generated on: ${new Date().toLocaleString()}\n`;
+    reportContent += `Total Employees: ${stats.total}\n`;
+    reportContent += `Active Employees: ${stats.active}\n`;
+    reportContent += `Temporary Staff: ${stats.temporary}\n`;
+    reportContent += `Senior Staff: ${stats.senior}\n\n`;
+    
+    // Add department breakdown
+    reportContent += 'DEPARTMENT BREAKDOWN\n';
+    reportContent += 'Department,Employee Count,Percentage\n';
+    Object.entries(stats.departments).forEach(([dept, count]) => {
+        const percentage = ((count / stats.total) * 100).toFixed(1);
+        reportContent += `"${dept}",${count},"${percentage}%"\n`;
+    });
+    reportContent += '\n';
+    
+    // Add detailed employee data
+    reportContent += 'DETAILED EMPLOYEE DATA\n';
+    const headers = [
+        'Employee ID', 'Full Name', 'Email', 'Phone', 'Department', 
+        'Position', 'Status', 'Contract Type', 'Salary', 'Hire Date', 
+        'NIDA', 'Passport', 'Created At', 'Employment Type'
+    ];
+    
+    reportContent += headers.join(',') + '\n';
+    
+    employees.forEach(emp => {
+        const row = [
+            `"${emp.employee_id || emp.id || ''}"`,
+            `"${(emp.full_name || emp.name || '').replace(/"/g, '""')}"`,
+            `"${emp.gmail || emp.email || ''}"`,
+            `"${emp.phone || ''}"`,
+            `"${emp.department || ''}"`,
+            `"${(emp.position || emp.job_category || '').replace(/"/g, '""')}"`,
+            `"${emp.status || ''}"`,
+            `"${emp.contract_type || ''}"`,
+            `"${emp.salary || '0.00'}"`,
+            `"${emp.hire_date ? new Date(emp.hire_date).toLocaleDateString() : ''}"`,
+            `"${emp.nida || ''}"`,
+            `"${emp.passport || ''}"`,
+            `"${emp.created_at ? new Date(emp.created_at).toLocaleDateString() : ''}"`,
+            `"${emp.employment_type || 'Full-time'}"`
+        ].join(',');
+        reportContent += row + '\n';
+    });
+    
+    // Add analytics section
+    reportContent += '\nWORKFORCE ANALYTICS\n';
+    reportContent += 'Metric,Value,Insight\n';
+    reportContent += `"Average Tenure","${stats.averageTenure} months","Employee retention indicator"\n`;
+    reportContent += `"Department Count","${Object.keys(stats.departments).length}","Organizational complexity"\n`;
+    reportContent += `"Temporary Ratio","${((stats.temporary / stats.total) * 100).toFixed(1)}%","Workforce flexibility"\n`;
+    reportContent += `"Senior Ratio","${((stats.senior / stats.total) * 100).toFixed(1)}%","Leadership depth"\n`;
+    
+    // Create and download the file
+    const blob = new Blob([reportContent], { 
+        type: 'text/csv;charset=utf-8;' 
+    });
+    
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    
+    link.setAttribute('href', url);
+    link.setAttribute('download', filename);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    
+    // Show success message with detailed information
+    customAlert(
+        `Comprehensive workforce report generated successfully!\n\n` +
+        `Report Details:\n` +
+        `Total Employees: ${stats.total}\n` +
+        `Active Employees: ${stats.active}\n` +
+        `Departments: ${Object.keys(stats.departments).length}\n` +
+        `Report Format: Enhanced Excel CSV\n` +
+        `Filename: ${filename}\n\n` +
+        `Report includes:\n` +
+        `Executive Summary\n` +
+        `Department Breakdown\n` +
+        `Detailed Employee Data\n` +
+        `Workforce Analytics\n\n` +
+        `File downloaded to your default download folder.`,
+        'Excel Report Generated', 
+        'success'
+    );
+}
+
+// Calculate workforce statistics
+function calculateWorkforceStats(employees) {
+    const stats = {
+        total: employees.length,
+        active: 0,
+        temporary: 0,
+        senior: 0,
+        departments: {},
+        averageTenure: 0
+    };
+    
+    employees.forEach(emp => {
+        // Count by status
+        if (emp.status === 'active' || emp.status === 'Active') {
+            stats.active++;
+        }
+        
+        // Count by contract type
+        if (emp.contract_type === 'temporary' || emp.contract_type === 'Temporary' || 
+            emp.employment_type === 'temporary' || emp.employment_type === 'Temporary') {
+            stats.temporary++;
+        }
+        
+        // Count senior staff
+        if (emp.position && (
+            emp.position.toLowerCase().includes('manager') ||
+            emp.position.toLowerCase().includes('director') ||
+            emp.position.toLowerCase().includes('senior') ||
+            emp.position.toLowerCase().includes('lead') ||
+            emp.position.toLowerCase().includes('head')
+        )) {
+            stats.senior++;
+        }
+        
+        // Count by department
+        const dept = emp.department || 'Unassigned';
+        stats.departments[dept] = (stats.departments[dept] || 0) + 1;
+        
+        // Calculate tenure (if hire date available)
+        if (emp.hire_date) {
+            const hireDate = new Date(emp.hire_date);
+            const today = new Date();
+            const tenureMonths = Math.floor((today - hireDate) / (1000 * 60 * 60 * 24 * 30));
+            stats.averageTenure += tenureMonths;
+        }
+    });
+    
+    // Calculate average tenure
+    if (employees.length > 0) {
+        stats.averageTenure = Math.round(stats.averageTenure / employees.length);
+    }
+    
+    return stats;
 }
 
 // Generate CSV report as fallback
