@@ -4942,11 +4942,11 @@ async function createWorkforceBudgetTables() {
             CREATE TABLE IF NOT EXISTS workforce_budgets (
                 id INT AUTO_INCREMENT PRIMARY KEY,
                 department VARCHAR(100) NOT NULL,
-                total_budget DECIMAL(15,2) NOT NULL,
-                salaries_wages DECIMAL(15,2) NOT NULL,
-                training_development DECIMAL(15,2) NOT NULL,
-                employee_benefits DECIMAL(15,2) NOT NULL,
-                recruitment_costs DECIMAL(15,2) NOT NULL,
+                total_budget BIGINT NOT NULL,
+                salaries_wages BIGINT NOT NULL,
+                training_development BIGINT NOT NULL,
+                employee_benefits BIGINT NOT NULL,
+                recruitment_costs BIGINT NOT NULL,
                 status ENUM('pending', 'approved', 'rejected', 'modification_requested') DEFAULT 'pending',
                 submission_date DATE NOT NULL,
                 approved_by VARCHAR(255),
@@ -4963,6 +4963,10 @@ async function createWorkforceBudgetTables() {
         try {
             await db.execute(createWorkforceBudgetsTableSQL);
             console.log('Workforce budgets table created successfully');
+            
+            // Verify table structure
+            const columns = await db.execute('DESCRIBE workforce_budgets');
+            console.log('Workforce budgets table columns:', columns.map(col => col.Field));
         } catch (tableError) {
             console.error('Error creating workforce_budgets table:', tableError.message);
         }
@@ -4983,6 +4987,10 @@ async function createWorkforceBudgetTables() {
         try {
             await db.execute(createWorkforceBudgetRejectionsTableSQL);
             console.log('Workforce budget rejections table created successfully');
+            
+            // Verify table structure
+            const columns = await db.execute('DESCRIBE workforce_budget_rejections');
+            console.log('Workforce budget rejections table columns:', columns.map(col => col.Field));
         } catch (tableError) {
             console.error('Error creating workforce_budget_rejections table:', tableError.message);
         }
@@ -5005,6 +5013,10 @@ async function createWorkforceBudgetTables() {
         try {
             await db.execute(createWorkforceBudgetModificationsTableSQL);
             console.log('Workforce budget modifications table created successfully');
+            
+            // Verify table structure
+            const columns = await db.execute('DESCRIBE workforce_budget_modifications');
+            console.log('Workforce budget modifications table columns:', columns.map(col => col.Field));
         } catch (tableError) {
             console.error('Error creating workforce_budget_modifications table:', tableError.message);
         }
