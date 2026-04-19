@@ -4698,7 +4698,13 @@ async function createWorkerAssignmentsTable() {
 
         const [verification] = await db.execute("DESCRIBE worker_assignments");
 
-        console.log('Verified worker_assignments table columns:', verification.map(col => col.Field));
+        // Check if verification is an array and has elements
+        if (Array.isArray(verification) && verification.length > 0) {
+            console.log('Verified worker_assignments table columns:', verification.map(col => col.Field));
+        } else {
+            console.log('Could not verify table columns, verification result:', verification);
+            return; // Exit early if we can't verify
+        }
 
         
 
