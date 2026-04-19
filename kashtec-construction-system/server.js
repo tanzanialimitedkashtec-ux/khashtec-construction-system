@@ -5035,11 +5035,11 @@ async function createWorkforceBudgetTables() {
             // Insert fresh sample data with explicit id values
             await db.execute(`
                 INSERT INTO workforce_budgets 
-                (id, budget_period, total_proposed, salaries_wages, training_development, employee_benefits, recruitment_costs, status, submission_date, justification) 
+                (id, budget_period, total_proposed, salaries_wages, training_development, employee_benefits, recruitment_costs, submitted_by, submitted_by_role, status, submission_date, justification) 
                 VALUES 
-                (1, 'IT', '500000000', '300000000', '50000000', '100000000', '50000000', 'pending', '2026-04-15', 'Q2 2026 IT department budget for infrastructure upgrades and team expansion'),
-                (2, 'Construction', '1200000000', '800000000', '100000000', '200000000', '100000000', 'pending', '2026-04-16', 'Q2 2026 Construction budget for new projects and equipment'),
-                (3, 'Operations', '800000000', '500000000', '80000000', '150000000', '70000000', 'pending', '2026-04-17', 'Q2 2026 Operations budget for process improvements and staffing')
+                (1, 'IT', '500000000', '300000000', '50000000', '100000000', '50000000', 'Department Head', 'IT Manager', 'pending', '2026-04-15', 'Q2 2026 IT department budget for infrastructure upgrades and team expansion'),
+                (2, 'Construction', '1200000000', '800000000', '100000000', '200000000', '100000000', 'Department Head', 'Construction Manager', 'pending', '2026-04-16', 'Q2 2026 Construction budget for new projects and equipment'),
+                (3, 'Operations', '800000000', '500000000', '80000000', '150000000', '70000000', 'Department Head', 'Operations Manager', 'pending', '2026-04-17', 'Q2 2026 Operations budget for process improvements and staffing')
             `);
             console.log('Sample workforce budget requests inserted successfully');
         } catch (error) {
