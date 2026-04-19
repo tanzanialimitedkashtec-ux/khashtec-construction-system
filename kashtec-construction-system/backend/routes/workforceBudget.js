@@ -17,17 +17,13 @@ router.get('/test', (req, res) => {
 router.get('/', async (req, res) => {
     console.log('📝 GET /api/workforce-budget accessed');
     try {
-        const connection = await db.getConnection();
-        
-        const [rows] = await connection.query(`
+        const [rows] = await db.execute(`
             SELECT id, department, total_budget, salaries_wages, training_development, 
                    employee_benefits, recruitment_costs, status, submission_date,
                    approved_by, approval_date, justification
             FROM workforce_budgets 
             ORDER BY submission_date DESC
         `);
-        
-        connection.release();
         
         res.json(rows);
     } catch (error) {
@@ -40,17 +36,13 @@ router.get('/', async (req, res) => {
 router.get('/:id', async (req, res) => {
     console.log('?? GET /api/workforce-budget/:id accessed with id:', req.params.id);
     try {
-        const connection = await db.getConnection();
-        
-        const [rows] = await connection.query(`
+        const [rows] = await db.execute(`
             SELECT id, department, total_budget, salaries_wages, training_development, 
                    employee_benefits, recruitment_costs, status, submission_date,
                    approved_by, approval_date, justification
             FROM workforce_budgets 
             WHERE id = ?
         `, [req.params.id]);
-        
-        connection.release();
         
         if (rows.length === 0) {
             return res.status(404).json({ error: 'Workforce budget not found' });

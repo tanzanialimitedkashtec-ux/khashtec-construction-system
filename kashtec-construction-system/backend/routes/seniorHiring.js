@@ -17,18 +17,14 @@ router.get('/test', (req, res) => {
 router.get('/', async (req, res) => {
     console.log('📝 GET /api/senior-hiring accessed');
     try {
-        const connection = await db.getConnection();
-        
         // Fetch pending senior hiring requests from senior_hiring_approval table
-        const [rows] = await connection.query(`
+        const [rows] = await db.execute(`
             SELECT id, candidate_name, position, department, proposed_salary, experience, 
                    hr_recommendation, status, request_date, approval_date, approved_by
             FROM senior_hiring_approval 
             WHERE status = 'pending'
             ORDER BY request_date DESC
         `);
-        
-        connection.release();
         
         res.json(rows);
     } catch (error) {
@@ -41,16 +37,12 @@ router.get('/', async (req, res) => {
 router.get('/:id', async (req, res) => {
     console.log('📝 GET /api/senior-hiring/:id accessed with id:', req.params.id);
     try {
-        const connection = await db.getConnection();
-        
-        const [rows] = await connection.query(`
+        const [rows] = await db.execute(`
             SELECT id, candidate_name, position, department, proposed_salary, experience, 
                    hr_recommendation, status, request_date, approval_date, approved_by
             FROM senior_hiring_approval 
             WHERE id = ?
         `, [req.params.id]);
-        
-        connection.release();
         
         if (rows.length === 0) {
             return res.status(404).json({ error: 'Senior hiring request not found' });

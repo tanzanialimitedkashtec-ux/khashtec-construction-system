@@ -4890,8 +4890,14 @@ async function createSeniorHiringTables() {
 
         // Force insert sample senior hiring data for testing
         try {
-            // Clear existing data to avoid duplicates
-            await db.execute('DELETE FROM senior_hiring_approval');
+            // Clear existing data to avoid duplicates - handle foreign key constraints
+            try {
+                await db.execute('DELETE FROM senior_hiring_info_request');
+                await db.execute('DELETE FROM senior_hiring_rejection');
+                await db.execute('DELETE FROM senior_hiring_approval');
+            } catch (fkError) {
+                console.log('Warning: Could not clear tables due to foreign key constraints:', fkError.message);
+            }
             
             // Insert fresh sample data
             await db.execute(`
@@ -4993,10 +4999,16 @@ async function createWorkforceBudgetTables() {
         
         // Force insert sample workforce budget data for testing
         try {
-            // Clear existing data to avoid duplicates
-            await db.execute('DELETE FROM workforce_budgets');
+            // Clear existing data to avoid duplicates - handle foreign key constraints
+            try {
+                await db.execute('DELETE FROM workforce_budget_modifications');
+                await db.execute('DELETE FROM workforce_budget_rejections');
+                await db.execute('DELETE FROM workforce_budgets');
+            } catch (fkError) {
+                console.log('Warning: Could not clear tables due to foreign key constraints:', fkError.message);
+            }
             
-            // Insert fresh sample data
+            // Insert fresh sample data - use only essential columns
             await db.execute(`
                 INSERT INTO workforce_budgets 
                 (department, total_budget, salaries_wages, training_development, employee_benefits, recruitment_costs, status, submission_date, justification) 
