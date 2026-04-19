@@ -1296,6 +1296,9 @@ app.post('/api/work/assignments', async (req, res) => {
 
     try {
 
+        console.log('Worker assignments API called');
+        console.log('Request body:', req.body);
+
         const db = require('./database/config/database');
 
         const {
@@ -1322,6 +1325,32 @@ app.post('/api/work/assignments', async (req, res) => {
 
         } = req.body;
 
+        
+
+        console.log('Extracted fields:', {
+
+            employee_id,
+
+            employee_name,
+
+            project_id,
+
+            project_name,
+
+            role_in_project,
+
+            start_date,
+
+            end_date,
+
+            assignment_notes,
+
+            assigned_by,
+
+            assigned_by_role
+
+        });
+
 
 
         // Validate required fields
@@ -1341,6 +1370,8 @@ app.post('/api/work/assignments', async (req, res) => {
 
 
         // Insert worker assignment
+
+        console.log('About to execute INSERT query...');
 
         const [result] = await db.execute(`
 
@@ -1368,7 +1399,7 @@ app.post('/api/work/assignments', async (req, res) => {
 
                 created_at
 
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())
 
         `, [
 
@@ -1377,6 +1408,8 @@ app.post('/api/work/assignments', async (req, res) => {
             start_date, end_date, assignment_notes, assigned_by, assigned_by_role
 
         ]);
+
+        console.log('INSERT query successful, result:', result);
 
 
 
@@ -4602,11 +4635,51 @@ async function createWorkerAssignmentsTable() {
 
         
 
+        // First, check if table exists and get current schema
+
+        try {
+
+            const [tableInfo] = await db.execute("DESCRIBE worker_assignments");
+
+            console.log('Current worker_assignments table columns:', tableInfo.map(col => col.Field));
+
+            
+
+            // Check if role_in_project column exists
+
+            const hasRoleColumn = tableInfo.some(col => col.Field === 'role_in_project');
+
+            
+
+            if (!hasRoleColumn) {
+
+                console.log('role_in_project column missing, dropping and recreating table...');
+
+                // Drop existing table to recreate with correct schema
+
+                await db.execute("DROP TABLE IF EXISTS worker_assignments");
+
+            } else {
+
+                console.log('worker_assignments table already exists with correct schema');
+
+                return;
+
+            }
+
+        } catch (error) {
+
+            console.log('Table does not exist, creating new one...');
+
+        }
+
+        
+
         // Create worker_assignments table
 
         const createWorkerAssignmentsTableSQL = `
 
-            CREATE TABLE IF NOT EXISTS worker_assignments (
+            CREATE TABLE worker_assignments (
 
                 id INT AUTO_INCREMENT PRIMARY KEY,
 
@@ -4653,6 +4726,14 @@ async function createWorkerAssignmentsTable() {
         await db.execute(createWorkerAssignmentsTableSQL);
 
         console.log('Worker assignments table created successfully');
+
+        
+
+        // Verify table was created correctly
+
+        const [verification] = await db.execute("DESCRIBE worker_assignments");
+
+        console.log('Verified worker_assignments table columns:', verification.map(col => col.Field));
 
         
 
