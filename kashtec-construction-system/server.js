@@ -5035,7 +5035,7 @@ async function createWorkforceBudgetTables() {
             // Insert fresh sample data with explicit id values
             await db.execute(`
                 INSERT INTO workforce_budgets 
-                (id, department, total_budget, salaries_wages, training_development, employee_benefits, recruitment_costs, status, submission_date, justification) 
+                (id, budget_period, total_proposed, salaries_wages, training_development, employee_benefits, recruitment_costs, status, submission_date, justification) 
                 VALUES 
                 (1, 'IT', '500000000', '300000000', '50000000', '100000000', '50000000', 'pending', '2026-04-15', 'Q2 2026 IT department budget for infrastructure upgrades and team expansion'),
                 (2, 'Construction', '1200000000', '800000000', '100000000', '200000000', '100000000', 'pending', '2026-04-16', 'Q2 2026 Construction budget for new projects and equipment'),

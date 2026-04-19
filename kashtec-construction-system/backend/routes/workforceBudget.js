@@ -102,7 +102,7 @@ router.post('/:id/reject', async (req, res) => {
         // Insert into workforce_budget_rejections table
         await db.execute(`
             INSERT INTO workforce_budget_rejections 
-            (budget_id, rejection_reason, rejected_by, rejected_date)
+            (budget_id, rejection_reason, rejected_by, rejection_date)
             VALUES (?, ?, ?, ?)
         `, [req.params.id, rejection_reason || 'Budget does not meet requirements', rejectedBy, rejectedDate]);
         
