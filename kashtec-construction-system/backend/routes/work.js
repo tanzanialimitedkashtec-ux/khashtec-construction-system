@@ -76,6 +76,12 @@ router.get('/:department', async (req, res) => {
             }
         }
         
+        // Map assignments to admin_work table since assignments_work doesn't exist
+        if (department === 'assignments') {
+            department = 'admin';
+            console.log('🔄 Mapping assignments department to admin_work table');
+        }
+        
         console.log(`📋 Fetching ${department} work items`);
         
         let workItems = [];

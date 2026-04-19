@@ -140,7 +140,14 @@ router.post('/', async (req, res) => {
             // First, verify the worker_accounts table exists and has correct schema
             try {
                 const [tableInfo] = await db.execute("DESCRIBE worker_accounts");
-                console.log('?? worker_accounts table columns:', tableInfo.map(col => col.Field));
+                
+                // Check if tableInfo is an array and has elements
+                if (Array.isArray(tableInfo) && tableInfo.length > 0) {
+                    console.log('?? worker_accounts table columns:', tableInfo.map(col => col.Field));
+                } else {
+                    console.log('?? Could not verify worker_accounts table columns, tableInfo result:', tableInfo);
+                    throw new Error('Could not verify worker_accounts table schema');
+                }
                 
                 // Check if all required columns exist
                 const requiredColumns = ['employee_id', 'full_name', 'work_email', 'phone_number', 'department', 'job_title', 'account_type', 'access_level', 'temporary_password'];
