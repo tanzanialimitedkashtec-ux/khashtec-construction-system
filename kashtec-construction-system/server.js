@@ -4899,14 +4899,14 @@ async function createSeniorHiringTables() {
                 console.log('Warning: Could not clear tables due to foreign key constraints:', fkError.message);
             }
             
-            // Insert fresh sample data
+            // Insert fresh sample data with explicit id values
             await db.execute(`
                 INSERT INTO senior_hiring_approval 
-                (candidate_name, position, department, proposed_salary, experience, hr_recommendation, status, request_date) 
+                (id, candidate_name, position, department, proposed_salary, experience, hr_recommendation, status, request_date) 
                 VALUES 
-                ('John Smith', 'Project Manager', 'Projects', '150000', '10 years in construction management', 'Highly recommended for leadership role', 'pending', '2026-04-15'),
-                ('Sarah Johnson', 'Senior Engineer', 'Operations', '120000', '8 years in structural engineering', 'Excellent technical skills and project experience', 'pending', '2026-04-16'),
-                ('Michael Chen', 'Finance Director', 'Finance', '180000', '12 years in financial management', 'Strong leadership background in construction finance', 'pending', '2026-04-17')
+                (1, 'John Smith', 'Project Manager', 'Projects', '150000', '10 years in construction management', 'Highly recommended for leadership role', 'pending', '2026-04-15'),
+                (2, 'Sarah Johnson', 'Senior Engineer', 'Operations', '120000', '8 years in structural engineering', 'Excellent technical skills and project experience', 'pending', '2026-04-16'),
+                (3, 'Michael Chen', 'Finance Director', 'Finance', '180000', '12 years in financial management', 'Strong leadership background in construction finance', 'pending', '2026-04-17')
             `);
             console.log('Sample senior hiring requests inserted successfully');
         } catch (error) {
@@ -5008,14 +5008,14 @@ async function createWorkforceBudgetTables() {
                 console.log('Warning: Could not clear tables due to foreign key constraints:', fkError.message);
             }
             
-            // Insert fresh sample data - use only essential columns
+            // Insert fresh sample data with explicit id values
             await db.execute(`
                 INSERT INTO workforce_budgets 
-                (department, total_budget, salaries_wages, training_development, employee_benefits, recruitment_costs, status, submission_date, justification) 
+                (id, department, total_budget, salaries_wages, training_development, employee_benefits, recruitment_costs, status, submission_date, justification) 
                 VALUES 
-                ('IT', '500000000', '300000000', '50000000', '100000000', '50000000', 'pending', '2026-04-15', 'Q2 2026 IT department budget for infrastructure upgrades and team expansion'),
-                ('Construction', '1200000000', '800000000', '100000000', '200000000', '100000000', 'pending', '2026-04-16', 'Q2 2026 Construction budget for new projects and equipment'),
-                ('Operations', '800000000', '500000000', '80000000', '150000000', '70000000', 'pending', '2026-04-17', 'Q2 2026 Operations budget for process improvements and staffing')
+                (1, 'IT', '500000000', '300000000', '50000000', '100000000', '50000000', 'pending', '2026-04-15', 'Q2 2026 IT department budget for infrastructure upgrades and team expansion'),
+                (2, 'Construction', '1200000000', '800000000', '100000000', '200000000', '100000000', 'pending', '2026-04-16', 'Q2 2026 Construction budget for new projects and equipment'),
+                (3, 'Operations', '800000000', '500000000', '80000000', '150000000', '70000000', 'pending', '2026-04-17', 'Q2 2026 Operations budget for process improvements and staffing')
             `);
             console.log('Sample workforce budget requests inserted successfully');
         } catch (error) {
