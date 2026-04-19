@@ -4889,8 +4889,9 @@ async function createSeniorHiringTables() {
         
 
         // Insert sample senior hiring data for testing (only if table is empty)
-        const [existingRecords] = await db.execute('SELECT COUNT(*) as count FROM senior_hiring_approval');
-        if (existingRecords[0].count === 0) {
+        const existingRecordsResult = await db.execute('SELECT COUNT(*) as count FROM senior_hiring_approval');
+        const existingRecords = existingRecordsResult || [];
+        if (existingRecords.length > 0 && existingRecords[0].count === 0) {
             await db.execute(`
                 INSERT INTO senior_hiring_approval 
                 (candidate_name, position, department, proposed_salary, experience, hr_recommendation, status, request_date) 
@@ -4989,8 +4990,9 @@ async function createWorkforceBudgetTables() {
         console.log('Workforce budget modifications table created successfully');
         
         // Insert sample workforce budget data for testing (only if table is empty)
-        const [existingBudgetRecords] = await db.execute('SELECT COUNT(*) as count FROM workforce_budgets');
-        if (existingBudgetRecords[0].count === 0) {
+        const existingBudgetRecordsResult = await db.execute('SELECT COUNT(*) as count FROM workforce_budgets');
+        const existingBudgetRecords = existingBudgetRecordsResult || [];
+        if (existingBudgetRecords.length > 0 && existingBudgetRecords[0].count === 0) {
             await db.execute(`
                 INSERT INTO workforce_budgets 
                 (department, total_budget, salaries_wages, training_development, employee_benefits, recruitment_costs, status, submission_date, justification) 
