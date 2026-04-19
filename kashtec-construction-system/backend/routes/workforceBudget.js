@@ -18,9 +18,9 @@ router.get('/', async (req, res) => {
     console.log('📝 GET /api/workforce-budget accessed');
     try {
         const rows = await db.execute(`
-            SELECT id, department, total_budget, salaries_wages, training_development, 
+            SELECT id, budget_period as department, total_proposed as total_budget, salaries_wages, training_development, 
                    employee_benefits, recruitment_costs, status, submission_date,
-                   approved_by, approval_date, justification
+                   approved_by, approved_date as approval_date, justification
             FROM workforce_budgets 
             ORDER BY submission_date DESC
         `);
@@ -37,9 +37,9 @@ router.get('/:id', async (req, res) => {
     console.log('?? GET /api/workforce-budget/:id accessed with id:', req.params.id);
     try {
         const rows = await db.execute(`
-            SELECT id, department, total_budget, salaries_wages, training_development, 
+            SELECT id, budget_period as department, total_proposed as total_budget, salaries_wages, training_development, 
                    employee_benefits, recruitment_costs, status, submission_date,
-                   approved_by, approval_date, justification
+                   approved_by, approved_date as approval_date, justification
             FROM workforce_budgets 
             WHERE id = ?
         `, [req.params.id]);
@@ -65,9 +65,9 @@ router.post('/:id/approve', async (req, res) => {
         // Update workforce_budgets table
         const result = await db.execute(`
             UPDATE workforce_budgets 
-            SET status = 'approved', approved_by = ?, approval_date = ?
+            SET status = 'approved', approved_by = ?, approved_date = ?
             WHERE id = ?
-        `, [approvedBy, approvalDate, req.params.id]);
+        `, [approvedBy, new Date().toISOString().split('T')[0], req.params.id]);
         
         if (result.affectedRows === 0) {
             return res.status(404).json({
@@ -141,7 +141,7 @@ router.post('/:id/modify', async (req, res) => {
         // Insert into workforce_budget_modifications table
         await db.execute(`
             INSERT INTO workforce_budget_modifications 
-            (budget_id, modification_request, requested_by, requested_date, status)
+            (budget_id, modification_request, requested_by, request_date, status)
             VALUES (?, ?, ?, ?, 'pending')
         `, [req.params.id, modification_request || 'Please provide additional details', requestedBy, requestedDate]);
         
