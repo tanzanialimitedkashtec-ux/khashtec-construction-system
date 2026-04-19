@@ -4802,39 +4802,108 @@ function rejectBudget(budgetId) {
 }
 
 function generateWorkforceReport() {
+    console.log('generateWorkforceReport() called');
     customAlert('Generating comprehensive workforce report...\n\nReport will include all employee data, analytics, and trends.', 'Report Generation', 'info');
     
     // Fetch employee data for report
     const baseUrl = window.location.origin;
+    console.log('Fetching employee data from:', `${baseUrl}/api/employees`);
+    
+    // Check if sessionManager is available
+    let authToken = '';
+    try {
+        if (typeof sessionManager !== 'undefined' && sessionManager.getAuthToken) {
+            authToken = sessionManager.getAuthToken();
+            console.log('Auth token found:', authToken ? 'Yes' : 'No');
+        } else {
+            console.log('SessionManager not available, proceeding without auth');
+        }
+    } catch (error) {
+        console.log('Error getting auth token:', error);
+    }
+    
     fetch(`${baseUrl}/api/employees`, {
         method: 'GET',
         headers: {
             'Content-Type': 'application/json',
             'Accept': 'application/json',
-            'Authorization': `Bearer ${sessionManager.getAuthToken()}`
+            ...(authToken ? { 'Authorization': `Bearer ${authToken}` } : {})
         }
     })
     .then(response => {
+        console.log('Response status:', response.status);
         if (!response.ok) {
             throw new Error(`HTTP ${response.status}: ${response.statusText}`);
         }
         return response.json();
     })
     .then(data => {
-        console.log('📊 Workforce report data:', data);
-        const employees = Array.isArray(data) ? data : [];
+        console.log('Workforce report data received:', data);
+        const employees = Array.isArray(data) ? data : [data]; // Handle single object response
+        
+        console.log('Processed employees array:', employees);
+        console.log('Number of employees:', employees.length);
         
         if (employees.length === 0) {
-            customAlert('No employee data available for report generation.', 'No Data', 'warning');
+            customAlert('No employee data available for report generation.\n\nCreating sample report for demonstration...', 'No Data', 'warning');
+            // Create sample data for demonstration
+            const sampleEmployees = [
+                {
+                    employee_id: 'EMP001',
+                    full_name: 'Sample Employee',
+                    gmail: 'sample@company.com',
+                    phone: '+255123456789',
+                    department: 'HR',
+                    position: 'HR Manager',
+                    status: 'active',
+                    contract_type: 'permanent',
+                    salary: '50000.00',
+                    hire_date: '2023-01-15',
+                    nida: '123456789012345678',
+                    passport: 'PA1234567',
+                    created_at: '2023-01-15',
+                    employment_type: 'Full-time'
+                }
+            ];
+            generateExcelReport(sampleEmployees);
             return;
         }
         
+        console.log('Calling generateExcelReport with employees...');
         // Generate Excel report
         generateExcelReport(employees);
     })
     .catch(error => {
-        console.error('❌ Error generating workforce report:', error);
-        customAlert(`Failed to generate workforce report: ${error.message}`, 'Report Error', 'error');
+        console.error('Error generating workforce report:', error);
+        console.error('Error details:', {
+            message: error.message,
+            stack: error.stack,
+            name: error.name
+        });
+        
+        // Try to generate a sample report even if API fails
+        customAlert(`API Error: ${error.message}\n\nGenerating sample report for demonstration...`, 'API Error - Using Sample Data', 'warning');
+        
+        const sampleEmployees = [
+            {
+                employee_id: 'SAMPLE001',
+                full_name: 'Demo Employee',
+                gmail: 'demo@company.com',
+                phone: '+255987654321',
+                department: 'IT',
+                position: 'Developer',
+                status: 'active',
+                contract_type: 'permanent',
+                salary: '60000.00',
+                hire_date: '2023-03-20',
+                nida: '987654321098765432',
+                passport: 'PA7654321',
+                created_at: '2023-03-20',
+                employment_type: 'Full-time'
+            }
+        ];
+        
+        generateExcelReport(sampleEmployees);
     });
 }
 
@@ -4854,103 +4923,153 @@ function generateExcelReport(employees) {
 
 // Generate enhanced Excel report with multiple sections
 function generateEnhancedExcelReport(employees) {
-    const timestamp = new Date().toISOString().replace(/[:.]/g, '-').split('T')[0];
-    const filename = `workforce_comprehensive_report_${timestamp}.csv`;
+    console.log('generateEnhancedExcelReport() called with employees:', employees.length);
     
-    // Calculate workforce statistics
-    const stats = calculateWorkforceStats(employees);
-    
-    // Create comprehensive report content
-    let reportContent = '';
-    
-    // Add summary section
-    reportContent += 'WORKFORCE COMPREHENSIVE REPORT\n';
-    reportContent += `Generated on: ${new Date().toLocaleString()}\n`;
-    reportContent += `Total Employees: ${stats.total}\n`;
-    reportContent += `Active Employees: ${stats.active}\n`;
-    reportContent += `Temporary Staff: ${stats.temporary}\n`;
-    reportContent += `Senior Staff: ${stats.senior}\n\n`;
-    
-    // Add department breakdown
-    reportContent += 'DEPARTMENT BREAKDOWN\n';
-    reportContent += 'Department,Employee Count,Percentage\n';
-    Object.entries(stats.departments).forEach(([dept, count]) => {
-        const percentage = ((count / stats.total) * 100).toFixed(1);
-        reportContent += `"${dept}",${count},"${percentage}%"\n`;
-    });
-    reportContent += '\n';
-    
-    // Add detailed employee data
-    reportContent += 'DETAILED EMPLOYEE DATA\n';
-    const headers = [
-        'Employee ID', 'Full Name', 'Email', 'Phone', 'Department', 
-        'Position', 'Status', 'Contract Type', 'Salary', 'Hire Date', 
-        'NIDA', 'Passport', 'Created At', 'Employment Type'
-    ];
-    
-    reportContent += headers.join(',') + '\n';
-    
-    employees.forEach(emp => {
-        const row = [
-            `"${emp.employee_id || emp.id || ''}"`,
-            `"${(emp.full_name || emp.name || '').replace(/"/g, '""')}"`,
-            `"${emp.gmail || emp.email || ''}"`,
-            `"${emp.phone || ''}"`,
-            `"${emp.department || ''}"`,
-            `"${(emp.position || emp.job_category || '').replace(/"/g, '""')}"`,
-            `"${emp.status || ''}"`,
-            `"${emp.contract_type || ''}"`,
-            `"${emp.salary || '0.00'}"`,
-            `"${emp.hire_date ? new Date(emp.hire_date).toLocaleDateString() : ''}"`,
-            `"${emp.nida || ''}"`,
-            `"${emp.passport || ''}"`,
-            `"${emp.created_at ? new Date(emp.created_at).toLocaleDateString() : ''}"`,
-            `"${emp.employment_type || 'Full-time'}"`
-        ].join(',');
-        reportContent += row + '\n';
-    });
-    
-    // Add analytics section
-    reportContent += '\nWORKFORCE ANALYTICS\n';
-    reportContent += 'Metric,Value,Insight\n';
-    reportContent += `"Average Tenure","${stats.averageTenure} months","Employee retention indicator"\n`;
-    reportContent += `"Department Count","${Object.keys(stats.departments).length}","Organizational complexity"\n`;
-    reportContent += `"Temporary Ratio","${((stats.temporary / stats.total) * 100).toFixed(1)}%","Workforce flexibility"\n`;
-    reportContent += `"Senior Ratio","${((stats.senior / stats.total) * 100).toFixed(1)}%","Leadership depth"\n`;
-    
-    // Create and download the file
-    const blob = new Blob([reportContent], { 
-        type: 'text/csv;charset=utf-8;' 
-    });
-    
-    const link = document.createElement('a');
-    const url = URL.createObjectURL(blob);
-    
-    link.setAttribute('href', url);
-    link.setAttribute('download', filename);
-    link.style.visibility = 'hidden';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    
-    // Show success message with detailed information
-    customAlert(
-        `Comprehensive workforce report generated successfully!\n\n` +
-        `Report Details:\n` +
-        `Total Employees: ${stats.total}\n` +
-        `Active Employees: ${stats.active}\n` +
-        `Departments: ${Object.keys(stats.departments).length}\n` +
-        `Report Format: Enhanced Excel CSV\n` +
-        `Filename: ${filename}\n\n` +
-        `Report includes:\n` +
-        `Executive Summary\n` +
-        `Department Breakdown\n` +
-        `Detailed Employee Data\n` +
-        `Workforce Analytics\n\n` +
-        `File downloaded to your default download folder.`,
-        'Excel Report Generated', 
-        'success'
-    );
+    try {
+        const timestamp = new Date().toISOString().replace(/[:.]/g, '-').split('T')[0];
+        const filename = `workforce_comprehensive_report_${timestamp}.csv`;
+        console.log('Generated filename:', filename);
+        
+        // Calculate workforce statistics
+        console.log('Calculating workforce statistics...');
+        const stats = calculateWorkforceStats(employees);
+        console.log('Calculated stats:', stats);
+        
+        // Create comprehensive report content
+        console.log('Creating report content...');
+        let reportContent = '';
+        
+        // Add summary section
+        reportContent += 'WORKFORCE COMPREHENSIVE REPORT\n';
+        reportContent += `Generated on: ${new Date().toLocaleString()}\n`;
+        reportContent += `Total Employees: ${stats.total}\n`;
+        reportContent += `Active Employees: ${stats.active}\n`;
+        reportContent += `Temporary Staff: ${stats.temporary}\n`;
+        reportContent += `Senior Staff: ${stats.senior}\n\n`;
+        console.log('Added summary section');
+        
+        // Add department breakdown
+        reportContent += 'DEPARTMENT BREAKDOWN\n';
+        reportContent += 'Department,Employee Count,Percentage\n';
+        Object.entries(stats.departments).forEach(([dept, count]) => {
+            const percentage = stats.total > 0 ? ((count / stats.total) * 100).toFixed(1) : '0.0';
+            reportContent += `"${dept}",${count},"${percentage}%"\n`;
+        });
+        reportContent += '\n';
+        console.log('Added department breakdown');
+        
+        // Add detailed employee data
+        reportContent += 'DETAILED EMPLOYEE DATA\n';
+        const headers = [
+            'Employee ID', 'Full Name', 'Email', 'Phone', 'Department', 
+            'Position', 'Status', 'Contract Type', 'Salary', 'Hire Date', 
+            'NIDA', 'Passport', 'Created At', 'Employment Type'
+        ];
+        
+        reportContent += headers.join(',') + '\n';
+        console.log('Added employee data headers');
+        
+        employees.forEach((emp, index) => {
+            const row = [
+                `"${emp.employee_id || emp.id || ''}"`,
+                `"${(emp.full_name || emp.name || '').replace(/"/g, '""')}"`,
+                `"${emp.gmail || emp.email || ''}"`,
+                `"${emp.phone || ''}"`,
+                `"${emp.department || ''}"`,
+                `"${(emp.position || emp.job_category || '').replace(/"/g, '""')}"`,
+                `"${emp.status || ''}"`,
+                `"${emp.contract_type || ''}"`,
+                `"${emp.salary || '0.00'}"`,
+                `"${emp.hire_date ? new Date(emp.hire_date).toLocaleDateString() : ''}"`,
+                `"${emp.nida || ''}"`,
+                `"${emp.passport || ''}"`,
+                `"${emp.created_at ? new Date(emp.created_at).toLocaleDateString() : ''}"`,
+                `"${emp.employment_type || 'Full-time'}"`
+            ].join(',');
+            reportContent += row + '\n';
+        });
+        console.log('Added employee data for', employees.length, 'employees');
+        
+        // Add analytics section
+        reportContent += '\nWORKFORCE ANALYTICS\n';
+        reportContent += 'Metric,Value,Insight\n';
+        reportContent += `"Average Tenure","${stats.averageTenure} months","Employee retention indicator"\n`;
+        reportContent += `"Department Count","${Object.keys(stats.departments).length}","Organizational complexity"\n`;
+        reportContent += `"Temporary Ratio","${stats.total > 0 ? ((stats.temporary / stats.total) * 100).toFixed(1) : '0.0'}%","Workforce flexibility"\n`;
+        reportContent += `"Senior Ratio","${stats.total > 0 ? ((stats.senior / stats.total) * 100).toFixed(1) : '0.0'}%","Leadership depth"\n`;
+        console.log('Added analytics section');
+        
+        console.log('Report content length:', reportContent.length);
+        
+        // Create and download the file
+        console.log('Creating blob...');
+        const blob = new Blob([reportContent], { 
+            type: 'text/csv;charset=utf-8;' 
+        });
+        console.log('Blob created, size:', blob.size);
+        
+        console.log('Creating download link...');
+        const link = document.createElement('a');
+        const url = URL.createObjectURL(blob);
+        console.log('Object URL created:', url);
+        
+        link.setAttribute('href', url);
+        link.setAttribute('download', filename);
+        link.style.visibility = 'hidden';
+        document.body.appendChild(link);
+        console.log('Link added to DOM');
+        
+        console.log('Triggering download...');
+        link.click();
+        console.log('Download triggered');
+        
+        document.body.removeChild(link);
+        console.log('Link removed from DOM');
+        
+        URL.revokeObjectURL(url);
+        console.log('Object URL revoked');
+        
+        // Show success message with detailed information
+        console.log('Showing success message...');
+        customAlert(
+            `Comprehensive workforce report generated successfully!\n\n` +
+            `Report Details:\n` +
+            `Total Employees: ${stats.total}\n` +
+            `Active Employees: ${stats.active}\n` +
+            `Departments: ${Object.keys(stats.departments).length}\n` +
+            `Report Format: Enhanced Excel CSV\n` +
+            `Filename: ${filename}\n\n` +
+            `Report includes:\n` +
+            `Executive Summary\n` +
+            `Department Breakdown\n` +
+            `Detailed Employee Data\n` +
+            `Workforce Analytics\n\n` +
+            `File downloaded to your default download folder.`,
+            'Excel Report Generated', 
+            'success'
+        );
+        
+        console.log('generateEnhancedExcelReport() completed successfully');
+        
+    } catch (error) {
+        console.error('Error in generateEnhancedExcelReport():', error);
+        console.error('Error details:', {
+            message: error.message,
+            stack: error.stack,
+            name: error.name
+        });
+        
+        // Show error message and try fallback
+        customAlert(`Error generating enhanced report: ${error.message}\n\nTrying basic CSV format...`, 'Report Error - Trying Fallback', 'warning');
+        
+        // Fallback to basic CSV
+        try {
+            generateCSVReport(employees);
+        } catch (fallbackError) {
+            console.error('Fallback also failed:', fallbackError);
+            customAlert(`Both enhanced and basic report generation failed.\n\nError: ${fallbackError.message}\n\nPlease check browser settings and try again.`, 'Report Generation Failed', 'error');
+        }
+    }
 }
 
 // Calculate workforce statistics
