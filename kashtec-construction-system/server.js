@@ -5426,21 +5426,17 @@ async function startServer() {
 
         
 
-        console.log('🔄 Step 3: Creating employee details table...');
+        console.log(' Step 3: Creating employee details table...');
 
         await createEmployeeDetailsTable();
 
-        console.log('✅ Step 3 completed: Employee details table ready');
+        console.log('Step 3 completed: Employee details table ready');
         
-        console.log('🔄 Step 3.5: Creating missing employee table...');
-        await createEmployeeTable();
-        console.log('✅ Step 3.5 completed: Employee table ready');
-        
-        console.log('🔄 Step 4: Creating missing properties and clients tables...');
+        console.log(' Step 4: Creating missing properties and clients tables...');
 
         await createPropertiesAndClientsTables();
 
-        console.log('✅ Step 4 completed: Properties and clients tables ready');
+        console.log(' Step 4 completed: Properties and clients tables ready');
 
         
 
