@@ -134,6 +134,29 @@ router.post('/', async (req, res) => {
     
     try {
         try {
+            console.log('?? Worker account creation request received');
+            console.log('?? Request data:', { employeeId, fullName, workEmail, phoneNumber, department, jobTitle, accountType, accessLevel });
+            
+            // First, verify the worker_accounts table exists and has correct schema
+            try {
+                const [tableInfo] = await db.execute("DESCRIBE worker_accounts");
+                console.log('?? worker_accounts table columns:', tableInfo.map(col => col.Field));
+                
+                // Check if all required columns exist
+                const requiredColumns = ['employee_id', 'full_name', 'work_email', 'phone_number', 'department', 'job_title', 'account_type', 'access_level', 'temporary_password'];
+                const missingColumns = requiredColumns.filter(col => !tableInfo.some(tableCol => tableCol.Field === col));
+                
+                if (missingColumns.length > 0) {
+                    console.error('?? Missing columns in worker_accounts table:', missingColumns);
+                    throw new Error(`Missing required columns: ${missingColumns.join(', ')}`);
+                }
+                
+                console.log('?? worker_accounts table schema verified');
+            } catch (schemaError) {
+                console.error('?? Error checking worker_accounts table schema:', schemaError);
+                throw new Error(`Database table schema issue: ${schemaError.message}`);
+            }
+            
             console.log('?? Checking if worker account already exists...');
             // Check if worker account already exists
             const [existingWorkers] = await db.execute(
@@ -152,31 +175,39 @@ router.post('/', async (req, res) => {
             
             console.log('?? Creating new worker account...');
             
-            // Create worker account
-            const workerResult = await db.execute(
-                `INSERT INTO worker_accounts (
+            // Prepare the INSERT query with proper column names
+            const insertQuery = `
+                INSERT INTO worker_accounts (
                     employee_id, full_name, work_email, phone_number, department, 
                     job_title, account_type, access_level, temporary_password, 
                     account_notes, profile_picture, id_document, contract_document
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-                [
-                    employeeId,
-                    fullName,
-                    workEmail,
-                    phoneNumber,
-                    department,
-                    jobTitle,
-                    accountType,
-                    accessLevel,
-                    temporaryPassword,
-                    accountNotes || '',
-                    profilePicture || '',
-                    idDocument || '',
-                    contractDocument || ''
-                ]
-            );
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            `;
             
-            console.log('?? Worker account created:', workerResult);
+            const insertValues = [
+                employeeId,
+                fullName,
+                workEmail,
+                phoneNumber,
+                department,
+                jobTitle,
+                accountType,
+                accessLevel,
+                temporaryPassword,
+                accountNotes || '',
+                profilePicture || '',
+                idDocument || '',
+                contractDocument || ''
+            ];
+            
+            console.log('?? INSERT query:', insertQuery);
+            console.log('?? INSERT values:', insertValues);
+            
+            // Create worker account
+            const workerResult = await db.execute(insertQuery, insertValues);
+            
+            console.log('?? Worker account created successfully:', workerResult);
+            console.log('?? Insert ID:', workerResult.insertId);
             
             // Return the created worker account
             const [newWorker] = await db.execute(
@@ -191,7 +222,42 @@ router.post('/', async (req, res) => {
                 worker: newWorker[0]
             });
         } catch (dbError) {
-            console.error('Database error during worker account creation, using fallback:', dbError.message);
+            console.error('?? Database error during worker account creation:', dbError);
+            console.error('?? Database error details:', {
+                message: dbError.message,
+                code: dbError.code,
+                errno: dbError.errno,
+                sqlState: dbError.sqlState,
+                sqlMessage: dbError.sqlMessage
+            });
+            
+            // Check if it's a specific database error that we can handle
+            if (dbError.code === 'ER_DUP_ENTRY') {
+                console.log('?? Duplicate entry error');
+                return res.status(409).json({
+                    error: 'Worker account with this Employee ID or Email already exists'
+                });
+            }
+            
+            if (dbError.code === 'ER_NO_SUCH_TABLE') {
+                console.error('?? worker_accounts table does not exist!');
+                return res.status(500).json({
+                    error: 'Database table missing',
+                    details: 'The worker_accounts table was not found. Please contact administrator.',
+                    code: 'TABLE_MISSING'
+                });
+            }
+            
+            if (dbError.code === 'ER_BAD_FIELD_ERROR') {
+                console.error('?? Column does not exist in table');
+                return res.status(500).json({
+                    error: 'Database schema error',
+                    details: 'One or more required columns are missing from the worker_accounts table.',
+                    code: 'SCHEMA_ERROR'
+                });
+            }
+            
+            console.log('?? Using fallback mode due to database error');
             
             // Fallback mock data when database fails
             const mockWorker = {
@@ -206,7 +272,8 @@ router.post('/', async (req, res) => {
                 email: workEmail,
                 created_at: new Date().toISOString(),
                 fallback: true,
-                message: 'Worker account created with fallback data (database unavailable)'
+                message: 'Worker account created with fallback data (database unavailable)',
+                database_error: dbError.message
             };
             
             console.log('?? Returning fallback worker data:', mockWorker);
@@ -214,7 +281,9 @@ router.post('/', async (req, res) => {
             res.status(201).json({
                 message: 'Worker account created successfully (fallback mode)',
                 worker: mockWorker,
-                fallback: true
+                fallback: true,
+                database_error: dbError.message,
+                warning: 'This is fallback mode - the account was not saved to the database'
             });
         }
         
