@@ -4637,42 +4637,34 @@ async function createWorkerAssignmentsTable() {
 
         // First, check if table exists and get current schema
 
-        try {
-
-            const [tableInfo] = await db.execute("DESCRIBE worker_assignments");
-
-            console.log('Current worker_assignments table columns:', tableInfo.map(col => col.Field));
-
-            
-
-            // Check if role_in_project column exists
-
-            const hasRoleColumn = tableInfo.some(col => col.Field === 'role_in_project');
-
-            
-
-            if (!hasRoleColumn) {
-
-                console.log('role_in_project column missing, dropping and recreating table...');
-
-                // Drop existing table to recreate with correct schema
-
+        // Check if table exists using SHOW TABLES
+        const [tables] = await db.execute("SHOW TABLES LIKE 'worker_assignments'");
+        
+        if (tables.length > 0) {
+            // Table exists, check schema
+            try {
+                const [tableInfo] = await db.execute("DESCRIBE worker_assignments");
+                console.log('Current worker_assignments table columns:', tableInfo.map(col => col.Field));
+                
+                // Check if role_in_project column exists
+                const hasRoleColumn = tableInfo.some(col => col.Field === 'role_in_project');
+                
+                if (!hasRoleColumn) {
+                    console.log('role_in_project column missing, dropping and recreating table...');
+                    // Drop existing table to recreate with correct schema
+                    await db.execute("DROP TABLE worker_assignments");
+                    console.log('Existing worker_assignments table dropped');
+                } else {
+                    console.log('worker_assignments table already exists with correct schema');
+                    return;
+                }
+            } catch (describeError) {
+                console.log('Table exists but DESCRIBE failed, dropping and recreating...');
                 await db.execute("DROP TABLE worker_assignments");
-
-                console.log('Existing worker_assignments table dropped');
-
-            } else {
-
-                console.log('worker_assignments table already exists with correct schema');
-
-                return;
-
+                console.log('Existing worker_assignments table dropped due to DESCRIBE error');
             }
-
-        } catch (error) {
-
+        } else {
             console.log('Table does not exist, creating new one...');
-
         }
 
         
