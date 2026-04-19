@@ -4657,7 +4657,9 @@ async function createWorkerAssignmentsTable() {
 
                 // Drop existing table to recreate with correct schema
 
-                await db.execute("DROP TABLE IF EXISTS worker_assignments");
+                await db.execute("DROP TABLE worker_assignments");
+
+                console.log('Existing worker_assignments table dropped');
 
             } else {
 
