@@ -148,7 +148,7 @@ router.post('/:id/modify', async (req, res) => {
         // Update main budget status
         await db.execute(`
             UPDATE workforce_budgets 
-            SET status = 'modification_requested'
+            SET status = 'pending'
             WHERE id = ?
         `, [req.params.id]);
         
@@ -157,7 +157,7 @@ router.post('/:id/modify', async (req, res) => {
         res.json({
             message: 'Workforce budget modification requested successfully',
             budget_id: req.params.id,
-            status: 'modification_requested',
+            status: 'pending',
             modification_request: modification_request || 'Please provide additional details',
             requested_by: requestedBy,
             requested_date: requestedDate,
