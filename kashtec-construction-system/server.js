@@ -2625,6 +2625,80 @@ async function createMeetingMinutesTable() {
     }
 }
 
+// Create missing senior hiring tables with correct singular names
+async function createSeniorHiringTables() {
+    try {
+        console.log('Creating missing senior hiring tables...');
+        const db = require('./database/config/database');
+        
+        // Create senior_hiring_approval table (singular, not plural)
+        const createSeniorHiringApprovalTableSQL = `
+            CREATE TABLE IF NOT EXISTS senior_hiring_approval (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                candidate_name VARCHAR(255) NOT NULL,
+                position VARCHAR(255) NOT NULL,
+                department VARCHAR(100) NOT NULL,
+                proposed_salary VARCHAR(50) NOT NULL,
+                experience TEXT,
+                hr_recommendation TEXT,
+                status ENUM('pending', 'approved', 'rejected', 'info_requested') DEFAULT 'pending',
+                request_date DATE NOT NULL,
+                approval_date DATE,
+                approved_by VARCHAR(255),
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+                INDEX idx_status (status),
+                INDEX idx_department (department),
+                INDEX idx_request_date (request_date)
+            )
+        `;
+        
+        await db.execute(createSeniorHiringApprovalTableSQL);
+        console.log('Senior hiring approval table created successfully');
+        
+        // Create senior_hiring_info_request table (singular, not plural)
+        const createSeniorHiringInfoRequestTableSQL = `
+            CREATE TABLE IF NOT EXISTS senior_hiring_info_request (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                hiring_request_id INT NOT NULL,
+                info_request TEXT NOT NULL,
+                requested_by VARCHAR(255) NOT NULL,
+                requested_date DATE NOT NULL,
+                status ENUM('pending', 'provided', 'closed') DEFAULT 'pending',
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+                INDEX idx_hiring_request_id (hiring_request_id),
+                INDEX idx_status (status)
+            )
+        `;
+        
+        await db.execute(createSeniorHiringInfoRequestTableSQL);
+        console.log('Senior hiring info request table created successfully');
+        
+        // Create senior_hiring_rejection table (singular, not plural)
+        const createSeniorHiringRejectionTableSQL = `
+            CREATE TABLE IF NOT EXISTS senior_hiring_rejection (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                hiring_request_id INT NOT NULL,
+                rejection_reason TEXT NOT NULL,
+                rejected_by VARCHAR(255) NOT NULL,
+                rejected_date DATE NOT NULL,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                INDEX idx_hiring_request_id (hiring_request_id)
+            )
+        `;
+        
+        await db.execute(createSeniorHiringRejectionTableSQL);
+        console.log('Senior hiring rejection table created successfully');
+        
+        console.log('All senior hiring tables created successfully');
+        
+    } catch (error) {
+        console.error('Error creating senior hiring tables:', error);
+        throw error;
+    }
+}
+
 // Start server after migrations and authentication table creation
 console.log('🚀 Starting KASHTEC server startup sequence...');
 
@@ -2654,7 +2728,11 @@ async function startServer() {
         await createMeetingMinutesTable();
         console.log('✅ Step 6 completed: Meeting minutes table ready');
         
-        console.log('🔄 Step 7: Starting HTTP server...');
+        console.log('🔄 Step 7: Creating missing senior hiring tables...');
+        await createSeniorHiringTables();
+        console.log('✅ Step 7 completed: Senior hiring tables ready');
+        
+        console.log('🔄 Step 8: Starting HTTP server...');
         const server = app.listen(SERVER_PORT, '0.0.0.0', () => {
             console.log('🚀 ' + config.APP_NAME);
             console.log('🌍 Environment: ' + config.NODE_ENV);
