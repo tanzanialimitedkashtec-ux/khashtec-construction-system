@@ -139,28 +139,63 @@ router.post('/', async (req, res) => {
             
             // First, verify the worker_accounts table exists and has correct schema
             try {
+                console.log('?? Checking worker_accounts table schema...');
                 const [tableInfo] = await db.execute("DESCRIBE worker_accounts");
+                console.log('?? DESCRIBE result type:', typeof tableInfo);
+                console.log('?? DESCRIBE result isArray:', Array.isArray(tableInfo));
+                console.log('?? DESCRIBE result length:', tableInfo ? tableInfo.length : 'undefined');
                 
                 // Check if tableInfo is an array and has elements
                 if (Array.isArray(tableInfo) && tableInfo.length > 0) {
                     console.log('?? worker_accounts table columns:', tableInfo.map(col => col.Field));
+                    
+                    // Check if all required columns exist
+                    const requiredColumns = ['employee_id', 'full_name', 'work_email', 'phone_number', 'department', 'job_title', 'account_type', 'access_level', 'temporary_password'];
+                    const missingColumns = requiredColumns.filter(col => !tableInfo.some(tableCol => tableCol.Field === col));
+                    
+                    if (missingColumns.length > 0) {
+                        console.error('?? Missing columns in worker_accounts table:', missingColumns);
+                        throw new Error(`Missing required columns: ${missingColumns.join(', ')}`);
+                    }
+                    
+                    console.log('?? worker_accounts table schema verified');
                 } else {
                     console.log('?? Could not verify worker_accounts table columns, tableInfo result:', tableInfo);
-                    throw new Error('Could not verify worker_accounts table schema');
+                    console.log('?? Attempting to create worker_accounts table...');
+                    
+                    // Try to create the table if it doesn't exist
+                    await db.execute(`
+                        CREATE TABLE IF NOT EXISTS worker_accounts (
+                            id INT AUTO_INCREMENT PRIMARY KEY,
+                            employee_id VARCHAR(50) NOT NULL UNIQUE,
+                            full_name VARCHAR(255) NOT NULL,
+                            work_email VARCHAR(255) NOT NULL,
+                            phone_number VARCHAR(50),
+                            department VARCHAR(100),
+                            job_title VARCHAR(255),
+                            account_type ENUM('worker', 'supervisor', 'manager') DEFAULT 'worker',
+                            access_level ENUM('basic', 'supervisor', 'manager', 'admin') DEFAULT 'basic',
+                            temporary_password VARCHAR(255),
+                            status ENUM('active', 'inactive', 'suspended') DEFAULT 'active',
+                            hire_date DATE,
+                            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+                            INDEX idx_employee_id (employee_id),
+                            INDEX idx_email (work_email),
+                            INDEX idx_department (department),
+                            INDEX idx_status (status)
+                        )
+                    `);
+                    
+                    console.log('?? worker_accounts table created successfully');
                 }
-                
-                // Check if all required columns exist
-                const requiredColumns = ['employee_id', 'full_name', 'work_email', 'phone_number', 'department', 'job_title', 'account_type', 'access_level', 'temporary_password'];
-                const missingColumns = requiredColumns.filter(col => !tableInfo.some(tableCol => tableCol.Field === col));
-                
-                if (missingColumns.length > 0) {
-                    console.error('?? Missing columns in worker_accounts table:', missingColumns);
-                    throw new Error(`Missing required columns: ${missingColumns.join(', ')}`);
-                }
-                
-                console.log('?? worker_accounts table schema verified');
             } catch (schemaError) {
                 console.error('?? Error checking worker_accounts table schema:', schemaError);
+                console.error('?? Schema error details:', {
+                    message: schemaError.message,
+                    code: schemaError.code,
+                    errno: schemaError.errno
+                });
                 throw new Error(`Database table schema issue: ${schemaError.message}`);
             }
             
