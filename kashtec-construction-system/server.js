@@ -2888,263 +2888,15 @@ app.post('/api/policies/:policyId/revision', async (req, res) => {
 
 
 
-// Workforce Budget Management API endpoints
 
-app.post('/api/workforce-budget/:budgetId/approve', async (req, res) => {
 
-    try {
 
-        const db = require('./database/config/database');
 
-        const { budgetId } = req.params;
 
-        const { approvedBy, comments } = req.body;
 
 
 
-        // Update workforce budget status to approved
 
-        const [result] = await db.execute(`
-
-            UPDATE workforce_budgets 
-
-            SET status = 'Approved', approved_by = ?, approved_date = NOW()
-
-            WHERE id = ?
-
-        `, [approvedBy, budgetId]);
-
-
-
-        if (result.affectedRows === 0) {
-
-            return res.status(404).json({
-
-                success: false,
-
-                message: 'Workforce budget not found'
-
-            });
-
-        }
-
-
-
-        res.status(200).json({
-
-            success: true,
-
-            message: 'Workforce budget approved successfully'
-
-        });
-
-
-
-    } catch (error) {
-
-        console.error('Error approving workforce budget:', error);
-
-        res.status(500).json({
-
-            success: false,
-
-            message: 'Failed to approve workforce budget',
-
-            error: error.message
-
-        });
-
-    }
-
-});
-
-
-
-app.post('/api/workforce-budget/:budgetId/reject', async (req, res) => {
-
-    try {
-
-        const db = require('./database/config/database');
-
-        const { budgetId } = req.params;
-
-        const { rejectedBy, rejectionReason } = req.body;
-
-
-
-        // Update workforce budget status to rejected
-
-        const [result] = await db.execute(`
-
-            UPDATE workforce_budgets 
-
-            SET status = 'Rejected', rejection_reason = ?
-
-            WHERE id = ?
-
-        `, [rejectionReason, budgetId]);
-
-
-
-        if (result.affectedRows === 0) {
-
-            return res.status(404).json({
-
-                success: false,
-
-                message: 'Workforce budget not found'
-
-            });
-
-        }
-
-
-
-        res.status(200).json({
-
-            success: true,
-
-            message: 'Workforce budget rejected successfully'
-
-        });
-
-
-
-    } catch (error) {
-
-        console.error('Error rejecting workforce budget:', error);
-
-        res.status(500).json({
-
-            success: false,
-
-            message: 'Failed to reject workforce budget',
-
-            error: error.message
-
-        });
-
-    }
-
-});
-
-
-
-app.post('/api/workforce-budget/:budgetId/modify', async (req, res) => {
-
-    try {
-
-        const db = require('./database/config/database');
-
-        const { budgetId } = req.params;
-
-        const { requestedBy, modificationRequest, deadline } = req.body;
-
-
-
-        // Update workforce budget status to modification requested
-
-        const [result] = await db.execute(`
-
-            UPDATE workforce_budgets 
-
-            SET status = 'Modification Requested', modification_request = ?
-
-            WHERE id = ?
-
-        `, [modificationRequest, budgetId]);
-
-
-
-        if (result.affectedRows === 0) {
-
-            return res.status(404).json({
-
-                success: false,
-
-                message: 'Workforce budget not found'
-
-            });
-
-        }
-
-
-
-        res.status(200).json({
-
-            success: true,
-
-            message: 'Workforce budget modification requested successfully'
-
-        });
-
-
-
-    } catch (error) {
-
-        console.error('Error requesting modification for workforce budget:', error);
-
-        res.status(500).json({
-
-            success: false,
-
-            message: 'Failed to request modification for workforce budget',
-
-            error: error.message
-
-        });
-
-    }
-
-});
-
-
-
-// GET endpoint for workforce budget requests
-
-app.get('/api/workforce-budget', async (req, res) => {
-
-    try {
-
-        const db = require('./database/config/database');
-
-        const [budgets] = await db.execute(`
-
-            SELECT * FROM workforce_budgets 
-
-            ORDER BY submission_date DESC
-
-        `);
-
-
-
-        res.status(200).json({
-
-            success: true,
-
-            budgets: budgets
-
-        });
-
-
-
-    } catch (error) {
-
-        console.error('Error fetching workforce budgets:', error);
-
-        res.status(500).json({
-
-            success: false,
-
-            message: 'Failed to fetch workforce budgets',
-
-            error: error.message
-
-        });
-
-    }
-
-});
 
 
 
@@ -5152,6 +4904,82 @@ async function createSeniorHiringTables() {
 
 
 
+// Create missing workforce budget tables
+async function createWorkforceBudgetTables() {
+    try {
+        console.log('Creating missing workforce budget tables...');
+        const db = require('./database/config/database');
+        
+        // Create workforce_budgets table
+        const createWorkforceBudgetsTableSQL = `
+            CREATE TABLE IF NOT EXISTS workforce_budgets (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                department VARCHAR(100) NOT NULL,
+                total_budget DECIMAL(15,2) NOT NULL,
+                salaries_wages DECIMAL(15,2) NOT NULL,
+                training_development DECIMAL(15,2) NOT NULL,
+                employee_benefits DECIMAL(15,2) NOT NULL,
+                recruitment_costs DECIMAL(15,2) NOT NULL,
+                status ENUM('pending', 'approved', 'rejected', 'modification_requested') DEFAULT 'pending',
+                submission_date DATE NOT NULL,
+                approved_by VARCHAR(255),
+                approval_date DATE,
+                justification TEXT,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+                INDEX idx_status (status),
+                INDEX idx_department (department),
+                INDEX idx_submission_date (submission_date)
+            )
+        `;
+        
+        await db.execute(createWorkforceBudgetsTableSQL);
+        console.log('Workforce budgets table created successfully');
+        
+        // Create workforce_budget_rejections table
+        const createWorkforceBudgetRejectionsTableSQL = `
+            CREATE TABLE IF NOT EXISTS workforce_budget_rejections (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                budget_id INT NOT NULL,
+                rejection_reason TEXT NOT NULL,
+                rejected_by VARCHAR(255) NOT NULL,
+                rejected_date DATE NOT NULL,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                INDEX idx_budget_id (budget_id)
+            )
+        `;
+        
+        await db.execute(createWorkforceBudgetRejectionsTableSQL);
+        console.log('Workforce budget rejections table created successfully');
+        
+        // Create workforce_budget_modifications table
+        const createWorkforceBudgetModificationsTableSQL = `
+            CREATE TABLE IF NOT EXISTS workforce_budget_modifications (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                budget_id INT NOT NULL,
+                modification_request TEXT NOT NULL,
+                requested_by VARCHAR(255) NOT NULL,
+                requested_date DATE NOT NULL,
+                status ENUM('pending', 'approved', 'rejected') DEFAULT 'pending',
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                INDEX idx_budget_id (budget_id),
+                INDEX idx_status (status)
+            )
+        `;
+        
+        await db.execute(createWorkforceBudgetModificationsTableSQL);
+        console.log('Workforce budget modifications table created successfully');
+        
+        console.log('All workforce budget tables created successfully');
+        
+    } catch (error) {
+        console.error('Error creating workforce budget tables:', error);
+        throw error;
+    }
+}
+
+
+
 // Start server after migrations and authentication table creation
 
 console.log('🚀 Starting KASHTEC server startup sequence...');
@@ -5216,7 +5044,13 @@ async function startServer() {
 
         
 
-        console.log('🔄 Step 8: Starting HTTP server...');
+        console.log('🔄 Step 8: Creating missing workforce budget tables...');
+        await createWorkforceBudgetTables();
+        console.log('✅ Step 8 completed: Workforce budget tables ready');
+
+        
+
+        console.log('🔄 Step 9: Starting HTTP server...');
 
         const server = app.listen(SERVER_PORT, '0.0.0.0', () => {
 
