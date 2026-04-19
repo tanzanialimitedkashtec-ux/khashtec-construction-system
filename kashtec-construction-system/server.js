@@ -4960,8 +4960,12 @@ async function createWorkforceBudgetTables() {
             )
         `;
         
-        await db.execute(createWorkforceBudgetsTableSQL);
-        console.log('Workforce budgets table created successfully');
+        try {
+            await db.execute(createWorkforceBudgetsTableSQL);
+            console.log('Workforce budgets table created successfully');
+        } catch (tableError) {
+            console.error('Error creating workforce_budgets table:', tableError.message);
+        }
         
         // Create workforce_budget_rejections table
         const createWorkforceBudgetRejectionsTableSQL = `
@@ -4976,8 +4980,12 @@ async function createWorkforceBudgetTables() {
             )
         `;
         
-        await db.execute(createWorkforceBudgetRejectionsTableSQL);
-        console.log('Workforce budget rejections table created successfully');
+        try {
+            await db.execute(createWorkforceBudgetRejectionsTableSQL);
+            console.log('Workforce budget rejections table created successfully');
+        } catch (tableError) {
+            console.error('Error creating workforce_budget_rejections table:', tableError.message);
+        }
         
         // Create workforce_budget_modifications table
         const createWorkforceBudgetModificationsTableSQL = `
@@ -4994,8 +5002,12 @@ async function createWorkforceBudgetTables() {
             )
         `;
         
-        await db.execute(createWorkforceBudgetModificationsTableSQL);
-        console.log('Workforce budget modifications table created successfully');
+        try {
+            await db.execute(createWorkforceBudgetModificationsTableSQL);
+            console.log('Workforce budget modifications table created successfully');
+        } catch (tableError) {
+            console.error('Error creating workforce_budget_modifications table:', tableError.message);
+        }
         
         // Force insert sample workforce budget data for testing
         try {
