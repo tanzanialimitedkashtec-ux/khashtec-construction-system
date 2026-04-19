@@ -4888,10 +4888,12 @@ async function createSeniorHiringTables() {
 
         
 
-        // Insert sample senior hiring data for testing (only if table is empty)
-        const existingRecordsResult = await db.execute('SELECT COUNT(*) as count FROM senior_hiring_approval');
-        const existingRecords = existingRecordsResult || [];
-        if (existingRecords.length > 0 && existingRecords[0].count === 0) {
+        // Force insert sample senior hiring data for testing
+        try {
+            // Clear existing data to avoid duplicates
+            await db.execute('DELETE FROM senior_hiring_approval');
+            
+            // Insert fresh sample data
             await db.execute(`
                 INSERT INTO senior_hiring_approval 
                 (candidate_name, position, department, proposed_salary, experience, hr_recommendation, status, request_date) 
@@ -4901,8 +4903,8 @@ async function createSeniorHiringTables() {
                 ('Michael Chen', 'Finance Director', 'Finance', '180000', '12 years in financial management', 'Strong leadership background in construction finance', 'pending', '2026-04-17')
             `);
             console.log('Sample senior hiring requests inserted successfully');
-        } else {
-            console.log('Senior hiring table already has data, skipping sample insertion');
+        } catch (error) {
+            console.log('Error inserting sample senior hiring data:', error.message);
         }
 
         
@@ -4989,10 +4991,12 @@ async function createWorkforceBudgetTables() {
         await db.execute(createWorkforceBudgetModificationsTableSQL);
         console.log('Workforce budget modifications table created successfully');
         
-        // Insert sample workforce budget data for testing (only if table is empty)
-        const existingBudgetRecordsResult = await db.execute('SELECT COUNT(*) as count FROM workforce_budgets');
-        const existingBudgetRecords = existingBudgetRecordsResult || [];
-        if (existingBudgetRecords.length > 0 && existingBudgetRecords[0].count === 0) {
+        // Force insert sample workforce budget data for testing
+        try {
+            // Clear existing data to avoid duplicates
+            await db.execute('DELETE FROM workforce_budgets');
+            
+            // Insert fresh sample data
             await db.execute(`
                 INSERT INTO workforce_budgets 
                 (department, total_budget, salaries_wages, training_development, employee_benefits, recruitment_costs, status, submission_date, justification) 
@@ -5002,8 +5006,8 @@ async function createWorkforceBudgetTables() {
                 ('Operations', '800000000', '500000000', '80000000', '150000000', '70000000', 'pending', '2026-04-17', 'Q2 2026 Operations budget for process improvements and staffing')
             `);
             console.log('Sample workforce budget requests inserted successfully');
-        } else {
-            console.log('Workforce budget table already has data, skipping sample insertion');
+        } catch (error) {
+            console.log('Error inserting sample workforce budget data:', error.message);
         }
         
         console.log('All workforce budget tables created successfully');
