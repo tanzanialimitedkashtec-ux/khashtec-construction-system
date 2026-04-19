@@ -17,7 +17,7 @@ router.get('/test', (req, res) => {
 router.get('/', async (req, res) => {
     console.log('📝 GET /api/workforce-budget accessed');
     try {
-        const [rows] = await db.execute(`
+        const rows = await db.execute(`
             SELECT id, department, total_budget, salaries_wages, training_development, 
                    employee_benefits, recruitment_costs, status, submission_date,
                    approved_by, approval_date, justification
@@ -36,7 +36,7 @@ router.get('/', async (req, res) => {
 router.get('/:id', async (req, res) => {
     console.log('?? GET /api/workforce-budget/:id accessed with id:', req.params.id);
     try {
-        const [rows] = await db.execute(`
+        const rows = await db.execute(`
             SELECT id, department, total_budget, salaries_wages, training_development, 
                    employee_benefits, recruitment_costs, status, submission_date,
                    approved_by, approval_date, justification

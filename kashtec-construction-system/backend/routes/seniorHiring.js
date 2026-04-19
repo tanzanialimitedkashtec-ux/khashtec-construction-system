@@ -18,7 +18,7 @@ router.get('/', async (req, res) => {
     console.log('📝 GET /api/senior-hiring accessed');
     try {
         // Fetch pending senior hiring requests from senior_hiring_approval table
-        const [rows] = await db.execute(`
+        const rows = await db.execute(`
             SELECT id, candidate_name, position, department, proposed_salary, experience, 
                    hr_recommendation, status, request_date, approval_date, approved_by
             FROM senior_hiring_approval 
@@ -37,7 +37,7 @@ router.get('/', async (req, res) => {
 router.get('/:id', async (req, res) => {
     console.log('📝 GET /api/senior-hiring/:id accessed with id:', req.params.id);
     try {
-        const [rows] = await db.execute(`
+        const rows = await db.execute(`
             SELECT id, candidate_name, position, department, proposed_salary, experience, 
                    hr_recommendation, status, request_date, approval_date, approved_by
             FROM senior_hiring_approval 
