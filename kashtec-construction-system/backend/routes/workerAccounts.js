@@ -194,14 +194,59 @@ router.post('/', async (req, res) => {
                         
                         // Verify the recreated table
                         const [verification] = await db.execute("DESCRIBE worker_accounts");
-                        if (verification && typeof verification === 'object') {
-                            const verificationColumns = Array.isArray(verification) ? verification : [verification];
-                            console.log('?? Verified recreated table columns:', verificationColumns.map(col => col.Field));
+                        console.log('?? Verification result type:', typeof verification);
+                        console.log('?? Verification result isArray:', Array.isArray(verification));
+                        
+                        let verificationColumns = [];
+                        if (Array.isArray(verification)) {
+                            verificationColumns = verification;
+                            console.log('?? Verified recreated table columns (array):', verificationColumns.map(col => col.Field));
+                        } else if (verification && typeof verification === 'object') {
+                            verificationColumns = [verification];
+                            console.log('?? Verified recreated table columns (single):', [verification.Field]);
+                        }
+                        
+                        // If we still only have id column, try to create table again with different approach
+                        if (verificationColumns.length === 1 && verificationColumns[0].Field === 'id') {
+                            console.log('?? Still only getting id column, trying alternative table creation...');
                             
-                            if (verificationColumns.length >= 9) { // Should have at least 9 columns now
+                            // Drop and recreate with simpler approach
+                            await db.execute("DROP TABLE IF EXISTS worker_accounts");
+                            
+                            // Create table step by step
+                            await db.execute(`
+                                CREATE TABLE worker_accounts (
+                                    id INT AUTO_INCREMENT PRIMARY KEY,
+                                    employee_id VARCHAR(50) NOT NULL UNIQUE,
+                                    full_name VARCHAR(255) NOT NULL,
+                                    work_email VARCHAR(255) NOT NULL,
+                                    phone_number VARCHAR(50),
+                                    department VARCHAR(100),
+                                    job_title VARCHAR(255),
+                                    account_type ENUM('worker', 'supervisor', 'manager') DEFAULT 'worker',
+                                    access_level ENUM('basic', 'supervisor', 'manager', 'admin') DEFAULT 'basic',
+                                    temporary_password VARCHAR(255),
+                                    status ENUM('active', 'inactive', 'suspended') DEFAULT 'active',
+                                    hire_date DATE,
+                                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                                    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+                                )
+                            `);
+                            
+                            console.log('?? Worker accounts table recreated with simpler approach');
+                            
+                            // Final verification
+                            const [finalVerification] = await db.execute("DESCRIBE worker_accounts");
+                            if (Array.isArray(finalVerification) && finalVerification.length >= 9) {
+                                console.log('?? Final verification successful:', finalVerification.length, 'columns');
                                 console.log('?? Table recreation verified, proceeding...');
                                 return; // Exit successfully
+                            } else {
+                                console.log('?? Final verification still failed, result:', finalVerification);
                             }
+                        } else if (verificationColumns.length >= 9) {
+                            console.log('?? Table recreation verified, proceeding...');
+                            return; // Exit successfully
                         }
                         
                         throw new Error('Table recreation failed verification');
