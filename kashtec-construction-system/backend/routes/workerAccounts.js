@@ -151,9 +151,65 @@ router.post('/', async (req, res) => {
                     columns = tableInfo;
                     console.log('?? worker_accounts table columns:', columns.map(col => col.Field));
                 } else if (tableInfo && typeof tableInfo === 'object') {
-                    // DESCRIBE returned a single object, wrap it in array
-                    columns = [tableInfo];
-                    console.log('?? worker_accounts table columns (single object):', [tableInfo.Field]);
+                    // DESCRIBE returned a single object, check if it's a complete table or just id column
+                    if (tableInfo.Field === 'id' && Object.keys(tableInfo).length <= 6) {
+                        // This is likely an incomplete table with only id column
+                        console.log('?? Detected incomplete worker_accounts table (only id column), recreating...');
+                        console.log('?? Could not verify worker_accounts table columns, tableInfo result:', tableInfo);
+                        console.log('?? Attempting to drop and recreate worker_accounts table...');
+                        
+                        // Drop and recreate the table to ensure all columns exist
+                        try {
+                            await db.execute("DROP TABLE IF EXISTS worker_accounts");
+                            console.log('?? Existing worker_accounts table dropped');
+                        } catch (dropError) {
+                            console.log('?? No existing table to drop:', dropError.message);
+                        }
+                        
+                        // Create the table with all required columns
+                        await db.execute(`
+                            CREATE TABLE worker_accounts (
+                                id INT AUTO_INCREMENT PRIMARY KEY,
+                                employee_id VARCHAR(50) NOT NULL UNIQUE,
+                                full_name VARCHAR(255) NOT NULL,
+                                work_email VARCHAR(255) NOT NULL,
+                                phone_number VARCHAR(50),
+                                department VARCHAR(100),
+                                job_title VARCHAR(255),
+                                account_type ENUM('worker', 'supervisor', 'manager') DEFAULT 'worker',
+                                access_level ENUM('basic', 'supervisor', 'manager', 'admin') DEFAULT 'basic',
+                                temporary_password VARCHAR(255),
+                                status ENUM('active', 'inactive', 'suspended') DEFAULT 'active',
+                                hire_date DATE,
+                                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+                                INDEX idx_employee_id (employee_id),
+                                INDEX idx_email (work_email),
+                                INDEX idx_department (department),
+                                INDEX idx_status (status)
+                            )
+                        `);
+                        
+                        console.log('?? worker_accounts table recreated successfully');
+                        
+                        // Verify the recreated table
+                        const [verification] = await db.execute("DESCRIBE worker_accounts");
+                        if (verification && typeof verification === 'object') {
+                            const verificationColumns = Array.isArray(verification) ? verification : [verification];
+                            console.log('?? Verified recreated table columns:', verificationColumns.map(col => col.Field));
+                            
+                            if (verificationColumns.length >= 9) { // Should have at least 9 columns now
+                                console.log('?? Table recreation verified, proceeding...');
+                                return; // Exit successfully
+                            }
+                        }
+                        
+                        throw new Error('Table recreation failed verification');
+                    } else {
+                        // DESCRIBE returned a valid single object, wrap it in array
+                        columns = [tableInfo];
+                        console.log('?? worker_accounts table columns (single object):', [tableInfo.Field]);
+                    }
                 } else {
                     console.log('?? Could not verify worker_accounts table columns, tableInfo result:', tableInfo);
                     console.log('?? Attempting to drop and recreate worker_accounts table...');
@@ -195,10 +251,10 @@ router.post('/', async (req, res) => {
                     // Verify the recreated table
                     const [verification] = await db.execute("DESCRIBE worker_accounts");
                     if (verification && typeof verification === 'object') {
-                        const columns = Array.isArray(verification) ? verification : [verification];
-                        console.log('?? Verified recreated table columns:', columns.map(col => col.Field));
+                        const verificationColumns = Array.isArray(verification) ? verification : [verification];
+                        console.log('?? Verified recreated table columns:', verificationColumns.map(col => col.Field));
                         
-                        if (columns.length >= 9) { // Should have at least 9 columns now
+                        if (verificationColumns.length >= 9) { // Should have at least 9 columns now
                             console.log('?? Table recreation verified, proceeding...');
                             return; // Exit successfully
                         }
