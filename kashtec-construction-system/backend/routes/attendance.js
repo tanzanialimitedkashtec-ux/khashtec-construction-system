@@ -187,10 +187,46 @@ router.post('/', async (req, res) => {
                 hoursWorked
             ];
             
-            console.log('🔍 Query:', query);
-            console.log('📊 Values:', values);
+            console.log('?? Query:', query);
+            console.log('?? Values:', values);
             
-            const resultResult = await db.execute(query, values);
+            let resultResult;
+            try {
+                resultResult = await db.execute(query, values);
+            } catch (columnError) {
+                if (columnError.message.includes('Unknown column')) {
+                    console.log('?? Missing column detected, recreating attendance table...');
+                    
+                    // Drop and recreate table with correct schema
+                    await db.execute("DROP TABLE IF EXISTS attendance");
+                    await db.execute(`
+                        CREATE TABLE attendance (
+                            id INT AUTO_INCREMENT PRIMARY KEY,
+                            employee_id VARCHAR(50) NOT NULL,
+                            employee_name VARCHAR(255) NOT NULL,
+                            date DATE NOT NULL,
+                            check_in TIME NOT NULL,
+                            check_out TIME NULL,
+                            status VARCHAR(50) DEFAULT 'present',
+                            department VARCHAR(100) NULL,
+                            notes TEXT NULL,
+                            hours_worked DECIMAL(5,2) NULL,
+                            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+                            INDEX idx_employee_id (employee_id),
+                            INDEX idx_date (date),
+                            INDEX idx_status (status)
+                        )
+                    `);
+                    
+                    console.log('?? Attendance table recreated, retrying insertion...');
+                    
+                    // Retry insertion
+                    resultResult = await db.execute(query, values);
+                } else {
+                    throw columnError;
+                }
+            }
             const result = Array.isArray(resultResult) ? resultResult[0] : resultResult;
             
             console.log('✅ Attendance record inserted successfully:', result);
