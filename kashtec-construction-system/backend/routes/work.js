@@ -250,25 +250,80 @@ router.post('/assignments', async (req, res) => {
             });
         }
         
-        // Insert new assignment
-        const result = await db.execute(`
-            INSERT INTO worker_assignments (
-                employee_id, employee_name, project_id, project_name, role_in_project,
-                start_date, end_date, assignment_notes, status, assigned_by, assigned_by_role
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-        `, [
-            employee_id,
-            employee_name,
-            project_id,
-            project_name,
-            role_in_project,
-            start_date,
-            end_date || null,
-            assignment_notes || null,
-            'Active', // Add status column
-            assigned_by,
-            assigned_by_role
-        ]);
+        // Insert new assignment with error handling for missing columns
+        let result;
+        try {
+            result = await db.execute(`
+                INSERT INTO worker_assignments (
+                    employee_id, employee_name, project_id, project_name, role_in_project,
+                    start_date, end_date, assignment_notes, status, assigned_by, assigned_by_role
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            `, [
+                employee_id,
+                employee_name,
+                project_id,
+                project_name,
+                role_in_project,
+                start_date,
+                end_date || null,
+                assignment_notes || null,
+                'Active', // Add status column
+                assigned_by,
+                assigned_by_role
+            ]);
+        } catch (columnError) {
+            if (columnError.message.includes('Unknown column')) {
+                console.log('?? Missing column detected, recreating worker_assignments table...');
+                
+                // Drop and recreate table with correct schema
+                await db.execute("DROP TABLE IF EXISTS worker_assignments");
+                await db.execute(`
+                    CREATE TABLE worker_assignments (
+                        id INT AUTO_INCREMENT PRIMARY KEY,
+                        employee_id VARCHAR(50) NOT NULL,
+                        employee_name VARCHAR(255) NOT NULL,
+                        project_id VARCHAR(50) NOT NULL,
+                        project_name VARCHAR(255) NOT NULL,
+                        role_in_project VARCHAR(255) NOT NULL,
+                        start_date DATE NOT NULL,
+                        end_date DATE NULL,
+                        assignment_notes TEXT NULL,
+                        status VARCHAR(50) DEFAULT 'Active',
+                        assigned_by VARCHAR(255) NOT NULL,
+                        assigned_by_role VARCHAR(255) NOT NULL,
+                        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+                        INDEX idx_employee_id (employee_id),
+                        INDEX idx_project_id (project_id),
+                        INDEX idx_status (status)
+                    )
+                `);
+                
+                console.log('?? worker_assignments table recreated, retrying insertion...');
+                
+                // Retry insertion
+                result = await db.execute(`
+                    INSERT INTO worker_assignments (
+                        employee_id, employee_name, project_id, project_name, role_in_project,
+                        start_date, end_date, assignment_notes, status, assigned_by, assigned_by_role
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                `, [
+                    employee_id,
+                    employee_name,
+                    project_id,
+                    project_name,
+                    role_in_project,
+                    start_date,
+                    end_date || null,
+                    assignment_notes || null,
+                    'Active',
+                    assigned_by,
+                    assigned_by_role
+                ]);
+            } else {
+                throw columnError;
+            }
+        }
         
         // Handle different result formats from db.execute()
         const insertId = Array.isArray(result) ? result[0].insertId : result.insertId;

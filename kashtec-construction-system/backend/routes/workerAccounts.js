@@ -165,14 +165,14 @@ router.post('/', async (req, res) => {
         try {
             console.log('?? Checking if worker account already exists...');
             // Check if worker account already exists
-            const [existingWorkers] = await db.execute(
+            const existingWorkers = await db.execute(
                 'SELECT id FROM worker_accounts WHERE employee_id = ? OR work_email = ?',
                 [employeeId, workEmail]
             );
             
             console.log('?? Existing workers check result:', existingWorkers);
             
-            if (existingWorkers && existingWorkers.length > 0) {
+            if (existingWorkers && existingWorkers[0] && existingWorkers[0].length > 0) {
                 console.log('?? Worker account already exists');
                 return res.status(409).json({
                     error: 'Worker account with this Employee ID or Email already exists'
@@ -181,7 +181,7 @@ router.post('/', async (req, res) => {
             
             console.log('?? Creating new worker account...');
             
-            const [result] = await db.execute(insertQuery, [
+            const result = await db.execute(insertQuery, [
                 employeeId,
                 fullName,
                 workEmail,
@@ -203,7 +203,7 @@ router.post('/', async (req, res) => {
             res.status(201).json({
                 message: 'Worker account created successfully',
                 worker: {
-                    id: result.insertId,
+                    id: result[0]?.insertId,
                     employee_id: employeeId,
                     full_name: fullName,
                     work_email: workEmail,
