@@ -6460,7 +6460,7 @@ function loadEmployeeForUpdate() {
     const resultsDiv = document.getElementById('employeeSearchResults');
     
     if (searchTerm.length < 2) {
-        resultsDiv.innerHTML = '<p style="color: #666;">Enter at least 2 characters to search</p><p style="color: #999; font-size: 12px;">Try: admin, it, emp, or employee ID</p>';
+        resultsDiv.innerHTML = '<p style="color: #666;">Enter at least 2 characters to search</p><p style="color: #999; font-size: 12px;">Try: admin, it, emp, 786, or click "Show All Employees"</p>';
         return;
     }
     
@@ -6501,13 +6501,15 @@ function loadEmployeeForUpdate() {
                 const position = (emp.position || '').toLowerCase();
                 const gmail = (emp.gmail || '').toLowerCase();
                 const phone = (emp.phone || '').toLowerCase();
+                const salary = (emp.salary || '').toLowerCase();
                 
                 const matches = fullName.includes(searchTerm) || 
                        employeeId.includes(searchTerm) || 
                        department.includes(searchTerm) ||
                        position.includes(searchTerm) ||
                        gmail.includes(searchTerm) ||
-                       phone.includes(searchTerm);
+                       phone.includes(searchTerm) ||
+                       salary.includes(searchTerm);
                 
                 console.log('?? Checking employee:', {
                     searchTerm,
@@ -6517,6 +6519,7 @@ function loadEmployeeForUpdate() {
                     position,
                     gmail,
                     phone,
+                    salary,
                     matches
                 });
                 
@@ -6743,7 +6746,15 @@ function selectEmployeeForUpdate(email) {
                 employees = [];
             }
             
-            const employee = employees.find(emp => (emp.gmail || emp.email) === email);
+            // Handle both ID and email searches
+            const employee = employees.find(emp => {
+                // If email parameter looks like a number, search by ID
+                if (!isNaN(email)) {
+                    return emp.id == email || emp.employee_id === email;
+                }
+                // Otherwise search by email
+                return (emp.gmail || emp.email) === email;
+            });
             
             console.log('📊 Selected employee:', employee);
             
