@@ -140,12 +140,12 @@ router.post('/', async (req, res) => {
             // First, verify the worker_accounts table exists and has correct schema
             try {
                 console.log('?? Checking worker_accounts table schema...');
-                const [tableInfo] = await db.execute("DESCRIBE worker_accounts");
-                console.log('?? DESCRIBE result type:', typeof tableInfo);
-                console.log('?? DESCRIBE result isArray:', Array.isArray(tableInfo));
-                console.log('?? DESCRIBE result length:', tableInfo ? tableInfo.length : 'undefined');
+                const [tableInfo] = await db.execute("SHOW COLUMNS FROM worker_accounts");
+                console.log('?? SHOW COLUMNS result type:', typeof tableInfo);
+                console.log('?? SHOW COLUMNS result isArray:', Array.isArray(tableInfo));
+                console.log('?? SHOW COLUMNS result length:', tableInfo ? tableInfo.length : 'undefined');
                 
-                // Handle both array and single object results from DESCRIBE
+                // Handle both array and single object results from SHOW COLUMNS
                 let columns = [];
                 if (Array.isArray(tableInfo)) {
                     columns = tableInfo;
@@ -193,7 +193,7 @@ router.post('/', async (req, res) => {
                         console.log('?? worker_accounts table recreated successfully');
                         
                         // Verify the recreated table
-                        const [verification] = await db.execute("DESCRIBE worker_accounts");
+                        const [verification] = await db.execute("SHOW COLUMNS FROM worker_accounts");
                         console.log('?? Verification result type:', typeof verification);
                         console.log('?? Verification result isArray:', Array.isArray(verification));
                         
@@ -236,7 +236,7 @@ router.post('/', async (req, res) => {
                             console.log('?? Worker accounts table recreated with simpler approach');
                             
                             // Final verification
-                            const [finalVerification] = await db.execute("DESCRIBE worker_accounts");
+                            const [finalVerification] = await db.execute("SHOW COLUMNS FROM worker_accounts");
                             if (Array.isArray(finalVerification) && finalVerification.length >= 9) {
                                 console.log('?? Final verification successful:', finalVerification.length, 'columns');
                                 console.log('?? Table recreation verified, proceeding...');
@@ -294,7 +294,7 @@ router.post('/', async (req, res) => {
                     console.log('?? worker_accounts table recreated successfully');
                     
                     // Verify the recreated table
-                    const [verification] = await db.execute("DESCRIBE worker_accounts");
+                    const [verification] = await db.execute("SHOW COLUMNS FROM worker_accounts");
                     if (verification && typeof verification === 'object') {
                         const verificationColumns = Array.isArray(verification) ? verification : [verification];
                         console.log('?? Verified recreated table columns:', verificationColumns.map(col => col.Field));
