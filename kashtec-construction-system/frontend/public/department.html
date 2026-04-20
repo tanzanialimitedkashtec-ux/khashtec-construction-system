@@ -6488,19 +6488,24 @@ function loadEmployeeForUpdate() {
                 employees = [];
             }
             
-            console.log('📊 Processed employees:', employees);
+            console.log('?? Processed employees:', employees);
+            console.log('?? First employee structure:', employees[0] ? Object.keys(employees[0]) : 'No employees');
             
             // Filter employees based on search term
             const filteredEmployees = employees.filter(emp => {
                 const fullName = (emp.full_name || emp.fullName || '').toLowerCase();
                 const employeeId = (emp.employee_id || emp.employeeId || '').toLowerCase();
                 const department = (emp.department || '').toLowerCase();
+                const position = (emp.position || '').toLowerCase();
                 const gmail = (emp.gmail || '').toLowerCase();
+                const phone = (emp.phone || '').toLowerCase();
                 
                 return fullName.includes(searchTerm) || 
                        employeeId.includes(searchTerm) || 
                        department.includes(searchTerm) ||
-                       gmail.includes(searchTerm);
+                       position.includes(searchTerm) ||
+                       gmail.includes(searchTerm) ||
+                       phone.includes(searchTerm);
             });
             
             console.log('🔍 Filtered employees:', filteredEmployees);
