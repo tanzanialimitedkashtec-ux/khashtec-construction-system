@@ -11206,24 +11206,25 @@ function saveDepartmentBudget() {
         return false;
     }
     
-    // Prepare work item for Finance department
-    const workItem = {
-        work_type: 'Budget Management',
-        work_title: `Budget - ${budget.department} (${budget.period})`,
-        work_description: `Budget Request:\n\nDepartment: ${budget.department}\nPeriod: ${budget.period}\nStart Date: ${budget.startDate}\nEnd Date: ${budget.endDate}\nTotal Amount: TZS ${budget.total}\n\nBreakdown:\n• Salaries: TZS ${budget.salaries}\n• Supplies: TZS ${budget.supplies}\n• Equipment: TZS ${budget.equipment}\n• Training: TZS ${budget.training}\n• Travel: TZS ${budget.travel}\n• Miscellaneous: TZS ${budget.misc}\n\nJustification: ${budget.justification}`,
-        amount: budget.total, // Required field
-        vendor_name: 'Internal Budget', // Required field
-        invoice_number: `BUD-${Date.now()}`, // Required field
-        priority: 'High',
-        due_date: budget.startDate,
-        assigned_to: 'Finance Manager',
-        submitted_by: 'Finance Manager'
+    // Prepare budget data for workforce budget API
+    const budgetData = {
+        department: budget.department,
+        total_budget: parseFloat(budget.total) || 0,
+        salaries_wages: parseFloat(budget.salaries) || 0,
+        training_development: parseFloat(budget.training) || 0,
+        employee_benefits: parseFloat(budget.supplies) || 0, // Map supplies to benefits
+        recruitment_costs: parseFloat(budget.equipment) || 0, // Map equipment to recruitment
+        justification: budget.justification || `Budget request for ${budget.department} - ${budget.period}`,
+        submitted_by: 'Finance Manager',
+        budget_period: budget.period
     };
+    
+    console.log(' Budget data to send:', budgetData);
     
     // Show loading message
     customAlert('Creating budget...', "Processing", "info");
     
-    // Send data to backend Finance API
+    // Send data to workforce budget API
     const baseUrl = window.location.origin;
     
     // Check connectivity first
@@ -11236,14 +11237,14 @@ function saveDepartmentBudget() {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
     
-    fetch(`${baseUrl}/api/finance/work`, {
+    fetch(`${baseUrl}/api/workforce-budget`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
             'Accept': 'application/json',
             'Authorization': `Bearer ${sessionManager.getAuthToken()}`
         },
-        body: JSON.stringify(workItem),
+        body: JSON.stringify(budgetData),
         signal: controller.signal
     })
     .then(response => {

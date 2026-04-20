@@ -55,6 +55,71 @@ router.get('/:id', async (req, res) => {
     }
 });
 
+// POST create new budget
+router.post('/', async (req, res) => {
+    console.log(' Creating new workforce budget...');
+    console.log(' Request body:', req.body);
+    
+    try {
+        const {
+            department,
+            total_budget,
+            salaries_wages,
+            training_development,
+            employee_benefits,
+            recruitment_costs,
+            justification,
+            submitted_by,
+            budget_period
+        } = req.body;
+        
+        // Validate required fields
+        if (!department || !total_budget || !salaries_wages || !training_development || !employee_benefits || !recruitment_costs) {
+            return res.status(400).json({
+                error: 'Missing required fields',
+                required: ['department', 'total_budget', 'salaries_wages', 'training_development', 'employee_benefits', 'recruitment_costs']
+            });
+        }
+        
+        // Insert new budget
+        const result = await db.execute(`
+            INSERT INTO workforce_budgets (
+                department, total_budget, salaries_wages, training_development, 
+                employee_benefits, recruitment_costs, status, submission_date, 
+                justification, created_at, updated_at
+            ) VALUES (?, ?, ?, ?, ?, ?, 'pending', CURDATE(), ?, NOW(), NOW())
+        `, [
+            department,
+            total_budget,
+            salaries_wages,
+            training_development,
+            employee_benefits,
+            recruitment_costs,
+            justification || 'No justification provided'
+        ]);
+        
+        const budgetId = Array.isArray(result) ? result[0].insertId : result.insertId;
+        
+        console.log(' Workforce budget created successfully:', budgetId);
+        
+        res.status(201).json({
+            message: 'Workforce budget created successfully',
+            budget_id: budgetId,
+            department,
+            total_budget,
+            status: 'pending',
+            submission_date: new Date().toISOString().split('T')[0]
+        });
+        
+    } catch (error) {
+        console.error('Error creating workforce budget:', error);
+        res.status(500).json({
+            error: 'Failed to create workforce budget',
+            details: error.message
+        });
+    }
+});
+
 // POST approve budget
 router.post('/:id/approve', async (req, res) => {
     try {
