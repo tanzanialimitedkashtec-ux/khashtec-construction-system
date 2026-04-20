@@ -2497,6 +2497,22 @@ app.get('/api/admin-work', async (req, res) => {
 
 // Attendance API endpoints
 
+// Helper function to calculate hours worked
+function calculateHours(checkIn, checkOut) {
+    try {
+        const [inHour, inMin] = checkIn.split(':').map(Number);
+        const [outHour, outMin] = checkOut.split(':').map(Number);
+        
+        const inMinutes = inHour * 60 + inMin;
+        const outMinutes = outHour * 60 + outMin;
+        
+        return Math.round((outMinutes - inMinutes) / 60 * 100) / 100;
+    } catch (error) {
+        console.error('Error calculating hours:', error);
+        return null;
+    }
+}
+
 app.post('/api/attendance', async (req, res) => {
 
     try {
@@ -2541,27 +2557,79 @@ app.post('/api/attendance', async (req, res) => {
 
 
 
-        // Insert attendance record
+        // Insert attendance record with error handling for missing columns
+        let result;
+        try {
+            result = await db.execute(`
 
-        const [result] = await db.execute(`
+                INSERT INTO attendance (
 
-            INSERT INTO attendance (
+                    employee_id, employee_name, attendance_date, check_in_time, check_out_time,
 
-                employee_id, employee_name, attendance_date, check_in_time, check_out_time,
+                    attendance_status, notes, marked_by, marked_by_role, created_at
 
-                attendance_status, notes, marked_by, marked_by_role, created_at
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())
 
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())
+            `, [
 
-        `, [
+                employee_id, req.body.employee_name || '', attendance_date, check_in_time, check_out_time,
 
-            employee_id, req.body.employee_name || '', attendance_date, check_in_time, check_out_time,
+                attendance_status, notes, marked_by, marked_by_role
 
-            attendance_status, notes, marked_by, marked_by_role
+            ]);
+        } catch (columnError) {
+            if (columnError.message.includes('Unknown column')) {
+                console.log('?? Missing column detected, recreating attendance table...');
+                
+                // Drop and recreate table with correct schema
+                await db.execute("DROP TABLE IF EXISTS attendance");
+                await db.execute(`
+                    CREATE TABLE attendance (
+                        id INT AUTO_INCREMENT PRIMARY KEY,
+                        employee_id VARCHAR(50) NOT NULL,
+                        employee_name VARCHAR(255) NOT NULL,
+                        date DATE NOT NULL,
+                        check_in TIME NOT NULL,
+                        check_out TIME NULL,
+                        status VARCHAR(50) DEFAULT 'present',
+                        department VARCHAR(100) NULL,
+                        notes TEXT NULL,
+                        hours_worked DECIMAL(5,2) NULL,
+                        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+                        INDEX idx_employee_id (employee_id),
+                        INDEX idx_date (date),
+                        INDEX idx_status (status)
+                    )
+                `);
+                
+                console.log('?? Attendance table recreated, retrying insertion with correct column names...');
+                
+                // Retry insertion with corrected column names
+                result = await db.execute(`
+                    INSERT INTO attendance (
+                        employee_id, employee_name, date, check_in, check_out, status,
+                        department, notes, hours_worked, created_at
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())
+                `, [
+                    employee_id, 
+                    req.body.employee_name || '', 
+                    attendance_date, 
+                    check_in_time, 
+                    check_out_time,
+                    attendance_status,
+                    req.body.department || null,
+                    notes,
+                    check_out_time ? calculateHours(check_in_time, check_out_time) : null
+                ]);
+            } else {
+                throw columnError;
+            }
+        }
 
-        ]);
 
 
+        const insertResult = Array.isArray(result) ? result[0] : result;
 
         res.status(201).json({
 
@@ -2569,7 +2637,7 @@ app.post('/api/attendance', async (req, res) => {
 
             message: 'Attendance recorded successfully',
 
-            attendanceId: result.insertId
+            attendanceId: insertResult.insertId
 
         });
 
