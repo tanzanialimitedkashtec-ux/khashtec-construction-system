@@ -11785,17 +11785,29 @@ async function loadProjectDetails() {
             throw new Error(`HTTP ${response.status}: ${response.statusText}`);
         }
         
-        const project = await response.json();
-        console.log('📊 Project details loaded:', project);
+        const data = await response.json();
+        console.log(' Project details loaded:', data);
+        
+        if (!data.success) {
+            throw new Error(data.error || 'Failed to load project details');
+        }
+        
+        const project = data.project;
         
         // Populate form with current project data
-        document.getElementById('progressPercentage').value = project.progress || 0;
-        document.getElementById('projectStatus').value = project.status || 'active';
+        document.getElementById('progressPercentage').value = project.progress_percentage || 0;
+        document.getElementById('projectStatus').value = project.progress_status || 'on-track';
+        document.getElementById('progressReport').value = project.progress_report || '';
+        document.getElementById('completedMilestones').value = project.completed_milestones || '';
+        document.getElementById('nextMilestones').value = project.next_milestones || '';
+        document.getElementById('budgetUsed').value = project.budget_used || '';
+        document.getElementById('projectIssues').value = project.issues || '';
         
         // Show the form
         document.getElementById('progressUpdateForm').classList.remove('hidden');
         
     } catch (error) {
+        console.error(' Error loading project details:', error);
         console.error('❌ Error loading project details:', error);
         showNotification('Error loading project details', 'error', 3000);
         
@@ -12425,13 +12437,17 @@ function saveNewProject() {
         },
         body: JSON.stringify({
             name: project.projectName,
-            client: project.clientName,
-            location: project.siteLocation,
-            startDate: project.projectStartDate,
-            endDate: project.projectEndDate,
-            budget: project.contractValue,
+            code: project.projectCode,
+            client_name: project.clientName,
+            type: project.projectType,
+            start_date: project.projectStartDate,
+            end_date: project.projectEndDate,
+            contract_value: project.contractValue,
             manager: project.projectManager,
-            description: project.projectDescription
+            description: project.projectDescription,
+            key_deliverables: project.keyDeliverables,
+            priority_level: project.priorityLevel,
+            site_location: project.siteLocation
         })
     })
     .then(response => {
