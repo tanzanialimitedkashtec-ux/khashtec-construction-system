@@ -84,18 +84,20 @@ router.post('/', async (req, res) => {
         // Insert new budget
         const result = await db.execute(`
             INSERT INTO workforce_budgets (
-                department, total_budget, salaries_wages, training_development, 
+                budget_period, total_proposed, salaries_wages, training_development, 
                 employee_benefits, recruitment_costs, status, submission_date, 
-                justification, created_at, updated_at
-            ) VALUES (?, ?, ?, ?, ?, ?, 'pending', CURDATE(), ?, NOW(), NOW())
+                justification, submitted_by, submitted_by_role, created_at, updated_at
+            ) VALUES (?, ?, ?, ?, ?, ?, 'pending', CURDATE(), ?, ?, ?, NOW(), NOW())
         `, [
-            department,
+            budget_period || 'monthly',
             total_budget,
             salaries_wages,
             training_development,
             employee_benefits,
             recruitment_costs,
-            justification || 'No justification provided'
+            justification || 'No justification provided',
+            submitted_by || 'Finance Manager',
+            'Finance Manager'
         ]);
         
         const budgetId = Array.isArray(result) ? result[0].insertId : result.insertId;
@@ -105,8 +107,8 @@ router.post('/', async (req, res) => {
         res.status(201).json({
             message: 'Workforce budget created successfully',
             budget_id: budgetId,
-            department,
-            total_budget,
+            budget_period: budget_period || 'monthly',
+            total_proposed: total_budget,
             status: 'pending',
             submission_date: new Date().toISOString().split('T')[0]
         });
