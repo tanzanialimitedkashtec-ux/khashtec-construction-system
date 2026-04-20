@@ -6490,6 +6490,8 @@ function loadEmployeeForUpdate() {
             
             console.log('?? Processed employees:', employees);
             console.log('?? First employee structure:', employees[0] ? Object.keys(employees[0]) : 'No employees');
+            console.log('?? Search term:', searchTerm);
+            console.log('?? First employee data:', employees[0]);
             
             // Filter employees based on search term
             const filteredEmployees = employees.filter(emp => {
@@ -6500,12 +6502,25 @@ function loadEmployeeForUpdate() {
                 const gmail = (emp.gmail || '').toLowerCase();
                 const phone = (emp.phone || '').toLowerCase();
                 
-                return fullName.includes(searchTerm) || 
+                const matches = fullName.includes(searchTerm) || 
                        employeeId.includes(searchTerm) || 
                        department.includes(searchTerm) ||
                        position.includes(searchTerm) ||
                        gmail.includes(searchTerm) ||
                        phone.includes(searchTerm);
+                
+                console.log('?? Checking employee:', {
+                    searchTerm,
+                    fullName,
+                    employeeId,
+                    department,
+                    position,
+                    gmail,
+                    phone,
+                    matches
+                });
+                
+                return matches;
             });
             
             console.log('🔍 Filtered employees:', filteredEmployees);
