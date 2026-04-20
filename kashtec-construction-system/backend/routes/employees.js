@@ -4,10 +4,19 @@ const db = require('../../database/config/database');
 
 // Get all employees
 router.get('/', async (req, res) => {
+    console.log('🔍 GET /api/employees endpoint called');
+    console.log('📋 Request method:', req.method);
+    console.log('📋 Request URL:', req.url);
+    console.log('📋 Request headers:', req.headers);
+    
     try {
+        console.log('🗄️ Executing employee query...');
         const [employees] = await db.execute(
             'SELECT e.*, ed.full_name, ed.gmail, ed.phone, ed.nida, ed.passport, ed.contract_type FROM employees e LEFT JOIN employee_details ed ON e.id = ed.employee_id ORDER BY e.hire_date DESC'
         );
+        console.log('📊 Employee query result:', employees);
+        console.log('📊 Employee count:', employees.length);
+        
         res.json(employees);
     } catch (error) {
         console.error('Database error, using fallback employee data:', error.message);
@@ -61,7 +70,11 @@ router.get('/', async (req, res) => {
 
 // Create new employee
 router.post('/', async (req, res) => {
-    console.log('?? Employee registration request received');
+    console.log('🔍 POST /api/employees endpoint called');
+    console.log('📋 Request method:', req.method);
+    console.log('📋 Request URL:', req.url);
+    console.log('📋 Request headers:', req.headers);
+    console.log('📋 Request body:', req.body);
     
     const { fullName, gmail, phone, department, jobCategory, status = 'active', nida, passport, contract } = req.body;
     
