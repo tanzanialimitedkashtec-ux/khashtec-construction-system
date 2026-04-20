@@ -253,8 +253,66 @@ router.put('/:id', async (req, res) => {
             values
         );
         
-        // Return updated employee
-        const [updatedEmployee] = await db.execute('SELECT * FROM employees WHERE id = ?', [req.params.id]);
+        // Update employee_details table with detailed information
+        const detailUpdates = [];
+        const detailValues = [];
+        
+        if (fullName) {
+            detailUpdates.push('full_name = ?');
+            detailValues.push(fullName);
+        }
+        if (gmail) {
+            detailUpdates.push('gmail = ?');
+            detailValues.push(gmail);
+        }
+        if (phone) {
+            detailUpdates.push('phone = ?');
+            detailValues.push(phone);
+        }
+        if (nida) {
+            detailUpdates.push('nida = ?');
+            detailValues.push(nida);
+        }
+        if (passport) {
+            detailUpdates.push('passport = ?');
+            detailValues.push(passport);
+        }
+        if (contract) {
+            detailUpdates.push('contract_type = ?');
+            detailValues.push(contract);
+        }
+        
+        if (detailUpdates.length > 0) {
+            // Check if employee_details record exists
+            const [existingDetails] = await db.execute(
+                'SELECT employee_id FROM employee_details WHERE employee_id = ?',
+                [req.params.id]
+            );
+            
+            if (existingDetails.length > 0) {
+                // Update existing record
+                detailValues.push(req.params.id);
+                await db.execute(
+                    `UPDATE employee_details SET ${detailUpdates.join(', ')} WHERE employee_id = ?`,
+                    detailValues
+                );
+                console.log('✅ Updated existing employee_details record');
+            } else {
+                // Insert new record
+                detailValues.push(req.params.id);
+                await db.execute(
+                    `INSERT INTO employee_details (${detailUpdates.join(', ')}, employee_id) VALUES (${detailUpdates.map(() => '?').join(', ')}, ?)`,
+                    detailValues
+                );
+                console.log('✅ Created new employee_details record');
+            }
+        }
+        
+        // Return updated employee with details
+        const [updatedEmployee] = await db.execute(
+            'SELECT e.*, ed.full_name, ed.gmail, ed.phone, ed.nida, ed.passport, ed.contract_type FROM employees e LEFT JOIN employee_details ed ON e.id = ed.employee_id WHERE e.id = ?',
+            [req.params.id]
+        );
         
         res.json({
             message: 'Employee updated successfully',
