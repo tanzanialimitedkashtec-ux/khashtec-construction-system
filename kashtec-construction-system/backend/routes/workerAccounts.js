@@ -156,21 +156,6 @@ router.post('/', async (req, res) => {
                     console.log('?? worker_accounts table columns (single object):', [tableInfo.Field]);
                 } else {
                     console.log('?? Could not verify worker_accounts table columns, tableInfo result:', tableInfo);
-                    throw new Error('Could not verify worker_accounts table schema');
-                }
-                
-                // Check if all required columns exist
-                const requiredColumns = ['employee_id', 'full_name', 'work_email', 'phone_number', 'department', 'job_title', 'account_type', 'access_level', 'temporary_password'];
-                const missingColumns = requiredColumns.filter(col => !columns.some(tableCol => tableCol.Field === col));
-                
-                if (missingColumns.length > 0) {
-                    console.error('?? Missing columns in worker_accounts table:', missingColumns);
-                    throw new Error(`Missing required columns: ${missingColumns.join(', ')}`);
-                }
-                
-                console.log('?? worker_accounts table schema verified');
-            } else {
-                    console.log('?? Could not verify worker_accounts table columns, tableInfo result:', tableInfo);
                     console.log('?? Attempting to create worker_accounts table...');
                     
                     // Try to create the table if it doesn't exist
@@ -198,7 +183,19 @@ router.post('/', async (req, res) => {
                     `);
                     
                     console.log('?? worker_accounts table created successfully');
+                    throw new Error('Table created but needs verification');
                 }
+                
+                // Check if all required columns exist
+                const requiredColumns = ['employee_id', 'full_name', 'work_email', 'phone_number', 'department', 'job_title', 'account_type', 'access_level', 'temporary_password'];
+                const missingColumns = requiredColumns.filter(col => !columns.some(tableCol => tableCol.Field === col));
+                
+                if (missingColumns.length > 0) {
+                    console.error('?? Missing columns in worker_accounts table:', missingColumns);
+                    throw new Error(`Missing required columns: ${missingColumns.join(', ')}`);
+                }
+                
+                console.log('?? worker_accounts table schema verified');
             } catch (schemaError) {
                 console.error('?? Error checking worker_accounts table schema:', schemaError);
                 console.error('?? Schema error details:', {
