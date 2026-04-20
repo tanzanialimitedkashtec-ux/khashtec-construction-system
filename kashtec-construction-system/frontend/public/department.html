@@ -6746,17 +6746,34 @@ function selectEmployeeForUpdate(email) {
                 employees = [];
             }
             
+            console.log('?? Available employees:', employees);
+            
             // Handle both ID and email searches
+            console.log('?? Searching for employee with parameter:', email, 'type:', typeof email);
+            console.log('?? Available employees:', employees.map(emp => ({
+                id: emp.id,
+                employee_id: emp.employee_id,
+                gmail: emp.gmail,
+                idType: typeof emp.id,
+                empIdType: typeof emp.employee_id
+            })));
+            
             const employee = employees.find(emp => {
                 // If email parameter looks like a number, search by ID
                 if (!isNaN(email)) {
-                    return emp.id == email || emp.employee_id === email;
+                    const idMatch = emp.id == email;
+                    const empIdMatch = emp.employee_id === email;
+                    console.log('?? Checking ID match:', emp.id, '==', email, '=', idMatch);
+                    console.log('?? Checking employee_id match:', emp.employee_id, '===', email, '=', empIdMatch);
+                    return idMatch || empIdMatch;
                 }
                 // Otherwise search by email
-                return (emp.gmail || emp.email) === email;
+                const emailMatch = (emp.gmail || emp.email) === email;
+                console.log('?? Checking email match:', emp.gmail || emp.email, '===', email, '=', emailMatch);
+                return emailMatch;
             });
             
-            console.log('📊 Selected employee:', employee);
+            console.log('?? Selected employee:', employee);
             
             if (employee) {
                 // Fill the update form with employee data
