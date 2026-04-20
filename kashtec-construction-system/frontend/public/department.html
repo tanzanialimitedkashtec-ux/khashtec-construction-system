@@ -6503,14 +6503,6 @@ function loadEmployeeForUpdate() {
                 const phone = (emp.phone || '').toLowerCase();
                 const salary = (emp.salary || '').toLowerCase();
                 
-                const matches = fullName.includes(searchTerm) || 
-                       employeeId.includes(searchTerm) || 
-                       department.includes(searchTerm) ||
-                       position.includes(searchTerm) ||
-                       gmail.includes(searchTerm) ||
-                       phone.includes(searchTerm) ||
-                       salary.includes(searchTerm);
-                
                 console.log('?? Checking employee:', {
                     searchTerm,
                     fullName,
@@ -6520,9 +6512,18 @@ function loadEmployeeForUpdate() {
                     gmail,
                     phone,
                     salary,
-                    matches
+                    rawEmp: emp
                 });
                 
+                const matches = fullName.includes(searchTerm) || 
+                               employeeId.includes(searchTerm) || 
+                               department.includes(searchTerm) ||
+                               position.includes(searchTerm) ||
+                               gmail.includes(searchTerm) ||
+                               phone.includes(searchTerm) ||
+                               salary.includes(searchTerm);
+                
+                console.log('?? Match result:', matches);
                 return matches;
             });
             
