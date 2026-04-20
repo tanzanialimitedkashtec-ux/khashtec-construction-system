@@ -11200,20 +11200,35 @@ function saveDepartmentBudget() {
         createdDate: new Date().toLocaleString()
     };
     
+    // Helper function to parse TZS values
+    const parseTZSValue = (value) => {
+        if (!value) return 0;
+        // Remove "TZS " prefix and any commas, then parse as number
+        const numericValue = value.toString().replace(/^TZS\s*/, '').replace(/,/g, '');
+        return parseFloat(numericValue) || 0;
+    };
+    
     // Validate required fields
     if (!budget.department || !budget.period || !budget.startDate || !budget.endDate || !budget.total) {
         customAlert('Please fill in all required fields:\n\n• Department\n• Budget Period\n• Start Date\n• End Date\n• Total Budget Amount', "Validation Error", "error");
         return false;
     }
     
+    // Parse total budget to check if it's greater than 0
+    const parsedTotal = parseTZSValue(budget.total);
+    if (parsedTotal <= 0) {
+        customAlert('Total budget amount must be greater than 0', "Validation Error", "error");
+        return false;
+    }
+    
     // Prepare budget data for workforce budget API
     const budgetData = {
         department: budget.department,
-        total_budget: parseFloat(budget.total) || 0,
-        salaries_wages: parseFloat(budget.salaries) || 0,
-        training_development: parseFloat(budget.training) || 0,
-        employee_benefits: parseFloat(budget.supplies) || 0, // Map supplies to benefits
-        recruitment_costs: parseFloat(budget.equipment) || 0, // Map equipment to recruitment
+        total_budget: parseTZSValue(budget.total),
+        salaries_wages: parseTZSValue(budget.salaries),
+        training_development: parseTZSValue(budget.training),
+        employee_benefits: parseTZSValue(budget.supplies), // Map supplies to benefits
+        recruitment_costs: parseTZSValue(budget.equipment), // Map equipment to recruitment
         justification: budget.justification || `Budget request for ${budget.department} - ${budget.period}`,
         submitted_by: 'Finance Manager',
         budget_period: budget.period
