@@ -81,14 +81,18 @@ router.post('/', async (req, res) => {
             });
         }
         
+        // Generate unique budget ID
+        const budgetId = `BUD-${Date.now()}-${Math.random().toString(36).substr(2, 9).toUpperCase()}`;
+        
         // Insert new budget
         const result = await db.execute(`
             INSERT INTO workforce_budgets (
-                budget_period, total_proposed, salaries_wages, training_development, 
-                employee_benefits, recruitment_costs, status, submission_date, 
+                id, budget_period, total_proposed, salaries_wages, training_development,
+                employee_benefits, recruitment_costs, status, submission_date,
                 justification, submitted_by, submitted_by_role, created_at, updated_at
-            ) VALUES (?, ?, ?, ?, ?, ?, 'pending', CURDATE(), ?, ?, ?, NOW(), NOW())
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, 'pending', CURDATE(), ?, ?, ?, NOW(), NOW())
         `, [
+            budgetId,
             budget_period || 'monthly',
             total_budget,
             salaries_wages,
@@ -99,8 +103,6 @@ router.post('/', async (req, res) => {
             submitted_by || 'Finance Manager',
             'Finance Manager'
         ]);
-        
-        const budgetId = Array.isArray(result) ? result[0].insertId : result.insertId;
         
         console.log(' Workforce budget created successfully:', budgetId);
         
