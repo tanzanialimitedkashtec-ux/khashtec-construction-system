@@ -6777,16 +6777,50 @@ function selectEmployeeForUpdate(email) {
             console.log('?? Selected employee:', employee);
             
             if (employee) {
+                console.log('🔍 Populating form with employee data:', employee);
+                
                 // Fill the update form with employee data
                 // Use database ID for updates (not employee_id)
-                document.getElementById('updateEmpID').value = employee.id || employee.employee_id || 'N/A';
-                document.getElementById('updateFullName').value = employee.full_name || employee.fullName || '';
-                document.getElementById('updatePhone').value = employee.phone || '';
-                document.getElementById('updateGmail').value = employee.gmail || employee.email || '';
-                document.getElementById('updateDepartment').value = employee.department || '';
-                document.getElementById('updateJobCategory').value = employee.position || employee.jobCategory || '';
-                document.getElementById('updateContract').value = employee.contract_type || employee.contract || '';
-                document.getElementById('updateStatus').value = employee.status || 'active';
+                const empId = employee.id || employee.employee_id || 'N/A';
+                const fullName = employee.full_name || employee.fullName || '';
+                const phone = employee.phone || '';
+                const gmail = employee.gmail || employee.email || '';
+                const department = employee.department || '';
+                const position = employee.position || employee.jobCategory || '';
+                const contract = employee.contract_type || employee.contract || '';
+                const status = employee.status || 'active';
+                
+                console.log('🔍 Form values to set:', {
+                    empId,
+                    fullName,
+                    phone,
+                    gmail,
+                    department,
+                    position,
+                    contract,
+                    status
+                });
+                
+                document.getElementById('updateEmpID').value = empId;
+                document.getElementById('updateFullName').value = fullName;
+                document.getElementById('updatePhone').value = phone;
+                document.getElementById('updateGmail').value = gmail;
+                document.getElementById('updateDepartment').value = department;
+                document.getElementById('updateJobCategory').value = position;
+                document.getElementById('updateContract').value = contract;
+                document.getElementById('updateStatus').value = status;
+                
+                // Verify values were set
+                console.log('🔍 Form values after setting:', {
+                    empId: document.getElementById('updateEmpID').value,
+                    fullName: document.getElementById('updateFullName').value,
+                    phone: document.getElementById('updatePhone').value,
+                    gmail: document.getElementById('updateGmail').value,
+                    department: document.getElementById('updateDepartment').value,
+                    position: document.getElementById('updateJobCategory').value,
+                    contract: document.getElementById('updateContract').value,
+                    status: document.getElementById('updateStatus').value
+                });
                 
                 // Show the update form
                 document.getElementById('updateForm').classList.remove('hidden');
