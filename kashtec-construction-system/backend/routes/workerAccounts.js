@@ -145,21 +145,31 @@ router.post('/', async (req, res) => {
                 console.log('?? DESCRIBE result isArray:', Array.isArray(tableInfo));
                 console.log('?? DESCRIBE result length:', tableInfo ? tableInfo.length : 'undefined');
                 
-                // Check if tableInfo is an array and has elements
-                if (Array.isArray(tableInfo) && tableInfo.length > 0) {
-                    console.log('?? worker_accounts table columns:', tableInfo.map(col => col.Field));
-                    
-                    // Check if all required columns exist
-                    const requiredColumns = ['employee_id', 'full_name', 'work_email', 'phone_number', 'department', 'job_title', 'account_type', 'access_level', 'temporary_password'];
-                    const missingColumns = requiredColumns.filter(col => !tableInfo.some(tableCol => tableCol.Field === col));
-                    
-                    if (missingColumns.length > 0) {
-                        console.error('?? Missing columns in worker_accounts table:', missingColumns);
-                        throw new Error(`Missing required columns: ${missingColumns.join(', ')}`);
-                    }
-                    
-                    console.log('?? worker_accounts table schema verified');
+                // Handle both array and single object results from DESCRIBE
+                let columns = [];
+                if (Array.isArray(tableInfo)) {
+                    columns = tableInfo;
+                    console.log('?? worker_accounts table columns:', columns.map(col => col.Field));
+                } else if (tableInfo && typeof tableInfo === 'object') {
+                    // DESCRIBE returned a single object, wrap it in array
+                    columns = [tableInfo];
+                    console.log('?? worker_accounts table columns (single object):', [tableInfo.Field]);
                 } else {
+                    console.log('?? Could not verify worker_accounts table columns, tableInfo result:', tableInfo);
+                    throw new Error('Could not verify worker_accounts table schema');
+                }
+                
+                // Check if all required columns exist
+                const requiredColumns = ['employee_id', 'full_name', 'work_email', 'phone_number', 'department', 'job_title', 'account_type', 'access_level', 'temporary_password'];
+                const missingColumns = requiredColumns.filter(col => !columns.some(tableCol => tableCol.Field === col));
+                
+                if (missingColumns.length > 0) {
+                    console.error('?? Missing columns in worker_accounts table:', missingColumns);
+                    throw new Error(`Missing required columns: ${missingColumns.join(', ')}`);
+                }
+                
+                console.log('?? worker_accounts table schema verified');
+            } else {
                     console.log('?? Could not verify worker_accounts table columns, tableInfo result:', tableInfo);
                     console.log('?? Attempting to create worker_accounts table...');
                     
@@ -217,6 +227,22 @@ router.post('/', async (req, res) => {
             
             console.log('?? Creating new worker account...');
             
+            // Map frontend account_type values to database ENUM values
+            const mappedAccountType = accountType === 'staff' ? 'worker' : 
+                                     accountType === 'admin' ? 'manager' : 
+                                     accountType === 'supervisor' ? 'supervisor' : 
+                                     'worker'; // default fallback
+            
+            // Map frontend access_level values to database ENUM values  
+            const mappedAccessLevel = accessLevel === 'standard' ? 'basic' :
+                                     accessLevel === 'admin' ? 'admin' :
+                                     accessLevel === 'supervisor' ? 'supervisor' :
+                                     accessLevel === 'manager' ? 'manager' :
+                                     'basic'; // default fallback
+            
+            console.log('?? Mapped account_type:', accountType, '->', mappedAccountType);
+            console.log('?? Mapped access_level:', accessLevel, '->', mappedAccessLevel);
+            
             // Prepare the INSERT query with proper column names
             const insertQuery = `
                 INSERT INTO worker_accounts (
@@ -233,8 +259,8 @@ router.post('/', async (req, res) => {
                 phoneNumber,
                 department,
                 jobTitle,
-                accountType,
-                accessLevel,
+                mappedAccountType,
+                mappedAccessLevel,
                 temporaryPassword,
                 accountNotes || '',
                 profilePicture || '',
