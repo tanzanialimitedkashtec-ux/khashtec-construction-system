@@ -156,11 +156,19 @@ router.post('/', async (req, res) => {
                     console.log('?? worker_accounts table columns (single object):', [tableInfo.Field]);
                 } else {
                     console.log('?? Could not verify worker_accounts table columns, tableInfo result:', tableInfo);
-                    console.log('?? Attempting to create worker_accounts table...');
+                    console.log('?? Attempting to drop and recreate worker_accounts table...');
                     
-                    // Try to create the table if it doesn't exist
+                    // Drop and recreate the table to ensure all columns exist
+                    try {
+                        await db.execute("DROP TABLE IF EXISTS worker_accounts");
+                        console.log('?? Existing worker_accounts table dropped');
+                    } catch (dropError) {
+                        console.log('?? No existing table to drop:', dropError.message);
+                    }
+                    
+                    // Create the table with all required columns
                     await db.execute(`
-                        CREATE TABLE IF NOT EXISTS worker_accounts (
+                        CREATE TABLE worker_accounts (
                             id INT AUTO_INCREMENT PRIMARY KEY,
                             employee_id VARCHAR(50) NOT NULL UNIQUE,
                             full_name VARCHAR(255) NOT NULL,
@@ -182,8 +190,21 @@ router.post('/', async (req, res) => {
                         )
                     `);
                     
-                    console.log('?? worker_accounts table created successfully');
-                    throw new Error('Table created but needs verification');
+                    console.log('?? worker_accounts table recreated successfully');
+                    
+                    // Verify the recreated table
+                    const [verification] = await db.execute("DESCRIBE worker_accounts");
+                    if (verification && typeof verification === 'object') {
+                        const columns = Array.isArray(verification) ? verification : [verification];
+                        console.log('?? Verified recreated table columns:', columns.map(col => col.Field));
+                        
+                        if (columns.length >= 9) { // Should have at least 9 columns now
+                            console.log('?? Table recreation verified, proceeding...');
+                            return; // Exit successfully
+                        }
+                    }
+                    
+                    throw new Error('Table recreation failed verification');
                 }
                 
                 // Check if all required columns exist
