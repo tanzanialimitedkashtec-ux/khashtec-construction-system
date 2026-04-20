@@ -6460,7 +6460,7 @@ function loadEmployeeForUpdate() {
     const resultsDiv = document.getElementById('employeeSearchResults');
     
     if (searchTerm.length < 2) {
-        resultsDiv.innerHTML = '<p style="color: #666;">Enter at least 2 characters to search</p>';
+        resultsDiv.innerHTML = '<p style="color: #666;">Enter at least 2 characters to search</p><p style="color: #999; font-size: 12px;">Try: admin, it, emp, or employee ID</p>';
         return;
     }
     
@@ -6526,7 +6526,17 @@ function loadEmployeeForUpdate() {
             console.log('🔍 Filtered employees:', filteredEmployees);
             
             if (filteredEmployees.length === 0) {
-                resultsDiv.innerHTML = '<p style="color: #dc3545;">No employees found</p>';
+                // Check if it's because employee_details are missing
+                const hasBasicData = employees.some(emp => emp.employee_id || emp.department || emp.position);
+                if (hasBasicData) {
+                    resultsDiv.innerHTML = `
+                        <p style="color: #dc3545;">No employees found with that search term.</p>
+                        <p style="color: #999; font-size: 12px;">Available search options: admin, it, emp, or employee ID like 'EMP1776674449274'</p>
+                        <button class="action" onclick="showAllEmployees()" style="font-size: 12px; margin-top: 10px;">Show All Employees</button>
+                    `;
+                } else {
+                    resultsDiv.innerHTML = '<p style="color: #dc3545;">No employees found</p>';
+                }
                 return;
             }
             
@@ -6556,6 +6566,68 @@ function loadEmployeeForUpdate() {
         })
         .catch(error => {
             console.error('❌ Error loading employees:', error);
+            resultsDiv.innerHTML = '<p style="color: #dc3545;">Error loading employees. Please try again.</p>';
+        });
+}
+
+function showAllEmployees() {
+    console.log('?? Showing all employees...');
+    const resultsDiv = document.getElementById('employeeSearchResults');
+    resultsDiv.innerHTML = '<p style="color: #666;">Loading all employees...</p>';
+    
+    // Load employees from API
+    fetch('/api/employees')
+        .then(response => response.json())
+        .then(data => {
+            // Handle different response formats
+            let employees = [];
+            
+            if (Array.isArray(data)) {
+                employees = data;
+            } else if (data.employees && Array.isArray(data.employees)) {
+                employees = data.employees;
+            } else if (data.employee && Array.isArray(data.employee)) {
+                employees = data.employee;
+            } else if (data && typeof data === 'object') {
+                employees = [data];
+            } else {
+                employees = [];
+            }
+            
+            console.log('?? All employees loaded:', employees);
+            
+            if (employees.length === 0) {
+                resultsDiv.innerHTML = '<p style="color: #dc3545;">No employees found</p>';
+                return;
+            }
+            
+            // Display all employees
+            let resultsHtml = '<div class="search-results-list"><h4>All Employees</h4>';
+            employees.forEach(emp => {
+                const fullName = emp.full_name || emp.fullName || 'Unknown';
+                const employeeId = emp.employee_id || emp.employeeId || 'N/A';
+                const department = emp.department || 'N/A';
+                const position = emp.position || emp.jobCategory || 'N/A';
+                const gmail = emp.gmail || 'N/A';
+                const status = emp.status || 'active';
+                
+                resultsHtml += `
+                    <div class="search-result-item" onclick="selectEmployeeForUpdate('${emp.gmail || emp.id}')">
+                        <div class="employee-info">
+                            <strong>${fullName}</strong><br>
+                            ID: ${employeeId} | Dept: ${department} | Pos: ${position}<br>
+                            Email: ${gmail} | Status: ${status}
+                        </div>
+                        <button class="select-btn" onclick="event.stopPropagation(); selectEmployeeForUpdate('${emp.gmail || emp.id}')">Select</button>
+                    </div>
+                `;
+            });
+            resultsHtml += '</div>';
+            
+            resultsDiv.innerHTML = resultsHtml;
+        })
+        .catch(error => {
+            console.error('?? Error loading all employees:', error);
             resultsDiv.innerHTML = '<p style="color: #dc3545;">Error loading employees. Please try again.</p>';
         });
 }
