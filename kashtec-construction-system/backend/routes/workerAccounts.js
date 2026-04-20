@@ -136,6 +136,31 @@ router.post('/', async (req, res) => {
         console.log('?? Worker account creation request received');
         console.log('?? Request data:', { employeeId, fullName, workEmail, phoneNumber, department, jobTitle, accountType, accessLevel });
         
+        // Map frontend account_type values to database ENUM values
+        const mappedAccountType = accountType === 'staff' ? 'worker' : 
+                                 accountType === 'admin' ? 'manager' : 
+                                 accountType === 'supervisor' ? 'supervisor' : 
+                                 'worker'; // default fallback
+        
+        // Map frontend access_level values to database ENUM values  
+        const mappedAccessLevel = accessLevel === 'standard' ? 'basic' :
+                                 accessLevel === 'admin' ? 'admin' :
+                                 accessLevel === 'supervisor' ? 'supervisor' :
+                                 accessLevel === 'manager' ? 'manager' :
+                                 'basic'; // default fallback
+        
+        console.log('?? Mapped account_type:', accountType, '->', mappedAccountType);
+        console.log('?? Mapped access_level:', accessLevel, '->', mappedAccessLevel);
+        
+        // Prepare INSERT query with proper column names
+        const insertQuery = `
+            INSERT INTO worker_accounts (
+                employee_id, full_name, work_email, phone_number, department, 
+                job_title, account_type, access_level, temporary_password, 
+                account_notes, profile_picture, id_document, contract_document
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        `;
+        
         // Try direct insertion first - if table schema is wrong, we'll handle the error
         try {
             console.log('?? Checking if worker account already exists...');
@@ -155,31 +180,6 @@ router.post('/', async (req, res) => {
             }
             
             console.log('?? Creating new worker account...');
-            
-            // Map frontend account_type values to database ENUM values
-            const mappedAccountType = accountType === 'staff' ? 'worker' : 
-                                     accountType === 'admin' ? 'manager' : 
-                                     accountType === 'supervisor' ? 'supervisor' : 
-                                     'worker'; // default fallback
-            
-            // Map frontend access_level values to database ENUM values  
-            const mappedAccessLevel = accessLevel === 'standard' ? 'basic' :
-                                     accessLevel === 'admin' ? 'admin' :
-                                     accessLevel === 'supervisor' ? 'supervisor' :
-                                     accessLevel === 'manager' ? 'manager' :
-                                     'basic'; // default fallback
-            
-            console.log('?? Mapped account_type:', accountType, '->', mappedAccountType);
-            console.log('?? Mapped access_level:', accessLevel, '->', mappedAccessLevel);
-            
-            // Prepare INSERT query with proper column names
-            const insertQuery = `
-                INSERT INTO worker_accounts (
-                    employee_id, full_name, work_email, phone_number, department, 
-                    job_title, account_type, access_level, temporary_password, 
-                    account_notes, profile_picture, id_document, contract_document
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-            `;
             
             const [result] = await db.execute(insertQuery, [
                 employeeId,
