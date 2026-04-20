@@ -7750,12 +7750,26 @@ function saveEmployeeManual() {
         })
         .then(response => {
             console.log('📡 Employees API test response status:', response.status);
+            console.log('📡 Employees API test headers:', [...response.headers.entries()]);
+            
             if (response.status === 404) {
                 throw new Error('Employees API endpoint not found (404)');
             }
             if (response.status >= 500) {
                 throw new Error('Server error on employees API (500+)');
             }
+            
+            // Check content type before parsing JSON
+            const contentType = response.headers.get('content-type');
+            console.log('📡 Response content type:', contentType);
+            
+            if (!contentType || !contentType.includes('application/json')) {
+                return response.text().then(text => {
+                    console.log('📡 Non-JSON response:', text);
+                    throw new Error(`Expected JSON but got ${contentType || 'unknown'}: ${text.substring(0, 100)}`);
+                });
+            }
+            
             return response.json();
         })
         .then(data => {
@@ -7796,6 +7810,17 @@ function saveEmployeeManual() {
             }
             if (response.status >= 500) {
                 throw new Error('Server error during employee registration (500+)');
+            }
+            
+            // Check content type before parsing JSON
+            const contentType = response.headers.get('content-type');
+            console.log('📡 POST Response content type:', contentType);
+            
+            if (!contentType || !contentType.includes('application/json')) {
+                return response.text().then(text => {
+                    console.log('📡 POST Non-JSON response:', text);
+                    throw new Error(`Expected JSON but got ${contentType || 'unknown'}: ${text.substring(0, 100)}`);
+                });
             }
             
             return response.json();
