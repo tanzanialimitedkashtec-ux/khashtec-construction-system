@@ -182,6 +182,21 @@ class DatabaseAPI {
         return this.get('/employees');
     }
 
+    // Worker Assignments
+    async getWorkerAssignments() {
+        return this.get('/worker-accounts/assignments');
+    }
+
+    async getWorkerAssignmentStats() {
+        // For now, return basic stats derived from assignments
+        const assignments = await this.getWorkerAssignments();
+        return {
+            totalWorkers: assignments.length,
+            activeProjects: [...new Set(assignments.map(a => a.project_name))].length,
+            activeTasks: assignments.filter(a => a.status === 'active').length
+        };
+    }
+
     // Properties
     async getProperties() {
         return this.get('/properties');

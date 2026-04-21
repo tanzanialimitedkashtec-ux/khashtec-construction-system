@@ -248,10 +248,10 @@ document.addEventListener('DOMContentLoaded', function() {
 async function loadWorkerAssignments() {
     try {
         // Load assignments
-        const assignments = await window.ApiService.getWorkerAssignments();
+        const assignments = await window.apiService.getWorkerAssignments();
         
         // Load stats
-        const stats = await window.ApiService.getWorkerAssignmentStats();
+        const stats = await window.apiService.getWorkerAssignmentStats();
         
         // Update stats display
         updateWorkerStats(stats);
@@ -397,7 +397,7 @@ function filterAssignedWorkers() {
     const projectFilter = document.getElementById('projectFilter').value;
     
     // Get all assignments and filter them
-    window.ApiService.getWorkerAssignments().then(assignments => {
+    window.apiService.getWorkerAssignments().then(assignments => {
         let filteredAssignments = assignments;
         
         // Filter by search term
