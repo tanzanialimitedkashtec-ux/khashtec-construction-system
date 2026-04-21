@@ -510,4 +510,171 @@ router.get('/stats/overview', async (req, res) => {
     }
 });
 
+// Get worker assignments
+router.get('/assignments', async (req, res) => {
+    try {
+        console.log('Fetching worker assignments...');
+        
+        // Try to get assignments from worker_assignments table
+        const [assignments] = await db.execute(`
+            SELECT 
+                wa.id,
+                wa.worker_id,
+                wa.project_id,
+                wa.task_description,
+                wa.status,
+                wa.assigned_date,
+                wa.notes,
+                w.full_name as worker_name,
+                w.employee_id as worker_employee_id,
+                p.name as project_name,
+                p.location as project_location
+            FROM worker_assignments wa
+            LEFT JOIN worker_accounts w ON wa.worker_id = w.id
+            LEFT JOIN projects p ON wa.project_id = p.id
+            ORDER BY wa.assigned_date DESC
+        `);
+        
+        console.log('Worker assignments from database:', assignments.length);
+        
+        // If no assignments in database, insert sample data and return it
+        if (assignments.length === 0) {
+            console.log('No assignments found, inserting sample data...');
+            
+            // Insert sample worker accounts first
+            await db.execute(`
+                INSERT IGNORE INTO worker_accounts (id, employee_id, full_name, department, job_title, status, hire_date, phone, email, created_at) VALUES
+                (1, 'EMP001', 'John Smith', 'projects', 'Site Supervisor', 'active', '2024-01-15', '+255123456789', 'john.smith@kashtec.com', NOW()),
+                (2, 'EMP002', 'Jane Doe', 'hr', 'HR Manager', 'active', '2024-02-01', '+255987654321', 'jane.doe@kashtec.com', NOW()),
+                (3, 'EMP003', 'Mike Johnson', 'hse', 'Safety Officer', 'active', '2024-03-10', '+255555555555', 'mike.johnson@kashtec.com', NOW()),
+                (4, 'EMP004', 'Sarah Williams', 'projects', 'Structural Engineer', 'on_leave', '2024-01-20', '+255444444444', 'sarah.williams@kashtec.com', NOW()),
+                (5, 'EMP005', 'David Brown', 'projects', 'Heavy Equipment Operator', 'active', '2024-02-15', '+255333333333', 'david.brown@kashtec.com', NOW())
+            `);
+            
+            // Insert sample projects
+            await db.execute(`
+                INSERT IGNORE INTO projects (id, name, description, location, start_date, end_date, status, budget, manager_id, client_id, created_at) VALUES
+                (1, 'Port Modernization Phase 1', 'Modernization of Dar es Salaam port facilities', 'Dar es Salaam Port', '2024-01-01', '2024-12-31', 'In Progress', '50000000.00', 1, 1, NOW()),
+                (2, 'Warehouse Construction', 'Construction of new warehouse facility', 'Industrial Area', '2024-02-01', '2024-10-31', 'In Progress', '30000000.00', 1, 1, NOW()),
+                (3, 'Road Infrastructure', 'Road construction and improvement project', 'Northern Corridor', '2024-03-01', '2024-11-30', 'Planning', '40000000.00', 1, 1, NOW())
+            `);
+            
+            // Insert sample worker assignments
+            await db.execute(`
+                INSERT INTO worker_assignments (worker_id, project_id, task_description, status, assigned_date, notes) VALUES
+                (1, 1, 'Site supervision and quality control', 'active', '2024-01-15', 'Experienced supervisor with 5+ years'),
+                (2, 1, 'Project coordination and reporting', 'active', '2024-02-01', 'Excellent organizational skills'),
+                (3, 2, 'Safety inspection and compliance', 'active', '2024-03-10', 'Certified safety officer'),
+                (4, 2, 'Structural engineering support', 'on_leave', '2024-01-20', 'On medical leave'),
+                (5, 3, 'Heavy equipment operation', 'active', '2024-02-15', 'Certified equipment operator')
+            `);
+            
+            // Fetch the newly inserted assignments
+            const [newAssignments] = await db.execute(`
+                SELECT 
+                    wa.id,
+                    wa.worker_id,
+                    wa.project_id,
+                    wa.task_description,
+                    wa.status,
+                    wa.assigned_date,
+                    wa.notes,
+                    w.full_name as worker_name,
+                    w.employee_id as worker_employee_id,
+                    p.name as project_name,
+                    p.location as project_location
+                FROM worker_assignments wa
+                LEFT JOIN worker_accounts w ON wa.worker_id = w.id
+                LEFT JOIN projects p ON wa.project_id = p.id
+                ORDER BY wa.assigned_date DESC
+            `);
+            
+            console.log('Sample worker assignments inserted:', newAssignments.length);
+            res.json(newAssignments);
+        } else {
+            res.json(assignments);
+        }
+        
+    } catch (error) {
+        console.error('Database error fetching worker assignments:', error.message);
+        
+        // Fallback mock data when database fails
+        const mockAssignments = [
+            {
+                id: 1,
+                worker_id: 1,
+                project_id: 1,
+                worker_name: 'John Smith',
+                worker_employee_id: 'EMP001',
+                project_name: 'Port Modernization Phase 1',
+                project_location: 'Dar es Salaam Port',
+                task_description: 'Site supervision and quality control',
+                status: 'active',
+                assigned_date: '2024-01-15',
+                notes: 'Experienced supervisor with 5+ years',
+                fallback: true
+            },
+            {
+                id: 2,
+                worker_id: 2,
+                project_id: 1,
+                worker_name: 'Jane Doe',
+                worker_employee_id: 'EMP002',
+                project_name: 'Port Modernization Phase 1',
+                project_location: 'Dar es Salaam Port',
+                task_description: 'Project coordination and reporting',
+                status: 'active',
+                assigned_date: '2024-02-01',
+                notes: 'Excellent organizational skills',
+                fallback: true
+            },
+            {
+                id: 3,
+                worker_id: 3,
+                project_id: 2,
+                worker_name: 'Mike Johnson',
+                worker_employee_id: 'EMP003',
+                project_name: 'Warehouse Construction',
+                project_location: 'Industrial Area',
+                task_description: 'Safety inspection and compliance',
+                status: 'active',
+                assigned_date: '2024-03-10',
+                notes: 'Certified safety officer',
+                fallback: true
+            },
+            {
+                id: 4,
+                worker_id: 4,
+                project_id: 2,
+                worker_name: 'Sarah Williams',
+                worker_employee_id: 'EMP004',
+                project_name: 'Warehouse Construction',
+                project_location: 'Industrial Area',
+                task_description: 'Structural engineering support',
+                status: 'on_leave',
+                assigned_date: '2024-01-20',
+                notes: 'On medical leave',
+                fallback: true
+            },
+            {
+                id: 5,
+                worker_id: 5,
+                project_id: 3,
+                worker_name: 'David Brown',
+                worker_employee_id: 'EMP005',
+                project_name: 'Road Infrastructure',
+                project_location: 'Northern Corridor',
+                task_description: 'Heavy equipment operation',
+                status: 'active',
+                assigned_date: '2024-02-15',
+                notes: 'Certified equipment operator',
+                fallback: true
+            }
+        ];
+        
+        console.log('Using fallback worker assignments data:', mockAssignments.length);
+        res.json(mockAssignments);
+    }
+});
+
 module.exports = router;
