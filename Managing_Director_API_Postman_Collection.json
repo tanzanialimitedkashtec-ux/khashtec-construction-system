@@ -1,0 +1,546 @@
+{
+	"info": {
+		"_postman_id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+		"name": "KASHTEC Managing Director API",
+		"description": "Complete API collection for KASHTEC Construction System - Managing Director Department. This collection includes all endpoints for testing the managing director functionality with sample requests and expected responses.",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Authentication",
+			"item": [
+				{
+					"name": "Login",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"director@kashtec.co.tz\",\n  \"password\": \"director123\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/auth/login",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"auth",
+								"login"
+							]
+						},
+						"description": "Authenticate to get JWT token for accessing managing director endpoints"
+					},
+					"response": []
+				}
+			],
+			"description": "Authentication endpoints to get JWT tokens"
+		},
+		{
+			"name": "Dashboard",
+			"item": [
+				{
+					"name": "Get Dashboard Overview",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/managing-director/dashboard",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"managing-director",
+								"dashboard"
+							]
+						},
+						"description": "Get comprehensive dashboard overview with key metrics including total projects, active projects, employees, revenue, and pending approvals"
+					},
+					"response": []
+				}
+			],
+			"description": "Dashboard endpoints for executive overview"
+		},
+		{
+			"name": "Projects Management",
+			"item": [
+				{
+					"name": "Get All Projects",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/managing-director/projects",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"managing-director",
+								"projects"
+							]
+						},
+						"description": "Get all projects with detailed metrics, worker assignments, and manager information"
+					},
+					"response": []
+				}
+			],
+			"description": "Project management endpoints"
+		},
+		{
+			"name": "Financial Overview",
+			"item": [
+				{
+					"name": "Get Financial Data",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/managing-director/financial",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"managing-director",
+								"financial"
+							]
+						},
+						"description": "Get comprehensive financial data including revenue by month, top budgets, expenses, and financial summary"
+					},
+					"response": []
+				}
+			],
+			"description": "Financial data and reporting endpoints"
+		},
+		{
+			"name": "Employee Performance",
+			"item": [
+				{
+					"name": "Get Performance Metrics",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/managing-director/employees/performance",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"managing-director",
+								"employees",
+								"performance"
+							]
+						},
+						"description": "Get detailed employee performance analytics including department statistics, top performers, attendance data, and hiring trends"
+					},
+					"response": []
+				}
+			],
+			"description": "Employee performance and analytics endpoints"
+		},
+		{
+			"name": "Pending Approvals",
+			"item": [
+				{
+					"name": "Get Pending Approvals",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/managing-director/approvals/pending",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"managing-director",
+								"approvals",
+								"pending"
+							]
+						},
+						"description": "Get all pending approvals requiring director attention including work approvals, workforce requests, leave requests, and budget requests"
+					},
+					"response": []
+				}
+			],
+			"description": "Approval management endpoints"
+		},
+		{
+			"name": "Approval Actions",
+			"item": [
+				{
+					"name": "Approve Work Request",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"action\": \"approve\",\n  \"comments\": \"Work quality meets all standards and requirements\",\n  \"approved_by\": \"Managing Director\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/managing-director/approvals/work/123",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"managing-director",
+								"approvals",
+								"work",
+								"123"
+							]
+						},
+						"description": "Approve a work approval request by ID"
+					},
+					"response": []
+				},
+				{
+					"name": "Reject Budget Request",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"action\": \"reject\",\n  \"comments\": \"Budget constraints prevent approval at this time. Please resubmit with revised amount.\",\n  \"approved_by\": \"Managing Director\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/managing-director/approvals/budget/101",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"managing-director",
+								"approvals",
+								"budget",
+								"101"
+							]
+						},
+						"description": "Reject a budget request by ID"
+					},
+					"response": []
+				},
+				{
+					"name": "Approve Workforce Request",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"action\": \"approve\",\n  \"comments\": \"Additional workforce approved based on project requirements\",\n  \"approved_by\": \"Managing Director\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/managing-director/approvals/workforce/456",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"managing-director",
+								"approvals",
+								"workforce",
+								"456"
+							]
+						},
+						"description": "Approve a workforce request by ID"
+					},
+					"response": []
+				},
+				{
+					"name": "Approve Leave Request",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"action\": \"approve\",\n  \"comments\": \"Leave approved as per company policy\",\n  \"approved_by\": \"Managing Director\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/managing-director/approvals/leave/789",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"managing-director",
+								"approvals",
+								"leave",
+								"789"
+							]
+						},
+						"description": "Approve a leave request by ID"
+					},
+					"response": []
+				}
+			],
+			"description": "Endpoints for approving/rejecting various requests"
+		},
+		{
+			"name": "Risk & Compliance",
+			"item": [
+				{
+					"name": "Get Risk & Compliance Data",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/managing-director/risk-compliance",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"managing-director",
+								"risk-compliance"
+							]
+						},
+						"description": "Get risk assessment and compliance reports including safety incidents, compliance issues, risk assessments, and audit reports"
+					},
+					"response": []
+				}
+			],
+			"description": "Risk management and compliance endpoints"
+		},
+		{
+			"name": "Executive Reports",
+			"item": [
+				{
+					"name": "Quarterly Report",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/managing-director/reports/quarterly?startDate=2024-01-01&endDate=2024-03-31",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"managing-director",
+								"reports",
+								"quarterly"
+							],
+							"query": [
+								{
+									"key": "startDate",
+									"value": "2024-01-01"
+								},
+								{
+									"key": "endDate",
+									"value": "2024-03-31"
+								}
+							]
+						},
+						"description": "Generate quarterly executive report with project and financial summaries"
+					},
+					"response": []
+				},
+				{
+					"name": "Annual Report",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/managing-director/reports/annual?startDate=2024-01-01&endDate=2024-12-31",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"managing-director",
+								"reports",
+								"annual"
+							],
+							"query": [
+								{
+									"key": "startDate",
+									"value": "2024-01-01"
+								},
+								{
+									"key": "endDate",
+									"value": "2024-12-31"
+								}
+							]
+						},
+						"description": "Generate annual executive report with yearly statistics and department performance"
+					},
+					"response": []
+				},
+				{
+					"name": "Performance Report",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/managing-director/reports/performance?startDate=2024-01-01&endDate=2024-03-31",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"managing-director",
+								"reports",
+								"performance"
+							],
+							"query": [
+								{
+									"key": "startDate",
+									"value": "2024-01-01"
+								},
+								{
+									"key": "endDate",
+									"value": "2024-03-31"
+								}
+							]
+						},
+						"description": "Generate performance report with project and employee performance metrics"
+					},
+					"response": []
+				},
+				{
+					"name": "Financial Report",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/managing-director/reports/financial?startDate=2024-01-01&endDate=2024-03-31",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"managing-director",
+								"reports",
+								"financial"
+							],
+							"query": [
+								{
+									"key": "startDate",
+									"value": "2024-01-01"
+								},
+								{
+									"key": "endDate",
+									"value": "2024-03-31"
+								}
+							]
+						},
+						"description": "Generate financial report with revenue summaries and expense breakdowns"
+					},
+					"response": []
+				}
+			],
+			"description": "Executive reporting endpoints"
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "baseUrl",
+			"value": "http://localhost:3000/api",
+			"type": "string"
+		},
+		{
+			"key": "token",
+			"value": "your-jwt-token-here",
+			"type": "string"
+		}
+	]
+}

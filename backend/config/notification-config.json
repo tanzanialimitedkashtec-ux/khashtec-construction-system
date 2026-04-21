@@ -1,0 +1,47 @@
+{
+  "enableDesktop": true,
+  "enableSound": true,
+  "enableEmail": false,
+  "soundFile": "notification.mp3",
+  "logFile": "notifications.log",
+  "types": {
+    "info": {
+      "color": "cyan",
+      "icon": "ℹ️",
+      "duration": 5000
+    },
+    "success": {
+      "color": "green", 
+      "icon": "✅",
+      "duration": 5000
+    },
+    "warning": {
+      "color": "yellow",
+      "icon": "⚠️", 
+      "duration": 6000
+    },
+    "error": {
+      "color": "red",
+      "icon": "❌",
+      "duration": 8000
+    },
+    "update": {
+      "color": "magenta",
+      "icon": "🔄",
+      "duration": 4000
+    }
+  },
+  "git": {
+    "notifyOnCommit": true,
+    "notifyOnPush": true,
+    "notifyOnError": true,
+    "showCommitHash": true,
+    "showBranch": true
+  },
+  "desktop": {
+    "enableWindowsToast": true,
+    "enableMacNotificationCenter": true,
+    "enableLinuxNotify": true,
+    "duration": 3000
+  }
+}
