@@ -12452,6 +12452,11 @@ function saveNewProject() {
         customAlert(`Project created successfully!\n\nProject: ${project.projectName}\nCode: ${project.projectCode}\nContract Value: TZS ${parseInt(project.contractValue).toLocaleString()}\nStatus: ${project.status}\nProject ID: ${data.id}\n\n🎉 Project saved to database!`, "Project Created", "success");
         
         document.getElementById('projectForm').reset();
+        
+        // Refresh the current view to show new project
+        setTimeout(() => {
+            createNewProject(); // Reload the Project Manager view
+        }, 2000);
     })
     .catch(error => {
         console.error('❌ Error creating project:', error);
