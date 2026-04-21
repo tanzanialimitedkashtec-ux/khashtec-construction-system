@@ -12400,13 +12400,13 @@ function saveNewProject() {
     // Prepare work item for Projects department
     const workItem = {
         work_type: 'Project Creation',
-        work_title: `New Project - ${project.name}`,
-        work_description: `New Project Created\n\nProject Name: ${project.name}\nProject Code: ${project.code}\nClient: ${project.client}\nType: ${project.type}\nStart Date: ${project.startDate}\nEnd Date: ${project.endDate}\nContract Value: TZS ${project.contractValue}\nManager: ${project.manager}\nDescription: ${project.description}\nDeliverables: ${project.deliverables}\nLocation: ${project.location}\nPriority: ${project.priority}\nStatus: ${project.status}\nCreated Date: ${project.createdDate}`,
-        project_name: project.name, // Required field
-        client_name: project.client, // Required field
+        work_title: `New Project - ${project.projectName}`,
+        work_description: `New Project Created\n\nProject Name: ${project.projectName}\nProject Code: ${project.projectCode}\nClient: ${project.clientName}\nType: ${project.projectType}\nStart Date: ${project.projectStartDate}\nEnd Date: ${project.projectEndDate}\nContract Value: TZS ${project.contractValue}\nManager: ${project.projectManager}\nDescription: ${project.projectDescription}\nDeliverables: ${project.keyDeliverables}\nLocation: ${project.siteLocation}\nPriority: ${project.priorityLevel}\nStatus: ${project.status}\nCreated Date: ${project.createdDate}`,
+        project_name: project.projectName, // Required field
+        client_name: project.clientName, // Required field
         project_phase: 'planning', // Required field
-        priority: project.priority === 'critical' ? 'High' : project.priority === 'high' ? 'Medium' : 'Low',
-        due_date: project.startDate,
+        priority: project.priorityLevel === 'critical' ? 'High' : project.priorityLevel === 'high' ? 'Medium' : 'Low',
+        due_date: project.projectStartDate,
         assigned_to: 'Project Manager',
         submitted_by: 'Project Manager'
     };
@@ -12425,13 +12425,17 @@ function saveNewProject() {
         },
         body: JSON.stringify({
             name: project.projectName,
+            code: project.projectCode,
             client: project.clientName,
+            type: project.projectType,
             location: project.siteLocation,
             startDate: project.projectStartDate,
             endDate: project.projectEndDate,
             budget: project.contractValue,
             manager: project.projectManager,
-            description: project.projectDescription
+            description: project.projectDescription,
+            keyDeliverables: project.keyDeliverables,
+            priority: project.priorityLevel
         })
     })
     .then(response => {
@@ -12445,7 +12449,7 @@ function saveNewProject() {
             throw new Error(data.error);
         }
         
-        customAlert(`Project created successfully!\n\nProject: ${project.name}\nCode: ${project.code}\nContract Value: TZS ${parseInt(project.contractValue).toLocaleString()}\nStatus: ${project.status}\nProject ID: ${data.id}\n\n🎉 Project saved to database!`, "Project Created", "success");
+        customAlert(`Project created successfully!\n\nProject: ${project.projectName}\nCode: ${project.projectCode}\nContract Value: TZS ${parseInt(project.contractValue).toLocaleString()}\nStatus: ${project.status}\nProject ID: ${data.id}\n\n🎉 Project saved to database!`, "Project Created", "success");
         
         document.getElementById('projectForm').reset();
     })
