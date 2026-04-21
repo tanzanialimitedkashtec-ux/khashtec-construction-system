@@ -116,8 +116,8 @@ async function loadProjectDetails() {
         progressForm.classList.remove('hidden');
         
         // Pre-fill current project data
-        if (project.progress !== undefined) {
-            document.getElementById('progressPercentage').value = project.progress;
+        if (project.actual_cost !== undefined) {
+            document.getElementById('progressPercentage').value = project.actual_cost;
         }
         
         if (project.status) {
@@ -175,17 +175,17 @@ async function saveProjectProgress() {
 // Load recent progress updates
 async function loadProgressUpdates(projectId) {
     try {
-        // Check if ApiService is available
-        if (!window.ApiService || !window.ApiService.getProjectProgressUpdates) {
-            console.error('ApiService or getProjectProgressUpdates method not available');
+        // Check if apiService is available
+        if (!window.apiService || !window.apiService.getProjectProgressUpdates) {
+            console.error('apiService or getProjectProgressUpdates method not available');
             const updateList = document.querySelector('.update-list');
             if (updateList) {
-                updateList.innerHTML = '<div class="update-item">ApiService not loaded</div>';
+                updateList.innerHTML = '<div class="update-item">apiService not loaded</div>';
             }
             return;
         }
         
-        const response = await window.ApiService.getProjectProgressUpdates(projectId);
+        const response = await window.apiService.getProjectProgressUpdates(projectId);
         const updateList = document.querySelector('.update-list');
         
         if (response.updates && response.updates.length > 0) {

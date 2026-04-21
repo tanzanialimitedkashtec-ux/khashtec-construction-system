@@ -169,6 +169,14 @@ class DatabaseAPI {
         return this.put(`/projects/${id}`, projectData);
     }
 
+    async getProjectProgressUpdates(projectId) {
+        return this.get(`/projects/${projectId}/progress`);
+    }
+
+    async addProjectProgress(projectId, progressData) {
+        return this.post(`/projects/${projectId}/progress`, progressData);
+    }
+
     // Employees
     async getEmployees() {
         return this.get('/employees');

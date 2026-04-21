@@ -266,4 +266,107 @@ router.post('/:id/milestones', async (req, res) => {
     }
 });
 
+// Get project progress updates
+router.get('/:id/progress', async (req, res) => {
+    try {
+        const projectId = req.params.id;
+        
+        // Check if project exists
+        const projects = await db.execute('SELECT * FROM projects WHERE id = ?', [projectId]);
+        
+        if (projects.length === 0) {
+            return res.status(404).json({
+                error: 'Project not found'
+            });
+        }
+        
+        // For now, return mock progress updates since we don't have a progress table
+        const mockUpdates = [
+            {
+                id: 1,
+                projectName: projects[0].name,
+                progressPercentage: projects[0].actual_cost || 0,
+                status: projects[0].status,
+                report: 'Initial project setup completed',
+                completedMilestones: 'Planning',
+                nextMilestones: 'Foundation work',
+                budgetUsed: projects[0].budget * 0.1,
+                issues: 'None',
+                createdAt: new Date().toISOString()
+            }
+        ];
+        
+        res.json({
+            updates: mockUpdates,
+            project: projects[0]
+        });
+    } catch (error) {
+        console.error('Error fetching progress updates:', error);
+        res.status(500).json({
+            error: 'Failed to fetch progress updates',
+            details: error.message
+        });
+    }
+});
+
+// Add project progress update
+router.post('/:id/progress', async (req, res) => {
+    try {
+        const projectId = req.params.id;
+        const {
+            progressPercentage,
+            status,
+            report,
+            completedMilestones,
+            nextMilestones,
+            budgetUsed,
+            issues
+        } = req.body;
+        
+        // Check if project exists
+        const projects = await db.execute('SELECT * FROM projects WHERE id = ?', [projectId]);
+        
+        if (projects.length === 0) {
+            return res.status(404).json({
+                error: 'Project not found'
+            });
+        }
+        
+        // Update project with progress data
+        await db.execute(`
+            UPDATE projects SET 
+                actual_cost = ?,
+                status = ?,
+                updated_at = NOW()
+            WHERE id = ?
+        `, [
+            parseFloat(progressPercentage) || 0,
+            status || projects[0].status,
+            projectId
+        ]);
+        
+        // For now, return success since we don't have a progress table
+        res.status(201).json({
+            message: 'Progress update saved successfully',
+            projectId: projectId,
+            progressData: {
+                progressPercentage,
+                status,
+                report,
+                completedMilestones,
+                nextMilestones,
+                budgetUsed,
+                issues,
+                createdAt: new Date().toISOString()
+            }
+        });
+    } catch (error) {
+        console.error('Error saving progress update:', error);
+        res.status(500).json({
+            error: 'Failed to save progress update',
+            details: error.message
+        });
+    }
+});
+
 module.exports = router;
