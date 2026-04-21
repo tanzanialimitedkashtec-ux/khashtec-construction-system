@@ -1,8 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const Database = require('../../database/config/database');
-
-const db = new Database();
+const db = require('../../database/config/database');
 
 // Get all projects
 router.get('/', async (req, res) => {
