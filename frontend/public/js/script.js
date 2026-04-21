@@ -116,13 +116,22 @@ async function loadProjectDetails() {
         progressForm.classList.remove('hidden');
         
         // Pre-fill current project data
-        if (project.actual_cost !== undefined) {
+        if (project.actual_cost !== undefined && project.actual_cost !== null) {
             document.getElementById('progressPercentage').value = project.actual_cost;
+        } else {
+            document.getElementById('progressPercentage').value = '0';
         }
         
         if (project.status) {
             document.getElementById('projectStatus').value = project.status;
         }
+        
+        // Pre-fill other fields with empty values for now
+        document.getElementById('progressReport').value = '';
+        document.getElementById('completedMilestones').value = '';
+        document.getElementById('nextMilestones').value = '';
+        document.getElementById('budgetUsed').value = '';
+        document.getElementById('projectIssues').value = '';
         
         // Load recent progress updates
         loadProgressUpdates(projectId);
@@ -156,7 +165,7 @@ async function saveProjectProgress() {
     };
     
     try {
-        await window.ApiService.updateProjectProgress(projectId, progressData);
+        await window.apiService.addProjectProgress(projectId, progressData);
         
         // Reset form
         document.getElementById('progressForm').reset();
