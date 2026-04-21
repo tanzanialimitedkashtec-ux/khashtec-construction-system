@@ -5,7 +5,6 @@ const db = require('../../database/config/database');
 // Get all projects
 router.get('/', async (req, res) => {
     try {
-        const connection = await db.getConnection();
         const { status, manager, search } = req.query;
         
         let query = `
@@ -32,8 +31,7 @@ router.get('/', async (req, res) => {
         
         query += ` ORDER BY p.created_at DESC`;
         
-        const [projects] = await connection.execute(query, params);
-        connection.release();
+        const projects = await db.execute(query, params);
         
         res.json({
             projects: projects,
@@ -51,9 +49,7 @@ router.get('/', async (req, res) => {
 // Get project by ID
 router.get('/:id', async (req, res) => {
     try {
-        const connection = await db.getConnection();
-        
-        const [projects] = await connection.execute(`
+        const projects = await db.execute(`
             SELECT p.*, 
                    c.name as client_name,
                    m.name as manager_name
@@ -62,8 +58,6 @@ router.get('/:id', async (req, res) => {
             LEFT JOIN employees m ON p.manager_id = m.id
             WHERE p.id = ?
         `, [req.params.id]);
-        
-        connection.release();
         
         if (projects.length === 0) {
             return res.status(404).json({
@@ -84,8 +78,6 @@ router.get('/:id', async (req, res) => {
 // Create new project
 router.post('/', async (req, res) => {
     try {
-        const connection = await db.getConnection();
-        
         const { 
             name, code, client, type, location, 
             startDate, endDate, budget, manager, 
@@ -100,7 +92,7 @@ router.post('/', async (req, res) => {
         }
         
         // Insert project into database
-        const [result] = await connection.execute(`
+        const result = await db.execute(`
             INSERT INTO projects (
                 name, code, description, location, 
                 start_date, end_date, status, budget, 
@@ -119,7 +111,7 @@ router.post('/', async (req, res) => {
         ]);
         
         // Get the created project
-        const [newProject] = await connection.execute(`
+        const newProject = await db.execute(`
             SELECT p.*, 
                    c.name as client_name,
                    m.name as manager_name
@@ -128,8 +120,6 @@ router.post('/', async (req, res) => {
             LEFT JOIN employees m ON p.manager_id = m.id
             WHERE p.id = ?
         `, [result.insertId]);
-        
-        connection.release();
         
         res.status(201).json({
             message: 'Project created successfully',
@@ -154,15 +144,12 @@ router.post('/', async (req, res) => {
 // Update project
 router.put('/:id', async (req, res) => {
     try {
-        const connection = await db.getConnection();
-        
         const { name, client, location, startDate, endDate, status, budget, progress, manager, description } = req.body;
         
         // Check if project exists
-        const [existingProjects] = await connection.execute('SELECT id FROM projects WHERE id = ?', [req.params.id]);
+        const existingProjects = await db.execute('SELECT id FROM projects WHERE id = ?', [req.params.id]);
         
         if (existingProjects.length === 0) {
-            connection.release();
             return res.status(404).json({
                 error: 'Project not found'
             });
@@ -210,10 +197,10 @@ router.put('/:id', async (req, res) => {
         
         const updateQuery = `UPDATE projects SET ${updateFields.join(', ')} WHERE id = ?`;
         
-        await connection.execute(updateQuery, updateValues);
+        await db.execute(updateQuery, updateValues);
         
         // Get updated project
-        const [updatedProjects] = await connection.execute(`
+        const updatedProjects = await db.execute(`
             SELECT p.*, 
                    c.name as client_name,
                    m.name as manager_name
@@ -222,8 +209,6 @@ router.put('/:id', async (req, res) => {
             LEFT JOIN employees m ON p.manager_id = m.id
             WHERE p.id = ?
         `, [req.params.id]);
-        
-        connection.release();
         
         res.json({
             message: 'Project updated successfully',
@@ -241,22 +226,17 @@ router.put('/:id', async (req, res) => {
 // Delete project
 router.delete('/:id', async (req, res) => {
     try {
-        const connection = await db.getConnection();
-        
         // Check if project exists
-        const [existingProjects] = await connection.execute('SELECT id FROM projects WHERE id = ?', [req.params.id]);
+        const existingProjects = await db.execute('SELECT id FROM projects WHERE id = ?', [req.params.id]);
         
         if (existingProjects.length === 0) {
-            connection.release();
             return res.status(404).json({
                 error: 'Project not found'
             });
         }
         
         // Delete project
-        await connection.execute('DELETE FROM projects WHERE id = ?', [req.params.id]);
-        
-        connection.release();
+        await db.execute('DELETE FROM projects WHERE id = ?', [req.params.id]);
         
         res.json({
             message: 'Project deleted successfully'
@@ -273,8 +253,6 @@ router.delete('/:id', async (req, res) => {
 // Add milestone to project
 router.post('/:id/milestones', async (req, res) => {
     try {
-        const connection = await db.getConnection();
-        
         const { name, date, description } = req.body;
         
         if (!name || !date) {
@@ -284,10 +262,9 @@ router.post('/:id/milestones', async (req, res) => {
         }
         
         // Check if project exists
-        const [existingProjects] = await connection.execute('SELECT id FROM projects WHERE id = ?', [req.params.id]);
+        const existingProjects = await db.execute('SELECT id FROM projects WHERE id = ?', [req.params.id]);
         
         if (existingProjects.length === 0) {
-            connection.release();
             return res.status(404).json({
                 error: 'Project not found'
             });
@@ -301,8 +278,6 @@ router.post('/:id/milestones', async (req, res) => {
             description: description || '',
             completed: false
         };
-        
-        connection.release();
         
         res.status(201).json({
             message: 'Milestone added successfully',
