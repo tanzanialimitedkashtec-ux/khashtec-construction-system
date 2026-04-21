@@ -98,20 +98,40 @@ async function loadProjectDetails() {
     try {
         // Use apiService to get project details
         const project = await window.apiService.get(`/projects/${projectId}`);
+        console.log('Project details loaded:', project);
         
         // Show the progress form
         progressForm.classList.remove('hidden');
+        console.log('Progress form shown');
         
         // Pre-fill current project data
+        const progressField = document.getElementById('progressPercentage');
+        const statusField = document.getElementById('projectStatus');
+        
+        console.log('Form fields found:', {
+            progressField: !!progressField,
+            statusField: !!statusField,
+            actual_cost: project.actual_cost,
+            status: project.status
+        });
+        
         if (project.actual_cost !== undefined && project.actual_cost !== null) {
-            document.getElementById('progressPercentage').value = project.actual_cost;
+            progressField.value = project.actual_cost;
+            console.log('Set progress percentage to:', project.actual_cost);
         } else {
-            document.getElementById('progressPercentage').value = '0';
+            progressField.value = '0';
+            console.log('Set progress percentage to 0 (null actual_cost)');
         }
         
         if (project.status) {
-            document.getElementById('projectStatus').value = project.status;
+            statusField.value = project.status;
+            console.log('Set status to:', project.status);
         }
+        
+        console.log('Form field values after setting:', {
+            progress: progressField.value,
+            status: statusField.value
+        });
         
         // Pre-fill other fields with empty values for now
         document.getElementById('progressReport').value = '';
