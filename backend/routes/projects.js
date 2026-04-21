@@ -7,29 +7,21 @@ router.get('/', async (req, res) => {
     try {
         const { status, manager, search } = req.query;
         
-        let query = `
-            SELECT p.*, 
-                   c.name as client_name,
-                   m.name as manager_name
-            FROM projects p
-            LEFT JOIN clients c ON p.client_id = c.id
-            LEFT JOIN employees m ON p.manager_id = m.id
-            WHERE 1=1
-        `;
+        let query = `SELECT * FROM projects WHERE 1=1`;
         const params = [];
         
         if (status) {
-            query += ` AND p.status = ?`;
+            query += ` AND status = ?`;
             params.push(status);
         }
         
         if (search) {
-            query += ` AND (p.name LIKE ? OR p.description LIKE ? OR p.location LIKE ?)`;
+            query += ` AND (name LIKE ? OR description LIKE ? OR location LIKE ?)`;
             const searchTerm = `%${search}%`;
             params.push(searchTerm, searchTerm, searchTerm);
         }
         
-        query += ` ORDER BY p.created_at DESC`;
+        query += ` ORDER BY created_at DESC`;
         
         const projects = await db.execute(query, params);
         
@@ -50,13 +42,7 @@ router.get('/', async (req, res) => {
 router.get('/:id', async (req, res) => {
     try {
         const projects = await db.execute(`
-            SELECT p.*, 
-                   c.name as client_name,
-                   m.name as manager_name
-            FROM projects p
-            LEFT JOIN clients c ON p.client_id = c.id
-            LEFT JOIN employees m ON p.manager_id = m.id
-            WHERE p.id = ?
+            SELECT * FROM projects WHERE id = ?
         `, [req.params.id]);
         
         if (projects.length === 0) {
@@ -112,13 +98,7 @@ router.post('/', async (req, res) => {
         
         // Get the created project
         const newProject = await db.execute(`
-            SELECT p.*, 
-                   c.name as client_name,
-                   m.name as manager_name
-            FROM projects p
-            LEFT JOIN clients c ON p.client_id = c.id
-            LEFT JOIN employees m ON p.manager_id = m.id
-            WHERE p.id = ?
+            SELECT * FROM projects WHERE id = ?
         `, [result.insertId]);
         
         res.status(201).json({
@@ -201,13 +181,7 @@ router.put('/:id', async (req, res) => {
         
         // Get updated project
         const updatedProjects = await db.execute(`
-            SELECT p.*, 
-                   c.name as client_name,
-                   m.name as manager_name
-            FROM projects p
-            LEFT JOIN clients c ON p.client_id = c.id
-            LEFT JOIN employees m ON p.manager_id = m.id
-            WHERE p.id = ?
+            SELECT * FROM projects WHERE id = ?
         `, [req.params.id]);
         
         res.json({
