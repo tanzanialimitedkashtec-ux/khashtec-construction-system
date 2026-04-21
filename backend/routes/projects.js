@@ -97,13 +97,14 @@ router.post('/', async (req, res) => {
                 name, description, location, 
                 start_date, end_date, status, budget, 
                 manager_id, client_id, created_at, updated_at
-            ) VALUES (?, ?, ?, ?, ?, ?, 'planning', ?, ?, ?, NOW(), NOW())
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())
         `, [
             name, 
             description || '', 
             location, 
             startDate, 
             endDate, 
+            'planning', 
             parseFloat(budget), 
             1, // manager_id (temporary - should be resolved from manager name)
             1  // client_id (temporary - should be resolved from client name)
