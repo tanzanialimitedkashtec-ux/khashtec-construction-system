@@ -94,13 +94,12 @@ router.post('/', async (req, res) => {
         // Insert project into database
         const result = await db.execute(`
             INSERT INTO projects (
-                name, code, description, location, 
+                name, description, location, 
                 start_date, end_date, status, budget, 
                 manager_id, client_id, created_at, updated_at
             ) VALUES (?, ?, ?, ?, ?, ?, 'planning', ?, ?, ?, NOW(), NOW())
         `, [
             name, 
-            code || '', 
             description || '', 
             location, 
             startDate, 
