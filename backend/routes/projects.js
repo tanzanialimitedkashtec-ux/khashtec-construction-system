@@ -332,19 +332,8 @@ router.post('/:id/progress', async (req, res) => {
             });
         }
         
-        // Map frontend status values to database ENUM values
-        const statusMapping = {
-            'on-track': 'In Progress',
-            'at-risk': 'In Progress', 
-            'delayed': 'In Progress',
-            'completed': 'Completed',
-            'on-hold': 'On Hold',
-            'in-progress': 'In Progress',
-            'planning': 'Planning',
-            'cancelled': 'Cancelled'
-        };
-        
-        const mappedStatus = statusMapping[status] || status || projects[0].status;
+        // Use status directly since frontend now sends correct database values
+        const mappedStatus = status || projects[0].status;
         
         // Update project with progress data
         await db.execute(`
