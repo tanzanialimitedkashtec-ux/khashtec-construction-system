@@ -96,21 +96,8 @@ async function loadProjectDetails() {
     }
     
     try {
-        const baseUrl = window.location.origin;
-        const response = await fetch(`${baseUrl}/api/projects/${projectId}`, {
-            method: 'GET',
-            headers: {
-                'Content-Type': 'application/json',
-                'Accept': 'application/json',
-                'Authorization': `Bearer ${sessionManager.getAuthToken()}`
-            }
-        });
-        
-        if (!response.ok) {
-            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-        }
-        
-        const project = await response.json();
+        // Use apiService to get project details
+        const project = await window.apiService.get(`/projects/${projectId}`);
         
         // Show the progress form
         progressForm.classList.remove('hidden');
