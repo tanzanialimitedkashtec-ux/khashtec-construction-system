@@ -91,7 +91,7 @@ router.get('/:id', (req, res) => {
 
 // Create new project
 router.post('/', (req, res) => {
-    const { name, client, location, startDate, endDate, budget, manager, description } = req.body;
+    const { name, code, client, type, location, startDate, endDate, budget, manager, description, keyDeliverables, priority } = req.body;
     
     // Validate input
     if (!name || !client || !location || !startDate || !endDate || !budget || !manager) {
@@ -104,7 +104,9 @@ router.post('/', (req, res) => {
     const newProject = {
         id: projects.length + 1,
         name,
+        code: code || '',
         client,
+        type: type || '',
         location,
         startDate,
         endDate,
@@ -113,6 +115,8 @@ router.post('/', (req, res) => {
         progress: 0,
         manager,
         description: description || '',
+        keyDeliverables: keyDeliverables || '',
+        priority: priority || 'medium',
         milestones: []
     };
     
