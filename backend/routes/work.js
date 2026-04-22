@@ -1112,7 +1112,7 @@ router.post('/approvals', async (req, res) => {
                     quality_score, status, approved_by, approval_date
                 ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'approved', ?, CURDATE())
             `, [
-                work_id, 0, 'Current User', new Date().toISOString().split('T')[0], 
+                work_id, 1, 'Current User', new Date().toISOString().split('T')[0], 
                 quality_assessment, compliance_check, approval_comments,
                 safety_compliance || null, time_completion || null, null, 'Current User'
             ]);
