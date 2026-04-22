@@ -786,7 +786,51 @@ router.post('/site-reports', async (req, res) => {
         try {
             const db = require('../../database/config/database');
             
-            console.log('Using existing site_reports table...');
+            console.log('Checking if site_reports table exists...');
+            
+            // Create site_reports table if it doesn't exist
+            await db.execute(`
+                CREATE TABLE IF NOT EXISTS site_reports (
+                    id INT AUTO_INCREMENT PRIMARY KEY,
+                    project_id INT NOT NULL,
+                    report_date DATE NOT NULL,
+                    weather_conditions VARCHAR(50) NOT NULL,
+                    site_supervisor VARCHAR(255) NOT NULL,
+                    workers_present INT NOT NULL,
+                    work_completed TEXT NOT NULL,
+                    site_issues TEXT,
+                    safety_incidents TEXT,
+                    materials_used TEXT,
+                    equipment_used TEXT,
+                    next_day_plan TEXT NOT NULL,
+                    status ENUM('submitted', 'reviewed', 'approved') DEFAULT 'submitted',
+                    created_by VARCHAR(255),
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+                    INDEX idx_project_id (project_id),
+                    INDEX idx_report_date (report_date),
+                    INDEX idx_status (status)
+                )
+            `);
+            
+            console.log('site_reports table ready...');
+            
+            // Log the values being inserted
+            const insertValues = [
+                numericProjectId, report_date, weather_conditions, site_supervisor,
+                workers_present, work_completed, site_issues || null, safety_incidents || null,
+                materials_used || null, equipment_used || null, next_day_plan, site_supervisor
+            ];
+            
+            console.log('📝 Inserting values:', insertValues);
+            console.log('📝 SQL Query:');
+            console.log(`
+                INSERT INTO site_reports (
+                    project_id, report_date, weather_conditions, site_supervisor, 
+                    workers_present, work_completed, site_issues, safety_incidents,
+                    materials_used, equipment_used, next_day_plan, status, created_by
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'submitted', ?)
+            `);
             
             // Insert site report into existing table
             const [result] = await db.execute(`
@@ -795,13 +839,10 @@ router.post('/site-reports', async (req, res) => {
                     workers_present, work_completed, site_issues, safety_incidents,
                     materials_used, equipment_used, next_day_plan, status, created_by
                 ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'submitted', ?)
-            `, [
-                numericProjectId, report_date, weather_conditions, site_supervisor,
-                workers_present, work_completed, site_issues || null, safety_incidents || null,
-                materials_used || null, equipment_used || null, next_day_plan, site_supervisor
-            ]);
+            `, insertValues);
             
-            console.log('Site report saved to database with ID:', result.insertId);
+            console.log('✅ Site report saved to database with ID:', result.insertId);
+            console.log('✅ Database insert result:', result);
             
             res.json({
                 success: true,
@@ -825,7 +866,9 @@ router.post('/site-reports', async (req, res) => {
             });
             
         } catch (dbError) {
-            console.log('Database error, using fallback for site report:', dbError.message);
+            console.error('❌ Database error, using fallback for site report:', dbError.message);
+            console.error('❌ Full database error:', dbError);
+            console.error('❌ Error stack:', dbError.stack);
             
             // Fallback: Generate a mock report ID and return success
             const reportId = `SR${Date.now().toString().slice(-6)}`;
