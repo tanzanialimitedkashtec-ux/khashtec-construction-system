@@ -16,6 +16,17 @@ class DatabaseAPI {
             ...options
         };
 
+        // Add authentication token if available
+        if (window.sessionManager && window.sessionManager.getAuthToken) {
+            const token = window.sessionManager.getAuthToken();
+            if (token) {
+                config.headers.Authorization = `Bearer ${token}`;
+                if (!this.isProduction) {
+                    console.log('Adding auth token to request');
+                }
+            }
+        }
+
         try {
             if (!this.isProduction) {
                 console.log('🌐 Making API request to:', url);
