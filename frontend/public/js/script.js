@@ -249,6 +249,10 @@ async function loadWorkerAssignments() {
     try {
         // Load assignments
         const assignments = await window.apiService.getWorkerAssignments();
+        console.log('Raw assignments response:', assignments);
+        
+        // Ensure assignments is an array
+        const assignmentsArray = Array.isArray(assignments) ? assignments : [];
         
         // Load stats
         const stats = await window.apiService.getWorkerAssignmentStats();
@@ -260,10 +264,10 @@ async function loadWorkerAssignments() {
         await loadProjectsForWorkerFilter();
         
         // Display assignments
-        displayWorkerAssignments(assignments);
+        displayWorkerAssignments(assignmentsArray);
         
         // Update allocation chart
-        updateAllocationChart(assignments);
+        updateAllocationChart(assignmentsArray);
         
     } catch (error) {
         console.error('Failed to load worker assignments:', error);
@@ -364,13 +368,16 @@ function displayWorkerAssignments(assignments) {
 function updateAllocationChart(assignments) {
     const allocationChart = document.querySelector('.allocation-chart');
     
-    if (!allocationChart || !assignments || assignments.length === 0) {
+    // Ensure assignments is an array
+    const assignmentsArray = Array.isArray(assignments) ? assignments : [];
+    
+    if (!allocationChart || !assignmentsArray || assignmentsArray.length === 0) {
         return;
     }
     
     // Group assignments by project
     const projectGroups = {};
-    assignments.forEach(assignment => {
+    assignmentsArray.forEach(assignment => {
         if (!projectGroups[assignment.project_name]) {
             projectGroups[assignment.project_name] = 0;
         }
