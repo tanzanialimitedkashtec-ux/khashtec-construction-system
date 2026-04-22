@@ -65,6 +65,30 @@ router.post('/', async (req, res) => {
         try {
             const db = require('../../database/config/database');
             
+            // Map frontend property types to database ENUM values
+            const typeMapping = {
+                'residential': 'Residential',
+                'commercial': 'Commercial', 
+                'industrial': 'Industrial',
+                'agricultural': 'Land',
+                'land': 'Land',
+                'mixed-use': 'Mixed Use'
+            };
+            
+            const mappedType = typeMapping[type.toLowerCase()] || 'Residential';
+            
+            // Map frontend status to database ENUM values
+            const statusMapping = {
+                'available': 'Available',
+                'sold': 'Sold',
+                'reserved': 'Under Offer',
+                'under-development': 'Off Market',
+                'rented': 'Rented',
+                'off-market': 'Off Market'
+            };
+            
+            const mappedStatus = statusMapping[status.toLowerCase()] || 'Available';
+            
             // Map frontend fields to database fields
             const query = `
                 INSERT INTO properties (
@@ -77,9 +101,9 @@ router.post('/', async (req, res) => {
                 `Property ${plotNumber}`, // title
                 description || `Property details: ${description || 'No description available'}`, // description
                 location, // location
-                type, // type
+                mappedType, // mapped type
                 parseFloat(price), // price
-                status || 'Available', // status
+                mappedStatus, // mapped status
                 parseFloat(area) // size_sqm
             ];
             
