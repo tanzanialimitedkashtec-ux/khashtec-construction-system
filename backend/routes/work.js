@@ -714,6 +714,56 @@ router.post('/', async (req, res) => {
     }
 });
 
+// Database Test Endpoint
+router.get('/db-test', async (req, res) => {
+    try {
+        console.log('Testing database connection and tables...');
+        
+        const db = require('../../database/config/database');
+        
+        // Test basic connection
+        const [testResult] = await db.execute('SELECT 1 as test');
+        console.log('Database connection test:', testResult);
+        
+        // Check existing tables
+        const [tables] = await db.execute('SHOW TABLES');
+        console.log('Existing tables:', tables.map(t => Object.values(t)[0]));
+        
+        // Test site_reports table
+        try {
+            const [siteReportsCheck] = await db.execute('DESCRIBE site_reports');
+            console.log('site_reports table structure:', siteReportsCheck);
+        } catch (e) {
+            console.log('site_reports table error:', e.message);
+        }
+        
+        // Test work_approvals table
+        try {
+            const [workApprovalsCheck] = await db.execute('DESCRIBE work_approvals');
+            console.log('work_approvals table structure:', workApprovalsCheck);
+        } catch (e) {
+            console.log('work_approvals table error:', e.message);
+        }
+        
+        res.json({
+            success: true,
+            message: 'Database test completed',
+            connection: testResult,
+            tables: tables.map(t => Object.values(t)[0]),
+            site_reports_exists: siteReportsCheck ? true : false,
+            work_approvals_exists: workApprovalsCheck ? true : false
+        });
+        
+    } catch (error) {
+        console.error('Database test failed:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Database test failed',
+            details: error.message
+        });
+    }
+});
+
 // Save Site Report
 router.post('/site-reports', async (req, res) => {
     try {
