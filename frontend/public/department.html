@@ -12085,11 +12085,6 @@ function requestWorkforce(){
 }
 
 function viewAssignedWorkers(){
-    // Load projects and worker assignments
-    const projects = []; // TODO: Load from API
-    const assignments = []; // TODO: Load from API
-    const employees = []; // TODO: Load from API
-    
     showContent(`<div class="card">
         <h3>View Assigned Workers</h3>
         <p><strong>Project Authority:</strong> Monitor workforce allocation and assignments</p>
@@ -12098,15 +12093,15 @@ function viewAssignedWorkers(){
             <div class="worker-stats">
                 <div class="stat-item">
                     <span class="stat-label">Total Assigned Workers:</span>
-                    <span class="stat-value">${employees.length}</span>
+                    <span class="stat-value">0</span>
                 </div>
                 <div class="stat-item">
                     <span class="stat-label">Active Projects:</span>
-                    <span class="stat-value">${projects.length}</span>
+                    <span class="stat-value">0</span>
                 </div>
                 <div class="stat-item">
                     <span class="stat-label">Active Tasks:</span>
-                    <span class="stat-value">${assignments.length}</span>
+                    <span class="stat-value">0</span>
                 </div>
             </div>
             
@@ -12114,9 +12109,6 @@ function viewAssignedWorkers(){
                 <input type="text" id="workerSearch" placeholder="Search workers by name, project, or task..." onkeyup="filterAssignedWorkers()">
                 <select id="projectFilter" onchange="filterAssignedWorkers()">
                     <option value="">All Projects</option>
-                    ${projects.map(project => 
-                        `<option value="${project.id}">${project.name}</option>`
-                    ).join('')}
                 </select>
             </div>
         </div>
@@ -12124,7 +12116,7 @@ function viewAssignedWorkers(){
         <div class="assigned-workers-list">
             <h4>Current Worker Assignments</h4>
             <div id="workerResults" class="worker-results">
-                ${generateWorkerAssignments(employees, assignments, projects)}
+                <div class="loading-message">Loading worker assignments...</div>
             </div>
         </div>
         
@@ -12152,6 +12144,11 @@ function viewAssignedWorkers(){
             </div>
         </div>
     </div>`);
+    
+    // Load worker assignments after the content is displayed
+    setTimeout(() => {
+        loadWorkerAssignments();
+    }, 100);
 }
 
 function recordSiteReports(){
