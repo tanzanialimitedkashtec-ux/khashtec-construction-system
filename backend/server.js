@@ -1425,6 +1425,11 @@ app.get('/api/employees-test', (req, res) => {
     console.log('🧪 Employees test endpoint accessed');
     res.json({ 
         message: 'Employees API is working!',
+        timestamp: new Date().toISOString(),
+        endpoints: ['GET /api/employees', 'POST /api/employees', 'GET /api/employees/:id', 'PUT /api/employees/:id', 'DELETE /api/employees/:id']
+    });
+});
+
 // ===== PROPERTIES ROUTES =====
 console.log(' Loading properties routes...');
 
@@ -1453,67 +1458,7 @@ try {
     });
 }
 
-// Add a direct properties endpoint as backup (outside the try-catch)
-app.post('/api/properties', async (req, res) => {
-    try {
-        console.log('🏠 Direct properties endpoint accessed');
-        console.log('📝 Request body:', req.body);
-        
-        const {
-            plotNumber,
-            type,
-            location,
-            area,
-            price,
-            status,
-            tpNumber,
-            description,
-            utilities,
-            zoning,
-            addedBy,
-            addedDate
-        } = req.body;
-        
-        // Validate required fields
-        if (!plotNumber || !type || !location || !area || !price) {
-            return res.status(400).json({
-                success: false,
-                error: 'Missing required fields',
-                details: 'plotNumber, type, location, area, and price are required'
-            });
-        }
-        
-        // Simulate property creation (in production, this would save to database)
-        const propertyId = `PROP${Date.now().toString().slice(-6)}`;
-        
-        console.log('✅ Direct property creation successful:', propertyId);
-        
-        res.status(201).json({
-            success: true,
-            message: 'Property created successfully!',
-            property: {
-                id: propertyId,
-                plotNumber,
-                type,
-                location,
-                area,
-                price,
-                status: status || 'Available',
-                description,
-                addedBy,
-                addedDate: addedDate || new Date().toISOString()
-            }
-        });
-        
-    } catch (error) {
-        console.error('❌ Direct properties endpoint error:', error);
-        res.status(500).json({ 
-            success: false,
-            error: 'Failed to create property',
-            details: error.message 
-        });
-    }
-});
+// Properties endpoint now handled by routes/properties.js
 
 // Add a test endpoint for properties
 app.get('/api/properties-test', (req, res) => {
