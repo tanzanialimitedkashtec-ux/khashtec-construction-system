@@ -12159,7 +12159,7 @@ function recordSiteReports(){
         <h3>Record Site Reports</h3>
         <p><strong>Project Authority:</strong> Document daily site activities and ensure safety compliance</p>
         
-        <form id="siteReportForm" onsubmit="return saveSiteReport()">
+        <form id="siteReportForm" onsubmit="saveSiteReport(event); return false;">
             <div class="form-row">
                 <div class="form-group">
                     <label>Project *</label>

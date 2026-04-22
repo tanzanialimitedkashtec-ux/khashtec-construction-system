@@ -2511,8 +2511,11 @@ window.onload = function() {
 };
 
 // Save Site Report function
-async function saveSiteReport() {
+async function saveSiteReport(event) {
     try {
+        // Prevent default form submission
+        event.preventDefault();
+        
         console.log('Saving site report...');
         
         // Get form values

@@ -743,9 +743,22 @@ router.post('/site-reports', async (req, res) => {
         console.log('  work_completed:', work_completed, 'type:', typeof work_completed, 'truthy:', !!work_completed);
         console.log('  next_day_plan:', next_day_plan, 'type:', typeof next_day_plan, 'truthy:', !!next_day_plan);
         
+        // Convert project_id from string to integer if needed
+        let numericProjectId = project_id;
+        if (typeof project_id === 'string' && project_id.startsWith('prj')) {
+            // Extract numeric part from 'prj001', 'prj002', etc.
+            const projectMap = {
+                'prj001': 1,
+                'prj002': 2,
+                'prj003': 3
+            };
+            numericProjectId = projectMap[project_id] || parseInt(project_id.replace('prj', '')) || 1;
+            console.log(`Converted project_id from ${project_id} to ${numericProjectId}`);
+        }
+
         // Validate required fields with better checking
         const missingFields = [];
-        if (!project_id || project_id === '') missingFields.push('project_id');
+        if (!numericProjectId || numericProjectId === '') missingFields.push('project_id');
         if (!report_date || report_date === '') missingFields.push('report_date');
         if (!weather_conditions || weather_conditions === '') missingFields.push('weather_conditions');
         if (!workers_present || workers_present === '') missingFields.push('workers_present');
@@ -783,7 +796,7 @@ router.post('/site-reports', async (req, res) => {
                     materials_used, equipment_used, next_day_plan, status, created_by
                 ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'submitted', ?)
             `, [
-                project_id, report_date, weather_conditions, site_supervisor,
+                numericProjectId, report_date, weather_conditions, site_supervisor,
                 workers_present, work_completed, site_issues || null, safety_incidents || null,
                 materials_used || null, equipment_used || null, next_day_plan, site_supervisor
             ]);
