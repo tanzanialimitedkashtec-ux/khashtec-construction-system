@@ -284,14 +284,14 @@ function updateWorkerStats(stats) {
 // Load projects for worker filter dropdown
 async function loadProjectsForWorkerFilter() {
     try {
-        const response = await window.ApiService.get('/projects');
+        const projects = await window.apiService.get('/projects');
         const projectFilter = document.getElementById('projectFilter');
         
-        if (response.projects && response.projects.length > 0) {
+        if (projects && projects.length > 0) {
             // Clear existing options except "All Projects"
             projectFilter.innerHTML = '<option value="">All Projects</option>';
             
-            response.projects.forEach(project => {
+            projects.forEach(project => {
                 const option = document.createElement('option');
                 option.value = project.id;
                 option.textContent = project.name;
@@ -307,44 +307,53 @@ async function loadProjectsForWorkerFilter() {
 function displayWorkerAssignments(assignments) {
     const workerResults = document.getElementById('workerResults');
     
-    if (!assignments || assignments.length === 0) {
+    // Ensure assignments is an array
+    const assignmentsArray = Array.isArray(assignments) ? assignments : [];
+    
+    if (!assignmentsArray || assignmentsArray.length === 0) {
         workerResults.innerHTML = '<div class="no-results">No worker assignments found</div>';
         return;
     }
     
     workerResults.innerHTML = '';
     
-    assignments.forEach(assignment => {
+    assignmentsArray.forEach(assignment => {
         const assignmentCard = document.createElement('div');
         assignmentCard.className = 'worker-assignment-card';
         assignmentCard.innerHTML = `
             <div class="assignment-header">
-                <h5>${assignment.employee_name}</h5>
-                <span class="status-badge ${assignment.status.toLowerCase()}">${assignment.status}</span>
+                <h5>${assignment.worker_name || 'Unknown Worker'}</h5>
+                <span class="status-badge ${assignment.status ? assignment.status.toLowerCase() : 'active'}">${assignment.status || 'Active'}</span>
             </div>
             <div class="assignment-details">
                 <div class="detail-row">
                     <span class="label">Project:</span>
-                    <span class="value">${assignment.project_name}</span>
+                    <span class="value">${assignment.project_name || 'Unassigned'}</span>
                 </div>
                 <div class="detail-row">
-                    <span class="label">Role:</span>
-                    <span class="value">${assignment.role_in_project}</span>
+                    <span class="label">Task:</span>
+                    <span class="value">${assignment.task_description || 'No task description'}</span>
                 </div>
                 <div class="detail-row">
-                    <span class="label">Assignment Period:</span>
-                    <span class="value">${formatDate(assignment.start_date)} - ${assignment.end_date ? formatDate(assignment.end_date) : 'Ongoing'}</span>
+                    <span class="label">Employee ID:</span>
+                    <span class="value">${assignment.worker_employee_id || 'N/A'}</span>
                 </div>
-                ${assignment.assignment_notes ? `
+                <div class="detail-row">
+                    <span class="label">Assigned Date:</span>
+                    <span class="value">${assignment.assigned_date || 'Recent'}</span>
+                </div>
+                ${assignment.notes ? `
                 <div class="detail-row">
                     <span class="label">Notes:</span>
-                    <span class="value">${assignment.assignment_notes}</span>
+                    <span class="value">${assignment.notes}</span>
                 </div>
                 ` : ''}
+                ${assignment.project_location ? `
                 <div class="detail-row">
-                    <span class="label">Assigned By:</span>
-                    <span class="value">${assignment.assigned_by} (${assignment.assigned_by_role})</span>
+                    <span class="label">Location:</span>
+                    <span class="value">${assignment.project_location}</span>
                 </div>
+                ` : ''}
             </div>
         `;
         workerResults.appendChild(assignmentCard);
