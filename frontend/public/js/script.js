@@ -2545,7 +2545,11 @@ async function saveSiteReport() {
         console.log('Site report saved successfully:', response);
         
         // Show success message
-        alert('Site report submitted successfully!');
+        try {
+            alert('Site report submitted successfully!');
+        } catch (e) {
+            console.error('Alert error:', e);
+        }
         
         // Reset form
         document.getElementById('siteReportForm').reset();
@@ -2559,7 +2563,11 @@ async function saveSiteReport() {
         
     } catch (error) {
         console.error('Error saving site report:', error);
-        alert('Failed to save site report. Please try again.');
+        try {
+            alert('Failed to save site report. Please try again.');
+        } catch (e) {
+            console.error('Alert error:', e);
+        }
         return false;
     }
 }

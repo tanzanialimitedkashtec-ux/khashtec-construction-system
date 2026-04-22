@@ -771,7 +771,7 @@ router.post('/site-reports', async (req, res) => {
         
         // Try to save to database
         try {
-            const db = require('../database/config/database');
+            const db = require('../../database/config/database');
             
             console.log('Using existing site_reports table...');
             
@@ -856,7 +856,7 @@ router.get('/site-reports', async (req, res) => {
         
         // Try to get from database
         try {
-            const db = require('../database/config/database');
+            const db = require('../../database/config/database');
             
             const [reports] = await db.execute(`
                 SELECT id, project_id, report_date, weather_conditions, site_supervisor, 
