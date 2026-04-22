@@ -2574,3 +2574,131 @@ async function saveSiteReport(event) {
         return false;
     }
 }
+
+// Work Approval functions
+function approveWork(workId) {
+    console.log('Approving work:', workId);
+    
+    // Populate the form with the work ID
+    document.getElementById('workId').value = workId;
+    
+    // Set default values for approval
+    document.getElementById('qualityAssessment').value = 'excellent';
+    document.getElementById('complianceCheck').value = 'fully-compliant';
+    document.getElementById('approvalComments').value = 'Work approved successfully. Quality meets all requirements.';
+    
+    // Scroll to the approval form
+    document.getElementById('approvalForm').scrollIntoView({ behavior: 'smooth' });
+    
+    // Show success message
+    try {
+        alert(`Preparing approval for work item: ${workId}`);
+    } catch (e) {
+        console.error('Alert error:', e);
+    }
+}
+
+function requestRework(workId) {
+    console.log('Requesting rework for:', workId);
+    
+    // Populate the form with the work ID
+    document.getElementById('workId').value = workId;
+    
+    // Set default values for rework
+    document.getElementById('qualityAssessment').value = 'acceptable';
+    document.getElementById('complianceCheck').value = 'minor-issues';
+    document.getElementById('approvalComments').value = 'Rework required. Please address the identified issues before resubmission.';
+    
+    // Scroll to the approval form
+    document.getElementById('approvalForm').scrollIntoView({ behavior: 'smooth' });
+    
+    // Show message
+    try {
+        alert(`Preparing rework request for work item: ${workId}`);
+    } catch (e) {
+        console.error('Alert error:', e);
+    }
+}
+
+function rejectWork(workId) {
+    console.log('Rejecting work:', workId);
+    
+    // Populate the form with the work ID
+    document.getElementById('workId').value = workId;
+    
+    // Set default values for rejection
+    document.getElementById('qualityAssessment').value = 'poor';
+    document.getElementById('complianceCheck').value = 'non-compliant';
+    document.getElementById('approvalComments').value = 'Work rejected. Significant issues need to be addressed.';
+    
+    // Scroll to the approval form
+    document.getElementById('approvalForm').scrollIntoView({ behavior: 'smooth' });
+    
+    // Show message
+    try {
+        alert(`Preparing rejection for work item: ${workId}`);
+    } catch (e) {
+        console.error('Alert error:', e);
+    }
+}
+
+async function saveWorkApproval(event) {
+    try {
+        // Prevent default form submission
+        if (event) {
+            event.preventDefault();
+        }
+        
+        console.log('Saving work approval...');
+        
+        // Get form data
+        const approvalData = {
+            work_id: document.getElementById('workId').value,
+            quality_assessment: document.getElementById('qualityAssessment').value,
+            compliance_check: document.getElementById('complianceCheck').value,
+            approval_comments: document.getElementById('approvalComments').value,
+            safety_compliance: document.getElementById('safetyCompliance').value,
+            time_completion: document.getElementById('timeCompletion').value
+        };
+        
+        console.log('Work approval data:', approvalData);
+        
+        // Validate required fields
+        if (!approvalData.work_id || !approvalData.quality_assessment || 
+            !approvalData.compliance_check || !approvalData.approval_comments) {
+            alert('Please fill in all required fields marked with *');
+            return false;
+        }
+        
+        // Send data to backend
+        const response = await window.apiService.post('/work/approvals', approvalData);
+        
+        console.log('Work approval saved successfully:', response);
+        
+        // Show success message
+        try {
+            alert('Work approval submitted successfully!');
+        } catch (e) {
+            console.error('Alert error:', e);
+        }
+        
+        // Reset form
+        document.getElementById('approvalForm').reset();
+        
+        // Reload approvals (if function exists)
+        if (typeof loadPendingApprovals === 'function') {
+            loadPendingApprovals();
+        }
+        
+        return false; // Prevent form submission
+        
+    } catch (error) {
+        console.error('Error saving work approval:', error);
+        try {
+            alert('Failed to save work approval. Please try again.');
+        } catch (e) {
+            console.error('Alert error:', e);
+        }
+        return false;
+    }
+}

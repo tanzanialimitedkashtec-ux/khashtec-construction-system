@@ -12298,7 +12298,7 @@ function approveCompletedWork(){
         
         <div class="approval-form">
             <h4>Work Approval Details</h4>
-            <form id="approvalForm" onsubmit="return saveWorkApproval()">
+            <form id="approvalForm" onsubmit="saveWorkApproval(event); return false;">
                 <div class="form-group">
                     <label>Work ID</label>
                     <input type="text" id="workId" readonly>
