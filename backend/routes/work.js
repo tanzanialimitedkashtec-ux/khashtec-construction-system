@@ -714,6 +714,210 @@ router.post('/', async (req, res) => {
     }
 });
 
+// Save Site Report
+router.post('/site-reports', async (req, res) => {
+    try {
+        console.log('Saving site report...');
+        console.log('Request body raw:', JSON.stringify(req.body, null, 2));
+        
+        const {
+            project_id,
+            report_date,
+            weather_conditions,
+            site_supervisor,
+            workers_present,
+            work_completed,
+            site_issues,
+            safety_incidents,
+            materials_used,
+            equipment_used,
+            next_day_plan
+        } = req.body;
+        
+        // Debug each field
+        console.log('Field validation:');
+        console.log('  project_id:', project_id, 'type:', typeof project_id, 'truthy:', !!project_id);
+        console.log('  report_date:', report_date, 'type:', typeof report_date, 'truthy:', !!report_date);
+        console.log('  weather_conditions:', weather_conditions, 'type:', typeof weather_conditions, 'truthy:', !!weather_conditions);
+        console.log('  workers_present:', workers_present, 'type:', typeof workers_present, 'truthy:', !!workers_present);
+        console.log('  work_completed:', work_completed, 'type:', typeof work_completed, 'truthy:', !!work_completed);
+        console.log('  next_day_plan:', next_day_plan, 'type:', typeof next_day_plan, 'truthy:', !!next_day_plan);
+        
+        // Validate required fields with better checking
+        const missingFields = [];
+        if (!project_id || project_id === '') missingFields.push('project_id');
+        if (!report_date || report_date === '') missingFields.push('report_date');
+        if (!weather_conditions || weather_conditions === '') missingFields.push('weather_conditions');
+        if (!workers_present || workers_present === '') missingFields.push('workers_present');
+        if (!work_completed || work_completed === '') missingFields.push('work_completed');
+        if (!next_day_plan || next_day_plan === '') missingFields.push('next_day_plan');
+        
+        if (missingFields.length > 0) {
+            console.log('Missing fields detected:', missingFields);
+            return res.status(400).json({ 
+                success: false,
+                message: 'Missing required fields',
+                missing_fields: missingFields,
+                received: {
+                    project_id,
+                    report_date,
+                    weather_conditions,
+                    workers_present,
+                    work_completed,
+                    next_day_plan
+                }
+            });
+        }
+        
+        // Try to save to database
+        try {
+            const db = require('../database/config/database');
+            
+            console.log('Using existing site_reports table...');
+            
+            // Insert site report into existing table
+            const [result] = await db.execute(`
+                INSERT INTO site_reports (
+                    project_id, report_date, weather_conditions, site_supervisor, 
+                    workers_present, work_completed, site_issues, safety_incidents,
+                    materials_used, equipment_used, next_day_plan, status, created_by
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'submitted', ?)
+            `, [
+                project_id, report_date, weather_conditions, site_supervisor,
+                workers_present, work_completed, site_issues || null, safety_incidents || null,
+                materials_used || null, equipment_used || null, next_day_plan, site_supervisor
+            ]);
+            
+            console.log('Site report saved to database with ID:', result.insertId);
+            
+            res.json({
+                success: true,
+                message: 'Site report submitted successfully',
+                report_id: result.insertId,
+                data: {
+                    id: result.insertId,
+                    project_id,
+                    report_date,
+                    weather_conditions,
+                    site_supervisor,
+                    workers_present,
+                    work_completed,
+                    site_issues,
+                    safety_incidents,
+                    materials_used,
+                    equipment_used,
+                    next_day_plan,
+                    created_at: new Date().toISOString()
+                }
+            });
+            
+        } catch (dbError) {
+            console.log('Database error, using fallback for site report:', dbError.message);
+            
+            // Fallback: Generate a mock report ID and return success
+            const reportId = `SR${Date.now().toString().slice(-6)}`;
+            
+            res.json({
+                success: true,
+                message: 'Site report submitted successfully (saved locally)',
+                report_id: reportId,
+                fallback: true,
+                data: {
+                    id: reportId,
+                    project_id,
+                    report_date,
+                    weather_conditions,
+                    site_supervisor,
+                    workers_present,
+                    work_completed,
+                    site_issues,
+                    safety_incidents,
+                    materials_used,
+                    equipment_used,
+                    next_day_plan,
+                    created_at: new Date().toISOString()
+                }
+            });
+        }
+        
+    } catch (error) {
+        console.error('Error saving site report:', error);
+        res.status(500).json({ 
+            error: 'Failed to save site report',
+            details: error.message 
+        });
+    }
+});
+
+// Get Site Reports
+router.get('/site-reports', async (req, res) => {
+    try {
+        console.log('Fetching site reports...');
+        
+        // Try to get from database
+        try {
+            const db = require('../database/config/database');
+            
+            const [reports] = await db.execute(`
+                SELECT id, project_id, report_date, weather_conditions, site_supervisor, 
+                       workers_present, work_completed, site_issues, safety_incidents,
+                       materials_used, equipment_used, next_day_plan, status, created_by, created_at
+                FROM site_reports 
+                ORDER BY created_at DESC 
+                LIMIT 10
+            `);
+            
+            console.log('Site reports from database:', reports.length);
+            res.json(reports);
+            
+        } catch (dbError) {
+            console.log('Database error, using fallback site reports:', dbError.message);
+            
+            // Fallback mock data
+            const mockReports = [
+                {
+                    id: 'SR001',
+                    project_id: 'prj001',
+                    report_date: '2024-03-15',
+                    weather_conditions: 'sunny',
+                    site_supervisor: 'John Smith',
+                    workers_present: 15,
+                    work_completed: 'Foundation excavation completed',
+                    site_issues: 'Minor delay due to equipment shortage',
+                    safety_incidents: 'None',
+                    materials_used: 'Cement: 50 bags, Steel: 2 tons',
+                    equipment_used: 'Excavator, Concrete Mixer',
+                    next_day_plan: 'Begin foundation pouring',
+                    created_at: '2024-03-15T16:00:00Z',
+                    fallback: true
+                },
+                {
+                    id: 'SR002',
+                    project_id: 'prj002',
+                    report_date: '2024-03-14',
+                    weather_conditions: 'cloudy',
+                    site_supervisor: 'Jane Doe',
+                    workers_present: 12,
+                    work_completed: 'Steel frame installation 60% complete',
+                    site_issues: 'Weather delay in afternoon',
+                    safety_incidents: '1 near miss - tool drop',
+                    materials_used: 'Steel beams: 15, Bolts: 200',
+                    equipment_used: 'Crane, Welding machine',
+                    next_day_plan: 'Complete steel frame installation',
+                    created_at: '2024-03-14T17:30:00Z',
+                    fallback: true
+                }
+            ];
+            
+            res.json(mockReports);
+        }
+        
+    } catch (error) {
+        console.error('Error fetching site reports:', error);
+        res.status(500).json({ error: 'Failed to fetch site reports' });
+    }
+});
+
 // Create new work item
 router.post('/:department', async (req, res) => {
     try {
@@ -1400,208 +1604,5 @@ router.delete('/assignments/:id', async (req, res) => {
     }
 });
 
-// Save Site Report
-router.post('/site-reports', async (req, res) => {
-    try {
-        console.log('Saving site report...');
-        console.log('Request body raw:', JSON.stringify(req.body, null, 2));
-        
-        const {
-            project_id,
-            report_date,
-            weather_conditions,
-            site_supervisor,
-            workers_present,
-            work_completed,
-            site_issues,
-            safety_incidents,
-            materials_used,
-            equipment_used,
-            next_day_plan
-        } = req.body;
-        
-        // Debug each field
-        console.log('Field validation:');
-        console.log('  project_id:', project_id, 'type:', typeof project_id, 'truthy:', !!project_id);
-        console.log('  report_date:', report_date, 'type:', typeof report_date, 'truthy:', !!report_date);
-        console.log('  weather_conditions:', weather_conditions, 'type:', typeof weather_conditions, 'truthy:', !!weather_conditions);
-        console.log('  workers_present:', workers_present, 'type:', typeof workers_present, 'truthy:', !!workers_present);
-        console.log('  work_completed:', work_completed, 'type:', typeof work_completed, 'truthy:', !!work_completed);
-        console.log('  next_day_plan:', next_day_plan, 'type:', typeof next_day_plan, 'truthy:', !!next_day_plan);
-        
-        // Validate required fields with better checking
-        const missingFields = [];
-        if (!project_id || project_id === '') missingFields.push('project_id');
-        if (!report_date || report_date === '') missingFields.push('report_date');
-        if (!weather_conditions || weather_conditions === '') missingFields.push('weather_conditions');
-        if (!workers_present || workers_present === '') missingFields.push('workers_present');
-        if (!work_completed || work_completed === '') missingFields.push('work_completed');
-        if (!next_day_plan || next_day_plan === '') missingFields.push('next_day_plan');
-        
-        if (missingFields.length > 0) {
-            console.log('Missing fields detected:', missingFields);
-            return res.status(400).json({ 
-                success: false,
-                message: 'Missing required fields',
-                missing_fields: missingFields,
-                received: {
-                    project_id,
-                    report_date,
-                    weather_conditions,
-                    workers_present,
-                    work_completed,
-                    next_day_plan
-                }
-            });
-        }
-        
-        // Try to save to database
-        try {
-            const db = require('../database/config/database');
-            
-            console.log('Using existing site_reports table...');
-            
-            // Insert site report into existing table
-            const [result] = await db.execute(`
-                INSERT INTO site_reports (
-                    project_id, report_date, weather_conditions, site_supervisor, 
-                    workers_present, work_completed, site_issues, safety_incidents,
-                    materials_used, equipment_used, next_day_plan, status, created_by
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'submitted', ?)
-            `, [
-                project_id, report_date, weather_conditions, site_supervisor,
-                workers_present, work_completed, site_issues || null, safety_incidents || null,
-                materials_used || null, equipment_used || null, next_day_plan, site_supervisor
-            ]);
-            
-            console.log('Site report saved to database with ID:', result.insertId);
-            
-            res.json({
-                success: true,
-                message: 'Site report submitted successfully',
-                report_id: result.insertId,
-                data: {
-                    id: result.insertId,
-                    project_id,
-                    report_date,
-                    weather_conditions,
-                    site_supervisor,
-                    workers_present,
-                    work_completed,
-                    site_issues,
-                    safety_incidents,
-                    materials_used,
-                    equipment_used,
-                    next_day_plan,
-                    created_at: new Date().toISOString()
-                }
-            });
-            
-        } catch (dbError) {
-            console.log('Database error, using fallback for site report:', dbError.message);
-            
-            // Fallback: Generate a mock report ID and return success
-            const reportId = `SR${Date.now().toString().slice(-6)}`;
-            
-            res.json({
-                success: true,
-                message: 'Site report submitted successfully (saved locally)',
-                report_id: reportId,
-                fallback: true,
-                data: {
-                    id: reportId,
-                    project_id,
-                    report_date,
-                    weather_conditions,
-                    site_supervisor,
-                    workers_present,
-                    work_completed,
-                    site_issues,
-                    safety_incidents,
-                    materials_used,
-                    equipment_used,
-                    next_day_plan,
-                    created_at: new Date().toISOString()
-                }
-            });
-        }
-        
-    } catch (error) {
-        console.error('Error saving site report:', error);
-        res.status(500).json({ 
-            error: 'Failed to save site report',
-            details: error.message 
-        });
-    }
-});
-
-// Get Site Reports
-router.get('/site-reports', async (req, res) => {
-    try {
-        console.log('Fetching site reports...');
-        
-        // Try to get from database
-        try {
-            const db = require('../database/config/database');
-            
-            const [reports] = await db.execute(`
-                SELECT id, project_id, report_date, weather_conditions, site_supervisor, 
-                       workers_present, work_completed, site_issues, safety_incidents,
-                       materials_used, equipment_used, next_day_plan, status, created_by, created_at
-                FROM site_reports 
-                ORDER BY created_at DESC 
-                LIMIT 10
-            `);
-            
-            console.log('Site reports from database:', reports.length);
-            res.json(reports);
-            
-        } catch (dbError) {
-            console.log('Database error, using fallback site reports:', dbError.message);
-            
-            // Fallback mock data
-            const mockReports = [
-                {
-                    id: 'SR001',
-                    project_id: 'prj001',
-                    report_date: '2024-03-15',
-                    weather_conditions: 'sunny',
-                    site_supervisor: 'John Smith',
-                    workers_present: 15,
-                    work_completed: 'Foundation excavation completed',
-                    site_issues: 'Minor delay due to equipment shortage',
-                    safety_incidents: 'None',
-                    materials_used: 'Cement: 50 bags, Steel: 2 tons',
-                    equipment_used: 'Excavator, Concrete Mixer',
-                    next_day_plan: 'Begin foundation pouring',
-                    created_at: '2024-03-15T16:00:00Z',
-                    fallback: true
-                },
-                {
-                    id: 'SR002',
-                    project_id: 'prj002',
-                    report_date: '2024-03-14',
-                    weather_conditions: 'cloudy',
-                    site_supervisor: 'Jane Doe',
-                    workers_present: 12,
-                    work_completed: 'Steel frame installation 60% complete',
-                    site_issues: 'Weather delay in afternoon',
-                    safety_incidents: '1 near miss - tool drop',
-                    materials_used: 'Steel beams: 15, Bolts: 200',
-                    equipment_used: 'Crane, Welding machine',
-                    next_day_plan: 'Complete steel frame installation',
-                    created_at: '2024-03-14T17:30:00Z',
-                    fallback: true
-                }
-            ];
-            
-            res.json(mockReports);
-        }
-        
-    } catch (error) {
-        console.error('Error fetching site reports:', error);
-        res.status(500).json({ error: 'Failed to fetch site reports' });
-    }
-});
 
 module.exports = router;
