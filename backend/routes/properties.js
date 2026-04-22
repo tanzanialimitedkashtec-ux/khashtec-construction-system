@@ -77,6 +77,8 @@ router.post('/', async (req, res) => {
             
             const mappedType = typeMapping[type.toLowerCase()] || 'Residential';
             
+            console.log('DEBUG: Original type:', type, '-> Mapped type:', mappedType);
+            
             // Map frontend status to database ENUM values
             const statusMapping = {
                 'available': 'Available',
@@ -88,6 +90,8 @@ router.post('/', async (req, res) => {
             };
             
             const mappedStatus = statusMapping[status.toLowerCase()] || 'Available';
+            
+            console.log('DEBUG: Original status:', status, '-> Mapped status:', mappedStatus);
             
             // Map frontend fields to database fields
             const query = `
