@@ -188,13 +188,27 @@ class DatabaseAPI {
     }
 
     async getWorkerAssignmentStats() {
-        // For now, return basic stats derived from assignments
-        const assignments = await this.getWorkerAssignments();
-        return {
-            totalWorkers: assignments.length,
-            activeProjects: [...new Set(assignments.map(a => a.project_name))].length,
-            activeTasks: assignments.filter(a => a.status === 'active').length
-        };
+        try {
+            // For now, return basic stats derived from assignments
+            const assignments = await this.getWorkerAssignments();
+            
+            // Ensure assignments is an array
+            const assignmentsArray = Array.isArray(assignments) ? assignments : [];
+            
+            return {
+                totalWorkers: assignmentsArray.length,
+                activeProjects: [...new Set(assignmentsArray.map(a => a.project_name).filter(Boolean))].length,
+                activeTasks: assignmentsArray.filter(a => a.status === 'active').length
+            };
+        } catch (error) {
+            console.error('Error calculating worker assignment stats:', error);
+            // Return default stats if there's an error
+            return {
+                totalWorkers: 0,
+                activeProjects: 0,
+                activeTasks: 0
+            };
+        }
     }
 
     // Properties

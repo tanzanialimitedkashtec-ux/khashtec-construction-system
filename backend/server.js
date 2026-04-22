@@ -1425,11 +1425,6 @@ app.get('/api/employees-test', (req, res) => {
     console.log('🧪 Employees test endpoint accessed');
     res.json({ 
         message: 'Employees API is working!',
-        timestamp: new Date().toISOString(),
-        endpoints: ['GET /api/employees', 'GET /api/employees/:id', 'POST /api/employees']
-    });
-});
-
 // ===== PROPERTIES ROUTES =====
 console.log(' Loading properties routes...');
 
@@ -2450,6 +2445,16 @@ app.post('/api/project/work', async (req, res) => {
         });
     }
 });
+
+// ===== WORKER ACCOUNTS ROUTES =====
+console.log('Loading worker accounts routes...');
+try {
+    const workerAccountsRoutes = require('./routes/workerAccounts');
+    app.use('/api/worker-accounts', workerAccountsRoutes);
+    console.log('Worker accounts routes mounted successfully');
+} catch (error) {
+    console.error('Error loading worker accounts routes:', error);
+}
 
 // Fallback project details endpoint
 app.get('/api/projects/:id', async (req, res) => {
