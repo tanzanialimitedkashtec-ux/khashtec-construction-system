@@ -1082,13 +1082,18 @@ router.post('/approvals', async (req, res) => {
                 CREATE TABLE IF NOT EXISTS work_approvals (
                     id INT AUTO_INCREMENT PRIMARY KEY,
                     work_id VARCHAR(50) NOT NULL,
+                    project_id INT,
+                    completed_by VARCHAR(255),
+                    completion_date DATE,
                     quality_assessment ENUM('excellent', 'good', 'acceptable', 'poor') NOT NULL,
                     compliance_check ENUM('fully-compliant', 'minor-issues', 'major-issues', 'non-compliant') NOT NULL,
                     approval_comments TEXT NOT NULL,
                     safety_compliance ENUM('compliant', 'minor-violations', 'major-violations'),
                     time_completion ENUM('on-time', 'early', 'delayed'),
+                    quality_score INT,
                     status ENUM('pending', 'approved', 'rejected', 'rework-required') DEFAULT 'pending',
                     approved_by VARCHAR(255),
+                    approval_date DATE,
                     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
                     INDEX idx_work_id (work_id),
@@ -1102,12 +1107,14 @@ router.post('/approvals', async (req, res) => {
             // Insert work approval
             const [result] = await db.execute(`
                 INSERT INTO work_approvals (
-                    work_id, quality_assessment, compliance_check, approval_comments,
-                    safety_compliance, time_completion, status, approved_by
-                ) VALUES (?, ?, ?, ?, ?, ?, 'approved', ?)
+                    work_id, project_id, completed_by, completion_date, quality_assessment, 
+                    compliance_check, approval_comments, safety_compliance, time_completion, 
+                    quality_score, status, approved_by, approval_date
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'approved', ?, CURDATE())
             `, [
-                work_id, quality_assessment, compliance_check, approval_comments,
-                safety_compliance || null, time_completion || null, 'Current User'
+                work_id, null, 'Current User', new Date().toISOString().split('T')[0], 
+                quality_assessment, compliance_check, approval_comments,
+                safety_compliance || null, time_completion || null, null, 'Current User'
             ]);
             
             console.log('Work approval saved to database with ID:', result.insertId);
