@@ -544,12 +544,40 @@ class PropertyController {
                 });
             }
             
+            // Map frontend property types to database ENUM values
+            const typeMapping = {
+                'residential': 'Residential',
+                'commercial': 'Commercial', 
+                'industrial': 'Industrial',
+                'agricultural': 'Land',
+                'land': 'Land',
+                'mixed-use': 'Mixed Use'
+            };
+            
+            const mappedType = typeMapping[type.toLowerCase()] || 'Residential';
+            
+            console.log('DEBUG: Original type:', type, '-> Mapped type:', mappedType);
+            
+            // Map frontend status to database ENUM values
+            const statusMapping = {
+                'available': 'Available',
+                'sold': 'Sold',
+                'reserved': 'Under Offer',
+                'under-development': 'Off Market',
+                'rented': 'Rented',
+                'off-market': 'Off Market'
+            };
+            
+            const mappedStatus = statusMapping[status.toLowerCase()] || 'Available';
+            
+            console.log('DEBUG: Original status:', status, '-> Mapped status:', mappedStatus);
+            
             const propertyId = `PROP${Date.now().toString().slice(-6)}`;
             
             const connection = await db.getConnection();
             await connection.query(
                 'INSERT INTO properties (plot_number, type, location, area, price, status, description, added_by) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
-                [plot_number, type, location, area, price, status, description, req.user?.id || 'system']
+                [plot_number, mappedType, location, area, price, mappedStatus, description, req.user?.id || 'system']
             );
             connection.release();
             
