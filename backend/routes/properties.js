@@ -137,19 +137,19 @@ router.post('/', async (req, res) => {
 });
 
 // Get all properties
-router.get('/', async (req, res) => {
+router.get('/all', async (req, res) => {
     try {
-        console.log('📋 Fetching all properties...');
+        console.log('?? Fetching all properties...');
         
         const propertiesResult = await db.execute('SELECT * FROM properties ORDER BY created_at DESC');
         const properties = Array.isArray(propertiesResult) ? propertiesResult[0] : propertiesResult;
         
-        console.log('✅ Properties retrieved successfully:', properties.length);
+        console.log('?? Properties retrieved successfully:', properties.length);
         
         res.json(properties);
         
     } catch (error) {
-        console.error('❌ Error fetching properties:', error);
+        console.error('?? Error fetching properties:', error);
         res.status(500).json({ 
             error: 'Failed to fetch properties',
             details: error.message 
