@@ -1403,7 +1403,8 @@ router.delete('/assignments/:id', async (req, res) => {
 // Save Site Report
 router.post('/site-reports', async (req, res) => {
     try {
-        console.log('Saving site report:', req.body);
+        console.log('Saving site report...');
+        console.log('Request body raw:', JSON.stringify(req.body, null, 2));
         
         const {
             project_id,
@@ -1419,11 +1420,38 @@ router.post('/site-reports', async (req, res) => {
             next_day_plan
         } = req.body;
         
-        // Validate required fields
-        if (!project_id || !report_date || !weather_conditions || !workers_present || !work_completed || !next_day_plan) {
+        // Debug each field
+        console.log('Field validation:');
+        console.log('  project_id:', project_id, 'type:', typeof project_id, 'truthy:', !!project_id);
+        console.log('  report_date:', report_date, 'type:', typeof report_date, 'truthy:', !!report_date);
+        console.log('  weather_conditions:', weather_conditions, 'type:', typeof weather_conditions, 'truthy:', !!weather_conditions);
+        console.log('  workers_present:', workers_present, 'type:', typeof workers_present, 'truthy:', !!workers_present);
+        console.log('  work_completed:', work_completed, 'type:', typeof work_completed, 'truthy:', !!work_completed);
+        console.log('  next_day_plan:', next_day_plan, 'type:', typeof next_day_plan, 'truthy:', !!next_day_plan);
+        
+        // Validate required fields with better checking
+        const missingFields = [];
+        if (!project_id || project_id === '') missingFields.push('project_id');
+        if (!report_date || report_date === '') missingFields.push('report_date');
+        if (!weather_conditions || weather_conditions === '') missingFields.push('weather_conditions');
+        if (!workers_present || workers_present === '') missingFields.push('workers_present');
+        if (!work_completed || work_completed === '') missingFields.push('work_completed');
+        if (!next_day_plan || next_day_plan === '') missingFields.push('next_day_plan');
+        
+        if (missingFields.length > 0) {
+            console.log('Missing fields detected:', missingFields);
             return res.status(400).json({ 
-                error: 'Missing required fields',
-                required: ['project_id', 'report_date', 'weather_conditions', 'workers_present', 'work_completed', 'next_day_plan']
+                success: false,
+                message: 'Missing required fields',
+                missing_fields: missingFields,
+                received: {
+                    project_id,
+                    report_date,
+                    weather_conditions,
+                    workers_present,
+                    work_completed,
+                    next_day_plan
+                }
             });
         }
         
