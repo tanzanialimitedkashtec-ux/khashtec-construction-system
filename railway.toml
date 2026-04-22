@@ -5,7 +5,7 @@ builder = "NIXPACKS"
 
 
 [deploy]
-
+# FORCE REDEPLOY - PROPERTIES FIX v2.0.1
 startCommand = "npm start"
 
 restartPolicyType = "ON_FAILURE"
