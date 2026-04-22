@@ -1459,37 +1459,19 @@ router.post('/site-reports', async (req, res) => {
         try {
             const db = require('../database/config/database');
             
-            // Create site_reports table if it doesn't exist
-            await db.execute(`
-                CREATE TABLE IF NOT EXISTS site_reports (
-                    id INT AUTO_INCREMENT PRIMARY KEY,
-                    project_id VARCHAR(50) NOT NULL,
-                    report_date DATE NOT NULL,
-                    weather_conditions VARCHAR(50) NOT NULL,
-                    site_supervisor VARCHAR(255) NOT NULL,
-                    workers_present INT NOT NULL,
-                    work_completed TEXT NOT NULL,
-                    site_issues TEXT,
-                    safety_incidents TEXT,
-                    materials_used TEXT,
-                    equipment_used TEXT,
-                    next_day_plan TEXT NOT NULL,
-                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-                )
-            `);
+            console.log('Using existing site_reports table...');
             
-            // Insert site report
+            // Insert site report into existing table
             const [result] = await db.execute(`
                 INSERT INTO site_reports (
                     project_id, report_date, weather_conditions, site_supervisor, 
                     workers_present, work_completed, site_issues, safety_incidents,
-                    materials_used, equipment_used, next_day_plan
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    materials_used, equipment_used, next_day_plan, status, created_by
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'submitted', ?)
             `, [
                 project_id, report_date, weather_conditions, site_supervisor,
                 workers_present, work_completed, site_issues || null, safety_incidents || null,
-                materials_used || null, equipment_used || null, next_day_plan
+                materials_used || null, equipment_used || null, next_day_plan, site_supervisor
             ]);
             
             console.log('Site report saved to database with ID:', result.insertId);
@@ -1563,7 +1545,10 @@ router.get('/site-reports', async (req, res) => {
             const db = require('../database/config/database');
             
             const [reports] = await db.execute(`
-                SELECT * FROM site_reports 
+                SELECT id, project_id, report_date, weather_conditions, site_supervisor, 
+                       workers_present, work_completed, site_issues, safety_incidents,
+                       materials_used, equipment_used, next_day_plan, status, created_by, created_at
+                FROM site_reports 
                 ORDER BY created_at DESC 
                 LIMIT 10
             `);

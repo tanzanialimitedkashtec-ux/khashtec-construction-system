@@ -2540,7 +2540,7 @@ async function saveSiteReport() {
         }
         
         // Send data to backend
-        const response = await window.apiService.post('/site-reports', reportData);
+        const response = await window.apiService.post('/work/site-reports', reportData);
         
         console.log('Site report saved successfully:', response);
         
