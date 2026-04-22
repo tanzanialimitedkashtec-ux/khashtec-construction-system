@@ -2702,3 +2702,180 @@ async function saveWorkApproval(event) {
         return false;
     }
 }
+
+// ===== PROPERTY MANAGEMENT FUNCTIONS =====
+
+// Load properties from database and populate the select dropdown
+async function loadPropertiesForEdit() {
+    try {
+        console.log('Loading properties from database...');
+        
+        const response = await fetch('/api/properties/all', {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${localStorage.getItem('token')}`,
+                'Content-Type': 'application/json'
+            }
+        });
+        
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const properties = await response.json();
+        console.log('Properties loaded:', properties);
+        
+        const selectElement = document.getElementById('editPropertySelect');
+        selectElement.innerHTML = '<option value="">Select Property</option>';
+        
+        if (properties && properties.length > 0) {
+            properties.forEach(property => {
+                const option = document.createElement('option');
+                option.value = property.id;
+                option.textContent = `${property.title || property.plotNumber || 'Property ' + property.id} - ${property.location} (${property.status || 'Available'})`;
+                selectElement.appendChild(option);
+            });
+        } else {
+            console.log('No properties found in database');
+        }
+        
+    } catch (error) {
+        console.error('Error loading properties:', error);
+        // Show error message to user
+        const selectElement = document.getElementById('editPropertySelect');
+        selectElement.innerHTML = '<option value="">Error loading properties</option>';
+    }
+}
+
+// Load property details when a property is selected
+async function loadPropertyDetails() {
+    const propertyId = document.getElementById('editPropertySelect').value;
+    
+    if (!propertyId) {
+        document.getElementById('propertyEditForm').classList.add('hidden');
+        return;
+    }
+    
+    try {
+        console.log('Loading property details for ID:', propertyId);
+        
+        const response = await fetch(`/api/properties/${propertyId}`, {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${localStorage.getItem('token')}`,
+                'Content-Type': 'application/json'
+            }
+        });
+        
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const property = await response.json();
+        console.log('Property details loaded:', property);
+        
+        // Populate form fields with property data
+        document.getElementById('editPlotNumber').value = property.plotNumber || extractPlotNumber(property.title) || '';
+        document.getElementById('editPropertyType').value = property.type || 'residential';
+        document.getElementById('editPropertyLocation').value = property.location || '';
+        document.getElementById('editPropertyArea').value = property.size_sqm || property.area || '';
+        document.getElementById('editPropertyPrice').value = property.price || '';
+        document.getElementById('editPropertyStatus').value = property.status || 'available';
+        document.getElementById('editTpNumber').value = property.tpNumber || '';
+        document.getElementById('editPropertyDescription').value = property.description || '';
+        
+        // Show the edit form
+        document.getElementById('propertyEditForm').classList.remove('hidden');
+        
+    } catch (error) {
+        console.error('Error loading property details:', error);
+        alert('Error loading property details. Please try again.');
+        document.getElementById('propertyEditForm').classList.add('hidden');
+    }
+}
+
+// Save property edits to database
+async function savePropertyEdits(event) {
+    if (event) {
+        event.preventDefault();
+    }
+    
+    const propertyId = document.getElementById('editPropertySelect').value;
+    
+    if (!propertyId) {
+        alert('Please select a property to edit');
+        return false;
+    }
+    
+    try {
+        console.log('Saving property edits for ID:', propertyId);
+        
+        // Get form data
+        const formData = {
+            plotNumber: document.getElementById('editPlotNumber').value,
+            type: document.getElementById('editPropertyType').value,
+            location: document.getElementById('editPropertyLocation').value,
+            area: document.getElementById('editPropertyArea').value,
+            price: document.getElementById('editPropertyPrice').value,
+            status: document.getElementById('editPropertyStatus').value,
+            tpNumber: document.getElementById('editTpNumber').value,
+            description: document.getElementById('editPropertyDescription').value,
+            updateReason: document.getElementById('updateReason').value
+        };
+        
+        console.log('Form data:', formData);
+        
+        const response = await fetch(`/api/properties/${propertyId}`, {
+            method: 'PUT',
+            headers: {
+                'Authorization': `Bearer ${localStorage.getItem('token')}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(formData)
+        });
+        
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
+        }
+        
+        const result = await response.json();
+        console.log('Property updated successfully:', result);
+        
+        // Show success message
+        customAlert(`Property ${formData.plotNumber} updated successfully!\n\nChanges have been saved and property status updated.`, "Property Updated", "success");
+        
+        // Reset form and hide it
+        document.getElementById('editPropertyForm').reset();
+        document.getElementById('propertyEditForm').classList.add('hidden');
+        document.getElementById('editPropertySelect').value = '';
+        
+        // Reload properties to reflect changes
+        loadPropertiesForEdit();
+        
+        return false;
+        
+    } catch (error) {
+        console.error('Error saving property edits:', error);
+        alert(`Error updating property: ${error.message}`);
+        return false;
+    }
+}
+
+// Helper function to extract plot number from title
+function extractPlotNumber(title) {
+    if (!title) return '';
+    
+    // Look for patterns like "Property PLOT-001" or "Property 001"
+    const match = title.match(/(?:Property\s+)?(PLOT-?\d+|\d+)/i);
+    return match ? match[1] : '';
+}
+
+// Initialize property loading when page loads
+document.addEventListener('DOMContentLoaded', function() {
+    // Load properties for edit form if the element exists
+    const editPropertySelect = document.getElementById('editPropertySelect');
+    if (editPropertySelect) {
+        loadPropertiesForEdit();
+    }
+});
