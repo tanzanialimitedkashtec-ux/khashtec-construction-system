@@ -2509,3 +2509,57 @@ window.onload = function() {
         console.log('✅ Login button event listener attached (window.onload fallback)');
     }
 };
+
+// Save Site Report function
+async function saveSiteReport() {
+    try {
+        console.log('Saving site report...');
+        
+        // Get form values
+        const reportData = {
+            project_id: document.getElementById('reportProject').value,
+            report_date: document.getElementById('reportDate').value,
+            weather_conditions: document.getElementById('weatherConditions').value,
+            site_supervisor: document.getElementById('siteSupervisor').value,
+            workers_present: document.getElementById('workersPresent').value,
+            work_completed: document.getElementById('workCompleted').value,
+            site_issues: document.getElementById('siteIssues').value,
+            safety_incidents: document.getElementById('safetyIncidents').value,
+            materials_used: document.getElementById('materialsUsed').value,
+            equipment_used: document.getElementById('equipmentUsed').value,
+            next_day_plan: document.getElementById('nextDayPlan').value
+        };
+        
+        console.log('Site report data:', reportData);
+        
+        // Validate required fields
+        if (!reportData.project_id || !reportData.report_date || !reportData.weather_conditions || 
+            !reportData.workers_present || !reportData.work_completed || !reportData.next_day_plan) {
+            alert('Please fill in all required fields marked with *');
+            return false;
+        }
+        
+        // Send data to backend
+        const response = await window.apiService.post('/site-reports', reportData);
+        
+        console.log('Site report saved successfully:', response);
+        
+        // Show success message
+        alert('Site report submitted successfully!');
+        
+        // Reset form
+        document.getElementById('siteReportForm').reset();
+        
+        // Reload recent reports (if function exists)
+        if (typeof loadRecentSiteReports === 'function') {
+            loadRecentSiteReports();
+        }
+        
+        return false; // Prevent form submission
+        
+    } catch (error) {
+        console.error('Error saving site report:', error);
+        alert('Failed to save site report. Please try again.');
+        return false;
+    }
+}
