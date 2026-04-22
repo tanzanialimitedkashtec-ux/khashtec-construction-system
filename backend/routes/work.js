@@ -1102,11 +1102,11 @@ router.post('/approvals', async (req, res) => {
             // Insert work approval
             const [result] = await db.execute(`
                 INSERT INTO work_approvals (
-                    work_id, project_id, quality_assessment, compliance_check, approval_comments,
+                    work_id, quality_assessment, compliance_check, approval_comments,
                     safety_compliance, time_completion, status, approved_by
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, 'approved', ?)
+                ) VALUES (?, ?, ?, ?, ?, ?, 'approved', ?)
             `, [
-                work_id, null, quality_assessment, compliance_check, approval_comments,
+                work_id, quality_assessment, compliance_check, approval_comments,
                 safety_compliance || null, time_completion || null, 'Current User'
             ]);
             
