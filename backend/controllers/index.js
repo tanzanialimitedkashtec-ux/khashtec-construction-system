@@ -575,7 +575,7 @@ class PropertyController {
             const propertyId = `PROP${Date.now().toString().slice(-6)}`;
             
             const connection = await db.getConnection();
-            await connection.query(
+            const [result] = await connection.query(
                 'INSERT INTO properties (plot_number, type, location, area, price, status, description, added_by) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
                 [plot_number, mappedType, location, area, price, mappedStatus, description, req.user?.id || 'system']
             );
