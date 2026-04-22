@@ -2738,7 +2738,7 @@ async function runMigrationsOnStartup() {
 
 // Start server
 app.listen(PORT, async () => {
-    console.log(`KASHTEC Server starting on port ${PORT}`);
+    console.log(`KASHTEC Server v2.0.1-PROPERTIES-FIX starting on port ${PORT}`);
     console.log('Database connected and ready for connections');
     
     // Run migrations automatically
