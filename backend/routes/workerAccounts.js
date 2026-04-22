@@ -76,6 +76,7 @@ router.get('/assignments', async (req, res) => {
                 wa.notes,
                 w.full_name as worker_name,
                 w.employee_id as worker_employee_id,
+                w.department as department,
                 p.name as project_name,
                 p.location as project_location
             FROM worker_assignments wa
@@ -130,6 +131,7 @@ router.get('/assignments', async (req, res) => {
                     wa.notes,
                     w.full_name as worker_name,
                     w.employee_id as worker_employee_id,
+                    w.department as department,
                     p.name as project_name,
                     p.location as project_location
                 FROM worker_assignments wa
@@ -155,6 +157,7 @@ router.get('/assignments', async (req, res) => {
                 project_id: 1,
                 worker_name: 'John Smith',
                 worker_employee_id: 'EMP001',
+                department: 'projects',
                 project_name: 'Port Modernization Phase 1',
                 project_location: 'Dar es Salaam Port',
                 task_description: 'Site supervision and quality control',
@@ -169,6 +172,7 @@ router.get('/assignments', async (req, res) => {
                 project_id: 1,
                 worker_name: 'Jane Doe',
                 worker_employee_id: 'EMP002',
+                department: 'hr',
                 project_name: 'Port Modernization Phase 1',
                 project_location: 'Dar es Salaam Port',
                 task_description: 'Project coordination and reporting',
@@ -183,6 +187,7 @@ router.get('/assignments', async (req, res) => {
                 project_id: 2,
                 worker_name: 'Mike Johnson',
                 worker_employee_id: 'EMP003',
+                department: 'hse',
                 project_name: 'Warehouse Construction',
                 project_location: 'Industrial Area',
                 task_description: 'Safety inspection and compliance',
@@ -197,6 +202,7 @@ router.get('/assignments', async (req, res) => {
                 project_id: 2,
                 worker_name: 'Sarah Williams',
                 worker_employee_id: 'EMP004',
+                department: 'projects',
                 project_name: 'Warehouse Construction',
                 project_location: 'Industrial Area',
                 task_description: 'Structural engineering support',
@@ -211,6 +217,7 @@ router.get('/assignments', async (req, res) => {
                 project_id: 3,
                 worker_name: 'David Brown',
                 worker_employee_id: 'EMP005',
+                department: 'projects',
                 project_name: 'Road Infrastructure',
                 project_location: 'Northern Corridor',
                 task_description: 'Heavy equipment operation',

@@ -244,6 +244,9 @@ document.addEventListener('DOMContentLoaded', function() {
 
 // ===== WORKER ASSIGNMENT FUNCTIONS =====
 
+// Global variable to store assignments
+let allAssignments = [];
+
 // Load all worker assignments and stats
 async function loadWorkerAssignments() {
     try {
@@ -254,14 +257,17 @@ async function loadWorkerAssignments() {
         // Ensure assignments is an array
         const assignmentsArray = Array.isArray(assignments) ? assignments : [];
         
+        // Store assignments globally for filtering
+        allAssignments = assignmentsArray;
+        
         // Load stats
         const stats = await window.apiService.getWorkerAssignmentStats();
         
         // Update stats display
         updateWorkerStats(stats);
         
-        // Load projects for filter dropdown
-        await loadProjectsForWorkerFilter();
+        // Load filters for dropdowns
+        await loadFiltersForWorkerAssignments();
         
         // Display assignments
         displayWorkerAssignments(assignmentsArray);
@@ -285,9 +291,10 @@ function updateWorkerStats(stats) {
     }
 }
 
-// Load projects for worker filter dropdown
-async function loadProjectsForWorkerFilter() {
+// Load projects and departments for filter dropdowns
+async function loadFiltersForWorkerAssignments() {
     try {
+        // Load projects
         const projects = await window.apiService.get('/projects');
         const projectFilter = document.getElementById('projectFilter');
         
@@ -302,8 +309,23 @@ async function loadProjectsForWorkerFilter() {
                 projectFilter.appendChild(option);
             });
         }
+        
+        // Load departments from assignments
+        const departmentFilter = document.getElementById('departmentFilter');
+        const departments = [...new Set(allAssignments.map(a => a.department).filter(Boolean))];
+        
+        // Clear existing options except "All Departments"
+        departmentFilter.innerHTML = '<option value="">All Departments</option>';
+        
+        departments.forEach(department => {
+            const option = document.createElement('option');
+            option.value = department;
+            option.textContent = department;
+            departmentFilter.appendChild(option);
+        });
+        
     } catch (error) {
-        console.error('Failed to load projects for filter:', error);
+        console.error('Failed to load filters:', error);
     }
 }
 
@@ -411,32 +433,51 @@ function updateAllocationChart(assignments) {
 function filterAssignedWorkers() {
     const searchTerm = document.getElementById('workerSearch').value.toLowerCase();
     const projectFilter = document.getElementById('projectFilter').value;
+    const departmentFilter = document.getElementById('departmentFilter').value;
     
-    // Get all assignments and filter them
-    window.apiService.getWorkerAssignments().then(assignments => {
-        let filteredAssignments = assignments;
-        
-        // Filter by search term
-        if (searchTerm) {
-            filteredAssignments = filteredAssignments.filter(assignment => 
-                assignment.employee_name.toLowerCase().includes(searchTerm) ||
-                assignment.project_name.toLowerCase().includes(searchTerm) ||
-                assignment.role_in_project.toLowerCase().includes(searchTerm)
-            );
-        }
-        
-        // Filter by project
-        if (projectFilter) {
-            filteredAssignments = filteredAssignments.filter(assignment => 
-                assignment.project_id == projectFilter
-            );
-        }
-        
-        // Display filtered results
-        displayWorkerAssignments(filteredAssignments);
-    }).catch(error => {
-        console.error('Error filtering assignments:', error);
-    });
+    // Start with all assignments
+    let filteredAssignments = [...allAssignments];
+    
+    // Filter by search term (worker name, project, task, employee ID, location)
+    if (searchTerm) {
+        filteredAssignments = filteredAssignments.filter(assignment => {
+            const workerName = (assignment.worker_name || '').toLowerCase();
+            const projectName = (assignment.project_name || '').toLowerCase();
+            const taskDescription = (assignment.task_description || '').toLowerCase();
+            const employeeId = (assignment.worker_employee_id || '').toLowerCase();
+            const location = (assignment.project_location || '').toLowerCase();
+            const notes = (assignment.notes || '').toLowerCase();
+            
+            return workerName.includes(searchTerm) ||
+                   projectName.includes(searchTerm) ||
+                   taskDescription.includes(searchTerm) ||
+                   employeeId.includes(searchTerm) ||
+                   location.includes(searchTerm) ||
+                   notes.includes(searchTerm);
+        });
+    }
+    
+    // Filter by project
+    if (projectFilter) {
+        filteredAssignments = filteredAssignments.filter(assignment => 
+            assignment.project_id == projectFilter
+        );
+    }
+    
+    // Filter by department
+    if (departmentFilter) {
+        filteredAssignments = filteredAssignments.filter(assignment => 
+            assignment.department == departmentFilter
+        );
+    }
+    
+    // Display filtered results
+    displayWorkerAssignments(filteredAssignments);
+    
+    // Update allocation chart based on filtered results
+    updateAllocationChart(filteredAssignments);
+    
+    console.log(`Filtered ${allAssignments.length} assignments to ${filteredAssignments.length} results`);
 }
 
 // Helper function to format dates
