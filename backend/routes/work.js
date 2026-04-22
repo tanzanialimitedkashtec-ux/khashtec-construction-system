@@ -918,6 +918,9 @@ router.post('/site-reports', async (req, res) => {
         } catch (dbError) {
             console.error('❌ Database error, using fallback for site report:', dbError.message);
             console.error('❌ Full database error:', dbError);
+            console.error('❌ Error code:', dbError.code);
+            console.error('❌ Error errno:', dbError.errno);
+            console.error('❌ SQL state:', dbError.sqlState);
             console.error('❌ Error stack:', dbError.stack);
             
             // Fallback: Generate a mock report ID and return success
@@ -1127,9 +1130,12 @@ router.post('/approvals', async (req, res) => {
             });
             
         } catch (dbError) {
-            console.error('Database error, using fallback for work approval:', dbError.message);
-            console.error('Full database error:', dbError);
-            console.error('Error stack:', dbError.stack);
+            console.error('❌ Database error, using fallback for work approval:', dbError.message);
+            console.error('❌ Full database error:', dbError);
+            console.error('❌ Error code:', dbError.code);
+            console.error('❌ Error errno:', dbError.errno);
+            console.error('❌ SQL state:', dbError.sqlState);
+            console.error('❌ Error stack:', dbError.stack);
             
             // Fallback: Generate a mock approval ID and return success
             const approvalId = `WA${Date.now().toString().slice(-6)}`;
