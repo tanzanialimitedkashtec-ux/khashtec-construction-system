@@ -74,24 +74,57 @@ router.post('/', async (req, res) => {
             console.log('❌ Error checking table structure:', error.message);
         }
         
-        // Create new meeting minutes
-        const [result] = await db.execute(
-            `INSERT INTO meeting_minutes (
-                meeting_title, meeting_type, meeting_date, meeting_time, 
-                attendees, minutes_content, action_items, recorded_by, status
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-            [
-                meeting_title || '', 
-                meeting_type || '',
-                meeting_date || new Date().toISOString().split('T')[0], // Default to today
-                meeting_time || new Date().toTimeString().split(' ')[0].substring(0, 5), // Default to now
-                attendees || '',
-                minutes_content || '',
-                action_items || null,
-                recorded_by || 'Admin Assistant',
-                'draft' // Default status
-            ]
-        );
+        // Create new meeting minutes with fallback for different table structures
+        let result;
+        try {
+            // Try the expected table structure first
+            [result] = await db.execute(
+                `INSERT INTO meeting_minutes (
+                    meeting_title, meeting_type, meeting_date, meeting_time, 
+                    attendees, minutes_content, action_items, recorded_by, status
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+                [
+                    meeting_title || '', 
+                    meeting_type || '',
+                    meeting_date || new Date().toISOString().split('T')[0], // Default to today
+                    meeting_time || new Date().toTimeString().split(' ')[0].substring(0, 5), // Default to now
+                    attendees || '',
+                    minutes_content || '',
+                    action_items || null,
+                    recorded_by || 'Admin Assistant',
+                    'draft' // Default status
+                ]
+            );
+            console.log('✅ Meeting minutes created with standard structure');
+        } catch (error) {
+            if (error.message.includes('Unknown column')) {
+                console.log('⚠️ Standard structure failed, trying minimal structure...');
+                console.log('❌ Error:', error.message);
+                
+                // Fallback to minimal structure - try to identify what columns exist
+                try {
+                    // Try a basic INSERT without the problematic columns
+                    [result] = await db.execute(
+                        `INSERT INTO meeting_minutes (meeting_type, meeting_date, meeting_time, attendees, minutes_content, recorded_by) 
+                         VALUES (?, ?, ?, ?, ?, ?)`,
+                        [
+                            meeting_type || 'general',
+                            meeting_date || new Date().toISOString().split('T')[0],
+                            meeting_time || new Date().toTimeString().split(' ')[0].substring(0, 5),
+                            attendees || '',
+                            minutes_content || '',
+                            recorded_by || 'Admin Assistant'
+                        ]
+                    );
+                    console.log('✅ Meeting minutes created with minimal structure');
+                } catch (fallbackError) {
+                    console.log('❌ Even minimal structure failed:', fallbackError.message);
+                    throw fallbackError;
+                }
+            } else {
+                throw error;
+            }
+        }
         
         // Get the created meeting minutes
         const [newMinutes] = await db.execute(
