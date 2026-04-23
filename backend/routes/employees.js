@@ -13,6 +13,8 @@ router.get('/', async (req, res) => {
         console.log('🗄️ Executing employee query...');
         console.log('📝 SQL Query: SELECT e.*, ed.full_name, ed.gmail, ed.phone, ed.nida, ed.passport, ed.contract_type, ed.profile_image FROM employees e LEFT JOIN employee_details ed ON e.id = ed.employee_id ORDER BY e.hire_date DESC');
         
+        console.log('🔍 Checking employee details table...');
+        
         // Check if employee_details table has any records
         const [detailsCount] = await db.execute('SELECT COUNT(*) as count FROM employee_details');
         console.log('📊 Employee details table record count:', detailsCount[0].count);
@@ -23,8 +25,10 @@ router.get('/', async (req, res) => {
             
             // Get all employees to create details for them
             const [allEmployees] = await db.execute('SELECT id, position, department FROM employees LIMIT 5');
+            console.log(`📊 Found ${allEmployees.length} employees to create details for`);
             
             for (const emp of allEmployees) {
+                console.log(`📝 Creating details for employee ${emp.id}`);
                 await db.execute(`
                     INSERT INTO employee_details (employee_id, full_name, gmail, phone, nida, passport, contract_type)
                     VALUES (?, ?, ?, ?, ?, ?, ?)
@@ -40,6 +44,8 @@ router.get('/', async (req, res) => {
             }
             
             console.log(`✅ Created sample details for ${allEmployees.length} employees`);
+        } else {
+            console.log('📊 Employee details table already has records');
         }
         
         const [employees] = await db.execute(
