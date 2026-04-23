@@ -74,7 +74,18 @@ router.post('/', async (req, res) => {
             console.log('📊 Meeting minutes table columns:', tableColumns);
         } catch (error) {
             console.log('❌ Error checking table structure:', error.message);
-            throw new Error('Failed to check meeting_minutes table structure');
+            console.log('🔄 Trying alternative table structure detection...');
+            
+            // Fallback: Try SHOW COLUMNS
+            try {
+                const [columns] = await db.execute('SHOW COLUMNS FROM meeting_minutes');
+                tableColumns = columns.map(col => col.Field);
+                console.log('📊 Meeting minutes table columns (SHOW COLUMNS):', tableColumns);
+            } catch (showError) {
+                console.log('❌ SHOW COLUMNS also failed:', showError.message);
+                console.log('🔄 Using predefined minimal column set as last resort...');
+                tableColumns = ['id', 'meeting_type', 'meeting_date', 'meeting_time', 'attendees', 'minutes_content', 'recorded_by'];
+            }
         }
         
         // Build dynamic INSERT based on available columns
@@ -125,8 +136,49 @@ router.post('/', async (req, res) => {
         console.log('📝 Dynamic INSERT query:', insertQuery);
         console.log('📝 Values:', values);
         
-        const [result] = await db.execute(insertQuery, values);
-        console.log('✅ Meeting minutes created successfully with dynamic structure');
+        let result;
+        try {
+            [result] = await db.execute(insertQuery, values);
+            console.log('✅ Meeting minutes created successfully with dynamic structure');
+        } catch (dynamicError) {
+            console.log('❌ Dynamic INSERT failed:', dynamicError.message);
+            console.log('🔄 Trying fallback INSERT strategies...');
+            
+            // Fallback 1: Try minimal columns only
+            try {
+                const minimalQuery = `INSERT INTO meeting_minutes (meeting_type, meeting_date, meeting_time, attendees, minutes_content, recorded_by) VALUES (?, ?, ?, ?, ?, ?)`;
+                const minimalValues = [
+                    meeting_type || 'general',
+                    meeting_date || new Date().toISOString().split('T')[0],
+                    meeting_time || new Date().toTimeString().split(' ')[0].substring(0, 5),
+                    attendees || '',
+                    minutes_content || '',
+                    recorded_by || 'Admin Assistant'
+                ];
+                console.log('📝 Fallback 1 - Minimal INSERT query:', minimalQuery);
+                [result] = await db.execute(minimalQuery, minimalValues);
+                console.log('✅ Meeting minutes created with minimal structure');
+            } catch (minimalError) {
+                console.log('❌ Minimal INSERT failed:', minimalError.message);
+                
+                // Fallback 2: Try absolute basic columns
+                try {
+                    const basicQuery = `INSERT INTO meeting_minutes (meeting_type, meeting_date, attendees, minutes_content) VALUES (?, ?, ?, ?)`;
+                    const basicValues = [
+                        meeting_type || 'general',
+                        meeting_date || new Date().toISOString().split('T')[0],
+                        attendees || '',
+                        minutes_content || ''
+                    ];
+                    console.log('📝 Fallback 2 - Basic INSERT query:', basicQuery);
+                    [result] = await db.execute(basicQuery, basicValues);
+                    console.log('✅ Meeting minutes created with basic structure');
+                } catch (basicError) {
+                    console.log('❌ Basic INSERT failed:', basicError.message);
+                    throw new Error(`All INSERT strategies failed. Last error: ${basicError.message}`);
+                }
+            }
+        }
         
         // Get the created meeting minutes
         const [newMinutes] = await db.execute(
