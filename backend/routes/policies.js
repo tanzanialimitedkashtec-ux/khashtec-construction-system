@@ -119,17 +119,19 @@ router.get('/', async (req, res) => {
         // Fetch actual policies from database with simpler query first
         let policies;
         try {
-            [policies] = await db.execute(`
+            const result = await db.execute(`
                 SELECT * FROM policies 
                 ORDER BY created_at DESC
             `);
+            policies = result[0]; // Get the first element (rows array)
         } catch (queryError) {
             console.log('⚠️ Full query failed, trying basic query:', queryError.message);
             try {
-                [policies] = await db.execute(`
+                const result = await db.execute(`
                     SELECT id, title, description FROM policies 
                     ORDER BY id DESC
                 `);
+                policies = result[0]; // Get the first element (rows array)
             } catch (basicError) {
                 console.log('⚠️ Basic query also failed:', basicError.message);
                 policies = null;
