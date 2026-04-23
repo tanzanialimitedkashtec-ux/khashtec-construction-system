@@ -1519,7 +1519,7 @@ router.post('/:department', async (req, res) => {
             
             console.log('✅ Work item created successfully:', result);
             
-            // If this is a Safety Policy Upload, also create entry in policies table
+            // Create entries in shared tables based on work type
             if (mapped_work_type === 'Safety Policy Upload') {
                 try {
                     const policyId = `POL${Date.now().toString().slice(-6)}`;
@@ -1540,7 +1540,123 @@ router.post('/:department', async (req, res) => {
                     console.log('✅ Policy also created in policies table:', policyId);
                 } catch (policyError) {
                     console.error('⚠️ Failed to create policy entry:', policyError.message);
-                    // Don't fail the request, just log the error
+                }
+            }
+            
+            // Record Incident Reports - Create entry in hse_incidents table
+            if (mapped_work_type === 'Incident Reporting') {
+                try {
+                    const incidentId = `INC${Date.now().toString().slice(-6)}`;
+                    await db.execute(`
+                        INSERT INTO hse_incidents (
+                            id, incident_date, incident_type, severity, description, 
+                            reported_by, project_id, status, created_at
+                        ) VALUES (?, CURDATE(), ?, ?, ?, ?, ?, ?, NOW())
+                    `, [
+                        incidentId,
+                        'General Incident',
+                        'Medium',
+                        description || 'Incident reported via HSE work item',
+                        req.user?.id || 'system',
+                        1, // Default project ID
+                        'pending'
+                    ]);
+                    console.log('✅ Incident also created in hse_incidents table:', incidentId);
+                } catch (incidentError) {
+                    console.error('⚠️ Failed to create incident entry:', incidentError.message);
+                }
+            }
+            
+            // Record Toolbox Meetings - Create entry in schedule_meetings table
+            if (mapped_work_type === 'Toolbox Meeting') {
+                try {
+                    const meetingId = `MTG${Date.now().toString().slice(-6)}`;
+                    await db.execute(`
+                        INSERT INTO schedule_meetings (
+                            id, title, meeting_date, meeting_type, organizer, 
+                            department, status, agenda, created_at
+                        ) VALUES (?, ?, CURDATE(), ?, ?, ?, ?, ?, NOW())
+                    `, [
+                        meetingId,
+                        work_title,
+                        'Toolbox Meeting',
+                        req.user?.id || 'system',
+                        'HSE',
+                        'scheduled',
+                        description || 'Toolbox meeting via HSE work item'
+                    ]);
+                    console.log('✅ Meeting also created in schedule_meetings table:', meetingId);
+                } catch (meetingError) {
+                    console.error('⚠️ Failed to create meeting entry:', meetingError.message);
+                }
+            }
+            
+            // Track PPE Issuance - Create entry in ppe_issuance table
+            if (mapped_work_type === 'PPE Issuance') {
+                try {
+                    const ppeId = `PPE${Date.now().toString().slice(-6)}`;
+                    await db.execute(`
+                        INSERT INTO ppe_issuance (
+                            id, item_name, quantity, issued_to, issued_by, 
+                            issue_date, expected_return_date, status, notes, created_at
+                        ) VALUES (?, ?, 1, ?, ?, CURDATE(), DATE_ADD(CURDATE(), INTERVAL 30 DAY), ?, ?, NOW())
+                    `, [
+                        ppeId,
+                        work_title,
+                        req.user?.id || 'system',
+                        req.user?.id || 'system',
+                        'issued',
+                        description || 'PPE issued via HSE work item'
+                    ]);
+                    console.log('✅ PPE also created in ppe_issuance table:', ppeId);
+                } catch (ppeError) {
+                    console.error('⚠️ Failed to create PPE entry:', ppeError.message);
+                }
+            }
+            
+            // Mark Safety Violations - Create entry in hse_incidents table
+            if (mapped_work_type === 'Safety Violation') {
+                try {
+                    const violationId = `VIO${Date.now().toString().slice(-6)}`;
+                    await db.execute(`
+                        INSERT INTO hse_incidents (
+                            id, incident_date, incident_type, severity, description, 
+                            reported_by, project_id, status, created_at
+                        ) VALUES (?, CURDATE(), 'Safety Violation', ?, ?, ?, ?, ?, NOW())
+                    `, [
+                        violationId,
+                        'High',
+                        description || 'Safety violation reported via HSE work item',
+                        req.user?.id || 'system',
+                        1, // Default project ID
+                        'pending'
+                    ]);
+                    console.log('✅ Safety violation also created in hse_incidents table:', violationId);
+                } catch (violationError) {
+                    console.error('⚠️ Failed to create safety violation entry:', violationError.message);
+                }
+            }
+            
+            // Upload Inspection Reports - Create entry in documents table
+            if (mapped_work_type === 'Inspection Report') {
+                try {
+                    const documentId = `DOC${Date.now().toString().slice(-6)}`;
+                    await db.execute(`
+                        INSERT INTO documents (
+                            id, title, description, category, uploaded_by, 
+                            project_id, status, created_at
+                        ) VALUES (?, ?, ?, 'Inspection Report', ?, ?, ?, NOW())
+                    `, [
+                        documentId,
+                        work_title,
+                        description || 'Inspection report uploaded via HSE work item',
+                        req.user?.id || 'system',
+                        1, // Default project ID
+                        'pending'
+                    ]);
+                    console.log('✅ Document also created in documents table:', documentId);
+                } catch (documentError) {
+                    console.error('⚠️ Failed to create document entry:', documentError.message);
                 }
             }
             
