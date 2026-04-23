@@ -1519,6 +1519,31 @@ router.post('/:department', async (req, res) => {
             
             console.log('✅ Work item created successfully:', result);
             
+            // If this is a Safety Policy Upload, also create entry in policies table
+            if (mapped_work_type === 'Safety Policy Upload') {
+                try {
+                    const policyId = `POL${Date.now().toString().slice(-6)}`;
+                    await db.execute(`
+                        INSERT INTO policies (
+                            id, title, description, submitted_by, submitted_by_role, 
+                            department, status, created_at
+                        ) VALUES (?, ?, ?, ?, ?, ?, ?, NOW())
+                    `, [
+                        policyId,
+                        work_title,
+                        description || 'Safety policy uploaded via HSE work item',
+                        req.user?.id || 'system',
+                        req.user?.role || 'HSE Manager',
+                        'HSE',
+                        'pending'
+                    ]);
+                    console.log('✅ Policy also created in policies table:', policyId);
+                } catch (policyError) {
+                    console.error('⚠️ Failed to create policy entry:', policyError.message);
+                    // Don't fail the request, just log the error
+                }
+            }
+            
             // Return success response
             res.status(201).json({
                 message: 'Work item created successfully',
