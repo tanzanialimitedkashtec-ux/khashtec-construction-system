@@ -1035,52 +1035,34 @@ INSERT IGNORE INTO contracts (
 -- Meeting Minutes table
 CREATE TABLE IF NOT EXISTS meeting_minutes (
   id INT AUTO_INCREMENT PRIMARY KEY,
-  meeting_id INT NOT NULL,
   meeting_title VARCHAR(255) NOT NULL,
-  meeting_date DATE NOT NULL,
   meeting_type ENUM('board', 'management', 'department', 'project', 'client', 'training', 'general') NOT NULL,
-  location VARCHAR(255),
-  organizing_department ENUM('management', 'hr', 'finance', 'projects', 'operations', 'realestate') NOT NULL,
+  meeting_date DATE NOT NULL,
+  meeting_time TIME NOT NULL,
   attendees TEXT,
   minutes_content TEXT NOT NULL,
   action_items TEXT,
-  decisions_made TEXT,
-  next_steps TEXT,
-  follow_up_date DATE,
-  status ENUM('Draft', 'Pending Review', 'Approved', 'Distributed') DEFAULT 'Draft',
-  prepared_by VARCHAR(255) NOT NULL,
-  reviewed_by VARCHAR(255),
-  approved_by VARCHAR(255),
+  recorded_by VARCHAR(255) NOT NULL,
+  recording_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  status ENUM('draft', 'final', 'archived') DEFAULT 'draft',
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  
-  -- Foreign key relationship to schedule_meetings table
-  FOREIGN KEY (meeting_id) REFERENCES schedule_meetings(id) ON DELETE CASCADE,
-  
-  -- Indexes for performance
-  INDEX idx_meeting_id (meeting_id),
   INDEX idx_meeting_date (meeting_date),
   INDEX idx_meeting_type (meeting_type),
-  INDEX idx_department (organizing_department),
   INDEX idx_status (status),
-  INDEX idx_prepared_by (prepared_by),
-  INDEX idx_follow_up_date (follow_up_date)
+  INDEX idx_recorded_by (recorded_by)
 );
 
 -- Insert sample meeting minutes data
 INSERT IGNORE INTO meeting_minutes (
-  meeting_id, meeting_title, meeting_date, meeting_type, location, organizing_department,
-  attendees, minutes_content, action_items, decisions_made, next_steps, follow_up_date,
-  status, prepared_by, reviewed_by, approved_by
+  meeting_title, meeting_type, meeting_date, meeting_time,
+  attendees, minutes_content, action_items, recorded_by, status
 ) VALUES
-(1, 'Monthly Management Review', CURDATE(), 'management', 'Board Room', 'management',
+('Monthly Management Review', 'management', CURDATE(), '10:00',
   'Dr. John Smith, HR Manager, Finance Manager, Project Manager', 
   'Monthly review of project progress, financial status, and operational challenges.',
   '1. Review Q2 budget proposals\n2. Approve new project timeline\n3. Address staffing issues',
-  'Budget approval deferred pending additional information. Project timeline approved with modifications.',
-  'Schedule follow-up meeting for budget review next week. Update project documentation.',
-  DATE_ADD(CURDATE(), INTERVAL 7 DAY),
-  'Draft', 'Admin Assistant', NULL, NULL);
+  'Admin Assistant', 'draft');
 
 -- Site Reports table
 CREATE TABLE IF NOT EXISTS site_reports (
