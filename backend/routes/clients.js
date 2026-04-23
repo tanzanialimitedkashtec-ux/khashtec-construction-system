@@ -35,9 +35,8 @@ router.get('/', (req, res) => {
 // Create new client
 router.post('/', async (req, res) => {
     try {
-        console.log(' CLIENTS ROUTE: Client registration request received');
-        console.log(' CLIENTS ROUTE: Request body:', req.body);
-        console.log(' CLIENTS ROUTE: This is the route-based clients endpoint');
+        console.log('👥 Client registration request received');
+        console.log('📝 Request body:', req.body);
         
         // Map frontend field names to database field names
         const {
