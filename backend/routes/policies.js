@@ -47,7 +47,15 @@ router.get('/', async (req, res) => {
             ORDER BY created_at DESC
         `);
         
-        console.log('📋 Policies data returned:', policies.length, 'items');
+        console.log('📋 Policies data returned:', policies ? policies.length : 'undefined', 'items');
+        console.log('📋 Policies type:', typeof policies);
+        console.log('📋 Policies is array:', Array.isArray(policies));
+        
+        // Check if policies is a valid array
+        if (!policies || !Array.isArray(policies)) {
+            console.log('⚠️ Policies query did not return an array, returning empty array');
+            return res.json([]);
+        }
         
         // Format policies for frontend
         const formattedPolicies = policies.map(policy => ({
