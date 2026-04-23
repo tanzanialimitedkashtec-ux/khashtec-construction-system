@@ -38,82 +38,32 @@ router.get('/', async (req, res) => {
             return res.json([]);
         }
         
-        // First check what columns actually exist in policies table
-        let tableStructure;
+        // Check if policies table exists, if not create it
         try {
-            [tableStructure] = await db.execute(`
-                DESCRIBE policies
+            await db.execute(`
+                CREATE TABLE IF NOT EXISTS policies (
+                  id VARCHAR(50) PRIMARY KEY,
+                  title VARCHAR(255) NOT NULL,
+                  description TEXT,
+                  submitted_by VARCHAR(255) NOT NULL,
+                  submitted_by_role VARCHAR(100),
+                  submission_date DATE,
+                  impact ENUM('Low', 'Medium', 'High', 'Critical') DEFAULT 'Medium',
+                  status ENUM('Pending', 'Approved', 'Rejected', 'Revision Requested') DEFAULT 'Pending',
+                  approved_by VARCHAR(255),
+                  approved_date DATE,
+                  rejection_reason TEXT,
+                  revision_request TEXT,
+                  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+                  INDEX idx_status (status),
+                  INDEX idx_submitted_by (submitted_by),
+                  INDEX idx_date (submission_date)
+                )
             `);
-            console.log('🔍 Policies table structure:', tableStructure);
-            
-            // Check if table has incomplete schema (missing required columns)
-            const requiredColumns = ['id', 'title', 'description', 'submitted_by', 'status', 'created_at'];
-            let existingColumns = [];
-            
-            if (tableStructure) {
-                if (Array.isArray(tableStructure)) {
-                    existingColumns = tableStructure.map(col => col.Field);
-                } else if (tableStructure.Field) {
-                    existingColumns = [tableStructure.Field];
-                }
-            }
-            
-            const hasAllColumns = requiredColumns.every(col => existingColumns.includes(col));
-            
-            if (!hasAllColumns) {
-                console.log('⚠️ Policies table has incomplete schema, recreating table...');
-                console.log('🔍 Existing columns:', existingColumns);
-                console.log('🔍 Required columns:', requiredColumns);
-                
-                // Drop and recreate table with correct schema
-                await db.execute(`DROP TABLE policies`);
-                await db.execute(`
-                    CREATE TABLE policies (
-                      id VARCHAR(50) PRIMARY KEY,
-                      title VARCHAR(255) NOT NULL,
-                      description TEXT,
-                      submitted_by VARCHAR(255) NOT NULL,
-                      submitted_by_role VARCHAR(100),
-                      submission_date DATE,
-                      impact ENUM('Low', 'Medium', 'High', 'Critical') DEFAULT 'Medium',
-                      status ENUM('Pending', 'Approved', 'Rejected', 'Revision Requested') DEFAULT 'Pending',
-                      approved_by VARCHAR(255),
-                      approved_date DATE,
-                      rejection_reason TEXT,
-                      revision_request TEXT,
-                      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-                      INDEX idx_status (status),
-                      INDEX idx_submitted_by (submitted_by),
-                      INDEX idx_date (submission_date)
-                    )
-                `);
-                console.log('✅ Policies table recreated with correct schema');
-                
-                // Re-insert the existing policy if it exists
-                try {
-                    await db.execute(`
-                        INSERT INTO policies (
-                            id, title, description, submitted_by, submitted_by_role, 
-                            submission_date, impact, status, created_at, updated_at
-                        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())
-                    `, [
-                        'POL503445',
-                        'Safety Policy - policy rejection',
-                        'Safety Policy: policy rejection\n\nCategory: ppe-policy\nDescription: asdfghj\nCompliance Level: guideline\nApplicable To: specific-project\nTraining Required: induction, toolbox, formal, refresher\nEffective Date: 2026-04-24\nReview Date: 2026-04-24\nUploaded By: HSE Manager',
-                        '2',
-                        'HSE Manager',
-                        '2026-04-23',
-                        'Medium',
-                        'Pending'
-                    ]);
-                    console.log('✅ Existing policy re-inserted with correct schema');
-                } catch (insertError) {
-                    console.log('⚠️ Could not re-insert existing policy:', insertError.message);
-                }
-            }
-        } catch (structError) {
-            console.log('⚠️ Could not get table structure:', structError.message);
+            console.log('✅ Policies table verified/created successfully');
+        } catch (tableError) {
+            console.log('⚠️ Could not create policies table:', tableError.message);
         }
         
         // Fetch actual policies from database with simpler query first
