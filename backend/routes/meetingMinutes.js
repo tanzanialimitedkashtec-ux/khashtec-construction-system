@@ -65,66 +65,68 @@ router.post('/', async (req, res) => {
             });
         }
         
-        // Check table structure first
+        // Check table structure first and build dynamic INSERT
         console.log('🔍 Checking meeting_minutes table structure...');
+        let tableColumns = [];
         try {
             const [columns] = await db.execute('DESCRIBE meeting_minutes');
-            console.log('📊 Meeting minutes table columns:', columns.map(col => col.Field));
+            tableColumns = columns.map(col => col.Field);
+            console.log('📊 Meeting minutes table columns:', tableColumns);
         } catch (error) {
             console.log('❌ Error checking table structure:', error.message);
+            throw new Error('Failed to check meeting_minutes table structure');
         }
         
-        // Create new meeting minutes with fallback for different table structures
-        let result;
-        try {
-            // Try the expected table structure first
-            [result] = await db.execute(
-                `INSERT INTO meeting_minutes (
-                    meeting_title, meeting_type, meeting_date, meeting_time, 
-                    attendees, minutes_content, action_items, recorded_by, status
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-                [
-                    meeting_title || '', 
-                    meeting_type || '',
-                    meeting_date || new Date().toISOString().split('T')[0], // Default to today
-                    meeting_time || new Date().toTimeString().split(' ')[0].substring(0, 5), // Default to now
-                    attendees || '',
-                    minutes_content || '',
-                    action_items || null,
-                    recorded_by || 'Admin Assistant',
-                    'draft' // Default status
-                ]
-            );
-            console.log('✅ Meeting minutes created with standard structure');
-        } catch (error) {
-            if (error.message.includes('Unknown column')) {
-                console.log('⚠️ Standard structure failed, trying minimal structure...');
-                console.log('❌ Error:', error.message);
-                
-                // Fallback to minimal structure - try to identify what columns exist
-                try {
-                    // Try a basic INSERT without the problematic columns
-                    [result] = await db.execute(
-                        `INSERT INTO meeting_minutes (meeting_type, meeting_date, meeting_time, attendees, minutes_content, recorded_by) 
-                         VALUES (?, ?, ?, ?, ?, ?)`,
-                        [
-                            meeting_type || 'general',
-                            meeting_date || new Date().toISOString().split('T')[0],
-                            meeting_time || new Date().toTimeString().split(' ')[0].substring(0, 5),
-                            attendees || '',
-                            minutes_content || '',
-                            recorded_by || 'Admin Assistant'
-                        ]
-                    );
-                    console.log('✅ Meeting minutes created with minimal structure');
-                } catch (fallbackError) {
-                    console.log('❌ Even minimal structure failed:', fallbackError.message);
-                    throw fallbackError;
-                }
-            } else {
-                throw error;
-            }
+        // Build dynamic INSERT based on available columns
+        const availableColumns = tableColumns;
+        const insertData = {};
+        
+        // Map data to available columns
+        if (availableColumns.includes('meeting_title')) {
+            insertData.meeting_title = meeting_title || '';
         }
+        if (availableColumns.includes('meeting_type')) {
+            insertData.meeting_type = meeting_type || 'general';
+        }
+        if (availableColumns.includes('meeting_date')) {
+            insertData.meeting_date = meeting_date || new Date().toISOString().split('T')[0];
+        }
+        if (availableColumns.includes('meeting_time')) {
+            insertData.meeting_time = meeting_time || new Date().toTimeString().split(' ')[0].substring(0, 5);
+        }
+        if (availableColumns.includes('attendees')) {
+            insertData.attendees = attendees || '';
+        }
+        if (availableColumns.includes('minutes_content')) {
+            insertData.minutes_content = minutes_content || '';
+        }
+        if (availableColumns.includes('action_items')) {
+            insertData.action_items = action_items || null;
+        }
+        if (availableColumns.includes('recorded_by')) {
+            insertData.recorded_by = recorded_by || 'Admin Assistant';
+        }
+        if (availableColumns.includes('status')) {
+            insertData.status = 'draft';
+        }
+        
+        console.log('🔧 Insert data mapped to columns:', insertData);
+        
+        // Build dynamic INSERT query
+        const columns = Object.keys(insertData);
+        const values = Object.values(insertData);
+        const placeholders = values.map(() => '?').join(', ');
+        
+        if (columns.length === 0) {
+            throw new Error('No valid columns found for meeting_minutes table');
+        }
+        
+        const insertQuery = `INSERT INTO meeting_minutes (${columns.join(', ')}) VALUES (${placeholders})`;
+        console.log('📝 Dynamic INSERT query:', insertQuery);
+        console.log('📝 Values:', values);
+        
+        const [result] = await db.execute(insertQuery, values);
+        console.log('✅ Meeting minutes created successfully with dynamic structure');
         
         // Get the created meeting minutes
         const [newMinutes] = await db.execute(
