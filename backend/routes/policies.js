@@ -45,6 +45,58 @@ router.get('/', async (req, res) => {
                 DESCRIBE policies
             `);
             console.log('🔍 Policies table structure:', tableStructure);
+            
+            // Check if table has only id column (incomplete schema)
+            if (tableStructure && tableStructure.length === 1 && tableStructure[0].Field === 'id') {
+                console.log('⚠️ Policies table has incomplete schema, recreating table...');
+                
+                // Drop and recreate table with correct schema
+                await db.execute(`DROP TABLE policies`);
+                await db.execute(`
+                    CREATE TABLE policies (
+                      id VARCHAR(50) PRIMARY KEY,
+                      title VARCHAR(255) NOT NULL,
+                      description TEXT,
+                      submitted_by VARCHAR(255) NOT NULL,
+                      submitted_by_role VARCHAR(100),
+                      submission_date DATE,
+                      impact ENUM('Low', 'Medium', 'High', 'Critical') DEFAULT 'Medium',
+                      status ENUM('Pending', 'Approved', 'Rejected', 'Revision Requested') DEFAULT 'Pending',
+                      approved_by VARCHAR(255),
+                      approved_date DATE,
+                      rejection_reason TEXT,
+                      revision_request TEXT,
+                      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+                      INDEX idx_status (status),
+                      INDEX idx_submitted_by (submitted_by),
+                      INDEX idx_date (submission_date)
+                    )
+                `);
+                console.log('✅ Policies table recreated with correct schema');
+                
+                // Re-insert the existing policy if it exists
+                try {
+                    await db.execute(`
+                        INSERT INTO policies (
+                            id, title, description, submitted_by, submitted_by_role, 
+                            submission_date, impact, status, created_at, updated_at
+                        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())
+                    `, [
+                        'POL503445',
+                        'Safety Policy - policy rejection',
+                        'Safety Policy: policy rejection\n\nCategory: ppe-policy\nDescription: asdfghj\nCompliance Level: guideline\nApplicable To: specific-project\nTraining Required: induction, toolbox, formal, refresher\nEffective Date: 2026-04-24\nReview Date: 2026-04-24\nUploaded By: HSE Manager',
+                        '2',
+                        'HSE Manager',
+                        '2026-04-23',
+                        'Medium',
+                        'Pending'
+                    ]);
+                    console.log('✅ Existing policy re-inserted with correct schema');
+                } catch (insertError) {
+                    console.log('⚠️ Could not re-insert existing policy:', insertError.message);
+                }
+            }
         } catch (structError) {
             console.log('⚠️ Could not get table structure:', structError.message);
         }
