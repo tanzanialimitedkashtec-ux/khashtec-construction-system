@@ -13,12 +13,23 @@ router.get('/', async (req, res) => {
         console.log('🗄️ Executing employee query...');
         console.log('📝 SQL Query: SELECT e.*, ed.full_name, ed.gmail, ed.phone, ed.nida, ed.passport, ed.contract_type, ed.profile_image FROM employees e LEFT JOIN employee_details ed ON e.id = ed.employee_id ORDER BY e.hire_date DESC');
         
+        // Check if employee_details table has any records
+        const [detailsCount] = await db.execute('SELECT COUNT(*) as count FROM employee_details');
+        console.log('📊 Employee details table record count:', detailsCount[0].count);
+        
         const [employees] = await db.execute(
             'SELECT e.*, ed.full_name, ed.gmail, ed.phone, ed.nida, ed.passport, ed.contract_type, ed.profile_image FROM employees e LEFT JOIN employee_details ed ON e.id = ed.employee_id ORDER BY e.hire_date DESC'
         );
         console.log('✅ Employee query executed successfully');
-        console.log('📊 Employee query result:', employees);
         console.log('📊 Employee count:', employees.length);
+        
+        // Log first employee details to debug
+        if (employees.length > 0) {
+            console.log('🔍 First employee data:', JSON.stringify(employees[0], null, 2));
+            console.log('🔍 First employee keys:', Object.keys(employees[0]));
+        }
+        
+        console.log('📊 Employee query result:', employees);
         
         res.json(employees);
     } catch (error) {
