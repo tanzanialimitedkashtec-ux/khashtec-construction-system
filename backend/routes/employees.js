@@ -11,15 +11,24 @@ router.get('/', async (req, res) => {
     
     try {
         console.log('🗄️ Executing employee query...');
+        console.log('📝 SQL Query: SELECT e.*, ed.full_name, ed.gmail, ed.phone, ed.nida, ed.passport, ed.contract_type, ed.profile_image FROM employees e LEFT JOIN employee_details ed ON e.id = ed.employee_id ORDER BY e.hire_date DESC');
+        
         const [employees] = await db.execute(
-            'SELECT e.*, ed.full_name, ed.gmail, ed.phone, ed.nida, ed.passport, ed.contract_type, ed.profile_image, ed.date_of_birth, ed.gender, ed.emergency_contact_name, ed.emergency_contact_phone, ed.emergency_contact_relationship, ed.bank_account, ed.pay_grade, ed.work_location FROM employees e LEFT JOIN employee_details ed ON e.id = ed.employee_id ORDER BY e.hire_date DESC'
+            'SELECT e.*, ed.full_name, ed.gmail, ed.phone, ed.nida, ed.passport, ed.contract_type, ed.profile_image FROM employees e LEFT JOIN employee_details ed ON e.id = ed.employee_id ORDER BY e.hire_date DESC'
         );
+        console.log('✅ Employee query executed successfully');
         console.log('📊 Employee query result:', employees);
         console.log('📊 Employee count:', employees.length);
         
         res.json(employees);
     } catch (error) {
-        console.error('Database error, using fallback employee data:', error.message);
+        console.error('❌ Database error in employees endpoint:', error);
+        console.error('❌ Error message:', error.message);
+        console.error('❌ Error code:', error.code);
+        console.error('❌ Error errno:', error.errno);
+        console.error('❌ Error sqlState:', error.sqlState);
+        console.error('❌ Error sqlMessage:', error.sqlMessage);
+        console.log('🔄 Falling back to mock employee data...');
         
         // Fallback mock data when database fails
         const mockEmployees = [
@@ -186,9 +195,7 @@ router.get('/:id', async (req, res) => {
     try {
         const [employees] = await db.execute(`
             SELECT e.*, ed.full_name, ed.gmail, ed.phone, ed.nida, ed.passport, 
-                   ed.contract_type, ed.profile_image, ed.date_of_birth, ed.gender,
-                   ed.emergency_contact_name, ed.emergency_contact_phone, ed.emergency_contact_relationship,
-                   ed.bank_account, ed.pay_grade, ed.work_location
+                   ed.contract_type, ed.profile_image
             FROM employees e 
             LEFT JOIN employee_details ed ON e.id = ed.employee_id 
             WHERE e.id = ?

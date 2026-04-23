@@ -14950,12 +14950,12 @@ function showEmployeeDetailsModal(employee) {
                                 <span>${employee.nida || employee.nida_number || 'N/A'}</span>
                             </div>
                             <div class="detail-item">
-                                <label>Date of Birth:</label>
-                                <span>${employee.date_of_birth || employee.dateOfBirth || employee.dob ? new Date(employee.date_of_birth || employee.dateOfBirth || employee.dob).toLocaleDateString() : 'N/A'}</span>
+                                <label>Contract Type:</label>
+                                <span>${employee.contract_type || 'N/A'}</span>
                             </div>
                             <div class="detail-item">
-                                <label>Gender:</label>
-                                <span>${employee.gender || 'N/A'}</span>
+                                <label>Passport:</label>
+                                <span>${employee.passport || 'N/A'}</span>
                             </div>
                         </div>
                     </div>
@@ -14982,46 +14982,6 @@ function showEmployeeDetailsModal(employee) {
                             <div class="detail-item">
                                 <label>Hire Date:</label>
                                 <span>${employee.hire_date || employee.hireDate || employee.date_hired ? new Date(employee.hire_date || employee.hireDate || employee.date_hired).toLocaleDateString() : 'N/A'}</span>
-                            </div>
-                            <div class="detail-item">
-                                <label>Work Location:</label>
-                                <span>${employee.work_location || employee.workLocation || 'N/A'}</span>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="detail-section">
-                        <h4>💰 Compensation</h4>
-                        <div class="detail-grid">
-                            <div class="detail-item">
-                                <label>Salary:</label>
-                                <span>${employee.salary ? `TZS ${Number(employee.salary).toLocaleString()}` : 'N/A'}</span>
-                            </div>
-                            <div class="detail-item">
-                                <label>Pay Grade:</label>
-                                <span>${employee.pay_grade || employee.payGrade || 'N/A'}</span>
-                            </div>
-                            <div class="detail-item">
-                                <label>Bank Account:</label>
-                                <span>${employee.bank_account || employee.bankAccount || 'N/A'}</span>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="detail-section">
-                        <h4>📞 Emergency Contact</h4>
-                        <div class="detail-grid">
-                            <div class="detail-item">
-                                <label>Emergency Contact Name:</label>
-                                <span>${employee.emergency_contact_name || employee.emergencyContactName || employee.emergency_contact || 'N/A'}</span>
-                            </div>
-                            <div class="detail-item">
-                                <label>Emergency Contact Phone:</label>
-                                <span>${employee.emergency_contact_phone || employee.emergencyContactPhone || employee.emergency_phone || 'N/A'}</span>
-                            </div>
-                            <div class="detail-item">
-                                <label>Relationship:</label>
-                                <span>${employee.emergency_contact_relationship || employee.emergencyContactRelationship || employee.emergency_relationship || 'N/A'}</span>
                             </div>
                         </div>
                     </div>
