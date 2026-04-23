@@ -65,6 +65,15 @@ router.post('/', async (req, res) => {
             });
         }
         
+        // Check table structure first
+        console.log('🔍 Checking meeting_minutes table structure...');
+        try {
+            const [columns] = await db.execute('DESCRIBE meeting_minutes');
+            console.log('📊 Meeting minutes table columns:', columns.map(col => col.Field));
+        } catch (error) {
+            console.log('❌ Error checking table structure:', error.message);
+        }
+        
         // Create new meeting minutes
         const [result] = await db.execute(
             `INSERT INTO meeting_minutes (
