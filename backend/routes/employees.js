@@ -92,6 +92,29 @@ router.get('/', async (req, res) => {
         if (employees.length > 0) {
             console.log('🔍 First employee data:', JSON.stringify(employees[0], null, 2));
             console.log('🔍 First employee keys:', Object.keys(employees[0]));
+            
+            // Specifically check employee_details fields
+            const emp = employees[0];
+            console.log('📋 Employee Details Fields Check:');
+            console.log('  - full_name:', emp.full_name);
+            console.log('  - gmail:', emp.gmail);
+            console.log('  - phone:', emp.phone);
+            console.log('  - nida:', emp.nida);
+            console.log('  - passport:', emp.passport);
+            console.log('  - contract_type:', emp.contract_type);
+            console.log('  - profile_image:', emp.profile_image);
+            console.log('  - employee_id:', emp.employee_id);
+            console.log('  - position:', emp.position);
+            console.log('  - department:', emp.department);
+            
+            // Check if employee_details fields are null
+            const detailsFields = ['full_name', 'gmail', 'phone', 'nida', 'passport', 'contract_type', 'profile_image'];
+            const nullFields = detailsFields.filter(field => emp[field] === null || emp[field] === undefined);
+            if (nullFields.length > 0) {
+                console.log('⚠️ Employee details fields that are null/undefined:', nullFields);
+            } else {
+                console.log('✅ All employee details fields have values');
+            }
         }
         
         console.log('📊 Employee query result:', employees);
@@ -269,6 +292,8 @@ router.post('/', async (req, res) => {
 // Get employee by ID
 router.get('/:id', async (req, res) => {
     try {
+        console.log(`🔍 Fetching employee with ID: ${req.params.id}`);
+        
         const [employees] = await db.execute(`
             SELECT e.*, ed.full_name, ed.gmail, ed.phone, ed.nida, ed.passport, 
                    ed.contract_type, ed.profile_image
@@ -278,10 +303,35 @@ router.get('/:id', async (req, res) => {
         `, [req.params.id]);
         
         if (employees.length === 0) {
+            console.log(`❌ Employee with ID ${req.params.id} not found`);
             return res.status(404).json({ error: 'Employee not found' });
         }
         
-        res.json(employees[0]);
+        const employee = employees[0];
+        console.log('📋 Single Employee Details Fields Check:');
+        console.log('  - full_name:', employee.full_name);
+        console.log('  - gmail:', employee.gmail);
+        console.log('  - phone:', employee.phone);
+        console.log('  - nida:', employee.nida);
+        console.log('  - passport:', employee.passport);
+        console.log('  - contract_type:', employee.contract_type);
+        console.log('  - profile_image:', employee.profile_image);
+        console.log('  - employee_id:', employee.employee_id);
+        console.log('  - position:', employee.position);
+        console.log('  - department:', employee.department);
+        
+        // Check if employee_details fields are null
+        const detailsFields = ['full_name', 'gmail', 'phone', 'nida', 'passport', 'contract_type', 'profile_image'];
+        const nullFields = detailsFields.filter(field => employee[field] === null || employee[field] === undefined);
+        if (nullFields.length > 0) {
+            console.log('⚠️ Single employee - null/undefined fields:', nullFields);
+        } else {
+            console.log('✅ Single employee - all details fields have values');
+        }
+        
+        console.log('🔍 Full employee object being returned:', JSON.stringify(employee, null, 2));
+        
+        res.json(employee);
     } catch (error) {
         console.error('Error fetching employee:', error);
         res.status(500).json({ error: 'Failed to fetch employee' });
