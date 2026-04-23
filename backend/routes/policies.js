@@ -19,14 +19,21 @@ router.get('/', async (req, res) => {
     console.log('📋 Policies main endpoint accessed - fetching all policies');
     try {
         // Check if policies table exists first
-        const [tableCheck] = await db.execute(`
-            SELECT COUNT(*) as count 
-            FROM information_schema.tables 
-            WHERE table_schema = DATABASE() 
-            AND table_name = 'policies'
-        `);
+        let tableCheck;
+        try {
+            [tableCheck] = await db.execute(`
+                SELECT COUNT(*) as count 
+                FROM information_schema.tables 
+                WHERE table_schema = DATABASE() 
+                AND table_name = 'policies'
+            `);
+        } catch (checkError) {
+            console.log('⚠️ Table existence check failed, assuming table exists:', checkError.message);
+            // Continue with the main query
+        }
         
-        if (tableCheck[0].count === 0) {
+        // Only check if tableCheck is valid
+        if (tableCheck && tableCheck[0] && tableCheck[0].count === 0) {
             console.log('⚠️ Policies table does not exist, returning empty array');
             return res.json([]);
         }
