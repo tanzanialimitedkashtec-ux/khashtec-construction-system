@@ -2701,37 +2701,65 @@ function approveRecruitmentPolicies(){
 
 function fetchPoliciesForApproval() {
     console.log('🔄 Fetching policies for approval...');
+    console.log('🔍 About to call /api/policies endpoint...');
     
     fetch('/api/policies')
         .then(response => {
             console.log('📡 Policies API Response status:', response.status);
+            console.log('📡 Response OK:', response.ok);
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
             return response.json();
         })
         .then(policies => {
             console.log('📊 Policies API Response data:', policies);
+            console.log('📊 Policies type:', typeof policies);
+            console.log('📊 Policies length:', policies ? policies.length : 'undefined');
             displayPoliciesForApproval(policies);
         })
         .catch(error => {
             console.error('❌ Error fetching policies:', error);
-            document.getElementById('policies-container').innerHTML = 
-                '<div class="error">Failed to load policies. Please try again.</div>';
+            console.error('❌ Error details:', error.message);
+            const container = document.getElementById('policies-container');
+            if (container) {
+                container.innerHTML = `<div class="error">Failed to load policies. Error: ${error.message}</div>`;
+            } else {
+                console.error('❌ Policies container not found!');
+            }
         });
 }
 
 function displayPoliciesForApproval(policies) {
+    console.log('🎨 Displaying policies for approval...');
+    console.log('📊 Input policies:', policies);
+    
     const container = document.getElementById('policies-container');
+    console.log('🔍 Container found:', !!container);
+    
+    if (!container) {
+        console.error('❌ Policies container not found!');
+        return;
+    }
     
     if (!policies || policies.length === 0) {
+        console.log('ℹ️ No policies found');
         container.innerHTML = '<div class="no-policies">No policies pending approval.</div>';
         return;
     }
+    
+    console.log('📊 Total policies:', policies.length);
     
     // Filter for pending policies
     const pendingPolicies = policies.filter(policy => 
         policy.status === 'pending' || policy.status === 'Pending'
     );
     
+    console.log('📊 Pending policies:', pendingPolicies.length);
+    console.log('📊 Pending policies details:', pendingPolicies);
+    
     if (pendingPolicies.length === 0) {
+        console.log('ℹ️ No pending policies found');
         container.innerHTML = '<div class="no-policies">No policies pending approval.</div>';
         return;
     }
