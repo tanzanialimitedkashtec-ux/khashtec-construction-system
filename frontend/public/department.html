@@ -14680,13 +14680,13 @@ function displayEmployeeList(employees) {
     let html = '';
     employees.forEach(employee => {
         // Handle field mapping for both employee_details and employees tables
-        const fullName = employee.fullName || employee.full_name || employee.name || 'N/A';
-        const employeeId = employee.employeeId || employee.employee_id || 'N/A';
+        const fullName = employee.full_name || employee.fullName || employee.name || 'N/A';
+        const employeeId = employee.employee_id || employee.employeeId || 'N/A';
         const department = employee.department || employee.department_name || 'N/A';
-        const position = employee.position || employee.job_title || 'N/A';
-        const email = employee.email || employee.email_address || 'N/A';
+        const position = employee.position || employee.job_category || employee.job_title || 'N/A';
+        const email = employee.gmail || employee.email || employee.email_address || 'N/A';
         const phone = employee.phone || employee.phone_number || employee.contact || 'N/A';
-        const hireDate = employee.hireDate || employee.hire_date || employee.date_hired || 'N/A';
+        const hireDate = employee.hire_date || employee.hireDate || employee.date_hired || 'N/A';
         const status = employee.status || employee.employment_status || 'Active';
         
         const statusClass = status === 'Active' ? 'status-active' : 
@@ -14921,8 +14921,8 @@ function showEmployeeDetailsModal(employee) {
                              onerror="this.src='https://picsum.photos/seed/default/100/100.jpg'">
                     </div>
                     <div class="employee-name-section">
-                        <h2>${employee.fullName || employee.full_name || employee.name || 'N/A'}</h2>
-                        <p class="employee-title">${employee.position || employee.job_title || 'N/A'}</p>
+                        <h2>${employee.full_name || employee.fullName || employee.name || 'N/A'}</h2>
+                        <p class="employee-title">${employee.position || employee.job_category || employee.job_title || 'N/A'}</p>
                         <p class="employee-department">${employee.department || employee.department_name || 'N/A'}</p>
                     </div>
                 </div>
@@ -14935,11 +14935,11 @@ function showEmployeeDetailsModal(employee) {
                         <div class="detail-grid">
                             <div class="detail-item">
                                 <label>Full Name:</label>
-                                <span>${employee.fullName || employee.full_name || employee.name || 'N/A'}</span>
+                                <span>${employee.full_name || employee.fullName || employee.name || 'N/A'}</span>
                             </div>
                             <div class="detail-item">
                                 <label>Email:</label>
-                                <span>${employee.email || employee.email_address || employee.gmail || 'N/A'}</span>
+                                <span>${employee.gmail || employee.email || employee.email_address || 'N/A'}</span>
                             </div>
                             <div class="detail-item">
                                 <label>Phone:</label>
@@ -14951,7 +14951,7 @@ function showEmployeeDetailsModal(employee) {
                             </div>
                             <div class="detail-item">
                                 <label>Date of Birth:</label>
-                                <span>${employee.dateOfBirth || employee.dob ? new Date(employee.dateOfBirth || employee.dob).toLocaleDateString() : 'N/A'}</span>
+                                <span>${employee.date_of_birth || employee.dateOfBirth || employee.dob ? new Date(employee.date_of_birth || employee.dateOfBirth || employee.dob).toLocaleDateString() : 'N/A'}</span>
                             </div>
                             <div class="detail-item">
                                 <label>Gender:</label>
@@ -14965,7 +14965,7 @@ function showEmployeeDetailsModal(employee) {
                         <div class="detail-grid">
                             <div class="detail-item">
                                 <label>Employee ID:</label>
-                                <span>${employee.employeeId || employee.employee_id || employee.id || 'N/A'}</span>
+                                <span>${employee.employee_id || employee.employeeId || employee.id || 'N/A'}</span>
                             </div>
                             <div class="detail-item">
                                 <label>Department:</label>
@@ -14973,7 +14973,7 @@ function showEmployeeDetailsModal(employee) {
                             </div>
                             <div class="detail-item">
                                 <label>Position:</label>
-                                <span>${employee.position || employee.job_title || 'N/A'}</span>
+                                <span>${employee.position || employee.job_category || employee.job_title || 'N/A'}</span>
                             </div>
                             <div class="detail-item">
                                 <label>Employment Status:</label>
@@ -14981,11 +14981,11 @@ function showEmployeeDetailsModal(employee) {
                             </div>
                             <div class="detail-item">
                                 <label>Hire Date:</label>
-                                <span>${employee.hireDate || employee.hire_date || employee.date_hired ? new Date(employee.hireDate || employee.hire_date || employee.date_hired).toLocaleDateString() : 'N/A'}</span>
+                                <span>${employee.hire_date || employee.hireDate || employee.date_hired ? new Date(employee.hire_date || employee.hireDate || employee.date_hired).toLocaleDateString() : 'N/A'}</span>
                             </div>
                             <div class="detail-item">
                                 <label>Work Location:</label>
-                                <span>${employee.workLocation || employee.work_location || 'N/A'}</span>
+                                <span>${employee.work_location || employee.workLocation || 'N/A'}</span>
                             </div>
                         </div>
                     </div>
@@ -14999,11 +14999,11 @@ function showEmployeeDetailsModal(employee) {
                             </div>
                             <div class="detail-item">
                                 <label>Pay Grade:</label>
-                                <span>${employee.payGrade || employee.pay_grade || 'N/A'}</span>
+                                <span>${employee.pay_grade || employee.payGrade || 'N/A'}</span>
                             </div>
                             <div class="detail-item">
                                 <label>Bank Account:</label>
-                                <span>${employee.bankAccount || employee.bank_account || 'N/A'}</span>
+                                <span>${employee.bank_account || employee.bankAccount || 'N/A'}</span>
                             </div>
                         </div>
                     </div>
@@ -15013,15 +15013,15 @@ function showEmployeeDetailsModal(employee) {
                         <div class="detail-grid">
                             <div class="detail-item">
                                 <label>Emergency Contact Name:</label>
-                                <span>${employee.emergencyContactName || employee.emergency_contact || 'N/A'}</span>
+                                <span>${employee.emergency_contact_name || employee.emergencyContactName || employee.emergency_contact || 'N/A'}</span>
                             </div>
                             <div class="detail-item">
                                 <label>Emergency Contact Phone:</label>
-                                <span>${employee.emergencyContactPhone || employee.emergency_phone || 'N/A'}</span>
+                                <span>${employee.emergency_contact_phone || employee.emergencyContactPhone || employee.emergency_phone || 'N/A'}</span>
                             </div>
                             <div class="detail-item">
                                 <label>Relationship:</label>
-                                <span>${employee.emergencyContactRelationship || employee.emergency_relationship || 'N/A'}</span>
+                                <span>${employee.emergency_contact_relationship || employee.emergencyContactRelationship || employee.emergency_relationship || 'N/A'}</span>
                             </div>
                         </div>
                     </div>
