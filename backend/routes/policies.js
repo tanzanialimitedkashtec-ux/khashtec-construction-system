@@ -48,7 +48,16 @@ router.get('/', async (req, res) => {
             
             // Check if table has incomplete schema (missing required columns)
             const requiredColumns = ['id', 'title', 'description', 'submitted_by', 'status', 'created_at'];
-            const existingColumns = tableStructure ? tableStructure.map(col => col.Field) : [];
+            let existingColumns = [];
+            
+            if (tableStructure) {
+                if (Array.isArray(tableStructure)) {
+                    existingColumns = tableStructure.map(col => col.Field);
+                } else if (tableStructure.Field) {
+                    existingColumns = [tableStructure.Field];
+                }
+            }
+            
             const hasAllColumns = requiredColumns.every(col => existingColumns.includes(col));
             
             if (!hasAllColumns) {
