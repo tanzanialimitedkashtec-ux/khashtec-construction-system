@@ -18,6 +18,19 @@ router.get('/test', (req, res) => {
 router.get('/', async (req, res) => {
     console.log('📋 Policies main endpoint accessed - fetching all policies');
     try {
+        // Check if policies table exists first
+        const [tableCheck] = await db.execute(`
+            SELECT COUNT(*) as count 
+            FROM information_schema.tables 
+            WHERE table_schema = DATABASE() 
+            AND table_name = 'policies'
+        `);
+        
+        if (tableCheck[0].count === 0) {
+            console.log('⚠️ Policies table does not exist, returning empty array');
+            return res.json([]);
+        }
+        
         // Fetch actual policies from database
         const [policies] = await db.execute(`
             SELECT id, title, description, submitted_by, submitted_by_role, 
@@ -50,7 +63,18 @@ router.get('/', async (req, res) => {
         res.json(formattedPolicies);
     } catch (error) {
         console.error('❌ Error fetching policies:', error);
-        res.status(500).json({ error: 'Failed to fetch policies' });
+        console.error('❌ Error details:', error.message);
+        
+        // If table doesn't exist, return empty array instead of error
+        if (error.message.includes("Table") && error.message.includes("doesn't exist")) {
+            console.log('⚠️ Policies table missing, returning empty array');
+            return res.json([]);
+        }
+        
+        res.status(500).json({ 
+            error: 'Failed to fetch policies',
+            details: error.message 
+        });
     }
 });
 

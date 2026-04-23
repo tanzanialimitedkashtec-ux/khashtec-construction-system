@@ -2624,7 +2624,7 @@ async function runMigrationsOnStartup() {
             console.log('🔧 Checking and creating missing critical tables...');
             
             const criticalTables = [
-                'users', 'projects', 'documents', 'contracts'
+                'users', 'projects', 'documents', 'contracts', 'policies'
             ];
             
             for (const tableName of criticalTables) {
@@ -2720,6 +2720,32 @@ async function runMigrationsOnStartup() {
                                 )
                             `);
                             console.log('✅ Created fallback contracts table');
+                        }
+                        
+                        // Create basic policies table
+                        if (tableName === 'policies') {
+                            await db.query(`
+                                CREATE TABLE IF NOT EXISTS policies (
+                                    id VARCHAR(50) PRIMARY KEY,
+                                    title VARCHAR(255) NOT NULL,
+                                    description TEXT,
+                                    submitted_by VARCHAR(255) NOT NULL,
+                                    submitted_by_role VARCHAR(100),
+                                    submission_date DATE,
+                                    impact ENUM('Low', 'Medium', 'High', 'Critical') DEFAULT 'Medium',
+                                    status ENUM('Pending', 'Approved', 'Rejected', 'Revision Requested') DEFAULT 'Pending',
+                                    approved_by VARCHAR(255),
+                                    approved_date DATE,
+                                    rejection_reason TEXT,
+                                    revision_request TEXT,
+                                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                                    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+                                    INDEX idx_status (status),
+                                    INDEX idx_submitted_by (submitted_by),
+                                    INDEX idx_date (submission_date)
+                                )
+                            `);
+                            console.log('✅ Created fallback policies table');
                         }
                     }
                 }
