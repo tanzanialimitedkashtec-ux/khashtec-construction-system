@@ -12,7 +12,7 @@ router.get('/', async (req, res) => {
     try {
         console.log('🗄️ Executing employee query...');
         const [employees] = await db.execute(
-            'SELECT e.*, ed.full_name, ed.gmail, ed.phone, ed.nida, ed.passport, ed.contract_type FROM employees e LEFT JOIN employee_details ed ON e.id = ed.employee_id ORDER BY e.hire_date DESC'
+            'SELECT e.*, ed.full_name, ed.gmail, ed.phone, ed.nida, ed.passport, ed.contract_type, ed.profile_image, ed.date_of_birth, ed.gender, ed.emergency_contact_name, ed.emergency_contact_phone, ed.emergency_contact_relationship, ed.bank_account, ed.pay_grade, ed.work_location FROM employees e LEFT JOIN employee_details ed ON e.id = ed.employee_id ORDER BY e.hire_date DESC'
         );
         console.log('📊 Employee query result:', employees);
         console.log('📊 Employee count:', employees.length);
@@ -184,7 +184,15 @@ router.post('/', async (req, res) => {
 // Get employee by ID
 router.get('/:id', async (req, res) => {
     try {
-        const [employees] = await db.execute('SELECT * FROM employees WHERE id = ?', [req.params.id]);
+        const [employees] = await db.execute(`
+            SELECT e.*, ed.full_name, ed.gmail, ed.phone, ed.nida, ed.passport, 
+                   ed.contract_type, ed.profile_image, ed.date_of_birth, ed.gender,
+                   ed.emergency_contact_name, ed.emergency_contact_phone, ed.emergency_contact_relationship,
+                   ed.bank_account, ed.pay_grade, ed.work_location
+            FROM employees e 
+            LEFT JOIN employee_details ed ON e.id = ed.employee_id 
+            WHERE e.id = ?
+        `, [req.params.id]);
         
         if (employees.length === 0) {
             return res.status(404).json({ error: 'Employee not found' });
