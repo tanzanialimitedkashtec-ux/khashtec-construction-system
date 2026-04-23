@@ -38,18 +38,41 @@ router.get('/', async (req, res) => {
             return res.json([]);
         }
         
-        // Fetch actual policies from database
-        const [policies] = await db.execute(`
-            SELECT id, title, description, submitted_by, submitted_by_role, 
-                   submission_date, impact, status, approved_by, approved_date,
-                   rejection_reason, revision_request, created_at, updated_at
-            FROM policies 
-            ORDER BY created_at DESC
-        `);
+        // First check what columns actually exist in policies table
+        let tableStructure;
+        try {
+            [tableStructure] = await db.execute(`
+                DESCRIBE policies
+            `);
+            console.log('🔍 Policies table structure:', tableStructure);
+        } catch (structError) {
+            console.log('⚠️ Could not get table structure:', structError.message);
+        }
+        
+        // Fetch actual policies from database with simpler query first
+        let policies;
+        try {
+            [policies] = await db.execute(`
+                SELECT * FROM policies 
+                ORDER BY created_at DESC
+            `);
+        } catch (queryError) {
+            console.log('⚠️ Full query failed, trying basic query:', queryError.message);
+            try {
+                [policies] = await db.execute(`
+                    SELECT id, title, description FROM policies 
+                    ORDER BY id DESC
+                `);
+            } catch (basicError) {
+                console.log('⚠️ Basic query also failed:', basicError.message);
+                policies = null;
+            }
+        }
         
         console.log('📋 Policies data returned:', policies ? policies.length : 'undefined', 'items');
         console.log('📋 Policies type:', typeof policies);
         console.log('📋 Policies is array:', Array.isArray(policies));
+        console.log('📋 Raw policies object:', JSON.stringify(policies, null, 2));
         
         // Check if policies is a valid array
         if (!policies || !Array.isArray(policies)) {
