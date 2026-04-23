@@ -1521,8 +1521,17 @@ router.post('/:department', async (req, res) => {
             
             // Create entries in shared tables based on work type
             if (mapped_work_type === 'Safety Policy Upload') {
+                console.log('🔍 Safety Policy Upload detected - creating policy entry...');
+                console.log('📋 Policy data:', {
+                    work_title,
+                    work_description,
+                    mapped_work_type
+                });
+                
                 try {
                     const policyId = `POL${Date.now().toString().slice(-6)}`;
+                    console.log('🆔 Generated policy ID:', policyId);
+                    
                     await db.execute(`
                         INSERT INTO policies (
                             id, title, description, submitted_by, submitted_by_role, 
@@ -1537,10 +1546,24 @@ router.post('/:department', async (req, res) => {
                         'HSE',
                         'pending'
                     ]);
-                    console.log('✅ Policy also created in policies table:', policyId);
+                    console.log('✅ Policy successfully created in policies table:', policyId);
+                    console.log('📊 Policy details inserted:', {
+                        id: policyId,
+                        title: work_title,
+                        department: 'HSE',
+                        status: 'pending'
+                    });
                 } catch (policyError) {
-                    console.error('⚠️ Failed to create policy entry:', policyError.message);
+                    console.error('❌ Failed to create policy entry:', policyError.message);
+                    console.error('❌ Policy error details:', {
+                        code: policyError.code,
+                        errno: policyError.errno,
+                        sqlState: policyError.sqlState,
+                        sqlMessage: policyError.sqlMessage
+                    });
                 }
+            } else {
+                console.log('ℹ️ Work type is not Safety Policy Upload:', mapped_work_type);
             }
             
             // Record Incident Reports - Create entry in hse_incidents table
