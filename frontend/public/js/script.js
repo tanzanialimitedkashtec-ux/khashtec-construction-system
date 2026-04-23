@@ -188,6 +188,12 @@ async function saveProjectProgress() {
     }
 }
 
+// Wrapper function for form submission
+function saveProjectProgressSubmit() {
+    saveProjectProgress();
+    return false;
+}
+
 // Load recent progress updates
 async function loadProgressUpdates(projectId) {
     try {
