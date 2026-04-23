@@ -4309,64 +4309,7 @@ function testPolicyButtons() {
     console.log('Policy buttons test completed');
 }
 
-// Auto-run test when approveRecruitmentPolicies is loaded
-function approveRecruitmentPolicies(){
-    // Run test after content is loaded
-    setTimeout(() => {
-        testPolicyButtons();
-    }, 100);
-    
-    showContent(`<div class="card">
-        <h3>Approve Recruitment Policies</h3>
-        <p><strong>High-Level Authority:</strong> Review and approve company recruitment policies and procedures</p>
-        
-        <div class="policy-section">
-            <h4>Current Recruitment Policies Pending Approval</h4>
-            <div class="policy-item">
-                <h5>Digital Recruitment Platform Policy</h5>
-                <p>Implementation of online job portal and digital application system</p>
-                <div class="policy-details">
-                    <span><strong>Submitted by:</strong> HR Department</span>
-                    <span><strong>Date:</strong> 2026-03-01</span>
-                    <span><strong>Impact:</strong> High - Affects all recruitment</span>
-                </div>
-                <div class="policy-actions">
-                    <button class="action" onclick="approvePolicy('digital-recruitment')">Approve Policy</button>
-                    <button class="action" onclick="requestPolicyRevision('digital-recruitment')" style="background: #ffc107;">Request Revision</button>
-                    <button class="action" onclick="rejectPolicy('digital-recruitment')" style="background: #dc3545;">Reject</button>
-                </div>
-            </div>
-            
-            <div class="policy-item">
-                <h5>Internship Program Guidelines</h5>
-                <p>Structured internship program for university students and fresh graduates</p>
-                <div class="policy-details">
-                    <span><strong>Submitted by:</strong> HR Department</span>
-                    <span><strong>Date:</strong> 2026-02-28</span>
-                    <span><strong>Impact:</strong> Medium - Affects entry-level recruitment</span>
-                </div>
-                <div class="policy-actions">
-                    <button class="action" onclick="approvePolicy('internship-guidelines')">Approve Policy</button>
-                    <button class="action" onclick="requestPolicyRevision('internship-guidelines')" style="background: #ffc107;">Request Revision</button>
-                    <button class="action" onclick="rejectPolicy('internship-guidelines')" style="background: #dc3545;">Reject</button>
-                </div>
-            </div>
-        </div>
-        
-        <div class="approval-summary">
-            <h4>Approval Authority</h4>
-            <div class="authority-item">
-                <span>✅ Can approve all recruitment policies</span>
-            </div>
-            <div class="authority-item">
-                <span>✅ Can request policy revisions</span>
-            </div>
-            <div class="authority-item">
-                <span>✅ Final authority on recruitment procedures</span>
-            </div>
-        </div>
-    </div>`);
-}
+// Note: approveRecruitmentPolicies function is defined above with dynamic API call
 
 function approveSeniorHire(hireId) {
     // Show confirmation dialog
