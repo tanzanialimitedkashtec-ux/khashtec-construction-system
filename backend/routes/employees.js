@@ -16,8 +16,15 @@ router.get('/', async (req, res) => {
         console.log('🔍 Checking employee details table...');
         
         // Check if employee_details table has any records
-        const [detailsCount] = await db.execute('SELECT COUNT(*) as count FROM employee_details');
-        console.log('📊 Employee details table record count:', detailsCount[0].count);
+        let detailsCount;
+        try {
+            [detailsCount] = await db.execute('SELECT COUNT(*) as count FROM employee_details');
+            console.log('📊 Employee details table record count:', detailsCount[0].count);
+        } catch (error) {
+            console.log('❌ Error checking employee_details table:', error.message);
+            console.log('🔄 Skipping employee details creation due to table error');
+            detailsCount = [{ count: 0 }]; // Set to 0 to skip creation
+        }
         
         // If employee_details is empty, create sample data for existing employees
         if (detailsCount[0].count === 0) {
