@@ -68,7 +68,7 @@ router.get('/assignments', async (req, res) => {
         const [assignments] = await db.execute(`
             SELECT 
                 wa.id,
-                wa.worker_id,
+                wa.employee_id,
                 wa.project_id,
                 wa.task_description,
                 wa.status,
@@ -80,7 +80,7 @@ router.get('/assignments', async (req, res) => {
                 p.name as project_name,
                 p.location as project_location
             FROM worker_assignments wa
-            LEFT JOIN worker_accounts w ON wa.worker_id = w.id
+            LEFT JOIN worker_accounts w ON wa.employee_id = w.employee_id
             LEFT JOIN projects p ON wa.project_id = p.id
             ORDER BY wa.assigned_date DESC
         `);
@@ -111,19 +111,19 @@ router.get('/assignments', async (req, res) => {
             
             // Insert sample worker assignments
             await db.execute(`
-                INSERT INTO worker_assignments (worker_id, project_id, task_description, status, assigned_date, notes) VALUES
-                (1, 1, 'Site supervision and quality control', 'active', '2024-01-15', 'Experienced supervisor with 5+ years'),
-                (2, 1, 'Project coordination and reporting', 'active', '2024-02-01', 'Excellent organizational skills'),
-                (3, 2, 'Safety inspection and compliance', 'active', '2024-03-10', 'Certified safety officer'),
-                (4, 2, 'Structural engineering support', 'on_leave', '2024-01-20', 'On medical leave'),
-                (5, 3, 'Heavy equipment operation', 'active', '2024-02-15', 'Certified equipment operator')
+                INSERT INTO worker_assignments (employee_id, project_id, task_description, status, assigned_date, notes) VALUES
+                ('EMP001', 1, 'Site supervision and quality control', 'active', '2024-01-15', 'Experienced supervisor with 5+ years'),
+                ('EMP002', 1, 'Project coordination and reporting', 'active', '2024-02-01', 'Excellent organizational skills'),
+                ('EMP003', 2, 'Safety inspection and compliance', 'active', '2024-03-10', 'Certified safety officer'),
+                ('EMP004', 2, 'Structural engineering support', 'on_leave', '2024-01-20', 'On medical leave'),
+                ('EMP005', 3, 'Heavy equipment operation', 'active', '2024-02-15', 'Certified equipment operator')
             `);
             
             // Fetch the newly inserted assignments
             const [newAssignments] = await db.execute(`
                 SELECT 
                     wa.id,
-                    wa.worker_id,
+                    wa.employee_id,
                     wa.project_id,
                     wa.task_description,
                     wa.status,
@@ -135,7 +135,7 @@ router.get('/assignments', async (req, res) => {
                     p.name as project_name,
                     p.location as project_location
                 FROM worker_assignments wa
-                LEFT JOIN worker_accounts w ON wa.worker_id = w.id
+                LEFT JOIN worker_accounts w ON wa.employee_id = w.employee_id
                 LEFT JOIN projects p ON wa.project_id = p.id
                 ORDER BY wa.assigned_date DESC
             `);
