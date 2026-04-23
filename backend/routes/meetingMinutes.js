@@ -65,117 +65,58 @@ router.post('/', async (req, res) => {
             });
         }
         
-        // Check table structure first and build dynamic INSERT
-        console.log('🔍 Checking meeting_minutes table structure...');
-        let tableColumns = [];
-        try {
-            const [columns] = await db.execute('DESCRIBE meeting_minutes');
-            tableColumns = columns.map(col => col.Field);
-            console.log('📊 Meeting minutes table columns:', tableColumns);
-        } catch (error) {
-            console.log('❌ Error checking table structure:', error.message);
-            console.log('🔄 Trying alternative table structure detection...');
-            
-            // Fallback: Try SHOW COLUMNS
-            try {
-                const [columns] = await db.execute('SHOW COLUMNS FROM meeting_minutes');
-                tableColumns = columns.map(col => col.Field);
-                console.log('📊 Meeting minutes table columns (SHOW COLUMNS):', tableColumns);
-            } catch (showError) {
-                console.log('❌ SHOW COLUMNS also failed:', showError.message);
-                console.log('🔄 Using predefined minimal column set as last resort...');
-                tableColumns = ['id', 'meeting_type', 'meeting_date', 'meeting_time', 'attendees', 'minutes_content', 'recorded_by'];
-            }
-        }
-        
-        // Build dynamic INSERT based on available columns
-        const availableColumns = tableColumns;
-        const insertData = {};
-        
-        // Map data to available columns
-        if (availableColumns.includes('meeting_title')) {
-            insertData.meeting_title = meeting_title || '';
-        }
-        if (availableColumns.includes('meeting_type')) {
-            insertData.meeting_type = meeting_type || 'general';
-        }
-        if (availableColumns.includes('meeting_date')) {
-            insertData.meeting_date = meeting_date || new Date().toISOString().split('T')[0];
-        }
-        if (availableColumns.includes('meeting_time')) {
-            insertData.meeting_time = meeting_time || new Date().toTimeString().split(' ')[0].substring(0, 5);
-        }
-        if (availableColumns.includes('attendees')) {
-            insertData.attendees = attendees || '';
-        }
-        if (availableColumns.includes('minutes_content')) {
-            insertData.minutes_content = minutes_content || '';
-        }
-        if (availableColumns.includes('action_items')) {
-            insertData.action_items = action_items || null;
-        }
-        if (availableColumns.includes('recorded_by')) {
-            insertData.recorded_by = recorded_by || 'Admin Assistant';
-        }
-        if (availableColumns.includes('status')) {
-            insertData.status = 'draft';
-        }
-        
-        console.log('🔧 Insert data mapped to columns:', insertData);
-        
-        // Build dynamic INSERT query
-        const columns = Object.keys(insertData);
-        const values = Object.values(insertData);
-        const placeholders = values.map(() => '?').join(', ');
-        
-        if (columns.length === 0) {
-            throw new Error('No valid columns found for meeting_minutes table');
-        }
-        
-        const insertQuery = `INSERT INTO meeting_minutes (${columns.join(', ')}) VALUES (${placeholders})`;
-        console.log('📝 Dynamic INSERT query:', insertQuery);
-        console.log('📝 Values:', values);
-        
         let result;
+        
+        // Strategy 1: Try emergency basic INSERT first (most likely to work)
         try {
-            [result] = await db.execute(insertQuery, values);
-            console.log('✅ Meeting minutes created successfully with dynamic structure');
-        } catch (dynamicError) {
-            console.log('❌ Dynamic INSERT failed:', dynamicError.message);
-            console.log('🔄 Trying fallback INSERT strategies...');
+            console.log('🚨 Emergency strategy - trying basic INSERT...');
+            const emergencyQuery = `INSERT INTO meeting_minutes (meeting_type, meeting_date) VALUES (?, ?)`;
+            const emergencyValues = [
+                meeting_type || 'general',
+                meeting_date || new Date().toISOString().split('T')[0]
+            ];
+            console.log('📝 Emergency INSERT query:', emergencyQuery);
+            console.log('📝 Emergency values:', emergencyValues);
+            [result] = await db.execute(emergencyQuery, emergencyValues);
+            console.log('✅ Meeting minutes created with emergency strategy');
+        } catch (emergencyError) {
+            console.log('❌ Emergency strategy failed:', emergencyError.message);
             
-            // Fallback 1: Try minimal columns only
+            // Strategy 2: Try with more columns
             try {
-                const minimalQuery = `INSERT INTO meeting_minutes (meeting_type, meeting_date, meeting_time, attendees, minutes_content, recorded_by) VALUES (?, ?, ?, ?, ?, ?)`;
-                const minimalValues = [
+                console.log('🔄 Strategy 2 - trying with more columns...');
+                const strategy2Query = `INSERT INTO meeting_minutes (meeting_type, meeting_date, meeting_time, attendees, minutes_content) VALUES (?, ?, ?, ?, ?)`;
+                const strategy2Values = [
                     meeting_type || 'general',
                     meeting_date || new Date().toISOString().split('T')[0],
                     meeting_time || new Date().toTimeString().split(' ')[0].substring(0, 5),
                     attendees || '',
-                    minutes_content || '',
-                    recorded_by || 'Admin Assistant'
+                    minutes_content || ''
                 ];
-                console.log('📝 Fallback 1 - Minimal INSERT query:', minimalQuery);
-                [result] = await db.execute(minimalQuery, minimalValues);
-                console.log('✅ Meeting minutes created with minimal structure');
-            } catch (minimalError) {
-                console.log('❌ Minimal INSERT failed:', minimalError.message);
+                console.log('📝 Strategy 2 query:', strategy2Query);
+                [result] = await db.execute(strategy2Query, strategy2Values);
+                console.log('✅ Meeting minutes created with strategy 2');
+            } catch (strategy2Error) {
+                console.log('❌ Strategy 2 failed:', strategy2Error.message);
                 
-                // Fallback 2: Try absolute basic columns
+                // Strategy 3: Try with recorded_by
                 try {
-                    const basicQuery = `INSERT INTO meeting_minutes (meeting_type, meeting_date, attendees, minutes_content) VALUES (?, ?, ?, ?)`;
-                    const basicValues = [
+                    console.log('🔄 Strategy 3 - trying with recorded_by...');
+                    const strategy3Query = `INSERT INTO meeting_minutes (meeting_type, meeting_date, meeting_time, attendees, minutes_content, recorded_by) VALUES (?, ?, ?, ?, ?, ?)`;
+                    const strategy3Values = [
                         meeting_type || 'general',
                         meeting_date || new Date().toISOString().split('T')[0],
+                        meeting_time || new Date().toTimeString().split(' ')[0].substring(0, 5),
                         attendees || '',
-                        minutes_content || ''
+                        minutes_content || '',
+                        recorded_by || 'Admin Assistant'
                     ];
-                    console.log('📝 Fallback 2 - Basic INSERT query:', basicQuery);
-                    [result] = await db.execute(basicQuery, basicValues);
-                    console.log('✅ Meeting minutes created with basic structure');
-                } catch (basicError) {
-                    console.log('❌ Basic INSERT failed:', basicError.message);
-                    throw new Error(`All INSERT strategies failed. Last error: ${basicError.message}`);
+                    console.log('📝 Strategy 3 query:', strategy3Query);
+                    [result] = await db.execute(strategy3Query, strategy3Values);
+                    console.log('✅ Meeting minutes created with strategy 3');
+                } catch (strategy3Error) {
+                    console.log('❌ Strategy 3 failed:', strategy3Error.message);
+                    throw new Error(`All INSERT strategies failed. Last error: ${strategy3Error.message}`);
                 }
             }
         }
