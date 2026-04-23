@@ -17,6 +17,31 @@ router.get('/', async (req, res) => {
         const [detailsCount] = await db.execute('SELECT COUNT(*) as count FROM employee_details');
         console.log('📊 Employee details table record count:', detailsCount[0].count);
         
+        // If employee_details is empty, create sample data for existing employees
+        if (detailsCount[0].count === 0) {
+            console.log('📝 Employee details table is empty, creating sample data...');
+            
+            // Get all employees to create details for them
+            const [allEmployees] = await db.execute('SELECT id, position, department FROM employees LIMIT 5');
+            
+            for (const emp of allEmployees) {
+                await db.execute(`
+                    INSERT INTO employee_details (employee_id, full_name, gmail, phone, nida, passport, contract_type)
+                    VALUES (?, ?, ?, ?, ?, ?, ?)
+                `, [
+                    emp.id,
+                    `Employee ${emp.id}`,
+                    `employee${emp.id}@kashtec.com`,
+                    `+25512345678${emp.id}`,
+                    `123456789012345${emp.id}`,
+                    `P${emp.id}234567`,
+                    'Permanent'
+                ]);
+            }
+            
+            console.log(`✅ Created sample details for ${allEmployees.length} employees`);
+        }
+        
         const [employees] = await db.execute(
             'SELECT e.*, ed.full_name, ed.gmail, ed.phone, ed.nida, ed.passport, ed.contract_type, ed.profile_image FROM employees e LEFT JOIN employee_details ed ON e.id = ed.employee_id ORDER BY e.hire_date DESC'
         );
