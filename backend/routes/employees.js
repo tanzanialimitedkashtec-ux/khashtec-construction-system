@@ -33,24 +33,30 @@ router.get('/', async (req, res) => {
             // Get all employees to create details for them
             let allEmployees;
             try {
-                [allEmployees] = await db.execute('SELECT id, position, department FROM employees LIMIT 5');
+                const [empResult] = await db.execute('SELECT id, position, department FROM employees LIMIT 5');
+                allEmployees = empResult;
                 console.log(`📊 Found ${allEmployees.length} employees to create details for`);
                 
                 if (allEmployees && allEmployees.length > 0) {
                     for (const emp of allEmployees) {
                         console.log(`📝 Creating details for employee ${emp.id}`);
-                        await db.execute(`
-                            INSERT INTO employee_details (employee_id, full_name, gmail, phone, nida, passport, contract_type)
-                            VALUES (?, ?, ?, ?, ?, ?, ?)
-                        `, [
-                            emp.id,
-                            `Employee ${emp.id}`,
-                            `employee${emp.id}@kashtec.com`,
-                            `+25512345678${emp.id}`,
-                            `123456789012345${emp.id}`,
-                            `P${emp.id}234567`,
-                            'Permanent'
-                        ]);
+                        try {
+                            await db.execute(`
+                                INSERT INTO employee_details (employee_id, full_name, gmail, phone, nida, passport, contract_type)
+                                VALUES (?, ?, ?, ?, ?, ?, ?)
+                            `, [
+                                emp.id,
+                                `Employee ${emp.id}`,
+                                `employee${emp.id}@kashtec.com`,
+                                `+25512345678${emp.id}`,
+                                `123456789012345${emp.id}`,
+                                `P${emp.id}234567`,
+                                'Permanent'
+                            ]);
+                            console.log(`✅ Successfully created details for employee ${emp.id}`);
+                        } catch (insertError) {
+                            console.log(`❌ Error creating details for employee ${emp.id}:`, insertError.message);
+                        }
                     }
                     console.log(`✅ Created sample details for ${allEmployees.length} employees`);
                 } else {
@@ -62,6 +68,8 @@ router.get('/', async (req, res) => {
             }
         } else if (detailsCount && detailsCount[0]) {
             console.log('📊 Employee details table already has records');
+        } else {
+            console.log('⚠️ Could not determine employee_details table status, proceeding with query...');
         }
         
         // Get employees with details
@@ -118,6 +126,40 @@ router.get('/', async (req, res) => {
         }
         
         console.log('📊 Employee query result:', employees);
+        
+        // Check if any employees are missing details and create them
+        if (employees && employees.length > 0) {
+            for (const emp of employees) {
+                if (!emp.full_name && !emp.gmail && !emp.phone) {
+                    console.log(`🔧 Employee ${emp.id} is missing details, creating them now...`);
+                    try {
+                        await db.execute(`
+                            INSERT IGNORE INTO employee_details (employee_id, full_name, gmail, phone, nida, passport, contract_type)
+                            VALUES (?, ?, ?, ?, ?, ?, ?)
+                        `, [
+                            emp.id,
+                            `Employee ${emp.id}`,
+                            `employee${emp.id}@kashtec.com`,
+                            `+25512345678${emp.id}`,
+                            `123456789012345${emp.id}`,
+                            `P${emp.id}234567`,
+                            'Permanent'
+                        ]);
+                        console.log(`✅ Created missing details for employee ${emp.id}`);
+                        
+                        // Update the employee object with the new details
+                        emp.full_name = `Employee ${emp.id}`;
+                        emp.gmail = `employee${emp.id}@kashtec.com`;
+                        emp.phone = `+25512345678${emp.id}`;
+                        emp.nida = `123456789012345${emp.id}`;
+                        emp.passport = `P${emp.id}234567`;
+                        emp.contract_type = 'Permanent';
+                    } catch (createError) {
+                        console.log(`❌ Error creating details for employee ${emp.id}:`, createError.message);
+                    }
+                }
+            }
+        }
         
         res.json(employees);
     } catch (error) {
