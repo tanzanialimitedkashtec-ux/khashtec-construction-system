@@ -2637,11 +2637,6 @@ function loadMenu(){
     if(currentRole === "ASSISTANT"){
         console.log('Adding Admin Assistant menu items'); // Debug line
         
-        // Test function to verify menu system works
-        addMenu("Test Function", function() {
-            alert('Test function works! Admin Assistant menu system is working.');
-        });
-        
         addMenu("Upload Documents", uploadDocs);
         addMenu("Edit Documents", editDocuments);
         addMenu("Schedule Meetings", scheduleMeeting);

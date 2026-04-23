@@ -883,7 +883,7 @@ router.post('/site-reports', async (req, res) => {
             `);
             
             // Insert site report into existing table
-            const [result] = await db.execute(`
+            const result = await db.execute(`
                 INSERT INTO site_reports (
                     project_id, report_date, weather_conditions, site_supervisor, 
                     workers_present, work_completed, site_issues, safety_incidents,
@@ -1105,7 +1105,7 @@ router.post('/approvals', async (req, res) => {
             console.log('work_approvals table ready...');
             
             // Insert work approval
-            const [result] = await db.execute(`
+            const result = await db.execute(`
                 INSERT INTO work_approvals (
                     work_id, project_id, completed_by, completion_date, quality_assessment, 
                     compliance_check, approval_comments, safety_compliance, time_completion, 
