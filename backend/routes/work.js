@@ -1531,7 +1531,7 @@ router.post('/:department', async (req, res) => {
                     `, [
                         policyId,
                         work_title,
-                        description || 'Safety policy uploaded via HSE work item',
+                        work_description || 'Safety policy uploaded via HSE work item',
                         req.user?.id || 'system',
                         req.user?.role || 'HSE Manager',
                         'HSE',
@@ -1556,7 +1556,7 @@ router.post('/:department', async (req, res) => {
                         incidentId,
                         'General Incident',
                         'Medium',
-                        description || 'Incident reported via HSE work item',
+                        work_description || 'Incident reported via HSE work item',
                         req.user?.id || 'system',
                         1, // Default project ID
                         'pending'
@@ -1583,7 +1583,7 @@ router.post('/:department', async (req, res) => {
                         req.user?.id || 'system',
                         'HSE',
                         'scheduled',
-                        description || 'Toolbox meeting via HSE work item'
+                        work_description || 'Toolbox meeting via HSE work item'
                     ]);
                     console.log('✅ Meeting also created in schedule_meetings table:', meetingId);
                 } catch (meetingError) {
@@ -1606,7 +1606,7 @@ router.post('/:department', async (req, res) => {
                         req.user?.id || 'system',
                         req.user?.id || 'system',
                         'issued',
-                        description || 'PPE issued via HSE work item'
+                        work_description || 'PPE issued via HSE work item'
                     ]);
                     console.log('✅ PPE also created in ppe_issuance table:', ppeId);
                 } catch (ppeError) {
@@ -1626,7 +1626,7 @@ router.post('/:department', async (req, res) => {
                     `, [
                         violationId,
                         'High',
-                        description || 'Safety violation reported via HSE work item',
+                        work_description || 'Safety violation reported via HSE work item',
                         req.user?.id || 'system',
                         1, // Default project ID
                         'pending'
@@ -1649,7 +1649,7 @@ router.post('/:department', async (req, res) => {
                     `, [
                         documentId,
                         work_title,
-                        description || 'Inspection report uploaded via HSE work item',
+                        work_description || 'Inspection report uploaded via HSE work item',
                         req.user?.id || 'system',
                         1, // Default project ID
                         'pending'
