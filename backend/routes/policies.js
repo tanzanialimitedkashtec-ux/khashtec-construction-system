@@ -46,9 +46,15 @@ router.get('/', async (req, res) => {
             `);
             console.log('🔍 Policies table structure:', tableStructure);
             
-            // Check if table has only id column (incomplete schema)
-            if (tableStructure && tableStructure.length === 1 && tableStructure[0].Field === 'id') {
+            // Check if table has incomplete schema (missing required columns)
+            const requiredColumns = ['id', 'title', 'description', 'submitted_by', 'status', 'created_at'];
+            const existingColumns = tableStructure ? tableStructure.map(col => col.Field) : [];
+            const hasAllColumns = requiredColumns.every(col => existingColumns.includes(col));
+            
+            if (!hasAllColumns) {
                 console.log('⚠️ Policies table has incomplete schema, recreating table...');
+                console.log('🔍 Existing columns:', existingColumns);
+                console.log('🔍 Required columns:', requiredColumns);
                 
                 // Drop and recreate table with correct schema
                 await db.execute(`DROP TABLE policies`);
