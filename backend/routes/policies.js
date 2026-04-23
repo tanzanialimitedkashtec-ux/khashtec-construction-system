@@ -131,15 +131,9 @@ router.get('/', async (req, res) => {
             console.log('🔍 Full query result[0] is array:', Array.isArray(result[0]));
             console.log('🔍 Full query result[0] length:', result[0] ? result[0].length : 'undefined');
             
-            // Try different ways to extract the rows array
+            // The database result is already the rows array
             if (Array.isArray(result)) {
-                if (result.length > 0 && Array.isArray(result[0])) {
-                    policies = result[0]; // Standard format: [rows, fields]
-                } else if (Array.isArray(result)) {
-                    policies = result; // Direct array format
-                } else {
-                    policies = [result]; // Wrap single object in array
-                }
+                policies = result; // result is already the rows array
             } else if (result && typeof result === 'object') {
                 policies = [result]; // Wrap single object in array
             } else {
@@ -157,15 +151,9 @@ router.get('/', async (req, res) => {
                 console.log('🔍 Basic query result[0] type:', typeof result[0]);
                 console.log('🔍 Basic query result[0] is array:', Array.isArray(result[0]));
                 
-                // Try different ways to extract the rows array
+                // The database result is already the rows array
                 if (Array.isArray(result)) {
-                    if (result.length > 0 && Array.isArray(result[0])) {
-                        policies = result[0]; // Standard format: [rows, fields]
-                    } else if (Array.isArray(result)) {
-                        policies = result; // Direct array format
-                    } else {
-                        policies = [result]; // Wrap single object in array
-                    }
+                    policies = result; // result is already the rows array
                 } else if (result && typeof result === 'object') {
                     policies = [result]; // Wrap single object in array
                 } else {
