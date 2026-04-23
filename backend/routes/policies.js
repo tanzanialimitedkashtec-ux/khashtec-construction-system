@@ -1,5 +1,6 @@
 const express = require('express');
 const router = express.Router();
+const db = require('../../database/config/database');
 
 console.log('🚀 Policies route file is being loaded...');
 
@@ -15,34 +16,40 @@ router.get('/test', (req, res) => {
 
 // Root endpoint - return all policies (main endpoint)
 router.get('/', async (req, res) => {
-    console.log('?? Policies main endpoint accessed - fetching all policies');
+    console.log('📋 Policies main endpoint accessed - fetching all policies');
     try {
-        // Mock policies data for now
-        const policies = [
-            {
-                id: 'digital-recruitment',
-                title: 'Digital Recruitment Policy',
-                category: 'HR',
-                status: 'pending',
-                submitted_by: 'HR Manager',
-                submitted_date: '2026-04-15',
-                description: 'Policy for digital recruitment processes and procedures'
-            },
-            {
-                id: 'safety-protocols',
-                title: 'Workplace Safety Protocols',
-                category: 'HSE',
-                status: 'pending',
-                submitted_by: 'HSE Manager',
-                submitted_date: '2026-04-14',
-                description: 'Updated safety protocols for construction sites'
-            }
-        ];
+        // Fetch actual policies from database
+        const [policies] = await db.execute(`
+            SELECT id, title, description, submitted_by, submitted_by_role, 
+                   submission_date, impact, status, approved_by, approved_date,
+                   rejection_reason, revision_request, created_at, updated_at
+            FROM policies 
+            ORDER BY created_at DESC
+        `);
         
-        console.log('?? Policies data returned:', policies.length, 'items');
-        res.json(policies);
+        console.log('📋 Policies data returned:', policies.length, 'items');
+        
+        // Format policies for frontend
+        const formattedPolicies = policies.map(policy => ({
+            id: policy.id,
+            title: policy.title,
+            description: policy.description,
+            submitted_by: policy.submitted_by,
+            submitted_by_role: policy.submitted_by_role,
+            submitted_date: policy.submission_date,
+            impact: policy.impact || 'Medium',
+            status: policy.status.toLowerCase(),
+            approved_by: policy.approved_by,
+            approved_date: policy.approved_date,
+            rejection_reason: policy.rejection_reason,
+            revision_request: policy.revision_request,
+            created_at: policy.created_at,
+            updated_at: policy.updated_at
+        }));
+        
+        res.json(formattedPolicies);
     } catch (error) {
-        console.error('?? Error fetching policies:', error);
+        console.error('❌ Error fetching policies:', error);
         res.status(500).json({ error: 'Failed to fetch policies' });
     }
 });

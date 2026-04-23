@@ -2676,34 +2676,8 @@ function approveRecruitmentPolicies(){
         
         <div class="policy-section">
             <h4>Current Recruitment Policies Pending Approval</h4>
-            <div class="policy-item">
-                <h5>Digital Recruitment Platform Policy</h5>
-                <p>Implementation of online job portal and digital application system</p>
-                <div class="policy-details">
-                    <span><strong>Submitted by:</strong> HR Department</span>
-                    <span><strong>Date:</strong> 2026-03-01</span>
-                    <span><strong>Impact:</strong> High - Affects all recruitment</span>
-                </div>
-                <div class="policy-actions">
-                    <button class="action" onclick="approvePolicy('digital-recruitment')">Approve Policy</button>
-                    <button class="action" onclick="requestPolicyRevision('digital-recruitment')" style="background: #ffc107;">Request Revision</button>
-                    <button class="action" onclick="rejectPolicy('digital-recruitment')" style="background: #dc3545;">Reject</button>
-                </div>
-            </div>
-            
-            <div class="policy-item">
-                <h5>Internship Program Guidelines</h5>
-                <p>Structured internship program for university students and fresh graduates</p>
-                <div class="policy-details">
-                    <span><strong>Submitted by:</strong> HR Department</span>
-                    <span><strong>Date:</strong> 2026-02-28</span>
-                    <span><strong>Impact:</strong> Medium - Affects entry-level recruitment</span>
-                </div>
-                <div class="policy-actions">
-                    <button class="action" onclick="approvePolicy('internship-guidelines')">Approve Policy</button>
-                    <button class="action" onclick="requestPolicyRevision('internship-guidelines')" style="background: #ffc107;">Request Revision</button>
-                    <button class="action" onclick="rejectPolicy('internship-guidelines')" style="background: #dc3545;">Reject</button>
-                </div>
+            <div id="policies-container">
+                <div class="loading">Loading policies...</div>
             </div>
         </div>
         
@@ -2720,6 +2694,66 @@ function approveRecruitmentPolicies(){
             </div>
         </div>
     </div>`);
+    
+    // Fetch real policies from API
+    fetchPoliciesForApproval();
+}
+
+function fetchPoliciesForApproval() {
+    console.log('🔄 Fetching policies for approval...');
+    
+    fetch('/api/policies')
+        .then(response => {
+            console.log('📡 Policies API Response status:', response.status);
+            return response.json();
+        })
+        .then(policies => {
+            console.log('📊 Policies API Response data:', policies);
+            displayPoliciesForApproval(policies);
+        })
+        .catch(error => {
+            console.error('❌ Error fetching policies:', error);
+            document.getElementById('policies-container').innerHTML = 
+                '<div class="error">Failed to load policies. Please try again.</div>';
+        });
+}
+
+function displayPoliciesForApproval(policies) {
+    const container = document.getElementById('policies-container');
+    
+    if (!policies || policies.length === 0) {
+        container.innerHTML = '<div class="no-policies">No policies pending approval.</div>';
+        return;
+    }
+    
+    // Filter for pending policies
+    const pendingPolicies = policies.filter(policy => 
+        policy.status === 'pending' || policy.status === 'Pending'
+    );
+    
+    if (pendingPolicies.length === 0) {
+        container.innerHTML = '<div class="no-policies">No policies pending approval.</div>';
+        return;
+    }
+    
+    const policiesHTML = pendingPolicies.map(policy => `
+        <div class="policy-item">
+            <h5>${policy.title}</h5>
+            <p>${policy.description}</p>
+            <div class="policy-details">
+                <span><strong>Submitted by:</strong> ${policy.submitted_by_role || policy.submitted_by}</span>
+                <span><strong>Date:</strong> ${policy.submitted_date || policy.created_at}</span>
+                <span><strong>Impact:</strong> ${policy.impact || 'Medium'}</span>
+            </div>
+            <div class="policy-actions">
+                <button class="action" onclick="approvePolicy('${policy.id}')">Approve Policy</button>
+                <button class="action" onclick="requestPolicyRevision('${policy.id}')" style="background: #ffc107;">Request Revision</button>
+                <button class="action" onclick="rejectPolicy('${policy.id}')" style="background: #dc3545;">Reject</button>
+            </div>
+        </div>
+    `).join('');
+    
+    container.innerHTML = policiesHTML;
 }
 
 function approveSeniorHiring(){
