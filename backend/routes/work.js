@@ -1535,16 +1535,15 @@ router.post('/:department', async (req, res) => {
                     await db.execute(`
                         INSERT INTO policies (
                             id, title, description, submitted_by, submitted_by_role, 
-                            department, status, created_at
-                        ) VALUES (?, ?, ?, ?, ?, ?, ?, NOW())
+                            status, submission_date
+                        ) VALUES (?, ?, ?, ?, ?, ?, CURDATE())
                     `, [
                         policyId,
                         work_title,
                         work_description || 'Safety policy uploaded via HSE work item',
                         req.user?.id || 'system',
                         req.user?.role || 'HSE Manager',
-                        'HSE',
-                        'pending'
+                        'Pending'
                     ]);
                     console.log('✅ Policy successfully created in policies table:', policyId);
                     console.log('📊 Policy details inserted:', {
