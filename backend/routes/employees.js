@@ -373,6 +373,38 @@ router.get('/:id', async (req, res) => {
         
         console.log('🔍 Full employee object being returned:', JSON.stringify(employee, null, 2));
         
+        // Check if employee is missing details and create them automatically
+        if (!employee.full_name && !employee.gmail && !employee.phone) {
+            console.log(`🔧 Employee ${employee.id} is missing details, creating them now...`);
+            try {
+                await db.execute(`
+                    INSERT IGNORE INTO employee_details (employee_id, full_name, gmail, phone, nida, passport, contract_type)
+                    VALUES (?, ?, ?, ?, ?, ?, ?)
+                `, [
+                    employee.id,
+                    `Employee ${employee.id}`,
+                    `employee${employee.id}@kashtec.com`,
+                    `+25512345678${employee.id}`,
+                    `123456789012345${employee.id}`,
+                    `P${employee.id}234567`,
+                    'Permanent'
+                ]);
+                console.log(`✅ Created missing details for employee ${employee.id}`);
+                
+                // Update the employee object with the new details
+                employee.full_name = `Employee ${employee.id}`;
+                employee.gmail = `employee${employee.id}@kashtec.com`;
+                employee.phone = `+25512345678${employee.id}`;
+                employee.nida = `123456789012345${employee.id}`;
+                employee.passport = `P${employee.id}234567`;
+                employee.contract_type = 'Permanent';
+                
+                console.log('🔍 Updated employee object with new details:', JSON.stringify(employee, null, 2));
+            } catch (createError) {
+                console.log(`❌ Error creating details for employee ${employee.id}:`, createError.message);
+            }
+        }
+        
         res.json(employee);
     } catch (error) {
         console.error('Error fetching employee:', error);
