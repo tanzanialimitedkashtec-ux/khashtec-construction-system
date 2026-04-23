@@ -27,37 +27,64 @@ router.get('/', async (req, res) => {
         }
         
         // If employee_details is empty, create sample data for existing employees
-        if (detailsCount[0].count === 0) {
+        if (detailsCount && detailsCount[0] && detailsCount[0].count === 0) {
             console.log('📝 Employee details table is empty, creating sample data...');
             
             // Get all employees to create details for them
-            const [allEmployees] = await db.execute('SELECT id, position, department FROM employees LIMIT 5');
-            console.log(`📊 Found ${allEmployees.length} employees to create details for`);
-            
-            for (const emp of allEmployees) {
-                console.log(`📝 Creating details for employee ${emp.id}`);
-                await db.execute(`
-                    INSERT INTO employee_details (employee_id, full_name, gmail, phone, nida, passport, contract_type)
-                    VALUES (?, ?, ?, ?, ?, ?, ?)
-                `, [
-                    emp.id,
-                    `Employee ${emp.id}`,
-                    `employee${emp.id}@kashtec.com`,
-                    `+25512345678${emp.id}`,
-                    `123456789012345${emp.id}`,
-                    `P${emp.id}234567`,
-                    'Permanent'
-                ]);
+            let allEmployees;
+            try {
+                [allEmployees] = await db.execute('SELECT id, position, department FROM employees LIMIT 5');
+                console.log(`📊 Found ${allEmployees.length} employees to create details for`);
+                
+                if (allEmployees && allEmployees.length > 0) {
+                    for (const emp of allEmployees) {
+                        console.log(`📝 Creating details for employee ${emp.id}`);
+                        await db.execute(`
+                            INSERT INTO employee_details (employee_id, full_name, gmail, phone, nida, passport, contract_type)
+                            VALUES (?, ?, ?, ?, ?, ?, ?)
+                        `, [
+                            emp.id,
+                            `Employee ${emp.id}`,
+                            `employee${emp.id}@kashtec.com`,
+                            `+25512345678${emp.id}`,
+                            `123456789012345${emp.id}`,
+                            `P${emp.id}234567`,
+                            'Permanent'
+                        ]);
+                    }
+                    console.log(`✅ Created sample details for ${allEmployees.length} employees`);
+                } else {
+                    console.log('⚠️ No employees found to create details for');
+                }
+            } catch (empError) {
+                console.log('❌ Error getting employees for details creation:', empError.message);
+                console.log('🔄 Skipping employee details creation due to employees table error');
             }
-            
-            console.log(`✅ Created sample details for ${allEmployees.length} employees`);
-        } else {
+        } else if (detailsCount && detailsCount[0]) {
             console.log('📊 Employee details table already has records');
         }
         
-        const [employees] = await db.execute(
-            'SELECT e.*, ed.full_name, ed.gmail, ed.phone, ed.nida, ed.passport, ed.contract_type, ed.profile_image FROM employees e LEFT JOIN employee_details ed ON e.id = ed.employee_id ORDER BY e.hire_date DESC'
-        );
+        // Get employees with details
+        let employees;
+        try {
+            const [empResult] = await db.execute(
+                'SELECT e.*, ed.full_name, ed.gmail, ed.phone, ed.nida, ed.passport, ed.contract_type, ed.profile_image FROM employees e LEFT JOIN employee_details ed ON e.id = ed.employee_id ORDER BY e.hire_date DESC'
+            );
+            employees = empResult;
+            console.log('✅ Employee query executed successfully');
+        } catch (empQueryError) {
+            console.log('❌ Error in main employee query:', empQueryError.message);
+            console.log('🔄 Trying simple employee query without JOIN...');
+            
+            try {
+                const [simpleResult] = await db.execute('SELECT * FROM employees ORDER BY hire_date DESC');
+                employees = simpleResult;
+                console.log('✅ Simple employee query executed successfully');
+            } catch (simpleError) {
+                console.log('❌ Even simple employee query failed:', simpleError.message);
+                throw simpleError;
+            }
+        }
         console.log('✅ Employee query executed successfully');
         console.log('📊 Employee count:', employees.length);
         
