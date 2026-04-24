@@ -15762,6 +15762,11 @@ function viewEmployeeList() {
     
     // Load employees when the view is displayed
     loadEmployeeList();
+    
+    // Load real departments from API to populate filter
+    setTimeout(() => {
+        loadDepartmentFilter();
+    }, 500);
 }
 
 function loadEmployeeList() {
@@ -15908,6 +15913,66 @@ function updateEmployeeStats(employees) {
     document.getElementById('departmentCount').textContent = departments;
 }
 
+// Load real departments from API and populate filter
+function loadDepartmentFilter() {
+    const baseUrl = window.location.origin;
+    
+    // Try to get departments from employees API
+    fetch(`${baseUrl}/api/employees`, {
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'Authorization': `Bearer ${sessionManager.getAuthToken()}`
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        const employees = Array.isArray(data) ? data : (data && typeof data === 'object' ? [data] : []);
+        
+        // Extract unique departments
+        const departments = [...new Set(employees.map(emp => 
+            emp.department || emp.department_name || ''
+        ).filter(dept => dept))];
+        
+        // Populate department filter
+        populateDepartmentFilter(departments);
+    })
+    .catch(error => {
+        console.error('❌ Error loading departments:', error);
+        // Fallback to default departments
+        populateDepartmentFilter([
+            'Administration', 'Human Resources', 'Finance', 'Projects', 
+            'Engineering', 'Health & Safety', 'Real Estate', 'Operations'
+        ]);
+    });
+}
+
+// Populate department filter with real data
+function populateDepartmentFilter(departments) {
+    const departmentFilter = document.getElementById('departmentFilter');
+    if (!departmentFilter) return;
+    
+    // Clear existing options except "All Departments"
+    const currentValue = departmentFilter.value;
+    departmentFilter.innerHTML = '<option value="">All Departments</option>';
+    
+    // Add departments from API
+    departments.sort().forEach(dept => {
+        const option = document.createElement('option');
+        option.value = dept.toLowerCase().replace(/\s+/g, '');
+        option.textContent = dept;
+        departmentFilter.appendChild(option);
+    });
+    
+    // Restore previous selection if it still exists
+    if (currentValue) {
+        departmentFilter.value = currentValue;
+    }
+    
+    console.log('📋 Departments loaded:', departments);
+}
+
 function filterEmployeeList() {
     const searchTerm = document.getElementById('employeeSearchInput').value.toLowerCase();
     const departmentFilter = document.getElementById('departmentFilter').value;
@@ -15939,8 +16004,20 @@ function filterEmployeeList() {
                     department.toLowerCase().includes(searchTerm) ||
                     position.toLowerCase().includes(searchTerm);
                 
-                const matchesDepartment = !departmentFilter || 
-                    department.toLowerCase() === departmentFilter.toLowerCase();
+                // Enhanced department matching - handle various formats
+                let matchesDepartment = !departmentFilter;
+                if (departmentFilter && department) {
+                    const deptLower = department.toLowerCase();
+                    const filterLower = departmentFilter.toLowerCase();
+                    
+                    // Direct match
+                    matchesDepartment = deptLower === filterLower ||
+                                       // Match without spaces/special chars
+                                       deptLower.replace(/\s+/g, '') === filterLower ||
+                                       // Partial match for safety
+                                       deptLower.includes(filterLower) ||
+                                       filterLower.includes(deptLower.replace(/\s+/g, ''));
+                }
                 
                 return matchesSearch && matchesDepartment;
             });
@@ -15967,12 +16044,29 @@ function filterEmployeeList() {
             // Apply filters
             if (searchTerm || departmentFilter) {
                 employees = employees.filter(employee => {
-                    const matchesSearch = !searchTerm || 
-                        (employee.fullName && employee.fullName.toLowerCase().includes(searchTerm)) ||
-                        (employee.department && employee.department.toLowerCase().includes(searchTerm)) ||
-                        (employee.position && employee.position.toLowerCase().includes(searchTerm));
+                    const fullName = employee.fullName || employee.full_name || employee.name || '';
+                    const department = employee.department || employee.department_name || '';
+                    const position = employee.position || employee.job_title || '';
                     
-                    const matchesDepartment = !departmentFilter || employee.department === departmentFilter;
+                    const matchesSearch = !searchTerm || 
+                        fullName.toLowerCase().includes(searchTerm) ||
+                        department.toLowerCase().includes(searchTerm) ||
+                        position.toLowerCase().includes(searchTerm);
+                    
+                    // Enhanced department matching - handle various formats
+                    let matchesDepartment = !departmentFilter;
+                    if (departmentFilter && department) {
+                        const deptLower = department.toLowerCase();
+                        const filterLower = departmentFilter.toLowerCase();
+                        
+                        // Direct match
+                        matchesDepartment = deptLower === filterLower ||
+                                           // Match without spaces/special chars
+                                           deptLower.replace(/\s+/g, '') === filterLower ||
+                                           // Partial match for safety
+                                           deptLower.includes(filterLower) ||
+                                           filterLower.includes(deptLower.replace(/\s+/g, ''));
+                    }
                     
                     return matchesSearch && matchesDepartment;
                 });
