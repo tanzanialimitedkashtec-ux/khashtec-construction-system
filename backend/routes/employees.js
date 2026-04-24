@@ -91,7 +91,20 @@ router.get('/', async (req, res) => {
                 employees = [];
             }
             
+            // Deduplicate employees by ID to prevent duplicates from JOIN
+            const uniqueEmployees = [];
+            const seenIds = new Set();
+            
+            for (const emp of employees) {
+                if (!seenIds.has(emp.id)) {
+                    seenIds.add(emp.id);
+                    uniqueEmployees.push(emp);
+                }
+            }
+            
+            employees = uniqueEmployees;
             console.log('✅ Employee query executed successfully');
+            console.log(`📊 Deduplicated employees: ${employees.length} unique records`);
         } catch (empQueryError) {
             console.log('❌ Error in main employee query:', empQueryError.message);
             console.log('🔄 Trying simple employee query without JOIN...');
