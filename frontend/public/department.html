@@ -16597,6 +16597,7 @@ async function loadOfficePortalData() {
         // Load contracts
         let contracts = [];
         try {
+            console.log('🔄 Attempting to load contracts...');
             const contractsResponse = await fetch(`${baseUrl}/api/contracts`, {
                 method: 'GET',
                 headers: {
@@ -16605,24 +16606,28 @@ async function loadOfficePortalData() {
                 }
             });
             
+            console.log('📡 Contracts API Response status:', contractsResponse.status);
+            
             if (contractsResponse.ok) {
                 const contractsData = await contractsResponse.json();
-                console.log('🔍 Contracts API response:', contractsData);
-                console.log('🔍 Contracts response type:', typeof contractsData);
-                console.log('🔍 Contracts is array:', Array.isArray(contractsData));
-                
-                // Handle both direct array and wrapped response
-                if (Array.isArray(contractsData)) {
-                    contracts = contractsData; // Direct array response
-                } else if (contractsData && contractsData.contracts && Array.isArray(contractsData.contracts)) {
-                    contracts = contractsData.contracts; // Wrapped response
-                } else {
-                    contracts = [];
-                }
+                contracts = contractsData.contracts || contractsData || [];
                 console.log(`✅ Loaded ${contracts.length} contracts`);
+                console.log('🔍 Contracts data:', contracts);
+            } else {
+                console.log(`⚠️ Contracts API returned ${contractsResponse.status}`);
+                // Try the test endpoint to see if API is working
+                try {
+                    const testResponse = await fetch(`${baseUrl}/api/contracts/test`);
+                    if (testResponse.ok) {
+                        console.log('✅ Contracts API test endpoint works, main endpoint may have table issues');
+                    }
+                } catch (testError) {
+                    console.log('❌ Contracts API test endpoint also failed:', testError.message);
+                }
             }
         } catch (error) {
-            console.error('❌ Error loading contracts:', error);
+            console.log('❌ Error loading contracts:', error.message);
+            console.log('🔄 Using empty contracts array as fallback');
         }
         
         // Store data globally for other functions
