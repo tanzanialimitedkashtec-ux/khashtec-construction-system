@@ -2999,7 +2999,7 @@ function displayWorkforceBudgets(budgets) {
         
         return `
             <div class="budget-proposal" data-budget-id="${budget.id}">
-                <h5>${budget.department || 'Budget Period'} - ${getStatusText(budget.status)}</h5>
+                <h5>${budget.budget_period || 'Budget Period'} - ${getStatusText(budget.status)}</h5>
                 <div class="budget-status">
                     <span class="status-badge ${getStatusClass(budget.status)}">${getStatusText(budget.status)}</span>
                 </div>
@@ -3035,11 +3035,21 @@ function displayWorkforceBudgets(budgets) {
                     <div class="form-row">
                         <div class="form-group">
                             <label for="budget-period-${budget.id}">Budget Period</label>
-                            <input type="text" id="budget-period-${budget.id}" name="budget_period" value="${budget.department || 'Not specified'}" readonly>
+                            <input type="text" id="budget-period-${budget.id}" name="budget_period" value="${budget.budget_period || 'Not specified'}" readonly>
                         </div>
+                        <div class="form-group">
+                            <label for="budget-headcount-${budget.id}">Current Headcount</label>
+                            <input type="text" id="budget-headcount-${budget.id}" name="current_headcount" value="${budget.current_headcount ? budget.current_headcount + ' employees' : 'Not specified'}" readonly>
+                        </div>
+                    </div>
+                    <div class="form-row">
                         <div class="form-group">
                             <label for="budget-submission-date-${budget.id}">Submission Date</label>
                             <input type="text" id="budget-submission-date-${budget.id}" name="submission_date" value="${formatDate(budget.submission_date)}" readonly>
+                        </div>
+                        <div class="form-group">
+                            <label for="budget-submitted-role-${budget.id}">Submitted By Role</label>
+                            <input type="text" id="budget-submitted-role-${budget.id}" name="submitted_by_role" value="${budget.submitted_by_role || 'Not specified'}" readonly>
                         </div>
                     </div>
                     <div class="form-group">
@@ -3054,8 +3064,20 @@ function displayWorkforceBudgets(budgets) {
                         </div>
                         <div class="form-group">
                             <label for="budget-approval-date-${budget.id}">Approval Date</label>
-                            <input type="text" id="budget-approval-date-${budget.id}" name="approval_date" value="${formatDate(budget.approval_date)}" readonly>
+                            <input type="text" id="budget-approval-date-${budget.id}" name="approval_date" value="${formatDate(budget.approved_date)}" readonly>
                         </div>
+                    </div>
+                    ` : ''}
+                    ${budget.rejection_reason ? `
+                    <div class="form-group">
+                        <label for="budget-rejection-reason-${budget.id}">Rejection Reason</label>
+                        <textarea id="budget-rejection-reason-${budget.id}" name="rejection_reason" rows="2" readonly>${budget.rejection_reason}</textarea>
+                    </div>
+                    ` : ''}
+                    ${budget.modification_request ? `
+                    <div class="form-group">
+                        <label for="budget-modification-request-${budget.id}">Modification Request</label>
+                        <textarea id="budget-modification-request-${budget.id}" name="modification_request" rows="2" readonly>${budget.modification_request}</textarea>
                     </div>
                     ` : ''}
                 </div>

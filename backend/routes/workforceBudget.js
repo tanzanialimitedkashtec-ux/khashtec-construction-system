@@ -18,9 +18,10 @@ router.get('/', async (req, res) => {
     console.log('📝 GET /api/workforce-budget accessed');
     try {
         const rows = await db.execute(`
-            SELECT id, budget_period as department, total_proposed as total_budget, salaries_wages, training_development, 
-                   employee_benefits, recruitment_costs, status, submission_date,
-                   approved_by, approved_date as approval_date, justification
+            SELECT id, budget_period, total_proposed, salaries_wages, training_development, 
+                   employee_benefits, recruitment_costs, submitted_by, submitted_by_role, 
+                   current_headcount, justification, status, submission_date,
+                   approved_by, approved_date, rejection_reason, modification_request
             FROM workforce_budgets 
             ORDER BY submission_date DESC
         `);
