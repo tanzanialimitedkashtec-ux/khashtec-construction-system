@@ -786,7 +786,7 @@ router.post('/action', async (req, res) => {
     try {
         // Get employee details for work title
         const employeeData = await db.execute(
-            'SELECT full_name, position FROM employees WHERE id = ?',
+            'SELECT e.position, ed.full_name FROM employees e LEFT JOIN employee_details ed ON e.id = ed.employee_id WHERE e.id = ?',
             [employeeId]
         );
         
