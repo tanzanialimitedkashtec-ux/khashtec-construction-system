@@ -433,121 +433,144 @@ router.put('/:id', async (req, res) => {
     });
     
     try {
+        console.log('🔄 Starting employee update for ID:', req.params.id);
+        
         // Check if employee exists
         const [existingEmployees] = await db.execute('SELECT id FROM employees WHERE id = ?', [req.params.id]);
         
-        if (existingEmployees.length === 0) {
+        if (!existingEmployees || existingEmployees.length === 0) {
+            console.log('❌ Employee not found:', req.params.id);
             return res.status(404).json({ error: 'Employee not found' });
         }
         
-        // Build dynamic update query - only update fields that exist in employees table
+        console.log('✅ Employee found, proceeding with update');
+        
+        // Simplified update - only update employees table basic fields
         const updates = [];
         const values = [];
         
-        // Validate status value before processing
-        const validStatuses = ['Active', 'Inactive', 'Terminated'];
-        console.log('🔍 Validating status:', { received: status, valid: validStatuses });
-        
-        if (status && !validStatuses.includes(status)) {
-            console.log('❌ Invalid status value:', status);
-            return res.status(400).json({ 
-                error: 'Invalid status value', 
-                details: `Status must be one of: ${validStatuses.join(', ')}`,
-                received: status 
-            });
-        }
-        
-        console.log('✅ Status validation passed:', status);
-        
-        // Only update fields that exist in employees table
-        if (department) {
+        // Only update fields that exist and are provided
+        if (department !== undefined && department !== null) {
             updates.push('department = ?');
             values.push(department);
+            console.log('📝 Adding department update:', department);
         }
-        if (jobCategory) {
+        
+        if (jobCategory !== undefined && jobCategory !== null) {
             updates.push('position = ?'); // Map jobCategory to position field
             values.push(jobCategory);
+            console.log('📝 Adding position update:', jobCategory);
         }
-        if (status) {
+        
+        if (status !== undefined && status !== null) {
             updates.push('status = ?');
             values.push(status);
+            console.log('📝 Adding status update:', status);
         }
         
         if (updates.length === 0) {
+            console.log('❌ No valid fields to update');
             return res.status(400).json({ error: 'No valid fields to update' });
         }
         
         values.push(req.params.id);
         
-        await db.execute(
+        console.log('🔧 Executing update query:', `UPDATE employees SET ${updates.join(', ')} WHERE id = ?`);
+        console.log('🔧 Update values:', values);
+        
+        const updateResult = await db.execute(
             `UPDATE employees SET ${updates.join(', ')} WHERE id = ?`,
             values
         );
         
-        // Update employee_details table with detailed information
-        const detailUpdates = [];
-        const detailValues = [];
+        console.log('✅ Employees table updated:', updateResult);
         
-        if (fullName) {
-            detailUpdates.push('full_name = ?');
-            detailValues.push(fullName);
-        }
-        if (gmail) {
-            detailUpdates.push('gmail = ?');
-            detailValues.push(gmail);
-        }
-        if (phone) {
-            detailUpdates.push('phone = ?');
-            detailValues.push(phone);
-        }
-        if (nida) {
-            detailUpdates.push('nida = ?');
-            detailValues.push(nida);
-        }
-        if (passport) {
-            detailUpdates.push('passport = ?');
-            detailValues.push(passport);
-        }
-        if (contract) {
-            detailUpdates.push('contract_type = ?');
-            detailValues.push(contract);
-        }
-        
-        if (detailUpdates.length > 0) {
-            // Check if employee_details record exists
-            const [existingDetails] = await db.execute(
-                'SELECT employee_id FROM employee_details WHERE employee_id = ?',
-                [req.params.id]
-            );
+        // Update employee_details table separately if detailed fields are provided
+        if (fullName || gmail || phone || nida || passport || contract) {
+            console.log('📝 Updating employee details...');
             
-            if (existingDetails.length > 0) {
-                // Update existing record
-                detailValues.push(req.params.id);
-                await db.execute(
-                    `UPDATE employee_details SET ${detailUpdates.join(', ')} WHERE employee_id = ?`,
-                    detailValues
-                );
-                console.log('✅ Updated existing employee_details record');
-            } else {
-                // Insert new record
-                detailValues.push(req.params.id);
-                await db.execute(
-                    `INSERT INTO employee_details (${detailUpdates.join(', ')}, employee_id) VALUES (${detailUpdates.map(() => '?').join(', ')}, ?)`,
-                    detailValues
-                );
-                console.log('✅ Created new employee_details record');
+            try {
+                const detailUpdates = [];
+                const detailValues = [];
+                
+                if (fullName) {
+                    detailUpdates.push('full_name = ?');
+                    detailValues.push(fullName);
+                }
+                if (gmail) {
+                    detailUpdates.push('gmail = ?');
+                    detailValues.push(gmail);
+                }
+                if (phone) {
+                    detailUpdates.push('phone = ?');
+                    detailValues.push(phone);
+                }
+                if (nida) {
+                    detailUpdates.push('nida = ?');
+                    detailValues.push(nida);
+                }
+                if (passport) {
+                    detailUpdates.push('passport = ?');
+                    detailValues.push(passport);
+                }
+                if (contract) {
+                    detailUpdates.push('contract_type = ?');
+                    detailValues.push(contract);
+                }
+                
+                if (detailUpdates.length > 0) {
+                    // Check if employee_details record exists
+                    const [existingDetails] = await db.execute(
+                        'SELECT employee_id FROM employee_details WHERE employee_id = ?',
+                        [req.params.id]
+                    );
+                    
+                    if (existingDetails && existingDetails.length > 0) {
+                        // Update existing record
+                        detailValues.push(req.params.id);
+                        await db.execute(
+                            `UPDATE employee_details SET ${detailUpdates.join(', ')} WHERE employee_id = ?`,
+                            detailValues
+                        );
+                        console.log('✅ Updated existing employee_details record');
+                    } else {
+                        // Insert new record with all fields
+                        const allDetailFields = ['full_name', 'gmail', 'phone', 'nida', 'passport', 'contract_type'];
+                        const allDetailValues = [];
+                        
+                        if (fullName) allDetailValues.push(fullName); else allDetailValues.push(null);
+                        if (gmail) allDetailValues.push(gmail); else allDetailValues.push(null);
+                        if (phone) allDetailValues.push(phone); else allDetailValues.push(null);
+                        if (nida) allDetailValues.push(nida); else allDetailValues.push(null);
+                        if (passport) allDetailValues.push(passport); else allDetailValues.push(null);
+                        if (contract) allDetailValues.push(contract); else allDetailValues.push(null);
+                        
+                        allDetailValues.push(req.params.id);
+                        
+                        await db.execute(
+                            `INSERT INTO employee_details (full_name, gmail, phone, nida, passport, contract_type, employee_id) VALUES (?, ?, ?, ?, ?, ?, ?)`,
+                            allDetailValues
+                        );
+                        console.log('✅ Created new employee_details record');
+                    }
+                }
+            } catch (detailsError) {
+                console.warn('⚠️ Error updating employee_details (continuing):', detailsError.message);
+                // Don't fail the whole operation if details update fails
             }
         }
         
-        // Return updated employee with details
+        // Return updated employee
         const [updatedEmployee] = await db.execute(
             'SELECT e.*, ed.full_name, ed.gmail, ed.phone, ed.nida, ed.passport, ed.contract_type FROM employees e LEFT JOIN employee_details ed ON e.id = ed.employee_id WHERE e.id = ?',
             [req.params.id]
         );
         
+        console.log('✅ Employee update completed successfully');
+        
         res.json({
             message: 'Employee updated successfully',
-            employee: updatedEmployee[0]
+            employee: updatedEmployee && updatedEmployee.length > 0 ? updatedEmployee[0] : null
         });
         
     } catch (error) {

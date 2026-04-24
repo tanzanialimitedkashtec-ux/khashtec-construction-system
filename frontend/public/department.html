@@ -3497,7 +3497,8 @@ function loadEmployeesForAction() {
     .then(data => {
         console.log('📊 Employees for action:', data);
         const employeeSelect = document.getElementById('actionEmployee');
-        const employees = Array.isArray(data) ? data : [];
+        // Handle both single objects and arrays
+        const employees = Array.isArray(data) ? data : (data && typeof data === 'object') ? [data] : [];
         
         if (!employeeSelect) {
             console.error('actionEmployee element not found in .then block!');
