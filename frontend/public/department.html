@@ -6194,11 +6194,7 @@ function attendance(){
                     <div class="form-group">
                         <label>Select Employee *</label>
                         <select id="attEmployee" required>
-                            <option value="">Select Employee</option>
-                            <option value="emp001">John Doe</option>
-                            <option value="emp002">Jane Smith</option>
-                            <option value="emp003">Mike Johnson</option>
-                            <option value="emp004">Sarah Wilson</option>
+                            <option value="">Loading employees...</option>
                         </select>
                     </div>
                 </div>
@@ -6241,23 +6237,167 @@ function attendance(){
             <div class="summary-stats">
                 <div class="stat-item">
                     <span class="stat-label">Total Employees:</span>
-                    <span class="stat-value">45</span>
+                    <span class="stat-value" id="totalEmployees">Loading...</span>
                 </div>
                 <div class="stat-item">
                     <span class="stat-label">Present:</span>
-                    <span class="stat-value present">42</span>
+                    <span class="stat-value present" id="presentCount">Loading...</span>
                 </div>
                 <div class="stat-item">
                     <span class="stat-label">Absent:</span>
-                    <span class="stat-value absent">2</span>
+                    <span class="stat-value absent" id="absentCount">Loading...</span>
                 </div>
                 <div class="stat-item">
                     <span class="stat-label">On Leave:</span>
-                    <span class="stat-value leave">1</span>
+                    <span class="stat-value leave" id="leaveCount">Loading...</span>
                 </div>
             </div>
         </div>
     </div>`);
+    
+    // Load real employees and today's attendance summary
+    loadEmployeesForAttendance();
+    loadTodayAttendanceSummary();
+}
+
+// Load employees for attendance dropdown
+async function loadEmployeesForAttendance() {
+    console.log('🔄 Loading employees for attendance dropdown...');
+    
+    try {
+        const baseUrl = window.location.origin;
+        const response = await fetch(`${baseUrl}/api/employees`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${sessionManager.getAuthToken()}`
+            }
+        });
+        
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+        
+        const employees = await response.json();
+        console.log('📊 Employees for attendance:', employees);
+        
+        const select = document.getElementById('attEmployee');
+        if (!select) return;
+        
+        // Clear existing options except the first one
+        select.innerHTML = '<option value="">Select Employee</option>';
+        
+        // Add employee options
+        employees.forEach(employee => {
+            const option = document.createElement('option');
+            option.value = employee.id;
+            const displayName = employee.full_name || `Employee ${employee.id}`;
+            const position = employee.position || 'Unknown Position';
+            option.textContent = `${displayName} - ${position}`;
+            select.appendChild(option);
+        });
+        
+        console.log(`✅ Employee dropdown populated with ${employees.length} employees`);
+        
+    } catch (error) {
+        console.error('❌ Error loading employees for attendance:', error);
+        const select = document.getElementById('attEmployee');
+        if (select) {
+            select.innerHTML = '<option value="">Error loading employees</option>';
+        }
+    }
+}
+
+// Load today's attendance summary
+async function loadTodayAttendanceSummary() {
+    console.log('🔄 Loading today\'s attendance summary...');
+    
+    try {
+        const baseUrl = window.location.origin;
+        const today = new Date().toISOString().split('T')[0]; // Format: YYYY-MM-DD
+        
+        const response = await fetch(`${baseUrl}/api/attendance/all?date=${today}`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${sessionManager.getAuthToken()}`
+            }
+        });
+        
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+        
+        const attendanceData = await response.json();
+        console.log('📊 Today\'s attendance data:', attendanceData);
+        
+        // Calculate summary statistics
+        const totalEmployeesElement = document.getElementById('totalEmployees');
+        const presentCountElement = document.getElementById('presentCount');
+        const absentCountElement = document.getElementById('absentCount');
+        const leaveCountElement = document.getElementById('leaveCount');
+        
+        if (!totalEmployeesElement || !presentCountElement || !absentCountElement || !leaveCountElement) {
+            console.error('❌ Attendance summary elements not found');
+            return;
+        }
+        
+        // Count attendance statuses
+        let presentCount = 0;
+        let absentCount = 0;
+        let leaveCount = 0;
+        
+        attendanceData.forEach(record => {
+            switch (record.status) {
+                case 'present':
+                case 'late':
+                    presentCount++;
+                    break;
+                case 'absent':
+                    absentCount++;
+                    break;
+                case 'sick':
+                case 'annual':
+                case 'permission':
+                    leaveCount++;
+                    break;
+            }
+        });
+        
+        // Get total employees count
+        const totalEmployeesResponse = await fetch(`${baseUrl}/api/employees`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${sessionManager.getAuthToken()}`
+            }
+        });
+        
+        const totalEmployeesData = await totalEmployeesResponse.json();
+        const totalEmployees = totalEmployeesData.length || 0;
+        
+        // Update summary display
+        totalEmployeesElement.textContent = totalEmployees;
+        presentCountElement.textContent = presentCount;
+        absentCountElement.textContent = absentCount;
+        leaveCountElement.textContent = leaveCount;
+        
+        console.log(`✅ Attendance summary updated - Total: ${totalEmployees}, Present: ${presentCount}, Absent: ${absentCount}, Leave: ${leaveCount}`);
+        
+    } catch (error) {
+        console.error('❌ Error loading attendance summary:', error);
+        
+        // Update elements with error state
+        const totalEmployeesElement = document.getElementById('totalEmployees');
+        const presentCountElement = document.getElementById('presentCount');
+        const absentCountElement = document.getElementById('absentCount');
+        const leaveCountElement = document.getElementById('leaveCount');
+        
+        if (totalEmployeesElement) totalEmployeesElement.textContent = 'Error';
+        if (presentCountElement) presentCountElement.textContent = 'Error';
+        if (absentCountElement) absentCountElement.textContent = 'Error';
+        if (leaveCountElement) leaveCountElement.textContent = 'Error';
+    }
 }
 
 // Form submission functions
