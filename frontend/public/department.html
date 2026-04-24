@@ -2665,6 +2665,127 @@ function showContent(html){
     document.getElementById("contentArea").innerHTML = html;
 }
 
+/* ===== KASHTEC API SERVICE ===== */
+
+// KashTecAPI - Centralized API service for all backend communications
+window.KashTecAPI = {
+    // Base URL for API calls
+    baseUrl: window.location.origin,
+    
+    // Get auth token
+    getAuthToken() {
+        return sessionManager?.getAuthToken() || localStorage.getItem('authToken') || '';
+    },
+    
+    // Generic API request method
+    async apiRequest(endpoint, options = {}) {
+        const defaultOptions = {
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+                'Authorization': `Bearer ${this.getAuthToken()}`
+            }
+        };
+        
+        const finalOptions = { ...defaultOptions, ...options };
+        
+        try {
+            console.log(`📡 API Request: ${endpoint}`, finalOptions);
+            
+            const response = await fetch(`${this.baseUrl}${endpoint}`, finalOptions);
+            
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            }
+            
+            const data = await response.json();
+            console.log(`✅ API Response: ${endpoint}`, data);
+            
+            return data;
+        } catch (error) {
+            console.error(`❌ API Error: ${endpoint}`, error);
+            throw error;
+        }
+    },
+    
+    // Document Management APIs
+    async getDocument(docId) {
+        return this.apiRequest(`/api/documents/${docId}`);
+    },
+    
+    async getAllDocuments() {
+        return this.apiRequest('/api/documents');
+    },
+    
+    async updateDocument(docId, documentData) {
+        return this.apiRequest(`/api/documents/${docId}`, {
+            method: 'PUT',
+            body: JSON.stringify(documentData)
+        });
+    },
+    
+    async downloadDocument(docId) {
+        const response = await fetch(`${this.baseUrl}/api/documents/${docId}/download`, {
+            headers: {
+                'Authorization': `Bearer ${this.getAuthToken()}`
+            }
+        });
+        
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+        
+        return await response.blob();
+    },
+    
+    async createDocument(documentData) {
+        return this.apiRequest('/api/documents', {
+            method: 'POST',
+            body: JSON.stringify(documentData)
+        });
+    },
+    
+    async deleteDocument(docId) {
+        return this.apiRequest(`/api/documents/${docId}`, {
+            method: 'DELETE'
+        });
+    },
+    
+    // HR Work APIs
+    async createHRWork(workData) {
+        return this.apiRequest('/api/hr/work', {
+            method: 'POST',
+            body: JSON.stringify(workData)
+        });
+    },
+    
+    async getHRWork() {
+        return this.apiRequest('/api/hr/work');
+    },
+    
+    // HSE Work APIs
+    async createHSEWork(workData) {
+        return this.apiRequest('/api/hse/work', {
+            method: 'POST',
+            body: JSON.stringify(workData)
+        });
+    },
+    
+    async getHSEWork() {
+        return this.apiRequest('/api/hse/work');
+    },
+    
+    // Test API connectivity
+    async testConnection() {
+        try {
+            const result = await this.apiRequest('/api/test');
+            return { success: true, data: result };
+        } catch (error) {
+            return { success: false, error: error.message };
+        }
+    }
+};
+
 /* ===== DASHBOARD FUNCTIONS ===== */
 
 /* ===== MANAGING DIRECTOR FUNCTIONS ===== */
@@ -17553,6 +17674,13 @@ document.addEventListener('DOMContentLoaded', function() {
 // Edit document - opens document editor
 async function editDoc(docId) {
     try {
+        // Check if KashTecAPI is available
+        if (typeof KashTecAPI === 'undefined') {
+            console.warn('KashTecAPI not available, using fallback');
+            editDocFallback(docId);
+            return;
+        }
+        
         const response = await KashTecAPI.getDocument(docId);
         
         if (response.success && response.data) {
@@ -17627,11 +17755,93 @@ async function editDoc(docId) {
     }
 }
 
+// Fallback edit document function
+function editDocFallback(docId) {
+    // Sample document data for demonstration
+    const sampleDoc = {
+        id: docId,
+        title: `Document ${docId}`,
+        type: 'Policy',
+        department: 'HR',
+        description: 'Sample document description',
+        content: 'This is sample document content that can be edited.',
+        status: 'Active'
+    };
+    
+    showContent(`
+        <div class="card">
+            <h3>Edit Document: ${sampleDoc.title}</h3>
+            <div class="document-editor">
+                <form id="editDocumentForm" onsubmit="saveDocumentFallback(event, '${docId}')">
+                    <div class="form-group">
+                        <label>Document Title</label>
+                        <input type="text" id="docTitle" value="${sampleDoc.title}" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Document Type</label>
+                        <select id="docType" required>
+                            <option value="Policy" ${sampleDoc.type === 'Policy' ? 'selected' : ''}>Policy</option>
+                            <option value="Procedure" ${sampleDoc.type === 'Procedure' ? 'selected' : ''}>Procedure</option>
+                            <option value="Manual" ${sampleDoc.type === 'Manual' ? 'selected' : ''}>Manual</option>
+                            <option value="Report" ${sampleDoc.type === 'Report' ? 'selected' : ''}>Report</option>
+                            <option value="Contract" ${sampleDoc.type === 'Contract' ? 'selected' : ''}>Contract</option>
+                            <option value="Other" ${sampleDoc.type === 'Other' ? 'selected' : ''}>Other</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Department</label>
+                        <select id="docDepartment" required>
+                            <option value="Management" ${sampleDoc.department === 'Management' ? 'selected' : ''}>Management</option>
+                            <option value="HR" ${sampleDoc.department === 'HR' ? 'selected' : ''}>Human Resources</option>
+                            <option value="Finance" ${sampleDoc.department === 'Finance' ? 'selected' : ''}>Finance</option>
+                            <option value="Projects" ${sampleDoc.department === 'Projects' ? 'selected' : ''}>Projects</option>
+                            <option value="Operations" ${sampleDoc.department === 'Operations' ? 'selected' : ''}>Operations</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Description</label>
+                        <textarea id="docDescription" rows="4">${sampleDoc.description || ''}</textarea>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Content</label>
+                        <textarea id="docContent" rows="15" required>${sampleDoc.content || ''}</textarea>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Status</label>
+                        <select id="docStatus">
+                            <option value="Draft" ${sampleDoc.status === 'Draft' ? 'selected' : ''}>Draft</option>
+                            <option value="Active" ${sampleDoc.status === 'Active' ? 'selected' : ''}>Active</option>
+                            <option value="Archived" ${sampleDoc.status === 'Archived' ? 'selected' : ''}>Archived</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-actions">
+                        <button type="submit" class="btn-primary">Save Changes</button>
+                        <button type="button" class="btn-secondary" onclick="editDocuments()">Cancel</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    `);
+}
+
 // Save document changes
 async function saveDocument(event, docId) {
     event.preventDefault();
     
     try {
+        // Check if KashTecAPI is available
+        if (typeof KashTecAPI === 'undefined') {
+            console.warn('KashTecAPI not available, using fallback');
+            saveDocumentFallback(event, docId);
+            return;
+        }
+        
         const formData = {
             title: document.getElementById('docTitle').value,
             type: document.getElementById('docType').value,
@@ -17656,9 +17866,43 @@ async function saveDocument(event, docId) {
     }
 }
 
+// Fallback save document function
+function saveDocumentFallback(event, docId) {
+    event.preventDefault();
+    
+    const formData = {
+        title: document.getElementById('docTitle').value,
+        type: document.getElementById('docType').value,
+        department: document.getElementById('docDepartment').value,
+        description: document.getElementById('docDescription').value,
+        content: document.getElementById('docContent').value,
+        status: document.getElementById('docStatus').value,
+        updatedAt: new Date().toISOString()
+    };
+    
+    // Save to localStorage as fallback
+    const savedDocs = JSON.parse(localStorage.getItem('savedDocuments') || '{}');
+    savedDocs[docId] = formData;
+    localStorage.setItem('savedDocuments', JSON.stringify(savedDocs));
+    
+    customAlert('Document saved successfully! (Local Storage)', 'Success', 'success');
+    
+    // Return to document list after a short delay
+    setTimeout(() => {
+        editDocuments();
+    }, 1500);
+}
+
 // View document - opens document viewer
 async function viewDoc(docId) {
     try {
+        // Check if KashTecAPI is available
+        if (typeof KashTecAPI === 'undefined') {
+            console.warn('KashTecAPI not available, using fallback');
+            viewDocFallback(docId);
+            return;
+        }
+        
         const response = await KashTecAPI.getDocument(docId);
         
         if (response.success && response.data) {
@@ -17701,9 +17945,61 @@ async function viewDoc(docId) {
     }
 }
 
+// Fallback view document function
+function viewDocFallback(docId) {
+    // Check localStorage for saved document
+    const savedDocs = JSON.parse(localStorage.getItem('savedDocuments') || '{}');
+    const doc = savedDocs[docId] || {
+        id: docId,
+        title: `Document ${docId}`,
+        type: 'Policy',
+        department: 'HR',
+        description: 'Sample document description',
+        content: 'This is sample document content for demonstration purposes.',
+        status: 'Active',
+        updatedAt: new Date().toISOString()
+    };
+    
+    showContent(`
+        <div class="card">
+            <div class="document-viewer-header">
+                <h3>${doc.title}</h3>
+                <div class="document-meta">
+                    <span class="meta-item">Type: ${doc.type}</span>
+                    <span class="meta-item">Department: ${doc.department}</span>
+                    <span class="meta-item">Status: ${doc.status || 'Active'}</span>
+                    <span class="meta-item">Last Updated: ${new Date(doc.updatedAt || doc.uploadDate).toLocaleDateString()}</span>
+                </div>
+            </div>
+            
+            <div class="document-viewer-content">
+                ${doc.description ? `<div class="document-description"><h4>Description</h4><p>${doc.description}</p></div>` : ''}
+                
+                <div class="document-content">
+                    <h4>Content</h4>
+                    <div class="content-area">${doc.content ? doc.content.replace(/\n/g, '<br>') : 'No content available'}</div>
+                </div>
+            </div>
+            
+            <div class="document-viewer-actions">
+                <button class="btn-primary" onclick="editDoc('${docId}')">Edit Document</button>
+                <button class="btn-secondary" onclick="downloadDoc('${docId}')">Download</button>
+                <button class="btn-secondary" onclick="editDocuments()">Back to List</button>
+            </div>
+        </div>
+    `);
+}
+
 // Download document
 async function downloadDoc(docId) {
     try {
+        // Check if KashTecAPI is available
+        if (typeof KashTecAPI === 'undefined') {
+            console.warn('KashTecAPI not available, using fallback');
+            downloadDocFallback(docId);
+            return;
+        }
+        
         const blob = await KashTecAPI.downloadDocument(docId);
         const url = window.URL.createObjectURL(blob);
         const a = document.createElement('a');
@@ -17717,6 +18013,37 @@ async function downloadDoc(docId) {
         customAlert('Document downloaded successfully!', 'Success', 'success');
     } catch (error) {
         console.error('Error downloading document:', error);
+        customAlert('Error downloading document', 'Error', 'error');
+    }
+}
+
+// Fallback download document function
+function downloadDocFallback(docId) {
+    try {
+        // Check localStorage for saved document
+        const savedDocs = JSON.parse(localStorage.getItem('savedDocuments') || '{}');
+        const doc = savedDocs[docId] || {
+            id: docId,
+            title: `Document ${docId}`,
+            content: 'This is sample document content for demonstration purposes.',
+            type: 'Policy'
+        };
+        
+        // Create a text file with document content
+        const content = `Document: ${doc.title}\nType: ${doc.type}\nID: ${doc.id}\n\n${doc.content}`;
+        const blob = new Blob([content], { type: 'text/plain' });
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `${doc.title.replace(/\s+/g, '_')}_${docId}.txt`;
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+        document.body.removeChild(a);
+        
+        customAlert('Document downloaded successfully! (Local Storage)', 'Success', 'success');
+    } catch (error) {
+        console.error('Error downloading document (fallback):', error);
         customAlert('Error downloading document', 'Error', 'error');
     }
 }
