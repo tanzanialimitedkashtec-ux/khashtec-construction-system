@@ -9,7 +9,8 @@ router.get('/test', (req, res) => {
     res.json({ 
         message: 'Attendance API is working!',
         timestamp: new Date().toISOString(),
-        status: 'routes_loaded_successfully'
+        status: 'routes_loaded_successfully',
+        debug: 'Attendance routes are loaded and responding'
     });
 });
 
