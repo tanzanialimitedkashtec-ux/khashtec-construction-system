@@ -16538,7 +16538,20 @@ async function loadOfficePortalData() {
             
             if (policiesResponse.ok) {
                 const policiesData = await policiesResponse.json();
-                policies = policiesData.policies || [];
+                console.log('🔍 Policies API response:', policiesData);
+                console.log('🔍 Policies response type:', typeof policiesData);
+                console.log('🔍 Policies is array:', Array.isArray(policiesData));
+                
+                // Handle both direct array and wrapped response
+                if (Array.isArray(policiesData)) {
+                    policies = policiesData; // Direct array response
+                } else if (policiesData && policiesData.policies && Array.isArray(policiesData.policies)) {
+                    policies = policiesData.policies; // Wrapped response
+                } else if (policiesData && policiesData.contracts && Array.isArray(policiesData.contracts)) {
+                    policies = policiesData.contracts; // Wrong endpoint but array
+                } else {
+                    policies = [];
+                }
                 console.log(`✅ Loaded ${policies.length} policies`);
             }
         } catch (error) {
@@ -16558,7 +16571,18 @@ async function loadOfficePortalData() {
             
             if (contractsResponse.ok) {
                 const contractsData = await contractsResponse.json();
-                contracts = contractsData.contracts || [];
+                console.log('🔍 Contracts API response:', contractsData);
+                console.log('🔍 Contracts response type:', typeof contractsData);
+                console.log('🔍 Contracts is array:', Array.isArray(contractsData));
+                
+                // Handle both direct array and wrapped response
+                if (Array.isArray(contractsData)) {
+                    contracts = contractsData; // Direct array response
+                } else if (contractsData && contractsData.contracts && Array.isArray(contractsData.contracts)) {
+                    contracts = contractsData.contracts; // Wrapped response
+                } else {
+                    contracts = [];
+                }
                 console.log(`✅ Loaded ${contracts.length} contracts`);
             }
         } catch (error) {
