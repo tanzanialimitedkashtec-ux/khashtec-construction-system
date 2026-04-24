@@ -16680,18 +16680,18 @@ function renderOfficePortal(officePortalUsers, documents, policies, contracts) {
         return icons[type] || '📄';
     }
     
-    function getPolicyIcon(category) {
+    function getPolicyIcon(impact) {
         const icons = {
-            'HR': '👥',
-            'Safety': '⚠️',
-            'Finance': '💰',
-            'Operations': '⚙️',
-            'IT': '💻',
-            'Legal': '⚖️',
-            'Quality': '✅',
-            'Environmental': '🌱'
+            'Low': '📋',
+            'Medium': '⚠️',
+            'High': '🔥',
+            'Critical': '🚨',
+            'Pending': '⏳',
+            'Approved': '✅',
+            'Rejected': '❌',
+            'General': '📄'
         };
-        return icons[category] || '📋';
+        return icons[impact] || '📋';
     }
     
     // Generate HTML for registered users with enhanced cards
@@ -16745,14 +16745,14 @@ function renderOfficePortal(officePortalUsers, documents, policies, contracts) {
     
     // Generate policies section
     const policiesHTML = policies.map(policy => `
-        <div class="policy-card" data-category="${policy.category}" data-status="${policy.status}">
+        <div class="policy-card" data-category="${policy.impact || 'General'}" data-status="${policy.status}">
             <div class="policy-header">
                 <div class="policy-icon">
-                    ${getPolicyIcon(policy.category)}
+                    ${getPolicyIcon(policy.impact || 'General')}
                 </div>
                 <div class="policy-info">
                     <h4>${policy.title}</h4>
-                    <p class="policy-meta">${policy.category} • ${policy.department || 'General'} • ${new Date(policy.created_at || policy.uploadDate).toLocaleDateString()}</p>
+                    <p class="policy-meta">${policy.impact || 'General'} • ${policy.status || 'Pending'} • ${new Date(policy.created_at || policy.uploadDate).toLocaleDateString()}</p>
                 </div>
             </div>
             <div class="policy-actions">
