@@ -7926,30 +7926,37 @@ function saveContract() {
         return false;
     }
     
-    // Prepare work item for HR department
-    const workItem = {
-        work_type: 'Contract Management',
-        work_title: `Contract - ${contract.contractType}`,
-        work_description: `Contract for ${contract.employee}\n\nType: ${contract.contractType}\nSalary: TZS ${contract.salary}\nStart: ${contract.startDate}\nEnd: ${contract.endDate}\nTerms: ${contract.terms}\nStatus: ${contract.status}`,
-        priority: contract.status === 'urgent' ? 'High' : 'Medium',
-        due_date: contract.startDate,
-        assigned_to: 'HR Manager',
-        submitted_by: 'HR Manager'
-    };
-    
     // Show loading message
     customAlert('Processing contract...', "Processing", "info");
     
-    // Send data to backend API
+    // Send data to backend API - use dual contracts endpoint to save to both tables
     const baseUrl = window.location.origin;
-    fetch(`${baseUrl}/api/hr/work`, {
+    
+    // Prepare data for dual contracts endpoint
+    const contractData = {
+        employee_id: contract.employee,
+        employee_name: contract.employee,
+        contract_type: contract.contractType,
+        start_date: contract.startDate,
+        end_date: contract.endDate,
+        salary: contract.salary,
+        contract_status: contract.status,
+        contract_terms: contract.terms,
+        contract_document: contract.document,
+        created_by: 'HR Manager',
+        department_code: 'hr',
+        priority: contract.status === 'urgent' ? 'High' : 'Medium',
+        submitted_by: 'HR Manager'
+    };
+    
+    fetch(`${baseUrl}/api/dual-contracts`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
             'Accept': 'application/json',
             'Authorization': `Bearer ${sessionManager.getAuthToken()}`
         },
-        body: JSON.stringify(workItem)
+        body: JSON.stringify(contractData)
     })
     .then(response => {
         console.log('📡 Contract API Response status:', response.status);
