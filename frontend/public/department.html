@@ -16526,7 +16526,7 @@ async function loadOfficePortalData() {
                 officePortalUsers = employeesData.map(emp => ({
                     id: emp.id,
                     name: emp.full_name || `Employee ${emp.id}`,
-                    email: emp.email || 'unknown@example.com',
+                    email: emp.gmail || emp.email || 'unknown@example.com',
                     phone: emp.phone || 'N/A',
                     position: emp.position || 'Unknown Position',
                     department: emp.department || 'General',
