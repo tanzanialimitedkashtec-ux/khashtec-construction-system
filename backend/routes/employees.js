@@ -75,18 +75,42 @@ router.get('/', async (req, res) => {
         // Get employees with details
         let employees;
         try {
-            const [empResult] = await db.execute(
+            const empResult = await db.execute(
                 'SELECT e.*, ed.full_name, ed.gmail, ed.phone, ed.nida, ed.passport, ed.contract_type, ed.profile_image FROM employees e LEFT JOIN employee_details ed ON e.id = ed.employee_id ORDER BY e.hire_date DESC'
             );
-            employees = empResult;
+            
+            // Handle different database response formats
+            if (Array.isArray(empResult)) {
+                employees = empResult;
+            } else if (empResult && Array.isArray(empResult[0])) {
+                employees = empResult[0];
+            } else if (empResult && empResult.rows) {
+                employees = empResult.rows;
+            } else {
+                console.warn('⚠️ Unexpected employee query result format:', empResult);
+                employees = [];
+            }
+            
             console.log('✅ Employee query executed successfully');
         } catch (empQueryError) {
             console.log('❌ Error in main employee query:', empQueryError.message);
             console.log('🔄 Trying simple employee query without JOIN...');
             
             try {
-                const [simpleResult] = await db.execute('SELECT * FROM employees ORDER BY hire_date DESC');
-                employees = simpleResult;
+                const simpleResult = await db.execute('SELECT * FROM employees ORDER BY hire_date DESC');
+                
+                // Handle different database response formats
+                if (Array.isArray(simpleResult)) {
+                    employees = simpleResult;
+                } else if (simpleResult && Array.isArray(simpleResult[0])) {
+                    employees = simpleResult[0];
+                } else if (simpleResult && simpleResult.rows) {
+                    employees = simpleResult.rows;
+                } else {
+                    console.warn('⚠️ Unexpected simple employee query result format:', simpleResult);
+                    employees = [];
+                }
+                
                 console.log('✅ Simple employee query executed successfully');
             } catch (simpleError) {
                 console.log('❌ Even simple employee query failed:', simpleError.message);
