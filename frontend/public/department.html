@@ -3106,6 +3106,8 @@ function displayWorkforceBudgets(budgets) {
 
 // Approve workforce budget
 function approveBudget(budgetId) {
+    console.log('🔍 approveBudget function called with ID:', budgetId);
+    
     if (!confirm('Are you sure you want to approve this workforce budget?')) {
         return;
     }
@@ -3139,6 +3141,7 @@ function approveBudget(budgetId) {
 
 // Request budget modification
 function modifyBudget(budgetId) {
+    console.log('🔍 modifyBudget function called with ID:', budgetId);
     showModificationModal(budgetId);
 }
 
@@ -3343,6 +3346,7 @@ function processBudgetModification(budgetId, modificationRequest, deadline) {
 
 // Reject workforce budget
 function rejectBudget(budgetId) {
+    console.log('🔍 rejectBudget function called with ID:', budgetId);
     showRejectionModal(budgetId);
 }
 
