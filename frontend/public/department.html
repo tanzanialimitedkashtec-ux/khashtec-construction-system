@@ -16464,14 +16464,170 @@ function userAccountManagement(){
 
 function officePortal(){
     // Load all office portal data
-    const officePortalUsers = []; // TODO: Load from API instead of // TODO: Load from API instead of localStorage
-    const documents = []; // TODO: Load from API instead of // TODO: Load from API instead of localStorage
-    const policies = []; // TODO: Load from API instead of // TODO: Load from API instead of localStorage
-    const contracts = []; // TODO: Load from API instead of // TODO: Load from API instead of localStorage
+    loadOfficePortalData();
+}
+
+// Load real data for office portal
+async function loadOfficePortalData() {
+    console.log('🔄 Loading office portal data...');
+    
+    try {
+        const baseUrl = window.location.origin;
+        
+        // Load employees/personnel
+        let officePortalUsers = [];
+        try {
+            const employeesResponse = await fetch(`${baseUrl}/api/employees`, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${sessionManager.getAuthToken()}`
+                }
+            });
+            
+            if (employeesResponse.ok) {
+                const employeesData = await employeesResponse.json();
+                officePortalUsers = employeesData.map(emp => ({
+                    id: emp.id,
+                    name: emp.full_name || `Employee ${emp.id}`,
+                    email: emp.email || 'unknown@example.com',
+                    phone: emp.phone || 'N/A',
+                    position: emp.position || 'Unknown Position',
+                    department: emp.department || 'General',
+                    type: 'Employee',
+                    profileImage: `https://picsum.photos/seed/${emp.id}/100/100.jpg`,
+                    accessLevel: 'user',
+                    files: []
+                }));
+                console.log(`✅ Loaded ${officePortalUsers.length} employees`);
+            }
+        } catch (error) {
+            console.error('❌ Error loading employees:', error);
+        }
+        
+        // Load documents
+        let documents = [];
+        try {
+            const documentsResponse = await fetch(`${baseUrl}/api/documents`, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${sessionManager.getAuthToken()}`
+                }
+            });
+            
+            if (documentsResponse.ok) {
+                const documentsData = await documentsResponse.json();
+                documents = documentsData.documents || [];
+                console.log(`✅ Loaded ${documents.length} documents`);
+            }
+        } catch (error) {
+            console.error('❌ Error loading documents:', error);
+        }
+        
+        // Load policies
+        let policies = [];
+        try {
+            const policiesResponse = await fetch(`${baseUrl}/api/policies`, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${sessionManager.getAuthToken()}`
+                }
+            });
+            
+            if (policiesResponse.ok) {
+                const policiesData = await policiesResponse.json();
+                policies = policiesData.policies || [];
+                console.log(`✅ Loaded ${policies.length} policies`);
+            }
+        } catch (error) {
+            console.error('❌ Error loading policies:', error);
+        }
+        
+        // Load contracts
+        let contracts = [];
+        try {
+            const contractsResponse = await fetch(`${baseUrl}/api/contracts`, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${sessionManager.getAuthToken()}`
+                }
+            });
+            
+            if (contractsResponse.ok) {
+                const contractsData = await contractsResponse.json();
+                contracts = contractsData.contracts || [];
+                console.log(`✅ Loaded ${contracts.length} contracts`);
+            }
+        } catch (error) {
+            console.error('❌ Error loading contracts:', error);
+        }
+        
+        // Store data globally for other functions
+        window.currentPortalData = {
+            personnel: officePortalUsers,
+            documents: documents,
+            policies: policies,
+            contracts: contracts
+        };
+        
+        // Render the portal with real data
+        renderOfficePortal(officePortalUsers, documents, policies, contracts);
+        
+    } catch (error) {
+        console.error('❌ Error loading office portal data:', error);
+        // Show error message
+        showContent(`
+            <div class="card">
+                <h3>🏢 KASHTEC Office Portal</h3>
+                <div class="error-message">
+                    <p>❌ Failed to load office portal data. Please try refreshing the page.</p>
+                    <button class="action-btn" onclick="officePortal()">🔄 Retry</button>
+                </div>
+            </div>
+        `);
+    }
+}
+
+// Render office portal with loaded data
+function renderOfficePortal(officePortalUsers, documents, policies, contracts) {
     
     // Count by type
     const employeeCount = officePortalUsers.filter(user => user.type === 'Employee').length;
     const workerCount = officePortalUsers.filter(user => user.type === 'Worker').length;
+    
+    // Helper functions
+    function getDocumentIcon(type) {
+        const icons = {
+            'Policy': '📋',
+            'Contract': '📝',
+            'ID Document': '🆔',
+            'Certificate': '🏆',
+            'Training': '📚',
+            'Report': '📊',
+            'Invoice': '🧾',
+            'Resume': '👤',
+            'Application': '📋',
+            'Agreement': '🤝'
+        };
+        return icons[type] || '📄';
+    }
+    
+    function getPolicyIcon(category) {
+        const icons = {
+            'HR': '👥',
+            'Safety': '⚠️',
+            'Finance': '💰',
+            'Operations': '⚙️',
+            'IT': '💻',
+            'Legal': '⚖️',
+            'Quality': '✅',
+            'Environmental': '🌱'
+        };
+        return icons[category] || '📋';
+    }
     
     // Generate HTML for registered users with enhanced cards
     const registeredUsersHTML = officePortalUsers.map(user => `
@@ -16512,13 +16668,12 @@ function officePortal(){
                 </div>
                 <div class="document-info">
                     <h4>${doc.title}</h4>
-                    <p class="document-meta">${doc.type} • ${doc.department} • ${new Date(doc.uploadDate).toLocaleDateString()}</p>
+                    <p class="document-meta">${doc.type} • ${doc.department || 'General'} • ${new Date(doc.uploadedDate || doc.created_at).toLocaleDateString()}</p>
                 </div>
             </div>
             <div class="document-actions">
-                <button class="action-btn primary" onclick="viewDocument('${doc.id}', '${doc.title}')">📖 Open</button>
+                <button class="action-btn primary" onclick="viewDocument('${doc.id}', '${doc.title}')">📖 View Document</button>
                 <button class="action-btn secondary" onclick="downloadDocument('${doc.id}', '${doc.title}')">💾 Download</button>
-                ${doc.type === 'Contract' ? `<button class="action-btn warning" onclick="signDocument('${doc.id}', '${doc.title}')">✍️ Sign</button>` : ''}
             </div>
         </div>
     `).join('');
@@ -16532,7 +16687,7 @@ function officePortal(){
                 </div>
                 <div class="policy-info">
                     <h4>${policy.title}</h4>
-                    <p class="policy-meta">${policy.category} • ${policy.status} • Updated: ${new Date(policy.lastUpdated).toLocaleDateString()}</p>
+                    <p class="policy-meta">${policy.category} • ${policy.department || 'General'} • ${new Date(policy.created_at || policy.uploadDate).toLocaleDateString()}</p>
                 </div>
             </div>
             <div class="policy-actions">
@@ -16546,15 +16701,15 @@ function officePortal(){
     
     // Generate contracts section
     const contractsHTML = contracts.map(contract => `
-        <div class="contract-card" data-status="${contract.status}" data-value="${contract.value}">
+        <div class="contract-card" data-status="${contract.status}" data-value="${contract.value || 0}">
             <div class="contract-header">
                 <div class="contract-value">
-                    <span class="currency">${contract.currency}</span>
-                    <span class="amount">${contract.value.toLocaleString()}</span>
+                    <span class="currency">${contract.currency || 'USD'}</span>
+                    <span class="amount">${(contract.value || 0).toLocaleString()}</span>
                 </div>
                 <div class="contract-info">
                     <h4>${contract.title}</h4>
-                    <p class="contract-meta">${contract.party} • ${contract.type} • ${new Date(contract.startDate).toLocaleDateString()}</p>
+                    <p class="contract-meta">${contract.party || 'Unknown'} • ${contract.type || 'General'} • ${new Date(contract.startDate || contract.created_at).toLocaleDateString()}</p>
                 </div>
             </div>
             <div class="contract-actions">
@@ -16565,38 +16720,6 @@ function officePortal(){
             </div>
         </div>
     `).join('');
-    
-    // Get document icon based on type
-    function getDocumentIcon(type) {
-        const icons = {
-            'Policy': '📋',
-            'Contract': '📝',
-            'ID Document': '🆔',
-            'Certificate': '🏆',
-            'Training': '📚',
-            'Report': '📊',
-            'Invoice': '🧾',
-            'Resume': '👤',
-            'Application': '📋',
-            'Agreement': '🤝'
-        };
-        return icons[type] || '📄';
-    }
-    
-    // Get policy icon based on category
-    function getPolicyIcon(category) {
-        const icons = {
-            'HR': '👥',
-            'Safety': '⚠️',
-            'Finance': '💰',
-            'Operations': '⚙️',
-            'IT': '💻',
-            'Legal': '⚖️',
-            'Quality': '✅',
-            'Environmental': '🌱'
-        };
-        return icons[category] || '📋';
-    }
     
     // Generate comprehensive portal HTML
     const portalHTML = `
@@ -16757,14 +16880,6 @@ function officePortal(){
     `;
     
     showContent(portalHTML);
-    
-    // Store portal data for access by other functions
-    window.currentPortalData = {
-        personnel: officePortalUsers,
-        documents: documents,
-        policies: policies,
-        contracts: contracts
-    };
 }
 
 // Enhanced Office Portal Functions
