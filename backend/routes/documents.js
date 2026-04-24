@@ -421,6 +421,23 @@ router.post('/', upload.single('file'), async (req, res) => {
                 docFileSize
             } = req.body;
             
+            // Get user ID from JWT token or fallback to submitted_by
+            let userId = 1; // Default fallback
+            try {
+                const authHeader = req.headers.authorization;
+                if (authHeader && authHeader.startsWith('Bearer ')) {
+                    const token = authHeader.substring(7);
+                    const jwt = require('jsonwebtoken');
+                    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'your-secret-key');
+                    userId = decoded.id || 1;
+                    console.log('🔍 Extracted user ID from JWT:', userId);
+                }
+            } catch (tokenError) {
+                console.warn('⚠️ Could not extract user ID from token, using fallback:', tokenError.message);
+            }
+            
+            console.log('🔍 Final user ID for upload:', userId);
+            
             console.log('🔍 Extracted work_type:', work_type);
             console.log('🔍 Extracted work_title:', work_title);
             console.log('🔍 Extracted priority:', priority);
@@ -497,7 +514,7 @@ router.post('/', upload.single('file'), async (req, res) => {
                     docFileSize || 0,
                     docType || 'PDF',
                     mappedCategory,
-                    submitted_by || 1
+                    userId
                 ];
                 
                 console.log('🔍 Inserting document with values:', documentsValues);
