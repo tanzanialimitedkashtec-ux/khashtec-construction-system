@@ -6313,16 +6313,38 @@ async function loadTodayAttendanceSummary() {
         const baseUrl = window.location.origin;
         const today = new Date().toISOString().split('T')[0]; // Format: YYYY-MM-DD
         
-        const response = await fetch(`${baseUrl}/api/attendance/all?date=${today}`, {
-            method: 'GET',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${sessionManager.getAuthToken()}`
+        let response;
+        try {
+            response = await fetch(`${baseUrl}/api/attendance/all?date=${today}`, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${sessionManager.getAuthToken()}`
+                }
+            });
+            
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
             }
-        });
-        
-        if (!response.ok) {
-            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        } catch (primaryError) {
+            console.warn('⚠️ Primary attendance endpoint failed, trying fallback:', primaryError.message);
+            // Try fallback endpoint that might work
+            try {
+                response = await fetch(`${baseUrl}/api/attendance?date=${today}`, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${sessionManager.getAuthToken()}`
+                    }
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`Fallback also failed: HTTP ${response.status}: ${response.statusText}`);
+                }
+            } catch (fallbackError) {
+                console.error('❌ Both attendance endpoints failed:', fallbackError.message);
+                throw new Error('All attendance endpoints unavailable');
+            }
         }
         
         const attendanceData = await response.json();
