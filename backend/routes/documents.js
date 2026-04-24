@@ -109,7 +109,7 @@ router.get('/', async (req, res) => {
         let documents = [];
         
         try {
-            const db = require('../database/config/database');
+            const db = require('../../database/config/database');
             
             // Fetch from documents table first
             let realDocuments = [];
@@ -267,7 +267,7 @@ router.get('/:id', async (req, res) => {
         
         // Try database first, fallback to mock data
         try {
-            const db = require('../database/config/database');
+            const db = require('../../database/config/database');
             const [adminWorkItems] = await db.execute(
                 'SELECT * FROM admin_work WHERE id = ?', [docId]
             );
@@ -622,7 +622,7 @@ router.get('/:id/download', async (req, res) => {
         const docId = req.params.id;
         
         // Fetch from admin_work table
-        const db = require('../database/config/database');
+        const db = require('../../database/config/database');
         const [adminWorkItems] = await db.execute(
             'SELECT * FROM admin_work WHERE id = ?', [docId]
         );

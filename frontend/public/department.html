@@ -15096,50 +15096,90 @@ function editDocuments(){
 
 // Load documents from API
 async function loadDocuments() {
+    console.log('🔄 Loading documents for editing...');
+    
     try {
-        // Check if KashTecAPI is available
-        if (typeof KashTecAPI === 'undefined') {
-            console.error('❌ KashTecAPI is not defined');
-            document.getElementById('docsGrid').innerHTML = '<div class="error">API service not loaded. Please refresh the page.</div>';
+        const baseUrl = window.location.origin;
+        const response = await fetch(`${baseUrl}/api/documents`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${sessionManager.getAuthToken()}`
+            }
+        });
+        
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+        
+        const data = await response.json();
+        const documents = data.documents || [];
+        console.log('📊 Documents for editing:', documents);
+        
+        const docsGrid = document.getElementById('docsGrid');
+        if (!docsGrid) return;
+        
+        if (documents.length === 0) {
+            docsGrid.innerHTML = '<div class="no-documents">No documents found</div>';
             return;
         }
         
-        const response = await KashTecAPI.getDocuments();
-        console.log('📄 Documents API Response:', response);
-        const docsGrid = document.getElementById('docsGrid');
+        const formatDate = (dateStr) => {
+            if (!dateStr) return 'Unknown';
+            const date = new Date(dateStr);
+            return date.toLocaleDateString('en-US', { 
+                year: 'numeric', 
+                month: 'short', 
+                day: 'numeric' 
+            });
+        };
         
-        // Handle the actual response format from documents API
-        if (response && response.documents) {
-            const documents = response.documents;
-            console.log('📄 Documents array:', documents);
-            
-            if (documents.length === 0) {
-                docsGrid.innerHTML = '<div class="no-documents">No documents found</div>';
-                return;
-            }
-            
-            docsGrid.innerHTML = documents.map(doc => `
-                <div class="doc-item" data-id="${doc.id}" data-department="${doc.department}" data-type="${doc.type}">
-                    <div class="doc-info">
-                        <h5>${doc.title}</h5>
-                        <p>Type: ${doc.type} | Department: ${doc.department}</p>
-                        <p>Last Updated: ${new Date(doc.updatedAt || doc.uploadDate).toLocaleDateString()}</p>
-                        <p>Status: ${doc.status || 'Active'}</p>
-                    </div>
-                    <div class="doc-actions">
-                        <button class="action edit-btn" onclick="editDoc('${doc.id}')">Edit</button>
-                        <button class="action view-btn" onclick="viewDoc('${doc.id}')">View</button>
-                        <button class="action download-btn" onclick="downloadDoc('${doc.id}')">Download</button>
-                    </div>
+        const getStatusBadge = (status) => {
+            const statusClass = status === 'Approved' ? 'approved' : 
+                               status === 'Pending' ? 'pending' : 
+                               status === 'Draft' ? 'draft' : 'active';
+            return `<span class="status-badge ${statusClass}">${status}</span>`;
+        };
+        
+        docsGrid.innerHTML = documents.map(doc => `
+            <div class="doc-item" data-id="${doc.id}" data-department="${doc.department || doc.category}" data-type="${doc.type}">
+                <div class="doc-info">
+                    <h5>${doc.title}</h5>
+                    <p>Type: ${doc.type || 'PDF'} | Department: ${doc.department || doc.category || 'Unknown'}</p>
+                    <p>Last Updated: ${formatDate(doc.uploadedDate)}</p>
+                    <p>Status: ${getStatusBadge(doc.status)}</p>
+                    ${doc.uploadedByName ? `<p>By: ${doc.uploadedByName}</p>` : ''}
+                    ${doc.fileSize ? `<p>Size: ${formatFileSize(doc.fileSize)}</p>` : ''}
+                    ${doc.source ? `<p><small>Source: ${doc.source}</small></p>` : ''}
                 </div>
-            `).join('');
-        } else {
+                <div class="doc-actions">
+                    <button class="action edit-btn" onclick="editDoc('${doc.id}')">Edit</button>
+                    <button class="action view-btn" onclick="viewDoc('${doc.id}')">View</button>
+                    <button class="action download-btn" onclick="downloadDoc('${doc.id}')">Download</button>
+                </div>
+            </div>
+        `).join('');
+        
+        console.log(`✅ Documents displayed for editing: ${documents.length} documents`);
+        
+    } catch (error) {
+        console.error('❌ Error loading documents for editing:', error);
+        const docsGrid = document.getElementById('docsGrid');
+        if (docsGrid) {
             docsGrid.innerHTML = '<div class="error">Failed to load documents</div>';
         }
-    } catch (error) {
-        console.error('Error loading documents:', error);
-        document.getElementById('docsGrid').innerHTML = '<div class="error">Error loading documents</div>';
     }
+}
+
+// Format file size helper
+function formatFileSize(size) {
+    if (!size) return 'Unknown size';
+    const bytes = parseInt(size);
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
 }
 
 // Filter documents by search term
