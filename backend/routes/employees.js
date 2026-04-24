@@ -161,7 +161,10 @@ router.get('/', async (req, res) => {
             }
         }
         
-        res.json(employees);
+        // Ensure we always return an array
+        const employeesArray = Array.isArray(employees) ? employees : [employees];
+        console.log('📊 Returning employees array:', employeesArray.length, 'items');
+        res.json(employeesArray);
     } catch (error) {
         console.error('❌ Database error in employees endpoint:', error);
         console.error('❌ Error message:', error.message);

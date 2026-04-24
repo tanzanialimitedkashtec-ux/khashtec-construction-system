@@ -8,7 +8,11 @@ router.get('/', async (req, res) => {
         const [workers] = await db.execute(
             'SELECT * FROM worker_accounts ORDER BY created_at DESC'
         );
-        res.json(workers);
+        
+        // Ensure we always return an array
+        const workersArray = Array.isArray(workers) ? workers : [workers];
+        console.log('📊 Returning workers array:', workersArray.length, 'items');
+        res.json(workersArray);
     } catch (error) {
         console.error('Database error, using fallback worker data:', error.message);
         
