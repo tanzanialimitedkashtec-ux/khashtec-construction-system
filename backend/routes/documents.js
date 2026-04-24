@@ -494,6 +494,32 @@ router.post('/', upload.single('file'), async (req, res) => {
                 
                 const mappedCategory = categoryMap[docDepartment?.toLowerCase()] || 'Other';
                 
+                // Ensure documents table exists
+                try {
+                    await db.execute(`
+                        CREATE TABLE IF NOT EXISTS documents (
+                            id INT AUTO_INCREMENT PRIMARY KEY,
+                            title VARCHAR(255) NOT NULL,
+                            description TEXT,
+                            file_name VARCHAR(255) NOT NULL,
+                            file_size BIGINT DEFAULT 0,
+                            file_type VARCHAR(100) DEFAULT 'PDF',
+                            category ENUM('Contract', 'Plan', 'Report', 'Invoice', 'Permit', 'Certificate', 'Other') DEFAULT 'Other',
+                            uploaded_by INT NOT NULL,
+                            status ENUM('Pending', 'Approved', 'Rejected') DEFAULT 'Pending',
+                            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+                            INDEX idx_category (category),
+                            INDEX idx_status (status),
+                            INDEX idx_uploaded_by (uploaded_by),
+                            INDEX idx_created_at (created_at)
+                        )
+                    `);
+                    console.log('✅ Documents table verified/created successfully');
+                } catch (tableError) {
+                    console.log('⚠️ Could not create documents table:', tableError.message);
+                }
+                
                 const documentsQuery = `
                     INSERT INTO documents (
                         title,
