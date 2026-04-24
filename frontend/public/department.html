@@ -6043,22 +6043,14 @@ function assignWorker(){
             <div class="form-group">
                 <label>Select Employee *</label>
                 <select id="assignEmployee" required>
-                    <option value="">Select Employee</option>
-                    <option value="emp001">John Doe - Engineer</option>
-                    <option value="emp002">Jane Smith - HR Manager</option>
-                    <option value="emp003">Mike Johnson - Construction Worker</option>
-                    <option value="emp004">Sarah Wilson - Admin Assistant</option>
+                    <option value="">Loading employees...</option>
                 </select>
             </div>
             
             <div class="form-group">
                 <label>Select Project *</label>
                 <select id="assignProject" required>
-                    <option value="">Select Project</option>
-                    <option value="proj001">Dar es Salaam Port Modernization</option>
-                    <option value="proj002">Residential Buildings - Kinondoni</option>
-                    <option value="proj003">Fukayosi Real Estate Project</option>
-                    <option value="proj004">Road Construction - Bagamoyo</option>
+                    <option value="">Loading projects...</option>
                 </select>
             </div>
             
@@ -6086,6 +6078,105 @@ function assignWorker(){
             <button type="submit" class="action">Assign Worker</button>
         </form>
     </div>`);
+    
+    // Load real employees and projects
+    loadEmployeesForAssignment();
+    loadProjectsForAssignment();
+}
+
+// Load employees for assignment dropdown
+async function loadEmployeesForAssignment() {
+    console.log('🔄 Loading employees for assignment dropdown...');
+    
+    try {
+        const baseUrl = window.location.origin;
+        const response = await fetch(`${baseUrl}/api/employees`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${sessionManager.getAuthToken()}`
+            }
+        });
+        
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+        
+        const employees = await response.json();
+        console.log('📊 Employees for assignment:', employees);
+        
+        const select = document.getElementById('assignEmployee');
+        if (!select) return;
+        
+        // Clear existing options except the first one
+        select.innerHTML = '<option value="">Select Employee</option>';
+        
+        // Add employee options
+        employees.forEach(employee => {
+            const option = document.createElement('option');
+            option.value = employee.id;
+            const displayName = employee.full_name || `Employee ${employee.id}`;
+            const position = employee.position || 'Unknown Position';
+            option.textContent = `${displayName} - ${position}`;
+            select.appendChild(option);
+        });
+        
+        console.log(`✅ Employee dropdown populated with ${employees.length} employees`);
+        
+    } catch (error) {
+        console.error('❌ Error loading employees for assignment:', error);
+        const select = document.getElementById('assignEmployee');
+        if (select) {
+            select.innerHTML = '<option value="">Error loading employees</option>';
+        }
+    }
+}
+
+// Load projects for assignment dropdown
+async function loadProjectsForAssignment() {
+    console.log('🔄 Loading projects for assignment dropdown...');
+    
+    try {
+        const baseUrl = window.location.origin;
+        const response = await fetch(`${baseUrl}/api/projects`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${sessionManager.getAuthToken()}`
+            }
+        });
+        
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+        
+        const data = await response.json();
+        const projects = data.projects || [];
+        console.log('📊 Projects for assignment:', projects);
+        
+        const select = document.getElementById('assignProject');
+        if (!select) return;
+        
+        // Clear existing options except the first one
+        select.innerHTML = '<option value="">Select Project</option>';
+        
+        // Add project options
+        projects.forEach(project => {
+            const option = document.createElement('option');
+            option.value = project.id;
+            option.textContent = project.name || `Project ${project.id}`;
+            select.appendChild(option);
+        });
+        
+        console.log(`✅ Project dropdown populated with ${projects.length} projects`);
+        
+    } catch (error) {
+        console.error('❌ Error loading projects for assignment:', error);
+        const select = document.getElementById('assignProject');
+        if (select) {
+            select.innerHTML = '<option value="">Error loading projects</option>';
+        }
+    }
 }
 
 function attendance(){
