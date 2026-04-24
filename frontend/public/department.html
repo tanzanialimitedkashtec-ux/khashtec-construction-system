@@ -2888,58 +2888,8 @@ function approveWorkforceBudget(){
         
         <div class="budget-section">
             <h4>Workforce Budget Proposals</h4>
-            
-            <div class="budget-proposal">
-                <h5>Q2 2026 Workforce Budget</h5>
-                <div class="budget-overview">
-                    <div class="budget-row">
-                        <span class="budget-category">Salaries & Wages:</span>
-                        <span class="budget-amount">TZS 45,000,000</span>
-                    </div>
-                    <div class="budget-row">
-                        <span class="budget-category">Training & Development:</span>
-                        <span class="budget-amount">TZS 5,000,000</span>
-                    </div>
-                    <div class="budget-row">
-                        <span class="budget-category">Employee Benefits:</span>
-                        <span class="budget-amount">TZS 8,000,000</span>
-                    </div>
-                    <div class="budget-row">
-                        <span class="budget-category">Recruitment Costs:</span>
-                        <span class="budget-amount">TZS 3,500,000</span>
-                    </div>
-                    <div class="budget-row total">
-                        <span class="budget-category">Total Proposed:</span>
-                        <span class="budget-amount">TZS 61,500,000</span>
-                    </div>
-                </div>
-                
-                <div class="budget-details">
-                    <div class="form-group">
-                        <label for="budget-submitted-by">Submitted By</label>
-                        <input type="text" id="budget-submitted-by" name="submitted_by" value="Finance Department" readonly>
-                    </div>
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="budget-period">Budget Period</label>
-                            <input type="text" id="budget-period" name="budget_period" value="April - June 2026" readonly>
-                        </div>
-                        <div class="form-group">
-                            <label for="budget-headcount">Current Headcount</label>
-                            <input type="text" id="budget-headcount" name="current_headcount" value="45 employees" readonly>
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <label for="budget-justification">Justification</label>
-                        <textarea id="budget-justification" name="justification" rows="4" readonly>Budget covers quarterly salaries, training programs, employee benefits, and recruitment costs for expanding project portfolio. Includes 5% increase for cost of living adjustments.</textarea>
-                    </div>
-                </div>
-                
-                <div class="budget-actions">
-                    <button class="action" onclick="approveBudget('1')">Approve Budget</button>
-                    <button class="action" onclick="modifyBudget('1')" style="background: #ffc107;">Request Modification</button>
-                    <button class="action" onclick="rejectBudget('1')" style="background: #dc3545;">Reject Budget</button>
-                </div>
+            <div id="budget-proposals-container">
+                <div class="loading">Loading workforce budgets...</div>
             </div>
         </div>
         
@@ -2956,6 +2906,289 @@ function approveWorkforceBudget(){
             </div>
         </div>
     </div>`);
+    
+    // Load workforce budgets data
+    loadWorkforceBudgets();
+}
+
+// Load workforce budgets from API
+function loadWorkforceBudgets() {
+    console.log('🔄 Loading workforce budgets...');
+    
+    const baseUrl = window.location.origin;
+    fetch(`${baseUrl}/api/workforce-budget`, {
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'Authorization': `Bearer ${sessionManager.getAuthToken()}`
+        }
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error(`Workforce budgets API: ${response.status}`);
+        }
+        return response.json();
+    })
+    .then(data => {
+        console.log('📊 Workforce budgets data:', data);
+        // Handle both single objects and arrays
+        const budgets = Array.isArray(data) ? data : (data && typeof data === 'object') ? [data] : [];
+        displayWorkforceBudgets(budgets);
+    })
+    .catch(error => {
+        console.error('❌ Error loading workforce budgets:', error);
+        document.getElementById('budget-proposals-container').innerHTML = 
+            '<div class="error">Failed to load workforce budgets. Please try again.</div>';
+    });
+}
+
+// Display workforce budgets
+function displayWorkforceBudgets(budgets) {
+    console.log('🎨 displayWorkforceBudgets called with:', budgets.length, 'budgets');
+    
+    const container = document.getElementById('budget-proposals-container');
+    
+    if (!budgets || budgets.length === 0) {
+        container.innerHTML = '<div class="no-budgets">No workforce budgets found</div>';
+        return;
+    }
+    
+    const budgetsHtml = budgets.map(budget => {
+        // Format currency
+        const formatCurrency = (amount) => {
+            const num = parseFloat(amount) || 0;
+            return `TZS ${num.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`;
+        };
+        
+        // Calculate total
+        const totalBudget = (parseFloat(budget.salaries_wages) || 0) + 
+                           (parseFloat(budget.training_development) || 0) + 
+                           (parseFloat(budget.employee_benefits) || 0) + 
+                           (parseFloat(budget.recruitment_costs) || 0);
+        
+        // Format dates
+        const formatDate = (dateStr) => {
+            if (!dateStr) return 'Not specified';
+            const date = new Date(dateStr);
+            return date.toLocaleDateString('en-US', { 
+                year: 'numeric', 
+                month: 'long', 
+                day: 'numeric' 
+            });
+        };
+        
+        // Status badge styling
+        const getStatusClass = (status) => {
+            switch(status?.toLowerCase()) {
+                case 'approved': return 'status-approved';
+                case 'rejected': return 'status-rejected';
+                case 'modification_requested': return 'status-modification';
+                default: return 'status-pending';
+            }
+        };
+        
+        const getStatusText = (status) => {
+            switch(status?.toLowerCase()) {
+                case 'approved': return 'Approved';
+                case 'rejected': return 'Rejected';
+                case 'modification_requested': return 'Modification Requested';
+                default: return 'Pending';
+            }
+        };
+        
+        return `
+            <div class="budget-proposal" data-budget-id="${budget.id}">
+                <h5>${budget.department || 'Budget Period'} - ${getStatusText(budget.status)}</h5>
+                <div class="budget-status">
+                    <span class="status-badge ${getStatusClass(budget.status)}">${getStatusText(budget.status)}</span>
+                </div>
+                
+                <div class="budget-overview">
+                    <div class="budget-row">
+                        <span class="budget-category">Salaries & Wages:</span>
+                        <span class="budget-amount">${formatCurrency(budget.salaries_wages)}</span>
+                    </div>
+                    <div class="budget-row">
+                        <span class="budget-category">Training & Development:</span>
+                        <span class="budget-amount">${formatCurrency(budget.training_development)}</span>
+                    </div>
+                    <div class="budget-row">
+                        <span class="budget-category">Employee Benefits:</span>
+                        <span class="budget-amount">${formatCurrency(budget.employee_benefits)}</span>
+                    </div>
+                    <div class="budget-row">
+                        <span class="budget-category">Recruitment Costs:</span>
+                        <span class="budget-amount">${formatCurrency(budget.recruitment_costs)}</span>
+                    </div>
+                    <div class="budget-row total">
+                        <span class="budget-category">Total Proposed:</span>
+                        <span class="budget-amount">${formatCurrency(totalBudget)}</span>
+                    </div>
+                </div>
+                
+                <div class="budget-details">
+                    <div class="form-group">
+                        <label for="budget-submitted-by-${budget.id}">Submitted By</label>
+                        <input type="text" id="budget-submitted-by-${budget.id}" name="submitted_by" value="${budget.submitted_by || 'Finance Department'}" readonly>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="budget-period-${budget.id}">Budget Period</label>
+                            <input type="text" id="budget-period-${budget.id}" name="budget_period" value="${budget.department || 'Not specified'}" readonly>
+                        </div>
+                        <div class="form-group">
+                            <label for="budget-submission-date-${budget.id}">Submission Date</label>
+                            <input type="text" id="budget-submission-date-${budget.id}" name="submission_date" value="${formatDate(budget.submission_date)}" readonly>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="budget-justification-${budget.id}">Justification</label>
+                        <textarea id="budget-justification-${budget.id}" name="justification" rows="4" readonly>${budget.justification || 'No justification provided'}</textarea>
+                    </div>
+                    ${budget.approved_by ? `
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="budget-approved-by-${budget.id}">Approved By</label>
+                            <input type="text" id="budget-approved-by-${budget.id}" name="approved_by" value="${budget.approved_by}" readonly>
+                        </div>
+                        <div class="form-group">
+                            <label for="budget-approval-date-${budget.id}">Approval Date</label>
+                            <input type="text" id="budget-approval-date-${budget.id}" name="approval_date" value="${formatDate(budget.approval_date)}" readonly>
+                        </div>
+                    </div>
+                    ` : ''}
+                </div>
+                
+                <div class="budget-actions">
+                    ${budget.status === 'pending' ? `
+                        <button class="action" onclick="approveBudget('${budget.id}')">Approve Budget</button>
+                        <button class="action" onclick="modifyBudget('${budget.id}')" style="background: #ffc107;">Request Modification</button>
+                        <button class="action" onclick="rejectBudget('${budget.id}')" style="background: #dc3545;">Reject Budget</button>
+                    ` : budget.status === 'modification_requested' ? `
+                        <button class="action" onclick="approveBudget('${budget.id}')">Approve Budget</button>
+                        <button class="action" onclick="rejectBudget('${budget.id}')" style="background: #dc3545;">Reject Budget</button>
+                    ` : `
+                        <button class="action disabled" disabled>Budget ${getStatusText(budget.status)}</button>
+                    `}
+                </div>
+            </div>
+        `;
+    }).join('');
+    
+    container.innerHTML = budgetsHtml;
+    console.log('✅ Workforce budgets displayed successfully');
+}
+
+// Approve workforce budget
+function approveBudget(budgetId) {
+    if (!confirm('Are you sure you want to approve this workforce budget?')) {
+        return;
+    }
+    
+    console.log('✅ Approving workforce budget:', budgetId);
+    
+    const baseUrl = window.location.origin;
+    fetch(`${baseUrl}/api/workforce-budget/${budgetId}/approve`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${sessionManager.getAuthToken()}`
+        },
+        body: JSON.stringify({
+            approved_by: sessionManager.getUser()?.name || 'Managing Director',
+            comments: 'Budget approved by Managing Director'
+        })
+    })
+    .then(response => response.json())
+    .then(result => {
+        console.log('✅ Budget approved successfully:', result);
+        customAlert('Workforce budget approved successfully!', 'Success', 'success');
+        // Reload budgets to show updated status
+        loadWorkforceBudgets();
+    })
+    .catch(error => {
+        console.error('❌ Error approving budget:', error);
+        customAlert('Failed to approve budget. Please try again.', 'Error', 'error');
+    });
+}
+
+// Request budget modification
+function modifyBudget(budgetId) {
+    const modificationRequest = prompt('Please specify the modification request:');
+    if (!modificationRequest) {
+        return;
+    }
+    
+    const deadline = prompt('Set deadline for modification (YYYY-MM-DD):', '2026-05-01');
+    if (!deadline) {
+        return;
+    }
+    
+    console.log('🔄 Requesting budget modification:', budgetId);
+    
+    const baseUrl = window.location.origin;
+    fetch(`${baseUrl}/api/workforce-budget/${budgetId}/modify`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${sessionManager.getAuthToken()}`
+        },
+        body: JSON.stringify({
+            modification_request: modificationRequest,
+            requested_by: sessionManager.getUser()?.name || 'Managing Director',
+            deadline: deadline
+        })
+    })
+    .then(response => response.json())
+    .then(result => {
+        console.log('✅ Budget modification requested:', result);
+        customAlert('Budget modification requested successfully!', 'Success', 'success');
+        // Reload budgets to show updated status
+        loadWorkforceBudgets();
+    })
+    .catch(error => {
+        console.error('❌ Error requesting modification:', error);
+        customAlert('Failed to request modification. Please try again.', 'Error', 'error');
+    });
+}
+
+// Reject workforce budget
+function rejectBudget(budgetId) {
+    const rejectionReason = prompt('Please specify the reason for rejection:');
+    if (!rejectionReason) {
+        return;
+    }
+    
+    if (!confirm('Are you sure you want to reject this workforce budget?')) {
+        return;
+    }
+    
+    console.log('❌ Rejecting workforce budget:', budgetId);
+    
+    const baseUrl = window.location.origin;
+    fetch(`${baseUrl}/api/workforce-budget/${budgetId}/reject`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${sessionManager.getAuthToken()}`
+        },
+        body: JSON.stringify({
+            rejection_reason: rejectionReason,
+            rejected_by: sessionManager.getUser()?.name || 'Managing Director'
+        })
+    })
+    .then(response => response.json())
+    .then(result => {
+        console.log('✅ Budget rejected successfully:', result);
+        customAlert('Workforce budget rejected successfully!', 'Success', 'success');
+        // Reload budgets to show updated status
+        loadWorkforceBudgets();
+    })
+    .catch(error => {
+        console.error('❌ Error rejecting budget:', error);
+        customAlert('Failed to reject budget. Please try again.', 'Error', 'error');
+    });
 }
 
 function reviewEmployeeCount(){

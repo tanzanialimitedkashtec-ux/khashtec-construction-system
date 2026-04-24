@@ -25,7 +25,10 @@ router.get('/', async (req, res) => {
             ORDER BY submission_date DESC
         `);
         
-        res.json(rows);
+        // Ensure we always return an array
+        const budgetsArray = Array.isArray(rows) ? rows : [rows];
+        console.log('📊 Returning workforce budgets array:', budgetsArray.length, 'items');
+        res.json(budgetsArray);
     } catch (error) {
         console.error('Error fetching workforce budgets:', error);
         res.status(500).json({ error: 'Failed to fetch workforce budgets' });
