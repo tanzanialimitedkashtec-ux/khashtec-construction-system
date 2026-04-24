@@ -82,15 +82,15 @@ router.get('/', async (req, res) => {
                         created_by: 2
                     },
                     {
-                        employee_id: 30,
-                        employee_name: 'Sarah Johnson',
+                        employee_id: 28,
+                        employee_name: 'Chrispin Golden',
                         contract_type: 'Consulting',
                         start_date: '2026-03-01',
                         end_date: '2026-09-01',
                         salary: 75000.00,
                         contract_status: 'pending',
                         contract_terms: 'Consulting agreement for system implementation',
-                        contract_document: 'consulting_sarah_2026.pdf',
+                        contract_document: 'consulting_chrispin_2026.pdf',
                         created_by: 2
                     }
                 ];
