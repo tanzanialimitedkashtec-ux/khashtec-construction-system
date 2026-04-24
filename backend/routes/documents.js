@@ -105,32 +105,79 @@ router.get('/', async (req, res) => {
     try {
         const { category, type, uploadedBy, search } = req.query;
         
-        // Try to fetch from admin_work table first
+        // Try to fetch from both documents and admin_work tables
         let documents = [];
         
         try {
             const db = require('../database/config/database');
-            const [adminWorkItems] = await db.execute(`
-                SELECT * FROM admin_work 
-                ORDER BY submitted_date DESC
-            `);
             
-            // Transform admin_work data to document format
-            documents = adminWorkItems.map(item => ({
-                id: item.id,
-                title: item.work_title,
-                description: item.work_description,
-                category: item.work_type || 'general',
-                type: 'PDF', // Default type
-                uploadedBy: item.assigned_to || 1,
-                uploadedDate: item.submitted_date,
-                status: item.status || 'active',
-                fileName: `${item.work_title.replace(/[^a-zA-Z0-9]/g, '_')}.pdf`,
-                filePath: `/uploads/documents/${item.id}`,
-                department: item.department_code || 'admin'
-            }));
+            // Fetch from documents table first
+            let realDocuments = [];
+            try {
+                const [documentsItems] = await db.execute(`
+                    SELECT d.*, u.name as uploaded_by_name 
+                    FROM documents d 
+                    LEFT JOIN users u ON d.uploaded_by = u.id 
+                    ORDER BY d.created_at DESC
+                `);
+                
+                realDocuments = documentsItems.map(item => ({
+                    id: item.id,
+                    title: item.title,
+                    description: item.description,
+                    category: item.category,
+                    type: item.file_type,
+                    uploadedBy: item.uploaded_by,
+                    uploadedByName: item.uploaded_by_name,
+                    uploadedDate: item.created_at,
+                    status: item.status,
+                    fileName: item.file_name,
+                    filePath: item.file_path,
+                    fileSize: item.file_size,
+                    source: 'documents'
+                }));
+                
+                console.log('✅ Documents fetched from documents table:', realDocuments.length);
+            } catch (docError) {
+                console.error('❌ Error fetching from documents table:', docError);
+            }
             
-            console.log('✅ Documents fetched from admin_work:', documents.length);
+            // Also fetch from admin_work table
+            let adminWorkDocuments = [];
+            try {
+                const [adminWorkItems] = await db.execute(`
+                    SELECT * FROM admin_work 
+                    WHERE work_type LIKE '%Document%' OR work_title LIKE '%Document%'
+                    ORDER BY submitted_date DESC
+                `);
+                
+                adminWorkDocuments = adminWorkItems.map(item => ({
+                    id: item.id,
+                    title: item.work_title,
+                    description: item.work_description,
+                    category: item.work_type || 'general',
+                    type: 'PDF', // Default type
+                    uploadedBy: item.assigned_to || 1,
+                    uploadedDate: item.submitted_date,
+                    status: item.status || 'active',
+                    fileName: `${item.work_title.replace(/[^a-zA-Z0-9]/g, '_')}.pdf`,
+                    filePath: `/uploads/documents/${item.id}`,
+                    department: item.department_code || 'admin',
+                    source: 'admin_work'
+                }));
+                
+                console.log('✅ Documents fetched from admin_work:', adminWorkDocuments.length);
+            } catch (adminError) {
+                console.error('❌ Error fetching from admin_work table:', adminError);
+            }
+            
+            // Combine both sources
+            documents = [...realDocuments, ...adminWorkDocuments];
+            
+            // Sort by date (newest first)
+            documents.sort((a, b) => new Date(b.uploadedDate) - new Date(a.uploadedDate));
+            
+            console.log('✅ Total documents fetched:', documents.length);
             
         } catch (dbError) {
             console.error('❌ Database error, using fallback documents:', dbError);
@@ -148,7 +195,8 @@ router.get('/', async (req, res) => {
                     filePath: '/uploads/documents/kigali-tower-proposal.pdf',
                     size: 2048576,
                     status: 'active',
-                    description: 'Initial project proposal for Kigali Tower Complex'
+                    description: 'Initial project proposal for Kigali Tower Complex',
+                    source: 'fallback'
                 },
                 {
                     id: 2,
@@ -161,7 +209,8 @@ router.get('/', async (req, res) => {
                     filePath: '/uploads/documents/safety-manual-2024.pdf',
                     size: 5242880,
                     status: 'active',
-                    description: 'Updated safety procedures and guidelines'
+                    description: 'Updated safety procedures and guidelines',
+                    source: 'fallback'
                 }
             ];
         }
@@ -327,7 +376,13 @@ router.post('/', upload.single('file'), async (req, res) => {
                 priority = 'Medium',
                 due_date,
                 assigned_to,
-                submitted_by
+                submitted_by,
+                docType,
+                docDepartment,
+                docPriority,
+                docDescription,
+                docFileName,
+                docFileSize
             } = req.body;
             
             console.log('🔍 Extracted work_type:', work_type);
@@ -335,7 +390,7 @@ router.post('/', upload.single('file'), async (req, res) => {
             console.log('🔍 Extracted priority:', priority);
             
             // Insert into admin_work table
-            const query = `
+            const adminWorkQuery = `
                 INSERT INTO admin_work (
                     department_code,
                     work_type,
@@ -350,7 +405,7 @@ router.post('/', upload.single('file'), async (req, res) => {
                 ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, NOW(), 'pending')
             `;
             
-            const values = [
+            const adminWorkValues = [
                 'admin',
                 work_type,
                 work_title,
@@ -361,72 +416,62 @@ router.post('/', upload.single('file'), async (req, res) => {
                 submitted_by
             ];
             
-            console.log('🔍 Executing admin work query:', query);
-            console.log('📊 Query values:', values);
-            console.log('🔍 Work type value being inserted:', work_type);
-            console.log('🔍 Work type value length:', work_type ? work_type.length : 'null');
+            console.log('🔍 Inserting work item with values:', adminWorkValues);
             
-            // Check if work_type is valid before inserting
-            const validWorkTypes = [
-                'Administrative Operations', 'Compliance Management', 'Staff Oversight', 
-                'Policy Implementation', 'Document Management', 'Document Upload', 
-                'Project Creation', 'Safety Policy Upload', 'Toolbox Meeting', 'PPE Issuance', 'Safety Violation', 'Inspection Report', 'Budget Management', 'Expense Report', 'Property Management', 'Client Registration', 'User Account Management', 'System Administration', 'Department Coordination'
-            ];
+            const adminWorkResult = await db.execute(adminWorkQuery, adminWorkValues);
+            console.log('✅ Work item inserted successfully:', adminWorkResult);
             
-            if (!validWorkTypes.includes(work_type)) {
-                console.error('❌ Invalid work_type:', work_type);
-                console.error('❌ Valid work types:', validWorkTypes);
-                return res.status(400).json({
-                    error: 'Invalid work type',
-                    details: `Work type "${work_type}" is not valid. Valid types: ${validWorkTypes.join(', ')}`
-                });
-            }
-            
+            // Also insert into documents table
             try {
-                console.log('🔍 About to execute database query...');
-                console.log('🔍 Query:', query);
-                console.log('🔍 Values:', values);
-                console.log('🔍 Values type:', typeof values);
-                console.log('🔍 Values is array:', Array.isArray(values));
-                console.log('🔍 Values length:', values ? values.length : 'null');
+                const documentsQuery = `
+                    INSERT INTO documents (
+                        title,
+                        description,
+                        file_name,
+                        file_size,
+                        file_type,
+                        category,
+                        uploaded_by,
+                        status
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, 'Pending')
+                `;
                 
-                // Try to execute query with detailed error handling
-                const result = await db.execute(query, values);
-                console.log('🔍 Query result type:', typeof result);
-                console.log('🔍 Query result is array:', Array.isArray(result));
-                console.log('🔍 Query result:', result);
-                
-                // MySQL2 returns [rows, fields] or just rows depending on configuration
-                let insertResult;
-                if (Array.isArray(result)) {
-                    insertResult = result[0]; // First element is usually the rows/result
-                } else {
-                    insertResult = result; // Use result directly if it's not an array
-                }
-                
-                console.log('🔍 Insert result:', insertResult);
-                console.log('✅ Admin work item created:', insertResult);
-                
-                // Return success response
-                res.status(201).json({
-                    message: 'Document work item created successfully',
-                    id: insertResult.insertId,
-                    work_type,
+                const documentsValues = [
                     work_title,
+                    docDescription || work_description,
+                    docFileName || `${work_title.replace(/[^a-zA-Z0-9]/g, '_')}.pdf`,
+                    docFileSize || 0,
+                    docType || 'PDF',
+                    docDepartment || 'Other',
+                    submitted_by || 1
+                ];
+                
+                console.log('🔍 Inserting document with values:', documentsValues);
+                
+                const documentsResult = await db.execute(documentsQuery, documentsValues);
+                console.log('✅ Document inserted successfully:', documentsResult);
+                
+                res.json({
+                    success: true,
+                    message: 'Document uploaded successfully',
+                    id: documentsResult.insertId,
+                    adminWorkId: adminWorkResult.insertId,
                     status: 'pending'
                 });
-            } catch (dbError) {
-                console.error('❌ Database error details:', {
-                    message: dbError.message,
-                    stack: dbError.stack,
-                    code: dbError.code,
-                    errno: dbError.errno,
-                    sqlState: dbError.sqlState,
-                    sqlMessage: dbError.sqlMessage
+                
+            } catch (docError) {
+                console.error('❌ Error inserting into documents table:', docError);
+                // Still return success for admin_work insertion
+                res.json({
+                    success: true,
+                    message: 'Work item uploaded successfully (document table error)',
+                    id: adminWorkResult.insertId,
+                    status: 'pending',
+                    warning: 'Document table insertion failed'
                 });
-                throw dbError;
             }
             
+            return;
         } else if (!req.file) {
             // Traditional file upload without file
             return res.status(400).json({

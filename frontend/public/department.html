@@ -14821,18 +14821,102 @@ function uploadDocs(){
             
             <div class="recent-uploads">
                 <h4>Recent Uploads</h4>
-                <div class="upload-list">
-                    <div class="upload-item">
-                        <div class="upload-info">
-                            <strong>Q1 Financial Report</strong>
-                            <p>Type: Report | Department: Finance</p>
-                            <p>Uploaded: March 5, 2026 | Status: Approved</p>
-                        </div>
-                    </div>
+                <div class="upload-list" id="recentUploadsList">
+                    <div class="loading">Loading recent documents...</div>
                 </div>
             </div>
         </div>
     </div>`);
+    
+    // Load real documents for recent uploads
+    loadRecentDocuments();
+}
+
+// Load recent documents from database
+async function loadRecentDocuments() {
+    console.log('🔄 Loading recent documents...');
+    
+    try {
+        const baseUrl = window.location.origin;
+        const response = await fetch(`${baseUrl}/api/documents`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${sessionManager.getAuthToken()}`
+            }
+        });
+        
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+        
+        const data = await response.json();
+        const documents = data.documents || [];
+        console.log('📊 Recent documents:', documents);
+        
+        const recentUploadsList = document.getElementById('recentUploadsList');
+        if (!recentUploadsList) return;
+        
+        if (documents.length === 0) {
+            recentUploadsList.innerHTML = '<div class="no-documents">No documents found</div>';
+            return;
+        }
+        
+        // Show only the 5 most recent documents
+        const recentDocuments = documents.slice(0, 5);
+        
+        const documentsHtml = recentDocuments.map(doc => {
+            const formatDate = (dateStr) => {
+                if (!dateStr) return 'Unknown';
+                const date = new Date(dateStr);
+                return date.toLocaleDateString('en-US', { 
+                    year: 'numeric', 
+                    month: 'short', 
+                    day: 'numeric' 
+                });
+            };
+            
+            const formatFileSize = (size) => {
+                if (!size) return 'Unknown size';
+                const bytes = parseInt(size);
+                if (bytes === 0) return '0 Bytes';
+                const k = 1024;
+                const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+                const i = Math.floor(Math.log(bytes) / Math.log(k));
+                return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+            };
+            
+            const getStatusBadge = (status) => {
+                const statusClass = status === 'Approved' ? 'approved' : 
+                                   status === 'Pending' ? 'pending' : 
+                                   status === 'Draft' ? 'draft' : 'active';
+                return `<span class="status-badge ${statusClass}">${status}</span>`;
+            };
+            
+            return `
+                <div class="upload-item">
+                    <div class="upload-info">
+                        <strong>${doc.title}</strong>
+                        <p>Type: ${doc.type || doc.category || 'Unknown'} | Department: ${doc.department || doc.category || 'Unknown'}</p>
+                        <p>Uploaded: ${formatDate(doc.uploadedDate)} | ${getStatusBadge(doc.status)}</p>
+                        ${doc.fileSize ? `<p>Size: ${formatFileSize(doc.fileSize)}</p>` : ''}
+                        ${doc.uploadedByName ? `<p>By: ${doc.uploadedByName}</p>` : ''}
+                        ${doc.source ? `<p><small>Source: ${doc.source}</small></p>` : ''}
+                    </div>
+                </div>
+            `;
+        }).join('');
+        
+        recentUploadsList.innerHTML = documentsHtml;
+        console.log(`✅ Recent documents displayed: ${recentDocuments.length} documents`);
+        
+    } catch (error) {
+        console.error('❌ Error loading recent documents:', error);
+        const recentUploadsList = document.getElementById('recentUploadsList');
+        if (recentUploadsList) {
+            recentUploadsList.innerHTML = '<div class="error">Failed to load documents</div>';
+        }
+    }
 }
 
 function uploadDocument() {
@@ -14885,12 +14969,19 @@ function uploadDocument() {
     // Prepare work item for Admin department
     const workItem = {
         work_type: 'Document Management', // Temporary fix - use existing ENUM value
-        work_title: `Document Upload - ${docTitle}`,
-        work_description: `Document Uploaded\n\nTitle: ${docTitle}\nType: ${docType}\nDepartment: ${docDepartment}\nDescription: ${docDescription}\nFile: ${docFile.name} (${(docFile.size / 1024).toFixed(2)} KB)\nPriority: ${docPriority}\nUploaded By: ${documentData.uploadedBy}\nUpload Date: ${documentData.uploadDate}\nStatus: ${documentData.status}`,
+        work_title: docTitle,
+        work_description: docDescription,
         priority: docPriority === 'urgent' ? 'High' : docPriority === 'important' ? 'Medium' : 'Low',
         due_date: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], // 7 days from now
         assigned_to: 'Admin Assistant',
-        submitted_by: 'Admin Assistant'
+        submitted_by: 'Admin Assistant',
+        // Additional document fields
+        docType: docType,
+        docDepartment: docDepartment,
+        docPriority: docPriority,
+        docDescription: docDescription,
+        docFileName: docFile.name,
+        docFileSize: docFile.size
     };
     
     // Show loading message
