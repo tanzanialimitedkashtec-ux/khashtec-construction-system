@@ -26,6 +26,32 @@ router.get('/', async (req, res) => {
         try {
             const db = require('../../database/config/database');
             
+            // Ensure attendance table exists
+            try {
+                await db.execute(`
+                    CREATE TABLE IF NOT EXISTS attendance (
+                        id INT AUTO_INCREMENT PRIMARY KEY,
+                        employee_id VARCHAR(50) NOT NULL,
+                        employee_name VARCHAR(255) NOT NULL,
+                        date DATE NOT NULL,
+                        check_in TIME NOT NULL,
+                        check_out TIME NULL,
+                        status VARCHAR(50) DEFAULT 'present',
+                        department VARCHAR(100) NULL,
+                        notes TEXT NULL,
+                        hours_worked DECIMAL(5,2) NULL,
+                        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+                        INDEX idx_employee_date (employee_id, date),
+                        INDEX idx_date (date),
+                        INDEX idx_status (status)
+                    )
+                `);
+                console.log('✅ Attendance table verified/created successfully');
+            } catch (tableError) {
+                console.log('⚠️ Could not create attendance table:', tableError.message);
+            }
+            
             let query = 'SELECT * FROM attendance';
             const params = [];
             
@@ -112,6 +138,32 @@ router.get('/all', async (req, res) => {
         
         try {
             const db = require('../../database/config/database');
+            
+            // Ensure attendance table exists
+            try {
+                await db.execute(`
+                    CREATE TABLE IF NOT EXISTS attendance (
+                        id INT AUTO_INCREMENT PRIMARY KEY,
+                        employee_id VARCHAR(50) NOT NULL,
+                        employee_name VARCHAR(255) NOT NULL,
+                        date DATE NOT NULL,
+                        check_in TIME NOT NULL,
+                        check_out TIME NULL,
+                        status VARCHAR(50) DEFAULT 'present',
+                        department VARCHAR(100) NULL,
+                        notes TEXT NULL,
+                        hours_worked DECIMAL(5,2) NULL,
+                        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+                        INDEX idx_employee_date (employee_id, date),
+                        INDEX idx_date (date),
+                        INDEX idx_status (status)
+                    )
+                `);
+                console.log('✅ Attendance table verified/created successfully in /all endpoint');
+            } catch (tableError) {
+                console.log('⚠️ Could not create attendance table in /all endpoint:', tableError.message);
+            }
             
             let query = 'SELECT * FROM attendance';
             const params = [];
