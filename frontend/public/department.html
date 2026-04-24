@@ -6933,11 +6933,7 @@ function manageLeaveContracts(){
                     <div class="form-group">
                         <label>Employee *</label>
                         <select id="leaveEmployee" required>
-                            <option value="">Select Employee</option>
-                            <option value="emp001">John Doe</option>
-                            <option value="emp002">Jane Smith</option>
-                            <option value="emp003">Mike Johnson</option>
-                            <option value="emp004">Sarah Wilson</option>
+                            <option value="">Loading employees...</option>
                         </select>
                     </div>
                     <div class="form-group">
@@ -6997,11 +6993,7 @@ function manageLeaveContracts(){
                     <div class="form-group">
                         <label>Employee *</label>
                         <select id="contractEmployee" required>
-                            <option value="">Select Employee</option>
-                            <option value="emp001">John Doe</option>
-                            <option value="emp002">Jane Smith</option>
-                            <option value="emp003">Mike Johnson</option>
-                            <option value="emp004">Sarah Wilson</option>
+                            <option value="">Loading employees...</option>
                         </select>
                     </div>
                     <div class="form-group">
@@ -7061,6 +7053,76 @@ function manageLeaveContracts(){
             </form>
         </div>
     </div>`);
+    
+    // Load real employees for both forms
+    loadEmployeesForLeaveContracts();
+}
+
+// Load employees for leave and contract forms
+async function loadEmployeesForLeaveContracts() {
+    console.log('🔄 Loading employees for leave & contracts...');
+    
+    try {
+        const baseUrl = window.location.origin;
+        const response = await fetch(`${baseUrl}/api/employees`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${sessionManager.getAuthToken()}`
+            }
+        });
+        
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+        
+        const employees = await response.json();
+        console.log('📊 Employees for leave & contracts:', employees);
+        
+        // Update leave form employee dropdown
+        const leaveSelect = document.getElementById('leaveEmployee');
+        if (leaveSelect) {
+            leaveSelect.innerHTML = '<option value="">Select Employee</option>';
+            employees.forEach(employee => {
+                const option = document.createElement('option');
+                option.value = employee.id;
+                const displayName = employee.full_name || `Employee ${employee.id}`;
+                const position = employee.position || 'Unknown Position';
+                option.textContent = `${displayName} - ${position}`;
+                leaveSelect.appendChild(option);
+            });
+        }
+        
+        // Update contract form employee dropdown
+        const contractSelect = document.getElementById('contractEmployee');
+        if (contractSelect) {
+            contractSelect.innerHTML = '<option value="">Select Employee</option>';
+            employees.forEach(employee => {
+                const option = document.createElement('option');
+                option.value = employee.id;
+                const displayName = employee.full_name || `Employee ${employee.id}`;
+                const position = employee.position || 'Unknown Position';
+                option.textContent = `${displayName} - ${position}`;
+                contractSelect.appendChild(option);
+            });
+        }
+        
+        console.log(`✅ Employee dropdowns populated with ${employees.length} employees`);
+        
+    } catch (error) {
+        console.error('❌ Error loading employees for leave & contracts:', error);
+        
+        // Update both dropdowns with error state
+        const leaveSelect = document.getElementById('leaveEmployee');
+        const contractSelect = document.getElementById('contractEmployee');
+        
+        if (leaveSelect) {
+            leaveSelect.innerHTML = '<option value="">Error loading employees</option>';
+        }
+        if (contractSelect) {
+            contractSelect.innerHTML = '<option value="">Error loading employees</option>';
+        }
+    }
 }
 
 // ===== API CONNECTION TEST =====
