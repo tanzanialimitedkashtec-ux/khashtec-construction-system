@@ -3139,16 +3139,180 @@ function approveBudget(budgetId) {
 
 // Request budget modification
 function modifyBudget(budgetId) {
-    const modificationRequest = prompt('Please specify the modification request:');
-    if (!modificationRequest) {
-        return;
-    }
+    showModificationModal(budgetId);
+}
+
+function showModificationModal(budgetId) {
+    // Create modal overlay
+    const modalOverlay = document.createElement('div');
+    modalOverlay.className = 'modal-overlay';
+    modalOverlay.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 10000;
+    `;
     
-    const deadline = prompt('Set deadline for modification (YYYY-MM-DD):', '2026-05-01');
-    if (!deadline) {
-        return;
-    }
+    // Create modal content
+    const modalContent = document.createElement('div');
+    modalContent.className = 'modal-content';
+    modalContent.style.cssText = `
+        background: white;
+        padding: 30px;
+        border-radius: 10px;
+        max-width: 600px;
+        width: 90%;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        animation: modalSlideIn 0.3s ease-out;
+    `;
     
+    modalContent.innerHTML = `
+        <h3 style="margin: 0 0 20px 0; color: #ffc107;">Budget Modification Request</h3>
+        <div style="margin-bottom: 20px;">
+            <label style="display: block; margin-bottom: 5px; font-weight: bold;">Modification Request Details:</label>
+            <textarea id="modificationRequest" rows="4" style="
+                width: 100%;
+                padding: 10px;
+                border: 2px solid #ddd;
+                border-radius: 5px;
+                font-size: 14px;
+                resize: vertical;
+                box-sizing: border-box;
+            " placeholder="Please specify what needs to be modified in this budget..."></textarea>
+        </div>
+        <div style="margin-bottom: 20px;">
+            <label style="display: block; margin-bottom: 5px; font-weight: bold;">Deadline for Modification:</label>
+            <input type="date" id="modificationDeadline" style="
+                width: 100%;
+                padding: 10px;
+                border: 2px solid #ddd;
+                border-radius: 5px;
+                font-size: 14px;
+                box-sizing: border-box;
+            " value="2026-05-01">
+        </div>
+        <div style="text-align: right;">
+            <button id="cancelModification" style="
+                background: #6c757d;
+                color: white;
+                border: none;
+                padding: 10px 20px;
+                margin-right: 10px;
+                border-radius: 5px;
+                cursor: pointer;
+                font-size: 14px;
+            ">Cancel</button>
+            <button id="submitModification" style="
+                background: #ffc107;
+                color: black;
+                border: none;
+                padding: 10px 20px;
+                border-radius: 5px;
+                cursor: pointer;
+                font-size: 14px;
+            ">Request Modification</button>
+        </div>
+    `;
+    
+    // Add animation styles
+    const style = document.createElement('style');
+    style.textContent = `
+        @keyframes modalSlideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        .modal-overlay {
+            animation: fadeIn 0.3s ease-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        #modificationRequest:focus, #modificationDeadline:focus {
+            outline: none;
+            border-color: #ffc107;
+            box-shadow: 0 0 5px rgba(255, 193, 7, 0.3);
+        }
+        #submitModification:hover {
+            background: #e0a800;
+        }
+        #cancelModification:hover {
+            background: #5a6268;
+        }
+    `;
+    
+    modalOverlay.appendChild(modalContent);
+    document.head.appendChild(style);
+    document.body.appendChild(modalOverlay);
+    
+    // Add event listeners
+    const submitBtn = modalContent.querySelector('#submitModification');
+    const cancelBtn = modalContent.querySelector('#cancelModification');
+    const textarea = modalContent.querySelector('#modificationRequest');
+    const deadline = modalContent.querySelector('#modificationDeadline');
+    
+    // Auto-focus textarea
+    setTimeout(() => textarea.focus(), 100);
+    
+    // Handle submit
+    submitBtn.addEventListener('click', () => {
+        const modificationRequest = textarea.value.trim();
+        const deadlineValue = deadline.value;
+        
+        if (!modificationRequest) {
+            customAlert('Please specify the modification request details', 'Warning', 'warning');
+            textarea.focus();
+            return;
+        }
+        
+        if (!deadlineValue) {
+            customAlert('Please specify a deadline for modification', 'Warning', 'warning');
+            deadline.focus();
+            return;
+        }
+        
+        // Process modification request
+        processBudgetModification(budgetId, modificationRequest, deadlineValue);
+        closeModal();
+    });
+    
+    // Handle cancel
+    cancelBtn.addEventListener('click', closeModal);
+    
+    // Handle escape key
+    document.addEventListener('keydown', function handleEscape(e) {
+        if (e.key === 'Escape') {
+            closeModal();
+            document.removeEventListener('keydown', handleEscape);
+        }
+    });
+    
+    // Handle overlay click
+    modalOverlay.addEventListener('click', (e) => {
+        if (e.target === modalOverlay) {
+            closeModal();
+        }
+    });
+    
+    function closeModal() {
+        modalOverlay.remove();
+        style.remove();
+    }
+}
+
+function processBudgetModification(budgetId, modificationRequest, deadline) {
     console.log('🔄 Requesting budget modification:', budgetId);
     
     const baseUrl = window.location.origin;
@@ -3179,15 +3343,169 @@ function modifyBudget(budgetId) {
 
 // Reject workforce budget
 function rejectBudget(budgetId) {
-    const rejectionReason = prompt('Please specify the reason for rejection:');
-    if (!rejectionReason) {
-        return;
-    }
+    showRejectionModal(budgetId);
+}
+
+function showRejectionModal(budgetId) {
+    // Create modal overlay
+    const modalOverlay = document.createElement('div');
+    modalOverlay.className = 'modal-overlay';
+    modalOverlay.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 10000;
+    `;
     
-    if (!confirm('Are you sure you want to reject this workforce budget?')) {
-        return;
-    }
+    // Create modal content
+    const modalContent = document.createElement('div');
+    modalContent.className = 'modal-content';
+    modalContent.style.cssText = `
+        background: white;
+        padding: 30px;
+        border-radius: 10px;
+        max-width: 600px;
+        width: 90%;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        animation: modalSlideIn 0.3s ease-out;
+    `;
     
+    modalContent.innerHTML = `
+        <h3 style="margin: 0 0 20px 0; color: #dc3545;">Budget Rejection</h3>
+        <div style="margin-bottom: 20px;">
+            <label style="display: block; margin-bottom: 5px; font-weight: bold;">Reason for Rejection:</label>
+            <textarea id="rejectionReason" rows="4" style="
+                width: 100%;
+                padding: 10px;
+                border: 2px solid #ddd;
+                border-radius: 5px;
+                font-size: 14px;
+                resize: vertical;
+                box-sizing: border-box;
+            " placeholder="Please specify the reason for rejecting this budget..."></textarea>
+        </div>
+        <div style="margin-bottom: 20px; color: #dc3545;">
+            <strong>Warning:</strong> This action cannot be undone. The budget will be marked as rejected.
+        </div>
+        <div style="text-align: right;">
+            <button id="cancelRejection" style="
+                background: #6c757d;
+                color: white;
+                border: none;
+                padding: 10px 20px;
+                margin-right: 10px;
+                border-radius: 5px;
+                cursor: pointer;
+                font-size: 14px;
+            ">Cancel</button>
+            <button id="submitRejection" style="
+                background: #dc3545;
+                color: white;
+                border: none;
+                padding: 10px 20px;
+                border-radius: 5px;
+                cursor: pointer;
+                font-size: 14px;
+            ">Reject Budget</button>
+        </div>
+    `;
+    
+    // Add animation styles
+    const style = document.createElement('style');
+    style.textContent = `
+        @keyframes modalSlideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        .modal-overlay {
+            animation: fadeIn 0.3s ease-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        #rejectionReason:focus {
+            outline: none;
+            border-color: #dc3545;
+            box-shadow: 0 0 5px rgba(220, 53, 69, 0.3);
+        }
+        #submitRejection:hover {
+            background: #c82333;
+        }
+        #cancelRejection:hover {
+            background: #5a6268;
+        }
+    `;
+    
+    modalOverlay.appendChild(modalContent);
+    document.head.appendChild(style);
+    document.body.appendChild(modalOverlay);
+    
+    // Add event listeners
+    const submitBtn = modalContent.querySelector('#submitRejection');
+    const cancelBtn = modalContent.querySelector('#cancelRejection');
+    const textarea = modalContent.querySelector('#rejectionReason');
+    
+    // Auto-focus textarea
+    setTimeout(() => textarea.focus(), 100);
+    
+    // Handle submit
+    submitBtn.addEventListener('click', () => {
+        const rejectionReason = textarea.value.trim();
+        
+        if (!rejectionReason) {
+            customAlert('Please specify the reason for rejection', 'Warning', 'warning');
+            textarea.focus();
+            return;
+        }
+        
+        // Confirm rejection
+        if (!confirm('Are you sure you want to reject this workforce budget? This action cannot be undone.')) {
+            return;
+        }
+        
+        // Process rejection
+        processBudgetRejection(budgetId, rejectionReason);
+        closeModal();
+    });
+    
+    // Handle cancel
+    cancelBtn.addEventListener('click', closeModal);
+    
+    // Handle escape key
+    document.addEventListener('keydown', function handleEscape(e) {
+        if (e.key === 'Escape') {
+            closeModal();
+            document.removeEventListener('keydown', handleEscape);
+        }
+    });
+    
+    // Handle overlay click
+    modalOverlay.addEventListener('click', (e) => {
+        if (e.target === modalOverlay) {
+            closeModal();
+        }
+    });
+    
+    function closeModal() {
+        modalOverlay.remove();
+        style.remove();
+    }
+}
+
+function processBudgetRejection(budgetId, rejectionReason) {
     console.log('❌ Rejecting workforce budget:', budgetId);
     
     const baseUrl = window.location.origin;
