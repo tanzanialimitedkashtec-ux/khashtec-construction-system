@@ -3122,7 +3122,7 @@ window.approveBudget = function(budgetId) {
             'Authorization': `Bearer ${sessionManager.getAuthToken()}`
         },
         body: JSON.stringify({
-            approved_by: sessionManager.getUser()?.name || 'Managing Director',
+            approved_by: sessionManager.getCurrentUser()?.name || 'Managing Director',
             comments: 'Budget approved by Managing Director'
         })
     })
@@ -3327,7 +3327,7 @@ function processBudgetModification(budgetId, modificationRequest, deadline) {
         },
         body: JSON.stringify({
             modification_request: modificationRequest,
-            requested_by: sessionManager.getUser()?.name || 'Managing Director',
+            requested_by: sessionManager.getCurrentUser()?.name || 'Managing Director',
             deadline: deadline
         })
     })
@@ -3480,24 +3480,16 @@ function showRejectionModal(budgetId) {
     // Auto-focus textarea
     setTimeout(() => textarea.focus(), 100);
     
-    // Handle submit
+    // Handle confirm
     submitBtn.addEventListener('click', () => {
-        const rejectionReason = textarea.value.trim();
-        
-        if (!rejectionReason) {
-            customAlert('Please specify the reason for rejection', 'Warning', 'warning');
-            textarea.focus();
-            return;
+        const reason = textarea.value.trim();
+        if (reason) {
+            // Process rejection directly
+            processBudgetRejection(budgetId, reason);
+            closeModal();
+        } else {
+            alert('Please enter a rejection reason');
         }
-        
-        // Confirm rejection
-        if (!confirm('Are you sure you want to reject this workforce budget? This action cannot be undone.')) {
-            return;
-        }
-        
-        // Process rejection
-        processBudgetRejection(budgetId, rejectionReason);
-        closeModal();
     });
     
     // Handle cancel
@@ -3536,7 +3528,7 @@ function processBudgetRejection(budgetId, rejectionReason) {
         },
         body: JSON.stringify({
             rejection_reason: rejectionReason,
-            rejected_by: sessionManager.getUser()?.name || 'Managing Director'
+            rejected_by: sessionManager.getCurrentUser()?.name || 'Managing Director'
         })
     })
     .then(response => response.json())
