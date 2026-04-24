@@ -4,6 +4,48 @@ const path = require('path');
 const fs = require('fs');
 const router = express.Router();
 
+// Simple PDF generation utility
+const generatePDF = (documentData) => {
+    // For now, we'll create a simple HTML-to-PDF conversion
+    // In a production environment, you might use libraries like puppeteer or pdfkit
+    const htmlContent = `
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <meta charset="utf-8">
+        <title>${documentData.work_title}</title>
+        <style>
+            body { font-family: Arial, sans-serif; margin: 40px; }
+            .header { border-bottom: 2px solid #333; padding-bottom: 20px; margin-bottom: 30px; }
+            .title { font-size: 24px; font-weight: bold; color: #333; }
+            .meta { margin: 10px 0; color: #666; }
+            .content { line-height: 1.6; margin-top: 30px; }
+            .footer { margin-top: 50px; border-top: 1px solid #ccc; padding-top: 20px; font-size: 12px; color: #888; }
+        </style>
+    </head>
+    <body>
+        <div class="header">
+            <div class="title">${documentData.work_title}</div>
+            <div class="meta">Document Type: ${documentData.work_type}</div>
+            <div class="meta">Department: ${documentData.department_code || 'Admin'}</div>
+            <div class="meta">Status: ${documentData.status}</div>
+            <div class="meta">Submitted: ${new Date(documentData.submitted_date).toLocaleDateString()}</div>
+        </div>
+        <div class="content">
+            <h3>Description</h3>
+            <p>${documentData.work_description || 'No description available'}</p>
+        </div>
+        <div class="footer">
+            <p>Generated on: ${new Date().toLocaleDateString()}</p>
+            <p>KashTec Construction System - Document Download</p>
+        </div>
+    </body>
+    </html>
+    `;
+    
+    return htmlContent;
+};
+
 // Configure multer for file uploads
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
@@ -109,7 +151,7 @@ router.get('/', async (req, res) => {
         let documents = [];
         
         try {
-            const db = require('../../database/config/database');
+            const db = require('../../../database/config/database');
             
             // Fetch from documents table first
             let realDocuments = [];
@@ -303,7 +345,7 @@ router.get('/:id', async (req, res) => {
         
         // Try database first, fallback to mock data
         try {
-            const db = require('../../database/config/database');
+            const db = require('../../../database/config/database');
             const [adminWorkItems] = await db.execute(
                 'SELECT * FROM admin_work WHERE id = ?', [docId]
             );
@@ -404,7 +446,7 @@ router.post('/', upload.single('file'), async (req, res) => {
             // This is a work item submission from frontend forms
             console.log('🔄 Processing work item submission...');
             
-            const db = require('../../database/config/database');
+            const db = require('../../../database/config/database');
             const {
                 work_type,
                 work_title,
@@ -726,32 +768,41 @@ router.delete('/:id', (req, res) => {
 router.get('/:id/download', async (req, res) => {
     try {
         const docId = req.params.id;
+        console.log(`📄 Download request for document ID: ${docId}`);
         
         // Fetch from admin_work table
-        const db = require('../../database/config/database');
+        const db = require('../../../database/config/database');
         const [adminWorkItems] = await db.execute(
             'SELECT * FROM admin_work WHERE id = ?', [docId]
         );
         
         if (adminWorkItems.length === 0) {
+            console.log(`❌ Document not found: ${docId}`);
             return res.status(404).json({
-                error: 'Document not found'
+                error: 'Document not found',
+                details: `No document found with ID: ${docId}`
             });
         }
         
         const item = adminWorkItems[0];
+        console.log(`✅ Found document: ${item.work_title}`);
         
-        // For admin work items, create a simple text file as placeholder
-        const content = `Document: ${item.work_title}\nDescription: ${item.work_description}\nType: ${item.work_type}\nSubmitted: ${item.submitted_date}\nStatus: ${item.status}\nDepartment: ${item.department_code || 'admin'}`;
+        // Generate PDF content as HTML
+        const pdfContent = generatePDF(item);
         
-        const fileName = `${item.work_title.replace(/[^a-zA-Z0-9]/g, '_')}.txt`;
+        // Create a proper filename
+        const fileName = `${item.work_title.replace(/[^a-zA-Z0-9\s]/g, '_').trim()}.pdf`;
         
-        res.setHeader('Content-Type', 'text/plain');
+        // Set headers for PDF download
+        res.setHeader('Content-Type', 'application/pdf');
         res.setHeader('Content-Disposition', `attachment; filename="${fileName}"`);
-        res.send(content);
+        res.setHeader('Content-Length', Buffer.byteLength(pdfContent, 'utf8'));
+        
+        console.log(`📤 Sending PDF: ${fileName}`);
+        res.send(pdfContent);
         
     } catch (error) {
-        console.error('Error downloading document:', error);
+        console.error('❌ Error downloading document:', error);
         res.status(500).json({ 
             error: 'Failed to download document',
             details: error.message 
