@@ -15,33 +15,55 @@ router.get('/test', (req, res) => {
 // Get all contracts
 router.get('/', async (req, res) => {
     try {
-        console.log('📋 Fetching contracts...');
+        console.log(' Fetching contracts...');
         
-        // Check if contracts table exists
+        // Ensure contracts table exists
+        try {
+            await db.execute(`
+                CREATE TABLE IF NOT EXISTS contracts (
+                    id INT AUTO_INCREMENT PRIMARY KEY,
+                    employee_id INT,
+                    employee_name VARCHAR(255) NOT NULL,
+                    contract_type VARCHAR(100) NOT NULL,
+                    start_date DATE NOT NULL,
+                    end_date DATE NULL,
+                    salary DECIMAL(10,2) NOT NULL,
+                    contract_status ENUM('active', 'expired', 'terminated', 'pending') DEFAULT 'active',
+                    contract_terms TEXT NULL,
+                    contract_document VARCHAR(255) NULL,
+                    created_by INT NULL,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+                    INDEX idx_employee_id (employee_id),
+                    INDEX idx_contract_type (contract_type),
+                    INDEX idx_status (contract_status),
+                    INDEX idx_start_date (start_date),
+                    INDEX idx_created_at (created_at)
+                )
+            `);
+            console.log(' Contracts table verified/created successfully');
+        } catch (tableError) {
+            console.log(' Could not create contracts table:', tableError.message);
+        }
+        
+        // Fetch contracts
         try {
             const [contracts] = await db.execute(`
                 SELECT * FROM contracts 
                 ORDER BY created_at DESC
             `);
             
-            console.log('✅ Contracts fetched:', contracts.length);
+            console.log(' Contracts fetched:', contracts.length);
             res.json({ contracts: contracts });
             
-        } catch (tableError) {
-            console.error('❌ Contracts table error:', tableError.message);
-            
-            // Check if table doesn't exist
-            if (tableError.message.includes("doesn't exist") || tableError.message.includes('Unknown table')) {
-                console.log('⚠️ Contracts table does not exist, returning empty array');
-                res.json({ contracts: [] });
-            } else {
-                throw tableError;
-            }
+        } catch (fetchError) {
+            console.error(' Error fetching contracts data:', fetchError.message);
+            res.json({ contracts: [] });
         }
         
     } catch (error) {
-        console.error('❌ Error fetching contracts:', error);
-        res.status(500).json({ error: 'Failed to fetch contracts', details: error.message });
+        console.error(' Error fetching contracts:', error);
+        res.status(500).json({ error: 'Failed to fetch contracts' });
     }
 });
 

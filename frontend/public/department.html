@@ -16036,26 +16036,40 @@ function closeEmployeeDetails() {
     goBack();
 }
 
+// Add debouncing to prevent infinite loops
+let backButtonTimeout = null;
+
 function goBack() {
-    console.log('🔙 Going back...');
-    
-    // Try to go back in browser history
-    if (window.history.length > 1) {
-        window.history.back();
-    } else {
-        // If no history, go back to main menu
-        console.log('🏠 No history available, returning to main menu');
-        showContent(`
-            <div class="card">
-                <h3>🏠 Main Menu</h3>
-                <p>Welcome back to the main menu. Select an option from the navigation menu.</p>
-                <div class="form-actions">
-                    <button class="action" onclick="officePortal()">🏢 Office Portal</button>
-                    <button class="action" onclick="showContent('')">📋 Dashboard</button>
-                </div>
-            </div>
-        `);
+    // Clear any existing timeout
+    if (backButtonTimeout) {
+        clearTimeout(backButtonTimeout);
     }
+    
+    // Set new timeout to prevent rapid multiple calls
+    backButtonTimeout = setTimeout(() => {
+        console.log('🔙 Going back...');
+        
+        // Try to go back in browser history
+        if (window.history.length > 1) {
+            window.history.back();
+        } else {
+            // If no history, go back to main menu
+            console.log('🏠 No history available, returning to main menu');
+            showContent(`
+                <div class="card">
+                    <h3>🏠 Main Menu</h3>
+                    <p>Welcome back to the main menu. Select an option from the navigation menu.</p>
+                    <div class="form-actions">
+                        <button class="action" onclick="officePortal()">🏢 Office Portal</button>
+                        <button class="action" onclick="showContent('')">📋 Dashboard</button>
+                    </div>
+                </div>
+            `);
+        }
+        
+        // Clear timeout after execution
+        backButtonTimeout = null;
+    }, 100); // 100ms debounce
 }
 
 function scheduleMeeting(){
