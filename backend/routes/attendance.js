@@ -13,13 +13,92 @@ router.get('/test', (req, res) => {
     });
 });
 
-// Root endpoint test
-router.get('/', (req, res) => {
-    console.log('📝 Attendance root endpoint accessed');
-    res.json({ 
-        message: 'Attendance API root endpoint',
-        available_endpoints: ['GET /test', 'GET /all', 'POST /', 'GET /:id', 'PUT /:id', 'GET /employee/:employeeId', 'GET /date/:date']
-    });
+// Root endpoint - handle query parameters
+router.get('/', async (req, res) => {
+    try {
+        console.log('📝 Attendance root endpoint accessed with query params');
+        console.log('📝 Query parameters:', req.query);
+        
+        const { employeeId, date, status, startDate, endDate } = req.query;
+        
+        let attendance = [];
+        
+        try {
+            const db = require('../../database/config/database');
+            
+            let query = 'SELECT * FROM attendance';
+            const params = [];
+            
+            if (employeeId) {
+                query += ' WHERE employee_id = ?';
+                params.push(employeeId);
+            }
+            
+            if (date) {
+                query += employeeId ? ' AND date = ?' : ' WHERE date = ?';
+                params.push(date);
+            }
+            
+            if (status) {
+                query += (employeeId || date) ? ' AND status = ?' : ' WHERE status = ?';
+                params.push(status);
+            }
+            
+            if (startDate && endDate) {
+                query += (employeeId || date || status) ? ' AND date BETWEEN ? AND ?' : ' WHERE date BETWEEN ? AND ?';
+                params.push(startDate, endDate);
+            }
+            
+            query += ' ORDER BY date DESC, check_in DESC';
+            
+            const attendanceResult = await db.execute(query, params);
+            
+            // Handle different database response formats
+            if (Array.isArray(attendanceResult)) {
+                attendance = attendanceResult;
+            } else if (attendanceResult && Array.isArray(attendanceResult[0])) {
+                attendance = attendanceResult[0];
+            } else if (attendanceResult && attendanceResult.rows) {
+                attendance = attendanceResult.rows;
+            } else {
+                attendance = [];
+            }
+            
+            console.log('✅ Attendance records fetched from database:', attendance.length);
+        } catch (dbError) {
+            console.error('❌ Database error, using fallback attendance records:', dbError);
+            
+            // Fallback to mock attendance records
+            attendance = [
+                {
+                    id: 1,
+                    employee_id: 'EMP001',
+                    employee_name: 'John Doe',
+                    date: '2024-01-15',
+                    check_in: '08:00',
+                    check_out: '17:00',
+                    status: 'present',
+                    hours_worked: 9.0,
+                    department: 'IT',
+                    created_at: '2024-01-15T08:00:00Z'
+                }
+            ];
+        }
+        
+        res.json({
+            success: true,
+            attendance: attendance,
+            total: attendance.length
+        });
+        
+    } catch (error) {
+        console.error('❌ Error fetching attendance records:', error);
+        res.status(500).json({ 
+            success: false,
+            error: 'Failed to fetch attendance records',
+            details: error.message 
+        });
+    }
 });
 
 // Get all attendance records
@@ -60,7 +139,18 @@ router.get('/all', async (req, res) => {
             query += ' ORDER BY date DESC, check_in DESC';
             
             const attendanceResult = await db.execute(query, params);
-            attendance = Array.isArray(attendanceResult) ? attendanceResult[0] : attendanceResult;
+            
+            // Handle different database response formats
+            if (Array.isArray(attendanceResult)) {
+                attendance = attendanceResult;
+            } else if (attendanceResult && Array.isArray(attendanceResult[0])) {
+                attendance = attendanceResult[0];
+            } else if (attendanceResult && attendanceResult.rows) {
+                attendance = attendanceResult.rows;
+            } else {
+                attendance = [];
+            }
+            
             console.log('✅ Attendance records fetched from database:', attendance.length);
         } catch (dbError) {
             console.error('❌ Database error, using fallback attendance records:', dbError);
