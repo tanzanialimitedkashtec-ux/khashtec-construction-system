@@ -17,17 +17,31 @@ router.get('/', async (req, res) => {
     try {
         console.log('📋 Fetching contracts...');
         
-        const [contracts] = await db.execute(`
-            SELECT * FROM contracts 
-            ORDER BY created_at DESC
-        `);
-        
-        console.log('✅ Contracts fetched:', contracts.length);
-        res.json(contracts);
+        // Check if contracts table exists
+        try {
+            const [contracts] = await db.execute(`
+                SELECT * FROM contracts 
+                ORDER BY created_at DESC
+            `);
+            
+            console.log('✅ Contracts fetched:', contracts.length);
+            res.json({ contracts: contracts });
+            
+        } catch (tableError) {
+            console.error('❌ Contracts table error:', tableError.message);
+            
+            // Check if table doesn't exist
+            if (tableError.message.includes("doesn't exist") || tableError.message.includes('Unknown table')) {
+                console.log('⚠️ Contracts table does not exist, returning empty array');
+                res.json({ contracts: [] });
+            } else {
+                throw tableError;
+            }
+        }
         
     } catch (error) {
         console.error('❌ Error fetching contracts:', error);
-        res.status(500).json({ error: 'Failed to fetch contracts' });
+        res.status(500).json({ error: 'Failed to fetch contracts', details: error.message });
     }
 });
 

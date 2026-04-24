@@ -114,14 +114,32 @@ router.get('/', async (req, res) => {
             // Fetch from documents table first
             let realDocuments = [];
             try {
-                const [documentsItems] = await db.execute(`
+                const documentsItems = await db.execute(`
                     SELECT d.*, u.name as uploaded_by_name 
                     FROM documents d 
                     LEFT JOIN users u ON d.uploaded_by = u.id 
                     ORDER BY d.created_at DESC
                 `);
                 
-                realDocuments = documentsItems.map(item => ({
+                console.log('🔍 Documents query result type:', typeof documentsItems);
+                console.log('🔍 Documents query result:', documentsItems);
+                
+                // Handle different database response formats
+                let documentsArray = [];
+                if (Array.isArray(documentsItems)) {
+                    documentsArray = documentsItems;
+                } else if (documentsItems && Array.isArray(documentsItems[0])) {
+                    documentsArray = documentsItems[0];
+                } else if (documentsItems && documentsItems.rows) {
+                    documentsArray = documentsItems.rows;
+                } else {
+                    console.warn('⚠️ Unexpected documents query result format:', documentsItems);
+                    documentsArray = [];
+                }
+                
+                console.log('🔍 Documents array length:', documentsArray.length);
+                
+                realDocuments = documentsArray.map(item => ({
                     id: item.id,
                     title: item.title,
                     description: item.description,
@@ -145,13 +163,31 @@ router.get('/', async (req, res) => {
             // Also fetch from admin_work table
             let adminWorkDocuments = [];
             try {
-                const [adminWorkItems] = await db.execute(`
+                const adminWorkItems = await db.execute(`
                     SELECT * FROM admin_work 
                     WHERE work_type LIKE '%Document%' OR work_title LIKE '%Document%'
                     ORDER BY submitted_date DESC
                 `);
                 
-                adminWorkDocuments = adminWorkItems.map(item => ({
+                console.log('🔍 Admin work query result type:', typeof adminWorkItems);
+                console.log('🔍 Admin work query result:', adminWorkItems);
+                
+                // Handle different database response formats
+                let adminWorkArray = [];
+                if (Array.isArray(adminWorkItems)) {
+                    adminWorkArray = adminWorkItems;
+                } else if (adminWorkItems && Array.isArray(adminWorkItems[0])) {
+                    adminWorkArray = adminWorkItems[0];
+                } else if (adminWorkItems && adminWorkItems.rows) {
+                    adminWorkArray = adminWorkItems.rows;
+                } else {
+                    console.warn('⚠️ Unexpected admin_work query result format:', adminWorkItems);
+                    adminWorkArray = [];
+                }
+                
+                console.log('🔍 Admin work array length:', adminWorkArray.length);
+                
+                adminWorkDocuments = adminWorkArray.map(item => ({
                     id: item.id,
                     title: item.work_title,
                     description: item.work_description,
