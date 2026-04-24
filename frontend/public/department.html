@@ -2942,15 +2942,11 @@ function loadWorkforceBudgets() {
             '<div class="error">Failed to load workforce budgets. Please try again.</div>';
     });
 }
-
-// Display workforce budgets
 function displayWorkforceBudgets(budgets) {
     console.log('🎨 displayWorkforceBudgets called with:', budgets.length, 'budgets');
     
-    const container = document.getElementById('budget-proposals-container');
-    
     if (!budgets || budgets.length === 0) {
-        container.innerHTML = '<div class="no-budgets">No workforce budgets found</div>';
+        showContent('<div class="card"><h3>Workforce Budget Proposals</h3><div class="no-budgets">No workforce budgets found</div></div>');
         return;
     }
     
@@ -3047,6 +3043,7 @@ function displayWorkforceBudgets(budgets) {
                     <div class="form-row">
                         <div class="form-group">
                             <label for="budget-submission-date-${budget.id}">Submission Date</label>
+                        <input type="text" id="budget-submission-date-${budget.id}" name="submission_date" value="${formatDate(budget.submission_date)}" readonly>
                             <input type="text" id="budget-submission-date-${budget.id}" name="submission_date" value="${formatDate(budget.submission_date)}" readonly>
                         </div>
                         <div class="form-group">
