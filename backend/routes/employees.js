@@ -784,10 +784,8 @@ router.post('/action', async (req, res) => {
     }
     
     try {
-        const connection = await db.getConnection();
-        
         // Get employee details for work title
-        const [employeeData] = await connection.query(
+        const employeeData = await db.execute(
             'SELECT full_name, position FROM employees WHERE id = ?',
             [employeeId]
         );
@@ -795,44 +793,72 @@ router.post('/action', async (req, res) => {
         const employeeName = employeeData[0]?.full_name || `Employee ${employeeId}`;
         const employeePosition = employeeData[0]?.position || 'Unknown Position';
         
-        // Insert into hr_work table
-        const [result] = await connection.query(`
-            INSERT INTO hr_work 
-            (work_type, work_title, work_description, employee_name, employee_id, 
-             work_status, created_by, created_date, department_code)
-            VALUES (?, ?, ?, ?, ?, 'executed', ?, CURDATE(), 'HR')
+        // Check if worker_action table exists, if not create it
+        try {
+            await db.execute(`
+                CREATE TABLE IF NOT EXISTS worker_action (
+                    id INT AUTO_INCREMENT PRIMARY KEY,
+                    employee_id INT NOT NULL,
+                    action_type ENUM('suspend', 'terminate', 'demote') NOT NULL,
+                    action_date DATE NOT NULL,
+                    reason_category ENUM('misconduct', 'performance', 'violation', 'redundancy', 'restructuring', 'other') NOT NULL,
+                    action_details TEXT NOT NULL,
+                    suspension_days INT NULL,
+                    final_payment_date DATE NULL,
+                    md_notes TEXT NULL,
+                    decided_by VARCHAR(255) NOT NULL,
+                    decided_date DATE NOT NULL,
+                    status ENUM('pending', 'executed', 'cancelled') DEFAULT 'executed',
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    INDEX idx_employee_id (employee_id),
+                    INDEX idx_action_type (action_type),
+                    INDEX idx_status (status)
+                )
+            `);
+        } catch (tableError) {
+            console.log('📝 Worker action table check:', tableError.message);
+        }
+        
+        // Insert into worker_action table
+        const result = await db.execute(`
+            INSERT INTO worker_action 
+            (employee_id, action_type, action_date, reason_category, action_details, 
+             suspension_days, final_payment_date, md_notes, decided_by, decided_date, status)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'executed')
         `, [
-            'Employment Action',
-            `${actionType.charAt(0).toUpperCase() + actionType.slice(1)} - ${employeeName}`,
-            `${actionType.charAt(0).toUpperCase() + actionType.slice(1)} action for ${employeeName} (${employeePosition}). Reason: ${reasonCategory}. Details: ${actionDetails}. MD Notes: ${mdNotes || 'None'}. Effective Date: ${actionDate}. ${suspensionDays ? `Suspension Period: ${suspensionDays} days.` : ''} ${finalPaymentDate ? `Final Payment Date: ${finalPaymentDate}.` : ''}`,
-            employeeName,
             employeeId,
-            decidedBy || 'Managing Director'
+            actionType,
+            actionDate,
+            reasonCategory,
+            actionDetails,
+            suspensionDays || null,
+            finalPaymentDate || null,
+            mdNotes || null,
+            decidedBy || 'Managing Director',
+            new Date().toISOString().split('T')[0]
         ]);
         
         // Update employee status if needed
         if (actionType === 'suspend') {
-            await connection.query(
+            await db.execute(
                 'UPDATE employees SET status = ? WHERE id = ?',
                 ['suspended', employeeId]
             );
         } else if (actionType === 'terminate') {
-            await connection.query(
+            await db.execute(
                 'UPDATE employees SET status = ?, end_date = ? WHERE id = ?',
                 ['terminated', actionDate, employeeId]
             );
         } else if (actionType === 'demote') {
-            await connection.query(
+            await db.execute(
                 'UPDATE employees SET status = ? WHERE id = ?',
                 ['demoted', employeeId]
             );
         }
         
-        connection.release();
-        
         res.json({
             message: 'Employee action executed successfully',
-            actionId: result.insertId,
+            actionId: result.insertId || result[0]?.insertId,
             employeeId: employeeId,
             actionType: actionType,
             status: 'executed',
