@@ -46,6 +46,81 @@ router.get('/', async (req, res) => {
             console.log(' Could not create contracts table:', tableError.message);
         }
         
+        // Check if contracts table is empty and insert sample data
+        try {
+            const [existingContracts] = await db.execute(`
+                SELECT COUNT(*) as count FROM contracts
+            `);
+            
+            if (existingContracts[0].count === 0) {
+                console.log('📝 Contracts table is empty, inserting sample data...');
+                
+                // Insert sample contracts
+                const sampleContracts = [
+                    {
+                        employee_id: 28,
+                        employee_name: 'Chrispin Golden',
+                        contract_type: 'Employment',
+                        start_date: '2026-01-15',
+                        end_date: '2027-01-15',
+                        salary: 50000.00,
+                        contract_status: 'active',
+                        contract_terms: 'Standard employment contract with benefits package',
+                        contract_document: 'employment_chrispin_2026.pdf',
+                        created_by: 2
+                    },
+                    {
+                        employee_id: 29,
+                        employee_name: 'Billzone Mwipopo',
+                        contract_type: 'Temporary',
+                        start_date: '2026-02-01',
+                        end_date: '2026-08-01',
+                        salary: 35000.00,
+                        contract_status: 'active',
+                        contract_terms: 'Temporary contract for project-based work',
+                        contract_document: 'temp_billzone_2026.pdf',
+                        created_by: 2
+                    },
+                    {
+                        employee_id: 30,
+                        employee_name: 'Sarah Johnson',
+                        contract_type: 'Consulting',
+                        start_date: '2026-03-01',
+                        end_date: '2026-09-01',
+                        salary: 75000.00,
+                        contract_status: 'pending',
+                        contract_terms: 'Consulting agreement for system implementation',
+                        contract_document: 'consulting_sarah_2026.pdf',
+                        created_by: 2
+                    }
+                ];
+                
+                for (const contract of sampleContracts) {
+                    await db.execute(`
+                        INSERT INTO contracts (
+                            employee_id, employee_name, contract_type, start_date, end_date,
+                            salary, contract_status, contract_terms, contract_document, created_by
+                        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    `, [
+                        contract.employee_id,
+                        contract.employee_name,
+                        contract.contract_type,
+                        contract.start_date,
+                        contract.end_date,
+                        contract.salary,
+                        contract.contract_status,
+                        contract.contract_terms,
+                        contract.contract_document,
+                        contract.created_by
+                    ]);
+                }
+                
+                console.log(`✅ Inserted ${sampleContracts.length} sample contracts`);
+            }
+        } catch (insertError) {
+            console.log('⚠️ Could not insert sample contracts:', insertError.message);
+        }
+        
         // Fetch contracts
         try {
             const [contracts] = await db.execute(`

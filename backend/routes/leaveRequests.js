@@ -19,6 +19,121 @@ router.get('/', async (req, res) => {
     try {
         console.log('📋 Fetching leave requests...');
         
+        // Ensure leave_requests table exists
+        try {
+            await db.execute(`
+                CREATE TABLE IF NOT EXISTS leave_requests (
+                    id INT AUTO_INCREMENT PRIMARY KEY,
+                    employee_id INT,
+                    employee_name VARCHAR(255) NOT NULL,
+                    leave_type ENUM('annual', 'sick', 'maternity', 'paternity', 'personal', 'unpaid') NOT NULL,
+                    start_date DATE NOT NULL,
+                    end_date DATE NOT NULL,
+                    days_requested INT NOT NULL,
+                    reason_for_leave TEXT,
+                    approval_status ENUM('pending', 'approved', 'rejected', 'cancelled') DEFAULT 'pending',
+                    approved_by VARCHAR(255),
+                    approved_date DATE,
+                    rejection_reason TEXT,
+                    created_by INT NULL,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+                    INDEX idx_employee_id (employee_id),
+                    INDEX idx_leave_type (leave_type),
+                    INDEX idx_status (approval_status),
+                    INDEX idx_start_date (start_date),
+                    INDEX idx_created_at (created_at)
+                )
+            `);
+            console.log('✅ Leave requests table verified/created successfully');
+        } catch (tableError) {
+            console.log('⚠️ Could not create leave_requests table:', tableError.message);
+        }
+        
+        // Check if leave_requests table is empty and insert sample data
+        try {
+            const [existingRequests] = await db.execute(`
+                SELECT COUNT(*) as count FROM leave_requests
+            `);
+            
+            if (existingRequests[0].count === 0) {
+                console.log('📝 Leave requests table is empty, inserting sample data...');
+                
+                // Insert sample leave requests
+                const sampleLeaveRequests = [
+                    {
+                        employee_id: 28,
+                        employee_name: 'Chrispin Golden',
+                        leave_type: 'annual',
+                        start_date: '2026-05-01',
+                        end_date: '2026-05-05',
+                        days_requested: 5,
+                        reason_for_leave: 'Annual vacation leave for personal time',
+                        approval_status: 'pending',
+                        approved_by: null,
+                        approved_date: null,
+                        rejection_reason: null,
+                        created_by: 2
+                    },
+                    {
+                        employee_id: 29,
+                        employee_name: 'Billzone Mwipopo',
+                        leave_type: 'sick',
+                        start_date: '2026-04-20',
+                        end_date: '2026-04-22',
+                        days_requested: 3,
+                        reason_for_leave: 'Medical leave due to illness',
+                        approval_status: 'approved',
+                        approved_by: 'HR Manager',
+                        approved_date: '2026-04-19',
+                        rejection_reason: null,
+                        created_by: 2
+                    },
+                    {
+                        employee_id: 30,
+                        employee_name: 'Sarah Johnson',
+                        leave_type: 'personal',
+                        start_date: '2026-06-10',
+                        end_date: '2026-06-12',
+                        days_requested: 3,
+                        reason_for_leave: 'Personal emergency leave',
+                        approval_status: 'pending',
+                        approved_by: null,
+                        approved_date: null,
+                        rejection_reason: null,
+                        created_by: 2
+                    }
+                ];
+                
+                for (const request of sampleLeaveRequests) {
+                    await db.execute(`
+                        INSERT INTO leave_requests (
+                            employee_id, employee_name, leave_type, start_date, end_date,
+                            days_requested, reason_for_leave, approval_status, approved_by,
+                            approved_date, rejection_reason, created_by
+                        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    `, [
+                        request.employee_id,
+                        request.employee_name,
+                        request.leave_type,
+                        request.start_date,
+                        request.end_date,
+                        request.days_requested,
+                        request.reason_for_leave,
+                        request.approval_status,
+                        request.approved_by,
+                        request.approved_date,
+                        request.rejection_reason,
+                        request.created_by
+                    ]);
+                }
+                
+                console.log(`✅ Inserted ${sampleLeaveRequests.length} sample leave requests`);
+            }
+        } catch (insertError) {
+            console.log('⚠️ Could not insert sample leave requests:', insertError.message);
+        }
+        
         const [leaveRequests] = await db.execute(`
             SELECT * FROM leave_requests 
             ORDER BY created_at DESC
