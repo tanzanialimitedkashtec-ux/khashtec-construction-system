@@ -2980,19 +2980,21 @@ function displayWorkforceBudgets(budgets) {
         
         // Status badge styling
         const getStatusClass = (status) => {
-            switch(status?.toLowerCase()) {
-                case 'approved': return 'status-approved';
-                case 'rejected': return 'status-rejected';
-                case 'modification_requested': return 'status-modification';
+            switch(status) {
+                case 'Approved': return 'status-approved';
+                case 'Rejected': return 'status-rejected';
+                case 'Modification Requested': return 'status-modification';
+                case 'Pending': return 'status-pending';
                 default: return 'status-pending';
             }
         };
         
         const getStatusText = (status) => {
-            switch(status?.toLowerCase()) {
-                case 'approved': return 'Approved';
-                case 'rejected': return 'Rejected';
-                case 'modification_requested': return 'Modification Requested';
+            switch(status) {
+                case 'Approved': return 'Approved';
+                case 'Rejected': return 'Rejected';
+                case 'Modification Requested': return 'Modification Requested';
+                case 'Pending': return 'Pending';
                 default: return 'Pending';
             }
         };
@@ -3083,11 +3085,11 @@ function displayWorkforceBudgets(budgets) {
                 </div>
                 
                 <div class="budget-actions">
-                    ${budget.status === 'pending' ? `
+                    ${budget.status === 'Pending' ? `
                         <button class="action" onclick="approveBudget('${budget.id}')">Approve Budget</button>
                         <button class="action" onclick="modifyBudget('${budget.id}')" style="background: #ffc107;">Request Modification</button>
                         <button class="action" onclick="rejectBudget('${budget.id}')" style="background: #dc3545;">Reject Budget</button>
-                    ` : budget.status === 'modification_requested' ? `
+                    ` : budget.status === 'Modification Requested' ? `
                         <button class="action" onclick="approveBudget('${budget.id}')">Approve Budget</button>
                         <button class="action" onclick="rejectBudget('${budget.id}')" style="background: #dc3545;">Reject Budget</button>
                     ` : `
