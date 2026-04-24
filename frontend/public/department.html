@@ -199,6 +199,23 @@ button.action{
     transform: translateY(-1px);
 }
 
+.doc-actions .delete-btn {
+    background: linear-gradient(45deg, #f44336, #d32f2f);
+    color: white;
+    border: none;
+    padding: 6px 12px;
+    font-size: 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.doc-actions .delete-btn:hover {
+    background: linear-gradient(45deg, #d32f2f, #b71c1c);
+    opacity: 0.9;
+    transform: translateY(-1px);
+}
+
 .loading, .no-documents, .error {
     text-align: center;
     padding: 40px;
@@ -15276,6 +15293,7 @@ async function loadDocuments() {
                 <div class="doc-actions">
                     <button class="action view-btn" onclick="viewDoc('${doc.id}')">View</button>
                     <button class="action download-btn" onclick="downloadDoc('${doc.id}')">Download</button>
+                    <button class="action delete-btn" onclick="deleteDoc('${doc.id}', '${doc.title}')">🗑️ Delete</button>
                 </div>
             </div>
         `).join('');
@@ -18130,6 +18148,62 @@ function downloadDocFallback(docId) {
     } catch (error) {
         console.error('Error downloading document (fallback):', error);
         customAlert('Error downloading document', 'Error', 'error');
+    }
+}
+
+// Delete document function
+async function deleteDoc(docId, docTitle) {
+    // Confirm deletion
+    const confirmed = confirm(`Are you sure you want to delete "${docTitle}"?\n\nThis action cannot be undone.`);
+    if (!confirmed) {
+        return;
+    }
+
+    try {
+        // Check if KashTecAPI is available
+        if (typeof KashTecAPI !== 'undefined' && KashTecAPI.deleteDocument) {
+            console.log('🗑️ Deleting document via API:', docId);
+            await KashTecAPI.deleteDocument(docId);
+            customAlert('Document deleted successfully!', 'Success', 'success');
+        } else {
+            // Fallback deletion
+            console.log('🗑️ Using fallback delete for document:', docId);
+            deleteDocFallback(docId, docTitle);
+        }
+
+        // Remove the document from the UI
+        const docElement = document.querySelector(`[data-id="${docId}"]`);
+        if (docElement) {
+            docElement.remove();
+            console.log('✅ Document removed from UI:', docId);
+        }
+
+        // Refresh the document list
+        setTimeout(() => {
+            loadDocuments();
+        }, 1000);
+
+    } catch (error) {
+        console.error('❌ Error deleting document:', error);
+        customAlert('Error deleting document: ' + error.message, 'Error', 'error');
+    }
+}
+
+// Fallback delete document function
+function deleteDocFallback(docId, docTitle) {
+    try {
+        // Remove from localStorage if exists
+        const savedDocs = JSON.parse(localStorage.getItem('savedDocuments') || '{}');
+        if (savedDocs[docId]) {
+            delete savedDocs[docId];
+            localStorage.setItem('savedDocuments', JSON.stringify(savedDocs));
+            console.log('🗑️ Document removed from localStorage:', docId);
+        }
+
+        customAlert(`Document "${docTitle}" deleted successfully! (Local Storage)`, 'Success', 'success');
+    } catch (error) {
+        console.error('Error deleting document (fallback):', error);
+        customAlert('Error deleting document', 'Error', 'error');
     }
 }
 

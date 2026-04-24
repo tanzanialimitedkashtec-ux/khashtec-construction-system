@@ -726,42 +726,40 @@ router.put('/:id', (req, res) => {
 });
 
 // Delete document
-router.delete('/:id', (req, res) => {
-    // Ensure documents array exists
-    if (!documents || !Array.isArray(documents)) {
-        return res.status(500).json({
-            error: 'Document storage not initialized'
+router.delete('/:id', async (req, res) => {
+    try {
+        const docId = req.params.id;
+        console.log(`🗑️ Delete request for document ID: ${docId}`);
+        
+        // Try database first
+        const db = require('../../../database/config/database');
+        
+        // Delete from admin_work table
+        const [result] = await db.execute(
+            'DELETE FROM admin_work WHERE id = ?', [docId]
+        );
+        
+        if (result.affectedRows === 0) {
+            return res.status(404).json({
+                error: 'Document not found',
+                details: `No document found with ID: ${docId}`
+            });
+        }
+        
+        console.log(`✅ Document deleted from database: ${docId}`);
+        
+        res.json({
+            message: 'Document deleted successfully',
+            documentId: docId
+        });
+        
+    } catch (error) {
+        console.error('❌ Error deleting document:', error);
+        res.status(500).json({ 
+            error: 'Failed to delete document',
+            details: error.message 
         });
     }
-    
-    const documentIndex = documents.findIndex(doc => doc.id === parseInt(req.params.id));
-    
-    if (documentIndex === -1) {
-        return res.status(404).json({
-            error: 'Document not found'
-        });
-    }
-    
-    // Safe splice with check
-    const deletedDocuments = documents.splice(documentIndex, 1);
-    const deletedDocument = deletedDocuments.length > 0 ? deletedDocuments[0] : null;
-    
-    if (!deletedDocument) {
-        return res.status(404).json({
-            error: 'Document could not be deleted'
-        });
-    }
-    
-    // Delete actual file
-    const filePath = path.join(__dirname, '../../uploads/documents', deletedDocument.fileName);
-    if (fs.existsSync(filePath)) {
-        fs.unlinkSync(filePath);
-    }
-    
-    res.json({
-        message: 'Document deleted successfully',
-        document: deletedDocument
-    });
 });
 
 // Download document
