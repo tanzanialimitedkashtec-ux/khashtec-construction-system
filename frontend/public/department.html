@@ -15936,7 +15936,7 @@ function viewEmployeeDetails(employeeId) {
                 <div class="error">
                     <p>Failed to load employee details</p>
                         <p>Error: ${error.message}</p>
-                        <button class="action" onclick="history.back()">Go Back</button>
+                        <button class="action" onclick="goBack()">Go Back</button>
                     </div>
                 </div>
             `);
@@ -16024,7 +16024,7 @@ function showEmployeeDetailsModal(employee) {
             </div>
             
             <div class="employee-details-actions">
-                <button class="btn-secondary" onclick="history.back()">← Back</button>
+                <button class="btn-secondary" onclick="goBack()">← Back</button>
             </div>
         </div>
     `;
@@ -16033,7 +16033,29 @@ function showEmployeeDetailsModal(employee) {
 }
 
 function closeEmployeeDetails() {
-    history.back();
+    goBack();
+}
+
+function goBack() {
+    console.log('🔙 Going back...');
+    
+    // Try to go back in browser history
+    if (window.history.length > 1) {
+        window.history.back();
+    } else {
+        // If no history, go back to main menu
+        console.log('🏠 No history available, returning to main menu');
+        showContent(`
+            <div class="card">
+                <h3>🏠 Main Menu</h3>
+                <p>Welcome back to the main menu. Select an option from the navigation menu.</p>
+                <div class="form-actions">
+                    <button class="action" onclick="officePortal()">🏢 Office Portal</button>
+                    <button class="action" onclick="showContent('')">📋 Dashboard</button>
+                </div>
+            </div>
+        `);
+    }
 }
 
 function scheduleMeeting(){
@@ -16930,46 +16952,123 @@ function showPortalSection(section) {
 
 function searchPortal(searchTerm) {
     const term = searchTerm.toLowerCase();
+    console.log('🔍 Searching portal for:', term);
     
     // Search personnel
     const personnelCards = document.querySelectorAll('.personnel-card');
     personnelCards.forEach(card => {
-        const text = card.textContent.toLowerCase();
-        card.style.display = text.includes(term) ? 'block' : 'none';
+        const name = card.querySelector('h4')?.textContent.toLowerCase() || '';
+        const position = card.querySelector('.position-title')?.textContent.toLowerCase() || '';
+        const department = card.dataset.department?.toLowerCase() || '';
+        const role = card.dataset.role?.toLowerCase() || '';
+        const contact = card.querySelector('.contact-info')?.textContent.toLowerCase() || '';
+        
+        const matches = name.includes(term) || 
+                       position.includes(term) || 
+                       department.includes(term) || 
+                       role.includes(term) || 
+                       contact.includes(term);
+        
+        card.style.display = matches ? 'block' : 'none';
+        console.log('👤 Personnel card:', { name, position, department, role, matches });
     });
     
     // Search documents
     const documentCards = document.querySelectorAll('.document-card');
     documentCards.forEach(card => {
-        const text = card.textContent.toLowerCase();
-        card.style.display = text.includes(term) ? 'block' : 'none';
+        const title = card.querySelector('h4')?.textContent.toLowerCase() || '';
+        const type = card.dataset.type?.toLowerCase() || '';
+        const department = card.dataset.department?.toLowerCase() || '';
+        const meta = card.querySelector('.document-meta')?.textContent.toLowerCase() || '';
+        
+        const matches = title.includes(term) || 
+                       type.includes(term) || 
+                       department.includes(term) || 
+                       meta.includes(term);
+        
+        card.style.display = matches ? 'block' : 'none';
+        console.log('📄 Document card:', { title, type, department, matches });
     });
     
     // Search policies
     const policyCards = document.querySelectorAll('.policy-card');
     policyCards.forEach(card => {
-        const text = card.textContent.toLowerCase();
-        card.style.display = text.includes(term) ? 'block' : 'none';
+        const title = card.querySelector('h4')?.textContent.toLowerCase() || '';
+        const category = card.dataset.category?.toLowerCase() || '';
+        const status = card.dataset.status?.toLowerCase() || '';
+        const meta = card.querySelector('.policy-meta')?.textContent.toLowerCase() || '';
+        
+        const matches = title.includes(term) || 
+                       category.includes(term) || 
+                       status.includes(term) || 
+                       meta.includes(term);
+        
+        card.style.display = matches ? 'block' : 'none';
+        console.log('📋 Policy card:', { title, category, status, matches });
     });
     
     // Search contracts
     const contractCards = document.querySelectorAll('.contract-card');
     contractCards.forEach(card => {
-        const text = card.textContent.toLowerCase();
-        card.style.display = text.includes(term) ? 'block' : 'none';
+        const title = card.querySelector('h4')?.textContent.toLowerCase() || '';
+        const status = card.dataset.status?.toLowerCase() || '';
+        const meta = card.querySelector('.contract-meta')?.textContent.toLowerCase() || '';
+        
+        const matches = title.includes(term) || 
+                       status.includes(term) || 
+                       meta.includes(term);
+        
+        card.style.display = matches ? 'block' : 'none';
+        console.log('📝 Contract card:', { title, status, matches });
     });
+    
+    // Show search results notification
+    const visibleCards = document.querySelectorAll('.personnel-card[style*="block"], .document-card[style*="block"], .policy-card[style*="block"], .contract-card[style*="block"]').length;
+    showNotification('Search Results', `Found ${visibleCards} items matching "${searchTerm}"`, 'info');
 }
 
 function filterPortal(category) {
+    console.log('🔍 Filtering portal by category:', category);
+    
     const allCards = document.querySelectorAll('.personnel-card, .document-card, .policy-card, .contract-card');
+    let visibleCount = 0;
     
     allCards.forEach(card => {
-        if (category === '' || card.dataset.department === category || card.dataset.category === category) {
+        const cardDepartment = card.dataset.department?.toLowerCase() || '';
+        const cardCategory = card.dataset.category?.toLowerCase() || '';
+        const cardType = card.dataset.type?.toLowerCase() || '';
+        const cardRole = card.dataset.role?.toLowerCase() || '';
+        
+        // Show all if no category selected
+        if (category === '') {
             card.style.display = 'block';
-        } else {
+            visibleCount++;
+        } 
+        // Filter by department/category match
+        else if (cardDepartment === category.toLowerCase() || 
+                 cardCategory === category.toLowerCase() || 
+                 cardType === category.toLowerCase() || 
+                 cardRole === category.toLowerCase()) {
+            card.style.display = 'block';
+            visibleCount++;
+        } 
+        else {
             card.style.display = 'none';
         }
+        
+        console.log('🏷️ Card filter check:', {
+            department: cardDepartment,
+            category: cardCategory,
+            type: cardType,
+            role: cardRole,
+            filter: category,
+            visible: card.style.display === 'block'
+        });
     });
+    
+    // Show filter results notification
+    const categoryName = category === '' ? 'All Categories' : category.charAt(0).toUpperCase() + category.slice(1);
+    showNotification('Filter Applied', `Showing ${visibleCount} items in ${categoryName}`, 'info');
 }
 
 function viewPersonnelDetails(personId, name, position) {
