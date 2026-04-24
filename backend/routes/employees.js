@@ -786,23 +786,28 @@ router.post('/action', async (req, res) => {
     try {
         const connection = await db.getConnection();
         
-        // Insert into worker_action table
+        // Get employee details for work title
+        const [employeeData] = await connection.query(
+            'SELECT full_name, position FROM employees WHERE id = ?',
+            [employeeId]
+        );
+        
+        const employeeName = employeeData[0]?.full_name || `Employee ${employeeId}`;
+        const employeePosition = employeeData[0]?.position || 'Unknown Position';
+        
+        // Insert into hr_work table
         const [result] = await connection.query(`
-            INSERT INTO worker_action 
-            (employee_id, action_type, action_date, reason_category, action_details, 
-             suspension_days, final_payment_date, md_notes, decided_by, decided_date, status)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'executed')
+            INSERT INTO hr_work 
+            (work_type, work_title, work_description, employee_name, employee_id, 
+             work_status, created_by, created_date, department_code)
+            VALUES (?, ?, ?, ?, ?, 'executed', ?, CURDATE(), 'HR')
         `, [
+            'Employment Action',
+            `${actionType.charAt(0).toUpperCase() + actionType.slice(1)} - ${employeeName}`,
+            `${actionType.charAt(0).toUpperCase() + actionType.slice(1)} action for ${employeeName} (${employeePosition}). Reason: ${reasonCategory}. Details: ${actionDetails}. MD Notes: ${mdNotes || 'None'}. Effective Date: ${actionDate}. ${suspensionDays ? `Suspension Period: ${suspensionDays} days.` : ''} ${finalPaymentDate ? `Final Payment Date: ${finalPaymentDate}.` : ''}`,
+            employeeName,
             employeeId,
-            actionType,
-            actionDate,
-            reasonCategory,
-            actionDetails,
-            suspensionDays || null,
-            finalPaymentDate || null,
-            mdNotes || null,
-            decidedBy || 'Managing Director',
-            new Date().toISOString().split('T')[0]
+            decidedBy || 'Managing Director'
         ]);
         
         // Update employee status if needed
@@ -815,6 +820,11 @@ router.post('/action', async (req, res) => {
             await connection.query(
                 'UPDATE employees SET status = ?, end_date = ? WHERE id = ?',
                 ['terminated', actionDate, employeeId]
+            );
+        } else if (actionType === 'demote') {
+            await connection.query(
+                'UPDATE employees SET status = ? WHERE id = ?',
+                ['demoted', employeeId]
             );
         }
         
