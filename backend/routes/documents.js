@@ -423,6 +423,24 @@ router.post('/', upload.single('file'), async (req, res) => {
             
             // Also insert into documents table
             try {
+                // Map department to valid category ENUM values
+                const categoryMap = {
+                    'finance': 'Invoice',
+                    'hr': 'Other',
+                    'projects': 'Plan',
+                    'operations': 'Other',
+                    'management': 'Other',
+                    'realestate': 'Contract',
+                    'policy': 'Other',
+                    'procedure': 'Other',
+                    'report': 'Report',
+                    'contract': 'Contract',
+                    'memo': 'Other',
+                    'other': 'Other'
+                };
+                
+                const mappedCategory = categoryMap[docDepartment?.toLowerCase()] || 'Other';
+                
                 const documentsQuery = `
                     INSERT INTO documents (
                         title,
@@ -442,11 +460,12 @@ router.post('/', upload.single('file'), async (req, res) => {
                     docFileName || `${work_title.replace(/[^a-zA-Z0-9]/g, '_')}.pdf`,
                     docFileSize || 0,
                     docType || 'PDF',
-                    docDepartment || 'Other',
+                    mappedCategory,
                     submitted_by || 1
                 ];
                 
                 console.log('🔍 Inserting document with values:', documentsValues);
+                console.log('🔍 Mapped category:', docDepartment, '→', mappedCategory);
                 
                 const documentsResult = await db.execute(documentsQuery, documentsValues);
                 console.log('✅ Document inserted successfully:', documentsResult);
@@ -461,13 +480,21 @@ router.post('/', upload.single('file'), async (req, res) => {
                 
             } catch (docError) {
                 console.error('❌ Error inserting into documents table:', docError);
+                console.error('❌ Error details:', {
+                    message: docError.message,
+                    code: docError.code,
+                    errno: docError.errno,
+                    sqlState: docError.sqlState,
+                    sqlMessage: docError.sqlMessage
+                });
                 // Still return success for admin_work insertion
                 res.json({
                     success: true,
                     message: 'Work item uploaded successfully (document table error)',
                     id: adminWorkResult.insertId,
                     status: 'pending',
-                    warning: 'Document table insertion failed'
+                    warning: 'Document table insertion failed',
+                    error: docError.message
                 });
             }
             
