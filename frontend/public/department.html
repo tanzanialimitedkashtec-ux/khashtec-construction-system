@@ -15274,7 +15274,6 @@ async function loadDocuments() {
                     ${doc.source ? `<p><small>Source: ${doc.source}</small></p>` : ''}
                 </div>
                 <div class="doc-actions">
-                    <button class="action edit-btn" onclick="editDoc('${doc.id}')">Edit</button>
                     <button class="action view-btn" onclick="viewDoc('${doc.id}')">View</button>
                     <button class="action download-btn" onclick="downloadDoc('${doc.id}')">Download</button>
                 </div>
@@ -16968,14 +16967,6 @@ function renderOfficePortal(officePortalUsers, documents, policies, contracts) {
                     </div>
                     ${user.files && user.files.length > 0 ? `<div class="files-indicator">📁 ${user.files.length} files</div>` : ''}
                 </div>
-            </div>
-            <div class="personnel-actions">
-                <button class="action-btn view" onclick="viewPersonnelDetails('${user.id}', '${user.name}', '${user.position}')">👁 View Profile</button>
-                ${user.files && user.files.length > 0 ? `<button class="action-btn documents" onclick="viewPersonnelFiles('${user.id}', '${user.name}')">📁 Files (${user.files.length})</button>` : ''}
-                <button class="action-btn documents" onclick="viewPersonnelDocuments('${user.id}', '${user.name}')">📄 Documents</button>
-                <button class="action-btn policies" onclick="viewPersonnelPolicies('${user.id}', '${user.name}')">📋 Policies</button>
-                <button class="action-btn contracts" onclick="viewPersonnelContracts('${user.id}', '${user.name}')">📝 Contracts</button>
-                ${user.accessLevel === 'admin' ? `<button class="action-btn admin" onclick="editPersonnel('${user.id}', '${user.name}')">⚙️ Edit</button>` : ''}
             </div>
         </div>
     `).join('');
