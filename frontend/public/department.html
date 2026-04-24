@@ -3105,7 +3105,7 @@ function displayWorkforceBudgets(budgets) {
 }
 
 // Approve workforce budget
-function approveBudget(budgetId) {
+window.approveBudget = function(budgetId) {
     console.log('🔍 approveBudget function called with ID:', budgetId);
     
     if (!confirm('Are you sure you want to approve this workforce budget?')) {
@@ -3140,10 +3140,10 @@ function approveBudget(budgetId) {
 }
 
 // Request budget modification
-function modifyBudget(budgetId) {
+window.modifyBudget = function(budgetId) {
     console.log('🔍 modifyBudget function called with ID:', budgetId);
     showModificationModal(budgetId);
-}
+};
 
 function showModificationModal(budgetId) {
     // Create modal overlay
@@ -3345,10 +3345,25 @@ function processBudgetModification(budgetId, modificationRequest, deadline) {
 }
 
 // Reject workforce budget
-function rejectBudget(budgetId) {
+window.rejectBudget = function(budgetId) {
     console.log('🔍 rejectBudget function called with ID:', budgetId);
     showRejectionModal(budgetId);
-}
+};
+
+// Test function to verify button functionality
+window.testButtons = function() {
+    console.log('🧪 Testing button functions...');
+    console.log('approveBudget function exists:', typeof window.approveBudget);
+    console.log('modifyBudget function exists:', typeof window.modifyBudget);
+    console.log('rejectBudget function exists:', typeof window.rejectBudget);
+    
+    // Test calling one function directly
+    if (typeof window.approveBudget === 'function') {
+        console.log('✅ Functions are properly defined and accessible');
+    } else {
+        console.error('❌ Functions are not accessible');
+    }
+};
 
 function showRejectionModal(budgetId) {
     // Create modal overlay
