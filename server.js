@@ -64,6 +64,8 @@ const scheduleMeetingsRoutes = require('./backend/routes/scheduleMeetings');
 
 const workerAccountRoutes = require('./backend/routes/workerAccounts');
 
+const userAccountRoutes = require('./backend/routes/userAccounts');
+
 
 
 const app = express();
@@ -606,6 +608,14 @@ app.use('/api/employees', asyncHandler(async (req, res, next) => {
 app.use('/api/worker-accounts', asyncHandler(async (req, res, next) => {
 
     return workerAccountRoutes(req, res, next);
+
+}));
+
+
+
+app.use('/api/user-accounts', asyncHandler(async (req, res, next) => {
+
+    return userAccountRoutes(req, res, next);
 
 }));
 

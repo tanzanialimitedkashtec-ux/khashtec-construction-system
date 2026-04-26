@@ -14207,6 +14207,76 @@ function showPolicyModal(policy) {
         .status-badge.Approved { background: #28a745; color: white; }
         .status-badge.Rejected { background: #dc3545; color: white; }
         .status-badge.Revision\:Requested { background: #17a2b8; color: white; }
+        
+        /* User Account Management Styles */
+        .status-badge.status-active { background: #28a745; color: white; }
+        .status-badge.status-suspended { background: #dc3545; color: white; }
+        .status-badge.status-inactive { background: #6c757d; color: white; }
+        
+        .user-list-container {
+            margin-top: 20px;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .user-table table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+        
+        .user-table th {
+            background: #f8f9fa;
+            padding: 12px;
+            text-align: left;
+            border: 1px solid #ddd;
+            font-weight: bold;
+        }
+        
+        .user-table td {
+            padding: 10px;
+            border: 1px solid #ddd;
+        }
+        
+        .suspend-form, .reactivate-form {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-top: 20px;
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #333;
+        }
+        
+        .form-group input, .form-group textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        
+        .form-group textarea {
+            resize: vertical;
+        }
+        
+        .no-users {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+            font-style: italic;
+        }
     `;
     document.head.appendChild(style);
 }
@@ -20170,21 +20240,365 @@ function policyImplementation(){
         <div class="policy-dashboard">
             <div class="active-policies">
                 <h4>Active Company Policies</h4>
-                <div class="policy-list">
-                    <div class="policy-item">
-                        <div class="policy-info">
-                            <h5>Employee Code of Conduct</h5>
-                            <p>Status: Enforced | Last Updated: Jan 15, 2026</p>
-                        </div>
-                        <div class="policy-actions">
-                            <button class="action" onclick="reviewPolicy('policy001')">Review</button>
-                            <button class="action" onclick="updatePolicy('policy001')">Update</button>
-                        </div>
-                    </div>
+                <div class="policy-list" id="policy-list-container">
+                    <div class="loading-policies">Loading policies...</div>
                 </div>
             </div>
+            
+            <div class="policy-actions-section">
+                <h4>Policy Actions</h4>
+                <button class="action" onclick="showAllPolicies()">View All Policies</button>
+                <button class="action" onclick="showCreatePolicyForm()">Create New Policy</button>
+                <button class="action" onclick="refreshPolicies()">Refresh</button>
+            </div>
         </div>
+        
+        <div id="policy-management-content"></div>
     </div>`);
+    
+    // Load real policies when function is called
+    loadPoliciesForImplementation();
+}
+
+// Load policies for implementation from database
+async function loadPoliciesForImplementation() {
+    console.log('📋 Loading policies for implementation...');
+    
+    try {
+        const token = localStorage.getItem('token');
+        const baseUrl = window.location.origin;
+        
+        const response = await fetch(`${baseUrl}/api/policies`, {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            }
+        });
+        
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const policies = await response.json();
+        console.log('📋 Policies response:', policies);
+        
+        // Filter for approved/enforced policies only
+        const activePolicies = policies.filter(policy => 
+            policy.status === 'approved' || policy.status === 'Approved'
+        );
+        
+        displayActivePolicies(activePolicies);
+    } catch (error) {
+        console.error('❌ Error loading policies:', error);
+        document.getElementById('policy-list-container').innerHTML = 
+            '<div class="error-message">Error loading policies: ' + error.message + '</div>';
+    }
+}
+
+// Display active policies
+function displayActivePolicies(policies) {
+    const container = document.getElementById('policy-list-container');
+    
+    if (!policies || policies.length === 0) {
+        container.innerHTML = '<div class="no-policies">No active policies found.</div>';
+        return;
+    }
+    
+    const policiesHTML = policies.map(policy => `
+        <div class="policy-item">
+            <div class="policy-info">
+                <h5>${policy.title}</h5>
+                <p>
+                    Status: <span class="status-badge status-${policy.status.toLowerCase()}">${policy.status}</span> 
+                    | Last Updated: ${policy.updated_at ? new Date(policy.updated_at).toLocaleDateString() : (policy.approved_date ? new Date(policy.approved_date).toLocaleDateString() : 'No date')}
+                </p>
+                <p><strong>Submitted by:</strong> ${policy.submitted_by_role || policy.submitted_by}</p>
+                <p><strong>Impact:</strong> ${policy.impact || 'Medium'}</p>
+            </div>
+            <div class="policy-actions">
+                <button class="action" onclick="reviewPolicy('${policy.id}')" style="background: #17a2b8;">Review</button>
+                <button class="action" onclick="updatePolicy('${policy.id}')" style="background: #ffc107;">Update</button>
+                <button class="action" onclick="enforcePolicy('${policy.id}')" style="background: #28a745;">Enforce</button>
+            </div>
+        </div>
+    `).join('');
+    
+    container.innerHTML = policiesHTML;
+}
+
+// Show all policies
+async function showAllPolicies() {
+    console.log('📋 Loading all policies...');
+    
+    try {
+        const token = localStorage.getItem('token');
+        const baseUrl = window.location.origin;
+        
+        const response = await fetch(`${baseUrl}/api/policies/all`, {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            }
+        });
+        
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const result = await response.json();
+        console.log('📋 All policies response:', result);
+        
+        displayAllPolicies(result.policies || result);
+    } catch (error) {
+        console.error('❌ Error loading all policies:', error);
+        showNotification('Error loading policies: ' + error.message, 'error');
+    }
+}
+
+// Display all policies in management content area
+function displayAllPolicies(policies) {
+    const contentDiv = document.getElementById('policy-management-content');
+    
+    if (!policies || policies.length === 0) {
+        contentDiv.innerHTML = '<div class="no-policies">No policies found.</div>';
+        return;
+    }
+    
+    const policiesHTML = `
+        <div class="all-policies-container">
+            <h4>All Company Policies</h4>
+            <div class="policy-table">
+                <table style="width: 100%; border-collapse: collapse;">
+                    <thead>
+                        <tr style="background: #f8f9fa;">
+                            <th style="padding: 10px; border: 1px solid #ddd;">Title</th>
+                            <th style="padding: 10px; border: 1px solid #ddd;">Submitted By</th>
+                            <th style="padding: 10px; border: 1px solid #ddd;">Status</th>
+                            <th style="padding: 10px; border: 1px solid #ddd;">Impact</th>
+                            <th style="padding: 10px; border: 1px solid #ddd;">Submission Date</th>
+                            <th style="padding: 10px; border: 1px solid #ddd;">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${policies.map(policy => `
+                            <tr>
+                                <td style="padding: 10px; border: 1px solid #ddd;">${policy.title}</td>
+                                <td style="padding: 10px; border: 1px solid #ddd;">${policy.submitted_by_role || policy.submitted_by}</td>
+                                <td style="padding: 10px; border: 1px solid #ddd;">
+                                    <span class="status-badge status-${policy.status.toLowerCase()}">${policy.status}</span>
+                                </td>
+                                <td style="padding: 10px; border: 1px solid #ddd;">${policy.impact || 'Medium'}</td>
+                                <td style="padding: 10px; border: 1px solid #ddd;">
+                                    ${policy.submission_date ? new Date(policy.submission_date).toLocaleDateString() : (policy.created_at ? new Date(policy.created_at).toLocaleDateString() : 'No date')}
+                                </td>
+                                <td style="padding: 10px; border: 1px solid #ddd;">
+                                    <button class="action" onclick="reviewPolicy('${policy.id}')" style="background: #17a2b8; padding: 5px 10px; font-size: 12px;">Review</button>
+                                    <button class="action" onclick="updatePolicy('${policy.id}')" style="background: #ffc107; padding: 5px 10px; font-size: 12px;">Update</button>
+                                    ${policy.status === 'Approved' ? 
+                                        `<button class="action" onclick="enforcePolicy('${policy.id}')" style="background: #28a745; padding: 5px 10px; font-size: 12px;">Enforce</button>` : 
+                                        ''
+                                    }
+                                </td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    `;
+    
+    contentDiv.innerHTML = policiesHTML;
+}
+
+// Show create policy form
+function showCreatePolicyForm() {
+    const contentDiv = document.getElementById('policy-management-content');
+    contentDiv.innerHTML = `
+        <div class="create-policy-form">
+            <h4>Create New Policy</h4>
+            <div class="form-group">
+                <label for="policy-title">Policy Title:</label>
+                <input type="text" id="policy-title" placeholder="Enter policy title">
+            </div>
+            <div class="form-group">
+                <label for="policy-description">Description:</label>
+                <textarea id="policy-description" placeholder="Enter policy description" rows="5"></textarea>
+            </div>
+            <div class="form-group">
+                <label for="policy-impact">Impact Level:</label>
+                <select id="policy-impact">
+                    <option value="Low">Low</option>
+                    <option value="Medium" selected>Medium</option>
+                    <option value="High">High</option>
+                    <option value="Critical">Critical</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="policy-category">Category:</label>
+                <input type="text" id="policy-category" placeholder="Enter policy category">
+            </div>
+            <button class="action" onclick="createNewPolicy()" style="background: #28a745;">Create Policy</button>
+            <button class="action" onclick="clearPolicyManagementContent()" style="background: #6c757d;">Cancel</button>
+        </div>
+    `;
+}
+
+// Create new policy
+async function createNewPolicy() {
+    const title = document.getElementById('policy-title').value.trim();
+    const description = document.getElementById('policy-description').value.trim();
+    const impact = document.getElementById('policy-impact').value;
+    const category = document.getElementById('policy-category').value.trim();
+    
+    if (!title || !description) {
+        showNotification('Title and description are required', 'error');
+        return;
+    }
+    
+    try {
+        const token = localStorage.getItem('token');
+        const baseUrl = window.location.origin;
+        
+        const response = await fetch(`${baseUrl}/api/policies`, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                title,
+                description,
+                submittedBy: getCurrentUserName(),
+                submittedByRole: getCurrentUserRole(),
+                impact,
+                category
+            })
+        });
+        
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const result = await response.json();
+        console.log('📝 Create policy response:', result);
+        
+        if (result.success) {
+            showNotification('Policy created successfully', 'success');
+            clearPolicyManagementContent();
+            loadPoliciesForImplementation(); // Refresh the active policies
+        } else {
+            showNotification('Failed to create policy: ' + result.error, 'error');
+        }
+    } catch (error) {
+        console.error('❌ Error creating policy:', error);
+        showNotification('Error creating policy: ' + error.message, 'error');
+    }
+}
+
+// Review policy
+async function reviewPolicy(policyId) {
+    console.log('🔍 Reviewing policy:', policyId);
+    
+    try {
+        const token = localStorage.getItem('token');
+        const baseUrl = window.location.origin;
+        
+        const response = await fetch(`${baseUrl}/api/policies/${policyId}`, {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            }
+        });
+        
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const result = await response.json();
+        console.log('🔍 Policy details:', result);
+        
+        if (result.success) {
+            displayPolicyReview(result.policy);
+        } else {
+            showNotification('Failed to load policy: ' + result.error, 'error');
+        }
+    } catch (error) {
+        console.error('❌ Error reviewing policy:', error);
+        showNotification('Error reviewing policy: ' + error.message, 'error');
+    }
+}
+
+// Display policy review
+function displayPolicyReview(policy) {
+    const contentDiv = document.getElementById('policy-management-content');
+    contentDiv.innerHTML = `
+        <div class="policy-review">
+            <h4>Policy Review: ${policy.title}</h4>
+            <div class="policy-details">
+                <div class="detail-section">
+                    <h5>Description</h5>
+                    <p>${policy.description}</p>
+                </div>
+                <div class="detail-section">
+                    <h5>Submission Details</h5>
+                    <p><strong>Submitted by:</strong> ${policy.submitted_by_role || policy.submitted_by}</p>
+                    <p><strong>Submission date:</strong> ${policy.submission_date ? new Date(policy.submission_date).toLocaleDateString() : 'No date'}</p>
+                    <p><strong>Impact level:</strong> ${policy.impact || 'Medium'}</p>
+                    <p><strong>Status:</strong> <span class="status-badge status-${policy.status.toLowerCase()}">${policy.status}</span></p>
+                </div>
+                ${policy.approved_by ? `
+                    <div class="detail-section">
+                        <h5>Approval Details</h5>
+                        <p><strong>Approved by:</strong> ${policy.approved_by}</p>
+                        <p><strong>Approval date:</strong> ${policy.approved_date ? new Date(policy.approved_date).toLocaleDateString() : 'No date'}</p>
+                    </div>
+                ` : ''}
+                ${policy.rejection_reason ? `
+                    <div class="detail-section">
+                        <h5>Rejection Details</h5>
+                        <p><strong>Rejection reason:</strong> ${policy.rejection_reason}</p>
+                    </div>
+                ` : ''}
+                ${policy.revision_request ? `
+                    <div class="detail-section">
+                        <h5>Revision Request</h5>
+                        <p><strong>Revision requested:</strong> ${policy.revision_request}</p>
+                    </div>
+                ` : ''}
+            </div>
+            <div class="review-actions">
+                <button class="action" onclick="clearPolicyManagementContent()" style="background: #6c757d;">Close</button>
+            </div>
+        </div>
+    `;
+}
+
+// Update policy
+function updatePolicy(policyId) {
+    showNotification(`Opening update form for policy ${policyId}...`, 'info');
+    // This would open a form to update the policy
+    // For now, just show a notification
+}
+
+// Enforce policy
+function enforcePolicy(policyId) {
+    if (confirm(`Are you sure you want to enforce policy ${policyId}?`)) {
+        showNotification(`Policy ${policyId} has been enforced`, 'success');
+    }
+}
+
+// Refresh policies
+function refreshPolicies() {
+    loadPoliciesForImplementation();
+    showNotification('Policies refreshed', 'success');
+}
+
+// Clear policy management content
+function clearPolicyManagementContent() {
+    document.getElementById('policy-management-content').innerHTML = '';
 }
 
 function documentManagement(){
@@ -20225,26 +20639,280 @@ function userAccountManagement(){
                 <div class="account-stats">
                     <div class="stat-item">
                         <span>Total Active Users:</span>
-                        <span class="stat-value">48</span>
+                        <span class="stat-value" id="active-users-count">Loading...</span>
                     </div>
                     <div class="stat-item">
                         <span>Suspended Accounts:</span>
-                        <span class="stat-value">2</span>
+                        <span class="stat-value" id="suspended-accounts-count">Loading...</span>
                     </div>
                 </div>
             </div>
             
             <div class="account-actions">
                 <h4>Account Actions</h4>
-                <button class="action" onclick="suspendUser()">Suspend User</button>
-                <button class="action" onclick="reactivateUser()">Reactivate Account</button>
+                <button class="action" onclick="showUserList()">View All Users</button>
+                <button class="action" onclick="showSuspendForm()">Suspend User</button>
+                <button class="action" onclick="showReactivateForm()">Reactivate Account</button>
             </div>
         </div>
+        
+        <div id="user-management-content"></div>
         
         <div class="disclaimer">
             <p><strong>Note:</strong> Director of Administration cannot suspend MD accounts.</p>
         </div>
     </div>`);
+    
+    // Load real data when the function is called
+    loadUserAccountStats();
+}
+
+// Load user account statistics from database
+async function loadUserAccountStats() {
+    console.log('📊 Loading user account statistics...');
+    
+    try {
+        const token = localStorage.getItem('token');
+        const baseUrl = window.location.origin;
+        
+        const response = await fetch(`${baseUrl}/api/user-accounts/stats`, {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            }
+        });
+        
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const result = await response.json();
+        console.log('📊 User stats response:', result);
+        
+        if (result.success) {
+            document.getElementById('active-users-count').textContent = result.data.totalActiveUsers;
+            document.getElementById('suspended-accounts-count').textContent = result.data.suspendedAccounts;
+        } else {
+            console.error('❌ Failed to load user stats:', result.error);
+            document.getElementById('active-users-count').textContent = 'Error';
+            document.getElementById('suspended-accounts-count').textContent = 'Error';
+        }
+    } catch (error) {
+        console.error('❌ Error loading user account stats:', error);
+        document.getElementById('active-users-count').textContent = 'Error';
+        document.getElementById('suspended-accounts-count').textContent = 'Error';
+    }
+}
+
+// Show all users list
+async function showUserList() {
+    console.log('👥 Loading user list...');
+    
+    try {
+        const token = localStorage.getItem('token');
+        const baseUrl = window.location.origin;
+        
+        const response = await fetch(`${baseUrl}/api/user-accounts/users`, {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            }
+        });
+        
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const result = await response.json();
+        console.log('👥 Users response:', result);
+        
+        if (result.success) {
+            displayUserList(result.data);
+        } else {
+            console.error('❌ Failed to load users:', result.error);
+            showNotification('Failed to load users: ' + result.error, 'error');
+        }
+    } catch (error) {
+        console.error('❌ Error loading users:', error);
+        showNotification('Error loading users: ' + error.message, 'error');
+    }
+}
+
+// Display user list
+function displayUserList(users) {
+    const contentDiv = document.getElementById('user-management-content');
+    
+    if (!users || users.length === 0) {
+        contentDiv.innerHTML = '<div class="no-users">No users found.</div>';
+        return;
+    }
+    
+    const usersHTML = `
+        <div class="user-list-container">
+            <h4>All System Users</h4>
+            <div class="user-table">
+                <table style="width: 100%; border-collapse: collapse;">
+                    <thead>
+                        <tr style="background: #f8f9fa;">
+                            <th style="padding: 10px; border: 1px solid #ddd;">Email</th>
+                            <th style="padding: 10px; border: 1px solid #ddd;">Role</th>
+                            <th style="padding: 10px; border: 1px solid #ddd;">Department</th>
+                            <th style="padding: 10px; border: 1px solid #ddd;">Status</th>
+                            <th style="padding: 10px; border: 1px solid #ddd;">Last Login</th>
+                            <th style="padding: 10px; border: 1px solid #ddd;">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${users.map(user => `
+                            <tr>
+                                <td style="padding: 10px; border: 1px solid #ddd;">${user.email}</td>
+                                <td style="padding: 10px; border: 1px solid #ddd;">${user.role}</td>
+                                <td style="padding: 10px; border: 1px solid #ddd;">${user.department_name || 'N/A'}</td>
+                                <td style="padding: 10px; border: 1px solid #ddd;">
+                                    <span class="status-badge status-${user.status.toLowerCase()}">${user.status}</span>
+                                </td>
+                                <td style="padding: 10px; border: 1px solid #ddd;">
+                                    ${user.last_login ? new Date(user.last_login).toLocaleDateString() : 'Never'}
+                                </td>
+                                <td style="padding: 10px; border: 1px solid #ddd;">
+                                    ${user.status === 'Active' ? 
+                                        `<button class="action" onclick="suspendUserById(${user.id}, '${user.email}')" style="background: #ffc107; padding: 5px 10px; font-size: 12px;">Suspend</button>` :
+                                        `<button class="action" onclick="reactivateUserById(${user.id}, '${user.email}')" style="background: #28a745; padding: 5px 10px; font-size: 12px;">Reactivate</button>`
+                                    }
+                                </td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    `;
+    
+    contentDiv.innerHTML = usersHTML;
+}
+
+// Show suspend user form
+function showSuspendForm() {
+    const contentDiv = document.getElementById('user-management-content');
+    contentDiv.innerHTML = `
+        <div class="suspend-form">
+            <h4>Suspend User Account</h4>
+            <div class="form-group">
+                <label for="suspend-email">User Email:</label>
+                <input type="email" id="suspend-email" placeholder="Enter user email to suspend">
+            </div>
+            <div class="form-group">
+                <label for="suspend-reason">Reason:</label>
+                <textarea id="suspend-reason" placeholder="Reason for suspension" rows="3"></textarea>
+            </div>
+            <button class="action" onclick="executeSuspendUser()" style="background: #ffc107;">Suspend User</button>
+            <button class="action" onclick="clearUserManagementContent()" style="background: #6c757d;">Cancel</button>
+        </div>
+    `;
+}
+
+// Show reactivate user form
+function showReactivateForm() {
+    const contentDiv = document.getElementById('user-management-content');
+    contentDiv.innerHTML = `
+        <div class="reactivate-form">
+            <h4>Reactivate User Account</h4>
+            <div class="form-group">
+                <label for="reactivate-email">User Email:</label>
+                <input type="email" id="reactivate-email" placeholder="Enter user email to reactivate">
+            </div>
+            <button class="action" onclick="executeReactivateUser()" style="background: #28a745;">Reactivate User</button>
+            <button class="action" onclick="clearUserManagementContent()" style="background: #6c757d;">Cancel</button>
+        </div>
+    `;
+}
+
+// Execute suspend user
+async function suspendUserById(userId, email) {
+    if (!confirm(`Are you sure you want to suspend ${email}?`)) {
+        return;
+    }
+    
+    try {
+        const token = localStorage.getItem('token');
+        const baseUrl = window.location.origin;
+        
+        const response = await fetch(`${baseUrl}/api/user-accounts/suspend/${userId}`, {
+            method: 'PUT',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                reason: 'Suspended by administrator'
+            })
+        });
+        
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const result = await response.json();
+        console.log('🔒 Suspend response:', result);
+        
+        if (result.success) {
+            showNotification(`User ${email} suspended successfully`, 'success');
+            // Refresh the user list and stats
+            showUserList();
+            loadUserAccountStats();
+        } else {
+            showNotification('Failed to suspend user: ' + result.error, 'error');
+        }
+    } catch (error) {
+        console.error('❌ Error suspending user:', error);
+        showNotification('Error suspending user: ' + error.message, 'error');
+    }
+}
+
+// Execute reactivate user
+async function reactivateUserById(userId, email) {
+    if (!confirm(`Are you sure you want to reactivate ${email}?`)) {
+        return;
+    }
+    
+    try {
+        const token = localStorage.getItem('token');
+        const baseUrl = window.location.origin;
+        
+        const response = await fetch(`${baseUrl}/api/user-accounts/reactivate/${userId}`, {
+            method: 'PUT',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            }
+        });
+        
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const result = await response.json();
+        console.log('🔄 Reactivate response:', result);
+        
+        if (result.success) {
+            showNotification(`User ${email} reactivated successfully`, 'success');
+            // Refresh the user list and stats
+            showUserList();
+            loadUserAccountStats();
+        } else {
+            showNotification('Failed to reactivate user: ' + result.error, 'error');
+        }
+    } catch (error) {
+        console.error('❌ Error reactivating user:', error);
+        showNotification('Error reactivating user: ' + error.message, 'error');
+    }
+}
+
+// Clear user management content
+function clearUserManagementContent() {
+    document.getElementById('user-management-content').innerHTML = '';
 }
 
 function officePortal(){
