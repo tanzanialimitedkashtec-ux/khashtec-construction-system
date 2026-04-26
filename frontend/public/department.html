@@ -2860,7 +2860,7 @@ function loadHiringRequestsFromBackend() {
     });
 }
 
-function loadWorkforceBudgets() {
+function showWorkforceBudgetApproval() {
     showContent(`<div class="card">
         <h3>Approve Workforce Budget</h3>
         <p><strong>HR Authority:</strong> Review and approve workforce budget requests</p>
@@ -2933,7 +2933,7 @@ function loadMenu(){
     if(currentRole === "MD"){
         addMenu("Approve Recruitment Policies", approveRecruitmentPolicies);
         addMenu("Approve Senior Staff Hiring", approveSeniorHiring);
-        addMenu("Approve Workforce Budget", approveWorkforceBudget);
+        addMenu("Approve Workforce Budget", showWorkforceBudgetApproval);
         addMenu("Review Employee Count", reviewEmployeeCount);
         addMenu("View All Workers", viewAllWorkers);
         addMenu("Suspend/Terminate Employment", suspendTerminateEmployment);
@@ -3695,7 +3695,18 @@ function displayWorkforceBudgets(budgets) {
     
     const container = document.getElementById('budget-proposals-container');
     if (!container) {
-        console.error('❌ Budget proposals container not found!');
+        console.warn('⚠️ Budget proposals container not found - reloading workforce budget view...');
+        // Reload the workforce budget view to ensure container exists
+        approveWorkforceBudget();
+        // Try again after a short delay
+        setTimeout(() => {
+            const retryContainer = document.getElementById('budget-proposals-container');
+            if (retryContainer) {
+                displayWorkforceBudgets(budgets);
+            } else {
+                console.error('❌ Budget proposals container still not found after reload');
+            }
+        }, 100);
         return;
     }
     
@@ -17082,10 +17093,13 @@ function useMockAssignedWorkers() {
 
 // Display assigned workers in the UI
 function displayAssignedWorkers(workers) {
-    const workerResults = document.getElementById('workerResults');
+    // Try multiple possible container IDs
+    const workerResults = document.getElementById('workerResults') || 
+                          document.getElementById('mdWorkerResults') ||
+                          document.querySelector('.worker-results');
     
     if (!workerResults) {
-        console.warn('⚠️ Worker results container not found');
+        console.warn('⚠️ Worker results container not found - tried workerResults, mdWorkerResults, .worker-results');
         return;
     }
     

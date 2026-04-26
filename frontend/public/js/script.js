@@ -2028,7 +2028,7 @@ document.addEventListener('DOMContentLoaded', function() {
     console.log('🔍 Login button type:', loginBtn ? loginBtn.tagName : 'null');
     console.log('🔍 Login button class:', loginBtn ? loginBtn.className : 'null');
     
-    if (loginBtn) {
+    if (loginBtn && !loginBtn.hasAttribute('data-listener-attached')) {
         loginBtn.addEventListener('click', function(e) {
             console.log('🖱️ Login button clicked!', e);
             console.log('🖱️ Event type:', e.type);
@@ -2038,6 +2038,7 @@ document.addEventListener('DOMContentLoaded', function() {
             e.stopPropagation();
             handleLogin();
         });
+        loginBtn.setAttribute('data-listener-attached', 'true');
         console.log('✅ Login button event listener attached (DOMContentLoaded)');
         
         // Test if button is clickable

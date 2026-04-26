@@ -8,6 +8,7 @@ class SessionManager {
     constructor() {
         this.sessionData = {};
         this.listeners = {};
+        this.saveTimeout = null;
         this.init();
     }
 
@@ -37,10 +38,24 @@ class SessionManager {
         try {
                 const sessionString = JSON.stringify(this.sessionData);
                 sessionStorage.setItem('kashtec_session_data', sessionString);
-                console.log('💾 Session saved to sessionStorage');
+                // Only log when not in rapid succession (reduce console spam)
+                if (!this.saveTimeout) {
+                        console.log('💾 Session saved to sessionStorage');
+                }
         } catch (error) {
                 console.error('❌ Error saving session:', error);
         }
+    }
+
+    // Debounced save to reduce excessive calls
+    debouncedSave() {
+        if (this.saveTimeout) {
+                clearTimeout(this.saveTimeout);
+        }
+        this.saveTimeout = setTimeout(() => {
+                this.saveToSessionStorage();
+                this.saveTimeout = null;
+        }, 100); // Wait 100ms before saving
     }
 
     // Setup session persistence across page reloads
@@ -67,7 +82,7 @@ class SessionManager {
     // Session data operations
     set(key, value) {
         this.sessionData[key] = value;
-        this.saveToSessionStorage();
+        this.debouncedSave();
         this.notifyListeners('set', { key, value });
         console.log(`📝 Session set: ${key}`);
     }
@@ -78,7 +93,7 @@ class SessionManager {
 
     remove(key) {
         delete this.sessionData[key];
-        this.saveToSessionStorage();
+        this.debouncedSave();
         this.notifyListeners('remove', { key });
         console.log(`🗑️ Session removed: ${key}`);
     }
