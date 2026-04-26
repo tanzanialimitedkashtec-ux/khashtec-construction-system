@@ -16504,14 +16504,14 @@ function scheduleMeetingSubmit() {
         document.getElementById('whiteboard').checked = false;
         document.getElementById('refreshments').checked = false;
         document.getElementById('parking').checked = false;
+        
+        // Refresh meetings list to show the newly created meeting
+        fetchUpcomingMeetings();
     })
     .catch(error => {
         console.error('❌ Error scheduling meeting:', error);
         alert('Failed to schedule meeting: ' + error.message);
     });
-    
-    // Refresh meetings list
-    scheduleMeeting();
 }
 
 function viewMeetingDetails(meetingId) {
