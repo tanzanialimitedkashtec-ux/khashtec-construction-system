@@ -3472,7 +3472,7 @@ function displayFilteredPolicies(policies) {
             <p>${policy.description}</p>
             <div class="policy-details">
                 <span><strong>Submitted by:</strong> ${policy.submitted_by_role || policy.submitted_by}</span>
-                <span><strong>Date:</strong> ${policy.submitted_date || policy.created_at}</span>
+                <span><strong>Date:</strong> ${policy.submitted_date ? new Date(policy.submitted_date).toLocaleDateString() : (policy.created_at ? new Date(policy.created_at).toLocaleDateString() : 'No date available')}</span>
                 <span><strong>Impact:</strong> ${policy.impact || 'Medium'}</span>
             </div>
             <div class="policy-actions">
@@ -14133,7 +14133,7 @@ function showPolicyModal(policy) {
                     <div style="background: #f5f5f5; padding: 15px; border-radius: 5px; margin: 10px 0; white-space: pre-wrap;">${policy.work_description || 'No description available'}</div>
                     <p><strong>Status:</strong> <span class="status-badge ${policy.status}">${policy.status}</span></p>
                     <p><strong>Submitted By:</strong> ${policy.submitted_by}</p>
-                    <p><strong>Submitted Date:</strong> ${new Date(policy.submitted_date).toLocaleDateString()}</p>
+                    <p><strong>Submitted Date:</strong> ${policy.submitted_date ? new Date(policy.submitted_date).toLocaleDateString() : 'No date available'}</p>
                     ${policy.assigned_to ? `<p><strong>Assigned To:</strong> ${policy.assigned_to}</p>` : ''}
                     ${policy.due_date ? `<p><strong>Due Date:</strong> ${new Date(policy.due_date).toLocaleDateString()}</p>` : ''}
                     ${policy.approved_by ? `<p><strong>Approved By:</strong> ${policy.approved_by}</p>` : ''}
@@ -17119,7 +17119,7 @@ function displayAssignedWorkers(workers) {
                 <p><strong>Project:</strong> ${worker.project_name}</p>
                 <p><strong>Role:</strong> ${worker.role_in_project}</p>
                 <p><strong>Status:</strong> <span class="status ${worker.status.toLowerCase()}">${worker.status}</span></p>
-                <p><strong>Start Date:</strong> ${new Date(worker.start_date).toLocaleDateString()}</p>
+                <p><strong>Start Date:</strong> ${worker.start_date ? new Date(worker.start_date).toLocaleDateString() : 'No start date'}</p>
                 ${worker.end_date ? `<p><strong>End Date:</strong> ${new Date(worker.end_date).toLocaleDateString()}</p>` : ''}
                 ${worker.assignment_notes ? `<p><strong>Notes:</strong> ${worker.assignment_notes}</p>` : ''}
                 <p><strong>Assigned By:</strong> ${worker.assigned_by}</p>
