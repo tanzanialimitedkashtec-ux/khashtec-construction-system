@@ -1713,6 +1713,17 @@ try {
     console.error('❌ Error loading workforce budget routes:', error);
 }
 
+// ===== WORKFORCE ANALYTICS ROUTES =====
+console.log('🔍 Mounting workforce analytics routes from routes/workforceAnalytics.js...');
+try {
+    const workforceAnalyticsRoutes = require('./routes/workforceAnalytics');
+    console.log('✅ Workforce analytics routes loaded successfully');
+    app.use('/api/workforce-analytics', workforceAnalyticsRoutes);
+    console.log('✅ Workforce analytics routes mounted at /api/workforce-analytics');
+} catch (error) {
+    console.error('❌ Error loading workforce analytics routes:', error);
+}
+
 // ===== WORK ROUTES =====
 console.log('🔍 Mounting work routes from routes/work.js...');
 try {

@@ -2660,6 +2660,196 @@ function modifyBudget(budgetId) {
     });
 }
 
+function loadWorkforceAnalytics() {
+    const baseUrl = window.location.origin;
+    
+    fetch(`${baseUrl}/api/workforce-analytics`)
+        .then(response => response.json())
+        .then(data => {
+            console.log('📊 Workforce analytics loaded:', data);
+            
+            // Update summary report
+            updateSummaryReport(data.summary);
+            
+            // Update turnover report
+            updateTurnoverReport(data.turnover);
+            
+            // Update performance report
+            updatePerformanceReport(data.performance);
+            
+            // Update compliance report
+            updateComplianceReport(data.compliance);
+        })
+        .catch(error => {
+            console.error('❌ Error loading workforce analytics:', error);
+            // Show error in all sections
+            document.querySelectorAll('.loading').forEach(el => {
+                el.innerHTML = '<div class="error">Error loading data: ' + error.message + '</div>';
+            });
+        });
+}
+
+function updateSummaryReport(summary) {
+    // Update total employees
+    const totalEmployeesEl = document.getElementById('totalEmployees');
+    if (totalEmployeesEl) {
+        totalEmployeesEl.textContent = summary.totalEmployees || 0;
+    }
+    
+    // Update YTD change
+    const ytdChangeEl = document.getElementById('ytdChange');
+    if (ytdChangeEl) {
+        const change = summary.ytdChange || 0;
+        ytdChangeEl.textContent = `${change > 0 ? '+' : ''}${change}% YTD`;
+        ytdChangeEl.className = `metric-change ${change > 0 ? 'positive' : change < 0 ? 'negative' : 'neutral'}`;
+    }
+    
+    // Update department distribution
+    updateDepartmentChart(summary.departmentDistribution);
+    
+    // Update new hires
+    const newHiresEl = document.getElementById('newHires');
+    if (newHiresEl) {
+        newHiresEl.textContent = summary.newHiresQ1 || 0;
+    }
+    
+    // Update new hires change
+    const newHiresChangeEl = document.getElementById('newHiresChange');
+    if (newHiresChangeEl) {
+        const change = summary.newHiresChange || 0;
+        newHiresChangeEl.textContent = `+${change}% vs Q1 2025`;
+        newHiresChangeEl.className = `metric-change ${change > 0 ? 'positive' : 'negative'}`;
+    }
+    
+    // Update workforce cost
+    const workforceCostEl = document.getElementById('workforceCost');
+    if (workforceCostEl) {
+        const cost = summary.annualWorkforceCost || 0;
+        workforceCostEl.textContent = `TZS ${parseInt(cost).toLocaleString()}`;
+    }
+    
+    // Show the grid and hide loading
+    const summaryGrid = document.getElementById('summaryGrid');
+    const loadingEl = summaryGrid?.previousElementSibling;
+    if (summaryGrid) summaryGrid.style.display = 'grid';
+    if (loadingEl && loadingEl.classList.contains('loading')) loadingEl.style.display = 'none';
+}
+
+function updateDepartmentChart(deptDistribution) {
+    const deptChartEl = document.getElementById('deptChart');
+    if (!deptChartEl || !deptDistribution || deptDistribution.length === 0) {
+        if (deptChartEl) deptChartEl.innerHTML = '<div class="info">No department data available</div>';
+        return;
+    }
+    
+    // Calculate total for percentages
+    const total = deptDistribution.reduce((sum, dept) => sum + dept.count, 0);
+    
+    // Generate department bars
+    let html = '';
+    deptDistribution.forEach(dept => {
+        const percentage = total > 0 ? ((dept.count / total) * 100).toFixed(1) : 0;
+        const deptName = dept.department || 'Unknown';
+        html += `<div class="dept-bar" style="width: ${percentage}%;">${deptName}: ${percentage}%</div>`;
+    });
+    
+    deptChartEl.innerHTML = html;
+}
+
+function updateTurnoverReport(turnover) {
+    // Update turnover rates
+    document.getElementById('annualTurnover').textContent = `${turnover.annualTurnoverRate}%`;
+    document.getElementById('voluntaryTurnover').textContent = `${turnover.voluntaryTurnover}%`;
+    document.getElementById('involuntaryTurnover').textContent = `${turnover.involuntaryTurnover}%`;
+    
+    // Show the stats and hide loading
+    const turnoverStats = document.getElementById('turnoverStats');
+    const loadingEl = turnoverStats?.previousElementSibling;
+    if (turnoverStats) turnoverStats.style.display = 'block';
+    if (loadingEl && loadingEl.classList.contains('loading')) loadingEl.style.display = 'none';
+}
+
+function updatePerformanceReport(performance) {
+    // Update performance metrics
+    document.getElementById('productivityIndex').textContent = `${performance.productivityIndex}%`;
+    document.getElementById('attendanceRate').textContent = `${performance.attendanceRate}%`;
+    document.getElementById('trainingCompletion').textContent = `${performance.trainingCompletion}%`;
+    
+    // Show the grid and hide loading
+    const performanceGrid = document.getElementById('performanceGrid');
+    const loadingEl = performanceGrid?.previousElementSibling;
+    if (performanceGrid) performanceGrid.style.display = 'grid';
+    if (loadingEl && loadingEl.classList.contains('loading')) loadingEl.style.display = 'none';
+}
+
+function updateComplianceReport(compliance) {
+    // Update compliance status
+    const laborLawEl = document.getElementById('laborLawCompliance');
+    const safetyEl = document.getElementById('safetyRegulations');
+    const contractEl = document.getElementById('contractCompliance');
+    
+    if (laborLawEl) {
+        laborLawEl.textContent = compliance.laborLawCompliance || 'Unknown';
+        laborLawEl.className = compliance.laborLawCompliance === 'Compliant' ? 'status-good' : 'status-warning';
+    }
+    
+    if (safetyEl) {
+        safetyEl.textContent = compliance.safetyRegulations || 'Unknown';
+        safetyEl.className = compliance.safetyRegulations === 'Compliant' ? 'status-good' : 'status-warning';
+    }
+    
+    if (contractEl) {
+        contractEl.textContent = compliance.contractCompliance || 'Unknown';
+        contractEl.className = compliance.contractCompliance.includes('100') ? 'status-good' : 'status-warning';
+    }
+    
+    // Show the items and hide loading
+    const complianceItems = document.getElementById('complianceItems');
+    const loadingEl = complianceItems?.previousElementSibling;
+    if (complianceItems) complianceItems.style.display = 'block';
+    if (loadingEl && loadingEl.classList.contains('loading')) loadingEl.style.display = 'none';
+}
+
+// Tab switching function
+function showReportTab(tabName) {
+    // Hide all tabs
+    document.querySelectorAll('.tab-content').forEach(tab => {
+        tab.classList.add('hidden');
+        tab.style.display = 'none';
+    });
+    
+    // Remove active class from all buttons
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.classList.remove('active');
+    });
+    
+    // Show selected tab
+    const selectedTab = document.getElementById(tabName + 'Report');
+    if (selectedTab) {
+        selectedTab.classList.remove('hidden');
+        selectedTab.style.display = 'block';
+    }
+    
+    // Add active class to clicked button
+    event.target.classList.add('active');
+}
+
+// Report action functions
+function exportWorkforceReport() {
+    customAlert('Generating comprehensive workforce report...', 'Export', 'info');
+    // TODO: Implement actual export functionality
+}
+
+function scheduleBoardReview() {
+    customAlert('Board review scheduling feature coming soon...', 'Schedule', 'info');
+    // TODO: Implement board review scheduling
+}
+
+function generateComplianceReport() {
+    customAlert('Generating detailed compliance report...', 'Compliance', 'info');
+    // TODO: Implement compliance report generation
+}
+
 function logout(){
     location.reload();
 }
@@ -3610,39 +3800,37 @@ function viewWorkforceReports(){
             
             <div id="summaryReport" class="tab-content">
                 <h4>Workforce Summary Report</h4>
-                <div class="report-grid">
+                <div class="loading">Loading workforce analytics...</div>
+                <div class="report-grid" id="summaryGrid" style="display: none;">
                     <div class="report-card">
                         <h5>Headcount Trends</h5>
                         <div class="metric">
-                            <span class="metric-value">45</span>
+                            <span class="metric-value" id="totalEmployees">0</span>
                             <span class="metric-label">Current Employees</span>
-                            <span class="metric-change positive">+6.7% YTD</span>
+                            <span class="metric-change positive" id="ytdChange">+0% YTD</span>
                         </div>
                     </div>
                     
                     <div class="report-card">
                         <h5>Department Distribution</h5>
-                        <div class="dept-chart">
-                            <div class="dept-bar" style="width: 40%;">Projects: 40%</div>
-                            <div class="dept-bar" style="width: 20%;">Admin: 20%</div>
-                            <div class="dept-bar" style="width: 15%;">Finance: 15%</div>
-                            <div class="dept-bar" style="width: 25%;">Others: 25%</div>
+                        <div class="dept-chart" id="deptChart">
+                            <div class="loading">Loading department data...</div>
                         </div>
                     </div>
                     
                     <div class="report-card">
                         <h5>Recruitment Metrics</h5>
                         <div class="metric">
-                            <span class="metric-value">8</span>
+                            <span class="metric-value" id="newHires">0</span>
                             <span class="metric-label">New Hires Q1</span>
-                            <span class="metric-change positive">+33% vs Q1 2025</span>
+                            <span class="metric-change positive" id="newHiresChange">+0% vs Q1 2025</span>
                         </div>
                     </div>
                     
                     <div class="report-card">
                         <h5>Cost Analysis</h5>
                         <div class="metric">
-                            <span class="metric-value">TZS 61.5M</span>
+                            <span class="metric-value" id="workforceCost">TZS 0</span>
                             <span class="metric-label">Annual Workforce Cost</span>
                             <span class="metric-change neutral">On Budget</span>
                         </div>
@@ -3658,54 +3846,57 @@ function viewWorkforceReports(){
             
             <div id="turnoverReport" class="tab-content hidden">
                 <h4>Employee Turnover Analysis</h4>
-                <div class="turnover-stats">
+                <div class="loading">Loading turnover analytics...</div>
+                <div class="turnover-stats" id="turnoverStats" style="display: none;">
                     <div class="turnover-item">
                         <span>Annual Turnover Rate:</span>
-                        <span class="turnover-rate">12.5%</span>
+                        <span class="turnover-rate" id="annualTurnover">0%</span>
                     </div>
                     <div class="turnover-item">
                         <span>Voluntary Turnover:</span>
-                        <span class="turnover-rate">8.3%</span>
+                        <span class="turnover-rate" id="voluntaryTurnover">0%</span>
                     </div>
                     <div class="turnover-item">
                         <span>Involuntary Turnover:</span>
-                        <span class="turnover-rate">4.2%</span>
+                        <span class="turnover-rate" id="involuntaryTurnover">0%</span>
                     </div>
                 </div>
             </div>
             
             <div id="performanceReport" class="tab-content hidden">
                 <h4>Performance Metrics Dashboard</h4>
-                <div class="performance-grid">
+                <div class="loading">Loading performance metrics...</div>
+                <div class="performance-grid" id="performanceGrid" style="display: none;">
                     <div class="perf-metric">
                         <span class="perf-label">Productivity Index</span>
-                        <span class="perf-value">87.3%</span>
+                        <span class="perf-value" id="productivityIndex">0%</span>
                     </div>
                     <div class="perf-metric">
                         <span class="perf-label">Attendance Rate</span>
-                        <span class="perf-value">94.2%</span>
+                        <span class="perf-value" id="attendanceRate">0%</span>
                     </div>
                     <div class="perf-metric">
                         <span class="perf-label">Training Completion</span>
-                        <span class="perf-value">76.8%</span>
+                        <span class="perf-value" id="trainingCompletion">0%</span>
                     </div>
                 </div>
             </div>
             
             <div id="complianceReport" class="tab-content hidden">
                 <h4>Compliance Status Report</h4>
-                <div class="compliance-items">
+                <div class="loading">Loading compliance data...</div>
+                <div class="compliance-items" id="complianceItems" style="display: none;">
                     <div class="compliance-item">
                         <span>Labor Law Compliance:</span>
-                        <span class="status-good">Compliant</span>
+                        <span class="status-good" id="laborLawCompliance">Checking...</span>
                     </div>
                     <div class="compliance-item">
                         <span>Safety Regulations:</span>
-                        <span class="status-good">Compliant</span>
+                        <span class="status-good" id="safetyRegulations">Checking...</span>
                     </div>
                     <div class="compliance-item">
                         <span>Contract Compliance:</span>
-                        <span class="status-warning">95% Compliant</span>
+                        <span class="status-warning" id="contractCompliance">Checking...</span>
                     </div>
                 </div>
             </div>
@@ -3727,6 +3918,9 @@ function viewWorkforceReports(){
             </div>
         </div>
     </div>`);
+    
+    // Load real data from database
+    loadWorkforceAnalytics();
 }
 
 // MD Helper Functions
