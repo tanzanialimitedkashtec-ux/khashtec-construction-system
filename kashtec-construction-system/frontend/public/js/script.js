@@ -58,8 +58,10 @@ function handleLogin(){
     currentRole = role;
     document.getElementById("loginPage").classList.add("hidden");
     document.getElementById("systemPage").classList.remove("hidden");
+    document.getElementById("notificationContainer").classList.remove("hidden");
     document.getElementById("userRole").innerText = roleDescriptions[role] + " Dashboard";
     loadMenu();
+    loadNotifications();
     return false; // Prevent form submission
 }
 
@@ -86,8 +88,10 @@ function login(){
     currentRole = role;
     document.getElementById("loginPage").classList.add("hidden");
     document.getElementById("systemPage").classList.remove("hidden");
+    document.getElementById("notificationContainer").classList.remove("hidden");
     document.getElementById("userRole").innerText = roleDescriptions[role] + " Dashboard";
     loadMenu();
+    loadNotifications();
 }
 
 // Core application functions
@@ -99,8 +103,39 @@ function handleLogout() {
     currentRole = "";
     document.getElementById("loginPage").classList.remove("hidden");
     document.getElementById("systemPage").classList.add("hidden");
+    document.getElementById("notificationContainer").classList.add("hidden");
     document.getElementById("loginRole").value = "";
     document.getElementById("loginPassword").value = "";
+}
+
+// Notification functions
+function loadNotifications() {
+    // Load notifications for the current user/role
+    updateNotificationBadge();
+}
+
+function updateNotificationBadge() {
+    // Get notification count from backend or local storage
+    // For now, we'll use a sample count - replace with actual backend call
+    let notificationCount = localStorage.getItem('notificationCount') || 0;
+    const badge = document.getElementById("notificationBadge");
+    
+    if (notificationCount > 0) {
+        badge.innerText = notificationCount;
+        badge.classList.remove("hidden");
+    } else {
+        badge.classList.add("hidden");
+    }
+}
+
+function toggleNotificationPanel() {
+    // Show notification panel with detailed notifications
+    customAlert(
+        "You have notifications from the system. Check your messages and updates regularly.",
+        "Notifications",
+        "info"
+    );
+    // Optional: You can expand this to show a detailed notification panel
 }
 
 function customAlert(message, title = "Alert", type = "info") {
