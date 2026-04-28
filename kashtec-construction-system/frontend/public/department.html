@@ -1323,28 +1323,29 @@ background: #f8f9fa;
     position: fixed;
     top: 80px;
     right: 20px;
-    z-index: 999;
+    z-index: 1001;
 }
 
 .nav-toggle-btn {
-    background: linear-gradient(135deg, #0b3d91, #1e5bb8);
+    background: linear-gradient(135deg, #ff6b6b, #ee5a24);
     color: white;
-    border: none;
+    border: 2px solid white;
     padding: 12px 20px;
     border-radius: 25px;
     cursor: pointer;
     font-size: 14px;
     font-weight: 600;
-    box-shadow: 0 4px 15px rgba(11, 61, 145, 0.3);
+    box-shadow: 0 4px 15px rgba(238, 90, 36, 0.4);
     transition: all 0.3s ease;
     display: flex;
     align-items: center;
     gap: 8px;
+    animation: pulse 2s infinite;
 }
 
 .nav-toggle-btn:hover {
     transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(11, 61, 145, 0.4);
+    box-shadow: 0 6px 25px rgba(238, 90, 36, 0.6);
 }
 
 .nav-menu {
@@ -1390,6 +1391,18 @@ background: #f8f9fa;
     to {
         opacity: 1;
         transform: translateY(0);
+    }
+}
+
+@keyframes pulse {
+    0% {
+        box-shadow: 0 4px 15px rgba(238, 90, 36, 0.4);
+    }
+    50% {
+        box-shadow: 0 4px 25px rgba(238, 90, 36, 0.6);
+    }
+    100% {
+        box-shadow: 0 4px 15px rgba(238, 90, 36, 0.4);
     }
 }
 
