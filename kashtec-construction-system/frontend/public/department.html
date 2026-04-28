@@ -540,6 +540,21 @@ button.action{
     box-shadow:0 0 5px rgba(11,61,145,0.2);
 }
 
+.login-box input[type="email"]{
+    width:100%;
+    padding:8px;
+    margin:10px 0;
+    border:1px solid #ddd;
+    border-radius:4px;
+    font-size:14px;
+}
+
+.login-box input[type="email"]:focus{
+    border-color:#0b3d91;
+    outline:none;
+    box-shadow:0 0 5px rgba(11,61,145,0.2);
+}
+
 /* Enhanced Form Styles */
 .form-row {
     display: flex;
@@ -1336,6 +1351,7 @@ background: #f8f9fa;
     padding: 15px;
     border-radius: 10px;
     margin-bottom: 20px;
+    -webkit-backdrop-filter: blur(10px);
     backdrop-filter: blur(10px);
     border: 1px solid rgba(255,255,255,255,0.2);
 }
@@ -2241,8 +2257,8 @@ background: #f8f9fa;
 <div id="loginPage" class="login-box">
     <h3>Login</h3>
     <form id="loginForm" onsubmit="return handleLogin()">
-        <input type="email" id="loginEmail" placeholder="Enter your email" style="width: 100%; margin: 10px 0; padding: 8px; border: 1px solid #ddd; border-radius: 4px;" required>
-        <select id="loginRole" onchange="updatePasswordPlaceholder()" required>
+        <input type="email" id="loginEmail" placeholder="Enter your email" required>
+        <select id="loginRole" onchange="updatePasswordPlaceholder()" title="Select your role" required>
             <option value="">Select Role</option>
             <option value="MD">Managing Director</option>
             <option value="ADMIN">Director of Administration</option>
@@ -2253,7 +2269,7 @@ background: #f8f9fa;
             <option value="REALESTATE">Real Estate Manager</option>
             <option value="ASSISTANT">Admin Assistant</option>
         </select>
-        <input type="password" id="loginPassword" placeholder="Enter password" style="width: 100%; margin: 10px 0; padding: 8px; border: 1px solid #ddd; border-radius: 4px;" required>
+        <input type="password" id="loginPassword" placeholder="Enter password" required>
         <button type="submit" id="loginBtn" class="action">Login</button>
     </form>
     
@@ -2265,7 +2281,7 @@ background: #f8f9fa;
     <button class="notification-btn" onclick="toggleNotifications()" title="Notifications">
         🔔
         <span class="notification-badge" id="notificationBadge">0</span>
-    </div>
+    </button>
 
     <div class="sidebar">
         <h3 id="userRole"></h3>
