@@ -1292,6 +1292,27 @@ background: #f8f9fa;
     padding: 15px 20px 20px 20px;
 }
 
+.notification-panel {
+    position: fixed;
+    top: 0;
+    right: 0;
+    width: 350px;
+    height: 100vh;
+    background: white;
+    box-shadow: -2px 0 10px rgba(0,0,0,0.1);
+    z-index: 1000;
+    display: none;
+}
+
+.notification-panel-close {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 20px;
+    cursor: pointer;
+    padding: 5px;
+}
+
 .notification-body p {
     margin: 0;
     font-size: 14px;
@@ -2294,10 +2315,10 @@ background: #f8f9fa;
     </div>
 
     <!-- NOTIFICATION PANEL -->
-    <div class="notification-panel" id="notificationPanel" style="display: none;">
+    <div class="notification-panel" id="notificationPanel">
         <div class="notification-header">
             <span>🔔 Notifications</span>
-            <button onclick="toggleNotifications()" style="background: none; border: none; color: white; font-size: 20px; cursor: pointer;">×</button>
+            <button class="notification-panel-close" onclick="toggleNotifications()">×</button>
         </div>
         <div class="notification-list" id="notificationList">
             <div class="notification-item">
