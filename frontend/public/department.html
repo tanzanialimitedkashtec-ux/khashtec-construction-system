@@ -1508,6 +1508,7 @@ background: #f8f9fa;
     padding: 15px;
     border-radius: 10px;
     margin-bottom: 20px;
+    -webkit-backdrop-filter: blur(10px);
     backdrop-filter: blur(10px);
     border: 1px solid rgba(255,255,255,255,0.2);
 }
@@ -2595,7 +2596,8 @@ background: #f8f9fa;
 <div id="loginPage" class="login-box">
     <h3>Login</h3>
     <form id="loginForm" onsubmit="return handleLogin()">
-        <input type="email" id="loginEmail" placeholder="Enter your email" style="width: 100%; margin: 10px 0; padding: 8px; border: 1px solid #ddd; border-radius: 4px;" required>
+        <input type="email" id="loginEmail" placeholder="Enter your email" required>
+        <label for="loginRole" class="sr-only">Login role</label>
         <select id="loginRole" onchange="updatePasswordPlaceholder()" required>
             <option value="">Select Role</option>
             <option value="Managing Director">Managing Director</option>
@@ -2607,7 +2609,7 @@ background: #f8f9fa;
             <option value="Real Estate Manager">Real Estate Manager</option>
             <option value="Admin Assistant">Admin Assistant</option>
         </select>
-        <input type="password" id="loginPassword" placeholder="Enter password" style="width: 100%; margin: 10px 0; padding: 8px; border: 1px solid #ddd; border-radius: 4px;" required>
+        <input type="password" id="loginPassword" placeholder="Enter password" required>
         <button type="submit" id="loginBtn" class="action">Login</button>
     </form>
     
