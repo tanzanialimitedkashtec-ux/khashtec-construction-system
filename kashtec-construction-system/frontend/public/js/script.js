@@ -1,87 +1,301 @@
-function toggleHSE(){
-    var x = document.getElementById("hse");
-    if(x.classList.contains("hidden")){
-        x.classList.remove("hidden");
-    }else{
-        x.classList.add("hidden");
-    }
-}
+let currentRole = "";
 
-function submitForm(){
-    alert("Thank you for contacting KASHTEC Tanzania Limited!");
-    return false;
-}
+// Role-based passwords (for demo purposes)
+const rolePasswords = {
+    "MD": "admin123",
+    "ADMIN": "admin123", 
+    "HR": "hr123",
+    "HSE": "hse123",
+    "FINANCE": "finance123",
+    "PROJECT": "project123",
+    "REALESTATE": "realestate123",
+    "ASSISTANT": "assistant123"
+};
 
-function toggleServiceDescription() {
-    var serviceType = document.getElementById("serviceType");
-    var customServiceGroup = document.getElementById("customServiceGroup");
-    var customService = document.getElementById("customService");
+// Role descriptions for password hints
+const roleDescriptions = {
+    "MD": "Managing Director",
+    "ADMIN": "Director of Administration",
+    "HR": "HR Manager", 
+    "HSE": "HSE Manager",
+    "FINANCE": "Finance Manager",
+    "PROJECT": "Project Manager",
+    "REALESTATE": "Real Estate Manager",
+    "ASSISTANT": "Admin Assistant"
+};
+
+function updatePasswordPlaceholder(){
+    const role = document.getElementById("loginRole").value;
+    const passwordInput = document.getElementById("loginPassword");
     
-    if (serviceType.value === "custom") {
-        customServiceGroup.style.display = "block";
-        customService.required = true;
+    if(role === ""){
+        passwordInput.placeholder = "Select a role first";
     } else {
-        customServiceGroup.style.display = "none";
-        customService.required = false;
-        customService.value = "";
+        passwordInput.placeholder = `Enter password for ${roleDescriptions[role]}`;
     }
 }
 
-function submitAccountForm() {
-    var fullName = document.getElementById("fullName").value;
-    var email = document.getElementById("email").value;
-    var phone = document.getElementById("phone").value;
-    var location = document.getElementById("location").value;
-    var serviceType = document.getElementById("serviceType");
-    var customService = document.getElementById("customService").value;
-    var additionalInfo = document.getElementById("additionalInfo").value;
+function handleLogin(){
+    const role = document.getElementById("loginRole").value;
+    const password = document.getElementById("loginPassword").value;
     
-    // Get selected service text
-    var selectedService = serviceType.options[serviceType.selectedIndex].text;
-    
-    // Validate required fields
-    if (!fullName || !email || !phone || !location || !serviceType.value) {
-        alert("Please fill in all required fields marked with *");
+    if(role === ""){
+        customAlert("Please select a role from the dropdown menu.", "Role Required", "error");
         return false;
     }
     
-    // If custom service is selected, validate that it's filled
-    if (serviceType.value === "custom" && !customService) {
-        alert("Please describe your required service");
+    if(password === ""){
+        customAlert("Please enter your password.", "Password Required", "error");
         return false;
     }
     
-    // Here you would normally send the data to a server
-    // For now, just show a success message
-    alert("Account request submitted successfully! We will contact you soon.");
-    return false;
+    // Validate password
+    if(password !== rolePasswords[role]){
+        customAlert("Invalid password. Please check your credentials.", "Authentication Failed", "error");
+        return false;
+    }
+    
+    currentRole = role;
+    document.getElementById("loginPage").classList.add("hidden");
+    document.getElementById("systemPage").classList.remove("hidden");
+    document.getElementById("userRole").innerText = roleDescriptions[role] + " Dashboard";
+    loadMenu();
+    return false; // Prevent form submission
 }
 
-// ===== PROJECT PROGRESS FUNCTIONS =====
+function login(){
+    const role = document.getElementById("roleSelect").value;
+    const password = document.getElementById("passwordInput").value;
+    
+    if(role === ""){
+        customAlert("Please select a role from the dropdown menu.", "Role Required", "error");
+        return;
+    }
+    
+    if(password === ""){
+        customAlert("Please enter your password.", "Password Required", "error");
+        return;
+    }
+    
+    // Validate password
+    if(password !== rolePasswords[role]){
+        customAlert("Invalid password. Please check your credentials.", "Authentication Failed", "error");
+        return;
+    }
+    
+    currentRole = role;
+    document.getElementById("loginPage").classList.add("hidden");
+    document.getElementById("systemPage").classList.remove("hidden");
+    document.getElementById("userRole").innerText = roleDescriptions[role] + " Dashboard";
+    loadMenu();
+}
 
-// Load projects into the select dropdown
-async function loadProjects() {
-    try {
-        const response = await window.ApiService.get('/projects');
-        const projectSelect = document.getElementById('progressProject');
-        
-        if (response.projects && response.projects.length > 0) {
-            projectSelect.innerHTML = '<option value="">Select Project to Update</option>';
-            
-            response.projects.forEach(project => {
-                const option = document.createElement('option');
-                option.value = project.id;
-                option.textContent = `${project.name} - ${project.location}`;
-                projectSelect.appendChild(option);
-            });
-        } else {
-            projectSelect.innerHTML = '<option value="">No projects available</option>';
+// Core application functions
+function showContent(content) {
+    document.getElementById('contentArea').innerHTML = content;
+}
+
+function handleLogout() {
+    currentRole = "";
+    document.getElementById("loginPage").classList.remove("hidden");
+    document.getElementById("systemPage").classList.add("hidden");
+    document.getElementById("loginRole").value = "";
+    document.getElementById("loginPassword").value = "";
+}
+
+function customAlert(message, title = "Alert", type = "info") {
+    // Create modal overlay
+    const modalOverlay = document.createElement('div');
+    modalOverlay.className = 'modal-overlay';
+    modalOverlay.style.display = 'flex';
+    
+    // Create modal content
+    const modalContent = document.createElement('div');
+    modalContent.className = 'modal-content';
+    
+    // Determine icon and color based on type
+    let icon = '';
+    let color = '#0b3d91';
+    switch(type) {
+        case 'success':
+            icon = '✅';
+            color = '#28a745';
+            break;
+        case 'error':
+            icon = '❌';
+            color = '#dc3545';
+            break;
+        case 'warning':
+            icon = '⚠️';
+            color = '#ffc107';
+            break;
+        default:
+            icon = 'ℹ️';
+            color = '#17a2b8';
+    }
+    
+    modalContent.innerHTML = `
+        <div class="modal-header">
+            <h3>${icon} ${title}</h3>
+            <button class="modal-close" onclick="this.closest('.modal-overlay').remove()">×</button>
+        </div>
+        <div class="modal-body">
+            <p>${message}</p>
+        </div>
+        <div class="modal-footer">
+            <button class="action" onclick="this.closest('.modal-overlay').remove()">OK</button>
+        </div>
+    `;
+    
+    modalOverlay.appendChild(modalContent);
+    document.body.appendChild(modalOverlay);
+    
+    // Close modal when clicking overlay
+    modalOverlay.addEventListener('click', function(e) {
+        if (e.target === modalOverlay) {
+            modalOverlay.remove();
         }
-    } catch (error) {
-        console.error('Failed to load projects:', error);
-        const projectSelect = document.getElementById('progressProject');
-        projectSelect.innerHTML = '<option value="">Failed to load projects</option>';
+    });
+}
+
+function loadMenu() {
+    const menu = document.getElementById('menu');
+    let menuItems = [];
+    
+    switch(currentRole) {
+        case 'MD':
+            menuItems = [
+                { text: '📊 System Overview', action: 'systemOverview()' },
+                { text: '👥 All Departments', action: 'viewAllDepartments()' },
+                { text: '📈 Analytics & Reports', action: 'loadAnalytics()' },
+                { text: '⚙️ System Settings', action: 'systemSettings()' },
+                { text: '🔔 Notifications', action: 'viewNotifications()' }
+            ];
+            break;
+        case 'HR':
+            menuItems = [
+                { text: '👥 Employee Management', action: 'loadEmployees()' },
+                { text: '📋 Policies', action: 'loadPolicies()' },
+                { text: '🎓 Senior Hiring', action: 'loadSeniorHiringRequests()' },
+                { text: '💰 Workforce Budget', action: 'loadWorkforceBudgets()' },
+                { text: '📊 Workforce Analytics', action: 'loadWorkforceAnalytics()' },
+                { text: '📈 Reports', action: 'loadReports()' }
+            ];
+            break;
+        case 'PROJECT':
+            menuItems = [
+                { text: '🏗️ Projects', action: 'loadProjects()' },
+                { text: '📊 Project Progress', action: 'loadProjectProgress()' },
+                { text: '👷 Workers', action: 'loadWorkers()' },
+                { text: '📈 Reports', action: 'loadProjectReports()' }
+            ];
+            break;
+        case 'FINANCE':
+            menuItems = [
+                { text: '💰 Budget Management', action: 'loadBudgets()' },
+                { text: '📊 Financial Reports', action: 'loadFinancialReports()' },
+                { text: '💸 Expenses', action: 'loadExpenses()' },
+                { text: '📈 Analytics', action: 'loadFinancialAnalytics()' }
+            ];
+            break;
+        case 'HSE':
+            menuItems = [
+                { text: '⚠️ Safety Reports', action: 'loadSafetyReports()' },
+                { text: '🔧 Equipment Management', action: 'loadEquipment()' },
+                { text: '📊 Compliance', action: 'loadCompliance()' },
+                { text: '🚨 Incidents', action: 'loadIncidents()' }
+            ];
+            break;
+        case 'REALESTATE':
+            menuItems = [
+                { text: '🏠 Properties', action: 'loadProperties()' },
+                { text: '👥 Tenants', action: 'loadTenants()' },
+                { text: '📊 Property Analytics', action: 'loadPropertyAnalytics()' }
+            ];
+            break;
+        case 'ADMIN':
+            menuItems = [
+                { text: '👥 User Management', action: 'loadUserManagement()' },
+                { text: '⚙️ System Admin', action: 'loadSystemAdmin()' },
+                { text: '📊 System Reports', action: 'loadSystemReports()' }
+            ];
+            break;
+        case 'ASSISTANT':
+            menuItems = [
+                { text: '📝 Documents', action: 'loadDocuments()' },
+                { text: '📊 Basic Reports', action: 'loadBasicReports()' },
+                { text: '📞 Communications', action: 'loadCommunications()' }
+            ];
+            break;
     }
+    
+    menu.innerHTML = menuItems.map(item => 
+        `<button onclick="${item.action}">${item.text}</button>`
+    ).join('');
+    
+    // Load default content
+    if (menuItems.length > 0) {
+        eval(menuItems[0].action);
+    }
+}
+
+// Placeholder functions for menu items
+function loadEmployees() {
+    showContent(`<div class="card"><h3>Employee Management</h3><p>Employee management module coming soon...</p></div>`);
+}
+
+function loadProjects() {
+    showContent(`<div class="card"><h3>Project Management</h3><p>Project management module coming soon...</p></div>`);
+}
+
+function loadBudgets() {
+    showContent(`<div class="card"><h3>Budget Management</h3><p>Budget management module coming soon...</p></div>`);
+}
+
+function systemOverview() {
+    showContent(`<div class="card"><h3>System Overview</h3><p>System overview module coming soon...</p></div>`);
+}
+
+function viewNotifications() {
+    showContent(`<div class="card"><h3>Notifications</h3><p>No new notifications</p></div>`);
+}
+
+
+// Add more placeholder functions as needed
+function viewAllDepartments() { showContent(`<div class="card"><h3>All Departments</h3><p>Department overview coming soon...</p></div>`); }
+function loadAnalytics() { showContent(`<div class="card"><h3>Analytics</h3><p>Analytics module coming soon...</p></div>`); }
+function systemSettings() { showContent(`<div class="card"><h3>System Settings</h3><p>Settings module coming soon...</p></div>`); }
+function loadSeniorHiringRequests() { showContent(`<div class="card"><h3>Senior Hiring</h3><p>Senior hiring module coming soon...</p></div>`); }
+function loadWorkforceBudgets() { showContent(`<div class="card"><h3>Workforce Budget</h3><p>Workforce budget module coming soon...</p></div>`); }
+function loadWorkforceAnalytics() { showContent(`<div class="card"><h3>Workforce Analytics</h3><p>Workforce analytics coming soon...</p></div>`); }
+function loadReports() { showContent(`<div class="card"><h3>Reports</h3><p>Reports module coming soon...</p></div>`); }
+function loadProjectProgress() { showContent(`<div class="card"><h3>Project Progress</h3><p>Project progress module coming soon...</p></div>`); }
+function loadWorkers() { showContent(`<div class="card"><h3>Workers</h3><p>Workers module coming soon...</p></div>`); }
+function loadProjectReports() { showContent(`<div class="card"><h3>Project Reports</h3><p>Project reports module coming soon...</p></div>`); }
+function loadFinancialReports() { showContent(`<div class="card"><h3>Financial Reports</h3><p>Financial reports module coming soon...</p></div>`); }
+function loadExpenses() { showContent(`<div class="card"><h3>Expenses</h3><p>Expenses module coming soon...</p></div>`); }
+function loadFinancialAnalytics() { showContent(`<div class="card"><h3>Financial Analytics</h3><p>Financial analytics coming soon...</p></div>`); }
+function loadSafetyReports() { showContent(`<div class="card"><h3>Safety Reports</h3><p>Safety reports module coming soon...</p></div>`); }
+function loadEquipment() { showContent(`<div class="card"><h3>Equipment Management</h3><p>Equipment module coming soon...</p></div>`); }
+function loadCompliance() { showContent(`<div class="card"><h3>Compliance</h3><p>Compliance module coming soon...</p></div>`); }
+function loadIncidents() { showContent(`<div class="card"><h3>Incidents</h3><p>Incidents module coming soon...</p></div>`); }
+function loadProperties() { showContent(`<div class="card"><h3>Properties</h3><p>Properties module coming soon...</p></div>`); }
+function loadTenants() { showContent(`<div class="card"><h3>Tenants</h3><p>Tenants module coming soon...</p></div>`); }
+function loadPropertyAnalytics() { showContent(`<div class="card"><h3>Property Analytics</h3><p>Property analytics coming soon...</p></div>`); }
+function loadUserManagement() { showContent(`<div class="card"><h3>User Management</h3><p>User management module coming soon...</p></div>`); }
+function loadSystemAdmin() { showContent(`<div class="card"><h3>System Admin</h3><p>System admin module coming soon...</p></div>`); }
+function loadSystemReports() { showContent(`<div class="card"><h3>System Reports</h3><p>System reports module coming soon...</p></div>`); }
+function loadDocuments() { showContent(`<div class="card"><h3>Documents</h3><p>Documents module coming soon...</p></div>`); }
+function loadBasicReports() { showContent(`<div class="card"><h3>Basic Reports</h3><p>Basic reports module coming soon...</p></div>`); }
+function loadCommunications() { showContent(`<div class="card"><h3>Communications</h3><p>Communications module coming soon...</p></div>`); }
+
+// Policy functions
+function viewPolicy(id) {
+    customAlert(`Viewing policy ID: ${id}`, 'Policy Details', 'info');
+}
+
+function downloadPolicy(id) {
+    customAlert(`Downloading policy ID: ${id}`, 'Download', 'info');
 }
 
 // Load project details when a project is selected
