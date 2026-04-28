@@ -2533,14 +2533,20 @@ function loadBudgetRequestsFromBackend() {
             data.forEach(request => {
                 html += `
                     <div class="budget-item">
-                        <h5>${request.work_title || 'Untitled Request'}</h5>
-                        <p><strong>Department:</strong> ${request.department || 'N/A'}</p>
-                        <p><strong>Amount:</strong> TZS ${request.amount ? parseInt(request.amount).toLocaleString() : 'N/A'}</p>
-                        <p><strong>Status:</strong> <span class="status-${request.status || 'pending'}">${request.status || 'Pending'}</span></p>
+                        <h5>${request.budget_period ? request.budget_period.charAt(0).toUpperCase() + request.budget_period.slice(1) + ' Budget' : 'Workforce Budget Request'}</h5>
+                        <p><strong>Department:</strong> ${request.department || 'All Departments'}</p>
+                        <p><strong>Total Budget:</strong> TZS ${request.total_budget ? parseInt(request.total_budget).toLocaleString() : 'N/A'}</p>
+                        <p><strong>Salaries & Wages:</strong> TZS ${request.salaries_wages ? parseInt(request.salaries_wages).toLocaleString() : 'N/A'}</p>
+                        <p><strong>Training & Development:</strong> TZS ${request.training_development ? parseInt(request.training_development).toLocaleString() : 'N/A'}</p>
+                        <p><strong>Employee Benefits:</strong> TZS ${request.employee_benefits ? parseInt(request.employee_benefits).toLocaleString() : 'N/A'}</p>
+                        <p><strong>Recruitment Costs:</strong> TZS ${request.recruitment_costs ? parseInt(request.recruitment_costs).toLocaleString() : 'N/A'}</p>
+                        <p><strong>Submission Date:</strong> ${request.submission_date || 'N/A'}</p>
+                        <p><strong>Status:</strong> <span class="status-${request.status || 'pending'}">${request.status ? request.status.charAt(0).toUpperCase() + request.status.slice(1) : 'Pending'}</span></p>
+                        ${request.justification ? `<p><strong>Justification:</strong> ${request.justification}</p>` : ''}
                         <div class="budget-actions">
-                            <button class="action" onclick="approveBudget(${request.id})">Approve</button>
-                            <button class="action" onclick="rejectBudget(${request.id})">Reject</button>
-                            <button class="action" onclick="modifyBudget(${request.id})">Modify</button>
+                            <button class="action" onclick="approveBudget('${request.id}')">Approve</button>
+                            <button class="action" onclick="rejectBudget('${request.id}')">Reject</button>
+                            <button class="action" onclick="modifyBudget('${request.id}')">Modify</button>
                         </div>
                     </div>
                 `;
@@ -2552,6 +2558,106 @@ function loadBudgetRequestsFromBackend() {
             console.error('❌ Error loading budget requests:', error);
             document.getElementById('budgetContainer').innerHTML = '<div class="error">Error loading budget requests: ' + error.message + '</div>';
         });
+}
+
+function approveBudget(budgetId) {
+    const baseUrl = window.location.origin;
+    
+    if (!confirm('Are you sure you want to approve this budget request?')) {
+        return;
+    }
+    
+    fetch(`${baseUrl}/api/workforce-budget/${budgetId}/approve`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            approved_by: currentRole || 'Managing Director'
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        console.log('✅ Budget approved:', data);
+        customAlert('Budget approved successfully!', 'Success', 'success');
+        loadBudgetRequestsFromBackend(); // Refresh the list
+    })
+    .catch(error => {
+        console.error('❌ Error approving budget:', error);
+        customAlert('Error approving budget: ' + error.message, 'Error', 'error');
+    });
+}
+
+function rejectBudget(budgetId) {
+    const rejectionReason = prompt('Please provide a reason for rejection:');
+    
+    if (rejectionReason === null) {
+        return; // User cancelled
+    }
+    
+    if (!rejectionReason.trim()) {
+        customAlert('Please provide a rejection reason', 'Error', 'error');
+        return;
+    }
+    
+    const baseUrl = window.location.origin;
+    
+    fetch(`${baseUrl}/api/workforce-budget/${budgetId}/reject`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            rejection_reason: rejectionReason,
+            rejected_by: currentRole || 'Managing Director'
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        console.log('✅ Budget rejected:', data);
+        customAlert('Budget rejected successfully!', 'Success', 'success');
+        loadBudgetRequestsFromBackend(); // Refresh the list
+    })
+    .catch(error => {
+        console.error('❌ Error rejecting budget:', error);
+        customAlert('Error rejecting budget: ' + error.message, 'Error', 'error');
+    });
+}
+
+function modifyBudget(budgetId) {
+    const modificationRequest = prompt('Please specify the modifications needed:');
+    
+    if (modificationRequest === null) {
+        return; // User cancelled
+    }
+    
+    if (!modificationRequest.trim()) {
+        customAlert('Please provide modification details', 'Error', 'error');
+        return;
+    }
+    
+    const baseUrl = window.location.origin;
+    
+    fetch(`${baseUrl}/api/workforce-budget/${budgetId}/modify`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            modification_request: modificationRequest,
+            requested_by: currentRole || 'Managing Director'
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        console.log('✅ Budget modification requested:', data);
+        customAlert('Budget modification requested successfully!', 'Success', 'success');
+        loadBudgetRequestsFromBackend(); // Refresh the list
+    })
+    .catch(error => {
+        console.error('❌ Error requesting budget modification:', error);
+        customAlert('Error requesting budget modification: ' + error.message, 'Error', 'error');
+    });
 }
 
 function logout(){
