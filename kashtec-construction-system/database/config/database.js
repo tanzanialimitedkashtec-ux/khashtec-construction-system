@@ -31,9 +31,17 @@ class Database {
             }
             
             // Use Railway's DATABASE_URL or construct from individual variables
-            const databaseUrl = process.env.DATABASE_URL && !process.env.DATABASE_URL.includes('${') 
-                ? process.env.DATABASE_URL 
-                : process.env.MYSQL_URL || `mysql://${process.env.MYSQLUSER}:${process.env.MYSQLPASSWORD}@${process.env.MYSQLHOST}:${process.env.MYSQLPORT}/${process.env.MYSQLDATABASE}`;
+            const mysqlUser = process.env.MYSQLUSER || process.env.DB_USER;
+            const mysqlPassword = process.env.MYSQLPASSWORD || process.env.DB_PASSWORD;
+            const mysqlHost = process.env.MYSQLHOST || process.env.DB_HOST;
+            const mysqlPort = process.env.MYSQLPORT || process.env.DB_PORT || 3306;
+            const mysqlDatabase = process.env.MYSQLDATABASE || process.env.DB_NAME || process.env.DB_DATABASE;
+            const databaseUrl = process.env.DATABASE_URL && !process.env.DATABASE_URL.includes('${')
+                ? process.env.DATABASE_URL
+                : process.env.MYSQL_URL
+                || (mysqlUser && mysqlPassword && mysqlHost && mysqlDatabase
+                    ? `mysql://${mysqlUser}:${mysqlPassword}@${mysqlHost}:${mysqlPort}/${mysqlDatabase}`
+                    : null);
             
             if (databaseUrl) {
                 // Parse DATABASE_URL format: mysql://user:password@host:port/database
