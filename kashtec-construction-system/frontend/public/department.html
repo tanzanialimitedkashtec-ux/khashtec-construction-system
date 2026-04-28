@@ -2261,6 +2261,12 @@ background: #f8f9fa;
 
 <div id="systemPage" class="container hidden">
 
+    <!-- NOTIFICATION BUTTON FOR MD -->
+    <button class="notification-btn" onclick="toggleNotifications()" title="Notifications">
+        🔔
+        <span class="notification-badge" id="notificationBadge">0</span>
+    </div>
+
     <div class="sidebar">
         <h3 id="userRole"></h3>
         <div id="menu"></div>
@@ -2269,6 +2275,21 @@ background: #f8f9fa;
 
     <div class="content" id="contentArea">
         <h3>Welcome</h3>
+    </div>
+
+    <!-- NOTIFICATION PANEL -->
+    <div class="notification-panel" id="notificationPanel" style="display: none;">
+        <div class="notification-header">
+            <span>🔔 Notifications</span>
+            <button onclick="toggleNotifications()" style="background: none; border: none; color: white; font-size: 20px; cursor: pointer;">×</button>
+        </div>
+        <div class="notification-list" id="notificationList">
+            <div class="notification-item">
+                <p><strong>Welcome!</strong></p>
+                <p>System notifications will appear here</p>
+                <small>Just now</small>
+            </div>
+        </div>
     </div>
 
 </div>
@@ -2850,6 +2871,1116 @@ function generateComplianceReport() {
     // TODO: Implement compliance report generation
 }
 
+// ===== MD COMPREHENSIVE MANAGEMENT FUNCTIONS =====
+
+// System Overview & Monitoring
+function systemOverview() {
+    showContent(`<div class="card">
+        <h3>🏢 System Overview</h3>
+        <p><strong>Complete System Monitoring</strong></p>
+        
+        <div class="overview-grid">
+            <div class="overview-card">
+                <h4>👥 Active Users</h4>
+                <div class="metric">
+                    <span class="metric-value" id="activeUsersCount">Loading...</span>
+                    <span class="metric-label">Currently Online</span>
+                </div>
+            </div>
+            
+            <div class="overview-card">
+                <h4>🏢 Departments</h4>
+                <div class="metric">
+                    <span class="metric-value">7</span>
+                    <span class="metric-label">Active Departments</span>
+                </div>
+            </div>
+            
+            <div class="overview-card">
+                <h4>📊 System Health</h4>
+                <div class="metric">
+                    <span class="metric-value status-good">98%</span>
+                    <span class="metric-label">Operational Status</span>
+                </div>
+            </div>
+            
+            <div class="overview-card">
+                <h4>⚡ Recent Activities</h4>
+                <div class="metric">
+                    <span class="metric-value" id="recentActivities">Loading...</span>
+                    <span class="metric-label">Last 24 Hours</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="system-actions">
+            <button class="action" onclick="departmentActivities()">View Department Activities</button>
+            <button class="action" onclick="userLoginHistory()">Check Login History</button>
+            <button class="action" onclick="realtimeAnalytics()">Real-time Analytics</button>
+        </div>
+    </div>`);
+    
+    loadSystemOverviewData();
+}
+
+function departmentActivities() {
+    showContent(`<div class="card">
+        <h3>📊 Department Activities</h3>
+        <p><strong>Real-time Department Monitoring</strong></p>
+        
+        <div class="dept-activities">
+            <div class="dept-activity-card">
+                <h4>🏗️ Projects Department</h4>
+                <div class="activity-status">
+                    <span class="status-indicator active"></span>
+                    <span>5 Active Projects</span>
+                </div>
+                <div class="recent-activity">
+                    <p>Latest: Tower Complex Phase 2 - Progress Update</p>
+                    <small>2 hours ago</small>
+                </div>
+            </div>
+            
+            <div class="dept-activity-card">
+                <h4>💼 HR Department</h4>
+                <div class="activity-status">
+                    <span class="status-indicator active"></span>
+                    <span>3 Pending Approvals</span>
+                </div>
+                <div class="recent-activity">
+                    <p>Latest: New employee onboarding completed</p>
+                    <small>1 hour ago</small>
+                </div>
+            </div>
+            
+            <div class="dept-activity-card">
+                <h4>🔒 HSE Department</h4>
+                <div class="activity-status">
+                    <span class="status-indicator warning"></span>
+                    <span>2 Safety Reports</span>
+                </div>
+                <div class="recent-activity">
+                    <p>Latest: Monthly safety inspection completed</p>
+                    <small>3 hours ago</small>
+                </div>
+            </div>
+            
+            <div class="dept-activity-card">
+                <h4>💵 Finance Department</h4>
+                <div class="activity-status">
+                    <span class="status-indicator active"></span>
+                    <span>4 Budget Reviews</span>
+                </div>
+                <div class="recent-activity">
+                    <p>Latest: Q1 budget approval completed</p>
+                    <small>4 hours ago</small>
+                </div>
+            </div>
+        </div>
+        
+        <div class="dept-actions">
+            <button class="action" onclick="projectsDepartment()">Projects Details</button>
+            <button class="action" onclick="hrDepartment()">HR Details</button>
+            <button class="action" onclick="hseDepartment()">HSE Details</button>
+            <button class="action" onclick="financeDepartment()">Finance Details</button>
+        </div>
+    </div>`);
+}
+
+function userLoginHistory() {
+    showContent(`<div class="card">
+        <h3>🔍 User Login History</h3>
+        <p><strong>Monitor User Access & Security</strong></p>
+        
+        <div class="login-history">
+            <div class="history-controls">
+                <input type="date" id="historyDate" class="date-input">
+                <button class="action" onclick="filterLoginHistory()">Filter</button>
+                <button class="action" onclick="exportLoginHistory()">Export</button>
+            </div>
+            
+            <div class="history-table">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>User</th>
+                            <th>Role</th>
+                            <th>Login Time</th>
+                            <th>IP Address</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="loginHistoryBody">
+                        <tr>
+                            <td colspan="6" class="loading">Loading login history...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        
+        <div class="security-actions">
+            <button class="action" onclick="suspiciousActivity()">Check Suspicious Activity</button>
+            <button class="action" onclick="userManagement()">Manage Users</button>
+            <button class="action" onclick="systemSettings()">Security Settings</button>
+        </div>
+    </div>`);
+    
+    loadLoginHistory();
+}
+
+function realtimeAnalytics() {
+    showContent(`<div class="card">
+        <h3>📈 Real-time Analytics</h3>
+        <p><strong>Live System Performance Metrics</strong></p>
+        
+        <div class="analytics-dashboard">
+            <div class="analytics-grid">
+                <div class="analytics-card">
+                    <h4>System Performance</h4>
+                    <div class="performance-metrics">
+                        <div class="metric">
+                            <span class="metric-value">99.8%</span>
+                            <span class="metric-label">Uptime</span>
+                        </div>
+                        <div class="metric">
+                            <span class="metric-value">1.2s</span>
+                            <span class="metric-label">Response Time</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="analytics-card">
+                    <h4>User Activity</h4>
+                    <div class="activity-metrics">
+                        <div class="metric">
+                            <span class="metric-value">247</span>
+                            <span class="metric-label">Active Sessions</span>
+                        </div>
+                        <div class="metric">
+                            <span class="metric-value">1,842</span>
+                            <span class="metric-label">Daily Logins</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="live-activity-feed">
+                <h4>🔴 Live Activity Feed</h4>
+                <div id="liveFeed" class="activity-feed">
+                    <div class="feed-item">
+                        <span class="timestamp">Just now</span>
+                        <span class="activity">HR Manager logged in</span>
+                    </div>
+                    <div class="feed-item">
+                        <span class="timestamp">2 min ago</span>
+                        <span class="activity">New project created</span>
+                    </div>
+                    <div class="feed-item">
+                        <span class="timestamp">5 min ago</span>
+                        <span class="activity">Budget approved by Finance</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>`);
+    
+    startLiveFeed();
+}
+
+// Policy & Compliance Management
+function managePolicies() {
+    showContent(`<div class="card">
+        <h3>📋 Manage Policies</h3>
+        <p><strong>Organization Policy Management</strong></p>
+        
+        <div class="policy-management">
+            <div class="policy-controls">
+                <button class="action" onclick="createNewPolicy()">Create New Policy</button>
+                <button class="action" onclick="reviewPolicies()">Review Pending</button>
+                <button class="action" onclick="archivePolicies()">Archive Old</button>
+            </div>
+            
+            <div class="policy-list">
+                <h4>Active Policies</h4>
+                <div id="policyList" class="policy-items">
+                    <div class="loading">Loading policies...</div>
+                </div>
+            </div>
+        </div>
+    </div>`);
+    
+    loadPolicies();
+}
+
+function complianceTracking() {
+    showContent(`<div class="card">
+        <h3>✅ Compliance Tracking</h3>
+        <p><strong>Monitor Regulatory Compliance</strong></p>
+        
+        <div class="compliance-dashboard">
+            <div class="compliance-summary">
+                <div class="compliance-metric">
+                    <span class="metric-value status-good">95%</span>
+                    <span class="metric-label">Overall Compliance</span>
+                </div>
+                <div class="compliance-metric">
+                    <span class="metric-value">12</span>
+                    <span class="metric-label">Pending Reviews</span>
+                </div>
+            </div>
+            
+            <div class="compliance-areas">
+                <h4>Compliance Areas</h4>
+                <div class="compliance-grid">
+                    <div class="compliance-item status-good">
+                        <span>Labor Regulations</span>
+                        <span>✅ Compliant</span>
+                    </div>
+                    <div class="compliance-item status-warning">
+                        <span>Safety Standards</span>
+                        <span>⚠️ Review Needed</span>
+                    </div>
+                    <div class="compliance-item status-good">
+                        <span>Financial Regulations</span>
+                        <span>✅ Compliant</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>`);
+}
+
+function policyEnforcement() {
+    showContent(`<div class="card">
+        <h3>📜 Policy Enforcement</h3>
+        <p><strong>Ensure Policy Compliance</strong></p>
+        
+        <div class="enforcement-dashboard">
+            <div class="enforcement-actions">
+                <h4>Recent Enforcement Actions</h4>
+                <div class="enforcement-list">
+                    <div class="enforcement-item">
+                        <span class="action-type">Warning</span>
+                        <span class="action-desc">Late attendance policy violation</span>
+                        <span class="action-date">2 days ago</span>
+                    </div>
+                    <div class="enforcement-item">
+                        <span class="action-type">Suspension</span>
+                        <span class="action-desc">Safety protocol breach</span>
+                        <span class="action-date">1 week ago</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="enforcement-tools">
+                <button class="action" onclick="disciplinaryActions()">View Disciplinary Actions</button>
+                <button class="action" onclick="generateComplianceReport()">Generate Report</button>
+            </div>
+        </div>
+    </div>`);
+}
+
+// Financial & Budget Management
+function budgetManagement() {
+    showContent(`<div class="card">
+        <h3>💰 Budget Management</h3>
+        <p><strong>Comprehensive Budget Oversight</strong></p>
+        
+        <div class="budget-overview">
+            <div class="budget-summary">
+                <div class="budget-metric">
+                    <span class="metric-value">TZS 450M</span>
+                    <span class="metric-label">Total Annual Budget</span>
+                </div>
+                <div class="budget-metric">
+                    <span class="metric-value">67%</span>
+                    <span class="metric-label">Budget Utilized</span>
+                </div>
+            </div>
+            
+            <div class="department-budgets">
+                <h4>Department Budgets</h4>
+                <div class="budget-grid">
+                    <div class="budget-item">
+                        <span>Projects</span>
+                        <span>TZS 180M (40%)</span>
+                    </div>
+                    <div class="budget-item">
+                        <span>HR</span>
+                        <span>TZS 90M (20%)</span>
+                    </div>
+                    <div class="budget-item">
+                        <span>Operations</span>
+                        <span>TZS 135M (30%)</span>
+                    </div>
+                    <div class="budget-item">
+                        <span>Admin</span>
+                        <span>TZS 45M (10%)</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="budget-actions">
+            <button class="action" onclick="approveWorkforceBudget()">Approve Budgets</button>
+            <button class="action" onclick="budgetReports()">Budget Reports</button>
+            <button class="action" onclick="financialTransactions()">View Transactions</button>
+        </div>
+    </div>`);
+}
+
+function trackPayments() {
+    showContent(`<div class="card">
+        <h3>💳 Track Payments</h3>
+        <p><strong>Payment Transaction Monitoring</strong></p>
+        
+        <div class="payment-tracking">
+            <div class="payment-summary">
+                <div class="payment-metric">
+                    <span class="metric-value">TZS 12.5M</span>
+                    <span class="metric-label">Payments Today</span>
+                </div>
+                <div class="payment-metric">
+                    <span class="metric-value">47</span>
+                    <span class="metric-label">Pending Approvals</span>
+                </div>
+            </div>
+            
+            <div class="payment-list">
+                <h4>Recent Payments</h4>
+                <div id="paymentList" class="payment-items">
+                    <div class="loading">Loading payment data...</div>
+                </div>
+            </div>
+        </div>
+    </div>`);
+    
+    loadPaymentData();
+}
+
+function financialTransactions() {
+    showContent(`<div class="card">
+        <h3>📊 Financial Transactions</h3>
+        <p><strong>Complete Transaction History</strong></p>
+        
+        <div class="transaction-dashboard">
+            <div class="transaction-filters">
+                <input type="date" id="startDate" class="date-input">
+                <input type="date" id="endDate" class="date-input">
+                <select id="transactionType" class="select-input">
+                    <option value="">All Types</option>
+                    <option value="payment">Payments</option>
+                    <option value="budget">Budget</option>
+                    <option value="expense">Expenses</option>
+                </select>
+                <button class="action" onclick="filterTransactions()">Filter</button>
+            </div>
+            
+            <div class="transaction-table">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Type</th>
+                            <th>Description</th>
+                            <th>Amount</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="transactionBody">
+                        <tr>
+                            <td colspan="6" class="loading">Loading transactions...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>`);
+    
+    loadTransactions();
+}
+
+function budgetReports() {
+    showContent(`<div class="card">
+        <h3>📑 Budget Reports</h3>
+        <p><strong>Comprehensive Budget Analysis</strong></p>
+        
+        <div class="budget-reports">
+            <div class="report-controls">
+                <button class="action" onclick="generateBudgetReport()">Generate Report</button>
+                <button class="action" onclick="exportBudgetReport()">Export PDF</button>
+                <button class="action" onclick="scheduleBudgetReview()">Schedule Review</button>
+            </div>
+            
+            <div class="report-preview">
+                <h4>Latest Budget Report</h4>
+                <div class="report-summary">
+                    <div class="summary-item">
+                        <span>Period:</span>
+                        <span>Q1 2024</span>
+                    </div>
+                    <div class="summary-item">
+                        <span>Total Budget:</span>
+                        <span>TZS 450M</span>
+                    </div>
+                    <div class="summary-item">
+                        <span>Utilization:</span>
+                        <span>67%</span>
+                    </div>
+                    <div class="summary-item">
+                        <span>Remaining:</span>
+                        <span>TZS 148.5M</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>`);
+}
+
+// Employee & Workforce Management
+function employeeManagement() {
+    showContent(`<div class="card">
+        <h3>👥 Employee Management</h3>
+        <p><strong>Complete Employee Oversight</strong></p>
+        
+        <div class="employee-overview">
+            <div class="employee-stats">
+                <div class="employee-metric">
+                    <span class="metric-value">247</span>
+                    <span class="metric-label">Total Employees</span>
+                </div>
+                <div class="employee-metric">
+                    <span class="metric-value">235</span>
+                    <span class="metric-label">Active</span>
+                </div>
+                <div class="employee-metric">
+                    <span class="metric-value">12</span>
+                    <span class="metric-label">On Leave</span>
+                </div>
+            </div>
+            
+            <div class="employee-actions">
+                <button class="action" onclick="viewAllWorkers()">View All Employees</button>
+                <button class="action" onclick="reviewEmployeeCount()">Review Headcount</button>
+                <button class="action" onclick="suspendTerminateEmployment()">Manage Employment</button>
+            </div>
+        </div>
+    </div>`);
+}
+
+function workerAccountsManagement() {
+    showContent(`<div class="card">
+        <h3>👷 Worker Accounts Management</h3>
+        <p><strong>Worker Account Administration</strong></p>
+        
+        <div class="worker-accounts">
+            <div class="account-stats">
+                <div class="account-metric">
+                    <span class="metric-value">89</span>
+                    <span class="metric-label">Active Workers</span>
+                </div>
+                <div class="account-metric">
+                    <span class="metric-value">5</span>
+                    <span class="metric-label">Pending Activation</span>
+                </div>
+            </div>
+            
+            <div class="account-list">
+                <h4>Recent Worker Accounts</h4>
+                <div id="workerList" class="worker-items">
+                    <div class="loading">Loading worker accounts...</div>
+                </div>
+            </div>
+        </div>
+    </div>`);
+    
+    loadWorkerAccounts();
+}
+
+function disciplinaryActions() {
+    showContent(`<div class="card">
+        <h3>⚠️ Disciplinary Actions</h3>
+        <p><strong>Employee Disciplinary Management</strong></p>
+        
+        <div class="disciplinary-dashboard">
+            <div class="disciplinary-summary">
+                <div class="disciplinary-metric">
+                    <span class="metric-value">3</span>
+                    <span class="metric-label">Active Cases</span>
+                </div>
+                <div class="disciplinary-metric">
+                    <span class="metric-value">8</span>
+                    <span class="metric-label">This Month</span>
+                </div>
+            </div>
+            
+            <div class="disciplinary-list">
+                <h4>Recent Disciplinary Actions</h4>
+                <div class="disciplinary-items">
+                    <div class="disciplinary-item">
+                        <span class="action-type warning">Warning</span>
+                        <span class="employee-name">John Doe</span>
+                        <span class="action-reason">Late attendance</span>
+                        <span class="action-date">2 days ago</span>
+                    </div>
+                    <div class="disciplinary-item">
+                        <span class="action-type severe">Suspension</span>
+                        <span class="employee-name">Jane Smith</span>
+                        <span class="action-reason">Safety violation</span>
+                        <span class="action-date">1 week ago</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>`);
+}
+
+// Department Oversight Functions
+function projectsDepartment() {
+    showContent(`<div class="card">
+        <h3>🏗️ Projects Department</h3>
+        <p><strong>Projects Department Overview</strong></p>
+        
+        <div class="dept-overview">
+            <div class="dept-stats">
+                <div class="dept-metric">
+                    <span class="metric-value">5</span>
+                    <span class="metric-label">Active Projects</span>
+                </div>
+                <div class="dept-metric">
+                    <span class="metric-value">TZS 180M</span>
+                    <span class="metric-label">Budget Allocation</span>
+                </div>
+            </div>
+            
+            <div class="recent-projects">
+                <h4>Recent Projects</h4>
+                <div class="project-items">
+                    <div class="project-item">
+                        <span class="project-name">Tower Complex Phase 2</span>
+                        <span class="project-status active">In Progress</span>
+                        <span class="project-budget">TZS 85M</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>`);
+}
+
+function hrDepartment() {
+    showContent(`<div class="card">
+        <h3>💼 HR Department</h3>
+        <p><strong>HR Department Overview</strong></p>
+        
+        <div class="dept-overview">
+            <div class="dept-stats">
+                <div class="dept-metric">
+                    <span class="metric-value">247</span>
+                    <span class="metric-label">Employees Managed</span>
+                </div>
+                <div class="dept-metric">
+                    <span class="metric-value">3</span>
+                    <span class="metric-label">Pending Approvals</span>
+                </div>
+            </div>
+            
+            <div class="hr-activities">
+                <h4>Recent HR Activities</h4>
+                <div class="hr-items">
+                    <div class="hr-item">
+                        <span class="activity-type">Onboarding</span>
+                        <span class="activity-desc">New employee onboarding completed</span>
+                        <span class="activity-time">1 hour ago</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>`);
+}
+
+function hseDepartment() {
+    showContent(`<div class="card">
+        <h3>🔒 HSE Department</h3>
+        <p><strong>HSE Department Overview</strong></p>
+        
+        <div class="dept-overview">
+            <div class="dept-stats">
+                <div class="dept-metric">
+                    <span class="metric-value">2</span>
+                    <span class="metric-label">Safety Reports</span>
+                </div>
+                <div class="dept-metric">
+                    <span class="metric-value">98%</span>
+                    <span class="metric-label">Safety Compliance</span>
+                </div>
+            </div>
+            
+            <div class="hse-activities">
+                <h4>Recent HSE Activities</h4>
+                <div class="hse-items">
+                    <div class="hse-item">
+                        <span class="activity-type">Inspection</span>
+                        <span class="activity-desc">Monthly safety inspection completed</span>
+                        <span class="activity-time">3 hours ago</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>`);
+}
+
+function financeDepartment() {
+    showContent(`<div class="card">
+        <h3>💵 Finance Department</h3>
+        <p><strong>Finance Department Overview</strong></p>
+        
+        <div class="dept-overview">
+            <div class="dept-stats">
+                <div class="dept-metric">
+                    <span class="metric-value">4</span>
+                    <span class="metric-label">Budget Reviews</span>
+                </div>
+                <div class="dept-metric">
+                    <span class="metric-value">TZS 12.5M</span>
+                    <span class="metric-label">Payments Today</span>
+                </div>
+            </div>
+            
+            <div class="finance-activities">
+                <h4>Recent Finance Activities</h4>
+                <div class="finance-items">
+                    <div class="finance-item">
+                        <span class="activity-type">Budget</span>
+                        <span class="activity-desc">Q1 budget approval completed</span>
+                        <span class="activity-time">4 hours ago</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>`);
+}
+
+function realEstateDepartment() {
+    showContent(`<div class="card">
+        <h3>🏠 Real Estate Department</h3>
+        <p><strong>Real Estate Department Overview</strong></p>
+        
+        <div class="dept-overview">
+            <div class="dept-stats">
+                <div class="dept-metric">
+                    <span class="metric-value">12</span>
+                    <span class="metric-label">Properties</span>
+                </div>
+                <div class="dept-metric">
+                    <span class="metric-value">3</span>
+                    <span class="metric-label">Available</span>
+                </div>
+            </div>
+        </div>
+    </div>`);
+}
+
+function adminDepartment() {
+    showContent(`<div class="card">
+        <h3>⚙️ Admin Department</h3>
+        <p><strong>Admin Department Overview</strong></p>
+        
+        <div class="dept-overview">
+            <div class="dept-stats">
+                <div class="dept-metric">
+                    <span class="metric-value">156</span>
+                    <span class="metric-label">Documents Managed</span>
+                </div>
+                <div class="dept-metric">
+                    <span class="metric-value">8</span>
+                    <span class="metric-label">Pending Tasks</span>
+                </div>
+            </div>
+        </div>
+    </div>`);
+}
+
+// System Administration
+function systemSettings() {
+    showContent(`<div class="card">
+        <h3>🔧 System Settings</h3>
+        <p><strong>System Configuration</strong></p>
+        
+        <div class="settings-dashboard">
+            <div class="setting-sections">
+                <div class="setting-section">
+                    <h4>Security Settings</h4>
+                    <div class="setting-options">
+                        <div class="setting-item">
+                            <span>Two-Factor Authentication</span>
+                            <input type="checkbox" checked>
+                        </div>
+                        <div class="setting-item">
+                            <span>Session Timeout</span>
+                            <select>
+                                <option>30 minutes</option>
+                                <option>1 hour</option>
+                                <option>2 hours</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="setting-section">
+                    <h4>Notification Settings</h4>
+                    <div class="setting-options">
+                        <div class="setting-item">
+                            <span>Email Notifications</span>
+                            <input type="checkbox" checked>
+                        </div>
+                        <div class="setting-item">
+                            <span>System Alerts</span>
+                            <input type="checkbox" checked>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="settings-actions">
+                <button class="action" onclick="saveSettings()">Save Settings</button>
+                <button class="action" onclick="resetSettings()">Reset to Default</button>
+            </div>
+        </div>
+    </div>`);
+}
+
+function systemReports() {
+    showContent(`<div class="card">
+        <h3>📊 System Reports</h3>
+        <p><strong>Comprehensive System Reports</strong></p>
+        
+        <div class="reports-dashboard">
+            <div class="report-categories">
+                <div class="report-category">
+                    <h4>📈 Performance Reports</h4>
+                    <div class="report-list">
+                        <div class="report-item">
+                            <span>System Performance Analysis</span>
+                            <button class="action" onclick="generateReport('performance')">Generate</button>
+                        </div>
+                        <div class="report-item">
+                            <span>User Activity Report</span>
+                            <button class="action" onclick="generateReport('user_activity')">Generate</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="report-category">
+                    <h4>🔒 Security Reports</h4>
+                    <div class="report-list">
+                        <div class="report-item">
+                            <span>Login History Analysis</span>
+                            <button class="action" onclick="generateReport('login_history')">Generate</button>
+                        </div>
+                        <div class="report-item">
+                            <span>Security Audit Report</span>
+                            <button class="action" onclick="generateReport('security_audit')">Generate</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>`);
+}
+
+function notificationCenter() {
+    showContent(`<div class="card">
+        <h3>🔔 Notification Center</h3>
+        <p><strong>System Notifications Management</strong></p>
+        
+        <div class="notification-center">
+            <div class="notification-stats">
+                <div class="notification-metric">
+                    <span class="metric-value">23</span>
+                    <span class="metric-label">Unread Notifications</span>
+                </div>
+                <div class="notification-metric">
+                    <span class="metric-value">147</span>
+                    <span class="metric-label">Total This Month</span>
+                </div>
+            </div>
+            
+            <div class="notification-filters">
+                <button class="filter-btn active" onclick="filterNotifications('all')">All</button>
+                <button class="filter-btn" onclick="filterNotifications('unread')">Unread</button>
+                <button class="filter-btn" onclick="filterNotifications('important')">Important</button>
+                <button class="filter-btn" onclick="filterNotifications('system')">System</button>
+            </div>
+            
+            <div class="notification-list-full">
+                <div id="fullNotificationList" class="notification-items">
+                    <div class="loading">Loading notifications...</div>
+                </div>
+            </div>
+        </div>
+    </div>`);
+    
+    loadFullNotifications();
+}
+
+function userManagement() {
+    showContent(`<div class="card">
+        <h3>👤 User Management</h3>
+        <p><strong>Complete User Administration</strong></p>
+        
+        <div class="user-management">
+            <div class="user-stats">
+                <div class="user-metric">
+                    <span class="metric-value">89</span>
+                    <span class="metric-label">Active Users</span>
+                </div>
+                <div class="user-metric">
+                    <span class="metric-value">5</span>
+                    <span class="metric-label">Pending Approval</span>
+                </div>
+            </div>
+            
+            <div class="user-actions">
+                <button class="action" onclick="createUser()">Create New User</button>
+                <button class="action" onclick="managePermissions()">Manage Permissions</button>
+                <button class="action" onclick="userLoginHistory()">View Login History</button>
+                <button class="action" onclick="suspiciousActivity()">Check Security</button>
+            </div>
+            
+            <div class="user-list">
+                <h4>Recent User Activity</h4>
+                <div id="userActivityList" class="user-items">
+                    <div class="loading">Loading user data...</div>
+                </div>
+            </div>
+        </div>
+    </div>`);
+    
+    loadUserManagementData();
+}
+
+// Data Loading Functions
+function loadSystemOverviewData() {
+    // Mock data for system overview
+    setTimeout(() => {
+        const activeUsersEl = document.getElementById('activeUsersCount');
+        const recentActivitiesEl = document.getElementById('recentActivities');
+        
+        if (activeUsersEl) activeUsersEl.textContent = '247';
+        if (recentActivitiesEl) recentActivitiesEl.textContent = '1,842';
+    }, 1000);
+}
+
+function loadLoginHistory() {
+    const tbody = document.getElementById('loginHistoryBody');
+    if (tbody) {
+        tbody.innerHTML = `
+            <tr>
+                <td>HR Manager</td>
+                <td>HR</td>
+                <td>2024-01-28 09:15:23</td>
+                <td>192.168.1.100</td>
+                <td class="status-good">Success</td>
+                <td><button class="action" onclick="viewUserDetails('HR Manager')">View</button></td>
+            </tr>
+            <tr>
+                <td>Finance Manager</td>
+                <td>FINANCE</td>
+                <td>2024-01-28 08:45:12</td>
+                <td>192.168.1.101</td>
+                <td class="status-good">Success</td>
+                <td><button class="action" onclick="viewUserDetails('Finance Manager')">View</button></td>
+            </tr>
+            <tr>
+                <td>Project Manager</td>
+                <td>PROJECT</td>
+                <td>2024-01-28 08:30:45</td>
+                <td>192.168.1.102</td>
+                <td class="status-warning">Failed</td>
+                <td><button class="action" onclick="viewUserDetails('Project Manager')">View</button></td>
+            </tr>
+        `;
+    }
+}
+
+function loadPaymentData() {
+    const paymentList = document.getElementById('paymentList');
+    if (paymentList) {
+        paymentList.innerHTML = `
+            <div class="payment-item">
+                <span class="payment-desc">Supplier Payment - ABC Construction</span>
+                <span class="payment-amount">TZS 2,500,000</span>
+                <span class="payment-status approved">Approved</span>
+            </div>
+            <div class="payment-item">
+                <span class="payment-desc">Employee Salaries - January 2024</span>
+                <span class="payment-amount">TZS 8,750,000</span>
+                <span class="payment-status pending">Pending</span>
+            </div>
+            <div class="payment-item">
+                <span class="payment-desc">Office Rent - Q1 2024</span>
+                <span class="payment-amount">TZS 1,250,000</span>
+                <span class="payment-status approved">Approved</span>
+            </div>
+        `;
+    }
+}
+
+function loadTransactions() {
+    const tbody = document.getElementById('transactionBody');
+    if (tbody) {
+        tbody.innerHTML = `
+            <tr>
+                <td>2024-01-28</td>
+                <td>Payment</td>
+                <td>Supplier Payment - ABC Construction</td>
+                <td>TZS 2,500,000</td>
+                <td class="status-good">Completed</td>
+                <td><button class="action" onclick="viewTransactionDetails('1')">View</button></td>
+            </tr>
+            <tr>
+                <td>2024-01-28</td>
+                <td>Budget</td>
+                <td>Q1 Budget Allocation - Projects</td>
+                <td>TZS 85,000,000</td>
+                <td class="status-good">Approved</td>
+                <td><button class="action" onclick="viewTransactionDetails('2')">View</button></td>
+            </tr>
+            <tr>
+                <td>2024-01-27</td>
+                <td>Expense</td>
+                <td>Office Supplies Purchase</td>
+                <td>TZS 150,000</td>
+                <td class="status-warning">Pending</td>
+                <td><button class="action" onclick="viewTransactionDetails('3')">View</button></td>
+            </tr>
+        `;
+    }
+}
+
+function loadWorkerAccounts() {
+    const workerList = document.getElementById('workerList');
+    if (workerList) {
+        workerList.innerHTML = `
+            <div class="worker-item">
+                <span class="worker-name">John Doe</span>
+                <span class="worker-id">WRK001</span>
+                <span class="worker-status active">Active</span>
+                <span class="worker-dept">Projects</span>
+            </div>
+            <div class="worker-item">
+                <span class="worker-name">Jane Smith</span>
+                <span class="worker-id">WRK002</span>
+                <span class="worker-status pending">Pending</span>
+                <span class="worker-dept">HR</span>
+            </div>
+            <div class="worker-item">
+                <span class="worker-name">Mike Johnson</span>
+                <span class="worker-id">WRK003</span>
+                <span class="worker-status active">Active</span>
+                <span class="worker-dept">Finance</span>
+            </div>
+        `;
+    }
+}
+
+function loadFullNotifications() {
+    const notificationList = document.getElementById('fullNotificationList');
+    if (notificationList) {
+        notificationList.innerHTML = `
+            <div class="notification-item-full unread">
+                <span class="notification-type important">🔴 Important</span>
+                <span class="notification-message">Budget approval required for Q1 2024</span>
+                <span class="notification-time">2 hours ago</span>
+                <button class="action" onclick="markAsRead('1')">Mark Read</button>
+            </div>
+            <div class="notification-item-full unread">
+                <span class="notification-type system">🔧 System</span>
+                <span class="notification-message">System maintenance scheduled for tonight</span>
+                <span class="notification-time">4 hours ago</span>
+                <button class="action" onclick="markAsRead('2')">Mark Read</button>
+            </div>
+            <div class="notification-item-full">
+                <span class="notification-type info">ℹ️ Info</span>
+                <span class="notification-message">New employee onboarding completed</span>
+                <span class="notification-time">1 day ago</span>
+                <button class="action" onclick="markAsRead('3')">Archive</button>
+            </div>
+        `;
+    }
+}
+
+function loadUserManagementData() {
+    const userActivityList = document.getElementById('userActivityList');
+    if (userActivityList) {
+        userActivityList.innerHTML = `
+            <div class="user-item">
+                <span class="user-name">HR Manager</span>
+                <span class="user-role">HR</span>
+                <span class="user-status online">Online</span>
+                <span class="user-activity">Just logged in</span>
+                <button class="action" onclick="manageUser('HR Manager')">Manage</button>
+            </div>
+            <div class="user-item">
+                <span class="user-name">Finance Manager</span>
+                <span class="user-role">FINANCE</span>
+                <span class="user-status offline">Offline</span>
+                <span class="user-activity">Last seen 2 hours ago</span>
+                <button class="action" onclick="manageUser('Finance Manager')">Manage</button>
+            </div>
+            <div class="user-item">
+                <span class="user-name">Project Manager</span>
+                <span class="user-role">PROJECT</span>
+                <span class="user-status online">Online</span>
+                <span class="user-activity">Active in project module</span>
+                <button class="action" onclick="manageUser('Project Manager')">Manage</button>
+            </div>
+        `;
+    }
+}
+
+// Utility Functions
+function startLiveFeed() {
+    const feed = document.getElementById('liveFeed');
+    if (feed) {
+        // Simulate live feed updates
+        setInterval(() => {
+            const activities = [
+                'New user registration completed',
+                'Budget document uploaded',
+                'Project status updated',
+                'Employee attendance recorded',
+                'System backup completed'
+            ];
+            
+            const randomActivity = activities[Math.floor(Math.random() * activities.length)];
+            const feedItem = document.createElement('div');
+            feedItem.className = 'feed-item';
+            feedItem.innerHTML = `
+                <span class="timestamp">Just now</span>
+                <span class="activity">${randomActivity}</span>
+            `;
+            
+            feed.insertBefore(feedItem, feed.firstChild);
+            
+            // Keep only last 10 items
+            while (feed.children.length > 10) {
+                feed.removeChild(feed.lastChild);
+            }
+        }, 30000); // Update every 30 seconds
+    }
+}
+
+function toggleNotifications() {
+    const panel = document.getElementById('notificationPanel');
+    if (panel) {
+        panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
+    }
+}
+
 function logout(){
     location.reload();
 }
@@ -2861,13 +3992,50 @@ function loadMenu(){
     console.log('Loading menu for role:', currentRole); // Debug line
 
     if(currentRole === "MD"){
-        addMenu("Approve Recruitment Policies", approveRecruitmentPolicies);
-        addMenu("Approve Senior Staff Hiring", approveSeniorHiring);
-        addMenu("Approve Workforce Budget", approveWorkforceBudget);
-        addMenu("Review Employee Count", reviewEmployeeCount);
-        addMenu("View All Workers", viewAllWorkers);
-        addMenu("Suspend/Terminate Employment", suspendTerminateEmployment);
-        addMenu("View Workforce Reports", viewWorkforceReports);
+        // System Overview & Monitoring
+        addMenu("🏢 System Overview", systemOverview);
+        addMenu("📊 Department Activities", departmentActivities);
+        addMenu("🔍 User Login History", userLoginHistory);
+        addMenu("📈 Real-time Analytics", realtimeAnalytics);
+        
+        // Policy & Compliance Management
+        addMenu("📋 Manage Policies", managePolicies);
+        addMenu("✅ Compliance Tracking", complianceTracking);
+        addMenu("📜 Policy Enforcement", policyEnforcement);
+        
+        // Financial & Budget Management
+        addMenu("💰 Budget Management", budgetManagement);
+        addMenu("💳 Track Payments", trackPayments);
+        addMenu("📊 Financial Transactions", financialTransactions);
+        addMenu("📑 Budget Reports", budgetReports);
+        
+        // Employee & Workforce Management
+        addMenu("👥 Employee Management", employeeManagement);
+        addMenu("👷 Worker Accounts", workerAccountsManagement);
+        addMenu("📊 Workforce Analytics", viewWorkforceReports);
+        addMenu("⚠️ Disciplinary Actions", disciplinaryActions);
+        
+        // Department Oversight
+        addMenu("🏗️ Projects Department", projectsDepartment);
+        addMenu("💼 HR Department", hrDepartment);
+        addMenu("🔒 HSE Department", hseDepartment);
+        addMenu("💵 Finance Department", financeDepartment);
+        addMenu("🏠 Real Estate Department", realEstateDepartment);
+        addMenu("⚙️ Admin Department", adminDepartment);
+        
+        // Approvals & Authorizations
+        addMenu("✅ Approve Policies", approveRecruitmentPolicies);
+        addMenu("👔 Approve Senior Hiring", approveSeniorHiring);
+        addMenu("💰 Approve Workforce Budget", approveWorkforceBudget);
+        addMenu("📋 Review Employee Count", reviewEmployeeCount);
+        addMenu("👁️ View All Workers", viewAllWorkers);
+        addMenu("⚡ Suspend/Terminate", suspendTerminateEmployment);
+        
+        // System Administration
+        addMenu("🔧 System Settings", systemSettings);
+        addMenu("📊 System Reports", systemReports);
+        addMenu("🔔 Notification Center", notificationCenter);
+        addMenu("👤 User Management", userManagement);
     }
 
     if(currentRole === "ADMIN"){
