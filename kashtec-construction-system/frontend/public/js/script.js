@@ -109,33 +109,57 @@ function handleLogout() {
 }
 
 // Notification functions
+let notificationsData = [];
+
 function loadNotifications() {
     // Load notifications for the current user/role
+    // Initialize with sample data for demo
+    notificationsData = [
+        { id: 1, title: "Welcome", message: "You have successfully logged in", type: "success" },
+        { id: 2, title: "New Message", message: "You have a new system message", type: "info" },
+        { id: 3, title: "Pending Approval", message: "You have 2 pending approvals", type: "warning" }
+    ];
+    
+    // Update the badge with notification count
     updateNotificationBadge();
 }
 
 function updateNotificationBadge() {
-    // Get notification count from backend or local storage
-    // For now, we'll use a sample count - replace with actual backend call
-    let notificationCount = localStorage.getItem('notificationCount') || 0;
+    // Get notification count from data or localStorage
+    let notificationCount = notificationsData.length || parseInt(localStorage.getItem('notificationCount') || 0);
     const badge = document.getElementById("notificationBadge");
+    const container = document.getElementById("notificationContainer");
     
     if (notificationCount > 0) {
-        badge.innerText = notificationCount;
+        badge.innerText = notificationCount > 9 ? '9+' : notificationCount;
         badge.classList.remove("hidden");
+        if (container) container.classList.remove("hidden");
     } else {
         badge.classList.add("hidden");
     }
+    
+    console.log('📬 Notifications loaded:', notificationCount);
 }
 
 function toggleNotificationPanel() {
     // Show notification panel with detailed notifications
-    customAlert(
-        "You have notifications from the system. Check your messages and updates regularly.",
-        "Notifications",
-        "info"
-    );
-    // Optional: You can expand this to show a detailed notification panel
+    if (notificationsData.length === 0) {
+        customAlert(
+            "No new notifications at this time. Check back later.",
+            "Notifications",
+            "info"
+        );
+    } else {
+        const notificationList = notificationsData
+            .map(n => `• ${n.title}: ${n.message}`)
+            .join('\n');
+        
+        customAlert(
+            notificationList,
+            `Notifications (${notificationsData.length})`,
+            "info"
+        );
+    }
 }
 
 function customAlert(message, title = "Alert", type = "info") {

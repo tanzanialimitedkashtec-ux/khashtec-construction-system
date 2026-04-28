@@ -12,13 +12,33 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 // Middleware
-app.use(helmet());
+app.use(helmet({ contentSecurityPolicy: false }));
 app.use(cors());
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
-// Serve static files
+// Serve static frontend and uploads
 app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
+app.use(express.static(path.join(__dirname, '../frontend/public')));
+
+// Custom CSP header for frontend compatibility
+app.use((req, res, next) => {
+    res.setHeader(
+        'Content-Security-Policy',
+        "default-src 'self'; " +
+        "script-src 'self' 'unsafe-inline'; " +
+        "style-src 'self' 'unsafe-inline'; " +
+        "img-src 'self' data: https:; " +
+        "font-src 'self' https://fonts.gstatic.com; " +
+        "connect-src 'self' ws: wss: https:;"
+    );
+    next();
+});
+
+// Serve the department frontend at the root path
+app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, '../frontend/public/department.html'));
+});
 
 // JWT Secret
 const JWT_SECRET = process.env.JWT_SECRET || 'kashtec-secret-key-2024';
