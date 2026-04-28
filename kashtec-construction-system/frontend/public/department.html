@@ -2244,14 +2244,14 @@ background: #f8f9fa;
         <input type="email" id="loginEmail" placeholder="Enter your email" style="width: 100%; margin: 10px 0; padding: 8px; border: 1px solid #ddd; border-radius: 4px;" required>
         <select id="loginRole" onchange="updatePasswordPlaceholder()" required>
             <option value="">Select Role</option>
-            <option value="Managing Director">Managing Director</option>
-            <option value="Director of Administration">Director of Administration</option>
-            <option value="HR Manager">HR Manager</option>
-            <option value="HSE Manager">HSE Manager</option>
-            <option value="Finance Manager">Finance Manager</option>
-            <option value="Project Manager">Project Manager</option>
-            <option value="Real Estate Manager">Real Estate Manager</option>
-            <option value="Admin Assistant">Admin Assistant</option>
+            <option value="MD">Managing Director</option>
+            <option value="ADMIN">Director of Administration</option>
+            <option value="HR">HR Manager</option>
+            <option value="HSE">HSE Manager</option>
+            <option value="FINANCE">Finance Manager</option>
+            <option value="PROJECT">Project Manager</option>
+            <option value="REALESTATE">Real Estate Manager</option>
+            <option value="ASSISTANT">Admin Assistant</option>
         </select>
         <input type="password" id="loginPassword" placeholder="Enter password" style="width: 100%; margin: 10px 0; padding: 8px; border: 1px solid #ddd; border-radius: 4px;" required>
         <button type="submit" id="loginBtn" class="action">Login</button>
@@ -2323,14 +2323,42 @@ const roleDescriptions = {
 };
 
 function updatePasswordPlaceholder(){
-    const role = document.getElementById("roleSelect").value;
-    const passwordInput = document.getElementById("passwordInput");
+    const role = document.getElementById("loginRole").value;
+    const passwordInput = document.getElementById("loginPassword");
     
     if(role === ""){
         passwordInput.placeholder = "Select a role first";
     } else {
         passwordInput.placeholder = `Enter password for ${roleDescriptions[role]}`;
     }
+}
+
+function handleLogin(){
+    const role = document.getElementById("loginRole").value;
+    const password = document.getElementById("loginPassword").value;
+    
+    if(role === ""){
+        customAlert("Please select a role from the dropdown menu.", "Role Required", "error");
+        return false;
+    }
+    
+    if(password === ""){
+        customAlert("Please enter your password.", "Password Required", "error");
+        return false;
+    }
+    
+    // Validate password
+    if(password !== rolePasswords[role]){
+        customAlert("Invalid password. Please check your credentials.", "Authentication Failed", "error");
+        return false;
+    }
+    
+    currentRole = role;
+    document.getElementById("loginPage").classList.add("hidden");
+    document.getElementById("systemPage").classList.remove("hidden");
+    document.getElementById("userRole").innerText = roleDescriptions[role] + " Dashboard";
+    loadMenu();
+    return false; // Prevent form submission
 }
 
 function login(){
