@@ -41,11 +41,51 @@ body{
 }
 
 header{
+    display:flex;
+    justify-content: space-between;
+    align-items: center;
     background:#0b3d91;
     color:white;
     padding:15px 25px;
-    text-align:center;
     font-size: 18px;
+}
+
+header .menu-toggle {
+    background: rgba(255,255,255,0.15);
+    color: white;
+    border: 1px solid rgba(255,255,255,0.6);
+    padding: 10px 14px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: background 0.2s ease;
+}
+
+header .menu-toggle:hover {
+    background: rgba(255,255,255,0.25);
+}
+
+.sidebar{
+    width:280px;
+    min-width: 0;
+    background:#1f2d3d;
+    color:white;
+    padding:20px;
+    font-size: 14px;
+    height: 540px;
+    transition: width 0.3s ease, padding 0.3s ease;
+}
+
+.sidebar.collapsed {
+    width: 0;
+    padding: 0;
+    overflow: hidden;
+}
+
+.sidebar.collapsed h3,
+.sidebar.collapsed #menu,
+.sidebar.collapsed button {
+    display: none;
 }
 
 .container{
@@ -2597,6 +2637,7 @@ background: #f8f9fa;
 
 <header>
     <h2>KASHTEC TANZANIA LIMITED</h2>
+    <button type="button" class="menu-toggle" onclick="toggleSidebar()">Toggle Menu</button>
 </header>
 
 <div id="loginPage" class="login-box">
@@ -2958,6 +2999,12 @@ function loadBudgetRequestsFromBackend() {
 
 function logout(){
     location.reload();
+}
+
+function toggleSidebar(){
+    const sidebar = document.querySelector('.sidebar');
+    if (!sidebar) return;
+    sidebar.classList.toggle('collapsed');
 }
 
 function loadMenu(){
