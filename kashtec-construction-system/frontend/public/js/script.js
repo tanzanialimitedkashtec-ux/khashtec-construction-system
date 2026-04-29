@@ -1,688 +1,87 @@
-let currentRole = "";
-
-// Role-based passwords (for demo purposes)
-const rolePasswords = {
-    "MD": "admin123",
-    "ADMIN": "admin123", 
-    "HR": "hr123",
-    "HSE": "hse123",
-    "FINANCE": "finance123",
-    "PROJECT": "project123",
-    "REALESTATE": "realestate123",
-    "ASSISTANT": "assistant123"
-};
-
-// Role descriptions for password hints
-const roleDescriptions = {
-    "MD": "Managing Director",
-    "ADMIN": "Director of Administration",
-    "HR": "HR Manager", 
-    "HSE": "HSE Manager",
-    "FINANCE": "Finance Manager",
-    "PROJECT": "Project Manager",
-    "REALESTATE": "Real Estate Manager",
-    "ASSISTANT": "Admin Assistant"
-};
-
-function updatePasswordPlaceholder(){
-    const role = document.getElementById("loginRole").value;
-    const passwordInput = document.getElementById("loginPassword");
-    
-    if(role === ""){
-        passwordInput.placeholder = "Select a role first";
-    } else {
-        passwordInput.placeholder = `Enter password for ${roleDescriptions[role]}`;
+function toggleHSE(){
+    var x = document.getElementById("hse");
+    if(x.classList.contains("hidden")){
+        x.classList.remove("hidden");
+    }else{
+        x.classList.add("hidden");
     }
 }
 
-function handleLogin(){
-    const role = document.getElementById("loginRole").value;
-    const password = document.getElementById("loginPassword").value;
+function submitForm(){
+    alert("Thank you for contacting KASHTEC Tanzania Limited!");
+    return false;
+}
+
+function toggleServiceDescription() {
+    var serviceType = document.getElementById("serviceType");
+    var customServiceGroup = document.getElementById("customServiceGroup");
+    var customService = document.getElementById("customService");
     
-    if(role === ""){
-        customAlert("Please select a role from the dropdown menu.", "Role Required", "error");
+    if (serviceType.value === "custom") {
+        customServiceGroup.style.display = "block";
+        customService.required = true;
+    } else {
+        customServiceGroup.style.display = "none";
+        customService.required = false;
+        customService.value = "";
+    }
+}
+
+function submitAccountForm() {
+    var fullName = document.getElementById("fullName").value;
+    var email = document.getElementById("email").value;
+    var phone = document.getElementById("phone").value;
+    var location = document.getElementById("location").value;
+    var serviceType = document.getElementById("serviceType");
+    var customService = document.getElementById("customService").value;
+    var additionalInfo = document.getElementById("additionalInfo").value;
+    
+    // Get selected service text
+    var selectedService = serviceType.options[serviceType.selectedIndex].text;
+    
+    // Validate required fields
+    if (!fullName || !email || !phone || !location || !serviceType.value) {
+        alert("Please fill in all required fields marked with *");
         return false;
     }
     
-    if(password === ""){
-        customAlert("Please enter your password.", "Password Required", "error");
+    // If custom service is selected, validate that it's filled
+    if (serviceType.value === "custom" && !customService) {
+        alert("Please describe your required service");
         return false;
     }
     
-    // Validate password
-    if(password !== rolePasswords[role]){
-        customAlert("Invalid password. Please check your credentials.", "Authentication Failed", "error");
-        return false;
-    }
-    
-    currentRole = role;
-    document.getElementById("loginPage").classList.add("hidden");
-    document.getElementById("systemPage").classList.remove("hidden");
-    document.getElementById("notificationContainer").classList.remove("hidden");
-    document.getElementById("userRole").innerText = roleDescriptions[role] + " Dashboard";
-    loadMenu();
-    loadNotifications();
-    return false; // Prevent form submission
+    // Here you would normally send the data to a server
+    // For now, just show a success message
+    alert("Account request submitted successfully! We will contact you soon.");
+    return false;
 }
 
-function login(){
-    const role = document.getElementById("roleSelect").value;
-    const password = document.getElementById("passwordInput").value;
-    
-    if(role === ""){
-        customAlert("Please select a role from the dropdown menu.", "Role Required", "error");
-        return;
-    }
-    
-    if(password === ""){
-        customAlert("Please enter your password.", "Password Required", "error");
-        return;
-    }
-    
-    // Validate password
-    if(password !== rolePasswords[role]){
-        customAlert("Invalid password. Please check your credentials.", "Authentication Failed", "error");
-        return;
-    }
-    
-    currentRole = role;
-    document.getElementById("loginPage").classList.add("hidden");
-    document.getElementById("systemPage").classList.remove("hidden");
-    document.getElementById("notificationContainer").classList.remove("hidden");
-    document.getElementById("userRole").innerText = roleDescriptions[role] + " Dashboard";
-    loadMenu();
-    loadNotifications();
-}
+// ===== PROJECT PROGRESS FUNCTIONS =====
 
-// Core application functions
-function showContent(content) {
-    document.getElementById('contentArea').innerHTML = content;
-}
-
-function handleLogout() {
-    currentRole = "";
-    document.getElementById("loginPage").classList.remove("hidden");
-    document.getElementById("systemPage").classList.add("hidden");
-    document.getElementById("notificationContainer").classList.add("hidden");
-    document.getElementById("loginRole").value = "";
-    document.getElementById("loginPassword").value = "";
-}
-
-// Notification functions
-let notificationsData = [];
-
-function loadNotifications() {
-    // Load notifications for the current user/role
-    // Initialize with sample data for demo
-    notificationsData = [
-        { id: 1, title: "Welcome", message: "You have successfully logged in", type: "success" },
-        { id: 2, title: "New Message", message: "You have a new system message", type: "info" },
-        { id: 3, title: "Pending Approval", message: "You have 2 pending approvals", type: "warning" }
-    ];
-    
-    // Update the badge with notification count
-    updateNotificationBadge();
-}
-
-function updateNotificationBadge() {
-    // Get notification count from data or localStorage
-    let notificationCount = notificationsData.length || parseInt(localStorage.getItem('notificationCount') || 0);
-    const badge = document.getElementById("notificationBadge");
-    const container = document.getElementById("notificationContainer");
-    
-    if (notificationCount > 0) {
-        badge.innerText = notificationCount > 9 ? '9+' : notificationCount;
-        badge.classList.remove("hidden");
-        if (container) container.classList.remove("hidden");
-    } else {
-        badge.classList.add("hidden");
-    }
-    
-    console.log('📬 Notifications loaded:', notificationCount);
-}
-
-function toggleNotificationPanel() {
-    // Show notification panel with detailed notifications
-    if (notificationsData.length === 0) {
-        customAlert(
-            "No new notifications at this time. Check back later.",
-            "Notifications",
-            "info"
-        );
-    } else {
-        const notificationList = notificationsData
-            .map(n => `• ${n.title}: ${n.message}`)
-            .join('\n');
+// Load projects into the select dropdown
+async function loadProjects() {
+    try {
+        const response = await window.ApiService.get('/projects');
+        const projectSelect = document.getElementById('progressProject');
         
-        customAlert(
-            notificationList,
-            `Notifications (${notificationsData.length})`,
-            "info"
-        );
-    }
-}
-
-function customAlert(message, title = "Alert", type = "info") {
-    // Create modal overlay
-    const modalOverlay = document.createElement('div');
-    modalOverlay.className = 'modal-overlay';
-    modalOverlay.style.display = 'flex';
-    
-    // Create modal content
-    const modalContent = document.createElement('div');
-    modalContent.className = 'modal-content';
-    
-    // Determine icon and color based on type
-    let icon = '';
-    let color = '#0b3d91';
-    switch(type) {
-        case 'success':
-            icon = '✅';
-            color = '#28a745';
-            break;
-        case 'error':
-            icon = '❌';
-            color = '#dc3545';
-            break;
-        case 'warning':
-            icon = '⚠️';
-            color = '#ffc107';
-            break;
-        default:
-            icon = 'ℹ️';
-            color = '#17a2b8';
-    }
-    
-    modalContent.innerHTML = `
-        <div class="modal-header">
-            <h3>${icon} ${title}</h3>
-            <button class="modal-close" onclick="this.closest('.modal-overlay').remove()">×</button>
-        </div>
-        <div class="modal-body">
-            <p>${message}</p>
-        </div>
-        <div class="modal-footer">
-            <button class="action" onclick="this.closest('.modal-overlay').remove()">OK</button>
-        </div>
-    `;
-    
-    modalOverlay.appendChild(modalContent);
-    document.body.appendChild(modalOverlay);
-    
-    // Close modal when clicking overlay
-    modalOverlay.addEventListener('click', function(e) {
-        if (e.target === modalOverlay) {
-            modalOverlay.remove();
-        }
-    });
-}
-
-function loadMenu() {
-    const menu = document.getElementById('menu');
-    let menuItems = [];
-    
-    switch(currentRole) {
-        case 'MD':
-            menuItems = [
-                // System Overview
-                { text: '📊 System Overview', action: 'systemOverview()' },
-                
-                // HR Department
-                { text: '👥 Employee Management', action: 'loadEmployees()' },
-                { text: '📋 Policies', action: 'loadPolicies()' },
-                { text: '🎓 Senior Hiring', action: 'loadSeniorHiringRequests()' },
-                { text: '💰 Workforce Budget', action: 'loadWorkforceBudgets()' },
-                { text: '📊 Workforce Analytics', action: 'loadWorkforceAnalytics()' },
-                
-                // Project Department
-                { text: '🏗️ Projects', action: 'loadProjects()' },
-                { text: '📊 Project Progress', action: 'loadProjectProgress()' },
-                { text: '👷 Workers', action: 'loadWorkers()' },
-                { text: '📈 Project Reports', action: 'loadProjectReports()' },
-                
-                // Finance Department
-                { text: '💰 Budget Management', action: 'loadBudgets()' },
-                { text: '📊 Financial Reports', action: 'loadFinancialReports()' },
-                { text: '💸 Expenses', action: 'loadExpenses()' },
-                { text: '📈 Financial Analytics', action: 'loadFinancialAnalytics()' },
-                
-                // HSE Department
-                { text: '⚠️ Safety Reports', action: 'loadSafetyReports()' },
-                { text: '🔧 Equipment Management', action: 'loadEquipment()' },
-                { text: '📊 Compliance', action: 'loadCompliance()' },
-                { text: '🚨 Incidents', action: 'loadIncidents()' },
-                
-                // Real Estate Department
-                { text: '🏠 Properties', action: 'loadProperties()' },
-                { text: '👥 Tenants', action: 'loadTenants()' },
-                { text: '📊 Property Analytics', action: 'loadPropertyAnalytics()' },
-                
-                // Admin Department
-                { text: '👥 User Management', action: 'loadUserManagement()' },
-                { text: '⚙️ System Admin', action: 'loadSystemAdmin()' },
-                { text: '📊 System Reports', action: 'loadSystemReports()' },
-                
-                // Assistant Functions
-                { text: '📝 Documents', action: 'loadDocuments()' },
-                { text: '📊 Basic Reports', action: 'loadBasicReports()' },
-                { text: '📞 Communications', action: 'loadCommunications()' },
-                
-                // General
-                { text: '📈 Analytics & Reports', action: 'loadAnalytics()' },
-                { text: '⚙️ System Settings', action: 'systemSettings()' },
-                { text: '🔔 Notifications', action: 'viewNotifications()' }
-            ];
-            break;
-        case 'HR':
-            menuItems = [
-                { text: '👥 Employee Management', action: 'loadEmployees()' },
-                { text: '📋 Policies', action: 'loadPolicies()' },
-                { text: '🎓 Senior Hiring', action: 'loadSeniorHiringRequests()' },
-                { text: '💰 Workforce Budget', action: 'loadWorkforceBudgets()' },
-                { text: '📊 Workforce Analytics', action: 'loadWorkforceAnalytics()' },
-                { text: '📈 Reports', action: 'loadReports()' }
-            ];
-            break;
-        case 'PROJECT':
-            menuItems = [
-                { text: '🏗️ Projects', action: 'loadProjects()' },
-                { text: '📊 Project Progress', action: 'loadProjectProgress()' },
-                { text: '👷 Workers', action: 'loadWorkers()' },
-                { text: '📈 Reports', action: 'loadProjectReports()' }
-            ];
-            break;
-        case 'FINANCE':
-            menuItems = [
-                { text: '💰 Budget Management', action: 'loadBudgets()' },
-                { text: '📊 Financial Reports', action: 'loadFinancialReports()' },
-                { text: '💸 Expenses', action: 'loadExpenses()' },
-                { text: '📈 Analytics', action: 'loadFinancialAnalytics()' }
-            ];
-            break;
-        case 'HSE':
-            menuItems = [
-                { text: '⚠️ Safety Reports', action: 'loadSafetyReports()' },
-                { text: '🔧 Equipment Management', action: 'loadEquipment()' },
-                { text: '📊 Compliance', action: 'loadCompliance()' },
-                { text: '🚨 Incidents', action: 'loadIncidents()' }
-            ];
-            break;
-        case 'REALESTATE':
-            menuItems = [
-                { text: '🏠 Properties', action: 'loadProperties()' },
-                { text: '👥 Tenants', action: 'loadTenants()' },
-                { text: '📊 Property Analytics', action: 'loadPropertyAnalytics()' }
-            ];
-            break;
-        case 'ADMIN':
-            menuItems = [
-                { text: '👥 User Management', action: 'loadUserManagement()' },
-                { text: '⚙️ System Admin', action: 'loadSystemAdmin()' },
-                { text: '📊 System Reports', action: 'loadSystemReports()' }
-            ];
-            break;
-        case 'ASSISTANT':
-            menuItems = [
-                { text: '📝 Documents', action: 'loadDocuments()' },
-                { text: '📊 Basic Reports', action: 'loadBasicReports()' },
-                { text: '📞 Communications', action: 'loadCommunications()' }
-            ];
-            break;
-    }
-    
-    menu.innerHTML = menuItems.map(item => 
-        `<button onclick="${item.action}">${item.text}</button>`
-    ).join('');
-    
-    // Load default content
-    if (menuItems.length > 0) {
-        eval(menuItems[0].action);
-    }
-}
-
-// Placeholder functions for menu items
-function loadEmployees() {
-    showContent(`<div class="card"><h3>Employee Management</h3><p>Employee management module coming soon...</p></div>`);
-}
-
-function loadProjects() {
-    showContent(`<div class="card"><h3>Project Management</h3><p>Project management module coming soon...</p></div>`);
-}
-
-function loadBudgets() {
-    showContent(`<div class="card"><h3>Budget Management</h3><p>Budget management module coming soon...</p></div>`);
-}
-
-function systemOverview() {
-    const dashboard = `
-        <div class="system-dashboard">
-            <h3>🏢 KASHTEC TANZANIA LIMITED - Executive Dashboard</h3>
-            <p>Welcome, Managing Director. Here's your comprehensive system overview:</p>
+        if (response.projects && response.projects.length > 0) {
+            projectSelect.innerHTML = '<option value="">Select Project to Update</option>';
             
-            <div class="dashboard-grid">
-                <!-- Key Metrics -->
-                <div class="metric-card">
-                    <h4>👥 Total Employees</h4>
-                    <div class="metric-value">247</div>
-                    <p class="metric-trend">+12 this month</p>
-                </div>
-                
-                <div class="metric-card">
-                    <h4>🏗️ Active Projects</h4>
-                    <div class="metric-value">18</div>
-                    <p class="metric-trend">3 completed this quarter</p>
-                </div>
-                
-                <div class="metric-card">
-                    <h4>💰 Monthly Budget</h4>
-                    <div class="metric-value">$2.4M</div>
-                    <p class="metric-trend">85% utilized</p>
-                </div>
-                
-                <div class="metric-card">
-                    <h4>⚠️ Safety Incidents</h4>
-                    <div class="metric-value">2</div>
-                    <p class="metric-trend">Last 30 days</p>
-                </div>
-            </div>
-            
-            <!-- Department Quick Access -->
-            <div class="department-access">
-                <h4>Department Access</h4>
-                <div class="department-buttons">
-                    <button onclick="loadEmployees()" class="dept-btn">👥 HR</button>
-                    <button onclick="loadProjects()" class="dept-btn">🏗️ Projects</button>
-                    <button onclick="loadBudgets()" class="dept-btn">💰 Finance</button>
-                    <button onclick="loadSafetyReports()" class="dept-btn">⚠️ HSE</button>
-                    <button onclick="loadProperties()" class="dept-btn">🏠 Real Estate</button>
-                    <button onclick="loadUserManagement()" class="dept-btn">👤 Admin</button>
-                    <button onclick="loadDocuments()" class="dept-btn">📝 Documents</button>
-                </div>
-            </div>
-            
-            <!-- Recent Activity -->
-            <div class="recent-activity">
-                <h4>Recent Activity</h4>
-                <ul>
-                    <li>✅ New employee hired in Project Management</li>
-                    <li>📊 Monthly financial report generated</li>
-                    <li>🏗️ Construction project milestone achieved</li>
-                    <li>📋 Safety audit completed</li>
-                    <li>💰 Budget approval pending for Q2</li>
-                </ul>
-            </div>
-            
-            <!-- Quick Actions -->
-            <div class="quick-actions">
-                <h4>Quick Actions</h4>
-                <button onclick="loadAnalytics()" class="action-btn">📈 View Analytics</button>
-                <button onclick="systemSettings()" class="action-btn">⚙️ System Settings</button>
-                <button onclick="viewNotifications()" class="action-btn">🔔 Notifications</button>
-            </div>
-        </div>
-        
-        <style>
-        .system-dashboard {
-            padding: 20px;
+            response.projects.forEach(project => {
+                const option = document.createElement('option');
+                option.value = project.id;
+                option.textContent = `${project.name} - ${project.location}`;
+                projectSelect.appendChild(option);
+            });
+        } else {
+            projectSelect.innerHTML = '<option value="">No projects available</option>';
         }
-        
-        .dashboard-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 20px;
-            margin: 20px 0;
-        }
-        
-        .metric-card {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 20px;
-            border-radius: 10px;
-            text-align: center;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-        }
-        
-        .metric-value {
-            font-size: 2.5em;
-            font-weight: bold;
-            margin: 10px 0;
-        }
-        
-        .metric-trend {
-            font-size: 0.9em;
-            opacity: 0.8;
-        }
-        
-        .department-access, .recent-activity, .quick-actions {
-            background: white;
-            padding: 20px;
-            margin: 20px 0;
-            border-radius: 10px;
-            border-left: 5px solid #0b3d91;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        }
-        
-        .department-buttons {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
-            margin-top: 15px;
-        }
-        
-        .dept-btn {
-            background: #0b3d91;
-            color: white;
-            border: none;
-            padding: 10px 15px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 14px;
-            transition: background 0.3s;
-        }
-        
-        .dept-btn:hover {
-            background: #1976D2;
-        }
-        
-        .recent-activity ul {
-            list-style: none;
-            padding: 0;
-        }
-        
-        .recent-activity li {
-            padding: 8px 0;
-            border-bottom: 1px solid #eee;
-        }
-        
-        .recent-activity li:last-child {
-            border-bottom: none;
-        }
-        
-        .quick-actions {
-            display: flex;
-            gap: 15px;
-            align-items: center;
-        }
-        
-        .action-btn {
-            background: #28a745;
-            color: white;
-            border: none;
-            padding: 12px 20px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 14px;
-            transition: background 0.3s;
-        }
-        
-        .action-btn:hover {
-            background: #218838;
-        }
-        </style>
-    `;
-    showContent(dashboard);
-}
-
-function viewNotifications() {
-    showContent(`<div class="card"><h3>Notifications</h3><p>No new notifications</p></div>`);
-}
-
-
-// Add more placeholder functions as needed
-function viewAllDepartments() {
-    const departments = `
-        <div class="departments-overview">
-            <h3>🏢 All Departments Overview</h3>
-            <p>Comprehensive view of all company departments and their current status:</p>
-            
-            <div class="departments-grid">
-                <div class="dept-card" onclick="loadEmployees()">
-                    <div class="dept-icon">👥</div>
-                    <h4>Human Resources</h4>
-                    <p>Employee management, policies, and workforce planning</p>
-                    <div class="dept-status">Active</div>
-                </div>
-                
-                <div class="dept-card" onclick="loadProjects()">
-                    <div class="dept-icon">🏗️</div>
-                    <h4>Project Management</h4>
-                    <p>Construction projects, progress tracking, and workers</p>
-                    <div class="dept-status">Active</div>
-                </div>
-                
-                <div class="dept-card" onclick="loadBudgets()">
-                    <div class="dept-icon">💰</div>
-                    <h4>Finance</h4>
-                    <p>Budget management, financial reports, and expenses</p>
-                    <div class="dept-status">Active</div>
-                </div>
-                
-                <div class="dept-card" onclick="loadSafetyReports()">
-                    <div class="dept-icon">⚠️</div>
-                    <h4>Health & Safety</h4>
-                    <p>Safety reports, equipment, compliance, and incidents</p>
-                    <div class="dept-status">Active</div>
-                </div>
-                
-                <div class="dept-card" onclick="loadProperties()">
-                    <div class="dept-icon">🏠</div>
-                    <h4>Real Estate</h4>
-                    <p>Properties, tenants, and property analytics</p>
-                    <div class="dept-status">Active</div>
-                </div>
-                
-                <div class="dept-card" onclick="loadUserManagement()">
-                    <div class="dept-icon">👤</div>
-                    <h4>Administration</h4>
-                    <p>User management, system admin, and reports</p>
-                    <div class="dept-status">Active</div>
-                </div>
-                
-                <div class="dept-card" onclick="loadDocuments()">
-                    <div class="dept-icon">📝</div>
-                    <h4>Office Portal</h4>
-                    <p>Documents, basic reports, and communications</p>
-                    <div class="dept-status">Active</div>
-                </div>
-                
-                <div class="dept-card" onclick="systemSettings()">
-                    <div class="dept-icon">⚙️</div>
-                    <h4>System Management</h4>
-                    <p>System settings, analytics, and notifications</p>
-                    <div class="dept-status">Active</div>
-                </div>
-            </div>
-        </div>
-        
-        <style>
-        .departments-overview {
-            padding: 20px;
-        }
-        
-        .departments-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 20px;
-            margin-top: 20px;
-        }
-        
-        .dept-card {
-            background: white;
-            padding: 20px;
-            border-radius: 10px;
-            border-left: 5px solid #0b3d91;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            cursor: pointer;
-            transition: transform 0.3s, box-shadow 0.3s;
-        }
-        
-        .dept-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
-        }
-        
-        .dept-icon {
-            font-size: 2em;
-            margin-bottom: 10px;
-        }
-        
-        .dept-card h4 {
-            margin: 10px 0;
-            color: #0b3d91;
-        }
-        
-        .dept-card p {
-            color: #666;
-            font-size: 14px;
-            margin-bottom: 15px;
-        }
-        
-        .dept-status {
-            display: inline-block;
-            background: #28a745;
-            color: white;
-            padding: 4px 8px;
-            border-radius: 4px;
-            font-size: 12px;
-            font-weight: bold;
-        }
-        </style>
-    `;
-    showContent(departments);
-}
-function loadAnalytics() { showContent(`<div class="card"><h3>Analytics</h3><p>Analytics module coming soon...</p></div>`); }
-function systemSettings() { showContent(`<div class="card"><h3>System Settings</h3><p>Settings module coming soon...</p></div>`); }
-function loadSeniorHiringRequests() { showContent(`<div class="card"><h3>Senior Hiring</h3><p>Senior hiring module coming soon...</p></div>`); }
-function loadWorkforceBudgets() { showContent(`<div class="card"><h3>Workforce Budget</h3><p>Workforce budget module coming soon...</p></div>`); }
-function loadWorkforceAnalytics() { showContent(`<div class="card"><h3>Workforce Analytics</h3><p>Workforce analytics coming soon...</p></div>`); }
-function loadReports() { showContent(`<div class="card"><h3>Reports</h3><p>Reports module coming soon...</p></div>`); }
-function loadProjectProgress() { showContent(`<div class="card"><h3>Project Progress</h3><p>Project progress module coming soon...</p></div>`); }
-function loadWorkers() { showContent(`<div class="card"><h3>Workers</h3><p>Workers module coming soon...</p></div>`); }
-function loadProjectReports() { showContent(`<div class="card"><h3>Project Reports</h3><p>Project reports module coming soon...</p></div>`); }
-function loadFinancialReports() { showContent(`<div class="card"><h3>Financial Reports</h3><p>Financial reports module coming soon...</p></div>`); }
-function loadExpenses() { showContent(`<div class="card"><h3>Expenses</h3><p>Expenses module coming soon...</p></div>`); }
-function loadFinancialAnalytics() { showContent(`<div class="card"><h3>Financial Analytics</h3><p>Financial analytics coming soon...</p></div>`); }
-function loadSafetyReports() { showContent(`<div class="card"><h3>Safety Reports</h3><p>Safety reports module coming soon...</p></div>`); }
-function loadEquipment() { showContent(`<div class="card"><h3>Equipment Management</h3><p>Equipment module coming soon...</p></div>`); }
-function loadCompliance() { showContent(`<div class="card"><h3>Compliance</h3><p>Compliance module coming soon...</p></div>`); }
-function loadIncidents() { showContent(`<div class="card"><h3>Incidents</h3><p>Incidents module coming soon...</p></div>`); }
-function loadProperties() { showContent(`<div class="card"><h3>Properties</h3><p>Properties module coming soon...</p></div>`); }
-function loadTenants() { showContent(`<div class="card"><h3>Tenants</h3><p>Tenants module coming soon...</p></div>`); }
-function loadPropertyAnalytics() { showContent(`<div class="card"><h3>Property Analytics</h3><p>Property analytics coming soon...</p></div>`); }
-function loadUserManagement() { showContent(`<div class="card"><h3>User Management</h3><p>User management module coming soon...</p></div>`); }
-function loadSystemAdmin() { showContent(`<div class="card"><h3>System Admin</h3><p>System admin module coming soon...</p></div>`); }
-function loadSystemReports() { showContent(`<div class="card"><h3>System Reports</h3><p>System reports module coming soon...</p></div>`); }
-function loadDocuments() { showContent(`<div class="card"><h3>Documents</h3><p>Documents module coming soon...</p></div>`); }
-function loadBasicReports() { showContent(`<div class="card"><h3>Basic Reports</h3><p>Basic reports module coming soon...</p></div>`); }
-function loadCommunications() { showContent(`<div class="card"><h3>Communications</h3><p>Communications module coming soon...</p></div>`); }
-
-// Policy functions
-function viewPolicy(id) {
-    customAlert(`Viewing policy ID: ${id}`, 'Policy Details', 'info');
-}
-
-function downloadPolicy(id) {
-    customAlert(`Downloading policy ID: ${id}`, 'Download', 'info');
+    } catch (error) {
+        console.error('Failed to load projects:', error);
+        const projectSelect = document.getElementById('progressProject');
+        projectSelect.innerHTML = '<option value="">Failed to load projects</option>';
+    }
 }
 
 // Load project details when a project is selected
@@ -697,33 +96,49 @@ async function loadProjectDetails() {
     }
     
     try {
-        const baseUrl = window.location.origin;
-        const response = await fetch(`${baseUrl}/api/projects/${projectId}`, {
-            method: 'GET',
-            headers: {
-                'Content-Type': 'application/json',
-                'Accept': 'application/json',
-                'Authorization': `Bearer ${sessionManager.getAuthToken()}`
-            }
-        });
-        
-        if (!response.ok) {
-            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-        }
-        
-        const project = await response.json();
+        // Use apiService to get project details
+        const project = await window.apiService.get(`/projects/${projectId}`);
+        console.log('Project details loaded:', project);
         
         // Show the progress form
         progressForm.classList.remove('hidden');
+        console.log('Progress form shown');
         
         // Pre-fill current project data
-        if (project.progress !== undefined) {
-            document.getElementById('progressPercentage').value = project.progress;
+        const progressField = document.getElementById('progressPercentage');
+        const statusField = document.getElementById('projectStatus');
+        
+        console.log('Form fields found:', {
+            progressField: !!progressField,
+            statusField: !!statusField,
+            actual_cost: project.actual_cost,
+            status: project.status
+        });
+        
+        if (project.actual_cost !== undefined && project.actual_cost !== null) {
+            progressField.value = project.actual_cost;
+            console.log('Set progress percentage to:', project.actual_cost);
+        } else {
+            progressField.value = '0';
+            console.log('Set progress percentage to 0 (null actual_cost)');
         }
         
         if (project.status) {
-            document.getElementById('projectStatus').value = project.status;
+            statusField.value = project.status;
+            console.log('Set status to:', project.status);
         }
+        
+        console.log('Form field values after setting:', {
+            progress: progressField.value,
+            status: statusField.value
+        });
+        
+        // Pre-fill other fields with empty values for now
+        document.getElementById('progressReport').value = '';
+        document.getElementById('completedMilestones').value = '';
+        document.getElementById('nextMilestones').value = '';
+        document.getElementById('budgetUsed').value = '';
+        document.getElementById('projectIssues').value = '';
         
         // Load recent progress updates
         loadProgressUpdates(projectId);
@@ -757,7 +172,7 @@ async function saveProjectProgress() {
     };
     
     try {
-        await window.ApiService.updateProjectProgress(projectId, progressData);
+        await window.apiService.addProjectProgress(projectId, progressData);
         
         // Reset form
         document.getElementById('progressForm').reset();
@@ -773,20 +188,26 @@ async function saveProjectProgress() {
     }
 }
 
+// Wrapper function for form submission
+function saveProjectProgressSubmit() {
+    saveProjectProgress();
+    return false;
+}
+
 // Load recent progress updates
 async function loadProgressUpdates(projectId) {
     try {
-        // Check if ApiService is available
-        if (!window.ApiService || !window.ApiService.getProjectProgressUpdates) {
-            console.error('ApiService or getProjectProgressUpdates method not available');
+        // Check if apiService is available
+        if (!window.apiService || !window.apiService.getProjectProgressUpdates) {
+            console.error('apiService or getProjectProgressUpdates method not available');
             const updateList = document.querySelector('.update-list');
             if (updateList) {
-                updateList.innerHTML = '<div class="update-item">ApiService not loaded</div>';
+                updateList.innerHTML = '<div class="update-item">apiService not loaded</div>';
             }
             return;
         }
         
-        const response = await window.ApiService.getProjectProgressUpdates(projectId);
+        const response = await window.apiService.getProjectProgressUpdates(projectId);
         const updateList = document.querySelector('.update-list');
         
         if (response.updates && response.updates.length > 0) {
@@ -829,26 +250,36 @@ document.addEventListener('DOMContentLoaded', function() {
 
 // ===== WORKER ASSIGNMENT FUNCTIONS =====
 
+// Global variable to store assignments
+let allAssignments = [];
+
 // Load all worker assignments and stats
 async function loadWorkerAssignments() {
     try {
         // Load assignments
-        const assignments = await window.ApiService.getWorkerAssignments();
+        const assignments = await window.apiService.getWorkerAssignments();
+        console.log('Raw assignments response:', assignments);
+        
+        // Ensure assignments is an array
+        const assignmentsArray = Array.isArray(assignments) ? assignments : [];
+        
+        // Store assignments globally for filtering
+        allAssignments = assignmentsArray;
         
         // Load stats
-        const stats = await window.ApiService.getWorkerAssignmentStats();
+        const stats = await window.apiService.getWorkerAssignmentStats();
         
         // Update stats display
         updateWorkerStats(stats);
         
-        // Load projects for filter dropdown
-        await loadProjectsForWorkerFilter();
+        // Load filters for dropdowns
+        await loadFiltersForWorkerAssignments();
         
         // Display assignments
-        displayWorkerAssignments(assignments);
+        displayWorkerAssignments(assignmentsArray);
         
         // Update allocation chart
-        updateAllocationChart(assignments);
+        updateAllocationChart(assignmentsArray);
         
     } catch (error) {
         console.error('Failed to load worker assignments:', error);
@@ -866,25 +297,41 @@ function updateWorkerStats(stats) {
     }
 }
 
-// Load projects for worker filter dropdown
-async function loadProjectsForWorkerFilter() {
+// Load projects and departments for filter dropdowns
+async function loadFiltersForWorkerAssignments() {
     try {
-        const response = await window.ApiService.get('/projects');
+        // Load projects
+        const projects = await window.apiService.get('/projects');
         const projectFilter = document.getElementById('projectFilter');
         
-        if (response.projects && response.projects.length > 0) {
+        if (projects && projects.length > 0) {
             // Clear existing options except "All Projects"
             projectFilter.innerHTML = '<option value="">All Projects</option>';
             
-            response.projects.forEach(project => {
+            projects.forEach(project => {
                 const option = document.createElement('option');
                 option.value = project.id;
                 option.textContent = project.name;
                 projectFilter.appendChild(option);
             });
         }
+        
+        // Load departments from assignments
+        const departmentFilter = document.getElementById('departmentFilter');
+        const departments = [...new Set(allAssignments.map(a => a.department).filter(Boolean))];
+        
+        // Clear existing options except "All Departments"
+        departmentFilter.innerHTML = '<option value="">All Departments</option>';
+        
+        departments.forEach(department => {
+            const option = document.createElement('option');
+            option.value = department;
+            option.textContent = department;
+            departmentFilter.appendChild(option);
+        });
+        
     } catch (error) {
-        console.error('Failed to load projects for filter:', error);
+        console.error('Failed to load filters:', error);
     }
 }
 
@@ -892,44 +339,53 @@ async function loadProjectsForWorkerFilter() {
 function displayWorkerAssignments(assignments) {
     const workerResults = document.getElementById('workerResults');
     
-    if (!assignments || assignments.length === 0) {
+    // Ensure assignments is an array
+    const assignmentsArray = Array.isArray(assignments) ? assignments : [];
+    
+    if (!assignmentsArray || assignmentsArray.length === 0) {
         workerResults.innerHTML = '<div class="no-results">No worker assignments found</div>';
         return;
     }
     
     workerResults.innerHTML = '';
     
-    assignments.forEach(assignment => {
+    assignmentsArray.forEach(assignment => {
         const assignmentCard = document.createElement('div');
         assignmentCard.className = 'worker-assignment-card';
         assignmentCard.innerHTML = `
             <div class="assignment-header">
-                <h5>${assignment.employee_name}</h5>
-                <span class="status-badge ${assignment.status.toLowerCase()}">${assignment.status}</span>
+                <h5>${assignment.worker_name || 'Unknown Worker'}</h5>
+                <span class="status-badge ${assignment.status ? assignment.status.toLowerCase() : 'active'}">${assignment.status || 'Active'}</span>
             </div>
             <div class="assignment-details">
                 <div class="detail-row">
                     <span class="label">Project:</span>
-                    <span class="value">${assignment.project_name}</span>
+                    <span class="value">${assignment.project_name || 'Unassigned'}</span>
                 </div>
                 <div class="detail-row">
-                    <span class="label">Role:</span>
-                    <span class="value">${assignment.role_in_project}</span>
+                    <span class="label">Task:</span>
+                    <span class="value">${assignment.task_description || 'No task description'}</span>
                 </div>
                 <div class="detail-row">
-                    <span class="label">Assignment Period:</span>
-                    <span class="value">${formatDate(assignment.start_date)} - ${assignment.end_date ? formatDate(assignment.end_date) : 'Ongoing'}</span>
+                    <span class="label">Employee ID:</span>
+                    <span class="value">${assignment.worker_employee_id || 'N/A'}</span>
                 </div>
-                ${assignment.assignment_notes ? `
+                <div class="detail-row">
+                    <span class="label">Assigned Date:</span>
+                    <span class="value">${assignment.assigned_date || 'Recent'}</span>
+                </div>
+                ${assignment.notes ? `
                 <div class="detail-row">
                     <span class="label">Notes:</span>
-                    <span class="value">${assignment.assignment_notes}</span>
+                    <span class="value">${assignment.notes}</span>
                 </div>
                 ` : ''}
+                ${assignment.project_location ? `
                 <div class="detail-row">
-                    <span class="label">Assigned By:</span>
-                    <span class="value">${assignment.assigned_by} (${assignment.assigned_by_role})</span>
+                    <span class="label">Location:</span>
+                    <span class="value">${assignment.project_location}</span>
                 </div>
+                ` : ''}
             </div>
         `;
         workerResults.appendChild(assignmentCard);
@@ -940,13 +396,16 @@ function displayWorkerAssignments(assignments) {
 function updateAllocationChart(assignments) {
     const allocationChart = document.querySelector('.allocation-chart');
     
-    if (!allocationChart || !assignments || assignments.length === 0) {
+    // Ensure assignments is an array
+    const assignmentsArray = Array.isArray(assignments) ? assignments : [];
+    
+    if (!allocationChart || !assignmentsArray || assignmentsArray.length === 0) {
         return;
     }
     
     // Group assignments by project
     const projectGroups = {};
-    assignments.forEach(assignment => {
+    assignmentsArray.forEach(assignment => {
         if (!projectGroups[assignment.project_name]) {
             projectGroups[assignment.project_name] = 0;
         }
@@ -980,32 +439,51 @@ function updateAllocationChart(assignments) {
 function filterAssignedWorkers() {
     const searchTerm = document.getElementById('workerSearch').value.toLowerCase();
     const projectFilter = document.getElementById('projectFilter').value;
+    const departmentFilter = document.getElementById('departmentFilter').value;
     
-    // Get all assignments and filter them
-    window.ApiService.getWorkerAssignments().then(assignments => {
-        let filteredAssignments = assignments;
-        
-        // Filter by search term
-        if (searchTerm) {
-            filteredAssignments = filteredAssignments.filter(assignment => 
-                assignment.employee_name.toLowerCase().includes(searchTerm) ||
-                assignment.project_name.toLowerCase().includes(searchTerm) ||
-                assignment.role_in_project.toLowerCase().includes(searchTerm)
-            );
-        }
-        
-        // Filter by project
-        if (projectFilter) {
-            filteredAssignments = filteredAssignments.filter(assignment => 
-                assignment.project_id == projectFilter
-            );
-        }
-        
-        // Display filtered results
-        displayWorkerAssignments(filteredAssignments);
-    }).catch(error => {
-        console.error('Error filtering assignments:', error);
-    });
+    // Start with all assignments
+    let filteredAssignments = [...allAssignments];
+    
+    // Filter by search term (worker name, project, task, employee ID, location)
+    if (searchTerm) {
+        filteredAssignments = filteredAssignments.filter(assignment => {
+            const workerName = (assignment.worker_name || '').toLowerCase();
+            const projectName = (assignment.project_name || '').toLowerCase();
+            const taskDescription = (assignment.task_description || '').toLowerCase();
+            const employeeId = (assignment.worker_employee_id || '').toLowerCase();
+            const location = (assignment.project_location || '').toLowerCase();
+            const notes = (assignment.notes || '').toLowerCase();
+            
+            return workerName.includes(searchTerm) ||
+                   projectName.includes(searchTerm) ||
+                   taskDescription.includes(searchTerm) ||
+                   employeeId.includes(searchTerm) ||
+                   location.includes(searchTerm) ||
+                   notes.includes(searchTerm);
+        });
+    }
+    
+    // Filter by project
+    if (projectFilter) {
+        filteredAssignments = filteredAssignments.filter(assignment => 
+            assignment.project_id == projectFilter
+        );
+    }
+    
+    // Filter by department
+    if (departmentFilter) {
+        filteredAssignments = filteredAssignments.filter(assignment => 
+            assignment.department == departmentFilter
+        );
+    }
+    
+    // Display filtered results
+    displayWorkerAssignments(filteredAssignments);
+    
+    // Update allocation chart based on filtered results
+    updateAllocationChart(filteredAssignments);
+    
+    console.log(`Filtered ${allAssignments.length} assignments to ${filteredAssignments.length} results`);
 }
 
 // Helper function to format dates
@@ -1701,152 +1179,6 @@ async function processPolicyRevision(policyId, revisionRequest, requestedBy) {
     }
 }
 
-// Custom Modal Functions
-function showRejectionModal(title, message, callback) {
-    // Create modal overlay
-    const modalOverlay = document.createElement('div');
-    modalOverlay.className = 'modal-overlay';
-    modalOverlay.style.cssText = `
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: rgba(0, 0, 0, 0.5);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        z-index: 10000;
-    `;
-    
-    // Create modal content
-    const modalContent = document.createElement('div');
-    modalContent.className = 'modal-content';
-    modalContent.style.cssText = `
-        background: white;
-        padding: 30px;
-        border-radius: 10px;
-        max-width: 500px;
-        width: 90%;
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-        animation: modalSlideIn 0.3s ease-out;
-    `;
-    
-    modalContent.innerHTML = `
-        <h3 style="margin: 0 0 20px 0; color: #dc3545;">${title}</h3>
-        <p style="margin: 0 0 20px 0; color: #666;">${message}</p>
-        <textarea id="rejectionReason" rows="4" style="
-            width: 100%;
-            padding: 10px;
-            border: 2px solid #ddd;
-            border-radius: 5px;
-            font-size: 14px;
-            resize: vertical;
-            box-sizing: border-box;
-        " placeholder="Enter detailed rejection reason..."></textarea>
-        <div style="margin-top: 20px; text-align: right;">
-            <button id="cancelRejection" style="
-                background: #6c757d;
-                color: white;
-                border: none;
-                padding: 10px 20px;
-                margin-right: 10px;
-                border-radius: 5px;
-                cursor: pointer;
-                font-size: 14px;
-            ">Cancel</button>
-            <button id="confirmRejection" style="
-                background: #dc3545;
-                color: white;
-                border: none;
-                padding: 10px 20px;
-                border-radius: 5px;
-                cursor: pointer;
-                font-size: 14px;
-            ">Reject</button>
-        </div>
-    `;
-    
-    // Add animation styles
-    const style = document.createElement('style');
-    style.textContent = `
-        @keyframes modalSlideIn {
-            from {
-                opacity: 0;
-                transform: translateY(-50px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-        .modal-overlay {
-            animation: fadeIn 0.3s ease-out;
-        }
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
-        #rejectionReason:focus {
-            outline: none;
-            border-color: #dc3545;
-            box-shadow: 0 0 5px rgba(220, 53, 69, 0.3);
-        }
-        #confirmRejection:hover {
-            background: #c82333;
-        }
-        #cancelRejection:hover {
-            background: #5a6268;
-        }
-    `;
-    
-    modalOverlay.appendChild(modalContent);
-    document.head.appendChild(style);
-    document.body.appendChild(modalOverlay);
-    
-    // Add event listeners
-    const confirmBtn = modalContent.querySelector('#confirmRejection');
-    const cancelBtn = modalContent.querySelector('#cancelRejection');
-    const textarea = modalContent.querySelector('#rejectionReason');
-    
-    // Auto-focus textarea
-    setTimeout(() => textarea.focus(), 100);
-    
-    // Handle confirm
-    confirmBtn.addEventListener('click', () => {
-        const reason = textarea.value.trim();
-        if (reason) {
-            callback(reason);
-            closeModal();
-        } else {
-            showNotification('Please enter a rejection reason', 'warning', 3000);
-            textarea.focus();
-        }
-    });
-    
-    // Handle cancel
-    cancelBtn.addEventListener('click', closeModal);
-    
-    // Handle escape key
-    document.addEventListener('keydown', function handleEscape(e) {
-        if (e.key === 'Escape') {
-            closeModal();
-            document.removeEventListener('keydown', handleEscape);
-        }
-    });
-    
-    // Handle overlay click
-    modalOverlay.addEventListener('click', (e) => {
-        if (e.target === modalOverlay) {
-            closeModal();
-        }
-    });
-    
-    function closeModal() {
-        modalOverlay.remove();
-        style.remove();
-    }
-}
 
 function showRevisionModal(title, message, callback) {
     // Create modal overlay
@@ -2487,291 +1819,6 @@ function showInfoRequestModal(title, message, callback) {
     }
 }
 
-// Workforce Budget Functions
-async function loadWorkforceBudgets() {
-    try {
-        console.log('🔍 Loading workforce budget requests...');
-        
-        const baseUrl = window.location.origin;
-        const response = await fetch(`${baseUrl}/api/workforce-budget`, {
-                headers: {
-                        'Authorization': `Bearer ${sessionManager.getAuthToken()}`
-                }
-        });
-        
-        const budgets = await response.json();
-        
-        if (response.ok) {
-                console.log('📊 Workforce budget requests loaded:', budgets.length);
-                displayWorkforceBudgets(budgets);
-        } else {
-                showNotification('Failed to load workforce budget requests', 'error', 5000);
-        }
-        
-    } catch (error) {
-        console.error('❌ Error loading workforce budget requests:', error);
-        showNotification('Error loading workforce budget requests: ' + error.message, 'error', 5000);
-    }
-}
-
-function displayWorkforceBudgets(budgets) {
-    let html = `<div class="card">
-        <h3>Approve Workforce Budget</h3>
-        <p><strong>High-Level Authority:</strong> Review and approve annual workforce budget allocations</p>
-        
-        <div class="budget-section">
-            <h4>Workforce Budget Proposals</h4>`;
-    
-    if (budgets.length === 0) {
-        html += '<p>No workforce budget requests pending approval.</p>';
-    } else {
-        budgets.forEach(budget => {
-                const statusClass = budget.status.toLowerCase().replace(' ', '-');
-                const statusColor = {
-                        'pending': '#ffc107',
-                        'approved': '#28a745',
-                        'rejected': '#dc3545',
-                        'modification-requested': '#17a2b8'
-                }[statusClass] || '#6c757d';
-                
-                html += `
-                        <div class="budget-proposal">
-                                <h5>${budget.budget_period}</h5>
-                                <div class="budget-overview">
-                                        <div class="budget-row">
-                                                <span class="budget-category">Salaries & Wages:</span>
-                                                <span class="budget-amount">TZS ${(budget.salaries_wages || 0).toLocaleString()}</span>
-                                        </div>
-                                        <div class="budget-row">
-                                                <span class="budget-category">Training & Development:</span>
-                                                <span class="budget-amount">TZS ${(budget.training_development || 0).toLocaleString()}</span>
-                                        </div>
-                                        <div class="budget-row">
-                                                <span class="budget-category">Employee Benefits:</span>
-                                                <span class="budget-amount">TZS ${(budget.employee_benefits || 0).toLocaleString()}</span>
-                                        </div>
-                                        <div class="budget-row">
-                                                <span class="budget-category">Recruitment Costs:</span>
-                                                <span class="budget-amount">TZS ${(budget.recruitment_costs || 0).toLocaleString()}</span>
-                                        </div>
-                                        <div class="budget-row total">
-                                                <span class="budget-category">Total Proposed:</span>
-                                                <span class="budget-amount">TZS ${(budget.total_proposed || 0).toLocaleString()}</span>
-                                        </div>
-                                </div>
-                                
-                                <div class="budget-details">
-                                        <div class="form-group">
-                                                <label>Submitted By</label>
-                                                <input type="text" value="${budget.submitted_by}" readonly>
-                                        </div>
-                                        <div class="form-row">
-                                                <div class="form-group">
-                                                        <label>Budget Period</label>
-                                                        <input type="text" value="${budget.budget_period}" readonly>
-                                                </div>
-                                                <div class="form-group">
-                                                        <label>Current Headcount</label>
-                                                        <input type="text" value="${budget.current_headcount}" readonly>
-                                                </div>
-                                        </div>
-                                        <div class="form-group">
-                                                <label>Justification</label>
-                                                <textarea rows="4" readonly>${budget.justification}</textarea>
-                                        </div>
-                                </div>
-                                
-                                <div class="budget-actions">
-                                        <button class="action" onclick="approveBudget('${budget.id}')" style="background: #28a745;">Approve Budget</button>
-                                        <button class="action" onclick="modifyBudget('${budget.id}')" style="background: #ffc107;">Request Modification</button>
-                                        <button class="action" onclick="rejectBudget('${budget.id}')" style="background: #dc3545;">Reject Budget</button>
-                                </div>
-                        </div>
-                `;
-        });
-    }
-    
-    html += `
-            </div>
-            
-            <div class="approval-summary">
-                <h4>Budget Approval Authority</h4>
-                <div class="authority-item">
-                        <span>✅ Can approve workforce budgets up to TZS 100M</span>
-                </div>
-                <div class="authority-item">
-                        <span>✅ Can modify budget allocations</span>
-                </div>
-                <div class="authority-item">
-                        <span>✅ Final authority on workforce spending</span>
-                </div>
-            </div>
-        </div>
-    </div>`;
-    
-    showContent(html);
-}
-
-async function approveBudget(budgetId) {
-    try {
-        console.log('✅ Approving workforce budget:', budgetId);
-        
-        // Get current user
-        const currentUser = sessionManager.getCurrentUser() || {};
-        const approvedBy = currentUser.email || 'HR Manager';
-        
-        // Get comments from user
-        const comments = prompt('Enter approval comments (optional):');
-        
-        // Get approved amount from user
-        const approvedAmount = prompt('Enter approved amount (leave empty to use proposed):');
-        
-        // Show loading notification
-        showNotification('Approving workforce budget...', 'info', 2000);
-        
-        // Call API
-        console.log('🔍 Testing API connectivity...');
-        console.log('🌐 Base URL:', window.location.origin);
-        console.log('📡 Full URL:', `/api/workforce-budget/${budgetId}/approve`);
-        
-        const response = await fetch(`/api/workforce-budget/${budgetId}/approve`, {
-                method: 'POST',
-                headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${sessionManager.getAuthToken()}`
-                },
-                body: JSON.stringify({ approvedBy, comments, approvedAmount })
-        });
-        
-        const result = await response.json();
-        
-        if (response.ok) {
-                showNotification('Workforce budget approved successfully!', 'success', 4000);
-                
-                // Refresh budgets list
-                setTimeout(() => loadWorkforceBudgets(), 2000);
-        } else {
-                showNotification('Failed to approve workforce budget: ' + result.error, 'error', 5000);
-        }
-        
-    } catch (error) {
-        console.error('❌ Error approving workforce budget:', error);
-        showNotification('Error approving workforce budget: ' + error.message, 'error', 5000);
-    }
-}
-
-async function rejectBudget(budgetId) {
-    try {
-        console.log('❌ Rejecting workforce budget:', budgetId);
-        
-        // Get current user
-        const currentUser = sessionManager.getCurrentUser() || {};
-        const rejectedBy = currentUser.email || 'HR Manager';
-        
-        // Show custom rejection modal instead of prompt
-        showRejectionModal('Budget Rejection', 'Please enter rejection reason:', (rejectionReason) => {
-            if (!rejectionReason) {
-                showNotification('Rejection cancelled', 'info', 2000);
-                return;
-            }
-            
-            // Process rejection
-            processBudgetRejection(budgetId, rejectionReason, rejectedBy);
-        });
-    } catch (error) {
-        console.error('❌ Error rejecting workforce budget:', error);
-        showNotification('Error rejecting workforce budget: ' + error.message, 'error', 5000);
-    }
-}
-
-async function processBudgetRejection(budgetId, rejectionReason, rejectedBy) {
-    try {
-        // Show loading notification
-        showNotification('Rejecting workforce budget...', 'info', 2000);
-        
-        // Call API
-        const response = await fetch(`/api/workforce-budget/${budgetId}/reject`, {
-                method: 'POST',
-                headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${sessionManager.getAuthToken()}`
-                },
-                body: JSON.stringify({ rejectionReason, rejectedBy })
-        });
-        
-        const result = await response.json();
-        
-        if (response.ok) {
-                showNotification('Workforce budget rejected successfully!', 'warning', 4000);
-                
-                // Refresh budgets list
-                setTimeout(() => loadWorkforceBudgets(), 2000);
-        } else {
-                showNotification('Failed to reject workforce budget: ' + result.error, 'error', 5000);
-        }
-        
-    } catch (error) {
-        console.error('❌ Error processing budget rejection:', error);
-        showNotification('Error rejecting workforce budget: ' + error.message, 'error', 5000);
-    }
-}
-
-async function modifyBudget(budgetId) {
-    try {
-        console.log('🔄 Requesting modification for workforce budget:', budgetId);
-        
-        // Get current user
-        const currentUser = sessionManager.getCurrentUser() || {};
-        const requestedBy = currentUser.email || 'HR Manager';
-        
-        // Show custom revision modal instead of prompt
-        showRevisionModal('Budget Modification Request', 'Please specify modification required:', (modificationRequest) => {
-            if (!modificationRequest) {
-                showNotification('Modification request cancelled', 'info', 2000);
-                return;
-            }
-            
-            // Process modification request
-            processBudgetModification(budgetId, modificationRequest, requestedBy);
-        });
-    } catch (error) {
-        console.error('❌ Error requesting budget modification:', error);
-        showNotification('Error requesting budget modification: ' + error.message, 'error', 5000);
-    }
-}
-
-async function processBudgetModification(budgetId, modificationRequest, requestedBy) {
-    try {
-        // Show loading notification
-        showNotification('Requesting budget modification...', 'info', 2000);
-        
-        // Call API
-        const response = await fetch(`/api/workforce-budget/${budgetId}/modify`, {
-                method: 'POST',
-                headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${sessionManager.getAuthToken()}`
-                },
-                body: JSON.stringify({ modificationRequest, requestedBy })
-        });
-        
-        const result = await response.json();
-        
-        if (response.ok) {
-                showNotification('Budget modification requested successfully!', 'info', 4000);
-                
-                // Refresh budgets list
-                setTimeout(() => loadWorkforceBudgets(), 2000);
-        } else {
-                showNotification('Failed to request budget modification: ' + result.error, 'error', 5000);
-        }
-        
-    } catch (error) {
-        console.error('❌ Error processing budget modification:', error);
-        showNotification('Error requesting budget modification: ' + error.message, 'error', 5000);
-    }
-}
-
 function loadUserData() {
     var currentUser = sessionStorage.getItem('kashtec_current_user');
     
@@ -2981,7 +2028,7 @@ document.addEventListener('DOMContentLoaded', function() {
     console.log('🔍 Login button type:', loginBtn ? loginBtn.tagName : 'null');
     console.log('🔍 Login button class:', loginBtn ? loginBtn.className : 'null');
     
-    if (loginBtn) {
+    if (loginBtn && !loginBtn.hasAttribute('data-listener-attached')) {
         loginBtn.addEventListener('click', function(e) {
             console.log('🖱️ Login button clicked!', e);
             console.log('🖱️ Event type:', e.type);
@@ -2991,6 +2038,7 @@ document.addEventListener('DOMContentLoaded', function() {
             e.stopPropagation();
             handleLogin();
         });
+        loginBtn.setAttribute('data-listener-attached', 'true');
         console.log('✅ Login button event listener attached (DOMContentLoaded)');
         
         // Test if button is clickable
@@ -3037,3 +2085,373 @@ window.onload = function() {
         console.log('✅ Login button event listener attached (window.onload fallback)');
     }
 };
+
+// Save Site Report function
+async function saveSiteReport(event) {
+    try {
+        // Prevent default form submission
+        event.preventDefault();
+        
+        console.log('Saving site report...');
+        
+        // Get form values
+        const reportData = {
+            project_id: document.getElementById('reportProject').value,
+            report_date: document.getElementById('reportDate').value,
+            weather_conditions: document.getElementById('weatherConditions').value,
+            site_supervisor: document.getElementById('siteSupervisor').value,
+            workers_present: document.getElementById('workersPresent').value,
+            work_completed: document.getElementById('workCompleted').value,
+            site_issues: document.getElementById('siteIssues').value,
+            safety_incidents: document.getElementById('safetyIncidents').value,
+            materials_used: document.getElementById('materialsUsed').value,
+            equipment_used: document.getElementById('equipmentUsed').value,
+            next_day_plan: document.getElementById('nextDayPlan').value
+        };
+        
+        console.log('Site report data:', reportData);
+        
+        // Validate required fields
+        if (!reportData.project_id || !reportData.report_date || !reportData.weather_conditions || 
+            !reportData.workers_present || !reportData.work_completed || !reportData.next_day_plan) {
+            alert('Please fill in all required fields marked with *');
+            return false;
+        }
+        
+        // Send data to backend
+        const response = await window.apiService.post('/work/site-reports', reportData);
+        
+        console.log('Site report saved successfully:', response);
+        
+        // Show success message
+        try {
+            alert('Site report submitted successfully!');
+        } catch (e) {
+            console.error('Alert error:', e);
+        }
+        
+        // Reset form
+        document.getElementById('siteReportForm').reset();
+        
+        // Reload recent reports (if function exists)
+        if (typeof loadRecentSiteReports === 'function') {
+            loadRecentSiteReports();
+        }
+        
+        return false; // Prevent form submission
+        
+    } catch (error) {
+        console.error('Error saving site report:', error);
+        try {
+            alert('Failed to save site report. Please try again.');
+        } catch (e) {
+            console.error('Alert error:', e);
+        }
+        return false;
+    }
+}
+
+// Work Approval functions
+function approveWork(workId) {
+    console.log('Approving work:', workId);
+    
+    // Populate the form with the work ID
+    document.getElementById('workId').value = workId;
+    
+    // Set default values for approval
+    document.getElementById('qualityAssessment').value = 'excellent';
+    document.getElementById('complianceCheck').value = 'fully-compliant';
+    document.getElementById('approvalComments').value = 'Work approved successfully. Quality meets all requirements.';
+    
+    // Scroll to the approval form
+    document.getElementById('approvalForm').scrollIntoView({ behavior: 'smooth' });
+    
+    // Show success message
+    try {
+        alert(`Preparing approval for work item: ${workId}`);
+    } catch (e) {
+        console.error('Alert error:', e);
+    }
+}
+
+function requestRework(workId) {
+    console.log('Requesting rework for:', workId);
+    
+    // Populate the form with the work ID
+    document.getElementById('workId').value = workId;
+    
+    // Set default values for rework
+    document.getElementById('qualityAssessment').value = 'acceptable';
+    document.getElementById('complianceCheck').value = 'minor-issues';
+    document.getElementById('approvalComments').value = 'Rework required. Please address the identified issues before resubmission.';
+    
+    // Scroll to the approval form
+    document.getElementById('approvalForm').scrollIntoView({ behavior: 'smooth' });
+    
+    // Show message
+    try {
+        alert(`Preparing rework request for work item: ${workId}`);
+    } catch (e) {
+        console.error('Alert error:', e);
+    }
+}
+
+function rejectWork(workId) {
+    console.log('Rejecting work:', workId);
+    
+    // Populate the form with the work ID
+    document.getElementById('workId').value = workId;
+    
+    // Set default values for rejection
+    document.getElementById('qualityAssessment').value = 'poor';
+    document.getElementById('complianceCheck').value = 'non-compliant';
+    document.getElementById('approvalComments').value = 'Work rejected. Significant issues need to be addressed.';
+    
+    // Scroll to the approval form
+    document.getElementById('approvalForm').scrollIntoView({ behavior: 'smooth' });
+    
+    // Show message
+    try {
+        alert(`Preparing rejection for work item: ${workId}`);
+    } catch (e) {
+        console.error('Alert error:', e);
+    }
+}
+
+async function saveWorkApproval(event) {
+    try {
+        // Prevent default form submission
+        if (event) {
+            event.preventDefault();
+        }
+        
+        console.log('Saving work approval...');
+        
+        // Get form data
+        const approvalData = {
+            work_id: document.getElementById('workId').value,
+            quality_assessment: document.getElementById('qualityAssessment').value,
+            compliance_check: document.getElementById('complianceCheck').value,
+            approval_comments: document.getElementById('approvalComments').value,
+            safety_compliance: document.getElementById('safetyCompliance').value,
+            time_completion: document.getElementById('timeCompletion').value
+        };
+        
+        console.log('Work approval data:', approvalData);
+        
+        // Validate required fields
+        if (!approvalData.work_id || !approvalData.quality_assessment || 
+            !approvalData.compliance_check || !approvalData.approval_comments) {
+            alert('Please fill in all required fields marked with *');
+            return false;
+        }
+        
+        // Send data to backend
+        const response = await window.apiService.post('/work/approvals', approvalData);
+        
+        console.log('Work approval saved successfully:', response);
+        
+        // Show success message
+        try {
+            alert('Work approval submitted successfully!');
+        } catch (e) {
+            console.error('Alert error:', e);
+        }
+        
+        // Reset form
+        document.getElementById('approvalForm').reset();
+        
+        // Reload approvals (if function exists)
+        if (typeof loadPendingApprovals === 'function') {
+            loadPendingApprovals();
+        }
+        
+        return false; // Prevent form submission
+        
+    } catch (error) {
+        console.error('Error saving work approval:', error);
+        try {
+            alert('Failed to save work approval. Please try again.');
+        } catch (e) {
+            console.error('Alert error:', e);
+        }
+        return false;
+    }
+}
+
+// ===== PROPERTY MANAGEMENT FUNCTIONS =====
+
+// Load properties from database and populate the select dropdown
+async function loadPropertiesForEdit() {
+    try {
+        console.log('Loading properties from database...');
+        
+        const response = await fetch('/api/properties/all', {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${localStorage.getItem('token')}`,
+                'Content-Type': 'application/json'
+            }
+        });
+        
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const properties = await response.json();
+        console.log('Properties loaded:', properties);
+        
+        const selectElement = document.getElementById('editPropertySelect');
+        selectElement.innerHTML = '<option value="">Select Property</option>';
+        
+        if (properties && properties.length > 0) {
+            properties.forEach(property => {
+                const option = document.createElement('option');
+                option.value = property.id;
+                option.textContent = `${property.title || property.plotNumber || 'Property ' + property.id} - ${property.location} (${property.status || 'Available'})`;
+                selectElement.appendChild(option);
+            });
+        } else {
+            console.log('No properties found in database');
+        }
+        
+    } catch (error) {
+        console.error('Error loading properties:', error);
+        // Show error message to user
+        const selectElement = document.getElementById('editPropertySelect');
+        selectElement.innerHTML = '<option value="">Error loading properties</option>';
+    }
+}
+
+// Load property details when a property is selected
+async function loadPropertyDetails() {
+    const propertyId = document.getElementById('editPropertySelect').value;
+    
+    if (!propertyId) {
+        document.getElementById('propertyEditForm').classList.add('hidden');
+        return;
+    }
+    
+    try {
+        console.log('Loading property details for ID:', propertyId);
+        
+        const response = await fetch(`/api/properties/${propertyId}`, {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${localStorage.getItem('token')}`,
+                'Content-Type': 'application/json'
+            }
+        });
+        
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const property = await response.json();
+        console.log('Property details loaded:', property);
+        
+        // Populate form fields with property data
+        document.getElementById('editPlotNumber').value = property.plotNumber || extractPlotNumber(property.title) || '';
+        document.getElementById('editPropertyType').value = property.type || 'residential';
+        document.getElementById('editPropertyLocation').value = property.location || '';
+        document.getElementById('editPropertyArea').value = property.size_sqm || property.area || '';
+        document.getElementById('editPropertyPrice').value = property.price || '';
+        document.getElementById('editPropertyStatus').value = property.status || 'available';
+        document.getElementById('editTpNumber').value = property.tpNumber || '';
+        document.getElementById('editPropertyDescription').value = property.description || '';
+        
+        // Show the edit form
+        document.getElementById('propertyEditForm').classList.remove('hidden');
+        
+    } catch (error) {
+        console.error('Error loading property details:', error);
+        alert('Error loading property details. Please try again.');
+        document.getElementById('propertyEditForm').classList.add('hidden');
+    }
+}
+
+// Save property edits to database
+async function savePropertyEdits(event) {
+    if (event) {
+        event.preventDefault();
+    }
+    
+    const propertyId = document.getElementById('editPropertySelect').value;
+    
+    if (!propertyId) {
+        alert('Please select a property to edit');
+        return false;
+    }
+    
+    try {
+        console.log('Saving property edits for ID:', propertyId);
+        
+        // Get form data
+        const formData = {
+            plotNumber: document.getElementById('editPlotNumber').value,
+            type: document.getElementById('editPropertyType').value,
+            location: document.getElementById('editPropertyLocation').value,
+            area: document.getElementById('editPropertyArea').value,
+            price: document.getElementById('editPropertyPrice').value,
+            status: document.getElementById('editPropertyStatus').value,
+            tpNumber: document.getElementById('editTpNumber').value,
+            description: document.getElementById('editPropertyDescription').value,
+            updateReason: document.getElementById('updateReason').value
+        };
+        
+        console.log('Form data:', formData);
+        
+        const response = await fetch(`/api/properties/${propertyId}`, {
+            method: 'PUT',
+            headers: {
+                'Authorization': `Bearer ${localStorage.getItem('token')}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(formData)
+        });
+        
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
+        }
+        
+        const result = await response.json();
+        console.log('Property updated successfully:', result);
+        
+        // Show success message
+        customAlert(`Property ${formData.plotNumber} updated successfully!\n\nChanges have been saved and property status updated.`, "Property Updated", "success");
+        
+        // Reset form and hide it
+        document.getElementById('editPropertyForm').reset();
+        document.getElementById('propertyEditForm').classList.add('hidden');
+        document.getElementById('editPropertySelect').value = '';
+        
+        // Reload properties to reflect changes
+        loadPropertiesForEdit();
+        
+        return false;
+        
+    } catch (error) {
+        console.error('Error saving property edits:', error);
+        alert(`Error updating property: ${error.message}`);
+        return false;
+    }
+}
+
+// Helper function to extract plot number from title
+function extractPlotNumber(title) {
+    if (!title) return '';
+    
+    // Look for patterns like "Property PLOT-001" or "Property 001"
+    const match = title.match(/(?:Property\s+)?(PLOT-?\d+|\d+)/i);
+    return match ? match[1] : '';
+}
+
+// Initialize property loading when page loads
+document.addEventListener('DOMContentLoaded', function() {
+    // Load properties for edit form if the element exists
+    const editPropertySelect = document.getElementById('editPropertySelect');
+    if (editPropertySelect) {
+        loadPropertiesForEdit();
+    }
+});

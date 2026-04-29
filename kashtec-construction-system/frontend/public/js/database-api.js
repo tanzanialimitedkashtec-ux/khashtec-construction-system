@@ -16,6 +16,17 @@ class DatabaseAPI {
             ...options
         };
 
+        // Add authentication token if available
+        if (window.sessionManager && window.sessionManager.getAuthToken) {
+            const token = window.sessionManager.getAuthToken();
+            if (token) {
+                config.headers.Authorization = `Bearer ${token}`;
+                if (!this.isProduction) {
+                    console.log('Adding auth token to request');
+                }
+            }
+        }
+
         try {
             if (!this.isProduction) {
                 console.log('🌐 Making API request to:', url);
@@ -115,7 +126,6 @@ class DatabaseAPI {
         try {
             const response = await this.post('/auth/login', {
                 email,
-                username: email,
                 password,
                 role
             });
@@ -170,9 +180,46 @@ class DatabaseAPI {
         return this.put(`/projects/${id}`, projectData);
     }
 
+    async getProjectProgressUpdates(projectId) {
+        return this.get(`/projects/${projectId}/progress`);
+    }
+
+    async addProjectProgress(projectId, progressData) {
+        return this.post(`/projects/${projectId}/progress`, progressData);
+    }
+
     // Employees
     async getEmployees() {
         return this.get('/employees');
+    }
+
+    // Worker Assignments
+    async getWorkerAssignments() {
+        return this.get('/worker-accounts/assignments');
+    }
+
+    async getWorkerAssignmentStats() {
+        try {
+            // For now, return basic stats derived from assignments
+            const assignments = await this.getWorkerAssignments();
+            
+            // Ensure assignments is an array
+            const assignmentsArray = Array.isArray(assignments) ? assignments : [];
+            
+            return {
+                totalWorkers: assignmentsArray.length,
+                activeProjects: [...new Set(assignmentsArray.map(a => a.project_name).filter(Boolean))].length,
+                activeTasks: assignmentsArray.filter(a => a.status === 'active').length
+            };
+        } catch (error) {
+            console.error('Error calculating worker assignment stats:', error);
+            // Return default stats if there's an error
+            return {
+                totalWorkers: 0,
+                activeProjects: 0,
+                activeTasks: 0
+            };
+        }
     }
 
     // Properties
