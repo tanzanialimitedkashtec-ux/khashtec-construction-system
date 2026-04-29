@@ -54,7 +54,118 @@
     </div>
 
     <div class="content" id="contentArea">
-        <h3>Welcome</h3>
+        <div class="card">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
+                <h3 style="font-size: 10px; margin: 0;">Worker Account Management</h3>
+                <button type="button" id="toggleWorkerFormBtn" onclick="toggleWorkerAccountForm()" class="action" style="background: rgb(220, 53, 69); font-size: 8px; padding: 2px 4px;">❌ Close</button>
+            </div>
+            
+            <div id="workerAccountFormContainer" style="display: block;" class="show">
+                <div class="form-header" style="margin-bottom: 3px;">
+                    <h4 style="font-size: 9px; margin: 0;">Create New Worker Account</h4>
+                    <p style="font-size: 7px; margin: 1px 0;">Fill in the worker details below</p>
+                </div>
+                
+                <form id="workerAccountForm" onsubmit="event.preventDefault(); saveWorkerAccount(); return false;" style="font-size: 8px;">
+                    <div class="form-row" style="margin-bottom: 2px;">
+                        <div class="form-group" style="margin-bottom: 1px;">
+                            <label style="font-size: 7px; margin-bottom: 1px; display: block;">Employee ID *</label>
+                            <input type="text" id="workerEmpID" placeholder="e.g., EMP001" required="" style="font-size: 7px; padding: 1px; height: 15px;">
+                        </div>
+                        <div class="form-group" style="margin-bottom: 1px;">
+                            <label style="font-size: 7px; margin-bottom: 1px; display: block;">Full Name *</label>
+                            <input type="text" id="workerFullName" placeholder="Worker full name" required="" style="font-size: 7px; padding: 1px; height: 15px;">
+                        </div>
+                    </div>
+                    
+                    <div class="form-row" style="margin-bottom: 2px;">
+                        <div class="form-group" style="margin-bottom: 1px;">
+                            <label style="font-size: 7px; margin-bottom: 1px; display: block;">Work Email *</label>
+                            <input type="email" id="workerEmail" placeholder="worker@kashtec.co.tz" required="" style="font-size: 7px; padding: 1px; height: 15px;">
+                        </div>
+                        <div class="form-group" style="margin-bottom: 1px;">
+                            <label style="font-size: 7px; margin-bottom: 1px; display: block;">Phone Number *</label>
+                            <input type="tel" id="workerPhone" placeholder="+255 XXX XXX XXX" required="" style="font-size: 7px; padding: 1px; height: 15px;">
+                        </div>
+                    </div>
+                    
+                    <div class="form-row" style="margin-bottom: 2px;">
+                        <div class="form-group" style="margin-bottom: 1px;">
+                            <label style="font-size: 7px; margin-bottom: 1px; display: block;">Department *</label>
+                            <select id="workerDepartment" required="" style="font-size: 7px; padding: 1px; height: 18px;">
+                                <option value="">Select Department</option>
+                                <option value="projects">Projects</option>
+                                <option value="admin">Administration</option>
+                                <option value="finance">Finance</option>
+                                <option value="hr">Human Resources</option>
+                                <option value="hse">Health & Safety</option>
+                                <option value="realestate">Real Estate</option>
+                            </select>
+                        </div>
+                        <div class="form-group" style="margin-bottom: 1px;">
+                            <label style="font-size: 7px; margin-bottom: 1px; display: block;">Job Title *</label>
+                            <input type="text" id="workerJobTitle" placeholder="e.g., Site Engineer, Foreman" required="" style="font-size: 7px; padding: 1px; height: 15px;">
+                        </div>
+                    </div>
+                    
+                    <div class="form-row" style="margin-bottom: 2px;">
+                        <div class="form-group" style="margin-bottom: 1px;">
+                            <label style="font-size: 7px; margin-bottom: 1px; display: block;">Account Type *</label>
+                            <select id="workerAccountType" required="" style="font-size: 7px; padding: 1px; height: 18px;">
+                                <option value="">Select Account Type</option>
+                                <option value="staff">Staff Account</option>
+                                <option value="worker">Worker Account</option>
+                                <option value="contractor">Contractor Account</option>
+                            </select>
+                        </div>
+                        <div class="form-group" style="margin-bottom: 1px;">
+                            <label style="font-size: 7px; margin-bottom: 1px; display: block;">Access Level *</label>
+                            <select id="workerAccessLevel" required="" style="font-size: 7px; padding: 1px; height: 18px;">
+                                <option value="">Select Access Level</option>
+                                <option value="basic">Basic Access</option>
+                                <option value="standard">Standard Access</option>
+                                <option value="supervisor">Supervisor Access</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group" style="margin-bottom: 2px;">
+                        <label style="font-size: 7px; margin-bottom: 1px; display: block;">Temporary Password *</label>
+                        <input type="password" id="workerPassword" placeholder="Enter temporary password" required="" style="font-size: 7px; padding: 1px; height: 15px;">
+                        <small style="font-size: 6px;">Worker will be prompted to change on first login</small>
+                    </div>
+                    
+                    <div class="form-group" style="margin-bottom: 2px;">
+                        <label style="font-size: 7px; margin-bottom: 1px; display: block;">Account Notes</label>
+                        <textarea id="workerNotes" rows="2" placeholder="Additional notes..." style="font-size: 7px; padding: 1px; height: 25px; resize: none;"></textarea>
+                    </div>
+                    
+                    <div class="form-group" style="margin-bottom: 2px;">
+                        <label style="font-size: 7px; margin-bottom: 1px; display: block;">Profile Picture</label>
+                        <input type="file" id="workerProfile" accept="image/*" style="font-size: 6px;">
+                        <small style="font-size: 6px;">Upload passport size photo</small>
+                    </div>
+                    
+                    <div class="form-group" style="margin-bottom: 2px;">
+                        <label style="font-size: 7px; margin-bottom: 1px; display: block;">ID Document</label>
+                        <input type="file" id="workerID" accept=".pdf,.jpg,.jpeg,.png" style="font-size: 6px;">
+                        <small style="font-size: 6px;">Upload ID document (PDF or Image)</small>
+                    </div>
+                    
+                    <div class="form-group" style="margin-bottom: 2px;">
+                        <label style="font-size: 7px; margin-bottom: 1px; display: block;">Contract Document</label>
+                        <input type="file" id="workerContract" accept=".pdf,.doc,.docx" style="font-size: 6px;">
+                        <small style="font-size: 6px;">Upload employment contract (PDF/DOC)</small>
+                    </div>
+                    
+                    <div style="margin-top: 5px;">
+                        <button type="submit" class="action" style="background: #28a745; font-size: 7px; padding: 2px 4px; margin-right: 2px;">Create Worker Account</button>
+                        <button type="button" onclick="clearWorkerAccountForm()" class="action" style="background: #6c757d; font-size: 7px; padding: 2px 4px; margin-right: 2px;">Clear Form</button>
+                        <button type="button" onclick="toggleWorkerAccountForm()" class="action" style="background: #dc3545; font-size: 7px; padding: 2px 4px;">Close Form</button>
+                    </div>
+                </form>
+            </div>
+        </div>
     </div>
 
     
