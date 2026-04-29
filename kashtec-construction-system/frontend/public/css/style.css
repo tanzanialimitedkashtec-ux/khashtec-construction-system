@@ -66,58 +66,6 @@ header{
     background:#0b3d91;
 }
 
-/* Role-based menu item styles */
-.menu-item.accessible {
-    background: #34495e;
-    color: white;
-    opacity: 1;
-    transition: all 0.3s ease;
-}
-
-.menu-item.accessible:hover {
-    background: #0b3d91;
-    transform: translateY(-1px);
-    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-}
-
-.menu-item.restricted {
-    background: #6c757d;
-    color: #adb5bd;
-    opacity: 0.5;
-    cursor: not-allowed;
-    box-shadow: inset 0 0 10px rgba(0,0,0,0.3);
-    text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
-    position: relative;
-    overflow: hidden;
-}
-
-.menu-item.restricted::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: repeating-linear-gradient(
-        45deg,
-        transparent,
-        transparent 10px,
-        rgba(0,0,0,0.1) 10px,
-        rgba(0,0,0,0.1) 20px
-    );
-    pointer-events: none;
-}
-
-.menu-item.restricted:hover {
-    background: #5a6268;
-    opacity: 0.6;
-}
-
-.menu-item.restricted:disabled {
-    cursor: not-allowed;
-    pointer-events: none;
-}
-
 .content{
     flex:1;
     padding:30px;
