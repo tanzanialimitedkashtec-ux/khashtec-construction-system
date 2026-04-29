@@ -2712,7 +2712,7 @@ background: #f8f9fa;
 
 <div id="loginPage" class="login-box">
     <h3>Login</h3>
-    <form id="loginForm" onsubmit="return handleLogin()">
+    <form id="loginForm" onsubmit="return handleLogin(); setTimeout(() => updateNavigationForRole(document.getElementById('loginRole').value), 100);">
         <input type="email" id="loginEmail" placeholder="Enter your email (e.g. md@kashtec.com)" required>
         <label for="loginRole" class="sr-only">Login role</label>
         <select id="loginRole" onchange="updatePasswordPlaceholder()" required>
@@ -2742,7 +2742,7 @@ background: #f8f9fa;
         <div class="sidebar collapsed">
             <h3 id="userRole"></h3>
             <button onclick="handleLogout()">Logout</button>
-            <div id="menu"><button>Approve Recruitment Policies</button><button>Approve Senior Staff Hiring</button><button>Approve Workforce Budget</button><button>Review Employee Count</button><button>View All Workers</button><button>Suspend/Terminate Employment</button><button>View Workforce Reports</button></div>
+            <div id="menu"></div>
         </div>
 
         <div class="content" id="contentArea">
@@ -22858,6 +22858,190 @@ function reviewOrgStructure() {
 
 <!-- Include API Service -->
 <script src="assets/js/api.js"></script>
+
+<!-- Role-Based Navigation System -->
+<script>
+// Role-based menu configurations
+const roleMenus = {
+    'MD': {
+        title: 'MD Dashboard',
+        buttons: [
+            'Approve Recruitment Policies',
+            'Approve Senior Staff Hiring', 
+            'Approve Workforce Budget',
+            'Review Employee Count',
+            'View All Workers',
+            'Suspend/Terminate Employment',
+            'View Workforce Reports'
+        ]
+    },
+    'ADMIN': {
+        title: 'Admin Dashboard',
+        buttons: [
+            'Manage System Settings',
+            'User Account Management',
+            'System Reports',
+            'Backup & Recovery'
+        ]
+    },
+    'HR': {
+        title: 'HR Dashboard',
+        buttons: [
+            'Register Employee',
+            'Create Worker Account',
+            'Assign Project Workers',
+            'Update Employee Records',
+            'Track Attendance',
+            'Manage Leave & Contracts',
+            'Manage Policies',
+            'Approve Senior Staff Hiring',
+            'Approve Workforce Budget'
+        ]
+    },
+    'HSE': {
+        title: 'HSE Dashboard',
+        buttons: [
+            'Safety Inspections',
+            'Incident Reports',
+            'Safety Training',
+            'Compliance Monitoring',
+            'Risk Assessment',
+            'Emergency Procedures'
+        ]
+    },
+    'FINANCE': {
+        title: 'Finance Dashboard',
+        buttons: [
+            'Budget Management',
+            'Expense Reports',
+            'Payroll Processing',
+            'Financial Reports',
+            'Invoice Management',
+            'Tax Compliance'
+        ]
+    },
+    'PROJECT': {
+        title: 'Project Dashboard',
+        buttons: [
+            'Project Planning',
+            'Resource Allocation',
+            'Progress Tracking',
+            'Quality Control',
+            'Timeline Management',
+            'Cost Analysis'
+        ]
+    },
+    'REALESTATE': {
+        title: 'Real Estate Dashboard',
+        buttons: [
+            'Property Management',
+            'Client Relations',
+            'Sales Tracking',
+            'Property Listings',
+            'Market Analysis',
+            'Lease Management'
+        ]
+    },
+    'ASSISTANT': {
+        title: 'Assistant Dashboard',
+        buttons: [
+            'Schedule Management',
+            'Document Processing',
+            'Communication',
+            'Data Entry',
+            'Report Generation'
+        ]
+    }
+};
+
+// Function to update navigation based on user role
+function updateNavigationForRole(role) {
+    const menuContainer = document.getElementById('menu');
+    const userRoleElement = document.getElementById('userRole');
+    
+    // Clear existing menu
+    menuContainer.innerHTML = '';
+    
+    // Get menu configuration for the role
+    const menuConfig = roleMenus[role];
+    
+    if (menuConfig) {
+        // Update role title
+        userRoleElement.textContent = menuConfig.title;
+        
+        // Add role-specific buttons
+        menuConfig.buttons.forEach(buttonText => {
+            const button = document.createElement('button');
+            button.textContent = buttonText;
+            button.onclick = () => handleMenuClick(buttonText);
+            menuContainer.appendChild(button);
+        });
+    } else {
+        // Default empty menu for unknown roles
+        userRoleElement.textContent = 'Dashboard';
+        const disabledButton = document.createElement('button');
+        disabledButton.textContent = 'No Access';
+        disabledButton.style.opacity = '0.5';
+        disabledButton.style.cursor = 'not-allowed';
+        disabledButton.disabled = true;
+        menuContainer.appendChild(disabledButton);
+    }
+}
+
+// Function to handle menu clicks
+function handleMenuClick(menuItem) {
+    const userRole = document.getElementById('userRole').textContent;
+    
+    // Check if user has access to this menu item
+    const menuConfig = roleMenus[getCurrentUserRole()];
+    if (menuConfig && menuConfig.buttons.includes(menuItem)) {
+        console.log(`Access granted: ${menuItem}`);
+        // Here you can add specific functionality for each menu item
+        alert(`Opening: ${menuItem}`);
+    } else {
+        console.log(`Access denied: ${menuItem}`);
+        alert('Access denied: You do not have permission to access this feature.');
+    }
+}
+
+// Function to get current user role
+function getCurrentUserRole() {
+    const userRoleElement = document.getElementById('userRole');
+    const roleText = userRoleElement.textContent;
+    
+    // Map role titles back to role keys
+    for (const [key, config] of Object.entries(roleMenus)) {
+        if (config.title === roleText) {
+            return key;
+        }
+    }
+    return null;
+}
+
+// Function to disable menu items (for unauthorized access)
+function disableMenuItems() {
+    const menuContainer = document.getElementById('menu');
+    const buttons = menuContainer.querySelectorAll('button');
+    
+    buttons.forEach(button => {
+        button.style.opacity = '0.3';
+        button.style.cursor = 'not-allowed';
+        button.disabled = true;
+        button.style.boxShadow = '0 0 5px rgba(0,0,0,0.3)';
+    });
+}
+
+// Initialize navigation when page loads
+document.addEventListener('DOMContentLoaded', function() {
+    // This will be called after login to set up the appropriate menu
+    setTimeout(() => {
+        const currentRole = getCurrentUserRole();
+        if (currentRole) {
+            updateNavigationForRole(currentRole);
+        }
+    }, 100);
+});
+</script>
 
 <!-- Include Login Functions -->
 <script src="js/script.js"></script>
