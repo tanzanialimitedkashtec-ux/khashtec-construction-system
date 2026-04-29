@@ -114,6 +114,7 @@ class DatabaseAPI {
         }
         try {
             const response = await this.post('/auth/login', {
+                email,
                 username: email,
                 password,
                 role
