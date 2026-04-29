@@ -110,12 +110,12 @@ DB_NAME=kashtec_construction
 ```bash
 cd kashtec-construction-system/backend
 node server.js
-# Server will listen on http://localhost:8080
+# Server will listen on https://khashtec-construction-system-production-e297.up.railway.app
 ```
 
 ### Step 3: Open in Browser
 ```
-http://localhost:8080/frontend/public/department.html
+https://khashtec-construction-system-production-e297.up.railway.app/frontend/public/department.html
 ```
 
 ---
