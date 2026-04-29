@@ -224,8 +224,50 @@ function loadMenu() {
     switch(currentRole) {
         case 'MD':
             menuItems = [
+                // System Overview
                 { text: '📊 System Overview', action: 'systemOverview()' },
-                { text: '👥 All Departments', action: 'viewAllDepartments()' },
+                
+                // HR Department
+                { text: '👥 Employee Management', action: 'loadEmployees()' },
+                { text: '📋 Policies', action: 'loadPolicies()' },
+                { text: '🎓 Senior Hiring', action: 'loadSeniorHiringRequests()' },
+                { text: '💰 Workforce Budget', action: 'loadWorkforceBudgets()' },
+                { text: '📊 Workforce Analytics', action: 'loadWorkforceAnalytics()' },
+                
+                // Project Department
+                { text: '🏗️ Projects', action: 'loadProjects()' },
+                { text: '📊 Project Progress', action: 'loadProjectProgress()' },
+                { text: '👷 Workers', action: 'loadWorkers()' },
+                { text: '📈 Project Reports', action: 'loadProjectReports()' },
+                
+                // Finance Department
+                { text: '💰 Budget Management', action: 'loadBudgets()' },
+                { text: '📊 Financial Reports', action: 'loadFinancialReports()' },
+                { text: '💸 Expenses', action: 'loadExpenses()' },
+                { text: '📈 Financial Analytics', action: 'loadFinancialAnalytics()' },
+                
+                // HSE Department
+                { text: '⚠️ Safety Reports', action: 'loadSafetyReports()' },
+                { text: '🔧 Equipment Management', action: 'loadEquipment()' },
+                { text: '📊 Compliance', action: 'loadCompliance()' },
+                { text: '🚨 Incidents', action: 'loadIncidents()' },
+                
+                // Real Estate Department
+                { text: '🏠 Properties', action: 'loadProperties()' },
+                { text: '👥 Tenants', action: 'loadTenants()' },
+                { text: '📊 Property Analytics', action: 'loadPropertyAnalytics()' },
+                
+                // Admin Department
+                { text: '👥 User Management', action: 'loadUserManagement()' },
+                { text: '⚙️ System Admin', action: 'loadSystemAdmin()' },
+                { text: '📊 System Reports', action: 'loadSystemReports()' },
+                
+                // Assistant Functions
+                { text: '📝 Documents', action: 'loadDocuments()' },
+                { text: '📊 Basic Reports', action: 'loadBasicReports()' },
+                { text: '📞 Communications', action: 'loadCommunications()' },
+                
+                // General
                 { text: '📈 Analytics & Reports', action: 'loadAnalytics()' },
                 { text: '⚙️ System Settings', action: 'systemSettings()' },
                 { text: '🔔 Notifications', action: 'viewNotifications()' }
@@ -312,7 +354,173 @@ function loadBudgets() {
 }
 
 function systemOverview() {
-    showContent(`<div class="card"><h3>System Overview</h3><p>System overview module coming soon...</p></div>`);
+    const dashboard = `
+        <div class="system-dashboard">
+            <h3>🏢 KASHTEC TANZANIA LIMITED - Executive Dashboard</h3>
+            <p>Welcome, Managing Director. Here's your comprehensive system overview:</p>
+            
+            <div class="dashboard-grid">
+                <!-- Key Metrics -->
+                <div class="metric-card">
+                    <h4>👥 Total Employees</h4>
+                    <div class="metric-value">247</div>
+                    <p class="metric-trend">+12 this month</p>
+                </div>
+                
+                <div class="metric-card">
+                    <h4>🏗️ Active Projects</h4>
+                    <div class="metric-value">18</div>
+                    <p class="metric-trend">3 completed this quarter</p>
+                </div>
+                
+                <div class="metric-card">
+                    <h4>💰 Monthly Budget</h4>
+                    <div class="metric-value">$2.4M</div>
+                    <p class="metric-trend">85% utilized</p>
+                </div>
+                
+                <div class="metric-card">
+                    <h4>⚠️ Safety Incidents</h4>
+                    <div class="metric-value">2</div>
+                    <p class="metric-trend">Last 30 days</p>
+                </div>
+            </div>
+            
+            <!-- Department Quick Access -->
+            <div class="department-access">
+                <h4>Department Access</h4>
+                <div class="department-buttons">
+                    <button onclick="loadEmployees()" class="dept-btn">👥 HR</button>
+                    <button onclick="loadProjects()" class="dept-btn">🏗️ Projects</button>
+                    <button onclick="loadBudgets()" class="dept-btn">💰 Finance</button>
+                    <button onclick="loadSafetyReports()" class="dept-btn">⚠️ HSE</button>
+                    <button onclick="loadProperties()" class="dept-btn">🏠 Real Estate</button>
+                    <button onclick="loadUserManagement()" class="dept-btn">👤 Admin</button>
+                    <button onclick="loadDocuments()" class="dept-btn">📝 Documents</button>
+                </div>
+            </div>
+            
+            <!-- Recent Activity -->
+            <div class="recent-activity">
+                <h4>Recent Activity</h4>
+                <ul>
+                    <li>✅ New employee hired in Project Management</li>
+                    <li>📊 Monthly financial report generated</li>
+                    <li>🏗️ Construction project milestone achieved</li>
+                    <li>📋 Safety audit completed</li>
+                    <li>💰 Budget approval pending for Q2</li>
+                </ul>
+            </div>
+            
+            <!-- Quick Actions -->
+            <div class="quick-actions">
+                <h4>Quick Actions</h4>
+                <button onclick="loadAnalytics()" class="action-btn">📈 View Analytics</button>
+                <button onclick="systemSettings()" class="action-btn">⚙️ System Settings</button>
+                <button onclick="viewNotifications()" class="action-btn">🔔 Notifications</button>
+            </div>
+        </div>
+        
+        <style>
+        .system-dashboard {
+            padding: 20px;
+        }
+        
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin: 20px 0;
+        }
+        
+        .metric-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        
+        .metric-value {
+            font-size: 2.5em;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+        
+        .metric-trend {
+            font-size: 0.9em;
+            opacity: 0.8;
+        }
+        
+        .department-access, .recent-activity, .quick-actions {
+            background: white;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 10px;
+            border-left: 5px solid #0b3d91;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .department-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        
+        .dept-btn {
+            background: #0b3d91;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background 0.3s;
+        }
+        
+        .dept-btn:hover {
+            background: #1976D2;
+        }
+        
+        .recent-activity ul {
+            list-style: none;
+            padding: 0;
+        }
+        
+        .recent-activity li {
+            padding: 8px 0;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .recent-activity li:last-child {
+            border-bottom: none;
+        }
+        
+        .quick-actions {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+        
+        .action-btn {
+            background: #28a745;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background 0.3s;
+        }
+        
+        .action-btn:hover {
+            background: #218838;
+        }
+        </style>
+    `;
+    showContent(dashboard);
 }
 
 function viewNotifications() {
@@ -321,7 +529,127 @@ function viewNotifications() {
 
 
 // Add more placeholder functions as needed
-function viewAllDepartments() { showContent(`<div class="card"><h3>All Departments</h3><p>Department overview coming soon...</p></div>`); }
+function viewAllDepartments() {
+    const departments = `
+        <div class="departments-overview">
+            <h3>🏢 All Departments Overview</h3>
+            <p>Comprehensive view of all company departments and their current status:</p>
+            
+            <div class="departments-grid">
+                <div class="dept-card" onclick="loadEmployees()">
+                    <div class="dept-icon">👥</div>
+                    <h4>Human Resources</h4>
+                    <p>Employee management, policies, and workforce planning</p>
+                    <div class="dept-status">Active</div>
+                </div>
+                
+                <div class="dept-card" onclick="loadProjects()">
+                    <div class="dept-icon">🏗️</div>
+                    <h4>Project Management</h4>
+                    <p>Construction projects, progress tracking, and workers</p>
+                    <div class="dept-status">Active</div>
+                </div>
+                
+                <div class="dept-card" onclick="loadBudgets()">
+                    <div class="dept-icon">💰</div>
+                    <h4>Finance</h4>
+                    <p>Budget management, financial reports, and expenses</p>
+                    <div class="dept-status">Active</div>
+                </div>
+                
+                <div class="dept-card" onclick="loadSafetyReports()">
+                    <div class="dept-icon">⚠️</div>
+                    <h4>Health & Safety</h4>
+                    <p>Safety reports, equipment, compliance, and incidents</p>
+                    <div class="dept-status">Active</div>
+                </div>
+                
+                <div class="dept-card" onclick="loadProperties()">
+                    <div class="dept-icon">🏠</div>
+                    <h4>Real Estate</h4>
+                    <p>Properties, tenants, and property analytics</p>
+                    <div class="dept-status">Active</div>
+                </div>
+                
+                <div class="dept-card" onclick="loadUserManagement()">
+                    <div class="dept-icon">👤</div>
+                    <h4>Administration</h4>
+                    <p>User management, system admin, and reports</p>
+                    <div class="dept-status">Active</div>
+                </div>
+                
+                <div class="dept-card" onclick="loadDocuments()">
+                    <div class="dept-icon">📝</div>
+                    <h4>Office Portal</h4>
+                    <p>Documents, basic reports, and communications</p>
+                    <div class="dept-status">Active</div>
+                </div>
+                
+                <div class="dept-card" onclick="systemSettings()">
+                    <div class="dept-icon">⚙️</div>
+                    <h4>System Management</h4>
+                    <p>System settings, analytics, and notifications</p>
+                    <div class="dept-status">Active</div>
+                </div>
+            </div>
+        </div>
+        
+        <style>
+        .departments-overview {
+            padding: 20px;
+        }
+        
+        .departments-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+        
+        .dept-card {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            border-left: 5px solid #0b3d91;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            cursor: pointer;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        
+        .dept-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+        }
+        
+        .dept-icon {
+            font-size: 2em;
+            margin-bottom: 10px;
+        }
+        
+        .dept-card h4 {
+            margin: 10px 0;
+            color: #0b3d91;
+        }
+        
+        .dept-card p {
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 15px;
+        }
+        
+        .dept-status {
+            display: inline-block;
+            background: #28a745;
+            color: white;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        </style>
+    `;
+    showContent(departments);
+}
 function loadAnalytics() { showContent(`<div class="card"><h3>Analytics</h3><p>Analytics module coming soon...</p></div>`); }
 function systemSettings() { showContent(`<div class="card"><h3>System Settings</h3><p>Settings module coming soon...</p></div>`); }
 function loadSeniorHiringRequests() { showContent(`<div class="card"><h3>Senior Hiring</h3><p>Senior hiring module coming soon...</p></div>`); }
