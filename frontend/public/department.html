@@ -50,6 +50,27 @@ header{
     font-size: 18px;
 }
 
+.header-left {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+header .notification-btn {
+    background: rgba(255,255,255,0.15);
+    color: white;
+    border: 1px solid rgba(255,255,255,0.6);
+    padding: 8px 12px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 16px;
+    transition: background 0.2s ease;
+}
+
+header .notification-btn:hover {
+    background: rgba(255,255,255,0.25);
+}
+
 header .menu-toggle {
     background: rgba(255,255,255,0.15);
     color: white;
@@ -90,7 +111,30 @@ header .menu-toggle:hover {
 
 .container{
     display:flex;
+    flex-direction: column;
     height:90vh;
+}
+
+.container .menu-toggle {
+    align-self: flex-start;
+    margin: 10px;
+    background: rgba(11, 61, 145, 0.9);
+    color: white;
+    border: 1px solid rgba(255,255,255,0.6);
+    padding: 8px 12px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 16px;
+    transition: background 0.2s ease;
+}
+
+.container .menu-toggle:hover {
+    background: rgba(11, 61, 145, 1);
+}
+
+.system-content {
+    display: flex;
+    flex: 1;
 }
 
 .sidebar{
@@ -2636,8 +2680,10 @@ background: #f8f9fa;
 <body>
 
 <header>
-    <h2>KASHTEC TANZANIA LIMITED</h2>
-    <button type="button" class="menu-toggle" onclick="toggleSidebar()">☰</button>
+    <div class="header-left">
+        <button type="button" class="notification-btn" onclick="showNotifications()">🔔</button>
+        <h2>KASHTEC TANZANIA LIMITED</h2>
+    </div>
 </header>
 
 <div id="loginPage" class="login-box">
@@ -2663,15 +2709,18 @@ background: #f8f9fa;
     </div>
 
 <div id="systemPage" class="container hidden">
+    <button type="button" class="menu-toggle" onclick="toggleSidebar()">☰</button>
 
-    <div class="sidebar">
-        <h3 id="userRole"></h3>
-        <div id="menu"></div>
-        <button onclick="handleLogout()">Logout</button>
-    </div>
+    <div class="system-content">
+        <div class="sidebar">
+            <h3 id="userRole"></h3>
+            <div id="menu"></div>
+            <button onclick="handleLogout()">Logout</button>
+        </div>
 
-    <div class="content" id="contentArea">
-        <h3>Welcome</h3>
+        <div class="content" id="contentArea">
+            <h3>Welcome</h3>
+        </div>
     </div>
 
 </div>
@@ -3005,6 +3054,11 @@ function toggleSidebar(){
     const sidebar = document.querySelector('.sidebar');
     if (!sidebar) return;
     sidebar.classList.toggle('collapsed');
+}
+
+function showNotifications(){
+    // TODO: Implement notification panel or dropdown
+    alert('Notifications feature coming soon!');
 }
 
 function loadMenu(){
