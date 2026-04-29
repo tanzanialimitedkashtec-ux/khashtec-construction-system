@@ -2630,6 +2630,34 @@ background: #f8f9fa;
 </div>
 
 <script>
+const PRODUCTION_API_ORIGIN = 'https://khashtec-construction-system-production-e297.up.railway.app';
+const originalFetch = window.fetch.bind(window);
+window.fetch = function(resource, init) {
+    try {
+        if (typeof resource === 'string') {
+            if (resource.startsWith('/api')) {
+                resource = `${PRODUCTION_API_ORIGIN}${resource}`;
+            } else if (resource.startsWith(window.location.origin + '/api')) {
+                resource = resource.replace(window.location.origin, PRODUCTION_API_ORIGIN);
+            } else if (/^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?/.test(resource)) {
+                resource = resource.replace(/^(https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?)/, PRODUCTION_API_ORIGIN);
+            }
+        } else if (resource instanceof Request) {
+            let url = resource.url;
+            if (url.startsWith('/api')) {
+                url = `${PRODUCTION_API_ORIGIN}${url}`;
+            } else if (url.startsWith(window.location.origin + '/api')) {
+                url = url.replace(window.location.origin, PRODUCTION_API_ORIGIN);
+            } else if (/^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?/.test(url)) {
+                url = url.replace(/^(https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?)/, PRODUCTION_API_ORIGIN);
+            }
+            resource = new Request(url, resource);
+        }
+    } catch (error) {
+        console.warn('Fetch rewrite warning:', error);
+    }
+    return originalFetch(resource, init);
+};
 
 let currentRole = "";
 

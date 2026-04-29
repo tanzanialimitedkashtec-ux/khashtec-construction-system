@@ -1,8 +1,11 @@
 // Frontend Database API Connector
 class DatabaseAPI {
     constructor() {
-        this.baseURL = window.location.origin + '/api';
-        this.isProduction = window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1';
+        const PRODUCTION_API_ORIGIN = 'https://khashtec-construction-system-production-e297.up.railway.app';
+        this.baseURL = window.location.origin.includes('localhost') || window.location.origin.includes('127.0.0.1')
+            ? `${PRODUCTION_API_ORIGIN}/api`
+            : `${window.location.origin}/api`;
+        this.isProduction = true;
     }
 
     // Generic request method

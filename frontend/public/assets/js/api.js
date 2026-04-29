@@ -1,9 +1,10 @@
 // ===== API SERVICE FOR KASHTEC CONSTRUCTION SYSTEM =====
 // This file replaces all localStorage usage with secure database API calls
 
-// Dynamic API base URL - works in both development and production
-const API_BASE_URL = window.location.origin === 'http://localhost:3000' || window.location.origin === 'https://localhost:3000'
-    ? 'http://localhost:3000/api'
+// Dynamic API base URL - use Railway production when running from localhost/127.0.0.1
+const PRODUCTION_API_ORIGIN = 'https://khashtec-construction-system-production-e297.up.railway.app';
+const API_BASE_URL = window.location.origin.includes('localhost') || window.location.origin.includes('127.0.0.1')
+    ? `${PRODUCTION_API_ORIGIN}/api`
     : `${window.location.origin}/api`;
 
 // ===== AUTHENTICATION =====
