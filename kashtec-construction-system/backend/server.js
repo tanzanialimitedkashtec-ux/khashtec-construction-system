@@ -65,7 +65,8 @@ const authenticateToken = (req, res, next) => {
 // ===== AUTHENTICATION ROUTES =====
 app.post('/api/auth/login', async (req, res) => {
     try {
-        const { username, password, role } = req.body;
+        const username = req.body.username || req.body.email;
+        const { password, role } = req.body;
         
         if (!username || !password || !role) {
             return res.status(400).json({ error: 'Missing required fields' });
