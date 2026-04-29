@@ -173,12 +173,13 @@ header{
     left: 100%;
 }
 
-.sidebar button:last-child {
-    margin-top: 15px;
+.sidebar button[onclick*="handleLogout"] {
+    margin-bottom: 15px;
+    margin-top: 10px;
     background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
 }
 
-.sidebar button:last-child:hover {
+.sidebar button[onclick*="handleLogout"]:hover {
     background: linear-gradient(135deg, #c0392b 0%, #a93226 100%);
 }
 
@@ -2722,15 +2723,15 @@ background: #f8f9fa;
 
 <div id="systemPage" class="container hidden">
     <div class="top-controls">
-        <button type="button" class="notification-btn" onclick="showNotifications()">🔔</button>
         <button type="button" class="menu-toggle" onclick="toggleSidebar()">☰</button>
+        <button type="button" class="notification-btn" onclick="showNotifications()">🔔</button>
     </div>
 
     <div class="system-content">
         <div class="sidebar">
             <h3 id="userRole"></h3>
-            <div id="menu"></div>
             <button onclick="handleLogout()">Logout</button>
+            <div id="menu"></div>
         </div>
 
         <div class="content" id="contentArea">
