@@ -20622,69 +20622,57 @@ async function staffOversight(){
         console.error('❌ Error loading staff data:', error);
     }
     
-    // Generate HTML with real data in table format
+    // Generate HTML with real data in single table format
     const formHtml = `
         <div class="card">
             <h3>Staff Oversight</h3>
             <p><strong>HR Monitoring:</strong> Monitor HR department and review staff structure</p>
             
             <div class="oversight-dashboard">
-                <div class="hr-monitoring">
-                    <h4>HR Department Status</h4>
-                    <table class="oversight-table">
-                        <thead>
-                            <tr>
-                                <th>Metric</th>
-                                <th>Value</th>
-                                <th>Status</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td>Total Employees</td>
-                                <td>${totalEmployees}</td>
-                                <td><span class="status-badge active">Active</span></td>
-                            </tr>
-                            <tr>
-                                <td>Active Contracts</td>
-                                <td>${activeContracts}</td>
-                                <td><span class="status-badge ${activeContracts > 0 ? 'active' : 'warning'}">${activeContracts > 0 ? 'Active' : 'Low'}</span></td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-                
-                <div class="staff-structure">
-                    <h4>Staff Structure Review</h4>
-                    <table class="oversight-table">
-                        <thead>
-                            <tr>
-                                <th>Department</th>
-                                <th>Total Staff</th>
-                                <th>Budget Status</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td><strong>Management</strong></td>
-                                <td>${managementStaff}</td>
-                                <td><span class="status-badge approved">Approved</span></td>
-                                <td>
-                                    <button class="action-btn" onclick="reviewDeptStructure('management')">Review</button>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td><strong>Human Resources</strong></td>
-                                <td>${hrStaff}</td>
-                                <td><span class="status-badge approved">Approved</span></td>
-                                <td>
-                                    <button class="action-btn" onclick="reviewDeptStructure('hr')">Review</button>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
+                <h4>Staff Overview</h4>
+                <table class="oversight-table">
+                    <thead>
+                        <tr>
+                            <th>Category</th>
+                            <th>Type</th>
+                            <th>Value/Count</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td rowspan="2"><strong>HR Metrics</strong></td>
+                            <td>Total Employees</td>
+                            <td>${totalEmployees}</td>
+                            <td><span class="status-badge active">Active</span></td>
+                            <td>-</td>
+                        </tr>
+                        <tr>
+                            <td>Active Contracts</td>
+                            <td>${activeContracts}</td>
+                            <td><span class="status-badge ${activeContracts > 0 ? 'active' : 'warning'}">${activeContracts > 0 ? 'Active' : 'Low'}</span></td>
+                            <td>-</td>
+                        </tr>
+                        <tr>
+                            <td rowspan="2"><strong>Departments</strong></td>
+                            <td>Management</td>
+                            <td>${managementStaff} staff</td>
+                            <td><span class="status-badge approved">Approved</span></td>
+                            <td>
+                                <button class="action-btn" onclick="reviewDeptStructure('management')">Review</button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>Human Resources</td>
+                            <td>${hrStaff} staff</td>
+                            <td><span class="status-badge approved">Approved</span></td>
+                            <td>
+                                <button class="action-btn" onclick="reviewDeptStructure('hr')">Review</button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
             </div>
         </div>`;
     
