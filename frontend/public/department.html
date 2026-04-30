@@ -20386,15 +20386,34 @@ async function staffOversight(){
 }
 
 // User Account Management Functions
-function suspendUser(userId) {
+async function suspendUser(userId) {
     if (userId) {
         // Suspend specific user
         if (confirm(`Are you sure you want to suspend user ID: ${userId}?`)) {
             console.log('🔄 Suspending user:', userId);
-            // API call to suspend user would go here
-            showNotification('User suspended successfully', 'success');
-            // Refresh the user list
-            userAccountManagement();
+            
+            try {
+                const baseUrl = window.location.origin;
+                const response = await fetch(`${baseUrl}/api/users/${userId}/suspend`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    }
+                });
+                
+                if (response.ok) {
+                    showNotification('User suspended successfully', 'success');
+                    // Refresh the user list
+                    userAccountManagement();
+                } else {
+                    const errorData = await response.json().catch(() => ({}));
+                    showNotification(errorData.message || 'Failed to suspend user', 'error');
+                }
+            } catch (error) {
+                console.error('❌ Error suspending user:', error);
+                showNotification('Error suspending user. Please try again.', 'error');
+            }
         }
     } else {
         // Show dialog to select user
@@ -20402,15 +20421,34 @@ function suspendUser(userId) {
     }
 }
 
-function reactivateUser(userId) {
+async function reactivateUser(userId) {
     if (userId) {
         // Reactivate specific user
         if (confirm(`Are you sure you want to reactivate user ID: ${userId}?`)) {
             console.log('🔄 Reactivating user:', userId);
-            // API call to reactivate user would go here
-            showNotification('User reactivated successfully', 'success');
-            // Refresh the user list
-            userAccountManagement();
+            
+            try {
+                const baseUrl = window.location.origin;
+                const response = await fetch(`${baseUrl}/api/users/${userId}/reactivate`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    }
+                });
+                
+                if (response.ok) {
+                    showNotification('User reactivated successfully', 'success');
+                    // Refresh the user list
+                    userAccountManagement();
+                } else {
+                    const errorData = await response.json().catch(() => ({}));
+                    showNotification(errorData.message || 'Failed to reactivate user', 'error');
+                }
+            } catch (error) {
+                console.error('❌ Error reactivating user:', error);
+                showNotification('Error reactivating user. Please try again.', 'error');
+            }
         }
     } else {
         // Show dialog to select user
@@ -20418,10 +20456,80 @@ function reactivateUser(userId) {
     }
 }
 
-function viewUserDetails(userId) {
+async function viewUserDetails(userId) {
     console.log('👁️ Viewing user details:', userId);
-    // Show user details modal or navigate to details page
-    showNotification(`Viewing details for user ID: ${userId}`, 'info');
+    
+    try {
+        const baseUrl = window.location.origin;
+        const response = await fetch(`${baseUrl}/api/users/${userId}`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            }
+        });
+        
+        if (response.ok) {
+            const userData = await response.json();
+            showUserDetailsModal(userData);
+        } else {
+            showNotification('Failed to load user details', 'error');
+        }
+    } catch (error) {
+        console.error('❌ Error loading user details:', error);
+        showNotification('Error loading user details. Please try again.', 'error');
+    }
+}
+
+function showUserDetailsModal(user) {
+    const modal = document.createElement('div');
+    modal.className = 'modal-overlay';
+    modal.style.display = 'flex';
+    
+    modal.innerHTML = `
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>User Details</h2>
+                <button class="modal-close" onclick="this.closest('.modal-overlay').remove()">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="user-details">
+                    <div class="detail-row">
+                        <strong>User ID:</strong> ${user.id}
+                    </div>
+                    <div class="detail-row">
+                        <strong>Name:</strong> ${user.full_name || user.fullName || 'N/A'}
+                    </div>
+                    <div class="detail-row">
+                        <strong>Email:</strong> ${user.gmail || user.email || 'N/A'}
+                    </div>
+                    <div class="detail-row">
+                        <strong>Position:</strong> ${user.position || user.role || user.job_category || 'N/A'}
+                    </div>
+                    <div class="detail-row">
+                        <strong>Department:</strong> ${user.department || 'N/A'}
+                    </div>
+                    <div class="detail-row">
+                        <strong>Status:</strong> 
+                        <span class="status-badge ${user.status === 'suspended' || user.account_status === 'suspended' ? 'status-suspended' : 'status-active'}">
+                            ${user.status === 'suspended' || user.account_status === 'suspended' ? 'Suspended' : 'Active'}
+                        </span>
+                    </div>
+                    <div class="detail-row">
+                        <strong>Phone:</strong> ${user.phone || user.phoneNumber || 'N/A'}
+                    </div>
+                    <div class="detail-row">
+                        <strong>Address:</strong> ${user.address || 'N/A'}
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-cancel" onclick="this.closest('.modal-overlay').remove()">Close</button>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(modal);
 }
 
 function showSuspendUserDialog() {
@@ -20755,7 +20863,6 @@ async function userAccountManagement(){
                 
                 <div class="account-actions">
                     <h4>Account Actions</h4>
-                    <button class="action" onclick="showSuspendUserDialog()">Suspend User</button>
                     <button class="action" onclick="showReactivateUserDialog()">Reactivate Account</button>
                 </div>
             </div>
@@ -23018,6 +23125,31 @@ function filterPpeRecords() {
 
 .dept-actions button {
     margin: 5px;
+}
+
+/* User Details Modal Styles */
+.user-details {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.detail-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 0;
+    border-bottom: 1px solid #eee;
+}
+
+.detail-row:last-child {
+    border-bottom: none;
+}
+
+.detail-row strong {
+    color: #2c3e50;
+    font-weight: 600;
+    min-width: 120px;
 }
 </style>
 
