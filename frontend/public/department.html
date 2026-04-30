@@ -452,6 +452,233 @@ button.action{
     border-color: #0b3d91;
 }
 
+/* Payment Table Styles */
+.payment-controls {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 16px;
+}
+
+.search-filters {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+}
+
+.search-filters input,
+.search-filters select {
+    flex: 1;
+    min-width: 200px;
+}
+
+.payment-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: white;
+    border: 1px solid #dee2e6;
+    font-size: 9px;
+}
+
+.payment-table th {
+    background: #0b3d91;
+    color: white;
+    padding: 8px 6px;
+    text-align: left;
+    font-weight: bold;
+    font-size: 8px;
+    border-bottom: 2px solid #0a2c6a;
+}
+
+.payment-table td {
+    padding: 6px;
+    border-bottom: 1px solid #e9ecef;
+    vertical-align: middle;
+}
+
+.payment-table tr:hover {
+    background: #f8f9fa;
+}
+
+.client-info strong {
+    display: block;
+    font-size: 9px;
+    color: #0b3d91;
+}
+
+.client-info small {
+    display: block;
+    font-size: 7px;
+    color: #6c757d;
+    margin-top: 2px;
+}
+
+.property-details strong {
+    display: block;
+    font-size: 9px;
+    color: #0b3d91;
+}
+
+.property-details small {
+    display: block;
+    font-size: 7px;
+    color: #6c757d;
+    margin-top: 2px;
+}
+
+.outstanding-balance.has-balance {
+    color: #dc3545;
+    font-weight: bold;
+}
+
+.outstanding-balance.cleared {
+    color: #28a745;
+    font-weight: bold;
+}
+
+.progress-container {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.progress-bar {
+    flex: 1;
+    background: #e9ecef;
+    border-radius: 10px;
+    height: 12px;
+    min-width: 40px;
+}
+
+.progress-fill {
+    height: 100%;
+    border-radius: 10px;
+    transition: width 0.3s ease;
+}
+
+.progress-fill.completed { background: #28a745; }
+.progress-fill.good { background: #17a2b8; }
+.progress-fill.moderate { background: #ffc107; }
+.progress-fill.poor { background: #dc3545; }
+
+.progress-text {
+    font-size: 7px;
+    font-weight: bold;
+    color: #495057;
+    min-width: 25px;
+}
+
+.next-payment.overdue {
+    color: #dc3545;
+    font-weight: bold;
+}
+
+.overdue-badge {
+    display: inline-block;
+    background: #dc3545;
+    color: white;
+    padding: 1px 4px;
+    border-radius: 3px;
+    font-size: 6px;
+    margin-left: 4px;
+}
+
+.status-badge.completed { background: #28a745; color: white; }
+.status-badge.partial { background: #17a2b8; color: white; }
+.status-badge.pending { background: #ffc107; color: #212529; }
+.status-badge.overdue { background: #dc3545; color: white; }
+.status-badge.unknown { background: #6c757d; color: white; }
+
+.collection-chart {
+    margin-top: 12px;
+}
+
+.collection-item {
+    margin-bottom: 8px;
+}
+
+.collection-item span {
+    display: block;
+    font-size: 8px;
+    margin-bottom: 4px;
+    color: #495057;
+}
+
+.collection-bar {
+    background: #e9ecef;
+    border-radius: 10px;
+    height: 20px;
+    position: relative;
+}
+
+.collection-fill {
+    height: 100%;
+    border-radius: 10px;
+    transition: width 0.3s ease;
+    font-size: 7px;
+    color: white;
+    display: flex;
+    align-items: center;
+    padding: 0 8px;
+    font-weight: bold;
+}
+
+.collection-fill.excellent { background: #28a745; }
+.collection-fill.good { background: #17a2b8; }
+.collection-fill.moderate { background: #ffc107; color: #212529; }
+.collection-fill.poor { background: #dc3545; }
+
+.payment-form-info {
+    background: #f8f9fa;
+    padding: 12px;
+    border-radius: 4px;
+    margin-bottom: 16px;
+}
+
+.payment-form-info p {
+    margin: 4px 0;
+    font-size: 9px;
+}
+
+.payment-history-list {
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.history-item {
+    background: #f8f9fa;
+    border: 1px solid #e9ecef;
+    border-radius: 4px;
+    padding: 12px;
+    margin-bottom: 8px;
+}
+
+.history-details {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 8px;
+    margin-bottom: 8px;
+}
+
+.history-details strong {
+    color: #0b3d91;
+    font-size: 9px;
+}
+
+.history-details span {
+    font-size: 8px;
+    color: #495057;
+}
+
+.history-notes {
+    background: white;
+    padding: 8px;
+    border-radius: 3px;
+    font-size: 8px;
+    color: #6c757d;
+    border: 1px solid #dee2e6;
+}
+
 .campaign-grid,
 .purchase-grid,
 .tracking-grid {
@@ -19810,33 +20037,41 @@ function recordSale(){
     `);
 }
 
-function trackPaymentProgress(){
-    // Load sales data
-    const sales = []; // TODO: Load from API
-    
-    showContent(`<div class="card">
-        <h3>Track Payment Progress</h3>
-        <p><strong>Real Estate Authority:</strong> Monitor installment payments and outstanding balances</p>
-        
-        <div class="payment-overview">
-            <div class="payment-stats">
-                <div class="stat-item">
-                    <span class="stat-label">Active Installments:</span>
-                    <span class="stat-value">12</span>
-                </div>
-                <div class="stat-item">
-                    <span class="stat-label">Outstanding Balance:</span>
-                    <span class="stat-value">TZS 285,000,000</span>
-                </div>
-                <div class="stat-item">
-                    <span class="stat-label">This Month's Collections:</span>
-                    <span class="stat-value">TZS 45,000,000</span>
+async function trackPaymentProgress(){
+    showContent(`
+        <div class="card">
+            <h3>Payment Progress Tracking</h3>
+            <p><strong>Real Estate Authority:</strong> Monitor installment payments and outstanding balances</p>
+            
+            <div class="payment-controls">
+                <button class="btn-primary" onclick="refreshPaymentData()">Refresh Data</button>
+                <button class="btn-secondary" onclick="exportPaymentReport()">Export Report</button>
+            </div>
+            
+            <div class="payment-summary" id="paymentSummary">
+                <div class="summary-metrics">
+                    <div class="metric-item">
+                        <span class="metric-label">Active Installments</span>
+                        <span class="metric-value" id="activeInstallments">0</span>
+                    </div>
+                    <div class="metric-item">
+                        <span class="metric-label">Outstanding Balance</span>
+                        <span class="metric-value" id="outstandingBalance">TZS 0</span>
+                    </div>
+                    <div class="metric-item">
+                        <span class="metric-label">This Month's Collections</span>
+                        <span class="metric-value" id="monthlyCollections">TZS 0</span>
+                    </div>
+                    <div class="metric-item">
+                        <span class="metric-label">Overdue Payments</span>
+                        <span class="metric-value" id="overdueCount">0</span>
+                    </div>
                 </div>
             </div>
             
-            <div class="search-section">
-                <input type="text" id="paymentSearch" placeholder="Search by client name, property, or sale ID..." onkeyup="filterPayments()">
-                <select id="paymentStatusFilter" onchange="filterPayments()">
+            <div class="search-filters">
+                <input type="text" id="paymentSearch" placeholder="Search by client name, property, or sale ID..." onkeyup="filterPaymentTable()">
+                <select id="paymentStatusFilter" onchange="filterPaymentTable()">
                     <option value="">All Status</option>
                     <option value="pending">Payment Pending</option>
                     <option value="partial">Partial Payment</option>
@@ -19844,76 +20079,430 @@ function trackPaymentProgress(){
                     <option value="overdue">Payment Overdue</option>
                 </select>
             </div>
-        </div>
-        
-        <div class="payment-list">
-            <h4>Payment Tracking</h4>
-            <div id="paymentResults" class="payment-results">
-                <div class="payment-item">
-                    <div class="payment-details">
-                        <strong>PLT-2026-001 - John Smith</strong>
-                        <span>Total: TZS 50,000,000</span>
-                        <span>Paid: TZS 15,000,000 (30%)</span>
-                        <span>Outstanding: TZS 35,000,000</span>
-                        <span>Monthly: TZS 1,666,667 | Next: March 31</span>
-                        <span class="status-partial">Partial Payment</span>
-                    </div>
-                    <div class="payment-actions">
-                        <button class="action" onclick="recordPayment('sale001')">Record Payment</button>
-                        <button class="action" onclick="viewPaymentHistory('sale001')">History</button>
-                    </div>
-                </div>
-                
-                <div class="payment-item">
-                    <div class="payment-details">
-                        <strong>PLT-2026-003 - Mary Johnson</strong>
-                        <span>Total: TZS 75,000,000</span>
-                        <span>Paid: TZS 75,000,000 (100%)</span>
-                        <span>Outstanding: TZS 0</span>
-                        <span>Completed: March 10, 2026</span>
-                        <span class="status-completed">Payment Completed</span>
-                    </div>
-                    <div class="payment-actions">
-                        <button class="action" onclick="viewPaymentHistory('sale002')">History</button>
-                    </div>
-                </div>
-                
-                <div class="payment-item">
-                    <div class="payment-details">
-                        <strong>PLT-2026-005 - Robert Kim</strong>
-                        <span>Total: TZS 40,000,000</span>
-                        <span>Paid: TZS 5,000,000 (12.5%)</span>
-                        <span>Outstanding: TZS 35,000,000</span>
-                        <span>Monthly: TZS 1,250,000 | Overdue: 5 days</span>
-                        <span class="status-overdue">Payment Overdue</span>
-                    </div>
-                    <div class="payment-actions">
-                        <button class="action" onclick="recordPayment('sale003')" style="background: #dc3545;">Record Payment</button>
-                        <button class="action" onclick="sendReminder('sale003')" style="background: #ffc107;">Send Reminder</button>
-                        <button class="action" onclick="viewPaymentHistory('sale003')">History</button>
-                    </div>
+            
+            <div class="table-container">
+                <table class="payment-table" id="paymentTable">
+                    <thead>
+                        <tr>
+                            <th>Sale ID</th>
+                            <th>Client Name</th>
+                            <th>Property</th>
+                            <th>Total Amount</th>
+                            <th>Paid Amount</th>
+                            <th>Outstanding</th>
+                            <th>Progress %</th>
+                            <th>Monthly Installment</th>
+                            <th>Next Payment</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="paymentTableBody">
+                        <tr>
+                            <td colspan="11" class="loading-cell">Loading payment data...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            
+            <div class="monthly-summary" id="monthlySummary">
+                <h4>Monthly Collection Summary</h4>
+                <div class="collection-chart" id="collectionChart">
+                    <div class="loading">Loading collection data...</div>
                 </div>
             </div>
         </div>
+    `);
+    
+    // Load payment data
+    loadPaymentData();
+}
+
+// Load payment data from API
+async function loadPaymentData() {
+    try {
+        // Load payment tracking data
+        await loadPaymentTrackingData();
+        // Load payment statistics
+        await loadPaymentStatistics();
+        // Load monthly collection data
+        await loadMonthlyCollections();
+    } catch (error) {
+        console.error('Error loading payment data:', error);
+        const tableBody = document.getElementById('paymentTableBody');
+        tableBody.innerHTML = '<tr><td colspan="11" class="error-cell">Error loading payment data. Please try again.</td></tr>';
+    }
+}
+
+async function loadPaymentTrackingData() {
+    const response = await KashTecAPI.get('/api/payment-tracking');
+    
+    if (response.success) {
+        updatePaymentTable(response.data);
+    } else {
+        throw new Error(response.error || 'Failed to load payment data');
+    }
+}
+
+async function loadPaymentStatistics() {
+    const response = await KashTecAPI.get('/api/payment-tracking/statistics');
+    
+    if (response.success) {
+        const stats = response.data.statistics;
+        document.getElementById('activeInstallments').textContent = stats.active_installments || 0;
+        document.getElementById('outstandingBalance').textContent = `TZS ${(stats.total_outstanding || 0).toLocaleString()}`;
+        document.getElementById('monthlyCollections').textContent = `TZS ${(stats.this_month_collections || 0).toLocaleString()}`;
+        document.getElementById('overdueCount').textContent = stats.overdue_count || 0;
+    }
+}
+
+async function loadMonthlyCollections() {
+    const response = await KashTecAPI.get('/api/payment-tracking/statistics');
+    
+    if (response.success) {
+        const monthlyData = response.data.monthly_collections || [];
+        updateMonthlyChart(monthlyData);
+    }
+}
+
+function updatePaymentTable(payments) {
+    const tableBody = document.getElementById('paymentTableBody');
+    
+    if (!payments || payments.length === 0) {
+        tableBody.innerHTML = '<tr><td colspan="11" class="no-data">No payment data available</td></tr>';
+        return;
+    }
+    
+    tableBody.innerHTML = payments.map(payment => {
+        const progressPercentage = payment.total_amount > 0 ? 
+            Math.round((payment.paid_amount / payment.total_amount) * 100) : 0;
+        const isOverdue = payment.next_payment_date && 
+            new Date(payment.next_payment_date) < new Date() && 
+            payment.payment_status !== 'completed';
         
-        <div class="payment-summary">
-            <h4>Monthly Collection Summary</h4>
-            <div class="collection-chart">
-                <div class="collection-item">
-                    <span>March 2026</span>
-                    <div class="collection-bar">
-                        <div class="collection-fill" style="width: 75%">TZS 45M of 60M Target</div>
+        return `
+            <tr class="payment-row">
+                <td class="sale-id">${payment.sale_reference || 'N/A'}</td>
+                <td class="client-name">
+                    <div class="client-info">
+                        <strong>${payment.client_name || 'Unknown'}</strong>
+                        <small>${payment.client_email || ''}</small>
                     </div>
-                </div>
-                <div class="collection-item">
-                    <span>February 2026</span>
-                    <div class="collection-bar">
-                        <div class="collection-fill" style="width: 90%">TZS 54M of 60M Target</div>
+                </td>
+                <td class="property-info">
+                    <div class="property-details">
+                        <strong>${payment.property_title || 'N/A'}</strong>
+                        <small>${payment.property_location || ''}</small>
+                    </div>
+                </td>
+                <td class="total-amount">TZS ${(payment.total_amount || 0).toLocaleString()}</td>
+                <td class="paid-amount">TZS ${(payment.paid_amount || 0).toLocaleString()}</td>
+                <td class="outstanding-balance ${payment.outstanding_balance > 0 ? 'has-balance' : 'cleared'}">
+                    TZS ${(payment.outstanding_balance || 0).toLocaleString()}
+                </td>
+                <td class="progress-bar-cell">
+                    <div class="progress-container">
+                        <div class="progress-bar">
+                            <div class="progress-fill ${getProgressClass(progressPercentage)}" 
+                                 style="width: ${progressPercentage}%"></div>
+                        </div>
+                        <span class="progress-text">${progressPercentage}%</span>
+                    </div>
+                </td>
+                <td class="installment">TZS ${(payment.installment_amount || 0).toLocaleString()}</td>
+                <td class="next-payment ${isOverdue ? 'overdue' : ''}">
+                    ${formatDate(payment.next_payment_date) || 'N/A'}
+                    ${isOverdue ? '<span class="overdue-badge">Overdue</span>' : ''}
+                </td>
+                <td class="status">
+                    <span class="status-badge ${getStatusClass(payment.payment_status)}">
+                        ${formatStatus(payment.payment_status)}
+                    </span>
+                </td>
+                <td class="actions">
+                    <button class="action-btn" onclick="recordPayment(${payment.sale_id})" title="Record Payment">
+                        💰
+                    </button>
+                    <button class="action-btn" onclick="viewPaymentHistory(${payment.sale_id})" title="View History">
+                        📊
+                    </button>
+                    ${isOverdue ? `
+                        <button class="action-btn" onclick="sendPaymentReminder(${payment.sale_id})" title="Send Reminder">
+                            📧
+                        </button>
+                    ` : ''}
+                </td>
+            </tr>
+        `;
+    }).join('');
+}
+
+function updateMonthlyChart(monthlyData) {
+    const chartContainer = document.getElementById('collectionChart');
+    
+    if (!monthlyData || monthlyData.length === 0) {
+        chartContainer.innerHTML = '<p>No collection data available</p>';
+        return;
+    }
+    
+    const monthlyHtml = monthlyData.map(month => {
+        const monthName = new Date(month.month + '-01').toLocaleDateString('en-US', { 
+            month: 'long', 
+            year: 'numeric' 
+        });
+        const target = 60000000; // TZS 60M target
+        const percentage = Math.min((month.total_collected / target) * 100, 100);
+        
+        return `
+            <div class="collection-item">
+                <span>${monthName}</span>
+                <div class="collection-bar">
+                    <div class="collection-fill ${getCollectionClass(percentage)}" 
+                         style="width: ${percentage}%">
+                        TZS ${(month.total_collected / 1000000).toFixed(1)}M of ${(target / 1000000).toFixed(1)}M Target
                     </div>
                 </div>
             </div>
+        `;
+    }).join('');
+    
+    chartContainer.innerHTML = monthlyHtml;
+}
+
+// Helper functions
+function getProgressClass(percentage) {
+    if (percentage >= 100) return 'completed';
+    if (percentage >= 50) return 'good';
+    if (percentage >= 25) return 'moderate';
+    return 'poor';
+}
+
+function getStatusClass(status) {
+    switch (status?.toLowerCase()) {
+        case 'completed': return 'completed';
+        case 'partial': return 'partial';
+        case 'pending': return 'pending';
+        case 'overdue': return 'overdue';
+        default: return 'unknown';
+    }
+}
+
+function getCollectionClass(percentage) {
+    if (percentage >= 90) return 'excellent';
+    if (percentage >= 75) return 'good';
+    if (percentage >= 50) return 'moderate';
+    return 'poor';
+}
+
+function formatStatus(status) {
+    switch (status?.toLowerCase()) {
+        case 'completed': return 'Completed';
+        case 'partial': return 'Partial';
+        case 'pending': return 'Pending';
+        case 'overdue': return 'Overdue';
+        default: return status || 'Unknown';
+    }
+}
+
+function formatDate(dateString) {
+    if (!dateString) return null;
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', { 
+        month: 'short', 
+        day: 'numeric', 
+        year: 'numeric' 
+    });
+}
+
+// Action functions
+function refreshPaymentData() {
+    loadPaymentData();
+}
+
+function exportPaymentReport() {
+    customAlert('Payment report export feature coming soon!', 'Info', 'info');
+}
+
+function filterPaymentTable() {
+    const searchTerm = document.getElementById('paymentSearch').value.toLowerCase();
+    const statusFilter = document.getElementById('paymentStatusFilter').value;
+    const rows = document.querySelectorAll('#paymentTableBody .payment-row');
+    
+    rows.forEach(row => {
+        const text = row.textContent.toLowerCase();
+        const statusCell = row.querySelector('.status-badge');
+        const status = statusCell ? statusCell.textContent.toLowerCase() : '';
+        
+        const matchesSearch = text.includes(searchTerm);
+        const matchesStatus = !statusFilter || status === statusFilter.toLowerCase();
+        
+        row.style.display = matchesSearch && matchesStatus ? '' : 'none';
+    });
+}
+
+async function recordPayment(saleId) {
+    try {
+        // Get sale details first
+        const response = await KashTecAPI.get('/api/payment-tracking');
+        if (response.success) {
+            const sale = response.data.find(s => s.sale_id === saleId);
+            if (sale) {
+                showPaymentRecordingForm(sale);
+            }
+        }
+    } catch (error) {
+        console.error('Error preparing payment recording:', error);
+        customAlert('Error loading payment details', 'Error', 'error');
+    }
+}
+
+function showPaymentRecordingForm(sale) {
+    showContent(`
+        <div class="card">
+            <h3>Record Payment</h3>
+            <div class="payment-form-info">
+                <p><strong>Sale ID:</strong> ${sale.sale_reference}</p>
+                <p><strong>Client:</strong> ${sale.client_name}</p>
+                <p><strong>Property:</strong> ${sale.property_title}</p>
+                <p><strong>Total Amount:</strong> TZS ${sale.total_amount.toLocaleString()}</p>
+                <p><strong>Outstanding Balance:</strong> TZS ${sale.outstanding_balance.toLocaleString()}</p>
+            </div>
+            
+            <form id="paymentRecordingForm" class="compact-form">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Payment Amount *</label>
+                        <input type="number" id="paymentAmount" min="1" max="${sale.outstanding_balance}" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Payment Method *</label>
+                        <select id="paymentMethod" required>
+                            <option value="">Select Method</option>
+                            <option value="Bank Transfer">Bank Transfer</option>
+                            <option value="Cash">Cash</option>
+                            <option value="Mobile Money">Mobile Money</option>
+                            <option value="Cheque">Cheque</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Payment Date *</label>
+                        <input type="date" id="paymentDate" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Notes</label>
+                        <textarea id="paymentNotes" rows="3"></textarea>
+                    </div>
+                </div>
+                
+                <div class="form-actions">
+                    <button type="submit" class="btn-primary">Record Payment</button>
+                    <button type="button" class="btn-secondary" onclick="trackPaymentProgress()">Cancel</button>
+                </div>
+            </form>
         </div>
-    </div>`);
+    `);
+    
+    // Set today's date as default
+    document.getElementById('paymentDate').valueAsDate = new Date();
+    
+    // Add form submit handler
+    document.getElementById('paymentRecordingForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        savePaymentRecord(sale.sale_id);
+    });
+}
+
+async function savePaymentRecord(saleId) {
+    try {
+        const paymentData = {
+            sale_id: saleId,
+            payment_amount: parseFloat(document.getElementById('paymentAmount').value),
+            payment_method: document.getElementById('paymentMethod').value,
+            payment_date: document.getElementById('paymentDate').value,
+            notes: document.getElementById('paymentNotes').value,
+            created_by: getCurrentUserId()
+        };
+
+        const response = await KashTecAPI.post('/api/payment-tracking/record-payment', paymentData);
+        
+        if (response.success) {
+            customAlert('Payment recorded successfully!', 'Success', 'success');
+            trackPaymentProgress(); // Refresh the payment tracking view
+        } else {
+            customAlert('Error recording payment: ' + response.error, 'Error', 'error');
+        }
+    } catch (error) {
+        console.error('Error recording payment:', error);
+        customAlert('Error recording payment: ' + error.message, 'Error', 'error');
+    }
+}
+
+async function viewPaymentHistory(saleId) {
+    try {
+        const response = await KashTecAPI.get(`/api/payment-tracking/history/${saleId}`);
+        
+        if (response.success) {
+            showPaymentHistoryView(response.data);
+        } else {
+            customAlert('Error loading payment history', 'Error', 'error');
+        }
+    } catch (error) {
+        console.error('Error loading payment history:', error);
+        customAlert('Error loading payment history', 'Error', 'error');
+    }
+}
+
+function showPaymentHistoryView(history) {
+    const historyHtml = history.length > 0 ? 
+        history.map(payment => `
+            <div class="history-item">
+                <div class="history-details">
+                    <strong>TZS ${payment.amount.toLocaleString()}</strong>
+                    <span>Method: ${payment.payment_method}</span>
+                    <span>Date: ${formatDate(payment.payment_date)}</span>
+                    <span>Recorded by: ${payment.recorded_by_name || 'Unknown'}</span>
+                </div>
+                <div class="history-notes">
+                    ${payment.notes || 'No notes'}
+                </div>
+            </div>
+        `).join('') : '<p>No payment history available</p>';
+
+    showContent(`
+        <div class="card">
+            <h3>Payment History</h3>
+            <div class="payment-history-list">
+                ${historyHtml}
+            </div>
+            <div class="form-actions">
+                <button class="btn-primary" onclick="trackPaymentProgress()">Back to Payment Tracking</button>
+            </div>
+        </div>
+    `);
+}
+
+async function sendPaymentReminder(saleId) {
+    try {
+        const reminderData = {
+            reminder_type: 'email', // Default to email
+            created_by: getCurrentUserId()
+        };
+
+        const response = await KashTecAPI.post(`/api/payment-tracking/send-reminder/${saleId}`, reminderData);
+        
+        if (response.success) {
+            customAlert(response.message, 'Success', 'success');
+        } else {
+            customAlert('Error sending reminder: ' + response.error, 'Error', 'error');
+        }
+    } catch (error) {
+        console.error('Error sending reminder:', error);
+        customAlert('Error sending reminder: ' + error.message, 'Error', 'error');
+    }
 }
 
 function generateSalesReport(){

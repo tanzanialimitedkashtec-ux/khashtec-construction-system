@@ -648,4 +648,245 @@ router.put('/language-purchases/:id/payment-status', async (req, res) => {
     }
 });
 
+// ===== PAYMENT TRACKING API ENDPOINTS =====
+
+// Get all payment tracking data with sales and client information
+router.get('/payment-tracking', async (req, res) => {
+    try {
+        const [payments] = await db.execute(`
+            SELECT 
+                s.id as sale_id,
+                s.sale_id as sale_reference,
+                s.total_amount,
+                s.paid_amount,
+                s.outstanding_balance,
+                s.payment_status,
+                s.installment_amount,
+                s.next_payment_date,
+                s.installment_months,
+                s.completed_date,
+                c.full_name as client_name,
+                c.phone as client_phone,
+                c.email as client_email,
+                p.property_title,
+                p.property_type,
+                p.location as property_location,
+                u.name as created_by_name,
+                s.created_at
+            FROM sales s
+            LEFT JOIN clients c ON s.client_id = c.id
+            LEFT JOIN properties p ON s.property_id = p.id
+            LEFT JOIN users u ON s.created_by = u.id
+            WHERE s.payment_status IN ('pending', 'partial', 'completed', 'overdue')
+            ORDER BY s.next_payment_date ASC, s.created_at DESC
+        `);
+        
+        res.json({ success: true, data: payments });
+    } catch (error) {
+        console.error('Error fetching payment tracking data:', error);
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+// Get payment statistics and summary
+router.get('/payment-tracking/statistics', async (req, res) => {
+    try {
+        const [stats] = await db.execute(`
+            SELECT 
+                COUNT(*) as active_installments,
+                SUM(CASE WHEN outstanding_balance > 0 THEN outstanding_balance ELSE 0 END) as total_outstanding,
+                SUM(CASE WHEN payment_status = 'completed' THEN paid_amount ELSE 0 END) as total_collected,
+                SUM(CASE WHEN DATE(next_payment_date) = DATE(CURDATE()) THEN installment_amount ELSE 0 END) as due_today,
+                SUM(CASE WHEN DATE(next_payment_date) < DATE(CURDATE()) AND payment_status != 'completed' THEN 1 ELSE 0 END) as overdue_count,
+                SUM(CASE WHEN DATE(next_payment_date) BETWEEN DATE_SUB(CURDATE(), INTERVAL 30 DAY) AND DATE(CURDATE()) THEN paid_amount ELSE 0 END) as this_month_collections
+            FROM sales 
+            WHERE payment_status IN ('pending', 'partial', 'completed', 'overdue')
+        `);
+        
+        const [monthlyData] = await db.execute(`
+            SELECT 
+                DATE_FORMAT(payment_date, '%Y-%m') as month,
+                SUM(amount) as total_collected
+            FROM payment_history 
+            WHERE payment_date >= DATE_SUB(CURDATE(), INTERVAL 6 MONTH)
+            GROUP BY DATE_FORMAT(payment_date, '%Y-%m')
+            ORDER BY month DESC
+        `);
+        
+        res.json({ 
+            success: true, 
+            data: {
+                statistics: stats[0],
+                monthly_collections: monthlyData
+            }
+        });
+    } catch (error) {
+        console.error('Error fetching payment statistics:', error);
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+// Record new payment
+router.post('/payment-tracking/record-payment', async (req, res) => {
+    try {
+        const {
+            sale_id,
+            payment_amount,
+            payment_method,
+            payment_date,
+            notes,
+            created_by
+        } = req.body;
+
+        // Get current sale details
+        const [sale] = await db.execute(
+            'SELECT * FROM sales WHERE id = ?',
+            [sale_id]
+        );
+
+        if (sale.length === 0) {
+            return res.status(404).json({ success: false, error: 'Sale not found' });
+        }
+
+        const currentSale = sale[0];
+        const newPaidAmount = currentSale.paid_amount + payment_amount;
+        const newOutstandingBalance = currentSale.total_amount - newPaidAmount;
+        let newPaymentStatus = currentSale.payment_status;
+
+        // Update payment status based on new balance
+        if (newOutstandingBalance <= 0) {
+            newPaymentStatus = 'completed';
+        } else if (newPaidAmount > 0) {
+            newPaymentStatus = 'partial';
+        }
+
+        // Start transaction
+        await db.execute('START TRANSACTION');
+
+        try {
+            // Add payment history record
+            await db.execute(`
+                INSERT INTO payment_history 
+                (sale_id, amount, payment_method, payment_date, notes, created_by)
+                VALUES (?, ?, ?, ?, ?, ?)
+            `, [sale_id, payment_amount, payment_method, payment_date, notes, created_by]);
+
+            // Update sale record
+            await db.execute(`
+                UPDATE sales SET 
+                    paid_amount = ?,
+                    outstanding_balance = ?,
+                    payment_status = ?,
+                    last_payment_date = ?,
+                    updated_at = NOW()
+                WHERE id = ?
+            `, [newPaidAmount, newOutstandingBalance, newPaymentStatus, payment_date, sale_id]);
+
+            // Update next payment date if not completed
+            if (newPaymentStatus !== 'completed') {
+                await db.execute(`
+                    UPDATE sales SET 
+                        next_payment_date = DATE_ADD(?, INTERVAL 1 MONTH)
+                    WHERE id = ? AND payment_status != 'completed'
+                `, [currentSale.next_payment_date, sale_id]);
+            } else {
+                await db.execute(`
+                    UPDATE sales SET 
+                        completed_date = ?,
+                        next_payment_date = NULL
+                    WHERE id = ?
+                `, [payment_date, sale_id]);
+            }
+
+            await db.execute('COMMIT');
+
+            res.json({ 
+                success: true, 
+                message: 'Payment recorded successfully',
+                data: {
+                    new_paid_amount: newPaidAmount,
+                    new_outstanding_balance: newOutstandingBalance,
+                    new_payment_status: newPaymentStatus
+                }
+            });
+        } catch (error) {
+            await db.execute('ROLLBACK');
+            throw error;
+        }
+    } catch (error) {
+        console.error('Error recording payment:', error);
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+// Get payment history for a specific sale
+router.get('/payment-tracking/history/:saleId', async (req, res) => {
+    try {
+        const { saleId } = req.params;
+        
+        const [history] = await db.execute(`
+            SELECT 
+                ph.*,
+                u.name as recorded_by_name
+            FROM payment_history ph
+            LEFT JOIN users u ON ph.created_by = u.id
+            WHERE ph.sale_id = ?
+            ORDER BY ph.payment_date DESC
+        `, [saleId]);
+        
+        res.json({ success: true, data: history });
+    } catch (error) {
+        console.error('Error fetching payment history:', error);
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+// Send payment reminder (placeholder for email/sms integration)
+router.post('/payment-tracking/send-reminder/:saleId', async (req, res) => {
+    try {
+        const { saleId } = req.params;
+        const { reminder_type, created_by } = req.body;
+
+        // Get sale and client details
+        const [sale] = await db.execute(`
+            SELECT s.*, c.full_name, c.phone, c.email
+            FROM sales s
+            LEFT JOIN clients c ON s.client_id = c.id
+            WHERE s.id = ?
+        `, [saleId]);
+
+        if (sale.length === 0) {
+            return res.status(404).json({ success: false, error: 'Sale not found' });
+        }
+
+        const saleData = sale[0];
+
+        // Log reminder for now (in production, integrate with email/SMS service)
+        await db.execute(`
+            INSERT INTO payment_reminders 
+            (sale_id, client_id, reminder_type, sent_date, created_by)
+            VALUES (?, ?, ?, NOW(), ?)
+        `, [saleId, saleData.client_id, reminder_type, created_by]);
+
+        // TODO: Integrate with actual email/SMS service
+        // sendEmail(saleData.email, reminderContent);
+        // sendSMS(saleData.phone, reminderContent);
+
+        res.json({ 
+            success: true, 
+            message: `Payment reminder sent to ${saleData.full_name} via ${reminder_type}`,
+            data: {
+                client_name: saleData.full_name,
+                client_email: saleData.email,
+                client_phone: saleData.phone,
+                outstanding_balance: saleData.outstanding_balance,
+                next_payment_date: saleData.next_payment_date
+            }
+        });
+    } catch (error) {
+        console.error('Error sending reminder:', error);
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
 module.exports = router;
