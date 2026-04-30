@@ -1880,6 +1880,119 @@ font-size: 7px;
 color: #666;
 }
 
+/* Hiring Table Styles */
+.hiring-table-container {
+    background: white;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    margin-top: 20px;
+}
+
+.hiring-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12px;
+}
+
+.hiring-table th {
+    background: #0b3d91;
+    color: white;
+    padding: 12px 8px;
+    text-align: left;
+    font-weight: 600;
+    border-bottom: 2px solid #093278;
+}
+
+.hiring-table td {
+    padding: 10px 8px;
+    border-bottom: 1px solid #e9ecef;
+    vertical-align: top;
+}
+
+.hiring-table tr:hover {
+    background: #f8f9fa;
+}
+
+.hiring-table tr:last-child td {
+    border-bottom: none;
+}
+
+.position-title {
+    font-weight: 600;
+    color: #2c3e50;
+    margin-bottom: 4px;
+}
+
+.candidate-name {
+    color: #0b3d91;
+    font-weight: 500;
+}
+
+.salary-amount {
+    color: #28a745;
+    font-weight: 600;
+}
+
+.experience-text {
+    color: #6c757d;
+    font-size: 11px;
+}
+
+.recommendation-text {
+    color: #495057;
+    font-size: 11px;
+    line-height: 1.4;
+    max-width: 300px;
+}
+
+.hiring-table-actions {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+}
+
+.hiring-table-actions button {
+    padding: 6px 12px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 10px;
+    font-weight: 500;
+    transition: all 0.2s ease;
+    min-width: 80px;
+}
+
+.hiring-table-actions button:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
+.btn-approve {
+    background: #28a745;
+    color: white;
+}
+
+.btn-request-info {
+    background: #ffc107;
+    color: #212529;
+}
+
+.btn-reject {
+    background: #dc3545;
+    color: white;
+}
+
+.department-badge {
+    background: #e3f2fd;
+    color: #0b3d91;
+    padding: 2px 6px;
+    border-radius: 3px;
+    font-size: 10px;
+    font-weight: 500;
+    text-transform: uppercase;
+}
+
 .worker-list h4 {
 color: #0b3d91;
 margin-bottom: 10px;
@@ -4424,7 +4537,7 @@ function filterHiringRequests() {
     hiringRequests.forEach(request => {
         const text = request.textContent.toLowerCase();
         if (text.includes(searchTerm)) {
-            request.style.display = 'block';
+            request.style.display = 'table-row';
             visibleCount++;
         } else {
             request.style.display = 'none';
@@ -4794,74 +4907,76 @@ function approveSeniorHiring(){
                     </div>
                     <h4>Senior Staff Hiring Requests Pending Approval</h4>
                     
-                    <div class="hiring-request">
-                        <h5>Project Manager Position</h5>
-                        <div class="candidate-info">
-                            <div class="form-row">
-                                <div class="form-group">
-                                    <label>Candidate Name</label>
-                                    <input type="text" value="Eng. Michael K. Johnson" readonly>
-                                </div>
-                                <div class="form-group">
-                                    <label>Proposed Salary</label>
-                                    <input type="text" value="TZS 3,500,000/month" readonly>
-                                </div>
-                            </div>
-                            <div class="form-row">
-                                <div class="form-group">
-                                    <label>Department</label>
-                                    <input type="text" value="Projects Department" readonly>
-                                </div>
-                                <div class="form-group">
-                                    <label>Experience</label>
-                                    <input type="text" value="12 years in construction management" readonly>
-                                </div>
-                            </div>
-                            <div class="form-group">
-                                <label>HR Recommendation</label>
-                                <textarea rows="3" readonly>Highly qualified candidate with extensive experience in large-scale construction projects. Proven track record in project delivery and team management.</textarea>
-                            </div>
-                        </div>
-                        <div class="hiring-actions">
-                            <button class="action" onclick="approveSeniorHire('1')" style="background: #28a745;">Approve Hiring</button>
-                            <button class="action" onclick="requestMoreInfo('1')" style="background: #ffc107;">Request More Info</button>
-                            <button class="action" onclick="rejectSeniorHire('1')" style="background: #dc3545;">Reject Hiring</button>
-                        </div>
-                    </div>
-                    
-                    <div class="hiring-request">
-                        <h5>Finance Manager Position</h5>
-                        <div class="candidate-info">
-                            <div class="form-row">
-                                <div class="form-group">
-                                    <label>Candidate Name</label>
-                                    <input type="text" value="Sarah M. Kimario" readonly>
-                                </div>
-                                <div class="form-group">
-                                    <label>Proposed Salary</label>
-                                    <input type="text" value="TZS 2,800,000/month" readonly>
-                                </div>
-                            </div>
-                            <div class="form-row">
-                                <div class="form-group">
-                                    <label>Department</label>
-                                    <input type="text" value="Finance Department" readonly>
-                                </div>
-                                <div class="form-group">
-                                    <label>Experience</label>
-                                    <input type="text" value="8 years in financial management" readonly>
-                                </div>
-                            </div>
-                            <div class="form-group">
-                                <label>HR Recommendation</label>
-                                <textarea rows="3" readonly>Qualified candidate with CPA certification and experience in construction industry finance. Strong analytical skills and leadership capabilities.</textarea>
-                            </div>
-                        </div>
-                        <div class="hiring-actions">
-                            <button class="action" onclick="approveSeniorHire('2')" style="background: #28a745;">Approve Hiring</button>
-                            <button class="action" onclick="requestMoreInfo('2')" style="background: #ffc107;">Request More Info</button>
-                            <button class="action" onclick="rejectSeniorHire('2')" style="background: #dc3545;">Reject Hiring</button>
-                        </div>
+                    <div class="hiring-table-container">
+                        <table class="hiring-table">
+                            <thead>
+                                <tr>
+                                    <th>Position</th>
+                                    <th>Candidate</th>
+                                    <th>Salary</th>
+                                    <th>Department</th>
+                                    <th>Experience</th>
+                                    <th>HR Recommendation</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr class="hiring-request">
+                                    <td>
+                                        <div class="position-title">Project Manager Position</div>
+                                    </td>
+                                    <td>
+                                        <div class="candidate-name">Eng. Michael K. Johnson</div>
+                                    </td>
+                                    <td>
+                                        <div class="salary-amount">TZS 3,500,000/month</div>
+                                    </td>
+                                    <td>
+                                        <span class="department-badge">Projects</span>
+                                    </td>
+                                    <td>
+                                        <div class="experience-text">12 years in construction management</div>
+                                    </td>
+                                    <td>
+                                        <div class="recommendation-text">Highly qualified candidate with extensive experience in large-scale construction projects. Proven track record in project delivery and team management.</div>
+                                    </td>
+                                    <td>
+                                        <div class="hiring-table-actions">
+                                            <button class="btn-approve" onclick="approveSeniorHire('1')">Approve</button>
+                                            <button class="btn-request-info" onclick="requestMoreInfo('1')">Request Info</button>
+                                            <button class="btn-reject" onclick="rejectSeniorHire('1')">Reject</button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr class="hiring-request">
+                                    <td>
+                                        <div class="position-title">Finance Manager Position</div>
+                                    </td>
+                                    <td>
+                                        <div class="candidate-name">Sarah M. Kimario</div>
+                                    </td>
+                                    <td>
+                                        <div class="salary-amount">TZS 2,800,000/month</div>
+                                    </td>
+                                    <td>
+                                        <span class="department-badge">Finance</span>
+                                    </td>
+                                    <td>
+                                        <div class="experience-text">8 years in financial management</div>
+                                    </td>
+                                    <td>
+                                        <div class="recommendation-text">Qualified candidate with CPA certification and experience in construction industry finance. Strong analytical skills and leadership capabilities.</div>
+                                    </td>
+                                    <td>
+                                        <div class="hiring-table-actions">
+                                            <button class="btn-approve" onclick="approveSeniorHire('2')">Approve</button>
+                                            <button class="btn-request-info" onclick="requestMoreInfo('2')">Request Info</button>
+                                            <button class="btn-reject" onclick="rejectSeniorHire('2')">Reject</button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
                     </div>
                 </div>
                 
