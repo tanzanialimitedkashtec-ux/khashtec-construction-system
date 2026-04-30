@@ -2075,6 +2075,175 @@ color: #666;
     background: #6c757d;
 }
 
+/* Employee Table Styles */
+.employee-table-container {
+    background: white;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    margin-top: 20px;
+}
+
+.employee-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12px;
+}
+
+.employee-table th {
+    background: #0b3d91;
+    color: white;
+    padding: 12px 8px;
+    text-align: left;
+    font-weight: 600;
+    border-bottom: 2px solid #093278;
+}
+
+.employee-table td {
+    padding: 10px 8px;
+    border-bottom: 1px solid #e9ecef;
+    vertical-align: top;
+}
+
+.employee-table tr:hover {
+    background: #f8f9fa;
+}
+
+.employee-table tr:last-child td {
+    border-bottom: none;
+}
+
+.employee-name {
+    font-weight: 600;
+    color: #2c3e50;
+    margin-bottom: 2px;
+}
+
+.employee-id-cell {
+    color: #6c757d;
+    font-size: 10px;
+    font-family: monospace;
+}
+
+.employee-email {
+    color: #0b3d91;
+    font-size: 11px;
+}
+
+.employee-phone {
+    color: #495057;
+    font-size: 11px;
+}
+
+.employee-position {
+    color: #495057;
+    font-weight: 500;
+}
+
+.employee-dept-badge {
+    background: #e3f2fd;
+    color: #0b3d91;
+    padding: 2px 6px;
+    border-radius: 3px;
+    font-size: 10px;
+    font-weight: 500;
+    text-transform: uppercase;
+}
+
+.employee-hire-date {
+    color: #6c757d;
+    font-size: 11px;
+}
+
+.employee-table-actions {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+}
+
+.employee-table-actions button {
+    padding: 4px 8px;
+    border: none;
+    border-radius: 3px;
+    cursor: pointer;
+    font-size: 9px;
+    font-weight: 500;
+    transition: all 0.2s ease;
+    min-width: 60px;
+}
+
+.employee-table-actions button:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
+.btn-view-employee {
+    background: #17a2b8;
+    color: white;
+}
+
+.btn-view-employee:hover {
+    background: #138496;
+}
+
+.employee-status-badge {
+    padding: 2px 6px;
+    border-radius: 3px;
+    font-size: 8px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.2px;
+    color: white;
+}
+
+.employee-status-badge.status-active {
+    background: #28a745;
+}
+
+.employee-status-badge.status-inactive {
+    background: #6c757d;
+}
+
+.employee-status-badge.status-on_leave {
+    background: #ffc107;
+    color: #212529;
+}
+
+/* Employee overview stats in table format */
+.employee-overview-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 20px;
+    background: white;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.employee-overview-table th {
+    background: #0b3d91;
+    color: white;
+    padding: 10px;
+    text-align: left;
+    font-weight: 600;
+}
+
+.employee-overview-table td {
+    padding: 8px 10px;
+    border-bottom: 1px solid #e9ecef;
+    font-size: 14px;
+}
+
+.employee-overview-table tr:last-child td {
+    border-bottom: none;
+}
+
+.stat-value-table {
+    font-weight: 600;
+    color: #0b3d91;
+    font-size: 16px;
+}
+
 .worker-list h4 {
 color: #0b3d91;
 margin-bottom: 10px;
@@ -22512,20 +22681,28 @@ function viewEmployeeList() {
         <p><strong>Employee Directory:</strong> View complete employee information (read-only access)</p>
         
         <div class="employee-overview">
-            <div class="overview-stats">
-                <div class="stat-item">
-                    <span class="stat-label">Total Employees:</span>
-                    <span class="stat-value" id="totalEmployees">0</span>
-                </div>
-                <div class="stat-item">
-                    <span class="stat-label">Active Employees:</span>
-                    <span class="stat-value" id="activeEmployees">0</span>
-                </div>
-                <div class="stat-item">
-                    <span class="stat-label">Departments:</span>
-                    <span class="stat-value" id="departmentCount">0</span>
-                </div>
-            </div>
+            <table class="employee-overview-table">
+                <thead>
+                    <tr>
+                        <th>Metric</th>
+                        <th>Count</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Total Employees</td>
+                        <td class="stat-value-table" id="totalEmployees">0</td>
+                    </tr>
+                    <tr>
+                        <td>Active Employees</td>
+                        <td class="stat-value-table" id="activeEmployees">0</td>
+                    </tr>
+                    <tr>
+                        <td>Departments</td>
+                        <td class="stat-value-table" id="departmentCount">0</td>
+                    </tr>
+                </tbody>
+            </table>
         </div>
         
         <div class="employee-directory">
@@ -22543,8 +22720,27 @@ function viewEmployeeList() {
                 </select>
             </div>
             
-            <div class="employee-grid" id="employeeGrid">
-                <div class="loading-message">Loading employees...</div>
+            <div class="employee-table-container">
+                <table class="employee-table" id="employeeTable">
+                    <thead>
+                        <tr>
+                            <th>Employee</th>
+                            <th>Department</th>
+                            <th>Position</th>
+                            <th>Contact</th>
+                            <th>Hire Date</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="employeeTableBody">
+                        <tr>
+                            <td colspan="7" style="text-align: center; padding: 20px;">
+                                <div class="loading-message">Loading employees...</div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
             </div>
         </div>
         
@@ -22618,16 +22814,16 @@ function loadEmployeeList() {
         })
         .catch(fallbackError => {
             console.error('❌ Fallback also failed:', fallbackError);
-            document.getElementById('employeeGrid').innerHTML = '<div class="error-message">Error loading employees. Please try again.</div>';
+            document.getElementById('employeeTableBody').innerHTML = '<tr><td colspan="7" style="text-align: center; padding: 20px;" class="error-message">Error loading employees. Please try again.</td></tr>';
         });
     });
 }
 
 function displayEmployeeList(employees) {
-    const employeeGrid = document.getElementById('employeeGrid');
+    const employeeTableBody = document.getElementById('employeeTableBody');
     
     if (employees.length === 0) {
-        employeeGrid.innerHTML = '<div class="no-employees">No employees found</div>';
+        employeeTableBody.innerHTML = '<tr><td colspan="7" style="text-align: center; padding: 20px;">No employees found</td></tr>';
         return;
     }
     
@@ -22647,53 +22843,39 @@ function displayEmployeeList(employees) {
                            status === 'Inactive' ? 'status-inactive' : 'status-terminated';
         
         html += `
-            <div class="employee-card readonly">
-                <div class="employee-header">
-                    <div class="employee-avatar">
-                        <span>${fullName ? fullName.charAt(0).toUpperCase() : 'E'}</span>
+            <tr class="employee-row">
+                <td>
+                    <div class="employee-name">${fullName}</div>
+                    <div class="employee-id-cell">${employeeId}</div>
+                </td>
+                <td>
+                    <span class="employee-dept-badge">${department}</span>
+                </td>
+                <td>
+                    <div class="employee-position">${position}</div>
+                </td>
+                <td>
+                    <div class="employee-email">${email}</div>
+                    <div class="employee-phone">${phone}</div>
+                </td>
+                <td>
+                    <div class="employee-hire-date">${hireDate ? new Date(hireDate).toLocaleDateString() : 'N/A'}</div>
+                </td>
+                <td>
+                    <span class="employee-status-badge ${statusClass}">${status}</span>
+                </td>
+                <td>
+                    <div class="employee-table-actions">
+                        <button class="btn-view-employee" onclick="viewEmployeeDetails('${employee.id || employee.employee_id}')" title="View Details">
+                            👁️ View
+                        </button>
                     </div>
-                    <div class="employee-basic-info">
-                        <h4>${fullName}</h4>
-                        <p class="employee-id">${employeeId}</p>
-                    </div>
-                    <div class="employee-status">
-                        <span class="status-badge ${statusClass}">${status}</span>
-                    </div>
-                </div>
-                
-                <div class="employee-details">
-                    <div class="detail-row">
-                        <span class="label">Department:</span>
-                        <span class="value">${department}</span>
-                    </div>
-                    <div class="detail-row">
-                        <span class="label">Position:</span>
-                        <span class="value">${position}</span>
-                    </div>
-                    <div class="detail-row">
-                        <span class="label">Email:</span>
-                        <span class="value">${email}</span>
-                    </div>
-                    <div class="detail-row">
-                        <span class="label">Phone:</span>
-                        <span class="value">${phone}</span>
-                    </div>
-                    <div class="detail-row">
-                        <span class="label">Hire Date:</span>
-                        <span class="value">${hireDate ? new Date(hireDate).toLocaleDateString() : 'N/A'}</span>
-                    </div>
-                </div>
-                
-                <div class="employee-actions">
-                    <button class="action-btn readonly" onclick="viewEmployeeDetails('${employee.id || employee.employee_id}')" title="View Details">
-                        👁️ View
-                    </button>
-                </div>
-            </div>
+                </td>
+            </tr>
         `;
     });
     
-    employeeGrid.innerHTML = html;
+    employeeTableBody.innerHTML = html;
 }
 
 function updateEmployeeStats(employees) {
