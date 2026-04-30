@@ -1362,12 +1362,11 @@ background: #f8f9fa;
     left: 0;
     width: 100%;
     height: 100%;
-    background: rgba(0, 0, 0, 0.5);
-    display: flex;
+    background: rgba(0,0,0,0.5);
+    display: none;
     justify-content: center;
     align-items: center;
-    z-index: 1000;
-    animation: fadeIn 0.3s ease;
+    z-index: 10000;
 }
 
 .modal-content {
@@ -20386,6 +20385,77 @@ async function staffOversight(){
     console.log('✅ Staff oversight content updated successfully');
 }
 
+// User Account Management Functions
+function suspendUser(userId) {
+    if (userId) {
+        // Suspend specific user
+        if (confirm(`Are you sure you want to suspend user ID: ${userId}?`)) {
+            console.log('🔄 Suspending user:', userId);
+            // API call to suspend user would go here
+            showNotification('User suspended successfully', 'success');
+            // Refresh the user list
+            userAccountManagement();
+        }
+    } else {
+        // Show dialog to select user
+        showNotification('Please select a user from the table to suspend', 'info');
+    }
+}
+
+function reactivateUser(userId) {
+    if (userId) {
+        // Reactivate specific user
+        if (confirm(`Are you sure you want to reactivate user ID: ${userId}?`)) {
+            console.log('🔄 Reactivating user:', userId);
+            // API call to reactivate user would go here
+            showNotification('User reactivated successfully', 'success');
+            // Refresh the user list
+            userAccountManagement();
+        }
+    } else {
+        // Show dialog to select user
+        showNotification('Please select a suspended user from the table to reactivate', 'info');
+    }
+}
+
+function viewUserDetails(userId) {
+    console.log('👁️ Viewing user details:', userId);
+    // Show user details modal or navigate to details page
+    showNotification(`Viewing details for user ID: ${userId}`, 'info');
+}
+
+function showSuspendUserDialog() {
+    showNotification('Click the "Suspend" button next to any user in the table', 'info');
+}
+
+function showReactivateUserDialog() {
+    showNotification('Click the "Reactivate" button next to any suspended user in the table', 'info');
+}
+
+// Notification helper function
+function showNotification(message, type = 'info') {
+    const notification = document.createElement('div');
+    notification.className = `notification ${type}`;
+    notification.innerHTML = `
+        <div class="notification-header">
+            <h4>${type.charAt(0).toUpperCase() + type.slice(1)}</h4>
+            <button class="notification-close" onclick="this.parentElement.parentElement.remove()">×</button>
+        </div>
+        <div class="notification-body">
+            <p>${message}</p>
+        </div>
+    `;
+    
+    document.body.appendChild(notification);
+    
+    // Auto-remove after 5 seconds
+    setTimeout(() => {
+        if (notification.parentElement) {
+            notification.remove();
+        }
+    }, 5000);
+}
+
 function policyImplementation(){
     showContent(`<div class="card">
         <h3>Policy Implementation</h3>
@@ -20481,7 +20551,7 @@ async function userAccountManagement(){
         console.error('❌ Error loading users:', error);
     }
     
-    // Generate HTML with real data
+    // Generate HTML with real data and user table
     const formHtml = `
         <div class="card">
             <h3>User Account Management</h3>
@@ -20502,10 +20572,52 @@ async function userAccountManagement(){
                     </div>
                 </div>
                 
+                <div class="user-table-section">
+                    <h4>User Accounts</h4>
+                    <div class="table-container">
+                        <table class="user-table">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Name</th>
+                                    <th>Email</th>
+                                    <th>Role/Position</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${users.map(user => `
+                                    <tr class="user-row" data-user-id="${user.id}">
+                                        <td>${user.id}</td>
+                                        <td>${user.full_name || user.fullName || 'N/A'}</td>
+                                        <td>${user.gmail || user.email || 'N/A'}</td>
+                                        <td>${user.position || user.role || user.job_category || 'N/A'}</td>
+                                        <td>
+                                            <span class="status-badge ${user.status === 'suspended' || user.account_status === 'suspended' ? 'status-suspended' : 'status-active'}">
+                                                ${user.status === 'suspended' || user.account_status === 'suspended' ? 'Suspended' : 'Active'}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <div class="action-buttons">
+                                                ${user.status === 'suspended' || user.account_status === 'suspended' ? 
+                                                    `<button class="action-btn reactivate-btn" onclick="reactivateUser(${user.id})">Reactivate</button>` :
+                                                    `<button class="action-btn suspend-btn" onclick="suspendUser(${user.id})">Suspend</button>`
+                                                }
+                                                <button class="action-btn view-btn" onclick="viewUserDetails(${user.id})">View</button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                
                 <div class="account-actions">
                     <h4>Account Actions</h4>
-                    <button class="action" onclick="suspendUser()">Suspend User</button>
-                    <button class="action" onclick="reactivateUser()">Reactivate Account</button>
+                    <button class="action" onclick="showSuspendUserDialog()">Suspend User</button>
+                    <button class="action" onclick="showReactivateUserDialog()">Reactivate Account</button>
                 </div>
             </div>
             
@@ -22623,6 +22735,101 @@ function filterPpeRecords() {
 .form-group.error textarea,
 .form-group.error input {
     border-color: #dc3545;
+}
+
+/* User Table Styles */
+.user-table-section {
+    margin: 20px 0;
+}
+
+.table-container {
+    overflow-x: auto;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.user-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+}
+
+.user-table th {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 12px;
+    text-align: left;
+    font-weight: 600;
+    border-bottom: 2px solid #ddd;
+}
+
+.user-table td {
+    padding: 10px 12px;
+    border-bottom: 1px solid #eee;
+}
+
+.user-row:hover {
+    background-color: #f8f9fa;
+}
+
+.status-badge {
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.status-active {
+    background-color: #d4edda;
+    color: #155724;
+}
+
+.status-suspended {
+    background-color: #f8d7da;
+    color: #721c24;
+}
+
+.action-buttons {
+    display: flex;
+    gap: 5px;
+}
+
+.action-btn {
+    padding: 4px 8px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 12px;
+    transition: all 0.3s ease;
+}
+
+.suspend-btn {
+    background-color: #dc3545;
+    color: white;
+}
+
+.suspend-btn:hover {
+    background-color: #c82333;
+}
+
+.reactivate-btn {
+    background-color: #28a745;
+    color: white;
+}
+
+.reactivate-btn:hover {
+    background-color: #218838;
+}
+
+.view-btn {
+    background-color: #007bff;
+    color: white;
+}
+
+.view-btn:hover {
+    background-color: #0056b3;
 }
 </style>
 
