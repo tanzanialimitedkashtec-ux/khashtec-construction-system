@@ -16049,13 +16049,16 @@ async function assignTasks(){
         });
         
         if (projectsResponse.ok) {
-            projects = await projectsResponse.json();
+            const projectsData = await projectsResponse.json();
+            projects = Array.isArray(projectsData) ? projectsData : [];
             console.log('✅ Loaded projects:', projects.length, 'projects');
         } else {
             console.warn('⚠️ Failed to load projects, using empty array');
+            projects = [];
         }
     } catch (error) {
         console.error('❌ Error loading projects:', error);
+        projects = [];
     }
     
     try {
@@ -16070,7 +16073,7 @@ async function assignTasks(){
         
         if (employeesResponse.ok) {
             const employeesData = await employeesResponse.json();
-            employees = employeesData.map(emp => ({
+            employees = (Array.isArray(employeesData) ? employeesData : []).map(emp => ({
                 id: emp.id,
                 fullName: emp.full_name || emp.fullName || `Employee ${emp.id}`,
                 email: emp.gmail || emp.email || 'unknown@example.com',
@@ -16079,9 +16082,11 @@ async function assignTasks(){
             console.log('✅ Loaded employees:', employees.length, 'employees');
         } else {
             console.warn('⚠️ Failed to load employees, using empty array');
+            employees = [];
         }
     } catch (error) {
         console.error('❌ Error loading employees:', error);
+        employees = [];
     }
     
     // Now generate HTML with loaded data
