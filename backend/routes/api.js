@@ -12,6 +12,62 @@ router.get('/users', async (req, res) => {
     }
 });
 
+// Get user by ID with full details
+router.get('/users/:id', async (req, res) => {
+    try {
+        const userId = req.params.id;
+        console.log('🔍 Fetching user details:', userId);
+        
+        const [users] = await db.execute(`
+            SELECT u.*, e.position, e.department as emp_department, e.salary, e.hire_date,
+                   ed.full_name, ed.gmail, ed.phone, ed.nida, ed.passport, ed.profile_image,
+                   ed.contract_type, ed.passport_image, ed.address
+            FROM users u
+            LEFT JOIN employees e ON u.id = e.user_id
+            LEFT JOIN employee_details ed ON e.id = ed.employee_id
+            WHERE u.id = ? OR ed.employee_id = ?
+            ORDER BY u.created_at DESC
+            LIMIT 1
+        `, [userId, userId]);
+        
+        if (users.length > 0) {
+            const user = users[0];
+            const formattedUser = {
+                id: user.id,
+                name: user.name,
+                email: user.email,
+                phone: user.phone,
+                role: user.role,
+                department: user.department || user.emp_department,
+                status: user.status,
+                position: user.position,
+                salary: user.salary,
+                hire_date: user.hire_date,
+                full_name: user.full_name || user.name,
+                gmail: user.gmail || user.email,
+                phone: user.phone,
+                nida: user.nida,
+                passport: user.passport,
+                profile_image: user.profile_image,
+                contract_type: user.contract_type,
+                passport_image: user.passport_image,
+                address: user.address,
+                created_at: user.created_at,
+                updated_at: user.updated_at
+            };
+            
+            console.log('✅ User details retrieved successfully');
+            res.json({ success: true, data: formattedUser });
+        } else {
+            console.log('❌ User not found:', userId);
+            res.status(404).json({ success: false, error: 'User not found' });
+        }
+    } catch (error) {
+        console.error('❌ Error fetching user details:', error);
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
 // Get all projects
 router.get('/projects', async (req, res) => {
     try {

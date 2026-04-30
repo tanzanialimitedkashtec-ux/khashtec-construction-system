@@ -20473,7 +20473,7 @@ async function viewUserDetails(userId) {
     
     try {
         const baseUrl = window.location.origin;
-        const response = await fetch(`${baseUrl}/api/office-portal/users/${userId}`, {
+        const response = await fetch(`${baseUrl}/api/users/${userId}`, {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
@@ -20482,8 +20482,8 @@ async function viewUserDetails(userId) {
         });
         
         if (response.ok) {
-            const userData = await response.json();
-            showUserDetailsModal(userData);
+            const result = await response.json();
+            showUserDetailsModal(result.data);
         } else {
             showNotification('Failed to load user details', 'error');
         }
