@@ -213,6 +213,121 @@ router.post('/transactions', async (req, res) => {
     }
 });
 
+// Get all documents
+router.get('/documents', async (req, res) => {
+    try {
+        console.log('📄 Fetching documents from database...');
+        
+        // Check if documents table exists, if not create it
+        await db.execute(`
+            CREATE TABLE IF NOT EXISTS documents (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                type VARCHAR(50) NOT NULL,
+                name VARCHAR(255),
+                filename VARCHAR(255),
+                file_path VARCHAR(500),
+                file_size INT,
+                mime_type VARCHAR(100),
+                status ENUM('active', 'expired', 'pending') DEFAULT 'active',
+                expiry_date DATE,
+                description TEXT,
+                uploaded_by INT,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+            )
+        `);
+        
+        const documents = await db.execute(`
+            SELECT d.*, u.name as uploaded_by_name 
+            FROM documents d 
+            LEFT JOIN users u ON d.uploaded_by = u.id
+            ORDER BY d.created_at DESC
+        `);
+        
+        console.log(`✅ Found ${documents.length} documents`);
+        res.json({ success: true, data: documents });
+    } catch (error) {
+        console.error('❌ Error fetching documents:', error);
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+// Upload document
+router.post('/documents/upload', async (req, res) => {
+    try {
+        console.log('📤 Processing document upload...');
+        
+        // Check if documents table exists
+        await db.execute(`
+            CREATE TABLE IF NOT EXISTS documents (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                type VARCHAR(50) NOT NULL,
+                name VARCHAR(255),
+                filename VARCHAR(255),
+                file_path VARCHAR(500),
+                file_size INT,
+                mime_type VARCHAR(100),
+                status ENUM('active', 'expired', 'pending') DEFAULT 'active',
+                expiry_date DATE,
+                description TEXT,
+                uploaded_by INT,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+            )
+        `);
+        
+        // Since we don't have multer middleware, we'll simulate file upload with form data
+        const { type, name, filename, file_size, mime_type, expiry_date, description, uploaded_by } = req.body;
+        
+        if (!type) {
+            return res.status(400).json({ success: false, error: 'Document type is required' });
+        }
+        
+        // Insert document record
+        const result = await db.execute(`
+            INSERT INTO documents (type, name, filename, file_size, mime_type, expiry_date, description, uploaded_by)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+        `, [type, name || `${type} Certificate`, filename, file_size, mime_type, expiry_date, description, uploaded_by || 1]);
+        
+        console.log('✅ Document uploaded successfully:', result.insertId);
+        res.json({ 
+            success: true, 
+            data: { 
+                id: result.insertId,
+                message: 'Document uploaded successfully'
+            }
+        });
+    } catch (error) {
+        console.error('❌ Error uploading document:', error);
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+// Download document
+router.get('/documents/:id/download', async (req, res) => {
+    try {
+        const documentId = req.params.id;
+        console.log('⬇️ Downloading document:', documentId);
+        
+        const documents = await db.execute('SELECT * FROM documents WHERE id = ?', [documentId]);
+        
+        if (documents.length === 0) {
+            return res.status(404).json({ success: false, error: 'Document not found' });
+        }
+        
+        const document = documents[0];
+        
+        // For now, return a mock file since we don't have actual file storage
+        res.setHeader('Content-Type', document.mime_type || 'application/octet-stream');
+        res.setHeader('Content-Disposition', `attachment; filename="${document.filename || 'document.pdf'}"`);
+        res.send('Mock file content - implement actual file storage');
+        
+    } catch (error) {
+        console.error('❌ Error downloading document:', error);
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
 // Get dashboard statistics
 router.get('/dashboard/stats', async (req, res) => {
     try {
