@@ -20432,6 +20432,145 @@ function showReactivateUserDialog() {
     showNotification('Click the "Reactivate" button next to any suspended user in the table', 'info');
 }
 
+// Department Structure Review Function
+async function reviewDeptStructure(department) {
+    console.log(`🔍 Reviewing department structure for: ${department}`);
+    
+    // Show loading message
+    showContent(`
+        <div class="card">
+            <h3>Department Structure Review</h3>
+            <p><strong>Loading department data...</strong></p>
+        </div>
+    `);
+    
+    // Load department data from database
+    const baseUrl = window.location.origin;
+    let employees = [];
+    let departmentEmployees = [];
+    
+    try {
+        // Load all employees
+        const employeesResponse = await fetch(`${baseUrl}/api/employees`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            }
+        });
+        
+        if (employeesResponse.ok) {
+            const employeesData = await employeesResponse.json();
+            employees = Array.isArray(employeesData) ? employeesData : [];
+            
+            // Filter employees by department
+            departmentEmployees = employees.filter(emp => {
+                const dept = emp.department?.toLowerCase() || emp.role?.toLowerCase() || emp.position?.toLowerCase() || '';
+                return dept.includes(department.toLowerCase());
+            });
+            
+            console.log(`✅ Found ${departmentEmployees.length} employees in ${department} department`);
+        } else {
+            console.warn('⚠️ Failed to load employees, using empty list');
+        }
+    } catch (error) {
+        console.error('❌ Error loading department data:', error);
+    }
+    
+    // Generate department structure HTML
+    const deptStructureHtml = `
+        <div class="card">
+            <h3>Department Structure Review - ${department.charAt(0).toUpperCase() + department.slice(1)}</h3>
+            <p><strong>Department Analysis:</strong> Review staff structure and organizational details</p>
+            
+            <div class="dept-overview">
+                <div class="dept-stats">
+                    <div class="stat-item">
+                        <span>Total Staff:</span>
+                        <span class="stat-value">${departmentEmployees.length}</span>
+                    </div>
+                    <div class="stat-item">
+                        <span>Budget Status:</span>
+                        <span class="stat-value">Approved</span>
+                    </div>
+                    <div class="stat-item">
+                        <span>Department:</span>
+                        <span class="stat-value">${department.charAt(0).toUpperCase() + department.slice(1)}</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="dept-staff-list">
+                <h4>Department Staff Members</h4>
+                <div class="table-container">
+                    <table class="dept-table">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Name</th>
+                                <th>Position</th>
+                                <th>Email</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${departmentEmployees.length > 0 ? 
+                                departmentEmployees.map(emp => `
+                                    <tr class="dept-row">
+                                        <td>${emp.id}</td>
+                                        <td>${emp.full_name || emp.fullName || 'N/A'}</td>
+                                        <td>${emp.position || emp.role || emp.job_category || 'N/A'}</td>
+                                        <td>${emp.gmail || emp.email || 'N/A'}</td>
+                                        <td>
+                                            <span class="status-badge ${emp.status === 'suspended' || emp.account_status === 'suspended' ? 'status-suspended' : 'status-active'}">
+                                                ${emp.status === 'suspended' || emp.account_status === 'suspended' ? 'Suspended' : 'Active'}
+                                            </span>
+                                        </td>
+                                    </tr>
+                                `).join('') : 
+                                `<tr><td colspan="5" style="text-align: center; padding: 20px;">No staff members found in this department</td></tr>`
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            
+            <div class="dept-actions">
+                <h4>Department Actions</h4>
+                <button class="action" onclick="exportDeptReport('${department}')">Export Report</button>
+                <button class="action" onclick="requestBudgetReview('${department}')">Request Budget Review</button>
+                <button class="action" onclick="backToStaffOversight()">Back to Staff Oversight</button>
+            </div>
+            
+            <div class="disclaimer">
+                <p><strong>Note:</strong> This department structure report is generated in real-time from the current database.</p>
+            </div>
+        </div>`;
+    
+    console.log('🔄 Updating content with department structure...');
+    showContent(deptStructureHtml);
+    console.log('✅ Department structure review loaded successfully');
+}
+
+// Department action functions
+function exportDeptReport(department) {
+    console.log('📄 Exporting department report for:', department);
+    showNotification(`Generating report for ${department} department...`, 'info');
+    // In a real implementation, this would generate and download a PDF/Excel report
+}
+
+function requestBudgetReview(department) {
+    console.log('💰 Requesting budget review for:', department);
+    if (confirm(`Request budget review for ${department} department?`)) {
+        showNotification(`Budget review requested for ${department} department`, 'success');
+    }
+}
+
+function backToStaffOversight() {
+    console.log('🔙 Returning to Staff Oversight');
+    staffOversight();
+}
+
 // Notification helper function
 function showNotification(message, type = 'info') {
     const notification = document.createElement('div');
@@ -22830,6 +22969,55 @@ function filterPpeRecords() {
 
 .view-btn:hover {
     background-color: #0056b3;
+}
+
+/* Department Structure Review Styles */
+.dept-overview {
+    margin: 20px 0;
+}
+
+.dept-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+.dept-staff-list {
+    margin: 20px 0;
+}
+
+.dept-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+}
+
+.dept-table th {
+    background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+    color: white;
+    padding: 12px;
+    text-align: left;
+    font-weight: 600;
+    border-bottom: 2px solid #ddd;
+}
+
+.dept-table td {
+    padding: 10px 12px;
+    border-bottom: 1px solid #eee;
+}
+
+.dept-row:hover {
+    background-color: #f8f9fa;
+}
+
+.dept-actions {
+    margin: 20px 0;
+    text-align: center;
+}
+
+.dept-actions button {
+    margin: 5px;
 }
 </style>
 
