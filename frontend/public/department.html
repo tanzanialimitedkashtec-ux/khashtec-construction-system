@@ -20741,30 +20741,264 @@ function policyImplementation(){
 }
 
 function documentManagement(){
-    showContent(`<div class="card">
-        <h3>Document Management System</h3>
-        <p><strong>Document Control:</strong> Manage all company documents and certificates</p>
-        
-        <div class="doc-management">
-            <div class="doc-upload">
-                <h4>Upload Company Certificates</h4>
-                <div class="form-group">
-                    <label>Certificate Type</label>
-                    <select id="certType">
-                        <option value="">Select Type</option>
-                        <option value="tin">TIN Certificate</option>
-                        <option value="vrn">VRN Certificate</option>
-                        <option value="crb">CRB Certificate</option>
-                        <option value="license">Business License</option>
-                        <option value="osha">OSHA Compliance</option>
-                        <option value="nssf">NSSF Compliance</option>
-                        <option value="wcf">WCF Compliance</option>
-                    </select>
-                </div>
-                <button class="action" onclick="uploadCertificate()">Upload Certificate</button>
-            </div>
+    console.log('📄 Loading Document Management System...');
+    
+    // Show loading message
+    showContent(`
+        <div class="card">
+            <h3>Document Management System</h3>
+            <p><strong>Loading documents...</strong></p>
         </div>
-    </div>`);
+    `);
+    
+    // Load documents from database
+    const baseUrl = window.location.origin;
+    let documents = [];
+    
+    try {
+        const response = await fetch(`${baseUrl}/api/documents`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            }
+        });
+        
+        if (response.ok) {
+            const result = await response.json();
+            documents = result.data || [];
+            console.log(`✅ Loaded ${documents.length} documents from database`);
+        } else {
+            console.warn('⚠️ Failed to load documents, using empty list');
+        }
+    } catch (error) {
+        console.error('❌ Error loading documents:', error);
+    }
+    
+    // Generate document management HTML
+    const formHtml = `
+        <div class="card">
+            <h3>Document Management System</h3>
+            <p><strong>Document Control:</strong> Manage all company documents and certificates</p>
+            
+            <div class="doc-management">
+                <div class="doc-upload">
+                    <h4>Upload Company Certificates</h4>
+                    <div class="form-group">
+                        <label>Certificate Type</label>
+                        <select id="certType">
+                            <option value="">Select Type</option>
+                            <option value="tin">TIN Certificate</option>
+                            <option value="vrn">VRN Certificate</option>
+                            <option value="crb">CRB Certificate</option>
+                            <option value="license">Business License</option>
+                            <option value="osha">OSHA Compliance</option>
+                            <option value="nssf">NSSF Compliance</option>
+                            <option value="wcf">WCF Compliance</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Document File</label>
+                        <input type="file" id="certFile" accept=".pdf,.jpg,.jpeg,.png" />
+                    </div>
+                    <div class="form-group">
+                        <label>Expiry Date</label>
+                        <input type="date" id="certExpiry" />
+                    </div>
+                    <div class="form-group">
+                        <label>Description</label>
+                        <textarea id="certDescription" placeholder="Enter certificate description..."></textarea>
+                    </div>
+                    <button class="action" onclick="uploadCertificate()">Upload Certificate</button>
+                </div>
+                
+                <div class="doc-list">
+                    <h4>Existing Documents</h4>
+                    <div class="table-container">
+                        <table class="doc-table">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Type</th>
+                                    <th>Name</th>
+                                    <th>Status</th>
+                                    <th>Expiry Date</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${documents.length > 0 ? 
+                                    documents.map(doc => `
+                                        <tr class="doc-row">
+                                            <td>${doc.id}</td>
+                                            <td>${getDocumentTypeLabel(doc.type)}</td>
+                                            <td>${doc.name || doc.filename || 'N/A'}</td>
+                                            <td>
+                                                <span class="status-badge ${getDocumentStatusClass(doc.status, doc.expiry_date)}">
+                                                    ${getDocumentStatus(doc.status, doc.expiry_date)}
+                                                </span>
+                                            </td>
+                                            <td>${formatDate(doc.expiry_date)}</td>
+                                            <td>
+                                                <div class="action-buttons">
+                                                    <button class="action-btn view-btn" onclick="viewDocument(${doc.id})">View</button>
+                                                    <button class="action-btn download-btn" onclick="downloadDocument(${doc.id})">Download</button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    `).join('') : 
+                                    `<tr><td colspan="6" style="text-align: center; padding: 20px;">No documents found</td></tr>`
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="disclaimer">
+                <p><strong>Note:</strong> Upload certificates in PDF, JPG, or PNG format. Maximum file size: 10MB.</p>
+            </div>
+        </div>`;
+    
+    console.log('🔄 Updating content with document management data...');
+    showContent(formHtml);
+    console.log('✅ Document management content updated successfully');
+}
+
+// Document helper functions
+function getDocumentTypeLabel(type) {
+    const types = {
+        'tin': 'TIN Certificate',
+        'vrn': 'VRN Certificate',
+        'crb': 'CRB Certificate',
+        'license': 'Business License',
+        'osha': 'OSHA Compliance',
+        'nssf': 'NSSF Compliance',
+        'wcf': 'WCF Compliance'
+    };
+    return types[type] || type?.toUpperCase() || 'Unknown';
+}
+
+function getDocumentStatus(status, expiryDate) {
+    if (status === 'expired' || isExpired(expiryDate)) {
+        return 'Expired';
+    } else if (isExpiringSoon(expiryDate)) {
+        return 'Expiring Soon';
+    } else if (status === 'active') {
+        return 'Active';
+    }
+    return status || 'Unknown';
+}
+
+function getDocumentStatusClass(status, expiryDate) {
+    if (status === 'expired' || isExpired(expiryDate)) {
+        return 'status-suspended';
+    } else if (isExpiringSoon(expiryDate)) {
+        return 'status-warning';
+    }
+    return 'status-active';
+}
+
+function isExpired(expiryDate) {
+    if (!expiryDate) return false;
+    return new Date(expiryDate) < new Date();
+}
+
+function isExpiringSoon(expiryDate) {
+    if (!expiryDate) return false;
+    const expiry = new Date(expiryDate);
+    const today = new Date();
+    const daysUntilExpiry = Math.ceil((expiry - today) / (1000 * 60 * 60 * 24));
+    return daysUntilExpiry > 0 && daysUntilExpiry <= 30;
+}
+
+function formatDate(dateString) {
+    if (!dateString) return 'N/A';
+    const date = new Date(dateString);
+    return date.toLocaleDateString();
+}
+
+// Document action functions
+async function uploadCertificate() {
+    const certType = document.getElementById('certType').value;
+    const certFile = document.getElementById('certFile').files[0];
+    const certExpiry = document.getElementById('certExpiry').value;
+    const certDescription = document.getElementById('certDescription').value;
+    
+    if (!certType || !certFile) {
+        showNotification('Please select certificate type and file', 'error');
+        return;
+    }
+    
+    if (certFile.size > 10 * 1024 * 1024) {
+        showNotification('File size must be less than 10MB', 'error');
+        return;
+    }
+    
+    console.log('📤 Uploading certificate:', certType);
+    
+    try {
+        const formData = new FormData();
+        formData.append('type', certType);
+        formData.append('file', certFile);
+        formData.append('expiry_date', certExpiry);
+        formData.append('description', certDescription);
+        
+        const baseUrl = window.location.origin;
+        const response = await fetch(`${baseUrl}/api/documents/upload`, {
+            method: 'POST',
+            body: formData
+        });
+        
+        if (response.ok) {
+            showNotification('Certificate uploaded successfully', 'success');
+            // Clear form
+            document.getElementById('certType').value = '';
+            document.getElementById('certFile').value = '';
+            document.getElementById('certExpiry').value = '';
+            document.getElementById('certDescription').value = '';
+            // Refresh document list
+            documentManagement();
+        } else {
+            const errorData = await response.json().catch(() => ({}));
+            showNotification(errorData.error || 'Failed to upload certificate', 'error');
+        }
+    } catch (error) {
+        console.error('❌ Error uploading certificate:', error);
+        showNotification('Error uploading certificate. Please try again.', 'error');
+    }
+}
+
+async function viewDocument(docId) {
+    console.log('👁️ Viewing document:', docId);
+    showNotification(`Opening document ID: ${docId}`, 'info');
+    // In a real implementation, this would open the document in a viewer
+}
+
+async function downloadDocument(docId) {
+    console.log('⬇️ Downloading document:', docId);
+    try {
+        const baseUrl = window.location.origin;
+        const response = await fetch(`${baseUrl}/api/documents/${docId}/download`);
+        
+        if (response.ok) {
+            const blob = await response.blob();
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `document-${docId}`;
+            document.body.appendChild(a);
+            a.click();
+            window.URL.revokeObjectURL(url);
+            document.body.removeChild(a);
+            showNotification('Document downloaded successfully', 'success');
+        } else {
+            showNotification('Failed to download document', 'error');
+        }
+    } catch (error) {
+        console.error('❌ Error downloading document:', error);
+        showNotification('Error downloading document. Please try again.', 'error');
+    }
 }
 
 async function userAccountManagement(){
@@ -23162,6 +23396,105 @@ function filterPpeRecords() {
     color: #2c3e50;
     font-weight: 600;
     min-width: 120px;
+}
+
+/* Document Management Styles */
+.doc-management {
+    display: grid;
+    grid-template-columns: 1fr 2fr;
+    gap: 30px;
+    margin: 20px 0;
+}
+
+.doc-upload {
+    background: #f8f9fa;
+    padding: 20px;
+    border-radius: 8px;
+    border: 1px solid #dee2e6;
+}
+
+.doc-upload h4 {
+    color: #2c3e50;
+    margin-bottom: 15px;
+}
+
+.doc-upload .form-group {
+    margin-bottom: 15px;
+}
+
+.doc-upload label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: 600;
+    color: #495057;
+}
+
+.doc-upload select,
+.doc-upload input,
+.doc-upload textarea {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ced4da;
+    border-radius: 4px;
+    font-size: 14px;
+}
+
+.doc-upload textarea {
+    resize: vertical;
+    min-height: 80px;
+}
+
+.doc-list {
+    background: white;
+}
+
+.doc-list h4 {
+    color: #2c3e50;
+    margin-bottom: 15px;
+}
+
+.doc-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+}
+
+.doc-table th {
+    background: linear-gradient(135deg, #6c757d 0%, #495057 100%);
+    color: white;
+    padding: 12px;
+    text-align: left;
+    font-weight: 600;
+    border-bottom: 2px solid #ddd;
+}
+
+.doc-table td {
+    padding: 10px 12px;
+    border-bottom: 1px solid #eee;
+}
+
+.doc-row:hover {
+    background-color: #f8f9fa;
+}
+
+.status-warning {
+    background-color: #ffc107;
+    color: #212529;
+}
+
+.download-btn {
+    background-color: #17a2b8;
+    color: white;
+}
+
+.download-btn:hover {
+    background-color: #138496;
+}
+
+@media (max-width: 768px) {
+    .doc-management {
+        grid-template-columns: 1fr;
+    }
 }
 </style>
 
