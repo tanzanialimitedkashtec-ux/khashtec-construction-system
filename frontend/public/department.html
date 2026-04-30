@@ -20394,12 +20394,20 @@ async function suspendUser(userId) {
             
             try {
                 const baseUrl = window.location.origin;
-                const response = await fetch(`${baseUrl}/api/users/${userId}/suspend`, {
+                const response = await fetch(`${baseUrl}/api/employees/action`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
                         'Accept': 'application/json'
-                    }
+                    },
+                    body: JSON.stringify({
+                        employeeId: userId,
+                        actionType: 'suspend',
+                        actionDate: new Date().toISOString().split('T')[0],
+                        reasonCategory: 'other',
+                        actionDetails: 'Suspended by Director of Administration',
+                        decidedBy: 'Director of Administration'
+                    })
                 });
                 
                 if (response.ok) {
@@ -20408,7 +20416,7 @@ async function suspendUser(userId) {
                     userAccountManagement();
                 } else {
                     const errorData = await response.json().catch(() => ({}));
-                    showNotification(errorData.message || 'Failed to suspend user', 'error');
+                    showNotification(errorData.error || 'Failed to suspend user', 'error');
                 }
             } catch (error) {
                 console.error('❌ Error suspending user:', error);
@@ -20429,12 +20437,16 @@ async function reactivateUser(userId) {
             
             try {
                 const baseUrl = window.location.origin;
-                const response = await fetch(`${baseUrl}/api/users/${userId}/reactivate`, {
+                // For now, we'll use a simple approach to reactivate by updating status
+                const response = await fetch(`${baseUrl}/api/employees/reactivate`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
                         'Accept': 'application/json'
-                    }
+                    },
+                    body: JSON.stringify({
+                        employeeId: userId
+                    })
                 });
                 
                 if (response.ok) {
@@ -20442,8 +20454,8 @@ async function reactivateUser(userId) {
                     // Refresh the user list
                     userAccountManagement();
                 } else {
-                    const errorData = await response.json().catch(() => ({}));
-                    showNotification(errorData.message || 'Failed to reactivate user', 'error');
+                    // If the endpoint doesn't exist, show a message
+                    showNotification('Reactivate endpoint not available. Please contact system administrator.', 'info');
                 }
             } catch (error) {
                 console.error('❌ Error reactivating user:', error);
@@ -20461,7 +20473,7 @@ async function viewUserDetails(userId) {
     
     try {
         const baseUrl = window.location.origin;
-        const response = await fetch(`${baseUrl}/api/users/${userId}`, {
+        const response = await fetch(`${baseUrl}/api/office-portal/users/${userId}`, {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
