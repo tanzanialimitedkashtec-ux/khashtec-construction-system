@@ -4066,10 +4066,10 @@ background: #f8f9fa;
     </div>
 
     <div class="system-content">
-        <div class="sidebar collapsed">
-            <h3 id="userRole"></h3>
+        <div class="sidebar">
+            <h3 id="userRole">HR Dashboard</h3>
             <button onclick="handleLogout()">Logout</button>
-            <div id="menu"></div>
+            <div id="menu"><button>Register Employee</button><button>Create Worker Account</button><button>Assign Project Workers</button><button>Update Employee Records</button><button>Track Attendance</button><button>Manage Leave &amp; Contracts</button><button>Manage Policies</button><button>Approve Senior Staff Hiring</button><button>Approve Workforce Budget</button></div>
         </div>
 
         <div class="content" id="contentArea">
@@ -27424,27 +27424,34 @@ function reviewOrgStructure() {
 
 <!-- Role-Based Navigation System -->
 <script>
-// Role-based menu configurations
+// Role-based menu configurations - All roles use HR-style format
 const roleMenus = {
     'MD': {
-        title: 'MD Dashboard',
+        title: 'HR Dashboard',
         buttons: [
-            'Approve Recruitment Policies',
-            'Approve Senior Staff Hiring', 
-            'Approve Workforce Budget',
-            'Review Employee Count',
-            'View All Workers',
-            'Suspend/Terminate Employment',
-            'View Workforce Reports'
+            'Register Employee',
+            'Create Worker Account',
+            'Assign Project Workers',
+            'Update Employee Records',
+            'Track Attendance',
+            'Manage Leave & Contracts',
+            'Manage Policies',
+            'Approve Senior Staff Hiring',
+            'Approve Workforce Budget'
         ]
     },
     'ADMIN': {
-        title: 'Admin Dashboard',
+        title: 'HR Dashboard',
         buttons: [
-            'Manage System Settings',
-            'User Account Management',
-            'System Reports',
-            'Backup & Recovery'
+            'Register Employee',
+            'Create Worker Account',
+            'Assign Project Workers',
+            'Update Employee Records',
+            'Track Attendance',
+            'Manage Leave & Contracts',
+            'Manage Policies',
+            'Approve Senior Staff Hiring',
+            'Approve Workforce Budget'
         ]
     },
     'HR': {
@@ -27462,57 +27469,73 @@ const roleMenus = {
         ]
     },
     'HSE': {
-        title: 'HSE Dashboard',
+        title: 'HR Dashboard',
         buttons: [
-            'Safety Inspections',
-            'Incident Reports',
-            'Safety Training',
-            'Compliance Monitoring',
-            'Risk Assessment',
-            'Emergency Procedures'
+            'Register Employee',
+            'Create Worker Account',
+            'Assign Project Workers',
+            'Update Employee Records',
+            'Track Attendance',
+            'Manage Leave & Contracts',
+            'Manage Policies',
+            'Approve Senior Staff Hiring',
+            'Approve Workforce Budget'
         ]
     },
     'FINANCE': {
-        title: 'Finance Dashboard',
+        title: 'HR Dashboard',
         buttons: [
-            'Budget Management',
-            'Expense Reports',
-            'Payroll Processing',
-            'Financial Reports',
-            'Invoice Management',
-            'Tax Compliance'
+            'Register Employee',
+            'Create Worker Account',
+            'Assign Project Workers',
+            'Update Employee Records',
+            'Track Attendance',
+            'Manage Leave & Contracts',
+            'Manage Policies',
+            'Approve Senior Staff Hiring',
+            'Approve Workforce Budget'
         ]
     },
     'PROJECT': {
-        title: 'Project Dashboard',
+        title: 'HR Dashboard',
         buttons: [
-            'Project Planning',
-            'Resource Allocation',
-            'Progress Tracking',
-            'Quality Control',
-            'Timeline Management',
-            'Cost Analysis'
+            'Register Employee',
+            'Create Worker Account',
+            'Assign Project Workers',
+            'Update Employee Records',
+            'Track Attendance',
+            'Manage Leave & Contracts',
+            'Manage Policies',
+            'Approve Senior Staff Hiring',
+            'Approve Workforce Budget'
         ]
     },
     'REALESTATE': {
-        title: 'Real Estate Dashboard',
+        title: 'HR Dashboard',
         buttons: [
-            'Property Management',
-            'Client Relations',
-            'Sales Tracking',
-            'Property Listings',
-            'Market Analysis',
-            'Lease Management'
+            'Register Employee',
+            'Create Worker Account',
+            'Assign Project Workers',
+            'Update Employee Records',
+            'Track Attendance',
+            'Manage Leave & Contracts',
+            'Manage Policies',
+            'Approve Senior Staff Hiring',
+            'Approve Workforce Budget'
         ]
     },
     'ASSISTANT': {
-        title: 'Assistant Dashboard',
+        title: 'HR Dashboard',
         buttons: [
-            'Schedule Management',
-            'Document Processing',
-            'Communication',
-            'Data Entry',
-            'Report Generation'
+            'Register Employee',
+            'Create Worker Account',
+            'Assign Project Workers',
+            'Update Employee Records',
+            'Track Attendance',
+            'Manage Leave & Contracts',
+            'Manage Policies',
+            'Approve Senior Staff Hiring',
+            'Approve Workforce Budget'
         ]
     }
 };
