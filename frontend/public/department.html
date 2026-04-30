@@ -227,6 +227,80 @@ button.action{
     display:none;
 }
 
+/* Language Purchase Styles */
+.campaign-actions,
+.purchase-actions,
+.tracking-actions {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 16px;
+}
+
+.campaign-grid,
+.purchase-grid,
+.tracking-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 12px;
+    margin-top: 12px;
+}
+
+.campaign-card,
+.purchase-card,
+.tracking-card {
+    background: #f8f9fa;
+    border: 1px solid #e9ecef;
+    border-radius: 4px;
+    padding: 12px;
+    transition: box-shadow 0.2s ease;
+}
+
+.campaign-card:hover,
+.purchase-card:hover,
+.tracking-card:hover {
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.campaign-card h5,
+.purchase-card h5,
+.tracking-card h5 {
+    color: #0b3d91;
+    margin-bottom: 8px;
+    font-size: 12px;
+}
+
+.campaign-card p,
+.purchase-card p,
+.tracking-card p {
+    margin: 4px 0;
+    font-size: 9px;
+    color: #495057;
+}
+
+.campaign-details,
+.purchase-details,
+.tracking-details {
+    background: #f8f9fa;
+    padding: 16px;
+    border-radius: 4px;
+    margin: 12px 0;
+}
+
+.campaign-details p,
+.purchase-details p,
+.tracking-details p {
+    margin: 8px 0;
+    font-size: 10px;
+    line-height: 1.4;
+}
+
+.campaign-details strong,
+.purchase-details strong,
+.tracking-details strong {
+    color: #0b3d91;
+    font-weight: 600;
+}
+
 /* Document Management Styles */
 .search-section {
     display: flex;
@@ -3322,6 +3396,9 @@ function loadMenu(){
         addMenu("Financial Reporting", financialReporting);
         addMenu("Audits", financeAudits);
         addMenu("Compliance", financeCompliance);
+        addMenu("Language Campaigns", manageLanguageCampaigns);
+        addMenu("Language Purchases", manageLanguagePurchases);
+        addMenu("Payment Tracking", trackLanguagePayments);
     }
 
     if(currentRole === "PROJECT"){
@@ -16033,6 +16110,558 @@ function financeCompliance(){
             </div>
         </div>
     </div>`);
+}
+
+/* ===== LANGUAGE PURCHASE FUNCTIONS ===== */
+
+function manageLanguageCampaigns() {
+    showContent(`
+        <div class="card">
+            <h3>Language Purchase Campaigns</h3>
+            <p><strong>Campaign Management:</strong> Create and manage language purchase campaigns</p>
+            
+            <div class="campaign-actions">
+                <button class="btn-primary" onclick="createLanguageCampaign()">Create New Campaign</button>
+                <button class="btn-secondary" onclick="viewActiveCampaigns()">View Active Campaigns</button>
+            </div>
+            
+            <div class="campaigns-list" id="campaignsList">
+                <h4>Active Campaigns</h4>
+                <div class="campaign-grid">
+                    <!-- Campaigns will be loaded here -->
+                </div>
+            </div>
+        </div>
+    `);
+    loadLanguageCampaigns();
+}
+
+function manageLanguagePurchases() {
+    showContent(`
+        <div class="card">
+            <h3>Language Purchases</h3>
+            <p><strong>Purchase Management:</strong> Record and track language purchases</p>
+            
+            <div class="purchase-actions">
+                <button class="btn-primary" onclick="recordLanguagePurchase()">Record New Purchase</button>
+                <button class="btn-secondary" onclick="viewPurchaseHistory()">View Purchase History</button>
+            </div>
+            
+            <div class="purchases-list" id="purchasesList">
+                <h4>Recent Purchases</h4>
+                <div class="purchase-grid">
+                    <!-- Purchases will be loaded here -->
+                </div>
+            </div>
+        </div>
+    `);
+    loadLanguagePurchases();
+}
+
+function trackLanguagePayments() {
+    showContent(`
+        <div class="card">
+            <h3>Payment Tracking</h3>
+            <p><strong>Payment Management:</strong> Track and manage payment progress</p>
+            
+            <div class="tracking-actions">
+                <button class="btn-primary" onclick="generateTrackingNumber()">Generate Tracking Number</button>
+                <button class="btn-secondary" onclick="viewPaymentStatus()">View Payment Status</button>
+            </div>
+            
+            <div class="tracking-list" id="trackingList">
+                <h4>Payment Tracking</h4>
+                <div class="tracking-grid">
+                    <!-- Tracking info will be loaded here -->
+                </div>
+            </div>
+        </div>
+    `);
+    loadPaymentTracking();
+}
+
+function createLanguageCampaign() {
+    showContent(`
+        <div class="card">
+            <h3>Create Language Campaign</h3>
+            <form id="campaignForm" class="compact-form">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Campaign Name</label>
+                        <input type="text" id="campaignName" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Language Name</label>
+                        <input type="text" id="languageName" required>
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Language Code</label>
+                        <input type="text" id="languageCode" placeholder="e.g., EN, SW, FR" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Price per Unit (TZS)</label>
+                        <input type="number" id="pricePerUnit" step="0.01" required>
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Total Units Available</label>
+                        <input type="number" id="totalUnits" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Campaign Status</label>
+                        <select id="campaignStatus">
+                            <option value="Draft">Draft</option>
+                            <option value="Active">Active</option>
+                            <option value="Completed">Completed</option>
+                            <option value="Cancelled">Cancelled</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Start Date</label>
+                        <input type="date" id="startDate">
+                    </div>
+                    <div class="form-group">
+                        <label>End Date</label>
+                        <input type="date" id="endDate">
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label>Campaign Description</label>
+                    <textarea id="campaignDescription" rows="3"></textarea>
+                </div>
+                
+                <div class="form-actions">
+                    <button type="submit" class="btn-primary">Create Campaign</button>
+                    <button type="button" class="btn-secondary" onclick="manageLanguageCampaigns()">Cancel</button>
+                </div>
+            </form>
+        </div>
+    `);
+    
+    document.getElementById('campaignForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        saveLanguageCampaign();
+    });
+}
+
+function recordLanguagePurchase() {
+    showContent(`
+        <div class="card">
+            <h3>Record Language Purchase</h3>
+            <form id="purchaseForm" class="compact-form">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Select Campaign</label>
+                        <select id="campaignSelect" required>
+                            <option value="">Choose a campaign...</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Buyer Name</label>
+                        <input type="text" id="buyerName" required>
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Buyer Email</label>
+                        <input type="email" id="buyerEmail" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Buyer Phone</label>
+                        <input type="tel" id="buyerPhone">
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Units Purchased</label>
+                        <input type="number" id="unitsPurchased" min="1" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Payment Method</label>
+                        <select id="paymentMethod">
+                            <option value="Bank Transfer">Bank Transfer</option>
+                            <option value="Cash">Cash</option>
+                            <option value="Mobile Money">Mobile Money</option>
+                            <option value="Credit Card">Credit Card</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label>Buyer Address</label>
+                    <textarea id="buyerAddress" rows="2"></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label>Notes</label>
+                    <textarea id="purchaseNotes" rows="2"></textarea>
+                </div>
+                
+                <div class="form-actions">
+                    <button type="submit" class="btn-primary">Record Purchase</button>
+                    <button type="button" class="btn-secondary" onclick="manageLanguagePurchases()">Cancel</button>
+                </div>
+            </form>
+        </div>
+    `);
+    
+    loadCampaignsForPurchase();
+    document.getElementById('purchaseForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        saveLanguagePurchase();
+    });
+}
+
+function generateTrackingNumber() {
+    showContent(`
+        <div class="card">
+            <h3>Generate Payment Tracking Number</h3>
+            <form id="trackingForm" class="compact-form">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Select Purchase</label>
+                        <select id="purchaseSelect" required>
+                            <option value="">Choose a purchase...</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Payment Stage</label>
+                        <select id="paymentStage">
+                            <option value="Initiated">Initiated</option>
+                            <option value="Processing">Processing</option>
+                            <option value="Confirmed">Confirmed</option>
+                            <option value="Completed">Completed</option>
+                            <option value="Failed">Failed</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Payment Reference</label>
+                        <input type="text" id="paymentReference">
+                    </div>
+                    <div class="form-group">
+                        <label>Bank Reference</label>
+                        <input type="text" id="bankReference">
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Transaction ID</label>
+                        <input type="text" id="transactionId">
+                    </div>
+                    <div class="form-group">
+                        <label>Amount (TZS)</label>
+                        <input type="number" id="trackingAmount" step="0.01" required>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label>Notes</label>
+                    <textarea id="trackingNotes" rows="2"></textarea>
+                </div>
+                
+                <div class="form-actions">
+                    <button type="submit" class="btn-primary">Generate Tracking</button>
+                    <button type="button" class="btn-secondary" onclick="trackLanguagePayments()">Cancel</button>
+                </div>
+            </form>
+        </div>
+    `);
+    
+    loadPurchasesForTracking();
+    document.getElementById('trackingForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        savePaymentTracking();
+    });
+}
+
+// Save Functions
+function saveLanguageCampaign() {
+    const campaign = {
+        campaignName: document.getElementById('campaignName').value,
+        languageName: document.getElementById('languageName').value,
+        languageCode: document.getElementById('languageCode').value,
+        pricePerUnit: document.getElementById('pricePerUnit').value,
+        totalUnits: document.getElementById('totalUnits').value,
+        status: document.getElementById('campaignStatus').value,
+        startDate: document.getElementById('startDate').value,
+        endDate: document.getElementById('endDate').value,
+        description: document.getElementById('campaignDescription').value,
+        createdBy: getCurrentUser(),
+        createdDate: new Date().toLocaleString()
+    };
+    
+    // Generate unique campaign ID
+    campaign.id = 'CAMPAIGN_' + Date.now();
+    
+    // Save to localStorage (in production, this would be an API call)
+    let campaigns = JSON.parse(localStorage.getItem('languageCampaigns') || '[]');
+    campaigns.push(campaign);
+    localStorage.setItem('languageCampaigns', JSON.stringify(campaigns));
+    
+    customAlert('Campaign created successfully!', 'Success', 'success');
+    manageLanguageCampaigns();
+}
+
+function saveLanguagePurchase() {
+    const campaignSelect = document.getElementById('campaignSelect');
+    const selectedCampaign = JSON.parse(campaignSelect.options[campaignSelect.selectedIndex].value);
+    
+    const purchase = {
+        purchaseId: 'PURCHASE_' + Date.now(),
+        campaignId: selectedCampaign.id,
+        campaignName: selectedCampaign.campaignName,
+        buyerName: document.getElementById('buyerName').value,
+        buyerEmail: document.getElementById('buyerEmail').value,
+        buyerPhone: document.getElementById('buyerPhone').value,
+        buyerAddress: document.getElementById('buyerAddress').value,
+        unitsPurchased: document.getElementById('unitsPurchased').value,
+        unitPrice: selectedCampaign.pricePerUnit,
+        totalAmount: document.getElementById('unitsPurchased').value * selectedCampaign.pricePerUnit,
+        paymentMethod: document.getElementById('paymentMethod').value,
+        paymentStatus: 'Pending',
+        notes: document.getElementById('purchaseNotes').value,
+        purchaseDate: new Date().toLocaleString(),
+        createdBy: getCurrentUser()
+    };
+    
+    // Generate tracking number
+    purchase.trackingNumber = 'TRACK_' + Math.random().toString(36).substr(2, 9).toUpperCase();
+    
+    // Save to localStorage
+    let purchases = JSON.parse(localStorage.getItem('languagePurchases') || '[]');
+    purchases.push(purchase);
+    localStorage.setItem('languagePurchases', JSON.stringify(purchases));
+    
+    customAlert(`Purchase recorded successfully! Tracking Number: ${purchase.trackingNumber}`, 'Success', 'success');
+    manageLanguagePurchases();
+}
+
+function savePaymentTracking() {
+    const purchaseSelect = document.getElementById('purchaseSelect');
+    const selectedPurchase = JSON.parse(purchaseSelect.options[purchaseSelect.selectedIndex].value);
+    
+    const tracking = {
+        trackingId: 'TRACKING_' + Date.now(),
+        purchaseId: selectedPurchase.id,
+        trackingNumber: 'TRACK_' + Math.random().toString(36).substr(2, 9).toUpperCase(),
+        paymentStage: document.getElementById('paymentStage').value,
+        paymentReference: document.getElementById('paymentReference').value,
+        bankReference: document.getElementById('bankReference').value,
+        transactionId: document.getElementById('transactionId').value,
+        amount: document.getElementById('trackingAmount').value,
+        notes: document.getElementById('trackingNotes').value,
+        paymentDate: new Date().toLocaleString(),
+        createdBy: getCurrentUser()
+    };
+    
+    // Save to localStorage
+    let trackingRecords = JSON.parse(localStorage.getItem('languagePaymentTracking') || '[]');
+    trackingRecords.push(tracking);
+    localStorage.setItem('languagePaymentTracking', JSON.stringify(trackingRecords));
+    
+    customAlert(`Payment tracking created successfully! Tracking Number: ${tracking.trackingNumber}`, 'Success', 'success');
+    trackLanguagePayments();
+}
+
+// Load Functions
+function loadLanguageCampaigns() {
+    const campaigns = JSON.parse(localStorage.getItem('languageCampaigns') || '[]');
+    const campaignsGrid = document.querySelector('.campaign-grid');
+    
+    if (campaigns.length === 0) {
+        campaignsGrid.innerHTML = '<p>No campaigns found. Create your first campaign!</p>';
+        return;
+    }
+    
+    campaignsGrid.innerHTML = campaigns.map(campaign => `
+        <div class="campaign-card">
+            <h5>${campaign.campaignName}</h5>
+            <p><strong>Language:</strong> ${campaign.languageName} (${campaign.languageCode})</p>
+            <p><strong>Price:</strong> TZS ${campaign.pricePerUnit}</p>
+            <p><strong>Units:</strong> ${campaign.unitsSold || 0}/${campaign.totalUnits}</p>
+            <p><strong>Status:</strong> ${campaign.status}</p>
+            <button class="btn-primary" onclick="viewCampaignDetails('${campaign.id}')">View Details</button>
+        </div>
+    `).join('');
+}
+
+function loadLanguagePurchases() {
+    const purchases = JSON.parse(localStorage.getItem('languagePurchases') || '[]');
+    const purchasesGrid = document.querySelector('.purchase-grid');
+    
+    if (purchases.length === 0) {
+        purchasesGrid.innerHTML = '<p>No purchases found. Record your first purchase!</p>';
+        return;
+    }
+    
+    purchasesGrid.innerHTML = purchases.map(purchase => `
+        <div class="purchase-card">
+            <h5>${purchase.purchaseId}</h5>
+            <p><strong>Buyer:</strong> ${purchase.buyerName}</p>
+            <p><strong>Campaign:</strong> ${purchase.campaignName}</p>
+            <p><strong>Units:</strong> ${purchase.unitsPurchased}</p>
+            <p><strong>Amount:</strong> TZS ${purchase.totalAmount}</p>
+            <p><strong>Status:</strong> ${purchase.paymentStatus}</p>
+            <p><strong>Tracking:</strong> ${purchase.trackingNumber}</p>
+            <button class="btn-primary" onclick="viewPurchaseDetails('${purchase.id}')">View Details</button>
+        </div>
+    `).join('');
+}
+
+function loadPaymentTracking() {
+    const trackingRecords = JSON.parse(localStorage.getItem('languagePaymentTracking') || '[]');
+    const trackingGrid = document.querySelector('.tracking-grid');
+    
+    if (trackingRecords.length === 0) {
+        trackingGrid.innerHTML = '<p>No tracking records found. Generate your first tracking number!</p>';
+        return;
+    }
+    
+    trackingGrid.innerHTML = trackingRecords.map(tracking => `
+        <div class="tracking-card">
+            <h5>${tracking.trackingNumber}</h5>
+            <p><strong>Stage:</strong> ${tracking.paymentStage}</p>
+            <p><strong>Amount:</strong> TZS ${tracking.amount}</p>
+            <p><strong>Reference:</strong> ${tracking.paymentReference || 'N/A'}</p>
+            <p><strong>Date:</strong> ${tracking.paymentDate}</p>
+            <button class="btn-primary" onclick="viewTrackingDetails('${tracking.id}')">View Details</button>
+        </div>
+    `).join('');
+}
+
+function loadCampaignsForPurchase() {
+    const campaigns = JSON.parse(localStorage.getItem('languageCampaigns') || '[]');
+    const campaignSelect = document.getElementById('campaignSelect');
+    
+    campaigns.filter(c => c.status === 'Active').forEach(campaign => {
+        const option = document.createElement('option');
+        option.value = JSON.stringify(campaign);
+        option.textContent = `${campaign.campaignName} - ${campaign.languageName} (TZS ${campaign.pricePerUnit})`;
+        campaignSelect.appendChild(option);
+    });
+}
+
+function loadPurchasesForTracking() {
+    const purchases = JSON.parse(localStorage.getItem('languagePurchases') || '[]');
+    const purchaseSelect = document.getElementById('purchaseSelect');
+    
+    purchases.forEach(purchase => {
+        const option = document.createElement('option');
+        option.value = JSON.stringify(purchase);
+        option.textContent = `${purchase.purchaseId} - ${purchase.buyerName} (TZS ${purchase.totalAmount})`;
+        purchaseSelect.appendChild(option);
+    });
+}
+
+// Helper Functions
+function getCurrentUser() {
+    return document.getElementById('userName').textContent || 'Current User';
+}
+
+function viewCampaignDetails(campaignId) {
+    const campaigns = JSON.parse(localStorage.getItem('languageCampaigns') || '[]');
+    const campaign = campaigns.find(c => c.id === campaignId);
+    
+    if (campaign) {
+        showContent(`
+            <div class="card">
+                <h3>Campaign Details</h3>
+                <div class="campaign-details">
+                    <p><strong>Campaign Name:</strong> ${campaign.campaignName}</p>
+                    <p><strong>Language:</strong> ${campaign.languageName} (${campaign.languageCode})</p>
+                    <p><strong>Price per Unit:</strong> TZS ${campaign.pricePerUnit}</p>
+                    <p><strong>Total Units:</strong> ${campaign.totalUnits}</p>
+                    <p><strong>Units Sold:</strong> ${campaign.unitsSold || 0}</p>
+                    <p><strong>Status:</strong> ${campaign.status}</p>
+                    <p><strong>Start Date:</strong> ${campaign.startDate || 'Not set'}</p>
+                    <p><strong>End Date:</strong> ${campaign.endDate || 'Not set'}</p>
+                    <p><strong>Description:</strong> ${campaign.description || 'No description'}</p>
+                    <p><strong>Created By:</strong> ${campaign.createdBy}</p>
+                    <p><strong>Created Date:</strong> ${campaign.createdDate}</p>
+                </div>
+                <div class="form-actions">
+                    <button class="btn-primary" onclick="manageLanguageCampaigns()">Back to Campaigns</button>
+                </div>
+            </div>
+        `);
+    }
+}
+
+function viewPurchaseDetails(purchaseId) {
+    const purchases = JSON.parse(localStorage.getItem('languagePurchases') || '[]');
+    const purchase = purchases.find(p => p.id === purchaseId);
+    
+    if (purchase) {
+        showContent(`
+            <div class="card">
+                <h3>Purchase Details</h3>
+                <div class="purchase-details">
+                    <p><strong>Purchase ID:</strong> ${purchase.purchaseId}</p>
+                    <p><strong>Campaign:</strong> ${purchase.campaignName}</p>
+                    <p><strong>Buyer Name:</strong> ${purchase.buyerName}</p>
+                    <p><strong>Buyer Email:</strong> ${purchase.buyerEmail}</p>
+                    <p><strong>Buyer Phone:</strong> ${purchase.buyerPhone || 'Not provided'}</p>
+                    <p><strong>Buyer Address:</strong> ${purchase.buyerAddress || 'Not provided'}</p>
+                    <p><strong>Units Purchased:</strong> ${purchase.unitsPurchased}</p>
+                    <p><strong>Unit Price:</strong> TZS ${purchase.unitPrice}</p>
+                    <p><strong>Total Amount:</strong> TZS ${purchase.totalAmount}</p>
+                    <p><strong>Payment Method:</strong> ${purchase.paymentMethod}</p>
+                    <p><strong>Payment Status:</strong> ${purchase.paymentStatus}</p>
+                    <p><strong>Tracking Number:</strong> ${purchase.trackingNumber}</p>
+                    <p><strong>Purchase Date:</strong> ${purchase.purchaseDate}</p>
+                    <p><strong>Notes:</strong> ${purchase.notes || 'No notes'}</p>
+                    <p><strong>Created By:</strong> ${purchase.createdBy}</p>
+                </div>
+                <div class="form-actions">
+                    <button class="btn-primary" onclick="manageLanguagePurchases()">Back to Purchases</button>
+                </div>
+            </div>
+        `);
+    }
+}
+
+function viewTrackingDetails(trackingId) {
+    const trackingRecords = JSON.parse(localStorage.getItem('languagePaymentTracking') || '[]');
+    const tracking = trackingRecords.find(t => t.id === trackingId);
+    
+    if (tracking) {
+        showContent(`
+            <div class="card">
+                <h3>Payment Tracking Details</h3>
+                <div class="tracking-details">
+                    <p><strong>Tracking Number:</strong> ${tracking.trackingNumber}</p>
+                    <p><strong>Payment Stage:</strong> ${tracking.paymentStage}</p>
+                    <p><strong>Payment Reference:</strong> ${tracking.paymentReference || 'Not provided'}</p>
+                    <p><strong>Bank Reference:</strong> ${tracking.bankReference || 'Not provided'}</p>
+                    <p><strong>Transaction ID:</strong> ${tracking.transactionId || 'Not provided'}</p>
+                    <p><strong>Amount:</strong> TZS ${tracking.amount}</p>
+                    <p><strong>Payment Date:</strong> ${tracking.paymentDate}</p>
+                    <p><strong>Status:</strong> ${tracking.status}</p>
+                    <p><strong>Notes:</strong> ${tracking.notes || 'No notes'}</p>
+                    <p><strong>Created By:</strong> ${tracking.createdBy}</p>
+                </div>
+                <div class="form-actions">
+                    <button class="btn-primary" onclick="trackLanguagePayments()">Back to Tracking</button>
+                </div>
+            </div>
+        `);
+    }
 }
 
 // Finance Helper Functions
