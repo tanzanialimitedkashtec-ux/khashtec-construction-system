@@ -3111,7 +3111,7 @@ function loadMenu(){
     if(currentRole === "ADMIN"){
         addMenu("Administrative Operations", adminOperations);
         addMenu("Compliance Management", complianceManagement);
-        addMenu("Staff Oversight", staffOversight);
+        addMenu("Staff Oversight", () => staffOversight());
         addMenu("Policy Implementation", policyImplementation);
         addMenu("Document Management", documentManagement);
         addMenu("User Account Management", () => userAccountManagement());
@@ -20295,43 +20295,95 @@ function complianceManagement(){
     </div>`);
 }
 
-function staffOversight(){
-    showContent(`<div class="card">
-        <h3>Staff Oversight</h3>
-        <p><strong>HR Monitoring:</strong> Monitor HR department and review staff structure</p>
-        
-        <div class="oversight-dashboard">
-            <div class="hr-monitoring">
-                <h4>HR Department Status</h4>
-                <div class="hr-metrics">
-                    <div class="metric-item">
-                        <span class="metric-label">Total Employees:</span>
-                        <span class="metric-value">156</span>
-                    </div>
-                    <div class="metric-item">
-                        <span class="metric-label">Active Contracts:</span>
-                        <span class="metric-value">142</span>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="staff-structure">
-                <h4>Staff Structure Review</h4>
-                <div class="structure-grid">
-                    <div class="dept-item">
-                        <h5>Management</h5>
-                        <p>Staff: 8 | Budget: Approved</p>
-                        <button class="action" onclick="reviewDeptStructure('management')">Review</button>
-                    </div>
-                    <div class="dept-item">
-                        <h5>Human Resources</h5>
-                        <p>Staff: 12 | Budget: Approved</p>
-                        <button class="action" onclick="reviewDeptStructure('hr')">Review</button>
-                    </div>
-                </div>
-            </div>
+async function staffOversight(){
+    console.log('🔄 Loading staff oversight data...');
+    
+    // First show a loading message
+    showContent(`
+        <div class="card">
+            <h3>Staff Oversight</h3>
+            <p><strong>Loading staff data...</strong></p>
         </div>
-    </div>`);
+    `);
+    
+    // Load staff data from database
+    const baseUrl = window.location.origin;
+    let employees = [];
+    let totalEmployees = 0;
+    let activeContracts = 0;
+    let managementStaff = 0;
+    let hrStaff = 0;
+    
+    try {
+        // Load employees
+        const employeesResponse = await fetch(`${baseUrl}/api/employees`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            }
+        });
+        
+        if (employeesResponse.ok) {
+            const employeesData = await employeesResponse.json();
+            employees = Array.isArray(employeesData) ? employeesData : [];
+            
+            // Calculate statistics
+            totalEmployees = employees.length;
+            activeContracts = employees.filter(emp => emp.contract_status === 'active' || emp.status === 'active').length;
+            managementStaff = employees.filter(emp => emp.department === 'management' || emp.role === 'management' || emp.position?.toLowerCase().includes('manager')).length;
+            hrStaff = employees.filter(emp => emp.department === 'hr' || emp.department === 'human resources' || emp.position?.toLowerCase().includes('hr')).length;
+            
+            console.log('✅ Loaded staff data:', totalEmployees, 'total employees,', activeContracts, 'active contracts');
+        } else {
+            console.warn('⚠️ Failed to load staff data, using default values');
+        }
+    } catch (error) {
+        console.error('❌ Error loading staff data:', error);
+    }
+    
+    // Generate HTML with real data
+    const formHtml = `
+        <div class="card">
+            <h3>Staff Oversight</h3>
+            <p><strong>HR Monitoring:</strong> Monitor HR department and review staff structure</p>
+            
+            <div class="oversight-dashboard">
+                <div class="hr-monitoring">
+                    <h4>HR Department Status</h4>
+                    <div class="hr-metrics">
+                        <div class="metric-item">
+                            <span class="metric-label">Total Employees:</span>
+                            <span class="metric-value">${totalEmployees}</span>
+                        </div>
+                        <div class="metric-item">
+                            <span class="metric-label">Active Contracts:</span>
+                            <span class="metric-value">${activeContracts}</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="staff-structure">
+                    <h4>Staff Structure Review</h4>
+                    <div class="structure-grid">
+                        <div class="dept-item">
+                            <h5>Management</h5>
+                            <p>Staff: ${managementStaff} | Budget: Approved</p>
+                            <button class="action" onclick="reviewDeptStructure('management')">Review</button>
+                        </div>
+                        <div class="dept-item">
+                            <h5>Human Resources</h5>
+                            <p>Staff: ${hrStaff} | Budget: Approved</p>
+                            <button class="action" onclick="reviewDeptStructure('hr')">Review</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>`;
+    
+    console.log('🔄 Updating content with staff oversight data...');
+    showContent(formHtml);
+    console.log('✅ Staff oversight content updated successfully');
 }
 
 function policyImplementation(){
