@@ -568,6 +568,268 @@ button.action{
     min-width: 25px;
 }
 
+/* Budget Table Styles */
+.budget-statistics {
+    display: flex;
+    gap: 15px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+}
+
+.stat-card {
+    background: white;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    padding: 15px;
+    min-width: 140px;
+    text-align: center;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.stat-value {
+    font-size: 18px;
+    font-weight: bold;
+    color: #0b3d91;
+    margin-bottom: 5px;
+}
+
+.stat-label {
+    font-size: 9px;
+    color: #6c757d;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.budget-table-container {
+    background: white;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.budget-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 9px;
+    background: white;
+}
+
+.budget-table th {
+    background: #0b3d91;
+    color: white;
+    padding: 10px 8px;
+    text-align: left;
+    font-weight: bold;
+    font-size: 8px;
+    border-bottom: 2px solid #0a2c6a;
+    white-space: nowrap;
+}
+
+.budget-table td {
+    padding: 8px;
+    border-bottom: 1px solid #e9ecef;
+    vertical-align: middle;
+    font-size: 9px;
+}
+
+.budget-table tr:hover {
+    background: #f8f9fa;
+}
+
+.budget-id {
+    font-weight: bold;
+    color: #0b3d91;
+    font-size: 10px;
+}
+
+.budget-department {
+    color: #6c757d;
+    font-size: 8px;
+    margin-top: 2px;
+}
+
+.submitter-info .submitter-name {
+    font-weight: bold;
+    color: #495057;
+    font-size: 9px;
+}
+
+.submitter-info .submitter-role {
+    color: #6c757d;
+    font-size: 8px;
+    margin-top: 2px;
+}
+
+.headcount-info .headcount-number {
+    font-weight: bold;
+    color: #0b3d91;
+    font-size: 9px;
+}
+
+.budget-breakdown {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+
+.budget-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+}
+
+.budget-item .category {
+    color: #6c757d;
+    font-size: 8px;
+    white-space: nowrap;
+}
+
+.budget-item .amount {
+    font-weight: bold;
+    color: #495057;
+    font-size: 8px;
+    text-align: right;
+}
+
+.total-amount {
+    font-weight: bold;
+    color: #0b3d91;
+    font-size: 10px;
+}
+
+.submission-date {
+    color: #495057;
+    font-size: 9px;
+}
+
+.budget-actions {
+    display: flex;
+    gap: 4px;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.action-btn {
+    background: #0b3d91;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    padding: 4px 6px;
+    font-size: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    min-width: 20px;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.action-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
+.action-btn.approve {
+    background: #28a745;
+}
+
+.action-btn.approve:hover {
+    background: #218838;
+}
+
+.action-btn.modify {
+    background: #ffc107;
+    color: #212529;
+}
+
+.action-btn.modify:hover {
+    background: #e0a800;
+}
+
+.action-btn.reject {
+    background: #dc3545;
+}
+
+.action-btn.reject:hover {
+    background: #c82333;
+}
+
+.action-btn.view {
+    background: #17a2b8;
+}
+
+.action-btn.view:hover {
+    background: #138496;
+}
+
+.action-btn.disabled {
+    background: #6c757d;
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+
+.action-btn.disabled:hover {
+    transform: none;
+    box-shadow: none;
+}
+
+/* Status badges */
+.status-badge {
+    padding: 3px 6px;
+    border-radius: 12px;
+    font-size: 7px;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    white-space: nowrap;
+}
+
+.status-pending {
+    background: #fff3cd;
+    color: #856404;
+    border: 1px solid #ffeaa7;
+}
+
+.status-approved {
+    background: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
+}
+
+.status-rejected {
+    background: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
+}
+
+.status-modification {
+    background: #d1ecf1;
+    color: #0c5460;
+    border: 1px solid #bee5eb;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .budget-statistics {
+        flex-direction: column;
+    }
+    
+    .stat-card {
+        min-width: auto;
+    }
+    
+    .budget-table-container {
+        overflow-x: auto;
+    }
+    
+    .budget-table {
+        min-width: 800px;
+    }
+}
+
 .next-payment.overdue {
     color: #dc3545;
     font-weight: bold;
@@ -4227,19 +4489,19 @@ function filterHiringRequests() {
 function filterBudgets() {
     const searchTerm = document.getElementById('budgetSearchInput').value.toLowerCase();
     const searchResults = document.getElementById('budgetSearchResults');
-    const budgetItems = document.querySelectorAll('.budget-item');
+    const budgetRows = document.querySelectorAll('.budget-row');
     
-    if (budgetItems.length === 0) return;
+    if (budgetRows.length === 0) return;
     
     let visibleCount = 0;
     
-    budgetItems.forEach(item => {
-        const text = item.textContent.toLowerCase();
+    budgetRows.forEach(row => {
+        const text = row.textContent.toLowerCase();
         if (text.includes(searchTerm)) {
-            item.style.display = 'block';
+            row.style.display = '';
             visibleCount++;
         } else {
-            item.style.display = 'none';
+            row.style.display = 'none';
         }
     });
     
@@ -4249,6 +4511,210 @@ function filterBudgets() {
     } else {
         searchResults.textContent = '';
     }
+}
+
+// View budget details function
+window.viewBudgetDetails = function(budgetId) {
+    console.log('🔍 viewBudgetDetails called with ID:', budgetId);
+    
+    // Find the budget data from the current displayed budgets
+    const baseUrl = window.location.origin;
+    fetch(`${baseUrl}/api/workforce-budget/${budgetId}`, {
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${sessionManager.getAuthToken()}`
+        }
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error(`Failed to fetch budget details: ${response.status}`);
+        }
+        return response.json();
+    })
+    .then(budget => {
+        displayBudgetDetailsModal(budget);
+    })
+    .catch(error => {
+        console.error('❌ Error fetching budget details:', error);
+        customAlert('Failed to load budget details. Please try again.', 'Error', 'error');
+    });
+};
+
+function displayBudgetDetailsModal(budget) {
+    // Format currency
+    const formatCurrency = (amount) => {
+        const num = parseFloat(amount) || 0;
+        return `TZS ${num.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`;
+    };
+    
+    // Format dates
+    const formatDate = (dateStr) => {
+        if (!dateStr) return 'Not specified';
+        const date = new Date(dateStr);
+        return date.toLocaleDateString('en-US', { 
+            year: 'numeric', 
+            month: 'long', 
+            day: 'numeric' 
+        });
+    };
+    
+    // Calculate total
+    const totalBudget = (parseFloat(budget.salaries_wages) || 0) + 
+                       (parseFloat(budget.training_development) || 0) + 
+                       (parseFloat(budget.employee_benefits) || 0) + 
+                       (parseFloat(budget.recruitment_costs) || 0);
+    
+    // Status badge styling
+    const getStatusClass = (status) => {
+        switch(status) {
+            case 'Approved': return 'status-approved';
+            case 'Rejected': return 'status-rejected';
+            case 'Modification Requested': return 'status-modification';
+            case 'Pending': return 'status-pending';
+            default: return 'status-pending';
+        }
+    };
+    
+    const modalContent = `
+        <div class="budget-details-modal">
+            <h3>Budget Details - #${budget.id}</h3>
+            
+            <div class="budget-overview-section">
+                <h4>Budget Overview</h4>
+                <div class="budget-info-grid">
+                    <div class="info-item">
+                        <label>Department:</label>
+                        <span>${budget.budget_period || 'Not specified'}</span>
+                    </div>
+                    <div class="info-item">
+                        <label>Status:</label>
+                        <span class="status-badge ${getStatusClass(budget.status)}">${budget.status || 'Pending'}</span>
+                    </div>
+                    <div class="info-item">
+                        <label>Total Amount:</label>
+                        <span class="total-amount">${formatCurrency(totalBudget)}</span>
+                    </div>
+                    <div class="info-item">
+                        <label>Current Headcount:</label>
+                        <span>${budget.current_headcount || '0'} employees</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="budget-breakdown-section">
+                <h4>Budget Breakdown</h4>
+                <div class="breakdown-table">
+                    <div class="breakdown-row">
+                        <span class="category">Salaries & Wages:</span>
+                        <span class="amount">${formatCurrency(budget.salaries_wages)}</span>
+                    </div>
+                    <div class="breakdown-row">
+                        <span class="category">Training & Development:</span>
+                        <span class="amount">${formatCurrency(budget.training_development)}</span>
+                    </div>
+                    <div class="breakdown-row">
+                        <span class="category">Employee Benefits:</span>
+                        <span class="amount">${formatCurrency(budget.employee_benefits)}</span>
+                    </div>
+                    <div class="breakdown-row">
+                        <span class="category">Recruitment Costs:</span>
+                        <span class="amount">${formatCurrency(budget.recruitment_costs)}</span>
+                    </div>
+                    <div class="breakdown-row total">
+                        <span class="category">Total Budget:</span>
+                        <span class="amount">${formatCurrency(totalBudget)}</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="submission-details-section">
+                <h4>Submission Details</h4>
+                <div class="submission-grid">
+                    <div class="info-item">
+                        <label>Submitted By:</label>
+                        <span>${budget.submitted_by || 'Not specified'}</span>
+                    </div>
+                    <div class="info-item">
+                        <label>Submitted By Role:</label>
+                        <span>${budget.submitted_by_role || 'Not specified'}</span>
+                    </div>
+                    <div class="info-item">
+                        <label>Submission Date:</label>
+                        <span>${formatDate(budget.submission_date)}</span>
+                    </div>
+                </div>
+                
+                <div class="justification-section">
+                    <label>Justification:</label>
+                    <div class="justification-text">${budget.justification || 'No justification provided'}</div>
+                </div>
+            </div>
+            
+            ${budget.approved_by ? `
+            <div class="approval-details-section">
+                <h4>Approval Details</h4>
+                <div class="approval-grid">
+                    <div class="info-item">
+                        <label>Approved By:</label>
+                        <span>${budget.approved_by}</span>
+                    </div>
+                    <div class="info-item">
+                        <label>Approval Date:</label>
+                        <span>${formatDate(budget.approved_date)}</span>
+                    </div>
+                </div>
+            </div>
+            ` : ''}
+            
+            ${budget.rejection_reason ? `
+            <div class="rejection-details-section">
+                <h4>Rejection Details</h4>
+                <div class="rejection-reason">
+                    <label>Rejection Reason:</label>
+                    <div class="rejection-text">${budget.rejection_reason}</div>
+                </div>
+            </div>
+            ` : ''}
+            
+            ${budget.modification_request ? `
+            <div class="modification-details-section">
+                <h4>Modification Request</h4>
+                <div class="modification-request">
+                    <label>Modification Request:</label>
+                    <div class="modification-text">${budget.modification_request}</div>
+                </div>
+            </div>
+            ` : ''}
+            
+            <div class="modal-actions">
+                <button class="action-btn close" onclick="closeModal()">Close</button>
+            </div>
+        </div>
+    `;
+    
+    // Create and show modal
+    const modal = document.createElement('div');
+    modal.className = 'modal-overlay';
+    modal.innerHTML = `
+        <div class="modal-content">
+            ${modalContent}
+        </div>
+    `;
+    
+    document.body.appendChild(modal);
+    
+    // Close modal function
+    window.closeModal = function() {
+        document.body.removeChild(modal);
+    };
+    
+    // Close on overlay click
+    modal.addEventListener('click', function(e) {
+        if (e.target === modal) {
+            closeModal();
+        }
+    });
 }
 
 function filterPolicies() {
@@ -4474,12 +4940,12 @@ function approveWorkforceBudget(){
         <div class="card">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
                 <h3>Approve Workforce Budget</h3>
-                <button type="button" id="toggleWorkforceBudgetFormBtn" onclick="toggleWorkforceBudgetForm()" class="action" style="background: #007bff;">
-                    💰 Review Budget Proposals
+                <button type="button" id="toggleWorkforceBudgetFormBtn" onclick="toggleWorkforceBudgetForm()" class="action" style="background: #dc3545;">
+                    ❌ Close Budget Review
                 </button>
             </div>
             
-            <div id="workforceBudgetFormContainer" style="display: none;">
+            <div id="workforceBudgetFormContainer" style="display: block;">
                 <div class="form-header">
                     <h4>Workforce Budget Approval</h4>
                     <p>Review and approve annual workforce budget allocations. Use the search function to filter budget proposals by department, amount, or status.</p>
@@ -4578,155 +5044,177 @@ function displayWorkforceBudgets(budgets) {
         return;
     }
     
-    const budgetsHtml = budgets.map(budget => {
-        // Format currency
-        const formatCurrency = (amount) => {
-            const num = parseFloat(amount) || 0;
-            return `TZS ${num.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`;
-        };
-        
-        // Calculate total
+    // Calculate statistics
+    const totalBudgetAmount = budgets.reduce((sum, budget) => {
+        const total = (parseFloat(budget.salaries_wages) || 0) + 
+                      (parseFloat(budget.training_development) || 0) + 
+                      (parseFloat(budget.employee_benefits) || 0) + 
+                      (parseFloat(budget.recruitment_costs) || 0);
+        return sum + total;
+    }, 0);
+    
+    const pendingBudgets = budgets.filter(b => b.status === 'Pending').length;
+    const approvedBudgets = budgets.filter(b => b.status === 'Approved').length;
+    const totalHeadcount = budgets.reduce((sum, budget) => sum + (parseInt(budget.current_headcount) || 0), 0);
+    
+    // Format currency
+    const formatCurrency = (amount) => {
+        const num = parseFloat(amount) || 0;
+        return `TZS ${num.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`;
+    };
+    
+    // Format dates
+    const formatDate = (dateStr) => {
+        if (!dateStr) return 'Not specified';
+        const date = new Date(dateStr);
+        return date.toLocaleDateString('en-US', { 
+            year: 'numeric', 
+            month: 'short', 
+            day: 'numeric' 
+        });
+    };
+    
+    // Status badge styling
+    const getStatusClass = (status) => {
+        switch(status) {
+            case 'Approved': return 'status-approved';
+            case 'Rejected': return 'status-rejected';
+            case 'Modification Requested': return 'status-modification';
+            case 'Pending': return 'status-pending';
+            default: return 'status-pending';
+        }
+    };
+    
+    const getStatusText = (status) => {
+        switch(status) {
+            case 'Approved': return 'Approved';
+            case 'Rejected': return 'Rejected';
+            case 'Modification Requested': return 'Modification Requested';
+            case 'Pending': return 'Pending';
+            default: return 'Pending';
+        }
+    };
+    
+    // Generate table rows
+    const tableRows = budgets.map(budget => {
         const totalBudget = (parseFloat(budget.salaries_wages) || 0) + 
                            (parseFloat(budget.training_development) || 0) + 
                            (parseFloat(budget.employee_benefits) || 0) + 
                            (parseFloat(budget.recruitment_costs) || 0);
         
-        // Format dates
-        const formatDate = (dateStr) => {
-            if (!dateStr) return 'Not specified';
-            const date = new Date(dateStr);
-            return date.toLocaleDateString('en-US', { 
-                year: 'numeric', 
-                month: 'long', 
-                day: 'numeric' 
-            });
-        };
-        
-        // Status badge styling
-        const getStatusClass = (status) => {
-            switch(status) {
-                case 'Approved': return 'status-approved';
-                case 'Rejected': return 'status-rejected';
-                case 'Modification Requested': return 'status-modification';
-                case 'Pending': return 'status-pending';
-                default: return 'status-pending';
-            }
-        };
-        
-        const getStatusText = (status) => {
-            switch(status) {
-                case 'Approved': return 'Approved';
-                case 'Rejected': return 'Rejected';
-                case 'Modification Requested': return 'Modification Requested';
-                case 'Pending': return 'Pending';
-                default: return 'Pending';
-            }
-        };
-        
         return `
-            <div class="budget-proposal budget-item" data-budget-id="${budget.id}">
-                <h5>${budget.budget_period || 'Budget Period'} - ${getStatusText(budget.status)}</h5>
-                <div class="budget-status">
+            <tr class="budget-row" data-budget-id="${budget.id}">
+                <td>
+                    <div class="budget-id">#${budget.id}</div>
+                    <div class="budget-department">${budget.budget_period || 'Not specified'}</div>
+                </td>
+                <td>
+                    <div class="submitter-info">
+                        <div class="submitter-name">${budget.submitted_by || 'Not specified'}</div>
+                        <div class="submitter-role">${budget.submitted_by_role || 'Not specified'}</div>
+                    </div>
+                </td>
+                <td>
+                    <div class="headcount-info">
+                        <div class="headcount-number">${budget.current_headcount || '0'} employees</div>
+                    </div>
+                </td>
+                <td>
+                    <div class="budget-breakdown">
+                        <div class="budget-item">
+                            <span class="category">Salaries:</span>
+                            <span class="amount">${formatCurrency(budget.salaries_wages)}</span>
+                        </div>
+                        <div class="budget-item">
+                            <span class="category">Training:</span>
+                            <span class="amount">${formatCurrency(budget.training_development)}</span>
+                        </div>
+                        <div class="budget-item">
+                            <span class="category">Benefits:</span>
+                            <span class="amount">${formatCurrency(budget.employee_benefits)}</span>
+                        </div>
+                        <div class="budget-item">
+                            <span class="category">Recruitment:</span>
+                            <span class="amount">${formatCurrency(budget.recruitment_costs)}</span>
+                        </div>
+                    </div>
+                </td>
+                <td>
+                    <div class="total-amount">
+                        <strong>${formatCurrency(totalBudget)}</strong>
+                    </div>
+                </td>
+                <td>
+                    <div class="submission-date">${formatDate(budget.submission_date)}</div>
+                </td>
+                <td>
                     <span class="status-badge ${getStatusClass(budget.status)}">${getStatusText(budget.status)}</span>
-                </div>
-                
-                <div class="budget-overview">
-                    <div class="budget-row">
-                        <span class="budget-category">Salaries & Wages:</span>
-                        <span class="budget-amount">${formatCurrency(budget.salaries_wages)}</span>
+                </td>
+                <td>
+                    <div class="budget-actions">
+                        ${budget.status === 'Pending' ? `
+                            <button class="action-btn approve" onclick="approveBudget('${budget.id}')" title="Approve Budget">✅</button>
+                            <button class="action-btn modify" onclick="modifyBudget('${budget.id}')" title="Request Modification">📝</button>
+                            <button class="action-btn reject" onclick="rejectBudget('${budget.id}')" title="Reject Budget">❌</button>
+                        ` : budget.status === 'Modification Requested' ? `
+                            <button class="action-btn approve" onclick="approveBudget('${budget.id}')" title="Approve Budget">✅</button>
+                            <button class="action-btn reject" onclick="rejectBudget('${budget.id}')" title="Reject Budget">❌</button>
+                        ` : `
+                            <button class="action-btn disabled" disabled title="Budget ${getStatusText(budget.status)}">🔒</button>
+                        `}
+                        <button class="action-btn view" onclick="viewBudgetDetails('${budget.id}')" title="View Details">👁️</button>
                     </div>
-                    <div class="budget-row">
-                        <span class="budget-category">Training & Development:</span>
-                        <span class="budget-amount">${formatCurrency(budget.training_development)}</span>
-                    </div>
-                    <div class="budget-row">
-                        <span class="budget-category">Employee Benefits:</span>
-                        <span class="budget-amount">${formatCurrency(budget.employee_benefits)}</span>
-                    </div>
-                    <div class="budget-row">
-                        <span class="budget-category">Recruitment Costs:</span>
-                        <span class="budget-amount">${formatCurrency(budget.recruitment_costs)}</span>
-                    </div>
-                    <div class="budget-row total">
-                        <span class="budget-category">Total Proposed:</span>
-                        <span class="budget-amount">${formatCurrency(totalBudget)}</span>
-                    </div>
-                </div>
-                
-                <div class="budget-details">
-                    <div class="form-group">
-                        <label for="budget-submitted-by-${budget.id}">Submitted By</label>
-                        <input type="text" id="budget-submitted-by-${budget.id}" name="submitted_by" value="${budget.submitted_by || 'Finance Department'}" readonly>
-                    </div>
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="budget-period-${budget.id}">Budget Period</label>
-                            <input type="text" id="budget-period-${budget.id}" name="budget_period" value="${budget.budget_period || 'Not specified'}" readonly>
-                        </div>
-                        <div class="form-group">
-                            <label for="budget-headcount-${budget.id}">Current Headcount</label>
-                            <input type="text" id="budget-headcount-${budget.id}" name="current_headcount" value="${budget.current_headcount ? budget.current_headcount + ' employees' : 'Not specified'}" readonly>
-                        </div>
-                    </div>
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="budget-submission-date-${budget.id}">Submission Date</label>
-                        <input type="text" id="budget-submission-date-${budget.id}" name="submission_date" value="${formatDate(budget.submission_date)}" readonly>
-                            <input type="text" id="budget-submission-date-${budget.id}" name="submission_date" value="${formatDate(budget.submission_date)}" readonly>
-                        </div>
-                        <div class="form-group">
-                            <label for="budget-submitted-role-${budget.id}">Submitted By Role</label>
-                            <input type="text" id="budget-submitted-role-${budget.id}" name="submitted_by_role" value="${budget.submitted_by_role || 'Not specified'}" readonly>
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <label for="budget-justification-${budget.id}">Justification</label>
-                        <textarea id="budget-justification-${budget.id}" name="justification" rows="4" readonly>${budget.justification || 'No justification provided'}</textarea>
-                    </div>
-                    ${budget.approved_by ? `
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="budget-approved-by-${budget.id}">Approved By</label>
-                            <input type="text" id="budget-approved-by-${budget.id}" name="approved_by" value="${budget.approved_by}" readonly>
-                        </div>
-                        <div class="form-group">
-                            <label for="budget-approval-date-${budget.id}">Approval Date</label>
-                            <input type="text" id="budget-approval-date-${budget.id}" name="approval_date" value="${formatDate(budget.approved_date)}" readonly>
-                        </div>
-                    </div>
-                    ` : ''}
-                    ${budget.rejection_reason ? `
-                    <div class="form-group">
-                        <label for="budget-rejection-reason-${budget.id}">Rejection Reason</label>
-                        <textarea id="budget-rejection-reason-${budget.id}" name="rejection_reason" rows="2" readonly>${budget.rejection_reason}</textarea>
-                    </div>
-                    ` : ''}
-                    ${budget.modification_request ? `
-                    <div class="form-group">
-                        <label for="budget-modification-request-${budget.id}">Modification Request</label>
-                        <textarea id="budget-modification-request-${budget.id}" name="modification_request" rows="2" readonly>${budget.modification_request}</textarea>
-                    </div>
-                    ` : ''}
-                </div>
-                
-                <div class="budget-actions">
-                    ${budget.status === 'Pending' ? `
-                        <button class="action" onclick="approveBudget('${budget.id}')">Approve Budget</button>
-                        <button class="action" onclick="modifyBudget('${budget.id}')" style="background: #ffc107;">Request Modification</button>
-                        <button class="action" onclick="rejectBudget('${budget.id}')" style="background: #dc3545;">Reject Budget</button>
-                    ` : budget.status === 'Modification Requested' ? `
-                        <button class="action" onclick="approveBudget('${budget.id}')">Approve Budget</button>
-                        <button class="action" onclick="rejectBudget('${budget.id}')" style="background: #dc3545;">Reject Budget</button>
-                    ` : `
-                        <button class="action disabled" disabled>Budget ${getStatusText(budget.status)}</button>
-                    `}
-                </div>
-            </div>
+                </td>
+            </tr>
         `;
     }).join('');
     
-    container.innerHTML = budgetsHtml;
-    console.log('✅ Workforce budgets displayed successfully');
+    container.innerHTML = `
+        <div class="budget-statistics">
+            <div class="stat-card">
+                <div class="stat-value">${budgets.length}</div>
+                <div class="stat-label">Total Budgets</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value">${pendingBudgets}</div>
+                <div class="stat-label">Pending Approval</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value">${approvedBudgets}</div>
+                <div class="stat-label">Approved</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value">${formatCurrency(totalBudgetAmount)}</div>
+                <div class="stat-label">Total Budget Amount</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value">${totalHeadcount}</div>
+                <div class="stat-label">Total Headcount</div>
+            </div>
+        </div>
+        
+        <div class="budget-table-container">
+            <table class="budget-table">
+                <thead>
+                    <tr>
+                        <th>Budget ID & Department</th>
+                        <th>Submitted By</th>
+                        <th>Headcount</th>
+                        <th>Budget Breakdown</th>
+                        <th>Total Amount</th>
+                        <th>Submission Date</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${tableRows}
+                </tbody>
+            </table>
+        </div>
+    `;
+    
+    console.log('✅ Workforce budgets displayed successfully in table format');
 }
 
 // Approve workforce budget
@@ -25769,6 +26257,169 @@ function filterPpeRecords() {
 .btn {
     padding: 12px 24px;
     border: none;
+}
+
+/* Budget Details Modal Styles */
+.budget-details-modal {
+    max-width: 800px;
+    width: 95%;
+    margin: 0 auto;
+}
+
+.budget-details-modal h3 {
+    color: #0b3d91;
+    text-align: center;
+    margin-bottom: 25px;
+    font-size: 22px;
+    font-weight: bold;
+}
+
+.budget-overview-section,
+.budget-breakdown-section,
+.submission-details-section,
+.approval-details-section,
+.rejection-details-section,
+.modification-details-section {
+    margin-bottom: 25px;
+    padding: 20px;
+    background: #f8f9fa;
+    border-radius: 10px;
+    border: 1px solid #e9ecef;
+}
+
+.budget-details-modal h4 {
+    color: #495057;
+    margin-bottom: 15px;
+    font-size: 16px;
+    font-weight: bold;
+    border-bottom: 2px solid #0b3d91;
+    padding-bottom: 5px;
+}
+
+.budget-info-grid,
+.submission-grid,
+.approval-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 15px;
+}
+
+.info-item {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.info-item label {
+    font-weight: bold;
+    color: #6c757d;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.info-item span {
+    color: #495057;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.breakdown-table {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.breakdown-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 12px;
+    background: white;
+    border-radius: 6px;
+    border: 1px solid #dee2e6;
+}
+
+.breakdown-row.total {
+    background: #0b3d91;
+    color: white;
+    font-weight: bold;
+    border-color: #0a2c6a;
+}
+
+.breakdown-row .category {
+    color: #495057;
+    font-size: 13px;
+}
+
+.breakdown-row.total .category {
+    color: white;
+}
+
+.breakdown-row .amount {
+    font-weight: bold;
+    color: #0b3d91;
+    font-size: 13px;
+}
+
+.breakdown-row.total .amount {
+    color: white;
+}
+
+.justification-section,
+.rejection-reason,
+.modification-request {
+    margin-top: 15px;
+}
+
+.justification-section label,
+.rejection-reason label,
+.modification-request label {
+    display: block;
+    font-weight: bold;
+    color: #6c757d;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 8px;
+}
+
+.justification-text,
+.rejection-text,
+.modification-text {
+    background: white;
+    padding: 12px;
+    border-radius: 6px;
+    border: 1px solid #dee2e6;
+    color: #495057;
+    font-size: 14px;
+    line-height: 1.5;
+    white-space: pre-wrap;
+}
+
+.modal-actions {
+    display: flex;
+    justify-content: center;
+    margin-top: 25px;
+    padding-top: 20px;
+    border-top: 1px solid #e9ecef;
+}
+
+.action-btn.close {
+    background: #6c757d;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    transition: background-color 0.2s ease;
+}
+
+.action-btn.close:hover {
+    background: #5a6268;
+}
     border-radius: 10px;
     cursor: pointer;
     font-size: 14px;
