@@ -2686,6 +2686,99 @@ background: #f8f9fa;
     }
 }
 
+/* Staff Oversight Table Styles */
+.oversight-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 15px;
+    background: white;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.oversight-table th {
+    background: linear-gradient(135deg, #0b3d91 0%, #1e5bb8 100%);
+    color: white;
+    padding: 12px 15px;
+    text-align: left;
+    font-weight: 600;
+    font-size: 14px;
+    border: none;
+}
+
+.oversight-table td {
+    padding: 12px 15px;
+    border-bottom: 1px solid #e9ecef;
+    font-size: 13px;
+    vertical-align: middle;
+}
+
+.oversight-table tr:last-child td {
+    border-bottom: none;
+}
+
+.oversight-table tr:hover {
+    background-color: #f8f9fa;
+}
+
+.status-badge {
+    display: inline-block;
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.status-badge.active {
+    background: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
+}
+
+.status-badge.warning {
+    background: #fff3cd;
+    color: #856404;
+    border: 1px solid #ffeaa7;
+}
+
+.status-badge.approved {
+    background: #d1ecf1;
+    color: #0c5460;
+    border: 1px solid #bee5eb;
+}
+
+.action-btn {
+    background: linear-gradient(45deg, #4CAF50, #45a049);
+    color: white;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 11px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    margin-right: 5px;
+}
+
+.action-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
+.hr-monitoring, .staff-structure {
+    margin-bottom: 25px;
+}
+
+.hr-monitoring h4, .staff-structure h4 {
+    color: #0b3d91;
+    font-size: 16px;
+    margin-bottom: 10px;
+    font-weight: 600;
+}
+
 /* Responsive Policy Items */
 @media (max-width: 768px) {
     .policy-details {
@@ -2700,6 +2793,19 @@ background: #f8f9fa;
     .policy-actions button {
         width: 100%;
         min-width: auto;
+    }
+    
+    .oversight-table {
+        font-size: 12px;
+    }
+    
+    .oversight-table th, .oversight-table td {
+        padding: 8px 10px;
+    }
+    
+    .action-btn {
+        padding: 4px 8px;
+        font-size: 10px;
     }
 }
 </style>
@@ -20345,7 +20451,7 @@ async function staffOversight(){
         console.error('❌ Error loading staff data:', error);
     }
     
-    // Generate HTML with real data
+    // Generate HTML with real data in table format
     const formHtml = `
         <div class="card">
             <h3>Staff Oversight</h3>
@@ -20354,32 +20460,59 @@ async function staffOversight(){
             <div class="oversight-dashboard">
                 <div class="hr-monitoring">
                     <h4>HR Department Status</h4>
-                    <div class="hr-metrics">
-                        <div class="metric-item">
-                            <span class="metric-label">Total Employees:</span>
-                            <span class="metric-value">${totalEmployees}</span>
-                        </div>
-                        <div class="metric-item">
-                            <span class="metric-label">Active Contracts:</span>
-                            <span class="metric-value">${activeContracts}</span>
-                        </div>
-                    </div>
+                    <table class="oversight-table">
+                        <thead>
+                            <tr>
+                                <th>Metric</th>
+                                <th>Value</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Total Employees</td>
+                                <td>${totalEmployees}</td>
+                                <td><span class="status-badge active">Active</span></td>
+                            </tr>
+                            <tr>
+                                <td>Active Contracts</td>
+                                <td>${activeContracts}</td>
+                                <td><span class="status-badge ${activeContracts > 0 ? 'active' : 'warning'}">${activeContracts > 0 ? 'Active' : 'Low'}</span></td>
+                            </tr>
+                        </tbody>
+                    </table>
                 </div>
                 
                 <div class="staff-structure">
                     <h4>Staff Structure Review</h4>
-                    <div class="structure-grid">
-                        <div class="dept-item">
-                            <h5>Management</h5>
-                            <p>Staff: ${managementStaff} | Budget: Approved</p>
-                            <button class="action" onclick="reviewDeptStructure('management')">Review</button>
-                        </div>
-                        <div class="dept-item">
-                            <h5>Human Resources</h5>
-                            <p>Staff: ${hrStaff} | Budget: Approved</p>
-                            <button class="action" onclick="reviewDeptStructure('hr')">Review</button>
-                        </div>
-                    </div>
+                    <table class="oversight-table">
+                        <thead>
+                            <tr>
+                                <th>Department</th>
+                                <th>Total Staff</th>
+                                <th>Budget Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>Management</strong></td>
+                                <td>${managementStaff}</td>
+                                <td><span class="status-badge approved">Approved</span></td>
+                                <td>
+                                    <button class="action-btn" onclick="reviewDeptStructure('management')">Review</button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><strong>Human Resources</strong></td>
+                                <td>${hrStaff}</td>
+                                <td><span class="status-badge approved">Approved</span></td>
+                                <td>
+                                    <button class="action-btn" onclick="reviewDeptStructure('hr')">Review</button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </div>`;
