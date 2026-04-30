@@ -2750,6 +2750,73 @@ background: #f8f9fa;
     border: 1px solid #bee5eb;
 }
 
+.status-badge.normal {
+    background: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
+}
+
+.status-badge.warning {
+    background: #fff3cd;
+    color: #856404;
+    border: 1px solid #ffeaa7;
+}
+
+.status-badge.urgent {
+    background: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
+}
+
+/* Compliance Management Styles */
+.compliance-dashboard {
+    margin-top: 20px;
+}
+
+.compliance-alerts, .compliance-summary, .compliance-actions {
+    margin-bottom: 25px;
+}
+
+.compliance-alerts h4, .compliance-summary h4, .compliance-actions h4 {
+    color: #0b3d91;
+    font-size: 16px;
+    margin-bottom: 15px;
+    font-weight: 600;
+}
+
+.no-alerts {
+    text-align: center;
+    padding: 30px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    border: 1px solid #e9ecef;
+    color: #6c757d;
+}
+
+.no-alerts p {
+    margin: 0;
+    font-size: 14px;
+}
+
+.oversight-table tr.urgent {
+    background-color: #fff5f5;
+}
+
+.oversight-table tr.warning {
+    background-color: #fffbf0;
+}
+
+.oversight-table tr.normal {
+    background-color: #f0fff4;
+}
+
+.compliance-actions {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    align-items: center;
+}
+
 .action-btn {
     background: linear-gradient(45deg, #4CAF50, #45a049);
     color: white;
@@ -3219,7 +3286,7 @@ function loadMenu(){
 
     if(currentRole === "ADMIN"){
         addMenu("Administrative Operations", adminOperations);
-        addMenu("Compliance Management", complianceManagement);
+        addMenu("Compliance Management", () => complianceManagement());
         addMenu("Staff Oversight", () => staffOversight());
         addMenu("Policy Implementation", policyImplementation);
         addMenu("Document Management", documentManagement);
@@ -20374,34 +20441,138 @@ function adminOperations(){
     </div>`);
 }
 
-function complianceManagement(){
-    showContent(`<div class="card">
-        <h3>Compliance Management</h3>
-        <p><strong>Regulatory Compliance:</strong> Monitor and manage all legal documents and regulatory requirements</p>
-        
-        <div class="compliance-dashboard">
-            <div class="compliance-alerts">
-                <h4>Compliance Alerts</h4>
-                <div class="alert-item urgent">
-                    <strong>Business License Expiry</strong>
-                    <p>Expires in 30 days - Action Required</p>
-                    <button class="action" onclick="updateComplianceDoc('license')">Update Document</button>
-                </div>
-                <div class="alert-item warning">
-                    <strong>TIN Renewal</strong>
-                    <p>Expires in 60 days - Plan Renewal</p>
-                    <button class="action" onclick="updateComplianceDoc('tin')">Update Document</button>
-                </div>
-            </div>
-            
-            <div class="compliance-actions">
-                <h4>Compliance Actions</h4>
-                <button class="action" onclick="uploadCertificate()">Upload New Certificate</button>
-                <button class="action" onclick="reviewCompliance()">Review All Compliance</button>
-                <button class="action" onclick="notifyMD()">Notify MD of Issues</button>
-            </div>
+async function complianceManagement(){
+    console.log('🔄 Loading compliance data...');
+    
+    // First show a loading message
+    showContent(`
+        <div class="card">
+            <h3>Compliance Management</h3>
+            <p><strong>Loading compliance data...</strong></p>
         </div>
-    </div>`);
+    `);
+    
+    // Load documents data from database
+    const baseUrl = window.location.origin;
+    let documents = [];
+    let complianceAlerts = [];
+    
+    try {
+        console.log('📄 Fetching compliance documents...');
+        const response = await fetch(`${baseUrl}/api/documents`);
+        if (response.ok) {
+            const result = await response.json();
+            documents = result.data || [];
+            console.log('✅ Loaded documents:', documents.length);
+            
+            // Generate compliance alerts based on document expiry dates
+            const today = new Date();
+            complianceAlerts = documents
+                .filter(doc => doc.expiry_date)
+                .map(doc => {
+                    const expiryDate = new Date(doc.expiry_date);
+                    const daysUntilExpiry = Math.ceil((expiryDate - today) / (1000 * 60 * 60 * 24));
+                    
+                    let urgency = 'normal';
+                    if (daysUntilExpiry <= 30) urgency = 'urgent';
+                    else if (daysUntilExpiry <= 60) urgency = 'warning';
+                    
+                    return {
+                        id: doc.id,
+                        type: doc.type,
+                        name: doc.name || doc.type,
+                        expiry_date: doc.expiry_date,
+                        days_until_expiry: daysUntilExpiry,
+                        urgency: urgency,
+                        status: doc.status || 'active'
+                    };
+                })
+                .sort((a, b) => a.days_until_expiry - b.days_until_expiry);
+        } else {
+            console.warn('⚠️ Failed to load documents, using default alerts');
+            complianceAlerts = [];
+        }
+    } catch (error) {
+        console.error('❌ Error loading compliance data:', error);
+        complianceAlerts = [];
+    }
+    
+    // Generate HTML with real data in table format
+    const formHtml = `
+        <div class="card">
+            <h3>Compliance Management</h3>
+            <p><strong>Regulatory Compliance:</strong> Monitor and manage all legal documents and regulatory requirements</p>
+            
+            <div class="compliance-dashboard">
+                <div class="compliance-alerts">
+                    <h4>Compliance Alerts</h4>
+                    ${complianceAlerts.length > 0 ? `
+                        <table class="oversight-table">
+                            <thead>
+                                <tr>
+                                    <th>Document Type</th>
+                                    <th>Document Name</th>
+                                    <th>Expiry Date</th>
+                                    <th>Days Until Expiry</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${complianceAlerts.map(alert => `
+                                    <tr class="${alert.urgency}">
+                                        <td><strong>${alert.type.toUpperCase()}</strong></td>
+                                        <td>${alert.name}</td>
+                                        <td>${new Date(alert.expiry_date).toLocaleDateString()}</td>
+                                        <td>${alert.days_until_expiry} days</td>
+                                        <td><span class="status-badge ${alert.urgency}">${alert.urgency.toUpperCase()}</span></td>
+                                        <td>
+                                            <button class="action-btn" onclick="updateComplianceDoc('${alert.id}')">Update</button>
+                                        </td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    ` : `
+                        <div class="no-alerts">
+                            <p>No compliance alerts at this time. All documents are up to date.</p>
+                        </div>
+                    `}
+                </div>
+                
+                <div class="compliance-summary">
+                    <h4>Compliance Summary</h4>
+                    <table class="oversight-table">
+                        <thead>
+                            <tr>
+                                <th>Total Documents</th>
+                                <th>Active Documents</th>
+                                <th>Expiring Soon (≤30 days)</th>
+                                <th>Expired Documents</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>${documents.length}</td>
+                                <td>${documents.filter(d => d.status === 'active').length}</td>
+                                <td>${complianceAlerts.filter(a => a.urgency === 'urgent').length}</td>
+                                <td>${complianceAlerts.filter(a => a.days_until_expiry < 0).length}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                
+                <div class="compliance-actions">
+                    <h4>Quick Actions</h4>
+                    <button class="action-btn" onclick="uploadCertificate()">Upload New Certificate</button>
+                    <button class="action-btn" onclick="documentManagement()">View All Documents</button>
+                </div>
+            </div>
+        </div>`;
+    
+    console.log('🔄 Updating content with compliance data...');
+    showContent(formHtml);
+    console.log('✅ Compliance management content updated successfully');
 }
 
 async function staffOversight(){
