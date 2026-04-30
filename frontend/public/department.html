@@ -3970,65 +3970,6 @@ function loadHiringRequestsFromBackend() {
     });
 }
 
-function showWorkforceBudgetApproval() {
-    showContent(`<div class="card">
-        <h3>Approve Workforce Budget</h3>
-        <p><strong>HR Authority:</strong> Review and approve workforce budget requests</p>
-        
-        <div class="budget-list">
-            <h4>Pending Budget Requests</h4>
-            <div id="budgetContainer">
-                <div class="loading">Loading budget requests...</div>
-            </div>
-        </div>
-    </div>`);
-    
-    // Load budget requests from backend
-    loadBudgetRequestsFromBackend();
-}
-
-function loadBudgetRequestsFromBackend() {
-    const baseUrl = window.location.origin;
-    fetch(`${baseUrl}/api/workforce-budget`)
-        .then(response => response.json())
-        .then(data => {
-            console.log('📋 Budget requests loaded:', data);
-            const container = document.getElementById('budgetContainer');
-            
-            if (!data || !Array.isArray(data)) {
-                container.innerHTML = '<div class="error">No budget requests found or error loading requests</div>';
-                return;
-            }
-            
-            if (data.length === 0) {
-                container.innerHTML = '<div class="info">No pending budget requests</div>';
-                return;
-            }
-            
-            let html = '<div class="budget-items">';
-            data.forEach(request => {
-                html += `
-                    <div class="budget-item">
-                        <h5>${request.work_title || 'Untitled Request'}</h5>
-                        <p><strong>Department:</strong> ${request.department || 'N/A'}</p>
-                        <p><strong>Amount:</strong> TZS ${request.amount ? parseInt(request.amount).toLocaleString() : 'N/A'}</p>
-                        <p><strong>Status:</strong> <span class="status-${request.status || 'pending'}">${request.status || 'Pending'}</span></p>
-                        <div class="budget-actions">
-                            <button class="action" onclick="approveBudget(${request.id})">Approve</button>
-                            <button class="action" onclick="rejectBudget(${request.id})">Reject</button>
-                            <button class="action" onclick="modifyBudget(${request.id})">Modify</button>
-                        </div>
-                    </div>
-                `;
-            });
-            html += '</div>';
-            container.innerHTML = html;
-        })
-        .catch(error => {
-            console.error('❌ Error loading budget requests:', error);
-            document.getElementById('budgetContainer').innerHTML = '<div class="error">Error loading budget requests: ' + error.message + '</div>';
-        });
-}
 
 function logout(){
     location.reload();
@@ -4050,7 +3991,7 @@ function loadMenu(){
     if(currentRole === "MD"){
         addMenu("Approve Recruitment Policies", approveRecruitmentPolicies);
         addMenu("Approve Senior Staff Hiring", approveSeniorHiring);
-        addMenu("Approve Workforce Budget", showWorkforceBudgetApproval);
+        addMenu("Approve Workforce Budget", approveWorkforceBudget);
         addMenu("Review Employee Count", reviewEmployeeCount);
         addMenu("View All Workers", viewAllWorkers);
         addMenu("View Assigned Workers", viewAssignedWorkers);
@@ -4081,7 +4022,7 @@ function loadMenu(){
         addMenu("Manage Leave & Contracts", manageLeaveContracts);
         addMenu("Manage Policies", loadPolicies);
         addMenu("Approve Senior Staff Hiring", loadSeniorHiringRequests);
-        addMenu("Approve Workforce Budget", loadWorkforceBudgets);
+        addMenu("Approve Workforce Budget", approveWorkforceBudget);
     }
 
     if(currentRole === "HSE"){
