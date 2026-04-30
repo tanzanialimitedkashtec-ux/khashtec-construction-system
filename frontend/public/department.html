@@ -744,11 +744,11 @@ button.action{
 .stat-item {
     display: flex;
     justify-content: space-between;
-    padding: 10px 15px;
-    background: white;
+    padding: 6px 10px;
+    background: rgba(255, 255, 255, 0.1);
     border-radius: 6px;
-    border-left: 4px solid #0b3d91;
-    font-size: 14px;
+    margin-bottom: 8px;
+    font-size: 12px;
 }
 
 .stat-label {
@@ -1660,11 +1660,11 @@ background: #f8f9fa;
 .stat-item {
     background: rgba(76, 175, 80, 0.2);
     color: #4CAF50;
-    padding: 8px 12px;
+    padding: 5px 8px;
     border-radius: 6px;
-    font-size: 12px;
-    font-weight: 600;
-    margin: 2px;
+    margin-bottom: 6px;
+    font-weight: bold;
+    font-size: 11px;
 }
 
 .personnel-header {
@@ -2625,15 +2625,16 @@ background: #f8f9fa;
 .stat-item {
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     color: white;
-    padding: 16px;
-    border-radius: 12px;
+    padding: 8px 10px;
+    border-radius: 6px;
     text-align: center;
-    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+    margin-bottom: 8px;
     transition: transform 0.3s ease;
+    font-size: 11px;
 }
 
 .stat-item:hover {
-    transform: translateY(-3px);
+    transform: translateY(-2px);
 }
 
 .stat-label {
@@ -2752,6 +2753,13 @@ background: #f8f9fa;
 </div>
 
 <script>
+// Define toggleSidebar function first to ensure it's available when called
+function toggleSidebar(){
+    const sidebar = document.querySelector('.sidebar');
+    if (!sidebar) return;
+    sidebar.classList.toggle('collapsed');
+}
+
 const PRODUCTION_API_ORIGIN = 'https://khashtec-construction-system-production-e297.up.railway.app';
 const originalFetch = window.fetch.bind(window);
 window.fetch = function(resource, init) {
@@ -3076,11 +3084,7 @@ function logout(){
     location.reload();
 }
 
-function toggleSidebar(){
-    const sidebar = document.querySelector('.sidebar');
-    if (!sidebar) return;
-    sidebar.classList.toggle('collapsed');
-}
+// toggleSidebar function already defined above
 
 function showNotifications(){
     // TODO: Implement notification panel or dropdown
