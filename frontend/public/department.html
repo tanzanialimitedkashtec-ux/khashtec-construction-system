@@ -3114,7 +3114,7 @@ function loadMenu(){
         addMenu("Staff Oversight", staffOversight);
         addMenu("Policy Implementation", policyImplementation);
         addMenu("Document Management", documentManagement);
-        addMenu("User Account Management", userAccountManagement);
+        addMenu("User Account Management", () => userAccountManagement());
     }
 
     if(currentRole === "HR"){
@@ -3151,7 +3151,7 @@ function loadMenu(){
     if(currentRole === "PROJECT"){
         addMenu("Create New Project", createNewProject);
         addMenu("Update Project Progress", updateProjectProgress);
-        addMenu("Assign Tasks", assignTasks);
+        addMenu("Assign Tasks", () => assignTasks());
         addMenu("Request Workforce", requestWorkforce);
         addMenu("View Assigned Workers", viewAssignedWorkers);
         addMenu("Record Site Reports", recordSiteReports);
