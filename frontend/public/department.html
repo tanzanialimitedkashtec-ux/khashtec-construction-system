@@ -20386,37 +20386,75 @@ function documentManagement(){
     </div>`);
 }
 
-function userAccountManagement(){
-    showContent(`<div class="card">
-        <h3>User Account Management</h3>
-        <p><strong>Account Control:</strong> Manage user accounts and system access (except MD)</p>
+async function userAccountManagement(){
+    console.log('🔄 Loading user account management data...');
+    
+    // Load users from database
+    const baseUrl = window.location.origin;
+    let users = [];
+    let totalActiveUsers = 0;
+    let suspendedAccounts = 0;
+    
+    try {
+        // Load employees/users
+        const usersResponse = await fetch(`${baseUrl}/api/employees`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            }
+        });
         
-        <div class="account-management">
-            <div class="account-overview">
-                <h4>System Account Overview</h4>
-                <div class="account-stats">
-                    <div class="stat-item">
-                        <span>Total Active Users:</span>
-                        <span class="stat-value">48</span>
+        if (usersResponse.ok) {
+            const usersData = await usersResponse.json();
+            users = Array.isArray(usersData) ? usersData : [];
+            
+            // Calculate statistics
+            totalActiveUsers = users.length;
+            suspendedAccounts = users.filter(user => user.status === 'suspended' || user.account_status === 'suspended').length;
+            
+            console.log('✅ Loaded users:', totalActiveUsers, 'total users,', suspendedAccounts, 'suspended');
+        } else {
+            console.warn('⚠️ Failed to load users, using default values');
+        }
+    } catch (error) {
+        console.error('❌ Error loading users:', error);
+    }
+    
+    // Generate HTML with real data
+    const formHtml = `
+        <div class="card">
+            <h3>User Account Management</h3>
+            <p><strong>Account Control:</strong> Manage user accounts and system access (except MD)</p>
+            
+            <div class="account-management">
+                <div class="account-overview">
+                    <h4>System Account Overview</h4>
+                    <div class="account-stats">
+                        <div class="stat-item">
+                            <span>Total Active Users:</span>
+                            <span class="stat-value">${totalActiveUsers}</span>
+                        </div>
+                        <div class="stat-item">
+                            <span>Suspended Accounts:</span>
+                            <span class="stat-value">${suspendedAccounts}</span>
+                        </div>
                     </div>
-                    <div class="stat-item">
-                        <span>Suspended Accounts:</span>
-                        <span class="stat-value">2</span>
-                    </div>
+                </div>
+                
+                <div class="account-actions">
+                    <h4>Account Actions</h4>
+                    <button class="action" onclick="suspendUser()">Suspend User</button>
+                    <button class="action" onclick="reactivateUser()">Reactivate Account</button>
                 </div>
             </div>
             
-            <div class="account-actions">
-                <h4>Account Actions</h4>
-                <button class="action" onclick="suspendUser()">Suspend User</button>
-                <button class="action" onclick="reactivateUser()">Reactivate Account</button>
+            <div class="disclaimer">
+                <p><strong>Note:</strong> Director of Administration cannot suspend MD accounts.</p>
             </div>
-        </div>
-        
-        <div class="disclaimer">
-            <p><strong>Note:</strong> Director of Administration cannot suspend MD accounts.</p>
-        </div>
-    </div>`);
+        </div>`;
+    
+    showContent(formHtml);
 }
 
 function officePortal(){
