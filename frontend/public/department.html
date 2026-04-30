@@ -1993,6 +1993,88 @@ color: #666;
     text-transform: uppercase;
 }
 
+/* Worker Assignment Card Styles - Very Small */
+.worker-assignment-card {
+    background: white;
+    border: 1px solid #e9ecef;
+    border-radius: 4px;
+    padding: 6px;
+    margin-bottom: 6px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    transition: all 0.2s ease;
+}
+
+.worker-assignment-card:hover {
+    background: #f8f9fa;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+}
+
+.assignment-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 4px;
+}
+
+.assignment-header h5 {
+    margin: 0;
+    font-size: 8px;
+    font-weight: 600;
+    color: #2c3e50;
+}
+
+.assignment-details {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.detail-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 6px;
+    line-height: 1.2;
+}
+
+.detail-row .label {
+    color: #6c757d;
+    font-weight: 400;
+    min-width: 60px;
+}
+
+.detail-row .value {
+    color: #495057;
+    font-weight: 500;
+    text-align: right;
+    flex: 1;
+}
+
+/* Small status badges for assignment cards */
+.worker-assignment-card .status-badge {
+    padding: 1px 4px;
+    border-radius: 2px;
+    font-size: 5px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.2px;
+    color: white;
+}
+
+.worker-assignment-card .status-badge.active {
+    background: #28a745;
+}
+
+.worker-assignment-card .status-badge.on_leave {
+    background: #ffc107;
+    color: #212529;
+}
+
+.worker-assignment-card .status-badge.inactive {
+    background: #6c757d;
+}
+
 .worker-list h4 {
 color: #0b3d91;
 margin-bottom: 10px;
