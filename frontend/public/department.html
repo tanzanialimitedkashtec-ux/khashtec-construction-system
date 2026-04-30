@@ -3282,6 +3282,7 @@ function loadMenu(){
         addMenu("Suspend/Terminate Employment", suspendTerminateEmployment);
         addMenu("View Workforce Reports", viewWorkforceReports);
         addMenu("Upload Safety Policies", uploadSafetyPolicies);
+        addMenu("Register Company Car", registerCompanyCar);
     }
 
     if(currentRole === "ADMIN"){
@@ -12501,47 +12502,35 @@ function uploadSafetyPolicies(){
                             <input type="date" id="effectiveDate" required>
                         </div>
                         <div class="form-group">
-                            <label>Review Date</label>
-                            <input type="date" id="reviewDate">
+                            <label>Review Date *</label>
+                            <input type="date" id="reviewDate" required>
                         </div>
                     </div>
                     
                     <div class="form-row">
                         <div class="form-group">
-                            <label>Applicable To *</label>
-                            <select id="applicableTo" required>
+                            <label>Applies To *</label>
+                            <select id="policyScope" required>
                                 <option value="">Select Scope</option>
                                 <option value="all-projects">All Projects</option>
-                                <option value="specific-project">Specific Project</option>
-                                <option value="head-office">Head Office</option>
+                                <option value="office-only">Office Only</option>
                                 <option value="field-operations">Field Operations</option>
+                                <option value="specific-project">Specific Project</option>
                             </select>
                         </div>
                         <div class="form-group">
-                            <label>Compliance Level *</label>
-                            <select id="complianceLevel" required>
-                                <option value="">Select Level</option>
+                            <label>Priority Level</label>
+                            <select id="policyPriority">
                                 <option value="mandatory">Mandatory</option>
                                 <option value="recommended">Recommended</option>
-                                <option value="guideline">Guideline</option>
+                                <option value="informational">Informational</option>
                             </select>
-                        </div>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label>Training Required</label>
-                        <div class="checkbox-group">
-                            <label><input type="checkbox" value="induction"> Site Induction</label>
-                            <label><input type="checkbox" value="toolbox"> Toolbox Talks</label>
-                            <label><input type="checkbox" value="formal"> Formal Training</label>
-                            <label><input type="checkbox" value="refresher"> Refresher Course</label>
                         </div>
                     </div>
                     
                     <div class="form-actions">
-                        <button type="submit" class="action" style="background: #28a745;">Upload Policy</button>
-                        <button type="button" class="action" onclick="clearPolicyForm()" style="background: #6c757d;">Clear Form</button>
-                        <button type="button" class="action" onclick="togglePolicyForm()" style="background: #dc3545;">Close Form</button>
+                        <button type="submit" class="btn-primary">💾 Save Policy</button>
+                        <button type="button" onclick="togglePolicyForm()" class="btn-secondary">❌ Cancel</button>
                     </div>
                 </form>
             </div>
@@ -12578,6 +12567,230 @@ function uploadSafetyPolicies(){
             </div>
         </div>
     `);
+}
+
+function registerCompanyCar(){
+    // Generate auto track number
+    const trackNumber = 'KTC-CAR-' + Date.now().toString().slice(-6);
+    
+    showContent(`
+        <div class="card">
+            <h3>Register Company Car</h3>
+            <p><strong>Fleet Management:</strong> Register new company vehicles for tracking and management</p>
+            
+            <div class="form-header">
+                <h4>Vehicle Registration Form</h4>
+                <p>Complete this form to register a new company vehicle in the fleet management system. All fields marked with * are required.</p>
+            </div>
+            
+            <form id="carRegistrationForm" onsubmit="return saveCarRegistration()">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Car Name *</label>
+                        <input type="text" id="carName" placeholder="e.g., Toyota Hilux" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Brand Name *</label>
+                        <select id="brandName" required>
+                            <option value="">Select Brand</option>
+                            <option value="toyota">Toyota</option>
+                            <option value="nissan">Nissan</option>
+                            <option value="mitsubishi">Mitsubishi</option>
+                            <option value="isuzu">Isuzu</option>
+                            <option value="ford">Ford</option>
+                            <option value="mazda">Mazda</option>
+                            <option value="honda">Honda</option>
+                            <option value="bmw">BMW</option>
+                            <option value="mercedes">Mercedes-Benz</option>
+                            <option value="volkswagen">Volkswagen</option>
+                            <option value="other">Other</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Registration Number *</label>
+                        <input type="text" id="regNo" placeholder="e.g., T 1234 ABC" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Plate Number *</label>
+                        <input type="text" id="plateNumber" placeholder="e.g., ABC 123" required>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label>Car Details *</label>
+                    <textarea id="carDetails" rows="3" placeholder="e.g., Double cabin, 4x4, Diesel engine, 2022 model" required></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label>Description *</label>
+                    <textarea id="carDescription" rows="4" placeholder="Detailed description of the vehicle including color, features, condition, and any special equipment..." required></textarea>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Assigned Driver *</label>
+                        <select id="driver" required>
+                            <option value="">Select Driver</option>
+                            <option value="driver001">John Michael - Driver ID: D001</option>
+                            <option value="driver002">James Wilson - Driver ID: D002</option>
+                            <option value="driver003">Robert Kimaro - Driver ID: D003</option>
+                            <option value="driver004">David Mwanga - Driver ID: D004</option>
+                            <option value="unassigned">Unassigned</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Registration Date *</label>
+                        <input type="date" id="registrationDate" required>
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Track Number (Auto-generated)</label>
+                        <input type="text" id="trackNumber" value="${trackNumber}" readonly style="background: #f8f9fa; color: #6c757d;">
+                    </div>
+                    <div class="form-group">
+                        <label>Vehicle Type *</label>
+                        <select id="vehicleType" required>
+                            <option value="">Select Type</option>
+                            <option value="pickup">Pickup Truck</option>
+                            <option value="suv">SUV</option>
+                            <option value="sedan">Sedan</option>
+                            <option value="van">Van</option>
+                            <option value="truck">Heavy Truck</option>
+                            <option value="motorcycle">Motorcycle</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Fuel Type *</label>
+                        <select id="fuelType" required>
+                            <option value="">Select Fuel Type</option>
+                            <option value="petrol">Petrol</option>
+                            <option value="diesel">Diesel</option>
+                            <option value="hybrid">Hybrid</option>
+                            <option value="electric">Electric</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Color</label>
+                        <input type="text" id="carColor" placeholder="e.g., White, Black, Blue">
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Year of Manufacture</label>
+                        <input type="number" id="yearOfManufacture" placeholder="e.g., 2022" min="2000" max="${new Date().getFullYear() + 1}">
+                    </div>
+                    <div class="form-group">
+                        <label>Odometer Reading (km)</label>
+                        <input type="number" id="odometerReading" placeholder="e.g., 15000">
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Insurance Status *</label>
+                        <select id="insuranceStatus" required>
+                            <option value="">Select Status</option>
+                            <option value="insured">Insured</option>
+                            <option value="pending">Pending</option>
+                            <option value="expired">Expired</option>
+                            <option value="not-required">Not Required</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Vehicle Status *</label>
+                        <select id="vehicleStatus" required>
+                            <option value="">Select Status</option>
+                            <option value="active">Active</option>
+                            <option value="maintenance">Under Maintenance</option>
+                            <option value="inactive">Inactive</option>
+                            <option value="retired">Retired</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label>Additional Notes</label>
+                    <textarea id="additionalNotes" rows="3" placeholder="Any additional information about the vehicle..."></textarea>
+                </div>
+                
+                <div class="form-actions">
+                    <button type="submit" class="btn-primary">🚗 Register Vehicle</button>
+                    <button type="button" onclick="resetCarForm()" class="btn-secondary">🔄 Reset Form</button>
+                </div>
+            </form>
+        </div>
+    `);
+}
+
+function saveCarRegistration(){
+    const formData = {
+        carName: document.getElementById('carName').value,
+        brandName: document.getElementById('brandName').value,
+        regNo: document.getElementById('regNo').value,
+        plateNumber: document.getElementById('plateNumber').value,
+        carDetails: document.getElementById('carDetails').value,
+        carDescription: document.getElementById('carDescription').value,
+        driver: document.getElementById('driver').value,
+        registrationDate: document.getElementById('registrationDate').value,
+        trackNumber: document.getElementById('trackNumber').value,
+        vehicleType: document.getElementById('vehicleType').value,
+        fuelType: document.getElementById('fuelType').value,
+        carColor: document.getElementById('carColor').value,
+        yearOfManufacture: document.getElementById('yearOfManufacture').value,
+        odometerReading: document.getElementById('odometerReading').value,
+        insuranceStatus: document.getElementById('insuranceStatus').value,
+        vehicleStatus: document.getElementById('vehicleStatus').value,
+        additionalNotes: document.getElementById('additionalNotes').value,
+        registeredBy: sessionManager.getCurrentUser()?.name || 'Managing Director',
+        registrationTimestamp: new Date().toISOString()
+    };
+    
+    console.log('🚗 Registering company car:', formData);
+    
+    // Save to database
+    const baseUrl = window.location.origin;
+    fetch(`${baseUrl}/api/company-cars`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${sessionManager.getAuthToken()}`
+        },
+        body: JSON.stringify(formData)
+    })
+    .then(response => response.json())
+    .then(data => {
+        console.log('✅ Car registered successfully:', data);
+        
+        // Show success notification
+        showNotification('✅ Vehicle Registration Successful!', `Track Number: ${formData.trackNumber}\nVehicle: ${formData.carName} (${formData.regNo})\nDriver: ${formData.driver}\nRegistered: ${new Date().toLocaleString()}`, 'success');
+        
+        // Reset form after successful registration
+        setTimeout(() => {
+            registerCompanyCar(); // Reload the form for new registration
+        }, 2000);
+    })
+    .catch(error => {
+        console.error('❌ Error registering car:', error);
+        showNotification('❌ Registration Failed', 'Please try again or contact system administrator', 'error');
+    });
+    
+    return false; // Prevent form submission
+}
+
+function resetCarForm(){
+    document.getElementById('carRegistrationForm').reset();
+    // Generate new track number
+    const trackNumber = 'KTC-CAR-' + Date.now().toString().slice(-6);
+    document.getElementById('trackNumber').value = trackNumber;
 }
 
 function recordToolboxMeetings(){
