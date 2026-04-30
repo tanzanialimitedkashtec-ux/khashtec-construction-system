@@ -20389,6 +20389,14 @@ function documentManagement(){
 async function userAccountManagement(){
     console.log('🔄 Loading user account management data...');
     
+    // First show a loading message
+    showContent(`
+        <div class="card">
+            <h3>User Account Management</h3>
+            <p><strong>Loading user data...</strong></p>
+        </div>
+    `);
+    
     // Load users from database
     const baseUrl = window.location.origin;
     let users = [];
@@ -20454,7 +20462,9 @@ async function userAccountManagement(){
             </div>
         </div>`;
     
+    console.log('🔄 Updating content with user data...');
     showContent(formHtml);
+    console.log('✅ Content updated successfully');
 }
 
 function officePortal(){
