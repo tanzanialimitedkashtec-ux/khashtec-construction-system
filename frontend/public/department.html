@@ -16786,277 +16786,397 @@ function generateTrackingNumber() {
     });
 }
 
-// Save Functions
-function saveLanguageCampaign() {
-    const campaign = {
-        campaignName: document.getElementById('campaignName').value,
-        languageName: document.getElementById('languageName').value,
-        languageCode: document.getElementById('languageCode').value,
-        pricePerUnit: document.getElementById('pricePerUnit').value,
-        totalUnits: document.getElementById('totalUnits').value,
-        status: document.getElementById('campaignStatus').value,
-        startDate: document.getElementById('startDate').value,
-        endDate: document.getElementById('endDate').value,
-        description: document.getElementById('campaignDescription').value,
-        createdBy: getCurrentUser(),
-        createdDate: new Date().toLocaleString()
-    };
-    
-    // Generate unique campaign ID
-    campaign.id = 'CAMPAIGN_' + Date.now();
-    
-    // Save to localStorage (in production, this would be an API call)
-    let campaigns = JSON.parse(localStorage.getItem('languageCampaigns') || '[]');
-    campaigns.push(campaign);
-    localStorage.setItem('languageCampaigns', JSON.stringify(campaigns));
-    
-    customAlert('Campaign created successfully!', 'Success', 'success');
-    manageLanguageCampaigns();
-}
+// Save Functions - API Integration
+async function saveLanguageCampaign() {
+    try {
+        const campaignData = {
+            campaign_name: document.getElementById('campaignName').value,
+            campaign_description: document.getElementById('campaignDescription').value,
+            language_name: document.getElementById('languageName').value,
+            language_code: document.getElementById('languageCode').value,
+            price_per_unit: parseFloat(document.getElementById('pricePerUnit').value),
+            total_units_available: parseInt(document.getElementById('totalUnits').value),
+            campaign_start_date: document.getElementById('startDate').value,
+            campaign_end_date: document.getElementById('endDate').value,
+            status: document.getElementById('campaignStatus').value,
+            created_by: getCurrentUserId()
+        };
 
-function saveLanguagePurchase() {
-    const campaignSelect = document.getElementById('campaignSelect');
-    const selectedCampaign = JSON.parse(campaignSelect.options[campaignSelect.selectedIndex].value);
-    
-    const purchase = {
-        purchaseId: 'PURCHASE_' + Date.now(),
-        campaignId: selectedCampaign.id,
-        campaignName: selectedCampaign.campaignName,
-        buyerName: document.getElementById('buyerName').value,
-        buyerEmail: document.getElementById('buyerEmail').value,
-        buyerPhone: document.getElementById('buyerPhone').value,
-        buyerAddress: document.getElementById('buyerAddress').value,
-        unitsPurchased: document.getElementById('unitsPurchased').value,
-        unitPrice: selectedCampaign.pricePerUnit,
-        totalAmount: document.getElementById('unitsPurchased').value * selectedCampaign.pricePerUnit,
-        paymentMethod: document.getElementById('paymentMethod').value,
-        paymentStatus: 'Pending',
-        notes: document.getElementById('purchaseNotes').value,
-        purchaseDate: new Date().toLocaleString(),
-        createdBy: getCurrentUser()
-    };
-    
-    // Generate tracking number
-    purchase.trackingNumber = 'TRACK_' + Math.random().toString(36).substr(2, 9).toUpperCase();
-    
-    // Save to localStorage
-    let purchases = JSON.parse(localStorage.getItem('languagePurchases') || '[]');
-    purchases.push(purchase);
-    localStorage.setItem('languagePurchases', JSON.stringify(purchases));
-    
-    customAlert(`Purchase recorded successfully! Tracking Number: ${purchase.trackingNumber}`, 'Success', 'success');
-    manageLanguagePurchases();
-}
-
-function savePaymentTracking() {
-    const purchaseSelect = document.getElementById('purchaseSelect');
-    const selectedPurchase = JSON.parse(purchaseSelect.options[purchaseSelect.selectedIndex].value);
-    
-    const tracking = {
-        trackingId: 'TRACKING_' + Date.now(),
-        purchaseId: selectedPurchase.id,
-        trackingNumber: 'TRACK_' + Math.random().toString(36).substr(2, 9).toUpperCase(),
-        paymentStage: document.getElementById('paymentStage').value,
-        paymentReference: document.getElementById('paymentReference').value,
-        bankReference: document.getElementById('bankReference').value,
-        transactionId: document.getElementById('transactionId').value,
-        amount: document.getElementById('trackingAmount').value,
-        notes: document.getElementById('trackingNotes').value,
-        paymentDate: new Date().toLocaleString(),
-        createdBy: getCurrentUser()
-    };
-    
-    // Save to localStorage
-    let trackingRecords = JSON.parse(localStorage.getItem('languagePaymentTracking') || '[]');
-    trackingRecords.push(tracking);
-    localStorage.setItem('languagePaymentTracking', JSON.stringify(trackingRecords));
-    
-    customAlert(`Payment tracking created successfully! Tracking Number: ${tracking.trackingNumber}`, 'Success', 'success');
-    trackLanguagePayments();
-}
-
-// Load Functions
-function loadLanguageCampaigns() {
-    const campaigns = JSON.parse(localStorage.getItem('languageCampaigns') || '[]');
-    const campaignsGrid = document.querySelector('.campaign-grid');
-    
-    if (campaigns.length === 0) {
-        campaignsGrid.innerHTML = '<p>No campaigns found. Create your first campaign!</p>';
-        return;
+        const response = await KashTecAPI.post('/api/language-campaigns', campaignData);
+        
+        if (response.success) {
+            customAlert('Campaign created successfully!', 'Success', 'success');
+            manageLanguageCampaigns();
+        } else {
+            customAlert('Error creating campaign: ' + response.error, 'Error', 'error');
+        }
+    } catch (error) {
+        console.error('Error saving campaign:', error);
+        customAlert('Error creating campaign: ' + error.message, 'Error', 'error');
     }
-    
-    campaignsGrid.innerHTML = campaigns.map(campaign => `
-        <div class="campaign-card">
-            <h5>${campaign.campaignName}</h5>
-            <p><strong>Language:</strong> ${campaign.languageName} (${campaign.languageCode})</p>
-            <p><strong>Price:</strong> TZS ${campaign.pricePerUnit}</p>
-            <p><strong>Units:</strong> ${campaign.unitsSold || 0}/${campaign.totalUnits}</p>
-            <p><strong>Status:</strong> ${campaign.status}</p>
-            <button class="btn-primary" onclick="viewCampaignDetails('${campaign.id}')">View Details</button>
-        </div>
-    `).join('');
 }
 
-function loadLanguagePurchases() {
-    const purchases = JSON.parse(localStorage.getItem('languagePurchases') || '[]');
-    const purchasesGrid = document.querySelector('.purchase-grid');
-    
-    if (purchases.length === 0) {
-        purchasesGrid.innerHTML = '<p>No purchases found. Record your first purchase!</p>';
-        return;
+async function saveLanguagePurchase() {
+    try {
+        const campaignSelect = document.getElementById('campaignSelect');
+        const campaignId = campaignSelect.value;
+        
+        const purchaseData = {
+            campaign_id: parseInt(campaignId),
+            buyer_name: document.getElementById('buyerName').value,
+            buyer_email: document.getElementById('buyerEmail').value,
+            buyer_phone: document.getElementById('buyerPhone').value,
+            buyer_address: document.getElementById('buyerAddress').value,
+            units_purchased: parseInt(document.getElementById('unitsPurchased').value),
+            payment_method: document.getElementById('paymentMethod').value,
+            notes: document.getElementById('purchaseNotes').value,
+            created_by: getCurrentUserId()
+        };
+
+        const response = await KashTecAPI.post('/api/language-purchases', purchaseData);
+        
+        if (response.success) {
+            customAlert(`Purchase recorded successfully! Tracking Number: ${response.data.tracking_number}`, 'Success', 'success');
+            manageLanguagePurchases();
+        } else {
+            customAlert('Error recording purchase: ' + response.error, 'Error', 'error');
+        }
+    } catch (error) {
+        console.error('Error saving purchase:', error);
+        customAlert('Error recording purchase: ' + error.message, 'Error', 'error');
     }
-    
-    purchasesGrid.innerHTML = purchases.map(purchase => `
-        <div class="purchase-card">
-            <h5>${purchase.purchaseId}</h5>
-            <p><strong>Buyer:</strong> ${purchase.buyerName}</p>
-            <p><strong>Campaign:</strong> ${purchase.campaignName}</p>
-            <p><strong>Units:</strong> ${purchase.unitsPurchased}</p>
-            <p><strong>Amount:</strong> TZS ${purchase.totalAmount}</p>
-            <p><strong>Status:</strong> ${purchase.paymentStatus}</p>
-            <p><strong>Tracking:</strong> ${purchase.trackingNumber}</p>
-            <button class="btn-primary" onclick="viewPurchaseDetails('${purchase.id}')">View Details</button>
-        </div>
-    `).join('');
 }
 
-function loadPaymentTracking() {
-    const trackingRecords = JSON.parse(localStorage.getItem('languagePaymentTracking') || '[]');
-    const trackingGrid = document.querySelector('.tracking-grid');
-    
-    if (trackingRecords.length === 0) {
-        trackingGrid.innerHTML = '<p>No tracking records found. Generate your first tracking number!</p>';
-        return;
+async function savePaymentTracking() {
+    try {
+        const purchaseSelect = document.getElementById('purchaseSelect');
+        const purchaseId = parseInt(purchaseSelect.value);
+        
+        const trackingData = {
+            purchase_id: purchaseId,
+            payment_stage: document.getElementById('paymentStage').value,
+            payment_reference: document.getElementById('paymentReference').value,
+            bank_reference: document.getElementById('bankReference').value,
+            transaction_id: document.getElementById('transactionId').value,
+            amount: parseFloat(document.getElementById('trackingAmount').value),
+            notes: document.getElementById('trackingNotes').value,
+            created_by: getCurrentUserId()
+        };
+
+        const response = await KashTecAPI.post('/api/language-payment-tracking', trackingData);
+        
+        if (response.success) {
+            customAlert(`Payment tracking created successfully! Tracking Number: ${response.data.tracking_number}`, 'Success', 'success');
+            trackLanguagePayments();
+        } else {
+            customAlert('Error creating tracking: ' + response.error, 'Error', 'error');
+        }
+    } catch (error) {
+        console.error('Error saving tracking:', error);
+        customAlert('Error creating tracking: ' + error.message, 'Error', 'error');
     }
-    
-    trackingGrid.innerHTML = trackingRecords.map(tracking => `
-        <div class="tracking-card">
-            <h5>${tracking.trackingNumber}</h5>
-            <p><strong>Stage:</strong> ${tracking.paymentStage}</p>
-            <p><strong>Amount:</strong> TZS ${tracking.amount}</p>
-            <p><strong>Reference:</strong> ${tracking.paymentReference || 'N/A'}</p>
-            <p><strong>Date:</strong> ${tracking.paymentDate}</p>
-            <button class="btn-primary" onclick="viewTrackingDetails('${tracking.id}')">View Details</button>
-        </div>
-    `).join('');
 }
 
-function loadCampaignsForPurchase() {
-    const campaigns = JSON.parse(localStorage.getItem('languageCampaigns') || '[]');
-    const campaignSelect = document.getElementById('campaignSelect');
-    
-    campaigns.filter(c => c.status === 'Active').forEach(campaign => {
-        const option = document.createElement('option');
-        option.value = JSON.stringify(campaign);
-        option.textContent = `${campaign.campaignName} - ${campaign.languageName} (TZS ${campaign.pricePerUnit})`;
-        campaignSelect.appendChild(option);
-    });
+// Load Functions - API Integration
+async function loadLanguageCampaigns() {
+    try {
+        const campaignsGrid = document.querySelector('.campaign-grid');
+        campaignsGrid.innerHTML = '<div class="loading">Loading campaigns...</div>';
+        
+        const response = await KashTecAPI.get('/api/language-campaigns');
+        
+        if (response.success && response.data.length > 0) {
+            campaignsGrid.innerHTML = response.data.map(campaign => `
+                <div class="campaign-card">
+                    <h5>${campaign.campaign_name}</h5>
+                    <p><strong>Language:</strong> ${campaign.language_name} (${campaign.language_code})</p>
+                    <p><strong>Price:</strong> TZS ${campaign.price_per_unit}</p>
+                    <p><strong>Units:</strong> ${campaign.units_sold || 0}/${campaign.total_units_available}</p>
+                    <p><strong>Status:</strong> ${campaign.status}</p>
+                    <button class="btn-primary" onclick="viewCampaignDetails('${campaign.id}')">View Details</button>
+                </div>
+            `).join('');
+        } else {
+            campaignsGrid.innerHTML = '<p>No campaigns found. Create your first campaign!</p>';
+        }
+    } catch (error) {
+        console.error('Error loading campaigns:', error);
+        const campaignsGrid = document.querySelector('.campaign-grid');
+        campaignsGrid.innerHTML = '<p>Error loading campaigns. Please try again.</p>';
+    }
 }
 
-function loadPurchasesForTracking() {
-    const purchases = JSON.parse(localStorage.getItem('languagePurchases') || '[]');
-    const purchaseSelect = document.getElementById('purchaseSelect');
-    
-    purchases.forEach(purchase => {
-        const option = document.createElement('option');
-        option.value = JSON.stringify(purchase);
-        option.textContent = `${purchase.purchaseId} - ${purchase.buyerName} (TZS ${purchase.totalAmount})`;
-        purchaseSelect.appendChild(option);
-    });
+async function loadLanguagePurchases() {
+    try {
+        const purchasesGrid = document.querySelector('.purchase-grid');
+        purchasesGrid.innerHTML = '<div class="loading">Loading purchases...</div>';
+        
+        const response = await KashTecAPI.get('/api/language-purchases');
+        
+        if (response.success && response.data.length > 0) {
+            purchasesGrid.innerHTML = response.data.map(purchase => `
+                <div class="purchase-card">
+                    <h5>${purchase.purchase_id}</h5>
+                    <p><strong>Buyer:</strong> ${purchase.buyer_name}</p>
+                    <p><strong>Campaign:</strong> ${purchase.campaign_name}</p>
+                    <p><strong>Units:</strong> ${purchase.units_purchased}</p>
+                    <p><strong>Amount:</strong> TZS ${purchase.total_amount}</p>
+                    <p><strong>Status:</strong> ${purchase.payment_status}</p>
+                    <p><strong>Tracking:</strong> ${purchase.tracking_number}</p>
+                    <button class="btn-primary" onclick="viewPurchaseDetails('${purchase.id}')">View Details</button>
+                </div>
+            `).join('');
+        } else {
+            purchasesGrid.innerHTML = '<p>No purchases found. Record your first purchase!</p>';
+        }
+    } catch (error) {
+        console.error('Error loading purchases:', error);
+        const purchasesGrid = document.querySelector('.purchase-grid');
+        purchasesGrid.innerHTML = '<p>Error loading purchases. Please try again.</p>';
+    }
 }
 
-// Helper Functions
+async function loadPaymentTracking() {
+    try {
+        const trackingGrid = document.querySelector('.tracking-grid');
+        trackingGrid.innerHTML = '<div class="loading">Loading tracking records...</div>';
+        
+        const response = await KashTecAPI.get('/api/language-payment-tracking');
+        
+        if (response.success && response.data.length > 0) {
+            trackingGrid.innerHTML = response.data.map(tracking => `
+                <div class="tracking-card">
+                    <h5>${tracking.tracking_number}</h5>
+                    <p><strong>Stage:</strong> ${tracking.payment_stage}</p>
+                    <p><strong>Amount:</strong> TZS ${tracking.amount}</p>
+                    <p><strong>Reference:</strong> ${tracking.payment_reference || 'N/A'}</p>
+                    <p><strong>Date:</strong> ${new Date(tracking.payment_date).toLocaleDateString()}</p>
+                    <button class="btn-primary" onclick="viewTrackingDetails('${tracking.id}')">View Details</button>
+                </div>
+            `).join('');
+        } else {
+            trackingGrid.innerHTML = '<p>No tracking records found. Generate your first tracking number!</p>';
+        }
+    } catch (error) {
+        console.error('Error loading tracking:', error);
+        const trackingGrid = document.querySelector('.tracking-grid');
+        trackingGrid.innerHTML = '<p>Error loading tracking records. Please try again.</p>';
+    }
+}
+
+async function loadCampaignsForPurchase() {
+    try {
+        const campaignSelect = document.getElementById('campaignSelect');
+        campaignSelect.innerHTML = '<option value="">Choose a campaign...</option>';
+        
+        const response = await KashTecAPI.get('/api/language-campaigns/active');
+        
+        if (response.success && response.data.length > 0) {
+            response.data.forEach(campaign => {
+                const option = document.createElement('option');
+                option.value = campaign.id;
+                option.textContent = `${campaign.campaign_name} - ${campaign.language_name} (TZS ${campaign.price_per_unit})`;
+                campaignSelect.appendChild(option);
+            });
+        }
+    } catch (error) {
+        console.error('Error loading campaigns for purchase:', error);
+    }
+}
+
+async function loadPurchasesForTracking() {
+    try {
+        const purchaseSelect = document.getElementById('purchaseSelect');
+        purchaseSelect.innerHTML = '<option value="">Choose a purchase...</option>';
+        
+        const response = await KashTecAPI.get('/api/language-purchases/for-tracking');
+        
+        if (response.success && response.data.length > 0) {
+            response.data.forEach(purchase => {
+                const option = document.createElement('option');
+                option.value = purchase.id;
+                option.textContent = `${purchase.purchase_id} - ${purchase.buyer_name} (TZS ${purchase.total_amount})`;
+                purchaseSelect.appendChild(option);
+            });
+        }
+    } catch (error) {
+        console.error('Error loading purchases for tracking:', error);
+    }
+}
+
+// Helper Functions - API Integration
 function getCurrentUser() {
     return document.getElementById('userName').textContent || 'Current User';
 }
 
-function viewCampaignDetails(campaignId) {
-    const campaigns = JSON.parse(localStorage.getItem('languageCampaigns') || '[]');
-    const campaign = campaigns.find(c => c.id === campaignId);
-    
-    if (campaign) {
+function getCurrentUserId() {
+    // In a real implementation, this would get the actual user ID from authentication
+    return 1; // Default to user ID 1 for demo purposes
+}
+
+async function viewCampaignDetails(campaignId) {
+    try {
         showContent(`
             <div class="card">
                 <h3>Campaign Details</h3>
-                <div class="campaign-details">
-                    <p><strong>Campaign Name:</strong> ${campaign.campaignName}</p>
-                    <p><strong>Language:</strong> ${campaign.languageName} (${campaign.languageCode})</p>
-                    <p><strong>Price per Unit:</strong> TZS ${campaign.pricePerUnit}</p>
-                    <p><strong>Total Units:</strong> ${campaign.totalUnits}</p>
-                    <p><strong>Units Sold:</strong> ${campaign.unitsSold || 0}</p>
-                    <p><strong>Status:</strong> ${campaign.status}</p>
-                    <p><strong>Start Date:</strong> ${campaign.startDate || 'Not set'}</p>
-                    <p><strong>End Date:</strong> ${campaign.endDate || 'Not set'}</p>
-                    <p><strong>Description:</strong> ${campaign.description || 'No description'}</p>
-                    <p><strong>Created By:</strong> ${campaign.createdBy}</p>
-                    <p><strong>Created Date:</strong> ${campaign.createdDate}</p>
-                </div>
-                <div class="form-actions">
-                    <button class="btn-primary" onclick="manageLanguageCampaigns()">Back to Campaigns</button>
-                </div>
+                <div class="loading">Loading campaign details...</div>
             </div>
         `);
+        
+        const response = await KashTecAPI.get('/api/language-campaigns');
+        
+        if (response.success) {
+            const campaign = response.data.find(c => c.id == campaignId);
+            
+            if (campaign) {
+                showContent(`
+                    <div class="card">
+                        <h3>Campaign Details</h3>
+                        <div class="campaign-details">
+                            <p><strong>Campaign Name:</strong> ${campaign.campaign_name}</p>
+                            <p><strong>Language:</strong> ${campaign.language_name} (${campaign.language_code})</p>
+                            <p><strong>Price per Unit:</strong> TZS ${campaign.price_per_unit}</p>
+                            <p><strong>Total Units:</strong> ${campaign.total_units_available}</p>
+                            <p><strong>Units Sold:</strong> ${campaign.units_sold || 0}</p>
+                            <p><strong>Status:</strong> ${campaign.status}</p>
+                            <p><strong>Start Date:</strong> ${campaign.campaign_start_date || 'Not set'}</p>
+                            <p><strong>End Date:</strong> ${campaign.campaign_end_date || 'Not set'}</p>
+                            <p><strong>Description:</strong> ${campaign.campaign_description || 'No description'}</p>
+                            <p><strong>Created By:</strong> ${campaign.created_by_name || 'Unknown'}</p>
+                            <p><strong>Created Date:</strong> ${new Date(campaign.created_at).toLocaleString()}</p>
+                        </div>
+                        <div class="form-actions">
+                            <button class="btn-primary" onclick="manageLanguageCampaigns()">Back to Campaigns</button>
+                        </div>
+                    </div>
+                `);
+            } else {
+                showContent(`
+                    <div class="card">
+                        <h3>Campaign Not Found</h3>
+                        <p>Campaign with ID ${campaignId} not found.</p>
+                        <div class="form-actions">
+                            <button class="btn-primary" onclick="manageLanguageCampaigns()">Back to Campaigns</button>
+                        </div>
+                    </div>
+                `);
+            }
+        }
+    } catch (error) {
+        console.error('Error loading campaign details:', error);
+        customAlert('Error loading campaign details', 'Error', 'error');
     }
 }
 
-function viewPurchaseDetails(purchaseId) {
-    const purchases = JSON.parse(localStorage.getItem('languagePurchases') || '[]');
-    const purchase = purchases.find(p => p.id === purchaseId);
-    
-    if (purchase) {
+async function viewPurchaseDetails(purchaseId) {
+    try {
         showContent(`
             <div class="card">
                 <h3>Purchase Details</h3>
-                <div class="purchase-details">
-                    <p><strong>Purchase ID:</strong> ${purchase.purchaseId}</p>
-                    <p><strong>Campaign:</strong> ${purchase.campaignName}</p>
-                    <p><strong>Buyer Name:</strong> ${purchase.buyerName}</p>
-                    <p><strong>Buyer Email:</strong> ${purchase.buyerEmail}</p>
-                    <p><strong>Buyer Phone:</strong> ${purchase.buyerPhone || 'Not provided'}</p>
-                    <p><strong>Buyer Address:</strong> ${purchase.buyerAddress || 'Not provided'}</p>
-                    <p><strong>Units Purchased:</strong> ${purchase.unitsPurchased}</p>
-                    <p><strong>Unit Price:</strong> TZS ${purchase.unitPrice}</p>
-                    <p><strong>Total Amount:</strong> TZS ${purchase.totalAmount}</p>
-                    <p><strong>Payment Method:</strong> ${purchase.paymentMethod}</p>
-                    <p><strong>Payment Status:</strong> ${purchase.paymentStatus}</p>
-                    <p><strong>Tracking Number:</strong> ${purchase.trackingNumber}</p>
-                    <p><strong>Purchase Date:</strong> ${purchase.purchaseDate}</p>
-                    <p><strong>Notes:</strong> ${purchase.notes || 'No notes'}</p>
-                    <p><strong>Created By:</strong> ${purchase.createdBy}</p>
-                </div>
-                <div class="form-actions">
-                    <button class="btn-primary" onclick="manageLanguagePurchases()">Back to Purchases</button>
-                </div>
+                <div class="loading">Loading purchase details...</div>
             </div>
         `);
+        
+        const response = await KashTecAPI.get('/api/language-purchases');
+        
+        if (response.success) {
+            const purchase = response.data.find(p => p.id == purchaseId);
+            
+            if (purchase) {
+                showContent(`
+                    <div class="card">
+                        <h3>Purchase Details</h3>
+                        <div class="purchase-details">
+                            <p><strong>Purchase ID:</strong> ${purchase.purchase_id}</p>
+                            <p><strong>Campaign:</strong> ${purchase.campaign_name}</p>
+                            <p><strong>Buyer Name:</strong> ${purchase.buyer_name}</p>
+                            <p><strong>Buyer Email:</strong> ${purchase.buyer_email}</p>
+                            <p><strong>Buyer Phone:</strong> ${purchase.buyer_phone || 'Not provided'}</p>
+                            <p><strong>Buyer Address:</strong> ${purchase.buyer_address || 'Not provided'}</p>
+                            <p><strong>Units Purchased:</strong> ${purchase.units_purchased}</p>
+                            <p><strong>Total Amount:</strong> TZS ${purchase.total_amount}</p>
+                            <p><strong>Payment Method:</strong> ${purchase.payment_method}</p>
+                            <p><strong>Payment Status:</strong> ${purchase.payment_status}</p>
+                            <p><strong>Tracking Number:</strong> ${purchase.tracking_number}</p>
+                            <p><strong>Purchase Date:</strong> ${new Date(purchase.purchase_date).toLocaleString()}</p>
+                            <p><strong>Notes:</strong> ${purchase.notes || 'No notes'}</p>
+                            <p><strong>Created By:</strong> ${purchase.created_by_name || 'Unknown'}</p>
+                        </div>
+                        <div class="form-actions">
+                            <button class="btn-primary" onclick="manageLanguagePurchases()">Back to Purchases</button>
+                        </div>
+                    </div>
+                `);
+            } else {
+                showContent(`
+                    <div class="card">
+                        <h3>Purchase Not Found</h3>
+                        <p>Purchase with ID ${purchaseId} not found.</p>
+                        <div class="form-actions">
+                            <button class="btn-primary" onclick="manageLanguagePurchases()">Back to Purchases</button>
+                        </div>
+                    </div>
+                `);
+            }
+        }
+    } catch (error) {
+        console.error('Error loading purchase details:', error);
+        customAlert('Error loading purchase details', 'Error', 'error');
     }
 }
 
-function viewTrackingDetails(trackingId) {
-    const trackingRecords = JSON.parse(localStorage.getItem('languagePaymentTracking') || '[]');
-    const tracking = trackingRecords.find(t => t.id === trackingId);
-    
-    if (tracking) {
+async function viewTrackingDetails(trackingId) {
+    try {
         showContent(`
             <div class="card">
                 <h3>Payment Tracking Details</h3>
-                <div class="tracking-details">
-                    <p><strong>Tracking Number:</strong> ${tracking.trackingNumber}</p>
-                    <p><strong>Payment Stage:</strong> ${tracking.paymentStage}</p>
-                    <p><strong>Payment Reference:</strong> ${tracking.paymentReference || 'Not provided'}</p>
-                    <p><strong>Bank Reference:</strong> ${tracking.bankReference || 'Not provided'}</p>
-                    <p><strong>Transaction ID:</strong> ${tracking.transactionId || 'Not provided'}</p>
-                    <p><strong>Amount:</strong> TZS ${tracking.amount}</p>
-                    <p><strong>Payment Date:</strong> ${tracking.paymentDate}</p>
-                    <p><strong>Status:</strong> ${tracking.status}</p>
-                    <p><strong>Notes:</strong> ${tracking.notes || 'No notes'}</p>
-                    <p><strong>Created By:</strong> ${tracking.createdBy}</p>
-                </div>
-                <div class="form-actions">
-                    <button class="btn-primary" onclick="trackLanguagePayments()">Back to Tracking</button>
-                </div>
+                <div class="loading">Loading tracking details...</div>
             </div>
         `);
+        
+        const response = await KashTecAPI.get('/api/language-payment-tracking');
+        
+        if (response.success) {
+            const tracking = response.data.find(t => t.id == trackingId);
+            
+            if (tracking) {
+                showContent(`
+                    <div class="card">
+                        <h3>Payment Tracking Details</h3>
+                        <div class="tracking-details">
+                            <p><strong>Tracking Number:</strong> ${tracking.tracking_number}</p>
+                            <p><strong>Purchase ID:</strong> ${tracking.purchase_id}</p>
+                            <p><strong>Buyer Name:</strong> ${tracking.buyer_name}</p>
+                            <p><strong>Payment Stage:</strong> ${tracking.payment_stage}</p>
+                            <p><strong>Payment Reference:</strong> ${tracking.payment_reference || 'Not provided'}</p>
+                            <p><strong>Bank Reference:</strong> ${tracking.bank_reference || 'Not provided'}</p>
+                            <p><strong>Transaction ID:</strong> ${tracking.transaction_id || 'Not provided'}</p>
+                            <p><strong>Amount:</strong> TZS ${tracking.amount}</p>
+                            <p><strong>Payment Date:</strong> ${new Date(tracking.payment_date).toLocaleString()}</p>
+                            <p><strong>Status:</strong> ${tracking.status}</p>
+                            <p><strong>Notes:</strong> ${tracking.notes || 'No notes'}</p>
+                            <p><strong>Created By:</strong> ${tracking.created_by_name || 'Unknown'}</p>
+                        </div>
+                        <div class="form-actions">
+                            <button class="btn-primary" onclick="trackLanguagePayments()">Back to Tracking</button>
+                        </div>
+                    </div>
+                `);
+            } else {
+                showContent(`
+                    <div class="card">
+                        <h3>Tracking Not Found</h3>
+                        <p>Tracking record with ID ${trackingId} not found.</p>
+                        <div class="form-actions">
+                            <button class="btn-primary" onclick="trackLanguagePayments()">Back to Tracking</button>
+                        </div>
+                    </div>
+                `);
+            }
+        }
+    } catch (error) {
+        console.error('Error loading tracking details:', error);
+        customAlert('Error loading tracking details', 'Error', 'error');
     }
 }
 

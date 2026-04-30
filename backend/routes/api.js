@@ -352,4 +352,300 @@ router.get('/dashboard/stats', async (req, res) => {
     }
 });
 
+// ===== LANGUAGE PURCHASE TRACKING API ENDPOINTS =====
+
+// Get all language campaigns
+router.get('/language-campaigns', async (req, res) => {
+    try {
+        const [campaigns] = await db.execute(`
+            SELECT lc.*, u.name as created_by_name
+            FROM language_campaigns lc
+            LEFT JOIN users u ON lc.created_by = u.id
+            ORDER BY lc.created_at DESC
+        `);
+        res.json({ success: true, data: campaigns });
+    } catch (error) {
+        console.error('Error fetching language campaigns:', error);
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+// Create new language campaign
+router.post('/language-campaigns', async (req, res) => {
+    try {
+        const {
+            campaign_name,
+            campaign_description,
+            language_name,
+            language_code,
+            price_per_unit,
+            total_units_available,
+            campaign_start_date,
+            campaign_end_date,
+            status,
+            created_by
+        } = req.body;
+
+        const [result] = await db.execute(`
+            INSERT INTO language_campaigns 
+            (campaign_name, campaign_description, language_name, language_code, 
+             price_per_unit, total_units_available, campaign_start_date, 
+             campaign_end_date, status, created_by)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        `, [
+            campaign_name,
+            campaign_description,
+            language_name,
+            language_code,
+            price_per_unit,
+            total_units_available,
+            campaign_start_date,
+            campaign_end_date,
+            status || 'Draft',
+            created_by
+        ]);
+
+        res.json({ 
+            success: true, 
+            data: { id: result.insertId, message: 'Campaign created successfully' }
+        });
+    } catch (error) {
+        console.error('Error creating language campaign:', error);
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+// Get all language purchases
+router.get('/language-purchases', async (req, res) => {
+    try {
+        const [purchases] = await db.execute(`
+            SELECT lp.*, lc.campaign_name, lc.language_name, u.name as created_by_name
+            FROM language_purchases lp
+            LEFT JOIN language_campaigns lc ON lp.campaign_id = lc.id
+            LEFT JOIN users u ON lp.created_by = u.id
+            ORDER BY lp.purchase_date DESC
+        `);
+        res.json({ success: true, data: purchases });
+    } catch (error) {
+        console.error('Error fetching language purchases:', error);
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+// Create new language purchase
+router.post('/language-purchases', async (req, res) => {
+    try {
+        const {
+            campaign_id,
+            buyer_name,
+            buyer_email,
+            buyer_phone,
+            buyer_address,
+            units_purchased,
+            payment_method,
+            notes,
+            created_by
+        } = req.body;
+
+        // Generate unique purchase ID and tracking number
+        const purchase_id = 'PURCHASE_' + Date.now();
+        const tracking_number = 'TRACK_' + Math.random().toString(36).substr(2, 9).toUpperCase();
+
+        // Get campaign details to calculate total amount
+        const [campaign] = await db.execute(
+            'SELECT price_per_unit FROM language_campaigns WHERE id = ?',
+            [campaign_id]
+        );
+
+        if (campaign.length === 0) {
+            return res.status(400).json({ success: false, error: 'Campaign not found' });
+        }
+
+        const total_amount = units_purchased * campaign[0].price_per_unit;
+
+        const [result] = await db.execute(`
+            INSERT INTO language_purchases 
+            (purchase_id, campaign_id, buyer_name, buyer_email, buyer_phone, 
+             buyer_address, units_purchased, total_amount, payment_method, 
+             payment_status, tracking_number, notes, created_by)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        `, [
+            purchase_id,
+            campaign_id,
+            buyer_name,
+            buyer_email,
+            buyer_phone,
+            buyer_address,
+            units_purchased,
+            total_amount,
+            payment_method,
+            'Pending',
+            tracking_number,
+            notes,
+            created_by
+        ]);
+
+        // Update campaign units sold
+        await db.execute(
+            'UPDATE language_campaigns SET units_sold = units_sold + ? WHERE id = ?',
+            [units_purchased, campaign_id]
+        );
+
+        res.json({ 
+            success: true, 
+            data: { 
+                id: result.insertId, 
+                purchase_id,
+                tracking_number,
+                total_amount,
+                message: 'Purchase recorded successfully' 
+            }
+        });
+    } catch (error) {
+        console.error('Error creating language purchase:', error);
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+// Get all payment tracking records
+router.get('/language-payment-tracking', async (req, res) => {
+    try {
+        const [tracking] = await db.execute(`
+            SELECT lpt.*, lp.purchase_id, lp.buyer_name, u.name as created_by_name
+            FROM language_payment_tracking lpt
+            LEFT JOIN language_purchases lp ON lpt.purchase_id = lp.id
+            LEFT JOIN users u ON lpt.created_by = u.id
+            ORDER BY lpt.payment_date DESC
+        `);
+        res.json({ success: true, data: tracking });
+    } catch (error) {
+        console.error('Error fetching payment tracking:', error);
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+// Create new payment tracking record
+router.post('/language-payment-tracking', async (req, res) => {
+    try {
+        const {
+            purchase_id,
+            payment_stage,
+            payment_reference,
+            bank_reference,
+            transaction_id,
+            amount,
+            notes,
+            created_by
+        } = req.body;
+
+        // Generate unique tracking number
+        const tracking_number = 'TRACK_' + Math.random().toString(36).substr(2, 9).toUpperCase();
+
+        const [result] = await db.execute(`
+            INSERT INTO language_payment_tracking 
+            (purchase_id, tracking_number, payment_stage, payment_reference, 
+             bank_reference, transaction_id, amount, notes, created_by)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+        `, [
+            purchase_id,
+            tracking_number,
+            payment_stage,
+            payment_reference,
+            bank_reference,
+            transaction_id,
+            amount,
+            notes,
+            created_by
+        ]);
+
+        // Update purchase payment status if completed
+        if (payment_stage === 'Completed') {
+            await db.execute(
+                'UPDATE language_purchases SET payment_status = ?, payment_date = NOW() WHERE id = ?',
+                ['Paid', purchase_id]
+            );
+        }
+
+        res.json({ 
+            success: true, 
+            data: { 
+                id: result.insertId, 
+                tracking_number,
+                message: 'Payment tracking created successfully' 
+            }
+        });
+    } catch (error) {
+        console.error('Error creating payment tracking:', error);
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+// Get active campaigns for purchase form
+router.get('/language-campaigns/active', async (req, res) => {
+    try {
+        const [campaigns] = await db.execute(`
+            SELECT id, campaign_name, language_name, price_per_unit, total_units_available, units_sold
+            FROM language_campaigns 
+            WHERE status = 'Active' 
+            ORDER BY campaign_name
+        `);
+        res.json({ success: true, data: campaigns });
+    } catch (error) {
+        console.error('Error fetching active campaigns:', error);
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+// Get purchases for tracking form
+router.get('/language-purchases/for-tracking', async (req, res) => {
+    try {
+        const [purchases] = await db.execute(`
+            SELECT id, purchase_id, buyer_name, total_amount, campaign_name
+            FROM language_purchases lp
+            LEFT JOIN language_campaigns lc ON lp.campaign_id = lc.id
+            ORDER BY lp.purchase_date DESC
+        `);
+        res.json({ success: true, data: purchases });
+    } catch (error) {
+        console.error('Error fetching purchases for tracking:', error);
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+// Update campaign status
+router.put('/language-campaigns/:id/status', async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { status } = req.body;
+
+        await db.execute(
+            'UPDATE language_campaigns SET status = ?, updated_at = NOW() WHERE id = ?',
+            [status, id]
+        );
+
+        res.json({ success: true, message: 'Campaign status updated successfully' });
+    } catch (error) {
+        console.error('Error updating campaign status:', error);
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+// Update purchase payment status
+router.put('/language-purchases/:id/payment-status', async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { payment_status } = req.body;
+
+        await db.execute(
+            'UPDATE language_purchases SET payment_status = ?, payment_date = NOW() WHERE id = ?',
+            [payment_status, id]
+        );
+
+        res.json({ success: true, message: 'Payment status updated successfully' });
+    } catch (error) {
+        console.error('Error updating payment status:', error);
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
 module.exports = router;
