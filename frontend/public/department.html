@@ -6,15 +6,9 @@
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
-    <title>KASHTEC Construction Management System004</title>
+    <title>KASHTEC Construction Management System006</title>
     
-        <script>
-        const PRODUCTION_FRONTEND_URL = 'https://khashtec-construction-system-production-e297.up.railway.app/frontend/public/department.html';
-        if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.hostname === '::1') {
-            window.location.replace(PRODUCTION_FRONTEND_URL);
-        }
-    </script>
-    
+            
     <style>
 *{
     margin:0;
@@ -4237,8 +4231,15 @@ function handleLogin() {
         return false;
     }
     
-    // Store user session
+    // Extract name from email (before @ symbol)
+    const userName = email.split('@')[0];
+    
+    // Store user session with name
     userManager.setUser(email, role);
+    sessionStorage.setItem('userName', userName);
+    sessionStorage.setItem('userEmail', email);
+    sessionStorage.setItem('userRole', role);
+    sessionStorage.setItem('loginTime', new Date().toLocaleString());
     currentRole = role;
     
     // Hide login, show system
@@ -23421,8 +23422,8 @@ function goBack() {
         } else {
             // If no history, go back to main menu
             console.log('🏠 No history available, returning to main menu');
-            const user = userManager.getUser();
-            const departmentTitle = user ? roleDescriptions[user.role] + ' Dashboard' : 'KASHTEC Department Portal';
+            const userRole = sessionStorage.getItem('userRole');
+            const departmentTitle = userRole ? roleDescriptions[userRole] + ' Dashboard' : 'KASHTEC Department Portal';
             showContent(getWelcomeContent(departmentTitle));
         }
         
@@ -25747,8 +25748,8 @@ document.addEventListener('DOMContentLoaded', function() {
     console.log('KASHTEC Construction System - Department Portal loaded');
     
     // Load initial content with user info
-    const user = userManager.getUser();
-    const departmentTitle = user ? roleDescriptions[user.role] + ' Dashboard' : 'KASHTEC Department Portal';
+    const userRole = sessionStorage.getItem('userRole');
+    const departmentTitle = userRole ? roleDescriptions[userRole] + ' Dashboard' : 'KASHTEC Department Portal';
     showContent(getWelcomeContent(departmentTitle));
     
     // Load assigned workers data
@@ -27525,11 +27526,10 @@ function reactivateUser(userId) {
 
 // Enhanced welcome content with user info
 function getWelcomeContent(departmentTitle) {
-    const user = userManager.getUser();
-    const userName = user ? user.name : 'Guest';
-    const userEmail = user ? user.email : 'Not logged in';
-    const userRole = user ? user.role : 'Unknown';
-    const currentTime = new Date().toLocaleString();
+    const userName = sessionStorage.getItem('userName') || 'Guest';
+    const userEmail = sessionStorage.getItem('userEmail') || 'Not logged in';
+    const userRole = sessionStorage.getItem('userRole') || 'Unknown';
+    const currentTime = sessionStorage.getItem('loginTime') || new Date().toLocaleString();
     
     return `
         <div class="card">
@@ -27574,8 +27574,8 @@ function cancelEmploymentAction() {
 
 // Show dashboard with user info
 function showDashboard() {
-    const user = userManager.getUser();
-    const departmentTitle = user ? roleDescriptions[user.role] + ' Dashboard' : 'KASHTEC Department Portal';
+    const userRole = sessionStorage.getItem('userRole');
+    const departmentTitle = userRole ? roleDescriptions[userRole] + ' Dashboard' : 'KASHTEC Department Portal';
     showContent(getWelcomeContent(departmentTitle));
 }
 
