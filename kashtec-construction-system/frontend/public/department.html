@@ -19645,36 +19645,189 @@ function approveCompletedWork(){
             
             <div class="approval-overview">
                 <h4>Work Pending Approval</h4>
-                <div class="pending-work">
-                    <div class="work-item">
-                        <div class="work-details">
-                            <strong>Foundation Excavation</strong>
-                            <span>Project: Port Modernization Phase 1</span>
-                            <span>Completed by: John Doe - Construction Worker</span>
-                            <span>Completed Date: March 15, 2026</span>
-                            <span>Quality Score: 95%</span>
-                        </div>
-                        <div class="work-actions">
-                            <button class="action" onclick="approveWork('work001')" style="background: #28a745;">Approve</button>
-                            <button class="action" onclick="requestRework('work001')" style="background: #ffc107;">Request Rework</button>
-                            <button class="action" onclick="rejectWork('work001')" style="background: #dc3545;">Reject</button>
-                        </div>
-                    </div>
-                    
-                    <div class="work-item">
-                        <div class="work-details">
-                            <strong>Steel Framework Installation</strong>
-                            <span>Project: Warehouse Construction</span>
-                            <span>Completed by: Mike Johnson - Engineer</span>
-                            <span>Completed Date: March 14, 2026</span>
-                            <span>Quality Score: 88%</span>
-                        </div>
-                        <div class="work-actions">
-                            <button class="action" onclick="approveWork('work002')" style="background: #28a745;">Approve</button>
-                            <button class="action" onclick="requestRework('work002')" style="background: #ffc107;">Request Rework</button>
-                            <button class="action" onclick="rejectWork('work002')" style="background: #dc3545;">Reject</button>
-                        </div>
-                    </div>
+                <div class="table-responsive">
+                    <table class="approval-table">
+                        <thead>
+                            <tr>
+                                <th>Work Details</th>
+                                <th>Project</th>
+                                <th>Completed By</th>
+                                <th>Completed Date</th>
+                                <th>Quality Score</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr class="work-row">
+                                <td>
+                                    <div class="work-info">
+                                        <strong>Foundation Excavation</strong>
+                                        <small>ID: work001</small>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="project-info">
+                                        <span class="project-name">Port Modernization Phase 1</span>
+                                        <small>PRJ-001</small>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="worker-info">
+                                        <span class="worker-name">John Doe</span>
+                                        <small>Construction Worker</small>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="date-info">
+                                        <span class="date">March 15, 2026</span>
+                                        <small class="time">2:30 PM</small>
+                                    </div>
+                                </td>
+                                <td>
+                                    <span class="quality-badge high">95%</span>
+                                </td>
+                                <td>
+                                    <div class="action-buttons">
+                                        <button class="action-btn approve" onclick="approveWork('work001')" title="Approve Work">
+                                            
+                                        </button>
+                                        <button class="action-btn rework" onclick="requestRework('work001')" title="Request Rework">
+                                            
+                                        </button>
+                                        <button class="action-btn reject" onclick="rejectWork('work001')" title="Reject Work">
+                                            
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr class="work-row">
+                                <td>
+                                    <div class="work-info">
+                                        <strong>Steel Framework Installation</strong>
+                                        <small>ID: work002</small>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="project-info">
+                                        <span class="project-name">Warehouse Construction</span>
+                                        <small>PRJ-002</small>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="worker-info">
+                                        <span class="worker-name">Mike Johnson</span>
+                                        <small>Engineer</small>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="date-info">
+                                        <span class="date">March 14, 2026</span>
+                                        <small class="time">4:15 PM</small>
+                                    </div>
+                                </td>
+                                <td>
+                                    <span class="quality-badge medium">88%</span>
+                                </td>
+                                <td>
+                                    <div class="action-buttons">
+                                        <button class="action-btn approve" onclick="approveWork('work002')" title="Approve Work">
+                                            
+                                        </button>
+                                        <button class="action-btn rework" onclick="requestRework('work002')" title="Request Rework">
+                                            
+                                        </button>
+                                        <button class="action-btn reject" onclick="rejectWork('work002')" title="Reject Work">
+                                            
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr class="work-row">
+                                <td>
+                                    <div class="work-info">
+                                        <strong>Electrical Wiring</strong>
+                                        <small>ID: work003</small>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="project-info">
+                                        <span class="project-name">Office Building Renovation</span>
+                                        <small>PRJ-003</small>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="worker-info">
+                                        <span class="worker-name">Sarah Williams</span>
+                                        <small>Electrician</small>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="date-info">
+                                        <span class="date">March 13, 2026</span>
+                                        <small class="time">11:20 AM</small>
+                                    </div>
+                                </td>
+                                <td>
+                                    <span class="quality-badge high">92%</span>
+                                </td>
+                                <td>
+                                    <div class="action-buttons">
+                                        <button class="action-btn approve" onclick="approveWork('work003')" title="Approve Work">
+                                            
+                                        </button>
+                                        <button class="action-btn rework" onclick="requestRework('work003')" title="Request Rework">
+                                            
+                                        </button>
+                                        <button class="action-btn reject" onclick="rejectWork('work003')" title="Reject Work">
+                                            
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr class="work-row">
+                                <td>
+                                    <div class="work-info">
+                                        <strong>Plumbing Installation</strong>
+                                        <small>ID: work004</small>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="project-info">
+                                        <span class="project-name">Residential Complex</span>
+                                        <small>PRJ-004</small>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="worker-info">
+                                        <span class="worker-name">Robert Chen</span>
+                                        <small>Plumber</small>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="date-info">
+                                        <span class="date">March 12, 2026</span>
+                                        <small class="time">3:45 PM</small>
+                                    </div>
+                                </td>
+                                <td>
+                                    <span class="quality-badge low">75%</span>
+                                </td>
+                                <td>
+                                    <div class="action-buttons">
+                                        <button class="action-btn approve" onclick="approveWork('work004')" title="Approve Work">
+                                            
+                                        </button>
+                                        <button class="action-btn rework" onclick="requestRework('work004')" title="Request Rework">
+                                            
+                                        </button>
+                                        <button class="action-btn reject" onclick="rejectWork('work004')" title="Reject Work">
+                                            
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
                 </div>
             </div>
             
