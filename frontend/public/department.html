@@ -6,7 +6,7 @@
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
-    <title>KASHTEC Construction Management System002</title>
+    <title>KASHTEC Construction Management System004</title>
     
         <script>
         const PRODUCTION_FRONTEND_URL = 'https://khashtec-construction-system-production-e297.up.railway.app/frontend/public/department.html';
@@ -4247,23 +4247,61 @@ function loadPoliciesFromBackend() {
 }
 
 function loadSeniorHiringRequests() {
-    showContent(`<div class="card">
-        <h3>Approve Senior Staff Hiring</h3>
-        <p><strong>HR Authority:</strong> Review and approve senior staff hiring requests</p>
-        
-        <div class="hiring-list">
-            <div class="search-container" style="margin-bottom: 20px;">
-                <input type="text" id="hrHiringSearchInput" placeholder="🔍 Search candidates by name, department, salary, or experience..." 
-                       style="width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 8px; font-size: 14px; box-sizing: border-box;"
-                       onkeyup="filterHRHiringRequests()">
-                <div id="hrHiringSearchResults" style="margin-top: 5px; font-size: 12px; color: #666;"></div>
+    showContent(`
+        <div class="card">
+            <h3>Approve Senior Staff Hiring</h3>
+            <p><strong>HR Authority:</strong> Review and approve senior staff hiring requests</p>
+            
+            <div class="hiring-section">
+                <h4>Senior Staff Hiring Requests Pending Approval</h4>
+                <div class="search-container" style="margin-bottom: 20px;">
+                    <input type="text" id="hrHiringSearchInput" placeholder="🔍 Search candidates by name, department, salary, or experience..." 
+                           style="width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 8px; font-size: 14px; box-sizing: border-box;"
+                           onkeyup="filterHRHiringRequests()">
+                    <div id="hrHiringSearchResults" style="margin-top: 5px; font-size: 12px; color: #666;"></div>
+                </div>
+                
+                <div class="table-responsive">
+                    <table class="hiring-table">
+                        <thead>
+                            <tr>
+                                <th>Position</th>
+                                <th>Candidate Name</th>
+                                <th>Proposed Salary</th>
+                                <th>Department</th>
+                                <th>Experience</th>
+                                <th>HR Recommendation</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="hiringContainer">
+                            <tr>
+                                <td colspan="7" class="loading-row">
+                                    <div class="loading">Loading hiring requests...</div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
             </div>
-            <h4>Pending Senior Hiring Requests</h4>
-            <div id="hiringContainer">
-                <div class="loading">Loading hiring requests...</div>
+            
+            <div class="approval-summary">
+                <h4>Senior Hiring Authority</h4>
+                <div class="authority-item">
+                    <span>✅ Can review all senior staff hires</span>
+                </div>
+                <div class="authority-item">
+                    <span>✅ Can recommend manager-level positions and above</span>
+                </div>
+                <div class="authority-item">
+                    <span>✅ Can forward recommendations to MD</span>
+                </div>
+                <div class="authority-item restriction">
+                    <span>❌ Cannot directly register workers (HR function)</span>
+                </div>
             </div>
         </div>
-    </div>`);
+    `);
     
     // Load hiring requests from backend
     loadHiringRequestsFromBackend();
@@ -4290,63 +4328,87 @@ function loadHiringRequestsFromBackend() {
         const container = document.getElementById('hiringContainer');
         
         if (!data || !Array.isArray(data)) {
-            container.innerHTML = '<div class="error">No hiring requests found or error loading requests</div>';
+            container.innerHTML = '<tr><td colspan="7" class="error-row"><div class="error">No hiring requests found or error loading requests</div></td></tr>';
             return;
         }
         
         if (data.length === 0) {
-            container.innerHTML = '<div class="info">No pending senior hiring requests</div>';
+            container.innerHTML = '<tr><td colspan="7" class="info-row"><div class="info">No pending senior hiring requests</div></td></tr>';
             return;
         }
         
-        let html = '<div class="hiring-items">';
+        let html = '';
         data.forEach(request => {
             html += `
-                <div class="hiring-item">
-                    <h5>${request.position || 'Position not specified'}</h5>
-                    <div class="candidate-info">
-                        <div class="form-row">
-                            <div class="form-group">
-                                <label for="candidate-name-${request.id}">Candidate Name</label>
-                                <input type="text" id="candidate-name-${request.id}" name="candidate_name" value="${request.candidate_name || 'N/A'}" readonly>
-                            </div>
-                            <div class="form-group">
-                                <label for="proposed-salary-${request.id}">Proposed Salary</label>
-                                <input type="text" id="proposed-salary-${request.id}" name="proposed_salary" value="${request.proposed_salary ? 'TZS ' + parseInt(request.proposed_salary).toLocaleString() : 'N/A'}" readonly>
-                            </div>
+                <tr class="hiring-row">
+                    <td>
+                        <div class="position-info">
+                            <strong>${request.position || 'Position not specified'}</strong>
+                            <small>ID: ${request.id || 'N/A'}</small>
                         </div>
-                        <div class="form-row">
-                            <div class="form-group">
-                                <label for="department-${request.id}">Department</label>
-                                <input type="text" id="department-${request.id}" name="department" value="${request.department || 'N/A'}" readonly>
-                            </div>
-                            <div class="form-group">
-                                <label for="experience-${request.id}">Experience</label>
-                                <input type="text" id="experience-${request.id}" name="experience" value="${request.experience || 'N/A'}" readonly>
-                            </div>
+                    </td>
+                    <td>
+                        <div class="candidate-info">
+                            <span class="candidate-name">${request.candidate_name || 'N/A'}</span>
+                            <small>Senior Candidate</small>
                         </div>
-                        <div class="form-group">
-                            <label for="hr-recommendation-${request.id}">HR Recommendation</label>
-                            <textarea id="hr-recommendation-${request.id}" name="hr_recommendation" rows="3" readonly>${request.hr_recommendation || 'No recommendation provided'}</textarea>
+                    </td>
+                    <td>
+                        <span class="salary-amount ${getSalaryClass(request.proposed_salary)}">${request.proposed_salary ? 'TZS ' + parseInt(request.proposed_salary).toLocaleString() : 'N/A'}</span>
+                    </td>
+                    <td>
+                        <span class="department-badge ${getDepartmentClass(request.department)}">${request.department || 'N/A'}</span>
+                    </td>
+                    <td>
+                        <div class="experience-text">${request.experience || 'N/A'}</div>
+                    </td>
+                    <td>
+                        <div class="recommendation-text">${request.hr_recommendation || 'No recommendation provided'}</div>
+                    </td>
+                    <td>
+                        <div class="action-buttons">
+                            <button class="action-btn approve" onclick="approveSeniorHire('${request.id}')" title="Approve Hiring">
+                                ✓
+                            </button>
+                            <button class="action-btn info" onclick="requestMoreInfo('${request.id}')" title="Request More Info">
+                                ℹ
+                            </button>
+                            <button class="action-btn reject" onclick="rejectSeniorHire('${request.id}')" title="Reject Hiring">
+                                ✗
+                            </button>
                         </div>
-                    </div>
-                    <div class="hiring-actions">
-                        <button class="action" onclick="approveSeniorHire('${request.id}')" style="background: #28a745;">Approve Hiring</button>
-                        <button class="action" onclick="requestMoreInfo('${request.id}')" style="background: #ffc107;">Request More Info</button>
-                        <button class="action" onclick="rejectSeniorHire('${request.id}')" style="background: #dc3545;">Reject Hiring</button>
-                    </div>
-                </div>
+                    </td>
+                </tr>
             `;
         });
-        html += '</div>';
         container.innerHTML = html;
     })
     .catch(error => {
         console.error('❌ Error loading hiring requests:', error);
-        document.getElementById('hiringContainer').innerHTML = '<div class="error">Error loading hiring requests: ' + error.message + '</div>';
+        document.getElementById('hiringContainer').innerHTML = '<tr><td colspan="7" class="error-row"><div class="error">Error loading hiring requests: ' + error.message + '</div></td></tr>';
     });
 }
 
+
+// Helper functions for table formatting
+function getSalaryClass(salary) {
+    if (!salary) return 'medium';
+    const amount = parseInt(salary);
+    if (amount >= 150000) return 'high';
+    if (amount >= 100000) return 'medium';
+    return 'low';
+}
+
+function getDepartmentClass(department) {
+    if (!department) return 'default';
+    const dept = department.toLowerCase();
+    if (dept.includes('finance')) return 'finance';
+    if (dept.includes('operations')) return 'operations';
+    if (dept.includes('projects')) return 'projects';
+    if (dept.includes('hr')) return 'hr';
+    if (dept.includes('admin')) return 'admin';
+    return 'default';
+}
 
 function logout(){
     location.reload();
