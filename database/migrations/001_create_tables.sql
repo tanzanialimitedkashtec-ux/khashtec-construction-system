@@ -1182,3 +1182,30 @@ CREATE TABLE IF NOT EXISTS project_progress_updates (
   INDEX idx_updated_by (updated_by),
   FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE
 );
+
+-- Suggestions table
+CREATE TABLE IF NOT EXISTS suggestions (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  employee_id INT NOT NULL,
+  title VARCHAR(255) NOT NULL,
+  category ENUM('safety', 'productivity', 'cost-saving', 'quality', 'environment', 'training', 'equipment', 'process', 'other') NOT NULL,
+  priority ENUM('low', 'medium', 'high', 'urgent') NOT NULL,
+  description TEXT NOT NULL,
+  current_situation TEXT,
+  proposed_solution TEXT,
+  expected_benefits TEXT,
+  resources_required TEXT,
+  timeline VARCHAR(255),
+  status ENUM('pending', 'under-review', 'approved', 'rejected', 'implemented') DEFAULT 'pending',
+  admin_feedback TEXT,
+  admin_decision VARCHAR(255),
+  decision_date TIMESTAMP NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  INDEX idx_employee_id (employee_id),
+  INDEX idx_category (category),
+  INDEX idx_priority (priority),
+  INDEX idx_status (status),
+  INDEX idx_created_at (created_at),
+  FOREIGN KEY (employee_id) REFERENCES users(id) ON DELETE CASCADE
+);

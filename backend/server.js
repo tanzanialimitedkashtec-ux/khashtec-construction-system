@@ -2402,6 +2402,16 @@ try {
     console.error('Error loading worker accounts routes:', error);
 }
 
+// Load suggestions routes
+try {
+    const suggestionsRoutes = require('./routes/suggestions');
+    console.log('✅ Suggestions routes loaded successfully');
+    app.use('/api/suggestions', suggestionsRoutes);
+    console.log('✅ Suggestions routes mounted at /api/suggestions');
+} catch (error) {
+    console.error('❌ Error loading suggestions routes:', error);
+}
+
 // Fallback project details endpoint
 app.get('/api/projects/:id', async (req, res) => {
     try {
