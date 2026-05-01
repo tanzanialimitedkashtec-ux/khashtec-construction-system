@@ -802,6 +802,86 @@ CREATE TABLE IF NOT EXISTS schedule_meetings (
   INDEX idx_created_by (created_by)
 );
 
+-- Language Purchase Campaigns table
+CREATE TABLE IF NOT EXISTS language_campaigns (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  campaign_name VARCHAR(255) NOT NULL,
+  campaign_description TEXT,
+  language_name VARCHAR(100) NOT NULL,
+  language_code VARCHAR(10) NOT NULL,
+  price_per_unit DECIMAL(10,2) NOT NULL,
+  total_units_available INT DEFAULT 0,
+  units_sold INT DEFAULT 0,
+  campaign_start_date DATE,
+  campaign_end_date DATE,
+  status ENUM('Draft', 'Active', 'Completed', 'Cancelled') DEFAULT 'Draft',
+  created_by INT,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  FOREIGN KEY (created_by) REFERENCES users(id) ON DELETE SET NULL,
+  INDEX idx_campaign_name (campaign_name),
+  INDEX idx_language (language_name),
+  INDEX idx_status (status),
+  INDEX idx_dates (campaign_start_date, campaign_end_date)
+);
+
+-- Language Purchases table
+CREATE TABLE IF NOT EXISTS language_purchases (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  purchase_id VARCHAR(50) UNIQUE NOT NULL,
+  campaign_id INT NOT NULL,
+  buyer_name VARCHAR(255) NOT NULL,
+  buyer_email VARCHAR(255) NOT NULL,
+  buyer_phone VARCHAR(50),
+  buyer_address TEXT,
+  units_purchased INT NOT NULL,
+  total_amount DECIMAL(10,2) NOT NULL,
+  payment_status ENUM('Pending', 'Paid', 'Failed', 'Refunded') DEFAULT 'Pending',
+  payment_method ENUM('Cash', 'Bank Transfer', 'Mobile Money', 'Credit Card', 'Other') DEFAULT 'Bank Transfer',
+  tracking_number VARCHAR(50) UNIQUE,
+  purchase_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  payment_date TIMESTAMP NULL,
+  notes TEXT,
+  created_by INT,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  FOREIGN KEY (campaign_id) REFERENCES language_campaigns(id) ON DELETE CASCADE,
+  FOREIGN KEY (created_by) REFERENCES users(id) ON DELETE SET NULL,
+  INDEX idx_purchase_id (purchase_id),
+  INDEX idx_campaign_id (campaign_id),
+  INDEX idx_buyer_email (buyer_email),
+  INDEX idx_payment_status (payment_status),
+  INDEX idx_tracking_number (tracking_number),
+  INDEX idx_purchase_date (purchase_date)
+);
+
+-- Language Payment Tracking table
+CREATE TABLE IF NOT EXISTS language_payment_tracking (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  purchase_id INT NOT NULL,
+  tracking_number VARCHAR(50) UNIQUE NOT NULL,
+  payment_stage ENUM('Initiated', 'Processing', 'Confirmed', 'Completed', 'Failed') DEFAULT 'Initiated',
+  payment_reference VARCHAR(100),
+  bank_reference VARCHAR(100),
+  transaction_id VARCHAR(100),
+  amount DECIMAL(10,2) NOT NULL,
+  payment_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  confirmed_date TIMESTAMP NULL,
+  completed_date TIMESTAMP NULL,
+  notes TEXT,
+  status ENUM('Active', 'Completed', 'Cancelled') DEFAULT 'Active',
+  created_by INT,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  FOREIGN KEY (purchase_id) REFERENCES language_purchases(id) ON DELETE CASCADE,
+  FOREIGN KEY (created_by) REFERENCES users(id) ON DELETE SET NULL,
+  INDEX idx_tracking_number (tracking_number),
+  INDEX idx_purchase_id (purchase_id),
+  INDEX idx_payment_stage (payment_stage),
+  INDEX idx_status (status),
+  INDEX idx_payment_date (payment_date)
+);
+
 -- Worker Accounts table
 CREATE TABLE IF NOT EXISTS worker_accounts (
   id INT AUTO_INCREMENT PRIMARY KEY,
