@@ -6,9 +6,15 @@
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
-    <title>KASHTEC Construction Management System008</title>
+    <title>KASHTEC Construction Management System002</title>
     
-            
+        <script>
+        const PRODUCTION_FRONTEND_URL = 'https://khashtec-construction-system-production-e297.up.railway.app/frontend/public/department.html';
+        if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.hostname === '::1') {
+            window.location.replace(PRODUCTION_FRONTEND_URL);
+        }
+    </script>
+    
     <style>
 *{
     margin:0;
@@ -195,54 +201,6 @@ header{
     border-left:1px solid #0b3d91;
     box-shadow:0 1px 2px rgba(0,0,0,0.1);
     border-radius: 3px;
-}
-
-/* User Information Section Styling */
-.user-info-section {
-    background: #f8f9fa;
-    border-radius: 8px;
-    border-left: 4px solid #0b3d91;
-    padding: 15px;
-    margin: 20px 0;
-}
-
-.user-info-grid {
-    display: grid;
-    grid-template-columns: auto 1fr;
-    gap: 10px;
-    margin-top: 10px;
-}
-
-.user-info-grid strong {
-    color: #333;
-    font-weight: 600;
-}
-
-.user-info-grid span {
-    color: #666;
-}
-
-.user-role-badge {
-    color: #0b3d91;
-    font-weight: bold;
-    text-transform: uppercase;
-    font-size: 0.9em;
-}
-
-.user-avatar {
-    width: 50px;
-    height: 50px;
-    border-radius: 50%;
-    background: linear-gradient(135deg, #0b3d91, #1e5bb8);
-    color: white;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 20px;
-    font-weight: bold;
-    text-transform: uppercase;
-    box-shadow: 0 2px 8px rgba(11, 61, 145, 0.3);
-    border: 2px solid white;
 }
 
 input, select, textarea{
@@ -4111,7 +4069,7 @@ background: #f8f9fa;
         <div class="sidebar">
             <h3 id="userRole">HR Dashboard</h3>
             <button onclick="handleLogout()">Logout</button>
-            <div id="menu"><button>Register Employee</button><button>Create Worker Account</button><button>Assign Project Workers</button><button>Update Employee Records</button><button>Track Attendance</button><button>Manage Leave &amp; Contracts</button><button>Manage Policies</button><button>Approve Workforce Budget</button></div>
+            <div id="menu"><button>Register Employee</button><button>Create Worker Account</button><button>Assign Project Workers</button><button>Update Employee Records</button><button>Track Attendance</button><button>Manage Leave &amp; Contracts</button><button>Manage Policies</button><button>Approve Senior Staff Hiring</button><button>Approve Workforce Budget</button></div>
         </div>
 
         <div class="content" id="contentArea">
@@ -4216,58 +4174,10 @@ function login(){
     }
     
     currentRole = role;
-    
-    // Store user session
-    const userEmail = `${role.toLowerCase().replace(' ', '')}@kashtec.com`;
-    userManager.setUser(userEmail, role);
-    
     document.getElementById("loginPage").classList.add("hidden");
     document.getElementById("systemPage").classList.remove("hidden");
     document.getElementById("userRole").innerText = roleDescriptions[role] + " Dashboard";
     loadMenu();
-    
-    // Show welcome content with user info
-    showContent(getWelcomeContent(roleDescriptions[role] + " Dashboard"));
-}
-
-// Handle login for email-based login form
-function handleLogin() {
-    const email = document.getElementById('loginEmail').value;
-    const role = document.getElementById('loginRole').value;
-    const password = document.getElementById('loginPassword').value;
-    
-    if (!email || !role || !password) {
-        customAlert('Please fill in all login fields.', 'Login Error', 'error');
-        return false;
-    }
-    
-    // Validate password
-    if (password !== rolePasswords[role]) {
-        customAlert('Invalid credentials. Please check your email, role, and password.', 'Authentication Failed', 'error');
-        return false;
-    }
-    
-    // Extract name from email (before @ symbol)
-    const userName = email.split('@')[0];
-    
-    // Store user session with name
-    userManager.setUser(email, role);
-    sessionStorage.setItem('userName', userName);
-    sessionStorage.setItem('userEmail', email);
-    sessionStorage.setItem('userRole', role);
-    sessionStorage.setItem('loginTime', new Date().toLocaleString());
-    currentRole = role;
-    
-    // Hide login, show system
-    document.getElementById('loginPage').classList.add('hidden');
-    document.getElementById('systemPage').classList.remove('hidden');
-    document.getElementById('userRole').innerText = roleDescriptions[role] + ' Dashboard';
-    
-    // Load menu and show welcome
-    loadMenu();
-    showContent(getWelcomeContent(roleDescriptions[role] + ' Dashboard'));
-    
-    return false; // Prevent form submission
 }
 
 // Missing functions for HR menu items
@@ -4337,61 +4247,23 @@ function loadPoliciesFromBackend() {
 }
 
 function loadSeniorHiringRequests() {
-    showContent(`
-        <div class="card">
-            <h3>Approve Senior Staff Hiring</h3>
-            <p><strong>HR Authority:</strong> Review and approve senior staff hiring requests</p>
-            
-            <div class="hiring-section">
-                <h4>Senior Staff Hiring Requests Pending Approval</h4>
-                <div class="search-container" style="margin-bottom: 20px;">
-                    <input type="text" id="hrHiringSearchInput" placeholder="🔍 Search candidates by name, department, salary, or experience..." 
-                           style="width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 8px; font-size: 14px; box-sizing: border-box;"
-                           onkeyup="filterHRHiringRequests()">
-                    <div id="hrHiringSearchResults" style="margin-top: 5px; font-size: 12px; color: #666;"></div>
-                </div>
-                
-                <div class="table-responsive">
-                    <table class="hiring-table">
-                        <thead>
-                            <tr>
-                                <th>Position</th>
-                                <th>Candidate Name</th>
-                                <th>Proposed Salary</th>
-                                <th>Department</th>
-                                <th>Experience</th>
-                                <th>HR Recommendation</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody id="hiringContainer">
-                            <tr>
-                                <td colspan="7" class="loading-row">
-                                    <div class="loading">Loading hiring requests...</div>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
+    showContent(`<div class="card">
+        <h3>Approve Senior Staff Hiring</h3>
+        <p><strong>HR Authority:</strong> Review and approve senior staff hiring requests</p>
+        
+        <div class="hiring-list">
+            <div class="search-container" style="margin-bottom: 20px;">
+                <input type="text" id="hrHiringSearchInput" placeholder="🔍 Search candidates by name, department, salary, or experience..." 
+                       style="width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 8px; font-size: 14px; box-sizing: border-box;"
+                       onkeyup="filterHRHiringRequests()">
+                <div id="hrHiringSearchResults" style="margin-top: 5px; font-size: 12px; color: #666;"></div>
             </div>
-            
-            <div class="approval-summary">
-                <h4>Senior Hiring Authority</h4>
-                <div class="authority-item">
-                    <span>✅ Can review all senior staff hires</span>
-                </div>
-                <div class="authority-item">
-                    <span>✅ Can recommend manager-level positions and above</span>
-                </div>
-                <div class="authority-item">
-                    <span>✅ Can forward recommendations to MD</span>
-                </div>
-                <div class="authority-item restriction">
-                    <span>❌ Cannot directly register workers (HR function)</span>
-                </div>
+            <h4>Pending Senior Hiring Requests</h4>
+            <div id="hiringContainer">
+                <div class="loading">Loading hiring requests...</div>
             </div>
         </div>
-    `);
+    </div>`);
     
     // Load hiring requests from backend
     loadHiringRequestsFromBackend();
@@ -4418,87 +4290,84 @@ function loadHiringRequestsFromBackend() {
         const container = document.getElementById('hiringContainer');
         
         if (!data || !Array.isArray(data)) {
-            container.innerHTML = '<tr><td colspan="7" class="error-row"><div class="error">No hiring requests found or error loading requests</div></td></tr>';
+            container.innerHTML = '<div class="error">No hiring requests found or error loading requests</div>';
             return;
         }
         
         if (data.length === 0) {
-            container.innerHTML = '<tr><td colspan="7" class="info-row"><div class="info">No pending senior hiring requests</div></td></tr>';
+            container.innerHTML = '<div class="info">No pending senior hiring requests</div>';
             return;
         }
         
-        let html = '';
+        let html = `
+            <div class="table-responsive">
+                <table class="hiring-table">
+                    <thead>
+                        <tr>
+                            <th>Position</th>
+                            <th>Candidate Name</th>
+                            <th>Proposed Salary</th>
+                            <th>Department</th>
+                            <th>Experience</th>
+                            <th>HR Recommendation</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>`;
         data.forEach(request => {
             html += `
-                <tr class="hiring-row">
-                    <td>
-                        <div class="position-info">
-                            <strong>${request.position || 'Position not specified'}</strong>
-                            <small>ID: ${request.id || 'N/A'}</small>
-                        </div>
-                    </td>
-                    <td>
-                        <div class="candidate-info">
-                            <span class="candidate-name">${request.candidate_name || 'N/A'}</span>
-                            <small>Senior Candidate</small>
-                        </div>
-                    </td>
-                    <td>
-                        <span class="salary-amount ${getSalaryClass(request.proposed_salary)}">${request.proposed_salary ? 'TZS ' + parseInt(request.proposed_salary).toLocaleString() : 'N/A'}</span>
-                    </td>
-                    <td>
-                        <span class="department-badge ${getDepartmentClass(request.department)}">${request.department || 'N/A'}</span>
-                    </td>
-                    <td>
-                        <div class="experience-text">${request.experience || 'N/A'}</div>
-                    </td>
-                    <td>
-                        <div class="recommendation-text">${request.hr_recommendation || 'No recommendation provided'}</div>
-                    </td>
-                    <td>
-                        <div class="action-buttons">
-                            <button class="action-btn approve" onclick="approveSeniorHire('${request.id}')" title="Approve Hiring">
-                                ✓
-                            </button>
-                            <button class="action-btn info" onclick="requestMoreInfo('${request.id}')" title="Request More Info">
-                                ℹ
-                            </button>
-                            <button class="action-btn reject" onclick="rejectSeniorHire('${request.id}')" title="Reject Hiring">
-                                ✗
-                            </button>
-                        </div>
-                    </td>
-                </tr>
-            `;
+                        <tr class="hiring-row">
+                            <td>
+                                <div class="position-info">
+                                    <strong>${request.position || 'Position not specified'}</strong>
+                                    <small>ID: ${request.id}</small>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="candidate-info">
+                                    <span class="candidate-name">${request.candidate_name || 'N/A'}</span>
+                                    <small>Senior Candidate</small>
+                                </div>
+                            </td>
+                            <td>
+                                <span class="salary-amount ${request.proposed_salary > 150000 ? 'high' : request.proposed_salary > 100000 ? 'medium' : 'low'}">TZS ${parseInt(request.proposed_salary || 0).toLocaleString()}</span>
+                            </td>
+                            <td>
+                                <span class="department-badge ${request.department ? request.department.toLowerCase() : 'default'}">${request.department || 'N/A'}</span>
+                            </td>
+                            <td>
+                                <div class="experience-text">${request.experience || 'N/A'}</div>
+                            </td>
+                            <td>
+                                <div class="recommendation-text">${request.hr_recommendation || 'No recommendation provided'}</div>
+                            </td>
+                            <td>
+                                <div class="action-buttons">
+                                    <button class="action-btn approve" onclick="approveSeniorHire('${request.id}')" title="Approve Hiring">
+                                        ✓
+                                    </button>
+                                    <button class="action-btn info" onclick="requestMoreInfo('${request.id}')" title="Request More Info">
+                                        ℹ
+                                    </button>
+                                    <button class="action-btn reject" onclick="rejectSeniorHire('${request.id}')" title="Reject Hiring">
+                                        ✗
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>`;
         });
+        html += `
+                    </tbody>
+                </table>
+            </div>`;
         container.innerHTML = html;
     })
     .catch(error => {
         console.error('❌ Error loading hiring requests:', error);
-        document.getElementById('hiringContainer').innerHTML = '<tr><td colspan="7" class="error-row"><div class="error">Error loading hiring requests: ' + error.message + '</div></td></tr>';
+        document.getElementById('hiringContainer').innerHTML = '<div class="error">Error loading hiring requests: ' + error.message + '</div>';
     });
 }
 
-
-// Helper functions for table formatting
-function getSalaryClass(salary) {
-    if (!salary) return 'medium';
-    const amount = parseInt(salary);
-    if (amount >= 150000) return 'high';
-    if (amount >= 100000) return 'medium';
-    return 'low';
-}
-
-function getDepartmentClass(department) {
-    if (!department) return 'default';
-    const dept = department.toLowerCase();
-    if (dept.includes('finance')) return 'finance';
-    if (dept.includes('operations')) return 'operations';
-    if (dept.includes('projects')) return 'projects';
-    if (dept.includes('hr')) return 'hr';
-    if (dept.includes('admin')) return 'admin';
-    return 'default';
-}
 
 function logout(){
     location.reload();
@@ -4550,6 +4419,7 @@ function loadMenu(){
         addMenu("Track Attendance", attendance);
         addMenu("Manage Leave & Contracts", manageLeaveContracts);
         addMenu("Manage Policies", loadPolicies);
+        addMenu("Approve Senior Staff Hiring", loadSeniorHiringRequests);
         addMenu("Approve Workforce Budget", approveWorkforceBudget);
     }
 
@@ -4599,7 +4469,6 @@ function loadMenu(){
         
         addMenu("Upload Documents", uploadDocs);
         addMenu("Edit Documents", editDocuments);
-        addMenu("Schedule Meetings", scheduleMeeting);
         addMenu("Send Notifications", sendNotifications);
         addMenu("Record Meeting Minutes", recordMeetingMinutes);
         addMenu("View Employee List", viewEmployeeList);
@@ -4620,48 +4489,6 @@ function addMenu(name, func){
         console.error('Error adding menu item:', name, error);
     }
 }
-
-// User session management
-const userManager = {
-    // Store user info
-    setUser(email, role, name) {
-        const userInfo = {
-            email: email,
-            role: role,
-            name: name || this.extractNameFromEmail(email),
-            loginTime: new Date().toISOString()
-        };
-        localStorage.setItem('kashtec_user', JSON.stringify(userInfo));
-        console.log('✅ User session stored:', userInfo);
-    },
-    
-    // Get user info
-    getUser() {
-        try {
-            const userStr = localStorage.getItem('kashtec_user');
-            return userStr ? JSON.parse(userStr) : null;
-        } catch (error) {
-            console.error('❌ Error getting user info:', error);
-            return null;
-        }
-    },
-    
-    // Extract name from email
-    extractNameFromEmail(email) {
-        if (!email) return 'User';
-        const parts = email.split('@')[0].split('.');
-        if (parts.length >= 2) {
-            return parts.map(part => part.charAt(0).toUpperCase() + part.slice(1)).join(' ');
-        }
-        return parts[0] ? parts[0].charAt(0).toUpperCase() + parts[0].slice(1) : 'User';
-    },
-    
-    // Clear user session
-    clearUser() {
-        localStorage.removeItem('kashtec_user');
-        console.log('🗑️ User session cleared');
-    }
-};
 
 function showContent(html){
     document.getElementById("contentArea").innerHTML = html;
@@ -4944,28 +4771,22 @@ function filterPolicyManagement() {
 function filterHRHiringRequests() {
     const searchTerm = document.getElementById('hrHiringSearchInput').value.toLowerCase();
     const searchResults = document.getElementById('hrHiringSearchResults');
-    const hiringItems = document.querySelectorAll('#hiringContainer .hiring-request');
+    const hiringRows = document.querySelectorAll('#hiringContainer .hiring-row');
     
-    if (hiringItems.length === 0) return;
+    if (hiringRows.length === 0) return;
     
     let visibleCount = 0;
-    
-    hiringItems.forEach(item => {
-        const text = item.textContent.toLowerCase();
+    hiringRows.forEach(row => {
+        const text = row.textContent.toLowerCase();
         if (text.includes(searchTerm)) {
-            item.style.display = 'block';
+            row.style.display = '';
             visibleCount++;
         } else {
-            item.style.display = 'none';
+            row.style.display = 'none';
         }
     });
     
-    // Update search results count
-    if (searchTerm) {
-        searchResults.textContent = `Found ${visibleCount} candidate(s) matching "${searchTerm}"`;
-    } else {
-        searchResults.textContent = '';
-    }
+    searchResults.textContent = searchTerm ? `Found ${visibleCount} matching requests` : '';
 }
 
 // Hiring search functionality
@@ -5442,6 +5263,226 @@ function approveSeniorHiring(){
                 </div>
                 <div class="authority-item restriction">
                     <span>❌ Cannot directly register workers (HR function)</span>
+                </div>
+            </div>
+        </div>
+    `);
+}
+
+function approveSeniorHiringMD(){
+    showContent(`
+        <div class="card">
+            <h3>Approve Senior Staff Hiring</h3>
+            <p><strong>High-Level Authority:</strong> Approve hiring decisions for senior positions (Manager level and above)</p>
+            
+            <div class="hiring-section">
+                <h4>Senior Staff Hiring Requests Pending Approval</h4>
+                <div class="table-responsive">
+                    <table class="hiring-table">
+                        <thead>
+                            <tr>
+                                <th>Position</th>
+                                <th>Candidate Name</th>
+                                <th>Proposed Salary</th>
+                                <th>Department</th>
+                                <th>Experience</th>
+                                <th>HR Recommendation</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr class="hiring-row">
+                                <td>
+                                    <div class="position-info">
+                                        <strong>Finance Manager</strong>
+                                        <small>ID: hire003</small>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="candidate-info">
+                                        <span class="candidate-name">Michael Chen</span>
+                                        <small>Senior Candidate</small>
+                                    </div>
+                                </td>
+                                <td>
+                                    <span class="salary-amount high">TZS 180,000</span>
+                                </td>
+                                <td>
+                                    <span class="department-badge finance">Finance</span>
+                                </td>
+                                <td>
+                                    <div class="experience-text">12 years in financial management</div>
+                                </td>
+                                <td>
+                                    <div class="recommendation-text">Strong leadership background in construction finance</div>
+                                </td>
+                                <td>
+                                    <div class="action-buttons">
+                                        <button class="action-btn approve" onclick="approveSeniorHire('3')" title="Approve Hiring">
+                                            ✓
+                                        </button>
+                                        <button class="action-btn info" onclick="requestMoreInfo('3')" title="Request More Info">
+                                            ℹ
+                                        </button>
+                                        <button class="action-btn reject" onclick="rejectSeniorHire('3')" title="Reject Hiring">
+                                            ✗
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr class="hiring-row">
+                                <td>
+                                    <div class="position-info">
+                                        <strong>Operations Manager</strong>
+                                        <small>ID: hire002</small>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="candidate-info">
+                                        <span class="candidate-name">Sarah Johnson</span>
+                                        <small>Senior Candidate</small>
+                                    </div>
+                                </td>
+                                <td>
+                                    <span class="salary-amount medium">TZS 120,000</span>
+                                </td>
+                                <td>
+                                    <span class="department-badge operations">Operations</span>
+                                </td>
+                                <td>
+                                    <div class="experience-text">8 years in structural engineering</div>
+                                </td>
+                                <td>
+                                    <div class="recommendation-text">Excellent technical skills and project experience</div>
+                                </td>
+                                <td>
+                                    <div class="action-buttons">
+                                        <button class="action-btn approve" onclick="approveSeniorHire('2')" title="Approve Hiring">
+                                            ✓
+                                        </button>
+                                        <button class="action-btn info" onclick="requestMoreInfo('2')" title="Request More Info">
+                                            ℹ
+                                        </button>
+                                        <button class="action-btn reject" onclick="rejectSeniorHire('2')" title="Reject Hiring">
+                                            ✗
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr class="hiring-row">
+                                <td>
+                                    <div class="position-info">
+                                        <strong>Project Manager</strong>
+                                        <small>ID: hire001</small>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="candidate-info">
+                                        <span class="candidate-name">John Smith</span>
+                                        <small>Senior Candidate</small>
+                                    </div>
+                                </td>
+                                <td>
+                                    <span class="salary-amount high">TZS 150,000</span>
+                                </td>
+                                <td>
+                                    <span class="department-badge projects">Projects</span>
+                                </td>
+                                <td>
+                                    <div class="experience-text">10 years in construction management</div>
+                                </td>
+                                <td>
+                                    <div class="recommendation-text">Highly recommended for leadership role</div>
+                                </td>
+                                <td>
+                                    <div class="action-buttons">
+                                        <button class="action-btn approve" onclick="approveSeniorHire('1')" title="Approve Hiring">
+                                            ✓
+                                        </button>
+                                        <button class="action-btn info" onclick="requestMoreInfo('1')" title="Request More Info">
+                                            ℹ
+                                        </button>
+                                        <button class="action-btn reject" onclick="rejectSeniorHire('1')" title="Reject Hiring">
+                                            ✗
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            
+            <div class="approval-summary">
+                <h4>Senior Hiring Authority</h4>
+                <div class="table-responsive">
+                    <table class="authority-table">
+                        <thead>
+                            <tr>
+                                <th>Authority Level</th>
+                                <th>Permissions</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr class="authority-row">
+                                <td>
+                                    <div class="authority-info">
+                                        <strong>Senior Staff Approval</strong>
+                                        <small>Manager level and above</small>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="permission-text">Can approve all senior staff hires</div>
+                                </td>
+                                <td>
+                                    <span class="status-badge active">✅ Active</span>
+                                </td>
+                            </tr>
+                            <tr class="authority-row">
+                                <td>
+                                    <div class="authority-info">
+                                        <strong>Manager-Level Positions</strong>
+                                        <small>Department heads</small>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="permission-text">Can approve manager-level positions and above</div>
+                                </td>
+                                <td>
+                                    <span class="status-badge active">✅ Active</span>
+                                </td>
+                            </tr>
+                            <tr class="authority-row">
+                                <td>
+                                    <div class="authority-info">
+                                        <strong>Final Authority</strong>
+                                        <small>Senior recruitment decisions</small>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="permission-text">Final authority on senior recruitment</div>
+                                </td>
+                                <td>
+                                    <span class="status-badge active">✅ Active</span>
+                                </td>
+                            </tr>
+                            <tr class="authority-row">
+                                <td>
+                                    <div class="authority-info">
+                                        <strong>Worker Registration</strong>
+                                        <small>HR function restriction</small>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="permission-text">Cannot directly register workers</div>
+                                </td>
+                                <td>
+                                    <span class="status-badge restricted">❌ Restricted</span>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </div>
@@ -19838,36 +19879,189 @@ function approveCompletedWork(){
             
             <div class="approval-overview">
                 <h4>Work Pending Approval</h4>
-                <div class="pending-work">
-                    <div class="work-item">
-                        <div class="work-details">
-                            <strong>Foundation Excavation</strong>
-                            <span>Project: Port Modernization Phase 1</span>
-                            <span>Completed by: John Doe - Construction Worker</span>
-                            <span>Completed Date: March 15, 2026</span>
-                            <span>Quality Score: 95%</span>
-                        </div>
-                        <div class="work-actions">
-                            <button class="action" onclick="approveWork('work001')" style="background: #28a745;">Approve</button>
-                            <button class="action" onclick="requestRework('work001')" style="background: #ffc107;">Request Rework</button>
-                            <button class="action" onclick="rejectWork('work001')" style="background: #dc3545;">Reject</button>
-                        </div>
-                    </div>
-                    
-                    <div class="work-item">
-                        <div class="work-details">
-                            <strong>Steel Framework Installation</strong>
-                            <span>Project: Warehouse Construction</span>
-                            <span>Completed by: Mike Johnson - Engineer</span>
-                            <span>Completed Date: March 14, 2026</span>
-                            <span>Quality Score: 88%</span>
-                        </div>
-                        <div class="work-actions">
-                            <button class="action" onclick="approveWork('work002')" style="background: #28a745;">Approve</button>
-                            <button class="action" onclick="requestRework('work002')" style="background: #ffc107;">Request Rework</button>
-                            <button class="action" onclick="rejectWork('work002')" style="background: #dc3545;">Reject</button>
-                        </div>
-                    </div>
+                <div class="table-responsive">
+                    <table class="approval-table">
+                        <thead>
+                            <tr>
+                                <th>Work Details</th>
+                                <th>Project</th>
+                                <th>Completed By</th>
+                                <th>Completed Date</th>
+                                <th>Quality Score</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr class="work-row">
+                                <td>
+                                    <div class="work-info">
+                                        <strong>Foundation Excavation</strong>
+                                        <small>ID: work001</small>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="project-info">
+                                        <span class="project-name">Port Modernization Phase 1</span>
+                                        <small>PRJ-001</small>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="worker-info">
+                                        <span class="worker-name">John Doe</span>
+                                        <small>Construction Worker</small>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="date-info">
+                                        <span class="date">March 15, 2026</span>
+                                        <small class="time">2:30 PM</small>
+                                    </div>
+                                </td>
+                                <td>
+                                    <span class="quality-badge high">95%</span>
+                                </td>
+                                <td>
+                                    <div class="action-buttons">
+                                        <button class="action-btn approve" onclick="approveWork('work001')" title="Approve Work">
+                                            
+                                        </button>
+                                        <button class="action-btn rework" onclick="requestRework('work001')" title="Request Rework">
+                                            
+                                        </button>
+                                        <button class="action-btn reject" onclick="rejectWork('work001')" title="Reject Work">
+                                            
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr class="work-row">
+                                <td>
+                                    <div class="work-info">
+                                        <strong>Steel Framework Installation</strong>
+                                        <small>ID: work002</small>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="project-info">
+                                        <span class="project-name">Warehouse Construction</span>
+                                        <small>PRJ-002</small>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="worker-info">
+                                        <span class="worker-name">Mike Johnson</span>
+                                        <small>Engineer</small>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="date-info">
+                                        <span class="date">March 14, 2026</span>
+                                        <small class="time">4:15 PM</small>
+                                    </div>
+                                </td>
+                                <td>
+                                    <span class="quality-badge medium">88%</span>
+                                </td>
+                                <td>
+                                    <div class="action-buttons">
+                                        <button class="action-btn approve" onclick="approveWork('work002')" title="Approve Work">
+                                            
+                                        </button>
+                                        <button class="action-btn rework" onclick="requestRework('work002')" title="Request Rework">
+                                            
+                                        </button>
+                                        <button class="action-btn reject" onclick="rejectWork('work002')" title="Reject Work">
+                                            
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr class="work-row">
+                                <td>
+                                    <div class="work-info">
+                                        <strong>Electrical Wiring</strong>
+                                        <small>ID: work003</small>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="project-info">
+                                        <span class="project-name">Office Building Renovation</span>
+                                        <small>PRJ-003</small>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="worker-info">
+                                        <span class="worker-name">Sarah Williams</span>
+                                        <small>Electrician</small>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="date-info">
+                                        <span class="date">March 13, 2026</span>
+                                        <small class="time">11:20 AM</small>
+                                    </div>
+                                </td>
+                                <td>
+                                    <span class="quality-badge high">92%</span>
+                                </td>
+                                <td>
+                                    <div class="action-buttons">
+                                        <button class="action-btn approve" onclick="approveWork('work003')" title="Approve Work">
+                                            
+                                        </button>
+                                        <button class="action-btn rework" onclick="requestRework('work003')" title="Request Rework">
+                                            
+                                        </button>
+                                        <button class="action-btn reject" onclick="rejectWork('work003')" title="Reject Work">
+                                            
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr class="work-row">
+                                <td>
+                                    <div class="work-info">
+                                        <strong>Plumbing Installation</strong>
+                                        <small>ID: work004</small>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="project-info">
+                                        <span class="project-name">Residential Complex</span>
+                                        <small>PRJ-004</small>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="worker-info">
+                                        <span class="worker-name">Robert Chen</span>
+                                        <small>Plumber</small>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="date-info">
+                                        <span class="date">March 12, 2026</span>
+                                        <small class="time">3:45 PM</small>
+                                    </div>
+                                </td>
+                                <td>
+                                    <span class="quality-badge low">75%</span>
+                                </td>
+                                <td>
+                                    <div class="action-buttons">
+                                        <button class="action-btn approve" onclick="approveWork('work004')" title="Approve Work">
+                                            
+                                        </button>
+                                        <button class="action-btn rework" onclick="requestRework('work004')" title="Request Rework">
+                                            
+                                        </button>
+                                        <button class="action-btn reject" onclick="rejectWork('work004')" title="Reject Work">
+                                            
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
                 </div>
             </div>
             
@@ -23438,9 +23632,16 @@ function goBack() {
         } else {
             // If no history, go back to main menu
             console.log('🏠 No history available, returning to main menu');
-            const userRole = sessionStorage.getItem('userRole');
-            const departmentTitle = userRole ? roleDescriptions[userRole] + ' Dashboard' : 'KASHTEC Department Portal';
-            showContent(getWelcomeContent(departmentTitle));
+            showContent(`
+                <div class="card">
+                    <h3>🏠 Main Menu</h3>
+                    <p>Welcome back to the main menu. Select an option from the navigation menu.</p>
+                    <div class="form-actions">
+                        <button class="action" onclick="officePortal()">🏢 Office Portal</button>
+                        <button class="action" onclick="showContent('')">📋 Dashboard</button>
+                    </div>
+                </div>
+            `);
         }
         
         // Clear timeout after execution
@@ -25763,10 +25964,19 @@ window.customConfirm = function(message, title = 'Confirm', onConfirm, onCancel)
 document.addEventListener('DOMContentLoaded', function() {
     console.log('KASHTEC Construction System - Department Portal loaded');
     
-    // Load initial content with user info
-    const userRole = sessionStorage.getItem('userRole');
-    const departmentTitle = userRole ? roleDescriptions[userRole] + ' Dashboard' : 'KASHTEC Department Portal';
-    showContent(getWelcomeContent(departmentTitle));
+    // Load initial content
+    showContent(`<div class="card">
+        <h3>Welcome to KASHTEC Department Portal</h3>
+        <p><strong>System Status:</strong> All systems operational</p>
+        <p><strong>Last Update:</strong> ${new Date().toLocaleString()}</p>
+        <div class="summary-stats">
+            <div class="stat-card">
+                <h5>System Ready</h5>
+                <div class="stat-value">✓</div>
+                <div class="stat-label">Online</div>
+            </div>
+        </div>
+    </div>`);
     
     // Load assigned workers data
     loadAssignedWorkers();
@@ -27540,55 +27750,9 @@ function reactivateUser(userId) {
     }
 }
 
-// Enhanced welcome content with user info
-function getWelcomeContent(departmentTitle) {
-    const userName = sessionStorage.getItem('userName') || 'Guest';
-    const userEmail = sessionStorage.getItem('userEmail') || 'Not logged in';
-    const userRole = sessionStorage.getItem('userRole') || 'Unknown';
-    const currentTime = sessionStorage.getItem('loginTime') || new Date().toLocaleString();
-    
-    // Get first letter from email for avatar
-    const firstLetter = userEmail && userEmail !== 'Not logged in' ? userEmail.charAt(0).toUpperCase() : 'U';
-    
-    return `
-        <div class="card">
-            <h3>Welcome to ${departmentTitle}</h3>
-            <div class="user-info-section">
-                <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 15px;">
-                    <div class="user-avatar">
-                        ${firstLetter}
-                    </div>
-                    <div>
-                        <h4 style="margin: 0; color: #0b3d91;">👤 User Information</h4>
-                        <p style="margin: 5px 0 0 0; color: #6c757d; font-size: 14px;">Logged in user details</p>
-                    </div>
-                </div>
-                <div class="user-info-grid">
-                    <strong>Name:</strong>
-                    <span>${userName}</span>
-                    
-                    <strong>Email:</strong>
-                    <span>${userEmail}</span>
-                    
-                    <strong>Role:</strong>
-                    <span class="user-role-badge">${userRole}</span>
-                    
-                    <strong>Login Time:</strong>
-                    <span>${currentTime}</span>
-                </div>
-            </div>
-            <div style="margin-top: 20px; padding: 15px; background: #f8f9fa; border-radius: 5px;">
-                <h4>Quick Start:</h4>
-                <p>Choose a function from the left menu to manage your department operations.</p>
-            </div>
-        </div>
-    `;
-}
-
 // Additional missing functions
 function handleLogout() {
     if (confirm('Are you sure you want to logout?')) {
-        userManager.clearUser();
         sessionStorage.clear();
         location.reload();
     }
@@ -27596,14 +27760,7 @@ function handleLogout() {
 
 function cancelEmploymentAction() {
     customAlert('Employment action cancelled.', "Action Cancelled", "info");
-    showContent(getWelcomeContent('Dashboard'));
-}
-
-// Show dashboard with user info
-function showDashboard() {
-    const userRole = sessionStorage.getItem('userRole');
-    const departmentTitle = userRole ? roleDescriptions[userRole] + ' Dashboard' : 'KASHTEC Department Portal';
-    showContent(getWelcomeContent(departmentTitle));
+    showContent('<div class="card"><h3>Action Cancelled</h3><p>The employment action has been cancelled.</p></div>');
 }
 
 function showReportTab(tabName) {
