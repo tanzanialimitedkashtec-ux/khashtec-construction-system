@@ -252,24 +252,25 @@ app.get('/', (req, res) => {
 
 // Simple health check endpoint for Railway (no database dependency)
 
+let serverReady = false;
+
 app.get('/api/health', (req, res) => {
+    if (!serverReady) {
+        return res.status(503).json({
+            status: 'Service Unavailable',
+            message: 'Server starting up...',
+            timestamp: new Date().toISOString()
+        });
+    }
 
     res.status(200).json({
-
         status: 'OK',
-
         timestamp: new Date().toISOString(),
-
         environment: process.env.NODE_ENV,
-
         port: PORT,
-
         uptime: process.uptime(),
-
         version: process.env.npm_package_version || '1.0.0',
-
         memory: {
-
             used: Math.round(process.memoryUsage().heapUsed / 1024 / 1024 * 100) / 100,
 
             total: Math.round(process.memoryUsage().heapTotal / 1024 / 1024 * 100) / 100
@@ -756,21 +757,6 @@ app.use('/api', asyncHandler(async (req, res, next) => {
 
 // Simple API health check
 
-app.get('/api/health', (req, res) => {
-
-    res.status(200).json({
-
-        status: 'OK',
-
-        message: 'API is running',
-
-        timestamp: new Date().toISOString(),
-
-        environment: process.env.NODE_ENV || 'development'
-
-    });
-
-});
 
 
 
@@ -5272,30 +5258,34 @@ async function startServer() {
 
         const server = app.listen(SERVER_PORT, '0.0.0.0', () => {
 
-            console.log('🚀 ' + config.APP_NAME);
+            console.log('KASHTEC Construction Management System');
 
-            console.log('🌍 Environment: ' + config.NODE_ENV);
+            console.log('Environment: ' + config.NODE_ENV);
 
-            console.log('📍 Server running on port ' + SERVER_PORT);
+            console.log('Server running on port ' + SERVER_PORT);
 
-            console.log('🏠 URL: http://0.0.0.0:' + SERVER_PORT);
+            console.log('URL: http://0.0.0.0:' + SERVER_PORT);
 
-            console.log('📊 Health check: http://0.0.0.0:' + SERVER_PORT + '/api/health');
+            console.log('Health check: http://0.0.0.0:' + SERVER_PORT + '/api/health');
 
-            console.log('🔍 API status: http://0.0.0.0:' + SERVER_PORT + '/api/status');
+            console.log('API status: http://0.0.0.0:' + SERVER_PORT + '/api/status');
 
-            console.log('🕒 Started at: ' + new Date().toLocaleString());
+            console.log('Started at: ' + new Date().toLocaleString());
 
-            console.log('✅ Server startup completed successfully!');
+            console.log('Server startup completed successfully!');
 
-            console.log('🌐 All API endpoints are ready for requests');
+            console.log('All API endpoints are ready for requests');
 
-            console.log('📅 Schedule meetings table is available for use');
+            console.log('Schedule meetings table is available for use');
 
-            console.log('👷 Worker accounts table is available for use');
+            console.log('Worker accounts table is available for use');
+
+            // Mark server as ready for health checks
+            serverReady = true;
+
+            console.log('Server marked as ready - health checks will now pass');
 
         });
-
 
 
         server.on('error', (error) => {
