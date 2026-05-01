@@ -293,15 +293,7 @@ CREATE TABLE IF NOT EXISTS office_portal (
   INDEX idx_status (status)
 );
 
--- Insert initial office portal data
-INSERT IGNORE INTO office_portal (department_name, department_code, manager_email, description, settings, status) VALUES
-('Human Resources', 'HR', 'hr@manager0501', 'HR Department manages employee relations, recruitment, training, and compliance', '{"theme": "blue", "notifications": true}', 'Active'),
-('Project Management', 'PM', 'pm@manager0501', 'Project Management oversees all construction projects, timelines, and resource allocation', '{"theme": "green", "notifications": true}', 'Active'),
-('Finance', 'FINANCE', 'finance@manager0501', 'Finance Department handles budgeting, accounting, and financial reporting', '{"theme": "orange", "notifications": true}', 'Active'),
-('Operations', 'OPS', 'operations@manager0501', 'Operations Department manages daily operations, logistics, and field coordination', '{"theme": "purple", "notifications": true}', 'Active'),
-('Real Estate', 'REALESTATE', 'realestate@manager0501', 'Real Estate Department handles property acquisitions, sales, and facility management', '{"theme": "red", "notifications": true}', 'Active'),
-('Health & Safety', 'HSE', 'hse@manager0501', 'HSE Department ensures workplace safety, compliance, and incident reporting', '{"theme": "yellow", "notifications": true}', 'Active'),
-('Administration', 'ADMIN', 'admin@kashtec.com', 'System Administration provides IT support, user management, and system configuration', '{"theme": "gray", "notifications": true}', 'Active');
+-- Office portal data populated via API after startup
 
 -- PPE (Personal Protective Equipment) table
 CREATE TABLE IF NOT EXISTS ppe_inventory (
@@ -936,69 +928,8 @@ CREATE TABLE IF NOT EXISTS worker_assignments (
   INDEX idx_assigned_by (assigned_by)
 );
 
--- Insert sample worker assignment data
-INSERT IGNORE INTO worker_assignments (
-  employee_id, 
-  employee_name, 
-  project_id, 
-  project_name, 
-  role_in_project, 
-  start_date, 
-  end_date, 
-  assignment_notes, 
-  status, 
-  assigned_by, 
-  assigned_by_role
-) VALUES
-('emp001', 'John Doe', 'proj001', 'Dar es Salaam Port Modernization', 'Site Supervisor', '2026-01-15', NULL, 'Leading the port modernization team', 'Active', 'HR Manager', 'HR Manager'),
-('emp002', 'Jane Smith', 'proj002', 'Residential Buildings - Kinondoni', 'Project Manager', '2026-02-01', '2026-03-15', 'Successfully completed residential project', 'Completed', 'HR Manager', 'HR Manager'),
-('emp003', 'Mike Johnson', 'proj003', 'Fukayosi Real Estate Project', 'Construction Worker', '2026-01-20', NULL, 'Skilled labor for real estate development', 'Active', 'HR Manager', 'HR Manager'),
-('emp004', 'Sarah Wilson', 'proj004', 'Road Construction - Bagamoyo', 'Engineer', '2026-03-01', NULL, 'Road construction and infrastructure work', 'Active', 'HR Manager', 'HR Manager');
-
--- Insert admin user (only if not exists)
-INSERT IGNORE INTO users (name, email, password, role, status) VALUES
-('Admin User', 'admin@kashtec.co.tz', 'admin123', 'Managing Director', 'Active');
-
--- Insert sample policy for HR to approve
-INSERT IGNORE INTO policies (id, title, description, submitted_by, submitted_by_role, impact, status) VALUES
-('digital-recruitment', 'Digital Recruitment Platform Policy', 'Implementation of online job portal and digital application system', 'HR Department', 'HR Manager', 'High', 'Pending');
-
--- Insert sample senior hiring requests
-INSERT IGNORE INTO senior_hiring_requests (id, candidate_name, proposed_salary, department, experience, hr_recommendation, position_level, requested_by, requested_by_role, status) VALUES
-('proj-manager-001', 'Eng. Michael K. Johnson', 'TZS 3,500,000/month', 'Projects Department', 'Highly qualified candidate with extensive experience in large-scale construction projects. Proven track record in project delivery and team management.', 'Manager', 'HR Department', 'HR Manager', 'Pending'),
-('finance-manager-001', 'Sarah M. Kimario', 'TZS 2,800,000/month', 'Finance Department', 'Qualified candidate with CPA certification and experience in construction industry finance. Strong analytical skills and leadership capabilities.', 'Manager', 'HR Department', 'HR Manager', 'Pending');
-
--- Insert sample workforce budget request
-INSERT IGNORE INTO workforce_budgets (id, budget_period, total_proposed, salaries_wages, training_development, employee_benefits, recruitment_costs, submitted_by, submitted_by_role, current_headcount, justification, status) VALUES
-('q2-2026-workforce', 'April - June 2026', 61500000.00, 45000000.00, 5000000.00, 8000000.00, 3500000.00, 'Finance Department', 'Finance Manager', 45, 'Budget covers quarterly salaries, training programs, employee benefits, and recruitment costs for expanding project portfolio. Includes 5% increase for cost of living adjustments.', 'Pending');
-
--- Insert sample department work records
-INSERT IGNORE INTO hr_work (department_code, work_type, work_title, work_description, employee_name, employee_email, project_name, status, priority, submitted_by, submitted_date, due_date) VALUES
-('HR', 'Employee Registration', 'New Employee Registration', 'Register new employee in HR system', 'John Doe', 'john.doe@kashtec.com', 'HR System Setup', 'Completed', 'Medium', 'HR Manager', '2026-03-22', '2026-03-25'),
-('HR', 'Policy Management', 'Policy Approval Required', 'Approve recruitment policy for digital platform', 'HR Manager', 'hr@manager0501', 'Digital Recruitment Policy', 'Pending', 'High', 'HR Manager', '2026-03-22', '2026-03-23'),
-('HR', 'Senior Staff Hiring', 'Project Manager Position', 'Hire experienced project manager', 'Eng. Michael K. Johnson', 'michael.johnson@kashtec.com', 'Project Management', 'Pending', 'High', 'HR Manager', '2026-03-22', '2026-03-24');
-
-INSERT IGNORE INTO finance_work (department_code, work_type, work_title, work_description, amount, vendor_name, invoice_number, status, priority, submitted_by, submitted_date, due_date) VALUES
-('FINANCE', 'Budget Management', 'Q2 2026 Workforce Budget', 'Approve quarterly workforce budget allocations', 61500000.00, 'Finance Department', 'BUD-2026-Q2', 'Pending', 'High', 'Finance Manager', '2026-03-22', '2026-03-25'),
-('FINANCE', 'Financial Reporting', 'Monthly Financial Report', 'Generate monthly financial statements for management', 0, 'Finance Department', 'FR-2026-03', 'In Progress', 'Medium', 'Finance Manager', '2026-03-22', '2026-03-23');
-
-INSERT IGNORE INTO hse_work (department_code, work_type, work_title, work_description, incident_type, severity, location, project_name, status, priority, submitted_by, submitted_date, due_date) VALUES
-('HSE', 'Incident Reporting', 'Safety Incident Report', 'Report workplace safety incident', 'Near Miss', 'Medium', 'Construction Site A', 'Building A', 'Pending', 'High', 'HSE Manager', '2026-03-22', '2026-03-23'),
-('HSE', 'Safety Policy Upload', 'New Safety Policy', 'Upload updated safety procedures', 'Policy Update', 'High', 'All Sites', 'Company Wide', 'Pending', 'High', 'HSE Manager', '2026-03-22', '2026-03-24'),
-('HSE', 'Toolbox Meeting', 'Weekly Safety Meeting', 'Conduct weekly toolbox talk with crew', 'Safety Meeting', 'Medium', 'Construction Site A', 'Building A', 'Pending', 'Medium', 'HSE Manager', '2026-03-22', '2026-03-25'),
-('HSE', 'Inspection Report', 'Monthly Safety Inspection', 'Conduct monthly safety inspection', 'Inspection', 'High', 'Construction Site A', 'Building A', 'Pending', 'High', 'HSE Manager', '2026-03-22', '2026-03-25');
-
-INSERT IGNORE INTO projects_work (department_code, work_type, work_title, work_description, project_name, client_name, project_phase, status, priority, submitted_by, submitted_date, due_date) VALUES
-('PROJECT', 'Project Creation', 'New Building Project', 'Start construction of new office building', 'Office Building Project', 'ABC Corporation', 'Planning', 'Pending', 'High', 'Project Manager', '2026-03-22', '2026-04-01'),
-('PROJECT', 'Workforce Request', 'Additional Workers', 'Request 5 additional workers for construction', 'Office Building Project', 'ABC Corporation', 'In Progress', 'Pending', 'Medium', 'Project Manager', '2026-03-22', '2026-03-25');
-
-INSERT IGNORE INTO realestate_work (department_code, work_type, work_title, work_description, property_address, property_type, client_name, sale_amount, status, priority, submitted_by, submitted_date, due_date) VALUES
-('REALESTATE', 'Property Addition', 'New Property Listing', 'Add commercial property to portfolio', '123 Main Street', 'Commercial', 'XYZ Company', 500000000.00, 'Pending', 'Medium', 'Real Estate Manager', '2026-03-22', '2026-03-30'),
-('REALESTATE', 'Client Registration', 'New Client Registration', 'Register new client in system', '456 Oak Avenue', 'Residential', 'John Smith', 0, 'Completed', 'Low', 'Real Estate Manager', '2026-03-22', '2026-03-23');
-
-INSERT IGNORE INTO admin_work (department_code, work_type, work_title, work_description, affected_department, deadline, status, priority, submitted_by, submitted_date, due_date) VALUES
-('ADMIN', 'Administrative Operations', 'System Update', 'Update system security protocols', 'All Departments', '2026-03-25', 'Pending', 'High', 'Admin', '2026-03-22', '2026-03-25'),
-('ADMIN', 'Compliance Management', 'Compliance Audit', 'Annual compliance audit preparation', 'All Departments', '2026-03-30', 'In Progress', 'High', 'Admin', '2026-03-22', '2026-03-30');
+-- Sample data for worker_assignments, users, policies, senior_hiring_requests,
+-- workforce_budgets, and department work tables populated via API after startup
 
 -- Attendance Management Table
 CREATE TABLE IF NOT EXISTS attendance (
@@ -1025,15 +956,7 @@ CREATE TABLE IF NOT EXISTS attendance (
   UNIQUE KEY unique_employee_date (employee_id, attendance_date)
 );
 
--- Insert sample attendance data
-INSERT IGNORE INTO attendance (
-  employee_id, employee_name, attendance_date, check_in_time, check_out_time, 
-  attendance_status, notes, marked_by, marked_by_role
-) VALUES
-('emp001', 'John Doe', CURDATE(), '08:00:00', '17:00:00', 'present', 'Regular work day', 'HR Manager', 'HR Manager'),
-('emp002', 'Jane Smith', CURDATE(), '08:30:00', '17:00:00', 'late', 'Traffic delay', 'HR Manager', 'HR Manager'),
-('emp003', 'Mike Johnson', CURDATE(), NULL, NULL, 'sick', 'Fever and headache', 'HR Manager', 'HR Manager'),
-('emp004', 'Sarah Wilson', CURDATE(), '08:00:00', '16:00:00', 'permission', 'Left early for personal appointment', 'HR Manager', 'HR Manager');
+-- Attendance data populated via API after startup
 
 -- Leave Management Table
 CREATE TABLE IF NOT EXISTS leave_requests (
@@ -1064,15 +987,7 @@ CREATE TABLE IF NOT EXISTS leave_requests (
   INDEX idx_created_at (created_at)
 );
 
--- Insert sample leave request data
-INSERT IGNORE INTO leave_requests (
-  employee_id, employee_name, leave_type, start_date, end_date, days_requested, 
-  reason_for_leave, approval_status, approved_by
-) VALUES
-('emp001', 'John Doe', 'annual', '2026-04-15', '2026-04-19', 5, 'Family vacation planned for Easter holiday', 'pending', NULL),
-('emp002', 'Jane Smith', 'sick', '2026-03-25', '2026-03-26', 2, 'Medical appointment and recovery', 'approved', 'HR Manager'),
-('emp003', 'Mike Johnson', 'compassionate', '2026-04-01', '2026-04-02', 2, 'Family emergency - attending funeral', 'approved', 'HR Manager'),
-('emp004', 'Sarah Wilson', 'study', '2026-05-10', '2026-05-12', 3, 'Professional development course attendance', 'pending', NULL);
+-- Leave request data populated via API after startup
 
 -- Contract Management Table
 CREATE TABLE IF NOT EXISTS contracts (
@@ -1102,15 +1017,7 @@ CREATE TABLE IF NOT EXISTS contracts (
   INDEX idx_created_at (created_at)
 );
 
--- Insert sample contract data
-INSERT IGNORE INTO contracts (
-  employee_id, employee_name, contract_type, start_date, end_date, salary, 
-  contract_status, contract_terms, created_by
-) VALUES
-('emp001', 'John Doe', 'permanent', '2025-01-15', NULL, 2500000.00, 'active', 'Full-time permanent employment with standard benefits including health insurance, annual leave, and pension contributions', 'HR Manager'),
-('emp002', 'Jane Smith', 'contract', '2025-03-01', '2025-12-31', 2200000.00, 'active', 'Fixed-term contract for project duration with possibility of extension based on performance', 'HR Manager'),
-('emp003', 'Mike Johnson', 'probation', '2025-02-01', '2025-05-01', 1800000.00, 'renewed', 'Probation period successfully completed and converted to permanent contract', 'HR Manager'),
-('emp004', 'Sarah Wilson', 'temporary', '2025-04-01', '2025-06-30', 2000000.00, 'active', 'Temporary contract for special project with competitive hourly rate and overtime benefits', 'HR Manager');
+-- Contract data populated via API after startup
 
 -- Meeting Minutes table
 CREATE TABLE IF NOT EXISTS meeting_minutes (
@@ -1147,20 +1054,7 @@ CREATE TABLE IF NOT EXISTS meeting_minutes (
   INDEX idx_follow_up_date (follow_up_date)
 );
 
--- Insert sample meeting minutes data
-INSERT IGNORE INTO meeting_minutes (
-  meeting_id, meeting_title, meeting_date, meeting_type, location, organizing_department,
-  attendees, minutes_content, action_items, decisions_made, next_steps, follow_up_date,
-  status, prepared_by, reviewed_by, approved_by
-) VALUES
-(1, 'Monthly Management Review', CURDATE(), 'management', 'Board Room', 'management',
-  'Dr. John Smith, HR Manager, Finance Manager, Project Manager', 
-  'Monthly review of project progress, financial status, and operational challenges.',
-  '1. Review Q2 budget proposals\n2. Approve new project timeline\n3. Address staffing issues',
-  'Budget approval deferred pending additional information. Project timeline approved with modifications.',
-  'Schedule follow-up meeting for budget review next week. Update project documentation.',
-  DATE_ADD(CURDATE(), INTERVAL 7 DAY),
-  'Draft', 'Admin Assistant', NULL, NULL);
+-- Meeting minutes data populated via API after startup
 
 -- Site Reports table
 CREATE TABLE IF NOT EXISTS site_reports (
