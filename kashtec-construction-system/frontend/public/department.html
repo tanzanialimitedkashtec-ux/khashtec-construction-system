@@ -5255,6 +5255,226 @@ function approveSeniorHiring(){
     `);
 }
 
+function approveSeniorHiringMD(){
+    showContent(`
+        <div class="card">
+            <h3>Approve Senior Staff Hiring</h3>
+            <p><strong>High-Level Authority:</strong> Approve hiring decisions for senior positions (Manager level and above)</p>
+            
+            <div class="hiring-section">
+                <h4>Senior Staff Hiring Requests Pending Approval</h4>
+                <div class="table-responsive">
+                    <table class="hiring-table">
+                        <thead>
+                            <tr>
+                                <th>Position</th>
+                                <th>Candidate Name</th>
+                                <th>Proposed Salary</th>
+                                <th>Department</th>
+                                <th>Experience</th>
+                                <th>HR Recommendation</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr class="hiring-row">
+                                <td>
+                                    <div class="position-info">
+                                        <strong>Finance Manager</strong>
+                                        <small>ID: hire003</small>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="candidate-info">
+                                        <span class="candidate-name">Michael Chen</span>
+                                        <small>Senior Candidate</small>
+                                    </div>
+                                </td>
+                                <td>
+                                    <span class="salary-amount high">TZS 180,000</span>
+                                </td>
+                                <td>
+                                    <span class="department-badge finance">Finance</span>
+                                </td>
+                                <td>
+                                    <div class="experience-text">12 years in financial management</div>
+                                </td>
+                                <td>
+                                    <div class="recommendation-text">Strong leadership background in construction finance</div>
+                                </td>
+                                <td>
+                                    <div class="action-buttons">
+                                        <button class="action-btn approve" onclick="approveSeniorHire('3')" title="Approve Hiring">
+                                            ✓
+                                        </button>
+                                        <button class="action-btn info" onclick="requestMoreInfo('3')" title="Request More Info">
+                                            ℹ
+                                        </button>
+                                        <button class="action-btn reject" onclick="rejectSeniorHire('3')" title="Reject Hiring">
+                                            ✗
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr class="hiring-row">
+                                <td>
+                                    <div class="position-info">
+                                        <strong>Operations Manager</strong>
+                                        <small>ID: hire002</small>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="candidate-info">
+                                        <span class="candidate-name">Sarah Johnson</span>
+                                        <small>Senior Candidate</small>
+                                    </div>
+                                </td>
+                                <td>
+                                    <span class="salary-amount medium">TZS 120,000</span>
+                                </td>
+                                <td>
+                                    <span class="department-badge operations">Operations</span>
+                                </td>
+                                <td>
+                                    <div class="experience-text">8 years in structural engineering</div>
+                                </td>
+                                <td>
+                                    <div class="recommendation-text">Excellent technical skills and project experience</div>
+                                </td>
+                                <td>
+                                    <div class="action-buttons">
+                                        <button class="action-btn approve" onclick="approveSeniorHire('2')" title="Approve Hiring">
+                                            ✓
+                                        </button>
+                                        <button class="action-btn info" onclick="requestMoreInfo('2')" title="Request More Info">
+                                            ℹ
+                                        </button>
+                                        <button class="action-btn reject" onclick="rejectSeniorHire('2')" title="Reject Hiring">
+                                            ✗
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr class="hiring-row">
+                                <td>
+                                    <div class="position-info">
+                                        <strong>Project Manager</strong>
+                                        <small>ID: hire001</small>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="candidate-info">
+                                        <span class="candidate-name">John Smith</span>
+                                        <small>Senior Candidate</small>
+                                    </div>
+                                </td>
+                                <td>
+                                    <span class="salary-amount high">TZS 150,000</span>
+                                </td>
+                                <td>
+                                    <span class="department-badge projects">Projects</span>
+                                </td>
+                                <td>
+                                    <div class="experience-text">10 years in construction management</div>
+                                </td>
+                                <td>
+                                    <div class="recommendation-text">Highly recommended for leadership role</div>
+                                </td>
+                                <td>
+                                    <div class="action-buttons">
+                                        <button class="action-btn approve" onclick="approveSeniorHire('1')" title="Approve Hiring">
+                                            ✓
+                                        </button>
+                                        <button class="action-btn info" onclick="requestMoreInfo('1')" title="Request More Info">
+                                            ℹ
+                                        </button>
+                                        <button class="action-btn reject" onclick="rejectSeniorHire('1')" title="Reject Hiring">
+                                            ✗
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            
+            <div class="approval-summary">
+                <h4>Senior Hiring Authority</h4>
+                <div class="table-responsive">
+                    <table class="authority-table">
+                        <thead>
+                            <tr>
+                                <th>Authority Level</th>
+                                <th>Permissions</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr class="authority-row">
+                                <td>
+                                    <div class="authority-info">
+                                        <strong>Senior Staff Approval</strong>
+                                        <small>Manager level and above</small>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="permission-text">Can approve all senior staff hires</div>
+                                </td>
+                                <td>
+                                    <span class="status-badge active">✅ Active</span>
+                                </td>
+                            </tr>
+                            <tr class="authority-row">
+                                <td>
+                                    <div class="authority-info">
+                                        <strong>Manager-Level Positions</strong>
+                                        <small>Department heads</small>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="permission-text">Can approve manager-level positions and above</div>
+                                </td>
+                                <td>
+                                    <span class="status-badge active">✅ Active</span>
+                                </td>
+                            </tr>
+                            <tr class="authority-row">
+                                <td>
+                                    <div class="authority-info">
+                                        <strong>Final Authority</strong>
+                                        <small>Senior recruitment decisions</small>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="permission-text">Final authority on senior recruitment</div>
+                                </td>
+                                <td>
+                                    <span class="status-badge active">✅ Active</span>
+                                </td>
+                            </tr>
+                            <tr class="authority-row">
+                                <td>
+                                    <div class="authority-info">
+                                        <strong>Worker Registration</strong>
+                                        <small>HR function restriction</small>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="permission-text">Cannot directly register workers</div>
+                                </td>
+                                <td>
+                                    <span class="status-badge restricted">❌ Restricted</span>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    `);
+}
+
 function approveWorkforceBudget(){
     showContent(`
         <div class="card">
