@@ -4299,46 +4299,67 @@ function loadHiringRequestsFromBackend() {
             return;
         }
         
-        let html = '<div class="hiring-items">';
+        let html = `
+            <div class="table-responsive">
+                <table class="hiring-table">
+                    <thead>
+                        <tr>
+                            <th>Position</th>
+                            <th>Candidate Name</th>
+                            <th>Proposed Salary</th>
+                            <th>Department</th>
+                            <th>Experience</th>
+                            <th>HR Recommendation</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>`;
         data.forEach(request => {
             html += `
-                <div class="hiring-item">
-                    <h5>${request.position || 'Position not specified'}</h5>
-                    <div class="candidate-info">
-                        <div class="form-row">
-                            <div class="form-group">
-                                <label for="candidate-name-${request.id}">Candidate Name</label>
-                                <input type="text" id="candidate-name-${request.id}" name="candidate_name" value="${request.candidate_name || 'N/A'}" readonly>
-                            </div>
-                            <div class="form-group">
-                                <label for="proposed-salary-${request.id}">Proposed Salary</label>
-                                <input type="text" id="proposed-salary-${request.id}" name="proposed_salary" value="${request.proposed_salary ? 'TZS ' + parseInt(request.proposed_salary).toLocaleString() : 'N/A'}" readonly>
-                            </div>
-                        </div>
-                        <div class="form-row">
-                            <div class="form-group">
-                                <label for="department-${request.id}">Department</label>
-                                <input type="text" id="department-${request.id}" name="department" value="${request.department || 'N/A'}" readonly>
-                            </div>
-                            <div class="form-group">
-                                <label for="experience-${request.id}">Experience</label>
-                                <input type="text" id="experience-${request.id}" name="experience" value="${request.experience || 'N/A'}" readonly>
-                            </div>
-                        </div>
-                        <div class="form-group">
-                            <label for="hr-recommendation-${request.id}">HR Recommendation</label>
-                            <textarea id="hr-recommendation-${request.id}" name="hr_recommendation" rows="3" readonly>${request.hr_recommendation || 'No recommendation provided'}</textarea>
-                        </div>
-                    </div>
-                    <div class="hiring-actions">
-                        <button class="action" onclick="approveSeniorHire('${request.id}')" style="background: #28a745;">Approve Hiring</button>
-                        <button class="action" onclick="requestMoreInfo('${request.id}')" style="background: #ffc107;">Request More Info</button>
-                        <button class="action" onclick="rejectSeniorHire('${request.id}')" style="background: #dc3545;">Reject Hiring</button>
-                    </div>
-                </div>
-            `;
+                        <tr class="hiring-row">
+                            <td>
+                                <div class="position-info">
+                                    <strong>${request.position || 'Position not specified'}</strong>
+                                    <small>ID: ${request.id}</small>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="candidate-info">
+                                    <span class="candidate-name">${request.candidate_name || 'N/A'}</span>
+                                    <small>Senior Candidate</small>
+                                </div>
+                            </td>
+                            <td>
+                                <span class="salary-amount ${request.proposed_salary > 150000 ? 'high' : request.proposed_salary > 100000 ? 'medium' : 'low'}">TZS ${parseInt(request.proposed_salary || 0).toLocaleString()}</span>
+                            </td>
+                            <td>
+                                <span class="department-badge ${request.department ? request.department.toLowerCase() : 'default'}">${request.department || 'N/A'}</span>
+                            </td>
+                            <td>
+                                <div class="experience-text">${request.experience || 'N/A'}</div>
+                            </td>
+                            <td>
+                                <div class="recommendation-text">${request.hr_recommendation || 'No recommendation provided'}</div>
+                            </td>
+                            <td>
+                                <div class="action-buttons">
+                                    <button class="action-btn approve" onclick="approveSeniorHire('${request.id}')" title="Approve Hiring">
+                                        ✓
+                                    </button>
+                                    <button class="action-btn info" onclick="requestMoreInfo('${request.id}')" title="Request More Info">
+                                        ℹ
+                                    </button>
+                                    <button class="action-btn reject" onclick="rejectSeniorHire('${request.id}')" title="Reject Hiring">
+                                        ✗
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>`;
         });
-        html += '</div>';
+        html += `
+                    </tbody>
+                </table>
+            </div>`;
         container.innerHTML = html;
     })
     .catch(error => {
@@ -4751,28 +4772,22 @@ function filterPolicyManagement() {
 function filterHRHiringRequests() {
     const searchTerm = document.getElementById('hrHiringSearchInput').value.toLowerCase();
     const searchResults = document.getElementById('hrHiringSearchResults');
-    const hiringItems = document.querySelectorAll('#hiringContainer .hiring-request');
+    const hiringRows = document.querySelectorAll('#hiringContainer .hiring-row');
     
-    if (hiringItems.length === 0) return;
+    if (hiringRows.length === 0) return;
     
     let visibleCount = 0;
-    
-    hiringItems.forEach(item => {
-        const text = item.textContent.toLowerCase();
+    hiringRows.forEach(row => {
+        const text = row.textContent.toLowerCase();
         if (text.includes(searchTerm)) {
-            item.style.display = 'block';
+            row.style.display = '';
             visibleCount++;
         } else {
-            item.style.display = 'none';
+            row.style.display = 'none';
         }
     });
     
-    // Update search results count
-    if (searchTerm) {
-        searchResults.textContent = `Found ${visibleCount} candidate(s) matching "${searchTerm}"`;
-    } else {
-        searchResults.textContent = '';
-    }
+    searchResults.textContent = searchTerm ? `Found ${visibleCount} matching requests` : '';
 }
 
 // Hiring search functionality
