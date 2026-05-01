@@ -203,6 +203,38 @@ header{
     border-radius: 3px;
 }
 
+/* User Information Section Styling */
+.user-info-section {
+    background: #f8f9fa;
+    border-radius: 8px;
+    border-left: 4px solid #0b3d91;
+    padding: 15px;
+    margin: 20px 0;
+}
+
+.user-info-grid {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.user-info-grid strong {
+    color: #333;
+    font-weight: 600;
+}
+
+.user-info-grid span {
+    color: #666;
+}
+
+.user-role-badge {
+    color: #0b3d91;
+    font-weight: bold;
+    text-transform: uppercase;
+    font-size: 0.9em;
+}
+
 input, select, textarea{
     width:100%;
     padding:4px;
@@ -4174,10 +4206,51 @@ function login(){
     }
     
     currentRole = role;
+    
+    // Store user session
+    const userEmail = `${role.toLowerCase().replace(' ', '')}@kashtec.com`;
+    userManager.setUser(userEmail, role);
+    
     document.getElementById("loginPage").classList.add("hidden");
     document.getElementById("systemPage").classList.remove("hidden");
     document.getElementById("userRole").innerText = roleDescriptions[role] + " Dashboard";
     loadMenu();
+    
+    // Show welcome content with user info
+    showContent(getWelcomeContent(roleDescriptions[role] + " Dashboard"));
+}
+
+// Handle login for email-based login form
+function handleLogin() {
+    const email = document.getElementById('loginEmail').value;
+    const role = document.getElementById('loginRole').value;
+    const password = document.getElementById('loginPassword').value;
+    
+    if (!email || !role || !password) {
+        customAlert('Please fill in all login fields.', 'Login Error', 'error');
+        return false;
+    }
+    
+    // Validate password
+    if (password !== rolePasswords[role]) {
+        customAlert('Invalid credentials. Please check your email, role, and password.', 'Authentication Failed', 'error');
+        return false;
+    }
+    
+    // Store user session
+    userManager.setUser(email, role);
+    currentRole = role;
+    
+    // Hide login, show system
+    document.getElementById('loginPage').classList.add('hidden');
+    document.getElementById('systemPage').classList.remove('hidden');
+    document.getElementById('userRole').innerText = roleDescriptions[role] + ' Dashboard';
+    
+    // Load menu and show welcome
+    loadMenu();
+    showContent(getWelcomeContent(roleDescriptions[role] + ' Dashboard'));
+    
+    return false; // Prevent form submission
 }
 
 // Missing functions for HR menu items
@@ -4460,7 +4533,6 @@ function loadMenu(){
         addMenu("Track Attendance", attendance);
         addMenu("Manage Leave & Contracts", manageLeaveContracts);
         addMenu("Manage Policies", loadPolicies);
-        addMenu("Approve Senior Staff Hiring", loadSeniorHiringRequests);
         addMenu("Approve Workforce Budget", approveWorkforceBudget);
     }
 
@@ -4531,6 +4603,48 @@ function addMenu(name, func){
         console.error('Error adding menu item:', name, error);
     }
 }
+
+// User session management
+const userManager = {
+    // Store user info
+    setUser(email, role, name) {
+        const userInfo = {
+            email: email,
+            role: role,
+            name: name || this.extractNameFromEmail(email),
+            loginTime: new Date().toISOString()
+        };
+        localStorage.setItem('kashtec_user', JSON.stringify(userInfo));
+        console.log('✅ User session stored:', userInfo);
+    },
+    
+    // Get user info
+    getUser() {
+        try {
+            const userStr = localStorage.getItem('kashtec_user');
+            return userStr ? JSON.parse(userStr) : null;
+        } catch (error) {
+            console.error('❌ Error getting user info:', error);
+            return null;
+        }
+    },
+    
+    // Extract name from email
+    extractNameFromEmail(email) {
+        if (!email) return 'User';
+        const parts = email.split('@')[0].split('.');
+        if (parts.length >= 2) {
+            return parts.map(part => part.charAt(0).toUpperCase() + part.slice(1)).join(' ');
+        }
+        return parts[0] ? parts[0].charAt(0).toUpperCase() + parts[0].slice(1) : 'User';
+    },
+    
+    // Clear user session
+    clearUser() {
+        localStorage.removeItem('kashtec_user');
+        console.log('🗑️ User session cleared');
+    }
+};
 
 function showContent(html){
     document.getElementById("contentArea").innerHTML = html;
@@ -23307,16 +23421,9 @@ function goBack() {
         } else {
             // If no history, go back to main menu
             console.log('🏠 No history available, returning to main menu');
-            showContent(`
-                <div class="card">
-                    <h3>🏠 Main Menu</h3>
-                    <p>Welcome back to the main menu. Select an option from the navigation menu.</p>
-                    <div class="form-actions">
-                        <button class="action" onclick="officePortal()">🏢 Office Portal</button>
-                        <button class="action" onclick="showContent('')">📋 Dashboard</button>
-                    </div>
-                </div>
-            `);
+            const user = userManager.getUser();
+            const departmentTitle = user ? roleDescriptions[user.role] + ' Dashboard' : 'KASHTEC Department Portal';
+            showContent(getWelcomeContent(departmentTitle));
         }
         
         // Clear timeout after execution
@@ -25639,19 +25746,10 @@ window.customConfirm = function(message, title = 'Confirm', onConfirm, onCancel)
 document.addEventListener('DOMContentLoaded', function() {
     console.log('KASHTEC Construction System - Department Portal loaded');
     
-    // Load initial content
-    showContent(`<div class="card">
-        <h3>Welcome to KASHTEC Department Portal</h3>
-        <p><strong>System Status:</strong> All systems operational</p>
-        <p><strong>Last Update:</strong> ${new Date().toLocaleString()}</p>
-        <div class="summary-stats">
-            <div class="stat-card">
-                <h5>System Ready</h5>
-                <div class="stat-value">✓</div>
-                <div class="stat-label">Online</div>
-            </div>
-        </div>
-    </div>`);
+    // Load initial content with user info
+    const user = userManager.getUser();
+    const departmentTitle = user ? roleDescriptions[user.role] + ' Dashboard' : 'KASHTEC Department Portal';
+    showContent(getWelcomeContent(departmentTitle));
     
     // Load assigned workers data
     loadAssignedWorkers();
@@ -27425,9 +27523,45 @@ function reactivateUser(userId) {
     }
 }
 
+// Enhanced welcome content with user info
+function getWelcomeContent(departmentTitle) {
+    const user = userManager.getUser();
+    const userName = user ? user.name : 'Guest';
+    const userEmail = user ? user.email : 'Not logged in';
+    const userRole = user ? user.role : 'Unknown';
+    const currentTime = new Date().toLocaleString();
+    
+    return `
+        <div class="card">
+            <h3>Welcome to ${departmentTitle}</h3>
+            <div class="user-info-section">
+                <h4>👤 User Information</h4>
+                <div class="user-info-grid">
+                    <strong>Name:</strong>
+                    <span>${userName}</span>
+                    
+                    <strong>Email:</strong>
+                    <span>${userEmail}</span>
+                    
+                    <strong>Role:</strong>
+                    <span class="user-role-badge">${userRole}</span>
+                    
+                    <strong>Login Time:</strong>
+                    <span>${currentTime}</span>
+                </div>
+            </div>
+            <div style="margin-top: 20px; padding: 15px; background: #f8f9fa; border-radius: 5px;">
+                <h4>Quick Start:</h4>
+                <p>Choose a function from the left menu to manage your department operations.</p>
+            </div>
+        </div>
+    `;
+}
+
 // Additional missing functions
 function handleLogout() {
     if (confirm('Are you sure you want to logout?')) {
+        userManager.clearUser();
         sessionStorage.clear();
         location.reload();
     }
@@ -27435,7 +27569,14 @@ function handleLogout() {
 
 function cancelEmploymentAction() {
     customAlert('Employment action cancelled.', "Action Cancelled", "info");
-    showContent('<div class="card"><h3>Action Cancelled</h3><p>The employment action has been cancelled.</p></div>');
+    showContent(getWelcomeContent('Dashboard'));
+}
+
+// Show dashboard with user info
+function showDashboard() {
+    const user = userManager.getUser();
+    const departmentTitle = user ? roleDescriptions[user.role] + ' Dashboard' : 'KASHTEC Department Portal';
+    showContent(getWelcomeContent(departmentTitle));
 }
 
 function showReportTab(tabName) {
