@@ -2981,6 +2981,193 @@ color: #666;
     box-shadow: 0 2px 4px rgba(0,0,0,0.2);
 }
 
+/* Financial Table Styles */
+.financial-records {
+    margin-top: 20px;
+}
+
+.financial-table-container {
+    background: white;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    margin-top: 15px;
+}
+
+.financial-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 11px;
+    background: white;
+}
+
+.financial-table th {
+    background: #0b3d91;
+    color: white;
+    padding: 10px 8px;
+    text-align: left;
+    font-weight: 600;
+    border-bottom: 2px solid #093278;
+    white-space: nowrap;
+}
+
+.financial-table td {
+    padding: 8px;
+    border-bottom: 1px solid #e9ecef;
+    vertical-align: middle;
+    font-size: 11px;
+}
+
+.financial-table tr:hover {
+    background: #f8f9fa;
+}
+
+.financial-table tr:last-child td {
+    border-bottom: none;
+}
+
+.transaction-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 120px;
+}
+
+.transaction-id {
+    font-weight: 600;
+    color: #333;
+    font-size: 11px;
+    text-transform: uppercase;
+}
+
+.transaction-ref {
+    font-size: 9px;
+    color: #666;
+    text-transform: uppercase;
+}
+
+.date-info {
+    min-width: 80px;
+}
+
+.transaction-date {
+    font-weight: 600;
+    color: #333;
+    font-size: 11px;
+}
+
+.description-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 200px;
+}
+
+.transaction-description {
+    font-weight: 600;
+    color: #333;
+    font-size: 11px;
+    line-height: 1.2;
+}
+
+.transaction-account {
+    font-size: 9px;
+    color: #666;
+    font-style: italic;
+}
+
+.category-info {
+    min-width: 120px;
+}
+
+.financial-table .category-badge {
+    font-size: 9px;
+    font-weight: 600;
+    color: white;
+    background: #6c757d;
+    padding: 2px 6px;
+    border-radius: 8px;
+    display: inline-block;
+}
+
+.type-badge.type-income {
+    background: #28a745;
+    color: white;
+}
+
+.type-badge.type-expense {
+    background: #dc3545;
+    color: white;
+}
+
+.amount-badge.amount-income {
+    background: #d4edda;
+    color: #155724;
+    font-weight: 600;
+}
+
+.amount-badge.amount-expense {
+    background: #f8d7da;
+    color: #721c24;
+    font-weight: 600;
+}
+
+.status-badge.status-completed {
+    background: #d4edda;
+    color: #155724;
+}
+
+.status-badge.status-pending {
+    background: #fff3cd;
+    color: #856404;
+}
+
+.status-badge.status-failed {
+    background: #f8d7da;
+    color: #721c24;
+}
+
+.financial-actions {
+    display: flex;
+    gap: 4px;
+    justify-content: center;
+}
+
+.financial-actions .action-btn {
+    padding: 4px 6px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 10px;
+    transition: all 0.2s ease;
+    min-width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.financial-actions .action-btn.view {
+    background: #17a2b8;
+    color: white;
+}
+
+.financial-actions .action-btn.edit {
+    background: #ffc107;
+    color: #212529;
+}
+
+.financial-actions .action-btn.download {
+    background: #28a745;
+    color: white;
+}
+
+.financial-actions .action-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
 .btn-approve {
     background: #28a745;
     color: white;
@@ -19008,27 +19195,359 @@ function financialManagement(){
             </div>
         </div>
         
-        <div class="recent-transactions">
+        <div class="financial-records">
             <h4>Recent Financial Transactions</h4>
-            <div class="transaction-list">
-                <div class="transaction-item">
-                    <span class="transaction-date">2026-03-01</span>
-                    <span class="transaction-desc">Client Payment - Port Modernization</span>
-                    <span class="transaction-amount positive">+TZS 45,000,000</span>
-                </div>
-                <div class="transaction-item">
-                    <span class="transaction-date">2026-03-01</span>
-                    <span class="transaction-desc">Salary Payments - February</span>
-                    <span class="transaction-amount negative">-TZS 28,500,000</span>
-                </div>
-                <div class="transaction-item">
-                    <span class="transaction-date">2026-02-28</span>
-                    <span class="transaction-desc">Equipment Purchase</span>
-                    <span class="transaction-amount negative">-TZS 12,000,000</span>
-                </div>
+            <div class="financial-table-container">
+                <table class="financial-table">
+                    <thead>
+                        <tr>
+                            <th>Transaction ID</th>
+                            <th>Date</th>
+                            <th>Description</th>
+                            <th>Category</th>
+                            <th>Type</th>
+                            <th>Amount</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="financialRecordsList">
+                        <tr>
+                            <td colspan="8">
+                                <div class="loading">Loading financial records...</div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
             </div>
         </div>
     </div>`);
+    
+    // Load financial records
+    loadFinancialRecords();
+}
+
+// Load financial records for table display
+async function loadFinancialRecords() {
+    console.log('🔄 Loading financial records...');
+    
+    try {
+        const baseUrl = window.location.origin;
+        let response;
+        
+        // Try to get financial records from API
+        try {
+            response = await fetch(`${baseUrl}/api/finance/transactions`, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${sessionManager.getAuthToken()}`
+                }
+            });
+            
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            }
+        } catch (primaryError) {
+            console.warn('⚠️ Primary financial records endpoint failed, trying fallback:', primaryError.message);
+            // Try fallback endpoint
+            try {
+                response = await fetch(`${baseUrl}/api/transactions`, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${sessionManager.getAuthToken()}`
+                    }
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`Fallback also failed: HTTP ${response.status}: ${response.statusText}`);
+                }
+            } catch (fallbackError) {
+                console.error('❌ All financial records endpoints failed:', fallbackError.message);
+                // Load sample data for demonstration
+                loadSampleFinancialRecords();
+                return;
+            }
+        }
+        
+        const financialRecords = await response.json();
+        console.log('📊 Financial records data:', financialRecords);
+        
+        displayFinancialRecords(financialRecords);
+        
+    } catch (error) {
+        console.error('❌ Error loading financial records:', error);
+        // Load sample data on error
+        loadSampleFinancialRecords();
+    }
+}
+
+// Load sample financial records for demonstration
+function loadSampleFinancialRecords() {
+    console.log('📋 Loading sample financial records...');
+    
+    const sampleRecords = [
+        {
+            id: 'TRX-2026001',
+            date: '2026-03-01',
+            description: 'Client Payment - Port Modernization Project',
+            category: 'Revenue',
+            type: 'income',
+            amount: 45000000,
+            status: 'completed',
+            reference: 'INV-2026-001',
+            account: 'Client Receivables'
+        },
+        {
+            id: 'TRX-2026002',
+            date: '2026-03-01',
+            description: 'Salary Payments - February 2026',
+            category: 'Payroll',
+            type: 'expense',
+            amount: 28500000,
+            status: 'completed',
+            reference: 'PAY-2026-02',
+            account: 'Payroll Account'
+        },
+        {
+            id: 'TRX-2026003',
+            date: '2026-02-28',
+            description: 'Heavy Equipment Purchase - Excavator',
+            category: 'Capital Expenditure',
+            type: 'expense',
+            amount: 12000000,
+            status: 'completed',
+            reference: 'PO-2026-045',
+            account: 'Equipment Account'
+        },
+        {
+            id: 'TRX-2026004',
+            date: '2026-02-27',
+            description: 'Material Procurement - Steel and Cement',
+            category: 'Materials',
+            type: 'expense',
+            amount: 8500000,
+            status: 'completed',
+            reference: 'PO-2026-044',
+            account: 'Materials Account'
+        },
+        {
+            id: 'TRX-2026005',
+            date: '2026-02-25',
+            description: 'Consulting Services - Engineering Design',
+            category: 'Professional Services',
+            type: 'expense',
+            amount: 3200000,
+            status: 'completed',
+            reference: 'INV-2026-089',
+            account: 'Services Account'
+        },
+        {
+            id: 'TRX-2026006',
+            date: '2026-02-24',
+            description: 'Project Retainer - Dar es Salaam Port',
+            category: 'Revenue',
+            type: 'income',
+            amount: 15000000,
+            status: 'completed',
+            reference: 'RET-2026-003',
+            account: 'Client Receivables'
+        },
+        {
+            id: 'TRX-2026007',
+            date: '2026-02-23',
+            description: 'Office Rent - March 2026',
+            category: 'Operating Expenses',
+            type: 'expense',
+            amount: 2500000,
+            status: 'completed',
+            reference: 'RENT-2026-03',
+            account: 'Office Expenses'
+        },
+        {
+            id: 'TRX-2026008',
+            date: '2026-02-22',
+            description: 'Fuel and Transportation Costs',
+            category: 'Operating Expenses',
+            type: 'expense',
+            amount: 1800000,
+            status: 'completed',
+            reference: 'FUEL-2026-08',
+            account: 'Transport Account'
+        },
+        {
+            id: 'TRX-2026009',
+            date: '2026-02-20',
+            description: 'Insurance Premium - Equipment Coverage',
+            category: 'Insurance',
+            type: 'expense',
+            amount: 1200000,
+            status: 'completed',
+            reference: 'INS-2026-01',
+            account: 'Insurance Account'
+        },
+        {
+            id: 'TRX-2026010',
+            date: '2026-02-19',
+            description: 'Tax Payment - VAT February',
+            category: 'Taxes',
+            type: 'expense',
+            amount: 3500000,
+            status: 'completed',
+            reference: 'TAX-2026-02',
+            account: 'Tax Account'
+        },
+        {
+            id: 'TRX-2026011',
+            date: '2026-02-18',
+            description: 'Software License - Project Management System',
+            category: 'Technology',
+            type: 'expense',
+            amount: 850000,
+            status: 'pending',
+            reference: 'SaaS-2026-02',
+            account: 'Technology Account'
+        },
+        {
+            id: 'TRX-2026012',
+            date: '2026-02-17',
+            description: 'Client Payment - Road Construction Phase 1',
+            category: 'Revenue',
+            type: 'income',
+            amount: 28000000,
+            status: 'completed',
+            reference: 'INV-2026-002',
+            account: 'Client Receivables'
+        }
+    ];
+    
+    displayFinancialRecords(sampleRecords);
+}
+
+// Display financial records in the table
+function displayFinancialRecords(records) {
+    const recordsList = document.getElementById('financialRecordsList');
+    
+    if (!recordsList) {
+        console.error('❌ Financial records list container not found!');
+        return;
+    }
+    
+    if (!records || records.length === 0) {
+        recordsList.innerHTML = `
+            <tr>
+                <td colspan="8">
+                    <div class="no-records">No financial records found</div>
+                </td>
+            </tr>
+        `;
+        return;
+    }
+    
+    // Sort records by date (most recent first)
+    records.sort((a, b) => new Date(b.date) - new Date(a.date));
+    
+    let recordsHTML = '';
+    
+    records.forEach(record => {
+        const transactionDate = new Date(record.date);
+        const formattedDate = transactionDate.toLocaleDateString('en-US', { 
+            year: 'numeric', 
+            month: 'short', 
+            day: 'numeric' 
+        });
+        
+        // Format amount with TZS currency and proper sign
+        const formattedAmount = record.type === 'income' ? 
+            `+TZS ${record.amount.toLocaleString()}` : 
+            `-TZS ${record.amount.toLocaleString()}`;
+        
+        // Get amount class
+        const amountClass = record.type === 'income' ? 'amount-income' : 'amount-expense';
+        
+        // Get category badge
+        const categoryDisplay = record.category === 'Revenue' ? '💰 Revenue' : 
+                               record.category === 'Payroll' ? '👥 Payroll' : 
+                               record.category === 'Capital Expenditure' ? '🏗️ CapEx' : 
+                               record.category === 'Materials' ? '📦 Materials' : 
+                               record.category === 'Professional Services' ? '👔 Services' : 
+                               record.category === 'Operating Expenses' ? '🏢 OpEx' : 
+                               record.category === 'Insurance' ? '🛡️ Insurance' : 
+                               record.category === 'Taxes' ? '📊 Taxes' : 
+                               record.category === 'Technology' ? '💻 Technology' : record.category;
+        
+        // Get type badge
+        const typeClass = record.type === 'income' ? 'type-income' : 'type-expense';
+        const typeBadge = record.type === 'income' ? '📈 Income' : '📉 Expense';
+        
+        // Get status badge
+        const statusClass = record.status === 'completed' ? 'status-completed' : 
+                           record.status === 'pending' ? 'status-pending' : 
+                           record.status === 'failed' ? 'status-failed' : 'status-default';
+        
+        const statusBadge = record.status === 'completed' ? '✅ Completed' : 
+                           record.status === 'pending' ? '⏳ Pending' : 
+                           record.status === 'failed' ? '❌ Failed' : '❓ Unknown';
+        
+        recordsHTML += `
+            <tr class="financial-row">
+                <td>
+                    <div class="transaction-info">
+                        <div class="transaction-id">${record.id}</div>
+                        <div class="transaction-ref">${record.reference}</div>
+                    </div>
+                </td>
+                <td>
+                    <div class="date-info">
+                        <div class="transaction-date">${formattedDate}</div>
+                    </div>
+                </td>
+                <td>
+                    <div class="description-info">
+                        <div class="transaction-description">${record.description}</div>
+                        <div class="transaction-account">${record.account}</div>
+                    </div>
+                </td>
+                <td>
+                    <div class="category-info">
+                        <span class="category-badge">${categoryDisplay}</span>
+                    </div>
+                </td>
+                <td>
+                    <span class="type-badge ${typeClass}">${typeBadge}</span>
+                </td>
+                <td>
+                    <span class="amount-badge ${amountClass}">${formattedAmount}</span>
+                </td>
+                <td>
+                    <span class="status-badge ${statusClass}">${statusBadge}</span>
+                </td>
+                <td>
+                    <div class="financial-actions">
+                        <button class="action-btn view" onclick="viewTransaction('${record.id}')" title="View Transaction">👁️</button>
+                        <button class="action-btn edit" onclick="editTransaction('${record.id}')" title="Edit Transaction">✏️</button>
+                        <button class="action-btn download" onclick="downloadTransaction('${record.id}')" title="Download Receipt">📥</button>
+                    </div>
+                </td>
+            </tr>
+        `;
+    });
+    
+    recordsList.innerHTML = recordsHTML;
+}
+
+// Financial transaction action functions
+function viewTransaction(recordId) {
+    customAlert(`Viewing transaction details for ID: ${recordId}\n\nFull transaction information including payment details, associated invoices, and audit trail will be displayed.`, "Transaction Details", "info");
+}
+
+function editTransaction(recordId) {
+    customAlert(`Editing transaction ${recordId}...\n\nTransaction editor will open for modifications, corrections, and status updates.`, "Edit Transaction", "info");
+}
+
+function downloadTransaction(recordId) {
+    customAlert(`Downloading transaction receipt ${recordId}...\n\nTransaction receipt and supporting documents will be downloaded in PDF format.`, "Download Receipt", "info");
 }
 
 function payrollProcessing(){
