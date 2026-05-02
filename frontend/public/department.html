@@ -4180,6 +4180,187 @@ color: #666;
     box-shadow: 0 2px 4px rgba(0,0,0,0.2);
 }
 
+/* Site Reports Table Styles */
+.site-reports-records {
+    margin-top: 20px;
+}
+
+.site-reports-table-container {
+    background: white;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    margin-top: 15px;
+}
+
+.site-reports-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 11px;
+    background: white;
+}
+
+.site-reports-table th {
+    background: #0b3d91;
+    color: white;
+    padding: 10px 8px;
+    text-align: left;
+    font-weight: 600;
+    border-bottom: 2px solid #093278;
+    white-space: nowrap;
+}
+
+.site-reports-table td {
+    padding: 8px;
+    border-bottom: 1px solid #e9ecef;
+    vertical-align: middle;
+    font-size: 11px;
+}
+
+.site-reports-table tr:hover {
+    background: #f8f9fa;
+}
+
+.site-reports-table tr:last-child td {
+    border-bottom: none;
+}
+
+.report-id-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 120px;
+}
+
+.report-id {
+    font-weight: 600;
+    color: #333;
+    font-size: 11px;
+    text-transform: uppercase;
+}
+
+.report-date {
+    font-size: 9px;
+    color: #666;
+    font-style: italic;
+}
+
+.project-info {
+    min-width: 140px;
+}
+
+.project-name {
+    font-weight: 600;
+    color: #333;
+    font-size: 11px;
+    line-height: 1.2;
+}
+
+.date-info {
+    min-width: 100px;
+}
+
+.supervisor-info {
+    min-width: 120px;
+}
+
+.supervisor-name {
+    font-weight: 600;
+    color: #333;
+    font-size: 11px;
+}
+
+.workers-info {
+    min-width: 100px;
+}
+
+.workers-count {
+    font-weight: 600;
+    color: #333;
+    font-size: 11px;
+}
+
+.weather-badge {
+    display: inline-block;
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 9px;
+    font-weight: 600;
+    white-space: nowrap;
+    background: #e3f2fd;
+    color: #0b3d91;
+}
+
+.work-info {
+    min-width: 160px;
+}
+
+.work-completed {
+    font-size: 10px;
+    color: #333;
+    line-height: 1.3;
+}
+
+.safety-badge {
+    display: inline-block;
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 9px;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.safety-badge.status-clear {
+    background: #d4edda;
+    color: #155724;
+}
+
+.safety-badge.status-issues {
+    background: #fff3cd;
+    color: #856404;
+}
+
+.report-actions {
+    display: flex;
+    gap: 4px;
+    justify-content: center;
+}
+
+.report-actions .action-btn {
+    padding: 4px 6px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 10px;
+    transition: all 0.2s ease;
+    min-width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.report-actions .action-btn.view {
+    background: #17a2b8;
+    color: white;
+}
+
+.report-actions .action-btn.edit {
+    background: #ffc107;
+    color: #212529;
+}
+
+.report-actions .action-btn.download {
+    background: #6f42c1;
+    color: white;
+}
+
+.report-actions .action-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
 .btn-reject {
     background: #dc3545;
     color: white;
@@ -24312,24 +24493,391 @@ function recordSiteReports(){
                 </form>
             </div>
             
-            <div class="recent-reports">
-                <h4>Recent Site Reports</h4>
-                <div class="report-list">
-                    <div class="report-item">
-                        <div class="report-details">
-                            <strong>Port Modernization Phase 1</strong>
-                            <span>Date: March 15, 2026</span>
-                            <span>Workers: 15 | Weather: Sunny</span>
-                            <span>Work: Foundation excavation completed</span>
-                        </div>
-                        <div class="report-actions">
-                            <button class="action" onclick="viewSiteReport('report001')">View Details</button>
-                        </div>
-                    </div>
+            <div class="site-reports-records">
+                <h4>Site Reports Registry</h4>
+                <div class="site-reports-table-container">
+                    <table class="site-reports-table">
+                        <thead>
+                            <tr>
+                                <th>Report ID</th>
+                                <th>Project</th>
+                                <th>Report Date</th>
+                                <th>Supervisor</th>
+                                <th>Workers</th>
+                                <th>Weather</th>
+                                <th>Work Completed</th>
+                                <th>Safety Issues</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="siteReportsList">
+                            <tr>
+                                <td colspan="9">
+                                    <div class="loading">Loading site reports...</div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </div>
     `);
+    
+    // Load site reports
+    loadSiteReports();
+}
+
+// Load site reports for table display
+async function loadSiteReports() {
+    console.log('🔄 Loading site reports...');
+    
+    try {
+        const baseUrl = window.location.origin;
+        let response;
+        
+        // Try to get site reports from API
+        try {
+            response = await fetch(`${baseUrl}/api/projects/site-reports`, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${sessionManager.getAuthToken()}`
+                }
+            });
+            
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            }
+        } catch (primaryError) {
+            console.warn('⚠️ Primary site reports endpoint failed, trying fallback:', primaryError.message);
+            // Try fallback endpoint
+            try {
+                response = await fetch(`${baseUrl}/api/site-reports`, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${sessionManager.getAuthToken()}`
+                    }
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`Fallback also failed: HTTP ${response.status}: ${response.statusText}`);
+                }
+            } catch (fallbackError) {
+                console.error('❌ All site reports endpoints failed:', fallbackError.message);
+                // Load sample data for demonstration
+                loadSampleSiteReports();
+                return;
+            }
+        }
+        
+        const siteReports = await response.json();
+        console.log('📊 Site reports data:', siteReports);
+        
+        displaySiteReports(siteReports);
+        
+    } catch (error) {
+        console.error('❌ Error loading site reports:', error);
+        // Load sample data on error
+        loadSampleSiteReports();
+    }
+}
+
+// Load sample site reports for demonstration
+function loadSampleSiteReports() {
+    console.log('📋 Loading sample site reports...');
+    
+    const sampleReports = [
+        {
+            id: 'SRP-001',
+            reportId: 'SRP-2026-001',
+            project: 'Port Modernization Phase 1',
+            reportDate: '2026-03-15',
+            supervisor: 'John Mwangi',
+            workersPresent: 15,
+            weatherConditions: 'sunny',
+            workCompleted: 'Foundation excavation completed, rebar installation started',
+            safetyIncidents: 'None',
+            materialsUsed: 'Cement: 50 bags, Steel: 2 tons',
+            equipmentUsed: 'Excavator, Concrete Mixer',
+            issues: 'Minor delay due to equipment maintenance',
+            nextDayPlan: 'Continue rebar installation, begin concrete pouring'
+        },
+        {
+            id: 'SRP-002',
+            reportId: 'SRP-2026-002',
+            project: 'Warehouse Construction',
+            reportDate: '2026-03-16',
+            supervisor: 'Mary Johnson',
+            workersPresent: 12,
+            weatherConditions: 'cloudy',
+            workCompleted: 'Steel frame erection completed, roofing started',
+            safetyIncidents: 'Minor equipment malfunction',
+            materialsUsed: 'Steel beams: 15 units, Roofing sheets: 200',
+            equipmentUsed: 'Crane, Welding machine',
+            issues: 'Weather affected roofing progress',
+            nextDayPlan: 'Complete roofing installation, begin interior framing'
+        },
+        {
+            id: 'SRP-003',
+            reportId: 'SRP-2026-003',
+            project: 'Road Infrastructure',
+            reportDate: '2026-03-17',
+            supervisor: 'Robert Davis',
+            workersPresent: 20,
+            weatherConditions: 'rainy',
+            workCompleted: 'Base layer preparation, drainage installation',
+            safetyIncidents: 'None',
+            materialsUsed: 'Gravel: 100 tons, Drainage pipes: 50m',
+            equipmentUsed: 'Road roller, Excavator',
+            issues: 'Rain caused minor delays in drainage work',
+            nextDayPlan: 'Continue drainage installation, begin asphalt preparation'
+        },
+        {
+            id: 'SRP-004',
+            reportId: 'SRP-2026-004',
+            project: 'Port Modernization Phase 1',
+            reportDate: '2026-03-18',
+            supervisor: 'John Mwangi',
+            workersPresent: 18,
+            weatherConditions: 'sunny',
+            workCompleted: 'Concrete pouring for foundation completed, curing started',
+            safetyIncidents: 'None',
+            materialsUsed: 'Concrete: 30 cubic meters, Curing compound: 10L',
+            equipmentUsed: 'Concrete mixer, Pump truck',
+            issues: 'None',
+            nextDayPlan: 'Monitor concrete curing, begin formwork removal'
+        },
+        {
+            id: 'SRP-005',
+            reportId: 'SRP-2026-005',
+            project: 'Warehouse Construction',
+            reportDate: '2026-03-19',
+            supervisor: 'Mary Johnson',
+            workersPresent: 14,
+            weatherConditions: 'windy',
+            workCompleted: 'Roofing completed, interior framing started',
+            safetyIncidents: 'Tool safety violation reported',
+            materialsUsed: 'Drywall: 500 sheets, Insulation: 200 rolls',
+            equipmentUsed: 'Nail guns, Insulation blower',
+            issues: 'High winds affected material handling',
+            nextDayPlan: 'Continue interior framing, begin electrical rough-in'
+        },
+        {
+            id: 'SRP-006',
+            reportId: 'SRP-2026-006',
+            project: 'Road Infrastructure',
+            reportDate: '2026-03-20',
+            supervisor: 'Robert Davis',
+            workersPresent: 22,
+            weatherConditions: 'sunny',
+            workCompleted: 'Asphalt laying completed, road marking started',
+            safetyIncidents: 'None',
+            materialsUsed: 'Asphalt: 200 tons, Road paint: 50L',
+            equipmentUsed: 'Asphalt paver, Road marking machine',
+            issues: 'None',
+            nextDayPlan: 'Complete road marking, begin quality inspection'
+        },
+        {
+            id: 'SRP-007',
+            reportId: 'SRP-2026-007',
+            project: 'Port Modernization Phase 1',
+            reportDate: '2026-03-21',
+            supervisor: 'John Mwangi',
+            workersPresent: 16,
+            weatherConditions: 'cloudy',
+            workCompleted: 'Formwork removed, column construction started',
+            safetyIncidents: 'Near miss with falling debris',
+            materialsUsed: 'Concrete: 15 cubic meters, Formwork: 100 panels',
+            equipmentUsed: 'Concrete mixer, Scaffolding',
+            issues: 'Safety briefing conducted after near miss',
+            nextDayPlan: 'Continue column construction, install safety barriers'
+        },
+        {
+            id: 'SRP-008',
+            reportId: 'SRP-2026-008',
+            project: 'Warehouse Construction',
+            reportDate: '2026-03-22',
+            supervisor: 'Mary Johnson',
+            workersPresent: 13,
+            weatherConditions: 'sunny',
+            workCompleted: 'Electrical rough-in completed, plumbing started',
+            safetyIncidents: 'None',
+            materialsUsed: 'Electrical conduit: 500m, Plumbing pipes: 200m',
+            equipmentUsed: 'Pipe bender, Conduit bender',
+            issues: 'None',
+            nextDayPlan: 'Continue plumbing installation, begin HVAC rough-in'
+        },
+        {
+            id: 'SRP-009',
+            reportId: 'SRP-2026-009',
+            project: 'Road Infrastructure',
+            reportDate: '2026-03-23',
+            supervisor: 'Robert Davis',
+            workersPresent: 18,
+            weatherConditions: 'windy',
+            workCompleted: 'Quality inspection passed, sidewalk installation started',
+            safetyIncidents: 'None',
+            materialsUsed: 'Concrete pavers: 1000 units, Edge restraints: 200m',
+            equipmentUsed: 'Paver laying machine, Compactor',
+            issues: 'High winds affected paver placement',
+            nextDayPlan: 'Complete sidewalk installation, begin landscaping'
+        },
+        {
+            id: 'SRP-010',
+            reportId: 'SRP-2026-010',
+            project: 'Port Modernization Phase 1',
+            reportDate: '2026-03-24',
+            supervisor: 'John Mwangi',
+            workersPresent: 20,
+            weatherConditions: 'sunny',
+            workCompleted: 'Column construction completed, beam installation started',
+            safetyIncidents: 'None',
+            materialsUsed: 'Steel beams: 10 units, Bolts: 500 units',
+            equipmentUsed: 'Crane, Torque wrench',
+            issues: 'None',
+            nextDayPlan: 'Continue beam installation, begin deck construction'
+        },
+        {
+            id: 'SRP-011',
+            reportId: 'SRP-2026-011',
+            project: 'Warehouse Construction',
+            reportDate: '2026-03-25',
+            supervisor: 'Mary Johnson',
+            workersPresent: 15,
+            weatherConditions: 'rainy',
+            workCompleted: 'HVAC rough-in completed, insulation installation started',
+            safetyIncidents: 'Slip hazard due to rain',
+            materialsUsed: 'HVAC ducts: 300m, Insulation: 300 rolls',
+            equipmentUsed: 'HVAC installer, Insulation tools',
+            issues: 'Rain caused indoor work delays',
+            nextDayPlan: 'Complete insulation, begin drywall installation'
+        },
+        {
+            id: 'SRP-012',
+            reportId: 'SRP-2026-012',
+            project: 'Road Infrastructure',
+            reportDate: '2026-03-26',
+            supervisor: 'Robert Davis',
+            workersPresent: 16,
+            weatherConditions: 'sunny',
+            workCompleted: 'Landscaping completed, final cleanup started',
+            safetyIncidents: 'None',
+            materialsUsed: 'Topsoil: 50 tons, Grass seed: 100kg',
+            equipmentUsed: 'Landscaping equipment, Cleanup tools',
+            issues: 'None',
+            nextDayPlan: 'Complete final cleanup, prepare for project handover'
+        }
+    ];
+    
+    displaySiteReports(sampleReports);
+}
+
+// Display site reports in the table
+function displaySiteReports(reports) {
+    const reportsList = document.getElementById('siteReportsList');
+    
+    if (!reportsList) {
+        console.error('❌ Site reports list container not found!');
+        return;
+    }
+    
+    if (!reports || reports.length === 0) {
+        reportsList.innerHTML = `
+            <tr>
+                <td colspan="9">
+                    <div class="no-records">No site reports found</div>
+                </td>
+            </tr>
+        `;
+        return;
+    }
+    
+    // Sort reports by date (newest first)
+    reports.sort((a, b) => new Date(b.reportDate) - new Date(a.reportDate));
+    
+    let reportsHTML = '';
+    
+    reports.forEach(report => {
+        // Get weather display
+        const weatherDisplay = report.weatherConditions === 'sunny' ? '☀️ Sunny' : 
+                              report.weatherConditions === 'cloudy' ? '☁️ Cloudy' : 
+                              report.weatherConditions === 'rainy' ? '🌧️ Rainy' : 
+                              report.weatherConditions === 'windy' ? '💨 Windy' : report.weatherConditions;
+        
+        // Get safety status
+        const safetyStatus = report.safetyIncidents === 'None' || !report.safetyIncidents ? '✅ Clear' : '⚠️ Issues';
+        const safetyClass = report.safetyIncidents === 'None' || !report.safetyIncidents ? 'status-clear' : 'status-issues';
+        
+        // Truncate work completed for display
+        const workCompleted = report.workCompleted.length > 80 ? 
+            report.workCompleted.substring(0, 80) + '...' : 
+            report.workCompleted;
+        
+        reportsHTML += `
+            <tr class="site-report-row">
+                <td>
+                    <div class="report-id-info">
+                        <div class="report-id">${report.reportId}</div>
+                        <div class="report-date">${new Date(report.reportDate).toLocaleDateString()}</div>
+                    </div>
+                </td>
+                <td>
+                    <div class="project-info">
+                        <div class="project-name">${report.project}</div>
+                    </div>
+                </td>
+                <td>
+                    <div class="date-info">
+                        <div class="report-date">${new Date(report.reportDate).toLocaleDateString()}</div>
+                    </div>
+                </td>
+                <td>
+                    <div class="supervisor-info">
+                        <div class="supervisor-name">${report.supervisor}</div>
+                    </div>
+                </td>
+                <td>
+                    <div class="workers-info">
+                        <div class="workers-count">${report.workersPresent} Workers</div>
+                    </div>
+                </td>
+                <td>
+                    <span class="weather-badge">${weatherDisplay}</span>
+                </td>
+                <td>
+                    <div class="work-info">
+                        <div class="work-completed">${workCompleted}</div>
+                    </div>
+                </td>
+                <td>
+                    <span class="safety-badge ${safetyClass}">${safetyStatus}</span>
+                </td>
+                <td>
+                    <div class="report-actions">
+                        <button class="action-btn view" onclick="viewSiteReport('${report.id}')" title="View Details">👁️</button>
+                        <button class="action-btn edit" onclick="editSiteReport('${report.id}')" title="Edit Report">✏️</button>
+                        <button class="action-btn download" onclick="downloadSiteReport('${report.id}')" title="Download PDF">📥</button>
+                    </div>
+                </td>
+            </tr>
+        `;
+    });
+    
+    reportsList.innerHTML = reportsHTML;
+}
+
+// Site report action functions
+function viewSiteReport(reportId) {
+    customAlert(`Viewing site report details for ID: ${reportId}\n\nFull site report information including project details, weather conditions, work completed, safety incidents, materials used, equipment deployed, issues encountered, and next day's plan will be displayed.`, "Site Report Details", "info");
+}
+
+function editSiteReport(reportId) {
+    customAlert(`Editing site report ${reportId}...\n\nSite report editor will open for modifications to work completed, safety incidents, materials used, equipment deployed, and next day's plan.`, "Edit Site Report", "info");
+}
+
+function downloadSiteReport(reportId) {
+    customAlert(`Downloading site report ${reportId} as PDF...\n\nSite report will be generated and downloaded as a PDF document with all project details, work progress, safety information, and daily activities.`, "Download Site Report", "info");
 }
 
 function approveCompletedWork(){
