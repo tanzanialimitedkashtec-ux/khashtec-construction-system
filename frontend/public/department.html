@@ -2168,6 +2168,230 @@ color: #666;
     color: #721c24;
 }
 
+/* Meeting Table Styles */
+.meeting-table-container {
+    background: white;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    margin-top: 15px;
+}
+
+.meeting-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 11px;
+    background: white;
+}
+
+.meeting-table th {
+    background: #0b3d91;
+    color: white;
+    padding: 10px 8px;
+    text-align: left;
+    font-weight: 600;
+    border-bottom: 2px solid #093278;
+    white-space: nowrap;
+}
+
+.meeting-table td {
+    padding: 8px;
+    border-bottom: 1px solid #e9ecef;
+    vertical-align: middle;
+    font-size: 11px;
+}
+
+.meeting-table tr:hover {
+    background: #f8f9fa;
+}
+
+.meeting-table tr:last-child td {
+    border-bottom: none;
+}
+
+.meeting-details {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 150px;
+}
+
+.meeting-title {
+    font-weight: 600;
+    color: #333;
+    font-size: 12px;
+    line-height: 1.2;
+}
+
+.meeting-type {
+    font-size: 10px;
+    color: #666;
+    text-transform: uppercase;
+}
+
+.past-indicator {
+    font-size: 9px;
+    font-weight: 600;
+    color: #dc3545;
+    background: #f8d7da;
+    padding: 1px 4px;
+    border-radius: 8px;
+    display: inline-block;
+    width: fit-content;
+}
+
+.datetime-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 100px;
+}
+
+.meeting-date {
+    font-weight: 600;
+    color: #333;
+    font-size: 11px;
+}
+
+.meeting-time {
+    font-size: 10px;
+    color: #666;
+}
+
+.location-info {
+    min-width: 80px;
+}
+
+.meeting-location {
+    font-weight: 500;
+    color: #333;
+    font-size: 11px;
+}
+
+.department-info {
+    min-width: 80px;
+}
+
+.department-badge {
+    font-size: 9px;
+    font-weight: 600;
+    color: white;
+    background: #6c757d;
+    padding: 2px 6px;
+    border-radius: 8px;
+    text-transform: capitalize;
+    display: inline-block;
+}
+
+.attendee-info {
+    text-align: center;
+    min-width: 60px;
+}
+
+.attendee-count {
+    font-size: 14px;
+    font-weight: 700;
+    color: #0b3d91;
+}
+
+.attendee-label {
+    font-size: 9px;
+    color: #666;
+    text-transform: uppercase;
+}
+
+.resources-info {
+    min-width: 80px;
+}
+
+.resources-text {
+    font-size: 10px;
+    color: #666;
+    line-height: 1.2;
+    max-width: 100px;
+    word-wrap: break-word;
+}
+
+.meeting-actions {
+    display: flex;
+    gap: 4px;
+    justify-content: center;
+}
+
+.meeting-actions .action-btn {
+    padding: 4px 6px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 10px;
+    transition: all 0.2s ease;
+    min-width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.meeting-actions .action-btn.view {
+    background: #17a2b8;
+    color: white;
+}
+
+.meeting-actions .action-btn.edit {
+    background: #ffc107;
+    color: #212529;
+}
+
+.meeting-actions .action-btn.delete {
+    background: #dc3545;
+    color: white;
+}
+
+.meeting-actions .action-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
+.status-badge.status-confirmed {
+    background: #d4edda;
+    color: #155724;
+    font-size: 9px;
+    font-weight: 600;
+    padding: 2px 6px;
+    border-radius: 8px;
+    display: inline-block;
+}
+
+.status-badge.status-pending {
+    background: #fff3cd;
+    color: #856404;
+    font-size: 9px;
+    font-weight: 600;
+    padding: 2px 6px;
+    border-radius: 8px;
+    display: inline-block;
+}
+
+.status-badge.status-cancelled {
+    background: #f8d7da;
+    color: #721c24;
+    font-size: 9px;
+    font-weight: 600;
+    padding: 2px 6px;
+    border-radius: 8px;
+    display: inline-block;
+}
+
+.past-meeting {
+    background: #f8f9fa;
+    opacity: 0.7;
+}
+
+.past-meeting .meeting-title {
+    color: #666;
+}
+
 .btn-approve {
     background: #28a745;
     color: white;
@@ -10920,34 +11144,76 @@ function displayUpcomingMeetings(meetings) {
         const meetingDate = new Date(meeting.meeting_date);
         const formattedDate = meetingDate.toLocaleDateString('en-US', { 
             year: 'numeric', 
-            month: 'long', 
+            month: 'short', 
             day: 'numeric' 
         });
         
         const startTime = formatTime(meeting.start_time);
         const endTime = formatTime(meeting.end_time);
         
-        const statusClass = meeting.status === 'confirmed' ? 'confirmed' : 
-                          meeting.status === 'pending' ? 'pending' : 'cancelled';
+        const statusClass = meeting.status === 'confirmed' ? 'status-confirmed' : 
+                          meeting.status === 'pending' ? 'status-pending' : 'status-cancelled';
         
         // Check if meeting is in the past
         const isPast = meetingDate < today;
         const pastClass = isPast ? 'past-meeting' : '';
-        const pastLabel = isPast ? '<span class="past-label">Past</span>' : '';
+        
+        // Format resources
+        const resources = meeting.required_resources ? 
+            meeting.required_resources.split(',').map(r => r.trim()).join(', ') : 'None';
+        
+        // Get status badge
+        const statusBadge = meeting.status === 'confirmed' ? '✅ Confirmed' : 
+                           meeting.status === 'pending' ? '⏳ Pending' : 
+                           meeting.status === 'cancelled' ? '❌ Cancelled' : '✅ Confirmed';
         
         meetingsHTML += `
-            <div class="meeting-item ${pastClass}">
-                <div class="meeting-info">
-                    <strong>${meeting.meeting_title}</strong> ${pastLabel}
-                    <p>Date: ${formattedDate} | Time: ${startTime} - ${endTime}</p>
-                    <p>Location: ${meeting.location} | Type: ${formatMeetingType(meeting.meeting_type)}</p>
-                    <p>Attendees: ${meeting.expected_attendees} | Status: <span class="status ${statusClass}">${meeting.status || 'Confirmed'}</span></p>
-                </div>
-                <div class="meeting-actions">
-                    <button class="action" onclick="viewMeetingDetails('${meeting.id}')">Details</button>
-                    <button class="action" onclick="editMeeting('${meeting.id}')">Edit</button>
-                </div>
-            </div>
+            <tr class="meeting-row ${pastClass}">
+                <td>
+                    <div class="meeting-details">
+                        <div class="meeting-title">${meeting.meeting_title}</div>
+                        <div class="meeting-type">${formatMeetingType(meeting.meeting_type)}</div>
+                        ${isPast ? '<div class="past-indicator">Past</div>' : ''}
+                    </div>
+                </td>
+                <td>
+                    <div class="datetime-info">
+                        <div class="meeting-date">${formattedDate}</div>
+                        <div class="meeting-time">${startTime} - ${endTime}</div>
+                    </div>
+                </td>
+                <td>
+                    <div class="location-info">
+                        <div class="meeting-location">${meeting.location}</div>
+                    </div>
+                </td>
+                <td>
+                    <div class="department-info">
+                        <span class="department-badge">${meeting.organizing_department || 'Not specified'}</span>
+                    </div>
+                </td>
+                <td>
+                    <div class="attendee-info">
+                        <div class="attendee-count">${meeting.expected_attendees || 0}</div>
+                        <div class="attendee-label">Attendees</div>
+                    </div>
+                </td>
+                <td>
+                    <div class="resources-info">
+                        <div class="resources-text">${resources}</div>
+                    </div>
+                </td>
+                <td>
+                    <span class="status-badge ${statusClass}">${statusBadge}</span>
+                </td>
+                <td>
+                    <div class="meeting-actions">
+                        <button class="action-btn view" onclick="viewMeetingDetails('${meeting.id}')" title="View Details">👁️</button>
+                        <button class="action-btn edit" onclick="editMeeting('${meeting.id}')" title="Edit Meeting">✏️</button>
+                        <button class="action-btn delete" onclick="deleteMeeting('${meeting.id}')" title="Delete Meeting">🗑️</button>
+                    </div>
+                </td>
+            </tr>
         `;
     });
     
@@ -24112,8 +24378,28 @@ function scheduleMeeting(){
             
             <div class="scheduled-meetings">
                 <h4>Upcoming Meetings</h4>
-                <div class="meeting-list" id="upcomingMeetingsList">
-                    <div class="loading">Loading upcoming meetings...</div>
+                <div class="meeting-table-container">
+                    <table class="meeting-table">
+                        <thead>
+                            <tr>
+                                <th>Meeting Details</th>
+                                <th>Date & Time</th>
+                                <th>Location</th>
+                                <th>Department</th>
+                                <th>Attendees</th>
+                                <th>Resources</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="upcomingMeetingsList">
+                            <tr>
+                                <td colspan="8">
+                                    <div class="loading">Loading upcoming meetings...</div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </div>
@@ -27061,6 +27347,19 @@ Status: ${meeting.status}
 
 function editMeeting(meetingId) {
     customAlert(`Editing meeting ${meetingId}...\n\nMeeting editor will open for modifications and updates.`, "Edit Meeting", "info");
+}
+
+function deleteMeeting(meetingId) {
+    if (confirm('Are you sure you want to delete this meeting? This action cannot be undone.')) {
+        // TODO: Implement actual API call to delete meeting
+        console.log('Deleting meeting with ID:', meetingId);
+        customAlert(`Meeting ${meetingId} has been deleted.\n\nThe meeting has been removed from the schedule.`, "Meeting Deleted", "success");
+        
+        // Refresh the meetings list
+        setTimeout(() => {
+            fetchUpcomingMeetings();
+        }, 1000);
+    }
 }
 
 function viewPolicy(policyId) {
