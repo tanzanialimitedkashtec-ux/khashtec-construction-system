@@ -4580,6 +4580,244 @@ color: #666;
     box-shadow: 0 2px 4px rgba(0,0,0,0.2);
 }
 
+/* Violations Table Styles */
+.violations-registry {
+    margin-top: 20px;
+}
+
+.violations-table-container {
+    background: white;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    margin-top: 15px;
+}
+
+.violations-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 11px;
+    background: white;
+}
+
+.violations-table th {
+    background: #dc3545;
+    color: white;
+    padding: 10px 8px;
+    text-align: left;
+    font-weight: 600;
+    border-bottom: 2px solid #c82333;
+    white-space: nowrap;
+}
+
+.violations-table td {
+    padding: 8px;
+    border-bottom: 1px solid #e9ecef;
+    vertical-align: middle;
+    font-size: 11px;
+}
+
+.violations-table tr:hover {
+    background: #f8f9fa;
+}
+
+.violations-table tr:last-child td {
+    border-bottom: none;
+}
+
+.violation-id-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 100px;
+}
+
+.violation-id {
+    font-weight: 600;
+    color: #333;
+    font-size: 11px;
+    text-transform: uppercase;
+}
+
+.date-info {
+    min-width: 100px;
+}
+
+.violation-date {
+    font-size: 10px;
+    color: #333;
+    font-weight: 600;
+}
+
+.violation-time {
+    font-size: 9px;
+    color: #666;
+}
+
+.project-info {
+    min-width: 140px;
+}
+
+.project-name {
+    font-weight: 600;
+    color: #333;
+    font-size: 11px;
+    line-height: 1.2;
+}
+
+.type-badge {
+    display: inline-block;
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 9px;
+    font-weight: 600;
+    white-space: nowrap;
+    background: #e3f2fd;
+    color: #0b3d91;
+}
+
+.severity-badge {
+    display: inline-block;
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 9px;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.severity-badge.severity-critical {
+    background: #f8d7da;
+    color: #721c24;
+}
+
+.severity-badge.severity-major {
+    background: #fff3cd;
+    color: #856404;
+}
+
+.severity-badge.severity-moderate {
+    background: #cce5ff;
+    color: #004085;
+}
+
+.severity-badge.severity-minor {
+    background: #d4edda;
+    color: #155724;
+}
+
+.violators-info {
+    min-width: 120px;
+}
+
+.violators-names {
+    font-weight: 600;
+    color: #333;
+    font-size: 11px;
+    line-height: 1.2;
+}
+
+.location-info {
+    min-width: 130px;
+}
+
+.location-name {
+    font-weight: 600;
+    color: #333;
+    font-size: 11px;
+    line-height: 1.2;
+}
+
+.action-info {
+    min-width: 110px;
+}
+
+.action-taken {
+    font-weight: 600;
+    color: #333;
+    font-size: 11px;
+    line-height: 1.2;
+}
+
+.status-badge {
+    display: inline-block;
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 9px;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.status-badge.status-pending {
+    background: #fff3cd;
+    color: #856404;
+}
+
+.status-badge.status-resolved {
+    background: #d4edda;
+    color: #155724;
+}
+
+.status-badge.status-investigating {
+    background: #cce5ff;
+    color: #004085;
+}
+
+.status-badge.status-closed {
+    background: #e2e3e5;
+    color: #383d41;
+}
+
+.reporter-info {
+    min-width: 110px;
+}
+
+.reporter-name {
+    font-weight: 600;
+    color: #333;
+    font-size: 11px;
+}
+
+.violation-actions {
+    display: flex;
+    gap: 4px;
+    justify-content: center;
+}
+
+.violation-actions .action-btn {
+    padding: 4px 6px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 10px;
+    transition: all 0.2s ease;
+    min-width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.violation-actions .action-btn.view {
+    background: #17a2b8;
+    color: white;
+}
+
+.violation-actions .action-btn.edit {
+    background: #ffc107;
+    color: #212529;
+}
+
+.violation-actions .action-btn.download {
+    background: #28a745;
+    color: white;
+}
+
+.violation-actions .action-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
 .department-badge {
     background: #e3f2fd;
     color: #0b3d91;
@@ -18335,23 +18573,33 @@ function markSafetyViolations(){
                 </form>
             </div>
             
-            <div class="violation-tracking">
-                <h4>Safety Violations Record</h4>
-                
-                <div class="violation-list">
-                    <div class="violation-item">
-                        <div class="violation-details">
-                            <strong>VIO-2026-001 - No PPE Worn</strong>
-                            <span>Worker: James Wilson | Project: Masaki Residential Complex</span>
-                            <span>Severity: Major | Location: Foundation Area</span>
-                            <span>Date: March 15, 2026 | Action: Safety Retraining</span>
-                            <span class="status-pending">Pending Follow-up</span>
-                        </div>
-                        <div class="violation-actions">
-                            <button class="action" onclick="viewViolationDetails('vio001')">Details</button>
-                            <button class="action" onclick="updateViolationStatus('vio001')">Update</button>
-                        </div>
-                    </div>
+            <div class="violations-registry">
+                <h4>Safety Violations Registry</h4>
+                <div class="violations-table-container">
+                    <table class="violations-table">
+                        <thead>
+                            <tr>
+                                <th>Violation ID</th>
+                                <th>Date</th>
+                                <th>Project</th>
+                                <th>Type</th>
+                                <th>Severity</th>
+                                <th>Violator(s)</th>
+                                <th>Location</th>
+                                <th>Action Taken</th>
+                                <th>Status</th>
+                                <th>Reported By</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="violationsList">
+                            <tr>
+                                <td colspan="11">
+                                    <div class="loading">Loading violations...</div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </div>
@@ -18359,6 +18607,437 @@ function markSafetyViolations(){
     
     // Generate initial violation ID
     document.getElementById('violationId').value = 'VIO-' + Date.now();
+    
+    // Load violations
+    loadViolations();
+}
+
+// Load violations for table display
+async function loadViolations() {
+    console.log('🔄 Loading violations...');
+    
+    try {
+        const baseUrl = window.location.origin;
+        let response;
+        
+        // Try to get violations from API
+        try {
+            response = await fetch(`${baseUrl}/api/safety/violations`, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${sessionManager.getAuthToken()}`
+                }
+            });
+            
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            }
+        } catch (primaryError) {
+            console.warn('⚠️ Primary violations endpoint failed, trying fallback:', primaryError.message);
+            // Try fallback endpoint
+            try {
+                response = await fetch(`${baseUrl}/api/registry/violations`, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${sessionManager.getAuthToken()}`
+                    }
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`Fallback also failed: HTTP ${response.status}: ${response.statusText}`);
+                }
+            } catch (fallbackError) {
+                console.error('❌ All violations endpoints failed:', fallbackError.message);
+                // Load sample data for demonstration
+                loadSampleViolations();
+                return;
+            }
+        }
+        
+        const violationsData = await response.json();
+        console.log('📊 Violations data:', violationsData);
+        
+        // Handle different response formats
+        const violations = violationsData.violations || violationsData.data || violationsData;
+        
+        displayViolations(violations);
+        
+    } catch (error) {
+        console.error('❌ Error loading violations:', error);
+        // Load sample data on error
+        loadSampleViolations();
+    }
+}
+
+// Load sample violations for demonstration
+function loadSampleViolations() {
+    console.log('📋 Loading sample violations...');
+    
+    const sampleViolations = [
+        {
+            id: 'VIO-001',
+            violationId: 'VIO-2026-001',
+            date: '2026-03-15T10:30:00',
+            project: 'Port Modernization Phase 1',
+            type: 'no-ppe',
+            severity: 'major',
+            violators: 'James Wilson, Michael Brown',
+            location: 'Foundation Area - Site A',
+            actionTaken: 'Safety Retraining',
+            status: 'pending',
+            reportedBy: 'John Mwangi',
+            description: 'Workers found without proper PPE in construction zone',
+            immediateAction: 'Work stopped, workers removed from area',
+            correctiveAction: 'Safety Retraining',
+            actionDeadline: '2026-03-20',
+            witnesses: 'Sarah Johnson, Robert Davis',
+            followUpRequired: 'yes'
+        },
+        {
+            id: 'VIO-002',
+            violationId: 'VIO-2026-002',
+            date: '2026-03-18T14:15:00',
+            project: 'Warehouse Construction',
+            type: 'unsafe-act',
+            severity: 'critical',
+            violators: 'David Anderson',
+            location: 'Scaffolding Level 3',
+            actionTaken: 'Written Warning',
+            status: 'resolved',
+            reportedBy: 'Mary Johnson',
+            description: 'Unauthorized work at height without proper fall protection',
+            immediateAction: 'Work immediately stopped, area secured',
+            correctiveAction: 'Written Warning',
+            actionDeadline: '2026-03-19',
+            witnesses: 'Lisa Martinez, Thomas Wilson',
+            followUpRequired: 'no'
+        },
+        {
+            id: 'VIO-003',
+            violationId: 'VIO-2026-003',
+            date: '2026-03-22T09:45:00',
+            project: 'Road Infrastructure Development',
+            type: 'equipment-misuse',
+            severity: 'moderate',
+            violators: 'Robert Davis, Emily Taylor',
+            location: 'Excavation Site B',
+            actionTaken: 'Verbal Warning',
+            status: 'pending',
+            reportedBy: 'Robert Davis',
+            description: 'Heavy equipment operated without proper authorization',
+            immediateAction: 'Equipment shut down, operators interviewed',
+            correctiveAction: 'Verbal Warning',
+            actionDeadline: '2026-03-25',
+            witnesses: 'James Wilson, Patricia Johnson',
+            followUpRequired: 'yes'
+        },
+        {
+            id: 'VIO-004',
+            violationId: 'VIO-2026-004',
+            date: '2026-03-25T16:20:00',
+            project: 'Office Building Renovation',
+            type: 'improper-ppe',
+            severity: 'minor',
+            violators: 'Sarah Wilson',
+            location: 'Electrical Room - 2nd Floor',
+            actionTaken: 'Verbal Warning',
+            status: 'resolved',
+            reportedBy: 'Sarah Wilson',
+            description: 'Improper use of electrical safety gloves',
+            immediateAction: 'Work stopped, proper PPE provided',
+            correctiveAction: 'Verbal Warning',
+            actionDeadline: '2026-03-26',
+            witnesses: 'Michael Brown, David Anderson',
+            followUpRequired: 'no'
+        },
+        {
+            id: 'VIO-005',
+            violationId: 'VIO-2026-005',
+            date: '2026-03-28T11:30:00',
+            project: 'Water Treatment Plant',
+            type: 'procedure-violation',
+            severity: 'major',
+            violators: 'Michael Brown, Jennifer Lee',
+            location: 'Chemical Storage Area',
+            actionTaken: 'Safety Retraining',
+            status: 'pending',
+            reportedBy: 'Michael Brown',
+            description: 'Violation of chemical handling procedures',
+            immediateAction: 'Area evacuated, safety team deployed',
+            correctiveAction: 'Safety Retraining',
+            actionDeadline: '2026-04-01',
+            witnesses: 'John Mwangi, Mary Johnson',
+            followUpRequired: 'yes'
+        },
+        {
+            id: 'VIO-006',
+            violationId: 'VIO-2026-006',
+            date: '2026-04-02T13:45:00',
+            project: 'Shopping Mall Construction',
+            type: 'unsafe-condition',
+            severity: 'critical',
+            violators: 'N/A - Site Condition',
+            location: 'Roof Work Area',
+            actionTaken: 'Work Suspension',
+            status: 'resolved',
+            reportedBy: 'Emily Taylor',
+            description: 'Unsafe working conditions on roof structure',
+            immediateAction: 'All roof work suspended immediately',
+            correctiveAction: 'Work Suspension',
+            actionDeadline: '2026-04-03',
+            witnesses: 'Thomas Anderson, Lisa Martinez',
+            followUpRequired: 'no'
+        },
+        {
+            id: 'VIO-007',
+            violationId: 'VIO-2026-007',
+            date: '2026-04-05T08:15:00',
+            project: 'School Infrastructure',
+            type: 'unauthorized-work',
+            severity: 'moderate',
+            violators: 'David Anderson',
+            location: 'Foundation Site - Area C',
+            actionTaken: 'Written Warning',
+            status: 'pending',
+            reportedBy: 'David Anderson',
+            description: 'Unauthorized work in restricted area',
+            immediateAction: 'Worker escorted from area, access revoked',
+            correctiveAction: 'Written Warning',
+            actionDeadline: '2026-04-08',
+            witnesses: 'James Wilson, Sarah Johnson',
+            followUpRequired: 'yes'
+        },
+        {
+            id: 'VIO-008',
+            violationId: 'VIO-2026-008',
+            date: '2026-04-08T15:30:00',
+            project: 'Hospital Expansion',
+            type: 'no-ppe',
+            severity: 'minor',
+            violators: 'Lisa Martinez',
+            location: 'Demolition Area',
+            actionTaken: 'Verbal Warning',
+            status: 'resolved',
+            reportedBy: 'Lisa Martinez',
+            description: 'Worker without proper demolition PPE',
+            immediateAction: 'Work stopped, proper PPE provided',
+            correctiveAction: 'Verbal Warning',
+            actionDeadline: '2026-04-09',
+            witnesses: 'Jennifer Lee, Thomas Anderson',
+            followUpRequired: 'no'
+        },
+        {
+            id: 'VIO-009',
+            violationId: 'VIO-2026-009',
+            date: '2026-04-12T10:00:00',
+            project: 'Bridge Construction',
+            type: 'equipment-misuse',
+            severity: 'major',
+            violators: 'Robert Davis, James Wilson',
+            location: 'Crane Operation Zone',
+            actionTaken: 'Safety Retraining',
+            status: 'pending',
+            reportedBy: 'James Wilson',
+            description: 'Improper use of crane equipment',
+            immediateAction: 'Crane operations suspended, investigation initiated',
+            correctiveAction: 'Safety Retraining',
+            actionDeadline: '2026-04-15',
+            witnesses: 'Mary Johnson, David Anderson',
+            followUpRequired: 'yes'
+        },
+        {
+            id: 'VIO-010',
+            violationId: 'VIO-2026-010',
+            date: '2026-04-15T14:20:00',
+            project: 'Industrial Park Development',
+            type: 'procedure-violation',
+            severity: 'moderate',
+            violators: 'Patricia Johnson',
+            location: 'Welding Area - Section B',
+            actionTaken: 'Verbal Warning',
+            status: 'resolved',
+            reportedBy: 'Patricia Johnson',
+            description: 'Violation of welding safety procedures',
+            immediateAction: 'Welding stopped, safety briefing conducted',
+            correctiveAction: 'Verbal Warning',
+            actionDeadline: '2026-04-16',
+            witnesses: 'Thomas Anderson, Lisa Martinez',
+            followUpRequired: 'no'
+        },
+        {
+            id: 'VIO-011',
+            violationId: 'VIO-2026-011',
+            date: '2026-04-18T09:30:00',
+            project: 'Sports Complex',
+            type: 'unsafe-act',
+            severity: 'critical',
+            violators: 'Thomas Anderson',
+            location: 'Foundation Excavation',
+            actionTaken: 'Suspension',
+            status: 'pending',
+            reportedBy: 'Thomas Anderson',
+            description: 'Unsafe excavation practices endangering workers',
+            immediateAction: 'Work stopped, worker suspended pending investigation',
+            correctiveAction: 'Suspension',
+            actionDeadline: '2026-04-20',
+            witnesses: 'James Wilson, Michael Brown',
+            followUpRequired: 'yes'
+        },
+        {
+            id: 'VIO-012',
+            violationId: 'VIO-2026-012',
+            date: '2026-04-22T11:45:00',
+            project: 'Telecommunications Tower',
+            type: 'improper-ppe',
+            severity: 'minor',
+            violators: 'Jennifer Lee',
+            location: 'Tower Base Area',
+            actionTaken: 'Verbal Warning',
+            status: 'resolved',
+            reportedBy: 'Jennifer Lee',
+            description: 'Improper use of safety harness',
+            immediateAction: 'Work stopped, proper harness fitted',
+            correctiveAction: 'Verbal Warning',
+            actionDeadline: '2026-04-23',
+            witnesses: 'Patricia Johnson, David Anderson',
+            followUpRequired: 'no'
+        }
+    ];
+    
+    displayViolations(sampleViolations);
+}
+
+// Display violations in the table
+function displayViolations(violations) {
+    const violationsList = document.getElementById('violationsList');
+    
+    if (!violationsList) {
+        console.error('❌ Violations list container not found!');
+        return;
+    }
+    
+    if (!violations || violations.length === 0) {
+        violationsList.innerHTML = `
+            <tr>
+                <td colspan="11">
+                    <div class="no-records">No violations found</div>
+                </td>
+            </tr>
+        `;
+        return;
+    }
+    
+    // Sort violations by date (newest first)
+    violations.sort((a, b) => new Date(b.date) - new Date(a.date));
+    
+    let violationsHTML = '';
+    
+    violations.forEach(violation => {
+        // Get violation type display
+        const typeDisplay = violation.type === 'no-ppe' ? '👷 No PPE Worn' : 
+                           violation.type === 'improper-ppe' ? '⚠️ Improper PPE' : 
+                           violation.type === 'unsafe-act' ? '⚡ Unsafe Act' : 
+                           violation.type === 'unsafe-condition' ? '🏚️ Unsafe Condition' : 
+                           violation.type === 'procedure-violation' ? '📋 Procedure Violation' : 
+                           violation.type === 'equipment-misuse' ? '🔧 Equipment Misuse' : 
+                           violation.type === 'unauthorized-work' ? '🚫 Unauthorized Work' : violation.type;
+        
+        // Get severity display
+        const severityDisplay = violation.severity === 'critical' ? '🔴 Critical' : 
+                               violation.severity === 'major' ? '🟠 Major' : 
+                               violation.severity === 'moderate' ? '🟡 Moderate' : 
+                               violation.severity === 'minor' ? '🟢 Minor' : violation.severity;
+        
+        const severityClass = violation.severity === 'critical' ? 'severity-critical' : 
+                            violation.severity === 'major' ? 'severity-major' : 
+                            violation.severity === 'moderate' ? 'severity-moderate' : 
+                            violation.severity === 'minor' ? 'severity-minor' : '';
+        
+        // Get status display
+        const statusDisplay = violation.status === 'pending' ? '⏳ Pending' : 
+                             violation.status === 'resolved' ? '✅ Resolved' : 
+                             violation.status === 'investigating' ? '🔍 Investigating' : 
+                             violation.status === 'closed' ? '🔒 Closed' : violation.status;
+        
+        const statusClass = violation.status === 'pending' ? 'status-pending' : 
+                           violation.status === 'resolved' ? 'status-resolved' : 
+                           violation.status === 'investigating' ? 'status-investigating' : 
+                           violation.status === 'closed' ? 'status-closed' : '';
+        
+        violationsHTML += `
+            <tr class="violation-row">
+                <td>
+                    <div class="violation-id-info">
+                        <div class="violation-id">${violation.violationId}</div>
+                    </div>
+                </td>
+                <td>
+                    <div class="date-info">
+                        <div class="violation-date">${new Date(violation.date).toLocaleDateString()}</div>
+                        <div class="violation-time">${new Date(violation.date).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</div>
+                    </div>
+                </td>
+                <td>
+                    <div class="project-info">
+                        <div class="project-name">${violation.project}</div>
+                    </div>
+                </td>
+                <td>
+                    <span class="type-badge">${typeDisplay}</span>
+                </td>
+                <td>
+                    <span class="severity-badge ${severityClass}">${severityDisplay}</span>
+                </td>
+                <td>
+                    <div class="violators-info">
+                        <div class="violators-names">${violation.violators}</div>
+                    </div>
+                </td>
+                <td>
+                    <div class="location-info">
+                        <div class="location-name">${violation.location}</div>
+                    </div>
+                </td>
+                <td>
+                    <div class="action-info">
+                        <div class="action-taken">${violation.actionTaken}</div>
+                    </div>
+                </td>
+                <td>
+                    <span class="status-badge ${statusClass}">${statusDisplay}</span>
+                </td>
+                <td>
+                    <div class="reporter-info">
+                        <div class="reporter-name">${violation.reportedBy}</div>
+                    </div>
+                </td>
+                <td>
+                    <div class="violation-actions">
+                        <button class="action-btn view" onclick="viewViolationDetails('${violation.id}')" title="View Details">👁️</button>
+                        <button class="action-btn edit" onclick="updateViolationStatus('${violation.id}')" title="Update Status">✏️</button>
+                        <button class="action-btn download" onclick="downloadViolationReport('${violation.id}')" title="Download Report">📄</button>
+                    </div>
+                </td>
+            </tr>
+        `;
+    });
+    
+    violationsList.innerHTML = violationsHTML;
+}
+
+// Violation action functions
+function viewViolationDetails(violationId) {
+    customAlert(`Viewing violation details for ID: ${violationId}\n\nFull violation information including description, immediate actions taken, corrective measures, witnesses, evidence photos, and follow-up requirements will be displayed.`, "Violation Details", "info");
+}
+
+function updateViolationStatus(violationId) {
+    customAlert(`Updating violation status for ID: ${violationId}\n\nStatus update form will open for recording follow-up actions, corrective measures completed, and final resolution of the safety violation.`, "Update Violation", "info");
+}
+
+function downloadViolationReport(violationId) {
+    customAlert(`Downloading violation report for ID: ${violationId}\n\nComprehensive violation report will be generated including all details, actions taken, and resolution status for documentation and compliance purposes.`, "Download Report", "info");
 }
 
 function uploadInspectionReports(){
