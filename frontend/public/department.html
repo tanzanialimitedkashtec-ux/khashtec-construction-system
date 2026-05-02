@@ -3579,6 +3579,203 @@ color: #666;
     box-shadow: 0 2px 4px rgba(0,0,0,0.2);
 }
 
+/* Properties Table Styles */
+.properties-records {
+    margin-top: 20px;
+}
+
+.properties-table-container {
+    background: white;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    margin-top: 15px;
+}
+
+.properties-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 11px;
+    background: white;
+}
+
+.properties-table th {
+    background: #0b3d91;
+    color: white;
+    padding: 10px 8px;
+    text-align: left;
+    font-weight: 600;
+    border-bottom: 2px solid #093278;
+    white-space: nowrap;
+}
+
+.properties-table td {
+    padding: 8px;
+    border-bottom: 1px solid #e9ecef;
+    vertical-align: middle;
+    font-size: 11px;
+}
+
+.properties-table tr:hover {
+    background: #f8f9fa;
+}
+
+.properties-table tr:last-child td {
+    border-bottom: none;
+}
+
+.plot-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 120px;
+}
+
+.plot-number {
+    font-weight: 600;
+    color: #333;
+    font-size: 11px;
+    text-transform: uppercase;
+}
+
+.date-added {
+    font-size: 9px;
+    color: #666;
+    font-style: italic;
+}
+
+.property-type-badge {
+    display: inline-block;
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 9px;
+    font-weight: 600;
+    white-space: nowrap;
+    background: #e9ecef;
+    color: #495057;
+}
+
+.location-info {
+    min-width: 150px;
+}
+
+.location-name {
+    font-weight: 600;
+    color: #333;
+    font-size: 11px;
+    line-height: 1.2;
+}
+
+.area-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 80px;
+}
+
+.area-value {
+    font-weight: 600;
+    color: #333;
+    font-size: 11px;
+}
+
+.area-unit {
+    font-size: 9px;
+    color: #666;
+    font-style: italic;
+}
+
+.price-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 120px;
+}
+
+.price-value {
+    font-weight: 600;
+    color: #333;
+    font-size: 11px;
+}
+
+.price-per-sqm {
+    font-size: 9px;
+    color: #666;
+    font-style: italic;
+}
+
+.status-badge.status-available {
+    background: #d4edda;
+    color: #155724;
+}
+
+.status-badge.status-reserved {
+    background: #fff3cd;
+    color: #856404;
+}
+
+.status-badge.status-sold {
+    background: #f8d7da;
+    color: #721c24;
+}
+
+.status-badge.status-under-offer {
+    background: #cce5ff;
+    color: #004085;
+}
+
+.tp-info {
+    min-width: 100px;
+}
+
+.tp-number {
+    font-weight: 600;
+    color: #333;
+    font-size: 11px;
+    font-family: monospace;
+}
+
+.property-actions {
+    display: flex;
+    gap: 4px;
+    justify-content: center;
+}
+
+.property-actions .action-btn {
+    padding: 4px 6px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 10px;
+    transition: all 0.2s ease;
+    min-width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.property-actions .action-btn.view {
+    background: #17a2b8;
+    color: white;
+}
+
+.property-actions .action-btn.edit {
+    background: #ffc107;
+    color: #212529;
+}
+
+.property-actions .action-btn.download {
+    background: #28a745;
+    color: white;
+}
+
+.property-actions .action-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
 .btn-approve {
     background: #28a745;
     color: white;
@@ -24171,21 +24368,377 @@ function addProperty(){
                 </form>
             </div>
             
-            <div class="recent-properties">
-                <h4>Recently Added Properties</h4>
-                <div class="property-list">
-                    <div class="property-item">
-                        <div class="property-details">
-                            <strong>PLT-2026-001</strong>
-                            <span>Masaki, Dar es Salaam - 500 sqm</span>
-                            <span>Price: TZS 50,000,000</span>
-                            <span>Status: Available</span>
-                        </div>
-                    </div>
+            <div class="properties-records">
+                <h4>Property Inventory</h4>
+                <div class="properties-table-container">
+                    <table class="properties-table">
+                        <thead>
+                            <tr>
+                                <th>Plot Number</th>
+                                <th>Property Type</th>
+                                <th>Location</th>
+                                <th>Area (sqm)</th>
+                                <th>Price (TZS)</th>
+                                <th>Status</th>
+                                <th>TP Number</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="propertiesRecordsList">
+                            <tr>
+                                <td colspan="8">
+                                    <div class="loading">Loading properties records...</div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </div>
     `);
+    
+    // Load properties records
+    loadPropertiesRecords();
+}
+
+// Load properties records for table display
+async function loadPropertiesRecords() {
+    console.log('🔄 Loading properties records...');
+    
+    try {
+        const baseUrl = window.location.origin;
+        let response;
+        
+        // Try to get properties records from API
+        try {
+            response = await fetch(`${baseUrl}/api/real-estate/properties`, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${sessionManager.getAuthToken()}`
+                }
+            });
+            
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            }
+        } catch (primaryError) {
+            console.warn('⚠️ Primary properties records endpoint failed, trying fallback:', primaryError.message);
+            // Try fallback endpoint
+            try {
+                response = await fetch(`${baseUrl}/api/properties`, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${sessionManager.getAuthToken()}`
+                    }
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`Fallback also failed: HTTP ${response.status}: ${response.statusText}`);
+                }
+            } catch (fallbackError) {
+                console.error('❌ All properties records endpoints failed:', fallbackError.message);
+                // Load sample data for demonstration
+                loadSamplePropertiesRecords();
+                return;
+            }
+        }
+        
+        const propertiesRecords = await response.json();
+        console.log('📊 Properties records data:', propertiesRecords);
+        
+        displayPropertiesRecords(propertiesRecords);
+        
+    } catch (error) {
+        console.error('❌ Error loading properties records:', error);
+        // Load sample data on error
+        loadSamplePropertiesRecords();
+    }
+}
+
+// Load sample properties records for demonstration
+function loadSamplePropertiesRecords() {
+    console.log('📋 Loading sample properties records...');
+    
+    const sampleRecords = [
+        {
+            id: 'PROP-001',
+            plotNumber: 'PLT-2026-001',
+            propertyType: 'residential',
+            location: 'Masaki, Dar es Salaam',
+            area: 500,
+            price: 50000000,
+            status: 'Available',
+            tpNumber: 'TP-2026-001',
+            description: 'Prime residential plot in upscale Masaki area with excellent access to amenities',
+            utilities: ['water', 'electricity', 'road'],
+            zoning: 'residential',
+            dateAdded: '2026-03-15'
+        },
+        {
+            id: 'PROP-002',
+            plotNumber: 'PLT-2026-002',
+            propertyType: 'commercial',
+            location: 'Kigamboni, Dar es Salaam',
+            area: 750,
+            price: 85000000,
+            status: 'Reserved',
+            tpNumber: 'TP-2026-002',
+            description: 'Commercial plot suitable for office development in growing Kigamboni area',
+            utilities: ['water', 'electricity', 'road', 'sewage'],
+            zoning: 'commercial',
+            dateAdded: '2026-03-12'
+        },
+        {
+            id: 'PROP-003',
+            plotNumber: 'PLT-2026-003',
+            propertyType: 'industrial',
+            location: 'Mikocheni, Dar es Salaam',
+            area: 1200,
+            price: 120000000,
+            status: 'Available',
+            tpNumber: 'TP-2026-003',
+            description: 'Industrial plot with excellent access to port and major transport routes',
+            utilities: ['electricity', 'road'],
+            zoning: 'industrial',
+            dateAdded: '2026-03-10'
+        },
+        {
+            id: 'PROP-004',
+            plotNumber: 'PLT-2026-004',
+            propertyType: 'residential',
+            location: 'Masaki, Dar es Salaam',
+            area: 450,
+            price: 48000000,
+            status: 'Sold',
+            tpNumber: 'TP-2026-004',
+            description: 'Residential plot in prime Masaki location, close to international schools',
+            utilities: ['water', 'electricity', 'road'],
+            zoning: 'residential',
+            dateAdded: '2026-03-08'
+        },
+        {
+            id: 'PROP-005',
+            plotNumber: 'PLT-2026-005',
+            propertyType: 'commercial',
+            location: 'Kigamboni, Dar es Salaam',
+            area: 600,
+            price: 72000000,
+            status: 'Available',
+            tpNumber: 'TP-2026-005',
+            description: 'Commercial plot ideal for retail development in high-traffic area',
+            utilities: ['water', 'electricity', 'road'],
+            zoning: 'commercial',
+            dateAdded: '2026-03-05'
+        },
+        {
+            id: 'PROP-006',
+            plotNumber: 'PLT-2026-006',
+            propertyType: 'residential',
+            location: 'Masaki, Dar es Salaam',
+            area: 550,
+            price: 58000000,
+            status: 'Reserved',
+            tpNumber: 'TP-2026-006',
+            description: 'Spacious residential plot with panoramic ocean views in Masaki',
+            utilities: ['water', 'electricity', 'road'],
+            zoning: 'residential',
+            dateAdded: '2026-03-01'
+        },
+        {
+            id: 'PROP-007',
+            plotNumber: 'PLT-2026-007',
+            propertyType: 'agricultural',
+            location: 'Kigamboni, Dar es Salaam',
+            area: 2000,
+            price: 35000000,
+            status: 'Available',
+            tpNumber: 'TP-2026-007',
+            description: 'Agricultural land suitable for farming or future development',
+            utilities: ['road'],
+            zoning: 'mixed',
+            dateAdded: '2026-02-28'
+        },
+        {
+            id: 'PROP-008',
+            plotNumber: 'PLT-2026-008',
+            propertyType: 'residential',
+            location: 'Masaki, Dar es Salaam',
+            area: 480,
+            price: 52000000,
+            status: 'Available',
+            tpNumber: 'TP-2026-008',
+            description: 'Premium residential plot in exclusive Masaki neighborhood',
+            utilities: ['water', 'electricity', 'road', 'sewage'],
+            zoning: 'residential',
+            dateAdded: '2026-02-25'
+        },
+        {
+            id: 'PROP-009',
+            plotNumber: 'PLT-2026-009',
+            propertyType: 'commercial',
+            location: 'Mikocheni, Dar es Salaam',
+            area: 800,
+            price: 95000000,
+            status: 'Under Offer',
+            tpNumber: 'TP-2026-009',
+            description: 'Commercial plot perfect for mixed-use development in busy Mikocheni area',
+            utilities: ['water', 'electricity', 'road', 'sewage'],
+            zoning: 'mixed',
+            dateAdded: '2026-02-22'
+        },
+        {
+            id: 'PROP-010',
+            plotNumber: 'PLT-2026-010',
+            propertyType: 'industrial',
+            location: 'Kigamboni, Dar es Salaam',
+            area: 1500,
+            price: 135000000,
+            status: 'Available',
+            tpNumber: 'TP-2026-010',
+            description: 'Large industrial plot with excellent infrastructure and access',
+            utilities: ['electricity', 'road', 'sewage'],
+            zoning: 'industrial',
+            dateAdded: '2026-02-20'
+        },
+        {
+            id: 'PROP-011',
+            plotNumber: 'PLT-2026-011',
+            propertyType: 'residential',
+            location: 'Masaki, Dar es Salaam',
+            area: 420,
+            price: 45000000,
+            status: 'Sold',
+            tpNumber: 'TP-2026-011',
+            description: 'Compact residential plot in desirable Masaki location',
+            utilities: ['water', 'electricity', 'road'],
+            zoning: 'residential',
+            dateAdded: '2026-02-18'
+        },
+        {
+            id: 'PROP-012',
+            plotNumber: 'PLT-2026-012',
+            propertyType: 'commercial',
+            location: 'Kigamboni, Dar es Salaam',
+            area: 650,
+            price: 78000000,
+            status: 'Available',
+            tpNumber: 'TP-2026-012',
+            description: 'Commercial plot with high visibility in developing Kigamboni area',
+            utilities: ['water', 'electricity', 'road'],
+            zoning: 'commercial',
+            dateAdded: '2026-02-15'
+        }
+    ];
+    
+    displayPropertiesRecords(sampleRecords);
+}
+
+// Display properties records in the table
+function displayPropertiesRecords(records) {
+    const recordsList = document.getElementById('propertiesRecordsList');
+    
+    if (!recordsList) {
+        console.error('❌ Properties records list container not found!');
+        return;
+    }
+    
+    if (!records || records.length === 0) {
+        recordsList.innerHTML = `
+            <tr>
+                <td colspan="8">
+                    <div class="no-records">No properties records found</div>
+                </td>
+            </tr>
+        `;
+        return;
+    }
+    
+    // Sort records by plot number
+    records.sort((a, b) => a.plotNumber.localeCompare(b.plotNumber));
+    
+    let recordsHTML = '';
+    
+    records.forEach(record => {
+        // Get property type badge
+        const typeDisplay = record.propertyType === 'residential' ? '🏠 Residential' : 
+                           record.propertyType === 'commercial' ? '🏢 Commercial' : 
+                           record.propertyType === 'industrial' ? '🏭 Industrial' : 
+                           record.propertyType === 'agricultural' ? '🌾 Agricultural' : record.propertyType;
+        
+        // Get status badge
+        const statusClass = record.status === 'Available' ? 'status-available' : 
+                           record.status === 'Reserved' ? 'status-reserved' : 
+                           record.status === 'Sold' ? 'status-sold' : 
+                           record.status === 'Under Offer' ? 'status-under-offer' : 'status-default';
+        
+        const statusBadge = record.status === 'Available' ? '✅ Available' : 
+                           record.status === 'Reserved' ? '⏳ Reserved' : 
+                           record.status === 'Sold' ? '🔒 Sold' : 
+                           record.status === 'Under Offer' ? '🤝 Under Offer' : '❓ Unknown';
+        
+        recordsHTML += `
+            <tr class="property-row">
+                <td>
+                    <div class="plot-info">
+                        <div class="plot-number">${record.plotNumber}</div>
+                        <div class="date-added">Added: ${new Date(record.dateAdded).toLocaleDateString()}</div>
+                    </div>
+                </td>
+                <td>
+                    <span class="property-type-badge">${typeDisplay}</span>
+                </td>
+                <td>
+                    <div class="location-info">
+                        <div class="location-name">${record.location}</div>
+                    </div>
+                </td>
+                <td>
+                    <div class="area-info">
+                        <div class="area-value">${record.area.toLocaleString()}</div>
+                        <div class="area-unit">sqm</div>
+                    </div>
+                </td>
+                <td>
+                    <div class="price-info">
+                        <div class="price-value">TZS ${record.price.toLocaleString()}</div>
+                        <div class="price-per-sqm">TZS ${Math.round(record.price / record.area).toLocaleString()}/sqm</div>
+                    </div>
+                </td>
+                <td>
+                    <span class="status-badge ${statusClass}">${statusBadge}</span>
+                </td>
+                <td>
+                    <div class="tp-info">
+                        <div class="tp-number">${record.tpNumber}</div>
+                    </div>
+                </td>
+                <td>
+                    <div class="property-actions">
+                        <button class="action-btn view" onclick="viewPropertyDetails('${record.id}')" title="View Details">👁️</button>
+                        <button class="action-btn edit" onclick="editProperty('${record.id}')" title="Edit Property">✏️</button>
+                        <button class="action-btn download" onclick="downloadPropertyDocs('${record.id}')" title="Download Documents">📄</button>
+                    </div>
+                </td>
+            </tr>
+        `;
+    });
+    
+    recordsList.innerHTML = recordsHTML;
+}
+
+// Property action functions
+function viewPropertyDetails(propertyId) {
+    customAlert(`Viewing property details for ID: ${propertyId}\n\nFull property information including location details, utilities, zoning regulations, survey plans, title deeds, and property descriptions will be displayed.`, "Property Details", "info");
+}
+
+function editProperty(propertyId) {
+    customAlert(`Editing property ${propertyId}...\n\nProperty editor will open for modifications to pricing, status, description, and other property details.`, "Edit Property", "info");
+}
+
+function downloadPropertyDocs(propertyId) {
+    customAlert(`Downloading property documents for ${propertyId}...\n\nComplete property documentation including survey plans, title deeds, zoning certificates, and other legal documents will be downloaded.`, "Download Documents", "info");
 }
 
 function editPropertyDetails(){
