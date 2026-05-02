@@ -21123,7 +21123,7 @@ async function loadViolations() {
         
         // Try to get violations from API
         try {
-            response = await fetch(`${baseUrl}/api/safety/violations`, {
+            response = await fetch(`${baseUrl}/api/work/hse`, {
                 method: 'GET',
                 headers: {
                     'Content-Type': 'application/json',
@@ -21138,7 +21138,7 @@ async function loadViolations() {
             console.warn('⚠️ Primary violations endpoint failed, trying fallback:', primaryError.message);
             // Try fallback endpoint
             try {
-                response = await fetch(`${baseUrl}/api/registry/violations`, {
+                response = await fetch(`${baseUrl}/api/work/site-reports`, {
                     method: 'GET',
                     headers: {
                         'Content-Type': 'application/json',
@@ -21160,8 +21160,67 @@ async function loadViolations() {
         const violationsData = await response.json();
         console.log('📊 Violations data:', violationsData);
         
-        // Handle different response formats
-        const violations = violationsData.violations || violationsData.data || violationsData;
+        // Transform API data to violations format
+        let violations = [];
+        
+        if (Array.isArray(violationsData)) {
+            // Check if this is HSE data or site-reports data
+            if (violationsData.length > 0 && violationsData[0].work_type) {
+                // HSE work items - filter for safety violations
+                violations = violationsData.filter(item => 
+                    item.work_type && (
+                        item.work_type.toLowerCase().includes('violation') ||
+                        item.work_type.toLowerCase().includes('incident') ||
+                        item.severity === 'High' ||
+                        item.severity === 'Medium'
+                    )
+                ).map(item => ({
+                    id: `VIO-${item.id}`,
+                    violationId: `VIO-2026-${String(item.id).padStart(3, '0')}`,
+                    date: item.work_date || item.created_at || new Date().toISOString(),
+                    project: item.project_name || 'Unknown Project',
+                    type: item.incident_type === 'Near Miss' ? 'near-miss' : 
+                          item.severity === 'High' ? 'major' : 'minor',
+                    severity: item.severity === 'High' ? 'major' : 
+                             item.severity === 'Medium' ? 'moderate' : 'minor',
+                    violators: item.assigned_to || 'Unknown',
+                    location: item.location || item.project_location || 'Site Location',
+                    actionTaken: item.work_description || 'Action Required',
+                    status: item.status === 'completed' ? 'resolved' : 'pending',
+                    reportedBy: item.created_by || 'HSE Manager',
+                    evidence: item.evidence_files || '',
+                    followUpRequired: item.status === 'pending' ? 'yes' : 'no',
+                    deadline: item.due_date || new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
+                }));
+            } else if (violationsData.length > 0 && violationsData[0].safety_incidents) {
+                // Site reports - extract safety incidents
+                violations = violationsData.filter(item => 
+                    item.safety_incidents && item.safety_incidents !== 'None'
+                ).map((item, index) => ({
+                    id: `VIO-SITE-${item.id}`,
+                    violationId: `VIO-2026-${String(item.id + 100).padStart(3, '0')}`,
+                    date: item.report_date || new Date().toISOString(),
+                    project: `Project ${index + 1}`,
+                    type: item.safety_incidents.includes('near miss') ? 'near-miss' : 'safety-violation',
+                    severity: item.safety_incidents.includes('near miss') ? 'minor' : 'moderate',
+                    violators: 'Site Personnel',
+                    location: 'Site Location',
+                    actionTaken: item.site_issues ? 'Issue Addressed' : 'Action Required',
+                    status: 'pending',
+                    reportedBy: item.site_supervisor || 'Site Supervisor',
+                    evidence: '',
+                    followUpRequired: 'yes',
+                    deadline: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
+                }));
+            }
+        }
+        
+        // If no violations found from API, use sample data
+        if (violations.length === 0) {
+            console.log('⚠️ No violations found in API data, using sample data');
+            loadSampleViolations();
+            return;
+        }
         
         displayViolations(violations);
         
