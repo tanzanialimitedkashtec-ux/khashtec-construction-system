@@ -1995,6 +1995,54 @@ color: #666;
     text-transform: uppercase;
 }
 
+/* User Information Section Styling */
+.user-info-section {
+    background: #f8f9fa;
+    border-radius: 8px;
+    border-left: 4px solid #0b3d91;
+    padding: 15px;
+    margin: 20px 0;
+}
+
+.user-info-grid {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.user-info-grid strong {
+    color: #333;
+    font-weight: 600;
+}
+
+.user-info-grid span {
+    color: #666;
+}
+
+.user-role-badge {
+    color: #0b3d91;
+    font-weight: bold;
+    text-transform: uppercase;
+    font-size: 0.9em;
+}
+
+.user-avatar {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #0b3d91, #1e5bb8);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    font-weight: bold;
+    text-transform: uppercase;
+    box-shadow: 0 2px 8px rgba(11, 61, 145, 0.3);
+    border: 2px solid white;
+}
+
 /* Worker Assignment Card Styles - Very Small */
 .worker-assignment-card {
     background: white;
@@ -25962,23 +26010,107 @@ window.customConfirm = function(message, title = 'Confirm', onConfirm, onCancel)
     document.body.appendChild(modal);
 };
 
+// Login handling functions
+function handleLogin() {
+    const email = document.getElementById('loginEmail').value;
+    const role = document.getElementById('loginRole').value;
+    const password = document.getElementById('loginPassword').value;
+    
+    // Store user information in sessionStorage
+    sessionStorage.setItem('userName', email.split('@')[0].charAt(0).toUpperCase() + email.split('@')[0].slice(1));
+    sessionStorage.setItem('userEmail', email);
+    sessionStorage.setItem('userRole', role);
+    sessionStorage.setItem('loginTime', new Date().toLocaleString());
+    
+    // Update navigation and load content
+    updateNavigationForRole(role);
+    loadMenu();
+    
+    // Show welcome content with user info
+    const departmentTitle = role.toUpperCase() + ' Dashboard';
+    showContent(getWelcomeContent(departmentTitle));
+    
+    return false; // Prevent form submission
+}
+
+// Handle login for email-based login form
+function handleEmailLogin() {
+    const email = document.getElementById('loginEmail').value;
+    const role = document.getElementById('loginRole').value;
+    
+    // Extract role from email if not selected
+    if (!role && email) {
+        const emailRole = email.split('@')[0];
+        sessionStorage.setItem('userRole', emailRole);
+    }
+    
+    // Store user information
+    sessionStorage.setItem('userName', email.split('@')[0].charAt(0).toUpperCase() + email.split('@')[0].slice(1));
+    sessionStorage.setItem('userEmail', email);
+    sessionStorage.setItem('userRole', role || email.split('@')[0]);
+    sessionStorage.setItem('loginTime', new Date().toLocaleString());
+    
+    // Load menu and show welcome
+    loadMenu();
+    const departmentTitle = (role || email.split('@')[0]).toUpperCase() + ' Dashboard';
+    showContent(getWelcomeContent(departmentTitle));
+    
+    return false; // Prevent form submission
+}
+
+// Enhanced welcome content with user info
+function getWelcomeContent(departmentTitle) {
+    const userName = sessionStorage.getItem('userName') || 'Guest';
+    const userEmail = sessionStorage.getItem('userEmail') || 'Not logged in';
+    const userRole = sessionStorage.getItem('userRole') || 'Unknown';
+    const currentTime = sessionStorage.getItem('loginTime') || new Date().toLocaleString();
+    
+    // Get first letter from email for avatar
+    const firstLetter = userEmail && userEmail !== 'Not logged in' ? userEmail.charAt(0).toUpperCase() : 'U';
+    
+    return `
+        <div class="card">
+            <h3>Welcome to ${departmentTitle}</h3>
+            <div class="user-info-section">
+                <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 15px;">
+                    <div class="user-avatar">
+                        ${firstLetter}
+                    </div>
+                    <div>
+                        <h4 style="margin: 0; color: #0b3d91;">👤 User Information</h4>
+                        <p style="margin: 5px 0 0 0; color: #6c757d; font-size: 14px;">Logged in user details</p>
+                    </div>
+                </div>
+                <div class="user-info-grid">
+                    <strong>Name:</strong>
+                    <span>${userName}</span>
+                    
+                    <strong>Email:</strong>
+                    <span>${userEmail}</span>
+                    
+                    <strong>Role:</strong>
+                    <span class="user-role-badge">${userRole}</span>
+                    
+                    <strong>Login Time:</strong>
+                    <span>${currentTime}</span>
+                </div>
+            </div>
+            <div style="margin-top: 20px; padding: 15px; background: #f8f9fa; border-radius: 5px;">
+                <h4>Quick Start:</h4>
+                <p>Choose a function from the left menu to manage your department operations.</p>
+            </div>
+        </div>
+    `;
+}
+
 // Initialize the system
 document.addEventListener('DOMContentLoaded', function() {
     console.log('KASHTEC Construction System - Department Portal loaded');
     
-    // Load initial content
-    showContent(`<div class="card">
-        <h3>Welcome to KASHTEC Department Portal</h3>
-        <p><strong>System Status:</strong> All systems operational</p>
-        <p><strong>Last Update:</strong> ${new Date().toLocaleString()}</p>
-        <div class="summary-stats">
-            <div class="stat-card">
-                <h5>System Ready</h5>
-                <div class="stat-value">✓</div>
-                <div class="stat-label">Online</div>
-            </div>
-        </div>
-    </div>`);
+    // Load initial content with user info
+    const userRole = sessionStorage.getItem('userRole');
+    const departmentTitle = userRole ? userRole.toUpperCase() + ' Dashboard' : 'KASHTEC Department Portal';
+    showContent(getWelcomeContent(departmentTitle));
     
     // Load assigned workers data
     loadAssignedWorkers();
@@ -27762,7 +27894,13 @@ function handleLogout() {
 
 function cancelEmploymentAction() {
     customAlert('Employment action cancelled.', "Action Cancelled", "info");
-    showContent('<div class="card"><h3>Action Cancelled</h3><p>The employment action has been cancelled.</p></div>');
+    showDashboard();
+}
+
+function showDashboard() {
+    const userRole = sessionStorage.getItem('userRole');
+    const departmentTitle = userRole ? userRole.toUpperCase() + ' Dashboard' : 'KASHTEC Department Portal';
+    showContent(getWelcomeContent(departmentTitle));
 }
 
 function showReportTab(tabName) {
