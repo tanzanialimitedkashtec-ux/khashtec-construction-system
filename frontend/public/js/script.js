@@ -883,6 +883,10 @@ function handleLogin() {
             sessionManager.setAuthToken(response.token);
             sessionManager.setCurrentUser(response.user);
             
+            // Persist login email and full role name so user info survives page reloads
+            sessionStorage.setItem('kashtec_login_email', email);
+            sessionStorage.setItem('kashtec_login_role', role);
+            
             // Redirect to system page
             setTimeout(() => {
                 // Hide login page and show system page
@@ -909,6 +913,11 @@ function handleLogin() {
                 
                 console.log('🔍 Setting currentRole:', currentRole, 'from role:', role);
                 
+                // Populate user info card in the navbar
+                if (typeof initUserDisplay === 'function') {
+                    initUserDisplay();
+                }
+                
                 // Load menu based on role
                 if (typeof loadMenu === 'function') {
                     loadMenu();
@@ -929,6 +938,7 @@ function handleLogin() {
             
         })
         .catch(error => {
+
             console.error('❌ Login failed:', error);
             
             // Reset button
@@ -976,6 +986,12 @@ function handleLogout() {
     
     // Clear session data
     sessionManager.removeCurrentSession();
+    
+    // Clear persisted login info
+    sessionStorage.removeItem('kashtec_login_email');
+    sessionStorage.removeItem('kashtec_login_role');
+    sessionStorage.removeItem('kashtec_token');
+    sessionStorage.removeItem('kashtec_user');
     
     // Reset current role
     currentRole = "";
