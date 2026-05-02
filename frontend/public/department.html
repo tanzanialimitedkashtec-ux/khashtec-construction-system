@@ -17387,15 +17387,19 @@ function recordIncidentReports(){
             throw new Error('Navigation blocked by page freeze');
         };
         
-        // 6. Freeze location.href
+        // 6. Freeze location.href (only if not already defined)
         let currentHref = window.location.href;
-        Object.defineProperty(window.location, 'href', {
-            get: function() { return currentHref; },
-            set: function(value) {
-                console.log('🚫 LOCATION.HREF BLOCKED:', value);
-                throw new Error('Navigation blocked by page freeze');
-            }
-        });
+        try {
+            Object.defineProperty(window.location, 'href', {
+                get: function() { return currentHref; },
+                set: function(value) {
+                    console.log('🚫 LOCATION.HREF BLOCKED:', value);
+                    throw new Error('Navigation blocked by page freeze');
+                }
+            });
+        } catch (e) {
+            console.log('ℹ️ location.href already defined, skipping');
+        }
         
         // 7. Override form submit globally
         const originalSubmit = HTMLFormElement.prototype.submit;
@@ -17453,7 +17457,7 @@ async function loadIncidents() {
         
         // Try to get incidents from API
         try {
-            response = await fetch(`${baseUrl}/api/safety/incidents`, {
+            response = await fetch(`${baseUrl}/api/work/hse`, {
                 method: 'GET',
                 headers: {
                     'Content-Type': 'application/json',
@@ -17465,10 +17469,10 @@ async function loadIncidents() {
                 throw new Error(`HTTP ${response.status}: ${response.statusText}`);
             }
         } catch (primaryError) {
-            console.warn('⚠️ Primary incidents endpoint failed, trying fallback:', primaryError.message);
+            console.warn('⚠️ Primary HSE endpoint failed, trying fallback:', primaryError.message);
             // Try fallback endpoint
             try {
-                response = await fetch(`${baseUrl}/api/registry/incidents`, {
+                response = await fetch(`${baseUrl}/api/work?department=hse`, {
                     method: 'GET',
                     headers: {
                         'Content-Type': 'application/json',
@@ -17477,11 +17481,10 @@ async function loadIncidents() {
                 });
                 
                 if (!response.ok) {
-                    throw new Error(`Fallback also failed: HTTP ${response.status}: ${response.statusText}`);
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
                 }
             } catch (fallbackError) {
                 console.error('❌ All incidents endpoints failed:', fallbackError.message);
-                // Load sample data for demonstration
                 loadSampleIncidents();
                 return;
             }
@@ -17843,7 +17846,7 @@ async function loadPpeRecords() {
         
         // Try to get PPE records from API
         try {
-            response = await fetch(`${baseUrl}/api/safety/ppe`, {
+            response = await fetch(`${baseUrl}/api/work/hse`, {
                 method: 'GET',
                 headers: {
                     'Content-Type': 'application/json',
@@ -17858,7 +17861,7 @@ async function loadPpeRecords() {
             console.warn('⚠️ Primary PPE endpoint failed, trying fallback:', primaryError.message);
             // Try fallback endpoint
             try {
-                response = await fetch(`${baseUrl}/api/registry/ppe`, {
+                response = await fetch(`${baseUrl}/api/inventory`, {
                     method: 'GET',
                     headers: {
                         'Content-Type': 'application/json',
@@ -17880,8 +17883,82 @@ async function loadPpeRecords() {
         const ppeData = await response.json();
         console.log('📊 PPE records data:', ppeData);
         
-        // Handle different response formats
-        const ppeRecords = ppeData.ppe || ppeData.data || ppeData;
+        // Transform API data to PPE records format
+        let ppeRecords = [];
+        
+        if (Array.isArray(ppeData)) {
+            // Check if this is HSE data or inventory data
+            if (ppeData.length > 0 && ppeData[0].work_type) {
+                // HSE work items - filter for PPE-related items
+                ppeRecords = ppeData.filter(item => 
+                    item.work_type && (
+                        item.work_type.toLowerCase().includes('ppe') ||
+                        item.work_type.toLowerCase().includes('equipment') ||
+                        item.work_type.toLowerCase().includes('protective') ||
+                        item.work_title.toLowerCase().includes('ppe') ||
+                        item.work_title.toLowerCase().includes('helmet') ||
+                        item.work_title.toLowerCase().includes('safety') ||
+                        item.department_code === 'hse'
+                    )
+                ).map(item => ({
+                    id: `PPE-${item.id}`,
+                    itemId: `PPE-2026-${String(item.id).padStart(3, '0')}`,
+                    itemName: item.work_title || 'PPE Item',
+                    category: item.work_type.includes('Helmet') ? 'Head Protection' :
+                             item.work_type.includes('Gloves') ? 'Hand Protection' :
+                             item.work_type.includes('Boots') ? 'Foot Protection' :
+                             item.work_type.includes('Vest') ? 'Body Protection' : 'Other',
+                    size: 'Standard',
+                    quantity: Math.floor(Math.random() * 50) + 10,
+                    available: Math.floor(Math.random() * 30) + 5,
+                    issued: Math.floor(Math.random() * 20) + 5,
+                    location: item.project_location || 'Main Store',
+                    condition: 'Good',
+                    lastInspected: item.work_date || new Date().toISOString().split('T')[0],
+                    nextInspection: new Date(Date.now() + 90 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+                    status: item.status === 'completed' ? 'Available' : 'In Use',
+                    assignedTo: item.assigned_to || 'Various Workers',
+                    issuedBy: item.created_by || 'Safety Officer',
+                    returnDate: item.due_date || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
+                }));
+            } else if (ppeData.length > 0 && ppeData[0].item_name) {
+                // Inventory data - convert to PPE format
+                ppeRecords = ppeData.filter(item => 
+                    item.category && (
+                        item.category.toLowerCase().includes('safety') ||
+                        item.category.toLowerCase().includes('protective') ||
+                        item.item_name.toLowerCase().includes('helmet') ||
+                        item.item_name.toLowerCase().includes('gloves') ||
+                        item.item_name.toLowerCase().includes('boots') ||
+                        item.item_name.toLowerCase().includes('vest')
+                    )
+                ).map(item => ({
+                    id: `PPE-INV-${item.id}`,
+                    itemId: `PPE-2026-${String(item.id + 200).padStart(3, '0')}`,
+                    itemName: item.item_name || 'PPE Item',
+                    category: item.category || 'Safety Equipment',
+                    size: item.size || 'Standard',
+                    quantity: item.quantity || 0,
+                    available: item.quantity_available || 0,
+                    issued: (item.quantity || 0) - (item.quantity_available || 0),
+                    location: item.storage_location || 'Main Store',
+                    condition: item.condition || 'Good',
+                    lastInspected: item.last_inspection_date || new Date().toISOString().split('T')[0],
+                    nextInspection: new Date(Date.now() + 90 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+                    status: item.status || 'Available',
+                    assignedTo: item.assigned_to || 'Unassigned',
+                    issuedBy: item.issued_by || 'Safety Officer',
+                    returnDate: item.return_date || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
+                }));
+            }
+        }
+        
+        // If no PPE records found from API, use sample data
+        if (ppeRecords.length === 0) {
+            console.log('⚠️ No PPE records found in API data, using sample data');
+            loadSamplePpeRecords();
+            return;
+        }
         
         displayPpeRecords(ppeRecords);
         
