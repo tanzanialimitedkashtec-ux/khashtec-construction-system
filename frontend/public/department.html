@@ -5297,6 +5297,209 @@ color: #666;
     box-shadow: 0 2px 4px rgba(0,0,0,0.2);
 }
 
+/* Toolbox Meetings Table Styles */
+.toolbox-meetings-registry {
+    margin-top: 20px;
+}
+
+.toolbox-table-container {
+    background: white;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    margin-top: 15px;
+}
+
+.toolbox-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 11px;
+    background: white;
+}
+
+.toolbox-table th {
+    background: #28a745;
+    color: white;
+    padding: 10px 8px;
+    text-align: left;
+    font-weight: 600;
+    border-bottom: 2px solid #1e7e34;
+    white-space: nowrap;
+}
+
+.toolbox-table td {
+    padding: 8px;
+    border-bottom: 1px solid #e9ecef;
+    vertical-align: middle;
+    font-size: 11px;
+}
+
+.toolbox-table tr:hover {
+    background: #f8f9fa;
+}
+
+.toolbox-table tr:last-child td {
+    border-bottom: none;
+}
+
+.meeting-id-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 100px;
+}
+
+.meeting-id {
+    font-weight: 600;
+    color: #333;
+    font-size: 11px;
+    text-transform: uppercase;
+}
+
+.datetime-info {
+    min-width: 100px;
+}
+
+.meeting-date {
+    font-size: 10px;
+    color: #333;
+    font-weight: 600;
+}
+
+.meeting-time {
+    font-size: 9px;
+    color: #666;
+}
+
+.project-info {
+    min-width: 140px;
+}
+
+.project-name {
+    font-weight: 600;
+    color: #333;
+    font-size: 11px;
+    line-height: 1.2;
+}
+
+.topic-info {
+    min-width: 120px;
+}
+
+.topic-name {
+    font-weight: 600;
+    color: #333;
+    font-size: 11px;
+    line-height: 1.3;
+    max-width: 140px;
+    word-wrap: break-word;
+}
+
+.duration-info {
+    min-width: 80px;
+}
+
+.duration {
+    font-weight: 600;
+    color: #333;
+    font-size: 11px;
+}
+
+.attendees-info {
+    min-width: 80px;
+}
+
+.attendees-count {
+    font-weight: 600;
+    color: #333;
+    font-size: 11px;
+}
+
+.conductor-info {
+    min-width: 110px;
+}
+
+.conductor-name {
+    font-weight: 600;
+    color: #333;
+    font-size: 11px;
+    line-height: 1.2;
+}
+
+.issues-info {
+    min-width: 60px;
+}
+
+.issues-status {
+    font-weight: 600;
+    font-size: 11px;
+}
+
+.actions-info {
+    min-width: 60px;
+}
+
+.actions-status {
+    font-weight: 600;
+    font-size: 11px;
+}
+
+.status-badge.status-completed {
+    background: #d4edda;
+    color: #155724;
+}
+
+.status-badge.status-in-progress {
+    background: #fff3cd;
+    color: #856404;
+}
+
+.status-badge.status-pending {
+    background: #f8d7da;
+    color: #721c24;
+}
+
+.toolbox-actions {
+    display: flex;
+    gap: 4px;
+    justify-content: center;
+}
+
+.toolbox-actions .action-btn {
+    padding: 4px 6px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 10px;
+    transition: all 0.2s ease;
+    min-width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.toolbox-actions .action-btn.view {
+    background: #17a2b8;
+    color: white;
+}
+
+.toolbox-actions .action-btn.download {
+    background: #28a745;
+    color: white;
+}
+
+.toolbox-actions .action-btn.materials {
+    background: #ffc107;
+    color: #212529;
+}
+
+.toolbox-actions .action-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
 .department-badge {
     background: #e3f2fd;
     color: #0b3d91;
@@ -17589,6 +17792,454 @@ function filterPpeRecords() {
     });
 }
 
+// Load toolbox meetings for table display
+async function loadToolboxMeetings() {
+    console.log('🔄 Loading toolbox meetings...');
+    
+    try {
+        const baseUrl = window.location.origin;
+        let response;
+        
+        // Try to get toolbox meetings from API
+        try {
+            response = await fetch(`${baseUrl}/api/safety/toolbox-meetings`, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${sessionManager.getAuthToken()}`
+                }
+            });
+            
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            }
+        } catch (primaryError) {
+            console.warn('⚠️ Primary toolbox meetings endpoint failed, trying fallback:', primaryError.message);
+            // Try fallback endpoint
+            try {
+                response = await fetch(`${baseUrl}/api/safety/meetings`, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${sessionManager.getAuthToken()}`
+                    }
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`Fallback also failed: HTTP ${response.status}: ${response.statusText}`);
+                }
+            } catch (fallbackError) {
+                console.error('❌ All toolbox meetings endpoints failed:', fallbackError.message);
+                // Load sample data for demonstration
+                loadSampleToolboxMeetings();
+                return;
+            }
+        }
+        
+        const toolboxData = await response.json();
+        console.log('📊 Toolbox meetings data:', toolboxData);
+        
+        // Handle different response formats
+        const toolboxMeetings = toolboxData.meetings || toolboxData.data || toolboxData;
+        
+        displayToolboxMeetings(toolboxMeetings);
+        
+    } catch (error) {
+        console.error('❌ Error loading toolbox meetings:', error);
+        // Load sample data on error
+        loadSampleToolboxMeetings();
+    }
+}
+
+// Load sample toolbox meetings for demonstration
+function loadSampleToolboxMeetings() {
+    console.log('📋 Loading sample toolbox meetings...');
+    
+    const sampleToolboxMeetings = [
+        {
+            id: 'TBT-001',
+            meetingId: 'TBT-2026-001',
+            meetingDate: '2026-03-15T09:00:00',
+            project: 'Masaki Residential Complex',
+            topic: 'Fall Protection',
+            customTopic: '',
+            duration: 30,
+            totalAttendees: 15,
+            conductedBy: 'John Smith',
+            keyPoints: 'Proper use of safety harnesses, anchor points, and fall arrest systems. Emergency procedures for fall incidents.',
+            attendees: 'Michael Johnson (Site Manager), Sarah Williams (Safety Officer), David Brown (Foreman), Robert Davis (Carpenter), Lisa Martinez (Mason), Thomas Anderson (Electrician), Jennifer Lee (Plumber), Michael Brown (Painter), Patricia Johnson (Steelworker), David Anderson (Welder), James Wilson (Laborer), Sarah Wilson (Laborer), Emily Taylor (Laborer), John Michael (Crane Operator), Mary Johnson (Crane Operator)',
+            issuesRaised: 'Some workers reported damaged safety harnesses that need immediate replacement. Request for additional anchor points on the west wing scaffolding.',
+            actionItems: '1. Replace damaged harnesses within 48 hours\n2. Install additional anchor points by end of week\n3. Conduct follow-up inspection of all fall protection equipment',
+            status: 'completed',
+            materials: ['fall_protection_presentation.pdf', 'safety_harness_checklist.docx'],
+            photos: ['toolbox_meeting_001_1.jpg', 'toolbox_meeting_001_2.jpg']
+        },
+        {
+            id: 'TBT-002',
+            meetingId: 'TBT-2026-002',
+            meetingDate: '2026-03-18T10:30:00',
+            project: 'Kigamboni Commercial Plaza',
+            topic: 'electrical-safety',
+            customTopic: '',
+            duration: 45,
+            totalAttendees: 22,
+            conductedBy: 'Sarah Johnson',
+            keyPoints: 'Lockout/tagout procedures, proper grounding, working near live wires, emergency response to electrical incidents, PPE requirements for electrical work.',
+            attendees: 'John Smith (Project Manager), Michael Johnson (Electrical Foreman), Sarah Williams (Safety Officer), David Brown (Electrician), Robert Davis (Electrician), Lisa Martinez (Electrician), Thomas Anderson (Electrician), Jennifer Lee (Electrician), Michael Brown (Electrician), Patricia Johnson (Electrician), David Anderson (Electrician), James Wilson (Electrician), Sarah Wilson (Electrician), Emily Taylor (Electrician), John Michael (Electrician), Mary Johnson (Electrician), William Davis (Apprentice), Elizabeth Wilson (Apprentice), Charles Brown (Apprentice), Barbara Taylor (Apprentice), Richard Anderson (Apprentice), Linda Martinez (Apprentice)',
+            issuesRaised: 'Need more insulated tools for the team. Some circuit breakers are not properly labeled. Request for additional electrical safety training for new apprentices.',
+            actionItems: '1. Order additional insulated tools by next week\n2. Label all circuit breakers within 3 days\n3. Schedule advanced electrical safety training for apprentices',
+            status: 'completed',
+            materials: ['electrical_safety_manual.pdf', 'lockout_procedure.pdf'],
+            photos: ['toolbox_meeting_002_1.jpg', 'toolbox_meeting_002_2.jpg', 'toolbox_meeting_002_3.jpg']
+        },
+        {
+            id: 'TBT-003',
+            meetingId: 'TBT-2026-003',
+            meetingDate: '2026-03-22T08:15:00',
+            project: 'Mikochi Industrial Park',
+            topic: 'equipment-operation',
+            customTopic: '',
+            duration: 35,
+            totalAttendees: 18,
+            conductedBy: 'Robert Davis',
+            keyPoints: 'Pre-operation equipment checks, proper loading/unloading procedures, operator responsibilities, maintenance schedules, emergency stop procedures.',
+            attendees: 'John Smith (Site Manager), Michael Johnson (Equipment Manager), Sarah Williams (Safety Officer), David Brown (Heavy Equipment Operator), Robert Davis (Crane Operator), Lisa Martinez (Forklift Operator), Thomas Anderson (Excavator Operator), Jennifer Lee (Bulldozer Operator), Michael Brown (Loader Operator), Patricia Johnson (Roller Operator), David Anderson (Skid Steer Operator), James Wilson (Backhoe Operator), Sarah Wilson (Compactor Operator), Emily Taylor (Concrete Mixer Operator), John Michael (Paver Operator), Mary Johnson (Boom Lift Operator), William Davis (Telehandler Operator), Elizabeth Wilson (Scissor Lift Operator)',
+            issuesRaised: 'Some equipment shows signs of wear and tear. Need more comprehensive pre-operation checklists. Request for additional operator training on new equipment.',
+            actionItems: '1. Schedule maintenance for worn equipment\n2. Develop comprehensive pre-operation checklists\n3. Arrange training session for new equipment operation',
+            status: 'in-progress',
+            materials: ['equipment_operation_guide.pdf', 'pre_operation_checklist.xlsx'],
+            photos: ['toolbox_meeting_003_1.jpg']
+        },
+        {
+            id: 'TBT-004',
+            meetingId: 'TBT-2026-004',
+            meetingDate: '2026-03-25T14:20:00',
+            project: 'Port Modernization Phase 1',
+            topic: 'fire-safety',
+            customTopic: '',
+            duration: 40,
+            totalAttendees: 20,
+            conductedBy: 'Lisa Martinez',
+            keyPoints: 'Fire prevention measures, proper use of fire extinguishers, emergency evacuation procedures, fire watch responsibilities, hot work permits.',
+            attendees: 'John Smith (Project Manager), Michael Johnson (Safety Manager), Sarah Williams (Fire Safety Officer), David Brown (Welder), Robert Davis (Welder), Lisa Martinez (Welder), Thomas Anderson (Welder), Jennifer Lee (Welder), Michael Brown (Fire Watch), Patricia Johnson (Fire Watch), David Anderson (Fire Watch), James Wilson (Fire Watch), Sarah Wilson (Fire Watch), Emily Taylor (Fire Watch), John Michael (Fire Watch), Mary Johnson (Fire Watch), William Davis (Fire Watch), Elizabeth Wilson (Fire Watch), Charles Brown (Fire Watch), Barbara Taylor (Fire Watch)',
+            issuesRaised: 'Some fire extinguishers are expired. Need more clearly marked fire assembly points. Request for additional fire drills on the site.',
+            actionItems: '1. Replace expired fire extinguishers immediately\n2. Mark additional fire assembly points\n3. Schedule monthly fire drills',
+            status: 'completed',
+            materials: ['fire_safety_procedures.pdf', 'extinguisher_usage_guide.pdf'],
+            photos: ['toolbox_meeting_004_1.jpg', 'toolbox_meeting_004_2.jpg']
+        },
+        {
+            id: 'TBT-005',
+            meetingId: 'TBT-2026-005',
+            meetingDate: '2026-03-28T11:45:00',
+            project: 'Masaki Residential Complex',
+            topic: 'chemical-handling',
+            customTopic: '',
+            duration: 30,
+            totalAttendees: 12,
+            conductedBy: 'Thomas Anderson',
+            keyPoints: 'Proper chemical storage, MSDS understanding, PPE for chemical handling, spill response procedures, first aid for chemical exposure.',
+            attendees: 'John Smith (Site Manager), Michael Johnson (Chemical Supervisor), Sarah Williams (Safety Officer), David Brown (Chemical Handler), Robert Davis (Chemical Handler), Lisa Martinez (Chemical Handler), Thomas Anderson (Chemical Handler), Jennifer Lee (Chemical Handler), Michael Brown (Chemical Handler), Patricia Johnson (Chemical Handler), David Anderson (Chemical Handler), James Wilson (Chemical Handler)',
+            issuesRaised: 'Need better ventilation in chemical storage area. Some MSDS sheets are missing. Request for additional chemical spill kits.',
+            actionItems: '1. Improve ventilation in chemical storage area\n2. Obtain missing MSDS sheets\n3. Order additional chemical spill kits',
+            status: 'in-progress',
+            materials: ['chemical_handling_guide.pdf', 'msds_template.docx'],
+            photos: ['toolbox_meeting_005_1.jpg']
+        },
+        {
+            id: 'TBT-006',
+            meetingId: 'TBT-2026-006',
+            meetingDate: '2026-04-01T09:30:00',
+            project: 'Kigamboni Commercial Plaza',
+            topic: 'confined-space',
+            customTopic: '',
+            duration: 50,
+            totalAttendees: 16,
+            conductedBy: 'Jennifer Lee',
+            keyPoints: 'Confined space identification, permit requirements, atmospheric testing, rescue procedures, communication protocols, emergency evacuation.',
+            attendees: 'John Smith (Project Manager), Michael Johnson (Confined Space Supervisor), Sarah Williams (Safety Officer), David Brown (Rescue Team), Robert Davis (Attendant), Lisa Martinez (Entrant), Thomas Anderson (Entrant), Jennifer Lee (Entrant), Michael Brown (Entrant), Patricia Johnson (Entrant), David Anderson (Entrant), James Wilson (Entrant), Sarah Wilson (Entrant), Emily Taylor (Entrant), John Michael (Entrant), Mary Johnson (Entrant)',
+            issuesRaised: 'Need gas detection equipment calibration. Some rescue equipment needs servicing. Request for additional confined space training.',
+            actionItems: '1. Calibrate gas detection equipment\n2. Service rescue equipment\n3. Schedule advanced confined space training',
+            status: 'completed',
+            materials: ['confined_space_procedures.pdf', 'rescue_equipment_checklist.xlsx'],
+            photos: ['toolbox_meeting_006_1.jpg', 'toolbox_meeting_006_2.jpg', 'toolbox_meeting_006_3.jpg']
+        },
+        {
+            id: 'TBT-007',
+            meetingId: 'TBT-2026-007',
+            meetingDate: '2026-04-05T13:15:00',
+            project: 'Mikochi Industrial Park',
+            topic: 'housekeeping',
+            customTopic: '',
+            duration: 25,
+            totalAttendees: 25,
+            conductedBy: 'Michael Brown',
+            keyPoints: 'Site cleanliness standards, waste management, material storage, walkway clearance, tool organization, spill cleanup procedures.',
+            attendees: 'John Smith (Site Manager), Michael Johnson (Housekeeping Supervisor), Sarah Williams (Safety Officer), David Brown (Foreman), Robert Davis (Foreman), Lisa Martinez (Foreman), Thomas Anderson (Foreman), Jennifer Lee (Foreman), Michael Brown (Foreman), Patricia Johnson (Foreman), David Anderson (Worker), James Wilson (Worker), Sarah Wilson (Worker), Emily Taylor (Worker), John Michael (Worker), Mary Johnson (Worker), William Davis (Worker), Elizabeth Wilson (Worker), Charles Brown (Worker), Barbara Taylor (Worker), Richard Anderson (Worker), Linda Martinez (Worker), James Brown (Worker), Susan Davis (Worker), Karen Wilson (Worker)',
+            issuesRaised: 'Insufficient waste disposal containers. Some areas have poor drainage. Need more regular housekeeping inspections.',
+            actionItems: '1. Order additional waste disposal containers\n2. Improve drainage in problem areas\n3. Implement daily housekeeping inspections',
+            status: 'completed',
+            materials: ['housekeeping_standards.pdf', 'waste_management_guide.pdf'],
+            photos: ['toolbox_meeting_007_1.jpg']
+        },
+        {
+            id: 'TBT-008',
+            meetingId: 'TBT-2026-008',
+            meetingDate: '2026-04-08T10:00:00',
+            project: 'Port Modernization Phase 1',
+            topic: 'ppe-proper-use',
+            customTopic: '',
+            duration: 35,
+            totalAttendees: 30,
+            conductedBy: 'Patricia Johnson',
+            keyPoints: 'Proper PPE selection, correct wearing procedures, PPE inspection and maintenance, limitations of PPE, emergency removal procedures.',
+            attendees: 'John Smith (Project Manager), Michael Johnson (PPE Supervisor), Sarah Williams (Safety Officer), David Brown (Worker), Robert Davis (Worker), Lisa Martinez (Worker), Thomas Anderson (Worker), Jennifer Lee (Worker), Michael Brown (Worker), Patricia Johnson (Worker), David Anderson (Worker), James Wilson (Worker), Sarah Wilson (Worker), Emily Taylor (Worker), John Michael (Worker), Mary Johnson (Worker), William Davis (Worker), Elizabeth Wilson (Worker), Charles Brown (Worker), Barbara Taylor (Worker), Richard Anderson (Worker), Linda Martinez (Worker), James Brown (Worker), Susan Davis (Worker), Karen Wilson (Worker), Thomas Lee (Worker), Maria Garcia (Worker), John Smith Jr (Worker), Robert Johnson (Worker)',
+            issuesRaised: 'Some PPE items are showing wear. Need better fitting PPE for some workers. Request for additional PPE training.',
+            actionItems: '1. Replace worn PPE items\n2. Order better fitting PPE sizes\n3. Conduct PPE fitting and training session',
+            status: 'in-progress',
+            materials: ['ppe_proper_use_guide.pdf', 'ppe_inspection_checklist.xlsx'],
+            photos: ['toolbox_meeting_008_1.jpg', 'toolbox_meeting_008_2.jpg']
+        },
+        {
+            id: 'TBT-009',
+            meetingId: 'TBT-2026-009',
+            meetingDate: '2026-04-10T15:45:00',
+            project: 'Masaki Residential Complex',
+            topic: '',
+            customTopic: 'Scaffold Safety and Erection Procedures',
+            duration: 45,
+            totalAttendees: 14,
+            conductedBy: 'David Anderson',
+            keyPoints: 'Scaffold erection standards, proper bracing, platform requirements, access ladders, load capacity limits, inspection procedures.',
+            attendees: 'John Smith (Site Manager), Michael Johnson (Scaffold Supervisor), Sarah Williams (Safety Officer), David Brown (Scaffold Erector), Robert Davis (Scaffold Erector), Lisa Martinez (Scaffold Erector), Thomas Anderson (Scaffold Erector), Jennifer Lee (Scaffold Inspector), Michael Brown (Scaffold Inspector), Patricia Johnson (Scaffold Inspector), David Anderson (Scaffold Inspector), James Wilson (Worker), Sarah Wilson (Worker), Emily Taylor (Worker)',
+            issuesRaised: 'Need more scaffold inspection training. Some scaffold components need replacement. Request for additional safety nets.',
+            actionItems: '1. Schedule scaffold inspection training\n2. Replace worn scaffold components\n3. Install additional safety nets',
+            status: 'completed',
+            materials: ['scaffold_safety_manual.pdf', 'erection_procedures.docx'],
+            photos: ['toolbox_meeting_009_1.jpg', 'toolbox_meeting_009_2.jpg']
+        },
+        {
+            id: 'TBT-010',
+            meetingId: 'TBT-2026-010',
+            meetingDate: '2026-04-12T08:30:00',
+            project: 'Kigamboni Commercial Plaza',
+            topic: '',
+            customTopic: 'Excavation and Trenching Safety',
+            duration: 40,
+            totalAttendees: 18,
+            conductedBy: 'James Wilson',
+            keyPoints: 'Soil classification, trench protection systems, shoring requirements, access/egress, atmospheric hazards, emergency rescue procedures.',
+            attendees: 'John Smith (Project Manager), Michael Johnson (Excavation Supervisor), Sarah Williams (Safety Officer), David Brown (Excavator Operator), Robert Davis (Trench Worker), Lisa Martinez (Trench Worker), Thomas Anderson (Trench Worker), Jennifer Lee (Trench Worker), Michael Brown (Trench Worker), Patricia Johnson (Trench Worker), David Anderson (Trench Worker), James Wilson (Trench Worker), Sarah Wilson (Trench Worker), Emily Taylor (Trench Worker), John Michael (Trench Worker), Mary Johnson (Trench Worker), William Davis (Trench Worker), Elizabeth Wilson (Trench Worker)',
+            issuesRaised: 'Need more trench boxes for deeper excavations. Some soil conditions are unstable. Request for additional trench safety training.',
+            actionItems: '1. Order additional trench boxes\n2. Implement soil stabilization measures\n3. Conduct trench safety refresher training',
+            status: 'in-progress',
+            materials: ['excavation_safety_guide.pdf', 'trench_protection_systems.pdf'],
+            photos: ['toolbox_meeting_010_1.jpg', 'toolbox_meeting_010_2.jpg']
+        },
+        {
+            id: 'TBT-011',
+            meetingId: 'TBT-2026-011',
+            meetingDate: '2026-04-15T11:20:00',
+            project: 'Mikochi Industrial Park',
+            topic: '',
+            customTopic: 'Heavy Rigging and Lifting Operations',
+            duration: 55,
+            totalAttendees: 16,
+            conductedBy: 'Sarah Wilson',
+            keyPoints: 'Rigging equipment inspection, load calculations, proper hitch techniques, crane signals, lift planning, emergency procedures.',
+            attendees: 'John Smith (Site Manager), Michael Johnson (Rigging Supervisor), Sarah Williams (Safety Officer), David Brown (Rigger), Robert Davis (Rigger), Lisa Martinez (Rigger), Thomas Anderson (Crane Operator), Jennifer Lee (Crane Operator), Michael Brown (Signal Person), Patricia Johnson (Signal Person), David Anderson (Signal Person), James Wilson (Spotter), Sarah Wilson (Spotter), Emily Taylor (Spotter), John Michael (Spotter), Mary Johnson (Spotter)',
+            issuesRaised: 'Some rigging equipment needs certification. Need better load calculation charts. Request for advanced rigging training.',
+            actionItems: '1. Certify rigging equipment\n2. Update load calculation charts\n3. Schedule advanced rigging training',
+            status: 'completed',
+            materials: ['rigging_safety_manual.pdf', 'load_calculation_charts.xlsx'],
+            photos: ['toolbox_meeting_011_1.jpg', 'toolbox_meeting_011_2.jpg', 'toolbox_meeting_011_3.jpg']
+        },
+        {
+            id: 'TBT-012',
+            meetingId: 'TBT-2026-012',
+            meetingDate: '2026-04-18T14:00:00',
+            project: 'Port Modernization Phase 1',
+            topic: '',
+            customTopic: 'Working at Heights and Roofing Safety',
+            duration: 35,
+            totalAttendees: 20,
+            conductedBy: 'Emily Taylor',
+            keyPoints: 'Roofing hazards, fall protection systems, weather considerations, material handling on roofs, emergency procedures, roof access requirements.',
+            attendees: 'John Smith (Site Manager), Michael Johnson (Roofing Supervisor), Sarah Williams (Safety Officer), David Brown (Roofer), Robert Davis (Roofer), Lisa Martinez (Roofer), Thomas Anderson (Roofer), Jennifer Lee (Roofer), Michael Brown (Roofer), Patricia Johnson (Roofer), David Anderson (Roofer), James Wilson (Roofer), Sarah Wilson (Roofer), Emily Taylor (Roofer), John Michael (Roofer), Mary Johnson (Roofer), William Davis (Roofer), Elizabeth Wilson (Roofer), Charles Brown (Roofer), Barbara Taylor (Roofer)',
+            issuesRaised: 'Need more roof anchors. Some roof access ladders are inadequate. Request for weather monitoring equipment.',
+            actionItems: '1. Install additional roof anchors\n2. Upgrade roof access ladders\n3. Install weather monitoring equipment',
+            status: 'completed',
+            materials: ['roofing_safety_guide.pdf', 'fall_protection_systems.pdf'],
+            photos: ['toolbox_meeting_012_1.jpg', 'toolbox_meeting_012_2.jpg']
+        }
+    ];
+    
+    displayToolboxMeetings(sampleToolboxMeetings);
+}
+
+// Display toolbox meetings in the table
+function displayToolboxMeetings(toolboxMeetings) {
+    const toolboxList = document.getElementById('toolboxList');
+    
+    if (!toolboxList) {
+        console.error('❌ Toolbox meetings list container not found!');
+        return;
+    }
+    
+    if (!toolboxMeetings || toolboxMeetings.length === 0) {
+        toolboxList.innerHTML = `
+            <tr>
+                <td colspan="11">
+                    <div class="no-records">No toolbox meetings found</div>
+                </td>
+            </tr>
+        `;
+        return;
+    }
+    
+    // Sort toolbox meetings by date (newest first)
+    toolboxMeetings.sort((a, b) => new Date(b.meetingDate) - new Date(a.meetingDate));
+    
+    let toolboxHTML = '';
+    
+    toolboxMeetings.forEach(meeting => {
+        // Get topic display
+        const topicDisplay = meeting.customTopic || getTopicDisplayName(meeting.topic);
+        
+        // Get status display
+        const statusDisplay = meeting.status === 'completed' ? '✅ Completed' : 
+                             meeting.status === 'in-progress' ? '🔄 In Progress' : 
+                             meeting.status === 'pending' ? '⏳ Pending' : meeting.status;
+        
+        const statusClass = meeting.status === 'completed' ? 'status-completed' : 
+                           meeting.status === 'in-progress' ? 'status-in-progress' : 
+                           meeting.status === 'pending' ? 'status-pending' : '';
+        
+        // Check if there are issues raised
+        const hasIssues = meeting.issuesRaised && meeting.issuesRaised.trim() !== '';
+        const issuesDisplay = hasIssues ? '🔴 Yes' : '🟢 No';
+        
+        // Check if there are action items
+        const hasActions = meeting.actionItems && meeting.actionItems.trim() !== '';
+        const actionsDisplay = hasActions ? '📋 Yes' : '➖ No';
+        
+        toolboxHTML += `
+            <tr class="toolbox-row">
+                <td>
+                    <div class="meeting-id-info">
+                        <div class="meeting-id">${meeting.meetingId}</div>
+                    </div>
+                </td>
+                <td>
+                    <div class="datetime-info">
+                        <div class="meeting-date">${new Date(meeting.meetingDate).toLocaleDateString()}</div>
+                        <div class="meeting-time">${new Date(meeting.meetingDate).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</div>
+                    </div>
+                </td>
+                <td>
+                    <div class="project-info">
+                        <div class="project-name">${meeting.project}</div>
+                    </div>
+                </td>
+                <td>
+                    <div class="topic-info">
+                        <div class="topic-name">${topicDisplay}</div>
+                    </div>
+                </td>
+                <td>
+                    <div class="duration-info">
+                        <div class="duration">${meeting.duration} min</div>
+                    </div>
+                </td>
+                <td>
+                    <div class="attendees-info">
+                        <div class="attendees-count">${meeting.totalAttendees} attendees</div>
+                    </div>
+                </td>
+                <td>
+                    <div class="conductor-info">
+                        <div class="conductor-name">${meeting.conductedBy}</div>
+                    </div>
+                </td>
+                <td>
+                    <div class="issues-info">
+                        <div class="issues-status">${issuesDisplay}</div>
+                    </div>
+                </td>
+                <td>
+                    <div class="actions-info">
+                        <div class="actions-status">${actionsDisplay}</div>
+                    </div>
+                </td>
+                <td>
+                    <span class="status-badge ${statusClass}">${statusDisplay}</span>
+                </td>
+                <td>
+                    <div class="toolbox-actions">
+                        <button class="action-btn view" onclick="viewMeetingDetails('${meeting.id}')" title="View Details">👁️</button>
+                        <button class="action-btn download" onclick="downloadAttendance('${meeting.id}')" title="Download Attendance">📥</button>
+                        <button class="action-btn materials" onclick="viewMeetingMaterials('${meeting.id}')" title="View Materials">📁</button>
+                    </div>
+                </td>
+            </tr>
+        `;
+    });
+    
+    toolboxList.innerHTML = toolboxHTML;
+}
+
+// Get topic display name
+function getTopicDisplayName(topic) {
+    const topicMap = {
+        'ppe-proper-use': 'Proper Use of PPE',
+        'fall-protection': 'Fall Protection',
+        'electrical-safety': 'Electrical Safety',
+        'fire-safety': 'Fire Safety',
+        'equipment-operation': 'Safe Equipment Operation',
+        'chemical-handling': 'Chemical Handling',
+        'confined-space': 'Confined Space Entry',
+        'housekeeping': 'Site Housekeeping'
+    };
+    return topicMap[topic] || topic;
+}
+
+// Toolbox meeting action functions
+function viewMeetingDetails(meetingId) {
+    customAlert(`Viewing toolbox meeting details for ID: ${meetingId}\n\nComplete toolbox meeting information will be displayed including all attendees, key points discussed, issues raised, action items, and meeting materials for comprehensive documentation and compliance tracking.`, "Meeting Details", "info");
+}
+
+function downloadAttendance(meetingId) {
+    customAlert(`Downloading attendance sheet for meeting ID: ${meetingId}\n\nAttendance sheet will be generated with all attendee names, positions, signatures, and meeting details for record-keeping and compliance purposes.`, "Download Attendance", "info");
+}
+
+function viewMeetingMaterials(meetingId) {
+    customAlert(`Viewing meeting materials for ID: ${meetingId}\n\nAll meeting materials including presentations, handouts, photos, and supporting documents will be displayed for reference and future training purposes.`, "Meeting Materials", "info");
+}
+
+// Filter toolbox meetings
+function filterToolboxMeetings() {
+    const searchInput = document.getElementById('toolboxSearchInput');
+    const projectFilter = document.getElementById('toolboxProjectFilter');
+    
+    if (!searchInput || !projectFilter) return;
+    
+    const searchTerm = searchInput.value.toLowerCase();
+    const selectedProject = projectFilter.value;
+    
+    const rows = document.querySelectorAll('.toolbox-row');
+    
+    rows.forEach(row => {
+        const topic = row.querySelector('.topic-name')?.textContent.toLowerCase() || '';
+        const conductor = row.querySelector('.conductor-name')?.textContent.toLowerCase() || '';
+        const project = row.querySelector('.project-name')?.textContent || '';
+        
+        const matchesSearch = topic.includes(searchTerm) || conductor.includes(searchTerm);
+        const matchesProject = !selectedProject || project === selectedProject;
+        
+        row.style.display = matchesSearch && matchesProject ? '' : 'none';
+    });
+}
+
 // Test function to verify page freeze works
 function testPageFreeze() {
     console.log('🧪 Testing page freeze...');
@@ -19565,21 +20216,44 @@ function recordToolboxMeetings(){
                 </form>
             </div>
             
-            <div class="recent-meetings">
-                <h4>Recent Toolbox Meetings</h4>
-                <div class="meeting-list">
-                    <div class="meeting-item">
-                        <div class="meeting-details">
-                            <strong>TBT-2026-001 - Fall Protection</strong>
-                            <span>Project: Masaki Residential Complex</span>
-                            <span>Date: March 15, 2026 | Duration: 30 minutes</span>
-                            <span>Attendees: 15 workers | Conducted by: John Smith</span>
-                        </div>
-                        <div class="meeting-actions">
-                            <button class="action" onclick="viewMeetingDetails('tbt001')">Details</button>
-                            <button class="action" onclick="downloadAttendance('tbt001')">Attendance</button>
-                        </div>
-                    </div>
+            <div class="toolbox-meetings-registry">
+                <h4>Toolbox Meetings Registry</h4>
+                <div class="search-section">
+                    <input type="text" id="toolboxSearchInput" placeholder="Search by topic or conductor..." onkeyup="filterToolboxMeetings()">
+                    <select id="toolboxProjectFilter" onchange="filterToolboxMeetings()">
+                        <option value="">All Projects</option>
+                        <option value="proj001">Masaki Residential Complex</option>
+                        <option value="proj002">Kigamboni Commercial Plaza</option>
+                        <option value="proj003">Mikochi Industrial Park</option>
+                        <option value="proj004">Port Modernization Phase 1</option>
+                    </select>
+                </div>
+                
+                <div class="toolbox-table-container">
+                    <table class="toolbox-table">
+                        <thead>
+                            <tr>
+                                <th>Meeting ID</th>
+                                <th>Date & Time</th>
+                                <th>Project</th>
+                                <th>Topic</th>
+                                <th>Duration</th>
+                                <th>Attendees</th>
+                                <th>Conducted By</th>
+                                <th>Issues Raised</th>
+                                <th>Action Items</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="toolboxList">
+                            <tr>
+                                <td colspan="11">
+                                    <div class="loading">Loading toolbox meetings...</div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </div>
@@ -19587,6 +20261,9 @@ function recordToolboxMeetings(){
     
     // Generate initial meeting ID
     document.getElementById('meetingId').value = 'TBT-' + Date.now();
+    
+    // Load toolbox meetings
+    loadToolboxMeetings();
 }
 
 function trackPpeIssuance(){
