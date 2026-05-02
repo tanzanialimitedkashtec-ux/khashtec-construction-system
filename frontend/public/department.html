@@ -5479,6 +5479,200 @@ function approveSeniorHiring(){
 }
 
 function approveWorkforceBudget(){
+    // Load workforce budgets data first, then show the form
+    loadWorkforceBudgetsWithForm();
+}
+
+function loadWorkforceBudgetsWithForm() {
+    console.log('🔄 Loading workforce budgets...');
+    
+    const baseUrl = window.location.origin;
+    fetch(`${baseUrl}/api/workforce-budget`, {
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'Authorization': `Bearer ${sessionManager.getAuthToken()}`
+        }
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error(`Workforce budgets API: ${response.status}`);
+        }
+        return response.json();
+    })
+    .then(data => {
+        console.log('📊 Workforce budgets data:', data);
+        // Handle both single objects and arrays
+        const budgets = Array.isArray(data) ? data : (data && typeof data === 'object') ? [data] : [];
+        
+        // Show the form with data immediately
+        showWorkforceBudgetForm(budgets);
+    })
+    .catch(error => {
+        console.error('❌ Error loading workforce budgets:', error);
+        // Show form with error message
+        showWorkforceBudgetForm([]);
+    });
+}
+
+function showWorkforceBudgetForm(budgets) {
+    // Generate budget HTML
+    let budgetHTML = '';
+    if (!budgets || budgets.length === 0) {
+        budgetHTML = '<div class="no-budgets">No workforce budgets found</div>';
+    } else {
+        // Calculate statistics
+        const totalBudgetAmount = budgets.reduce((sum, budget) => {
+            const total = (parseFloat(budget.salaries_wages) || 0) + 
+                          (parseFloat(budget.training_development) || 0) + 
+                          (parseFloat(budget.employee_benefits) || 0) + 
+                          (parseFloat(budget.recruitment_costs) || 0);
+            return sum + total;
+        }, 0);
+        
+        const pendingBudgets = budgets.filter(b => b.status === 'Pending').length;
+        const approvedBudgets = budgets.filter(b => b.status === 'Approved').length;
+        const totalHeadcount = budgets.reduce((sum, budget) => sum + (parseInt(budget.current_headcount) || 0), 0);
+        
+        // Format currency
+        const formatCurrency = (amount) => {
+            const num = parseFloat(amount) || 0;
+            return `TZS ${num.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`;
+        };
+        
+        // Format dates
+        const formatDate = (dateStr) => {
+            if (!dateStr) return 'Not specified';
+            const date = new Date(dateStr);
+            return date.toLocaleDateString('en-US', { 
+                year: 'numeric', 
+                month: 'short', 
+                day: 'numeric' 
+            });
+        };
+        
+        // Status badge styling
+        const getStatusClass = (status) => {
+            switch(status) {
+                case 'Approved': return 'status-approved';
+                case 'Rejected': return 'status-rejected';
+                case 'Pending': return 'status-pending';
+                default: return 'status-pending';
+            }
+        };
+        
+        budgetHTML = `
+        <div class="budget-statistics">
+            <div class="stat-card">
+                <div class="stat-value">${budgets.length}</div>
+                <div class="stat-label">Total Budgets</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value">${pendingBudgets}</div>
+                <div class="stat-label">Pending Approval</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value">${approvedBudgets}</div>
+                <div class="stat-label">Approved</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value">${formatCurrency(totalBudgetAmount)}</div>
+                <div class="stat-label">Total Budget Amount</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value">${totalHeadcount}</div>
+                <div class="stat-label">Total Headcount</div>
+            </div>
+        </div>
+        
+        <div class="budget-table-container">
+            <table class="budget-table">
+                <thead>
+                    <tr>
+                        <th>Budget ID & Department</th>
+                        <th>Submitted By</th>
+                        <th>Headcount</th>
+                        <th>Budget Breakdown</th>
+                        <th>Total Amount</th>
+                        <th>Submission Date</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>`;
+        
+        budgets.forEach(budget => {
+            const totalAmount = (parseFloat(budget.salaries_wages) || 0) + 
+                              (parseFloat(budget.training_development) || 0) + 
+                              (parseFloat(budget.employee_benefits) || 0) + 
+                              (parseFloat(budget.recruitment_costs) || 0);
+            
+            budgetHTML += `
+            <tr class="budget-row" data-budget-id="${budget.id}">
+                <td>
+                    <div class="budget-id">#${budget.id}</div>
+                    <div class="budget-department">${budget.department || 'Not specified'}</div>
+                </td>
+                <td>
+                    <div class="submitter-info">
+                        <div class="submitter-name">Department Head</div>
+                        <div class="submitter-role">${budget.department || 'Not specified'} Manager</div>
+                    </div>
+                </td>
+                <td>
+                    <div class="headcount-info">
+                        <div class="headcount-number">${budget.current_headcount || 0} employees</div>
+                    </div>
+                </td>
+                <td>
+                    <div class="budget-breakdown">
+                        <div class="budget-item">
+                            <span class="category">Salaries:</span>
+                            <span class="amount">${formatCurrency(budget.salaries_wages)}</span>
+                        </div>
+                        <div class="budget-item">
+                            <span class="category">Training:</span>
+                            <span class="amount">${formatCurrency(budget.training_development)}</span>
+                        </div>
+                        <div class="budget-item">
+                            <span class="category">Benefits:</span>
+                            <span class="amount">${formatCurrency(budget.employee_benefits)}</span>
+                        </div>
+                        <div class="budget-item">
+                            <span class="category">Recruitment:</span>
+                            <span class="amount">${formatCurrency(budget.recruitment_costs)}</span>
+                        </div>
+                    </div>
+                </td>
+                <td>
+                    <div class="total-amount">
+                        <strong>${formatCurrency(totalAmount)}</strong>
+                    </div>
+                </td>
+                <td>
+                    <div class="submission-date">${formatDate(budget.submission_date)}</div>
+                </td>
+                <td>
+                    <span class="status-badge ${getStatusClass(budget.status)}">${budget.status || 'Pending'}</span>
+                </td>
+                <td>
+                    <div class="budget-actions">
+                        <button class="action-btn approve" onclick="approveBudget('${budget.id}')" title="Approve Budget">✅</button>
+                        <button class="action-btn modify" onclick="modifyBudget('${budget.id}')" title="Request Modification">📝</button>
+                        <button class="action-btn reject" onclick="rejectBudget('${budget.id}')" title="Reject Budget">❌</button>
+                        <button class="action-btn view" onclick="viewBudgetDetails('${budget.id}')" title="View Details">👁️</button>
+                    </div>
+                </td>
+            </tr>`;
+        });
+        
+        budgetHTML += `
+                </tbody>
+            </table>
+        </div>`;
+    }
+    
     showContent(`
         <div class="card">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
@@ -5503,7 +5697,7 @@ function approveWorkforceBudget(){
                     </div>
                     <h4>Workforce Budget Proposals</h4>
                     <div id="budget-proposals-container">
-                        <div class="loading">Loading workforce budgets...</div>
+                        ${budgetHTML}
                     </div>
                 </div>
                 
@@ -5526,9 +5720,6 @@ function approveWorkforceBudget(){
             </div>
         </div>
     `);
-    
-    // Load workforce budgets data
-    loadWorkforceBudgets();
 }
 
 // Load workforce budgets from API
@@ -5567,18 +5758,7 @@ function displayWorkforceBudgets(budgets) {
     
     const container = document.getElementById('budget-proposals-container');
     if (!container) {
-        console.warn('⚠️ Budget proposals container not found - reloading workforce budget view...');
-        // Reload the workforce budget view to ensure container exists
-        approveWorkforceBudget();
-        // Try again after a short delay
-        setTimeout(() => {
-            const retryContainer = document.getElementById('budget-proposals-container');
-            if (retryContainer) {
-                displayWorkforceBudgets(budgets);
-            } else {
-                console.error('❌ Budget proposals container still not found after reload');
-            }
-        }, 100);
+        console.error('❌ Budget proposals container not found');
         return;
     }
     
