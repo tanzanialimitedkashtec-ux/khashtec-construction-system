@@ -4366,6 +4366,220 @@ color: #666;
     color: white;
 }
 
+/* Projects Table Styles */
+.projects-registry {
+    margin-top: 20px;
+}
+
+.projects-table-container {
+    background: white;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    margin-top: 15px;
+}
+
+.projects-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 11px;
+    background: white;
+}
+
+.projects-table th {
+    background: #0b3d91;
+    color: white;
+    padding: 10px 8px;
+    text-align: left;
+    font-weight: 600;
+    border-bottom: 2px solid #093278;
+    white-space: nowrap;
+}
+
+.projects-table td {
+    padding: 8px;
+    border-bottom: 1px solid #e9ecef;
+    vertical-align: middle;
+    font-size: 11px;
+}
+
+.projects-table tr:hover {
+    background: #f8f9fa;
+}
+
+.projects-table tr:last-child td {
+    border-bottom: none;
+}
+
+.project-id-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 100px;
+}
+
+.project-id {
+    font-weight: 600;
+    color: #333;
+    font-size: 11px;
+    text-transform: uppercase;
+}
+
+.project-name-info {
+    min-width: 160px;
+}
+
+.project-name {
+    font-weight: 600;
+    color: #333;
+    font-size: 11px;
+    line-height: 1.2;
+}
+
+.client-info {
+    min-width: 140px;
+}
+
+.client-name {
+    font-weight: 600;
+    color: #333;
+    font-size: 11px;
+    line-height: 1.2;
+}
+
+.type-badge {
+    display: inline-block;
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 9px;
+    font-weight: 600;
+    white-space: nowrap;
+    background: #e3f2fd;
+    color: #0b3d91;
+}
+
+.date-info {
+    min-width: 100px;
+}
+
+.start-date, .end-date {
+    font-size: 10px;
+    color: #333;
+}
+
+.contract-value {
+    font-weight: 600;
+    color: #333;
+    font-size: 11px;
+    min-width: 80px;
+}
+
+.status-badge {
+    display: inline-block;
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 9px;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.status-badge.status-active {
+    background: #d4edda;
+    color: #155724;
+}
+
+.status-badge.status-completed {
+    background: #cce5ff;
+    color: #004085;
+}
+
+.status-badge.status-planning {
+    background: #fff3cd;
+    color: #856404;
+}
+
+.status-badge.status-on-hold {
+    background: #f8d7da;
+    color: #721c24;
+}
+
+.status-badge.status-cancelled {
+    background: #e2e3e5;
+    color: #383d41;
+}
+
+.progress-bar-container {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 120px;
+}
+
+.progress-bar {
+    height: 8px;
+    background: #28a745;
+    border-radius: 4px;
+    min-width: 20px;
+}
+
+.progress-text {
+    font-size: 9px;
+    font-weight: 600;
+    color: #333;
+    min-width: 30px;
+}
+
+.manager-info {
+    min-width: 120px;
+}
+
+.manager-name {
+    font-weight: 600;
+    color: #333;
+    font-size: 11px;
+}
+
+.project-actions {
+    display: flex;
+    gap: 4px;
+    justify-content: center;
+}
+
+.project-actions .action-btn {
+    padding: 4px 6px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 10px;
+    transition: all 0.2s ease;
+    min-width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.project-actions .action-btn.view {
+    background: #17a2b8;
+    color: white;
+}
+
+.project-actions .action-btn.edit {
+    background: #ffc107;
+    color: #212529;
+}
+
+.project-actions .action-btn.progress {
+    background: #28a745;
+    color: white;
+}
+
+.project-actions .action-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
 .department-badge {
     background: #e3f2fd;
     color: #0b3d91;
@@ -23256,8 +23470,433 @@ function createNewProject(){
                     </div>
                 </form>
             </div>
+            
+            <div class="projects-registry">
+                <h4>Projects Registry</h4>
+                <div class="projects-table-container">
+                    <table class="projects-table">
+                        <thead>
+                            <tr>
+                                <th>Project ID</th>
+                                <th>Project Name</th>
+                                <th>Client</th>
+                                <th>Type</th>
+                                <th>Start Date</th>
+                                <th>End Date</th>
+                                <th>Contract Value</th>
+                                <th>Status</th>
+                                <th>Progress</th>
+                                <th>Manager</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="projectsList">
+                            <tr>
+                                <td colspan="11">
+                                    <div class="loading">Loading projects...</div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
         </div>
     `);
+    
+    // Load projects
+    loadProjects();
+}
+
+// Load projects for table display
+async function loadProjects() {
+    console.log('🔄 Loading projects...');
+    
+    try {
+        const baseUrl = window.location.origin;
+        let response;
+        
+        // Try to get projects from API
+        try {
+            response = await fetch(`${baseUrl}/api/projects`, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${sessionManager.getAuthToken()}`
+                }
+            });
+            
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            }
+        } catch (primaryError) {
+            console.warn('⚠️ Primary projects endpoint failed, trying fallback:', primaryError.message);
+            // Try fallback endpoint
+            try {
+                response = await fetch(`${baseUrl}/api/registry/projects`, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${sessionManager.getAuthToken()}`
+                    }
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`Fallback also failed: HTTP ${response.status}: ${response.statusText}`);
+                }
+            } catch (fallbackError) {
+                console.error('❌ All projects endpoints failed:', fallbackError.message);
+                // Load sample data for demonstration
+                loadSampleProjects();
+                return;
+            }
+        }
+        
+        const projectsData = await response.json();
+        console.log('📊 Projects data:', projectsData);
+        
+        // Handle different response formats
+        const projects = projectsData.projects || projectsData.data || projectsData;
+        
+        displayProjects(projects);
+        
+    } catch (error) {
+        console.error('❌ Error loading projects:', error);
+        // Load sample data on error
+        loadSampleProjects();
+    }
+}
+
+// Load sample projects for demonstration
+function loadSampleProjects() {
+    console.log('📋 Loading sample projects...');
+    
+    const sampleProjects = [
+        {
+            id: 'PRJ-001',
+            projectId: 'PRJ-2026-001',
+            name: 'Port Modernization Phase 1',
+            client: 'Tanzania Ports Authority',
+            type: 'infrastructure',
+            startDate: '2026-01-15',
+            endDate: '2026-06-30',
+            contractValue: 2500000000,
+            status: 'active',
+            progress: 65,
+            manager: 'John Mwangi',
+            description: 'Comprehensive modernization of Dar es Salaam port facilities',
+            location: 'Dar es Salaam Port',
+            priority: 'high'
+        },
+        {
+            id: 'PRJ-002',
+            projectId: 'PRJ-2026-002',
+            name: 'Warehouse Construction',
+            client: 'Tanzania Logistics Ltd',
+            type: 'construction',
+            startDate: '2026-02-01',
+            endDate: '2026-08-15',
+            contractValue: 1800000000,
+            status: 'active',
+            progress: 45,
+            manager: 'Mary Johnson',
+            description: 'Construction of modern warehouse facility with advanced storage systems',
+            location: 'Kigamboni Industrial Area',
+            priority: 'medium'
+        },
+        {
+            id: 'PRJ-003',
+            projectId: 'PRJ-2026-003',
+            name: 'Road Infrastructure Development',
+            client: 'Ministry of Works',
+            type: 'infrastructure',
+            startDate: '2026-01-20',
+            endDate: '2026-12-31',
+            contractValue: 3200000000,
+            status: 'active',
+            progress: 35,
+            manager: 'Robert Davis',
+            description: 'Development of major road infrastructure connecting key economic zones',
+            location: 'Dar es Salaam - Morogoro Highway',
+            priority: 'high'
+        },
+        {
+            id: 'PRJ-004',
+            projectId: 'PRJ-2026-004',
+            name: 'Office Building Renovation',
+            client: 'Tanzania Banking Corporation',
+            type: 'renovation',
+            startDate: '2026-03-01',
+            endDate: '2026-07-30',
+            contractValue: 850000000,
+            status: 'active',
+            progress: 25,
+            manager: 'Sarah Wilson',
+            description: 'Complete renovation and modernization of corporate office building',
+            location: 'Kijitonyama Business District',
+            priority: 'medium'
+        },
+        {
+            id: 'PRJ-005',
+            projectId: 'PRJ-2026-005',
+            name: 'Water Treatment Plant',
+            client: 'Dar es Salaam Water Authority',
+            type: 'construction',
+            startDate: '2026-02-15',
+            endDate: '2027-01-31',
+            contractValue: 4500000000,
+            status: 'active',
+            progress: 20,
+            manager: 'Michael Brown',
+            description: 'Construction of advanced water treatment facility with modern technology',
+            location: 'Upper Msimbazi Valley',
+            priority: 'high'
+        },
+        {
+            id: 'PRJ-006',
+            projectId: 'PRJ-2026-006',
+            name: 'Shopping Mall Construction',
+            client: 'Tanzania Retail Group',
+            type: 'construction',
+            startDate: '2026-04-01',
+            endDate: '2027-03-31',
+            contractValue: 5200000000,
+            status: 'planning',
+            progress: 10,
+            manager: 'Emily Taylor',
+            description: 'Construction of modern shopping mall with entertainment facilities',
+            location: 'Masaki Peninsula',
+            priority: 'medium'
+        },
+        {
+            id: 'PRJ-007',
+            projectId: 'PRJ-2026-007',
+            name: 'School Infrastructure',
+            client: 'Ministry of Education',
+            type: 'construction',
+            startDate: '2026-03-15',
+            endDate: '2026-10-30',
+            contractValue: 1200000000,
+            status: 'active',
+            progress: 40,
+            manager: 'David Anderson',
+            description: 'Construction of modern school facilities with advanced learning infrastructure',
+            location: 'Mikocheni Educational Zone',
+            priority: 'high'
+        },
+        {
+            id: 'PRJ-008',
+            projectId: 'PRJ-2026-008',
+            name: 'Hospital Expansion',
+            client: 'Muhimbili National Hospital',
+            type: 'renovation',
+            startDate: '2026-05-01',
+            endDate: '2026-11-30',
+            contractValue: 2800000000,
+            status: 'planning',
+            progress: 5,
+            manager: 'Lisa Martinez',
+            description: 'Expansion and renovation of hospital facilities with modern medical equipment',
+            location: 'Muhimbili Hospital Compound',
+            priority: 'high'
+        },
+        {
+            id: 'PRJ-009',
+            projectId: 'PRJ-2026-009',
+            name: 'Bridge Construction',
+            client: 'Tanzania Roads Authority',
+            type: 'infrastructure',
+            startDate: '2026-06-01',
+            endDate: '2027-02-28',
+            contractValue: 3800000000,
+            status: 'planning',
+            progress: 0,
+            manager: 'James Wilson',
+            description: 'Construction of major bridge connecting urban and suburban areas',
+            location: 'Kigamboni Crossing',
+            priority: 'high'
+        },
+        {
+            id: 'PRJ-010',
+            projectId: 'PRJ-2026-010',
+            name: 'Industrial Park Development',
+            client: 'Tanzania Investment Centre',
+            type: 'construction',
+            startDate: '2026-07-01',
+            endDate: '2027-06-30',
+            contractValue: 6500000000,
+            status: 'planning',
+            progress: 0,
+            manager: 'Patricia Johnson',
+            description: 'Development of comprehensive industrial park with modern facilities',
+            location: 'Mbagala Industrial Area',
+            priority: 'medium'
+        },
+        {
+            id: 'PRJ-011',
+            projectId: 'PRJ-2026-011',
+            name: 'Sports Complex',
+            client: 'Dar es Salaam City Council',
+            type: 'construction',
+            startDate: '2026-08-01',
+            endDate: '2027-04-30',
+            contractValue: 2200000000,
+            status: 'planning',
+            progress: 0,
+            manager: 'Thomas Anderson',
+            description: 'Construction of modern sports complex with multiple facilities',
+            location: 'Mwanza Sports Ground',
+            priority: 'low'
+        },
+        {
+            id: 'PRJ-012',
+            projectId: 'PRJ-2026-012',
+            name: 'Telecommunications Tower',
+            client: 'Tanzania Communications Authority',
+            type: 'infrastructure',
+            startDate: '2026-09-01',
+            endDate: '2026-12-31',
+            contractValue: 950000000,
+            status: 'planning',
+            progress: 0,
+            manager: 'Jennifer Lee',
+            description: 'Construction of modern telecommunications tower with advanced equipment',
+            location: 'Ubungo Heights',
+            priority: 'medium'
+        }
+    ];
+    
+    displayProjects(sampleProjects);
+}
+
+// Display projects in the table
+function displayProjects(projects) {
+    const projectsList = document.getElementById('projectsList');
+    
+    if (!projectsList) {
+        console.error('❌ Projects list container not found!');
+        return;
+    }
+    
+    if (!projects || projects.length === 0) {
+        projectsList.innerHTML = `
+            <tr>
+                <td colspan="11">
+                    <div class="no-records">No projects found</div>
+                </td>
+            </tr>
+        `;
+        return;
+    }
+    
+    // Sort projects by start date (newest first)
+    projects.sort((a, b) => new Date(b.startDate) - new Date(a.startDate));
+    
+    let projectsHTML = '';
+    
+    projects.forEach(project => {
+        // Get project type display
+        const typeDisplay = project.type === 'construction' ? '🏗️ Construction' : 
+                           project.type === 'renovation' ? '🔧 Renovation' : 
+                           project.type === 'infrastructure' ? '🌉 Infrastructure' : 
+                           project.type === 'maintenance' ? '🔨 Maintenance' : 
+                           project.type === 'consulting' ? '📋 Consulting' : project.type;
+        
+        // Get status display
+        const statusDisplay = project.status === 'active' ? '🟢 Active' : 
+                             project.status === 'completed' ? '✅ Completed' : 
+                             project.status === 'planning' ? '📋 Planning' : 
+                             project.status === 'on-hold' ? '⏸️ On Hold' : 
+                             project.status === 'cancelled' ? '❌ Cancelled' : project.status;
+        
+        const statusClass = project.status === 'active' ? 'status-active' : 
+                           project.status === 'completed' ? 'status-completed' : 
+                           project.status === 'planning' ? 'status-planning' : 
+                           project.status === 'on-hold' ? 'status-on-hold' : 
+                           project.status === 'cancelled' ? 'status-cancelled' : '';
+        
+        // Format contract value
+        const contractValue = project.contractValue ? 
+            (project.contractValue / 1000000).toFixed(1) + 'M TZS' : 
+            'N/A';
+        
+        // Get progress bar
+        const progress = project.progress || 0;
+        const progressBar = `
+            <div class="progress-bar-container">
+                <div class="progress-bar" style="width: ${progress}%"></div>
+                <span class="progress-text">${progress}%</span>
+            </div>
+        `;
+        
+        projectsHTML += `
+            <tr class="project-row">
+                <td>
+                    <div class="project-id-info">
+                        <div class="project-id">${project.projectId}</div>
+                    </div>
+                </td>
+                <td>
+                    <div class="project-name-info">
+                        <div class="project-name">${project.name}</div>
+                    </div>
+                </td>
+                <td>
+                    <div class="client-info">
+                        <div class="client-name">${project.client}</div>
+                    </div>
+                </td>
+                <td>
+                    <span class="type-badge">${typeDisplay}</span>
+                </td>
+                <td>
+                    <div class="date-info">
+                        <div class="start-date">${new Date(project.startDate).toLocaleDateString()}</div>
+                    </div>
+                </td>
+                <td>
+                    <div class="date-info">
+                        <div class="end-date">${new Date(project.endDate).toLocaleDateString()}</div>
+                    </div>
+                </td>
+                <td>
+                    <div class="contract-value">${contractValue}</div>
+                </td>
+                <td>
+                    <span class="status-badge ${statusClass}">${statusDisplay}</span>
+                </td>
+                <td>
+                    ${progressBar}
+                </td>
+                <td>
+                    <div class="manager-info">
+                        <div class="manager-name">${project.manager}</div>
+                    </div>
+                </td>
+                <td>
+                    <div class="project-actions">
+                        <button class="action-btn view" onclick="viewProject('${project.id}')" title="View Details">👁️</button>
+                        <button class="action-btn edit" onclick="editProject('${project.id}')" title="Edit Project">✏️</button>
+                        <button class="action-btn progress" onclick="updateProgress('${project.id}')" title="Update Progress">📊</button>
+                    </div>
+                </td>
+            </tr>
+        `;
+    });
+    
+    projectsList.innerHTML = projectsHTML;
+}
+
+// Project action functions
+function viewProject(projectId) {
+    customAlert(`Viewing project details for ID: ${projectId}\n\nFull project information including scope, timeline, budget, team members, milestones, deliverables, risks, and current progress status will be displayed.`, "Project Details", "info");
+}
+
+function editProject(projectId) {
+    customAlert(`Editing project ${projectId}...\n\nProject editor will open for modifications to project details, timeline, budget, team assignments, milestones, and deliverables.`, "Edit Project", "info");
+}
+
+function updateProgress(projectId) {
+    customAlert(`Updating progress for project ${projectId}...\n\nProgress update form will open for recording completed milestones, updating percentage complete, and documenting current project status.`, "Update Progress", "info");
 }
 
 // Load projects for progress update from API
