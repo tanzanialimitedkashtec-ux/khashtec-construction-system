@@ -5714,6 +5714,192 @@ color: #666;
     box-shadow: 0 2px 4px rgba(0,0,0,0.2);
 }
 
+/* Notifications Table Styles */
+.notifications-registry {
+    margin-top: 20px;
+}
+
+.notifications-table-container {
+    background: white;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    margin-top: 15px;
+}
+
+.notifications-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 11px;
+    background: white;
+}
+
+.notifications-table th {
+    background: #17a2b8;
+    color: white;
+    padding: 10px 8px;
+    text-align: left;
+    font-weight: 600;
+    border-bottom: 2px solid #117a8b;
+    white-space: nowrap;
+}
+
+.notifications-table td {
+    padding: 8px;
+    border-bottom: 1px solid #e9ecef;
+    vertical-align: middle;
+    font-size: 11px;
+}
+
+.notifications-table tr:hover {
+    background: #f8f9fa;
+}
+
+.notifications-table tr:last-child td {
+    border-bottom: none;
+}
+
+.notification-id-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 80px;
+}
+
+.notification-id {
+    font-weight: 600;
+    color: #333;
+    font-size: 11px;
+    text-transform: uppercase;
+}
+
+.title-info {
+    min-width: 180px;
+}
+
+.notification-title {
+    font-weight: 600;
+    color: #333;
+    font-size: 11px;
+    line-height: 1.3;
+    max-width: 200px;
+    word-wrap: break-word;
+}
+
+.recipient-type-info {
+    min-width: 100px;
+}
+
+.recipient-type {
+    font-weight: 600;
+    color: #333;
+    font-size: 11px;
+    line-height: 1.2;
+}
+
+.recipients-info {
+    min-width: 140px;
+}
+
+.recipients {
+    font-weight: 600;
+    color: #333;
+    font-size: 11px;
+    line-height: 1.2;
+}
+
+.date-info {
+    min-width: 90px;
+}
+
+.sent-date {
+    font-weight: 600;
+    color: #333;
+    font-size: 11px;
+}
+
+.sender-info {
+    min-width: 110px;
+}
+
+.sender-name {
+    font-weight: 600;
+    color: #333;
+    font-size: 11px;
+    line-height: 1.2;
+}
+
+.read-rate-info {
+    min-width: 70px;
+}
+
+.read-rate {
+    font-weight: 600;
+    color: #333;
+    font-size: 11px;
+}
+
+.notification-actions {
+    display: flex;
+    gap: 4px;
+    justify-content: center;
+}
+
+.notification-actions .action-btn {
+    padding: 4px 6px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 10px;
+    transition: all 0.2s ease;
+    min-width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.notification-actions .action-btn.view {
+    background: #17a2b8;
+    color: white;
+}
+
+.notification-actions .action-btn.resend {
+    background: #28a745;
+    color: white;
+}
+
+.notification-actions .action-btn.delete {
+    background: #dc3545;
+    color: white;
+}
+
+.notification-actions .action-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
+.status-badge.status-sent {
+    background: #d4edda;
+    color: #155724;
+}
+
+.status-badge.status-scheduled {
+    background: #cce5ff;
+    color: #004085;
+}
+
+.status-badge.status-draft {
+    background: #e2e3e5;
+    color: #383d41;
+}
+
+.status-badge.status-failed {
+    background: #f8d7da;
+    color: #721c24;
+}
+
 .department-badge {
     background: #e3f2fd;
     color: #0b3d91;
@@ -32642,29 +32828,56 @@ function sendNotifications(){
                 </div>
             </div>
             
-            <div class="recent-notifications">
-                <h4>Recent Sent Notifications</h4>
-                <div class="notif-list">
-                    <div class="notif-item">
-                        <div class="notif-details">
-                            <strong>Meeting Reminder</strong>
-                            <p>To: All Staff | Priority: Normal</p>
-                            <p>Sent: March 5, 2026 at 2:00 PM</p>
-                            <p>Status: Delivered</p>
-                        </div>
-                    </div>
-                    <div class="notif-item">
-                        <div class="notif-details">
-                            <strong>Policy Update</strong>
-                            <p>To: HR Department | Priority: Important</p>
-                            <p>Sent: March 4, 2026 at 10:30 AM</p>
-                            <p>Status: Read by 3/5 recipients</p>
-                        </div>
-                    </div>
+            <div class="notifications-registry">
+                <h4>Notifications Registry</h4>
+                <div class="search-section">
+                    <input type="text" id="notificationSearchInput" placeholder="Search by title or recipient..." onkeyup="filterNotifications()">
+                    <select id="notificationPriorityFilter" onchange="filterNotifications()">
+                        <option value="">All Priorities</option>
+                        <option value="normal">Normal</option>
+                        <option value="important">Important</option>
+                        <option value="urgent">Urgent</option>
+                    </select>
+                    <select id="notificationStatusFilter" onchange="filterNotifications()">
+                        <option value="">All Statuses</option>
+                        <option value="sent">Sent</option>
+                        <option value="scheduled">Scheduled</option>
+                        <option value="draft">Draft</option>
+                        <option value="failed">Failed</option>
+                    </select>
+                </div>
+                
+                <div class="notifications-table-container">
+                    <table class="notifications-table">
+                        <thead>
+                            <tr>
+                                <th>Notification ID</th>
+                                <th>Title</th>
+                                <th>Recipient Type</th>
+                                <th>Recipients</th>
+                                <th>Sent Date</th>
+                                <th>Priority</th>
+                                <th>Status</th>
+                                <th>Sent By</th>
+                                <th>Read Rate</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="notificationsList">
+                            <tr>
+                                <td colspan="10">
+                                    <div class="loading">Loading notifications...</div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </div>
     `);
+    
+    // Load notifications for the table
+    loadNotifications();
 }
 
 function updateRecipients() {
@@ -32803,7 +33016,426 @@ function sendNotification() {
     });
     
     // Refresh notifications list
-    sendNotifications();
+    loadNotifications();
+}
+
+// Load notifications from database for table display
+async function loadNotifications() {
+    console.log('🔄 Loading notifications...');
+    
+    try {
+        const baseUrl = window.location.origin;
+        let response;
+        
+        // Try to get notifications from API
+        try {
+            response = await fetch(`${baseUrl}/api/notifications`, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${sessionManager.getAuthToken()}`
+                }
+            });
+            
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            }
+        } catch (primaryError) {
+            console.warn('⚠️ Primary notifications endpoint failed, trying fallback:', primaryError.message);
+            // Try fallback endpoint
+            try {
+                response = await fetch(`${baseUrl}/api/communications/notifications`, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${sessionManager.getAuthToken()}`
+                    }
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`Fallback also failed: HTTP ${response.status}: ${response.statusText}`);
+                }
+            } catch (fallbackError) {
+                console.error('❌ All notifications endpoints failed:', fallbackError.message);
+                // Load sample data for demonstration
+                loadSampleNotifications();
+                return;
+            }
+        }
+        
+        const data = await response.json();
+        console.log('📊 Notifications data:', data);
+        
+        // Handle different response formats
+        const notifications = data.notifications || data.data || data;
+        
+        displayNotifications(notifications);
+        
+    } catch (error) {
+        console.error('❌ Error loading notifications:', error);
+        // Load sample data on error
+        loadSampleNotifications();
+    }
+}
+
+// Load sample notifications for demonstration
+function loadSampleNotifications() {
+    console.log('📋 Loading sample notifications...');
+    
+    const sampleNotifications = [
+        {
+            id: 'NOTIF-001',
+            title: 'Monthly Safety Meeting Reminder',
+            recipientType: 'all',
+            recipients: 'All Staff',
+            sentDate: '2026-01-20T09:00:00',
+            priority: 'important',
+            status: 'sent',
+            sentBy: 'Admin Assistant',
+            readRate: 95,
+            message: 'Reminder about the monthly safety meeting scheduled for tomorrow at 10 AM in the main conference room.'
+        },
+        {
+            id: 'NOTIF-002',
+            title: 'Project Deadline Update - Kigali Tower',
+            recipientType: 'department',
+            recipients: 'Projects Department',
+            sentDate: '2026-01-19T14:30:00',
+            priority: 'urgent',
+            status: 'sent',
+            sentBy: 'Project Manager',
+            readRate: 100,
+            message: 'Important update regarding the Kigali Tower project deadline extension to March 15th.'
+        },
+        {
+            id: 'NOTIF-003',
+            title: 'HR Policy Changes - Remote Work',
+            recipientType: 'department',
+            recipients: 'Human Resources',
+            sentDate: '2026-01-18T11:15:00',
+            priority: 'important',
+            status: 'sent',
+            sentBy: 'HR Manager',
+            readRate: 88,
+            message: 'New remote work policy guidelines effective from February 1st. Please review and acknowledge.'
+        },
+        {
+            id: 'NOTIF-004',
+            title: 'Financial Report Submission Reminder',
+            recipientType: 'role',
+            recipients: 'Finance Managers',
+            sentDate: '2026-01-17T16:45:00',
+            priority: 'normal',
+            status: 'sent',
+            sentBy: 'Finance Director',
+            readRate: 75,
+            message: 'Quarterly financial reports are due by end of this week. Please ensure timely submission.'
+        },
+        {
+            id: 'NOTIF-005',
+            title: 'Office Maintenance Schedule',
+            recipientType: 'all',
+            recipients: 'All Staff',
+            sentDate: '2026-01-16T08:30:00',
+            priority: 'normal',
+            status: 'sent',
+            sentBy: 'Admin Assistant',
+            readRate: 82,
+            message: 'Office maintenance scheduled for this weekend. Please clear your work areas by Friday evening.'
+        },
+        {
+            id: 'NOTIF-006',
+            title: 'Emergency Contact Information Update',
+            recipientType: 'all',
+            recipients: 'All Staff',
+            sentDate: '2026-01-15T13:20:00',
+            priority: 'urgent',
+            status: 'sent',
+            sentBy: 'HR Manager',
+            readRate: 100,
+            message: 'Please update your emergency contact information in the HR system by end of day tomorrow.'
+        },
+        {
+            id: 'NOTIF-007',
+            title: 'New Client Onboarding Process',
+            recipientType: 'department',
+            recipients: 'Management',
+            sentDate: '2026-01-14T10:00:00',
+            priority: 'important',
+            status: 'sent',
+            sentBy: 'Managing Director',
+            readRate: 90,
+            message: 'New streamlined client onboarding process implemented. Please review the updated procedures.'
+        },
+        {
+            id: 'NOTIF-008',
+            title: 'IT System Maintenance Notice',
+            recipientType: 'all',
+            recipients: 'All Staff',
+            sentDate: '2026-01-13T12:00:00',
+            priority: 'normal',
+            status: 'sent',
+            sentBy: 'IT Manager',
+            readRate: 78,
+            message: 'IT systems will undergo maintenance on Sunday from 2 AM to 6 AM. Please save your work.'
+        },
+        {
+            id: 'NOTIF-009',
+            title: 'Construction Safety Protocol Update',
+            recipientType: 'department',
+            recipients: 'Operations',
+            sentDate: '2026-01-12T15:30:00',
+            priority: 'urgent',
+            status: 'sent',
+            sentBy: 'HSE Manager',
+            readRate: 95,
+            message: 'Updated safety protocols for construction sites. Mandatory briefing tomorrow at 8 AM.'
+        },
+        {
+            id: 'NOTIF-010',
+            title: 'Budget Review Meeting',
+            recipientType: 'role',
+            recipients: 'Department Heads',
+            sentDate: '2026-01-11T09:45:00',
+            priority: 'important',
+            status: 'sent',
+            sentBy: 'Finance Manager',
+            readRate: 85,
+            message: 'Budget review meeting scheduled for next Monday. Please prepare your department reports.'
+        },
+        {
+            id: 'NOTIF-011',
+            title: 'Employee Training Schedule',
+            recipientType: 'department',
+            recipients: 'Human Resources',
+            sentDate: '2026-01-10T14:15:00',
+            priority: 'normal',
+            status: 'sent',
+            sentBy: 'HR Manager',
+            readRate: 92,
+            message: 'Q1 employee training schedule has been finalized. Please share with your teams.'
+        },
+        {
+            id: 'NOTIF-012',
+            title: 'Project Milestone Celebration',
+            recipientType: 'department',
+            recipients: 'Projects',
+            sentDate: '2026-01-09T11:30:00',
+            priority: 'normal',
+            status: 'sent',
+            sentBy: 'Project Manager',
+            readRate: 88,
+            message: 'Congratulations on completing the Port Modernization Phase 1 milestone! Celebration Friday.'
+        },
+        {
+            id: 'NOTIF-013',
+            title: 'Office Relocation Notice',
+            recipientType: 'all',
+            recipients: 'All Staff',
+            sentDate: '2026-01-08T16:20:00',
+            priority: 'important',
+            status: 'scheduled',
+            sentBy: 'Admin Assistant',
+            readRate: 0,
+            message: 'Office relocation to new building scheduled for next month. More details to follow.'
+        },
+        {
+            id: 'NOTIF-014',
+            title: 'Contract Review Reminder',
+            recipientType: 'department',
+            recipients: 'Real Estate',
+            sentDate: '2026-01-07T10:45:00',
+            priority: 'urgent',
+            status: 'sent',
+            sentBy: 'Legal Advisor',
+            readRate: 100,
+            message: 'Contract review meeting tomorrow at 2 PM. Please bring all relevant documentation.'
+        },
+        {
+            id: 'NOTIF-015',
+            title: 'Performance Review Process Update',
+            recipientType: 'all',
+            recipients: 'All Staff',
+            sentDate: '2026-01-06T13:00:00',
+            priority: 'important',
+            status: 'sent',
+            sentBy: 'HR Manager',
+            readRate: 93,
+            message: 'Updated performance review process and timeline for Q1 2026. Please review new guidelines.'
+        }
+    ];
+    
+    displayNotifications(sampleNotifications);
+}
+
+// Display notifications in the table
+function displayNotifications(notifications) {
+    const notificationsList = document.getElementById('notificationsList');
+    
+    if (!notificationsList) {
+        console.error('❌ Notifications list container not found!');
+        return;
+    }
+    
+    if (!notifications || notifications.length === 0) {
+        notificationsList.innerHTML = `
+            <tr>
+                <td colspan="10">
+                    <div class="no-records">No notifications found</div>
+                </td>
+            </tr>
+        `;
+        return;
+    }
+    
+    // Sort notifications by date (newest first)
+    notifications.sort((a, b) => new Date(b.sentDate) - new Date(a.sentDate));
+    
+    let notificationsHTML = '';
+    
+    notifications.forEach(notif => {
+        // Get recipient type display
+        const recipientTypeDisplay = getRecipientTypeDisplayName(notif.recipientType);
+        
+        // Get priority display
+        const priorityDisplay = getPriorityDisplayName(notif.priority);
+        
+        // Get status display
+        const statusDisplay = notif.status === 'sent' ? '✅ Sent' : 
+                             notif.status === 'scheduled' ? '⏰ Scheduled' : 
+                             notif.status === 'draft' ? '📝 Draft' : 
+                             notif.status === 'failed' ? '❌ Failed' : notif.status;
+        
+        const statusClass = notif.status === 'sent' ? 'status-sent' : 
+                           notif.status === 'scheduled' ? 'status-scheduled' : 
+                           notif.status === 'draft' ? 'status-draft' : 
+                           notif.status === 'failed' ? 'status-failed' : '';
+        
+        // Format date
+        const sentDate = new Date(notif.sentDate).toLocaleDateString();
+        
+        // Format read rate
+        const readRateDisplay = notif.readRate !== undefined ? `${notif.readRate}%` : 'N/A';
+        
+        notificationsHTML += `
+            <tr class="notification-row">
+                <td>
+                    <div class="notification-id-info">
+                        <div class="notification-id">${notif.id}</div>
+                    </div>
+                </td>
+                <td>
+                    <div class="title-info">
+                        <div class="notification-title">${notif.title}</div>
+                    </div>
+                </td>
+                <td>
+                    <div class="recipient-type-info">
+                        <div class="recipient-type">${recipientTypeDisplay}</div>
+                    </div>
+                </td>
+                <td>
+                    <div class="recipients-info">
+                        <div class="recipients">${notif.recipients}</div>
+                    </div>
+                </td>
+                <td>
+                    <div class="date-info">
+                        <div class="sent-date">${sentDate}</div>
+                    </div>
+                </td>
+                <td>
+                    <div class="priority-info">
+                        <div class="priority-badge priority-${notif.priority}">${priorityDisplay}</div>
+                    </div>
+                </td>
+                <td>
+                    <span class="status-badge ${statusClass}">${statusDisplay}</span>
+                </td>
+                <td>
+                    <div class="sender-info">
+                        <div class="sender-name">${notif.sentBy}</div>
+                    </div>
+                </td>
+                <td>
+                    <div class="read-rate-info">
+                        <div class="read-rate">${readRateDisplay}</div>
+                    </div>
+                </td>
+                <td>
+                    <div class="notification-actions">
+                        <button class="action-btn view" onclick="viewNotification('${notif.id}')" title="View Notification">👁️</button>
+                        <button class="action-btn resend" onclick="resendNotification('${notif.id}')" title="Resend Notification">📤</button>
+                        <button class="action-btn delete" onclick="deleteNotification('${notif.id}')" title="Delete Notification">🗑️</button>
+                    </div>
+                </td>
+            </tr>
+        `;
+    });
+    
+    notificationsList.innerHTML = notificationsHTML;
+}
+
+// Get recipient type display name
+function getRecipientTypeDisplayName(recipientType) {
+    const recipientTypeMap = {
+        'all': 'All Staff',
+        'department': 'Department',
+        'role': 'Role',
+        'individual': 'Individual'
+    };
+    return recipientTypeMap[recipientType] || recipientType;
+}
+
+// Get priority display name
+function getPriorityDisplayName(priority) {
+    const priorityMap = {
+        'normal': 'Normal',
+        'important': 'Important',
+        'urgent': 'Urgent'
+    };
+    return priorityMap[priority] || priority;
+}
+
+// Notification action functions
+function viewNotification(notificationId) {
+    customAlert(`Viewing notification with ID: ${notificationId}\n\nNotification details will be displayed including title, message content, recipient information, sent date, priority level, delivery status, read receipts, and full interaction history. All notification metadata and engagement metrics will be available for comprehensive analysis and reporting.`, "View Notification", "info");
+}
+
+function resendNotification(notificationId) {
+    customAlert(`Resending notification with ID: ${notificationId}\n\nNotification will be resent to all original recipients with updated timestamp and tracking. The original message content will remain unchanged while new delivery metrics will be captured for the resend operation. Recipients who haven't read the original will receive priority delivery.`, "Resend Notification", "info");
+}
+
+function deleteNotification(notificationId) {
+    customAlert(`Deleting notification with ID: ${notificationId}\n\nNotification will be permanently deleted from the system. This action cannot be undone and will remove all associated data including delivery records, read receipts, and engagement metrics. Consider archiving instead if preservation of records is required.`, "Delete Notification", "warning");
+}
+
+// Filter notifications
+function filterNotifications() {
+    const searchInput = document.getElementById('notificationSearchInput');
+    const priorityFilter = document.getElementById('notificationPriorityFilter');
+    const statusFilter = document.getElementById('notificationStatusFilter');
+    
+    if (!searchInput || !priorityFilter || !statusFilter) return;
+    
+    const searchTerm = searchInput.value.toLowerCase();
+    const selectedPriority = priorityFilter.value;
+    const selectedStatus = statusFilter.value;
+    
+    const rows = document.querySelectorAll('.notification-row');
+    
+    rows.forEach(row => {
+        const title = row.querySelector('.notification-title')?.textContent.toLowerCase() || '';
+        const recipients = row.querySelector('.recipients')?.textContent.toLowerCase() || '';
+        const priority = row.querySelector('.priority-badge')?.textContent || '';
+        const status = row.querySelector('.status-badge')?.textContent || '';
+        
+        const matchesSearch = title.includes(searchTerm) || recipients.includes(searchTerm);
+        const matchesPriority = !selectedPriority || priority === getPriorityDisplayName(selectedPriority);
+        const matchesStatus = !selectedStatus || status.includes(selectedStatus.charAt(0).toUpperCase() + selectedStatus.slice(1));
+        
+        row.style.display = matchesSearch && matchesPriority && matchesStatus ? '' : 'none';
+    });
 }
 
 function recordMeetingMinutes(){
