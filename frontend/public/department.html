@@ -4540,6 +4540,12 @@ function loadMenu(){
         addMenu("Track Attendance", attendance);
         addMenu("Manage Leave & Contracts", manageLeaveContracts);
         addMenu("Manage Policies", loadPolicies);
+        addMenu("Administrative Operations", adminOperations);
+        addMenu("Compliance Management", () => complianceManagement());
+        addMenu("Staff Oversight", () => staffOversight());
+        addMenu("Policy Implementation", policyImplementation);
+        addMenu("Document Management", documentManagement);
+        addMenu("User Account Management", () => userAccountManagement());
         addMenu("Create New Project", createNewProject);
         addMenu("Update Project Progress", updateProjectProgress);
         addMenu("Assign Tasks", () => assignTasks());
