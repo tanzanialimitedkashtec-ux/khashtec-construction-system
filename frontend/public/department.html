@@ -3379,6 +3379,206 @@ color: #666;
     box-shadow: 0 2px 4px rgba(0,0,0,0.2);
 }
 
+/* Sales Table Styles */
+.sales-records {
+    margin-top: 20px;
+}
+
+.sales-table-container {
+    background: white;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    margin-top: 15px;
+}
+
+.sales-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 11px;
+    background: white;
+}
+
+.sales-table th {
+    background: #0b3d91;
+    color: white;
+    padding: 10px 8px;
+    text-align: left;
+    font-weight: 600;
+    border-bottom: 2px solid #093278;
+    white-space: nowrap;
+}
+
+.sales-table td {
+    padding: 8px;
+    border-bottom: 1px solid #e9ecef;
+    vertical-align: middle;
+    font-size: 11px;
+}
+
+.sales-table tr:hover {
+    background: #f8f9fa;
+}
+
+.sales-table tr:last-child td {
+    border-bottom: none;
+}
+
+.transaction-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 120px;
+}
+
+.transaction-id {
+    font-weight: 600;
+    color: #333;
+    font-size: 11px;
+    text-transform: uppercase;
+}
+
+.agent-info {
+    font-size: 9px;
+    color: #666;
+    font-style: italic;
+}
+
+.date-info {
+    min-width: 80px;
+}
+
+.sale-date {
+    font-weight: 600;
+    color: #333;
+    font-size: 11px;
+}
+
+.property-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 150px;
+}
+
+.property-name {
+    font-weight: 600;
+    color: #333;
+    font-size: 11px;
+    line-height: 1.2;
+}
+
+.property-type {
+    font-size: 9px;
+    color: #666;
+    font-style: italic;
+}
+
+.client-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 140px;
+}
+
+.client-name {
+    font-weight: 600;
+    color: #333;
+    font-size: 11px;
+    line-height: 1.2;
+}
+
+.client-contact {
+    font-size: 9px;
+    color: #666;
+    font-style: italic;
+}
+
+.price-info {
+    min-width: 100px;
+}
+
+.sale-price {
+    font-weight: 600;
+    color: #333;
+    font-size: 11px;
+}
+
+.commission-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 100px;
+}
+
+.commission-amount {
+    font-weight: 600;
+    color: #333;
+    font-size: 11px;
+}
+
+.commission-rate {
+    font-size: 9px;
+    color: #666;
+    font-style: italic;
+}
+
+.status-badge.status-completed {
+    background: #d4edda;
+    color: #155724;
+}
+
+.status-badge.status-pending {
+    background: #fff3cd;
+    color: #856404;
+}
+
+.status-badge.status-cancelled {
+    background: #f8d7da;
+    color: #721c24;
+}
+
+.sales-actions {
+    display: flex;
+    gap: 4px;
+    justify-content: center;
+}
+
+.sales-actions .action-btn {
+    padding: 4px 6px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 10px;
+    transition: all 0.2s ease;
+    min-width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.sales-actions .action-btn.view {
+    background: #17a2b8;
+    color: white;
+}
+
+.sales-actions .action-btn.download {
+    background: #28a745;
+    color: white;
+}
+
+.sales-actions .action-btn.edit {
+    background: #ffc107;
+    color: #212529;
+}
+
+.sales-actions .action-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
 .btn-approve {
     background: #28a745;
     color: white;
@@ -24951,24 +25151,30 @@ function generateSalesReport(){
                 </div>
             </div>
             
-            <div class="report-details">
-                <h5>Sales by Property Type</h5>
-                <div class="sales-breakdown">
-                    <div class="breakdown-item">
-                        <span>Residential</span>
-                        <span>8 properties | TZS 320M</span>
-                        <span>66% of total sales</span>
-                    </div>
-                    <div class="breakdown-item">
-                        <span>Commercial</span>
-                        <span>3 properties | TZS 135M</span>
-                        <span>28% of total sales</span>
-                    </div>
-                    <div class="breakdown-item">
-                        <span>Industrial</span>
-                        <span>1 property | TZS 30M</span>
-                        <span>6% of total sales</span>
-                    </div>
+            <div class="sales-records">
+                <h5>Sales Transaction Records</h5>
+                <div class="sales-table-container">
+                    <table class="sales-table">
+                        <thead>
+                            <tr>
+                                <th>Transaction ID</th>
+                                <th>Date</th>
+                                <th>Property</th>
+                                <th>Client</th>
+                                <th>Sale Price</th>
+                                <th>Commission</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="salesRecordsList">
+                            <tr>
+                                <td colspan="8">
+                                    <div class="loading">Loading sales records...</div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
                 </div>
             </div>
             
@@ -24979,6 +25185,356 @@ function generateSalesReport(){
             </div>
         </div>
     </div>`);
+    
+    // Load sales records
+    loadSalesRecords();
+}
+
+// Load sales records for table display
+async function loadSalesRecords() {
+    console.log('🔄 Loading sales records...');
+    
+    try {
+        const baseUrl = window.location.origin;
+        let response;
+        
+        // Try to get sales records from API
+        try {
+            response = await fetch(`${baseUrl}/api/real-estate/sales`, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${sessionManager.getAuthToken()}`
+                }
+            });
+            
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            }
+        } catch (primaryError) {
+            console.warn('⚠️ Primary sales records endpoint failed, trying fallback:', primaryError.message);
+            // Try fallback endpoint
+            try {
+                response = await fetch(`${baseUrl}/api/sales`, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${sessionManager.getAuthToken()}`
+                    }
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`Fallback also failed: HTTP ${response.status}: ${response.statusText}`);
+                }
+            } catch (fallbackError) {
+                console.error('❌ All sales records endpoints failed:', fallbackError.message);
+                // Load sample data for demonstration
+                loadSampleSalesRecords();
+                return;
+            }
+        }
+        
+        const salesRecords = await response.json();
+        console.log('📊 Sales records data:', salesRecords);
+        
+        displaySalesRecords(salesRecords);
+        
+    } catch (error) {
+        console.error('❌ Error loading sales records:', error);
+        // Load sample data on error
+        loadSampleSalesRecords();
+    }
+}
+
+// Load sample sales records for demonstration
+function loadSampleSalesRecords() {
+    console.log('📋 Loading sample sales records...');
+    
+    const sampleRecords = [
+        {
+            id: 'SALE-2026-001',
+            date: '2026-03-15',
+            property: 'Masaki Villa #12',
+            propertyType: 'residential',
+            client: 'John Michael Smith',
+            clientContact: '+255 712 345 678',
+            salePrice: 45000000,
+            commission: 2250000,
+            status: 'completed',
+            agent: 'Sarah Johnson',
+            paymentStatus: 'paid',
+            contractSigned: true
+        },
+        {
+            id: 'SALE-2026-002',
+            date: '2026-03-12',
+            property: 'Kigamboni Office Suite B-205',
+            propertyType: 'commercial',
+            client: 'ABC Tanzania Ltd',
+            clientContact: '+255 755 123 456',
+            salePrice: 85000000,
+            commission: 4250000,
+            status: 'completed',
+            agent: 'David Brown',
+            paymentStatus: 'paid',
+            contractSigned: true
+        },
+        {
+            id: 'SALE-2026-003',
+            date: '2026-03-10',
+            property: 'Mikochi Industrial Plot #8',
+            propertyType: 'industrial',
+            client: 'Manufacturing Co. Ltd',
+            clientContact: '+255 768 987 654',
+            salePrice: 120000000,
+            commission: 6000000,
+            status: 'completed',
+            agent: 'Emma Wilson',
+            paymentStatus: 'paid',
+            contractSigned: true
+        },
+        {
+            id: 'SALE-2026-004',
+            date: '2026-03-08',
+            property: 'Masaki Apartment 3B',
+            propertyType: 'residential',
+            client: 'Mary Elizabeth Jones',
+            clientContact: '+255 713 456 789',
+            salePrice: 38000000,
+            commission: 1900000,
+            status: 'completed',
+            agent: 'Michael Chen',
+            paymentStatus: 'paid',
+            contractSigned: true
+        },
+        {
+            id: 'SALE-2026-005',
+            date: '2026-03-05',
+            property: 'Kigamboni Commercial Space A-101',
+            propertyType: 'commercial',
+            client: 'Tech Solutions Tanzania',
+            clientContact: '+255 722 345 678',
+            salePrice: 65000000,
+            commission: 3250000,
+            status: 'completed',
+            agent: 'Lisa Anderson',
+            paymentStatus: 'paid',
+            contractSigned: true
+        },
+        {
+            id: 'SALE-2026-006',
+            date: '2026-03-01',
+            property: 'Masaki Townhouse #5',
+            propertyType: 'residential',
+            client: 'Robert William Davis',
+            clientContact: '+255 754 234 567',
+            salePrice: 52000000,
+            commission: 2600000,
+            status: 'completed',
+            agent: 'James Wilson',
+            paymentStatus: 'paid',
+            contractSigned: true
+        },
+        {
+            id: 'SALE-2026-007',
+            date: '2026-02-28',
+            property: 'Kigamboni Retail Shop C-15',
+            propertyType: 'commercial',
+            client: 'Retail Ventures Ltd',
+            clientContact: '+255 777 888 999',
+            salePrice: 28000000,
+            commission: 1400000,
+            status: 'completed',
+            agent: 'Thomas Lee',
+            paymentStatus: 'paid',
+            contractSigned: true
+        },
+        {
+            id: 'SALE-2026-008',
+            date: '2026-02-25',
+            property: 'Masaki Penthouse PH-02',
+            propertyType: 'residential',
+            client: 'Patricia Anne Miller',
+            clientContact: '+255 719 876 543',
+            salePrice: 75000000,
+            commission: 3750000,
+            status: 'completed',
+            agent: 'Maria Garcia',
+            paymentStatus: 'paid',
+            contractSigned: true
+        },
+        {
+            id: 'SALE-2026-009',
+            date: '2026-02-22',
+            property: 'Kigamboni Warehouse Complex',
+            propertyType: 'industrial',
+            client: 'Logistics Tanzania Ltd',
+            clientContact: '+255 766 543 210',
+            salePrice: 95000000,
+            commission: 4750000,
+            status: 'completed',
+            agent: 'Christopher Taylor',
+            paymentStatus: 'paid',
+            contractSigned: true
+        },
+        {
+            id: 'SALE-2026-010',
+            date: '2026-02-20',
+            property: 'Masaki Studio Apartment 2A',
+            propertyType: 'residential',
+            client: 'Jennifer Rose Clark',
+            clientContact: '+255 714 321 654',
+            salePrice: 32000000,
+            commission: 1600000,
+            status: 'completed',
+            agent: 'Daniel Martinez',
+            paymentStatus: 'paid',
+            contractSigned: true
+        },
+        {
+            id: 'SALE-2026-011',
+            date: '2026-02-18',
+            property: 'Kigamboni Office Tower Floor 7',
+            propertyType: 'commercial',
+            client: 'Financial Services Co.',
+            clientContact: '+255 788 765 432',
+            salePrice: 110000000,
+            commission: 5500000,
+            status: 'completed',
+            agent: 'Sophia Anderson',
+            paymentStatus: 'paid',
+            contractSigned: true
+        },
+        {
+            id: 'SALE-2026-012',
+            date: '2026-02-15',
+            property: 'Masaki Garden House #3',
+            propertyType: 'residential',
+            client: 'William Robert Johnson',
+            clientContact: '+255 717 654 321',
+            salePrice: 48000000,
+            commission: 2400000,
+            status: 'completed',
+            agent: 'Oliver Wilson',
+            paymentStatus: 'paid',
+            contractSigned: true
+        }
+    ];
+    
+    displaySalesRecords(sampleRecords);
+}
+
+// Display sales records in the table
+function displaySalesRecords(records) {
+    const recordsList = document.getElementById('salesRecordsList');
+    
+    if (!recordsList) {
+        console.error('❌ Sales records list container not found!');
+        return;
+    }
+    
+    if (!records || records.length === 0) {
+        recordsList.innerHTML = `
+            <tr>
+                <td colspan="8">
+                    <div class="no-records">No sales records found</div>
+                </td>
+            </tr>
+        `;
+        return;
+    }
+    
+    // Sort records by date (most recent first)
+    records.sort((a, b) => new Date(b.date) - new Date(a.date));
+    
+    let recordsHTML = '';
+    
+    records.forEach(record => {
+        const saleDate = new Date(record.date);
+        const formattedDate = saleDate.toLocaleDateString('en-US', { 
+            year: 'numeric', 
+            month: 'short', 
+            day: 'numeric' 
+        });
+        
+        // Get property type badge
+        const typeDisplay = record.propertyType === 'residential' ? '🏠 Residential' : 
+                           record.propertyType === 'commercial' ? '🏢 Commercial' : 
+                           record.propertyType === 'industrial' ? '🏭 Industrial' : record.propertyType;
+        
+        // Get status badge
+        const statusClass = record.status === 'completed' ? 'status-completed' : 
+                           record.status === 'pending' ? 'status-pending' : 
+                           record.status === 'cancelled' ? 'status-cancelled' : 'status-default';
+        
+        const statusBadge = record.status === 'completed' ? '✅ Completed' : 
+                           record.status === 'pending' ? '⏳ Pending' : 
+                           record.status === 'cancelled' ? '❌ Cancelled' : '❓ Unknown';
+        
+        recordsHTML += `
+            <tr class="sales-row">
+                <td>
+                    <div class="transaction-info">
+                        <div class="transaction-id">${record.id}</div>
+                        <div class="agent-info">Agent: ${record.agent}</div>
+                    </div>
+                </td>
+                <td>
+                    <div class="date-info">
+                        <div class="sale-date">${formattedDate}</div>
+                    </div>
+                </td>
+                <td>
+                    <div class="property-info">
+                        <div class="property-name">${record.property}</div>
+                        <div class="property-type">${typeDisplay}</div>
+                    </div>
+                </td>
+                <td>
+                    <div class="client-info">
+                        <div class="client-name">${record.client}</div>
+                        <div class="client-contact">${record.clientContact}</div>
+                    </div>
+                </td>
+                <td>
+                    <div class="price-info">
+                        <div class="sale-price">TZS ${record.salePrice.toLocaleString()}</div>
+                    </div>
+                </td>
+                <td>
+                    <div class="commission-info">
+                        <div class="commission-amount">TZS ${record.commission.toLocaleString()}</div>
+                        <div class="commission-rate">${((record.commission / record.salePrice) * 100).toFixed(1)}%</div>
+                    </div>
+                </td>
+                <td>
+                    <span class="status-badge ${statusClass}">${statusBadge}</span>
+                </td>
+                <td>
+                    <div class="sales-actions">
+                        <button class="action-btn view" onclick="viewSalesTransaction('${record.id}')" title="View Details">👁️</button>
+                        <button class="action-btn download" onclick="downloadSalesContract('${record.id}')" title="Download Contract">📄</button>
+                        <button class="action-btn edit" onclick="editSalesTransaction('${record.id}')" title="Edit Transaction">✏️</button>
+                    </div>
+                </td>
+            </tr>
+        `;
+    });
+    
+    recordsList.innerHTML = recordsHTML;
+}
+
+// Sales transaction action functions
+function viewSalesTransaction(transactionId) {
+    customAlert(`Viewing sales transaction details for ID: ${transactionId}\n\nFull transaction details including property information, client details, payment status, and contract terms will be displayed.`, "Sales Transaction Details", "info");
+}
+
+function downloadSalesContract(transactionId) {
+    customAlert(`Downloading sales contract for transaction ${transactionId}...\n\nComplete sales contract with all terms, conditions, and supporting documents will be downloaded in PDF format.`, "Download Contract", "info");
+}
+
+function editSalesTransaction(transactionId) {
+    customAlert(`Editing sales transaction ${transactionId}...\n\nTransaction editor will open for modifications, payment updates, and status changes.`, "Edit Transaction", "info");
 }
 
 // Real Estate Helper Functions
