@@ -4029,6 +4029,183 @@ background: #f8f9fa;
         font-size: 10px;
     }
 }
+
+/* Modern Table Styles for Approve Completed Work */
+.table-responsive {
+    overflow-x: auto;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.modern-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: white;
+    border-radius: 8px;
+    overflow: hidden;
+    font-size: 14px;
+}
+
+.modern-table thead {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+}
+
+.modern-table th {
+    padding: 12px 15px;
+    text-align: left;
+    font-weight: 600;
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border-bottom: 2px solid rgba(255,255,255,0.1);
+}
+
+.modern-table td {
+    padding: 12px 15px;
+    border-bottom: 1px solid #e9ecef;
+    vertical-align: middle;
+}
+
+.modern-table tbody tr {
+    transition: all 0.3s ease;
+    border-bottom: 1px solid #f1f3f4;
+}
+
+.modern-table tbody tr:hover {
+    background: #f8f9ff;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.modern-table tbody tr:last-child {
+    border-bottom: none;
+}
+
+/* Quality Score Indicators */
+.quality-score {
+    display: inline-block;
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.quality-score.excellent {
+    background: linear-gradient(135deg, #28a745, #20c997);
+    color: white;
+}
+
+.quality-score.good {
+    background: linear-gradient(135deg, #17a2b8, #138496);
+    color: white;
+}
+
+.quality-score.acceptable {
+    background: linear-gradient(135deg, #ffc107, #e0a800);
+    color: #212529;
+}
+
+.quality-score.poor {
+    background: linear-gradient(135deg, #dc3545, #c82333);
+    color: white;
+}
+
+/* Compliance Status Indicators */
+.compliance-status {
+    display: inline-block;
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.compliance-status.fully-compliant {
+    background: linear-gradient(135deg, #28a745, #20c997);
+    color: white;
+}
+
+.compliance-status.minor-issues {
+    background: linear-gradient(135deg, #ffc107, #e0a800);
+    color: #212529;
+}
+
+.compliance-status.major-issues {
+    background: linear-gradient(135deg, #fd7e14, #e85d04);
+    color: white;
+}
+
+.compliance-status.non-compliant {
+    background: linear-gradient(135deg, #dc3545, #c82333);
+    color: white;
+}
+
+/* Action Buttons in Table */
+.modern-table .action {
+    padding: 6px 12px;
+    margin: 2px;
+    border: none;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.modern-table .action:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
+/* Responsive Design for Tables */
+@media (max-width: 768px) {
+    .modern-table {
+        font-size: 12px;
+    }
+    
+    .modern-table th,
+    .modern-table td {
+        padding: 8px 10px;
+    }
+    
+    .modern-table .action {
+        padding: 4px 8px;
+        font-size: 10px;
+        margin: 1px;
+    }
+    
+    .quality-score,
+    .compliance-status {
+        font-size: 10px;
+        padding: 2px 6px;
+    }
+}
+
+@media (max-width: 480px) {
+    .modern-table th {
+        font-size: 11px;
+        padding: 6px 8px;
+    }
+    
+    .modern-table td {
+        padding: 6px 8px;
+        font-size: 11px;
+    }
+    
+    .modern-table .action {
+        padding: 3px 6px;
+        font-size: 9px;
+        display: block;
+        margin: 2px 0;
+        width: 100%;
+    }
+}
 </style>
 </head>
 <body>
@@ -19643,39 +19820,45 @@ function approveCompletedWork(){
                 </button>
             </div>
             
-            <div class="approval-overview">
-                <h4>Work Pending Approval</h4>
-                <div class="pending-work">
-                    <div class="work-item">
-                        <div class="work-details">
-                            <strong>Foundation Excavation</strong>
-                            <span>Project: Port Modernization Phase 1</span>
-                            <span>Completed by: John Doe - Construction Worker</span>
-                            <span>Completed Date: March 15, 2026</span>
-                            <span>Quality Score: 95%</span>
-                        </div>
-                        <div class="work-actions">
-                            <button class="action" onclick="approveWork('work001')" style="background: #28a745;">Approve</button>
-                            <button class="action" onclick="requestRework('work001')" style="background: #ffc107;">Request Rework</button>
-                            <button class="action" onclick="rejectWork('work001')" style="background: #dc3545;">Reject</button>
-                        </div>
-                    </div>
-                    
-                    <div class="work-item">
-                        <div class="work-details">
-                            <strong>Steel Framework Installation</strong>
-                            <span>Project: Warehouse Construction</span>
-                            <span>Completed by: Mike Johnson - Engineer</span>
-                            <span>Completed Date: March 14, 2026</span>
-                            <span>Quality Score: 88%</span>
-                        </div>
-                        <div class="work-actions">
-                            <button class="action" onclick="approveWork('work002')" style="background: #28a745;">Approve</button>
-                            <button class="action" onclick="requestRework('work002')" style="background: #ffc107;">Request Rework</button>
-                            <button class="action" onclick="rejectWork('work002')" style="background: #dc3545;">Reject</button>
-                        </div>
-                    </div>
-                </div>
+            <div class="table-responsive">
+                <table class="modern-table">
+                    <thead>
+                        <tr>
+                            <th>Work Details</th>
+                            <th>Project</th>
+                            <th>Completed By</th>
+                            <th>Completed Date</th>
+                            <th>Quality Score</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>Foundation Excavation</strong></td>
+                            <td>Port Modernization Phase 1</td>
+                            <td>John Doe - Construction Worker</td>
+                            <td>March 15, 2026</td>
+                            <td><span class="quality-score excellent">95%</span></td>
+                            <td>
+                                <button class="action" onclick="approveWork('work001')" style="background: #28a745;">Approve</button>
+                                <button class="action" onclick="requestRework('work001')" style="background: #ffc107;">Request Rework</button>
+                                <button class="action" onclick="rejectWork('work001')" style="background: #dc3545;">Reject</button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><strong>Steel Framework Installation</strong></td>
+                            <td>Warehouse Construction</td>
+                            <td>Mike Johnson - Engineer</td>
+                            <td>March 14, 2026</td>
+                            <td><span class="quality-score good">88%</span></td>
+                            <td>
+                                <button class="action" onclick="approveWork('work002')" style="background: #28a745;">Approve</button>
+                                <button class="action" onclick="requestRework('work002')" style="background: #ffc107;">Request Rework</button>
+                                <button class="action" onclick="rejectWork('work002')" style="background: #dc3545;">Reject</button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
             </div>
             
             <div id="approvalFormContainer" style="display: none;">
@@ -19748,15 +19931,27 @@ function approveCompletedWork(){
             
             <div class="approval-history">
                 <h4>Recent Approvals</h4>
-                <div class="approval-list">
-                    <div class="approval-item">
-                        <div class="approval-details">
-                            <strong>Concrete Foundation</strong>
-                            <span>Approved: March 14, 2026</span>
-                            <span>Quality: Excellent | Status: Fully Compliant</span>
-                            <span>Approved by: Project Manager</span>
-                        </div>
-                    </div>
+                <div class="table-responsive">
+                    <table class="modern-table">
+                        <thead>
+                            <tr>
+                                <th>Work Item</th>
+                                <th>Approved Date</th>
+                                <th>Quality Rating</th>
+                                <th>Compliance Status</th>
+                                <th>Approved By</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>Concrete Foundation</strong></td>
+                                <td>March 14, 2026</td>
+                                <td><span class="quality-score excellent">Excellent</span></td>
+                                <td><span class="compliance-status fully-compliant">Fully Compliant</span></td>
+                                <td>Project Manager</td>
+                            </tr>
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </div>
