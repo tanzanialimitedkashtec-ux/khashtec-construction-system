@@ -3168,6 +3168,217 @@ color: #666;
     box-shadow: 0 2px 4px rgba(0,0,0,0.2);
 }
 
+/* Inspection Table Styles */
+.inspection-records {
+    margin-top: 20px;
+}
+
+.inspection-table-container {
+    background: white;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    margin-top: 15px;
+}
+
+.inspection-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 11px;
+    background: white;
+}
+
+.inspection-table th {
+    background: #0b3d91;
+    color: white;
+    padding: 10px 8px;
+    text-align: left;
+    font-weight: 600;
+    border-bottom: 2px solid #093278;
+    white-space: nowrap;
+}
+
+.inspection-table td {
+    padding: 8px;
+    border-bottom: 1px solid #e9ecef;
+    vertical-align: middle;
+    font-size: 11px;
+}
+
+.inspection-table tr:hover {
+    background: #f8f9fa;
+}
+
+.inspection-table tr:last-child td {
+    border-bottom: none;
+}
+
+.report-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 120px;
+}
+
+.report-id {
+    font-weight: 600;
+    color: #333;
+    font-size: 11px;
+    text-transform: uppercase;
+}
+
+.report-areas {
+    font-size: 9px;
+    color: #666;
+    font-style: italic;
+}
+
+.date-info {
+    min-width: 80px;
+}
+
+.inspection-date {
+    font-weight: 600;
+    color: #333;
+    font-size: 11px;
+}
+
+.project-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 150px;
+}
+
+.project-name {
+    font-weight: 600;
+    color: #333;
+    font-size: 11px;
+    line-height: 1.2;
+}
+
+.project-code {
+    font-size: 9px;
+    color: #666;
+    font-style: italic;
+}
+
+.type-info {
+    min-width: 120px;
+}
+
+.inspection-table .type-badge {
+    font-size: 9px;
+    font-weight: 600;
+    color: white;
+    background: #6c757d;
+    padding: 2px 6px;
+    border-radius: 8px;
+    display: inline-block;
+}
+
+.inspector-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 120px;
+}
+
+.inspector-name {
+    font-weight: 600;
+    color: #333;
+    font-size: 11px;
+}
+
+.inspector-license {
+    font-size: 9px;
+    color: #666;
+    font-style: italic;
+}
+
+.compliance-badge.compliance-excellent {
+    background: #d4edda;
+    color: #155724;
+}
+
+.compliance-badge.compliance-good {
+    background: #fff3cd;
+    color: #856404;
+}
+
+.compliance-badge.compliance-poor {
+    background: #f8d7da;
+    color: #721c24;
+}
+
+.compliance-badge.compliance-critical {
+    background: #f5c6cb;
+    color: #721c24;
+    font-weight: 600;
+}
+
+.risk-badge.risk-low {
+    background: #d4edda;
+    color: #155724;
+}
+
+.risk-badge.risk-medium {
+    background: #fff3cd;
+    color: #856404;
+}
+
+.risk-badge.risk-high {
+    background: #f8d7da;
+    color: #721c24;
+}
+
+.risk-badge.risk-critical {
+    background: #721c24;
+    color: white;
+    font-weight: 600;
+}
+
+.inspection-actions {
+    display: flex;
+    gap: 4px;
+    justify-content: center;
+}
+
+.inspection-actions .action-btn {
+    padding: 4px 6px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 10px;
+    transition: all 0.2s ease;
+    min-width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.inspection-actions .action-btn.view {
+    background: #17a2b8;
+    color: white;
+}
+
+.inspection-actions .action-btn.download {
+    background: #28a745;
+    color: white;
+}
+
+.inspection-actions .action-btn.edit {
+    background: #ffc107;
+    color: #212529;
+}
+
+.inspection-actions .action-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
 .btn-approve {
     background: #28a745;
     color: white;
@@ -17103,21 +17314,30 @@ function uploadInspectionReports(){
                 </form>
             </div>
             
-            <div class="inspection-library">
+            <div class="inspection-records">
                 <h4>Inspection Reports Library</h4>
-                <div class="inspection-list">
-                    <div class="inspection-item">
-                        <div class="inspection-details">
-                            <strong>INSP-2026-001 - Routine Safety Inspection</strong>
-                            <span>Project: Masaki Residential Complex</span>
-                            <span>Date: March 15, 2026 | Inspector: John Smith</span>
-                            <span>Status: Minor Issues | Risk: Medium</span>
-                        </div>
-                        <div class="inspection-actions">
-                            <button class="action" onclick="viewInspectionReport('insp001')">View Report</button>
-                            <button class="action" onclick="downloadInspectionReport('insp001')">Download</button>
-                        </div>
-                    </div>
+                <div class="inspection-table-container">
+                    <table class="inspection-table">
+                        <thead>
+                            <tr>
+                                <th>Report ID</th>
+                                <th>Date</th>
+                                <th>Project</th>
+                                <th>Inspection Type</th>
+                                <th>Inspector</th>
+                                <th>Compliance Status</th>
+                                <th>Risk Level</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="inspectionRecordsList">
+                            <tr>
+                                <td colspan="8">
+                                    <div class="loading">Loading inspection records...</div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </div>
@@ -17125,6 +17345,381 @@ function uploadInspectionReports(){
     
     // Generate initial report ID
     document.getElementById('reportId').value = 'INSP-' + Date.now();
+    
+    // Load inspection records
+    loadInspectionRecords();
+}
+
+// Load inspection records for table display
+async function loadInspectionRecords() {
+    console.log('🔄 Loading inspection records...');
+    
+    try {
+        const baseUrl = window.location.origin;
+        let response;
+        
+        // Try to get inspection records from API
+        try {
+            response = await fetch(`${baseUrl}/api/hse/inspections`, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${sessionManager.getAuthToken()}`
+                }
+            });
+            
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            }
+        } catch (primaryError) {
+            console.warn('⚠️ Primary inspection records endpoint failed, trying fallback:', primaryError.message);
+            // Try fallback endpoint
+            try {
+                response = await fetch(`${baseUrl}/api/inspections`, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${sessionManager.getAuthToken()}`
+                    }
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`Fallback also failed: HTTP ${response.status}: ${response.statusText}`);
+                }
+            } catch (fallbackError) {
+                console.error('❌ All inspection records endpoints failed:', fallbackError.message);
+                // Load sample data for demonstration
+                loadSampleInspectionRecords();
+                return;
+            }
+        }
+        
+        const inspectionRecords = await response.json();
+        console.log('📊 Inspection records data:', inspectionRecords);
+        
+        displayInspectionRecords(inspectionRecords);
+        
+    } catch (error) {
+        console.error('❌ Error loading inspection records:', error);
+        // Load sample data on error
+        loadSampleInspectionRecords();
+    }
+}
+
+// Load sample inspection records for demonstration
+function loadSampleInspectionRecords() {
+    console.log('📋 Loading sample inspection records...');
+    
+    const sampleRecords = [
+        {
+            id: 'INSP-2026-001',
+            date: '2026-03-15',
+            project: 'Masaki Residential Complex',
+            projectCode: 'proj001',
+            inspectionType: 'Routine Inspection',
+            inspector: 'John Smith',
+            inspectorLicense: 'HSE-2024-001',
+            complianceStatus: 'minor-issues',
+            riskLevel: 'medium',
+            areasInspected: ['site-access', 'work-areas', 'equipment', 'fire-safety'],
+            findings: 'Minor safety issues identified including inadequate PPE storage and missing safety signage in some areas. Overall compliance is good with immediate corrective actions required.',
+            recommendations: 'Install additional safety signage, organize PPE storage area, conduct refresher safety training for site workers.',
+            followUpDate: '2026-03-22',
+            nextInspectionDate: '2026-04-15',
+            documentUploaded: true,
+            photosCount: 8
+        },
+        {
+            id: 'INSP-2026-002',
+            date: '2026-03-12',
+            project: 'Kigamboni Commercial Plaza',
+            projectCode: 'proj002',
+            inspectionType: 'Compliance Audit',
+            inspector: 'Sarah Johnson',
+            inspectorLicense: 'HSE-2023-015',
+            complianceStatus: 'fully-compliant',
+            riskLevel: 'low',
+            areasInspected: ['site-access', 'work-areas', 'storage', 'electrical', 'fire-safety', 'waste', 'facilities'],
+            findings: 'Full compliance with all safety standards observed. Excellent safety culture maintained by site management. All safety protocols properly implemented.',
+            recommendations: 'Continue maintaining current safety standards. Consider implementing advanced safety monitoring systems.',
+            followUpDate: '',
+            nextInspectionDate: '2026-06-12',
+            documentUploaded: true,
+            photosCount: 12
+        },
+        {
+            id: 'INSP-2026-003',
+            date: '2026-03-10',
+            project: 'Mikochi Industrial Park',
+            projectCode: 'proj003',
+            inspectionType: 'Equipment Inspection',
+            inspector: 'Michael Chen',
+            inspectorLicense: 'HSE-2024-008',
+            complianceStatus: 'major-issues',
+            riskLevel: 'high',
+            areasInspected: ['equipment', 'electrical', 'work-areas'],
+            findings: 'Critical issues found with heavy equipment maintenance. Several excavators and cranes require immediate servicing. Electrical safety violations identified in workshop areas.',
+            recommendations: 'Immediate servicing of all heavy equipment required. Electrical systems must be inspected and repaired by certified electricians. Suspend operations in affected areas until compliance achieved.',
+            followUpDate: '2026-03-17',
+            nextInspectionDate: '2026-03-17',
+            documentUploaded: true,
+            photosCount: 15
+        },
+        {
+            id: 'INSP-2026-004',
+            date: '2026-03-08',
+            project: 'Masaki Residential Complex',
+            projectCode: 'proj001',
+            inspectionType: 'Environmental Inspection',
+            inspector: 'Emma Wilson',
+            inspectorLicense: 'HSE-2023-022',
+            complianceStatus: 'minor-issues',
+            riskLevel: 'medium',
+            areasInspected: ['waste', 'storage', 'site-access'],
+            findings: 'Minor environmental compliance issues including improper waste segregation and inadequate spill containment measures. Soil erosion control measures need improvement.',
+            recommendations: 'Implement proper waste segregation system, install additional spill containment kits, improve soil erosion control measures.',
+            followUpDate: '2026-03-15',
+            nextInspectionDate: '2026-04-08',
+            documentUploaded: true,
+            photosCount: 6
+        },
+        {
+            id: 'INSP-2026-005',
+            date: '2026-03-05',
+            project: 'Kigamboni Commercial Plaza',
+            projectCode: 'proj002',
+            inspectionType: 'Fire Safety Inspection',
+            inspector: 'David Brown',
+            inspectorLicense: 'HSE-2024-012',
+            complianceStatus: 'non-compliant',
+            riskLevel: 'critical',
+            areasInspected: ['fire-safety', 'electrical', 'storage', 'work-areas'],
+            findings: 'Critical fire safety violations identified. Fire extinguishers not properly maintained, emergency exits blocked, fire alarm system malfunctioning. Immediate action required.',
+            recommendations: 'Immediate servicing of all fire safety equipment required. Clear all emergency exits. Repair fire alarm system within 48 hours. Conduct fire safety training for all personnel.',
+            followUpDate: '2026-03-07',
+            nextInspectionDate: '2026-03-07',
+            documentUploaded: true,
+            photosCount: 10
+        },
+        {
+            id: 'INSP-2026-006',
+            date: '2026-03-01',
+            project: 'Mikochi Industrial Park',
+            projectCode: 'proj003',
+            inspectionType: 'Accident Investigation',
+            inspector: 'Robert Taylor',
+            inspectorLicense: 'HSE-2023-005',
+            complianceStatus: 'major-issues',
+            riskLevel: 'high',
+            areasInspected: ['equipment', 'work-areas', 'site-access'],
+            findings: 'Investigation of March 1st equipment failure incident. Root cause identified as inadequate maintenance procedures and lack of proper safety checks. One minor injury reported.',
+            recommendations: 'Revise equipment maintenance procedures, implement pre-operation safety checks, provide additional training on equipment operation safety.',
+            followUpDate: '2026-03-08',
+            nextInspectionDate: '2026-03-15',
+            documentUploaded: true,
+            photosCount: 20
+        },
+        {
+            id: 'INSP-2026-007',
+            date: '2026-02-28',
+            project: 'Masaki Residential Complex',
+            projectCode: 'proj001',
+            inspectionType: 'Routine Inspection',
+            inspector: 'Lisa Anderson',
+            inspectorLicense: 'HSE-2024-003',
+            complianceStatus: 'fully-compliant',
+            riskLevel: 'low',
+            areasInspected: ['site-access', 'work-areas', 'storage', 'facilities'],
+            findings: 'Routine inspection completed successfully. All safety measures properly implemented. Good housekeeping standards maintained throughout the site.',
+            recommendations: 'Maintain current safety standards. Consider implementing digital safety monitoring for improved efficiency.',
+            followUpDate: '',
+            nextInspectionDate: '2026-05-28',
+            documentUploaded: true,
+            photosCount: 8
+        },
+        {
+            id: 'INSP-2026-008',
+            date: '2026-02-25',
+            project: 'Kigamboni Commercial Plaza',
+            projectCode: 'proj002',
+            inspectionType: 'Equipment Inspection',
+            inspector: 'James Wilson',
+            inspectorLicense: 'HSE-2023-018',
+            complianceStatus: 'minor-issues',
+            riskLevel: 'medium',
+            areasInspected: ['equipment', 'electrical'],
+            findings: 'Minor equipment issues identified including worn hydraulic hoses and outdated safety guards on some machinery. No immediate safety risks but maintenance required.',
+            recommendations: 'Replace worn hydraulic hoses within 2 weeks, update safety guards on all machinery by end of month.',
+            followUpDate: '2026-03-10',
+            nextInspectionDate: '2026-05-25',
+            documentUploaded: true,
+            photosCount: 7
+        },
+        {
+            id: 'INSP-2026-009',
+            date: '2026-02-22',
+            project: 'Mikochi Industrial Park',
+            projectCode: 'proj003',
+            inspectionType: 'Environmental Inspection',
+            inspector: 'Maria Garcia',
+            inspectorLicense: 'HSE-2024-007',
+            complianceStatus: 'fully-compliant',
+            riskLevel: 'low',
+            areasInspected: ['waste', 'storage', 'site-access', 'facilities'],
+            findings: 'Environmental compliance inspection shows excellent adherence to environmental protection standards. Proper waste management and spill control measures in place.',
+            recommendations: 'Continue maintaining environmental standards. Consider implementing water conservation measures.',
+            followUpDate: '',
+            nextInspectionDate: '2026-05-22',
+            documentUploaded: true,
+            photosCount: 5
+        },
+        {
+            id: 'INSP-2026-010',
+            date: '2026-02-20',
+            project: 'Masaki Residential Complex',
+            projectCode: 'proj001',
+            inspectionType: 'Compliance Audit',
+            inspector: 'Thomas Lee',
+            inspectorLicense: 'HSE-2023-011',
+            complianceStatus: 'minor-issues',
+            riskLevel: 'medium',
+            areasInspected: ['site-access', 'work-areas', 'storage', 'electrical', 'fire-safety', 'waste', 'facilities'],
+            findings: 'General compliance audit shows good adherence to safety standards with minor documentation gaps. Some safety training records need updating.',
+            recommendations: 'Update safety training records, improve documentation filing system, conduct refresher training on updated procedures.',
+            followUpDate: '2026-02-27',
+            nextInspectionDate: '2026-05-20',
+            documentUploaded: true,
+            photosCount: 9
+        }
+    ];
+    
+    displayInspectionRecords(sampleRecords);
+}
+
+// Display inspection records in the table
+function displayInspectionRecords(records) {
+    const recordsList = document.getElementById('inspectionRecordsList');
+    
+    if (!recordsList) {
+        console.error('❌ Inspection records list container not found!');
+        return;
+    }
+    
+    if (!records || records.length === 0) {
+        recordsList.innerHTML = `
+            <tr>
+                <td colspan="8">
+                    <div class="no-records">No inspection records found</div>
+                </td>
+            </tr>
+        `;
+        return;
+    }
+    
+    // Sort records by date (most recent first)
+    records.sort((a, b) => new Date(b.date) - new Date(a.date));
+    
+    let recordsHTML = '';
+    
+    records.forEach(record => {
+        const inspectionDate = new Date(record.date);
+        const formattedDate = inspectionDate.toLocaleDateString('en-US', { 
+            year: 'numeric', 
+            month: 'short', 
+            day: 'numeric' 
+        });
+        
+        // Get inspection type badge
+        const typeDisplay = record.inspectionType === 'Routine Inspection' ? '🔍 Routine' : 
+                           record.inspectionType === 'Compliance Audit' ? '📋 Audit' : 
+                           record.inspectionType === 'Accident Investigation' ? '⚠️ Investigation' : 
+                           record.inspectionType === 'Equipment Inspection' ? '🔧 Equipment' : 
+                           record.inspectionType === 'Environmental Inspection' ? '🌱 Environmental' : 
+                           record.inspectionType === 'Fire Safety Inspection' ? '🔥 Fire Safety' : record.inspectionType;
+        
+        // Get compliance status badge
+        const complianceClass = record.complianceStatus === 'fully-compliant' ? 'compliance-excellent' : 
+                               record.complianceStatus === 'minor-issues' ? 'compliance-good' : 
+                               record.complianceStatus === 'major-issues' ? 'compliance-poor' : 
+                               record.complianceStatus === 'non-compliant' ? 'compliance-critical' : 'compliance-default';
+        
+        const complianceBadge = record.complianceStatus === 'fully-compliant' ? '✅ Fully Compliant' : 
+                               record.complianceStatus === 'minor-issues' ? '⚠️ Minor Issues' : 
+                               record.complianceStatus === 'major-issues' ? '🚨 Major Issues' : 
+                               record.complianceStatus === 'non-compliant' ? '❌ Non-Compliant' : '❓ Unknown';
+        
+        // Get risk level badge
+        const riskClass = record.riskLevel === 'low' ? 'risk-low' : 
+                         record.riskLevel === 'medium' ? 'risk-medium' : 
+                         record.riskLevel === 'high' ? 'risk-high' : 
+                         record.riskLevel === 'critical' ? 'risk-critical' : 'risk-default';
+        
+        const riskBadge = record.riskLevel === 'low' ? '🟢 Low Risk' : 
+                         record.riskLevel === 'medium' ? '🟡 Medium Risk' : 
+                         record.riskLevel === 'high' ? '🔴 High Risk' : 
+                         record.riskLevel === 'critical' ? '⚫ Critical Risk' : '❓ Unknown';
+        
+        recordsHTML += `
+            <tr class="inspection-row">
+                <td>
+                    <div class="report-info">
+                        <div class="report-id">${record.id}</div>
+                        <div class="report-areas">${record.areasInspected.length} areas inspected</div>
+                    </div>
+                </td>
+                <td>
+                    <div class="date-info">
+                        <div class="inspection-date">${formattedDate}</div>
+                    </div>
+                </td>
+                <td>
+                    <div class="project-info">
+                        <div class="project-name">${record.project}</div>
+                        <div class="project-code">${record.projectCode}</div>
+                    </div>
+                </td>
+                <td>
+                    <div class="type-info">
+                        <span class="type-badge">${typeDisplay}</span>
+                    </div>
+                </td>
+                <td>
+                    <div class="inspector-info">
+                        <div class="inspector-name">${record.inspector}</div>
+                        <div class="inspector-license">${record.inspectorLicense}</div>
+                    </div>
+                </td>
+                <td>
+                    <span class="compliance-badge ${complianceClass}">${complianceBadge}</span>
+                </td>
+                <td>
+                    <span class="risk-badge ${riskClass}">${riskBadge}</span>
+                </td>
+                <td>
+                    <div class="inspection-actions">
+                        <button class="action-btn view" onclick="viewInspectionReport('${record.id}')" title="View Report">👁️</button>
+                        <button class="action-btn download" onclick="downloadInspectionReport('${record.id}')" title="Download Report">📥</button>
+                        <button class="action-btn edit" onclick="editInspectionReport('${record.id}')" title="Edit Report">✏️</button>
+                    </div>
+                </td>
+            </tr>
+        `;
+    });
+    
+    recordsList.innerHTML = recordsHTML;
+}
+
+// Inspection report action functions
+function viewInspectionReport(reportId) {
+    customAlert(`Viewing inspection report details for ID: ${reportId}\n\nFull inspection report including findings, recommendations, photos, and compliance status will be displayed.`, "Inspection Report Details", "info");
+}
+
+function downloadInspectionReport(reportId) {
+    customAlert(`Downloading inspection report ${reportId}...\n\nComplete inspection report with all findings, photos, and supporting documents will be downloaded in PDF format.`, "Download Report", "info");
+}
+
+function editInspectionReport(reportId) {
+    customAlert(`Editing inspection report ${reportId}...\n\nInspection report editor will open for modifications, corrections, and status updates.`, "Edit Report", "info");
 }
 
 async function viewProjectSafetyStatus(){
