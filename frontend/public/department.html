@@ -6729,11 +6729,11 @@ background: #f8f9fa;
 .stat-item {
     background: rgba(76, 175, 80, 0.2);
     color: #4CAF50;
-    padding: 3px 6px;
-    border-radius: 4px;
-    margin-bottom: 4px;
+    padding: 2px 4px;
+    border-radius: 3px;
+    margin-bottom: 2px;
     font-weight: bold;
-    font-size: 10px;
+    font-size: 8px;
 }
 
 .personnel-header {
@@ -7696,12 +7696,12 @@ background: #f8f9fa;
 .stat-item {
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     color: white;
-    padding: 4px 6px;
-    border-radius: 4px;
+    padding: 2px 4px;
+    border-radius: 3px;
     text-align: center;
-    margin-bottom: 5px;
+    margin-bottom: 2px;
     transition: transform 0.3s ease;
-    font-size: 9px;
+    font-size: 7px;
 }
 
 .stat-item:hover {
@@ -14332,14 +14332,9 @@ function fetchUpcomingMeetings() {
     
     // Try different API endpoints in case one doesn't work
     const apiEndpoints = [
-        '/api/schedule-meetings/upcoming',  // Best endpoint - returns only upcoming meetings
-        '/api/schedule-meetings/all',       // Returns all meetings
-        '/api/meetings/all',
-        '/api/schedule-meetings/list',
-        '/api/meetings/list',
+        '/api/meetings/upcoming',  // Best endpoint - returns only upcoming meetings
+        '/api/meetings/all',       // Returns all meetings
         '/api/meetings',
-        '/api/schedule-meetings', 
-        '/api/meeting-schedule',
         '/meetings'
     ];
     
