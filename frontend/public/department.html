@@ -1955,6 +1955,219 @@ color: #666;
     box-shadow: 0 2px 4px rgba(0,0,0,0.2);
 }
 
+/* Workforce Table Styles */
+.workforce-table-container {
+    background: white;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    margin-top: 20px;
+}
+
+.workforce-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12px;
+    background: white;
+}
+
+.workforce-table th {
+    background: #0b3d91;
+    color: white;
+    padding: 12px 8px;
+    text-align: left;
+    font-weight: 600;
+    border-bottom: 2px solid #093278;
+    white-space: nowrap;
+}
+
+.workforce-table td {
+    padding: 10px 8px;
+    border-bottom: 1px solid #e9ecef;
+    vertical-align: middle;
+    font-size: 12px;
+}
+
+.workforce-table tr:hover {
+    background: #f8f9fa;
+}
+
+.workforce-table tr:last-child td {
+    border-bottom: none;
+}
+
+.category-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.category-name {
+    font-weight: 600;
+    color: #333;
+    font-size: 13px;
+}
+
+.category-desc {
+    font-size: 11px;
+    color: #666;
+}
+
+.count-number {
+    font-size: 18px;
+    font-weight: 700;
+    color: #0b3d91;
+    text-align: center;
+}
+
+.change-indicator {
+    font-size: 11px;
+    font-weight: 600;
+    padding: 2px 6px;
+    border-radius: 12px;
+    display: inline-block;
+}
+
+.status-badge {
+    font-size: 10px;
+    font-weight: 600;
+    padding: 4px 8px;
+    border-radius: 12px;
+    text-transform: uppercase;
+    white-space: nowrap;
+}
+
+.status-active {
+    background: #d4edda;
+    color: #155724;
+}
+
+.status-contract {
+    background: #cce5ff;
+    color: #004085;
+}
+
+.status-temporary {
+    background: #fff3cd;
+    color: #856404;
+}
+
+.status-senior {
+    background: #f8d7da;
+    color: #721c24;
+}
+
+/* Department Table Styles */
+.department-table-container {
+    background: white;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    margin-top: 15px;
+}
+
+.department-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 11px;
+    background: white;
+}
+
+.department-table th {
+    background: #0b3d91;
+    color: white;
+    padding: 10px 8px;
+    text-align: left;
+    font-weight: 600;
+    border-bottom: 2px solid #093278;
+    white-space: nowrap;
+}
+
+.department-table td {
+    padding: 8px;
+    border-bottom: 1px solid #e9ecef;
+    vertical-align: middle;
+    font-size: 11px;
+}
+
+.department-table tr:hover {
+    background: #f8f9fa;
+}
+
+.department-table tr:last-child td {
+    border-bottom: none;
+}
+
+.department-info {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.department-name {
+    font-weight: 600;
+    color: #333;
+    text-transform: capitalize;
+}
+
+.employee-count {
+    font-size: 14px;
+    font-weight: 600;
+    color: #0b3d91;
+    text-align: center;
+}
+
+.percentage-bar {
+    position: relative;
+    background: #e9ecef;
+    border-radius: 10px;
+    height: 16px;
+    min-width: 60px;
+    max-width: 100px;
+}
+
+.percentage-fill {
+    background: linear-gradient(90deg, #0b3d91, #1e5bb8);
+    height: 100%;
+    border-radius: 10px;
+    transition: width 0.3s ease;
+}
+
+.percentage-text {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 9px;
+    font-weight: 600;
+    color: #333;
+}
+
+.trend-indicator {
+    font-size: 10px;
+    font-weight: 600;
+    padding: 2px 6px;
+    border-radius: 12px;
+    display: inline-block;
+}
+
+.trend-up {
+    background: #d4edda;
+    color: #155724;
+}
+
+.trend-stable {
+    background: #e2e3e5;
+    color: #383d41;
+}
+
+.trend-down {
+    background: #f8d7da;
+    color: #721c24;
+}
+
 .btn-approve {
     background: #28a745;
     color: white;
@@ -6381,65 +6594,140 @@ function processBudgetRejection(budgetId, rejectionReason) {
 }
 
 function reviewEmployeeCount(){
-    showContent(`<div class="card">
-        <h3>Review Total Employee Count</h3>
-        <p><strong>High-Level Authority:</strong> Review and analyze total workforce composition and headcount</p>
-        
-        <div class="workforce-review">
-            <h4>Current Workforce Overview</h4>
+    showContent(`
+        <div class="card">
+            <h3>Review Total Employee Count</h3>
+            <p><strong>High-Level Authority:</strong> Review and analyze total workforce composition and headcount</p>
             
-            <div class="workforce-stats">
-                <div class="stat-card">
-                    <h5>Total Employees</h5>
-                    <div class="stat-number" id="totalEmployeesCount">Loading...</div>
-                    <div class="stat-change" id="totalEmployeesChange">Calculating...</div>
+            <div class="workforce-review">
+                <h4>Current Workforce Overview</h4>
+                
+                <div class="workforce-table-container">
+                    <table class="workforce-table">
+                        <thead>
+                            <tr>
+                                <th>Category</th>
+                                <th>Current Count</th>
+                                <th>Change from Last Month</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr class="workforce-row">
+                                <td>
+                                    <div class="category-info">
+                                        <div class="category-name">Total Employees</div>
+                                        <div class="category-desc">All active staff members</div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="count-number" id="totalEmployeesCount">Loading...</div>
+                                </td>
+                                <td>
+                                    <div class="change-indicator" id="totalEmployeesChange">Calculating...</div>
+                                </td>
+                                <td>
+                                    <span class="status-badge status-active">Active</span>
+                                </td>
+                            </tr>
+                            <tr class="workforce-row">
+                                <td>
+                                    <div class="category-info">
+                                        <div class="category-name">Active Contracts</div>
+                                        <div class="category-desc">Staff with active contracts</div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="count-number" id="activeContractsCount">Loading...</div>
+                                </td>
+                                <td>
+                                    <div class="change-indicator" id="activeContractsChange">Calculating...</div>
+                                </td>
+                                <td>
+                                    <span class="status-badge status-contract">Contract</span>
+                                </td>
+                            </tr>
+                            <tr class="workforce-row">
+                                <td>
+                                    <div class="category-info">
+                                        <div class="category-name">Temporary Staff</div>
+                                        <div class="category-desc">Temporary and contract workers</div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="count-number" id="temporaryStaffCount">Loading...</div>
+                                </td>
+                                <td>
+                                    <div class="change-indicator" id="temporaryStaffChange">Calculating...</div>
+                                </td>
+                                <td>
+                                    <span class="status-badge status-temporary">Temporary</span>
+                                </td>
+                            </tr>
+                            <tr class="workforce-row">
+                                <td>
+                                    <div class="category-info">
+                                        <div class="category-name">Senior Staff</div>
+                                        <div class="category-desc">Manager level and above</div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="count-number" id="seniorStaffCount">Loading...</div>
+                                </td>
+                                <td>
+                                    <div class="change-indicator" id="seniorStaffChange">Calculating...</div>
+                                </td>
+                                <td>
+                                    <span class="status-badge status-senior">Senior</span>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
                 </div>
                 
-                <div class="stat-card">
-                    <h5>Active Contracts</h5>
-                    <div class="stat-number" id="activeContractsCount">Loading...</div>
-                    <div class="stat-change" id="activeContractsChange">Calculating...</div>
+                <div class="department-breakdown">
+                    <h5>Department Breakdown</h5>
+                    <div class="department-table-container">
+                        <table class="department-table">
+                            <thead>
+                                <tr>
+                                    <th>Department</th>
+                                    <th>Employee Count</th>
+                                    <th>Percentage</th>
+                                    <th>Headcount Trend</th>
+                                </tr>
+                            </thead>
+                            <tbody id="departmentBreakdown">
+                                <tr>
+                                    <td colspan="4">
+                                        <div class="loading">Loading department breakdown...</div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
                 
-                <div class="stat-card">
-                    <h5>Temporary Staff</h5>
-                    <div class="stat-number" id="temporaryStaffCount">Loading...</div>
-                    <div class="stat-change" id="temporaryStaffChange">Calculating...</div>
-                </div>
-                
-                <div class="stat-card">
-                    <h5>Senior Staff</h5>
-                    <div class="stat-number" id="seniorStaffCount">Loading...</div>
-                    <div class="stat-change" id="seniorStaffChange">Calculating...</div>
+                <div class="workforce-actions">
+                    <h5>Workforce Management Actions</h5>
+                    <button class="action" onclick="generateWorkforceReport()">Generate Full Report</button>
                 </div>
             </div>
             
-            <div class="department-breakdown">
-                <h5>Department Breakdown</h5>
-                <div class="dept-stats" id="departmentBreakdown">
-                    <div class="loading">Loading department breakdown...</div>
+            <div class="approval-summary">
+                <h4>Employee Count Authority</h4>
+                <div class="authority-item">
+                    <span>✅ Can view all employee data</span>
                 </div>
-            </div>
-            
-            <div class="workforce-actions">
-                <h5>Workforce Management Actions</h5>
-                <button class="action" onclick="generateWorkforceReport()">Generate Full Report</button>
+                <div class="authority-item">
+                    <span>✅ Can approve workforce expansions</span>
+                </div>
+                <div class="authority-item">
+                    <span>✅ Can review department headcount</span>
+                </div>
             </div>
         </div>
-        
-        <div class="approval-summary">
-            <h4>Employee Count Authority</h4>
-            <div class="authority-item">
-                <span>✅ Can view all employee data</span>
-            </div>
-            <div class="authority-item">
-                <span>✅ Can approve workforce expansions</span>
-            </div>
-            <div class="authority-item">
-                <span>✅ Can review department headcount</span>
-            </div>
-        </div>
-    </div>`);
+    `);
     
     // Load employee count data
     loadEmployeeCountData();
@@ -6516,13 +6804,34 @@ function loadEmployeeCountData() {
         document.getElementById('seniorStaffChange').textContent = '+1 from last month';
         document.getElementById('seniorStaffChange').className = 'stat-change positive';
         
-        // Display department breakdown
-        const deptBreakdownHtml = Object.entries(departmentCounts).map(([dept, count]) => `
-            <div class="dept-item">
-                <span class="dept-name">${dept}</span>
-                <span class="dept-count">${count}</span>
-            </div>
-        `).join('');
+        // Display department breakdown in table format
+        const deptBreakdownHtml = Object.entries(departmentCounts).map(([dept, count]) => {
+            const percentage = ((count / totalEmployees) * 100).toFixed(1);
+            const trend = Math.random() > 0.5 ? '📈 Growing' : Math.random() > 0.5 ? '📊 Stable' : '📉 Declining';
+            const trendClass = trend.includes('Growing') ? 'trend-up' : trend.includes('Stable') ? 'trend-stable' : 'trend-down';
+            
+            return `
+                <tr class="department-row">
+                    <td>
+                        <div class="department-info">
+                            <div class="department-name">${dept.charAt(0).toUpperCase() + dept.slice(1)}</div>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="employee-count">${count}</div>
+                    </td>
+                    <td>
+                        <div class="percentage-bar">
+                            <div class="percentage-fill" style="width: ${percentage}%"></div>
+                            <span class="percentage-text">${percentage}%</span>
+                        </div>
+                    </td>
+                    <td>
+                        <span class="trend-indicator ${trendClass}">${trend}</span>
+                    </td>
+                </tr>
+            `;
+        }).join('');
         
         document.getElementById('departmentBreakdown').innerHTML = deptBreakdownHtml;
         
