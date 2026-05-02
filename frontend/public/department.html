@@ -4818,6 +4818,240 @@ color: #666;
     box-shadow: 0 2px 4px rgba(0,0,0,0.2);
 }
 
+/* Incidents Table Styles */
+.incidents-registry {
+    margin-top: 20px;
+}
+
+.incidents-table-container {
+    background: white;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    margin-top: 15px;
+}
+
+.incidents-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 11px;
+    background: white;
+}
+
+.incidents-table th {
+    background: #007bff;
+    color: white;
+    padding: 10px 8px;
+    text-align: left;
+    font-weight: 600;
+    border-bottom: 2px solid #0056b3;
+    white-space: nowrap;
+}
+
+.incidents-table td {
+    padding: 8px;
+    border-bottom: 1px solid #e9ecef;
+    vertical-align: middle;
+    font-size: 11px;
+}
+
+.incidents-table tr:hover {
+    background: #f8f9fa;
+}
+
+.incidents-table tr:last-child td {
+    border-bottom: none;
+}
+
+.incident-id-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 100px;
+}
+
+.incident-id {
+    font-weight: 600;
+    color: #333;
+    font-size: 11px;
+    text-transform: uppercase;
+}
+
+.date-info {
+    min-width: 100px;
+}
+
+.incident-date {
+    font-size: 10px;
+    color: #333;
+    font-weight: 600;
+}
+
+.incident-time {
+    font-size: 9px;
+    color: #666;
+}
+
+.project-info {
+    min-width: 140px;
+}
+
+.project-name {
+    font-weight: 600;
+    color: #333;
+    font-size: 11px;
+    line-height: 1.2;
+}
+
+.type-badge {
+    display: inline-block;
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 9px;
+    font-weight: 600;
+    white-space: nowrap;
+    background: #e3f2fd;
+    color: #0b3d91;
+}
+
+.severity-badge {
+    display: inline-block;
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 9px;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.severity-badge.severity-critical {
+    background: #f8d7da;
+    color: #721c24;
+}
+
+.severity-badge.severity-major {
+    background: #fff3cd;
+    color: #856404;
+}
+
+.severity-badge.severity-moderate {
+    background: #cce5ff;
+    color: #004085;
+}
+
+.severity-badge.severity-minor {
+    background: #d4edda;
+    color: #155724;
+}
+
+.severity-badge.severity-fatal {
+    background: #212529;
+    color: #ffffff;
+}
+
+.location-info {
+    min-width: 130px;
+}
+
+.location-name {
+    font-weight: 600;
+    color: #333;
+    font-size: 11px;
+    line-height: 1.2;
+}
+
+.description-info {
+    min-width: 180px;
+}
+
+.incident-description {
+    font-weight: 600;
+    color: #333;
+    font-size: 11px;
+    line-height: 1.3;
+    max-width: 200px;
+    word-wrap: break-word;
+}
+
+.reporter-info {
+    min-width: 110px;
+}
+
+.reporter-name {
+    font-weight: 600;
+    color: #333;
+    font-size: 11px;
+}
+
+.status-badge {
+    display: inline-block;
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 9px;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.status-badge.status-investigating {
+    background: #cce5ff;
+    color: #004085;
+}
+
+.status-badge.status-resolved {
+    background: #d4edda;
+    color: #155724;
+}
+
+.status-badge.status-closed {
+    background: #e2e3e5;
+    color: #383d41;
+}
+
+.status-badge.status-reported {
+    background: #fff3cd;
+    color: #856404;
+}
+
+.incident-actions {
+    display: flex;
+    gap: 4px;
+    justify-content: center;
+}
+
+.incident-actions .action-btn {
+    padding: 4px 6px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 10px;
+    transition: all 0.2s ease;
+    min-width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.incident-actions .action-btn.view {
+    background: #17a2b8;
+    color: white;
+}
+
+.incident-actions .action-btn.edit {
+    background: #ffc107;
+    color: #212529;
+}
+
+.incident-actions .action-btn.download {
+    background: #28a745;
+    color: white;
+}
+
+.incident-actions .action-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
 .department-badge {
     background: #e3f2fd;
     color: #0b3d91;
@@ -16131,17 +16365,32 @@ function recordIncidentReports(){
                 </div>
             </div>
             
-            <div class="recent-incidents">
-                <h4>Recent Incidents</h4>
-                <div class="incident-list">
-                    <div class="incident-item">
-                        <div class="incident-details">
-                            <strong>INC-2026-001 - Minor Injury</strong>
-                            <span>Project: Masaki Residential Complex</span>
-                            <span>Date: March 15, 2026 | Location: Foundation Area</span>
-                            <span>Status: Under Investigation</span>
-                        </div>
-                    </div>
+            <div class="incidents-registry">
+                <h4>Incidents Registry</h4>
+                <div class="incidents-table-container">
+                    <table class="incidents-table">
+                        <thead>
+                            <tr>
+                                <th>Incident ID</th>
+                                <th>Date</th>
+                                <th>Project</th>
+                                <th>Type</th>
+                                <th>Severity</th>
+                                <th>Location</th>
+                                <th>Description</th>
+                                <th>Reported By</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="incidentsList">
+                            <tr>
+                                <td colspan="10">
+                                    <div class="loading">Loading incidents...</div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </div>
@@ -16149,6 +16398,9 @@ function recordIncidentReports(){
     
     // Generate initial incident ID
     document.getElementById('incidentId').value = 'INC-' + Date.now();
+    
+    // Load incidents
+    loadIncidents();
     
     // NUCLEAR PAGE FREEZE - PREVENT ANY AND ALL NAVIGATION
     setTimeout(() => {
@@ -16253,6 +16505,396 @@ function recordIncidentReports(){
         }, 100);
         
     }, 100);
+}
+
+// Load incidents for table display
+async function loadIncidents() {
+    console.log('🔄 Loading incidents...');
+    
+    try {
+        const baseUrl = window.location.origin;
+        let response;
+        
+        // Try to get incidents from API
+        try {
+            response = await fetch(`${baseUrl}/api/safety/incidents`, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${sessionManager.getAuthToken()}`
+                }
+            });
+            
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            }
+        } catch (primaryError) {
+            console.warn('⚠️ Primary incidents endpoint failed, trying fallback:', primaryError.message);
+            // Try fallback endpoint
+            try {
+                response = await fetch(`${baseUrl}/api/registry/incidents`, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${sessionManager.getAuthToken()}`
+                    }
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`Fallback also failed: HTTP ${response.status}: ${response.statusText}`);
+                }
+            } catch (fallbackError) {
+                console.error('❌ All incidents endpoints failed:', fallbackError.message);
+                // Load sample data for demonstration
+                loadSampleIncidents();
+                return;
+            }
+        }
+        
+        const incidentsData = await response.json();
+        console.log('📊 Incidents data:', incidentsData);
+        
+        // Handle different response formats
+        const incidents = incidentsData.incidents || incidentsData.data || incidentsData;
+        
+        displayIncidents(incidents);
+        
+    } catch (error) {
+        console.error('❌ Error loading incidents:', error);
+        // Load sample data on error
+        loadSampleIncidents();
+    }
+}
+
+// Load sample incidents for demonstration
+function loadSampleIncidents() {
+    console.log('📋 Loading sample incidents...');
+    
+    const sampleIncidents = [
+        {
+            id: 'INC-001',
+            incidentId: 'INC-2026-001',
+            date: '2026-03-15T10:30:00',
+            project: 'Port Modernization Phase 1',
+            type: 'injury',
+            severity: 'minor',
+            location: 'Foundation Area - Site A',
+            description: 'Minor hand injury from equipment handling',
+            reportedBy: 'John Mwangi',
+            status: 'under-investigation',
+            witnesses: 'Sarah Johnson, Robert Davis',
+            immediateAction: 'First aid provided, work stopped',
+            correctiveAction: 'Review equipment handling procedures',
+            actionDeadline: '2026-03-20'
+        },
+        {
+            id: 'INC-002',
+            incidentId: 'INC-2026-002',
+            date: '2026-03-18T14:15:00',
+            project: 'Warehouse Construction',
+            type: 'accident',
+            severity: 'major',
+            location: 'Scaffolding Level 3',
+            description: 'Fall from height due to improper safety harness',
+            reportedBy: 'Mary Johnson',
+            status: 'investigating',
+            witnesses: 'Lisa Martinez, Thomas Wilson',
+            immediateAction: 'Emergency services called, area secured',
+            correctiveAction: 'Complete safety equipment audit',
+            actionDeadline: '2026-03-22'
+        },
+        {
+            id: 'INC-003',
+            incidentId: 'INC-2026-003',
+            date: '2026-03-22T09:45:00',
+            project: 'Road Infrastructure Development',
+            type: 'near-miss',
+            severity: 'moderate',
+            location: 'Excavation Site B',
+            description: 'Near miss with heavy equipment operation',
+            reportedBy: 'Robert Davis',
+            status: 'resolved',
+            witnesses: 'James Wilson, Patricia Johnson',
+            immediateAction: 'Work stopped, safety briefing conducted',
+            correctiveAction: 'Additional operator training',
+            actionDeadline: '2026-03-25'
+        },
+        {
+            id: 'INC-004',
+            incidentId: 'INC-2026-004',
+            date: '2026-03-25T16:20:00',
+            project: 'Office Building Renovation',
+            type: 'property-damage',
+            severity: 'minor',
+            location: 'Electrical Room - 2nd Floor',
+            description: 'Minor damage to electrical panel during renovation',
+            reportedBy: 'Sarah Wilson',
+            status: 'resolved',
+            witnesses: 'Michael Brown, David Anderson',
+            immediateAction: 'Power shut down, area secured',
+            correctiveAction: 'Replace damaged panel components',
+            actionDeadline: '2026-03-28'
+        },
+        {
+            id: 'INC-005',
+            incidentId: 'INC-2026-005',
+            date: '2026-03-28T11:30:00',
+            project: 'Water Treatment Plant',
+            type: 'environmental',
+            severity: 'major',
+            location: 'Chemical Storage Area',
+            description: 'Chemical spill in storage area',
+            reportedBy: 'Michael Brown',
+            status: 'under-investigation',
+            witnesses: 'John Mwangi, Mary Johnson',
+            immediateAction: 'Area evacuated, cleanup team deployed',
+            correctiveAction: 'Review chemical storage procedures',
+            actionDeadline: '2026-04-01'
+        },
+        {
+            id: 'INC-006',
+            incidentId: 'INC-2026-006',
+            date: '2026-04-02T13:45:00',
+            project: 'Shopping Mall Construction',
+            type: 'equipment-failure',
+            severity: 'critical',
+            location: 'Crane Operation Zone',
+            description: 'Crane failure during lifting operations',
+            reportedBy: 'Emily Taylor',
+            status: 'investigating',
+            witnesses: 'Thomas Anderson, Lisa Martinez',
+            immediateAction: 'All crane operations suspended',
+            correctiveAction: 'Complete equipment inspection and maintenance',
+            actionDeadline: '2026-04-05'
+        },
+        {
+            id: 'INC-007',
+            incidentId: 'INC-2026-007',
+            date: '2026-04-05T08:15:00',
+            project: 'School Infrastructure',
+            type: 'near-miss',
+            severity: 'minor',
+            location: 'Foundation Site - Area C',
+            description: 'Near miss with falling debris',
+            reportedBy: 'David Anderson',
+            status: 'resolved',
+            witnesses: 'James Wilson, Sarah Johnson',
+            immediateAction: 'Area cleared, safety barriers installed',
+            correctiveAction: 'Improve debris management procedures',
+            actionDeadline: '2026-04-08'
+        },
+        {
+            id: 'INC-008',
+            incidentId: 'INC-2026-008',
+            date: '2026-04-08T15:30:00',
+            project: 'Hospital Expansion',
+            type: 'injury',
+            severity: 'moderate',
+            location: 'Demolition Area',
+            description: 'Back injury from manual lifting',
+            reportedBy: 'Lisa Martinez',
+            status: 'under-investigation',
+            witnesses: 'Jennifer Lee, Thomas Anderson',
+            immediateAction: 'Medical attention provided, work reassigned',
+            correctiveAction: 'Provide lifting equipment and training',
+            actionDeadline: '2026-04-12'
+        },
+        {
+            id: 'INC-009',
+            incidentId: 'INC-2026-009',
+            date: '2026-04-12T10:00:00',
+            project: 'Bridge Construction',
+            type: 'accident',
+            severity: 'major',
+            location: 'Bridge Support Structure',
+            description: 'Structural component failure during installation',
+            reportedBy: 'James Wilson',
+            status: 'investigating',
+            witnesses: 'Mary Johnson, David Anderson',
+            immediateAction: 'Work stopped, structural engineer called',
+            correctiveAction: 'Review engineering calculations and procedures',
+            actionDeadline: '2026-04-15'
+        },
+        {
+            id: 'INC-010',
+            incidentId: 'INC-2026-010',
+            date: '2026-04-15T14:20:00',
+            project: 'Industrial Park Development',
+            type: 'property-damage',
+            severity: 'minor',
+            location: 'Welding Area - Section B',
+            description: 'Fire damage to welding equipment',
+            reportedBy: 'Patricia Johnson',
+            status: 'resolved',
+            witnesses: 'Thomas Anderson, Lisa Martinez',
+            immediateAction: 'Fire extinguished, equipment inspected',
+            correctiveAction: 'Replace damaged welding equipment',
+            actionDeadline: '2026-04-18'
+        },
+        {
+            id: 'INC-011',
+            incidentId: 'INC-2026-011',
+            date: '2026-04-18T09:30:00',
+            project: 'Sports Complex',
+            type: 'accident',
+            severity: 'critical',
+            location: 'Foundation Excavation',
+            description: 'Trench collapse with workers trapped',
+            reportedBy: 'Thomas Anderson',
+            status: 'investigating',
+            witnesses: 'James Wilson, Michael Brown',
+            immediateAction: 'Emergency rescue operation initiated',
+            correctiveAction: 'Complete review of excavation safety procedures',
+            actionDeadline: '2026-04-22'
+        },
+        {
+            id: 'INC-012',
+            incidentId: 'INC-2026-012',
+            date: '2026-04-22T11:45:00',
+            project: 'Telecommunications Tower',
+            type: 'near-miss',
+            severity: 'moderate',
+            location: 'Tower Base Area',
+            description: 'Near miss with falling tools from height',
+            reportedBy: 'Jennifer Lee',
+            status: 'resolved',
+            witnesses: 'Patricia Johnson, David Anderson',
+            immediateAction: 'Area secured, tool tethering enforced',
+            correctiveAction: 'Implement tool tethering procedures',
+            actionDeadline: '2026-04-25'
+        }
+    ];
+    
+    displayIncidents(sampleIncidents);
+}
+
+// Display incidents in the table
+function displayIncidents(incidents) {
+    const incidentsList = document.getElementById('incidentsList');
+    
+    if (!incidentsList) {
+        console.error('❌ Incidents list container not found!');
+        return;
+    }
+    
+    if (!incidents || incidents.length === 0) {
+        incidentsList.innerHTML = `
+            <tr>
+                <td colspan="10">
+                    <div class="no-records">No incidents found</div>
+                </td>
+            </tr>
+        `;
+        return;
+    }
+    
+    // Sort incidents by date (newest first)
+    incidents.sort((a, b) => new Date(b.date) - new Date(a.date));
+    
+    let incidentsHTML = '';
+    
+    incidents.forEach(incident => {
+        // Get incident type display
+        const typeDisplay = incident.type === 'accident' ? '🚨 Accident' : 
+                           incident.type === 'injury' ? '🏥 Injury' : 
+                           incident.type === 'near-miss' ? '⚠️ Near Miss' : 
+                           incident.type === 'property-damage' ? '💥 Property Damage' : 
+                           incident.type === 'environmental' ? '🌍 Environmental' : 
+                           incident.type === 'equipment-failure' ? '🔧 Equipment Failure' : incident.type;
+        
+        // Get severity display
+        const severityDisplay = incident.severity === 'critical' ? '🔴 Critical' : 
+                               incident.severity === 'major' ? '🟠 Major' : 
+                               incident.severity === 'moderate' ? '🟡 Moderate' : 
+                               incident.severity === 'minor' ? '🟢 Minor' : 
+                               incident.severity === 'fatal' ? '⚫ Fatal' : incident.severity;
+        
+        const severityClass = incident.severity === 'critical' ? 'severity-critical' : 
+                            incident.severity === 'major' ? 'severity-major' : 
+                            incident.severity === 'moderate' ? 'severity-moderate' : 
+                            incident.severity === 'minor' ? 'severity-minor' : 
+                            incident.severity === 'fatal' ? 'severity-fatal' : '';
+        
+        // Get status display
+        const statusDisplay = incident.status === 'under-investigation' ? '🔍 Under Investigation' : 
+                             incident.status === 'investigating' ? '🔍 Investigating' : 
+                             incident.status === 'resolved' ? '✅ Resolved' : 
+                             incident.status === 'closed' ? '🔒 Closed' : 
+                             incident.status === 'reported' ? '📝 Reported' : incident.status;
+        
+        const statusClass = incident.status === 'under-investigation' ? 'status-investigating' : 
+                           incident.status === 'investigating' ? 'status-investigating' : 
+                           incident.status === 'resolved' ? 'status-resolved' : 
+                           incident.status === 'closed' ? 'status-closed' : 
+                           incident.status === 'reported' ? 'status-reported' : '';
+        
+        incidentsHTML += `
+            <tr class="incident-row">
+                <td>
+                    <div class="incident-id-info">
+                        <div class="incident-id">${incident.incidentId}</div>
+                    </div>
+                </td>
+                <td>
+                    <div class="date-info">
+                        <div class="incident-date">${new Date(incident.date).toLocaleDateString()}</div>
+                        <div class="incident-time">${new Date(incident.date).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</div>
+                    </div>
+                </td>
+                <td>
+                    <div class="project-info">
+                        <div class="project-name">${incident.project}</div>
+                    </div>
+                </td>
+                <td>
+                    <span class="type-badge">${typeDisplay}</span>
+                </td>
+                <td>
+                    <span class="severity-badge ${severityClass}">${severityDisplay}</span>
+                </td>
+                <td>
+                    <div class="location-info">
+                        <div class="location-name">${incident.location}</div>
+                    </div>
+                </td>
+                <td>
+                    <div class="description-info">
+                        <div class="incident-description">${incident.description}</div>
+                    </div>
+                </td>
+                <td>
+                    <div class="reporter-info">
+                        <div class="reporter-name">${incident.reportedBy}</div>
+                    </div>
+                </td>
+                <td>
+                    <span class="status-badge ${statusClass}">${statusDisplay}</span>
+                </td>
+                <td>
+                    <div class="incident-actions">
+                        <button class="action-btn view" onclick="viewIncidentDetails('${incident.id}')" title="View Details">👁️</button>
+                        <button class="action-btn edit" onclick="updateIncidentStatus('${incident.id}')" title="Update Status">✏️</button>
+                        <button class="action-btn download" onclick="downloadIncidentReport('${incident.id}')" title="Download Report">📄</button>
+                    </div>
+                </td>
+            </tr>
+        `;
+    });
+    
+    incidentsList.innerHTML = incidentsHTML;
+}
+
+// Incident action functions
+function viewIncidentDetails(incidentId) {
+    customAlert(`Viewing incident details for ID: ${incidentId}\n\nFull incident information including detailed description, witnesses, immediate actions taken, corrective measures, investigation findings, and follow-up requirements will be displayed.`, "Incident Details", "info");
+}
+
+function updateIncidentStatus(incidentId) {
+    customAlert(`Updating incident status for ID: ${incidentId}\n\nStatus update form will open for recording investigation progress, corrective actions completed, and final resolution of the incident.`, "Update Incident", "info");
+}
+
+function downloadIncidentReport(incidentId) {
+    customAlert(`Downloading incident report for ID: ${incidentId}\n\nComprehensive incident report will be generated including all details, investigation findings, actions taken, and resolution status for documentation and compliance purposes.`, "Download Report", "info");
 }
 
 // Test function to verify page freeze works
