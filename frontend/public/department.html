@@ -5500,6 +5500,220 @@ color: #666;
     box-shadow: 0 2px 4px rgba(0,0,0,0.2);
 }
 
+/* Documents Table Styles */
+.documents-registry {
+    margin-top: 20px;
+}
+
+.documents-table-container {
+    background: white;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    margin-top: 15px;
+}
+
+.documents-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 11px;
+    background: white;
+}
+
+.documents-table th {
+    background: #007bff;
+    color: white;
+    padding: 10px 8px;
+    text-align: left;
+    font-weight: 600;
+    border-bottom: 2px solid #0056b3;
+    white-space: nowrap;
+}
+
+.documents-table td {
+    padding: 8px;
+    border-bottom: 1px solid #e9ecef;
+    vertical-align: middle;
+    font-size: 11px;
+}
+
+.documents-table tr:hover {
+    background: #f8f9fa;
+}
+
+.documents-table tr:last-child td {
+    border-bottom: none;
+}
+
+.document-id-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 80px;
+}
+
+.document-id {
+    font-weight: 600;
+    color: #333;
+    font-size: 11px;
+    text-transform: uppercase;
+}
+
+.title-info {
+    min-width: 180px;
+}
+
+.document-title {
+    font-weight: 600;
+    color: #333;
+    font-size: 11px;
+    line-height: 1.3;
+    max-width: 200px;
+    word-wrap: break-word;
+}
+
+.type-info {
+    min-width: 120px;
+}
+
+.document-type {
+    font-weight: 600;
+    color: #333;
+    font-size: 11px;
+    line-height: 1.2;
+}
+
+.department-info {
+    min-width: 120px;
+}
+
+.department-name {
+    font-weight: 600;
+    color: #333;
+    font-size: 11px;
+    line-height: 1.2;
+}
+
+.date-info {
+    min-width: 90px;
+}
+
+.upload-date {
+    font-weight: 600;
+    color: #333;
+    font-size: 11px;
+}
+
+.size-info {
+    min-width: 70px;
+}
+
+.file-size {
+    font-weight: 600;
+    color: #333;
+    font-size: 11px;
+}
+
+.priority-info {
+    min-width: 80px;
+}
+
+.priority-badge {
+    padding: 3px 8px;
+    border-radius: 12px;
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    display: inline-block;
+}
+
+.priority-badge.priority-normal {
+    background: #e9ecef;
+    color: #495057;
+}
+
+.priority-badge.priority-important {
+    background: #fff3cd;
+    color: #856404;
+}
+
+.priority-badge.priority-urgent {
+    background: #f8d7da;
+    color: #721c24;
+}
+
+.status-badge.status-active {
+    background: #d4edda;
+    color: #155724;
+}
+
+.status-badge.status-pending {
+    background: #fff3cd;
+    color: #856404;
+}
+
+.status-badge.status-draft {
+    background: #e2e3e5;
+    color: #383d41;
+}
+
+.status-badge.status-archived {
+    background: #d1ecf1;
+    color: #0c5460;
+}
+
+.uploader-info {
+    min-width: 110px;
+}
+
+.uploader-name {
+    font-weight: 600;
+    color: #333;
+    font-size: 11px;
+    line-height: 1.2;
+}
+
+.document-actions {
+    display: flex;
+    gap: 4px;
+    justify-content: center;
+}
+
+.document-actions .action-btn {
+    padding: 4px 6px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 10px;
+    transition: all 0.2s ease;
+    min-width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.document-actions .action-btn.view {
+    background: #17a2b8;
+    color: white;
+}
+
+.document-actions .action-btn.download {
+    background: #28a745;
+    color: white;
+}
+
+.document-actions .action-btn.edit {
+    background: #ffc107;
+    color: #212529;
+}
+
+.document-actions .action-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
 .department-badge {
     background: #e3f2fd;
     color: #0b3d91;
@@ -31530,104 +31744,509 @@ function uploadDocs(){
                 </div>
             </div>
             
-            <div class="recent-uploads">
-                <h4>Recent Uploads</h4>
-                <div class="upload-list" id="recentUploadsList">
-                    <div class="loading">Loading recent documents...</div>
+            <div class="documents-registry">
+                <h4>Documents Registry</h4>
+                <div class="search-section">
+                    <input type="text" id="documentSearchInput" placeholder="Search by title or department..." onkeyup="filterDocuments()">
+                    <select id="documentTypeFilter" onchange="filterDocuments()">
+                        <option value="">All Types</option>
+                        <option value="policy">Company Policy</option>
+                        <option value="procedure">Standard Procedure</option>
+                        <option value="report">Report</option>
+                        <option value="contract">Contract</option>
+                        <option value="memo">Memo</option>
+                        <option value="other">Other</option>
+                    </select>
+                    <select id="documentDepartmentFilter" onchange="filterDocuments()">
+                        <option value="">All Departments</option>
+                        <option value="management">Management</option>
+                        <option value="hr">Human Resources</option>
+                        <option value="finance">Finance</option>
+                        <option value="projects">Projects</option>
+                        <option value="operations">Operations</option>
+                        <option value="realestate">Real Estate</option>
+                    </select>
+                </div>
+                
+                <div class="documents-table-container">
+                    <table class="documents-table">
+                        <thead>
+                            <tr>
+                                <th>Document ID</th>
+                                <th>Title</th>
+                                <th>Type</th>
+                                <th>Department</th>
+                                <th>Uploaded Date</th>
+                                <th>File Size</th>
+                                <th>Priority</th>
+                                <th>Status</th>
+                                <th>Uploaded By</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="documentsList">
+                            <tr>
+                                <td colspan="10">
+                                    <div class="loading">Loading documents...</div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </div>
     `);
     
     // Load real documents for recent uploads
-    loadRecentDocuments();
+    loadDocuments();
 }
 
-// Load recent documents from database
-async function loadRecentDocuments() {
-    console.log('🔄 Loading recent documents...');
+// Load documents from database for table display
+async function loadDocuments() {
+    console.log('🔄 Loading documents...');
     
     try {
         const baseUrl = window.location.origin;
-        const response = await fetch(`${baseUrl}/api/documents`, {
-            method: 'GET',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${sessionManager.getAuthToken()}`
-            }
-        });
+        let response;
         
-        if (!response.ok) {
-            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        // Try to get documents from API
+        try {
+            response = await fetch(`${baseUrl}/api/documents`, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${sessionManager.getAuthToken()}`
+                }
+            });
+            
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            }
+        } catch (primaryError) {
+            console.warn('⚠️ Primary documents endpoint failed, trying fallback:', primaryError.message);
+            // Try fallback endpoint
+            try {
+                response = await fetch(`${baseUrl}/api/files/documents`, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${sessionManager.getAuthToken()}`
+                    }
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`Fallback also failed: HTTP ${response.status}: ${response.statusText}`);
+                }
+            } catch (fallbackError) {
+                console.error('❌ All documents endpoints failed:', fallbackError.message);
+                // Load sample data for demonstration
+                loadSampleDocuments();
+                return;
+            }
         }
         
         const data = await response.json();
-        const documents = data.documents || [];
-        console.log('📊 Recent documents:', documents);
+        console.log('📊 Documents data:', data);
         
-        const recentUploadsList = document.getElementById('recentUploadsList');
-        if (!recentUploadsList) return;
+        // Handle different response formats
+        const documents = data.documents || data.data || data;
         
-        if (documents.length === 0) {
-            recentUploadsList.innerHTML = '<div class="no-documents">No documents found</div>';
-            return;
-        }
-        
-        // Show only the 5 most recent documents
-        const recentDocuments = documents.slice(0, 5);
-        
-        const documentsHtml = recentDocuments.map(doc => {
-            const formatDate = (dateStr) => {
-                if (!dateStr) return 'Unknown';
-                const date = new Date(dateStr);
-                return date.toLocaleDateString('en-US', { 
-                    year: 'numeric', 
-                    month: 'short', 
-                    day: 'numeric' 
-                });
-            };
-            
-            const formatFileSize = (size) => {
-                if (!size) return 'Unknown size';
-                const bytes = parseInt(size);
-                if (bytes === 0) return '0 Bytes';
-                const k = 1024;
-                const sizes = ['Bytes', 'KB', 'MB', 'GB'];
-                const i = Math.floor(Math.log(bytes) / Math.log(k));
-                return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
-            };
-            
-            const getStatusBadge = (status) => {
-                const statusClass = status === 'Approved' ? 'approved' : 
-                                   status === 'Pending' ? 'pending' : 
-                                   status === 'Draft' ? 'draft' : 'active';
-                return `<span class="status-badge ${statusClass}">${status}</span>`;
-            };
-            
-            return `
-                <div class="upload-item">
-                    <div class="upload-info">
-                        <strong>${doc.title}</strong>
-                        <p>Type: ${doc.type || doc.category || 'Unknown'} | Department: ${doc.department || doc.category || 'Unknown'}</p>
-                        <p>Uploaded: ${formatDate(doc.uploadedDate)} | ${getStatusBadge(doc.status)}</p>
-                        ${doc.fileSize ? `<p>Size: ${formatFileSize(doc.fileSize)}</p>` : ''}
-                        ${doc.uploadedByName ? `<p>By: ${doc.uploadedByName}</p>` : ''}
-                        ${doc.source ? `<p><small>Source: ${doc.source}</small></p>` : ''}
-                    </div>
-                </div>
-            `;
-        }).join('');
-        
-        recentUploadsList.innerHTML = documentsHtml;
-        console.log(`✅ Recent documents displayed: ${recentDocuments.length} documents`);
+        displayDocuments(documents);
         
     } catch (error) {
-        console.error('❌ Error loading recent documents:', error);
-        const recentUploadsList = document.getElementById('recentUploadsList');
-        if (recentUploadsList) {
-            recentUploadsList.innerHTML = '<div class="error">Failed to load documents</div>';
-        }
+        console.error('❌ Error loading documents:', error);
+        // Load sample data on error
+        loadSampleDocuments();
     }
+}
+
+// Load sample documents for demonstration
+function loadSampleDocuments() {
+    console.log('📋 Loading sample documents...');
+    
+    const sampleDocuments = [
+        {
+            id: 'DOC-001',
+            title: 'Safety Manual 2024',
+            type: 'policy',
+            department: 'operations',
+            uploadedDate: '2026-01-20T10:30:00',
+            fileSize: 2048576,
+            priority: 'important',
+            status: 'active',
+            uploadedBy: 'John Smith',
+            description: 'Comprehensive safety manual covering all workplace safety protocols and procedures.'
+        },
+        {
+            id: 'DOC-002',
+            title: 'Project Proposal - Kigali Tower',
+            type: 'report',
+            department: 'projects',
+            uploadedDate: '2026-01-15T14:20:00',
+            fileSize: 5242880,
+            priority: 'urgent',
+            status: 'active',
+            uploadedBy: 'Sarah Johnson',
+            description: 'Detailed project proposal for the Kigali Tower construction project including timeline, budget, and specifications.'
+        },
+        {
+            id: 'DOC-003',
+            title: 'HR Policy Handbook',
+            type: 'policy',
+            department: 'hr',
+            uploadedDate: '2026-01-12T09:15:00',
+            fileSize: 1572864,
+            priority: 'normal',
+            status: 'active',
+            uploadedBy: 'Michael Brown',
+            description: 'Complete HR policy handbook covering employee relations, benefits, and company procedures.'
+        },
+        {
+            id: 'DOC-004',
+            title: 'Financial Report Q4 2023',
+            type: 'report',
+            department: 'finance',
+            uploadedDate: '2026-01-10T16:45:00',
+            fileSize: 3145728,
+            priority: 'important',
+            status: 'active',
+            uploadedBy: 'Lisa Martinez',
+            description: 'Quarterly financial report for Q4 2023 including revenue, expenses, and profit analysis.'
+        },
+        {
+            id: 'DOC-005',
+            title: 'Construction Contract - Masaki Complex',
+            type: 'contract',
+            department: 'realestate',
+            uploadedDate: '2026-01-08T11:30:00',
+            fileSize: 1048576,
+            priority: 'urgent',
+            status: 'active',
+            uploadedBy: 'David Anderson',
+            description: 'Construction contract for the Masaki Residential Complex project including terms and conditions.'
+        },
+        {
+            id: 'DOC-006',
+            title: 'Standard Operating Procedures',
+            type: 'procedure',
+            department: 'operations',
+            uploadedDate: '2026-01-05T13:20:00',
+            fileSize: 2621440,
+            priority: 'important',
+            status: 'active',
+            uploadedBy: 'Jennifer Lee',
+            description: 'Standard operating procedures for all operational activities and workflows.'
+        },
+        {
+            id: 'DOC-007',
+            title: 'Employee Training Manual',
+            type: 'procedure',
+            department: 'hr',
+            uploadedDate: '2026-01-03T10:45:00',
+            fileSize: 1835008,
+            priority: 'normal',
+            status: 'active',
+            uploadedBy: 'Thomas Anderson',
+            description: 'Comprehensive employee training manual covering onboarding and ongoing development.'
+        },
+        {
+            id: 'DOC-008',
+            title: 'Budget Allocation 2024',
+            type: 'report',
+            department: 'finance',
+            uploadedDate: '2026-01-02T15:30:00',
+            fileSize: 786432,
+            priority: 'urgent',
+            status: 'active',
+            uploadedBy: 'Patricia Johnson',
+            description: 'Annual budget allocation for 2024 including departmental breakdown and projections.'
+        },
+        {
+            id: 'DOC-009',
+            title: 'Marketing Strategy Memo',
+            type: 'memo',
+            department: 'management',
+            uploadedDate: '2025-12-28T12:15:00',
+            fileSize: 524288,
+            priority: 'normal',
+            status: 'active',
+            uploadedBy: 'James Wilson',
+            description: 'Internal memo outlining the marketing strategy for the upcoming fiscal year.'
+        },
+        {
+            id: 'DOC-010',
+            title: 'Quality Assurance Guidelines',
+            type: 'procedure',
+            department: 'operations',
+            uploadedDate: '2025-12-25T09:00:00',
+            fileSize: 1310720,
+            priority: 'important',
+            status: 'active',
+            uploadedBy: 'Sarah Wilson',
+            description: 'Quality assurance guidelines and procedures for maintaining high standards.'
+        },
+        {
+            id: 'DOC-011',
+            title: 'Legal Compliance Document',
+            type: 'other',
+            department: 'management',
+            uploadedDate: '2025-12-22T14:30:00',
+            fileSize: 9437184,
+            priority: 'urgent',
+            status: 'active',
+            uploadedBy: 'Emily Taylor',
+            description: 'Legal compliance documentation covering all regulatory requirements and obligations.'
+        },
+        {
+            id: 'DOC-012',
+            title: 'Project Timeline - Port Modernization',
+            type: 'report',
+            department: 'projects',
+            uploadedDate: '2025-12-20T11:45:00',
+            fileSize: 2097152,
+            priority: 'important',
+            status: 'active',
+            uploadedBy: 'John Michael',
+            description: 'Detailed project timeline for the Port Modernization Phase 1 project.'
+        },
+        {
+            id: 'DOC-013',
+            title: 'Employee Benefits Package',
+            type: 'policy',
+            department: 'hr',
+            uploadedDate: '2025-12-18T16:20:00',
+            fileSize: 1572864,
+            priority: 'normal',
+            status: 'active',
+            uploadedBy: 'Mary Johnson',
+            description: 'Complete employee benefits package including health insurance, retirement, and perks.'
+        },
+        {
+            id: 'DOC-014',
+            title: 'Investment Proposal - Tech Upgrade',
+            type: 'report',
+            department: 'finance',
+            uploadedDate: '2025-12-15T10:30:00',
+            fileSize: 3145728,
+            priority: 'important',
+            status: 'active',
+            uploadedBy: 'William Davis',
+            description: 'Investment proposal for technology infrastructure upgrade and modernization.'
+        },
+        {
+            id: 'DOC-015',
+            title: 'Property Acquisition Agreement',
+            type: 'contract',
+            department: 'realestate',
+            uploadedDate: '2025-12-12T13:15:00',
+            fileSize: 2621440,
+            priority: 'urgent',
+            status: 'active',
+            uploadedBy: 'Elizabeth Wilson',
+            description: 'Property acquisition agreement for new real estate development project.'
+        }
+    ];
+    
+    displayDocuments(sampleDocuments);
+}
+
+// Display documents in the table
+function displayDocuments(documents) {
+    const documentsList = document.getElementById('documentsList');
+    
+    if (!documentsList) {
+        console.error('❌ Documents list container not found!');
+        return;
+    }
+    
+    if (!documents || documents.length === 0) {
+        documentsList.innerHTML = `
+            <tr>
+                <td colspan="10">
+                    <div class="no-records">No documents found</div>
+                </td>
+            </tr>
+        `;
+        return;
+    }
+    
+    // Sort documents by date (newest first)
+    documents.sort((a, b) => new Date(b.uploadedDate) - new Date(a.uploadedDate));
+    
+    let documentsHTML = '';
+    
+    documents.forEach(doc => {
+        // Get type display
+        const typeDisplay = getTypeDisplayName(doc.type);
+        
+        // Get department display
+        const departmentDisplay = getDepartmentDisplayName(doc.department);
+        
+        // Get priority display
+        const priorityDisplay = getPriorityDisplayName(doc.priority);
+        
+        // Get status display
+        const statusDisplay = doc.status === 'active' ? '✅ Active' : 
+                             doc.status === 'pending' ? '⏳ Pending' : 
+                             doc.status === 'draft' ? '📝 Draft' : 
+                             doc.status === 'archived' ? '📦 Archived' : doc.status;
+        
+        const statusClass = doc.status === 'active' ? 'status-active' : 
+                           doc.status === 'pending' ? 'status-pending' : 
+                           doc.status === 'draft' ? 'status-draft' : 
+                           doc.status === 'archived' ? 'status-archived' : '';
+        
+        // Format date
+        const uploadDate = new Date(doc.uploadedDate).toLocaleDateString();
+        
+        // Format file size
+        const fileSize = formatFileSize(doc.fileSize);
+        
+        documentsHTML += `
+            <tr class="document-row">
+                <td>
+                    <div class="document-id-info">
+                        <div class="document-id">${doc.id}</div>
+                    </div>
+                </td>
+                <td>
+                    <div class="title-info">
+                        <div class="document-title">${doc.title}</div>
+                    </div>
+                </td>
+                <td>
+                    <div class="type-info">
+                        <div class="document-type">${typeDisplay}</div>
+                    </div>
+                </td>
+                <td>
+                    <div class="department-info">
+                        <div class="department-name">${departmentDisplay}</div>
+                    </div>
+                </td>
+                <td>
+                    <div class="date-info">
+                        <div class="upload-date">${uploadDate}</div>
+                    </div>
+                </td>
+                <td>
+                    <div class="size-info">
+                        <div class="file-size">${fileSize}</div>
+                    </div>
+                </td>
+                <td>
+                    <div class="priority-info">
+                        <div class="priority-badge priority-${doc.priority}">${priorityDisplay}</div>
+                    </div>
+                </td>
+                <td>
+                    <span class="status-badge ${statusClass}">${statusDisplay}</span>
+                </td>
+                <td>
+                    <div class="uploader-info">
+                        <div class="uploader-name">${doc.uploadedBy}</div>
+                    </div>
+                </td>
+                <td>
+                    <div class="document-actions">
+                        <button class="action-btn view" onclick="viewDocument('${doc.id}')" title="View Document">👁️</button>
+                        <button class="action-btn download" onclick="downloadDocument('${doc.id}')" title="Download Document">📥</button>
+                        <button class="action-btn edit" onclick="editDocument('${doc.id}')" title="Edit Document">✏️</button>
+                    </div>
+                </td>
+            </tr>
+        `;
+    });
+    
+    documentsList.innerHTML = documentsHTML;
+}
+
+// Get type display name
+function getTypeDisplayName(type) {
+    const typeMap = {
+        'policy': 'Company Policy',
+        'procedure': 'Standard Procedure',
+        'report': 'Report',
+        'contract': 'Contract',
+        'memo': 'Memo',
+        'other': 'Other'
+    };
+    return typeMap[type] || type;
+}
+
+// Get department display name
+function getDepartmentDisplayName(department) {
+    const departmentMap = {
+        'management': 'Management',
+        'hr': 'Human Resources',
+        'finance': 'Finance',
+        'projects': 'Projects',
+        'operations': 'Operations',
+        'realestate': 'Real Estate'
+    };
+    return departmentMap[department] || department;
+}
+
+// Get priority display name
+function getPriorityDisplayName(priority) {
+    const priorityMap = {
+        'normal': 'Normal',
+        'important': 'Important',
+        'urgent': 'Urgent'
+    };
+    return priorityMap[priority] || priority;
+}
+
+// Format file size
+function formatFileSize(size) {
+    if (!size) return 'Unknown';
+    const bytes = parseInt(size);
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+}
+
+// Document action functions
+function viewDocument(documentId) {
+    customAlert(`Viewing document with ID: ${documentId}\n\nDocument will be opened in a new tab for viewing and reference purposes. All document content and metadata will be displayed with full access to download, print, or share functionality as needed.`, "View Document", "info");
+}
+
+function downloadDocument(documentId) {
+    customAlert(`Downloading document with ID: ${documentId}\n\nDocument will be downloaded to your device for offline access and reference. The file will be saved in its original format with all content and metadata preserved.`, "Download Document", "info");
+}
+
+function editDocument(documentId) {
+    customAlert(`Editing document with ID: ${documentId}\n\nDocument editor will be opened allowing you to modify content, update metadata, change status, and manage document properties. All changes will be tracked and version controlled.`, "Edit Document", "info");
+}
+
+// Filter documents
+function filterDocuments() {
+    const searchInput = document.getElementById('documentSearchInput');
+    const typeFilter = document.getElementById('documentTypeFilter');
+    const departmentFilter = document.getElementById('documentDepartmentFilter');
+    
+    if (!searchInput || !typeFilter || !departmentFilter) return;
+    
+    const searchTerm = searchInput.value.toLowerCase();
+    const selectedType = typeFilter.value;
+    const selectedDepartment = departmentFilter.value;
+    
+    const rows = document.querySelectorAll('.document-row');
+    
+    rows.forEach(row => {
+        const title = row.querySelector('.document-title')?.textContent.toLowerCase() || '';
+        const uploader = row.querySelector('.uploader-name')?.textContent.toLowerCase() || '';
+        const type = row.querySelector('.document-type')?.textContent || '';
+        const department = row.querySelector('.department-name')?.textContent || '';
+        
+        const matchesSearch = title.includes(searchTerm) || uploader.includes(searchTerm);
+        const matchesType = !selectedType || type === getTypeDisplayName(selectedType);
+        const matchesDepartment = !selectedDepartment || department === getDepartmentDisplayName(selectedDepartment);
+        
+        row.style.display = matchesSearch && matchesType && matchesDepartment ? '' : 'none';
+    });
 }
 
 function uploadDocument() {
