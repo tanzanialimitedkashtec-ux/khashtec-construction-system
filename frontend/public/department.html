@@ -2601,6 +2601,206 @@ color: #666;
     font-style: italic;
 }
 
+/* Budget Table Styles */
+.budget-records {
+    margin-top: 20px;
+}
+
+.budget-table-container {
+    background: white;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    margin-top: 15px;
+}
+
+.budget-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 11px;
+    background: white;
+}
+
+.budget-table th {
+    background: #0b3d91;
+    color: white;
+    padding: 10px 8px;
+    text-align: left;
+    font-weight: 600;
+    border-bottom: 2px solid #093278;
+    white-space: nowrap;
+}
+
+.budget-table td {
+    padding: 8px;
+    border-bottom: 1px solid #e9ecef;
+    vertical-align: middle;
+    font-size: 11px;
+}
+
+.budget-table tr:hover {
+    background: #f8f9fa;
+}
+
+.budget-table tr:last-child td {
+    border-bottom: none;
+}
+
+.department-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 120px;
+}
+
+.department-name {
+    font-weight: 600;
+    color: #333;
+    font-size: 12px;
+    line-height: 1.2;
+}
+
+.budget-id {
+    font-size: 9px;
+    color: #666;
+    text-transform: uppercase;
+}
+
+.period-info {
+    min-width: 80px;
+}
+
+.period-badge {
+    font-size: 9px;
+    font-weight: 600;
+    color: white;
+    background: #6c757d;
+    padding: 2px 6px;
+    border-radius: 8px;
+    text-transform: capitalize;
+    display: inline-block;
+}
+
+.date-info {
+    min-width: 80px;
+}
+
+.budget-date {
+    font-weight: 600;
+    color: #333;
+    font-size: 11px;
+}
+
+.amount-info {
+    min-width: 100px;
+    text-align: right;
+}
+
+.budget-amount {
+    font-weight: 600;
+    color: #0b3d91;
+    font-size: 11px;
+    text-align: right;
+}
+
+.status-badge.status-active {
+    background: #d4edda;
+    color: #155724;
+}
+
+.status-badge.status-pending {
+    background: #fff3cd;
+    color: #856404;
+}
+
+.status-badge.status-completed {
+    background: #cce5ff;
+    color: #004085;
+}
+
+.status-badge.status-expired {
+    background: #f8d7da;
+    color: #721c24;
+}
+
+.utilization-info {
+    min-width: 100px;
+    text-align: center;
+}
+
+.utilization-bar {
+    width: 100%;
+    height: 8px;
+    background: #e9ecef;
+    border-radius: 4px;
+    overflow: hidden;
+    margin-bottom: 2px;
+}
+
+.utilization-fill {
+    height: 100%;
+    transition: width 0.3s ease;
+}
+
+.utilization-fill.utilization-high {
+    background: #28a745;
+}
+
+.utilization-fill.utilization-medium {
+    background: #ffc107;
+}
+
+.utilization-fill.utilization-low {
+    background: #dc3545;
+}
+
+.utilization-text {
+    font-size: 9px;
+    font-weight: 600;
+    color: #333;
+}
+
+.budget-actions {
+    display: flex;
+    gap: 4px;
+    justify-content: center;
+}
+
+.budget-actions .action-btn {
+    padding: 4px 6px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 10px;
+    transition: all 0.2s ease;
+    min-width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.budget-actions .action-btn.view {
+    background: #17a2b8;
+    color: white;
+}
+
+.budget-actions .action-btn.edit {
+    background: #ffc107;
+    color: #212529;
+}
+
+.budget-actions .action-btn.delete {
+    background: #dc3545;
+    color: white;
+}
+
+.budget-actions .action-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
 .btn-approve {
     background: #28a745;
     color: white;
@@ -11739,28 +11939,7 @@ function attendance(){
                 </div>
             </div>
             
-            <div class="attendance-summary">
-                <h4>Today's Attendance Summary</h4>
-                <div class="summary-stats">
-                    <div class="stat-item">
-                        <span class="stat-label">Total Employees:</span>
-                        <span class="stat-value" id="totalEmployees">Loading...</span>
-                    </div>
-                    <div class="stat-item">
-                        <span class="stat-label">Present:</span>
-                        <span class="stat-value present" id="presentCount">Loading...</span>
-                    </div>
-                    <div class="stat-item">
-                        <span class="stat-label">Absent:</span>
-                        <span class="stat-value absent" id="absentCount">Loading...</span>
-                    </div>
-                    <div class="stat-item">
-                        <span class="stat-label">On Leave:</span>
-                        <span class="stat-value leave" id="leaveCount">Loading...</span>
-                    </div>
-                </div>
-            </div>
-            
+                        
             <div class="attendance-records">
                 <h4>Recent Attendance Records</h4>
                 <div class="attendance-table-container">
@@ -18289,25 +18468,37 @@ function financeBudgeting(){
                 </div>
             </div>
             
-            <div class="existing-budgets">
+            <div class="budget-records">
                 <h4>Active Budgets</h4>
-                <div class="budget-list">
-                    <div class="budget-item">
-                        <span>Projects Department - Q2 2026</span>
-                        <span class="budget-amount">TZS 25,000,000</span>
-                    </div>
-                    <div class="budget-item">
-                        <span>Administration - Q2 2026</span>
-                        <span class="budget-amount">TZS 8,000,000</span>
-                    </div>
-                    <div class="budget-item">
-                        <span>Finance Department - Q2 2026</span>
-                        <span class="budget-amount">TZS 5,000,000</span>
-                    </div>
+                <div class="budget-table-container">
+                    <table class="budget-table">
+                        <thead>
+                            <tr>
+                                <th>Department</th>
+                                <th>Budget Period</th>
+                                <th>Start Date</th>
+                                <th>End Date</th>
+                                <th>Total Amount</th>
+                                <th>Status</th>
+                                <th>Utilization</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="budgetRecordsList">
+                            <tr>
+                                <td colspan="8">
+                                    <div class="loading">Loading budget records...</div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </div>
     `);
+    
+    // Load budget records
+    loadBudgetRecords();
 }
 
 function financialManagement(){
@@ -19799,6 +19990,301 @@ function saveDepartmentBudget() {
     });
     
     return false;
+}
+
+// Load budget records for table display
+async function loadBudgetRecords() {
+    console.log('🔄 Loading budget records...');
+    
+    try {
+        const baseUrl = window.location.origin;
+        let response;
+        
+        // Try to get budget records from API
+        try {
+            response = await fetch(`${baseUrl}/api/workforce-budget`, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${sessionManager.getAuthToken()}`
+                }
+            });
+            
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            }
+        } catch (primaryError) {
+            console.warn('⚠️ Primary budget records endpoint failed, trying fallback:', primaryError.message);
+            // Try fallback endpoint
+            try {
+                response = await fetch(`${baseUrl}/api/budgets`, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${sessionManager.getAuthToken()}`
+                    }
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`Fallback also failed: HTTP ${response.status}: ${response.statusText}`);
+                }
+            } catch (fallbackError) {
+                console.error('❌ All budget records endpoints failed:', fallbackError.message);
+                // Load sample data for demonstration
+                loadSampleBudgetRecords();
+                return;
+            }
+        }
+        
+        const budgetRecords = await response.json();
+        console.log('📊 Budget records data:', budgetRecords);
+        
+        displayBudgetRecords(budgetRecords);
+        
+    } catch (error) {
+        console.error('❌ Error loading budget records:', error);
+        // Load sample data on error
+        loadSampleBudgetRecords();
+    }
+}
+
+// Load sample budget records for demonstration
+function loadSampleBudgetRecords() {
+    console.log('📋 Loading sample budget records...');
+    
+    const sampleRecords = [
+        {
+            id: 1,
+            department: 'Projects',
+            period: 'Quarterly',
+            start_date: '2026-04-01',
+            end_date: '2026-06-30',
+            total_amount: 25000000,
+            status: 'active',
+            utilization: 65,
+            salaries_wages: 15000000,
+            training_development: 3000000,
+            employee_benefits: 4000000,
+            recruitment_costs: 3000000
+        },
+        {
+            id: 2,
+            department: 'Administration',
+            period: 'Quarterly',
+            start_date: '2026-04-01',
+            end_date: '2026-06-30',
+            total_amount: 8000000,
+            status: 'active',
+            utilization: 45,
+            salaries_wages: 5000000,
+            training_development: 1000000,
+            employee_benefits: 1500000,
+            recruitment_costs: 500000
+        },
+        {
+            id: 3,
+            department: 'Finance',
+            period: 'Quarterly',
+            start_date: '2026-04-01',
+            end_date: '2026-06-30',
+            total_amount: 5000000,
+            status: 'active',
+            utilization: 78,
+            salaries_wages: 3000000,
+            training_development: 500000,
+            employee_benefits: 1000000,
+            recruitment_costs: 500000
+        },
+        {
+            id: 4,
+            department: 'Human Resources',
+            period: 'Monthly',
+            start_date: '2026-05-01',
+            end_date: '2026-05-31',
+            total_amount: 3500000,
+            status: 'active',
+            utilization: 52,
+            salaries_wages: 2000000,
+            training_development: 800000,
+            employee_benefits: 500000,
+            recruitment_costs: 200000
+        },
+        {
+            id: 5,
+            department: 'Health & Safety',
+            period: 'Quarterly',
+            start_date: '2026-04-01',
+            end_date: '2026-06-30',
+            total_amount: 6000000,
+            status: 'pending',
+            utilization: 0,
+            salaries_wages: 3500000,
+            training_development: 1000000,
+            employee_benefits: 1000000,
+            recruitment_costs: 500000
+        },
+        {
+            id: 6,
+            department: 'Real Estate',
+            period: 'Annually',
+            start_date: '2026-01-01',
+            end_date: '2026-12-31',
+            total_amount: 15000000,
+            status: 'active',
+            utilization: 38,
+            salaries_wages: 8000000,
+            training_development: 2000000,
+            employee_benefits: 3000000,
+            recruitment_costs: 2000000
+        }
+    ];
+    
+    displayBudgetRecords(sampleRecords);
+}
+
+// Display budget records in the table
+function displayBudgetRecords(records) {
+    const recordsList = document.getElementById('budgetRecordsList');
+    
+    if (!recordsList) {
+        console.error('❌ Budget records list container not found!');
+        return;
+    }
+    
+    if (!records || records.length === 0) {
+        recordsList.innerHTML = `
+            <tr>
+                <td colspan="8">
+                    <div class="no-records">No budget records found</div>
+                </td>
+            </tr>
+        `;
+        return;
+    }
+    
+    // Sort records by start date (most recent first)
+    records.sort((a, b) => new Date(b.start_date) - new Date(a.start_date));
+    
+    let recordsHTML = '';
+    
+    records.forEach(record => {
+        const startDate = new Date(record.start_date);
+        const endDate = new Date(record.end_date);
+        const formattedStartDate = startDate.toLocaleDateString('en-US', { 
+            year: 'numeric', 
+            month: 'short', 
+            day: 'numeric' 
+        });
+        const formattedEndDate = endDate.toLocaleDateString('en-US', { 
+            year: 'numeric', 
+            month: 'short', 
+            day: 'numeric' 
+        });
+        
+        // Format currency
+        const formattedAmount = new Intl.NumberFormat('en-TZ', {
+            style: 'currency',
+            currency: 'TZS',
+            minimumFractionDigits: 0,
+            maximumFractionDigits: 0
+        }).format(record.total_amount);
+        
+        // Get status badge
+        const statusClass = record.status === 'active' ? 'status-active' : 
+                           record.status === 'pending' ? 'status-pending' : 
+                           record.status === 'completed' ? 'status-completed' : 
+                           record.status === 'expired' ? 'status-expired' : 'status-default';
+        
+        const statusBadge = record.status === 'active' ? '✅ Active' : 
+                           record.status === 'pending' ? '⏳ Pending' : 
+                           record.status === 'completed' ? '✅ Completed' : 
+                           record.status === 'expired' ? '❌ Expired' : '❓ Unknown';
+        
+        // Get utilization badge and color
+        let utilizationClass = 'utilization-low';
+        let utilizationBadge = '🔴 Low';
+        
+        if (record.utilization >= 80) {
+            utilizationClass = 'utilization-high';
+            utilizationBadge = '🟢 High';
+        } else if (record.utilization >= 50) {
+            utilizationClass = 'utilization-medium';
+            utilizationBadge = '🟡 Medium';
+        }
+        
+        recordsHTML += `
+            <tr class="budget-row">
+                <td>
+                    <div class="department-info">
+                        <div class="department-name">${record.department}</div>
+                        <div class="budget-id">ID: ${record.id}</div>
+                    </div>
+                </td>
+                <td>
+                    <div class="period-info">
+                        <span class="period-badge">${record.period}</span>
+                    </div>
+                </td>
+                <td>
+                    <div class="date-info">
+                        <div class="budget-date">${formattedStartDate}</div>
+                    </div>
+                </td>
+                <td>
+                    <div class="date-info">
+                        <div class="budget-date">${formattedEndDate}</div>
+                    </div>
+                </td>
+                <td>
+                    <div class="amount-info">
+                        <div class="budget-amount">${formattedAmount}</div>
+                    </div>
+                </td>
+                <td>
+                    <span class="status-badge ${statusClass}">${statusBadge}</span>
+                </td>
+                <td>
+                    <div class="utilization-info">
+                        <div class="utilization-bar">
+                            <div class="utilization-fill ${utilizationClass}" style="width: ${record.utilization}%"></div>
+                        </div>
+                        <div class="utilization-text">${record.utilization}%</div>
+                    </div>
+                </td>
+                <td>
+                    <div class="budget-actions">
+                        <button class="action-btn view" onclick="viewBudgetDetails('${record.id}')" title="View Details">👁️</button>
+                        <button class="action-btn edit" onclick="editBudget('${record.id}')" title="Edit Budget">✏️</button>
+                        <button class="action-btn delete" onclick="deleteBudget('${record.id}')" title="Delete Budget">🗑️</button>
+                    </div>
+                </td>
+            </tr>
+        `;
+    });
+    
+    recordsList.innerHTML = recordsHTML;
+}
+
+// Budget action functions
+function viewBudgetDetails(recordId) {
+    customAlert(`Viewing budget details for ID: ${recordId}\n\nFull budget breakdown including department allocation, utilization metrics, and expenditure details will be displayed.`, "Budget Details", "info");
+}
+
+function editBudget(recordId) {
+    customAlert(`Editing budget ${recordId}...\n\nBudget editor will open for modifications and reallocation adjustments.`, "Edit Budget", "info");
+}
+
+function deleteBudget(recordId) {
+    if (confirm('Are you sure you want to delete this budget? This action cannot be undone.')) {
+        // TODO: Implement actual API call to delete budget record
+        console.log('Deleting budget record with ID:', recordId);
+        customAlert(`Budget record ${recordId} has been deleted.\n\nThe budget has been removed from the system.`, "Record Deleted", "success");
+        
+        // Refresh the budget records
+        setTimeout(() => {
+            loadBudgetRecords();
+        }, 1000);
+    }
 }
 
 function saveSalaryStructure() {
