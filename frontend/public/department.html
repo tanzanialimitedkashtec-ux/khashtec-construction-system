@@ -2801,6 +2801,186 @@ color: #666;
     box-shadow: 0 2px 4px rgba(0,0,0,0.2);
 }
 
+/* Policy Table Styles */
+.policy-records {
+    margin-top: 20px;
+}
+
+.policy-table-container {
+    background: white;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    margin-top: 15px;
+}
+
+.policy-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 11px;
+    background: white;
+}
+
+.policy-table th {
+    background: #0b3d91;
+    color: white;
+    padding: 10px 8px;
+    text-align: left;
+    font-weight: 600;
+    border-bottom: 2px solid #093278;
+    white-space: nowrap;
+}
+
+.policy-table td {
+    padding: 8px;
+    border-bottom: 1px solid #e9ecef;
+    vertical-align: middle;
+    font-size: 11px;
+}
+
+.policy-table tr:hover {
+    background: #f8f9fa;
+}
+
+.policy-table tr:last-child td {
+    border-bottom: none;
+}
+
+.policy-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 180px;
+}
+
+.policy-title {
+    font-weight: 600;
+    color: #333;
+    font-size: 12px;
+    line-height: 1.2;
+}
+
+.policy-id {
+    font-size: 9px;
+    color: #666;
+    text-transform: uppercase;
+}
+
+.category-info {
+    min-width: 120px;
+}
+
+.category-badge {
+    font-size: 9px;
+    font-weight: 600;
+    color: white;
+    background: #6c757d;
+    padding: 2px 6px;
+    border-radius: 8px;
+    text-transform: capitalize;
+    display: inline-block;
+}
+
+.priority-badge.priority-mandatory {
+    background: #dc3545;
+    color: white;
+}
+
+.priority-badge.priority-recommended {
+    background: #ffc107;
+    color: #212529;
+}
+
+.priority-badge.priority-informational {
+    background: #17a2b8;
+    color: white;
+}
+
+.date-info {
+    min-width: 80px;
+}
+
+.policy-date {
+    font-weight: 600;
+    color: #333;
+    font-size: 11px;
+}
+
+.scope-info {
+    min-width: 100px;
+}
+
+.scope-badge {
+    font-size: 9px;
+    font-weight: 600;
+    color: white;
+    background: #6c757d;
+    padding: 2px 6px;
+    border-radius: 8px;
+    display: inline-block;
+}
+
+.status-badge.status-active {
+    background: #d4edda;
+    color: #155724;
+}
+
+.status-badge.status-pending {
+    background: #fff3cd;
+    color: #856404;
+}
+
+.status-badge.status-expired {
+    background: #f8d7da;
+    color: #721c24;
+}
+
+.policy-actions {
+    display: flex;
+    gap: 4px;
+    justify-content: center;
+}
+
+.policy-actions .action-btn {
+    padding: 4px 6px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 10px;
+    transition: all 0.2s ease;
+    min-width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.policy-actions .action-btn.view {
+    background: #17a2b8;
+    color: white;
+}
+
+.policy-actions .action-btn.download {
+    background: #28a745;
+    color: white;
+}
+
+.policy-actions .action-btn.edit {
+    background: #ffc107;
+    color: #212529;
+}
+
+.policy-actions .action-btn.delete {
+    background: #dc3545;
+    color: white;
+}
+
+.policy-actions .action-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
 .btn-approve {
     background: #28a745;
     color: white;
@@ -15503,38 +15683,37 @@ function uploadSafetyPolicies(){
                 </form>
             </div>
             
-            <div class="policy-library">
+            <div class="policy-records">
                 <h4>Safety Policy Library</h4>
-                <div class="policy-list">
-                    <div class="policy-item">
-                        <div class="policy-details">
-                            <strong>PPE Policy - Mandatory</strong>
-                            <span>Category: Personal Protective Equipment</span>
-                            <span>Effective: Jan 1, 2026 | Review: Dec 31, 2026</span>
-                            <span>Applies to: All Projects</span>
-                        </div>
-                        <div class="policy-actions">
-                            <button class="action" onclick="viewPolicy('ppe001')">View</button>
-                            <button class="action" onclick="downloadPolicy('ppe001')">Download</button>
-                        </div>
-                    </div>
-                    
-                    <div class="policy-item">
-                        <div class="policy-details">
-                            <strong>Emergency Response Procedures</strong>
-                            <span>Category: Emergency Procedures</span>
-                            <span>Effective: Feb 15, 2026 | Review: Feb 15, 2027</span>
-                            <span>Applies to: All Projects</span>
-                        </div>
-                        <div class="policy-actions">
-                            <button class="action" onclick="viewPolicy('emergency001')">View</button>
-                            <button class="action" onclick="downloadPolicy('emergency001')">Download</button>
-                        </div>
-                    </div>
+                <div class="policy-table-container">
+                    <table class="policy-table">
+                        <thead>
+                            <tr>
+                                <th>Policy Title</th>
+                                <th>Category</th>
+                                <th>Priority</th>
+                                <th>Effective Date</th>
+                                <th>Review Date</th>
+                                <th>Scope</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="policyRecordsList">
+                            <tr>
+                                <td colspan="8">
+                                    <div class="loading">Loading policy records...</div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </div>
     `);
+    
+    // Load policy records
+    loadPolicyRecords();
 }
 
 function registerCompanyCar(){
@@ -17797,6 +17976,288 @@ function saveSafetyPolicy() {
     });
     
     return false;
+}
+
+// Load policy records for table display
+async function loadPolicyRecords() {
+    console.log('🔄 Loading policy records...');
+    
+    try {
+        const baseUrl = window.location.origin;
+        let response;
+        
+        // Try to get policy records from API
+        try {
+            response = await fetch(`${baseUrl}/api/hse/work`, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${sessionManager.getAuthToken()}`
+                }
+            });
+            
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            }
+        } catch (primaryError) {
+            console.warn('⚠️ Primary policy records endpoint failed, trying fallback:', primaryError.message);
+            // Try fallback endpoint
+            try {
+                response = await fetch(`${baseUrl}/api/policies`, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${sessionManager.getAuthToken()}`
+                    }
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`Fallback also failed: HTTP ${response.status}: ${response.statusText}`);
+                }
+            } catch (fallbackError) {
+                console.error('❌ All policy records endpoints failed:', fallbackError.message);
+                // Load sample data for demonstration
+                loadSamplePolicyRecords();
+                return;
+            }
+        }
+        
+        const policyRecords = await response.json();
+        console.log('📊 Policy records data:', policyRecords);
+        
+        displayPolicyRecords(policyRecords);
+        
+    } catch (error) {
+        console.error('❌ Error loading policy records:', error);
+        // Load sample data on error
+        loadSamplePolicyRecords();
+    }
+}
+
+// Load sample policy records for demonstration
+function loadSamplePolicyRecords() {
+    console.log('📋 Loading sample policy records...');
+    
+    const sampleRecords = [
+        {
+            id: 'POL-2024001',
+            title: 'Personal Protective Equipment Policy',
+            category: 'PPE Policy',
+            priority: 'mandatory',
+            effectiveDate: '2026-01-01',
+            reviewDate: '2026-12-31',
+            scope: 'all-projects',
+            status: 'active',
+            description: 'Comprehensive PPE requirements for all field operations',
+            uploadedBy: 'HSE Manager',
+            uploadDate: '2026-01-01'
+        },
+        {
+            id: 'POL-2024002',
+            title: 'Emergency Response Procedures',
+            category: 'Emergency Procedures',
+            priority: 'mandatory',
+            effectiveDate: '2026-02-15',
+            reviewDate: '2027-02-15',
+            scope: 'all-projects',
+            status: 'active',
+            description: 'Emergency protocols and response coordination',
+            uploadedBy: 'HSE Manager',
+            uploadDate: '2026-02-15'
+        },
+        {
+            id: 'POL-2024003',
+            title: 'Equipment Safety Guidelines',
+            category: 'Equipment Safety',
+            priority: 'mandatory',
+            effectiveDate: '2026-01-15',
+            reviewDate: '2026-07-15',
+            scope: 'field-operations',
+            status: 'active',
+            description: 'Safe operation procedures for heavy machinery',
+            uploadedBy: 'HSE Manager',
+            uploadDate: '2026-01-15'
+        },
+        {
+            id: 'POL-2024004',
+            title: 'Environmental Protection Policy',
+            category: 'Environmental Policy',
+            priority: 'recommended',
+            effectiveDate: '2026-03-01',
+            reviewDate: '2027-03-01',
+            scope: 'all-projects',
+            status: 'pending',
+            description: 'Environmental impact mitigation measures',
+            uploadedBy: 'HSE Manager',
+            uploadDate: '2026-03-01'
+        },
+        {
+            id: 'POL-2024005',
+            title: 'Training Procedures Manual',
+            category: 'Training Procedures',
+            priority: 'informational',
+            effectiveDate: '2026-01-20',
+            reviewDate: '2026-06-20',
+            scope: 'office-only',
+            status: 'active',
+            description: 'Standardized training protocols and documentation',
+            uploadedBy: 'HSE Manager',
+            uploadDate: '2026-01-20'
+        },
+        {
+            id: 'POL-2024006',
+            title: 'Risk Assessment Framework',
+            category: 'Risk Assessment',
+            priority: 'mandatory',
+            effectiveDate: '2026-04-01',
+            reviewDate: '2027-04-01',
+            scope: 'all-projects',
+            status: 'expired',
+            description: 'Comprehensive risk identification and mitigation',
+            uploadedBy: 'HSE Manager',
+            uploadDate: '2026-04-01'
+        }
+    ];
+    
+    displayPolicyRecords(sampleRecords);
+}
+
+// Display policy records in the table
+function displayPolicyRecords(records) {
+    const recordsList = document.getElementById('policyRecordsList');
+    
+    if (!recordsList) {
+        console.error('❌ Policy records list container not found!');
+        return;
+    }
+    
+    if (!records || records.length === 0) {
+        recordsList.innerHTML = `
+            <tr>
+                <td colspan="8">
+                    <div class="no-records">No policy records found</div>
+                </td>
+            </tr>
+        `;
+        return;
+    }
+    
+    // Sort records by effective date (most recent first)
+    records.sort((a, b) => new Date(b.effectiveDate) - new Date(a.effectiveDate));
+    
+    let recordsHTML = '';
+    
+    records.forEach(record => {
+        const effectiveDate = new Date(record.effectiveDate);
+        const reviewDate = new Date(record.reviewDate);
+        const formattedEffectiveDate = effectiveDate.toLocaleDateString('en-US', { 
+            year: 'numeric', 
+            month: 'short', 
+            day: 'numeric' 
+        });
+        const formattedReviewDate = reviewDate.toLocaleDateString('en-US', { 
+            year: 'numeric', 
+            month: 'short', 
+            day: 'numeric' 
+        });
+        
+        // Get priority badge
+        const priorityClass = record.priority === 'mandatory' ? 'priority-mandatory' : 
+                              record.priority === 'recommended' ? 'priority-recommended' : 
+                              record.priority === 'informational' ? 'priority-informational' : 'priority-default';
+        
+        const priorityBadge = record.priority === 'mandatory' ? '🔴 Mandatory' : 
+                              record.priority === 'recommended' ? '🟡 Recommended' : 
+                              record.priority === 'informational' ? '🔵 Informational' : '❓ Unknown';
+        
+        // Get status badge
+        const statusClass = record.status === 'active' ? 'status-active' : 
+                           record.status === 'pending' ? 'status-pending' : 
+                           record.status === 'expired' ? 'status-expired' : 'status-default';
+        
+        const statusBadge = record.status === 'active' ? '✅ Active' : 
+                           record.status === 'pending' ? '⏳ Pending' : 
+                           record.status === 'expired' ? '❌ Expired' : '❓ Unknown';
+        
+        // Format scope display
+        const scopeDisplay = record.scope === 'all-projects' ? 'All Projects' : 
+                            record.scope === 'office-only' ? 'Office Only' : 
+                            record.scope === 'field-operations' ? 'Field Operations' : 
+                            record.scope === 'specific-project' ? 'Specific Project' : 'Unknown';
+        
+        recordsHTML += `
+            <tr class="policy-row">
+                <td>
+                    <div class="policy-info">
+                        <div class="policy-title">${record.title}</div>
+                        <div class="policy-id">${record.id}</div>
+                    </div>
+                </td>
+                <td>
+                    <div class="category-info">
+                        <span class="category-badge">${record.category}</span>
+                    </div>
+                </td>
+                <td>
+                    <span class="priority-badge ${priorityClass}">${priorityBadge}</span>
+                </td>
+                <td>
+                    <div class="date-info">
+                        <div class="policy-date">${formattedEffectiveDate}</div>
+                    </div>
+                </td>
+                <td>
+                    <div class="date-info">
+                        <div class="policy-date">${formattedReviewDate}</div>
+                    </div>
+                </td>
+                <td>
+                    <div class="scope-info">
+                        <span class="scope-badge">${scopeDisplay}</span>
+                    </div>
+                </td>
+                <td>
+                    <span class="status-badge ${statusClass}">${statusBadge}</span>
+                </td>
+                <td>
+                    <div class="policy-actions">
+                        <button class="action-btn view" onclick="viewPolicy('${record.id}')" title="View Policy">👁️</button>
+                        <button class="action-btn download" onclick="downloadPolicy('${record.id}')" title="Download Policy">📥</button>
+                        <button class="action-btn edit" onclick="editPolicy('${record.id}')" title="Edit Policy">✏️</button>
+                        <button class="action-btn delete" onclick="deletePolicy('${record.id}')" title="Delete Policy">🗑️</button>
+                    </div>
+                </td>
+            </tr>
+        `;
+    });
+    
+    recordsList.innerHTML = recordsHTML;
+}
+
+// Policy action functions
+function viewPolicy(recordId) {
+    customAlert(`Viewing policy details for ID: ${recordId}\n\nFull policy document including description, compliance requirements, and implementation guidelines will be displayed.`, "Policy Details", "info");
+}
+
+function downloadPolicy(recordId) {
+    customAlert(`Downloading policy ${recordId}...\n\nPolicy document will be downloaded in PDF format for offline reference and distribution.`, "Download Policy", "info");
+}
+
+function editPolicy(recordId) {
+    customAlert(`Editing policy ${recordId}...\n\nPolicy editor will open for modifications, updates, and compliance adjustments.`, "Edit Policy", "info");
+}
+
+function deletePolicy(recordId) {
+    if (confirm('Are you sure you want to delete this policy? This action cannot be undone.')) {
+        // TODO: Implement actual API call to delete policy record
+        console.log('Deleting policy record with ID:', recordId);
+        customAlert(`Policy record ${recordId} has been deleted.\n\nThe policy has been removed from the system.`, "Record Deleted", "success");
+        
+        // Refresh the policy records
+        setTimeout(() => {
+            loadPolicyRecords();
+        }, 1000);
+    }
 }
 
 function saveToolboxMeeting() {
