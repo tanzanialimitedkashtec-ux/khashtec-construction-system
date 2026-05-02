@@ -8654,7 +8654,15 @@ window.KashTecAPI = {
         try {
             console.log(`📡 API Request: ${endpoint}`, finalOptions);
             
-            const response = await fetch(`${this.baseUrl}${endpoint}`, finalOptions);
+            // Add cache-busting parameter for GET requests
+            let url = `${this.baseUrl}${endpoint}`;
+            if (!finalOptions.method || finalOptions.method.toUpperCase() === 'GET') {
+                const cacheBuster = Date.now();
+                const separator = url.includes('?') ? '&' : '?';
+                url = `${url}${separator}_cb=${cacheBuster}`;
+            }
+            
+            const response = await fetch(url, finalOptions);
             
             if (!response.ok) {
                 throw new Error(`HTTP ${response.status}: ${response.statusText}`);
