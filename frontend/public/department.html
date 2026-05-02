@@ -3776,6 +3776,194 @@ color: #666;
     box-shadow: 0 2px 4px rgba(0,0,0,0.2);
 }
 
+/* Clients Table Styles */
+.clients-records {
+    margin-top: 20px;
+}
+
+.clients-table-container {
+    background: white;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    margin-top: 15px;
+}
+
+.clients-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 11px;
+    background: white;
+}
+
+.clients-table th {
+    background: #0b3d91;
+    color: white;
+    padding: 10px 8px;
+    text-align: left;
+    font-weight: 600;
+    border-bottom: 2px solid #093278;
+    white-space: nowrap;
+}
+
+.clients-table td {
+    padding: 8px;
+    border-bottom: 1px solid #e9ecef;
+    vertical-align: middle;
+    font-size: 11px;
+}
+
+.clients-table tr:hover {
+    background: #f8f9fa;
+}
+
+.clients-table tr:last-child td {
+    border-bottom: none;
+}
+
+.client-id-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 120px;
+}
+
+.client-id {
+    font-weight: 600;
+    color: #333;
+    font-size: 11px;
+    text-transform: uppercase;
+}
+
+.nida-number {
+    font-size: 9px;
+    color: #666;
+    font-style: italic;
+    font-family: monospace;
+}
+
+.client-name-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 150px;
+}
+
+.client-name {
+    font-weight: 600;
+    color: #333;
+    font-size: 11px;
+    line-height: 1.2;
+}
+
+.company-name {
+    font-size: 9px;
+    color: #666;
+    font-style: italic;
+}
+
+.client-type-badge {
+    display: inline-block;
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 9px;
+    font-weight: 600;
+    white-space: nowrap;
+    background: #e9ecef;
+    color: #495057;
+}
+
+.contact-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 150px;
+}
+
+.contact-info .phone {
+    font-size: 10px;
+    color: #333;
+    font-weight: 500;
+}
+
+.contact-info .email {
+    font-size: 9px;
+    color: #007bff;
+    word-break: break-all;
+}
+
+.interest-badge {
+    display: inline-block;
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 9px;
+    font-weight: 600;
+    white-space: nowrap;
+    background: #e9ecef;
+    color: #495057;
+}
+
+.budget-info {
+    min-width: 100px;
+}
+
+.budget-range {
+    font-weight: 600;
+    color: #333;
+    font-size: 11px;
+}
+
+.registration-info {
+    min-width: 100px;
+}
+
+.reg-date {
+    font-weight: 600;
+    color: #333;
+    font-size: 11px;
+}
+
+.client-actions {
+    display: flex;
+    gap: 4px;
+    justify-content: center;
+}
+
+.client-actions .action-btn {
+    padding: 4px 6px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 10px;
+    transition: all 0.2s ease;
+    min-width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.client-actions .action-btn.view {
+    background: #17a2b8;
+    color: white;
+}
+
+.client-actions .action-btn.edit {
+    background: #ffc107;
+    color: #212529;
+}
+
+.client-actions .action-btn.contact {
+    background: #28a745;
+    color: white;
+}
+
+.client-actions .action-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
 .btn-approve {
     background: #28a745;
     color: white;
@@ -24961,21 +25149,401 @@ function registerClient(){
                 </form>
             </div>
             
-            <div class="recent-clients">
-                <h4>Recently Registered Clients</h4>
-                <div class="client-list">
-                    <div class="client-item">
-                        <div class="client-details">
-                            <strong>John Michael Smith</strong>
-                            <span>CLT-2026-001 - Individual</span>
-                            <span>Phone: +255 712 345 678</span>
-                            <span>Interest: Residential | Budget: 50M-100M</span>
-                        </div>
-                    </div>
+            <div class="clients-records">
+                <h4>Client Registry</h4>
+                <div class="clients-table-container">
+                    <table class="clients-table">
+                        <thead>
+                            <tr>
+                                <th>Client ID</th>
+                                <th>Client Name</th>
+                                <th>Client Type</th>
+                                <th>Contact Information</th>
+                                <th>Property Interest</th>
+                                <th>Budget Range</th>
+                                <th>Registration Date</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="clientsRecordsList">
+                            <tr>
+                                <td colspan="8">
+                                    <div class="loading">Loading clients records...</div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </div>
     `);
+    
+    // Load clients records
+    loadClientsRecords();
+}
+
+// Load clients records for table display
+async function loadClientsRecords() {
+    console.log('🔄 Loading clients records...');
+    
+    try {
+        const baseUrl = window.location.origin;
+        let response;
+        
+        // Try to get clients records from API
+        try {
+            response = await fetch(`${baseUrl}/api/real-estate/clients`, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${sessionManager.getAuthToken()}`
+                }
+            });
+            
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            }
+        } catch (primaryError) {
+            console.warn('⚠️ Primary clients records endpoint failed, trying fallback:', primaryError.message);
+            // Try fallback endpoint
+            try {
+                response = await fetch(`${baseUrl}/api/clients`, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${sessionManager.getAuthToken()}`
+                    }
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`Fallback also failed: HTTP ${response.status}: ${response.statusText}`);
+                }
+            } catch (fallbackError) {
+                console.error('❌ All clients records endpoints failed:', fallbackError.message);
+                // Load sample data for demonstration
+                loadSampleClientsRecords();
+                return;
+            }
+        }
+        
+        const clientsRecords = await response.json();
+        console.log('📊 Clients records data:', clientsRecords);
+        
+        displayClientsRecords(clientsRecords);
+        
+    } catch (error) {
+        console.error('❌ Error loading clients records:', error);
+        // Load sample data on error
+        loadSampleClientsRecords();
+    }
+}
+
+// Load sample clients records for demonstration
+function loadSampleClientsRecords() {
+    console.log('📋 Loading sample clients records...');
+    
+    const sampleRecords = [
+        {
+            id: 'CLT-001',
+            clientId: 'CLT-2026-001',
+            fullName: 'John Michael Smith',
+            clientType: 'individual',
+            companyName: '',
+            phone: '+255 712 345 678',
+            email: 'john.smith@email.com',
+            nidaNumber: '1980010123456789',
+            tinNumber: '101-234-567',
+            address: 'P.O. Box 1234, Dar es Salaam',
+            propertyInterest: 'residential',
+            budgetRange: '50m-100m',
+            notes: 'Looking for residential property in Masaki area, prefers gated community',
+            registrationDate: '2026-03-15'
+        },
+        {
+            id: 'CLT-002',
+            clientId: 'CLT-2026-002',
+            fullName: 'Mary Elizabeth Johnson',
+            clientType: 'individual',
+            companyName: '',
+            phone: '+255 713 987 654',
+            email: 'mary.johnson@email.com',
+            nidaNumber: '1985020234567890',
+            tinNumber: '102-345-678',
+            address: 'P.O. Box 5678, Dar es Salaam',
+            propertyInterest: 'commercial',
+            budgetRange: '100m-500m',
+            notes: 'Interested in commercial property for office space development',
+            registrationDate: '2026-03-12'
+        },
+        {
+            id: 'CLT-003',
+            clientId: 'CLT-2026-003',
+            fullName: 'Robert William Davis',
+            clientType: 'investor',
+            companyName: 'Davis Investments Ltd',
+            phone: '+255 714 234 567',
+            email: 'robert.davis@davisinvestments.co.tz',
+            nidaNumber: '1978030345678901',
+            tinNumber: '103-456-789',
+            address: 'P.O. Box 9012, Dar es Salaam',
+            propertyInterest: 'investment',
+            budgetRange: 'above-500m',
+            notes: 'High-net-worth investor looking for multiple properties',
+            registrationDate: '2026-03-10'
+        },
+        {
+            id: 'CLT-004',
+            clientId: 'CLT-2026-004',
+            fullName: 'Patricia Anne Miller',
+            clientType: 'individual',
+            companyName: '',
+            phone: '+255 715 876 543',
+            email: 'patricia.miller@email.com',
+            nidaNumber: '1990040456789012',
+            tinNumber: '104-567-890',
+            address: 'P.O. Box 3456, Dar es Salaam',
+            propertyInterest: 'residential',
+            budgetRange: '50m-100m',
+            notes: 'First-time home buyer, needs financing assistance',
+            registrationDate: '2026-03-08'
+        },
+        {
+            id: 'CLT-005',
+            clientId: 'CLT-2026-005',
+            fullName: 'ABC Tanzania Ltd',
+            clientType: 'company',
+            companyName: 'ABC Tanzania Ltd',
+            phone: '+255 716 543 210',
+            email: 'info@abctz.co.tz',
+            nidaNumber: '',
+            tinNumber: '105-678-901',
+            address: 'P.O. Box 7890, Dar es Salaam',
+            propertyInterest: 'commercial',
+            budgetRange: '100m-500m',
+            notes: 'Corporate client looking for office space expansion',
+            registrationDate: '2026-03-05'
+        },
+        {
+            id: 'CLT-006',
+            clientId: 'CLT-2026-006',
+            fullName: 'William Robert Brown',
+            clientType: 'individual',
+            companyName: '',
+            phone: '+255 717 432 109',
+            email: 'william.brown@email.com',
+            nidaNumber: '1987050567890123',
+            tinNumber: '106-789-012',
+            address: 'P.O. Box 2345, Dar es Salaam',
+            propertyInterest: 'residential',
+            budgetRange: '50m-100m',
+            notes: 'Looking for family home with good school district',
+            registrationDate: '2026-03-01'
+        },
+        {
+            id: 'CLT-007',
+            clientId: 'CLT-2026-007',
+            fullName: 'Jennifer Rose Wilson',
+            clientType: 'investor',
+            companyName: 'Wilson Properties',
+            phone: '+255 718 321 987',
+            email: 'jennifer.wilson@wilsonproperties.co.tz',
+            nidaNumber: '1992060678901234',
+            tinNumber: '107-890-123',
+            address: 'P.O. Box 6789, Dar es Salaam',
+            propertyInterest: 'investment',
+            budgetRange: '100m-500m',
+            notes: 'Real estate investor focusing on rental properties',
+            registrationDate: '2026-02-28'
+        },
+        {
+            id: 'CLT-008',
+            clientId: 'CLT-2026-008',
+            fullName: 'Tech Solutions Tanzania',
+            clientType: 'company',
+            companyName: 'Tech Solutions Tanzania',
+            phone: '+255 719 210 987',
+            email: 'contact@techsolutions.tz',
+            nidaNumber: '',
+            tinNumber: '108-901-234',
+            address: 'P.O. Box 4567, Dar es Salaam',
+            propertyInterest: 'commercial',
+            budgetRange: '50m-100m',
+            notes: 'Tech company looking for modern office space',
+            registrationDate: '2026-02-25'
+        },
+        {
+            id: 'CLT-009',
+            clientId: 'CLT-2026-009',
+            fullName: 'Michael James Taylor',
+            clientType: 'individual',
+            companyName: '',
+            phone: '+255 720 109 876',
+            email: 'michael.taylor@email.com',
+            nidaNumber: '1988070789012345',
+            tinNumber: '109-012-345',
+            address: 'P.O. Box 8901, Dar es Salaam',
+            propertyInterest: 'agricultural',
+            budgetRange: 'below-50m',
+            notes: 'Interested in agricultural land for farming',
+            registrationDate: '2026-02-22'
+        },
+        {
+            id: 'CLT-010',
+            clientId: 'CLT-2026-010',
+            fullName: 'Sarah Elizabeth Anderson',
+            clientType: 'individual',
+            companyName: '',
+            phone: '+255 721 098 765',
+            email: 'sarah.anderson@email.com',
+            nidaNumber: '1991080890123456',
+            tinNumber: '110-123-456',
+            address: 'P.O. Box 1234, Dar es Salaam',
+            propertyInterest: 'residential',
+            budgetRange: '50m-100m',
+            notes: 'Looking for apartment with city views',
+            registrationDate: '2026-02-20'
+        },
+        {
+            id: 'CLT-011',
+            clientId: 'CLT-2026-011',
+            fullName: 'Financial Services Co.',
+            clientType: 'company',
+            companyName: 'Financial Services Co.',
+            phone: '+255 722 987 654',
+            email: 'info@finserv.tz',
+            nidaNumber: '',
+            tinNumber: '111-234-567',
+            address: 'P.O. Box 5678, Dar es Salaam',
+            propertyInterest: 'commercial',
+            budgetRange: 'above-500m',
+            notes: 'Financial institution seeking premium office location',
+            registrationDate: '2026-02-18'
+        },
+        {
+            id: 'CLT-012',
+            clientId: 'CLT-2026-012',
+            fullName: 'David Christopher Martin',
+            clientType: 'investor',
+            companyName: 'Martin Holdings',
+            phone: '+255 723 876 543',
+            email: 'david.martin@martinholdings.co.tz',
+            nidaNumber: '1986090901234567',
+            tinNumber: '112-345-678',
+            address: 'P.O. Box 3456, Dar es Salaam',
+            propertyInterest: 'investment',
+            budgetRange: 'above-500m',
+            notes: 'Experienced investor in residential and commercial properties',
+            registrationDate: '2026-02-15'
+        }
+    ];
+    
+    displayClientsRecords(sampleRecords);
+}
+
+// Display clients records in the table
+function displayClientsRecords(records) {
+    const recordsList = document.getElementById('clientsRecordsList');
+    
+    if (!recordsList) {
+        console.error('❌ Clients records list container not found!');
+        return;
+    }
+    
+    if (!records || records.length === 0) {
+        recordsList.innerHTML = `
+            <tr>
+                <td colspan="8">
+                    <div class="no-records">No clients records found</div>
+                </td>
+            </tr>
+        `;
+        return;
+    }
+    
+    // Sort records by client ID
+    records.sort((a, b) => a.clientId.localeCompare(b.clientId));
+    
+    let recordsHTML = '';
+    
+    records.forEach(record => {
+        // Get client type badge
+        const typeDisplay = record.clientType === 'individual' ? '👤 Individual' : 
+                           record.clientType === 'company' ? '🏢 Company' : 
+                           record.clientType === 'investor' ? '💼 Investor' : record.clientType;
+        
+        // Get property interest badge
+        const interestDisplay = record.propertyInterest === 'residential' ? '🏠 Residential' : 
+                              record.propertyInterest === 'commercial' ? '🏢 Commercial' : 
+                              record.propertyInterest === 'investment' ? '💰 Investment' : 
+                              record.propertyInterest === 'agricultural' ? '🌾 Agricultural' : record.propertyInterest;
+        
+        // Get budget range display
+        const budgetDisplay = record.budgetRange === 'below-50m' ? 'Below 50M' : 
+                             record.budgetRange === '50m-100m' ? '50M - 100M' : 
+                             record.budgetRange === '100m-500m' ? '100M - 500M' : 
+                             record.budgetRange === 'above-500m' ? 'Above 500M' : record.budgetRange;
+        
+        recordsHTML += `
+            <tr class="client-row">
+                <td>
+                    <div class="client-id-info">
+                        <div class="client-id">${record.clientId}</div>
+                        <div class="nida-number">${record.nidaNumber || 'N/A'}</div>
+                    </div>
+                </td>
+                <td>
+                    <div class="client-name-info">
+                        <div class="client-name">${record.fullName}</div>
+                        ${record.companyName ? `<div class="company-name">${record.companyName}</div>` : ''}
+                    </div>
+                </td>
+                <td>
+                    <span class="client-type-badge">${typeDisplay}</span>
+                </td>
+                <td>
+                    <div class="contact-info">
+                        <div class="phone">📱 ${record.phone}</div>
+                        <div class="email">📧 ${record.email}</div>
+                    </div>
+                </td>
+                <td>
+                    <span class="interest-badge">${interestDisplay}</span>
+                </td>
+                <td>
+                    <div class="budget-info">
+                        <div class="budget-range">${budgetDisplay}</div>
+                    </div>
+                </td>
+                <td>
+                    <div class="registration-info">
+                        <div class="reg-date">${new Date(record.registrationDate).toLocaleDateString()}</div>
+                    </div>
+                </td>
+                <td>
+                    <div class="client-actions">
+                        <button class="action-btn view" onclick="viewClientDetails('${record.id}')" title="View Details">👁️</button>
+                        <button class="action-btn edit" onclick="editClient('${record.id}')" title="Edit Client">✏️</button>
+                        <button class="action-btn contact" onclick="contactClient('${record.id}')" title="Contact">📞</button>
+                    </div>
+                </td>
+            </tr>
+        `;
+    });
+    
+    recordsList.innerHTML = recordsHTML;
+}
+
+// Client action functions
+function viewClientDetails(clientId) {
+    customAlert(`Viewing client details for ID: ${clientId}\n\nFull client information including contact details, identification numbers, property preferences, budget ranges, special requirements, and transaction history will be displayed.`, "Client Details", "info");
+}
+
+function editClient(clientId) {
+    customAlert(`Editing client ${clientId}...\n\nClient editor will open for modifications to contact information, property interests, budget ranges, and other client details.`, "Edit Client", "info");
+}
+
+function contactClient(clientId) {
+    customAlert(`Contacting client ${clientId}...\n\nCommunication options including phone call, email, SMS, and appointment scheduling will be available for client outreach.`, "Contact Client", "info");
 }
 
 function recordSale(){
