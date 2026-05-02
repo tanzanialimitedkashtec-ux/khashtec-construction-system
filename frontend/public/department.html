@@ -8729,21 +8729,35 @@ window.KashTecAPI = {
             response = await this.apiRequest('/api/work/hse');
             
             // Transform HSE data to safety status format
+            console.log('🔍 Raw HSE response:', response);
+            
             const safetyData = {
-                projects: Array.isArray(response) ? response.filter(item => 
-                    item.work_type && item.work_type.toLowerCase().includes('safety')
-                ).map(item => ({
-                    id: item.id,
-                    name: item.work_title || 'Safety Project',
-                    safety_score: Math.floor(Math.random() * 20) + 80, // Random 80-100
-                    days_without_incident: Math.floor(Math.random() * 30) + 10,
-                    open_violations: Math.floor(Math.random() * 5),
-                    ppe_compliance: Math.floor(Math.random() * 15) + 85,
-                    last_inspection: item.work_date || new Date().toISOString().split('T')[0],
-                    risk_level: 'Low',
-                    status: item.status || 'Active',
-                    location: item.project_location || 'Various Sites'
-                })) : [],
+                projects: Array.isArray(response) ? response.filter(item => {
+                    // More comprehensive safety filter
+                    const isSafety = item.work_type && (
+                        item.work_type.toLowerCase().includes('safety') ||
+                        item.work_type.toLowerCase().includes('policy') ||
+                        item.work_type.toLowerCase().includes('incident') ||
+                        item.work_type.toLowerCase().includes('violation') ||
+                        item.department_code === 'hse'
+                    );
+                    console.log(`🔍 Filtering item ${item.id}: ${item.work_type} -> ${isSafety}`);
+                    return isSafety;
+                }).map((item, index) => {
+                    console.log(`📝 Mapping safety item ${item.id}:`, item);
+                    return {
+                        id: item.id,
+                        name: item.work_title || `Safety Policy ${index + 1}`,
+                        safety_score: Math.floor(Math.random() * 20) + 80, // Random 80-100
+                        days_without_incident: Math.floor(Math.random() * 30) + 10,
+                        open_violations: Math.floor(Math.random() * 5),
+                        ppe_compliance: Math.floor(Math.random() * 15) + 85,
+                        last_inspection: item.work_date || new Date().toISOString().split('T')[0],
+                        risk_level: item.severity === 'High' ? 'High' : 'Low',
+                        status: item.status || 'Active',
+                        location: item.project_location || 'Various Sites'
+                    };
+                }) : [],
                 metrics: {
                     total_projects: Array.isArray(response) ? response.length : 0,
                     avg_safety_score: 88,
@@ -8751,6 +8765,8 @@ window.KashTecAPI = {
                     compliance_rate: 92
                 }
             };
+            
+            console.log('✅ Transformed safety data:', safetyData);
             
             return safetyData;
             
@@ -21163,38 +21179,55 @@ async function loadViolations() {
         // Transform API data to violations format
         let violations = [];
         
-        if (Array.isArray(violationsData)) {
+        // Handle both single object and array responses
+        const dataArray = Array.isArray(violationsData) ? violationsData : [violationsData];
+        
+        if (dataArray.length > 0) {
             // Check if this is HSE data or site-reports data
-            if (violationsData.length > 0 && violationsData[0].work_type) {
-                // HSE work items - filter for safety violations
-                violations = violationsData.filter(item => 
-                    item.work_type && (
-                        item.work_type.toLowerCase().includes('violation') ||
-                        item.work_type.toLowerCase().includes('incident') ||
-                        item.severity === 'High' ||
-                        item.severity === 'Medium'
-                    )
-                ).map(item => ({
-                    id: `VIO-${item.id}`,
-                    violationId: `VIO-2026-${String(item.id).padStart(3, '0')}`,
-                    date: item.work_date || item.created_at || new Date().toISOString(),
-                    project: item.project_name || 'Unknown Project',
-                    type: item.incident_type === 'Near Miss' ? 'near-miss' : 
-                          item.severity === 'High' ? 'major' : 'minor',
-                    severity: item.severity === 'High' ? 'major' : 
-                             item.severity === 'Medium' ? 'moderate' : 'minor',
-                    violators: item.assigned_to || 'Unknown',
-                    location: item.location || item.project_location || 'Site Location',
-                    actionTaken: item.work_description || 'Action Required',
-                    status: item.status === 'completed' ? 'resolved' : 'pending',
-                    reportedBy: item.created_by || 'HSE Manager',
-                    evidence: item.evidence_files || '',
-                    followUpRequired: item.status === 'pending' ? 'yes' : 'no',
-                    deadline: item.due_date || new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
-                }));
-            } else if (violationsData.length > 0 && violationsData[0].safety_incidents) {
+            if (dataArray[0].work_type) {
+                // HSE work items - transform all safety-related items to violations
+                violations = dataArray.map(item => {
+                    // Map work_type to violation type
+                    let violationType = 'procedure-violation'; // default
+                    if (item.work_type.toLowerCase().includes('policy')) {
+                        violationType = 'procedure-violation';
+                    } else if (item.work_type.toLowerCase().includes('incident')) {
+                        violationType = 'unsafe-act';
+                    } else if (item.work_type.toLowerCase().includes('violation')) {
+                        violationType = 'procedure-violation';
+                    }
+                    
+                    // Map severity
+                    let severity = 'moderate'; // default
+                    if (item.severity === 'High') {
+                        severity = 'major';
+                    } else if (item.severity === 'Medium') {
+                        severity = 'moderate';
+                    } else if (item.severity === 'Low') {
+                        severity = 'minor';
+                    }
+                    
+                    return {
+                        id: `VIO-${item.id}`,
+                        violationId: `VIO-2026-${String(item.id).padStart(3, '0')}`,
+                        date: item.submitted_date || item.created_at || new Date().toISOString(),
+                        project: item.project_name || item.department_code?.toUpperCase() || 'HSE Department',
+                        type: violationType,
+                        severity: severity,
+                        violators: item.assigned_to || 'HSE Manager',
+                        location: item.location || 'HSE Office',
+                        actionTaken: item.work_description ? item.work_description.substring(0, 100) + '...' : 'Under Review',
+                        status: item.status === 'completed' ? 'resolved' : 
+                               item.status === 'Pending' ? 'pending' : 'pending',
+                        reportedBy: item.submitted_by || 'HSE Manager',
+                        evidence: '',
+                        followUpRequired: item.status === 'pending' ? 'yes' : 'no',
+                        deadline: item.due_date || new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
+                    };
+                });
+            } else if (dataArray[0].safety_incidents) {
                 // Site reports - extract safety incidents
-                violations = violationsData.filter(item => 
+                violations = dataArray.filter(item => 
                     item.safety_incidents && item.safety_incidents !== 'None'
                 ).map((item, index) => ({
                     id: `VIO-SITE-${item.id}`,
@@ -22251,22 +22284,36 @@ async function loadSafetyFromAPI() {
                     
                     const hseData = await response.json();
                     
+                    console.log('🔍 Raw HSE response in loadSafetyFromAPI:', hseData);
+                    
                     // Transform HSE data to safety status format
                     const safetyData = {
-                        projects: Array.isArray(hseData) ? hseData.filter(item => 
-                            item.work_type && item.work_type.toLowerCase().includes('safety')
-                        ).map(item => ({
-                            id: item.id,
-                            name: item.work_title || 'Safety Project',
-                            safety_score: Math.floor(Math.random() * 20) + 80, // Random 80-100
-                            days_without_incident: Math.floor(Math.random() * 30) + 10,
-                            open_violations: Math.floor(Math.random() * 5),
-                            ppe_compliance: Math.floor(Math.random() * 15) + 85,
-                            last_inspection: item.work_date || new Date().toISOString().split('T')[0],
-                            risk_level: 'Low',
-                            status: item.status || 'Active',
-                            location: item.project_location || 'Various Sites'
-                        })) : [],
+                        projects: Array.isArray(hseData) ? hseData.filter(item => {
+                            // More comprehensive safety filter
+                            const isSafety = item.work_type && (
+                                item.work_type.toLowerCase().includes('safety') ||
+                                item.work_type.toLowerCase().includes('policy') ||
+                                item.work_type.toLowerCase().includes('incident') ||
+                                item.work_type.toLowerCase().includes('violation') ||
+                                item.department_code === 'hse'
+                            );
+                            console.log(`🔍 Filtering item ${item.id}: ${item.work_type} -> ${isSafety}`);
+                            return isSafety;
+                        }).map((item, index) => {
+                            console.log(`📝 Mapping safety item ${item.id}:`, item);
+                            return {
+                                id: item.id,
+                                name: item.work_title || `Safety Policy ${index + 1}`,
+                                safety_score: Math.floor(Math.random() * 20) + 80, // Random 80-100
+                                days_without_incident: Math.floor(Math.random() * 30) + 10,
+                                open_violations: Math.floor(Math.random() * 5),
+                                ppe_compliance: Math.floor(Math.random() * 15) + 85,
+                                last_inspection: item.work_date || new Date().toISOString().split('T')[0],
+                                risk_level: item.severity === 'High' ? 'High' : 'Low',
+                                status: item.status || 'Active',
+                                location: item.project_location || 'Various Sites'
+                            };
+                        }) : [],
                         metrics: {
                             total_projects: Array.isArray(hseData) ? hseData.length : 0,
                             avg_safety_score: 88,
@@ -22274,6 +22321,8 @@ async function loadSafetyFromAPI() {
                             compliance_rate: 92
                         }
                     };
+                    
+                    console.log('✅ Transformed safety data in loadSafetyFromAPI:', safetyData);
                     
                     return safetyData;
                     
