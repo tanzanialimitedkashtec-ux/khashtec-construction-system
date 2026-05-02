@@ -158,6 +158,16 @@ header{
     background: linear-gradient(135deg, #c0392b 0%, #a93226 100%);
 }
 
+.sidebar.collapsed {
+    width: 0;
+    overflow: hidden;
+    transition: width 0.3s ease;
+}
+
+.sidebar:not(.collapsed) {
+    transition: width 0.3s ease;
+}
+
 .content{
     flex:1;
     padding:10px;
@@ -4220,7 +4230,7 @@ background: #f8f9fa;
     </div>
 
     <div class="system-content">
-        <div class="sidebar">
+        <div class="sidebar collapsed">
             <h3 id="userRole">HR Dashboard</h3>
             <button onclick="handleLogout()">Logout</button>
             <div id="menu"><button>Register Employee</button><button>Create Worker Account</button><button>Assign Project Workers</button><button>Update Employee Records</button><button>Track Attendance</button><button>Manage Leave &amp; Contracts</button><button>Manage Policies</button><button>Approve Senior Staff Hiring</button><button>Approve Workforce Budget</button></div>
@@ -4237,8 +4247,16 @@ background: #f8f9fa;
 // Define toggleSidebar function first to ensure it's available when called
 function toggleSidebar(){
     const sidebar = document.querySelector('.sidebar');
-    if (!sidebar) return;
+    if (!sidebar) {
+        console.error('Sidebar not found');
+        return;
+    }
+    
+    // Toggle collapsed class
     sidebar.classList.toggle('collapsed');
+    
+    // Log the current state for debugging
+    console.log('Sidebar toggled. Current classes:', sidebar.className);
 }
 
 const PRODUCTION_API_ORIGIN = 'https://khashtec-construction-system-production-e297.up.railway.app';
@@ -4516,6 +4534,13 @@ function showNotifications(){
 function loadMenu(){
     const menu = document.getElementById("menu");
     menu.innerHTML = "";
+    
+    // Reset sidebar to collapsed state when loading menu
+    const sidebar = document.querySelector('.sidebar');
+    if (sidebar) {
+        sidebar.classList.add('collapsed');
+        console.log('Sidebar reset to collapsed state');
+    }
     
     console.log('Loading menu for role:', currentRole); // Debug line
 
