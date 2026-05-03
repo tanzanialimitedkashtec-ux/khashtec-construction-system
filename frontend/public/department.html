@@ -3329,6 +3329,39 @@ color: #666;
     box-shadow: 0 2px 4px rgba(0,0,0,0.2);
 }
 
+/* Description and Notes Styles */
+.description-info {
+    min-width: 120px;
+    max-width: 150px;
+}
+
+.car-description {
+    font-size: 9px;
+    color: #2c3e50;
+    line-height: 1.3;
+    word-wrap: break-word;
+    cursor: help;
+}
+
+.notes-info {
+    min-width: 100px;
+    max-width: 130px;
+}
+
+.additional-notes {
+    font-size: 9px;
+    color: #6c757d;
+    line-height: 1.3;
+    word-wrap: break-word;
+    cursor: help;
+    font-style: italic;
+}
+
+/* Update table minimum width to accommodate new columns */
+.car-table {
+    min-width: 1600px;
+}
+
 /* Purchase Table Styles */
 .purchase-records {
     margin-top: 20px;
@@ -21655,11 +21688,13 @@ function manageCompanyCars() {
                                 <th>Insurance</th>
                                 <th>Vehicle Status</th>
                                 <th>Registration Date</th>
+                                <th>Description</th>
+                                <th>Additional Notes</th>
                                 <th>Actions</th>
                             </tr>
                         </thead>
                         <tbody id="carRecordsList">
-                            <tr><td colspan="14" class="loading">Loading vehicle records...</td></tr>
+                            <tr><td colspan="16" class="loading">Loading vehicle records...</td></tr>
                         </tbody>
                     </table>
                 </div>
@@ -21674,7 +21709,7 @@ function manageCompanyCars() {
 async function loadCompanyCars() {
     try {
         const recordsList = document.getElementById('carRecordsList');
-        recordsList.innerHTML = '<tr><td colspan="14" class="loading">Loading vehicle records...</td></tr>';
+        recordsList.innerHTML = '<tr><td colspan="16" class="loading">Loading vehicle records...</td></tr>';
         
         const response = await KashTecAPI.get('/api/company-cars');
         
@@ -21745,6 +21780,16 @@ async function loadCompanyCars() {
                         </div>
                     </td>
                     <td>
+                        <div class="description-info">
+                            <div class="car-description" title="${car.car_description || 'No description provided'}">${car.car_description ? (car.car_description.length > 30 ? car.car_description.substring(0, 30) + '...' : car.car_description) : '—'}</div>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="notes-info">
+                            <div class="additional-notes" title="${car.additional_notes || 'No additional notes'}">${car.additional_notes ? (car.additional_notes.length > 25 ? car.additional_notes.substring(0, 25) + '...' : car.additional_notes) : '—'}</div>
+                        </div>
+                    </td>
+                    <td>
                         <div class="car-actions">
                             <button class="action-btn view" onclick="viewCarDetails('${car.track_number}')" title="View Details">👁️</button>
                             <button class="action-btn edit" onclick="editCar('${car.track_number}')" title="Edit Vehicle">✏️</button>
@@ -21754,7 +21799,7 @@ async function loadCompanyCars() {
                 </tr>
             `).join('');
         } else {
-            recordsList.innerHTML = '<tr><td colspan="14" class="no-records">No vehicles found. Register your first company car!</td></tr>';
+            recordsList.innerHTML = '<tr><td colspan="16" class="no-records">No vehicles found. Register your first company car!</td></tr>';
         }
     } catch (error) {
         console.error('❌ Error loading vehicle records:', error);
@@ -21929,6 +21974,16 @@ function loadSampleCars() {
             <td>
                 <div class="date-info">
                     <div class="registration-date">${new Date(car.registration_date).toLocaleDateString()}</div>
+                </div>
+            </td>
+            <td>
+                <div class="description-info">
+                    <div class="car-description" title="${car.car_description || 'No description provided'}">${car.car_description ? (car.car_description.length > 30 ? car.car_description.substring(0, 30) + '...' : car.car_description) : '—'}</div>
+                </div>
+            </td>
+            <td>
+                <div class="notes-info">
+                    <div class="additional-notes" title="${car.additional_notes || 'No additional notes'}">${car.additional_notes ? (car.additional_notes.length > 25 ? car.additional_notes.substring(0, 25) + '...' : car.additional_notes) : '—'}</div>
                 </div>
             </td>
             <td>
