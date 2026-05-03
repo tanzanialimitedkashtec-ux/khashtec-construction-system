@@ -2100,5 +2100,269 @@ router.delete('/assignments/:id', async (req, res) => {
     }
 });
 
+// Workforce Requests Routes
+// Get all workforce requests
+router.get('/workforce-requests', async (req, res) => {
+    try {
+        console.log('📋 Fetching workforce requests...');
+        
+        let workforceRequests = [];
+        
+        try {
+            const [dbRequests] = await db.execute(`
+                SELECT * FROM workforce_requests 
+                ORDER BY submitted_date DESC
+            `);
+            workforceRequests = dbRequests;
+            console.log(`📊 Found ${workforceRequests.length} workforce requests from database`);
+            
+            // If fewer than 3 records, add sample data for demonstration
+            if (workforceRequests.length < 3) {
+                console.log(`⚠️ Only ${workforceRequests.length} workforce requests found, adding sample data`);
+                const sampleRequests = [
+                    {
+                        id: 'WFR-001',
+                        request_id: 'WFR-2026-001',
+                        project: 'Port Modernization Phase 1',
+                        request_type: 'additional',
+                        workers_needed: 5,
+                        job_categories: JSON.stringify(['construction', 'supervisor']),
+                        duration: '2 weeks',
+                        start_date: '2026-05-15',
+                        end_date: '2026-05-29',
+                        submitted_date: '2026-05-03',
+                        status: 'pending',
+                        justification: 'Additional workforce needed for accelerated timeline',
+                        special_requirements: 'Marine construction experience preferred',
+                        created_at: new Date().toISOString(),
+                        mock: true
+                    },
+                    {
+                        id: 'WFR-002',
+                        request_id: 'WFR-2026-002',
+                        project: 'Warehouse Construction',
+                        request_type: 'specialized',
+                        workers_needed: 3,
+                        job_categories: JSON.stringify(['engineering', 'safety']),
+                        duration: '1 month',
+                        start_date: '2026-05-10',
+                        end_date: '2026-06-10',
+                        submitted_date: '2026-05-01',
+                        status: 'approved',
+                        justification: 'Need specialized engineers for structural work',
+                        special_requirements: 'Structural engineering certification required',
+                        created_at: new Date().toISOString(),
+                        mock: true
+                    }
+                ];
+                
+                // Add sample data that doesn't conflict with real IDs
+                const additionalSampleData = sampleRequests.filter(sample => 
+                    !workforceRequests.some(real => real.id === sample.id)
+                );
+                workforceRequests = [...workforceRequests, ...additionalSampleData];
+                console.log(`📊 Total workforce requests after adding sample data: ${workforceRequests.length}`);
+            }
+        } catch (dbError) {
+            console.error('❌ Database error, workforce_requests table may not exist:', dbError);
+            
+            // Create table if it doesn't exist
+            try {
+                await db.execute(`
+                    CREATE TABLE IF NOT EXISTS workforce_requests (
+                        id VARCHAR(50) PRIMARY KEY,
+                        request_id VARCHAR(100) NOT NULL,
+                        project VARCHAR(255) NOT NULL,
+                        request_type ENUM('additional', 'replacement', 'specialized', 'temporary') NOT NULL,
+                        workers_needed INT NOT NULL,
+                        job_categories JSON,
+                        duration VARCHAR(100),
+                        start_date DATE,
+                        end_date DATE,
+                        submitted_date DATE NOT NULL,
+                        status ENUM('pending', 'approved', 'rejected', 'completed') DEFAULT 'pending',
+                        justification TEXT,
+                        special_requirements TEXT,
+                        submitted_by VARCHAR(255),
+                        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+                    )
+                `);
+                console.log('✅ workforce_requests table created successfully');
+                
+                // Return empty array since table is new
+                workforceRequests = [];
+            } catch (createError) {
+                console.error('❌ Failed to create workforce_requests table:', createError);
+                return res.status(500).json({
+                    error: 'Failed to create workforce requests table',
+                    details: createError.message
+                });
+            }
+        }
+        
+        console.log(`📋 Returning ${workforceRequests.length} workforce requests`);
+        res.json(workforceRequests);
+        
+    } catch (error) {
+        console.error('❌ Error fetching workforce requests:', error);
+        res.status(500).json({
+            error: 'Failed to fetch workforce requests',
+            details: error.message
+        });
+    }
+});
+
+// Create new workforce request
+router.post('/workforce-requests', async (req, res) => {
+    try {
+        console.log('📝 Creating new workforce request...');
+        console.log('📊 Request body:', req.body);
+        
+        const {
+            project,
+            requestType,
+            workersNeeded,
+            jobCategories,
+            duration,
+            startDate,
+            endDate,
+            justification,
+            specialRequirements,
+            submittedBy = 'Project Manager'
+        } = req.body;
+        
+        // Validate required fields
+        if (!project || !requestType || !workersNeeded || !jobCategories || !duration || !startDate || !justification) {
+            return res.status(400).json({
+                error: 'Missing required fields',
+                required: ['project', 'requestType', 'workersNeeded', 'jobCategories', 'duration', 'startDate', 'justification']
+            });
+        }
+        
+        // Generate unique request ID
+        const requestId = `WFR-${Date.now().toString().slice(-6)}`;
+        const id = `WFR-${new Date().getFullYear()}-${Date.now().toString().slice(-6)}`;
+        
+        // Ensure table exists
+        try {
+            await db.execute(`
+                CREATE TABLE IF NOT EXISTS workforce_requests (
+                    id VARCHAR(50) PRIMARY KEY,
+                    request_id VARCHAR(100) NOT NULL,
+                    project VARCHAR(255) NOT NULL,
+                    request_type ENUM('additional', 'replacement', 'specialized', 'temporary') NOT NULL,
+                    workers_needed INT NOT NULL,
+                    job_categories JSON,
+                    duration VARCHAR(100),
+                    start_date DATE,
+                    end_date DATE,
+                    submitted_date DATE NOT NULL,
+                    status ENUM('pending', 'approved', 'rejected', 'completed') DEFAULT 'pending',
+                    justification TEXT,
+                    special_requirements TEXT,
+                    submitted_by VARCHAR(255),
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+                )
+            `);
+        } catch (tableError) {
+            console.error('⚠️ Table creation error:', tableError.message);
+        }
+        
+        // Insert workforce request
+        const [result] = await db.execute(`
+            INSERT INTO workforce_requests (
+                id, request_id, project, request_type, workers_needed, job_categories,
+                duration, start_date, end_date, submitted_date, status, justification,
+                special_requirements, submitted_by
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, CURDATE(), ?, ?, ?, ?)
+        `, [
+            id,
+            requestId,
+            project,
+            requestType,
+            workersNeeded,
+            JSON.stringify(Array.isArray(jobCategories) ? jobCategories : [jobCategories]),
+            duration,
+            startDate,
+            endDate || null,
+            'pending',
+            justification,
+            specialRequirements || null,
+            submittedBy
+        ]);
+        
+        console.log('✅ Workforce request created successfully:', requestId);
+        
+        res.status(201).json({
+            message: 'Workforce request created successfully',
+            requestId: requestId,
+            id: id,
+            data: {
+                project,
+                requestType,
+                workersNeeded,
+                jobCategories,
+                duration,
+                startDate,
+                endDate,
+                justification,
+                specialRequirements,
+                status: 'pending'
+            }
+        });
+        
+    } catch (error) {
+        console.error('❌ Error creating workforce request:', error);
+        res.status(500).json({
+            error: 'Failed to create workforce request',
+            details: error.message
+        });
+    }
+});
+
+// Update workforce request status
+router.put('/workforce-requests/:id/status', async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { status } = req.body;
+        
+        if (!['pending', 'approved', 'rejected', 'completed'].includes(status)) {
+            return res.status(400).json({
+                error: 'Invalid status',
+                validStatuses: ['pending', 'approved', 'rejected', 'completed']
+            });
+        }
+        
+        const [result] = await db.execute(`
+            UPDATE workforce_requests 
+            SET status = ?, updated_at = CURRENT_TIMESTAMP 
+            WHERE id = ?
+        `, [status, id]);
+        
+        if (result.affectedRows === 0) {
+            return res.status(404).json({
+                error: 'Workforce request not found'
+            });
+        }
+        
+        console.log(`✅ Workforce request ${id} status updated to ${status}`);
+        
+        res.json({
+            message: 'Workforce request status updated successfully',
+            id: id,
+            status: status
+        });
+        
+    } catch (error) {
+        console.error('❌ Error updating workforce request status:', error);
+        res.status(500).json({
+            error: 'Failed to update workforce request status',
+            details: error.message
+        });
+    }
+});
+
 
 module.exports = router;

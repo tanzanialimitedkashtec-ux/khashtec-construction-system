@@ -31405,7 +31405,7 @@ async function loadWorkforceRequests() {
         
         // Try to get workforce requests from API
         try {
-            response = await fetch(`${baseUrl}/api/projects/workforce-requests`, {
+            response = await fetch(`${baseUrl}/api/work/workforce-requests`, {
                 method: 'GET',
                 headers: {
                     'Content-Type': 'application/json',
@@ -31546,8 +31546,21 @@ function displayWorkforceRequests(requests) {
                            request.requestType === 'specialized' ? '⭐ Specialized' : 
                            request.requestType === 'temporary' ? '⏰ Temporary' : request.requestType;
         
+        // Parse job categories (handle both array and JSON string)
+        let jobCategories = request.jobCategories;
+        if (typeof jobCategories === 'string') {
+            try {
+                jobCategories = JSON.parse(jobCategories);
+            } catch (e) {
+                jobCategories = [jobCategories];
+            }
+        }
+        if (!Array.isArray(jobCategories)) {
+            jobCategories = [jobCategories];
+        }
+        
         // Get job categories display
-        const categoriesDisplay = request.jobCategories.map(cat => {
+        const categoriesDisplay = jobCategories.map(cat => {
             const catMap = {
                 'construction': '👷 Construction',
                 'engineering': '🔧 Engineering',
@@ -33110,32 +33123,59 @@ function deleteTask(taskId) {
     }
 }
 
-function submitWorkforceRequest() {
-    const request = {
-        id: 'REQ-' + Date.now(),
-        project: document.getElementById('workforceProject').value,
-        type: document.getElementById('requestType').value,
-        workersNeeded: document.getElementById('workersNeeded').value,
-        duration: document.getElementById('workDuration').value,
-        jobCategories: getSelectedJobCategories(),
-        justification: document.getElementById('workforceJustification').value,
-        startDate: document.getElementById('workforceStartDate').value,
-        endDate: document.getElementById('workforceEndDate').value,
-        specialRequirements: document.getElementById('specialRequirements').value,
-        status: 'pending',
-        requestedBy: 'Project Manager',
-        requestDate: new Date().toLocaleString()
-    };
-    
-    // Save to secure API storage
-    const requests = [];
-    requests.push(request);
-    // TODO: Save to API
-    
-    customAlert(`Workforce request submitted!\n\nProject: ${request.project}\nWorkers Needed: ${request.workersNeeded}\nDuration: ${request.duration}\nStatus: Pending HR Approval`, "Request Submitted", "success");
-    
-    document.getElementById('workforceRequestForm').reset();
-    return false;
+async function submitWorkforceRequest() {
+    try {
+        const request = {
+            project: document.getElementById('workforceProject').value,
+            requestType: document.getElementById('requestType').value,
+            workersNeeded: parseInt(document.getElementById('workersNeeded').value),
+            duration: document.getElementById('workDuration').value,
+            jobCategories: getSelectedJobCategories(),
+            justification: document.getElementById('workforceJustification').value,
+            startDate: document.getElementById('workforceStartDate').value,
+            endDate: document.getElementById('workforceEndDate').value,
+            specialRequirements: document.getElementById('specialRequirements').value,
+            submittedBy: 'Project Manager'
+        };
+        
+        // Validate required fields
+        if (!request.project || !request.requestType || !request.workersNeeded || !request.jobCategories.length || 
+            !request.duration || !request.startDate || !request.justification) {
+            customAlert('Please fill in all required fields', 'Validation Error', 'error');
+            return false;
+        }
+        
+        const baseUrl = window.location.origin;
+        const response = await fetch(`${baseUrl}/api/work/workforce-requests`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${sessionManager.getAuthToken()}`
+            },
+            body: JSON.stringify(request)
+        });
+        
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+        
+        const result = await response.json();
+        console.log('✅ Workforce request submitted:', result);
+        
+        customAlert(`Workforce request submitted successfully!\n\nRequest ID: ${result.requestId}\nProject: ${request.project}\nWorkers Needed: ${request.workersNeeded}\nDuration: ${request.duration}\nStatus: Pending Approval`, "Request Submitted", "success");
+        
+        // Reset form and refresh the table
+        document.getElementById('workforceRequestForm').reset();
+        toggleWorkforceForm(); // Hide form
+        loadWorkforceRequests(); // Refresh the table
+        
+        return false;
+        
+    } catch (error) {
+        console.error('❌ Error submitting workforce request:', error);
+        customAlert('Failed to submit workforce request. Please try again.', 'Submission Error', 'error');
+        return false;
+    }
 }
 
 function saveSiteReport() {
