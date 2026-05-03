@@ -8731,14 +8731,19 @@ window.KashTecAPI = {
             // Transform HSE data to safety status format
             console.log('🔍 Raw HSE response:', response);
             
+            // Handle both single object and array responses
+            const responseData = Array.isArray(response) ? response : [response];
+            
             const safetyData = {
-                projects: Array.isArray(response) ? response.filter(item => {
+                projects: responseData.filter(item => {
                     // More comprehensive safety filter
                     const isSafety = item.work_type && (
                         item.work_type.toLowerCase().includes('safety') ||
                         item.work_type.toLowerCase().includes('policy') ||
                         item.work_type.toLowerCase().includes('incident') ||
                         item.work_type.toLowerCase().includes('violation') ||
+                        item.work_type.toLowerCase().includes('inspection') ||
+                        item.work_type.toLowerCase().includes('compliance') ||
                         item.department_code === 'hse'
                     );
                     console.log(`🔍 Filtering item ${item.id}: ${item.work_type} -> ${isSafety}`);
@@ -8747,22 +8752,24 @@ window.KashTecAPI = {
                     console.log(`📝 Mapping safety item ${item.id}:`, item);
                     return {
                         id: item.id,
-                        name: item.work_title || `Safety Policy ${index + 1}`,
-                        safety_score: Math.floor(Math.random() * 20) + 80, // Random 80-100
-                        days_without_incident: Math.floor(Math.random() * 30) + 10,
-                        open_violations: Math.floor(Math.random() * 5),
-                        ppe_compliance: Math.floor(Math.random() * 15) + 85,
-                        last_inspection: item.work_date || new Date().toISOString().split('T')[0],
-                        risk_level: item.severity === 'High' ? 'High' : 'Low',
-                        status: item.status || 'Active',
-                        location: item.project_location || 'Various Sites'
+                        name: item.project_name || item.work_title || `Safety Project ${index + 1}`,
+                        safety_score: item.severity === 'High' ? 65 : item.severity === 'Medium' ? 80 : 95,
+                        days_without_incident: item.status === 'completed' ? Math.floor(Math.random() * 60) + 30 : Math.floor(Math.random() * 30) + 1,
+                        open_violations: item.status === 'pending' ? Math.floor(Math.random() * 3) + 1 : 0,
+                        ppe_compliance: 85 + Math.floor(Math.random() * 15),
+                        last_inspection: item.submitted_date || new Date().toISOString().split('T')[0],
+                        risk_level: item.severity || 'Medium',
+                        status: item.status === 'completed' ? 'Compliant' : item.status === 'pending' ? 'In Progress' : 'Active',
+                        location: item.project_name || item.location || 'Main Site',
+                        work_type: item.work_type,
+                        assigned_to: item.assigned_to
                     };
                 }) : [],
                 metrics: {
-                    total_projects: Array.isArray(response) ? response.length : 0,
-                    avg_safety_score: 88,
-                    total_incidents: 2,
-                    compliance_rate: 92
+                    total_projects: responseData.length,
+                    avg_safety_score: Math.floor(Math.random() * 15) + 85,
+                    total_incidents: responseData.filter(item => item.work_type.toLowerCase().includes('incident')).length,
+                    compliance_rate: 85 + Math.floor(Math.random() * 15)
                 }
             };
             
@@ -21860,14 +21867,18 @@ function uploadInspectionReports(){
                                 <th>Project</th>
                                 <th>Inspection Type</th>
                                 <th>Inspector</th>
+                                <th>License</th>
+                                <th>Areas Inspected</th>
                                 <th>Compliance Status</th>
                                 <th>Risk Level</th>
+                                <th>Follow-up Date</th>
+                                <th>Next Inspection</th>
                                 <th>Actions</th>
                             </tr>
                         </thead>
                         <tbody id="inspectionRecordsList">
                             <tr>
-                                <td colspan="8">
+                                <td colspan="12">
                                     <div class="loading">Loading inspection records...</div>
                                 </td>
                             </tr>
@@ -22143,7 +22154,7 @@ function displayInspectionRecords(records) {
     if (!records || records.length === 0) {
         recordsList.innerHTML = `
             <tr>
-                <td colspan="8">
+                <td colspan="12">
                     <div class="no-records">No inspection records found</div>
                 </td>
             </tr>
@@ -22194,12 +22205,23 @@ function displayInspectionRecords(records) {
                          record.riskLevel === 'high' ? '🔴 High Risk' : 
                          record.riskLevel === 'critical' ? '⚫ Critical Risk' : '❓ Unknown';
         
+        // Format dates for follow-up and next inspection
+        const followUpDate = record.followUpDate ? new Date(record.followUpDate).toLocaleDateString('en-US', { 
+            year: 'numeric', month: 'short', day: 'numeric' 
+        }) : 'Not set';
+        
+        const nextInspectionDate = record.nextInspectionDate ? new Date(record.nextInspectionDate).toLocaleDateString('en-US', { 
+            year: 'numeric', month: 'short', day: 'numeric' 
+        }) : 'Not set';
+        
+        // Format areas inspected
+        const areasList = Array.isArray(record.areasInspected) ? record.areasInspected.join(', ') : 'Not specified';
+        
         recordsHTML += `
             <tr class="inspection-row">
                 <td>
                     <div class="report-info">
                         <div class="report-id">${record.id}</div>
-                        <div class="report-areas">${record.areasInspected.length} areas inspected</div>
                     </div>
                 </td>
                 <td>
@@ -22210,7 +22232,6 @@ function displayInspectionRecords(records) {
                 <td>
                     <div class="project-info">
                         <div class="project-name">${record.project}</div>
-                        <div class="project-code">${record.projectCode}</div>
                     </div>
                 </td>
                 <td>
@@ -22221,7 +22242,16 @@ function displayInspectionRecords(records) {
                 <td>
                     <div class="inspector-info">
                         <div class="inspector-name">${record.inspector}</div>
-                        <div class="inspector-license">${record.inspectorLicense}</div>
+                    </div>
+                </td>
+                <td>
+                    <div class="license-info">
+                        <div class="license-number">${record.inspectorLicense || 'N/A'}</div>
+                    </div>
+                </td>
+                <td>
+                    <div class="areas-info">
+                        <div class="areas-list" title="${areasList}">${areasList.length > 30 ? areasList.substring(0, 30) + '...' : areasList}</div>
                     </div>
                 </td>
                 <td>
@@ -22229,6 +22259,16 @@ function displayInspectionRecords(records) {
                 </td>
                 <td>
                     <span class="risk-badge ${riskClass}">${riskBadge}</span>
+                </td>
+                <td>
+                    <div class="followup-info">
+                        <div class="followup-date">${followUpDate}</div>
+                    </div>
+                </td>
+                <td>
+                    <div class="next-inspection-info">
+                        <div class="next-inspection-date">${nextInspectionDate}</div>
+                    </div>
                 </td>
                 <td>
                     <div class="inspection-actions">
@@ -22340,123 +22380,7 @@ async function loadSafetyFromAPI() {
         throw new Error('KashTecAPI not available');
     }
     
-    // Add method if not exists
-    if (typeof KashTecAPI.getProjectSafetyStatus !== 'function') {
-        Object.assign(KashTecAPI, {
-            getProjectSafetyStatus: async function() {
-                let response;
-                try {
-                    // Try to get safety data from HSE work items first
-                    response = await fetch(`${KashTecAPI.baseUrl}/api/work/hse`, {
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'Accept': 'application/json',
-                            'Authorization': `Bearer ${KashTecAPI.getAuthToken()}`
-                        }
-                    });
-                    
-                    if (!response.ok) {
-                        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-                    }
-                    
-                    const hseData = await response.json();
-                    
-                    console.log('🔍 Raw HSE response in loadSafetyFromAPI:', hseData);
-                    
-                    // Transform HSE data to safety status format
-                    const safetyData = {
-                        projects: Array.isArray(hseData) ? hseData.filter(item => {
-                            // More comprehensive safety filter
-                            const isSafety = item.work_type && (
-                                item.work_type.toLowerCase().includes('safety') ||
-                                item.work_type.toLowerCase().includes('policy') ||
-                                item.work_type.toLowerCase().includes('incident') ||
-                                item.work_type.toLowerCase().includes('violation') ||
-                                item.department_code === 'hse'
-                            );
-                            console.log(`🔍 Filtering item ${item.id}: ${item.work_type} -> ${isSafety}`);
-                            return isSafety;
-                        }).map((item, index) => {
-                            console.log(`📝 Mapping safety item ${item.id}:`, item);
-                            return {
-                                id: item.id,
-                                name: item.work_title || `Safety Policy ${index + 1}`,
-                                safety_score: Math.floor(Math.random() * 20) + 80, // Random 80-100
-                                days_without_incident: Math.floor(Math.random() * 30) + 10,
-                                open_violations: Math.floor(Math.random() * 5),
-                                ppe_compliance: Math.floor(Math.random() * 15) + 85,
-                                last_inspection: item.work_date || new Date().toISOString().split('T')[0],
-                                risk_level: item.severity === 'High' ? 'High' : 'Low',
-                                status: item.status || 'Active',
-                                location: item.project_location || 'Various Sites'
-                            };
-                        }) : [],
-                        metrics: {
-                            total_projects: Array.isArray(hseData) ? hseData.length : 0,
-                            avg_safety_score: 88,
-                            total_incidents: 2,
-                            compliance_rate: 92
-                        }
-                    };
-                    
-                    console.log('✅ Transformed safety data in loadSafetyFromAPI:', safetyData);
-                    
-                    return safetyData;
-                    
-                } catch (primaryError) {
-                    console.warn('⚠️ Primary safety endpoint failed, trying fallback:', primaryError.message);
-                    
-                    // Fallback to site reports for safety data
-                    try {
-                        response = await fetch(`${KashTecAPI.baseUrl}/api/work/site-reports`, {
-                            headers: {
-                                'Content-Type': 'application/json',
-                                'Accept': 'application/json',
-                                'Authorization': `Bearer ${KashTecAPI.getAuthToken()}`
-                            }
-                        });
-                        
-                        if (!response.ok) {
-                            throw new Error(`Fallback also failed: HTTP ${response.status}: ${response.statusText}`);
-                        }
-                        
-                        const siteData = await response.json();
-                        
-                        // Transform site reports to safety status format
-                        const safetyData = {
-                            projects: Array.isArray(siteData) ? siteData.slice(0, 5).map((item, index) => ({
-                                id: item.id || index + 1,
-                                name: `Project ${index + 1}`,
-                                safety_score: item.safety_incidents === 'None' ? 95 : 75,
-                                days_without_incident: Math.floor(Math.random() * 30) + 10,
-                                open_violations: item.safety_incidents && item.safety_incidents.includes('near miss') ? 1 : 0,
-                                ppe_compliance: Math.floor(Math.random() * 15) + 85,
-                                last_inspection: item.report_date || new Date().toISOString().split('T')[0],
-                                risk_level: item.safety_incidents === 'None' ? 'Low' : 'Medium',
-                                status: item.status || 'Active',
-                                location: 'Site Location'
-                            })) : [],
-                            metrics: {
-                                total_projects: Array.isArray(siteData) ? siteData.length : 0,
-                                avg_safety_score: 85,
-                                total_incidents: Array.isArray(siteData) ? siteData.filter(item => 
-                                    item.safety_incidents && item.safety_incidents !== 'None'
-                                ).length : 0,
-                                compliance_rate: 88
-                            }
-                        };
-                        
-                        return safetyData;
-                        
-                    } catch (fallbackError) {
-                        console.error('❌ All safety endpoints failed:', fallbackError.message);
-                        throw fallbackError;
-                    }
-                }
-            }
-        });
-    }
-    
+        
     const data = await KashTecAPI.getProjectSafetyStatus();
     updateSafetyTable(data.projects || []);
     updateSafetySummary(data.metrics || {});
