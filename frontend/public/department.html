@@ -4702,6 +4702,76 @@ color: #666;
     font-size: 11px;
 }
 
+.project-code-info {
+    min-width: 110px;
+}
+
+.project-code {
+    font-weight: 600;
+    color: #333;
+    font-size: 10px;
+    font-family: monospace;
+    background: #f8f9fa;
+    padding: 2px 4px;
+    border-radius: 3px;
+}
+
+.description-info {
+    min-width: 140px;
+    max-width: 160px;
+}
+
+.project-description {
+    font-size: 9px;
+    color: #333;
+    line-height: 1.2;
+}
+
+.deliverables-info {
+    min-width: 120px;
+    max-width: 140px;
+}
+
+.key-deliverables {
+    font-size: 9px;
+    color: #333;
+    line-height: 1.2;
+}
+
+.location-info {
+    min-width: 120px;
+}
+
+.site-location {
+    font-size: 10px;
+    color: #333;
+    font-weight: 500;
+}
+
+.priority-badge {
+    display: inline-block;
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 9px;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.priority-badge.priority-high {
+    background: #f8d7da;
+    color: #721c24;
+}
+
+.priority-badge.priority-medium {
+    background: #fff3cd;
+    color: #856404;
+}
+
+.priority-badge.priority-low {
+    background: #d4edda;
+    color: #155724;
+}
+
 .project-actions {
     display: flex;
     gap: 4px;
@@ -27280,20 +27350,25 @@ function createNewProject(){
                             <tr>
                                 <th>Project ID</th>
                                 <th>Project Name</th>
+                                <th>Project Code</th>
                                 <th>Client</th>
                                 <th>Type</th>
                                 <th>Start Date</th>
                                 <th>End Date</th>
                                 <th>Contract Value</th>
+                                <th>Project Description</th>
+                                <th>Key Deliverables</th>
+                                <th>Site Location</th>
+                                <th>Priority</th>
+                                <th>Manager</th>
                                 <th>Status</th>
                                 <th>Progress</th>
-                                <th>Manager</th>
                                 <th>Actions</th>
                             </tr>
                         </thead>
                         <tbody id="projectsList">
                             <tr>
-                                <td colspan="11">
+                                <td colspan="16">
                                     <div class="loading">Loading projects...</div>
                                 </td>
                             </tr>
@@ -27581,7 +27656,7 @@ function displayProjects(projects) {
     if (!projects || projects.length === 0) {
         projectsList.innerHTML = `
             <tr>
-                <td colspan="11">
+                <td colspan="16">
                     <div class="no-records">No projects found</div>
                 </td>
             </tr>
@@ -27620,6 +27695,24 @@ function displayProjects(projects) {
             (project.contractValue / 1000000).toFixed(1) + 'M TZS' : 
             'N/A';
         
+        // Get priority display
+        const priorityDisplay = project.priorityLevel === 'high' ? '🔴 High' : 
+                               project.priorityLevel === 'medium' ? '🟡 Medium' : 
+                               project.priorityLevel === 'low' ? '🟢 Low' : project.priorityLevel;
+        
+        const priorityClass = project.priorityLevel === 'high' ? 'priority-high' : 
+                             project.priorityLevel === 'medium' ? 'priority-medium' : 
+                             project.priorityLevel === 'low' ? 'priority-low' : '';
+        
+        // Truncate text fields for display
+        const projectDescription = project.projectDescription && project.projectDescription.length > 50 ? 
+            project.projectDescription.substring(0, 50) + '...' : 
+            (project.projectDescription || 'Not specified');
+        
+        const keyDeliverables = project.keyDeliverables && project.keyDeliverables.length > 40 ? 
+            project.keyDeliverables.substring(0, 40) + '...' : 
+            (project.keyDeliverables || 'Not specified');
+        
         // Get progress bar
         const progress = project.progress || 0;
         const progressBar = `
@@ -27638,12 +27731,17 @@ function displayProjects(projects) {
                 </td>
                 <td>
                     <div class="project-name-info">
-                        <div class="project-name">${project.name}</div>
+                        <div class="project-name" title="${project.name || 'Not specified'}">${project.name || 'Not specified'}</div>
+                    </div>
+                </td>
+                <td>
+                    <div class="project-code-info">
+                        <div class="project-code">${project.projectCode || 'N/A'}</div>
                     </div>
                 </td>
                 <td>
                     <div class="client-info">
-                        <div class="client-name">${project.client}</div>
+                        <div class="client-name">${project.client || 'Not specified'}</div>
                     </div>
                 </td>
                 <td>
@@ -27663,15 +27761,33 @@ function displayProjects(projects) {
                     <div class="contract-value">${contractValue}</div>
                 </td>
                 <td>
+                    <div class="description-info">
+                        <div class="project-description" title="${project.projectDescription || 'Not specified'}">${projectDescription}</div>
+                    </div>
+                </td>
+                <td>
+                    <div class="deliverables-info">
+                        <div class="key-deliverables" title="${project.keyDeliverables || 'Not specified'}">${keyDeliverables}</div>
+                    </div>
+                </td>
+                <td>
+                    <div class="location-info">
+                        <div class="site-location">${project.siteLocation || 'Not specified'}</div>
+                    </div>
+                </td>
+                <td>
+                    <span class="priority-badge ${priorityClass}">${priorityDisplay}</span>
+                </td>
+                <td>
+                    <div class="manager-info">
+                        <div class="manager-name">${project.manager || 'Not assigned'}</div>
+                    </div>
+                </td>
+                <td>
                     <span class="status-badge ${statusClass}">${statusDisplay}</span>
                 </td>
                 <td>
                     ${progressBar}
-                </td>
-                <td>
-                    <div class="manager-info">
-                        <div class="manager-name">${project.manager}</div>
-                    </div>
                 </td>
                 <td>
                     <div class="project-actions">
