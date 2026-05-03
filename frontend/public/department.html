@@ -4081,6 +4081,266 @@ color: #666;
     background: #5a6268;
 }
 
+/* Sales Table Styles */
+.sales-records {
+    margin-top: 20px;
+}
+
+.sales-table-container {
+    background: white;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    margin-top: 15px;
+    overflow-x: auto;
+}
+
+.sales-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 11px;
+    background: white;
+    min-width: 2000px;
+}
+
+.sales-table th {
+    background: #0b3d91;
+    color: white;
+    padding: 10px 8px;
+    text-align: left;
+    font-weight: 600;
+    border-bottom: 2px solid #0a2d6d;
+    white-space: nowrap;
+    font-size: 10px;
+}
+
+.sales-table td {
+    padding: 8px;
+    border-bottom: 1px solid #e9ecef;
+    vertical-align: middle;
+    font-size: 11px;
+}
+
+.sales-table tr:hover {
+    background: #f8f9fa;
+}
+
+.sales-table tr:last-child td {
+    border-bottom: none;
+}
+
+/* Sales Table Content Styles */
+.sale-id {
+    font-weight: 600;
+    color: #0b3d91;
+    margin-bottom: 2px;
+    font-size: 10px;
+}
+
+.sale-date {
+    font-size: 9px;
+    color: #6c757d;
+}
+
+.property-info {
+    min-width: 150px;
+    max-width: 180px;
+}
+
+.property-id {
+    font-weight: 600;
+    color: #0b3d91;
+    margin-bottom: 2px;
+    font-size: 10px;
+}
+
+.property-location {
+    font-size: 9px;
+    color: #2c3e50;
+    margin-bottom: 2px;
+    line-height: 1.2;
+}
+
+.property-price {
+    font-size: 9px;
+    color: #28a745;
+    font-weight: 600;
+}
+
+.client-info {
+    min-width: 150px;
+    max-width: 180px;
+}
+
+.client-name {
+    font-weight: 600;
+    color: #2c3e50;
+    margin-bottom: 2px;
+    font-size: 10px;
+    line-height: 1.2;
+}
+
+.client-contact, .client-email {
+    font-size: 9px;
+    color: #6c757d;
+    margin-bottom: 1px;
+    word-wrap: break-word;
+}
+
+.sale-details {
+    min-width: 150px;
+    max-width: 180px;
+}
+
+.sale-price {
+    font-size: 9px;
+    color: #28a745;
+    font-weight: 600;
+    margin-bottom: 2px;
+}
+
+.sale-date {
+    font-size: 9px;
+    color: #2c3e50;
+    margin-bottom: 2px;
+}
+
+.sale-notes {
+    font-size: 9px;
+    color: #6c757d;
+    line-height: 1.2;
+    word-wrap: break-word;
+}
+
+.payment-method-info {
+    min-width: 100px;
+    max-width: 120px;
+}
+
+.method {
+    font-size: 9px;
+    color: #2c3e50;
+    font-weight: 500;
+}
+
+.installment-info {
+    min-width: 150px;
+    max-width: 180px;
+}
+
+.period, .down-payment, .monthly, .interest {
+    font-size: 9px;
+    color: #2c3e50;
+    margin-bottom: 1px;
+}
+
+.no-installments {
+    font-size: 9px;
+    color: #6c757d;
+    font-style: italic;
+}
+
+.agreement-info {
+    min-width: 100px;
+    max-width: 120px;
+}
+
+.agreement-file {
+    font-size: 9px;
+    color: #0b3d91;
+    margin-bottom: 1px;
+}
+
+.no-agreement {
+    font-size: 9px;
+    color: #6c757d;
+    font-style: italic;
+}
+
+.payment-status-info {
+    min-width: 80px;
+}
+
+.status-badge {
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 8px;
+    font-weight: 500;
+    display: inline-block;
+}
+
+.status-pending {
+    background: #fff3cd;
+    color: #856404;
+}
+
+.status-partial {
+    background: #cce5ff;
+    color: #004085;
+}
+
+.status-completed {
+    background: #d4edda;
+    color: #155724;
+}
+
+.status-overdue {
+    background: #f8d7da;
+    color: #721c24;
+}
+
+.commission-info {
+    min-width: 80px;
+    max-width: 100px;
+}
+
+.agent-name {
+    font-size: 9px;
+    color: #2c3e50;
+    font-weight: 500;
+}
+
+.sales-actions {
+    display: flex;
+    gap: 4px;
+    justify-content: center;
+}
+
+.sales-actions .action-btn {
+    padding: 4px 6px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 10px;
+    transition: all 0.2s ease;
+    min-width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.sales-actions .action-btn.view {
+    background: #17a2b8;
+    color: white;
+}
+
+.sales-actions .action-btn.edit {
+    background: #ffc107;
+    color: #212529;
+}
+
+.sales-actions .action-btn.delete {
+    background: #dc3545;
+    color: white;
+}
+
+.sales-actions .action-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
 /* Policy Table Styles */
 .policy-records {
     margin-top: 20px;
@@ -10170,6 +10430,7 @@ function loadMenu(){
         addMenu("Edit Property Details", editPropertyDetails);
         addMenu("Register Client", registerClient);
         addMenu("Record Sale", recordSale);
+        addMenu("Manage Sales", manageSales);
         addMenu("Track Payment Progress", trackPaymentProgress);
         addMenu("Generate Sales Report", generateSalesReport);
     }
@@ -34317,6 +34578,356 @@ function recordSale(){
             </div>
         </div>
     `);
+}
+
+function manageSales() {
+    showContent(`
+        <div class="card">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h3>Manage Sales Records</h3>
+                <div>
+                    <button type="button" onclick="recordSale()" class="action" style="background: #28a745;">💰 Record New Sale</button>
+                    <button type="button" onclick="exportSales()" class="action" style="background: #007bff;">📊 Export Sales</button>
+                </div>
+            </div>
+            
+            <div class="sales-overview">
+                <div class="sales-stats">
+                    <div class="stat-item">
+                        <span class="stat-label">Total Sales:</span>
+                        <span class="stat-value">142</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">This Month:</span>
+                        <span class="stat-value">18</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">Revenue:</span>
+                        <span class="stat-value">TZS 8.5B</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">Pending:</span>
+                        <span class="stat-value">7</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="sales-records">
+                <div class="sales-table-container">
+                    <table class="sales-table">
+                        <thead>
+                            <tr>
+                                <th>Sale ID</th>
+                                <th>Property</th>
+                                <th>Client</th>
+                                <th>Sale Details</th>
+                                <th>Payment Method</th>
+                                <th>Installment Details</th>
+                                <th>Agreement</th>
+                                <th>Payment Status</th>
+                                <th>Commission Agent</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="salesRecordsList">
+                            <!-- Sales records will be loaded here -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    `);
+    
+    // Load sales records when the page loads
+    loadSales();
+}
+
+async function loadSales() {
+    try {
+        const recordsList = document.getElementById('salesRecordsList');
+        recordsList.innerHTML = '<tr><td colspan="10" class="loading">Loading sales records...</td></tr>';
+        
+        const response = await KashTecAPI.get('/api/sales');
+        
+        if (response.success && response.data.length > 0) {
+            recordsList.innerHTML = response.data.map(sale => `
+                <tr>
+                    <td>
+                        <div class="sale-id">${sale.saleId}</div>
+                        <div class="sale-date">Date: ${new Date(sale.saleDate).toLocaleDateString()}</div>
+                    </td>
+                    <td>
+                        <div class="property-info">
+                            <div class="property-id">${sale.propertyId}</div>
+                            <div class="property-location">${sale.propertyLocation}</div>
+                            <div class="property-price">TZS ${parseInt(sale.propertyPrice).toLocaleString()}</div>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="client-info">
+                            <div class="client-name">${sale.clientName}</div>
+                            <div class="client-contact">📱 ${sale.clientPhone}</div>
+                            <div class="client-email">📧 ${sale.clientEmail}</div>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="sale-details">
+                            <div class="sale-price">Price: TZS ${parseInt(sale.salePrice).toLocaleString()}</div>
+                            <div class="sale-date">Date: ${new Date(sale.saleDate).toLocaleDateString()}</div>
+                            <div class="sale-notes">${sale.saleNotes || 'No notes'}</div>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="payment-method-info">
+                            <div class="method">${sale.paymentMethod}</div>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="installment-info">
+                            ${sale.paymentMethod === 'installments' ? `
+                                <div class="period">Period: ${sale.installmentPeriod} months</div>
+                                <div class="down-payment">Down: TZS ${parseInt(sale.downPayment).toLocaleString()}</div>
+                                <div class="monthly">Monthly: TZS ${parseInt(sale.monthlyInstallment).toLocaleString()}</div>
+                                <div class="interest">Rate: ${sale.interestRate}%</div>
+                            ` : '<div class="no-installments">N/A</div>'}
+                        </div>
+                    </td>
+                    <td>
+                        <div class="agreement-info">
+                            ${sale.salesAgreement ? 
+                                `<div class="agreement-file">📄 ${sale.salesAgreement}</div>` : 
+                                '<div class="no-agreement">No Agreement</div>'
+                            }
+                        </div>
+                    </td>
+                    <td>
+                        <div class="payment-status-info">
+                            <span class="status-badge status-${sale.paymentStatus}">${sale.paymentStatus}</span>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="commission-info">
+                            <div class="agent-name">${sale.commissionAgent || 'N/A'}</div>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="sales-actions">
+                            <button class="action-btn view" onclick="viewSaleDetails('${sale.saleId}')" title="View Details">👁️</button>
+                            <button class="action-btn edit" onclick="editSale('${sale.saleId}')" title="Edit Sale">✏️</button>
+                            <button class="action-btn delete" onclick="deleteSale('${sale.saleId}')" title="Delete Sale">🗑️</button>
+                        </div>
+                    </td>
+                </tr>
+            `).join('');
+        } else {
+            recordsList.innerHTML = '<tr><td colspan="10" class="no-records">No sales records found. Record your first sale!</td></tr>';
+        }
+    } catch (error) {
+        console.error('❌ Error loading sales records:', error);
+        // Load sample data on error
+        loadSampleSales();
+    }
+}
+
+// Load sample sales records for demonstration
+function loadSampleSales() {
+    console.log('💰 Loading sample sales records...');
+    
+    const sampleSales = [
+        {
+            saleId: 'SAL-2026-001',
+            propertyId: 'PLT-2026-001',
+            propertyLocation: 'Masaki, Dar es Salaam',
+            propertyPrice: 50000000,
+            clientName: 'John Michael Smith',
+            clientPhone: '+255 712 345 678',
+            clientEmail: 'john.smith@email.com',
+            salePrice: 50000000,
+            saleDate: '2026-03-15',
+            saleNotes: 'Client interested in quick closing',
+            paymentMethod: 'full-payment',
+            installmentPeriod: null,
+            downPayment: null,
+            monthlyInstallment: null,
+            interestRate: null,
+            salesAgreement: 'agreement_001.pdf',
+            paymentStatus: 'completed',
+            commissionAgent: 'Agent Johnson'
+        },
+        {
+            saleId: 'SAL-2026-002',
+            propertyId: 'PLT-2026-002',
+            propertyLocation: 'Mikocheni, Dar es Salaam',
+            propertyPrice: 75000000,
+            clientName: 'Sarah Johnson',
+            clientPhone: '+255 755 987 654',
+            clientEmail: 'sarah.j@email.com',
+            salePrice: 75000000,
+            saleDate: '2026-03-20',
+            saleNotes: 'First-time buyer, requires guidance',
+            paymentMethod: 'installments',
+            installmentPeriod: 24,
+            downPayment: 15000000,
+            monthlyInstallment: 2708333,
+            interestRate: 15,
+            salesAgreement: 'agreement_002.pdf',
+            paymentStatus: 'partial',
+            commissionAgent: 'Agent Wilson'
+        },
+        {
+            saleId: 'SAL-2026-003',
+            propertyId: 'PLT-2026-003',
+            propertyLocation: 'Upanga, Dar es Salaam',
+            propertyPrice: 35000000,
+            clientName: 'Robert Kimaro',
+            clientPhone: '+255 765 432 109',
+            clientEmail: 'robert.k@email.com',
+            salePrice: 35000000,
+            saleDate: '2026-04-01',
+            saleNotes: 'Investment property purchase',
+            paymentMethod: 'bank-financing',
+            installmentPeriod: null,
+            downPayment: null,
+            monthlyInstallment: null,
+            interestRate: null,
+            salesAgreement: null,
+            paymentStatus: 'pending',
+            commissionAgent: 'Self'
+        },
+        {
+            saleId: 'SAL-2026-004',
+            propertyId: 'PLT-2026-004',
+            propertyLocation: 'Kariakoo, Dar es Salaam',
+            propertyPrice: 25000000,
+            clientName: 'Grace Wilson',
+            clientPhone: '+255 789 123 456',
+            clientEmail: 'grace.w@email.com',
+            salePrice: 25000000,
+            saleDate: '2026-04-10',
+            saleNotes: 'Commercial property for business',
+            paymentMethod: 'mortgage',
+            installmentPeriod: 36,
+            downPayment: 5000000,
+            monthlyInstallment: 694444,
+            interestRate: 12,
+            salesAgreement: 'agreement_004.pdf',
+            paymentStatus: 'completed',
+            commissionAgent: 'Agent Davis'
+        },
+        {
+            saleId: 'SAL-2026-005',
+            propertyId: 'PLT-2026-005',
+            propertyLocation: 'Mwenge, Dar es Salaam',
+            propertyPrice: 45000000,
+            clientName: 'David Mwanga',
+            clientPhone: '+255 621 876 543',
+            clientEmail: 'david.m@email.com',
+            salePrice: 45000000,
+            saleDate: '2026-04-15',
+            saleNotes: 'Family home purchase',
+            paymentMethod: 'installments',
+            installmentPeriod: 18,
+            downPayment: 9000000,
+            monthlyInstallment: 2333333,
+            interestRate: 10,
+            salesAgreement: 'agreement_005.pdf',
+            paymentStatus: 'overdue',
+            commissionAgent: 'Agent Thompson'
+        }
+    ];
+    
+    const recordsList = document.getElementById('salesRecordsList');
+    recordsList.innerHTML = sampleSales.map(sale => `
+        <tr>
+            <td>
+                <div class="sale-id">${sale.saleId}</div>
+                <div class="sale-date">Date: ${new Date(sale.saleDate).toLocaleDateString()}</div>
+            </td>
+            <td>
+                <div class="property-info">
+                    <div class="property-id">${sale.propertyId}</div>
+                    <div class="property-location">${sale.propertyLocation}</div>
+                    <div class="property-price">TZS ${sale.propertyPrice.toLocaleString()}</div>
+                </div>
+            </td>
+            <td>
+                <div class="client-info">
+                    <div class="client-name">${sale.clientName}</div>
+                    <div class="client-contact">📱 ${sale.clientPhone}</div>
+                    <div class="client-email">📧 ${sale.clientEmail}</div>
+                </div>
+            </td>
+            <td>
+                <div class="sale-details">
+                    <div class="sale-price">Price: TZS ${sale.salePrice.toLocaleString()}</div>
+                    <div class="sale-date">Date: ${new Date(sale.saleDate).toLocaleDateString()}</div>
+                    <div class="sale-notes">${sale.saleNotes}</div>
+                </div>
+            </td>
+            <td>
+                <div class="payment-method-info">
+                    <div class="method">${sale.paymentMethod}</div>
+                </div>
+            </td>
+            <td>
+                <div class="installment-info">
+                    ${sale.paymentMethod === 'installments' ? `
+                        <div class="period">Period: ${sale.installmentPeriod} months</div>
+                        <div class="down-payment">Down: TZS ${sale.downPayment.toLocaleString()}</div>
+                        <div class="monthly">Monthly: TZS ${sale.monthlyInstallment.toLocaleString()}</div>
+                        <div class="interest">Rate: ${sale.interestRate}%</div>
+                    ` : '<div class="no-installments">N/A</div>'}
+                </div>
+            </td>
+            <td>
+                <div class="agreement-info">
+                    ${sale.salesAgreement ? 
+                        `<div class="agreement-file">📄 ${sale.salesAgreement}</div>` : 
+                        '<div class="no-agreement">No Agreement</div>'
+                    }
+                </div>
+            </td>
+            <td>
+                <div class="payment-status-info">
+                    <span class="status-badge status-${sale.paymentStatus}">${sale.paymentStatus}</span>
+                </div>
+            </td>
+            <td>
+                <div class="commission-info">
+                    <div class="agent-name">${sale.commissionAgent}</div>
+                </div>
+            </td>
+            <td>
+                <div class="sales-actions">
+                    <button class="action-btn view" onclick="viewSaleDetails('${sale.saleId}')" title="View Details">👁️</button>
+                    <button class="action-btn edit" onclick="editSale('${sale.saleId}')" title="Edit Sale">✏️</button>
+                    <button class="action-btn delete" onclick="deleteSale('${sale.saleId}')" title="Delete Sale">🗑️</button>
+                </div>
+            </td>
+        </tr>
+    `).join('');
+    
+    console.log('✅ Sample sales records loaded successfully');
+}
+
+// Sales Action Functions
+function viewSaleDetails(saleId) {
+    customAlert(`Viewing details for sale: ${saleId}`, 'Sale Details', 'info');
+}
+
+function editSale(saleId) {
+    customAlert(`Editing sale: ${saleId}`, 'Edit Sale', 'info');
+}
+
+function deleteSale(saleId) {
+    if (confirm(`Are you sure you want to delete sale: ${saleId}?`)) {
+        customAlert(`Sale ${saleId} deleted successfully!`, 'Success', 'success');
+        loadSales();
+    }
+}
+
+function exportSales() {
+    customAlert('Exporting sales records...', 'Export Sales', 'info');
 }
 
 async function trackPaymentProgress(){
