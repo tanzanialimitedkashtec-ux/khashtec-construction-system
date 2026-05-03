@@ -2590,6 +2590,19 @@ color: #666;
     min-width: 80px;
 }
 
+.notes-info {
+    min-width: 120px;
+    max-width: 200px;
+}
+
+.attendance-notes {
+    font-size: 10px;
+    color: #666;
+    line-height: 1.3;
+    word-wrap: break-word;
+    cursor: help;
+}
+
 .department-badge {
     font-size: 9px;
     font-weight: 600;
@@ -15497,12 +15510,13 @@ function attendance(){
                                 <th>Status</th>
                                 <th>Work Hours</th>
                                 <th>Department</th>
+                                <th>Notes</th>
                                 <th>Actions</th>
                             </tr>
                         </thead>
                         <tbody id="attendanceRecordsList">
                             <tr>
-                                <td colspan="8">
+                                <td colspan="9">
                                     <div class="loading">Loading attendance records...</div>
                                 </td>
                             </tr>
@@ -16117,7 +16131,7 @@ function displayAttendanceRecords(records) {
     if (!records || records.length === 0) {
         recordsList.innerHTML = `
             <tr>
-                <td colspan="8">
+                <td colspan="9">
                     <div class="no-records">No attendance records found</div>
                 </td>
             </tr>
@@ -16198,6 +16212,11 @@ function displayAttendanceRecords(records) {
                 <td>
                     <div class="department-info">
                         <span class="department-badge">${record.department || 'Not specified'}</span>
+                    </div>
+                </td>
+                <td>
+                    <div class="notes-info">
+                        <div class="attendance-notes" title="${record.notes || 'No notes'}">${record.notes ? (record.notes.length > 30 ? record.notes.substring(0, 30) + '...' : record.notes) : '—'}</div>
                     </div>
                 </td>
                 <td>
@@ -35347,11 +35366,15 @@ function scheduleMeeting(){
                     <table class="meeting-table">
                         <thead>
                             <tr>
-                                <th>Meeting Details</th>
-                                <th>Date & Time</th>
+                                <th>Meeting Title</th>
+                                <th>Meeting Type</th>
+                                <th>Date</th>
+                                <th>Start Time</th>
+                                <th>End Time</th>
                                 <th>Location</th>
                                 <th>Department</th>
                                 <th>Attendees</th>
+                                <th>Description</th>
                                 <th>Resources</th>
                                 <th>Status</th>
                                 <th>Actions</th>
@@ -35359,7 +35382,7 @@ function scheduleMeeting(){
                         </thead>
                         <tbody id="upcomingMeetingsList">
                             <tr>
-                                <td colspan="8">
+                                <td colspan="12">
                                     <div class="loading">Loading upcoming meetings...</div>
                                 </td>
                             </tr>
