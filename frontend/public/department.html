@@ -2313,6 +2313,60 @@ color: #666;
     word-wrap: break-word;
 }
 
+.meeting-title-info {
+    min-width: 120px;
+}
+
+.meeting-type-info {
+    min-width: 80px;
+}
+
+.type-badge {
+    font-size: 9px;
+    font-weight: 600;
+    color: white;
+    background: #6c757d;
+    padding: 2px 6px;
+    border-radius: 8px;
+    display: inline-block;
+    text-transform: capitalize;
+}
+
+.date-info {
+    min-width: 80px;
+}
+
+.start-time-info {
+    min-width: 60px;
+}
+
+.start-time {
+    font-size: 10px;
+    color: #333;
+    font-weight: 500;
+}
+
+.end-time-info {
+    min-width: 60px;
+}
+
+.end-time {
+    font-size: 10px;
+    color: #333;
+    font-weight: 500;
+}
+
+.description-info {
+    min-width: 150px;
+    max-width: 200px;
+}
+
+.meeting-description {
+    font-size: 9px;
+    color: #333;
+    line-height: 1.2;
+}
+
 .meeting-actions {
     display: flex;
     gap: 4px;
@@ -2880,6 +2934,17 @@ color: #666;
     border-radius: 8px;
     text-transform: capitalize;
     display: inline-block;
+}
+
+.description-info {
+    min-width: 150px;
+    max-width: 200px;
+}
+
+.policy-description {
+    font-size: 9px;
+    color: #333;
+    line-height: 1.2;
 }
 
 .priority-badge.priority-mandatory {
@@ -4111,6 +4176,48 @@ color: #666;
     font-size: 11px;
 }
 
+.justification-info {
+    min-width: 150px;
+    max-width: 180px;
+}
+
+.justification {
+    font-size: 9px;
+    color: #333;
+    line-height: 1.2;
+}
+
+.start-date-info {
+    min-width: 90px;
+}
+
+.start-date {
+    font-size: 9px;
+    font-weight: 600;
+    color: #333;
+}
+
+.end-date-info {
+    min-width: 90px;
+}
+
+.end-date {
+    font-size: 9px;
+    font-weight: 600;
+    color: #333;
+}
+
+.special-requirements-info {
+    min-width: 120px;
+    max-width: 150px;
+}
+
+.special-requirements {
+    font-size: 9px;
+    color: #333;
+    line-height: 1.2;
+}
+
 .status-badge {
     display: inline-block;
     padding: 4px 8px;
@@ -4300,6 +4407,61 @@ color: #666;
     font-size: 10px;
     color: #333;
     line-height: 1.3;
+}
+
+.issues-info {
+    min-width: 120px;
+    max-width: 140px;
+}
+
+.site-issues {
+    font-size: 9px;
+    color: #333;
+    line-height: 1.2;
+}
+
+.safety-info {
+    min-width: 120px;
+    max-width: 140px;
+}
+
+.safety-incidents {
+    font-size: 9px;
+    color: #333;
+    line-height: 1.2;
+}
+
+.materials-info {
+    min-width: 110px;
+    max-width: 130px;
+}
+
+.materials-used {
+    font-size: 9px;
+    color: #333;
+    line-height: 1.2;
+}
+
+.equipment-info {
+    min-width: 110px;
+    max-width: 130px;
+}
+
+.equipment-used {
+    font-size: 9px;
+    color: #333;
+    line-height: 1.2;
+}
+
+.nextday-info {
+    min-width: 130px;
+    max-width: 150px;
+}
+
+.next-day-plan {
+    font-size: 9px;
+    color: #333;
+    line-height: 1.2;
 }
 
 .safety-badge {
@@ -4776,6 +4938,54 @@ color: #666;
     font-weight: 600;
     color: #333;
     font-size: 11px;
+}
+
+.description-info {
+    min-width: 120px;
+    max-width: 150px;
+}
+
+.violation-description {
+    font-size: 9px;
+    color: #333;
+    line-height: 1.2;
+}
+
+.immediate-action-info {
+    min-width: 120px;
+    max-width: 150px;
+}
+
+.immediate-action {
+    font-size: 9px;
+    color: #333;
+    line-height: 1.2;
+}
+
+.corrective-action-info {
+    min-width: 120px;
+}
+
+.corrective-action-badge {
+    display: inline-block;
+    padding: 3px 6px;
+    border-radius: 8px;
+    font-size: 8px;
+    font-weight: 600;
+    white-space: nowrap;
+    background: #f8f9fa;
+    color: #333;
+    border: 1px solid #dee2e6;
+}
+
+.deadline-info {
+    min-width: 80px;
+}
+
+.action-deadline {
+    font-size: 9px;
+    font-weight: 600;
+    color: #333;
 }
 
 .violation-actions {
@@ -14714,7 +14924,13 @@ function displayUpcomingMeetings(meetings) {
     });
     
     if (upcomingMeetings.length === 0) {
-        meetingsList.innerHTML = '<div class="no-meetings">No meetings scheduled in the last 7 days or upcoming</div>';
+        meetingsList.innerHTML = `
+            <tr>
+                <td colspan="12">
+                    <div class="no-meetings">No meetings scheduled in the last 7 days or upcoming</div>
+                </td>
+            </tr>
+        `;
         return;
     }
     
@@ -14747,24 +14963,41 @@ function displayUpcomingMeetings(meetings) {
                            meeting.status === 'pending' ? '⏳ Pending' : 
                            meeting.status === 'cancelled' ? '❌ Cancelled' : '✅ Confirmed';
         
+        // Format description with truncation
+        const description = meeting.meeting_description || 'No description provided';
+        const shortDescription = description.length > 50 ? description.substring(0, 50) + '...' : description;
+        
         meetingsHTML += `
             <tr class="meeting-row ${pastClass}">
                 <td>
-                    <div class="meeting-details">
-                        <div class="meeting-title">${meeting.meeting_title}</div>
-                        <div class="meeting-type">${formatMeetingType(meeting.meeting_type)}</div>
+                    <div class="meeting-title-info">
+                        <div class="meeting-title">${meeting.meeting_title || 'Untitled Meeting'}</div>
+                    </div>
+                </td>
+                <td>
+                    <div class="meeting-type-info">
+                        <span class="type-badge">${formatMeetingType(meeting.meeting_type)}</span>
+                    </div>
+                </td>
+                <td>
+                    <div class="date-info">
+                        <div class="meeting-date">${formattedDate}</div>
                         ${isPast ? '<div class="past-indicator">Past</div>' : ''}
                     </div>
                 </td>
                 <td>
-                    <div class="datetime-info">
-                        <div class="meeting-date">${formattedDate}</div>
-                        <div class="meeting-time">${startTime} - ${endTime}</div>
+                    <div class="start-time-info">
+                        <div class="start-time">${startTime}</div>
+                    </div>
+                </td>
+                <td>
+                    <div class="end-time-info">
+                        <div class="end-time">${endTime}</div>
                     </div>
                 </td>
                 <td>
                     <div class="location-info">
-                        <div class="meeting-location">${meeting.location}</div>
+                        <div class="meeting-location">${meeting.location || 'Not specified'}</div>
                     </div>
                 </td>
                 <td>
@@ -14775,7 +15008,11 @@ function displayUpcomingMeetings(meetings) {
                 <td>
                     <div class="attendee-info">
                         <div class="attendee-count">${meeting.expected_attendees || 0}</div>
-                        <div class="attendee-label">Attendees</div>
+                    </div>
+                </td>
+                <td>
+                    <div class="description-info">
+                        <div class="meeting-description" title="${description}">${shortDescription}</div>
                     </div>
                 </td>
                 <td>
@@ -20063,6 +20300,7 @@ function uploadSafetyPolicies(){
                             <tr>
                                 <th>Policy Title</th>
                                 <th>Category</th>
+                                <th>Description</th>
                                 <th>Priority</th>
                                 <th>Effective Date</th>
                                 <th>Review Date</th>
@@ -20073,7 +20311,7 @@ function uploadSafetyPolicies(){
                         </thead>
                         <tbody id="policyRecordsList">
                             <tr>
-                                <td colspan="8">
+                                <td colspan="9">
                                     <div class="loading">Loading policy records...</div>
                                 </td>
                             </tr>
@@ -21180,7 +21418,10 @@ function markSafetyViolations(){
                                 <th>Severity</th>
                                 <th>Violator(s)</th>
                                 <th>Location</th>
-                                <th>Action Taken</th>
+                                <th>Description</th>
+                                <th>Immediate Action</th>
+                                <th>Corrective Action</th>
+                                <th>Deadline</th>
                                 <th>Status</th>
                                 <th>Reported By</th>
                                 <th>Actions</th>
@@ -21188,7 +21429,7 @@ function markSafetyViolations(){
                         </thead>
                         <tbody id="violationsList">
                             <tr>
-                                <td colspan="11">
+                                <td colspan="14">
                                     <div class="loading">Loading violations...</div>
                                 </td>
                             </tr>
@@ -21591,7 +21832,7 @@ function displayViolations(violations) {
     if (!violations || violations.length === 0) {
         violationsList.innerHTML = `
             <tr>
-                <td colspan="11">
+                <td colspan="14">
                     <div class="no-records">No violations found</div>
                 </td>
             </tr>
@@ -21636,6 +21877,24 @@ function displayViolations(violations) {
                            violation.status === 'investigating' ? 'status-investigating' : 
                            violation.status === 'closed' ? 'status-closed' : '';
         
+        // Format description with truncation
+        const description = violation.description || 'No description provided';
+        const shortDescription = description.length > 30 ? description.substring(0, 30) + '...' : description;
+        
+        // Format immediate action with truncation
+        const immediateAction = violation.immediateAction || 'No action recorded';
+        const shortImmediateAction = immediateAction.length > 25 ? immediateAction.substring(0, 25) + '...' : immediateAction;
+        
+        // Get corrective action display
+        const correctiveActionDisplay = violation.correctiveAction === 'warning' ? '⚠️ Verbal Warning' : 
+                                      violation.correctiveAction === 'written-warning' ? '📝 Written Warning' : 
+                                      violation.correctiveAction === 'retraining' ? '📚 Safety Retraining' : 
+                                      violation.correctiveAction === 'suspension' ? '🚫 Suspension' : 
+                                      violation.correctiveAction === 'termination' ? '❌ Termination' : violation.correctiveAction;
+        
+        // Format deadline
+        const deadline = violation.actionDeadline ? new Date(violation.actionDeadline).toLocaleDateString() : 'Not set';
+        
         violationsHTML += `
             <tr class="violation-row">
                 <td>
@@ -21671,8 +21930,23 @@ function displayViolations(violations) {
                     </div>
                 </td>
                 <td>
-                    <div class="action-info">
-                        <div class="action-taken">${violation.actionTaken}</div>
+                    <div class="description-info">
+                        <div class="violation-description" title="${description}">${shortDescription}</div>
+                    </div>
+                </td>
+                <td>
+                    <div class="immediate-action-info">
+                        <div class="immediate-action" title="${immediateAction}">${shortImmediateAction}</div>
+                    </div>
+                </td>
+                <td>
+                    <div class="corrective-action-info">
+                        <span class="corrective-action-badge">${correctiveActionDisplay}</span>
+                    </div>
+                </td>
+                <td>
+                    <div class="deadline-info">
+                        <div class="action-deadline">${deadline}</div>
                     </div>
                 </td>
                 <td>
@@ -23582,7 +23856,7 @@ function displayPolicyRecords(records) {
     if (!records || records.length === 0) {
         recordsList.innerHTML = `
             <tr>
-                <td colspan="8">
+                <td colspan="9">
                     <div class="no-records">No policy records found</div>
                 </td>
             </tr>
@@ -23633,6 +23907,10 @@ function displayPolicyRecords(records) {
                             record.scope === 'field-operations' ? 'Field Operations' : 
                             record.scope === 'specific-project' ? 'Specific Project' : 'Unknown';
         
+        // Format description with truncation
+        const description = record.description || 'No description provided';
+        const shortDescription = description.length > 50 ? description.substring(0, 50) + '...' : description;
+        
         recordsHTML += `
             <tr class="policy-row">
                 <td>
@@ -23644,6 +23922,11 @@ function displayPolicyRecords(records) {
                 <td>
                     <div class="category-info">
                         <span class="category-badge">${record.category}</span>
+                    </div>
+                </td>
+                <td>
+                    <div class="description-info">
+                        <div class="policy-description" title="${description}">${shortDescription}</div>
                     </div>
                 </td>
                 <td>
@@ -27889,7 +28172,11 @@ function requestWorkforce(){
                                 <th>Request Type</th>
                                 <th>Workers Needed</th>
                                 <th>Job Categories</th>
+                                <th>Justification</th>
+                                <th>Start Date</th>
+                                <th>End Date</th>
                                 <th>Duration</th>
+                                <th>Special Requirements</th>
                                 <th>Submitted Date</th>
                                 <th>Status</th>
                                 <th>Actions</th>
@@ -27897,7 +28184,7 @@ function requestWorkforce(){
                         </thead>
                         <tbody id="workforceRequestsList">
                             <tr>
-                                <td colspan="9">
+                                <td colspan="13">
                                     <div class="loading">Loading workforce requests...</div>
                                 </td>
                             </tr>
@@ -28170,7 +28457,7 @@ function displayWorkforceRequests(requests) {
     if (!requests || requests.length === 0) {
         requestsList.innerHTML = `
             <tr>
-                <td colspan="9">
+                <td colspan="13">
                     <div class="no-records">No workforce requests found</div>
                 </td>
             </tr>
@@ -28214,6 +28501,18 @@ function displayWorkforceRequests(requests) {
                            request.status === 'rejected' ? 'status-rejected' : 
                            request.status === 'completed' ? 'status-completed' : '';
         
+        // Format justification with truncation
+        const justification = request.justification || 'No justification provided';
+        const shortJustification = justification.length > 40 ? justification.substring(0, 40) + '...' : justification;
+        
+        // Format dates
+        const startDate = request.startDate ? new Date(request.startDate).toLocaleDateString() : 'Not set';
+        const endDate = request.endDate ? new Date(request.endDate).toLocaleDateString() : 'Not set';
+        
+        // Format special requirements with truncation
+        const specialRequirements = request.specialRequirements || 'No special requirements';
+        const shortSpecialRequirements = specialRequirements.length > 30 ? specialRequirements.substring(0, 30) + '...' : specialRequirements;
+        
         requestsHTML += `
             <tr class="workforce-request-row">
                 <td>
@@ -28241,9 +28540,28 @@ function displayWorkforceRequests(requests) {
                     </div>
                 </td>
                 <td>
+                    <div class="justification-info">
+                        <div class="justification" title="${justification}">${shortJustification}</div>
+                    </div>
+                </td>
+                <td>
+                    <div class="start-date-info">
+                        <div class="start-date">${startDate}</div>
+                    </div>
+                </td>
+                <td>
+                    <div class="end-date-info">
+                        <div class="end-date">${endDate}</div>
+                    </div>
+                </td>
+                <td>
                     <div class="duration-info">
                         <div class="duration">${request.duration}</div>
-                        <div class="date-range">${new Date(request.startDate).toLocaleDateString()} - ${new Date(request.endDate).toLocaleDateString()}</div>
+                    </div>
+                </td>
+                <td>
+                    <div class="special-requirements-info">
+                        <div class="special-requirements" title="${specialRequirements}">${shortSpecialRequirements}</div>
                     </div>
                 </td>
                 <td>
@@ -28663,13 +28981,17 @@ function recordSiteReports(){
                                 <th>Workers</th>
                                 <th>Weather</th>
                                 <th>Work Completed</th>
-                                <th>Safety Issues</th>
+                                <th>Issues/Challenges</th>
+                                <th>Safety Incidents</th>
+                                <th>Materials Used</th>
+                                <th>Equipment Used</th>
+                                <th>Next Day's Plan</th>
                                 <th>Actions</th>
                             </tr>
                         </thead>
                         <tbody id="siteReportsList">
                             <tr>
-                                <td colspan="9">
+                                <td colspan="13">
                                     <div class="loading">Loading site reports...</div>
                                 </td>
                             </tr>
@@ -28942,7 +29264,7 @@ function displaySiteReports(reports) {
     if (!reports || reports.length === 0) {
         reportsList.innerHTML = `
             <tr>
-                <td colspan="9">
+                <td colspan="13">
                     <div class="no-records">No site reports found</div>
                 </td>
             </tr>
@@ -28966,10 +29288,30 @@ function displaySiteReports(reports) {
         const safetyStatus = report.safetyIncidents === 'None' || !report.safetyIncidents ? '✅ Clear' : '⚠️ Issues';
         const safetyClass = report.safetyIncidents === 'None' || !report.safetyIncidents ? 'status-clear' : 'status-issues';
         
-        // Truncate work completed for display
-        const workCompleted = report.workCompleted.length > 80 ? 
-            report.workCompleted.substring(0, 80) + '...' : 
-            report.workCompleted;
+        // Truncate text fields for display
+        const workCompleted = report.workCompleted && report.workCompleted.length > 60 ? 
+            report.workCompleted.substring(0, 60) + '...' : 
+            (report.workCompleted || 'Not specified');
+        
+        const siteIssues = report.siteIssues && report.siteIssues.length > 40 ? 
+            report.siteIssues.substring(0, 40) + '...' : 
+            (report.siteIssues || 'No issues');
+        
+        const safetyIncidents = report.safetyIncidents && report.safetyIncidents.length > 40 ? 
+            report.safetyIncidents.substring(0, 40) + '...' : 
+            (report.safetyIncidents || 'No incidents');
+        
+        const materialsUsed = report.materialsUsed && report.materialsUsed.length > 35 ? 
+            report.materialsUsed.substring(0, 35) + '...' : 
+            (report.materialsUsed || 'Not specified');
+        
+        const equipmentUsed = report.equipmentUsed && report.equipmentUsed.length > 35 ? 
+            report.equipmentUsed.substring(0, 35) + '...' : 
+            (report.equipmentUsed || 'Not specified');
+        
+        const nextDayPlan = report.nextDayPlan && report.nextDayPlan.length > 50 ? 
+            report.nextDayPlan.substring(0, 50) + '...' : 
+            (report.nextDayPlan || 'Not specified');
         
         reportsHTML += `
             <tr class="site-report-row">
@@ -29004,11 +29346,33 @@ function displaySiteReports(reports) {
                 </td>
                 <td>
                     <div class="work-info">
-                        <div class="work-completed">${workCompleted}</div>
+                        <div class="work-completed" title="${report.workCompleted || 'Not specified'}">${workCompleted}</div>
                     </div>
                 </td>
                 <td>
-                    <span class="safety-badge ${safetyClass}">${safetyStatus}</span>
+                    <div class="issues-info">
+                        <div class="site-issues" title="${report.siteIssues || 'No issues'}">${siteIssues}</div>
+                    </div>
+                </td>
+                <td>
+                    <div class="safety-info">
+                        <div class="safety-incidents" title="${report.safetyIncidents || 'No incidents'}">${safetyIncidents}</div>
+                    </div>
+                </td>
+                <td>
+                    <div class="materials-info">
+                        <div class="materials-used" title="${report.materialsUsed || 'Not specified'}">${materialsUsed}</div>
+                    </div>
+                </td>
+                <td>
+                    <div class="equipment-info">
+                        <div class="equipment-used" title="${report.equipmentUsed || 'Not specified'}">${equipmentUsed}</div>
+                    </div>
+                </td>
+                <td>
+                    <div class="nextday-info">
+                        <div class="next-day-plan" title="${report.nextDayPlan || 'Not specified'}">${nextDayPlan}</div>
+                    </div>
                 </td>
                 <td>
                     <div class="report-actions">
