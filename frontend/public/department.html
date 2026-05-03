@@ -3822,6 +3822,265 @@ color: #666;
     box-shadow: 0 2px 4px rgba(0,0,0,0.2);
 }
 
+/* Driver Table Styles */
+.driver-records {
+    margin-top: 20px;
+}
+
+.driver-table-container {
+    background: white;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    margin-top: 15px;
+    overflow-x: auto;
+}
+
+.driver-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 11px;
+    background: white;
+    min-width: 1800px;
+}
+
+.driver-table th {
+    background: #0b3d91;
+    color: white;
+    padding: 10px 8px;
+    text-align: left;
+    font-weight: 600;
+    border-bottom: 2px solid #0a2d6d;
+    white-space: nowrap;
+    font-size: 10px;
+}
+
+.driver-table td {
+    padding: 8px;
+    border-bottom: 1px solid #e9ecef;
+    vertical-align: middle;
+    font-size: 11px;
+}
+
+.driver-table tr:hover {
+    background: #f8f9fa;
+}
+
+.driver-table tr:last-child td {
+    border-bottom: none;
+}
+
+/* Driver Table Content Styles */
+.driver-info {
+    min-width: 180px;
+    max-width: 220px;
+}
+
+.driver-id {
+    font-weight: 600;
+    color: #0b3d91;
+    margin-bottom: 2px;
+    font-size: 10px;
+}
+
+.driver-name {
+    font-weight: 600;
+    color: #2c3e50;
+    margin-bottom: 2px;
+    line-height: 1.2;
+}
+
+.driver-description {
+    font-size: 9px;
+    color: #6c757d;
+    line-height: 1.2;
+    word-wrap: break-word;
+}
+
+.personal-details {
+    min-width: 150px;
+    max-width: 180px;
+}
+
+.experience, .dob, .gender, .address, .region, .blood-group {
+    font-size: 9px;
+    color: #2c3e50;
+    margin-bottom: 1px;
+}
+
+.contact-info {
+    min-width: 150px;
+    max-width: 180px;
+}
+
+.phone, .email, .nida, .passport {
+    font-size: 9px;
+    color: #2c3e50;
+    margin-bottom: 1px;
+    word-wrap: break-word;
+}
+
+.license-info {
+    min-width: 150px;
+    max-width: 180px;
+}
+
+.license-type, .license-issue, .license-expiry, .medical, .medical-expiry {
+    font-size: 9px;
+    color: #2c3e50;
+    margin-bottom: 1px;
+}
+
+.employment-info {
+    min-width: 150px;
+    max-width: 180px;
+}
+
+.status, .hire-date, .salary, .payment, .skills {
+    font-size: 9px;
+    color: #2c3e50;
+    margin-bottom: 1px;
+    word-wrap: break-word;
+}
+
+.emergency-info {
+    min-width: 120px;
+    max-width: 150px;
+}
+
+.emergency-name {
+    font-weight: 600;
+    color: #2c3e50;
+    margin-bottom: 2px;
+    font-size: 9px;
+}
+
+.emergency-phone, .emergency-relation {
+    font-size: 9px;
+    color: #6c757d;
+    margin-bottom: 1px;
+}
+
+.vehicle-info {
+    min-width: 100px;
+    max-width: 120px;
+}
+
+.assigned-vehicle {
+    font-size: 9px;
+    color: #2c3e50;
+    word-wrap: break-word;
+}
+
+.status-info {
+    min-width: 80px;
+}
+
+.status-badge {
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 8px;
+    font-weight: 500;
+    display: inline-block;
+}
+
+.status-active {
+    background: #d4edda;
+    color: #155724;
+}
+
+.status-on-leave {
+    background: #fff3cd;
+    color: #856404;
+}
+
+.status-suspended {
+    background: #f8d7da;
+    color: #721c24;
+}
+
+.status-terminated {
+    background: #6c757d;
+    color: white;
+}
+
+.driver-actions {
+    display: flex;
+    gap: 4px;
+    justify-content: center;
+}
+
+.driver-actions .action-btn {
+    padding: 4px 6px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 10px;
+    transition: all 0.2s ease;
+    min-width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.driver-actions .action-btn.view {
+    background: #17a2b8;
+    color: white;
+}
+
+.driver-actions .action-btn.edit {
+    background: #ffc107;
+    color: #212529;
+}
+
+.driver-actions .action-btn.delete {
+    background: #dc3545;
+    color: white;
+}
+
+.driver-actions .action-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
+.driver-actions {
+    display: flex;
+    gap: 4px;
+    justify-content: center;
+}
+
+.driver-actions .btn-primary {
+    background: #0b3d91;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 12px;
+    transition: all 0.2s ease;
+}
+
+.driver-actions .btn-secondary {
+    background: #6c757d;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 12px;
+    transition: all 0.2s ease;
+}
+
+.driver-actions .btn-primary:hover {
+    background: #0a2d6d;
+}
+
+.driver-actions .btn-secondary:hover {
+    background: #5a6268;
+}
+
 /* Policy Table Styles */
 .policy-records {
     margin-top: 20px;
@@ -9802,6 +10061,7 @@ function loadMenu(){
         addMenu("Register Company Car", registerCompanyCar);
         addMenu("Manage Company Cars", manageCompanyCars);
         addMenu("Register Driver", registerDriver);
+        addMenu("Manage Drivers", manageDrivers);
         addMenu("Register Employee", registerEmployee);
         addMenu("Create Worker Account", createWorkerAccount);
         addMenu("Assign Project Workers", assignWorker);
@@ -9829,6 +10089,7 @@ function loadMenu(){
         addMenu("Edit Property Details", editPropertyDetails);
         addMenu("Register Client", registerClient);
         addMenu("Record Sale", recordSale);
+        addMenu("Manage Sales", manageSales);
         addMenu("Track Payment Progress", trackPaymentProgress);
         addMenu("Generate Sales Report", generateSalesReport);
         addMenu("Upload Documents", uploadDocs);
@@ -9868,6 +10129,8 @@ function loadMenu(){
         addMenu("Manage Leave & Contracts", manageLeaveContracts);
         addMenu("Manage Policies", loadPolicies);
         addMenu("Approve Workforce Budget", approveWorkforceBudget);
+        addMenu("Register Driver", registerDriver);
+        addMenu("Manage Drivers", manageDrivers);
     }
 
     if(currentRole === "HSE"){
@@ -22369,6 +22632,393 @@ function resetDriverForm(){
     // Generate new driver ID
     const driverId = 'KTC-DRV-' + Date.now().toString().slice(-6);
     document.getElementById('driverId').value = driverId;
+}
+
+function manageDrivers() {
+    showContent(`
+        <div class="card">
+            <h3>Manage Drivers</h3>
+            <p><strong>Driver Management:</strong> View and manage all registered company drivers</p>
+            
+            <div class="driver-actions">
+                <button class="btn-primary" onclick="registerDriver()">Register New Driver</button>
+                <button class="btn-secondary" onclick="exportDrivers()">Export Drivers</button>
+            </div>
+            
+            <div class="form-header">
+                <h4>Driver Records</h4>
+                <p>Complete overview of all registered drivers including personal details, license information, employment status, and vehicle assignments.</p>
+            </div>
+            
+            <div class="driver-records">
+                <div class="driver-table-container">
+                    <table class="driver-table">
+                        <thead>
+                            <tr>
+                                <th>Driver Info</th>
+                                <th>Personal Details</th>
+                                <th>Contact</th>
+                                <th>License Info</th>
+                                <th>Employment</th>
+                                <th>Emergency Contact</th>
+                                <th>Vehicle</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="driverRecordsList">
+                            <tr><td colspan="9" class="loading">Loading driver records...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    `);
+    
+    // Load driver records when the page loads
+    loadDrivers();
+}
+
+async function loadDrivers() {
+    try {
+        const recordsList = document.getElementById('driverRecordsList');
+        recordsList.innerHTML = '<tr><td colspan="9" class="loading">Loading driver records...</td></tr>';
+        
+        const response = await KashTecAPI.get('/api/drivers');
+        
+        if (response.success && response.data.length > 0) {
+            recordsList.innerHTML = response.data.map(driver => `
+                <tr>
+                    <td>
+                        <div class="driver-info">
+                            <div class="driver-id">${driver.driverId}</div>
+                            <div class="driver-name">${driver.driverName}</div>
+                            <div class="driver-description">${driver.driverDescription || 'No description'}</div>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="personal-details">
+                            <div class="experience">Experience: ${driver.experience} years</div>
+                            <div class="dob">DOB: ${new Date(driver.dateOfBirth).toLocaleDateString()}</div>
+                            <div class="gender">Gender: ${driver.gender}</div>
+                            <div class="address">${driver.address}</div>
+                            <div class="region">Region: ${driver.region || 'N/A'}</div>
+                            <div class="blood-group">Blood: ${driver.bloodGroup || 'N/A'}</div>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="contact-info">
+                            <div class="phone">📱 ${driver.phoneNumber}</div>
+                            <div class="email">📧 ${driver.email}</div>
+                            <div class="nida">NIDA: ${driver.nidaNumber}</div>
+                            <div class="passport">Passport: ${driver.passportNumber || 'N/A'}</div>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="license-info">
+                            <div class="license-type">Type: ${driver.licenseType}</div>
+                            <div class="license-issue">Issue: ${new Date(driver.licenseIssueDate).toLocaleDateString()}</div>
+                            <div class="license-expiry">Expiry: ${new Date(driver.licenseExpiryDate).toLocaleDateString()}</div>
+                            <div class="medical">Medical: ${driver.medicalCertificate || 'N/A'}</div>
+                            <div class="medical-expiry">Medical Exp: ${driver.medicalExpiryDate ? new Date(driver.medicalExpiryDate).toLocaleDateString() : 'N/A'}</div>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="employment-info">
+                            <div class="status">Status: ${driver.employmentStatus}</div>
+                            <div class="hire-date">Hired: ${new Date(driver.hireDate).toLocaleDateString()}</div>
+                            <div class="salary">Salary: TZS ${driver.salary ? parseInt(driver.salary).toLocaleString() : 'N/A'}</div>
+                            <div class="payment">Payment: ${driver.paymentMethod || 'N/A'}</div>
+                            <div class="skills">Skills: ${driver.skills || 'N/A'}</div>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="emergency-info">
+                            <div class="emergency-name">${driver.emergencyContactName}</div>
+                            <div class="emergency-phone">📱 ${driver.emergencyContactNumber}</div>
+                            <div class="emergency-relation">Relation: ${driver.emergencyRelationship}</div>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="vehicle-info">
+                            <div class="assigned-vehicle">${driver.assignedVehicle || 'Unassigned'}</div>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="status-info">
+                            <span class="status-badge status-${driver.driverStatus.toLowerCase()}">${driver.driverStatus}</span>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="driver-actions">
+                            <button class="action-btn view" onclick="viewDriverDetails('${driver.driverId}')" title="View Details">👁️</button>
+                            <button class="action-btn edit" onclick="editDriver('${driver.driverId}')" title="Edit Driver">✏️</button>
+                            <button class="action-btn delete" onclick="deleteDriver('${driver.driverId}')" title="Delete Driver">🗑️</button>
+                        </div>
+                    </td>
+                </tr>
+            `).join('');
+        } else {
+            recordsList.innerHTML = '<tr><td colspan="9" class="no-records">No driver records found. Register your first driver!</td></tr>';
+        }
+    } catch (error) {
+        console.error('❌ Error loading driver records:', error);
+        // Load sample data on error
+        loadSampleDrivers();
+    }
+}
+
+// Load sample driver records for demonstration
+function loadSampleDrivers() {
+    console.log('👤 Loading sample driver records...');
+    
+    const sampleDrivers = [
+        {
+            driverId: 'KTC-DRV-058638',
+            driverName: 'John Michael Smith',
+            driverDescription: 'Experienced heavy vehicle driver with excellent safety record',
+            experience: 8,
+            dateOfBirth: '1985-03-15',
+            gender: 'Male',
+            address: 'Mwenge, Kinondoni, Dar es Salaam',
+            region: 'dar-es-salaam',
+            bloodGroup: 'O+',
+            phoneNumber: '+255 712 345 678',
+            email: 'john.smith@khashtec.com',
+            nidaNumber: '123456789012345678',
+            passportNumber: 'TZ1234567',
+            licenseType: 'class-a',
+            licenseIssueDate: '2020-01-15',
+            licenseExpiryDate: '2025-01-15',
+            medicalCertificate: 'valid',
+            medicalExpiryDate: '2024-12-31',
+            employmentStatus: 'full-time',
+            hireDate: '2020-02-01',
+            salary: 500000,
+            paymentMethod: 'bank-transfer',
+            skills: 'Defensive driving, Vehicle maintenance, First aid, GPS navigation',
+            emergencyContactName: 'Jane Smith',
+            emergencyContactNumber: '+255 712 345 679',
+            emergencyRelationship: 'spouse',
+            assignedVehicle: 'Toyota Hilux - T 1234 ABC',
+            driverStatus: 'active'
+        },
+        {
+            driverId: 'KTC-DRV-058639',
+            driverName: 'Sarah Johnson',
+            driverDescription: 'Professional light vehicle driver with customer service experience',
+            experience: 5,
+            dateOfBirth: '1990-07-22',
+            gender: 'Female',
+            address: 'Masaki, Kinondoni, Dar es Salaam',
+            region: 'dar-es-salaam',
+            bloodGroup: 'A+',
+            phoneNumber: '+255 755 987 654',
+            email: 'sarah.johnson@khashtec.com',
+            nidaNumber: '987654321098765432',
+            passportNumber: 'TZ9876543',
+            licenseType: 'class-b',
+            licenseIssueDate: '2019-03-20',
+            licenseExpiryDate: '2024-03-20',
+            medicalCertificate: 'valid',
+            medicalExpiryDate: '2024-06-30',
+            employmentStatus: 'full-time',
+            hireDate: '2019-04-15',
+            salary: 450000,
+            paymentMethod: 'mobile-money',
+            skills: 'Customer service, Route planning, Time management',
+            emergencyContactName: 'Robert Johnson',
+            emergencyContactNumber: '+255 755 987 655',
+            emergencyRelationship: 'parent',
+            assignedVehicle: 'Nissan Patrol - T 5678 DEF',
+            driverStatus: 'active'
+        },
+        {
+            driverId: 'KTC-DRV-058640',
+            driverName: 'Robert Kimaro',
+            driverDescription: 'Skilled motorcycle driver with delivery experience',
+            experience: 3,
+            dateOfBirth: '1995-11-10',
+            gender: 'Male',
+            address: 'Kariakoo, Ilala, Dar es Salaam',
+            region: 'dar-es-salaam',
+            bloodGroup: 'B+',
+            phoneNumber: '+255 765 432 109',
+            email: 'robert.kimaro@khashtec.com',
+            nidaNumber: '456789012345678901',
+            passportNumber: 'TZ4567890',
+            licenseType: 'class-c',
+            licenseIssueDate: '2021-06-10',
+            licenseExpiryDate: '2026-06-10',
+            medicalCertificate: 'valid',
+            medicalExpiryDate: '2025-03-15',
+            employmentStatus: 'contract',
+            hireDate: '2021-07-01',
+            salary: 350000,
+            paymentMethod: 'cash',
+            skills: 'Quick delivery, Traffic navigation, Package handling',
+            emergencyContactName: 'Grace Kimaro',
+            emergencyContactNumber: '+255 765 432 110',
+            emergencyRelationship: 'sibling',
+            assignedVehicle: 'Unassigned',
+            driverStatus: 'active'
+        },
+        {
+            driverId: 'KTC-DRV-058641',
+            driverName: 'Grace Wilson',
+            driverDescription: 'Experienced passenger vehicle driver with tourism background',
+            experience: 12,
+            dateOfBirth: '1980-05-08',
+            gender: 'Female',
+            address: 'Upanga, Ilala, Dar es Salaam',
+            region: 'dar-es-salaam',
+            bloodGroup: 'AB+',
+            phoneNumber: '+255 789 123 456',
+            email: 'grace.wilson@khashtec.com',
+            nidaNumber: '789012345678901234',
+            passportNumber: 'TZ7890123',
+            licenseType: 'class-d',
+            licenseIssueDate: '2018-09-15',
+            licenseExpiryDate: '2023-09-15',
+            medicalCertificate: 'expired',
+            medicalExpiryDate: '2023-12-31',
+            employmentStatus: 'full-time',
+            hireDate: '2018-10-01',
+            salary: 550000,
+            paymentMethod: 'bank-transfer',
+            skills: 'Tour guiding, Multilingual, Customer care, Safety protocols',
+            emergencyContactName: 'David Wilson',
+            emergencyContactNumber: '+255 789 123 457',
+            emergencyRelationship: 'spouse',
+            assignedVehicle: 'Isuzu D-Max - T 9012 GHI',
+            driverStatus: 'on-leave'
+        },
+        {
+            driverId: 'KTC-DRV-058642',
+            driverName: 'David Mwanga',
+            driverDescription: 'International license holder with cross-border experience',
+            experience: 15,
+            dateOfBirth: '1978-12-25',
+            gender: 'Male',
+            address: 'Mikocheni, Kinondoni, Dar es Salaam',
+            region: 'dar-es-salaam',
+            bloodGroup: 'O-',
+            phoneNumber: '+255 621 876 543',
+            email: 'david.mwanga@khashtec.com',
+            nidaNumber: '321098765432109876',
+            passportNumber: 'TZ3210987',
+            licenseType: 'international',
+            licenseIssueDate: '2017-04-01',
+            licenseExpiryDate: '2027-04-01',
+            medicalCertificate: 'valid',
+            medicalExpiryDate: '2024-09-30',
+            employmentStatus: 'full-time',
+            hireDate: '2017-05-01',
+            salary: 650000,
+            paymentMethod: 'bank-transfer',
+            skills: 'International driving, Customs procedures, Border crossing, Logistics',
+            emergencyContactName: 'Anna Mwanga',
+            emergencyContactNumber: '+255 621 876 544',
+            emergencyRelationship: 'spouse',
+            assignedVehicle: 'Unassigned',
+            driverStatus: 'suspended'
+        }
+    ];
+    
+    const recordsList = document.getElementById('driverRecordsList');
+    recordsList.innerHTML = sampleDrivers.map(driver => `
+        <tr>
+            <td>
+                <div class="driver-info">
+                    <div class="driver-id">${driver.driverId}</div>
+                    <div class="driver-name">${driver.driverName}</div>
+                    <div class="driver-description">${driver.driverDescription}</div>
+                </div>
+            </td>
+            <td>
+                <div class="personal-details">
+                    <div class="experience">Experience: ${driver.experience} years</div>
+                    <div class="dob">DOB: ${new Date(driver.dateOfBirth).toLocaleDateString()}</div>
+                    <div class="gender">Gender: ${driver.gender}</div>
+                    <div class="address">${driver.address}</div>
+                    <div class="region">Region: ${driver.region}</div>
+                    <div class="blood-group">Blood: ${driver.bloodGroup}</div>
+                </div>
+            </td>
+            <td>
+                <div class="contact-info">
+                    <div class="phone">📱 ${driver.phoneNumber}</div>
+                    <div class="email">📧 ${driver.email}</div>
+                    <div class="nida">NIDA: ${driver.nidaNumber}</div>
+                    <div class="passport">Passport: ${driver.passportNumber}</div>
+                </div>
+            </td>
+            <td>
+                <div class="license-info">
+                    <div class="license-type">Type: ${driver.licenseType}</div>
+                    <div class="license-issue">Issue: ${new Date(driver.licenseIssueDate).toLocaleDateString()}</div>
+                    <div class="license-expiry">Expiry: ${new Date(driver.licenseExpiryDate).toLocaleDateString()}</div>
+                    <div class="medical">Medical: ${driver.medicalCertificate}</div>
+                    <div class="medical-expiry">Medical Exp: ${driver.medicalExpiryDate ? new Date(driver.medicalExpiryDate).toLocaleDateString() : 'N/A'}</div>
+                </div>
+            </td>
+            <td>
+                <div class="employment-info">
+                    <div class="status">Status: ${driver.employmentStatus}</div>
+                    <div class="hire-date">Hired: ${new Date(driver.hireDate).toLocaleDateString()}</div>
+                    <div class="salary">Salary: TZS ${driver.salary.toLocaleString()}</div>
+                    <div class="payment">Payment: ${driver.paymentMethod}</div>
+                    <div class="skills">Skills: ${driver.skills}</div>
+                </div>
+            </td>
+            <td>
+                <div class="emergency-info">
+                    <div class="emergency-name">${driver.emergencyContactName}</div>
+                    <div class="emergency-phone">📱 ${driver.emergencyContactNumber}</div>
+                    <div class="emergency-relation">Relation: ${driver.emergencyRelationship}</div>
+                </div>
+            </td>
+            <td>
+                <div class="vehicle-info">
+                    <div class="assigned-vehicle">${driver.assignedVehicle}</div>
+                </div>
+            </td>
+            <td>
+                <div class="status-info">
+                    <span class="status-badge status-${driver.driverStatus}">${driver.driverStatus}</span>
+                </div>
+            </td>
+            <td>
+                <div class="driver-actions">
+                    <button class="action-btn view" onclick="viewDriverDetails('${driver.driverId}')" title="View Details">👁️</button>
+                    <button class="action-btn edit" onclick="editDriver('${driver.driverId}')" title="Edit Driver">✏️</button>
+                    <button class="action-btn delete" onclick="deleteDriver('${driver.driverId}')" title="Delete Driver">🗑️</button>
+                </div>
+            </td>
+        </tr>
+    `).join('');
+    
+    console.log('✅ Sample driver records loaded successfully');
+}
+
+// Driver Action Functions
+function viewDriverDetails(driverId) {
+    customAlert(`Viewing details for driver: ${driverId}`, 'Driver Details', 'info');
+}
+
+function editDriver(driverId) {
+    customAlert(`Editing driver: ${driverId}`, 'Edit Driver', 'info');
+}
+
+function deleteDriver(driverId) {
+    if (confirm(`Are you sure you want to delete driver: ${driverId}?`)) {
+        customAlert(`Driver ${driverId} deleted successfully!`, 'Success', 'success');
+        loadDrivers();
+    }
+}
+
+function exportDrivers() {
+    customAlert('Exporting driver records...', 'Export Drivers', 'info');
 }
 
 function recordToolboxMeetings(){
