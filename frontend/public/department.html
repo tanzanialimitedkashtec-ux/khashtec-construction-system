@@ -37508,84 +37508,66 @@ function updateRecipients() {
     }
 }
 
-function sendNotification() {
-    const recipientType = document.getElementById('recipientType').value;
-    const recipient = document.getElementById('recipientSelect').value;
-    const title = document.getElementById('notifTitle').value;
-    const message = document.getElementById('notifMessage').value;
-    const priority = document.getElementById('notifPriority').value;
-    const scheduleType = document.getElementById('scheduleType').value;
-    
-    if (!recipientType || !title || !message) {
-        alert('Please fill all required fields');
-        return;
-    }
-    
-    if ((recipientType === 'department' || recipientType === 'role' || recipientType === 'individual') && !recipient) {
-        alert('Please select a recipient');
-        return;
-    }
-    
-    const notification = {
-        id: 'NOTIF-' + Date.now(),
-        recipientType: recipientType,
-        recipient: recipient,
-        title: title,
-        message: message,
-        priority: priority,
-        scheduleType: scheduleType,
-        sentBy: 'Admin Assistant',
-        sentDate: new Date().toISOString(),
-        status: scheduleType === 'immediate' ? 'sent' : 'scheduled'
-    };
-    
-    // Save to API
-    console.log('Notification data to be saved to API:', notification);
-    
-    // Prepare data for API
-    const apiData = {
-        title: notification.title,
-        message: notification.message,
-        type: notification.priority === 'urgent' ? 'error' : notification.priority === 'important' ? 'warning' : 'info',
-        category: 'internal'
-    };
-    
-    // Choose API endpoint based on recipient type
-    let apiUrl = `${window.location.origin}/api/notifications`;
-    
-    if (notification.recipientType !== 'individual') {
-        // Use broadcast for department, role, and all staff notifications
-        apiUrl = `${window.location.origin}/api/notifications/broadcast`;
-    } else {
-        // For individual notifications, add userId (using recipient as userId for now)
-        apiData.userId = notification.recipient;
-    }
-    
-    // Send to API
-    fetch(apiUrl, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-            'Authorization': `Bearer ${sessionManager.getAuthToken()}`
-        },
-        body: JSON.stringify(apiData)
-    })
-    .then(response => {
-        console.log('📡 Notification API Response status:', response.status);
-        return response.json();
-    })
-    .then(data => {
-        console.log('📊 Notification API Response data:', data);
+async function sendNotification() {
+    try {
+        const recipientType = document.getElementById('recipientType').value;
+        const recipient = document.getElementById('recipientSelect').value;
+        const title = document.getElementById('notifTitle').value;
+        const message = document.getElementById('notifMessage').value;
+        const priority = document.getElementById('notifPriority').value;
+        const scheduleType = document.getElementById('scheduleType').value;
+        const scheduleDateTime = document.getElementById('scheduleDateTime').value;
         
-        if (data.error) {
-            throw new Error(data.error);
+        // Validate required fields
+        if (!recipientType || !title || !message) {
+            customAlert('Please fill all required fields', 'Validation Error', 'error');
+            return;
         }
         
-        const recipientText = notification.recipientType === 'all' ? 'All Staff' : notification.recipient;
-        const statusText = notification.scheduleType === 'immediate' ? 'sent immediately' : 'scheduled for later';
+        if ((recipientType === 'department' || recipientType === 'role' || recipientType === 'individual') && !recipient) {
+            customAlert('Please select a recipient', 'Validation Error', 'error');
+            return;
+        }
         
-        alert('Notification ' + statusText + '!\n\nTitle: ' + notification.title + '\nTo: ' + recipientText + '\nPriority: ' + notification.priority);
+        // Prepare data for API
+        const apiData = {
+            title: title,
+            recipientType: recipientType,
+            recipients: recipientType === 'all' ? 'All Staff' : recipient,
+            message: message,
+            priority: priority,
+            scheduleType: scheduleType,
+            sentBy: 'Admin Assistant'
+        };
+        
+        // Add schedule date/time if scheduled
+        if (scheduleType === 'scheduled' && scheduleDateTime) {
+            apiData.scheduleDateTime = scheduleDateTime;
+        }
+        
+        console.log('📝 Sending notification to API:', apiData);
+        
+        const baseUrl = window.location.origin;
+        const response = await fetch(`${baseUrl}/api/work/notifications`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${sessionManager.getAuthToken()}`
+            },
+            body: JSON.stringify(apiData)
+        });
+        
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+        
+        const result = await response.json();
+        console.log('✅ Notification sent successfully:', result);
+        
+        const recipientText = apiData.recipients;
+        const statusText = scheduleType === 'immediate' ? 'sent immediately' : 'scheduled for later';
+        
+        customAlert(`Notification ${statusText}!\n\nTitle: ${title}\nTo: ${recipientText}\nPriority: ${priority}\nNotification ID: ${result.notificationId}`, "Notification Sent", "success");
         
         // Clear form
         document.getElementById('recipientType').value = '';
@@ -37594,16 +37576,17 @@ function sendNotification() {
         document.getElementById('notifMessage').value = '';
         document.getElementById('notifPriority').value = 'normal';
         document.getElementById('scheduleType').value = 'immediate';
+        document.getElementById('scheduleDateTime').value = '';
         document.getElementById('recipientGroup').style.display = 'none';
         document.getElementById('scheduleGroup').style.display = 'none';
-    })
-    .catch(error => {
+        
+        // Refresh notifications list
+        loadNotifications();
+        
+    } catch (error) {
         console.error('❌ Error sending notification:', error);
-        alert('Failed to send notification: ' + error.message);
-    });
-    
-    // Refresh notifications list
-    loadNotifications();
+        customAlert('Failed to send notification: ' + error.message, 'Send Error', 'error');
+    }
 }
 
 // Load notifications from database for table display
@@ -37616,7 +37599,7 @@ async function loadNotifications() {
         
         // Try to get notifications from API
         try {
-            response = await fetch(`${baseUrl}/api/notifications`, {
+            response = await fetch(`${baseUrl}/api/work/notifications`, {
                 method: 'GET',
                 headers: {
                     'Content-Type': 'application/json',
@@ -37631,7 +37614,7 @@ async function loadNotifications() {
             console.warn('⚠️ Primary notifications endpoint failed, trying fallback:', primaryError.message);
             // Try fallback endpoint
             try {
-                response = await fetch(`${baseUrl}/api/communications/notifications`, {
+                response = await fetch(`${baseUrl}/api/notifications`, {
                     method: 'GET',
                     headers: {
                         'Content-Type': 'application/json',

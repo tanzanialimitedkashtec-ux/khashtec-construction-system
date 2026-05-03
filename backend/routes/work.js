@@ -2364,5 +2364,341 @@ router.put('/workforce-requests/:id/status', async (req, res) => {
     }
 });
 
+// Notifications Routes
+// Get all notifications
+router.get('/notifications', async (req, res) => {
+    try {
+        console.log('📋 Fetching notifications...');
+        
+        let notifications = [];
+        
+        try {
+            const [dbNotifications] = await db.execute(`
+                SELECT * FROM notifications 
+                ORDER BY created_at DESC
+            `);
+            notifications = dbNotifications;
+            console.log(`📊 Found ${notifications.length} notifications from database`);
+            
+            // If fewer than 5 records, add sample data for demonstration
+            if (notifications.length < 5) {
+                console.log(`⚠️ Only ${notifications.length} notifications found, adding sample data`);
+                const sampleNotifications = [
+                    {
+                        id: 'NOTIF-001',
+                        title: 'Monthly Safety Meeting Reminder',
+                        recipient_type: 'all',
+                        recipients: 'All Staff',
+                        message: 'Monthly safety meeting scheduled for tomorrow at 10 AM in the main conference room.',
+                        priority: 'important',
+                        status: 'sent',
+                        sent_date: '2026-01-20',
+                        sent_by: 'Admin Assistant',
+                        read_rate: 95,
+                        created_at: new Date().toISOString(),
+                        mock: true
+                    },
+                    {
+                        id: 'NOTIF-002',
+                        title: 'Project Deadline Update - Kigali Tower',
+                        recipient_type: 'department',
+                        recipients: 'Projects Department',
+                        message: 'Project deadline extended by 2 weeks due to weather conditions. New completion date: February 15, 2026.',
+                        priority: 'urgent',
+                        status: 'sent',
+                        sent_date: '2026-01-19',
+                        sent_by: 'Project Manager',
+                        read_rate: 100,
+                        created_at: new Date().toISOString(),
+                        mock: true
+                    },
+                    {
+                        id: 'NOTIF-003',
+                        title: 'HR Policy Changes - Remote Work',
+                        recipient_type: 'department',
+                        recipients: 'Human Resources',
+                        message: 'New remote work policy guidelines have been updated. Please review the attached document.',
+                        priority: 'important',
+                        status: 'sent',
+                        sent_date: '2026-01-18',
+                        sent_by: 'HR Manager',
+                        read_rate: 88,
+                        created_at: new Date().toISOString(),
+                        mock: true
+                    },
+                    {
+                        id: 'NOTIF-004',
+                        title: 'Financial Report Submission Reminder',
+                        recipient_type: 'role',
+                        recipients: 'Finance Managers',
+                        message: 'Quarterly financial reports are due by end of this week. Please ensure all submissions are complete.',
+                        priority: 'normal',
+                        status: 'sent',
+                        sent_date: '2026-01-17',
+                        sent_by: 'Finance Director',
+                        read_rate: 75,
+                        created_at: new Date().toISOString(),
+                        mock: true
+                    },
+                    {
+                        id: 'NOTIF-005',
+                        title: 'Office Maintenance Schedule',
+                        recipient_type: 'all',
+                        recipients: 'All Staff',
+                        message: 'Office maintenance scheduled for this weekend. Please remove personal items from workspaces.',
+                        priority: 'normal',
+                        status: 'sent',
+                        sent_date: '2026-01-16',
+                        sent_by: 'Admin Assistant',
+                        read_rate: 82,
+                        created_at: new Date().toISOString(),
+                        mock: true
+                    }
+                ];
+                
+                // Add sample data that doesn't conflict with real IDs
+                const additionalSampleData = sampleNotifications.filter(sample => 
+                    !notifications.some(real => real.id === sample.id)
+                );
+                notifications = [...notifications, ...additionalSampleData];
+                console.log(`📊 Total notifications after adding sample data: ${notifications.length}`);
+            }
+        } catch (dbError) {
+            console.error('❌ Database error, notifications table may not exist:', dbError);
+            
+            // Create table if it doesn't exist
+            try {
+                await db.execute(`
+                    CREATE TABLE IF NOT EXISTS notifications (
+                        id VARCHAR(50) PRIMARY KEY,
+                        title VARCHAR(255) NOT NULL,
+                        recipient_type ENUM('department', 'role', 'all', 'individual') NOT NULL,
+                        recipients VARCHAR(255) NOT NULL,
+                        message TEXT NOT NULL,
+                        priority ENUM('normal', 'important', 'urgent') DEFAULT 'normal',
+                        status ENUM('draft', 'scheduled', 'sent', 'failed') DEFAULT 'draft',
+                        sent_date DATE,
+                        scheduled_date DATETIME,
+                        sent_by VARCHAR(255),
+                        read_rate INT DEFAULT 0,
+                        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+                    )
+                `);
+                console.log('✅ notifications table created successfully');
+                
+                // Return empty array since table is new
+                notifications = [];
+            } catch (createError) {
+                console.error('❌ Failed to create notifications table:', createError);
+                return res.status(500).json({
+                    error: 'Failed to create notifications table',
+                    details: createError.message
+                });
+            }
+        }
+        
+        console.log(`📋 Returning ${notifications.length} notifications`);
+        res.json(notifications);
+        
+    } catch (error) {
+        console.error('❌ Error fetching notifications:', error);
+        res.status(500).json({
+            error: 'Failed to fetch notifications',
+            details: error.message
+        });
+    }
+});
+
+// Create new notification
+router.post('/notifications', async (req, res) => {
+    try {
+        console.log('📝 Creating new notification...');
+        console.log('📊 Request body:', req.body);
+        
+        const {
+            title,
+            recipientType,
+            recipients,
+            message,
+            priority = 'normal',
+            scheduleType = 'immediate',
+            scheduleDateTime,
+            sentBy = 'Admin Assistant'
+        } = req.body;
+        
+        // Validate required fields
+        if (!title || !recipientType || !recipients || !message) {
+            return res.status(400).json({
+                error: 'Missing required fields',
+                required: ['title', 'recipientType', 'recipients', 'message']
+            });
+        }
+        
+        // Generate unique notification ID
+        const notificationId = `NOTIF-${Date.now().toString().slice(-6)}`;
+        
+        // Ensure table exists
+        try {
+            await db.execute(`
+                CREATE TABLE IF NOT EXISTS notifications (
+                    id VARCHAR(50) PRIMARY KEY,
+                    title VARCHAR(255) NOT NULL,
+                    recipient_type ENUM('department', 'role', 'all', 'individual') NOT NULL,
+                    recipients VARCHAR(255) NOT NULL,
+                    message TEXT NOT NULL,
+                    priority ENUM('normal', 'important', 'urgent') DEFAULT 'normal',
+                    status ENUM('draft', 'scheduled', 'sent', 'failed') DEFAULT 'draft',
+                    sent_date DATE,
+                    scheduled_date DATETIME,
+                    sent_by VARCHAR(255),
+                    read_rate INT DEFAULT 0,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+                )
+            `);
+        } catch (tableError) {
+            console.error('⚠️ Table creation error:', tableError.message);
+        }
+        
+        // Determine status and dates
+        let status = 'draft';
+        let sentDate = null;
+        let scheduledDate = null;
+        
+        if (scheduleType === 'immediate') {
+            status = 'sent';
+            sentDate = new Date().toISOString().split('T')[0];
+        } else if (scheduleType === 'scheduled' && scheduleDateTime) {
+            status = 'scheduled';
+            scheduledDate = scheduleDateTime;
+        }
+        
+        // Insert notification
+        const [result] = await db.execute(`
+            INSERT INTO notifications (
+                id, title, recipient_type, recipients, message, priority, status,
+                sent_date, scheduled_date, sent_by, read_rate
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        `, [
+            notificationId,
+            title,
+            recipientType,
+            recipients,
+            message,
+            priority,
+            status,
+            sentDate,
+            scheduledDate,
+            sentBy,
+            status === 'sent' ? 0 : 0 // Read rate starts at 0
+        ]);
+        
+        console.log('✅ Notification created successfully:', notificationId);
+        
+        res.status(201).json({
+            message: 'Notification created successfully',
+            notificationId: notificationId,
+            data: {
+                title,
+                recipientType,
+                recipients,
+                message,
+                priority,
+                status,
+                sentDate,
+                scheduledDate
+            }
+        });
+        
+    } catch (error) {
+        console.error('❌ Error creating notification:', error);
+        res.status(500).json({
+            error: 'Failed to create notification',
+            details: error.message
+        });
+    }
+});
+
+// Update notification status
+router.put('/notifications/:id/status', async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { status, readRate } = req.body;
+        
+        if (!['draft', 'scheduled', 'sent', 'failed'].includes(status)) {
+            return res.status(400).json({
+                error: 'Invalid status',
+                validStatuses: ['draft', 'scheduled', 'sent', 'failed']
+            });
+        }
+        
+        let updateQuery = 'UPDATE notifications SET status = ?, updated_at = CURRENT_TIMESTAMP';
+        let params = [status, id];
+        
+        if (readRate !== undefined) {
+            updateQuery += ', read_rate = ?';
+            params = [status, readRate, id];
+        }
+        
+        updateQuery += ' WHERE id = ?';
+        
+        const [result] = await db.execute(updateQuery, params);
+        
+        if (result.affectedRows === 0) {
+            return res.status(404).json({
+                error: 'Notification not found'
+            });
+        }
+        
+        console.log(`✅ Notification ${id} status updated to ${status}`);
+        
+        res.json({
+            message: 'Notification status updated successfully',
+            id: id,
+            status: status,
+            readRate: readRate
+        });
+        
+    } catch (error) {
+        console.error('❌ Error updating notification status:', error);
+        res.status(500).json({
+            error: 'Failed to update notification status',
+            details: error.message
+        });
+    }
+});
+
+// Delete notification
+router.delete('/notifications/:id', async (req, res) => {
+    try {
+        const { id } = req.params;
+        
+        const [result] = await db.execute(`
+            DELETE FROM notifications WHERE id = ?
+        `, [id]);
+        
+        if (result.affectedRows === 0) {
+            return res.status(404).json({
+                error: 'Notification not found'
+            });
+        }
+        
+        console.log(`✅ Notification ${id} deleted successfully`);
+        
+        res.json({
+            message: 'Notification deleted successfully',
+            id: id
+        });
+        
+    } catch (error) {
+        console.error('❌ Error deleting notification:', error);
+        res.status(500).json({
+            error: 'Failed to delete notification',
+            details: error.message
+        });
+    }
+});
+
 
 module.exports = router;
