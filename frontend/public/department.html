@@ -3801,6 +3801,60 @@ color: #666;
     font-family: monospace;
 }
 
+.description-info {
+    min-width: 120px;
+    max-width: 150px;
+}
+
+.property-description {
+    font-size: 10px;
+    color: #333;
+    line-height: 1.3;
+    word-wrap: break-word;
+}
+
+.utilities-info {
+    min-width: 80px;
+}
+
+.utilities-display {
+    font-size: 12px;
+    line-height: 1.2;
+}
+
+.zoning-info {
+    min-width: 80px;
+}
+
+.zoning-badge {
+    display: inline-block;
+    padding: 3px 8px;
+    border-radius: 12px;
+    font-size: 9px;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.zoning-badge.zoning-residential {
+    background: #e8f5e8;
+    color: #2d5a2d;
+}
+
+.zoning-badge.zoning-commercial {
+    background: #e8f0ff;
+    color: #1a4d8a;
+}
+
+.zoning-badge.zoning-industrial {
+    background: #fff3e0;
+    color: #8b4513;
+}
+
+.zoning-badge.zoning-mixed {
+    background: #f3e8ff;
+    color: #6a1b9a;
+}
+
 .property-actions {
     display: flex;
     gap: 4px;
@@ -5873,6 +5927,18 @@ color: #666;
     color: #333;
     font-size: 11px;
     line-height: 1.2;
+}
+
+.description-info {
+    min-width: 150px;
+    max-width: 180px;
+}
+
+.document-description {
+    font-size: 10px;
+    color: #333;
+    line-height: 1.3;
+    word-wrap: break-word;
 }
 
 .date-info {
@@ -30345,12 +30411,15 @@ function addProperty(){
                                 <th>Price (TZS)</th>
                                 <th>Status</th>
                                 <th>TP Number</th>
+                                 <th>Description</th>
+                                <th>Utilities</th>
+                                <th>Zoning</th>
                                 <th>Actions</th>
                             </tr>
                         </thead>
                         <tbody id="propertiesRecordsList">
                             <tr>
-                                <td colspan="8">
+                                <td colspan="11">
                                     <div class="loading">Loading properties records...</div>
                                 </td>
                             </tr>
@@ -30611,7 +30680,7 @@ function displayPropertiesRecords(records) {
     if (!records || records.length === 0) {
         recordsList.innerHTML = `
             <tr>
-                <td colspan="8">
+                <td colspan="11">
                     <div class="no-records">No properties records found</div>
                 </td>
             </tr>
@@ -30641,6 +30710,27 @@ function displayPropertiesRecords(records) {
                            record.status === 'Reserved' ? '⏳ Reserved' : 
                            record.status === 'Sold' ? '🔒 Sold' : 
                            record.status === 'Under Offer' ? '🤝 Under Offer' : '❓ Unknown';
+        
+        // Truncate description for display
+        const description = record.description && record.description.length > 50 ? 
+            record.description.substring(0, 50) + '...' : 
+            (record.description || 'No description');
+        
+        // Format utilities display
+        const utilitiesDisplay = record.utilities && record.utilities.length > 0 ? 
+            record.utilities.map(utility => {
+                const utilityNames = {
+                    'water': '💧',
+                    'electricity': '⚡',
+                    'road': '🛣️',
+                    'sewage': '🚰'
+                };
+                return utilityNames[utility] || utility;
+            }).join(' ') : '❌ None';
+        
+        // Format zoning display
+        const zoningDisplay = record.zoning ? 
+            record.zoning.charAt(0).toUpperCase() + record.zoning.slice(1) : 'Not specified';
         
         recordsHTML += `
             <tr class="property-row">
@@ -30676,6 +30766,21 @@ function displayPropertiesRecords(records) {
                 <td>
                     <div class="tp-info">
                         <div class="tp-number">${record.tpNumber}</div>
+                    </div>
+                </td>
+                <td>
+                    <div class="description-info">
+                        <div class="property-description" title="${record.description || 'No description'}">${description}</div>
+                    </div>
+                </td>
+                <td>
+                    <div class="utilities-info">
+                        <div class="utilities-display">${utilitiesDisplay}</div>
+                    </div>
+                </td>
+                <td>
+                    <div class="zoning-info">
+                        <div class="zoning-badge zoning-${record.zoning}">${zoningDisplay}</div>
                     </div>
                 </td>
                 <td>
@@ -32852,6 +32957,7 @@ function uploadDocs(){
                                 <th>Title</th>
                                 <th>Type</th>
                                 <th>Department</th>
+                                <th>Description</th>
                                 <th>Uploaded Date</th>
                                 <th>File Size</th>
                                 <th>Priority</th>
@@ -32862,7 +32968,7 @@ function uploadDocs(){
                         </thead>
                         <tbody id="documentsList">
                             <tr>
-                                <td colspan="10">
+                                <td colspan="11">
                                     <div class="loading">Loading documents...</div>
                                 </td>
                             </tr>
@@ -33138,7 +33244,7 @@ function displayDocuments(documents) {
     if (!documents || documents.length === 0) {
         documentsList.innerHTML = `
             <tr>
-                <td colspan="10">
+                <td colspan="11">
                     <div class="no-records">No documents found</div>
                 </td>
             </tr>
@@ -33178,6 +33284,11 @@ function displayDocuments(documents) {
         // Format file size
         const fileSize = formatFileSize(doc.fileSize);
         
+        // Truncate description for display
+        const description = doc.description && doc.description.length > 60 ? 
+            doc.description.substring(0, 60) + '...' : 
+            (doc.description || 'No description');
+        
         documentsHTML += `
             <tr class="document-row">
                 <td>
@@ -33187,7 +33298,7 @@ function displayDocuments(documents) {
                 </td>
                 <td>
                     <div class="title-info">
-                        <div class="document-title">${doc.title}</div>
+                        <div class="document-title" title="${doc.title}">${doc.title}</div>
                     </div>
                 </td>
                 <td>
@@ -33198,6 +33309,11 @@ function displayDocuments(documents) {
                 <td>
                     <div class="department-info">
                         <div class="department-name">${departmentDisplay}</div>
+                    </div>
+                </td>
+                <td>
+                    <div class="description-info">
+                        <div class="document-description" title="${doc.description || 'No description'}">${description}</div>
                     </div>
                 </td>
                 <td>
