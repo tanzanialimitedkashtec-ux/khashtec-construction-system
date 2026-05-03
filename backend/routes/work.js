@@ -92,11 +92,39 @@ router.get('/:department', async (req, res) => {
             );
             workItems = dbWorkItems;
             console.log(`📊 Found ${workItems.length} ${department} work items from database`);
+            
+            // For HSE department, supplement with mock data if fewer than 3 records
+            if (department === 'hse' && workItems.length < 3) {
+                console.log(`⚠️ Only ${workItems.length} HSE records found, adding mock data for demonstration`);
+                const mockData = getMockWorkItems('hse');
+                // Add mock data that doesn't conflict with real IDs
+                const additionalMockData = mockData.filter(mock => 
+                    !workItems.some(real => real.id === mock.id)
+                ).slice(0, 5 - workItems.length);
+                workItems = [...workItems, ...additionalMockData];
+                console.log(`📊 Total HSE items after adding mock data: ${workItems.length}`);
+            }
         } catch (dbError) {
             console.error('❌ Database error, using fallback work items:', dbError);
             
             // Fallback to mock work items based on department
-            const mockWorkItems = {
+            workItems = getMockWorkItems(department);
+        }
+        
+        console.log(`📋 Returning ${workItems.length} ${department} work items`);
+        res.json(workItems);
+    } catch (error) {
+        console.error(`❌ Error fetching ${department} work items:`, error);
+        res.status(500).json({
+            error: 'Failed to fetch work items',
+            details: error.message
+        });
+    }
+});
+
+// Helper function to get mock work items
+function getMockWorkItems(department) {
+    const mockWorkItems = {
                 hr: [
                     {
                         id: 1,
@@ -155,6 +183,66 @@ router.get('/:department', async (req, res) => {
                         submitted_by: 'HSE Manager',
                         submitted_date: '2024-01-15',
                         mock: true
+                    },
+                    {
+                        id: 2,
+                        department_code: 'HSE',
+                        work_type: 'Safety Violation',
+                        work_title: 'PPE Compliance Check',
+                        work_description: 'Regular PPE compliance inspection',
+                        incident_type: 'Safety Violation',
+                        severity: 'Low',
+                        location: 'Site B',
+                        status: 'Completed',
+                        priority: 'Medium',
+                        submitted_by: 'Safety Officer',
+                        submitted_date: '2024-01-14',
+                        mock: true
+                    },
+                    {
+                        id: 3,
+                        department_code: 'HSE',
+                        work_type: 'Toolbox Meeting',
+                        work_title: 'Weekly Safety Toolbox Talk',
+                        work_description: 'Conduct weekly safety meeting with crew',
+                        incident_type: null,
+                        severity: 'Low',
+                        location: 'Main Office',
+                        status: 'Scheduled',
+                        priority: 'Medium',
+                        submitted_by: 'Site Supervisor',
+                        submitted_date: '2024-01-13',
+                        mock: true
+                    },
+                    {
+                        id: 4,
+                        department_code: 'HSE',
+                        work_type: 'Safety Policy Upload',
+                        work_title: 'Updated Safety Manual',
+                        work_description: 'Upload revised safety procedures manual',
+                        incident_type: null,
+                        severity: 'Low',
+                        location: 'All Sites',
+                        status: 'Pending',
+                        priority: 'High',
+                        submitted_by: 'HSE Manager',
+                        submitted_date: '2024-01-12',
+                        mock: true
+                    },
+                    {
+                        id: 5,
+                        department_code: 'HSE',
+                        work_type: 'Incident Reporting',
+                        work_title: 'Equipment Failure Report',
+                        work_description: 'Report and investigate equipment malfunction',
+                        incident_type: 'Equipment Failure',
+                        severity: 'High',
+                        location: 'Site C',
+                        status: 'Pending',
+                        priority: 'High',
+                        submitted_by: 'Maintenance Supervisor',
+                        submitted_date: '2024-01-11',
+                        mock: true
                     }
                 ],
                 projects: [
@@ -205,20 +293,8 @@ router.get('/:department', async (req, res) => {
                 ]
             };
             
-            workItems = mockWorkItems[department] || [];
-            console.log(`📊 Using fallback ${department} work items: ${workItems.length}`);
-        }
-        
-        res.json(workItems);
-    } catch (error) {
-        console.error(`Error fetching work items:`, error);
-        res.status(500).json({ 
-            success: false,
-            error: `Failed to fetch work items`,
-            details: error.message 
-        });
-    }
-});
+            return mockWorkItems[department] || [];
+}
 
 // Worker Assignments Routes
 // Create new worker assignment (moved here to prevent conflicts with general POST route)
