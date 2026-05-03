@@ -2868,6 +2868,27 @@ color: #666;
     box-shadow: 0 2px 4px rgba(0,0,0,0.2);
 }
 
+.budget-item {
+    font-size: 10px;
+    font-weight: 600;
+    color: #0b3d91;
+    white-space: nowrap;
+    text-align: right;
+}
+
+.justification-info {
+    min-width: 150px;
+    max-width: 200px;
+}
+
+.budget-justification {
+    font-size: 9px;
+    color: #666;
+    line-height: 1.3;
+    word-wrap: break-word;
+    cursor: help;
+}
+
 /* Policy Table Styles */
 .policy-records {
     margin-top: 20px;
@@ -24825,15 +24846,22 @@ function financeBudgeting(){
                                 <th>Budget Period</th>
                                 <th>Start Date</th>
                                 <th>End Date</th>
+                                <th>Salaries</th>
+                                <th>Supplies</th>
+                                <th>Equipment</th>
+                                <th>Training</th>
+                                <th>Travel</th>
+                                <th>Misc</th>
                                 <th>Total Amount</th>
                                 <th>Status</th>
                                 <th>Utilization</th>
+                                <th>Justification</th>
                                 <th>Actions</th>
                             </tr>
                         </thead>
                         <tbody id="budgetRecordsList">
                             <tr>
-                                <td colspan="8">
+                                <td colspan="15">
                                     <div class="loading">Loading budget records...</div>
                                 </td>
                             </tr>
@@ -26742,9 +26770,12 @@ function loadSampleBudgetRecords() {
             status: 'active',
             utilization: 65,
             salaries_wages: 15000000,
+            office_supplies: 1000000,
+            equipment_tools: 3000000,
             training_development: 3000000,
-            employee_benefits: 4000000,
-            recruitment_costs: 3000000
+            travel_transport: 2000000,
+            miscellaneous: 1000000,
+            justification: 'Budget for Q2 2026 project operations including new equipment and training programs'
         },
         {
             id: 2,
@@ -26756,9 +26787,12 @@ function loadSampleBudgetRecords() {
             status: 'active',
             utilization: 45,
             salaries_wages: 5000000,
+            office_supplies: 800000,
+            equipment_tools: 500000,
             training_development: 1000000,
-            employee_benefits: 1500000,
-            recruitment_costs: 500000
+            travel_transport: 400000,
+            miscellaneous: 300000,
+            justification: 'Administrative operational costs for Q2 2026 including office supplies and travel'
         },
         {
             id: 3,
@@ -26770,9 +26804,12 @@ function loadSampleBudgetRecords() {
             status: 'active',
             utilization: 78,
             salaries_wages: 3000000,
+            office_supplies: 300000,
+            equipment_tools: 200000,
             training_development: 500000,
-            employee_benefits: 1000000,
-            recruitment_costs: 500000
+            travel_transport: 800000,
+            miscellaneous: 200000,
+            justification: 'Finance department budget for Q2 2026 including audit and compliance activities'
         },
         {
             id: 4,
@@ -26784,9 +26821,12 @@ function loadSampleBudgetRecords() {
             status: 'active',
             utilization: 52,
             salaries_wages: 2000000,
+            office_supplies: 400000,
+            equipment_tools: 100000,
             training_development: 800000,
-            employee_benefits: 500000,
-            recruitment_costs: 200000
+            travel_transport: 150000,
+            miscellaneous: 50000,
+            justification: 'HR budget for May 2026 including recruitment drives and employee training programs'
         },
         {
             id: 5,
@@ -26798,9 +26838,12 @@ function loadSampleBudgetRecords() {
             status: 'pending',
             utilization: 0,
             salaries_wages: 3500000,
+            office_supplies: 500000,
+            equipment_tools: 1000000,
             training_development: 1000000,
-            employee_benefits: 1000000,
-            recruitment_costs: 500000
+            travel_transport: 0,
+            miscellaneous: 0,
+            justification: 'HSE budget for Q2 2026 focusing on safety equipment and compliance training'
         },
         {
             id: 6,
@@ -26812,9 +26855,12 @@ function loadSampleBudgetRecords() {
             status: 'active',
             utilization: 38,
             salaries_wages: 8000000,
+            office_supplies: 1000000,
+            equipment_tools: 2000000,
             training_development: 2000000,
-            employee_benefits: 3000000,
-            recruitment_costs: 2000000
+            travel_transport: 1500000,
+            miscellaneous: 500000,
+            justification: 'Annual real estate budget for 2026 including property management and development projects'
         }
     ];
     
@@ -26849,7 +26895,7 @@ function displayBudgetRecords(records) {
             // Map fields from API response to expected display format
             return {
                 id: record.id,
-                department: record.department || record.budget_period || 'Unknown',
+                department: record.department || 'Unknown',
                 period: record.period || record.budget_period || 'Unknown',
                 start_date: record.start_date || record.submission_date || new Date().toISOString().split('T')[0],
                 end_date: record.end_date || record.approved_date || new Date().toISOString().split('T')[0],
@@ -26857,9 +26903,11 @@ function displayBudgetRecords(records) {
                 status: record.status || 'pending',
                 utilization: record.utilization || Math.floor(Math.random() * 100), // Random utilization for demo
                 salaries_wages: record.salaries_wages || 0,
+                office_supplies: record.office_supplies || 0,
+                equipment_tools: record.equipment_tools || 0,
                 training_development: record.training_development || 0,
-                employee_benefits: record.employee_benefits || 0,
-                recruitment_costs: record.recruitment_costs || 0,
+                travel_transport: record.travel_transport || 0,
+                miscellaneous: record.miscellaneous || 0,
                 justification: record.justification || '',
                 submitted_by: record.submitted_by || 'Unknown',
                 submission_date: record.submission_date || new Date().toISOString().split('T')[0]
@@ -26871,7 +26919,7 @@ function displayBudgetRecords(records) {
     if (!records || records.length === 0) {
         recordsList.innerHTML = `
             <tr>
-                <td colspan="8">
+                <td colspan="15">
                     <div class="no-records">No budget records found</div>
                 </td>
             </tr>
@@ -26929,6 +26977,16 @@ function displayBudgetRecords(records) {
             utilizationBadge = '🟡 Medium';
         }
         
+        // Format individual budget items
+        const formatCurrency = (amount) => {
+            return new Intl.NumberFormat('en-TZ', {
+                style: 'currency',
+                currency: 'TZS',
+                minimumFractionDigits: 0,
+                maximumFractionDigits: 0
+            }).format(amount || 0);
+        };
+
         recordsHTML += `
             <tr class="budget-row">
                 <td>
@@ -26954,6 +27012,36 @@ function displayBudgetRecords(records) {
                 </td>
                 <td>
                     <div class="amount-info">
+                        <div class="budget-item">${formatCurrency(record.salaries_wages)}</div>
+                    </div>
+                </td>
+                <td>
+                    <div class="amount-info">
+                        <div class="budget-item">${formatCurrency(record.office_supplies || 0)}</div>
+                    </div>
+                </td>
+                <td>
+                    <div class="amount-info">
+                        <div class="budget-item">${formatCurrency(record.equipment_tools || 0)}</div>
+                    </div>
+                </td>
+                <td>
+                    <div class="amount-info">
+                        <div class="budget-item">${formatCurrency(record.training_development)}</div>
+                    </div>
+                </td>
+                <td>
+                    <div class="amount-info">
+                        <div class="budget-item">${formatCurrency(record.travel_transport || 0)}</div>
+                    </div>
+                </td>
+                <td>
+                    <div class="amount-info">
+                        <div class="budget-item">${formatCurrency(record.miscellaneous || 0)}</div>
+                    </div>
+                </td>
+                <td>
+                    <div class="amount-info">
                         <div class="budget-amount">${formattedAmount}</div>
                     </div>
                 </td>
@@ -26966,6 +27054,11 @@ function displayBudgetRecords(records) {
                             <div class="utilization-fill ${utilizationClass}" style="width: ${record.utilization}%"></div>
                         </div>
                         <div class="utilization-text">${record.utilization}%</div>
+                    </div>
+                </td>
+                <td>
+                    <div class="justification-info">
+                        <div class="budget-justification" title="${record.justification || 'No justification provided'}">${record.justification ? (record.justification.length > 50 ? record.justification.substring(0, 50) + '...' : record.justification) : '—'}</div>
                     </div>
                 </td>
                 <td>
