@@ -10569,8 +10569,11 @@ window.KashTecAPI = {
             // Transform HSE data to safety status format
             console.log('🔍 Raw HSE response:', response);
             
-            // Convert single object to array for consistent processing
+            // The backend already returns an array, so use it directly
             const hseData = Array.isArray(response) ? response : [response];
+            
+            console.log('🔍 Full HSE array before filtering in getProjectSafetyStatus:', hseData);
+            console.log('🔍 HSE array length in getProjectSafetyStatus:', hseData.length);
             
             const safetyData = {
                 projects: hseData.filter(item => {
@@ -10683,6 +10686,32 @@ window.KashTecAPI = {
         } catch (error) {
             return { success: false, error: error.message };
         }
+    },
+    
+    // Generic GET method
+    async get(endpoint) {
+        return this.apiRequest(endpoint, { method: 'GET' });
+    },
+    
+    // Generic POST method
+    async post(endpoint, data) {
+        return this.apiRequest(endpoint, {
+            method: 'POST',
+            body: JSON.stringify(data)
+        });
+    },
+    
+    // Generic PUT method
+    async put(endpoint, data) {
+        return this.apiRequest(endpoint, {
+            method: 'PUT',
+            body: JSON.stringify(data)
+        });
+    },
+    
+    // Generic DELETE method
+    async delete(endpoint) {
+        return this.apiRequest(endpoint, { method: 'DELETE' });
     }
 };
 
@@ -25016,8 +25045,11 @@ async function loadSafetyFromAPI() {
                     
                     console.log('🔍 Raw HSE response in loadSafetyFromAPI:', hseData);
                     
-                    // Convert single object to array for consistent processing
+                    // The backend already returns an array, so use it directly
                     const hseArray = Array.isArray(hseData) ? hseData : [hseData];
+                    
+                    console.log('🔍 Full HSE array before filtering:', hseArray);
+                    console.log('🔍 HSE array length:', hseArray.length);
                     
                     // Transform HSE data to safety status format
                     const safetyData = {
@@ -37508,66 +37540,84 @@ function updateRecipients() {
     }
 }
 
-async function sendNotification() {
-    try {
-        const recipientType = document.getElementById('recipientType').value;
-        const recipient = document.getElementById('recipientSelect').value;
-        const title = document.getElementById('notifTitle').value;
-        const message = document.getElementById('notifMessage').value;
-        const priority = document.getElementById('notifPriority').value;
-        const scheduleType = document.getElementById('scheduleType').value;
-        const scheduleDateTime = document.getElementById('scheduleDateTime').value;
+function sendNotification() {
+    const recipientType = document.getElementById('recipientType').value;
+    const recipient = document.getElementById('recipientSelect').value;
+    const title = document.getElementById('notifTitle').value;
+    const message = document.getElementById('notifMessage').value;
+    const priority = document.getElementById('notifPriority').value;
+    const scheduleType = document.getElementById('scheduleType').value;
+    
+    if (!recipientType || !title || !message) {
+        alert('Please fill all required fields');
+        return;
+    }
+    
+    if ((recipientType === 'department' || recipientType === 'role' || recipientType === 'individual') && !recipient) {
+        alert('Please select a recipient');
+        return;
+    }
+    
+    const notification = {
+        id: 'NOTIF-' + Date.now(),
+        recipientType: recipientType,
+        recipient: recipient,
+        title: title,
+        message: message,
+        priority: priority,
+        scheduleType: scheduleType,
+        sentBy: 'Admin Assistant',
+        sentDate: new Date().toISOString(),
+        status: scheduleType === 'immediate' ? 'sent' : 'scheduled'
+    };
+    
+    // Save to API
+    console.log('Notification data to be saved to API:', notification);
+    
+    // Prepare data for API
+    const apiData = {
+        title: notification.title,
+        message: notification.message,
+        type: notification.priority === 'urgent' ? 'error' : notification.priority === 'important' ? 'warning' : 'info',
+        category: 'internal'
+    };
+    
+    // Choose API endpoint based on recipient type
+    let apiUrl = `${window.location.origin}/api/notifications`;
+    
+    if (notification.recipientType !== 'individual') {
+        // Use broadcast for department, role, and all staff notifications
+        apiUrl = `${window.location.origin}/api/notifications/broadcast`;
+    } else {
+        // For individual notifications, add userId (using recipient as userId for now)
+        apiData.userId = notification.recipient;
+    }
+    
+    // Send to API
+    fetch(apiUrl, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'Authorization': `Bearer ${sessionManager.getAuthToken()}`
+        },
+        body: JSON.stringify(apiData)
+    })
+    .then(response => {
+        console.log('📡 Notification API Response status:', response.status);
+        return response.json();
+    })
+    .then(data => {
+        console.log('📊 Notification API Response data:', data);
         
-        // Validate required fields
-        if (!recipientType || !title || !message) {
-            customAlert('Please fill all required fields', 'Validation Error', 'error');
-            return;
+        if (data.error) {
+            throw new Error(data.error);
         }
         
-        if ((recipientType === 'department' || recipientType === 'role' || recipientType === 'individual') && !recipient) {
-            customAlert('Please select a recipient', 'Validation Error', 'error');
-            return;
-        }
+        const recipientText = notification.recipientType === 'all' ? 'All Staff' : notification.recipient;
+        const statusText = notification.scheduleType === 'immediate' ? 'sent immediately' : 'scheduled for later';
         
-        // Prepare data for API
-        const apiData = {
-            title: title,
-            recipientType: recipientType,
-            recipients: recipientType === 'all' ? 'All Staff' : recipient,
-            message: message,
-            priority: priority,
-            scheduleType: scheduleType,
-            sentBy: 'Admin Assistant'
-        };
-        
-        // Add schedule date/time if scheduled
-        if (scheduleType === 'scheduled' && scheduleDateTime) {
-            apiData.scheduleDateTime = scheduleDateTime;
-        }
-        
-        console.log('📝 Sending notification to API:', apiData);
-        
-        const baseUrl = window.location.origin;
-        const response = await fetch(`${baseUrl}/api/work/notifications`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${sessionManager.getAuthToken()}`
-            },
-            body: JSON.stringify(apiData)
-        });
-        
-        if (!response.ok) {
-            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-        }
-        
-        const result = await response.json();
-        console.log('✅ Notification sent successfully:', result);
-        
-        const recipientText = apiData.recipients;
-        const statusText = scheduleType === 'immediate' ? 'sent immediately' : 'scheduled for later';
-        
-        customAlert(`Notification ${statusText}!\n\nTitle: ${title}\nTo: ${recipientText}\nPriority: ${priority}\nNotification ID: ${result.notificationId}`, "Notification Sent", "success");
+        alert('Notification ' + statusText + '!\n\nTitle: ' + notification.title + '\nTo: ' + recipientText + '\nPriority: ' + notification.priority);
         
         // Clear form
         document.getElementById('recipientType').value = '';
@@ -37576,17 +37626,16 @@ async function sendNotification() {
         document.getElementById('notifMessage').value = '';
         document.getElementById('notifPriority').value = 'normal';
         document.getElementById('scheduleType').value = 'immediate';
-        document.getElementById('scheduleDateTime').value = '';
         document.getElementById('recipientGroup').style.display = 'none';
         document.getElementById('scheduleGroup').style.display = 'none';
-        
-        // Refresh notifications list
-        loadNotifications();
-        
-    } catch (error) {
+    })
+    .catch(error => {
         console.error('❌ Error sending notification:', error);
-        customAlert('Failed to send notification: ' + error.message, 'Send Error', 'error');
-    }
+        alert('Failed to send notification: ' + error.message);
+    });
+    
+    // Refresh notifications list
+    loadNotifications();
 }
 
 // Load notifications from database for table display
