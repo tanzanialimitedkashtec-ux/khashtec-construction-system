@@ -10,7 +10,7 @@ const jwt = require('jsonwebtoken');
 const db = require('../database/config/database');
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 8080;
 
 // Middleware
 app.use(helmet());
@@ -405,7 +405,7 @@ app.get('/api/work/admin', async (req, res) => {
     try {
         console.log('📋 Direct admin work endpoint accessed');
         
-        const db = require('./database/config/database');
+        const db = require('../database/config/database');
         const [adminWorkItems] = await db.execute(`
             SELECT * FROM admin_work 
             WHERE work_type LIKE '%Document%' OR 
@@ -437,7 +437,7 @@ app.get('/api/documents/:id/download', async (req, res) => {
         const docId = req.params.id;
         
         // Try to get document from admin_work first
-        const db = require('./database/config/database');
+        const db = require('../database/config/database');
         const [adminWorkItems] = await db.execute(
             'SELECT * FROM admin_work WHERE id = ?', [docId]
         );
@@ -500,7 +500,7 @@ app.get('/api/documents/:id', async (req, res) => {
         const docId = req.params.id;
         
         // Try to get document from admin_work first
-        const db = require('./database/config/database');
+        const db = require('../database/config/database');
         const [adminWorkItems] = await db.execute(
             'SELECT * FROM admin_work WHERE id = ?', [docId]
         );
@@ -587,7 +587,7 @@ app.post('/api/notifications/broadcast', async (req, res) => {
         
         // Try to use database first
         try {
-            const db = require('./database/config/database');
+            const db = require('../database/config/database');
             
             // First check if users table has any records, if not use NULL for sender_id
             const [userCheck] = await db.execute('SELECT COUNT(*) as count FROM users LIMIT 1');
@@ -664,7 +664,7 @@ app.get('/api/notifications-test', (req, res) => {
 app.get('/api/test-db', async (req, res) => {
     try {
         console.log('🔍 Testing database connection...');
-        const db = require('./database/config/database');
+        const db = require('../database/config/database');
         const [result] = await db.execute('SELECT 1 as test');
         console.log('✅ Database connection successful:', result);
         res.json({ 
@@ -717,7 +717,7 @@ app.post('/api/schedule-meetings/', async (req, res) => {
         
         // Try to use database first
         try {
-            const db = require('./database/config/database');
+            const db = require('../database/config/database');
             
             // Map frontend fields to database fields
             const result = await db.execute(`
@@ -832,7 +832,7 @@ app.post('/api/senior-hiring/:id/approve', async (req, res) => {
         
         // Try to use database first
         try {
-            const db = require('./database/config/database');
+            const db = require('../database/config/database');
             
             const result = await db.execute(`
                 UPDATE senior_hiring_approval 
@@ -897,7 +897,7 @@ app.post('/api/senior-hiring/:id/request-info', async (req, res) => {
         
         // Try to use database first
         try {
-            const db = require('./database/config/database');
+            const db = require('../database/config/database');
             
             // Insert info request
             await db.execute(`
@@ -965,7 +965,7 @@ app.post('/api/senior-hiring/:id/reject', async (req, res) => {
         
         // Try to use database first
         try {
-            const db = require('./database/config/database');
+            const db = require('../database/config/database');
             
             // Insert rejection record
             await db.execute(`
@@ -1039,7 +1039,7 @@ app.get('/api/senior-hiring', async (req, res) => {
         
         // Try to use database first
         try {
-            const db = require('./database/config/database');
+            const db = require('../database/config/database');
             const [requests] = await db.execute(`
                 SELECT id, candidate_name, position, department, proposed_salary, experience, 
                        hr_recommendation, status, request_date, approval_date, approved_by
@@ -1108,7 +1108,7 @@ app.post('/api/workforce-budget/:id/approve', async (req, res) => {
         
         // Try to use database first
         try {
-            const db = require('./database/config/database');
+            const db = require('../database/config/database');
             
             const result = await db.execute(`
                 UPDATE workforce_budget 
@@ -1168,7 +1168,7 @@ app.post('/api/workforce-budget/:id/modify', async (req, res) => {
         
         // Try to use database first
         try {
-            const db = require('./database/config/database');
+            const db = require('../database/config/database');
             
             // Insert modification request
             await db.execute(`
@@ -1238,7 +1238,7 @@ app.post('/api/workforce-budget/:id/reject', async (req, res) => {
         
         // Try to use database first
         try {
-            const db = require('./database/config/database');
+            const db = require('../database/config/database');
             
             // Insert rejection record
             await db.execute(`
@@ -1313,7 +1313,7 @@ app.get('/api/employees', async (req, res) => {
         
         // Try to use database first
         try {
-            const db = require('./database/config/database');
+            const db = require('../database/config/database');
             
             const [employees] = await db.execute(`
                 SELECT id, user_id, employee_id, position, department, status, 

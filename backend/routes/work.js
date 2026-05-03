@@ -51,6 +51,915 @@ router.get('/test-hr-table', async (req, res) => {
     }
 });
 
+// Get inspection records (alias for HSE Inspection Report work items)
+router.get('/hse/inspections', async (req, res) => {
+    try {
+        console.log('🔍 Fetching HSE inspection records...');
+        
+        let inspectionRecords = [];
+        
+        try {
+            const [dbRecords] = await db.execute(
+                `SELECT * FROM hse_work WHERE work_type = 'Inspection Report' ORDER BY submitted_date DESC`
+            );
+            inspectionRecords = dbRecords;
+            console.log(`📊 Found ${inspectionRecords.length} inspection records from database`);
+        } catch (dbError) {
+            console.error('❌ Database error, using fallback inspection records:', dbError);
+            
+            // Fallback to mock inspection records
+            inspectionRecords = [
+                {
+                    id: 1,
+                    department_code: 'HSE',
+                    work_type: 'Inspection Report',
+                    work_title: 'Routine Safety Inspection - Site A',
+                    work_description: 'Monthly routine safety inspection conducted at Site A. All areas inspected with minor findings.',
+                    inspection_date: '2026-04-15',
+                    inspector: 'John Smith',
+                    compliance_status: 'minor-issues',
+                    risk_level: 'low',
+                    project: 'proj001',
+                    status: 'completed',
+                    submitted_by: 'HSE Manager',
+                    submitted_date: '2026-04-15',
+                    mock: true
+                },
+                {
+                    id: 2,
+                    department_code: 'HSE',
+                    work_type: 'Inspection Report',
+                    work_title: 'Compliance Audit - Site B',
+                    work_description: 'Quarterly compliance audit revealing several areas requiring improvement.',
+                    inspection_date: '2026-04-10',
+                    inspector: 'Sarah Johnson',
+                    compliance_status: 'major-issues',
+                    risk_level: 'medium',
+                    project: 'proj002',
+                    status: 'pending-follow-up',
+                    submitted_by: 'Safety Officer',
+                    submitted_date: '2026-04-10',
+                    mock: true
+                },
+                {
+                    id: 3,
+                    department_code: 'HSE',
+                    work_type: 'Inspection Report',
+                    work_title: 'Fire Safety Inspection',
+                    work_description: 'Annual fire safety inspection and equipment verification.',
+                    inspection_date: '2026-04-05',
+                    inspector: 'Mike Wilson',
+                    compliance_status: 'fully-compliant',
+                    risk_level: 'low',
+                    project: 'proj003',
+                    status: 'completed',
+                    submitted_by: 'Fire Safety Officer',
+                    submitted_date: '2026-04-05',
+                    mock: true
+                }
+            ];
+            console.log(`📊 Using fallback mock inspection records:`, inspectionRecords.length);
+        }
+        
+        console.log(`📋 Returning ${inspectionRecords.length} inspection records`);
+        res.json(inspectionRecords);
+    } catch (error) {
+        console.error('❌ Error fetching inspection records:', error);
+        res.status(500).json({
+            error: 'Failed to fetch inspection records',
+            details: error.message
+        });
+    }
+});
+
+// Get inspection records (general endpoint)
+router.get('/inspections', async (req, res) => {
+    try {
+        console.log('🔍 Fetching inspection records (general endpoint)...');
+        
+        let inspectionRecords = [];
+        
+        try {
+            const [dbRecords] = await db.execute(
+                `SELECT * FROM hse_work WHERE work_type = 'Inspection Report' ORDER BY submitted_date DESC`
+            );
+            inspectionRecords = dbRecords;
+            console.log(`📊 Found ${inspectionRecords.length} inspection records from database`);
+        } catch (dbError) {
+            console.error('❌ Database error, using fallback inspection records:', dbError);
+            
+            // Same fallback as above
+            inspectionRecords = [
+                {
+                    id: 1,
+                    department_code: 'HSE',
+                    work_type: 'Inspection Report',
+                    work_title: 'Routine Safety Inspection - Site A',
+                    work_description: 'Monthly routine safety inspection conducted at Site A. All areas inspected with minor findings.',
+                    inspection_date: '2026-04-15',
+                    inspector: 'John Smith',
+                    compliance_status: 'minor-issues',
+                    risk_level: 'low',
+                    project: 'proj001',
+                    status: 'completed',
+                    submitted_by: 'HSE Manager',
+                    submitted_date: '2026-04-15',
+                    mock: true
+                },
+                {
+                    id: 2,
+                    department_code: 'HSE',
+                    work_type: 'Inspection Report',
+                    work_title: 'Compliance Audit - Site B',
+                    work_description: 'Quarterly compliance audit revealing several areas requiring improvement.',
+                    inspection_date: '2026-04-10',
+                    inspector: 'Sarah Johnson',
+                    compliance_status: 'major-issues',
+                    risk_level: 'medium',
+                    project: 'proj002',
+                    status: 'pending-follow-up',
+                    submitted_by: 'Safety Officer',
+                    submitted_date: '2026-04-10',
+                    mock: true
+                },
+                {
+                    id: 3,
+                    department_code: 'HSE',
+                    work_type: 'Inspection Report',
+                    work_title: 'Fire Safety Inspection',
+                    work_description: 'Annual fire safety inspection and equipment verification.',
+                    inspection_date: '2026-04-05',
+                    inspector: 'Mike Wilson',
+                    compliance_status: 'fully-compliant',
+                    risk_level: 'low',
+                    project: 'proj003',
+                    status: 'completed',
+                    submitted_by: 'Fire Safety Officer',
+                    submitted_date: '2026-04-05',
+                    mock: true
+                }
+            ];
+            console.log(`📊 Using fallback mock inspection records:`, inspectionRecords.length);
+        }
+        
+        console.log(`📋 Returning ${inspectionRecords.length} inspection records`);
+        res.json(inspectionRecords);
+    } catch (error) {
+        console.error('❌ Error fetching inspection records:', error);
+        res.status(500).json({
+            error: 'Failed to fetch inspection records',
+            details: error.message
+        });
+    }
+});
+
+// Get safety violations (alias for HSE Safety Violation work items)
+router.get('/hse/violations', async (req, res) => {
+    try {
+        console.log('🔍 Fetching HSE safety violations...');
+        
+        let violations = [];
+        
+        try {
+            const [dbRecords] = await db.execute(
+                `SELECT * FROM hse_work WHERE work_type = 'Safety Violation' ORDER BY submitted_date DESC`
+            );
+            violations = dbRecords;
+            console.log(`📊 Found ${violations.length} safety violations from database`);
+        } catch (dbError) {
+            console.error('❌ Database error, using fallback safety violations:', dbError);
+            
+            // Fallback to mock safety violations
+            violations = [
+                {
+                    id: 1,
+                    department_code: 'HSE',
+                    work_type: 'Safety Violation',
+                    work_title: 'No PPE - Hard Hat',
+                    work_description: 'Worker found without hard hat in construction area',
+                    severity: 'Major',
+                    location: 'Site A - Building 1',
+                    violator: 'John Doe',
+                    immediate_action: 'Stop work and issue PPE',
+                    corrective_action: 'Written warning',
+                    status: 'Pending',
+                    submitted_by: 'Safety Officer',
+                    submitted_date: '2026-04-20',
+                    mock: true
+                },
+                {
+                    id: 2,
+                    department_code: 'HSE',
+                    work_type: 'Safety Violation',
+                    work_title: 'Unauthorized Work',
+                    work_description: 'Workers performing electrical work without proper authorization',
+                    severity: 'Critical',
+                    location: 'Site B - Electrical Room',
+                    violator: 'Mike Wilson, Sarah Johnson',
+                    immediate_action: 'Immediate work stoppage',
+                    corrective_action: 'Suspension pending investigation',
+                    status: 'Under Investigation',
+                    submitted_by: 'HSE Manager',
+                    submitted_date: '2026-04-18',
+                    mock: true
+                },
+                {
+                    id: 3,
+                    department_code: 'HSE',
+                    work_type: 'Safety Violation',
+                    work_title: 'Improper Scaffolding',
+                    work_description: 'Scaffolding not properly secured and missing guardrails',
+                    severity: 'Major',
+                    location: 'Site C - 3rd Floor',
+                    violator: 'Construction Team',
+                    immediate_action: 'Area secured and access restricted',
+                    corrective_action: 'Retraining and supervision required',
+                    status: 'Resolved',
+                    submitted_by: 'Site Supervisor',
+                    submitted_date: '2026-04-15',
+                    mock: true
+                }
+            ];
+            console.log(`📊 Using fallback mock safety violations:`, violations.length);
+        }
+        
+        console.log(`📋 Returning ${violations.length} safety violations`);
+        res.json(violations);
+    } catch (error) {
+        console.error('❌ Error fetching safety violations:', error);
+        res.status(500).json({
+            error: 'Failed to fetch safety violations',
+            details: error.message
+        });
+    }
+});
+
+// Get safety violations (general endpoint)
+router.get('/violations', async (req, res) => {
+    try {
+        console.log('🔍 Fetching safety violations (general endpoint)...');
+        
+        let violations = [];
+        
+        try {
+            const [dbRecords] = await db.execute(
+                `SELECT * FROM hse_work WHERE work_type = 'Safety Violation' ORDER BY submitted_date DESC`
+            );
+            violations = dbRecords;
+            console.log(`📊 Found ${violations.length} safety violations from database`);
+        } catch (dbError) {
+            console.error('❌ Database error, using fallback safety violations:', dbError);
+            
+            // Same fallback as above
+            violations = [
+                {
+                    id: 1,
+                    department_code: 'HSE',
+                    work_type: 'Safety Violation',
+                    work_title: 'No PPE - Hard Hat',
+                    work_description: 'Worker found without hard hat in construction area',
+                    severity: 'Major',
+                    location: 'Site A - Building 1',
+                    violator: 'John Doe',
+                    immediate_action: 'Stop work and issue PPE',
+                    corrective_action: 'Written warning',
+                    status: 'Pending',
+                    submitted_by: 'Safety Officer',
+                    submitted_date: '2026-04-20',
+                    mock: true
+                },
+                {
+                    id: 2,
+                    department_code: 'HSE',
+                    work_type: 'Safety Violation',
+                    work_title: 'Unauthorized Work',
+                    work_description: 'Workers performing electrical work without proper authorization',
+                    severity: 'Critical',
+                    location: 'Site B - Electrical Room',
+                    violator: 'Mike Wilson, Sarah Johnson',
+                    immediate_action: 'Immediate work stoppage',
+                    corrective_action: 'Suspension pending investigation',
+                    status: 'Under Investigation',
+                    submitted_by: 'HSE Manager',
+                    submitted_date: '2026-04-18',
+                    mock: true
+                },
+                {
+                    id: 3,
+                    department_code: 'HSE',
+                    work_type: 'Safety Violation',
+                    work_title: 'Improper Scaffolding',
+                    work_description: 'Scaffolding not properly secured and missing guardrails',
+                    severity: 'Major',
+                    location: 'Site C - 3rd Floor',
+                    violator: 'Construction Team',
+                    immediate_action: 'Area secured and access restricted',
+                    corrective_action: 'Retraining and supervision required',
+                    status: 'Resolved',
+                    submitted_by: 'Site Supervisor',
+                    submitted_date: '2026-04-15',
+                    mock: true
+                }
+            ];
+            console.log(`📊 Using fallback mock safety violations:`, violations.length);
+        }
+        
+        console.log(`📋 Returning ${violations.length} safety violations`);
+        res.json(violations);
+    } catch (error) {
+        console.error('❌ Error fetching safety violations:', error);
+        res.status(500).json({
+            error: 'Failed to fetch safety violations',
+            details: error.message
+        });
+    }
+});
+
+// Get PPE issuance records
+router.get('/hse/ppe', async (req, res) => {
+    try {
+        console.log('🔍 Fetching HSE PPE issuance records...');
+        
+        let ppeRecords = [];
+        
+        try {
+            const [dbRecords] = await db.execute(
+                `SELECT * FROM hse_work WHERE work_type = 'PPE Issuance' ORDER BY submitted_date DESC`
+            );
+            ppeRecords = dbRecords;
+            console.log(`📊 Found ${ppeRecords.length} PPE records from database`);
+        } catch (dbError) {
+            console.error('❌ Database error, using fallback PPE records:', dbError);
+            
+            // Fallback to mock PPE records
+            ppeRecords = [
+                {
+                    id: 1,
+                    department_code: 'HSE',
+                    work_type: 'PPE Issuance',
+                    work_title: 'Hard Hat Issuance - Site A',
+                    work_description: 'Issued hard hats to new workers on Site A',
+                    ppe_type: 'Hard Hat',
+                    employee_name: 'John Doe',
+                    issued_date: '2026-04-20',
+                    return_date: '2026-05-20',
+                    status: 'Issued',
+                    issued_by: 'Safety Officer',
+                    submitted_by: 'Safety Officer',
+                    submitted_date: '2026-04-20',
+                    mock: true
+                },
+                {
+                    id: 2,
+                    department_code: 'HSE',
+                    work_type: 'PPE Issuance',
+                    work_title: 'Safety Boots Issuance - Site B',
+                    work_description: 'Issued safety boots to construction team',
+                    ppe_type: 'Safety Boots',
+                    employee_name: 'Mike Wilson',
+                    issued_date: '2026-04-18',
+                    return_date: '2026-05-18',
+                    status: 'Issued',
+                    issued_by: 'HSE Manager',
+                    submitted_by: 'HSE Manager',
+                    submitted_date: '2026-04-18',
+                    mock: true
+                },
+                {
+                    id: 3,
+                    department_code: 'HSE',
+                    work_type: 'PPE Issuance',
+                    work_title: 'Gloves and Goggles Issuance',
+                    work_description: 'Issued protective gloves and safety goggles',
+                    ppe_type: 'Gloves & Goggles',
+                    employee_name: 'Sarah Johnson',
+                    issued_date: '2026-04-15',
+                    return_date: '2026-04-30',
+                    status: 'Returned',
+                    issued_by: 'Safety Officer',
+                    submitted_by: 'Safety Officer',
+                    submitted_date: '2026-04-15',
+                    mock: true
+                }
+            ];
+            console.log(`📊 Using fallback mock PPE records:`, ppeRecords.length);
+        }
+        
+        console.log(`📋 Returning ${ppeRecords.length} PPE records`);
+        res.json(ppeRecords);
+    } catch (error) {
+        console.error('❌ Error fetching PPE records:', error);
+        res.status(500).json({
+            error: 'Failed to fetch PPE records',
+            details: error.message
+        });
+    }
+});
+
+// Get PPE issuance records (general endpoint)
+router.get('/ppe', async (req, res) => {
+    try {
+        console.log('🔍 Fetching PPE issuance records (general endpoint)...');
+        
+        let ppeRecords = [];
+        
+        try {
+            const [dbRecords] = await db.execute(
+                `SELECT * FROM hse_work WHERE work_type = 'PPE Issuance' ORDER BY submitted_date DESC`
+            );
+            ppeRecords = dbRecords;
+            console.log(`📊 Found ${ppeRecords.length} PPE records from database`);
+        } catch (dbError) {
+            console.error('❌ Database error, using fallback PPE records:', dbError);
+            
+            // Same fallback as above
+            ppeRecords = [
+                {
+                    id: 1,
+                    department_code: 'HSE',
+                    work_type: 'PPE Issuance',
+                    work_title: 'Hard Hat Issuance - Site A',
+                    work_description: 'Issued hard hats to new workers on Site A',
+                    ppe_type: 'Hard Hat',
+                    employee_name: 'John Doe',
+                    issued_date: '2026-04-20',
+                    return_date: '2026-05-20',
+                    status: 'Issued',
+                    issued_by: 'Safety Officer',
+                    submitted_by: 'Safety Officer',
+                    submitted_date: '2026-04-20',
+                    mock: true
+                },
+                {
+                    id: 2,
+                    department_code: 'HSE',
+                    work_type: 'PPE Issuance',
+                    work_title: 'Safety Boots Issuance - Site B',
+                    work_description: 'Issued safety boots to construction team',
+                    ppe_type: 'Safety Boots',
+                    employee_name: 'Mike Wilson',
+                    issued_date: '2026-04-18',
+                    return_date: '2026-05-18',
+                    status: 'Issued',
+                    issued_by: 'HSE Manager',
+                    submitted_by: 'HSE Manager',
+                    submitted_date: '2026-04-18',
+                    mock: true
+                },
+                {
+                    id: 3,
+                    department_code: 'HSE',
+                    work_type: 'PPE Issuance',
+                    work_title: 'Gloves and Goggles Issuance',
+                    work_description: 'Issued protective gloves and safety goggles',
+                    ppe_type: 'Gloves & Goggles',
+                    employee_name: 'Sarah Johnson',
+                    issued_date: '2026-04-15',
+                    return_date: '2026-04-30',
+                    status: 'Returned',
+                    issued_by: 'Safety Officer',
+                    submitted_by: 'Safety Officer',
+                    submitted_date: '2026-04-15',
+                    mock: true
+                }
+            ];
+            console.log(`📊 Using fallback mock PPE records:`, ppeRecords.length);
+        }
+        
+        console.log(`📋 Returning ${ppeRecords.length} PPE records`);
+        res.json(ppeRecords);
+    } catch (error) {
+        console.error('❌ Error fetching PPE records:', error);
+        res.status(500).json({
+            error: 'Failed to fetch PPE records',
+            details: error.message
+        });
+    }
+});
+
+// Get Toolbox Meeting records
+router.get('/hse/toolbox-meetings', async (req, res) => {
+    try {
+        console.log('🔍 Fetching HSE Toolbox Meeting records...');
+        
+        let toolboxMeetings = [];
+        
+        try {
+            const [dbRecords] = await db.execute(
+                `SELECT * FROM hse_work WHERE work_type = 'Toolbox Meeting' ORDER BY submitted_date DESC`
+            );
+            toolboxMeetings = dbRecords;
+            console.log(`📊 Found ${toolboxMeetings.length} Toolbox Meeting records from database`);
+        } catch (dbError) {
+            console.error('❌ Database error, using fallback Toolbox Meeting records:', dbError);
+            
+            // Fallback to mock Toolbox Meeting records
+            toolboxMeetings = [
+                {
+                    id: 1,
+                    department_code: 'HSE',
+                    work_type: 'Toolbox Meeting',
+                    work_title: 'Weekly Safety Talk - Fall Protection',
+                    work_description: 'Weekly toolbox meeting discussing fall protection measures and safety protocols',
+                    meeting_date: '2026-04-20T09:00:00',
+                    duration: 30,
+                    topic: 'Fall Protection',
+                    attendees: 15,
+                    conducted_by: 'HSE Manager',
+                    project: 'proj001',
+                    status: 'Completed',
+                    submitted_by: 'HSE Manager',
+                    submitted_date: '2026-04-20',
+                    mock: true
+                },
+                {
+                    id: 2,
+                    department_code: 'HSE',
+                    work_type: 'Toolbox Meeting',
+                    work_title: 'Toolbox Talk - PPE Requirements',
+                    work_description: 'Discussion on proper PPE usage and requirements for different work areas',
+                    meeting_date: '2026-04-18T14:00:00',
+                    duration: 25,
+                    topic: 'PPE Requirements',
+                    attendees: 20,
+                    conducted_by: 'Safety Officer',
+                    project: 'proj002',
+                    status: 'Completed',
+                    submitted_by: 'Safety Officer',
+                    submitted_date: '2026-04-18',
+                    mock: true
+                },
+                {
+                    id: 3,
+                    department_code: 'HSE',
+                    work_type: 'Toolbox Meeting',
+                    work_title: 'Safety Meeting - Electrical Safety',
+                    work_description: 'Toolbox meeting covering electrical safety procedures and lockout/tagout protocols',
+                    meeting_date: '2026-04-15T08:30:00',
+                    duration: 45,
+                    topic: 'Electrical Safety',
+                    attendees: 18,
+                    conducted_by: 'Site Supervisor',
+                    project: 'proj003',
+                    status: 'In Progress',
+                    submitted_by: 'Site Supervisor',
+                    submitted_date: '2026-04-15',
+                    mock: true
+                }
+            ];
+            console.log(`📊 Using fallback mock Toolbox Meeting records:`, toolboxMeetings.length);
+        }
+        
+        console.log(`📋 Returning ${toolboxMeetings.length} Toolbox Meeting records`);
+        res.json(toolboxMeetings);
+    } catch (error) {
+        console.error('❌ Error fetching Toolbox Meeting records:', error);
+        res.status(500).json({
+            error: 'Failed to fetch Toolbox Meeting records',
+            details: error.message
+        });
+    }
+});
+
+// Get Toolbox Meeting records (general endpoint)
+router.get('/toolbox-meetings', async (req, res) => {
+    try {
+        console.log('🔍 Fetching Toolbox Meeting records (general endpoint)...');
+        
+        let toolboxMeetings = [];
+        
+        try {
+            const [dbRecords] = await db.execute(
+                `SELECT * FROM hse_work WHERE work_type = 'Toolbox Meeting' ORDER BY submitted_date DESC`
+            );
+            toolboxMeetings = dbRecords;
+            console.log(`📊 Found ${toolboxMeetings.length} Toolbox Meeting records from database`);
+        } catch (dbError) {
+            console.error('❌ Database error, using fallback Toolbox Meeting records:', dbError);
+            
+            // Same fallback as above
+            toolboxMeetings = [
+                {
+                    id: 1,
+                    department_code: 'HSE',
+                    work_type: 'Toolbox Meeting',
+                    work_title: 'Weekly Safety Talk - Fall Protection',
+                    work_description: 'Weekly toolbox meeting discussing fall protection measures and safety protocols',
+                    meeting_date: '2026-04-20T09:00:00',
+                    duration: 30,
+                    topic: 'Fall Protection',
+                    attendees: 15,
+                    conducted_by: 'HSE Manager',
+                    project: 'proj001',
+                    status: 'Completed',
+                    submitted_by: 'HSE Manager',
+                    submitted_date: '2026-04-20',
+                    mock: true
+                },
+                {
+                    id: 2,
+                    department_code: 'HSE',
+                    work_type: 'Toolbox Meeting',
+                    work_title: 'Toolbox Talk - PPE Requirements',
+                    work_description: 'Discussion on proper PPE usage and requirements for different work areas',
+                    meeting_date: '2026-04-18T14:00:00',
+                    duration: 25,
+                    topic: 'PPE Requirements',
+                    attendees: 20,
+                    conducted_by: 'Safety Officer',
+                    project: 'proj002',
+                    status: 'Completed',
+                    submitted_by: 'Safety Officer',
+                    submitted_date: '2026-04-18',
+                    mock: true
+                },
+                {
+                    id: 3,
+                    department_code: 'HSE',
+                    work_type: 'Toolbox Meeting',
+                    work_title: 'Safety Meeting - Electrical Safety',
+                    work_description: 'Toolbox meeting covering electrical safety procedures and lockout/tagout protocols',
+                    meeting_date: '2026-04-15T08:30:00',
+                    duration: 45,
+                    topic: 'Electrical Safety',
+                    attendees: 18,
+                    conducted_by: 'Site Supervisor',
+                    project: 'proj003',
+                    status: 'In Progress',
+                    submitted_by: 'Site Supervisor',
+                    submitted_date: '2026-04-15',
+                    mock: true
+                }
+            ];
+            console.log(`📊 Using fallback mock Toolbox Meeting records:`, toolboxMeetings.length);
+        }
+        
+        console.log(`📋 Returning ${toolboxMeetings.length} Toolbox Meeting records`);
+        res.json(toolboxMeetings);
+    } catch (error) {
+        console.error('❌ Error fetching Toolbox Meeting records:', error);
+        res.status(500).json({
+            error: 'Failed to fetch Toolbox Meeting records',
+            details: error.message
+        });
+    }
+});
+
+// Get Incident Reporting records
+router.get('/hse/incidents', async (req, res) => {
+    try {
+        console.log('🔍 Fetching HSE Incident Reporting records...');
+        
+        let incidentRecords = [];
+        
+        try {
+            const [dbRecords] = await db.execute(
+                `SELECT * FROM hse_work WHERE work_type = 'Incident Reporting' ORDER BY submitted_date DESC`
+            );
+            incidentRecords = dbRecords;
+            console.log(`📊 Found ${incidentRecords.length} Incident Reporting records from database`);
+        } catch (dbError) {
+            console.error('❌ Database error, using fallback Incident Reporting records:', dbError);
+            
+            // Fallback to mock Incident Reporting records
+            incidentRecords = [
+                {
+                    id: 1,
+                    department_code: 'HSE',
+                    work_type: 'Incident Reporting',
+                    work_title: 'Near Miss - Falling Tools',
+                    work_description: 'Near miss incident with tools falling from height at tower construction site',
+                    incident_type: 'Near Miss',
+                    severity: 'Moderate',
+                    location: 'Tower Base Area',
+                    project: 'proj001',
+                    status: 'Resolved',
+                    submitted_by: 'Jennifer Lee',
+                    submitted_date: '2026-04-22',
+                    mock: true
+                },
+                {
+                    id: 2,
+                    department_code: 'HSE',
+                    work_type: 'Incident Reporting',
+                    work_title: 'Trench Collapse',
+                    work_description: 'Trench collapse with workers trapped during foundation excavation',
+                    incident_type: 'Accident',
+                    severity: 'Critical',
+                    location: 'Foundation Excavation',
+                    project: 'proj002',
+                    status: 'Investigating',
+                    submitted_by: 'Thomas Anderson',
+                    submitted_date: '2026-04-18',
+                    mock: true
+                },
+                {
+                    id: 3,
+                    department_code: 'HSE',
+                    work_type: 'Incident Reporting',
+                    work_title: 'Equipment Fire Damage',
+                    work_description: 'Fire damage to welding equipment in welding area',
+                    incident_type: 'Property Damage',
+                    severity: 'Minor',
+                    location: 'Welding Area - Section B',
+                    project: 'proj003',
+                    status: 'Resolved',
+                    submitted_by: 'Patricia Johnson',
+                    submitted_date: '2026-04-15',
+                    mock: true
+                }
+            ];
+            console.log(`📊 Using fallback mock Incident Reporting records:`, incidentRecords.length);
+        }
+        
+        console.log(`📋 Returning ${incidentRecords.length} Incident Reporting records`);
+        res.json(incidentRecords);
+    } catch (error) {
+        console.error('❌ Error fetching Incident Reporting records:', error);
+        res.status(500).json({
+            error: 'Failed to fetch Incident Reporting records',
+            details: error.message
+        });
+    }
+});
+
+// Get Incident Reporting records (general endpoint)
+router.get('/incidents', async (req, res) => {
+    try {
+        console.log('🔍 Fetching Incident Reporting records (general endpoint)...');
+        
+        let incidentRecords = [];
+        
+        try {
+            const [dbRecords] = await db.execute(
+                `SELECT * FROM hse_work WHERE work_type = 'Incident Reporting' ORDER BY submitted_date DESC`
+            );
+            incidentRecords = dbRecords;
+            console.log(`📊 Found ${incidentRecords.length} Incident Reporting records from database`);
+        } catch (dbError) {
+            console.error('❌ Database error, using fallback Incident Reporting records:', dbError);
+            
+            // Same fallback as above
+            incidentRecords = [
+                {
+                    id: 1,
+                    department_code: 'HSE',
+                    work_type: 'Incident Reporting',
+                    work_title: 'Near Miss - Falling Tools',
+                    work_description: 'Near miss incident with tools falling from height at tower construction site',
+                    incident_type: 'Near Miss',
+                    severity: 'Moderate',
+                    location: 'Tower Base Area',
+                    project: 'proj001',
+                    status: 'Resolved',
+                    submitted_by: 'Jennifer Lee',
+                    submitted_date: '2026-04-22',
+                    mock: true
+                },
+                {
+                    id: 2,
+                    department_code: 'HSE',
+                    work_type: 'Incident Reporting',
+                    work_title: 'Trench Collapse',
+                    work_description: 'Trench collapse with workers trapped during foundation excavation',
+                    incident_type: 'Accident',
+                    severity: 'Critical',
+                    location: 'Foundation Excavation',
+                    project: 'proj002',
+                    status: 'Investigating',
+                    submitted_by: 'Thomas Anderson',
+                    submitted_date: '2026-04-18',
+                    mock: true
+                },
+                {
+                    id: 3,
+                    department_code: 'HSE',
+                    work_type: 'Incident Reporting',
+                    work_title: 'Equipment Fire Damage',
+                    work_description: 'Fire damage to welding equipment in welding area',
+                    incident_type: 'Property Damage',
+                    severity: 'Minor',
+                    location: 'Welding Area - Section B',
+                    project: 'proj003',
+                    status: 'Resolved',
+                    submitted_by: 'Patricia Johnson',
+                    submitted_date: '2026-04-15',
+                    mock: true
+                }
+            ];
+            console.log(`📊 Using fallback mock Incident Reporting records:`, incidentRecords.length);
+        }
+        
+        console.log(`📋 Returning ${incidentRecords.length} Incident Reporting records`);
+        res.json(incidentRecords);
+    } catch (error) {
+        console.error('❌ Error fetching Incident Reporting records:', error);
+        res.status(500).json({
+            error: 'Failed to fetch Incident Reporting records',
+            details: error.message
+        });
+    }
+});
+
+// Get Site Report records
+router.get('/site-reports', async (req, res) => {
+    try {
+        console.log('🔍 Fetching Site Report records...');
+        
+        let siteReports = [];
+        
+        try {
+            const [dbRecords] = await db.execute(
+                `SELECT * FROM hse_work WHERE work_type = 'Site Report' ORDER BY submitted_date DESC`
+            );
+            siteReports = dbRecords;
+            console.log(`📊 Found ${siteReports.length} Site Report records from database`);
+        } catch (dbError) {
+            console.error('❌ Database error, using fallback Site Report records:', dbError);
+            
+            // Fallback to mock Site Report records
+            siteReports = [
+                {
+                    id: 1,
+                    department_code: 'PROJECT',
+                    work_type: 'Site Report',
+                    work_title: 'Daily Site Report - Port Modernization',
+                    work_description: 'Daily progress report for port modernization project',
+                    project: 'prj001',
+                    report_date: '2026-04-22',
+                    weather_conditions: 'Sunny',
+                    site_supervisor: 'John Mwangi',
+                    workers_present: 20,
+                    work_completed: 'Column construction completed, beam installation started',
+                    issues_challenges: 'No issues',
+                    safety_incidents: 'None',
+                    materials_used: 'Steel beams: 10 units, Bolts: 500 units',
+                    equipment_used: 'Crane, Torque wrench',
+                    next_day_plan: 'Continue beam installation, begin deck construction',
+                    status: 'Completed',
+                    submitted_by: 'John Mwangi',
+                    submitted_date: '2026-04-22',
+                    mock: true
+                },
+                {
+                    id: 2,
+                    department_code: 'PROJECT',
+                    work_type: 'Site Report',
+                    work_title: 'Daily Site Report - Warehouse Construction',
+                    work_description: 'Daily progress report for warehouse construction project',
+                    project: 'prj002',
+                    report_date: '2026-04-21',
+                    weather_conditions: 'Rainy',
+                    site_supervisor: 'Mary Johnson',
+                    workers_present: 15,
+                    work_completed: 'HVAC rough-in completed, insulation installation started',
+                    issues_challenges: 'No issues',
+                    safety_incidents: 'Slip hazard due to rain',
+                    materials_used: 'HVAC ducts: 300m, Insulation: 300 rolls',
+                    equipment_used: 'HVAC installer, Insulation tools',
+                    next_day_plan: 'Complete insulation, begin drywall installation',
+                    status: 'Completed',
+                    submitted_by: 'Mary Johnson',
+                    submitted_date: '2026-04-21',
+                    mock: true
+                },
+                {
+                    id: 3,
+                    department_code: 'PROJECT',
+                    work_type: 'Site Report',
+                    work_title: 'Daily Site Report - Road Infrastructure',
+                    work_description: 'Daily progress report for road infrastructure project',
+                    project: 'prj003',
+                    report_date: '2026-04-20',
+                    weather_conditions: 'Windy',
+                    site_supervisor: 'Robert Davis',
+                    workers_present: 18,
+                    work_completed: 'Quality inspection passed, sidewalk installation started',
+                    issues_challenges: 'No issues',
+                    safety_incidents: 'None',
+                    materials_used: 'Concrete pavers: 1000 units, Edge restraints: 200m',
+                    equipment_used: 'Paver laying machine, Compactor',
+                    next_day_plan: 'Complete sidewalk installation, begin landscaping',
+                    status: 'Completed',
+                    submitted_by: 'Robert Davis',
+                    submitted_date: '2026-04-20',
+                    mock: true
+                }
+            ];
+            console.log(`📊 Using fallback mock Site Report records:`, siteReports.length);
+        }
+        
+        console.log(`📋 Returning ${siteReports.length} Site Report records`);
+        res.json(siteReports);
+    } catch (error) {
+        console.error('❌ Error fetching Site Report records:', error);
+        res.status(500).json({
+            error: 'Failed to fetch Site Report records',
+            details: error.message
+        });
+    }
+});
+
 // Get all work items for a specific department
 router.get('/:department', async (req, res) => {
     try {
@@ -97,6 +1006,7 @@ router.get('/:department', async (req, res) => {
             if (department === 'hse' && workItems.length < 3) {
                 console.log(`⚠️ Only ${workItems.length} HSE records found, adding mock data for demonstration`);
                 const mockData = getMockWorkItems('hse');
+                
                 // Add mock data that doesn't conflict with real IDs
                 const additionalMockData = mockData.filter(mock => 
                     !workItems.some(real => real.id === mock.id)
@@ -109,6 +1019,7 @@ router.get('/:department', async (req, res) => {
             
             // Fallback to mock work items based on department
             workItems = getMockWorkItems(department);
+            console.log(`📊 Using fallback mock work items:`, workItems.length);
         }
         
         console.log(`📋 Returning ${workItems.length} ${department} work items`);
@@ -243,6 +1154,39 @@ function getMockWorkItems(department) {
                         submitted_by: 'Maintenance Supervisor',
                         submitted_date: '2024-01-11',
                         mock: true
+                    },
+                    {
+                        id: 6,
+                        department_code: 'HSE',
+                        work_type: 'PPE Issuance',
+                        work_title: 'Hard Hat Distribution',
+                        work_description: 'Issue hard hats to new construction workers',
+                        ppe_type: 'Hard Hat',
+                        employee_name: 'John Doe',
+                        issued_date: '2024-01-10',
+                        return_date: '2024-04-10',
+                        status: 'Issued',
+                        priority: 'Medium',
+                        submitted_by: 'Safety Officer',
+                        submitted_date: '2024-01-10',
+                        mock: true
+                    },
+                    {
+                        id: 7,
+                        department_code: 'HSE',
+                        work_type: 'Inspection Report',
+                        work_title: 'Monthly Safety Inspection',
+                        work_description: 'Conduct monthly safety inspection of all work areas',
+                        inspection_date: '2024-01-09',
+                        inspector: 'HSE Manager',
+                        compliance_status: 'minor-issues',
+                        risk_level: 'Low',
+                        project: 'proj001',
+                        status: 'Completed',
+                        priority: 'High',
+                        submitted_by: 'HSE Manager',
+                        submitted_date: '2024-01-09',
+                        mock: true
                     }
                 ],
                 projects: [
@@ -258,6 +1202,28 @@ function getMockWorkItems(department) {
                         priority: 'High',
                         submitted_by: 'Project Manager',
                         submitted_date: '2024-01-15',
+                        mock: true
+                    },
+                    {
+                        id: 2,
+                        department_code: 'PROJECT',
+                        work_type: 'Site Report',
+                        work_title: 'Daily Site Report - Port Modernization',
+                        work_description: 'Daily progress report for port modernization project',
+                        project: 'prj001',
+                        report_date: '2024-01-14',
+                        weather_conditions: 'Sunny',
+                        site_supervisor: 'John Mwangi',
+                        workers_present: 20,
+                        work_completed: 'Column construction completed, beam installation started',
+                        issues_challenges: 'No issues',
+                        safety_incidents: 'None',
+                        materials_used: 'Steel beams: 10 units, Bolts: 500 units',
+                        equipment_used: 'Crane, Torque wrench',
+                        next_day_plan: 'Continue beam installation, begin deck construction',
+                        status: 'Completed',
+                        submitted_by: 'John Mwangi',
+                        submitted_date: '2024-01-14',
                         mock: true
                     }
                 ],
