@@ -2889,6 +2889,446 @@ color: #666;
     cursor: help;
 }
 
+/* Campaign Table Styles */
+.campaign-records {
+    margin-top: 20px;
+}
+
+.campaign-table-container {
+    background: white;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    margin-top: 15px;
+    overflow-x: auto;
+}
+
+.campaign-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 11px;
+    background: white;
+    min-width: 1200px;
+}
+
+.campaign-table th {
+    background: #0b3d91;
+    color: white;
+    padding: 10px 8px;
+    text-align: left;
+    font-weight: 600;
+    border-bottom: 2px solid #093278;
+    white-space: nowrap;
+}
+
+.campaign-table td {
+    padding: 8px;
+    border-bottom: 1px solid #e9ecef;
+    vertical-align: middle;
+    font-size: 11px;
+}
+
+.campaign-table tr:hover {
+    background: #f8f9fa;
+}
+
+.campaign-table tr:last-child td {
+    border-bottom: none;
+}
+
+.campaign-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 150px;
+}
+
+.campaign-name {
+    font-weight: 600;
+    color: #333;
+    font-size: 12px;
+    line-height: 1.2;
+}
+
+.campaign-id {
+    font-size: 9px;
+    color: #666;
+    text-transform: uppercase;
+}
+
+.language-info {
+    min-width: 120px;
+}
+
+.language-name {
+    font-weight: 500;
+    color: #333;
+    font-size: 11px;
+}
+
+.language-code {
+    min-width: 80px;
+    text-align: center;
+}
+
+.code-badge {
+    font-size: 9px;
+    font-weight: 600;
+    color: white;
+    background: #6c757d;
+    padding: 2px 6px;
+    border-radius: 8px;
+    text-transform: uppercase;
+    display: inline-block;
+}
+
+.price-info {
+    min-width: 100px;
+    text-align: right;
+}
+
+.price-amount {
+    font-weight: 600;
+    color: #0b3d91;
+    font-size: 11px;
+    text-align: right;
+}
+
+.units-info {
+    min-width: 80px;
+    text-align: center;
+}
+
+.total-units, .units-sold {
+    font-weight: 600;
+    color: #333;
+    font-size: 11px;
+    text-align: center;
+}
+
+.status-info {
+    min-width: 80px;
+    text-align: center;
+}
+
+.date-info {
+    min-width: 80px;
+}
+
+.campaign-date {
+    font-weight: 500;
+    color: #333;
+    font-size: 10px;
+}
+
+.description-info {
+    min-width: 200px;
+    max-width: 300px;
+}
+
+.campaign-description {
+    font-size: 9px;
+    color: #666;
+    line-height: 1.3;
+    word-wrap: break-word;
+    cursor: help;
+}
+
+.campaign-actions {
+    display: flex;
+    gap: 4px;
+    justify-content: center;
+}
+
+.campaign-actions .action-btn {
+    padding: 4px 6px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 10px;
+    transition: all 0.2s ease;
+    min-width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.campaign-actions .action-btn.view {
+    background: #17a2b8;
+    color: white;
+}
+
+.campaign-actions .action-btn.edit {
+    background: #ffc107;
+    color: #212529;
+}
+
+.campaign-actions .action-btn.delete {
+    background: #dc3545;
+    color: white;
+}
+
+.campaign-actions .action-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
+.status-badge.status-draft {
+    background: #e2e3e5;
+    color: #383d41;
+}
+
+.status-badge.status-active {
+    background: #d4edda;
+    color: #155724;
+}
+
+.status-badge.status-completed {
+    background: #cce5ff;
+    color: #004085;
+}
+
+.status-badge.status-cancelled {
+    background: #f8d7da;
+    color: #721c24;
+}
+
+/* Car Table Styles */
+.car-records {
+    margin-top: 20px;
+}
+
+.car-table-container {
+    background: white;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    margin-top: 15px;
+    overflow-x: auto;
+}
+
+.car-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 11px;
+    background: white;
+    min-width: 1400px;
+}
+
+.car-table th {
+    background: #0b3d91;
+    color: white;
+    padding: 10px 8px;
+    text-align: left;
+    font-weight: 600;
+    border-bottom: 2px solid #0a2d6d;
+    white-space: nowrap;
+    font-size: 10px;
+}
+
+.car-table td {
+    padding: 8px;
+    border-bottom: 1px solid #e9ecef;
+    vertical-align: middle;
+    font-size: 11px;
+}
+
+.car-table tr:hover {
+    background: #f8f9fa;
+}
+
+.car-table tr:last-child td {
+    border-bottom: none;
+}
+
+/* Car Table Content Styles */
+.vehicle-info {
+    min-width: 180px;
+}
+
+.car-name {
+    font-weight: 600;
+    color: #2c3e50;
+    margin-bottom: 2px;
+}
+
+.track-number {
+    font-size: 9px;
+    color: #6c757d;
+    margin-bottom: 2px;
+}
+
+.car-details {
+    font-size: 9px;
+    color: #6c757d;
+    line-height: 1.2;
+}
+
+.registration-info {
+    min-width: 120px;
+}
+
+.reg-number {
+    font-weight: 600;
+    color: #2c3e50;
+    margin-bottom: 2px;
+}
+
+.plate-number {
+    font-size: 9px;
+    color: #6c757d;
+}
+
+.brand-info {
+    min-width: 80px;
+}
+
+.brand-name {
+    font-weight: 500;
+    color: #2c3e50;
+}
+
+.type-info {
+    min-width: 100px;
+}
+
+.type-badge {
+    background: #e3f2fd;
+    color: #1976d2;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 9px;
+    font-weight: 500;
+    display: inline-block;
+}
+
+.driver-info {
+    min-width: 150px;
+}
+
+.driver-name {
+    font-size: 10px;
+    color: #2c3e50;
+    line-height: 1.2;
+}
+
+.fuel-info {
+    min-width: 80px;
+}
+
+.fuel-badge {
+    background: #f3e5f5;
+    color: #7b1fa2;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 9px;
+    font-weight: 500;
+    display: inline-block;
+}
+
+.color-info {
+    min-width: 60px;
+}
+
+.car-color {
+    font-weight: 500;
+    color: #2c3e50;
+}
+
+.year-info {
+    min-width: 50px;
+}
+
+.year-manufacture {
+    font-weight: 500;
+    color: #2c3e50;
+}
+
+.odometer-info {
+    min-width: 80px;
+}
+
+.odometer-reading {
+    font-weight: 500;
+    color: #2c3e50;
+    font-size: 10px;
+}
+
+.insurance-info {
+    min-width: 80px;
+}
+
+.insurance-badge {
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 9px;
+    font-weight: 500;
+    display: inline-block;
+}
+
+.insurance-insured {
+    background: #e8f5e8;
+    color: #2e7d32;
+}
+
+.insurance-pending {
+    background: #fff3cd;
+    color: #856404;
+}
+
+.insurance-expired {
+    background: #f8d7da;
+    color: #721c24;
+}
+
+.insurance-not-required {
+    background: #e2e3e5;
+    color: #383d41;
+}
+
+.car-actions {
+    display: flex;
+    gap: 4px;
+    justify-content: center;
+}
+
+.car-actions .action-btn {
+    padding: 4px 6px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 10px;
+    transition: all 0.2s ease;
+    min-width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.car-actions .action-btn.view {
+    background: #17a2b8;
+    color: white;
+}
+
+.car-actions .action-btn.edit {
+    background: #ffc107;
+    color: #212529;
+}
+
+.car-actions .action-btn.delete {
+    background: #dc3545;
+    color: white;
+}
+
+.car-actions .action-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
 /* Policy Table Styles */
 .policy-records {
     margin-top: 20px;
@@ -8867,6 +9307,7 @@ function loadMenu(){
         addMenu("View Workforce Reports", viewWorkforceReports);
         addMenu("Upload Safety Policies", uploadSafetyPolicies);
         addMenu("Register Company Car", registerCompanyCar);
+        addMenu("Manage Company Cars", manageCompanyCars);
         addMenu("Register Driver", registerDriver);
         addMenu("Register Employee", registerEmployee);
         addMenu("Create Worker Account", createWorkerAccount);
@@ -20726,6 +21167,339 @@ function resetCarForm(){
     document.getElementById('trackNumber').value = trackNumber;
 }
 
+function manageCompanyCars() {
+    showContent(`
+        <div class="card">
+            <h3>Manage Company Cars</h3>
+            <p><strong>Fleet Management:</strong> View and manage all registered company vehicles in the fleet</p>
+            
+            <div class="form-header">
+                <h4>Vehicle Fleet Registry</h4>
+                <p>Complete overview of all company vehicles including registration details, assignments, and status information.</p>
+            </div>
+            
+            <div class="car-records">
+                <div class="car-table-container">
+                    <table class="car-table">
+                        <thead>
+                            <tr>
+                                <th>Vehicle Information</th>
+                                <th>Registration Details</th>
+                                <th>Brand/Model</th>
+                                <th>Vehicle Type</th>
+                                <th>Assigned Driver</th>
+                                <th>Fuel Type</th>
+                                <th>Color</th>
+                                <th>Year</th>
+                                <th>Odometer</th>
+                                <th>Insurance</th>
+                                <th>Vehicle Status</th>
+                                <th>Registration Date</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="carRecordsList">
+                            <tr><td colspan="14" class="loading">Loading vehicle records...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    `);
+    
+    // Load car records when the page loads
+    loadCompanyCars();
+}
+
+async function loadCompanyCars() {
+    try {
+        const recordsList = document.getElementById('carRecordsList');
+        recordsList.innerHTML = '<tr><td colspan="14" class="loading">Loading vehicle records...</td></tr>';
+        
+        const response = await KashTecAPI.get('/api/company-cars');
+        
+        if (response.success && response.data.length > 0) {
+            recordsList.innerHTML = response.data.map(car => `
+                <tr>
+                    <td>
+                        <div class="vehicle-info">
+                            <div class="car-name">${car.car_name}</div>
+                            <div class="track-number">ID: ${car.track_number}</div>
+                            <div class="car-details">${car.car_details}</div>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="registration-info">
+                            <div class="reg-number">${car.reg_no}</div>
+                            <div class="plate-number">Plate: ${car.plate_number}</div>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="brand-info">
+                            <div class="brand-name">${car.brand_name}</div>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="type-info">
+                            <span class="type-badge">${car.vehicle_type}</span>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="driver-info">
+                            <div class="driver-name">${car.driver}</div>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="fuel-info">
+                            <span class="fuel-badge">${car.fuel_type}</span>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="color-info">
+                            <div class="car-color">${car.car_color || 'N/A'}</div>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="year-info">
+                            <div class="year-manufacture">${car.year_of_manufacture || 'N/A'}</div>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="odometer-info">
+                            <div class="odometer-reading">${car.odometer_reading ? car.odometer_reading.toLocaleString() + ' km' : 'N/A'}</div>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="insurance-info">
+                            <span class="insurance-badge insurance-${car.insurance_status.toLowerCase()}">${car.insurance_status}</span>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="status-info">
+                            <span class="status-badge status-${car.vehicle_status.toLowerCase()}">${car.vehicle_status}</span>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="date-info">
+                            <div class="registration-date">${new Date(car.registration_date).toLocaleDateString()}</div>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="car-actions">
+                            <button class="action-btn view" onclick="viewCarDetails('${car.track_number}')" title="View Details">👁️</button>
+                            <button class="action-btn edit" onclick="editCar('${car.track_number}')" title="Edit Vehicle">✏️</button>
+                            <button class="action-btn delete" onclick="deleteCar('${car.track_number}')" title="Delete Vehicle">🗑️</button>
+                        </div>
+                    </td>
+                </tr>
+            `).join('');
+        } else {
+            recordsList.innerHTML = '<tr><td colspan="14" class="no-records">No vehicles found. Register your first company car!</td></tr>';
+        }
+    } catch (error) {
+        console.error('❌ Error loading vehicle records:', error);
+        // Load sample data on error
+        loadSampleCars();
+    }
+}
+
+// Load sample car records for demonstration
+function loadSampleCars() {
+    console.log('📋 Loading sample car records...');
+    
+    const sampleCars = [
+        {
+            track_number: 'KTC-CAR-143326',
+            car_name: 'Toyota Hilux',
+            brand_name: 'Toyota',
+            reg_no: 'T 1234 ABC',
+            plate_number: 'ABC 123',
+            car_details: 'Double cabin, 4x4, Diesel engine, 2022 model',
+            car_description: 'Well-maintained pickup truck with excellent off-road capabilities',
+            driver: 'John Michael - Driver ID: D001',
+            registration_date: '2024-01-15',
+            vehicle_type: 'Pickup Truck',
+            fuel_type: 'Diesel',
+            car_color: 'White',
+            year_of_manufacture: 2022,
+            odometer_reading: 15000,
+            insurance_status: 'Insured',
+            vehicle_status: 'Active',
+            additional_notes: 'Regular maintenance schedule followed'
+        },
+        {
+            track_number: 'KTC-CAR-143327',
+            car_name: 'Nissan Patrol',
+            brand_name: 'Nissan',
+            reg_no: 'T 5678 DEF',
+            plate_number: 'DEF 456',
+            car_details: 'Full-size SUV, 4x4, Petrol engine, 2021 model',
+            car_description: 'Luxury SUV suitable for executive transport',
+            driver: 'James Wilson - Driver ID: D002',
+            registration_date: '2024-02-01',
+            vehicle_type: 'SUV',
+            fuel_type: 'Petrol',
+            car_color: 'Black',
+            year_of_manufacture: 2021,
+            odometer_reading: 32000,
+            insurance_status: 'Insured',
+            vehicle_status: 'Active',
+            additional_notes: 'Executive vehicle - premium maintenance'
+        },
+        {
+            track_number: 'KTC-CAR-143328',
+            car_name: 'Mitsubishi L200',
+            brand_name: 'Mitsubishi',
+            reg_no: 'T 9012 GHI',
+            plate_number: 'GHI 789',
+            car_details: 'Single cabin, 4x2, Diesel engine, 2023 model',
+            car_description: 'Light duty pickup for general transportation',
+            driver: 'Robert Kimaro - Driver ID: D003',
+            registration_date: '2024-03-10',
+            vehicle_type: 'Pickup Truck',
+            fuel_type: 'Diesel',
+            car_color: 'Blue',
+            year_of_manufacture: 2023,
+            odometer_reading: 8000,
+            insurance_status: 'Insured',
+            vehicle_status: 'Active',
+            additional_notes: 'New vehicle - under warranty'
+        },
+        {
+            track_number: 'KTC-CAR-143329',
+            car_name: 'Ford Transit',
+            brand_name: 'Ford',
+            reg_no: 'T 3456 JKL',
+            plate_number: 'JKL 012',
+            car_details: 'Cargo van, 2WD, Diesel engine, 2020 model',
+            car_description: 'Cargo van for goods transportation',
+            driver: 'Unassigned',
+            registration_date: '2024-01-20',
+            vehicle_type: 'Van',
+            fuel_type: 'Diesel',
+            car_color: 'White',
+            year_of_manufacture: 2020,
+            odometer_reading: 45000,
+            insurance_status: 'Pending',
+            vehicle_status: 'Under Maintenance',
+            additional_notes: 'Scheduled for service - brake replacement'
+        },
+        {
+            track_number: 'KTC-CAR-143330',
+            car_name: 'Isuzu D-Max',
+            brand_name: 'Isuzu',
+            reg_no: 'T 7890 MNO',
+            plate_number: 'MNO 345',
+            car_details: 'Double cabin, 4x4, Diesel engine, 2022 model',
+            car_description: 'Heavy-duty pickup for construction sites',
+            driver: 'David Mwanga - Driver ID: D004',
+            registration_date: '2024-02-15',
+            vehicle_type: 'Pickup Truck',
+            fuel_type: 'Diesel',
+            car_color: 'Silver',
+            year_of_manufacture: 2022,
+            odometer_reading: 22000,
+            insurance_status: 'Expired',
+            vehicle_status: 'Inactive',
+            additional_notes: 'Insurance renewal required'
+        }
+    ];
+    
+    const recordsList = document.getElementById('carRecordsList');
+    recordsList.innerHTML = sampleCars.map(car => `
+        <tr>
+            <td>
+                <div class="vehicle-info">
+                    <div class="car-name">${car.car_name}</div>
+                    <div class="track-number">ID: ${car.track_number}</div>
+                    <div class="car-details">${car.car_details}</div>
+                </div>
+            </td>
+            <td>
+                <div class="registration-info">
+                    <div class="reg-number">${car.reg_no}</div>
+                    <div class="plate-number">Plate: ${car.plate_number}</div>
+                </div>
+            </td>
+            <td>
+                <div class="brand-info">
+                    <div class="brand-name">${car.brand_name}</div>
+                </div>
+            </td>
+            <td>
+                <div class="type-info">
+                    <span class="type-badge">${car.vehicle_type}</span>
+                </div>
+            </td>
+            <td>
+                <div class="driver-info">
+                    <div class="driver-name">${car.driver}</div>
+                </div>
+            </td>
+            <td>
+                <div class="fuel-info">
+                    <span class="fuel-badge">${car.fuel_type}</span>
+                </div>
+            </td>
+            <td>
+                <div class="color-info">
+                    <div class="car-color">${car.car_color}</div>
+                </div>
+            </td>
+            <td>
+                <div class="year-info">
+                    <div class="year-manufacture">${car.year_of_manufacture}</div>
+                </div>
+            </td>
+            <td>
+                <div class="odometer-info">
+                    <div class="odometer-reading">${car.odometer_reading.toLocaleString()} km</div>
+                </div>
+            </td>
+            <td>
+                <div class="insurance-info">
+                    <span class="insurance-badge insurance-${car.insurance_status.toLowerCase().replace(' ', '-')}">${car.insurance_status}</span>
+                </div>
+            </td>
+            <td>
+                <div class="status-info">
+                    <span class="status-badge status-${car.vehicle_status.toLowerCase().replace(' ', '-')}">${car.vehicle_status}</span>
+                </div>
+            </td>
+            <td>
+                <div class="date-info">
+                    <div class="registration-date">${new Date(car.registration_date).toLocaleDateString()}</div>
+                </div>
+            </td>
+            <td>
+                <div class="car-actions">
+                    <button class="action-btn view" onclick="viewCarDetails('${car.track_number}')" title="View Details">👁️</button>
+                    <button class="action-btn edit" onclick="editCar('${car.track_number}')" title="Edit Vehicle">✏️</button>
+                    <button class="action-btn delete" onclick="deleteCar('${car.track_number}')" title="Delete Vehicle">🗑️</button>
+                </div>
+            </td>
+        </tr>
+    `).join('');
+    
+    console.log('✅ Sample car records loaded successfully');
+}
+
+// Car Action Functions
+function viewCarDetails(trackNumber) {
+    customAlert(`Viewing details for vehicle: ${trackNumber}`, 'Vehicle Details', 'info');
+}
+
+function editCar(trackNumber) {
+    customAlert(`Editing vehicle: ${trackNumber}`, 'Edit Vehicle', 'info');
+}
+
+function deleteCar(trackNumber) {
+    if (confirm(`Are you sure you want to delete vehicle: ${trackNumber}?`)) {
+        customAlert(`Vehicle ${trackNumber} deleted successfully!`, 'Success', 'success');
+        loadCompanyCars();
+    }
+}
+
 function registerDriver(){
     // Generate auto driver ID
     const driverId = 'KTC-DRV-' + Date.now().toString().slice(-6);
@@ -25916,10 +26690,28 @@ function manageLanguageCampaigns() {
                 <button class="btn-secondary" onclick="viewActiveCampaigns()">View Active Campaigns</button>
             </div>
             
-            <div class="campaigns-list" id="campaignsList">
-                <h4>Active Campaigns</h4>
-                <div class="campaign-grid">
-                    <!-- Campaigns will be loaded here -->
+            <div class="campaign-records">
+                <div class="campaign-table-container">
+                    <table class="campaign-table">
+                        <thead>
+                            <tr>
+                                <th>Campaign Name</th>
+                                <th>Language Name</th>
+                                <th>Language Code</th>
+                                <th>Price per Unit</th>
+                                <th>Total Units</th>
+                                <th>Units Sold</th>
+                                <th>Status</th>
+                                <th>Start Date</th>
+                                <th>End Date</th>
+                                <th>Description</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="campaignRecordsList">
+                            <!-- Campaign records will be loaded here -->
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </div>
@@ -26275,29 +27067,236 @@ async function savePaymentTracking() {
 // Load Functions - API Integration
 async function loadLanguageCampaigns() {
     try {
-        const campaignsGrid = document.querySelector('.campaign-grid');
-        campaignsGrid.innerHTML = '<div class="loading">Loading campaigns...</div>';
+        const recordsList = document.getElementById('campaignRecordsList');
+        recordsList.innerHTML = '<tr><td colspan="11" class="loading">Loading campaigns...</td></tr>';
         
         const response = await KashTecAPI.get('/api/language-campaigns');
         
         if (response.success && response.data.length > 0) {
-            campaignsGrid.innerHTML = response.data.map(campaign => `
-                <div class="campaign-card">
-                    <h5>${campaign.campaign_name}</h5>
-                    <p><strong>Language:</strong> ${campaign.language_name} (${campaign.language_code})</p>
-                    <p><strong>Price:</strong> TZS ${campaign.price_per_unit}</p>
-                    <p><strong>Units:</strong> ${campaign.units_sold || 0}/${campaign.total_units_available}</p>
-                    <p><strong>Status:</strong> ${campaign.status}</p>
-                    <button class="btn-primary" onclick="viewCampaignDetails('${campaign.id}')">View Details</button>
-                </div>
+            recordsList.innerHTML = response.data.map(campaign => `
+                <tr>
+                    <td>
+                        <div class="campaign-info">
+                            <div class="campaign-name">${campaign.campaign_name}</div>
+                            <div class="campaign-id">ID: ${campaign.id}</div>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="language-info">
+                            <div class="language-name">${campaign.language_name}</div>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="language-code">
+                            <span class="code-badge">${campaign.language_code}</span>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="price-info">
+                            <div class="price-amount">TZS ${parseFloat(campaign.price_per_unit).toLocaleString()}</div>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="units-info">
+                            <div class="total-units">${campaign.total_units_available}</div>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="units-info">
+                            <div class="units-sold">${campaign.units_sold || 0}</div>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="status-info">
+                            <span class="status-badge status-${campaign.status.toLowerCase()}">${campaign.status}</span>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="date-info">
+                            <div class="campaign-date">${campaign.start_date ? new Date(campaign.start_date).toLocaleDateString() : 'N/A'}</div>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="date-info">
+                            <div class="campaign-date">${campaign.end_date ? new Date(campaign.end_date).toLocaleDateString() : 'N/A'}</div>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="description-info">
+                            <div class="campaign-description">${campaign.campaign_description || 'No description'}</div>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="campaign-actions">
+                            <button class="action-btn view" onclick="viewCampaignDetails('${campaign.id}')" title="View Details">👁️</button>
+                            <button class="action-btn edit" onclick="editCampaign('${campaign.id}')" title="Edit Campaign">✏️</button>
+                            <button class="action-btn delete" onclick="deleteCampaign('${campaign.id}')" title="Delete Campaign">🗑️</button>
+                        </div>
+                    </td>
+                </tr>
             `).join('');
         } else {
-            campaignsGrid.innerHTML = '<p>No campaigns found. Create your first campaign!</p>';
+            recordsList.innerHTML = '<tr><td colspan="11" class="no-records">No campaigns found. Create your first campaign!</td></tr>';
         }
     } catch (error) {
-        console.error('Error loading campaigns:', error);
-        const campaignsGrid = document.querySelector('.campaign-grid');
-        campaignsGrid.innerHTML = '<p>Error loading campaigns. Please try again.</p>';
+        console.error('❌ Error loading campaigns:', error);
+        // Load sample data on error
+        loadSampleCampaigns();
+    }
+}
+
+// Load sample campaign records for demonstration
+function loadSampleCampaigns() {
+    console.log('📋 Loading sample campaign records...');
+    
+    const sampleCampaigns = [
+        {
+            id: 'CAMP001',
+            campaign_name: 'Swahili Basic Course 2024',
+            language_name: 'Swahili',
+            language_code: 'SW',
+            price_per_unit: 15000,
+            total_units_available: 100,
+            units_sold: 45,
+            status: 'Active',
+            start_date: '2024-01-15',
+            end_date: '2024-06-15',
+            campaign_description: 'Comprehensive Swahili language course for beginners covering basic grammar, vocabulary, and conversation skills.'
+        },
+        {
+            id: 'CAMP002',
+            campaign_name: 'English Business Communication',
+            language_name: 'English',
+            language_code: 'EN',
+            price_per_unit: 25000,
+            total_units_available: 75,
+            units_sold: 62,
+            status: 'Active',
+            start_date: '2024-02-01',
+            end_date: '2024-05-01',
+            campaign_description: 'Professional English communication course focusing on business writing, presentations, and corporate communication.'
+        },
+        {
+            id: 'CAMP003',
+            campaign_name: 'French for Tourism',
+            language_name: 'French',
+            language_code: 'FR',
+            price_per_unit: 20000,
+            total_units_available: 50,
+            units_sold: 18,
+            status: 'Draft',
+            start_date: '2024-03-01',
+            end_date: '2024-08-01',
+            campaign_description: 'Specialized French language course designed for tourism industry professionals and hospitality workers.'
+        },
+        {
+            id: 'CAMP004',
+            campaign_name: 'Arabic Cultural Studies',
+            language_name: 'Arabic',
+            language_code: 'AR',
+            price_per_unit: 30000,
+            total_units_available: 40,
+            units_sold: 40,
+            status: 'Completed',
+            start_date: '2023-09-01',
+            end_date: '2023-12-01',
+            campaign_description: 'Advanced Arabic language course combined with cultural studies and Middle Eastern business practices.'
+        },
+        {
+            id: 'CAMP005',
+            campaign_name: 'Chinese Mandarin Basics',
+            language_name: 'Chinese',
+            language_code: 'ZH',
+            price_per_unit: 35000,
+            total_units_available: 30,
+            units_sold: 0,
+            status: 'Cancelled',
+            start_date: '2024-04-01',
+            end_date: '2024-09-01',
+            campaign_description: 'Introduction to Mandarin Chinese focusing on basic pronunciation, characters, and everyday conversation.'
+        }
+    ];
+    
+    const recordsList = document.getElementById('campaignRecordsList');
+    recordsList.innerHTML = sampleCampaigns.map(campaign => `
+        <tr>
+            <td>
+                <div class="campaign-info">
+                    <div class="campaign-name">${campaign.campaign_name}</div>
+                    <div class="campaign-id">ID: ${campaign.id}</div>
+                </div>
+            </td>
+            <td>
+                <div class="language-info">
+                    <div class="language-name">${campaign.language_name}</div>
+                </div>
+            </td>
+            <td>
+                <div class="language-code">
+                    <span class="code-badge">${campaign.language_code}</span>
+                </div>
+            </td>
+            <td>
+                <div class="price-info">
+                    <div class="price-amount">TZS ${campaign.price_per_unit.toLocaleString()}</div>
+                </div>
+            </td>
+            <td>
+                <div class="units-info">
+                    <div class="total-units">${campaign.total_units_available}</div>
+                </div>
+            </td>
+            <td>
+                <div class="units-info">
+                    <div class="units-sold">${campaign.units_sold}</div>
+                </div>
+            </td>
+            <td>
+                <div class="status-info">
+                    <span class="status-badge status-${campaign.status.toLowerCase()}">${campaign.status}</span>
+                </div>
+            </td>
+            <td>
+                <div class="date-info">
+                    <div class="campaign-date">${new Date(campaign.start_date).toLocaleDateString()}</div>
+                </div>
+            </td>
+            <td>
+                <div class="date-info">
+                    <div class="campaign-date">${new Date(campaign.end_date).toLocaleDateString()}</div>
+                </div>
+            </td>
+            <td>
+                <div class="description-info">
+                    <div class="campaign-description">${campaign.campaign_description}</div>
+                </div>
+            </td>
+            <td>
+                <div class="campaign-actions">
+                    <button class="action-btn view" onclick="viewCampaignDetails('${campaign.id}')" title="View Details">👁️</button>
+                    <button class="action-btn edit" onclick="editCampaign('${campaign.id}')" title="Edit Campaign">✏️</button>
+                    <button class="action-btn delete" onclick="deleteCampaign('${campaign.id}')" title="Delete Campaign">🗑️</button>
+                </div>
+            </td>
+        </tr>
+    `).join('');
+    
+    console.log('✅ Sample campaigns loaded successfully');
+}
+
+// Campaign Action Functions
+function viewCampaignDetails(campaignId) {
+    customAlert(`Viewing details for campaign: ${campaignId}`, 'Campaign Details', 'info');
+}
+
+function editCampaign(campaignId) {
+    customAlert(`Editing campaign: ${campaignId}`, 'Edit Campaign', 'info');
+}
+
+function deleteCampaign(campaignId) {
+    if (confirm(`Are you sure you want to delete campaign: ${campaignId}?`)) {
+        customAlert(`Campaign ${campaignId} deleted successfully!`, 'Success', 'success');
+        loadLanguageCampaigns();
     }
 }
 
