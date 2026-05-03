@@ -10569,8 +10569,11 @@ window.KashTecAPI = {
             // Transform HSE data to safety status format
             console.log('🔍 Raw HSE response:', response);
             
+            // Convert single object to array for consistent processing
+            const hseData = Array.isArray(response) ? response : [response];
+            
             const safetyData = {
-                projects: Array.isArray(response) ? response.filter(item => {
+                projects: hseData.filter(item => {
                     // More comprehensive safety filter
                     const isSafety = item.work_type && (
                         item.work_type.toLowerCase().includes('safety') ||
@@ -10595,9 +10598,9 @@ window.KashTecAPI = {
                         status: item.status || 'Active',
                         location: item.project_location || 'Various Sites'
                     };
-                }) : [],
+                }),
                 metrics: {
-                    total_projects: Array.isArray(response) ? response.length : 0,
+                    total_projects: hseData.length,
                     avg_safety_score: 88,
                     total_incidents: 2,
                     compliance_rate: 92
@@ -25013,9 +25016,12 @@ async function loadSafetyFromAPI() {
                     
                     console.log('🔍 Raw HSE response in loadSafetyFromAPI:', hseData);
                     
+                    // Convert single object to array for consistent processing
+                    const hseArray = Array.isArray(hseData) ? hseData : [hseData];
+                    
                     // Transform HSE data to safety status format
                     const safetyData = {
-                        projects: Array.isArray(hseData) ? hseData.filter(item => {
+                        projects: hseArray.filter(item => {
                             // More comprehensive safety filter
                             const isSafety = item.work_type && (
                                 item.work_type.toLowerCase().includes('safety') ||
@@ -25040,9 +25046,9 @@ async function loadSafetyFromAPI() {
                                 status: item.status || 'Active',
                                 location: item.project_location || 'Various Sites'
                             };
-                        }) : [],
+                        }),
                         metrics: {
-                            total_projects: Array.isArray(hseData) ? hseData.length : 0,
+                            total_projects: hseArray.length,
                             avg_safety_score: 88,
                             total_incidents: 2,
                             compliance_rate: 92
@@ -31207,24 +31213,40 @@ async function assignTasks(){
             
             <div class="active-tasks">
                 <h4>Active Task Assignments</h4>
-                <div class="task-list">
-                    <div class="task-item">
-                        <div class="task-details">
-                            <strong>Foundation Excavation</strong>
-                            <span>Assigned to: John Doe - Construction Worker</span>
-                            <span>Project: Port Modernization</span>
-                            <span>Due: March 25, 2026 (High Priority)</span>
-                        </div>
-                        <div class="task-actions">
-                            <button class="action" onclick="updateTaskStatus('task001')">Update Status</button>
-                        </div>
-                    </div>
+                <div class="task-table-container">
+                    <table class="task-table">
+                        <thead>
+                            <tr>
+                                <th>Task ID</th>
+                                <th>Task Name</th>
+                                <th>Project</th>
+                                <th>Assigned To</th>
+                                <th>Priority</th>
+                                <th>Start Date</th>
+                                <th>Due Date</th>
+                                <th>Description</th>
+                                <th>Est. Hours</th>
+                                <th>Required Skills</th>
+                                <th>Materials/Equipment</th>
+                                <th>Status</th>
+                                <th>Assigned By</th>
+                                <th>Assigned Date</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="taskRecordsList">
+                            <!-- Task records will be loaded here -->
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </div>
     `;
     
     showContent(formHtml);
+    
+    // Load task records when the page loads
+    loadTasks();
 }
 
 function requestWorkforce(){
@@ -32900,15 +32922,319 @@ function saveTaskAssignment() {
         assignedDate: new Date().toLocaleString()
     };
     
-    // Save to secure API storage
-    const tasks = [];
+    // Save to localStorage
+    let tasks = JSON.parse(localStorage.getItem('taskAssignments') || '[]');
     tasks.push(task);
-    // TODO: Save to API
+    localStorage.setItem('taskAssignments', JSON.stringify(tasks));
     
     customAlert(`Task assigned successfully!\n\nTask: ${task.name}\nAssigned to: ${task.assignee}\nDue: ${task.dueDate}\nPriority: ${task.priority}`, "Task Assigned", "success");
     
     document.getElementById('taskForm').reset();
+    
+    // Reload tasks to show in table
+    loadTasks();
+    
     return false;
+}
+
+function loadTasks() {
+    // Try to load from API first, then fallback to localStorage
+    const tasksList = document.getElementById('taskRecordsList');
+    if (!tasksList) return;
+    
+    let tasks = [];
+    
+    // Try to fetch from API
+    fetch('/api/tasks')
+        .then(response => response.json())
+        .then(data => {
+            if (data.success && data.tasks) {
+                tasks = data.tasks;
+            } else {
+                // Fallback to localStorage
+                tasks = JSON.parse(localStorage.getItem('taskAssignments') || '[]');
+            }
+            
+            // If still no tasks, add sample data
+            if (tasks.length === 0) {
+                tasks = getSampleTasks();
+                localStorage.setItem('taskAssignments', JSON.stringify(tasks));
+            }
+            
+            displayTasks(tasks);
+        })
+        .catch(error => {
+            console.error('Error loading tasks:', error);
+            // Fallback to localStorage
+            tasks = JSON.parse(localStorage.getItem('taskAssignments') || '[]');
+            
+            // If still no tasks, add sample data
+            if (tasks.length === 0) {
+                tasks = getSampleTasks();
+                localStorage.setItem('taskAssignments', JSON.stringify(tasks));
+            }
+            
+            displayTasks(tasks);
+        });
+}
+
+function getSampleTasks() {
+    return [
+        {
+            id: 'TSK-20260325001',
+            project: 'Port Modernization Phase 1',
+            name: 'Foundation Excavation',
+            assignee: 'moris@gmail.com',
+            priority: 'high',
+            startDate: '2026-03-25',
+            dueDate: '2026-04-15',
+            description: 'Excavate foundation area for main port structure, including soil testing and preparation',
+            estimatedHours: '120',
+            requiredSkills: 'Excavation, Soil Testing, Site Preparation',
+            materials: 'Excavator, Dump Trucks, Soil Testing Equipment, Safety Gear',
+            status: 'in-progress',
+            assignedBy: 'Project Manager',
+            assignedDate: '3/25/2026, 9:00:00 AM'
+        },
+        {
+            id: 'TSK-20260326002',
+            project: 'Port Modernization Phase 1',
+            name: 'Concrete Foundation Pouring',
+            assignee: 'brayan@gmail.com',
+            priority: 'urgent',
+            startDate: '2026-03-26',
+            dueDate: '2026-04-05',
+            description: 'Pour concrete foundation for the main port terminal building following structural specifications',
+            estimatedHours: '80',
+            requiredSkills: 'Concrete Work, Formwork, Reinforcement',
+            materials: 'Concrete, Rebar, Formwork, Concrete Mixer, Vibrator',
+            status: 'assigned',
+            assignedBy: 'Project Manager',
+            assignedDate: '3/26/2026, 10:30:00 AM'
+        },
+        {
+            id: 'TSK-20260327003',
+            project: 'Port Modernization Phase 2',
+            name: 'Steel Structure Installation',
+            assignee: 'chrispingolden@gmail.com',
+            priority: 'high',
+            startDate: '2026-03-27',
+            dueDate: '2026-04-20',
+            description: 'Install steel structural components for the port warehouse and storage facilities',
+            estimatedHours: '150',
+            requiredSkills: 'Steel Installation, Welding, Rigging',
+            materials: 'Steel Beams, Welding Equipment, Cranes, Safety Harnesses',
+            status: 'pending',
+            assignedBy: 'Project Manager',
+            assignedDate: '3/27/2026, 2:15:00 PM'
+        },
+        {
+            id: 'TSK-20260328004',
+            project: 'Port Modernization Phase 1',
+            name: 'Electrical Installation',
+            assignee: 'ayyan44@gmail.com',
+            priority: 'medium',
+            startDate: '2026-03-28',
+            dueDate: '2026-05-01',
+            description: 'Install electrical systems including lighting, power distribution, and control systems',
+            estimatedHours: '200',
+            requiredSkills: 'Electrical Work, Wiring, System Integration',
+            materials: 'Electrical Cables, Conduits, Switchgear, Lighting Fixtures',
+            status: 'assigned',
+            assignedBy: 'Project Manager',
+            assignedDate: '3/28/2026, 11:45:00 AM'
+        },
+        {
+            id: 'TSK-20260329005',
+            project: 'Port Modernization Phase 2',
+            name: 'Safety Inspection',
+            assignee: 'billzonemwipopo@gmail.com',
+            priority: 'urgent',
+            startDate: '2026-03-29',
+            dueDate: '2026-04-02',
+            description: 'Conduct comprehensive safety inspection of all work areas and equipment',
+            estimatedHours: '40',
+            requiredSkills: 'Safety Inspection, Risk Assessment, Compliance',
+            materials: 'Inspection Checklists, Safety Equipment, Reporting Forms',
+            status: 'in-progress',
+            assignedBy: 'Project Manager',
+            assignedDate: '3/29/2026, 8:00:00 AM'
+        }
+    ];
+}
+
+function displayTasks(tasks) {
+    const tasksList = document.getElementById('taskRecordsList');
+    if (!tasksList) return;
+    
+    if (tasks.length === 0) {
+        tasksList.innerHTML = `
+            <tr>
+                <td colspan="14" style="text-align: center; padding: 40px; color: #666;">
+                    <div style="margin-bottom: 10px;">📋</div>
+                    <div>No task assignments found. Start by assigning your first task.</div>
+                </td>
+            </tr>
+        `;
+        return;
+    }
+    
+    tasksList.innerHTML = tasks.map(task => {
+        const assigneeName = task.assignee.includes('@') ? 
+            task.assignee.split('@')[0].toUpperCase() : task.assignee;
+        
+        const statusBadge = getStatusBadge(task.status);
+        const priorityBadge = getPriorityBadge(task.priority);
+        
+        return `
+            <tr>
+                <td>
+                    <div style="font-weight: 600; color: #2563eb;">${task.id}</div>
+                    <div style="font-size: 11px; color: #666;">${task.assignedDate}</div>
+                </td>
+                <td>
+                    <div style="font-weight: 500;">${task.name}</div>
+                    <div style="font-size: 11px; color: #666; margin-top: 2px;">${task.description.substring(0, 50)}${task.description.length > 50 ? '...' : ''}</div>
+                </td>
+                <td>
+                    <div style="font-weight: 500;">${task.project}</div>
+                </td>
+                <td>
+                    <div style="font-weight: 500;">${assigneeName}</div>
+                    <div style="font-size: 11px; color: #666;">${task.assignee}</div>
+                </td>
+                <td>${priorityBadge}</td>
+                <td>
+                    <div style="font-weight: 500;">${formatDate(task.startDate)}</div>
+                </td>
+                <td>
+                    <div style="font-weight: 500;">${formatDate(task.dueDate)}</div>
+                </td>
+                <td>
+                    <div style="max-width: 200px; word-wrap: break-word; font-size: 12px;">${task.description}</div>
+                </td>
+                <td>
+                    <div style="font-weight: 500;">${task.estimatedHours || 'N/A'}</div>
+                    <div style="font-size: 11px; color: #666;">hours</div>
+                </td>
+                <td>
+                    <div style="max-width: 150px; word-wrap: break-word; font-size: 12px;">${task.requiredSkills || 'N/A'}</div>
+                </td>
+                <td>
+                    <div style="max-width: 150px; word-wrap: break-word; font-size: 12px;">${task.materials || 'N/A'}</div>
+                </td>
+                <td>${statusBadge}</td>
+                <td>
+                    <div style="font-weight: 500;">${task.assignedBy}</div>
+                </td>
+                <td>
+                    <div style="font-size: 12px;">${task.assignedDate}</div>
+                </td>
+                <td>
+                    <div style="display: flex; gap: 5px; flex-wrap: wrap;">
+                        <button class="action" onclick="viewTask('${task.id}')" style="padding: 4px 8px; font-size: 11px;">👁️ View</button>
+                        <button class="action" onclick="editTask('${task.id}')" style="padding: 4px 8px; font-size: 11px;">✏️ Edit</button>
+                        <button class="action" onclick="updateTaskStatus('${task.id}')" style="padding: 4px 8px; font-size: 11px;">🔄 Status</button>
+                        <button class="action" onclick="deleteTask('${task.id}')" style="background: #dc3545; padding: 4px 8px; font-size: 11px;">🗑️ Delete</button>
+                    </div>
+                </td>
+            </tr>
+        `;
+    }).join('');
+}
+
+function getStatusBadge(status) {
+    const badges = {
+        'assigned': '<span style="background: #007bff; color: white; padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: 500;">Assigned</span>',
+        'in-progress': '<span style="background: #28a745; color: white; padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: 500;">In Progress</span>',
+        'completed': '<span style="background: #17a2b8; color: white; padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: 500;">Completed</span>',
+        'pending': '<span style="background: #ffc107; color: black; padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: 500;">Pending</span>',
+        'overdue': '<span style="background: #dc3545; color: white; padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: 500;">Overdue</span>'
+    };
+    return badges[status] || '<span style="background: #6c757d; color: white; padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: 500;">Unknown</span>';
+}
+
+function getPriorityBadge(priority) {
+    const badges = {
+        'urgent': '<span style="background: #dc3545; color: white; padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: 500;">🔥 Urgent</span>',
+        'high': '<span style="background: #fd7e14; color: white; padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: 500;">⚡ High</span>',
+        'medium': '<span style="background: #ffc107; color: black; padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: 500;">📋 Medium</span>',
+        'low': '<span style="background: #28a745; color: white; padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: 500;">🟢 Low</span>'
+    };
+    return badges[priority] || '<span style="background: #6c757d; color: white; padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: 500;">Medium</span>';
+}
+
+function formatDate(dateString) {
+    if (!dateString) return 'N/A';
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', { 
+        year: 'numeric', 
+        month: 'short', 
+        day: 'numeric' 
+    });
+}
+
+function viewTask(taskId) {
+    const tasks = JSON.parse(localStorage.getItem('taskAssignments') || '[]');
+    const task = tasks.find(t => t.id === taskId);
+    
+    if (task) {
+        customAlert(`
+            Task Details:
+            
+            Task ID: ${task.id}
+            Task Name: ${task.name}
+            Project: ${task.project}
+            Assigned To: ${task.assignee}
+            Priority: ${task.priority}
+            Start Date: ${task.startDate}
+            Due Date: ${task.dueDate}
+            Description: ${task.description}
+            Estimated Hours: ${task.estimatedHours || 'N/A'}
+            Required Skills: ${task.requiredSkills || 'N/A'}
+            Materials/Equipment: ${task.materials || 'N/A'}
+            Status: ${task.status}
+            Assigned By: ${task.assignedBy}
+            Assigned Date: ${task.assignedDate}
+        `, "Task Details", "info");
+    }
+}
+
+function editTask(taskId) {
+    const tasks = JSON.parse(localStorage.getItem('taskAssignments') || '[]');
+    const task = tasks.find(t => t.id === taskId);
+    
+    if (task) {
+        customAlert(`Edit functionality for task ${taskId} will be implemented.`, "Edit Task", "info");
+    }
+}
+
+function updateTaskStatus(taskId) {
+    const tasks = JSON.parse(localStorage.getItem('taskAssignments') || '[]');
+    const task = tasks.find(t => t.id === taskId);
+    
+    if (task) {
+        const statusOptions = ['assigned', 'in-progress', 'completed', 'pending', 'overdue'];
+        const currentStatusIndex = statusOptions.indexOf(task.status);
+        const nextStatus = statusOptions[(currentStatusIndex + 1) % statusOptions.length];
+        
+        task.status = nextStatus;
+        localStorage.setItem('taskAssignments', JSON.stringify(tasks));
+        
+        customAlert(`Task ${taskId} status updated to: ${nextStatus}`, "Status Updated", "success");
+        loadTasks();
+    }
+}
+
+function deleteTask(taskId) {
+    if (confirm(`Are you sure you want to delete task ${taskId}?`)) {
+        let tasks = JSON.parse(localStorage.getItem('taskAssignments') || '[]');
+        tasks = tasks.filter(t => t.id !== taskId);
+        localStorage.setItem('taskAssignments', JSON.stringify(tasks));
+        
+        customAlert(`Task ${taskId} deleted successfully.`, "Task Deleted", "success");
+        loadTasks();
+    }
 }
 
 function submitWorkforceRequest() {
