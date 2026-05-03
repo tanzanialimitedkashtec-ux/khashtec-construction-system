@@ -26908,7 +26908,7 @@ function displayBudgetRecords(records) {
                 training_development: record.training_development || 0,
                 travel_transport: record.travel_transport || 0,
                 miscellaneous: record.miscellaneous || 0,
-                justification: record.justification || '',
+                justification: record.justification || record.budget_justification || record.description || record.purpose || record.notes || 'No justification provided',
                 submitted_by: record.submitted_by || 'Unknown',
                 submission_date: record.submission_date || new Date().toISOString().split('T')[0]
             };
@@ -27058,7 +27058,7 @@ function displayBudgetRecords(records) {
                 </td>
                 <td>
                     <div class="justification-info">
-                        <div class="budget-justification" title="${record.justification || 'No justification provided'}">${record.justification ? (record.justification.length > 50 ? record.justification.substring(0, 50) + '...' : record.justification) : '—'}</div>
+                        <div class="budget-justification" title="${record.justification || 'No justification provided'}">${record.justification && record.justification !== 'No justification provided' ? (record.justification.length > 50 ? record.justification.substring(0, 50) + '...' : record.justification) : record.justification || '—'}</div>
                     </div>
                 </td>
                 <td>
