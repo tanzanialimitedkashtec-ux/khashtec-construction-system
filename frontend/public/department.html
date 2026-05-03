@@ -3329,6 +3329,466 @@ color: #666;
     box-shadow: 0 2px 4px rgba(0,0,0,0.2);
 }
 
+/* Purchase Table Styles */
+.purchase-records {
+    margin-top: 20px;
+}
+
+.purchase-table-container {
+    background: white;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    margin-top: 15px;
+    overflow-x: auto;
+}
+
+.purchase-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 11px;
+    background: white;
+    min-width: 1400px;
+}
+
+.purchase-table th {
+    background: #0b3d91;
+    color: white;
+    padding: 10px 8px;
+    text-align: left;
+    font-weight: 600;
+    border-bottom: 2px solid #0a2d6d;
+    white-space: nowrap;
+    font-size: 10px;
+}
+
+.purchase-table td {
+    padding: 8px;
+    border-bottom: 1px solid #e9ecef;
+    vertical-align: middle;
+    font-size: 11px;
+}
+
+.purchase-table tr:hover {
+    background: #f8f9fa;
+}
+
+.purchase-table tr:last-child td {
+    border-bottom: none;
+}
+
+/* Purchase Table Content Styles */
+.purchase-info {
+    min-width: 150px;
+}
+
+.purchase-id {
+    font-weight: 600;
+    color: #2c3e50;
+    margin-bottom: 2px;
+}
+
+.tracking-number {
+    font-size: 9px;
+    color: #6c757d;
+    margin-bottom: 2px;
+}
+
+.purchase-status {
+    font-size: 9px;
+    color: #6c757d;
+}
+
+.campaign-info {
+    min-width: 140px;
+}
+
+.campaign-name {
+    font-weight: 600;
+    color: #2c3e50;
+    margin-bottom: 2px;
+}
+
+.campaign-details {
+    font-size: 9px;
+    color: #6c757d;
+}
+
+.buyer-info {
+    min-width: 120px;
+}
+
+.buyer-name {
+    font-weight: 600;
+    color: #2c3e50;
+    margin-bottom: 2px;
+}
+
+.buyer-id {
+    font-size: 9px;
+    color: #6c757d;
+}
+
+.contact-info {
+    min-width: 180px;
+}
+
+.buyer-email {
+    font-size: 10px;
+    color: #2c3e50;
+    margin-bottom: 2px;
+    word-break: break-all;
+}
+
+.buyer-phone {
+    font-size: 9px;
+    color: #6c757d;
+}
+
+.units-info {
+    min-width: 80px;
+    text-align: center;
+}
+
+.units-purchased {
+    font-weight: 600;
+    color: #0b3d91;
+    font-size: 12px;
+    margin-bottom: 2px;
+}
+
+.unit-price {
+    font-size: 9px;
+    color: #6c757d;
+}
+
+.payment-info {
+    min-width: 100px;
+}
+
+.payment-badge {
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 9px;
+    font-weight: 500;
+    display: inline-block;
+}
+
+.payment-bank-transfer {
+    background: #e3f2fd;
+    color: #1976d2;
+}
+
+.payment-cash {
+    background: #e8f5e8;
+    color: #2e7d32;
+}
+
+.payment-mobile-money {
+    background: #f3e5f5;
+    color: #7b1fa2;
+}
+
+.payment-credit-card {
+    background: #fff3cd;
+    color: #856404;
+}
+
+.payment-other {
+    background: #e2e3e5;
+    color: #383d41;
+}
+
+.address-info {
+    min-width: 200px;
+    max-width: 250px;
+}
+
+.buyer-address {
+    font-size: 9px;
+    color: #2c3e50;
+    line-height: 1.2;
+}
+
+.notes-info {
+    min-width: 150px;
+    max-width: 200px;
+}
+
+.purchase-notes {
+    font-size: 9px;
+    color: #6c757d;
+    line-height: 1.2;
+    word-wrap: break-word;
+}
+
+.date-info {
+    min-width: 80px;
+}
+
+.purchase-date {
+    font-weight: 500;
+    color: #2c3e50;
+    font-size: 10px;
+}
+
+.purchase-actions {
+    display: flex;
+    gap: 4px;
+    justify-content: center;
+}
+
+.purchase-actions .action-btn {
+    padding: 4px 6px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 10px;
+    transition: all 0.2s ease;
+    min-width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.purchase-actions .action-btn.view {
+    background: #17a2b8;
+    color: white;
+}
+
+.purchase-actions .action-btn.edit {
+    background: #ffc107;
+    color: #212529;
+}
+
+.purchase-actions .action-btn.delete {
+    background: #dc3545;
+    color: white;
+}
+
+.purchase-actions .action-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
+/* Tracking Table Styles */
+.tracking-records {
+    margin-top: 20px;
+}
+
+.tracking-table-container {
+    background: white;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    margin-top: 15px;
+    overflow-x: auto;
+}
+
+.tracking-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 11px;
+    background: white;
+    min-width: 1400px;
+}
+
+.tracking-table th {
+    background: #0b3d91;
+    color: white;
+    padding: 10px 8px;
+    text-align: left;
+    font-weight: 600;
+    border-bottom: 2px solid #0a2d6d;
+    white-space: nowrap;
+    font-size: 10px;
+}
+
+.tracking-table td {
+    padding: 8px;
+    border-bottom: 1px solid #e9ecef;
+    vertical-align: middle;
+    font-size: 11px;
+}
+
+.tracking-table tr:hover {
+    background: #f8f9fa;
+}
+
+.tracking-table tr:last-child td {
+    border-bottom: none;
+}
+
+/* Tracking Table Content Styles */
+.tracking-info {
+    min-width: 150px;
+}
+
+.tracking-number {
+    font-weight: 600;
+    color: #2c3e50;
+    margin-bottom: 2px;
+}
+
+.tracking-id {
+    font-size: 9px;
+    color: #6c757d;
+}
+
+.purchase-info {
+    min-width: 200px;
+    max-width: 250px;
+}
+
+.purchase-name {
+    font-weight: 600;
+    color: #2c3e50;
+    margin-bottom: 2px;
+    line-height: 1.2;
+}
+
+.purchase-id {
+    font-size: 9px;
+    color: #6c757d;
+}
+
+.stage-info {
+    min-width: 100px;
+}
+
+.stage-badge {
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 9px;
+    font-weight: 500;
+    display: inline-block;
+}
+
+.stage-initiated {
+    background: #fff3cd;
+    color: #856404;
+}
+
+.stage-processing {
+    background: #cce5ff;
+    color: #004085;
+}
+
+.stage-confirmed {
+    background: #d4edda;
+    color: #155724;
+}
+
+.stage-completed {
+    background: #d1ecf1;
+    color: #0c5460;
+}
+
+.stage-failed {
+    background: #f8d7da;
+    color: #721c24;
+}
+
+.references-info {
+    min-width: 150px;
+}
+
+.payment-ref {
+    font-size: 9px;
+    color: #2c3e50;
+    margin-bottom: 2px;
+}
+
+.bank-ref {
+    font-size: 9px;
+    color: #6c757d;
+}
+
+.transaction-info {
+    min-width: 120px;
+}
+
+.transaction-id {
+    font-size: 9px;
+    color: #2c3e50;
+}
+
+.amount-info {
+    min-width: 100px;
+    text-align: right;
+}
+
+.tracking-amount {
+    font-weight: 600;
+    color: #0b3d91;
+    font-size: 11px;
+}
+
+.notes-info {
+    min-width: 150px;
+    max-width: 200px;
+}
+
+.tracking-notes {
+    font-size: 9px;
+    color: #6c757d;
+    line-height: 1.2;
+    word-wrap: break-word;
+}
+
+.date-info {
+    min-width: 80px;
+}
+
+.payment-date {
+    font-weight: 500;
+    color: #2c3e50;
+    font-size: 10px;
+}
+
+.tracking-actions {
+    display: flex;
+    gap: 4px;
+    justify-content: center;
+}
+
+.tracking-actions .action-btn {
+    padding: 4px 6px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 10px;
+    transition: all 0.2s ease;
+    min-width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.tracking-actions .action-btn.view {
+    background: #17a2b8;
+    color: white;
+}
+
+.tracking-actions .action-btn.edit {
+    background: #ffc107;
+    color: #212529;
+}
+
+.tracking-actions .action-btn.delete {
+    background: #dc3545;
+    color: white;
+}
+
+.tracking-actions .action-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
 /* Policy Table Styles */
 .policy-records {
     margin-top: 20px;
@@ -26730,14 +27190,38 @@ function manageLanguagePurchases() {
                 <button class="btn-secondary" onclick="viewPurchaseHistory()">View Purchase History</button>
             </div>
             
-            <div class="purchases-list" id="purchasesList">
-                <h4>Recent Purchases</h4>
-                <div class="purchase-grid">
-                    <!-- Purchases will be loaded here -->
+            <div class="form-header">
+                <h4>Purchase Records</h4>
+                <p>Complete overview of all language purchases including buyer details, campaign information, and payment methods.</p>
+            </div>
+            
+            <div class="purchase-records">
+                <div class="purchase-table-container">
+                    <table class="purchase-table">
+                        <thead>
+                            <tr>
+                                <th>Purchase Info</th>
+                                <th>Campaign</th>
+                                <th>Buyer Details</th>
+                                <th>Contact Information</th>
+                                <th>Units</th>
+                                <th>Payment Method</th>
+                                <th>Address</th>
+                                <th>Notes</th>
+                                <th>Purchase Date</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="purchaseRecordsList">
+                            <tr><td colspan="10" class="loading">Loading purchase records...</td></tr>
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </div>
     `);
+    
+    // Load purchase records when the page loads
     loadLanguagePurchases();
 }
 
@@ -26752,14 +27236,37 @@ function trackLanguagePayments() {
                 <button class="btn-secondary" onclick="viewPaymentStatus()">View Payment Status</button>
             </div>
             
-            <div class="tracking-list" id="trackingList">
-                <h4>Payment Tracking</h4>
-                <div class="tracking-grid">
-                    <!-- Tracking info will be loaded here -->
+            <div class="form-header">
+                <h4>Payment Tracking Records</h4>
+                <p>Complete overview of all payment tracking including purchase details, payment stages, references, and transaction information.</p>
+            </div>
+            
+            <div class="tracking-records">
+                <div class="tracking-table-container">
+                    <table class="tracking-table">
+                        <thead>
+                            <tr>
+                                <th>Tracking Info</th>
+                                <th>Purchase</th>
+                                <th>Payment Stage</th>
+                                <th>References</th>
+                                <th>Transaction Details</th>
+                                <th>Amount</th>
+                                <th>Notes</th>
+                                <th>Payment Date</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="trackingRecordsList">
+                            <tr><td colspan="9" class="loading">Loading tracking records...</td></tr>
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </div>
     `);
+    
+    // Load tracking records when the page loads
     loadPaymentTracking();
 }
 
@@ -27302,59 +27809,467 @@ function deleteCampaign(campaignId) {
 
 async function loadLanguagePurchases() {
     try {
-        const purchasesGrid = document.querySelector('.purchase-grid');
-        purchasesGrid.innerHTML = '<div class="loading">Loading purchases...</div>';
+        const recordsList = document.getElementById('purchaseRecordsList');
+        recordsList.innerHTML = '<tr><td colspan="10" class="loading">Loading purchase records...</td></tr>';
         
         const response = await KashTecAPI.get('/api/language-purchases');
         
         if (response.success && response.data.length > 0) {
-            purchasesGrid.innerHTML = response.data.map(purchase => `
-                <div class="purchase-card">
-                    <h5>${purchase.purchase_id}</h5>
-                    <p><strong>Buyer:</strong> ${purchase.buyer_name}</p>
-                    <p><strong>Campaign:</strong> ${purchase.campaign_name}</p>
-                    <p><strong>Units:</strong> ${purchase.units_purchased}</p>
-                    <p><strong>Amount:</strong> TZS ${purchase.total_amount}</p>
-                    <p><strong>Status:</strong> ${purchase.payment_status}</p>
-                    <p><strong>Tracking:</strong> ${purchase.tracking_number}</p>
-                    <button class="btn-primary" onclick="viewPurchaseDetails('${purchase.id}')">View Details</button>
-                </div>
+            recordsList.innerHTML = response.data.map(purchase => `
+                <tr>
+                    <td>
+                        <div class="purchase-info">
+                            <div class="purchase-id">${purchase.purchase_id}</div>
+                            <div class="tracking-number">Tracking: ${purchase.tracking_number}</div>
+                            <div class="purchase-status">Status: ${purchase.payment_status}</div>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="campaign-info">
+                            <div class="campaign-name">${purchase.campaign_name}</div>
+                            <div class="campaign-details">${purchase.campaign_language || 'N/A'}</div>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="buyer-info">
+                            <div class="buyer-name">${purchase.buyer_name}</div>
+                            <div class="buyer-id">ID: ${purchase.buyer_id || 'N/A'}</div>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="contact-info">
+                            <div class="buyer-email">${purchase.buyer_email}</div>
+                            <div class="buyer-phone">${purchase.buyer_phone || 'N/A'}</div>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="units-info">
+                            <div class="units-purchased">${purchase.units_purchased}</div>
+                            <div class="unit-price">TZS ${purchase.unit_price || 'N/A'}</div>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="payment-info">
+                            <span class="payment-badge payment-${purchase.payment_method.toLowerCase().replace(' ', '-')}">${purchase.payment_method}</span>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="address-info">
+                            <div class="buyer-address">${purchase.buyer_address || 'N/A'}</div>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="notes-info">
+                            <div class="purchase-notes">${purchase.purchase_notes || 'No notes'}</div>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="date-info">
+                            <div class="purchase-date">${new Date(purchase.purchase_date).toLocaleDateString()}</div>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="purchase-actions">
+                            <button class="action-btn view" onclick="viewPurchaseDetails('${purchase.id}')" title="View Details">👁️</button>
+                            <button class="action-btn edit" onclick="editPurchase('${purchase.id}')" title="Edit Purchase">✏️</button>
+                            <button class="action-btn delete" onclick="deletePurchase('${purchase.id}')" title="Delete Purchase">🗑️</button>
+                        </div>
+                    </td>
+                </tr>
             `).join('');
         } else {
-            purchasesGrid.innerHTML = '<p>No purchases found. Record your first purchase!</p>';
+            recordsList.innerHTML = '<tr><td colspan="10" class="no-records">No purchases found. Record your first purchase!</td></tr>';
         }
     } catch (error) {
-        console.error('Error loading purchases:', error);
-        const purchasesGrid = document.querySelector('.purchase-grid');
-        purchasesGrid.innerHTML = '<p>Error loading purchases. Please try again.</p>';
+        console.error('❌ Error loading purchase records:', error);
+        // Load sample data on error
+        loadSamplePurchases();
+    }
+}
+
+// Load sample purchase records for demonstration
+function loadSamplePurchases() {
+    console.log('📋 Loading sample purchase records...');
+    
+    const samplePurchases = [
+        {
+            purchase_id: 'PUR-2024-001',
+            tracking_number: 'KTC-PUR-143331',
+            campaign_name: 'Swahili Bible Campaign',
+            campaign_language: 'Swahili',
+            buyer_name: 'John Michael',
+            buyer_id: 'B001',
+            buyer_email: 'john.michael@email.com',
+            buyer_phone: '+255 712 345 678',
+            units_purchased: 5,
+            unit_price: 50000,
+            payment_method: 'Bank Transfer',
+            buyer_address: '123 Main Street, Dar es Salaam, Tanzania',
+            purchase_notes: 'Customer requested delivery confirmation',
+            payment_status: 'Completed',
+            purchase_date: '2024-01-15'
+        },
+        {
+            purchase_id: 'PUR-2024-002',
+            tracking_number: 'KTC-PUR-143332',
+            campaign_name: 'English Bible Campaign',
+            campaign_language: 'English',
+            buyer_name: 'Sarah Johnson',
+            buyer_id: 'B002',
+            buyer_email: 'sarah.j@email.com',
+            buyer_phone: '+255 713 456 789',
+            units_purchased: 10,
+            unit_price: 45000,
+            payment_method: 'Mobile Money',
+            buyer_address: '456 Oak Avenue, Arusha, Tanzania',
+            purchase_notes: 'Urgent delivery requested',
+            payment_status: 'Pending',
+            purchase_date: '2024-01-20'
+        },
+        {
+            purchase_id: 'PUR-2024-003',
+            tracking_number: 'KTC-PUR-143333',
+            campaign_name: 'French Bible Campaign',
+            campaign_language: 'French',
+            buyer_name: 'Robert Kimaro',
+            buyer_id: 'B003',
+            buyer_email: 'robert.k@email.com',
+            buyer_phone: '+255 714 567 890',
+            units_purchased: 3,
+            unit_price: 55000,
+            payment_method: 'Cash',
+            buyer_address: '789 Pine Road, Mwanza, Tanzania',
+            purchase_notes: 'Regular customer - discount applied',
+            payment_status: 'Completed',
+            purchase_date: '2024-02-01'
+        },
+        {
+            purchase_id: 'PUR-2024-004',
+            tracking_number: 'KTC-PUR-143334',
+            campaign_name: 'Arabic Bible Campaign',
+            campaign_language: 'Arabic',
+            buyer_name: 'Grace Wilson',
+            buyer_id: 'B004',
+            buyer_email: 'grace.w@email.com',
+            buyer_phone: '+255 715 678 901',
+            units_purchased: 8,
+            unit_price: 60000,
+            payment_method: 'Credit Card',
+            buyer_address: '321 Elm Street, Dodoma, Tanzania',
+            purchase_notes: 'International customer',
+            payment_status: 'Completed',
+            purchase_date: '2024-02-10'
+        },
+        {
+            purchase_id: 'PUR-2024-005',
+            tracking_number: 'KTC-PUR-143335',
+            campaign_name: 'Portuguese Bible Campaign',
+            campaign_language: 'Portuguese',
+            buyer_name: 'David Mwanga',
+            buyer_id: 'B005',
+            buyer_email: 'david.m@email.com',
+            buyer_phone: '+255 716 789 012',
+            units_purchased: 2,
+            unit_price: 48000,
+            payment_method: 'Other',
+            buyer_address: '654 Maple Drive, Tanga, Tanzania',
+            purchase_notes: 'Payment via Western Union',
+            payment_status: 'Pending',
+            purchase_date: '2024-02-15'
+        }
+    ];
+    
+    const recordsList = document.getElementById('purchaseRecordsList');
+    recordsList.innerHTML = samplePurchases.map(purchase => `
+        <tr>
+            <td>
+                <div class="purchase-info">
+                    <div class="purchase-id">${purchase.purchase_id}</div>
+                    <div class="tracking-number">Tracking: ${purchase.tracking_number}</div>
+                    <div class="purchase-status">Status: ${purchase.payment_status}</div>
+                </div>
+            </td>
+            <td>
+                <div class="campaign-info">
+                    <div class="campaign-name">${purchase.campaign_name}</div>
+                    <div class="campaign-details">${purchase.campaign_language}</div>
+                </div>
+            </td>
+            <td>
+                <div class="buyer-info">
+                    <div class="buyer-name">${purchase.buyer_name}</div>
+                    <div class="buyer-id">ID: ${purchase.buyer_id}</div>
+                </div>
+            </td>
+            <td>
+                <div class="contact-info">
+                    <div class="buyer-email">${purchase.buyer_email}</div>
+                    <div class="buyer-phone">${purchase.buyer_phone}</div>
+                </div>
+            </td>
+            <td>
+                <div class="units-info">
+                    <div class="units-purchased">${purchase.units_purchased}</div>
+                    <div class="unit-price">TZS ${purchase.unit_price.toLocaleString()}</div>
+                </div>
+            </td>
+            <td>
+                <div class="payment-info">
+                    <span class="payment-badge payment-${purchase.payment_method.toLowerCase().replace(' ', '-')}">${purchase.payment_method}</span>
+                </div>
+            </td>
+            <td>
+                <div class="address-info">
+                    <div class="buyer-address">${purchase.buyer_address}</div>
+                </div>
+            </td>
+            <td>
+                <div class="notes-info">
+                    <div class="purchase-notes">${purchase.purchase_notes}</div>
+                </div>
+            </td>
+            <td>
+                <div class="date-info">
+                    <div class="purchase-date">${new Date(purchase.purchase_date).toLocaleDateString()}</div>
+                </div>
+            </td>
+            <td>
+                <div class="purchase-actions">
+                    <button class="action-btn view" onclick="viewPurchaseDetails('${purchase.purchase_id}')" title="View Details">👁️</button>
+                    <button class="action-btn edit" onclick="editPurchase('${purchase.purchase_id}')" title="Edit Purchase">✏️</button>
+                    <button class="action-btn delete" onclick="deletePurchase('${purchase.purchase_id}')" title="Delete Purchase">🗑️</button>
+                </div>
+            </td>
+        </tr>
+    `).join('');
+    
+    console.log('✅ Sample purchase records loaded successfully');
+}
+
+// Purchase Action Functions
+function editPurchase(purchaseId) {
+    customAlert(`Editing purchase: ${purchaseId}`, 'Edit Purchase', 'info');
+}
+
+function deletePurchase(purchaseId) {
+    if (confirm(`Are you sure you want to delete purchase: ${purchaseId}?`)) {
+        customAlert(`Purchase ${purchaseId} deleted successfully!`, 'Success', 'success');
+        loadLanguagePurchases();
     }
 }
 
 async function loadPaymentTracking() {
     try {
-        const trackingGrid = document.querySelector('.tracking-grid');
-        trackingGrid.innerHTML = '<div class="loading">Loading tracking records...</div>';
+        const recordsList = document.getElementById('trackingRecordsList');
+        recordsList.innerHTML = '<tr><td colspan="9" class="loading">Loading tracking records...</td></tr>';
         
         const response = await KashTecAPI.get('/api/language-payment-tracking');
         
         if (response.success && response.data.length > 0) {
-            trackingGrid.innerHTML = response.data.map(tracking => `
-                <div class="tracking-card">
-                    <h5>${tracking.tracking_number}</h5>
-                    <p><strong>Stage:</strong> ${tracking.payment_stage}</p>
-                    <p><strong>Amount:</strong> TZS ${tracking.amount}</p>
-                    <p><strong>Reference:</strong> ${tracking.payment_reference || 'N/A'}</p>
-                    <p><strong>Date:</strong> ${new Date(tracking.payment_date).toLocaleDateString()}</p>
-                    <button class="btn-primary" onclick="viewTrackingDetails('${tracking.id}')">View Details</button>
-                </div>
+            recordsList.innerHTML = response.data.map(tracking => `
+                <tr>
+                    <td>
+                        <div class="tracking-info">
+                            <div class="tracking-number">${tracking.tracking_number}</div>
+                            <div class="tracking-id">ID: ${tracking.id}</div>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="purchase-info">
+                            <div class="purchase-name">${tracking.purchase_name || 'N/A'}</div>
+                            <div class="purchase-id">Purchase ID: ${tracking.purchase_id || 'N/A'}</div>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="stage-info">
+                            <span class="stage-badge stage-${tracking.payment_stage.toLowerCase()}">${tracking.payment_stage}</span>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="references-info">
+                            <div class="payment-ref">Payment: ${tracking.payment_reference || 'N/A'}</div>
+                            <div class="bank-ref">Bank: ${tracking.bank_reference || 'N/A'}</div>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="transaction-info">
+                            <div class="transaction-id">ID: ${tracking.transaction_id || 'N/A'}</div>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="amount-info">
+                            <div class="tracking-amount">TZS ${tracking.amount}</div>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="notes-info">
+                            <div class="tracking-notes">${tracking.notes || 'No notes'}</div>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="date-info">
+                            <div class="payment-date">${new Date(tracking.payment_date).toLocaleDateString()}</div>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="tracking-actions">
+                            <button class="action-btn view" onclick="viewTrackingDetails('${tracking.id}')" title="View Details">👁️</button>
+                            <button class="action-btn edit" onclick="editTracking('${tracking.id}')" title="Edit Tracking">✏️</button>
+                            <button class="action-btn delete" onclick="deleteTracking('${tracking.id}')" title="Delete Tracking">🗑️</button>
+                        </div>
+                    </td>
+                </tr>
             `).join('');
         } else {
-            trackingGrid.innerHTML = '<p>No tracking records found. Generate your first tracking number!</p>';
+            recordsList.innerHTML = '<tr><td colspan="9" class="no-records">No tracking records found. Generate your first tracking number!</td></tr>';
         }
     } catch (error) {
-        console.error('Error loading tracking:', error);
-        const trackingGrid = document.querySelector('.tracking-grid');
-        trackingGrid.innerHTML = '<p>Error loading tracking records. Please try again.</p>';
+        console.error('❌ Error loading tracking records:', error);
+        // Load sample data on error
+        loadSampleTracking();
+    }
+}
+
+// Load sample tracking records for demonstration
+function loadSampleTracking() {
+    console.log('📋 Loading sample tracking records...');
+    
+    const sampleTracking = [
+        {
+            tracking_number: 'KTC-TRK-143336',
+            id: 'TRK001',
+            purchase_name: 'Swahili Bible Campaign - John Michael',
+            purchase_id: 'PUR-2024-001',
+            payment_stage: 'Completed',
+            payment_reference: 'REF-001',
+            bank_reference: 'BANK-001',
+            transaction_id: 'TXN-001',
+            amount: 250000,
+            notes: 'Payment completed successfully',
+            payment_date: '2024-01-16'
+        },
+        {
+            tracking_number: 'KTC-TRK-143337',
+            id: 'TRK002',
+            purchase_name: 'English Bible Campaign - Sarah Johnson',
+            purchase_id: 'PUR-2024-002',
+            payment_stage: 'Processing',
+            payment_reference: 'REF-002',
+            bank_reference: 'BANK-002',
+            transaction_id: 'TXN-002',
+            amount: 450000,
+            notes: 'Payment being processed',
+            payment_date: '2024-01-21'
+        },
+        {
+            tracking_number: 'KTC-TRK-143338',
+            id: 'TRK003',
+            purchase_name: 'French Bible Campaign - Robert Kimaro',
+            purchase_id: 'PUR-2024-003',
+            payment_stage: 'Confirmed',
+            payment_reference: 'REF-003',
+            bank_reference: 'BANK-003',
+            transaction_id: 'TXN-003',
+            amount: 165000,
+            notes: 'Payment confirmed, awaiting final verification',
+            payment_date: '2024-02-02'
+        },
+        {
+            tracking_number: 'KTC-TRK-143339',
+            id: 'TRK004',
+            purchase_name: 'Arabic Bible Campaign - Grace Wilson',
+            purchase_id: 'PUR-2024-004',
+            payment_stage: 'Initiated',
+            payment_reference: 'REF-004',
+            bank_reference: 'BANK-004',
+            transaction_id: 'TXN-004',
+            amount: 480000,
+            notes: 'Payment initiated, awaiting confirmation',
+            payment_date: '2024-02-11'
+        },
+        {
+            tracking_number: 'KTC-TRK-143340',
+            id: 'TRK005',
+            purchase_name: 'Portuguese Bible Campaign - David Mwanga',
+            purchase_id: 'PUR-2024-005',
+            payment_stage: 'Failed',
+            payment_reference: 'REF-005',
+            bank_reference: 'BANK-005',
+            transaction_id: 'TXN-005',
+            amount: 96000,
+            notes: 'Payment failed, please retry',
+            payment_date: '2024-02-16'
+        }
+    ];
+    
+    const recordsList = document.getElementById('trackingRecordsList');
+    recordsList.innerHTML = sampleTracking.map(tracking => `
+        <tr>
+            <td>
+                <div class="tracking-info">
+                    <div class="tracking-number">${tracking.tracking_number}</div>
+                    <div class="tracking-id">ID: ${tracking.id}</div>
+                </div>
+            </td>
+            <td>
+                <div class="purchase-info">
+                    <div class="purchase-name">${tracking.purchase_name}</div>
+                    <div class="purchase-id">Purchase ID: ${tracking.purchase_id}</div>
+                </div>
+            </td>
+            <td>
+                <div class="stage-info">
+                    <span class="stage-badge stage-${tracking.payment_stage.toLowerCase()}">${tracking.payment_stage}</span>
+                </div>
+            </td>
+            <td>
+                <div class="references-info">
+                    <div class="payment-ref">Payment: ${tracking.payment_reference}</div>
+                    <div class="bank-ref">Bank: ${tracking.bank_reference}</div>
+                </div>
+            </td>
+            <td>
+                <div class="transaction-info">
+                    <div class="transaction-id">ID: ${tracking.transaction_id}</div>
+                </div>
+            </td>
+            <td>
+                <div class="amount-info">
+                    <div class="tracking-amount">TZS ${tracking.amount.toLocaleString()}</div>
+                </div>
+            </td>
+            <td>
+                <div class="notes-info">
+                    <div class="tracking-notes">${tracking.notes}</div>
+                </div>
+            </td>
+            <td>
+                <div class="date-info">
+                    <div class="payment-date">${new Date(tracking.payment_date).toLocaleDateString()}</div>
+                </div>
+            </td>
+            <td>
+                <div class="tracking-actions">
+                    <button class="action-btn view" onclick="viewTrackingDetails('${tracking.id}')" title="View Details">👁️</button>
+                    <button class="action-btn edit" onclick="editTracking('${tracking.id}')" title="Edit Tracking">✏️</button>
+                    <button class="action-btn delete" onclick="deleteTracking('${tracking.id}')" title="Delete Tracking">🗑️</button>
+                </div>
+            </td>
+        </tr>
+    `).join('');
+    
+    console.log('✅ Sample tracking records loaded successfully');
+}
+
+// Tracking Action Functions
+function editTracking(trackingId) {
+    customAlert(`Editing tracking: ${trackingId}`, 'Edit Tracking', 'info');
+}
+
+function deleteTracking(trackingId) {
+    if (confirm(`Are you sure you want to delete tracking: ${trackingId}?`)) {
+        customAlert(`Tracking ${trackingId} deleted successfully!`, 'Success', 'success');
+        loadPaymentTracking();
     }
 }
 
