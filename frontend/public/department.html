@@ -31442,7 +31442,24 @@ async function loadWorkforceRequests() {
         const workforceRequests = await response.json();
         console.log('📊 Workforce requests data:', workforceRequests);
         
-        displayWorkforceRequests(workforceRequests);
+        // Handle different response formats
+        let requestsArray = [];
+        if (Array.isArray(workforceRequests)) {
+            requestsArray = workforceRequests;
+        } else if (workforceRequests.data && Array.isArray(workforceRequests.data)) {
+            requestsArray = workforceRequests.data;
+        } else if (workforceRequests.success) {
+            // API returned success but no data - use sample data
+            console.log('⚠️ API returned success but no workforce requests data');
+            loadSampleWorkforceRequests();
+            return;
+        } else {
+            console.log('⚠️ Unexpected workforce requests response format');
+            loadSampleWorkforceRequests();
+            return;
+        }
+        
+        displayWorkforceRequests(requestsArray);
         
     } catch (error) {
         console.error('❌ Error loading workforce requests:', error);
@@ -31461,15 +31478,15 @@ function loadSampleWorkforceRequests() {
             requestId: 'WFR-2026-001',
             project: 'Port Modernization Phase 1',
             requestType: 'additional',
-            workersNeeded: 8,
+            workersNeeded: 5,
             jobCategories: ['construction', 'supervisor'],
             duration: '2 weeks',
-            startDate: '2026-03-20',
-            endDate: '2026-04-03',
-            submittedDate: '2026-03-15',
+            startDate: '2026-05-15',
+            endDate: '2026-05-29',
+            submittedDate: '2026-05-03',
             status: 'pending',
-            justification: 'Increased workload due to accelerated project timeline',
-            specialRequirements: 'Experience with marine construction preferred'
+            justification: 'Additional workforce needed for accelerated timeline',
+            specialRequirements: 'Marine construction experience preferred'
         },
         {
             id: 'WFR-002',
@@ -31479,162 +31496,12 @@ function loadSampleWorkforceRequests() {
             workersNeeded: 3,
             jobCategories: ['engineering', 'safety'],
             duration: '1 month',
-            startDate: '2026-03-25',
-            endDate: '2026-04-25',
-            submittedDate: '2026-03-18',
+            startDate: '2026-05-10',
+            endDate: '2026-06-10',
+            submittedDate: '2026-05-01',
             status: 'approved',
-            justification: 'Need specialized engineers for structural design phase',
+            justification: 'Need specialized engineers for structural work',
             specialRequirements: 'Structural engineering certification required'
-        },
-        {
-            id: 'WFR-003',
-            requestId: 'WFR-2026-003',
-            project: 'Road Infrastructure',
-            requestType: 'replacement',
-            workersNeeded: 5,
-            jobCategories: ['construction', 'driver'],
-            duration: '3 weeks',
-            startDate: '2026-03-22',
-            endDate: '2026-04-12',
-            submittedDate: '2026-03-20',
-            status: 'pending',
-            justification: 'Replacing workers who completed their contracts',
-            specialRequirements: 'Heavy equipment operation experience'
-        },
-        {
-            id: 'WFR-004',
-            requestId: 'WFR-2026-004',
-            project: 'Port Modernization Phase 1',
-            requestType: 'temporary',
-            workersNeeded: 12,
-            jobCategories: ['labor', 'construction'],
-            duration: '1 week',
-            startDate: '2026-03-28',
-            endDate: '2026-04-04',
-            submittedDate: '2026-03-22',
-            status: 'approved',
-            justification: 'Temporary support for concrete pouring phase',
-            specialRequirements: 'Previous concrete work experience'
-        },
-        {
-            id: 'WFR-005',
-            requestId: 'WFR-2026-005',
-            project: 'Warehouse Construction',
-            requestType: 'additional',
-            workersNeeded: 6,
-            jobCategories: ['construction', 'supervisor', 'safety'],
-            duration: '4 weeks',
-            startDate: '2026-04-01',
-            endDate: '2026-04-29',
-            submittedDate: '2026-03-24',
-            status: 'pending',
-            justification: 'Additional workforce for roofing and electrical installation',
-            specialRequirements: 'Electrical and roofing experience required'
-        },
-        {
-            id: 'WFR-006',
-            requestId: 'WFR-2026-006',
-            project: 'Road Infrastructure',
-            requestType: 'specialized',
-            workersNeeded: 4,
-            jobCategories: ['engineering', 'driver'],
-            duration: '2 months',
-            startDate: '2026-04-05',
-            endDate: '2026-06-05',
-            submittedDate: '2026-03-26',
-            status: 'approved',
-            justification: 'Need specialized engineers for bridge construction',
-            specialRequirements: 'Bridge engineering experience mandatory'
-        },
-        {
-            id: 'WFR-007',
-            requestId: 'WFR-2026-007',
-            project: 'Port Modernization Phase 1',
-            requestType: 'additional',
-            workersNeeded: 10,
-            jobCategories: ['construction', 'labor', 'driver'],
-            duration: '6 weeks',
-            startDate: '2026-04-10',
-            endDate: '2026-05-22',
-            submittedDate: '2026-03-28',
-            status: 'pending',
-            justification: 'Additional workforce for pier construction phase',
-            specialRequirements: 'Marine construction experience preferred'
-        },
-        {
-            id: 'WFR-008',
-            requestId: 'WFR-2026-008',
-            project: 'Warehouse Construction',
-            requestType: 'replacement',
-            workersNeeded: 2,
-            jobCategories: ['supervisor'],
-            duration: '3 months',
-            startDate: '2026-04-15',
-            endDate: '2026-07-15',
-            submittedDate: '2026-03-30',
-            status: 'approved',
-            justification: 'Replacing supervisors transferred to new project',
-            specialRequirements: 'Construction management experience required'
-        },
-        {
-            id: 'WFR-009',
-            requestId: 'WFR-2026-009',
-            project: 'Road Infrastructure',
-            requestType: 'temporary',
-            workersNeeded: 8,
-            jobCategories: ['labor', 'construction'],
-            duration: '2 weeks',
-            startDate: '2026-04-20',
-            endDate: '2026-05-04',
-            submittedDate: '2026-04-01',
-            status: 'pending',
-            justification: 'Temporary support for asphalt paving phase',
-            specialRequirements: 'Road construction experience preferred'
-        },
-        {
-            id: 'WFR-010',
-            requestId: 'WFR-2026-010',
-            project: 'Port Modernization Phase 1',
-            requestType: 'specialized',
-            workersNeeded: 5,
-            jobCategories: ['engineering', 'safety'],
-            duration: '1 month',
-            startDate: '2026-04-25',
-            endDate: '2026-05-25',
-            submittedDate: '2026-04-03',
-            status: 'approved',
-            justification: 'Need safety officers for high-risk construction areas',
-            specialRequirements: 'OSHA certification and marine safety training'
-        },
-        {
-            id: 'WFR-011',
-            requestId: 'WFR-2026-011',
-            project: 'Warehouse Construction',
-            requestType: 'additional',
-            workersNeeded: 7,
-            jobCategories: ['construction', 'driver', 'supervisor'],
-            duration: '3 weeks',
-            startDate: '2026-05-01',
-            endDate: '2026-05-22',
-            submittedDate: '2026-04-05',
-            status: 'pending',
-            justification: 'Additional workforce for final construction phase',
-            specialRequirements: 'Experience with industrial construction'
-        },
-        {
-            id: 'WFR-012',
-            requestId: 'WFR-2026-012',
-            project: 'Road Infrastructure',
-            requestType: 'replacement',
-            workersNeeded: 3,
-            jobCategories: ['driver', 'operator'],
-            duration: '2 months',
-            startDate: '2026-05-05',
-            endDate: '2026-07-05',
-            submittedDate: '2026-04-07',
-            status: 'approved',
-            justification: 'Replacing equipment operators who completed contracts',
-            specialRequirements: 'Heavy machinery certification required'
         }
     ];
     
@@ -31648,6 +31515,12 @@ function displayWorkforceRequests(requests) {
     if (!requestsList) {
         console.error('❌ Workforce requests list container not found!');
         return;
+    }
+    
+    // Ensure requests is an array
+    if (!Array.isArray(requests)) {
+        console.error('❌ Requests is not an array:', requests);
+        requests = [];
     }
     
     if (!requests || requests.length === 0) {
