@@ -19360,7 +19360,7 @@ async function loadIncidents() {
         
         // Try to get incidents from API
         try {
-            response = await fetch(`${baseUrl}/api/work/hse`, {
+            response = await fetch(`${baseUrl}/api/work/hse/incidents`, {
                 method: 'GET',
                 headers: {
                     'Content-Type': 'application/json',
@@ -19372,10 +19372,10 @@ async function loadIncidents() {
                 throw new Error(`HTTP ${response.status}: ${response.statusText}`);
             }
         } catch (primaryError) {
-            console.warn('⚠️ Primary HSE endpoint failed, trying fallback:', primaryError.message);
+            console.warn('⚠️ Primary incidents endpoint failed, trying fallback:', primaryError.message);
             // Try fallback endpoint
             try {
-                response = await fetch(`${baseUrl}/api/work?department=hse`, {
+                response = await fetch(`${baseUrl}/api/work/incidents`, {
                     method: 'GET',
                     headers: {
                         'Content-Type': 'application/json',
@@ -19384,7 +19384,7 @@ async function loadIncidents() {
                 });
                 
                 if (!response.ok) {
-                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                    throw new Error(`Fallback also failed: HTTP ${response.status}: ${response.statusText}`);
                 }
             } catch (fallbackError) {
                 console.error('❌ All incidents endpoints failed:', fallbackError.message);
@@ -19396,8 +19396,18 @@ async function loadIncidents() {
         const incidentsData = await response.json();
         console.log('📊 Incidents data:', incidentsData);
         
-        // Handle different response formats
-        const incidents = incidentsData.incidents || incidentsData.data || incidentsData;
+        // Ensure we have an array
+        let incidents = [];
+        if (Array.isArray(incidentsData)) {
+            incidents = incidentsData;
+        } else if (incidentsData.incidents && Array.isArray(incidentsData.incidents)) {
+            incidents = incidentsData.incidents;
+        } else if (incidentsData.data && Array.isArray(incidentsData.data)) {
+            incidents = incidentsData.data;
+        } else if (incidentsData) {
+            // Single object, convert to array
+            incidents = [incidentsData];
+        }
         
         displayIncidents(incidents);
         
@@ -19749,7 +19759,7 @@ async function loadPpeRecords() {
         
         // Try to get PPE records from API
         try {
-            response = await fetch(`${baseUrl}/api/work/hse`, {
+            response = await fetch(`${baseUrl}/api/work/hse/ppe`, {
                 method: 'GET',
                 headers: {
                     'Content-Type': 'application/json',
@@ -19764,7 +19774,7 @@ async function loadPpeRecords() {
             console.warn('⚠️ Primary PPE endpoint failed, trying fallback:', primaryError.message);
             // Try fallback endpoint
             try {
-                response = await fetch(`${baseUrl}/api/inventory`, {
+                response = await fetch(`${baseUrl}/api/work/ppe`, {
                     method: 'GET',
                     headers: {
                         'Content-Type': 'application/json',
@@ -20270,7 +20280,7 @@ async function loadToolboxMeetings() {
         
         // Try to get toolbox meetings from API
         try {
-            response = await fetch(`${baseUrl}/api/safety/toolbox-meetings`, {
+            response = await fetch(`${baseUrl}/api/work/hse/toolbox-meetings`, {
                 method: 'GET',
                 headers: {
                     'Content-Type': 'application/json',
@@ -20285,7 +20295,7 @@ async function loadToolboxMeetings() {
             console.warn('⚠️ Primary toolbox meetings endpoint failed, trying fallback:', primaryError.message);
             // Try fallback endpoint
             try {
-                response = await fetch(`${baseUrl}/api/safety/meetings`, {
+                response = await fetch(`${baseUrl}/api/work/toolbox-meetings`, {
                     method: 'GET',
                     headers: {
                         'Content-Type': 'application/json',
@@ -23865,7 +23875,7 @@ async function loadViolations() {
         
         // Try to get violations from API
         try {
-            response = await fetch(`${baseUrl}/api/work/hse`, {
+            response = await fetch(`${baseUrl}/api/hse/violations`, {
                 method: 'GET',
                 headers: {
                     'Content-Type': 'application/json',
@@ -23880,7 +23890,7 @@ async function loadViolations() {
             console.warn('⚠️ Primary violations endpoint failed, trying fallback:', primaryError.message);
             // Try fallback endpoint
             try {
-                response = await fetch(`${baseUrl}/api/work/site-reports`, {
+                response = await fetch(`${baseUrl}/api/violations`, {
                     method: 'GET',
                     headers: {
                         'Content-Type': 'application/json',
@@ -32130,7 +32140,7 @@ async function loadSiteReports() {
         
         // Try to get site reports from API
         try {
-            response = await fetch(`${baseUrl}/api/projects/site-reports`, {
+            response = await fetch(`${baseUrl}/api/work/site-reports`, {
                 method: 'GET',
                 headers: {
                     'Content-Type': 'application/json',
@@ -32164,8 +32174,21 @@ async function loadSiteReports() {
             }
         }
         
-        const siteReports = await response.json();
-        console.log('📊 Site reports data:', siteReports);
+        const siteReportsData = await response.json();
+        console.log('📊 Site reports data:', siteReportsData);
+        
+        // Ensure we have an array
+        let siteReports = [];
+        if (Array.isArray(siteReportsData)) {
+            siteReports = siteReportsData;
+        } else if (siteReportsData.reports && Array.isArray(siteReportsData.reports)) {
+            siteReports = siteReportsData.reports;
+        } else if (siteReportsData.data && Array.isArray(siteReportsData.data)) {
+            siteReports = siteReportsData.data;
+        } else if (siteReportsData) {
+            // Single object, convert to array
+            siteReports = [siteReportsData];
+        }
         
         displaySiteReports(siteReports);
         
