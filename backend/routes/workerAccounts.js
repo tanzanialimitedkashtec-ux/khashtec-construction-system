@@ -1,16 +1,6 @@
 const express = require('express');
 const router = express.Router();
 const db = require('../../database/config/database');
-const multer = require('multer');
-
-// Configure multer for file uploads
-const storage = multer.memoryStorage();
-const upload = multer({ 
-    storage: storage,
-    limits: {
-        fileSize: 10 * 1024 * 1024 // 10MB limit
-    }
-});
 
 // Get all worker accounts
 router.get('/', async (req, res) => {
@@ -280,31 +270,25 @@ router.get('/:id', async (req, res) => {
 });
 
 // Create new worker account
-router.post('/', upload.fields([
-    { name: 'workerProfile', maxCount: 1 },
-    { name: 'workerID', maxCount: 1 },
-    { name: 'workerContract', maxCount: 1 }
-]), async (req, res) => {
+router.post('/', async (req, res) => {
     console.log('🔍 Worker account creation request received');
     console.log('📋 Request body:', req.body);
-    console.log('📁 Uploaded files:', req.files);
     
-    // Extract fields from FormData
-    const employeeId = req.body.employeeId;
-    const fullName = req.body.fullName;
-    const workEmail = req.body.workEmail;
-    const phoneNumber = req.body.phoneNumber;
-    const department = req.body.department;
-    const jobTitle = req.body.jobTitle;
-    const accountType = req.body.accountType;
-    const accessLevel = req.body.accessLevel;
-    const temporaryPassword = req.body.temporaryPassword;
-    const accountNotes = req.body.accountNotes;
-    
-    // Handle file uploads
-    const profilePicture = req.files.workerProfile ? req.files.workerProfile[0].originalname : null;
-    const idDocument = req.files.workerID ? req.files.workerID[0].originalname : null;
-    const contractDocument = req.files.workerContract ? req.files.workerContract[0].originalname : null;
+    const { 
+        employeeId, 
+        fullName, 
+        workEmail, 
+        phoneNumber, 
+        department, 
+        jobTitle, 
+        accountType, 
+        accessLevel, 
+        temporaryPassword, 
+        accountNotes,
+        profilePicture,
+        idDocument,
+        contractDocument
+    } = req.body;
     
     console.log('📝 Extracted worker data:', { 
         employeeId, 

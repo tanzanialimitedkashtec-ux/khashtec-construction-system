@@ -64,6 +64,10 @@ const scheduleMeetingsRoutes = require('./backend/routes/scheduleMeetings');
 
 const workerAccountRoutes = require('./backend/routes/workerAccounts');
 
+const driversRoutes = require('./backend/routes/drivers');
+
+const companyCarsRoutes = require('./backend/routes/companyCars');
+
 
 
 const app = express();
@@ -132,10 +136,10 @@ app.use('/api/', limiter);
 
 const allowedOrigins = [
     config.CORS_ORIGIN,
-    'http://localhost:3000',
-    'http://127.0.0.1:3000',
     'http://localhost:8080',
-    'http://127.0.0.1:8080'
+    'http://127.0.0.1:8080',
+    'http://localhost:3000',
+    'http://127.0.0.1:3000'
 ];
 
 app.use(cors({
@@ -628,6 +632,13 @@ app.use('/api/worker-accounts', asyncHandler(async (req, res, next) => {
 }));
 
 
+app.use('/api/drivers', asyncHandler(async (req, res, next) => {
+
+    return driversRoutes(req, res, next);
+
+}));
+
+
 
 app.use('/api/projects', asyncHandler(async (req, res, next) => {
 
@@ -760,6 +771,14 @@ app.use('/api/work', authenticateToken, asyncHandler(async (req, res, next) => {
 app.use('/api/meetings', authenticateToken, asyncHandler(async (req, res, next) => {
 
     return scheduleMeetingsRoutes(req, res, next);
+
+}));
+
+
+
+app.use('/api/company-cars', asyncHandler(async (req, res, next) => {
+
+    return companyCarsRoutes(req, res, next);
 
 }));
 
