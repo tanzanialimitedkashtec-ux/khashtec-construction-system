@@ -12,6 +12,22 @@ const db = require('../database/config/database');
 const app = express();
 const PORT = process.env.PORT || 8080;
 
+// Initialize Railway Database Connection
+console.log('🚀 Starting KASHTEC Backend Server...');
+console.log('🔧 Environment:', process.env.NODE_ENV || 'development');
+console.log('🔧 Port:', PORT);
+
+// Initialize database connection
+db.connect().then(connected => {
+    if (connected) {
+        console.log('✅ Railway Database Connected Successfully');
+    } else {
+        console.log('⚠️ Database connection failed - will retry automatically');
+    }
+}).catch(error => {
+    console.error('❌ Database initialization error:', error.message);
+});
+
 // Middleware
 app.use(helmet());
 app.use(cors());
@@ -658,6 +674,45 @@ app.get('/api/notifications-test', (req, res) => {
         timestamp: new Date().toISOString(),
         endpoints: ['POST /api/notifications/broadcast', 'GET /api/notifications', 'POST /api/notifications']
     });
+});
+
+// Add Railway database status endpoint
+app.get('/api/railway-db-status', async (req, res) => {
+    try {
+        console.log('🔍 Checking Railway database status...');
+        
+        // Check environment variables
+        const envStatus = {
+            DATABASE_URL: process.env.DATABASE_URL ? 'SET' : 'MISSING',
+            MYSQLHOST: process.env.MYSQLHOST || 'MISSING',
+            MYSQLUSER: process.env.MYSQLUSER || 'MISSING',
+            MYSQLDATABASE: process.env.MYSQLDATABASE || 'MISSING',
+            MYSQLPORT: process.env.MYSQLPORT || 'MISSING',
+            MYSQLPASSWORD: process.env.MYSQLPASSWORD ? 'SET' : 'MISSING',
+            isRailway: process.env.RAILWAY_ENVIRONMENT ? 'YES' : 'NO',
+            railwayDomain: process.env.RAILWAY_PUBLIC_DOMAIN || 'NOT SET'
+        };
+        
+        // Test database connection
+        const health = await db.healthCheck();
+        
+        console.log('✅ Railway database status check completed');
+        
+        res.json({ 
+            status: 'Railway Database Status Check',
+            environment: envStatus,
+            database: health,
+            timestamp: new Date().toISOString(),
+            message: health.status === 'connected' ? '✅ Railway Database Connected' : '⚠️ Database Not Connected'
+        });
+    } catch (error) {
+        console.error('❌ Railway database status check failed:', error);
+        res.status(500).json({ 
+            status: 'Railway Database Status Check Failed',
+            error: error.message,
+            timestamp: new Date().toISOString()
+        });
+    }
 });
 
 // Add a simple database test endpoint
@@ -2814,14 +2869,25 @@ async function runMigrationsOnStartup() {
 
 // Start server
 app.listen(PORT, async () => {
-    console.log(`KASHTEC Server v2.0.1-PROPERTIES-FIX starting on port ${PORT}`);
-    console.log('Database connected and ready for connections');
+    console.log(`🚀 KASHTEC Server v2.0.1-PROPERTIES-FIX starting on port ${PORT}`);
+    console.log('🔧 Environment:', process.env.NODE_ENV || 'development');
+    console.log('🔧 Railway Environment:', process.env.RAILWAY_ENVIRONMENT ? 'YES' : 'NO');
+    console.log('🔧 Railway Domain:', process.env.RAILWAY_PUBLIC_DOMAIN || 'NOT SET');
+    
+    // Check Railway database variables
+    const hasRailwayVars = process.env.DATABASE_URL && process.env.DATABASE_URL.includes('${') === false;
+    console.log('🔧 Railway Database Variables:', hasRailwayVars ? 'RESOLVED' : 'NOT RESOLVED');
+    
+    console.log('💾 Database connection initialized');
+    console.log('🔄 Running automatic migrations...');
     
     // Run migrations automatically
     await runMigrationsOnStartup();
     
-    console.log('Fallback endpoints enabled for production compatibility');
-    console.log(`KASHTEC Server fully started and ready on port ${PORT}`);
+    console.log('🛡️ Fallback endpoints enabled for production compatibility');
+    console.log('✅ KASHTEC Server fully started and ready');
+    console.log(`🌐 Server running on port ${PORT}`);
+    console.log('🔍 Check /api/railway-db-status for database connection status');
 });
 
 // Health check endpoint for Railway
