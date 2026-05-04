@@ -2,10 +2,22 @@
 class DatabaseAPI {
     constructor() {
         const PRODUCTION_API_ORIGIN = 'https://khashtec-construction-system-production-e297.up.railway.app';
-        this.baseURL = window.location.origin.includes('localhost') || window.location.origin.includes('127.0.0.1')
-            ? `${PRODUCTION_API_ORIGIN}/api`
-            : `${window.location.origin}/api`;
-        this.isProduction = true;
+        // Check if running locally - use local server on port 8080
+        this.isProduction = !(window.location.origin.includes('localhost') || window.location.origin.includes('127.0.0.1'));
+        
+        if (this.isProduction) {
+            // Production: use Railway URL
+            this.baseURL = `${PRODUCTION_API_ORIGIN}/api`;
+        } else {
+            // Local development: use local server on port 8080
+            this.baseURL = `http://localhost:8080/api`;
+        }
+        
+        console.log('🔧 API Configuration:', {
+            isProduction: this.isProduction,
+            origin: window.location.origin,
+            baseURL: this.baseURL
+        });
     }
 
     // Generic request method
