@@ -72,6 +72,8 @@ const languageCampaignsRoutes = require('./backend/routes/languageCampaigns');
 
 const languagePurchasesRoutes = require('./backend/routes/languagePurchases');
 
+const languagePaymentTrackingRoutes = require('./backend/routes/languagePaymentTracking');
+
 
 
 const app = express();
@@ -799,6 +801,14 @@ app.use('/api/language-campaigns', asyncHandler(async (req, res, next) => {
 app.use('/api/language-purchases', asyncHandler(async (req, res, next) => {
 
     return languagePurchasesRoutes(req, res, next);
+
+}));
+
+
+
+app.use('/api/language-payment-tracking', asyncHandler(async (req, res, next) => {
+
+    return languagePaymentTrackingRoutes(req, res, next);
 
 }));
 

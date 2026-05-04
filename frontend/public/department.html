@@ -35467,19 +35467,27 @@ function displayClientsRecords(data) {
     }
     
     // Handle different response formats
-    let records = data;
+    let records = [];
     if (data && typeof data === 'object') {
         // Handle {success: true, clients: [...]} format
-        if (data.clients && Array.isArray(data.clients)) {
+        if (data.success && data.clients && Array.isArray(data.clients)) {
             records = data.clients;
         }
         // Handle {data: [...]} format
         else if (data.data && Array.isArray(data.data)) {
             records = data.data;
         }
-        // Handle single object conversion
-        else if (!Array.isArray(data)) {
+        // Handle single object in clients property
+        else if (data.clients && typeof data.clients === 'object' && !Array.isArray(data.clients)) {
+            records = [data.clients];
+        }
+        // Handle single object response
+        else if (!Array.isArray(data) && data.id) {
             records = [data];
+        }
+        // Handle array directly
+        else if (Array.isArray(data)) {
+            records = data;
         }
     }
     
@@ -35497,18 +35505,18 @@ function displayClientsRecords(data) {
     // Map API fields to display fields and sort records
     const mappedRecords = records.map(record => ({
         id: record.id || record.client_id || `CLT-${Date.now()}`,
-        clientId: record.clientId || record.client_id || record.id || 'N/A',
-        fullName: record.fullName || record.full_name || record.name || 'N/A',
-        clientType: record.clientType || record.client_type || record.type || 'individual',
-        companyName: record.companyName || record.company_name || '',
-        phone: record.phone || record.phone_number || 'N/A',
-        email: record.email || record.email_address || 'N/A',
-        nidaNumber: record.nidaNumber || record.nida_number || record.nida || 'N/A',
-        tinNumber: record.tinNumber || record.tin_number || record.tin || '',
-        address: record.address || record.physical_address || 'N/A',
-        propertyInterest: record.propertyInterest || record.property_interest || 'residential',
-        budgetRange: record.budgetRange || record.budget_range || '50m-100m',
-        registrationDate: record.registrationDate || record.created_at || record.date || new Date().toISOString().split('T')[0]
+        clientId: record.client_id || record.clientId || `CLT-${record.id}` || 'N/A',
+        fullName: record.full_name || record.fullName || record.name || 'N/A',
+        clientType: record.client_type || record.clientType || record.type || 'individual',
+        companyName: record.company_name || record.companyName || '',
+        phone: record.phone_number || record.phone || 'N/A',
+        email: record.email_address || record.email || 'N/A',
+        nidaNumber: record.nida_number || record.nidaNumber || record.nida || 'N/A',
+        tinNumber: record.tin_number || record.tinNumber || record.tin || '',
+        address: record.physical_address || record.address || 'N/A',
+        propertyInterest: record.property_interest || record.propertyInterest || 'residential',
+        budgetRange: record.budget_range || record.budgetRange || '50m-100m',
+        registrationDate: record.created_at || record.registration_date || new Date().toISOString().split('T')[0]
     }));
     
     // Sort records by client ID
@@ -37199,13 +37207,16 @@ function saveNewClient() {
     
     const client = {
         id: 'CLT-' + Date.now(),
-        clientName: document.getElementById('clientFullName').value,
+        fullName: document.getElementById('clientFullName').value,
         companyName: document.getElementById('companyName').value,
         phone: document.getElementById('clientPhone').value,
         email: document.getElementById('clientEmail').value,
+        nida: document.getElementById('clientNida').value,
+        tin: document.getElementById('clientTin').value,
         address: document.getElementById('clientAddress').value,
-        industry: document.getElementById('propertyInterest').value,
-        clientType: document.getElementById('clientType').value,
+        propertyInterest: document.getElementById('propertyInterest').value,
+        budgetRange: document.getElementById('budgetRange').value,
+        type: document.getElementById('clientType').value,
         notes: document.getElementById('clientNotes').value
     };
     
