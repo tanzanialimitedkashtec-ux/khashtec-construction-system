@@ -844,7 +844,7 @@ app.use('/api/contracts', asyncHandler(async (req, res, next) => {
 
     return contractsRoutes(req, res, next);
 
-});
+}));
 
 
 
@@ -852,7 +852,7 @@ app.use('/api/tasks', asyncHandler(async (req, res, next) => {
 
     return tasksRoutes(req, res, next);
 
-});
+}));
 
 
 
