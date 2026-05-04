@@ -3299,7 +3299,7 @@ app.post('/api/properties', async (req, res) => {
 
         // Insert property
 
-        const [result] = await db.execute(`
+        const resultResult = await db.execute(`
 
             INSERT INTO properties (
 
@@ -3316,6 +3316,12 @@ app.post('/api/properties', async (req, res) => {
             status || 'Available', parsedSize
 
         ]);
+
+        
+
+        // Handle different MySQL2 return formats
+
+        const result = Array.isArray(resultResult) ? resultResult[0] : resultResult;
 
 
 
