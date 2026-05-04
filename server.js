@@ -82,6 +82,8 @@ const contractsRoutes = require('./backend/routes/contracts');
 
 const tasksRoutes = require('./backend/routes/tasks');
 
+const inspectionsRoutes = require('./backend/routes/inspections');
+
 
 
 const app = express();
@@ -849,6 +851,14 @@ app.use('/api/contracts', asyncHandler(async (req, res, next) => {
 app.use('/api/tasks', asyncHandler(async (req, res, next) => {
 
     return tasksRoutes(req, res, next);
+
+});
+
+
+
+app.use('/api/inspections', asyncHandler(async (req, res, next) => {
+
+    return inspectionsRoutes(req, res, next);
 
 }));
 
