@@ -13557,7 +13557,8 @@ function viewWorkforceReports(){
 
 // Load workforce summary data
 function loadWorkforceSummary() {
-    fetch('/api/workforce-reports/summary')
+    const baseUrl = window.location.origin;
+    fetch(`${baseUrl}/api/workforce-reports/summary`)
         .then(response => response.json())
         .then(data => {
             if (data.error) {
@@ -13657,7 +13658,8 @@ function displayWorkforceSummary(data) {
 
 // Load employee data
 function loadEmployeeData() {
-    fetch('/api/workforce-reports/employees')
+    const baseUrl = window.location.origin;
+    fetch(`${baseUrl}/api/workforce-reports/employees`)
         .then(response => response.json())
         .then(data => {
             if (data.error) {
@@ -13737,7 +13739,8 @@ function displayEmployeeData(employees) {
 
 // Load turnover data
 function loadTurnoverData() {
-    fetch('/api/workforce-reports/turnover')
+    const baseUrl = window.location.origin;
+    fetch(`${baseUrl}/api/workforce-reports/turnover`)
         .then(response => response.json())
         .then(data => {
             if (data.error) {
@@ -13809,7 +13812,8 @@ function displayTurnoverData(data) {
 
 // Load performance data
 function loadPerformanceData() {
-    fetch('/api/workforce-reports/performance')
+    const baseUrl = window.location.origin;
+    fetch(`${baseUrl}/api/workforce-reports/performance`)
         .then(response => response.json())
         .then(data => {
             if (data.error) {
@@ -13881,7 +13885,8 @@ function displayPerformanceData(data) {
 
 // Load compliance data
 function loadComplianceData() {
-    fetch('/api/workforce-reports/compliance')
+    const baseUrl = window.location.origin;
+    fetch(`${baseUrl}/api/workforce-reports/compliance`)
         .then(response => response.json())
         .then(data => {
             if (data.error) {
