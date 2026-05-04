@@ -1183,6 +1183,97 @@ CREATE TABLE IF NOT EXISTS project_progress_updates (
   FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE
 );
 
+-- Driver Management Table
+CREATE TABLE IF NOT EXISTS drivers (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  driver_id VARCHAR(50) UNIQUE NOT NULL,
+  full_name VARCHAR(255) NOT NULL,
+  description TEXT,
+  years_of_experience INT NOT NULL,
+  license_type ENUM('class-a', 'class-b', 'class-c', 'class-d', 'international') NOT NULL,
+  phone_number VARCHAR(50) NOT NULL,
+  email_address VARCHAR(255) NOT NULL,
+  nida_number VARCHAR(50) NOT NULL,
+  passport_number VARCHAR(50),
+  date_of_birth DATE NOT NULL,
+  gender ENUM('male', 'female', 'other') NOT NULL,
+  residential_address TEXT NOT NULL,
+  region ENUM('dar-es-salaam', 'arusha', 'mwanza', 'mbeya', 'tanga', 'morogoro', 'dodoma', 'kilimanjaro', 'tabora', 'kigoma', 'singida', 'shinyanga', 'mara', 'manyara', 'rukwa', 'njombe', 'katavi', 'simiyu', 'geita', 'lindi', 'mtwara', 'pwani', 'iringa', 'ruvuma', 'songwe'),
+  emergency_contact_name VARCHAR(255) NOT NULL,
+  emergency_contact_number VARCHAR(50) NOT NULL,
+  emergency_relationship ENUM('spouse', 'parent', 'sibling', 'child', 'friend', 'relative') NOT NULL,
+  blood_group ENUM('a+', 'a-', 'b+', 'b-', 'ab+', 'ab-', 'o+', 'o-'),
+  license_issue_date DATE NOT NULL,
+  license_expiry_date DATE NOT NULL,
+  employment_status ENUM('full-time', 'part-time', 'contract', 'temporary') NOT NULL,
+  hire_date DATE NOT NULL,
+  salary DECIMAL(12,2),
+  payment_method ENUM('bank-transfer', 'mobile-money', 'cash', 'cheque'),
+  bank_details TEXT,
+  medical_certificate ENUM('valid', 'expired', 'pending', 'not-required'),
+  medical_expiry_date DATE,
+  driver_status ENUM('active', 'on-leave', 'suspended', 'terminated') NOT NULL,
+  assigned_vehicle VARCHAR(50),
+  skills TEXT,
+  employment_history TEXT,
+  additional_notes TEXT,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  
+  -- Indexes for performance
+  INDEX idx_driver_id (driver_id),
+  INDEX idx_full_name (full_name),
+  INDEX idx_license_type (license_type),
+  INDEX idx_phone_number (phone_number),
+  INDEX idx_email_address (email_address),
+  INDEX idx_nida_number (nida_number),
+  INDEX idx_driver_status (driver_status),
+  INDEX idx_employment_status (employment_status),
+  INDEX idx_hire_date (hire_date),
+  INDEX idx_license_expiry (license_expiry_date),
+  INDEX idx_region (region)
+);
+
+-- Company Vehicles/Fleet Management Table
+CREATE TABLE IF NOT EXISTS vehicles (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  track_number VARCHAR(50) UNIQUE NOT NULL,
+  car_name VARCHAR(255) NOT NULL,
+  brand_name ENUM('toyota', 'nissan', 'mitsubishi', 'isuzu', 'ford', 'mazda', 'honda', 'bmw', 'mercedes', 'volkswagen', 'other') NOT NULL,
+  registration_number VARCHAR(50) UNIQUE NOT NULL,
+  plate_number VARCHAR(50) NOT NULL,
+  car_details TEXT NOT NULL,
+  description TEXT NOT NULL,
+  assigned_driver VARCHAR(50),
+  registration_date DATE NOT NULL,
+  vehicle_type ENUM('pickup', 'suv', 'sedan', 'van', 'truck', 'motorcycle') NOT NULL,
+  fuel_type ENUM('petrol', 'diesel', 'hybrid', 'electric') NOT NULL,
+  color VARCHAR(50),
+  year_of_manufacture INT,
+  odometer_reading INT,
+  insurance_status ENUM('insured', 'pending', 'expired', 'not-required') NOT NULL,
+  vehicle_status ENUM('active', 'maintenance', 'inactive', 'retired') NOT NULL,
+  additional_notes TEXT,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  
+  -- Foreign key relationship to drivers table
+  FOREIGN KEY (assigned_driver) REFERENCES drivers(driver_id) ON DELETE SET NULL,
+  
+  -- Indexes for performance
+  INDEX idx_track_number (track_number),
+  INDEX idx_car_name (car_name),
+  INDEX idx_brand_name (brand_name),
+  INDEX idx_registration_number (registration_number),
+  INDEX idx_plate_number (plate_number),
+  INDEX idx_assigned_driver (assigned_driver),
+  INDEX idx_vehicle_type (vehicle_type),
+  INDEX idx_fuel_type (fuel_type),
+  INDEX idx_vehicle_status (vehicle_status),
+  INDEX idx_insurance_status (insurance_status),
+  INDEX idx_registration_date (registration_date)
+);
+
 -- Suggestions table
 CREATE TABLE IF NOT EXISTS suggestions (
   id INT AUTO_INCREMENT PRIMARY KEY,
