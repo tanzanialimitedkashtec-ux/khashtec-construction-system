@@ -27260,18 +27260,19 @@ function displayPolicyRecords(records) {
     if (records && Array.isArray(records)) {
         records = records.map(record => {
             // Map fields from API response to expected display format
+            // Handle HSE work records structure
             return {
                 id: record.id || `POL-${record.id}`,
                 title: record.title || record.work_title || 'Untitled Policy',
                 category: record.category || record.work_type || 'General',
-                priority: record.priority || 'mandatory',
-                effectiveDate: record.effectiveDate || record.upload_date || new Date().toISOString().split('T')[0],
-                reviewDate: record.reviewDate || record.upload_date || new Date().toISOString().split('T')[0],
+                priority: record.priority || record.severity || 'moderate', // Use severity from HSE data
+                effectiveDate: record.effectiveDate || record.upload_date || record.created_at || new Date().toISOString().split('T')[0],
+                reviewDate: record.reviewDate || record.upload_date || record.created_at || new Date().toISOString().split('T')[0],
                 scope: record.scope || 'all-projects',
-                status: record.status || 'active',
+                status: record.status || 'active', // Default to active for HSE records
                 description: record.description || record.work_description || '',
-                uploadedBy: record.uploadedBy || record.uploaded_by || 'Unknown',
-                uploadDate: record.uploadDate || record.upload_date || new Date().toISOString().split('T')[0],
+                uploadedBy: record.uploadedBy || record.uploaded_by || record.recorded_by || 'Unknown',
+                uploadDate: record.uploadDate || record.upload_date || record.created_at || new Date().toISOString().split('T')[0],
                 department_code: record.department_code || 'general'
             };
         });
@@ -27311,11 +27312,19 @@ function displayPolicyRecords(records) {
         // Get priority badge
         const priorityClass = record.priority === 'mandatory' ? 'priority-mandatory' : 
                               record.priority === 'recommended' ? 'priority-recommended' : 
-                              record.priority === 'informational' ? 'priority-informational' : 'priority-default';
+                              record.priority === 'informational' ? 'priority-informational' : 
+                              record.priority === 'critical' ? 'priority-critical' :
+                              record.priority === 'high' ? 'priority-high' :
+                              record.priority === 'moderate' ? 'priority-moderate' :
+                              record.priority === 'low' ? 'priority-low' : 'priority-default';
         
         const priorityBadge = record.priority === 'mandatory' ? '🔴 Mandatory' : 
                               record.priority === 'recommended' ? '🟡 Recommended' : 
-                              record.priority === 'informational' ? '🔵 Informational' : '❓ Unknown';
+                              record.priority === 'informational' ? '🔵 Informational' : 
+                              record.priority === 'critical' ? '🔴 Critical' :
+                              record.priority === 'high' ? '🟠 High' :
+                              record.priority === 'moderate' ? '🟡 Moderate' :
+                              record.priority === 'low' ? '🟢 Low' : '❓ Unknown';
         
         // Get status badge
         const statusClass = record.status === 'active' ? 'status-active' : 
