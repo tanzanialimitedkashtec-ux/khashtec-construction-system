@@ -3,16 +3,6 @@ const router = express.Router();
 
 console.log('🚀 Attendance route file is being loaded...');
 
-// Test basic route loading
-router.get('/health', (req, res) => {
-    console.log('🏥 Attendance health check accessed');
-    res.json({ 
-        status: 'healthy',
-        message: 'Attendance routes are loaded',
-        timestamp: new Date().toISOString()
-    });
-});
-
 // Test endpoint to verify route is working
 router.get('/test', (req, res) => {
     console.log('🧪 Attendance test endpoint accessed');

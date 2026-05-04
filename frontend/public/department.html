@@ -38268,17 +38268,16 @@ function formatFileSize(size) {
 // Filter documents by search term
 function filterDocs() {
     const searchTerm = document.getElementById('docSearchInput').value.toLowerCase();
-    const docItems = document.querySelectorAll('.doc-item');
-    
-    docItems.forEach(item => {
-        const title = item.querySelector('h5').textContent.toLowerCase();
-        const type = item.querySelector('p').textContent.toLowerCase();
-        const department = item.querySelectorAll('p')[1].textContent.toLowerCase();
+    const docRows = document.querySelectorAll('.doc-row');
+    docRows.forEach(row => {
+        const title = row.querySelector('h5')?.textContent.toLowerCase() || '';
+        const type = row.querySelector('p')?.textContent.toLowerCase() || '';
+        const department = row.querySelectorAll('p')[1]?.textContent.toLowerCase() || '';
         
         if (title.includes(searchTerm) || type.includes(searchTerm) || department.includes(searchTerm)) {
-            item.style.display = 'block';
+            row.style.display = '';
         } else {
-            item.style.display = 'none';
+            row.style.display = 'none';
         }
     });
 }
@@ -41318,27 +41317,69 @@ function renderOfficePortal(officePortalUsers, documents, policies, contracts) {
         return icons[impact] || '📋';
     }
     
-    // Generate HTML for registered users with enhanced cards
-    const registeredUsersHTML = officePortalUsers.map(user => `
-        <div class="personnel-card client" data-department="${user.department}" data-role="${user.position}" data-person-id="${user.id}">
-            <div class="personnel-header">
-                <div class="personnel-image-large">
-                    <img src="${user.profileImage}" alt="${user.name}" onerror="this.src='https://picsum.photos/seed/default/100/100.jpg'">
-                    <div class="role-badge">${user.position}</div>
-                </div>
-                <div class="personnel-info">
-                    <h4>${user.name}</h4>
-                    <p class="position-title">${user.position} • ${user.department}</p>
-                    <div class="contact-info">
-                        <span>📧 ${user.email}</span>
-                        <span>📱 ${user.phone}</span>
-                        <span>🏢 ${user.department}</span>
-                    </div>
-                    ${user.files && user.files.length > 0 ? `<div class="files-indicator">📁 ${user.files.length} files</div>` : ''}
-                </div>
-            </div>
+    // Generate HTML for registered users in table format
+    const registeredUsersHTML = `
+        <div class="personnel-table-container">
+            <table class="personnel-table">
+                <thead>
+                    <tr>
+                        <th>Photo</th>
+                        <th>Name</th>
+                        <th>Position</th>
+                        <th>Department</th>
+                        <th>Email</th>
+                        <th>Phone</th>
+                        <th>Role</th>
+                        <th>Files</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${officePortalUsers.map(user => `
+                        <tr class="personnel-row" data-department="${user.department}" data-role="${user.position}" data-person-id="${user.id}">
+                            <td>
+                                <div class="personnel-avatar">
+                                    <img src="${user.profileImage}" alt="${user.name}" onerror="this.src='https://picsum.photos/seed/default/50/50.jpg'">
+                                </div>
+                            </td>
+                            <td>
+                                <div class="personnel-name">
+                                    <strong>${user.name}</strong>
+                                    <div class="role-badge small">${user.position}</div>
+                                </div>
+                            </td>
+                            <td>
+                                <span class="department-badge">${user.department}</span>
+                            </td>
+                            <td>
+                                <div class="contact-info">
+                                    <span class="contact-item">📧 ${user.email}</span>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="contact-info">
+                                    <span class="contact-item">📱 ${user.phone}</span>
+                                </div>
+                            </td>
+                            <td>
+                                <span class="position-badge">${user.position}</span>
+                            </td>
+                            <td>
+                                ${user.files && user.files.length > 0 ? `<span class="files-count">📁 ${user.files.length} files</span>` : '<span class="files-count">📁 0 files</span>'}
+                            </td>
+                            <td>
+                                <div class="personnel-actions">
+                                    <button class="action-btn view" onclick="viewPersonnelDetails('${user.id}')" title="View Details">👁️</button>
+                                    <button class="action-btn edit" onclick="editPersonnel('${user.id}')" title="Edit Personnel">✏️</button>
+                                    <button class="action-btn delete" onclick="deletePersonnel('${user.id}')" title="Delete Personnel">🗑️</button>
+                                </div>
+                            </td>
+                        </tr>
+                    `).join('')}
+                </tbody>
+            </table>
         </div>
-    `).join('');
+    `;
     
     // Generate documents section
     const documentsHTML = documents.map(doc => `
@@ -41590,22 +41631,17 @@ function searchPortal(searchTerm) {
     console.log('🔍 Searching portal for:', term);
     
     // Search personnel
-    const personnelCards = document.querySelectorAll('.personnel-card');
-    personnelCards.forEach(card => {
-        const name = card.querySelector('h4')?.textContent.toLowerCase() || '';
-        const position = card.querySelector('.position-title')?.textContent.toLowerCase() || '';
-        const department = card.dataset.department?.toLowerCase() || '';
-        const role = card.dataset.role?.toLowerCase() || '';
-        const contact = card.querySelector('.contact-info')?.textContent.toLowerCase() || '';
+    const personnelRows = document.querySelectorAll('.personnel-row');
+    personnelRows.forEach(row => {
+        const name = row.querySelector('.personnel-name strong')?.textContent.toLowerCase() || '';
+        const position = row.querySelector('.role-badge')?.textContent.toLowerCase() || '';
+        const department = row.querySelector('.department-badge')?.textContent.toLowerCase() || '';
         
-        const matches = name.includes(term) || 
-                       position.includes(term) || 
-                       department.includes(term) || 
-                       role.includes(term) || 
-                       contact.includes(term);
-        
-        card.style.display = matches ? 'block' : 'none';
-        console.log('👤 Personnel card:', { name, position, department, role, matches });
+        if (name.includes(term) || position.includes(term) || department.includes(term)) {
+            row.style.display = '';
+        } else {
+            row.style.display = 'none';
+        }
     });
     
     // Search documents
@@ -41658,25 +41694,38 @@ function searchPortal(searchTerm) {
     });
     
     // Show search results notification
-    const visibleCards = document.querySelectorAll('.personnel-card[style*="block"], .document-card[style*="block"], .policy-card[style*="block"], .contract-card[style*="block"]').length;
-    showNotification('Search Results', `Found ${visibleCards} items matching "${searchTerm}"`, 'info');
+    const visibleRows = document.querySelectorAll('.personnel-row:not([style*="none"]), .document-card[style*="block"], .policy-card[style*="block"], .contract-card[style*="block"]').length;
+    showNotification('Search Results', `Found ${visibleRows} items matching "${searchTerm}"`, 'info');
 }
 
 function filterPortal(category) {
     console.log('🔍 Filtering portal by category:', category);
     
-    const allCards = document.querySelectorAll('.personnel-card, .document-card, .policy-card, .contract-card');
+    const allItems = document.querySelectorAll('.personnel-row, .document-card, .policy-card, .contract-card');
     let visibleCount = 0;
     
-    allCards.forEach(card => {
-        const cardDepartment = card.dataset.department?.toLowerCase() || '';
-        const cardCategory = card.dataset.category?.toLowerCase() || '';
-        const cardType = card.dataset.type?.toLowerCase() || '';
-        const cardRole = card.dataset.role?.toLowerCase() || '';
+    allItems.forEach(item => {
+        let cardDepartment, cardCategory, cardType, cardRole;
+        
+        if (item.classList.contains('personnel-row')) {
+            // Handle table rows
+            const departmentBadge = item.querySelector('.department-badge');
+            const roleBadge = item.querySelector('.role-badge');
+            cardDepartment = departmentBadge?.textContent.toLowerCase() || '';
+            cardCategory = cardDepartment;
+            cardType = cardDepartment;
+            cardRole = roleBadge?.textContent.toLowerCase() || '';
+        } else {
+            // Handle cards
+            cardDepartment = item.dataset.department?.toLowerCase() || '';
+            cardCategory = item.dataset.category?.toLowerCase() || '';
+            cardType = item.dataset.type?.toLowerCase() || '';
+            cardRole = item.dataset.role?.toLowerCase() || '';
+        }
         
         // Show all if no category selected
         if (category === '') {
-            card.style.display = 'block';
+            item.style.display = item.classList.contains('personnel-row') ? '' : 'block';
             visibleCount++;
         } 
         // Filter by department/category match
@@ -41684,21 +41733,12 @@ function filterPortal(category) {
                  cardCategory === category.toLowerCase() || 
                  cardType === category.toLowerCase() || 
                  cardRole === category.toLowerCase()) {
-            card.style.display = 'block';
+            item.style.display = item.classList.contains('personnel-row') ? '' : 'block';
             visibleCount++;
         } 
         else {
-            card.style.display = 'none';
+            item.style.display = 'none';
         }
-        
-        console.log('🏷️ Card filter check:', {
-            department: cardDepartment,
-            category: cardCategory,
-            type: cardType,
-            role: cardRole,
-            filter: category,
-            visible: card.style.display === 'block'
-        });
     });
     
     // Show filter results notification
@@ -41997,21 +42037,23 @@ function downloadFile(personId, fileType, fileName) {
     }
 }
 
-// Add file viewing buttons to personnel cards
+// Add file viewing buttons to personnel rows
 function updatePersonnelCardsWithFiles() {
-    const personnelCards = document.querySelectorAll('.personnel-card');
-    personnelCards.forEach(card => {
-        const personId = card.dataset.personId;
+    const personnelRows = document.querySelectorAll('.personnel-row');
+    personnelRows.forEach(row => {
+        const personId = row.dataset.personId;
         if (personId) {
             const user = window.currentPortalData.personnel.find(p => p.id === personId);
             if (user && user.files && user.files.length > 0) {
-                const actionsDiv = card.querySelector('.personnel-actions');
-                if (actionsDiv) {
-                    const filesButton = document.createElement('button');
-                    filesButton.className = 'action-btn documents';
-                    filesButton.innerHTML = `📁 Files (${user.files.length})`;
-                    filesButton.onclick = () => viewPersonnelFiles(personId, user.name);
-                    actionsDiv.appendChild(filesButton);
+                const actionsCell = row.querySelector('.personnel-actions');
+                if (actionsCell) {
+                    const filesBtn = document.createElement('button');
+                    filesBtn.className = 'action-btn info';
+                    filesBtn.innerHTML = '📁 Files';
+                    filesBtn.style.fontSize = '12px';
+                    filesBtn.style.padding = '4px 8px';
+                    filesBtn.onclick = () => viewPersonnelFiles(personId, user.name);
+                    actionsCell.appendChild(filesBtn);
                 }
             }
         }
