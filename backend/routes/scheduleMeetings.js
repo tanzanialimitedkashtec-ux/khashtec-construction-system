@@ -111,7 +111,7 @@ router.get('/all', async (req, res) => {
 router.get('/upcoming', async (req, res) => {
     try {
         console.log('📅 Fetching upcoming meetings...');
-        const [meetings] = await db.execute(`
+        const meetingsResult = await db.execute(`
             SELECT 
                 id,
                 meeting_title,
@@ -135,6 +135,7 @@ router.get('/upcoming', async (req, res) => {
             WHERE meeting_date >= CURDATE()
             ORDER BY meeting_date ASC, start_time ASC
         `);
+        const meetings = Array.isArray(meetingsResult) ? meetingsResult[0] : meetingsResult;
         
         console.log(`✅ Found ${meetings.length} upcoming meetings`);
         res.json({
@@ -158,7 +159,7 @@ router.get('/department/:department', async (req, res) => {
         const { department } = req.params;
         console.log(`📅 Fetching meetings for department: ${department}`);
         
-        const [meetings] = await db.execute(`
+        const meetingsResult = await db.execute(`
             SELECT 
                 id,
                 meeting_title,
@@ -182,6 +183,7 @@ router.get('/department/:department', async (req, res) => {
             WHERE organizing_department = ?
             ORDER BY meeting_date ASC, start_time ASC
         `, [department]);
+        const meetings = Array.isArray(meetingsResult) ? meetingsResult[0] : meetingsResult;
         
         console.log(`✅ Found ${meetings.length} meetings for ${department} department`);
         res.json({
