@@ -1274,6 +1274,37 @@ CREATE TABLE IF NOT EXISTS vehicles (
   INDEX idx_registration_date (registration_date)
 );
 
+-- Language Campaigns Table
+CREATE TABLE IF NOT EXISTS language_campaigns (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  campaign_name VARCHAR(255) NOT NULL,
+  language_name VARCHAR(100) NOT NULL,
+  language_code VARCHAR(10) NOT NULL,
+  price_per_unit DECIMAL(10,2) NOT NULL,
+  total_units_available INT NOT NULL,
+  units_sold INT DEFAULT 0,
+  campaign_status ENUM('Draft', 'Active', 'Completed', 'Cancelled') DEFAULT 'Draft',
+  start_date DATE,
+  end_date DATE,
+  campaign_description TEXT,
+  created_by INT,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  
+  -- Foreign key relationship to users table
+  FOREIGN KEY (created_by) REFERENCES users(id) ON DELETE SET NULL,
+  
+  -- Indexes for performance
+  INDEX idx_campaign_name (campaign_name),
+  INDEX idx_language_name (language_name),
+  INDEX idx_language_code (language_code),
+  INDEX idx_campaign_status (campaign_status),
+  INDEX idx_start_date (start_date),
+  INDEX idx_end_date (end_date),
+  INDEX idx_created_by (created_by),
+  INDEX idx_created_at (created_at)
+);
+
 -- Suggestions table
 CREATE TABLE IF NOT EXISTS suggestions (
   id INT AUTO_INCREMENT PRIMARY KEY,
