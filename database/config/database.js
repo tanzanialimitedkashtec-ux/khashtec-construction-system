@@ -30,12 +30,25 @@ class Database {
                 console.log('🔗 Initializing database connection...');
             }
             
+            // Debug environment variables
+            console.log('🔍 Environment Variables Debug:');
+            console.log('  - DATABASE_URL:', process.env.DATABASE_URL ? 'SET' : 'MISSING');
+            console.log('  - MYSQL_URL:', process.env.MYSQL_URL ? 'SET' : 'MISSING');
+            console.log('  - MYSQLUSER:', process.env.MYSQLUSER || 'MISSING');
+            console.log('  - MYSQLHOST:', process.env.MYSQLHOST || 'MISSING');
+            console.log('  - MYSQLPORT:', process.env.MYSQLPORT || 'MISSING');
+            console.log('  - MYSQLDATABASE:', process.env.MYSQLDATABASE || 'MISSING');
+            console.log('  - MYSQLPASSWORD:', process.env.MYSQLPASSWORD ? 'SET' : 'MISSING');
+            
             // Use Railway's DATABASE_URL or construct from individual variables
             const databaseUrl = process.env.DATABASE_URL && !process.env.DATABASE_URL.includes('${') 
                 ? process.env.DATABASE_URL 
                 : process.env.MYSQL_URL || `mysql://${process.env.MYSQLUSER}:${process.env.MYSQLPASSWORD}@${process.env.MYSQLHOST}:${process.env.MYSQLPORT}/${process.env.MYSQLDATABASE}`;
             
             console.log('🔗 Database URL configured:', databaseUrl ? 'Available' : 'Missing');
+            if (databaseUrl) {
+                console.log('🔗 Database URL (safe):', databaseUrl.replace(/\/\/([^:]+):([^@]+)@/, '//***:***@'));
+            }
             
             if (databaseUrl) {
                 // Parse DATABASE_URL format: mysql://user:password@host:port/database
@@ -52,9 +65,6 @@ class Database {
                     queueLimit: 0,
                     enableKeepAlive: true,
                     keepAliveInitialDelay: 0,
-                    acquireTimeout: 60000, // 60 seconds
-                    timeout: 60000, // 60 seconds
-                    reconnect: true,
                     idleTimeout: 300000, // 5 minutes
                     ssl: {
                         rejectUnauthorized: false
@@ -81,9 +91,6 @@ class Database {
                     queueLimit: 0,
                     enableKeepAlive: true,
                     keepAliveInitialDelay: 0,
-                    acquireTimeout: 60000, // 60 seconds
-                    timeout: 60000, // 60 seconds
-                    reconnect: true,
                     idleTimeout: 300000, // 5 minutes
                     ssl: {
                         rejectUnauthorized: false
