@@ -38289,6 +38289,18 @@ async function loadDocuments() {
         if (docsGrid) {
             docsGrid.innerHTML = '<div class="error">Failed to load documents</div>';
         }
+        
+        // Also update table with error
+        const documentsList = document.getElementById('documentsList');
+        if (documentsList) {
+            documentsList.innerHTML = `
+                <tr>
+                    <td colspan="11">
+                        <div class="error">Failed to load documents</div>
+                    </td>
+                </tr>
+            `;
+        }
     }
 }
 
