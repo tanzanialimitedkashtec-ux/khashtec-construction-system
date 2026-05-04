@@ -78,6 +78,8 @@ const salesRoutes = require('./backend/routes/sales');
 
 const paymentTrackingRoutes = require('./backend/routes/paymentTracking');
 
+const contractsRoutes = require('./backend/routes/contracts');
+
 
 
 const app = express();
@@ -829,6 +831,14 @@ app.use('/api/sales', asyncHandler(async (req, res, next) => {
 app.use('/api/payment-tracking', asyncHandler(async (req, res, next) => {
 
     return paymentTrackingRoutes(req, res, next);
+
+}));
+
+
+
+app.use('/api/contracts', asyncHandler(async (req, res, next) => {
+
+    return contractsRoutes(req, res, next);
 
 }));
 
