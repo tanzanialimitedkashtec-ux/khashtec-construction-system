@@ -135,8 +135,17 @@ router.get('/upcoming', async (req, res) => {
             WHERE meeting_date >= CURDATE()
             ORDER BY meeting_date ASC, start_time ASC
         `);
+        
+        console.log('🔍 DEBUG - meetingsResult type:', typeof meetingsResult);
+        console.log('🔍 DEBUG - meetingsResult isArray:', Array.isArray(meetingsResult));
+        console.log('🔍 DEBUG - meetingsResult length:', meetingsResult.length);
+        console.log('🔍 DEBUG - meetingsResult content:', JSON.stringify(meetingsResult, null, 2));
+        
         const meetings = Array.isArray(meetingsResult) ? meetingsResult[0] : meetingsResult;
         
+        console.log('🔍 DEBUG - final meetings type:', typeof meetings);
+        console.log('🔍 DEBUG - final meetings isArray:', Array.isArray(meetings));
+        console.log('🔍 DEBUG - final meetings length:', meetings.length);
         console.log(`✅ Found ${meetings.length} upcoming meetings`);
         res.json({
             success: true,

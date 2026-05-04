@@ -1682,6 +1682,17 @@ try {
     console.error('❌ Error loading workforce budget routes:', error);
 }
 
+// ===== WORKFORCE REPORTS ROUTES =====
+console.log('📊 Mounting workforce reports routes from routes/workforceReports.js...');
+try {
+    const workforceReportsRoutes = require('./routes/workforceReports');
+    console.log('✅ Workforce reports routes loaded successfully');
+    app.use('/api/workforce-reports', workforceReportsRoutes);
+    console.log('✅ Workforce reports routes mounted at /api/workforce-reports');
+} catch (error) {
+    console.error('❌ Error loading workforce reports routes:', error);
+}
+
 // ===== WORK ROUTES =====
 console.log('🔍 Mounting work routes from routes/work.js...');
 try {

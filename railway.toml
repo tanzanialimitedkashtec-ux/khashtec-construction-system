@@ -34,7 +34,7 @@ source = "kashtec-construction-system"
 
 [services.ports.http]
 
-port = 3000
+port = 8080
 
 handler = "http"
 
@@ -44,7 +44,7 @@ handler = "http"
 
 NODE_ENV = "production"
 
-PORT = "${PORT:-3000}"
+PORT = "${PORT:-8080}"
 
 
 
