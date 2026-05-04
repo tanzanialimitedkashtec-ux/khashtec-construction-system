@@ -65,9 +65,6 @@ class Database {
                     queueLimit: 0,
                     enableKeepAlive: true,
                     keepAliveInitialDelay: 0,
-                    acquireTimeout: 60000, // 60 seconds
-                    timeout: 60000, // 60 seconds
-                    reconnect: true,
                     idleTimeout: 300000, // 5 minutes
                     ssl: {
                         rejectUnauthorized: false
@@ -94,9 +91,6 @@ class Database {
                     queueLimit: 0,
                     enableKeepAlive: true,
                     keepAliveInitialDelay: 0,
-                    acquireTimeout: 60000, // 60 seconds
-                    timeout: 60000, // 60 seconds
-                    reconnect: true,
                     idleTimeout: 300000, // 5 minutes
                     ssl: {
                         rejectUnauthorized: false
