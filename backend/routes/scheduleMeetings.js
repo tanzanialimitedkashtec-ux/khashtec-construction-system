@@ -89,7 +89,8 @@ router.get('/all', async (req, res) => {
             FROM schedule_meetings 
             ORDER BY meeting_date ASC, start_time ASC
         `);
-        const meetings = Array.isArray(meetingsResult) ? meetingsResult[0] : meetingsResult;
+        // MySQL2 returns [rows, fields] array - we need the first element (rows)
+        const meetings = meetingsResult[0] || [];
         
         console.log(`✅ Found ${meetings.length} scheduled meetings`);
         res.json({
@@ -203,13 +204,10 @@ router.get('/upcoming', async (req, res) => {
         console.log('🔍 DEBUG - meetingsResult type:', typeof meetingsResult);
         console.log('🔍 DEBUG - meetingsResult isArray:', Array.isArray(meetingsResult));
         console.log('🔍 DEBUG - meetingsResult length:', meetingsResult.length);
-        console.log('🔍 DEBUG - meetingsResult content:', JSON.stringify(meetingsResult, null, 2));
         
-        const meetings = Array.isArray(meetingsResult) ? meetingsResult[0] : meetingsResult;
+        // MySQL2 returns [rows, fields] array - we need the first element (rows)
+        const meetings = meetingsResult[0] || [];
         
-        console.log('🔍 DEBUG - final meetings type:', typeof meetings);
-        console.log('🔍 DEBUG - final meetings isArray:', Array.isArray(meetings));
-        console.log('🔍 DEBUG - final meetings length:', meetings.length);
         console.log(`✅ Found ${meetings.length} upcoming meetings`);
         res.json({
             success: true,
@@ -323,7 +321,8 @@ router.get('/department/:department', async (req, res) => {
             WHERE organizing_department = ?
             ORDER BY meeting_date ASC, start_time ASC
         `, [department]);
-        const meetings = Array.isArray(meetingsResult) ? meetingsResult[0] : meetingsResult;
+        // MySQL2 returns [rows, fields] array - we need the first element (rows)
+        const meetings = meetingsResult[0] || [];
         
         console.log(`✅ Found ${meetings.length} meetings for ${department} department`);
         res.json({
@@ -463,7 +462,8 @@ router.post('/', async (req, res) => {
             parseInt(created_by) || null
         ]);
         
-        const result = Array.isArray(queryResult) ? queryResult[0] : queryResult;
+        // MySQL2 returns [rows, fields] array - we need the first element (rows)
+        const result = queryResult[0] || {};
         console.log(`✅ Meeting created successfully with ID: ${result.insertId}`);
         
         // Fetch the created meeting to return complete data
@@ -490,7 +490,8 @@ router.post('/', async (req, res) => {
             WHERE id = ?
         `, [result.insertId]);
         
-        const createdMeeting = Array.isArray(createdMeetingResult) ? createdMeetingResult[0] : createdMeetingResult;
+        // MySQL2 returns [rows, fields] array - we need the first element (rows)
+        const createdMeeting = createdMeetingResult[0] || [];
         
         res.status(201).json({
             success: true,

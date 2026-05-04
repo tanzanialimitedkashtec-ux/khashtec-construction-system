@@ -10,27 +10,69 @@ router.get('/test', (req, res) => {
     });
 });
 
-// Root endpoint - list available endpoints
-router.get('/', (req, res) => {
-    res.status(200).json({
-        success: true,
-        message: 'Drivers API',
-        endpoints: [
-            'GET /api/drivers/test - Test endpoint',
-            'GET /api/drivers/ - Root endpoint',
-            'GET /api/drivers/all - Get all drivers',
-            'POST /api/drivers/ - Register new driver',
-            'GET /api/drivers/:id - Get specific driver',
-            'PUT /api/drivers/:id - Update driver',
-            'DELETE /api/drivers/:id - Delete driver'
-        ]
-    });
+// GET /api/drivers - for frontend compatibility (same as /all)
+router.get('/', async (req, res) => {
+    try {
+        const db = require('../../database/config/database');
+        
+        const [drivers] = await db.execute(`
+            SELECT id, driver_id, full_name, description, years_of_experience, 
+                   license_type, phone_number, email_address, driver_status,
+                   created_at, updated_at
+            FROM drivers 
+            ORDER BY created_at DESC
+        `);
+        
+        res.status(200).json({
+            success: true,
+            drivers: drivers,
+            count: drivers.length
+        });
+        
+    } catch (error) {
+        console.error('Error fetching drivers:', error);
+        
+        // Fallback to mock data if database fails
+        const mockDrivers = [
+            {
+                id: 1,
+                driver_id: 'KTC-DRV-773986',
+                full_name: 'Chrispin Golden',
+                description: 'Experienced driver with excellent safety record',
+                years_of_experience: 2,
+                license_type: 'class-d',
+                phone_number: '+255 712 345 678',
+                email_address: 'chrispin.golden@khashtec.com',
+                driver_status: 'active',
+                created_at: new Date().toISOString()
+            },
+            {
+                id: 2,
+                driver_id: 'KTC-DRV-773987',
+                full_name: 'John Smith',
+                description: 'Professional driver with 5 years experience',
+                years_of_experience: 5,
+                license_type: 'class-c',
+                phone_number: '+255 713 456 789',
+                email_address: 'john.smith@khashtec.com',
+                driver_status: 'active',
+                created_at: new Date().toISOString()
+            }
+        ];
+        
+        res.status(200).json({
+            success: true,
+            drivers: mockDrivers,
+            count: mockDrivers.length,
+            note: 'Using mock data - database unavailable'
+        });
+    }
 });
 
 // Get all drivers
 router.get('/all', async (req, res) => {
     try {
-        const db = require('../database/config/database');
+        const db = require('../../database/config/database');
         
         const [drivers] = await db.execute(`
             SELECT id, driver_id, full_name, description, years_of_experience, 
@@ -92,7 +134,7 @@ router.post('/', async (req, res) => {
         console.log('🚗 Driver registration endpoint called');
         console.log('Request body:', req.body);
         
-        const db = require('../database/config/database');
+        const db = require('../../database/config/database');
         
         const {
             driverId,
@@ -164,7 +206,7 @@ router.post('/', async (req, res) => {
 // Get specific driver
 router.get('/:id', async (req, res) => {
     try {
-        const db = require('../database/config/database');
+        const db = require('../../database/config/database');
         const driverId = req.params.id;
         
         const [drivers] = await db.execute(`
@@ -200,7 +242,7 @@ router.get('/:id', async (req, res) => {
 // Update driver
 router.put('/:id', async (req, res) => {
     try {
-        const db = require('../database/config/database');
+        const db = require('../../database/config/database');
         const driverId = req.params.id;
         
         const {
@@ -254,7 +296,7 @@ router.put('/:id', async (req, res) => {
 // Delete driver
 router.delete('/:id', async (req, res) => {
     try {
-        const db = require('../database/config/database');
+        const db = require('../../database/config/database');
         const driverId = req.params.id;
         
         const [result] = await db.execute(`

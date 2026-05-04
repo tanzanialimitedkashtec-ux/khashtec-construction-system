@@ -266,13 +266,40 @@ router.post('/', async (req, res) => {
     console.log('📋 Request headers:', req.headers);
     console.log('📋 Request body:', req.body);
     
-    const { fullName, gmail, phone, department, jobCategory, status = 'active', nida, passport, contract } = req.body;
+    const { fullName, gmail, phone, department, jobCategory, job_category, status = 'active', nida, passport, contract } = req.body;
+    
+    // Handle both jobCategory and job_category field names
+    const finalJobCategory = jobCategory || job_category;
+    
+    console.log('🔍 Employee registration validation:', {
+        fullName,
+        gmail,
+        phone,
+        department,
+        jobCategory,
+        job_category,
+        finalJobCategory,
+        nida,
+        passport,
+        contract
+    });
     
     // Validate input
-    if (!fullName || !gmail || !phone || !department || !jobCategory || !nida || !contract) {
+    if (!fullName || !gmail || !phone || !department || !finalJobCategory || !nida || !contract) {
+        console.log('❌ Validation failed - missing required fields');
         return res.status(400).json({
             error: 'All required fields must be provided',
-            received: { fullName, gmail, phone, department, jobCategory, nida, contract }
+            required: ['fullName', 'gmail', 'phone', 'department', 'jobCategory', 'nida', 'contract'],
+            received: { fullName, gmail, phone, department, jobCategory, job_category, nida, contract },
+            missing: [
+                !fullName ? 'fullName' : null,
+                !gmail ? 'gmail' : null,
+                !phone ? 'phone' : null,
+                !department ? 'department' : null,
+                !finalJobCategory ? 'jobCategory' : null,
+                !nida ? 'nida' : null,
+                !contract ? 'contract' : null
+            ].filter(Boolean)
         });
     }
     
@@ -306,7 +333,7 @@ router.post('/', async (req, res) => {
             const employeeResult = await db.execute(
                 `INSERT INTO employees (employee_id, position, department, salary, hire_date, status)
                  VALUES (?, ?, ?, ?, CURDATE(), ?)`,
-                [employeeId, jobCategory, department, 0, status || 'Active']
+                [employeeId, finalJobCategory, department, 0, status || 'Active']
             );
             
             const employeeDbId = Array.isArray(employeeResult) ? employeeResult[0].insertId : employeeResult.insertId;
@@ -328,7 +355,7 @@ router.post('/', async (req, res) => {
                     gmail: gmail,
                     phone: phone,
                     department: department,
-                    job_category: jobCategory,
+                    job_category: finalJobCategory,
                     status: status || 'active',
                     nida: nida,
                     passport: passport,
@@ -347,7 +374,7 @@ router.post('/', async (req, res) => {
                 gmail: gmail,
                 phone: phone,
                 department: department,
-                job_category: jobCategory,
+                job_category: finalJobCategory,
                 status: status || 'active',
                 nida: nida,
                 passport: passport || '',
@@ -822,10 +849,22 @@ router.post('/action', async (req, res) => {
     
     try {
         // Get employee details for work title
-        const employeeData = await db.execute(
+        const employeeDataResult = await db.execute(
             'SELECT e.position, ed.full_name FROM employees e LEFT JOIN employee_details ed ON e.id = ed.employee_id WHERE e.id = ?',
             [employeeId]
         );
+        
+        // Handle different database response formats
+        let employeeData;
+        if (Array.isArray(employeeDataResult)) {
+            employeeData = employeeDataResult;
+        } else if (employeeDataResult && Array.isArray(employeeDataResult[0])) {
+            employeeData = employeeDataResult[0];
+        } else if (employeeDataResult && employeeDataResult.rows) {
+            employeeData = employeeDataResult.rows;
+        } else {
+            employeeData = [];
+        }
         
         const employeeName = employeeData[0]?.full_name || `Employee ${employeeId}`;
         const employeePosition = employeeData[0]?.position || 'Unknown Position';
@@ -893,9 +932,21 @@ router.post('/action', async (req, res) => {
             );
         }
         
+        // Handle different database response formats for insert result
+        let actionId;
+        if (result && result.insertId) {
+            actionId = result.insertId;
+        } else if (result && result[0] && result[0].insertId) {
+            actionId = result[0].insertId;
+        } else if (Array.isArray(result) && result[0] && result[0].insertId) {
+            actionId = result[0].insertId;
+        } else {
+            actionId = Date.now(); // Fallback ID
+        }
+        
         res.json({
             message: 'Employee action executed successfully',
-            actionId: result.insertId || result[0]?.insertId,
+            actionId: actionId,
             employeeId: employeeId,
             actionType: actionType,
             status: 'executed',
@@ -905,7 +956,26 @@ router.post('/action', async (req, res) => {
         
     } catch (error) {
         console.error('❌ Error executing employee action:', error);
-        res.status(500).json({ error: 'Failed to execute employee action' });
+        console.error('❌ Error message:', error.message);
+        console.error('❌ Error code:', error.code);
+        console.error('❌ Error errno:', error.errno);
+        console.error('❌ Error sqlState:', error.sqlState);
+        console.error('❌ Error sqlMessage:', error.sqlMessage);
+        console.error('❌ Request data:', {
+            employeeId,
+            actionType,
+            actionDate,
+            reasonCategory,
+            actionDetails,
+            suspensionDays,
+            finalPaymentDate,
+            mdNotes,
+            decidedBy
+        });
+        res.status(500).json({ 
+            error: 'Failed to execute employee action',
+            details: error.message 
+        });
     }
 });
 

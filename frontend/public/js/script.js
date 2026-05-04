@@ -336,20 +336,20 @@ async function loadFiltersForWorkerAssignments() {
 }
 
 // Display worker assignments
-function displayWorkerAssignments(assignments) {
-    const workerResults = document.getElementById('workerResults');
+async function displayWorkerAssignments(assignments) {
+    // Try multiple possible container IDs
+    const workerResults = document.getElementById('workerResults') || 
+                          document.getElementById('mdWorkerResults') ||
+                          document.querySelector('.worker-results');
     
-    // Ensure assignments is an array
-    const assignmentsArray = Array.isArray(assignments) ? assignments : [];
-    
-    if (!assignmentsArray || assignmentsArray.length === 0) {
-        workerResults.innerHTML = '<div class="no-results">No worker assignments found</div>';
+    if (!workerResults) {
+        console.warn('⚠️ Worker results container not found - tried workerResults, mdWorkerResults, .worker-results');
         return;
     }
     
     workerResults.innerHTML = '';
     
-    assignmentsArray.forEach(assignment => {
+    assignments.forEach(assignment => {
         const assignmentCard = document.createElement('div');
         assignmentCard.className = 'worker-assignment-card';
         assignmentCard.innerHTML = `

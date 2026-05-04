@@ -2506,6 +2506,15 @@ try {
     console.error('❌ Error loading suggestions routes:', error);
 }
 
+try {
+    const driversRoutes = require('./routes/drivers');
+    console.log('✅ Drivers routes loaded successfully');
+    app.use('/api/drivers', driversRoutes);
+    console.log('✅ Drivers routes mounted at /api/drivers');
+} catch (error) {
+    console.error('❌ Error loading drivers routes:', error);
+}
+
 // Fallback project details endpoint
 app.get('/api/projects/:id', async (req, res) => {
     try {
