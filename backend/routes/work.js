@@ -3198,11 +3198,41 @@ router.post('/workforce-requests', async (req, res) => {
             submittedBy = 'Project Manager'
         } = req.body;
         
+        // Debug logging
+        console.log('🔍 Received fields:', {
+            project: !!project,
+            requestType: !!requestType,
+            workersNeeded: !!workersNeeded,
+            jobCategories: jobCategories,
+            jobCategoriesType: typeof jobCategories,
+            jobCategoriesLength: Array.isArray(jobCategories) ? jobCategories.length : 'N/A',
+            duration: !!duration,
+            startDate: !!startDate,
+            justification: !!justification
+        });
+        
         // Validate required fields
-        if (!project || !requestType || !workersNeeded || !jobCategories || !duration || !startDate || !justification) {
+        if (!project || !requestType || !workersNeeded || !duration || !startDate || !justification) {
             return res.status(400).json({
                 error: 'Missing required fields',
-                required: ['project', 'requestType', 'workersNeeded', 'jobCategories', 'duration', 'startDate', 'justification']
+                required: ['project', 'requestType', 'workersNeeded', 'jobCategories', 'duration', 'startDate', 'justification'],
+                received: {
+                    project: !!project,
+                    requestType: !!requestType,
+                    workersNeeded: !!workersNeeded,
+                    jobCategories: jobCategories,
+                    duration: !!duration,
+                    startDate: !!startDate,
+                    justification: !!justification
+                }
+            });
+        }
+        
+        // Validate job categories separately
+        if (!jobCategories || (Array.isArray(jobCategories) && jobCategories.length === 0)) {
+            return res.status(400).json({
+                error: 'At least one job category must be selected',
+                received: jobCategories
             });
         }
         

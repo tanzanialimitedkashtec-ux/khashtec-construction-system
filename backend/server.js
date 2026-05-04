@@ -1459,6 +1459,34 @@ try {
     });
 }
 
+// ===== SALES ROUTES =====
+console.log(' Loading sales routes...');
+
+try {
+    const salesRoutes = require('./routes/sales');
+    console.log('✅ Sales routes loaded successfully');
+    app.use('/api/sales', salesRoutes);
+    console.log('✅ Sales routes mounted at /api/sales');
+    
+    // Add a direct test endpoint to verify mounting
+    app.get('/api/sales-status', (req, res) => {
+        res.json({ 
+            status: 'Sales routes are mounted',
+            timestamp: new Date().toISOString(),
+            endpoints: ['/api/sales/test', '/api/sales/', '/api/sales/all', '/api/sales/:id']
+        });
+    });
+    
+} catch (error) {
+    console.error('❌ Error loading sales routes:', error);
+    console.error('❌ Full error stack:', error.stack);
+    console.error('❌ Error details:', {
+        message: error.message,
+        code: error.code,
+        errno: error.errno
+    });
+}
+
 // Properties endpoint now handled by routes/properties.js
 
 // Add a test endpoint for properties

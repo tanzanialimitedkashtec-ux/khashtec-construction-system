@@ -19796,75 +19796,23 @@ async function loadPpeRecords() {
         const ppeData = await response.json();
         console.log('📊 PPE records data:', ppeData);
         
-        // Transform API data to PPE records format
+        // Ensure we have an array
         let ppeRecords = [];
-        
         if (Array.isArray(ppeData)) {
-            // Check if this is HSE data or inventory data
-            if (ppeData.length > 0 && ppeData[0].work_type) {
-                // HSE work items - filter for PPE-related items
-                ppeRecords = ppeData.filter(item => 
-                    item.work_type && (
-                        item.work_type.toLowerCase().includes('ppe') ||
-                        item.work_type.toLowerCase().includes('equipment') ||
-                        item.work_type.toLowerCase().includes('protective') ||
-                        item.work_title.toLowerCase().includes('ppe') ||
-                        item.work_title.toLowerCase().includes('helmet') ||
-                        item.work_title.toLowerCase().includes('safety') ||
-                        item.department_code === 'hse'
-                    )
-                ).map(item => ({
-                    id: `PPE-${item.id}`,
-                    itemId: `PPE-2026-${String(item.id).padStart(3, '0')}`,
-                    itemName: item.work_title || 'PPE Item',
-                    category: item.work_type.includes('Helmet') ? 'Head Protection' :
-                             item.work_type.includes('Gloves') ? 'Hand Protection' :
-                             item.work_type.includes('Boots') ? 'Foot Protection' :
-                             item.work_type.includes('Vest') ? 'Body Protection' : 'Other',
-                    size: 'Standard',
-                    quantity: Math.floor(Math.random() * 50) + 10,
-                    available: Math.floor(Math.random() * 30) + 5,
-                    issued: Math.floor(Math.random() * 20) + 5,
-                    location: item.project_location || 'Main Store',
-                    condition: 'Good',
-                    lastInspected: item.work_date || new Date().toISOString().split('T')[0],
-                    nextInspection: new Date(Date.now() + 90 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-                    status: item.status === 'completed' ? 'Available' : 'In Use',
-                    assignedTo: item.assigned_to || 'Various Workers',
-                    issuedBy: item.created_by || 'Safety Officer',
-                    returnDate: item.due_date || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
-                }));
-            } else if (ppeData.length > 0 && ppeData[0].item_name) {
-                // Inventory data - convert to PPE format
-                ppeRecords = ppeData.filter(item => 
-                    item.category && (
-                        item.category.toLowerCase().includes('safety') ||
-                        item.category.toLowerCase().includes('protective') ||
-                        item.item_name.toLowerCase().includes('helmet') ||
-                        item.item_name.toLowerCase().includes('gloves') ||
-                        item.item_name.toLowerCase().includes('boots') ||
-                        item.item_name.toLowerCase().includes('vest')
-                    )
-                ).map(item => ({
-                    id: `PPE-INV-${item.id}`,
-                    itemId: `PPE-2026-${String(item.id + 200).padStart(3, '0')}`,
-                    itemName: item.item_name || 'PPE Item',
-                    category: item.category || 'Safety Equipment',
-                    size: item.size || 'Standard',
-                    quantity: item.quantity || 0,
-                    available: item.quantity_available || 0,
-                    issued: (item.quantity || 0) - (item.quantity_available || 0),
-                    location: item.storage_location || 'Main Store',
-                    condition: item.condition || 'Good',
-                    lastInspected: item.last_inspection_date || new Date().toISOString().split('T')[0],
-                    nextInspection: new Date(Date.now() + 90 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-                    status: item.status || 'Available',
-                    assignedTo: item.assigned_to || 'Unassigned',
-                    issuedBy: item.issued_by || 'Safety Officer',
-                    returnDate: item.return_date || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
-                }));
-            }
+            ppeRecords = ppeData;
+        } else if (ppeData.ppe && Array.isArray(ppeData.ppe)) {
+            ppeRecords = ppeData.ppe;
+        } else if (ppeData.data && Array.isArray(ppeData.data)) {
+            ppeRecords = ppeData.data;
+        } else if (ppeData) {
+            // Single object, convert to array
+            ppeRecords = [ppeData];
         }
+        
+        // Filter for PPE Issuance records only
+        ppeRecords = ppeRecords.filter(item => 
+            item.work_type && item.work_type === 'PPE Issuance'
+        );
         
         // If no PPE records found from API, use sample data
         if (ppeRecords.length === 0) {
@@ -20134,68 +20082,73 @@ function displayPpeRecords(ppeRecords) {
         return;
     }
     
-    // Sort PPE records by issue date (newest first)
-    ppeRecords.sort((a, b) => new Date(b.issueDate) - new Date(a.issueDate));
+    // Sort PPE records by issued_date (newest first)
+    ppeRecords.sort((a, b) => new Date(b.issued_date || b.submitted_date) - new Date(a.issued_date || a.submitted_date));
     
     let ppeHTML = '';
     
     ppeRecords.forEach(ppe => {
-        // Get condition display
-        const conditionDisplay = ppe.condition === 'new' ? '🆕 New' : 
-                                ppe.condition === 'good' ? '✅ Good' : 
-                                ppe.condition === 'replacement' ? '🔄 Replacement' : ppe.condition;
+        // Map API data to display format
+        const issuanceId = `PPE-2026-${String(ppe.id).padStart(3, '0')}`;
+        const issueDate = ppe.issued_date || ppe.submitted_date;
+        const workerName = ppe.employee_name || 'Unknown Worker';
+        const workerId = `WRK-${String(ppe.id + 100).padStart(3, '0')}`;
+        const project = ppe.project || 'General Site';
+        const department = ppe.department || 'General';
+        const ppeType = ppe.ppe_type || 'Safety Equipment';
+        const returnDate = ppe.return_date || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+        const status = ppe.status || 'Issued';
+        const issuedBy = ppe.issued_by || ppe.submitted_by || 'Safety Officer';
         
-        const conditionClass = ppe.condition === 'new' ? 'condition-new' : 
-                               ppe.condition === 'good' ? 'condition-good' : 
-                               ppe.condition === 'replacement' ? 'condition-replacement' : '';
+        // Get condition display (default to 'new' for API data)
+        const conditionDisplay = '🆕 New';
+        const conditionClass = 'condition-new';
         
         // Get status display
-        const statusDisplay = ppe.status === 'issued' ? '📦 Issued' : 
-                             ppe.status === 'returned' ? '✅ Returned' : 
-                             ppe.status === 'overdue' ? '⚠️ Overdue' : 
-                             ppe.status === 'lost' ? '❌ Lost' : ppe.status;
+        const statusDisplay = status === 'issued' ? '📦 Issued' : 
+                             status === 'returned' ? '✅ Returned' : 
+                             status === 'overdue' ? '⚠️ Overdue' : 
+                             status === 'lost' ? '❌ Lost' : '📦 Issued';
         
-        const statusClass = ppe.status === 'issued' ? 'status-issued' : 
-                           ppe.status === 'returned' ? 'status-returned' : 
-                           ppe.status === 'overdue' ? 'status-overdue' : 
-                           ppe.status === 'lost' ? 'status-lost' : '';
+        const statusClass = status === 'issued' ? 'status-issued' : 
+                           status === 'returned' ? 'status-returned' : 
+                           status === 'overdue' ? 'status-overdue' : 
+                           status === 'lost' ? 'status-lost' : 'status-issued';
         
-        // Format PPE items
-        const ppeItemsDisplay = ppe.ppeItems.map(item => 
-            `${item.type} (${item.quantity}${item.size ? `, ${item.size}` : ''})`
-        ).join(', ');
+        // Format PPE items (use ppe_type as single item)
+        const ppeItemsDisplay = ppeType;
         
         ppeHTML += `
             <tr class="ppe-row">
                 <td>
                     <div class="issuance-id-info">
-                        <div class="issuance-id">${ppe.issuanceId}</div>
+                        <div class="issuance-id">${issuanceId}</div>
                     </div>
                 </td>
                 <td>
                     <div class="date-info">
-                        <div class="issue-date">${new Date(ppe.issueDate).toLocaleDateString()}</div>
-                        <div class="issue-time">${new Date(ppe.issueDate).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</div>
+                        <div class="issue-date">${new Date(issueDate).toLocaleDateString()}</div>
+                        <div class="issue-time">${new Date(issueDate).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</div>
                     </div>
                 </td>
                 <td>
                     <div class="worker-info">
-                        <div class="worker-name">${ppe.workerName}</div>
+                        <div class="worker-name">${workerName}</div>
                     </div>
                 </td>
                 <td>
                     <div class="worker-id-info">
-                        <div class="worker-id">${ppe.workerId}</div>
+                        <div class="worker-id">${workerId}</div>
                     </div>
                 </td>
                 <td>
                     <div class="project-info">
-                        <div class="project-name">${ppe.project}</div>
+                        <div class="project-name">${project}</div>
                     </div>
                 </td>
                 <td>
                     <div class="department-info">
-                        <div class="department-name">${ppe.department}</div>
+                        <div class="department-name">${department}</div>
                     </div>
                 </td>
                 <td>
@@ -20208,7 +20161,7 @@ function displayPpeRecords(ppeRecords) {
                 </td>
                 <td>
                     <div class="return-date-info">
-                        <div class="return-date">${new Date(ppe.returnDate).toLocaleDateString()}</div>
+                        <div class="return-date">${new Date(returnDate).toLocaleDateString()}</div>
                     </div>
                 </td>
                 <td>
@@ -20216,7 +20169,7 @@ function displayPpeRecords(ppeRecords) {
                 </td>
                 <td>
                     <div class="issuer-info">
-                        <div class="issuer-name">${ppe.issuedBy}</div>
+                        <div class="issuer-name">${issuedBy}</div>
                     </div>
                 </td>
                 <td>
@@ -20317,19 +20270,42 @@ async function loadToolboxMeetings() {
         const toolboxData = await response.json();
         console.log('📊 Toolbox meetings data:', toolboxData);
         
-        // Handle different response formats
-        const toolboxMeetings = toolboxData.meetings || toolboxData.data || toolboxData;
+        // Handle different response formats and convert to array
+        let toolboxMeetings = toolboxData.meetings || toolboxData.data || toolboxData;
+        
+        // Convert single object to array if needed
+        if (!Array.isArray(toolboxMeetings)) {
+            if (toolboxMeetings && typeof toolboxMeetings === 'object') {
+                toolboxMeetings = [toolboxMeetings];
+            } else {
+                toolboxMeetings = [];
+            }
+        }
+        
+        // Filter for Toolbox Meeting records only
+        toolboxMeetings = toolboxMeetings.filter(item => 
+            item.work_type && item.work_type === 'Toolbox Meeting'
+        );
         
         displayToolboxMeetings(toolboxMeetings);
         
     } catch (error) {
         console.error('❌ Error loading toolbox meetings:', error);
-        // Load sample data on error
-        loadSampleToolboxMeetings();
+        // Display error message instead of fallback data
+        const toolboxList = document.getElementById('toolboxList');
+        if (toolboxList) {
+            toolboxList.innerHTML = `
+                <tr>
+                    <td colspan="11">
+                        <div class="no-records">Error loading toolbox meetings. Please try again later.</div>
+                    </td>
+                </tr>
+            `;
+        }
     }
 }
 
-// Load sample toolbox meetings for demonstration
+// Get topic display name
 function loadSampleToolboxMeetings() {
     console.log('📋 Loading sample toolbox meetings...');
     
@@ -20575,48 +20551,74 @@ function displayToolboxMeetings(toolboxMeetings) {
         return;
     }
     
-    // Sort toolbox meetings by date (newest first)
-    toolboxMeetings.sort((a, b) => new Date(b.meetingDate) - new Date(a.meetingDate));
+    // Sort toolbox meetings by submitted_date (newest first)
+    toolboxMeetings.sort((a, b) => new Date(b.submitted_date || b.created_at) - new Date(a.submitted_date || a.created_at));
     
     let toolboxHTML = '';
     
     toolboxMeetings.forEach(meeting => {
-        // Get topic display
-        const topicDisplay = meeting.customTopic || getTopicDisplayName(meeting.topic);
+        // Map API data to display format
+        const meetingId = `TBT-2026-${String(meeting.id).padStart(3, '0')}`;
+        const meetingDate = meeting.submitted_date || meeting.created_at || new Date().toISOString();
+        const topic = meeting.work_title || 'Toolbox Meeting Topic';
+        const project = meeting.project || 'General Site';
+        const conductedBy = meeting.submitted_by || 'Safety Officer';
+        const workDescription = meeting.work_description || '';
         
-        // Get status display
-        const statusDisplay = meeting.status === 'completed' ? '✅ Completed' : 
-                             meeting.status === 'in-progress' ? '🔄 In Progress' : 
-                             meeting.status === 'pending' ? '⏳ Pending' : meeting.status;
+        // Parse details from work_description
+        let duration = 30; // default duration
+        let attendees = 0;
+        let issuesRaised = '';
+        let actionItems = '';
         
-        const statusClass = meeting.status === 'completed' ? 'status-completed' : 
-                           meeting.status === 'in-progress' ? 'status-in-progress' : 
-                           meeting.status === 'pending' ? 'status-pending' : '';
+        if (workDescription && workDescription.includes('Toolbox Meeting Details:')) {
+            const lines = workDescription.split('\n');
+            lines.forEach(line => {
+                if (line.includes('Duration:')) {
+                    const durationStr = line.split(':')[1]?.trim();
+                    if (durationStr) duration = parseInt(durationStr) || 30;
+                } else if (line.includes('Attendees:')) {
+                    const attendeesStr = line.split(':')[1]?.trim();
+                    if (attendeesStr) attendees = parseInt(attendeesStr) || 0;
+                } else if (line.includes('Issues Raised:')) {
+                    issuesRaised = line.split(':')[1]?.trim() || '';
+                } else if (line.includes('Action Items:')) {
+                    actionItems = line.split(':')[1]?.trim() || '';
+                }
+            });
+        }
+        
+        // Get topic display (extract from work_title)
+        const topicDisplay = topic.replace('Toolbox Meeting - ', '').trim();
+        
+        // Get status display (default to completed for API data)
+        const statusDisplay = '✅ Completed';
+        const statusClass = 'status-completed';
         
         // Check if there are issues raised
-        const hasIssues = meeting.issuesRaised && meeting.issuesRaised.trim() !== '';
+        const hasIssues = issuesRaised && issuesRaised.trim() !== '' && issuesRaised !== 'none';
         const issuesDisplay = hasIssues ? '🔴 Yes' : '🟢 No';
         
         // Check if there are action items
-        const hasActions = meeting.actionItems && meeting.actionItems.trim() !== '';
+        const hasActions = actionItems && actionItems.trim() !== '' && actionItems !== 'none';
         const actionsDisplay = hasActions ? '📋 Yes' : '➖ No';
         
         toolboxHTML += `
             <tr class="toolbox-row">
                 <td>
                     <div class="meeting-id-info">
-                        <div class="meeting-id">${meeting.meetingId}</div>
+                        <div class="meeting-id">${meetingId}</div>
                     </div>
                 </td>
                 <td>
                     <div class="datetime-info">
-                        <div class="meeting-date">${new Date(meeting.meetingDate).toLocaleDateString()}</div>
-                        <div class="meeting-time">${new Date(meeting.meetingDate).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</div>
+                        <div class="meeting-date">${new Date(meetingDate).toLocaleDateString()}</div>
+                        <div class="meeting-time">${new Date(meetingDate).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</div>
                     </div>
                 </td>
                 <td>
                     <div class="project-info">
-                        <div class="project-name">${meeting.project}</div>
+                        <div class="project-name">${project}</div>
                     </div>
                 </td>
                 <td>
@@ -20626,17 +20628,17 @@ function displayToolboxMeetings(toolboxMeetings) {
                 </td>
                 <td>
                     <div class="duration-info">
-                        <div class="duration">${meeting.duration} min</div>
+                        <div class="duration">${duration} min</div>
                     </div>
                 </td>
                 <td>
                     <div class="attendees-info">
-                        <div class="attendees-count">${meeting.totalAttendees} attendees</div>
+                        <div class="attendees-count">${attendees} attendees</div>
                     </div>
                 </td>
                 <td>
                     <div class="conductor-info">
-                        <div class="conductor-name">${meeting.conductedBy}</div>
+                        <div class="conductor-name">${conductedBy}</div>
                     </div>
                 </td>
                 <td>
@@ -20654,9 +20656,9 @@ function displayToolboxMeetings(toolboxMeetings) {
                 </td>
                 <td>
                     <div class="toolbox-actions">
-                        <button class="action-btn view" onclick="viewMeetingDetails('${meeting.id}')" title="View Details">👁️</button>
-                        <button class="action-btn download" onclick="downloadAttendance('${meeting.id}')" title="Download Attendance">📥</button>
-                        <button class="action-btn materials" onclick="viewMeetingMaterials('${meeting.id}')" title="View Materials">📁</button>
+                        <button class="action-btn view" onclick="viewMeetingDetails('${meetingId}')" title="View Details">👁️</button>
+                        <button class="action-btn download" onclick="downloadAttendance('${meetingId}')" title="Download Attendance">📥</button>
+                        <button class="action-btn materials" onclick="viewMeetingMaterials('${meetingId}')" title="View Materials">📁</button>
                     </div>
                 </td>
             </tr>
@@ -24587,7 +24589,7 @@ async function loadInspectionRecords() {
         
         // Try to get inspection records from API
         try {
-            response = await fetch(`${baseUrl}/api/hse/inspections`, {
+            response = await fetch(`${baseUrl}/api/work/hse/inspections`, {
                 method: 'GET',
                 headers: {
                     'Content-Type': 'application/json',
@@ -24602,7 +24604,7 @@ async function loadInspectionRecords() {
             console.warn('⚠️ Primary inspection records endpoint failed, trying fallback:', primaryError.message);
             // Try fallback endpoint
             try {
-                response = await fetch(`${baseUrl}/api/inspections`, {
+                response = await fetch(`${baseUrl}/api/work/inspections`, {
                     method: 'GET',
                     headers: {
                         'Content-Type': 'application/json',
@@ -24621,8 +24623,21 @@ async function loadInspectionRecords() {
             }
         }
         
-        const inspectionRecords = await response.json();
-        console.log('📊 Inspection records data:', inspectionRecords);
+        const inspectionRecordsData = await response.json();
+        console.log('📊 Inspection records data:', inspectionRecordsData);
+        
+        // Ensure we have an array
+        let inspectionRecords = [];
+        if (Array.isArray(inspectionRecordsData)) {
+            inspectionRecords = inspectionRecordsData;
+        } else if (inspectionRecordsData.inspections && Array.isArray(inspectionRecordsData.inspections)) {
+            inspectionRecords = inspectionRecordsData.inspections;
+        } else if (inspectionRecordsData.data && Array.isArray(inspectionRecordsData.data)) {
+            inspectionRecords = inspectionRecordsData.data;
+        } else if (inspectionRecordsData) {
+            // Single object, convert to array
+            inspectionRecords = [inspectionRecordsData];
+        }
         
         displayInspectionRecords(inspectionRecords);
         
@@ -33180,12 +33195,14 @@ function deleteTask(taskId) {
 
 async function submitWorkforceRequest() {
     try {
+        const jobCategories = getSelectedJobCategories();
+        
         const request = {
             project: document.getElementById('workforceProject').value,
             requestType: document.getElementById('requestType').value,
             workersNeeded: parseInt(document.getElementById('workersNeeded').value),
             duration: document.getElementById('workDuration').value,
-            jobCategories: getSelectedJobCategories(),
+            jobCategories: jobCategories,
             justification: document.getElementById('workforceJustification').value,
             startDate: document.getElementById('workforceStartDate').value,
             endDate: document.getElementById('workforceEndDate').value,
@@ -33193,10 +33210,23 @@ async function submitWorkforceRequest() {
             submittedBy: 'Project Manager'
         };
         
+        // Debug logging
+        console.log('📤 Submitting workforce request:', request);
+        console.log('📤 Job categories:', request.jobCategories, 'Length:', request.jobCategories.length);
+        
         // Validate required fields
         if (!request.project || !request.requestType || !request.workersNeeded || !request.jobCategories.length || 
             !request.duration || !request.startDate || !request.justification) {
-            customAlert('Please fill in all required fields', 'Validation Error', 'error');
+            let missingFields = [];
+            if (!request.project) missingFields.push('Project');
+            if (!request.requestType) missingFields.push('Request Type');
+            if (!request.workersNeeded) missingFields.push('Number of Workers');
+            if (!request.jobCategories.length) missingFields.push('Job Categories (select at least one)');
+            if (!request.duration) missingFields.push('Duration');
+            if (!request.startDate) missingFields.push('Start Date');
+            if (!request.justification) missingFields.push('Justification');
+            
+            customAlert(`Please fill in all required fields:\n\n${missingFields.join('\n')}`, 'Validation Error', 'error');
             return false;
         }
         
@@ -33727,10 +33757,12 @@ async function loadPropertiesRecords() {
     try {
         const baseUrl = window.location.origin;
         let response;
+        let records = [];
         
-        // Try to get properties records from API
+        // Try to get properties records from API endpoints
         try {
-            response = await fetch(`${baseUrl}/api/real-estate/properties`, {
+            // Try the /api/properties/all endpoint first
+            response = await fetch(`${baseUrl}/api/properties/all`, {
                 method: 'GET',
                 headers: {
                     'Content-Type': 'application/json',
@@ -33738,7 +33770,11 @@ async function loadPropertiesRecords() {
                 }
             });
             
-            if (!response.ok) {
+            if (response.ok) {
+                const data = await response.json();
+                console.log('📊 Properties records data from /all:', data);
+                records = Array.isArray(data) ? data : (data.data || []);
+            } else {
                 throw new Error(`HTTP ${response.status}: ${response.statusText}`);
             }
         } catch (primaryError) {
@@ -33753,7 +33789,20 @@ async function loadPropertiesRecords() {
                     }
                 });
                 
-                if (!response.ok) {
+                if (response.ok) {
+                    const data = await response.json();
+                    console.log('📊 Properties records data from fallback:', data);
+                    // Handle different response formats
+                    if (data.success && data.properties) {
+                        records = data.properties;
+                    } else if (data.data) {
+                        records = data.data;
+                    } else if (Array.isArray(data)) {
+                        records = data;
+                    } else {
+                        records = [];
+                    }
+                } else {
                     throw new Error(`Fallback also failed: HTTP ${response.status}: ${response.statusText}`);
                 }
             } catch (fallbackError) {
@@ -33764,10 +33813,8 @@ async function loadPropertiesRecords() {
             }
         }
         
-        const propertiesRecords = await response.json();
-        console.log('📊 Properties records data:', propertiesRecords);
-        
-        displayPropertiesRecords(propertiesRecords);
+        console.log('📊 Final properties records:', records);
+        displayPropertiesRecords(records);
         
     } catch (error) {
         console.error('❌ Error loading properties records:', error);
@@ -33963,6 +34010,11 @@ function displayPropertiesRecords(records) {
         return;
     }
     
+    // Convert single object to array if needed
+    if (records && !Array.isArray(records) && typeof records === 'object') {
+        records = [records];
+    }
+    
     if (!records || records.length === 0) {
         recordsList.innerHTML = `
             <tr>
@@ -33974,12 +34026,31 @@ function displayPropertiesRecords(records) {
         return;
     }
     
+    // Map database fields to frontend display fields
+    const mappedRecords = records.map(record => {
+        // Handle database field mapping
+        return {
+            id: record.id || `PROP-${Date.now()}`,
+            plotNumber: record.plotNumber || record.title || `PLT-${record.id}`,
+            propertyType: record.propertyType || record.type || 'residential',
+            location: record.location || 'Unknown Location',
+            area: record.area || record.size_sqm || 0,
+            price: record.price || 0,
+            status: record.status || 'Available',
+            tpNumber: record.tpNumber || `TP-${record.id}`,
+            description: record.description || 'No description available',
+            utilities: record.utilities || [],
+            zoning: record.zoning || 'residential',
+            dateAdded: record.dateAdded || record.created_at || new Date().toISOString()
+        };
+    });
+    
     // Sort records by plot number
-    records.sort((a, b) => a.plotNumber.localeCompare(b.plotNumber));
+    mappedRecords.sort((a, b) => a.plotNumber.localeCompare(b.plotNumber));
     
     let recordsHTML = '';
     
-    records.forEach(record => {
+    mappedRecords.forEach(record => {
         // Get property type badge
         const typeDisplay = record.propertyType === 'residential' ? '🏠 Residential' : 
                            record.propertyType === 'commercial' ? '🏢 Commercial' : 
@@ -34355,42 +34426,18 @@ async function loadClientsRecords() {
     
     try {
         const baseUrl = window.location.origin;
-        let response;
         
-        // Try to get clients records from API
-        try {
-            response = await fetch(`${baseUrl}/api/real-estate/clients`, {
-                method: 'GET',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${sessionManager.getAuthToken()}`
-                }
-            });
-            
-            if (!response.ok) {
-                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        // Get clients records from API
+        const response = await fetch(`${baseUrl}/api/clients`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${sessionManager.getAuthToken()}`
             }
-        } catch (primaryError) {
-            console.warn('⚠️ Primary clients records endpoint failed, trying fallback:', primaryError.message);
-            // Try fallback endpoint
-            try {
-                response = await fetch(`${baseUrl}/api/clients`, {
-                    method: 'GET',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${sessionManager.getAuthToken()}`
-                    }
-                });
-                
-                if (!response.ok) {
-                    throw new Error(`Fallback also failed: HTTP ${response.status}: ${response.statusText}`);
-                }
-            } catch (fallbackError) {
-                console.error('❌ All clients records endpoints failed:', fallbackError.message);
-                // Load sample data for demonstration
-                loadSampleClientsRecords();
-                return;
-            }
+        });
+        
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
         }
         
         const clientsRecords = await response.json();
@@ -34400,220 +34447,45 @@ async function loadClientsRecords() {
         
     } catch (error) {
         console.error('❌ Error loading clients records:', error);
-        // Load sample data on error
-        loadSampleClientsRecords();
+        // Show empty state on error instead of mock data
+        const recordsList = document.getElementById('clientsRecordsList');
+        if (recordsList) {
+            recordsList.innerHTML = `
+                <tr>
+                    <td colspan="8">
+                        <div class="no-records">Failed to load clients records. Please try again later.</div>
+                    </td>
+                </tr>
+            `;
+        }
     }
 }
 
-// Load sample clients records for demonstration
-function loadSampleClientsRecords() {
-    console.log('📋 Loading sample clients records...');
-    
-    const sampleRecords = [
-        {
-            id: 'CLT-001',
-            clientId: 'CLT-2026-001',
-            fullName: 'John Michael Smith',
-            clientType: 'individual',
-            companyName: '',
-            phone: '+255 712 345 678',
-            email: 'john.smith@email.com',
-            nidaNumber: '1980010123456789',
-            tinNumber: '101-234-567',
-            address: 'P.O. Box 1234, Dar es Salaam',
-            propertyInterest: 'residential',
-            budgetRange: '50m-100m',
-            notes: 'Looking for residential property in Masaki area, prefers gated community',
-            registrationDate: '2026-03-15'
-        },
-        {
-            id: 'CLT-002',
-            clientId: 'CLT-2026-002',
-            fullName: 'Mary Elizabeth Johnson',
-            clientType: 'individual',
-            companyName: '',
-            phone: '+255 713 987 654',
-            email: 'mary.johnson@email.com',
-            nidaNumber: '1985020234567890',
-            tinNumber: '102-345-678',
-            address: 'P.O. Box 5678, Dar es Salaam',
-            propertyInterest: 'commercial',
-            budgetRange: '100m-500m',
-            notes: 'Interested in commercial property for office space development',
-            registrationDate: '2026-03-12'
-        },
-        {
-            id: 'CLT-003',
-            clientId: 'CLT-2026-003',
-            fullName: 'Robert William Davis',
-            clientType: 'investor',
-            companyName: 'Davis Investments Ltd',
-            phone: '+255 714 234 567',
-            email: 'robert.davis@davisinvestments.co.tz',
-            nidaNumber: '1978030345678901',
-            tinNumber: '103-456-789',
-            address: 'P.O. Box 9012, Dar es Salaam',
-            propertyInterest: 'investment',
-            budgetRange: 'above-500m',
-            notes: 'High-net-worth investor looking for multiple properties',
-            registrationDate: '2026-03-10'
-        },
-        {
-            id: 'CLT-004',
-            clientId: 'CLT-2026-004',
-            fullName: 'Patricia Anne Miller',
-            clientType: 'individual',
-            companyName: '',
-            phone: '+255 715 876 543',
-            email: 'patricia.miller@email.com',
-            nidaNumber: '1990040456789012',
-            tinNumber: '104-567-890',
-            address: 'P.O. Box 3456, Dar es Salaam',
-            propertyInterest: 'residential',
-            budgetRange: '50m-100m',
-            notes: 'First-time home buyer, needs financing assistance',
-            registrationDate: '2026-03-08'
-        },
-        {
-            id: 'CLT-005',
-            clientId: 'CLT-2026-005',
-            fullName: 'ABC Tanzania Ltd',
-            clientType: 'company',
-            companyName: 'ABC Tanzania Ltd',
-            phone: '+255 716 543 210',
-            email: 'info@abctz.co.tz',
-            nidaNumber: '',
-            tinNumber: '105-678-901',
-            address: 'P.O. Box 7890, Dar es Salaam',
-            propertyInterest: 'commercial',
-            budgetRange: '100m-500m',
-            notes: 'Corporate client looking for office space expansion',
-            registrationDate: '2026-03-05'
-        },
-        {
-            id: 'CLT-006',
-            clientId: 'CLT-2026-006',
-            fullName: 'William Robert Brown',
-            clientType: 'individual',
-            companyName: '',
-            phone: '+255 717 432 109',
-            email: 'william.brown@email.com',
-            nidaNumber: '1987050567890123',
-            tinNumber: '106-789-012',
-            address: 'P.O. Box 2345, Dar es Salaam',
-            propertyInterest: 'residential',
-            budgetRange: '50m-100m',
-            notes: 'Looking for family home with good school district',
-            registrationDate: '2026-03-01'
-        },
-        {
-            id: 'CLT-007',
-            clientId: 'CLT-2026-007',
-            fullName: 'Jennifer Rose Wilson',
-            clientType: 'investor',
-            companyName: 'Wilson Properties',
-            phone: '+255 718 321 987',
-            email: 'jennifer.wilson@wilsonproperties.co.tz',
-            nidaNumber: '1992060678901234',
-            tinNumber: '107-890-123',
-            address: 'P.O. Box 6789, Dar es Salaam',
-            propertyInterest: 'investment',
-            budgetRange: '100m-500m',
-            notes: 'Real estate investor focusing on rental properties',
-            registrationDate: '2026-02-28'
-        },
-        {
-            id: 'CLT-008',
-            clientId: 'CLT-2026-008',
-            fullName: 'Tech Solutions Tanzania',
-            clientType: 'company',
-            companyName: 'Tech Solutions Tanzania',
-            phone: '+255 719 210 987',
-            email: 'contact@techsolutions.tz',
-            nidaNumber: '',
-            tinNumber: '108-901-234',
-            address: 'P.O. Box 4567, Dar es Salaam',
-            propertyInterest: 'commercial',
-            budgetRange: '50m-100m',
-            notes: 'Tech company looking for modern office space',
-            registrationDate: '2026-02-25'
-        },
-        {
-            id: 'CLT-009',
-            clientId: 'CLT-2026-009',
-            fullName: 'Michael James Taylor',
-            clientType: 'individual',
-            companyName: '',
-            phone: '+255 720 109 876',
-            email: 'michael.taylor@email.com',
-            nidaNumber: '1988070789012345',
-            tinNumber: '109-012-345',
-            address: 'P.O. Box 8901, Dar es Salaam',
-            propertyInterest: 'agricultural',
-            budgetRange: 'below-50m',
-            notes: 'Interested in agricultural land for farming',
-            registrationDate: '2026-02-22'
-        },
-        {
-            id: 'CLT-010',
-            clientId: 'CLT-2026-010',
-            fullName: 'Sarah Elizabeth Anderson',
-            clientType: 'individual',
-            companyName: '',
-            phone: '+255 721 098 765',
-            email: 'sarah.anderson@email.com',
-            nidaNumber: '1991080890123456',
-            tinNumber: '110-123-456',
-            address: 'P.O. Box 1234, Dar es Salaam',
-            propertyInterest: 'residential',
-            budgetRange: '50m-100m',
-            notes: 'Looking for apartment with city views',
-            registrationDate: '2026-02-20'
-        },
-        {
-            id: 'CLT-011',
-            clientId: 'CLT-2026-011',
-            fullName: 'Financial Services Co.',
-            clientType: 'company',
-            companyName: 'Financial Services Co.',
-            phone: '+255 722 987 654',
-            email: 'info@finserv.tz',
-            nidaNumber: '',
-            tinNumber: '111-234-567',
-            address: 'P.O. Box 5678, Dar es Salaam',
-            propertyInterest: 'commercial',
-            budgetRange: 'above-500m',
-            notes: 'Financial institution seeking premium office location',
-            registrationDate: '2026-02-18'
-        },
-        {
-            id: 'CLT-012',
-            clientId: 'CLT-2026-012',
-            fullName: 'David Christopher Martin',
-            clientType: 'investor',
-            companyName: 'Martin Holdings',
-            phone: '+255 723 876 543',
-            email: 'david.martin@martinholdings.co.tz',
-            nidaNumber: '1986090901234567',
-            tinNumber: '112-345-678',
-            address: 'P.O. Box 3456, Dar es Salaam',
-            propertyInterest: 'investment',
-            budgetRange: 'above-500m',
-            notes: 'Experienced investor in residential and commercial properties',
-            registrationDate: '2026-02-15'
-        }
-    ];
-    
-    displayClientsRecords(sampleRecords);
-}
 
 // Display clients records in the table
-function displayClientsRecords(records) {
+function displayClientsRecords(data) {
     const recordsList = document.getElementById('clientsRecordsList');
     
     if (!recordsList) {
         console.error('❌ Clients records list container not found!');
         return;
+    }
+    
+    // Handle different response formats
+    let records = data;
+    if (data && typeof data === 'object') {
+        // Handle {success: true, clients: [...]} format
+        if (data.clients && Array.isArray(data.clients)) {
+            records = data.clients;
+        }
+        // Handle {data: [...]} format
+        else if (data.data && Array.isArray(data.data)) {
+            records = data.data;
+        }
+        // Handle single object conversion
+        else if (!Array.isArray(data)) {
+            records = [data];
+        }
     }
     
     if (!records || records.length === 0) {
@@ -34627,12 +34499,29 @@ function displayClientsRecords(records) {
         return;
     }
     
+    // Map API fields to display fields and sort records
+    const mappedRecords = records.map(record => ({
+        id: record.id || record.client_id || `CLT-${Date.now()}`,
+        clientId: record.clientId || record.client_id || record.id || 'N/A',
+        fullName: record.fullName || record.full_name || record.name || 'N/A',
+        clientType: record.clientType || record.client_type || record.type || 'individual',
+        companyName: record.companyName || record.company_name || '',
+        phone: record.phone || record.phone_number || 'N/A',
+        email: record.email || record.email_address || 'N/A',
+        nidaNumber: record.nidaNumber || record.nida_number || record.nida || 'N/A',
+        tinNumber: record.tinNumber || record.tin_number || record.tin || '',
+        address: record.address || record.physical_address || 'N/A',
+        propertyInterest: record.propertyInterest || record.property_interest || 'residential',
+        budgetRange: record.budgetRange || record.budget_range || '50m-100m',
+        registrationDate: record.registrationDate || record.created_at || record.date || new Date().toISOString().split('T')[0]
+    }));
+    
     // Sort records by client ID
-    records.sort((a, b) => a.clientId.localeCompare(b.clientId));
+    mappedRecords.sort((a, b) => a.clientId.localeCompare(b.clientId));
     
     let recordsHTML = '';
     
-    records.forEach(record => {
+    mappedRecords.forEach(record => {
         // Get client type badge
         const typeDisplay = record.clientType === 'individual' ? '👤 Individual' : 
                            record.clientType === 'company' ? '🏢 Company' : 
@@ -35835,10 +35724,12 @@ async function loadSalesRecords() {
     try {
         const baseUrl = window.location.origin;
         let response;
+        let records = [];
         
-        // Try to get sales records from API
+        // Try to get sales records from API endpoints
         try {
-            response = await fetch(`${baseUrl}/api/real-estate/sales`, {
+            // Try the /api/sales/all endpoint first
+            response = await fetch(`${baseUrl}/api/sales/all`, {
                 method: 'GET',
                 headers: {
                     'Content-Type': 'application/json',
@@ -35846,7 +35737,11 @@ async function loadSalesRecords() {
                 }
             });
             
-            if (!response.ok) {
+            if (response.ok) {
+                const data = await response.json();
+                console.log('📊 Sales records data from /all:', data);
+                records = Array.isArray(data) ? data : (data.data || []);
+            } else {
                 throw new Error(`HTTP ${response.status}: ${response.statusText}`);
             }
         } catch (primaryError) {
@@ -35861,7 +35756,20 @@ async function loadSalesRecords() {
                     }
                 });
                 
-                if (!response.ok) {
+                if (response.ok) {
+                    const data = await response.json();
+                    console.log('📊 Sales records data from fallback:', data);
+                    // Handle different response formats
+                    if (data.success && data.sales) {
+                        records = data.sales;
+                    } else if (data.data) {
+                        records = data.data;
+                    } else if (Array.isArray(data)) {
+                        records = data;
+                    } else {
+                        records = [];
+                    }
+                } else {
                     throw new Error(`Fallback also failed: HTTP ${response.status}: ${response.statusText}`);
                 }
             } catch (fallbackError) {
@@ -35872,10 +35780,8 @@ async function loadSalesRecords() {
             }
         }
         
-        const salesRecords = await response.json();
-        console.log('📊 Sales records data:', salesRecords);
-        
-        displaySalesRecords(salesRecords);
+        console.log('📊 Final sales records:', records);
+        displaySalesRecords(records);
         
     } catch (error) {
         console.error('❌ Error loading sales records:', error);
@@ -36071,6 +35977,11 @@ function displaySalesRecords(records) {
         return;
     }
     
+    // Convert single object to array if needed
+    if (records && !Array.isArray(records) && typeof records === 'object') {
+        records = [records];
+    }
+    
     if (!records || records.length === 0) {
         recordsList.innerHTML = `
             <tr>
@@ -36082,12 +35993,31 @@ function displaySalesRecords(records) {
         return;
     }
     
+    // Map database fields to frontend display fields
+    const mappedRecords = records.map(record => {
+        // Handle database field mapping
+        return {
+            id: record.id || `SALE-${Date.now()}`,
+            date: record.date || record.transaction_date || record.created_at || new Date().toISOString().split('T')[0],
+            property: record.property || record.description || 'Unknown Property',
+            propertyType: record.propertyType || 'residential',
+            client: record.client || record.client_name || 'Unknown Client',
+            clientContact: record.clientContact || record.contact || 'No Contact',
+            salePrice: record.salePrice || record.amount || 0,
+            commission: record.commission || 0,
+            status: record.status || 'completed',
+            agent: record.agent || 'System',
+            paymentStatus: record.paymentStatus || 'paid',
+            contractSigned: record.contractSigned || false
+        };
+    });
+    
     // Sort records by date (most recent first)
-    records.sort((a, b) => new Date(b.date) - new Date(a.date));
+    mappedRecords.sort((a, b) => new Date(b.date) - new Date(a.date));
     
     let recordsHTML = '';
     
-    records.forEach(record => {
+    mappedRecords.forEach(record => {
         const saleDate = new Date(record.date);
         const formattedDate = saleDate.toLocaleDateString('en-US', { 
             year: 'numeric', 
@@ -37669,9 +37599,9 @@ async function loadNotifications() {
         const baseUrl = window.location.origin;
         let response;
         
-        // Try to get notifications from API
+        // Get notifications from API
         try {
-            response = await fetch(`${baseUrl}/api/work/notifications`, {
+            response = await fetch(`${baseUrl}/api/notifications`, {
                 method: 'GET',
                 headers: {
                     'Content-Type': 'application/json',
@@ -37682,27 +37612,11 @@ async function loadNotifications() {
             if (!response.ok) {
                 throw new Error(`HTTP ${response.status}: ${response.statusText}`);
             }
-        } catch (primaryError) {
-            console.warn('⚠️ Primary notifications endpoint failed, trying fallback:', primaryError.message);
-            // Try fallback endpoint
-            try {
-                response = await fetch(`${baseUrl}/api/notifications`, {
-                    method: 'GET',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${sessionManager.getAuthToken()}`
-                    }
-                });
-                
-                if (!response.ok) {
-                    throw new Error(`Fallback also failed: HTTP ${response.status}: ${response.statusText}`);
-                }
-            } catch (fallbackError) {
-                console.error('❌ All notifications endpoints failed:', fallbackError.message);
-                // Load sample data for demonstration
-                loadSampleNotifications();
-                return;
-            }
+        } catch (error) {
+            console.error('❌ Notifications endpoint failed:', error.message);
+            // Load sample data for demonstration
+            loadSampleNotifications();
+            return;
         }
         
         const data = await response.json();
