@@ -5254,7 +5254,19 @@ async function startServer() {
 
         
 
-        console.log('🔄 Step 9: Starting HTTP server...');
+        console.log('🔄 Step 9: Initializing database connection...');
+        
+        // Initialize database connection
+        const db = require('./database/config/database');
+        const dbConnected = await db.connect();
+        
+        if (dbConnected) {
+            console.log('✅ Database connection established successfully');
+        } else {
+            console.log('⚠️ Database connection failed, server will start with limited functionality');
+        }
+
+        console.log('🔄 Step 10: Starting HTTP server...');
 
         const server = app.listen(SERVER_PORT, '0.0.0.0', () => {
 

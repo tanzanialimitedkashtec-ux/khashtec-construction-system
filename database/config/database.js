@@ -35,6 +35,8 @@ class Database {
                 ? process.env.DATABASE_URL 
                 : process.env.MYSQL_URL || `mysql://${process.env.MYSQLUSER}:${process.env.MYSQLPASSWORD}@${process.env.MYSQLHOST}:${process.env.MYSQLPORT}/${process.env.MYSQLDATABASE}`;
             
+            console.log('🔗 Database URL configured:', databaseUrl ? 'Available' : 'Missing');
+            
             if (databaseUrl) {
                 // Parse DATABASE_URL format: mysql://user:password@host:port/database
                 const url = new URL(databaseUrl);
@@ -60,12 +62,20 @@ class Database {
                 });
             } else {
                 // Fallback to individual environment variables
+                const dbHost = process.env.MYSQLHOST || process.env.DB_HOST || "centerbeam.proxy.rlwy.net";
+                const dbPort = process.env.MYSQLPORT || process.env.DB_PORT || 11044;
+                const dbUser = process.env.MYSQLUSER || process.env.DB_USER || "root";
+                const dbPassword = process.env.MYSQLPASSWORD || process.env.DB_PASSWORD || "LzDEYGJIiYfVRSTnBrufpsSwRIDnZRvz";
+                const dbName = process.env.MYSQLDATABASE || process.env.DB_NAME || "railway";
+                
+                console.log('🔗 Using fallback database config:', `${dbUser}@${dbHost}:${dbPort}/${dbName}`);
+                
                 this.pool = mysql.createPool({
-                    host: process.env.MYSQLHOST || process.env.DB_HOST || "centerbeam.proxy.rlwy.net",
-                    port: process.env.MYSQLPORT || process.env.DB_PORT || 11044,
-                    user: process.env.MYSQLUSER || process.env.DB_USER || "root",
-                    password: process.env.MYSQLPASSWORD || process.env.DB_PASSWORD || "LzDEYGJIiYfVRSTnBrufpsSwRIDnZRvz",
-                    database: process.env.MYSQLDATABASE || process.env.DB_NAME || "railway",
+                    host: dbHost,
+                    port: dbPort,
+                    user: dbUser,
+                    password: dbPassword,
+                    database: dbName,
                     waitForConnections: true,
                     connectionLimit: 5, // Reduced for Railway
                     queueLimit: 0,
