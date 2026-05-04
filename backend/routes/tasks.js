@@ -98,7 +98,7 @@ router.get('/', async (req, res) => {
                     completion_percentage: 56.25,
                     required_skills: 'Heavy Equipment Operation, Site Supervision',
                     task_materials: 'Excavator, Dump Trucks, Safety Equipment',
-                    dependencies: null,
+                    dependencies: '',
                     created_by: 'Project Manager',
                     project_name: 'Dar es Salaam Office Complex',
                     project_code: 'PRJ-2026-001',
@@ -142,7 +142,7 @@ router.get('/', async (req, res) => {
                     completion_percentage: 29.17,
                     required_skills: 'Electrical Work, Conduit Bending',
                     task_materials: 'Electrical Conduit, Wiring, Junction Boxes',
-                    dependencies: null,
+                    dependencies: '',
                     created_by: 'Site Supervisor',
                     project_name: 'Kigamboni Residential Estate',
                     project_code: 'PRJ-2026-002',
@@ -186,7 +186,7 @@ router.get('/', async (req, res) => {
                     completion_percentage: 0,
                     required_skills: 'Bridge Construction, Concrete Work',
                     task_materials: 'Reinforced Concrete, Formwork, Cranes',
-                    dependencies: null,
+                    dependencies: '',
                     created_by: 'Infrastructure Manager',
                     project_name: 'Coastal Highway Bridge',
                     project_code: 'PRJ-2026-004',
@@ -208,7 +208,7 @@ router.get('/', async (req, res) => {
                     completion_percentage: 100,
                     required_skills: 'Demolition, Safety Management',
                     task_materials: 'Demolition Tools, Safety Equipment, Debris Containers',
-                    dependencies: null,
+                    dependencies: '',
                     created_by: 'Renovation Manager',
                     project_name: 'Shopping Mall Renovation',
                     project_code: 'PRJ-2026-005',
@@ -218,10 +218,34 @@ router.get('/', async (req, res) => {
             ];
         }
         
+        // Ensure all tasks have proper default values to prevent frontend errors
+        const sanitizedTasks = tasks.map(task => ({
+            id: task.id || 0,
+            project_id: task.project_id || 0,
+            task_name: task.task_name || 'Unknown Task',
+            task_description: task.task_description || '',
+            assigned_to: task.assigned_to || 'Unassigned',
+            task_priority: task.task_priority || 'Medium',
+            task_status: task.task_status || 'Not Started',
+            start_date: task.start_date || '',
+            due_date: task.due_date || '',
+            estimated_hours: task.estimated_hours || 0,
+            actual_hours: task.actual_hours || 0,
+            completion_percentage: task.completion_percentage || 0,
+            required_skills: task.required_skills || '',
+            task_materials: task.task_materials || '',
+            dependencies: task.dependencies || '',
+            created_by: task.created_by || '',
+            project_name: task.project_name || 'Unknown Project',
+            project_code: task.project_code || '',
+            created_at: task.created_at || '',
+            updated_at: task.updated_at || ''
+        }));
+        
         res.json({
             success: true,
-            tasks: tasks,
-            total: tasks.length
+            tasks: sanitizedTasks,
+            total: sanitizedTasks.length
         });
         
     } catch (error) {
@@ -277,7 +301,7 @@ router.get('/:id', async (req, res) => {
                     completion_percentage: 56.25,
                     required_skills: 'Heavy Equipment Operation, Site Supervision',
                     task_materials: 'Excavator, Dump Trucks, Safety Equipment',
-                    dependencies: null,
+                    dependencies: '',
                     created_by: 'Project Manager',
                     project_name: 'Dar es Salaam Office Complex',
                     project_code: 'PRJ-2026-001',

@@ -25828,6 +25828,7 @@ function displayInspectionRecords(data) {
         reportId: record.work_title?.split(' - ')[1] || `INSP-${record.id}`,
         date: record.inspection_date || record.submitted_date || record.created_at,
         project: record.project || 'Unknown',
+        projectCode: record.project_code || 'PROJ-001',
         inspectionType: record.work_title?.includes('Routine') ? 'Routine Inspection' :
                       record.work_title?.includes('Compliance') ? 'Compliance Audit' :
                       record.work_title?.includes('Accident') ? 'Accident Investigation' :
@@ -25841,7 +25842,8 @@ function displayInspectionRecords(data) {
         findings: record.work_description || record.findings || 'No findings recorded',
         recommendations: record.recommendations || '',
         followUpDate: record.follow_up_date || '',
-        nextInspectionDate: record.next_inspection_date || ''
+        nextInspectionDate: record.next_inspection_date || '',
+        areasInspected: record.areas_inspected || ['General Area'] // Default to one area if not specified
     }));
     
     // Sort records by date (most recent first)
