@@ -38218,6 +38218,25 @@ async function loadDocuments() {
         const documents = data.documents || [];
         console.log('📊 Documents for editing:', documents);
         
+        // Also populate the documents table if it exists
+        const documentsList = document.getElementById('documentsList');
+        if (documentsList) {
+            // Map API fields to table display fields
+            const mappedDocuments = documents.map(doc => ({
+                id: doc.id,
+                title: doc.title,
+                type: doc.type || 'PDF',
+                department: doc.department || doc.category || 'Unknown',
+                description: doc.description || 'No description',
+                uploadedDate: doc.uploadedDate || doc.upload_date || new Date().toISOString(),
+                fileSize: doc.fileSize || doc.size || 0,
+                priority: doc.priority || 'normal',
+                status: doc.status || 'active',
+                uploadedBy: doc.uploadedByName || doc.uploadedBy || 'Unknown'
+            }));
+            displayDocuments(mappedDocuments);
+        }
+        
         const docsGrid = document.getElementById('docsGrid');
         if (!docsGrid) return;
         

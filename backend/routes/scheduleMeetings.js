@@ -335,7 +335,13 @@ router.get('/department/:department', async (req, res) => {
                 parking_required,
                 status,
                 created_by,
-                created_at,
+                created_at
+            FROM meetings 
+            WHERE organizing_department = ?
+            ORDER BY meeting_date, start_time
+        `, [department]);
+        
+        const meetings = meetingsResult.rows || meetingsResult;
         console.log(`✅ Found ${meetings.length} meetings for ${department} department`);
         res.json({
             success: true,
