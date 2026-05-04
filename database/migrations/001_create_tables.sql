@@ -1305,6 +1305,73 @@ CREATE TABLE IF NOT EXISTS language_campaigns (
   INDEX idx_created_at (created_at)
 );
 
+-- Language Purchases Table
+CREATE TABLE IF NOT EXISTS language_purchases (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  campaign_id INT NOT NULL,
+  buyer_name VARCHAR(255) NOT NULL,
+  buyer_email VARCHAR(255) NOT NULL,
+  buyer_phone VARCHAR(50),
+  units_purchased INT NOT NULL,
+  price_per_unit DECIMAL(10,2) NOT NULL,
+  total_amount DECIMAL(12,2) NOT NULL,
+  payment_method ENUM('Bank Transfer', 'Cash', 'Mobile Money', 'Credit Card', 'Other') DEFAULT 'Bank Transfer',
+  buyer_address TEXT,
+  purchase_notes TEXT,
+  purchase_status ENUM('Pending', 'Confirmed', 'Completed', 'Cancelled', 'Refunded') DEFAULT 'Pending',
+  purchase_date DATE NOT NULL,
+  created_by INT,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  
+  -- Foreign key relationships
+  FOREIGN KEY (campaign_id) REFERENCES language_campaigns(id) ON DELETE CASCADE,
+  FOREIGN KEY (created_by) REFERENCES users(id) ON DELETE SET NULL,
+  
+  -- Indexes for performance
+  INDEX idx_campaign_id (campaign_id),
+  INDEX idx_buyer_name (buyer_name),
+  INDEX idx_buyer_email (buyer_email),
+  INDEX idx_buyer_phone (buyer_phone),
+  INDEX idx_purchase_status (purchase_status),
+  INDEX idx_purchase_date (purchase_date),
+  INDEX idx_payment_method (payment_method),
+  INDEX idx_created_by (created_by),
+  INDEX idx_created_at (created_at)
+);
+
+-- Payment Tracking Table
+CREATE TABLE IF NOT EXISTS payment_tracking (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  tracking_number VARCHAR(50) UNIQUE NOT NULL,
+  purchase_id INT NOT NULL,
+  payment_stage ENUM('Initiated', 'Processing', 'Confirmed', 'Completed', 'Failed') NOT NULL,
+  payment_reference VARCHAR(100),
+  bank_reference VARCHAR(100),
+  transaction_id VARCHAR(100),
+  amount DECIMAL(12,2) NOT NULL,
+  tracking_notes TEXT,
+  payment_date DATE NOT NULL,
+  created_by INT,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  
+  -- Foreign key relationships
+  FOREIGN KEY (purchase_id) REFERENCES language_purchases(id) ON DELETE CASCADE,
+  FOREIGN KEY (created_by) REFERENCES users(id) ON DELETE SET NULL,
+  
+  -- Indexes for performance
+  INDEX idx_tracking_number (tracking_number),
+  INDEX idx_purchase_id (purchase_id),
+  INDEX idx_payment_stage (payment_stage),
+  INDEX idx_payment_reference (payment_reference),
+  INDEX idx_bank_reference (bank_reference),
+  INDEX idx_transaction_id (transaction_id),
+  INDEX idx_payment_date (payment_date),
+  INDEX idx_created_by (created_by),
+  INDEX idx_created_at (created_at)
+);
+
 -- Suggestions table
 CREATE TABLE IF NOT EXISTS suggestions (
   id INT AUTO_INCREMENT PRIMARY KEY,

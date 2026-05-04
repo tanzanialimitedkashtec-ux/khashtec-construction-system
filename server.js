@@ -68,6 +68,8 @@ const driversRoutes = require('./backend/routes/drivers');
 
 const companyCarsRoutes = require('./backend/routes/companyCars');
 
+const languageCampaignsRoutes = require('./backend/routes/languageCampaigns');
+
 
 
 const app = express();
@@ -779,6 +781,14 @@ app.use('/api/meetings', authenticateToken, asyncHandler(async (req, res, next) 
 app.use('/api/company-cars', asyncHandler(async (req, res, next) => {
 
     return companyCarsRoutes(req, res, next);
+
+}));
+
+
+
+app.use('/api/language-campaigns', asyncHandler(async (req, res, next) => {
+
+    return languageCampaignsRoutes(req, res, next);
 
 }));
 
