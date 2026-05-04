@@ -72,12 +72,15 @@ router.get('/', (req, res) => {
 // Get all company cars
 router.get('/all', async (req, res) => {
     try {
-        const db = require('../database/config/database');
+        const db = require('../../database/config/database');
         
-        const [cars] = await db.execute(`
+        const carsResult = await db.execute(`
             SELECT * FROM vehicles 
             ORDER BY created_at DESC
         `);
+        
+        // Handle different MySQL2 return formats
+        const cars = Array.isArray(carsResult) ? carsResult[0] : carsResult;
         
         res.status(200).json({
             success: true,
@@ -99,12 +102,15 @@ router.get('/all', async (req, res) => {
 // Get all company cars (main endpoint)
 router.get('/', async (req, res) => {
     try {
-        const db = require('../database/config/database');
+        const db = require('../../database/config/database');
         
-        const [cars] = await db.execute(`
+        const carsResult = await db.execute(`
             SELECT * FROM vehicles 
             ORDER BY created_at DESC
         `);
+        
+        // Handle different MySQL2 return formats
+        const cars = Array.isArray(carsResult) ? carsResult[0] : carsResult;
         
         res.status(200).json({
             success: true,
@@ -161,13 +167,16 @@ router.post('/', async (req, res) => {
             });
         }
 
-        const db = require('../database/config/database');
+        const db = require('../../database/config/database');
         
         // Check if registration number already exists
-        const [existing] = await db.execute(
+        const existingResult = await db.execute(
             'SELECT id FROM vehicles WHERE registration_number = ? OR plate_number = ?',
             [registration_number, plate_number]
         );
+        
+        // Handle different MySQL2 return formats
+        const existing = Array.isArray(existingResult) ? existingResult[0] : existingResult;
         
         if (existing.length > 0) {
             return res.status(400).json({
@@ -177,7 +186,7 @@ router.post('/', async (req, res) => {
         }
 
         // Insert new company car
-        const [result] = await db.execute(`
+        const resultResult = await db.execute(`
             INSERT INTO vehicles (
                 track_number, car_name, brand_name, registration_number, plate_number,
                 car_details, description, assigned_driver, registration_date, vehicle_status,
@@ -188,7 +197,10 @@ router.post('/', async (req, res) => {
             car_details, description, assigned_driver, registration_date, vehicle_status
         ]);
 
-        console.log('✅ Car registered successfully, ID:', result.insertId);
+        console.log('✅ Car registered successfully, ID:', resultResult.insertId);
+        
+        // Handle different MySQL2 return formats
+        const result = Array.isArray(resultResult) ? resultResult[0] : resultResult;
 
         res.status(201).json({
             success: true,
@@ -240,12 +252,15 @@ router.post('/', async (req, res) => {
 router.get('/:id', async (req, res) => {
     try {
         const carId = req.params.id;
-        const db = require('../database/config/database');
+        const db = require('../../database/config/database');
         
-        const [cars] = await db.execute(
+        const carsResult = await db.execute(
             'SELECT * FROM vehicles WHERE id = ?',
             [carId]
         );
+        
+        // Handle different MySQL2 return formats
+        const cars = Array.isArray(carsResult) ? carsResult[0] : carsResult;
         
         if (cars.length === 0) {
             return res.status(404).json({
@@ -284,7 +299,7 @@ router.put('/:id', async (req, res) => {
             driver
         } = req.body;
 
-        const db = require('../database/config/database');
+        const db = require('../../database/config/database');
         
         // Check if car exists
         const [existing] = await db.execute(
@@ -330,13 +345,16 @@ router.put('/:id', async (req, res) => {
 router.delete('/:id', async (req, res) => {
     try {
         const carId = req.params.id;
-        const db = require('../database/config/database');
+        const db = require('../../database/config/database');
         
         // Check if car exists
-        const [existing] = await db.execute(
+        const existingResult = await db.execute(
             'SELECT id FROM vehicles WHERE id = ?',
             [carId]
         );
+        
+        // Handle different MySQL2 return formats
+        const existing = Array.isArray(existingResult) ? existingResult[0] : existingResult;
         
         if (existing.length === 0) {
             return res.status(404).json({

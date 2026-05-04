@@ -34,16 +34,39 @@ class Database {
             console.log('🔍 Environment Variables Debug:');
             console.log('  - DATABASE_URL:', process.env.DATABASE_URL ? 'SET' : 'MISSING');
             console.log('  - MYSQL_URL:', process.env.MYSQL_URL ? 'SET' : 'MISSING');
+            console.log('  - MYSQL_PUBLIC_URL:', process.env.MYSQL_PUBLIC_URL ? 'SET' : 'MISSING');
             console.log('  - MYSQLUSER:', process.env.MYSQLUSER || 'MISSING');
             console.log('  - MYSQLHOST:', process.env.MYSQLHOST || 'MISSING');
+            console.log('  - RAILWAY_PRIVATE_DOMAIN:', process.env.RAILWAY_PRIVATE_DOMAIN || 'MISSING');
             console.log('  - MYSQLPORT:', process.env.MYSQLPORT || 'MISSING');
             console.log('  - MYSQLDATABASE:', process.env.MYSQLDATABASE || 'MISSING');
             console.log('  - MYSQLPASSWORD:', process.env.MYSQLPASSWORD ? 'SET' : 'MISSING');
+            console.log('  - DB_HOST:', process.env.DB_HOST || 'MISSING');
+            console.log('  - DB_USER:', process.env.DB_USER || 'MISSING');
+            console.log('  - DB_PASSWORD:', process.env.DB_PASSWORD ? 'SET' : 'MISSING');
+            console.log('  - DB_NAME:', process.env.DB_NAME || 'MISSING');
+            console.log('  - DB_PORT:', process.env.DB_PORT || 'MISSING');
             
             // Use Railway's DATABASE_URL or construct from individual variables
-            const databaseUrl = process.env.DATABASE_URL && !process.env.DATABASE_URL.includes('${') 
-                ? process.env.DATABASE_URL 
-                : process.env.MYSQL_URL || `mysql://${process.env.MYSQLUSER}:${process.env.MYSQLPASSWORD}@${process.env.MYSQLHOST}:${process.env.MYSQLPORT}/${process.env.MYSQLDATABASE}`;
+            let databaseUrl = process.env.DATABASE_URL;
+            
+            // Check if DATABASE_URL contains unresolved variables
+            if (!databaseUrl || databaseUrl.includes('${')) {
+                databaseUrl = process.env.MYSQL_URL || process.env.MYSQL_PUBLIC_URL;
+            }
+            
+            // If still no valid URL, construct from individual variables
+            if (!databaseUrl || databaseUrl.includes('${')) {
+                const dbHost = process.env.MYSQLHOST || process.env.RAILWAY_PRIVATE_DOMAIN || process.env.DB_HOST;
+                const dbPort = process.env.MYSQLPORT || process.env.DB_PORT || 3306;
+                const dbUser = process.env.MYSQLUSER || process.env.DB_USER;
+                const dbPassword = process.env.MYSQLPASSWORD || process.env.DB_PASSWORD;
+                const dbName = process.env.MYSQLDATABASE || process.env.DB_NAME || "railway";
+                
+                if (dbUser && dbPassword && dbHost) {
+                    databaseUrl = `mysql://${dbUser}:${dbPassword}@${dbHost}:${dbPort}/${dbName}`;
+                }
+            }
             
             console.log('🔗 Database URL configured:', databaseUrl ? 'Available' : 'Missing');
             if (databaseUrl) {

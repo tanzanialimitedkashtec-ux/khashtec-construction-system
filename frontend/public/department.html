@@ -22086,6 +22086,24 @@ function saveEmployeeManual() {
         const department = document.getElementById('empDepartment')?.value;
         
         console.log('📝 Employee data:', { fullName, phone, gmail, nida, contract, jobCategory, department });
+        console.log('🔍 Form field elements:', {
+            empFullName: document.getElementById('empFullName'),
+            empPhone: document.getElementById('empPhone'),
+            empGmail: document.getElementById('empGmail'),
+            empNIDA: document.getElementById('empNIDA'),
+            empContract: document.getElementById('empContract'),
+            empJobCategory: document.getElementById('empJobCategory'),
+            empDepartment: document.getElementById('empDepartment')
+        });
+        console.log('🔍 Form field values with types:', {
+            fullName: { value: fullName, type: typeof fullName, empty: !fullName },
+            phone: { value: phone, type: typeof phone, empty: !phone },
+            gmail: { value: gmail, type: typeof gmail, empty: !gmail },
+            nida: { value: nida, type: typeof nida, empty: !nida },
+            contract: { value: contract, type: typeof contract, empty: !contract },
+            jobCategory: { value: jobCategory, type: typeof jobCategory, empty: !jobCategory },
+            department: { value: department, type: typeof department, empty: !department }
+        });
         
         // Validate required fields
         if (!fullName || !phone || !gmail || !nida || !contract || !jobCategory || !department) {
@@ -33421,12 +33439,30 @@ function displaySiteReports(reports) {
         return;
     }
     
+    // Map API fields to display fields
+    const mappedReports = reports.map(report => ({
+        id: report.id,
+        reportId: `SR-${report.id}`,
+        reportDate: report.report_date || report.submitted_date || report.created_at || new Date().toISOString(),
+        project: report.project || report.work_title?.replace('Daily Site Report - ', '') || 'Unknown Project',
+        projectCode: report.project_code || `prj${String(report.id).padStart(3, '0')}`,
+        supervisor: report.supervisor || report.submitted_by || 'Unknown Supervisor',
+        workersCount: report.workers_count || report.workers || 0,
+        weatherConditions: report.weather_conditions || 'sunny',
+        workCompleted: report.work_completed || report.work_description || 'Not specified',
+        siteIssues: report.site_issues || report.issues || 'No issues',
+        safetyIncidents: report.safety_incidents || 'None',
+        materialsUsed: report.materials_used || 'Not specified',
+        equipmentUsed: report.equipment_used || 'Not specified',
+        nextDayPlan: report.next_day_plan || 'Not specified'
+    }));
+    
     // Sort reports by date (newest first)
-    reports.sort((a, b) => new Date(b.reportDate) - new Date(a.reportDate));
+    mappedReports.sort((a, b) => new Date(b.reportDate) - new Date(a.reportDate));
     
     let reportsHTML = '';
     
-    reports.forEach(report => {
+    mappedReports.forEach(report => {
         // Get weather display
         const weatherDisplay = report.weatherConditions === 'sunny' ? '☀️ Sunny' : 
                               report.weatherConditions === 'cloudy' ? '☁️ Cloudy' : 

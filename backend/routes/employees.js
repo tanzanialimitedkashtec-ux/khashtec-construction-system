@@ -284,22 +284,39 @@ router.post('/', async (req, res) => {
         contract
     });
     
+    console.log('🔍 Complete request body fields:', Object.keys(req.body));
+    console.log('🔍 Complete request body values:', req.body);
+    
     // Validate input
+    console.log('🔍 Field validation check:', {
+        'fullName': { value: fullName, valid: !!fullName },
+        'gmail': { value: gmail, valid: !!gmail },
+        'phone': { value: phone, valid: !!phone },
+        'department': { value: department, valid: !!department },
+        'finalJobCategory': { value: finalJobCategory, valid: !!finalJobCategory },
+        'nida': { value: nida, valid: !!nida },
+        'contract': { value: contract, valid: !!contract }
+    });
+    
     if (!fullName || !gmail || !phone || !department || !finalJobCategory || !nida || !contract) {
         console.log('❌ Validation failed - missing required fields');
+        const missingFields = [
+            !fullName ? 'fullName' : null,
+            !gmail ? 'gmail' : null,
+            !phone ? 'phone' : null,
+            !department ? 'department' : null,
+            !finalJobCategory ? 'jobCategory' : null,
+            !nida ? 'nida' : null,
+            !contract ? 'contract' : null
+        ].filter(Boolean);
+        
+        console.log('❌ Missing fields:', missingFields);
+        
         return res.status(400).json({
             error: 'All required fields must be provided',
             required: ['fullName', 'gmail', 'phone', 'department', 'jobCategory', 'nida', 'contract'],
             received: { fullName, gmail, phone, department, jobCategory, job_category, nida, contract },
-            missing: [
-                !fullName ? 'fullName' : null,
-                !gmail ? 'gmail' : null,
-                !phone ? 'phone' : null,
-                !department ? 'department' : null,
-                !finalJobCategory ? 'jobCategory' : null,
-                !nida ? 'nida' : null,
-                !contract ? 'contract' : null
-            ].filter(Boolean)
+            missing: missingFields
         });
     }
     
