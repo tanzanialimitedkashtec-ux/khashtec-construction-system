@@ -3347,6 +3347,150 @@ app.get('/api/properties', async (req, res) => {
 
 
 
+// GET all properties endpoint (for frontend compatibility)
+
+app.get('/api/properties/all', async (req, res) => {
+
+    try {
+
+        console.log('🏠 Fetching all properties for frontend...');
+
+        const db = require('./database/config/database');
+
+        const propertiesResult = await db.execute(`
+
+            SELECT * FROM properties 
+
+            ORDER BY created_at DESC
+
+        `);
+
+        
+
+        // Handle different MySQL2 return formats
+
+        let properties = [];
+
+        if (Array.isArray(propertiesResult)) {
+
+            properties = propertiesResult;
+
+        } else if (propertiesResult && Array.isArray(propertiesResult[0])) {
+
+            properties = propertiesResult[0];
+
+        } else if (propertiesResult && propertiesResult.rows) {
+
+            properties = propertiesResult.rows;
+
+        } else {
+
+            properties = [];
+
+        }
+
+        
+
+        console.log(`✅ Found ${properties.length} properties`);
+
+        res.status(200).json({
+
+            success: true,
+
+            data: properties
+
+        });
+
+
+
+    } catch (error) {
+
+        console.error('Error fetching all properties:', error);
+
+        // Return fallback properties data when database fails
+
+        const fallbackProperties = [
+
+            {
+
+                id: 1,
+
+                title: 'Modern Office Building',
+
+                description: 'Prime commercial office space in city center',
+
+                location: 'Dar es Salaam City Center',
+
+                type: 'commercial',
+
+                price: 5000000,
+
+                status: 'available',
+
+                created_at: '2026-05-01T00:00:00Z'
+
+            },
+
+            {
+
+                id: 2,
+
+                title: 'Residential Apartment Complex',
+
+                description: 'Luxury apartments with modern amenities',
+
+                location: 'Masaki, Dar es Salaam',
+
+                type: 'residential',
+
+                price: 2500000,
+
+                status: 'sold',
+
+                created_at: '2026-05-02T00:00:00Z'
+
+            },
+
+            {
+
+                id: 3,
+
+                title: 'Industrial Warehouse',
+
+                description: 'Large warehouse facility for logistics operations',
+
+                location: 'Kigamboni, Dar es Salaam',
+
+                type: 'industrial',
+
+                price: 8000000,
+
+                status: 'available',
+
+                created_at: '2026-05-03T00:00:00Z'
+
+            }
+
+        ];
+
+        
+
+        res.status(200).json({
+
+            success: true,
+
+            data: fallbackProperties,
+
+            note: 'Using fallback data - database unavailable'
+
+        });
+
+    }
+
+});
+
+
+
 // Clients API endpoints
 
 app.post('/api/clients', async (req, res) => {

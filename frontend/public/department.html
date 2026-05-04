@@ -37221,13 +37221,17 @@ function saveNewClient() {
     };
     
     // Validate required fields
-    if (!client.clientName || client.clientName.trim() === '' ||
+    if (!client.fullName || client.fullName.trim() === '' ||
         !client.phone || client.phone.trim() === '' ||
-        !client.email || client.email.trim() === '') {
+        !client.email || client.email.trim() === '' ||
+        !client.nida || client.nida.trim() === '' ||
+        !client.address || client.address.trim() === '') {
         customAlert('Please fill in all required fields:\n\n' +
-                    'Full Name\n' +
-                    'Phone Number\n' +
-                    'Email Address', "Validation Error", "error");
+                    'Full Name *\n' +
+                    'Phone Number *\n' +
+                    'Email Address *\n' +
+                    'NIDA Number *\n' +
+                    'Physical Address *', "Validation Error", "error");
         return false;
     }
     
@@ -37245,13 +37249,17 @@ function saveNewClient() {
             'Authorization': `Bearer ${sessionManager.getAuthToken()}`
         },
         body: JSON.stringify({
-            clientName: client.clientName,
+            id: client.id,
+            type: client.type,
+            fullName: client.fullName,
             companyName: client.companyName,
             phone: client.phone,
             email: client.email,
+            nida: client.nida,
+            tin: client.tin,
             address: client.address,
-            industry: client.industry,
-            clientType: client.clientType,
+            propertyInterest: client.propertyInterest,
+            budgetRange: client.budgetRange,
             notes: client.notes
         })
     })
@@ -37269,7 +37277,7 @@ function saveNewClient() {
             throw new Error(data.error);
         }
         
-        customAlert(`Client registered successfully!\n\nName: ${client.clientName}\nID: ${client.id}\nPhone: ${client.phone}\nEmail: ${client.email}\nRegistration ID: ${data.id}\n\n🎉 Client saved to database!`, "Client Registered", "success");
+        customAlert(`Client registered successfully!\n\nName: ${client.fullName}\nID: ${client.id}\nPhone: ${client.phone}\nEmail: ${client.email}\nNIDA: ${client.nida}\nRegistration ID: ${data.id}\n\n🎉 Client saved to database!`, "Client Registered", "success");
         
         document.getElementById('clientForm').reset();
     })
