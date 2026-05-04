@@ -814,7 +814,7 @@ app.use('/api/language-payment-tracking', asyncHandler(async (req, res, next) =>
 
     return languagePaymentTrackingRoutes(req, res, next);
 
-});
+}));
 
 
 
@@ -822,7 +822,7 @@ app.use('/api/sales', asyncHandler(async (req, res, next) => {
 
     return salesRoutes(req, res, next);
 
-});
+}));
 
 
 
