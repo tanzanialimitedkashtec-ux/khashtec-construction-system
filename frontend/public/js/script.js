@@ -888,6 +888,8 @@ function handleLogin() {
                 // Hide login page and show system page
                 document.getElementById("loginPage").classList.add("hidden");
                 document.getElementById("systemPage").classList.remove("hidden");
+                document.body.classList.add('logged-in');
+                document.body.classList.remove('login-active');
                 
                 // Map full role names to short codes for menu system
                 const roleMap = {
@@ -985,6 +987,8 @@ function handleLogout() {
         // Hide system page and show login page
         document.getElementById("systemPage").classList.add("hidden");
         document.getElementById("loginPage").classList.remove("hidden");
+        document.body.classList.remove('logged-in');
+        document.body.classList.add('login-active');
         
         // Clear form fields
         document.getElementById("loginEmail").value = "";

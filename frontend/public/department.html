@@ -29,6 +29,33 @@ body{
     font-size: 9px;
 }
 
+body.login-active {
+    background:#f4f6f9;
+}
+
+body.logged-in {
+    background:#ffffff;
+}
+
+#loginBackground {
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    background-image: url('images/WhatsApp Image 2026-05-05 at 2.55.12 PM.jpeg');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    filter: brightness(0.85);
+    opacity: 1;
+    visibility: visible;
+    transition: opacity 0.35s ease, visibility 0.35s ease;
+}
+
+body.logged-in #loginBackground {
+    opacity: 0;
+    visibility: hidden;
+}
+
 /* Screen reader only content */
 .sr-only {
     position: absolute;
@@ -10464,8 +10491,8 @@ background: #f8f9fa;
 }
 </style>
 </head>
-<body>
-
+<body class="login-active">
+<div id="loginBackground"></div>
 <header>
     <h2>KASHTEC TANZANIA LIMITED</h2>
 </header>
@@ -29684,7 +29711,13 @@ async function loadLanguageCampaigns() {
         const recordsList = document.getElementById('campaignRecordsList');
         recordsList.innerHTML = '<tr><td colspan="11" class="loading">Loading campaigns...</td></tr>';
         
-        const response = await KashTecAPI.get('/api/language-campaigns');
+        // Check if KashTecAPI is available
+        if (!window.KashTecAPI || typeof window.KashTecAPI.get !== 'function') {
+            console.error('❌ KashTecAPI.get is not available');
+            throw new Error('API service not loaded properly');
+        }
+        
+        const response = await window.KashTecAPI.get('/api/language-campaigns');
         
         if (response.success && response.data.length > 0) {
             recordsList.innerHTML = response.data.map(campaign => `
@@ -29919,7 +29952,13 @@ async function loadLanguagePurchases() {
         const recordsList = document.getElementById('purchaseRecordsList');
         recordsList.innerHTML = '<tr><td colspan="10" class="loading">Loading purchase records...</td></tr>';
         
-        const response = await KashTecAPI.get('/api/language-purchases');
+        // Check if KashTecAPI is available
+        if (!window.KashTecAPI || typeof window.KashTecAPI.get !== 'function') {
+            console.error('❌ KashTecAPI.get is not available');
+            throw new Error('API service not loaded properly');
+        }
+        
+        const response = await window.KashTecAPI.get('/api/language-purchases');
         
         if (response.success && response.data.length > 0) {
             recordsList.innerHTML = response.data.map(purchase => `
