@@ -302,10 +302,13 @@ router.put('/:id', async (req, res) => {
         const db = require('../../database/config/database');
         
         // Check if car exists
-        const [existing] = await db.execute(
+        const existingResult = await db.execute(
             'SELECT id FROM vehicles WHERE id = ?',
             [carId]
         );
+        
+        // Handle different MySQL2 return formats
+        const existing = Array.isArray(existingResult) ? existingResult[0] : existingResult;
         
         if (existing.length === 0) {
             return res.status(404).json({
