@@ -1,5 +1,19 @@
 const express = require('express');
 const router = express.Router();
+
+console.log('🏗️ Projects route file is being loaded...');
+
+// Test endpoint to verify route is working
+router.get('/test', (req, res) => {
+    console.log('🧪 Projects test endpoint accessed');
+    res.json({ 
+        message: 'Projects API is working!',
+        timestamp: new Date().toISOString(),
+        status: 'routes_loaded_successfully',
+        debug: 'Projects routes are loaded and responding'
+    });
+});
+
 const db = require('../../database/config/database');
 
 // Get all projects
@@ -75,6 +89,12 @@ router.get('/', async (req, res) => {
         }
         
         console.log(`✅ Found ${projects.length} projects`);
+        console.log('📊 Projects data structure:', {
+            isArray: Array.isArray(projects),
+            length: projects.length,
+            firstItem: projects[0] || 'No items',
+            sampleKeys: projects[0] ? Object.keys(projects[0]) : 'No keys'
+        });
         
         res.json({
             success: true,
