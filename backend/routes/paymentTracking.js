@@ -644,7 +644,7 @@ router.get('/statistics', async (req, res) => {
             `);
             
             const overallStats = Array.isArray(overallStatsResult) ? overallStatsResult[0] : overallStatsResult;
-            if (overallStats.length > 0) {
+            if (overallStats && overallStats.length > 0) {
                 statistics = {
                     ...statistics,
                     total_transactions: overallStats[0].total_transactions || 0,
@@ -663,13 +663,15 @@ router.get('/statistics', async (req, res) => {
             `);
             
             const typeStats = Array.isArray(typeStatsResult) ? typeStatsResult[0] : typeStatsResult;
-            statistics.by_transaction_type = {};
-            typeStats.forEach(stat => {
-                statistics.by_transaction_type[stat.transaction_type] = {
-                    count: stat.count,
-                    total_amount: stat.total_amount
-                };
-            });
+            if (typeStats && typeStats.length > 0) {
+                statistics.by_transaction_type = {};
+                typeStats.forEach(stat => {
+                    statistics.by_transaction_type[stat.transaction_type] = {
+                        count: stat.count,
+                        total_amount: stat.total_amount
+                    };
+                });
+            }
             
             // Get statistics by payment method
             const methodStatsResult = await db.execute(`
@@ -679,13 +681,15 @@ router.get('/statistics', async (req, res) => {
             `);
             
             const methodStats = Array.isArray(methodStatsResult) ? methodStatsResult[0] : methodStatsResult;
-            statistics.by_payment_method = {};
-            methodStats.forEach(stat => {
-                statistics.by_payment_method[stat.payment_method] = {
-                    count: stat.count,
-                    total_amount: stat.total_amount
-                };
-            });
+            if (methodStats && methodStats.length > 0) {
+                statistics.by_payment_method = {};
+                methodStats.forEach(stat => {
+                    statistics.by_payment_method[stat.payment_method] = {
+                        count: stat.count,
+                        total_amount: stat.total_amount
+                    };
+                });
+            }
             
             // Get statistics by payment status
             const statusStatsResult = await db.execute(`
@@ -695,13 +699,15 @@ router.get('/statistics', async (req, res) => {
             `);
             
             const statusStats = Array.isArray(statusStatsResult) ? statusStatsResult[0] : statusStatsResult;
-            statistics.by_payment_status = {};
-            statusStats.forEach(stat => {
-                statistics.by_payment_status[stat.payment_status] = {
-                    count: stat.count,
-                    total_amount: stat.total_amount
-                };
-            });
+            if (statusStats && statusStats.length > 0) {
+                statistics.by_payment_status = {};
+                statusStats.forEach(stat => {
+                    statistics.by_payment_status[stat.payment_status] = {
+                        count: stat.count,
+                        total_amount: stat.total_amount
+                    };
+                });
+            }
             
             // Get recent transactions (last 10)
             const recentResult = await db.execute(`
