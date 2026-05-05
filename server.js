@@ -2770,9 +2770,37 @@ app.get('/api/attendance', async (req, res) => {
 
     try {
 
+        console.log('📊 Attendance endpoint called');
         const db = require('./database/config/database');
 
         const { employeeId, dateFrom, dateTo } = req.query;
+        
+        // Ensure attendance table exists
+        try {
+            await db.execute(`
+                CREATE TABLE IF NOT EXISTS attendance (
+                    id INT AUTO_INCREMENT PRIMARY KEY,
+                    employee_id VARCHAR(50) NOT NULL,
+                    attendance_date DATE NOT NULL,
+                    check_in TIME NULL,
+                    check_out TIME NULL,
+                    work_hours DECIMAL(5,2) NULL,
+                    overtime_hours DECIMAL(5,2) NULL,
+                    status ENUM('Present', 'Absent', 'Late', 'Half Day', 'Leave', 'Holiday') DEFAULT 'Present',
+                    notes TEXT NULL,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+                    INDEX idx_employee_id (employee_id),
+                    INDEX idx_attendance_date (attendance_date),
+                    INDEX idx_status (status),
+                    INDEX idx_created_at (created_at),
+                    UNIQUE KEY unique_employee_date (employee_id, attendance_date)
+                )
+            `);
+            console.log('✅ Attendance table verified/created successfully');
+        } catch (tableError) {
+            console.log('⚠️ Could not create attendance table:', tableError.message);
+        }
 
 
 
@@ -2842,11 +2870,15 @@ app.get('/api/attendance', async (req, res) => {
 
 
 
+        console.log(`✅ Found ${attendance.length} attendance records`);
+        
         res.status(200).json({
 
             success: true,
 
-            attendance: attendance
+            attendance: attendance,
+
+            total: attendance.length
 
         });
 
@@ -2862,46 +2894,83 @@ app.get('/api/attendance', async (req, res) => {
                 id: 1,
                 employee_id: 'EMP001',
                 employee_name: 'John Doe',
-                attendance_date: '2026-05-04',
-                check_in_time: '08:00',
-                check_out_time: '17:00',
-                attendance_status: 'present',
                 department: 'IT',
-                hours_worked: 9.0,
-                notes: null,
-                created_at: '2026-05-04T08:00:00Z'
+                attendance_date: '2026-05-04',
+                check_in: '08:00:00',
+                check_out: '17:00:00',
+                work_hours: 9.0,
+                overtime_hours: 0.0,
+                status: 'Present',
+                notes: 'Regular work day',
+                created_at: '2026-05-04T08:00:00Z',
+                updated_at: '2026-05-04T17:00:00Z'
             },
             {
                 id: 2,
                 employee_id: 'EMP002',
                 employee_name: 'Jane Smith',
-                attendance_date: '2026-05-04',
-                check_in_time: '08:30',
-                check_out_time: '17:30',
-                attendance_status: 'present',
                 department: 'HR',
-                hours_worked: 9.0,
-                notes: null,
-                created_at: '2026-05-04T08:30:00Z'
+                attendance_date: '2026-05-04',
+                check_in: '08:30:00',
+                check_out: '17:30:00',
+                work_hours: 9.0,
+                overtime_hours: 0.0,
+                status: 'Present',
+                notes: 'Regular work day',
+                created_at: '2026-05-04T08:30:00Z',
+                updated_at: '2026-05-04T17:30:00Z'
             },
             {
                 id: 3,
                 employee_id: 'EMP003',
                 employee_name: 'Mike Johnson',
-                attendance_date: '2026-05-04',
-                check_in_time: '09:00',
-                check_out_time: null,
-                attendance_status: 'late',
                 department: 'Operations',
-                hours_worked: null,
-                notes: 'Late arrival',
-                created_at: '2026-05-04T09:00:00Z'
+                attendance_date: '2026-05-04',
+                check_in: '09:00:00',
+                check_out: null,
+                work_hours: null,
+                overtime_hours: null,
+                status: 'Late',
+                notes: 'Late arrival - 1 hour delay',
+                created_at: '2026-05-04T09:00:00Z',
+                updated_at: '2026-05-04T09:00:00Z'
+            },
+            {
+                id: 4,
+                employee_id: 'EMP004',
+                employee_name: 'Sarah Wilson',
+                department: 'Finance',
+                attendance_date: '2026-05-04',
+                check_in: '08:00:00',
+                check_out: '12:00:00',
+                work_hours: 4.0,
+                overtime_hours: 0.0,
+                status: 'Half Day',
+                notes: 'Half day - medical appointment',
+                created_at: '2026-05-04T08:00:00Z',
+                updated_at: '2026-05-04T12:00:00Z'
+            },
+            {
+                id: 5,
+                employee_id: 'EMP005',
+                employee_name: 'David Brown',
+                department: 'Projects',
+                attendance_date: '2026-05-04',
+                check_in: null,
+                check_out: null,
+                work_hours: 0.0,
+                overtime_hours: 0.0,
+                status: 'Leave',
+                notes: 'Annual leave',
+                created_at: '2026-05-04T00:00:00Z',
+                updated_at: '2026-05-04T00:00:00Z'
             }
         ];
 
         res.status(200).json({
             success: true,
             attendance: fallbackAttendance,
+            total: fallbackAttendance.length,
             note: 'Using fallback data - database unavailable'
         });
 
