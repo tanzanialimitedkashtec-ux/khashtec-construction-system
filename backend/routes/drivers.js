@@ -70,6 +70,12 @@ router.get('/', async (req, res) => {
         }
         
         console.log(`✅ Found ${drivers.length} drivers in database`);
+        console.log('📊 Drivers data structure:', {
+            isArray: Array.isArray(drivers),
+            length: drivers.length,
+            firstItem: drivers[0] || 'No items',
+            sampleKeys: drivers[0] ? Object.keys(drivers[0]) : 'No keys'
+        });
         
         res.status(200).json({
             success: true,
@@ -122,13 +128,25 @@ router.get('/all', async (req, res) => {
     try {
         const db = require('../../database/config/database');
         
-        const [drivers] = await db.execute(`
+        const driversResult = await db.execute(`
             SELECT id, driver_id, full_name, description, years_of_experience, 
                    license_type, phone_number, email_address, driver_status,
                    created_at, updated_at
             FROM drivers 
             ORDER BY created_at DESC
         `);
+        
+        // Handle different MySQL2 return formats
+        let drivers = [];
+        if (Array.isArray(driversResult)) {
+            drivers = driversResult;
+        } else if (driversResult && Array.isArray(driversResult[0])) {
+            drivers = driversResult[0];
+        } else if (driversResult && driversResult.rows) {
+            drivers = driversResult.rows;
+        } else {
+            drivers = [];
+        }
         
         res.status(200).json({
             success: true,
