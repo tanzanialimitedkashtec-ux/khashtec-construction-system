@@ -41,19 +41,39 @@ body.logged-in {
     position: fixed;
     inset: 0;
     z-index: -1;
-    background-image: url('images/WhatsApp Image 2026-05-05 at 2.55.12 PM.jpeg');
+    background-color: #0b3d91;
+    background-image: linear-gradient(rgba(3,16,47,0.45), rgba(3,16,47,0.45)), url('images/WhatsApp Image 2026-05-05 at 2.55.12 PM.jpeg');
     background-size: cover;
-    background-position: center;
+    background-position: center center;
     background-repeat: no-repeat;
-    filter: brightness(0.85);
+    background-attachment: fixed;
+    filter: brightness(0.95) saturate(1.08) contrast(1.05);
+    transform: scale(1.02);
     opacity: 1;
     visibility: visible;
-    transition: opacity 0.35s ease, visibility 0.35s ease;
+    transition: opacity 0.35s ease, visibility 0.35s ease, transform 0.35s ease;
+    animation: loginBackgroundDrift 22s ease-in-out infinite alternate;
+}
+
+@keyframes loginBackgroundDrift {
+    0% {
+        transform: scale(1.02) translateY(0px);
+        filter: brightness(0.95) saturate(1.08) contrast(1.05);
+    }
+    50% {
+        transform: scale(1.05) translateY(-12px);
+        filter: brightness(1) saturate(1.12) contrast(1.08);
+    }
+    100% {
+        transform: scale(1.02) translateY(0px);
+        filter: brightness(0.95) saturate(1.08) contrast(1.05);
+    }
 }
 
 body.logged-in #loginBackground {
     opacity: 0;
     visibility: hidden;
+    transform: scale(1);
 }
 
 /* Screen reader only content */
@@ -1430,12 +1450,14 @@ button.action{
 }
 
 .login-box{
-    width:280px;
+    width:320px;
     margin:40px auto;
-    background:white;
-    padding:25px;
-    border-radius:6px;
-    box-shadow:0 4px 8px rgba(0,0,0,0.1);
+    background: rgba(255,255,255,0.92);
+    padding:30px 28px;
+    border-radius: 18px;
+    border: 1px solid rgba(255,255,255,0.65);
+    box-shadow: 0 18px 40px rgba(2,24,70,0.16);
+    backdrop-filter: blur(18px);
 }
 
 .login-box select{
@@ -30209,7 +30231,13 @@ async function loadPaymentTracking() {
         const recordsList = document.getElementById('trackingRecordsList');
         recordsList.innerHTML = '<tr><td colspan="9" class="loading">Loading tracking records...</td></tr>';
         
-        const response = await KashTecAPI.get('/api/language-payment-tracking');
+        // Check if KashTecAPI is available
+        if (!window.KashTecAPI || typeof window.KashTecAPI.get !== 'function') {
+            console.error('❌ KashTecAPI.get is not available');
+            throw new Error('API service not loaded properly');
+        }
+        
+        const response = await window.KashTecAPI.get('/api/language-payment-tracking');
         
         if (response.success && response.data.length > 0) {
             recordsList.innerHTML = response.data.map(tracking => `
