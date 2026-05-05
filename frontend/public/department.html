@@ -44,28 +44,31 @@ body.logged-in {
     background-color: #0b3d91;
     background-image: linear-gradient(rgba(3,16,47,0.45), rgba(3,16,47,0.45)), url('images/WhatsApp Image 2026-05-05 at 2.55.12 PM.jpeg');
     background-size: cover;
-    background-position: center center;
+    background-position: left center;
     background-repeat: no-repeat;
     background-attachment: fixed;
     filter: brightness(0.95) saturate(1.08) contrast(1.05);
-    transform: scale(1.02);
+    transform: scale(1.04);
     opacity: 1;
     visibility: visible;
     transition: opacity 0.35s ease, visibility 0.35s ease, transform 0.35s ease;
-    animation: loginBackgroundDrift 22s ease-in-out infinite alternate;
+    animation: loginBackgroundSlide 22s ease-in-out infinite alternate;
 }
 
-@keyframes loginBackgroundDrift {
+@keyframes loginBackgroundSlide {
     0% {
-        transform: scale(1.02) translateY(0px);
+        background-position: left center;
+        transform: scale(1.04) translateX(0px);
         filter: brightness(0.95) saturate(1.08) contrast(1.05);
     }
     50% {
-        transform: scale(1.05) translateY(-12px);
+        background-position: center center;
+        transform: scale(1.06) translateX(-8px);
         filter: brightness(1) saturate(1.12) contrast(1.08);
     }
     100% {
-        transform: scale(1.02) translateY(0px);
+        background-position: right center;
+        transform: scale(1.04) translateX(0px);
         filter: brightness(0.95) saturate(1.08) contrast(1.05);
     }
 }
@@ -29652,7 +29655,13 @@ async function saveLanguageCampaign() {
             created_by: getCurrentUserId()
         };
 
-        const response = await KashTecAPI.post('/api/language-campaigns', campaignData);
+        // Check if KashTecAPI is available
+        if (!window.KashTecAPI || typeof window.KashTecAPI.post !== 'function') {
+            console.error('❌ KashTecAPI.post is not available');
+            throw new Error('API service not loaded properly');
+        }
+
+        const response = await window.KashTecAPI.post('/api/language-campaigns', campaignData);
         
         if (response.success) {
             customAlert('Campaign created successfully!', 'Success', 'success');
