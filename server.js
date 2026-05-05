@@ -74,6 +74,8 @@ const languagePurchasesRoutes = require('./backend/routes/languagePurchases');
 
 const languagePaymentTrackingRoutes = require('./backend/routes/languagePaymentTracking');
 
+const workforceRequestsRoutes = require('./backend/routes/workforceRequests');
+
 const salesRoutes = require('./backend/routes/sales');
 
 const paymentTrackingRoutes = require('./backend/routes/paymentTracking');
@@ -819,6 +821,14 @@ app.use('/api/language-purchases', asyncHandler(async (req, res, next) => {
 app.use('/api/language-payment-tracking', asyncHandler(async (req, res, next) => {
 
     return languagePaymentTrackingRoutes(req, res, next);
+
+}));
+
+
+
+app.use('/api/workforce-requests', asyncHandler(async (req, res, next) => {
+
+    return workforceRequestsRoutes(req, res, next);
 
 }));
 
@@ -1682,7 +1692,7 @@ app.post('/api/task-assignments', async (req, res) => {
 
         // Insert task assignment
 
-        const [result] = await db.execute(`
+        const resultResult = await db.execute(`
 
             INSERT INTO task_assignments (
 
@@ -1703,6 +1713,9 @@ app.post('/api/task-assignments', async (req, res) => {
             requiredSkills, taskMaterials, assignedTo
 
         ]);
+        
+        // Handle different MySQL2 return formats
+        const result = Array.isArray(resultResult) ? resultResult[0] : resultResult;
 
 
 
@@ -1774,7 +1787,19 @@ app.get('/api/task-assignments', async (req, res) => {
 
 
 
-        const [tasks] = await db.execute(query, params);
+        const tasksResult = await db.execute(query, params);
+        
+        // Handle different MySQL2 return formats
+        let tasks = [];
+        if (Array.isArray(tasksResult)) {
+            tasks = tasksResult;
+        } else if (tasksResult && Array.isArray(tasksResult[0])) {
+            tasks = tasksResult[0];
+        } else if (tasksResult && tasksResult.rows) {
+            tasks = tasksResult.rows;
+        } else {
+            tasks = [];
+        }
 
 
 
