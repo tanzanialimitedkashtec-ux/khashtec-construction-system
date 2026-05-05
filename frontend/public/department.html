@@ -42,7 +42,7 @@ body.logged-in {
     inset: 0;
     z-index: -1;
     background-color: #0b3d91;
-    background-image: linear-gradient(rgba(3,16,47,0.45), rgba(3,16,47,0.45)), url('images/WhatsApp Image 2026-05-05 at 2.55.12 PM.jpeg');
+    background-image: linear-gradient(rgba(3,16,47,0.45), rgba(3,16,47,0.45)), url('images/WhatsApp Image 2026-05-05 at 2.55.12 PM (1).jpeg');
     background-size: cover;
     background-position: center center;
     background-repeat: no-repeat;
@@ -10621,7 +10621,7 @@ const roleDescriptions = {
 // Background Image Slideshow
 let currentImageIndex = 0;
 const backgroundImages = [
-    'images/WhatsApp Image 2026-05-05 at 2.55.12 PM.jpeg',
+    'images/WhatsApp Image 2026-05-05 at 2.55.12 PM (1).jpeg',
     'images/pexels-rezwan-1216589.jpg'
 ];
 
@@ -18701,12 +18701,29 @@ function displayAttendanceRecords(records) {
     }
     
     // Sort records by date (most recent first)
-    records.sort((a, b) => new Date(b.attendance_date) - new Date(a.attendance_date));
+    records.sort((a, b) => {
+        const dateA = new Date(a.date || a.attendance_date);
+        const dateB = new Date(b.date || b.attendance_date);
+        return dateB - dateA;
+    });
     
     let recordsHTML = '';
     
     records.forEach(record => {
-        const recordDate = new Date(record.attendance_date);
+        // Map backend fields to frontend expected fields
+        const mappedRecord = {
+            id: record.id,
+            employee_name: record.employee_name,
+            department: record.department,
+            attendance_date: record.date || record.attendance_date,
+            check_in_time: record.check_in || record.check_in_time,
+            check_out_time: record.check_out || record.check_out_time,
+            attendance_status: record.status || record.attendance_status,
+            notes: record.notes,
+            hours_worked: record.hours_worked
+        };
+        
+        const recordDate = new Date(mappedRecord.attendance_date);
         const formattedDate = recordDate.toLocaleDateString('en-US', { 
             year: 'numeric', 
             month: 'short', 
@@ -18715,36 +18732,41 @@ function displayAttendanceRecords(records) {
         
         // Calculate work hours
         let workHours = 'N/A';
-        if (record.check_in_time && record.check_out_time) {
-            const checkIn = new Date(`2000-01-01T${record.check_in_time}`);
-            const checkOut = new Date(`2000-01-01T${record.check_out_time}`);
+        if (mappedRecord.check_in_time && mappedRecord.check_out_time) {
+            const checkIn = new Date(`2000-01-01T${mappedRecord.check_in_time}`);
+            const checkOut = new Date(`2000-01-01T${mappedRecord.check_out_time}`);
             const diffMs = checkOut - checkIn;
             const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
             const diffMins = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
             workHours = `${diffHours}h ${diffMins}m`;
+        } else if (mappedRecord.hours_worked) {
+            // Use pre-calculated hours if available
+            const hours = Math.floor(mappedRecord.hours_worked);
+            const mins = Math.round((mappedRecord.hours_worked - hours) * 60);
+            workHours = mins > 0 ? `${hours}h ${mins}m` : `${hours}h`;
         }
         
         // Get status badge
-        const statusClass = record.attendance_status === 'present' ? 'status-present' : 
-                           record.attendance_status === 'absent' ? 'status-absent' : 
-                           record.attendance_status === 'late' ? 'status-late' : 
-                           record.attendance_status === 'sick' ? 'status-sick' : 
-                           record.attendance_status === 'annual' ? 'status-annual' : 
-                           record.attendance_status === 'permission' ? 'status-permission' : 'status-default';
+        const statusClass = mappedRecord.attendance_status === 'present' ? 'status-present' : 
+                           mappedRecord.attendance_status === 'absent' ? 'status-absent' : 
+                           mappedRecord.attendance_status === 'late' ? 'status-late' : 
+                           mappedRecord.attendance_status === 'sick' ? 'status-sick' : 
+                           mappedRecord.attendance_status === 'annual' ? 'status-annual' : 
+                           mappedRecord.attendance_status === 'permission' ? 'status-permission' : 'status-default';
         
-        const statusBadge = record.attendance_status === 'present' ? '✅ Present' : 
-                           record.attendance_status === 'absent' ? '❌ Absent' : 
-                           record.attendance_status === 'late' ? '⏰ Late' : 
-                           record.attendance_status === 'sick' ? '🤒 Sick Leave' : 
-                           record.attendance_status === 'annual' ? '🏖️ Annual Leave' : 
-                           record.attendance_status === 'permission' ? '📋 Permission' : '❓ Unknown';
+        const statusBadge = mappedRecord.attendance_status === 'present' ? '✅ Present' : 
+                           mappedRecord.attendance_status === 'absent' ? '❌ Absent' : 
+                           mappedRecord.attendance_status === 'late' ? '⏰ Late' : 
+                           mappedRecord.attendance_status === 'sick' ? '🤒 Sick Leave' : 
+                           mappedRecord.attendance_status === 'annual' ? '🏖️ Annual Leave' : 
+                           mappedRecord.attendance_status === 'permission' ? '📋 Permission' : '❓ Unknown';
         
         recordsHTML += `
             <tr class="attendance-row">
                 <td>
                     <div class="employee-details">
-                        <div class="employee-name">${record.employee_name}</div>
-                        <div class="employee-id">ID: ${record.id}</div>
+                        <div class="employee-name">${mappedRecord.employee_name}</div>
+                        <div class="employee-id">ID: ${mappedRecord.id}</div>
                     </div>
                 </td>
                 <td>
@@ -18754,12 +18776,12 @@ function displayAttendanceRecords(records) {
                 </td>
                 <td>
                     <div class="time-info">
-                        <div class="check-time">${record.check_in_time || '—'}</div>
+                        <div class="check-time">${mappedRecord.check_in_time || '—'}</div>
                     </div>
                 </td>
                 <td>
                     <div class="time-info">
-                        <div class="check-time">${record.check_out_time || '—'}</div>
+                        <div class="check-time">${mappedRecord.check_out_time || '—'}</div>
                     </div>
                 </td>
                 <td>
@@ -18772,19 +18794,19 @@ function displayAttendanceRecords(records) {
                 </td>
                 <td>
                     <div class="department-info">
-                        <span class="department-badge">${record.department || 'Not specified'}</span>
+                        <span class="department-badge">${mappedRecord.department || 'Not specified'}</span>
                     </div>
                 </td>
                 <td>
                     <div class="notes-info">
-                        <div class="attendance-notes" title="${record.notes || 'No notes'}">${record.notes ? (record.notes.length > 30 ? record.notes.substring(0, 30) + '...' : record.notes) : '—'}</div>
+                        <div class="attendance-notes" title="${mappedRecord.notes || 'No notes'}">${mappedRecord.notes ? (mappedRecord.notes.length > 30 ? mappedRecord.notes.substring(0, 30) + '...' : mappedRecord.notes) : '—'}</div>
                     </div>
                 </td>
                 <td>
                     <div class="attendance-actions">
-                        <button class="action-btn view" onclick="viewAttendanceDetails('${record.id}')" title="View Details">👁️</button>
-                        <button class="action-btn edit" onclick="editAttendance('${record.id}')" title="Edit Attendance">✏️</button>
-                        <button class="action-btn delete" onclick="deleteAttendance('${record.id}')" title="Delete Record">🗑️</button>
+                        <button class="action-btn view" onclick="viewAttendanceDetails('${mappedRecord.id}')" title="View Details">👁️</button>
+                        <button class="action-btn edit" onclick="editAttendance('${mappedRecord.id}')" title="Edit Attendance">✏️</button>
+                        <button class="action-btn delete" onclick="deleteAttendance('${mappedRecord.id}')" title="Delete Record">🗑️</button>
                     </div>
                 </td>
             </tr>
