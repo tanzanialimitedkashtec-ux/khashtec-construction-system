@@ -5,14 +5,58 @@ const db = require('../../database/config/database');
 // Get all worker accounts
 router.get('/', async (req, res) => {
     try {
-        const [workers] = await db.execute(
+        console.log('👥 Worker accounts endpoint called');
+        const db = require('../../database/config/database');
+        
+        // Ensure worker_accounts table exists
+        try {
+            await db.execute(`
+                CREATE TABLE IF NOT EXISTS worker_accounts (
+                    id INT AUTO_INCREMENT PRIMARY KEY,
+                    employee_id VARCHAR(50) UNIQUE NOT NULL,
+                    full_name VARCHAR(255) NOT NULL,
+                    work_email VARCHAR(255) NOT NULL,
+                    phone_number VARCHAR(50) NOT NULL,
+                    department VARCHAR(100) NOT NULL,
+                    job_title VARCHAR(255) NOT NULL,
+                    account_type ENUM('staff', 'worker', 'contractor') NOT NULL,
+                    access_level ENUM('basic', 'standard', 'supervisor') NOT NULL,
+                    temporary_password VARCHAR(255) NOT NULL,
+                    account_notes TEXT NULL,
+                    profile_picture TEXT NULL,
+                    id_document TEXT NULL,
+                    contract_document TEXT NULL,
+                    status ENUM('active', 'inactive', 'suspended') DEFAULT 'active',
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+                    INDEX idx_employee_id (employee_id),
+                    INDEX idx_department (department),
+                    INDEX idx_account_type (account_type),
+                    INDEX idx_status (status),
+                    INDEX idx_created_at (created_at)
+                )
+            `);
+            console.log('✅ Worker accounts table verified/created successfully');
+        } catch (tableError) {
+            console.log('⚠️ Could not create worker_accounts table:', tableError.message);
+        }
+        
+        const workersResult = await db.execute(
             'SELECT * FROM worker_accounts ORDER BY created_at DESC'
         );
         
-        // Ensure we always return an array
-        const workersArray = Array.isArray(workers) ? workers : [workers];
-        console.log('📊 Returning workers array:', workersArray.length, 'items');
-        res.json(workersArray);
+        // Handle different MySQL2 return formats
+        let workers = [];
+        if (Array.isArray(workersResult)) {
+            workers = workersResult;
+        } else if (workersResult && Array.isArray(workersResult[0])) {
+            workers = workersResult[0];
+        } else if (workersResult && workersResult.rows) {
+            workers = workersResult.rows;
+        }
+        
+        console.log('📊 Returning workers array:', workers.length, 'items');
+        res.json(workers);
     } catch (error) {
         console.error('Database error, using fallback worker data:', error.message);
         
@@ -275,14 +319,18 @@ router.post('/', async (req, res) => {
     console.log('📋 Request body:', req.body);
     
     const { 
+        empID, 
         employeeId, 
         fullName, 
+        email, 
         workEmail, 
+        phone, 
         phoneNumber, 
         department, 
         jobTitle, 
         accountType, 
         accessLevel, 
+        password, 
         temporaryPassword, 
         accountNotes,
         profilePicture,
@@ -290,11 +338,17 @@ router.post('/', async (req, res) => {
         contractDocument
     } = req.body;
     
+    // Handle both frontend and backend field names
+    const finalEmployeeId = empID || employeeId;
+    const finalWorkEmail = email || workEmail;
+    const finalPhoneNumber = phone || phoneNumber;
+    const finalTemporaryPassword = password || temporaryPassword;
+    
     console.log('📝 Extracted worker data:', { 
-        employeeId, 
+        finalEmployeeId, 
         fullName, 
-        workEmail, 
-        phoneNumber, 
+        finalWorkEmail, 
+        finalPhoneNumber, 
         department, 
         jobTitle, 
         accountType, 
@@ -306,29 +360,29 @@ router.post('/', async (req, res) => {
     
     // Validate input
     console.log('🔍 Field validation check:', {
-        'employeeId': { value: employeeId, valid: !!employeeId },
+        'finalEmployeeId': { value: finalEmployeeId, valid: !!finalEmployeeId },
         'fullName': { value: fullName, valid: !!fullName },
-        'workEmail': { value: workEmail, valid: !!workEmail },
-        'phoneNumber': { value: phoneNumber, valid: !!phoneNumber },
+        'finalWorkEmail': { value: finalWorkEmail, valid: !!finalWorkEmail },
+        'finalPhoneNumber': { value: finalPhoneNumber, valid: !!finalPhoneNumber },
         'department': { value: department, valid: !!department },
         'jobTitle': { value: jobTitle, valid: !!jobTitle },
         'accountType': { value: accountType, valid: !!accountType },
         'accessLevel': { value: accessLevel, valid: !!accessLevel },
-        'temporaryPassword': { value: temporaryPassword, valid: !!temporaryPassword }
+        'finalTemporaryPassword': { value: finalTemporaryPassword, valid: !!finalTemporaryPassword }
     });
     
-    if (!employeeId || !fullName || !workEmail || !phoneNumber || !department || !jobTitle || !accountType || !accessLevel || !temporaryPassword) {
+    if (!finalEmployeeId || !fullName || !finalWorkEmail || !finalPhoneNumber || !department || !jobTitle || !accountType || !accessLevel || !finalTemporaryPassword) {
         console.log('❌ Validation failed - missing required fields');
         const missingFields = [
-            !employeeId ? 'employeeId' : null,
+            !finalEmployeeId ? 'employeeId (empID)' : null,
             !fullName ? 'fullName' : null,
-            !workEmail ? 'workEmail' : null,
-            !phoneNumber ? 'phoneNumber' : null,
+            !finalWorkEmail ? 'workEmail (email)' : null,
+            !finalPhoneNumber ? 'phoneNumber (phone)' : null,
             !department ? 'department' : null,
             !jobTitle ? 'jobTitle' : null,
             !accountType ? 'accountType' : null,
             !accessLevel ? 'accessLevel' : null,
-            !temporaryPassword ? 'temporaryPassword' : null
+            !finalTemporaryPassword ? 'temporaryPassword (password)' : null
         ].filter(Boolean);
         
         console.log('❌ Missing fields:', missingFields);
@@ -342,7 +396,7 @@ router.post('/', async (req, res) => {
     
     try {
         console.log('?? Worker account creation request received');
-        console.log('?? Request data:', { employeeId, fullName, workEmail, phoneNumber, department, jobTitle, accountType, accessLevel });
+        console.log('?? Request data:', { finalEmployeeId, fullName, finalWorkEmail, finalPhoneNumber, department, jobTitle, accountType, accessLevel });
         
         // Map frontend account_type values to database ENUM values
         const mappedAccountType = accountType === 'staff' ? 'worker' : 
@@ -373,14 +427,24 @@ router.post('/', async (req, res) => {
         try {
             console.log('?? Checking if worker account already exists...');
             // Check if worker account already exists
-            const existingWorkers = await db.execute(
+            const existingWorkersResult = await db.execute(
                 'SELECT id FROM worker_accounts WHERE employee_id = ? OR work_email = ?',
-                [employeeId, workEmail]
+                [finalEmployeeId, finalWorkEmail]
             );
+            
+            // Handle different MySQL2 return formats
+            let existingWorkers = [];
+            if (Array.isArray(existingWorkersResult)) {
+                existingWorkers = existingWorkersResult;
+            } else if (existingWorkersResult && Array.isArray(existingWorkersResult[0])) {
+                existingWorkers = existingWorkersResult[0];
+            } else if (existingWorkersResult && existingWorkersResult.rows) {
+                existingWorkers = existingWorkersResult.rows;
+            }
             
             console.log('?? Existing workers check result:', existingWorkers);
             
-            if (existingWorkers && existingWorkers[0] && existingWorkers[0].length > 0) {
+            if (existingWorkers && existingWorkers.length > 0) {
                 console.log('?? Worker account already exists');
                 return res.status(409).json({
                     error: 'Worker account with this Employee ID or Email already exists'
@@ -390,15 +454,15 @@ router.post('/', async (req, res) => {
             console.log('?? Creating new worker account...');
             
             const result = await db.execute(insertQuery, [
-                employeeId,
+                finalEmployeeId,
                 fullName,
-                workEmail,
-                phoneNumber,
+                finalWorkEmail,
+                finalPhoneNumber,
                 department,
                 jobTitle,
                 mappedAccountType,
                 mappedAccessLevel,
-                temporaryPassword,
+                finalTemporaryPassword,
                 accountNotes || null,
                 profilePicture || null,
                 idDocument || null,
