@@ -36,6 +36,7 @@ app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
 // Serve static files
 app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
+app.use('/images', express.static(path.join(__dirname, '../frontend/public/images')));
 
 // JWT Secret
 const JWT_SECRET = process.env.JWT_SECRET || 'kashtec-secret-key-2024';
