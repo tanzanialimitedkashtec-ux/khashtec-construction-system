@@ -251,6 +251,39 @@ router.post('/', async (req, res) => {
         });
         
         const resultResult = await db.execute(`
+            INSERT IGNORE INTO drivers (
+                driver_id, full_name, description, years_of_experience, 
+                license_type, phone_number, email_address, nida_number, 
+                date_of_birth, gender, residential_address, region,
+                emergency_contact_name, emergency_contact_number, emergency_relationship,
+                license_issue_date, license_expiry_date, employment_status, hire_date,
+                driver_status, registration_date, created_at, updated_at
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())
+        `, [
+            driverId,
+            driverName,
+            licenseType,
+            parseInt(experience) || 0,
+            'class-c', // Default license type
+            '+2557123456', // Default phone number
+            'driver@example.com', // Default email
+            'NIDA-' + driverId, // Default NIDA number
+            '1990-01-01', // Default date of birth
+            'other', // Default gender
+            'Default Address', // Default residential address
+            'dar-es-salaam', // Default region
+            'Emergency Contact', // Default emergency contact
+            '+2557123456', // Default emergency contact number
+            'relative', // Default emergency relationship
+            new Date().toISOString().split('T')[0], // License issue date (today)
+            '2026-12-31', // License expiry date (end of year)
+            'full-time', // Default employment status
+            new Date().toISOString().split('T')[0], // Hire date (today)
+            'active', // Default driver status
+            new Date().toISOString().split('T')[0] // Registration date (today)
+        ]);
+        
+        console.log('💾 Sample driver data inserted successfully');
             INSERT INTO drivers (
                 driver_id, full_name, description, years_of_experience, 
                 license_type, phone_number, email_address, nida_number, 
