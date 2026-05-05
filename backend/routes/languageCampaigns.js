@@ -118,9 +118,9 @@ router.get('/', async (req, res) => {
                     status: 'planning',
                     target_audience: 'Project Managers',
                     budget: 75000.00,
-                    actual_cost: 0.00,
+                    actual_cost: 0,
                     participants_count: 8,
-                    completion_rate: 0.0,
+                    completion_rate: 0,
                     created_by: 'Training Department',
                     created_at: '2026-05-04T00:00:00Z',
                     updated_at: '2026-05-04T00:00:00Z'

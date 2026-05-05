@@ -97,9 +97,9 @@ class Database {
             } else {
                 // Fallback to individual environment variables
                 const dbHost = process.env.MYSQLHOST || process.env.DB_HOST || "centerbeam.proxy.rlwy.net";
-                const dbPort = process.env.MYSQLPORT || process.env.DB_PORT || 11044;
+                const dbPort = process.env.MYSQLPORT || process.env.DB_PORT || 3306;
                 const dbUser = process.env.MYSQLUSER || process.env.DB_USER || "root";
-                const dbPassword = process.env.MYSQLPASSWORD || process.env.DB_PASSWORD || "LzDEYGJIiYfVRSTnBrufpsSwRIDnZRvz";
+                const dbPassword = process.env.MYSQLPASSWORD || process.env.DB_PASSWORD || "FpJJluFwvIzgsMTsfDZApQLznVVVIzJd";
                 const dbName = process.env.MYSQLDATABASE || process.env.DB_NAME || "railway";
                 
                 console.log('🔗 Using fallback database config:', `${dbUser}@${dbHost}:${dbPort}/${dbName}`);
