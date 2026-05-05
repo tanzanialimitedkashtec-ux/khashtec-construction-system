@@ -10627,7 +10627,12 @@ const backgroundImages = [
 
 function changeBackgroundImage() {
     const loginBackground = document.getElementById('loginBackground');
-    if (!loginBackground) return;
+    if (!loginBackground) {
+        console.log('Login background element not found');
+        return;
+    }
+    
+    console.log('Changing background image from index:', currentImageIndex);
     
     // Fade out
     loginBackground.style.transition = 'opacity 0.5s ease-in-out';
@@ -10636,22 +10641,34 @@ function changeBackgroundImage() {
     setTimeout(() => {
         // Change image
         currentImageIndex = (currentImageIndex + 1) % backgroundImages.length;
-        loginBackground.style.backgroundImage = `linear-gradient(rgba(3,16,47,0.45), rgba(3,16,47,0.45)), url('${backgroundImages[currentImageIndex]}')`;
+        const newImage = backgroundImages[currentImageIndex];
+        console.log('Changing to image:', newImage, 'at index:', currentImageIndex);
+        
+        loginBackground.style.backgroundImage = `linear-gradient(rgba(3,16,47,0.45), rgba(3,16,47,0.45)), url('${newImage}')`;
         
         // Fade in
         loginBackground.style.opacity = '1';
+        console.log('Background image changed successfully');
     }, 500);
 }
 
 // Initialize background slideshow when page loads
 document.addEventListener('DOMContentLoaded', function() {
+    console.log('Initializing background slideshow');
+    console.log('Available images:', backgroundImages);
+    
     // Set initial background image
     const loginBackground = document.getElementById('loginBackground');
     if (loginBackground) {
+        console.log('Setting initial background image to:', backgroundImages[0]);
         loginBackground.style.backgroundImage = `linear-gradient(rgba(3,16,47,0.45), rgba(3,16,47,0.45)), url('${backgroundImages[0]}')`;
+        console.log('Initial background image set');
+    } else {
+        console.log('Login background element not found during initialization');
     }
     
     // Start slideshow - change image every 6 seconds
+    console.log('Starting slideshow with 6-second interval');
     setInterval(changeBackgroundImage, 6000);
 });
 
