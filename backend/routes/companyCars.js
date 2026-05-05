@@ -55,7 +55,9 @@ router.get('/test', (req, res) => {
 // Root endpoint - get all company cars (main endpoint)
 router.get('/', async (req, res) => {
     try {
-        console.log('🚗 Company cars endpoint called - fetching vehicles from database');
+        console.log('🚗 Company cars ROOT endpoint called - method:', req.method);
+        console.log('🚗 Request URL:', req.originalUrl);
+        console.log('🚗 Fetching vehicles from database');
         const db = require('../../database/config/database');
         
         // Ensure vehicles table exists
@@ -132,6 +134,7 @@ router.get('/', async (req, res) => {
 
 // Endpoint info endpoint
 router.get('/info', (req, res) => {
+    console.log('🚗 Company cars INFO endpoint called');
     res.status(200).json({
         success: true,
         message: 'Company Cars API',
@@ -233,9 +236,16 @@ router.post('/', async (req, res) => {
         );
         
         // Handle different MySQL2 return formats
-        const existing = Array.isArray(existingResult) ? existingResult[0] : existingResult;
+        let existing = [];
+        if (Array.isArray(existingResult)) {
+            existing = existingResult;
+        } else if (existingResult && Array.isArray(existingResult[0])) {
+            existing = existingResult[0];
+        } else if (existingResult && existingResult.rows) {
+            existing = existingResult.rows;
+        }
         
-        if (existing.length > 0) {
+        if (existing && existing.length > 0) {
             return res.status(400).json({
                 success: false,
                 message: 'Car with this registration number or plate number already exists'
