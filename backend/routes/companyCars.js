@@ -261,7 +261,7 @@ router.post('/', async (req, res) => {
             ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pickup', 'diesel', NOW(), NOW())
         `, [
             track_number, car_name, brand_name, registration_number, plate_number,
-            car_details, description, assigned_driver, registration_date, vehicle_status
+            car_details, description, assigned_driver || null, registration_date || null, vehicle_status || 'active'
         ]);
 
         console.log('✅ Car registered successfully, ID:', resultResult.insertId);
