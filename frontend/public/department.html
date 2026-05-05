@@ -18089,23 +18089,39 @@ async function loadTodayAttendanceSummary() {
         const attendanceData = await response.json();
         console.log('📊 Today\'s attendance data:', attendanceData);
         
+        // Extract the actual attendance array from the response
+        const attendanceArray = attendanceData.attendance || attendanceData.data || attendanceData;
+        
+        // Ensure we have an array
+        if (!Array.isArray(attendanceArray)) {
+            console.error('❌ Expected array but got:', typeof attendanceArray, attendanceArray);
+            return;
+        }
+        
         // Calculate summary statistics
         const totalEmployeesElement = document.getElementById('totalEmployees');
         const presentCountElement = document.getElementById('presentCount');
         const absentCountElement = document.getElementById('absentCount');
         const leaveCountElement = document.getElementById('leaveCount');
         
-        if (!totalEmployeesElement || !presentCountElement || !absentCountElement || !leaveCountElement) {
-            console.error('❌ Attendance summary elements not found');
-            return;
-        }
-        
         // Count attendance statuses
         let presentCount = 0;
         let absentCount = 0;
         let leaveCount = 0;
         
-        attendanceData.forEach(record => {
+        // If summary elements don't exist, just log the summary and continue
+        if (!totalEmployeesElement || !presentCountElement || !absentCountElement || !leaveCountElement) {
+            console.log('ℹ️ Attendance summary elements not found - logging summary to console instead');
+            console.log('📊 Attendance Summary:', {
+                total: attendanceArray.length,
+                present: presentCount,
+                absent: absentCount,
+                leave: leaveCount
+            });
+            // Don't return - continue with counting for logging
+        }
+        
+        attendanceArray.forEach(record => {
             switch (record.status) {
                 case 'present':
                 case 'late':
@@ -18513,7 +18529,17 @@ async function loadAttendanceRecords() {
         const attendanceRecords = await response.json();
         console.log('📊 Attendance records data:', attendanceRecords);
         
-        displayAttendanceRecords(attendanceRecords);
+        // Extract the actual attendance array from the response
+        const records = attendanceRecords.attendance || attendanceRecords.data || attendanceRecords;
+        
+        // Ensure records is an array
+        if (!Array.isArray(records)) {
+            console.error('❌ Expected array but got:', typeof records, records);
+            displayAttendanceRecords([]);
+            return;
+        }
+        
+        displayAttendanceRecords(records);
         
     } catch (error) {
         console.error('❌ Error loading attendance records:', error);
@@ -27314,14 +27340,14 @@ function displayPolicyRecords(records) {
                 id: record.id || `POL-${record.id}`,
                 title: record.title || record.work_title || 'Untitled Policy',
                 category: record.category || record.work_type || 'General',
-                priority: record.priority || record.severity || 'moderate', // Use severity from HSE data
-                effectiveDate: record.effectiveDate || record.upload_date || record.created_at || new Date().toISOString().split('T')[0],
-                reviewDate: record.reviewDate || record.upload_date || record.created_at || new Date().toISOString().split('T')[0],
+                priority: record.priority || record.severity || 'moderate', // Use priority field first, then severity
+                effectiveDate: record.effectiveDate || record.upload_date || record.submitted_date || record.created_at || new Date().toISOString().split('T')[0],
+                reviewDate: record.reviewDate || record.upload_date || record.submitted_date || record.created_at || new Date().toISOString().split('T')[0],
                 scope: record.scope || 'all-projects',
-                status: record.status || 'active', // Default to active for HSE records
+                status: record.status || 'active', // Use status field from HSE data
                 description: record.description || record.work_description || '',
-                uploadedBy: record.uploadedBy || record.uploaded_by || record.recorded_by || 'Unknown',
-                uploadDate: record.uploadDate || record.upload_date || record.created_at || new Date().toISOString().split('T')[0],
+                uploadedBy: record.uploadedBy || record.uploaded_by || record.recorded_by || record.submitted_by || 'Unknown',
+                uploadDate: record.uploadDate || record.upload_date || record.submitted_date || record.created_at || new Date().toISOString().split('T')[0],
                 department_code: record.department_code || 'general'
             };
         });
@@ -27359,30 +27385,38 @@ function displayPolicyRecords(records) {
         });
         
         // Get priority badge
-        const priorityClass = record.priority === 'mandatory' ? 'priority-mandatory' : 
-                              record.priority === 'recommended' ? 'priority-recommended' : 
-                              record.priority === 'informational' ? 'priority-informational' : 
-                              record.priority === 'critical' ? 'priority-critical' :
-                              record.priority === 'high' ? 'priority-high' :
-                              record.priority === 'moderate' ? 'priority-moderate' :
-                              record.priority === 'low' ? 'priority-low' : 'priority-default';
+        const priorityLower = (record.priority || '').toLowerCase();
+        const priorityClass = priorityLower === 'mandatory' ? 'priority-mandatory' : 
+                              priorityLower === 'recommended' ? 'priority-recommended' : 
+                              priorityLower === 'informational' ? 'priority-informational' : 
+                              priorityLower === 'critical' ? 'priority-critical' :
+                              priorityLower === 'high' ? 'priority-high' :
+                              priorityLower === 'moderate' ? 'priority-moderate' :
+                              priorityLower === 'low' ? 'priority-low' : 'priority-default';
         
-        const priorityBadge = record.priority === 'mandatory' ? '🔴 Mandatory' : 
-                              record.priority === 'recommended' ? '🟡 Recommended' : 
-                              record.priority === 'informational' ? '🔵 Informational' : 
-                              record.priority === 'critical' ? '🔴 Critical' :
-                              record.priority === 'high' ? '🟠 High' :
-                              record.priority === 'moderate' ? '🟡 Moderate' :
-                              record.priority === 'low' ? '🟢 Low' : '❓ Unknown';
+        const priorityBadge = priorityLower === 'mandatory' ? '🔴 Mandatory' : 
+                              priorityLower === 'recommended' ? '🟡 Recommended' : 
+                              priorityLower === 'informational' ? '🔵 Informational' : 
+                              priorityLower === 'critical' ? '🔴 Critical' :
+                              priorityLower === 'high' ? '🟠 High' :
+                              priorityLower === 'moderate' ? '🟡 Moderate' :
+                              priorityLower === 'low' ? '🟢 Low' : '❓ Unknown';
         
         // Get status badge
-        const statusClass = record.status === 'active' ? 'status-active' : 
-                           record.status === 'pending' ? 'status-pending' : 
-                           record.status === 'expired' ? 'status-expired' : 'status-default';
+        const statusLower = (record.status || '').toLowerCase();
+        const statusClass = statusLower === 'active' ? 'status-active' : 
+                           statusLower === 'pending' ? 'status-pending' : 
+                           statusLower === 'expired' ? 'status-expired' :
+                           statusLower === 'completed' ? 'status-active' :
+                           statusLower === 'scheduled' ? 'status-pending' :
+                           statusLower === 'under investigation' ? 'status-pending' : 'status-default';
         
-        const statusBadge = record.status === 'active' ? '✅ Active' : 
-                           record.status === 'pending' ? '⏳ Pending' : 
-                           record.status === 'expired' ? '❌ Expired' : '❓ Unknown';
+        const statusBadge = statusLower === 'active' ? '✅ Active' : 
+                           statusLower === 'pending' ? '⏳ Pending' : 
+                           statusLower === 'expired' ? '❌ Expired' :
+                           statusLower === 'completed' ? '✅ Completed' :
+                           statusLower === 'scheduled' ? '📅 Scheduled' :
+                           statusLower === 'under investigation' ? '🔍 Under Investigation' : '❓ Unknown';
         
         // Format scope display
         const scopeDisplay = record.scope === 'all-projects' ? 'All Projects' : 
