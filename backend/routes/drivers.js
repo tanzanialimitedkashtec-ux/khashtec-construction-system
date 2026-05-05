@@ -13,15 +13,63 @@ router.get('/test', (req, res) => {
 // GET /api/drivers - for frontend compatibility (same as /all)
 router.get('/', async (req, res) => {
     try {
+        console.log('👤 Drivers endpoint called - fetching from database');
         const db = require('../../database/config/database');
         
-        const [drivers] = await db.execute(`
+        // Ensure drivers table exists
+        try {
+            await db.execute(`
+                CREATE TABLE IF NOT EXISTS drivers (
+                    id INT AUTO_INCREMENT PRIMARY KEY,
+                    driver_id VARCHAR(50) UNIQUE NOT NULL,
+                    full_name VARCHAR(255) NOT NULL,
+                    description TEXT NULL,
+                    years_of_experience INT NULL,
+                    license_type VARCHAR(50) NULL,
+                    phone_number VARCHAR(50) NULL,
+                    email_address VARCHAR(255) NULL,
+                    driver_status ENUM('Active', 'Inactive', 'On Leave', 'Suspended') DEFAULT 'Active',
+                    hire_date DATE NULL,
+                    assigned_vehicle VARCHAR(100) NULL,
+                    license_number VARCHAR(100) NULL,
+                    license_expiry DATE NULL,
+                    emergency_contact VARCHAR(255) NULL,
+                    emergency_phone VARCHAR(50) NULL,
+                    address TEXT NULL,
+                    city VARCHAR(100) NULL,
+                    country VARCHAR(100) NULL,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+                    INDEX idx_driver_id (driver_id),
+                    INDEX idx_driver_status (driver_status),
+                    INDEX idx_license_type (license_type),
+                    INDEX idx_created_at (created_at)
+                )
+            `);
+            console.log('✅ Drivers table verified/created successfully');
+        } catch (tableError) {
+            console.log('⚠️ Could not create drivers table:', tableError.message);
+        }
+        
+        const driversResult = await db.execute(`
             SELECT id, driver_id, full_name, description, years_of_experience, 
                    license_type, phone_number, email_address, driver_status,
                    created_at, updated_at
             FROM drivers 
             ORDER BY created_at DESC
         `);
+        
+        // Handle different MySQL2 return formats
+        let drivers = [];
+        if (Array.isArray(driversResult)) {
+            drivers = driversResult;
+        } else if (driversResult && Array.isArray(driversResult[0])) {
+            drivers = driversResult[0];
+        } else if (driversResult && driversResult.rows) {
+            drivers = driversResult.rows;
+        }
+        
+        console.log(`✅ Found ${drivers.length} drivers in database`);
         
         res.status(200).json({
             success: true,
@@ -166,7 +214,7 @@ router.post('/', async (req, res) => {
         }
         
         // Insert driver into database with proper field mapping
-        const [result] = await db.execute(`
+        const resultResult = await db.execute(`
             INSERT INTO drivers (
                 driver_id, full_name, description, years_of_experience, license_type, 
                 phone_number, email_address, driver_status, created_at, updated_at
@@ -180,6 +228,9 @@ router.post('/', async (req, res) => {
             phone || '',
             email || ''
         ]);
+        
+        // Handle different MySQL2 return formats
+        const result = Array.isArray(resultResult) ? resultResult[0] : resultResult;
         
         console.log('✅ Driver registered successfully:', result.insertId);
         
