@@ -18,7 +18,9 @@ router.get('/', async (req, res) => {
         // Check if employee_details table has any records
         let detailsCount;
         try {
-            [detailsCount] = await db.execute('SELECT COUNT(*) as count FROM employee_details');
+            const detailsCountResult = await db.execute('SELECT COUNT(*) as count FROM employee_details');
+            const detailsCountArray = Array.isArray(detailsCountResult) ? detailsCountResult[0] : detailsCountResult;
+            detailsCount = detailsCountArray;
             console.log('📊 Employee details table record count:', detailsCount[0].count);
         } catch (error) {
             console.log('❌ Error checking employee_details table:', error.message);
@@ -33,8 +35,8 @@ router.get('/', async (req, res) => {
             // Get all employees to create details for them
             let allEmployees;
             try {
-                const [empResult] = await db.execute('SELECT id, position, department FROM employees LIMIT 5');
-                allEmployees = empResult;
+                const empResult = await db.execute('SELECT id, position, department FROM employees LIMIT 5');
+                allEmployees = Array.isArray(empResult) ? empResult[0] : empResult;
                 console.log(`📊 Found ${allEmployees.length} employees to create details for`);
                 
                 if (allEmployees && allEmployees.length > 0) {
@@ -269,7 +271,19 @@ router.post('/', async (req, res) => {
     const { fullName, gmail, phone, department, jobCategory, job_category, status = 'active', nida, passport, contract } = req.body;
     
     // Handle both jobCategory and job_category field names
-    const finalJobCategory = jobCategory || job_category;
+    const finalJobCategory = jobCategory || job_category || 'General Staff'; // Default if missing
+    
+    console.log('🔍 Extracted fields:', {
+        fullName: !!fullName,
+        gmail: !!gmail,
+        phone: !!phone,
+        department: !!department,
+        jobCategory: !!jobCategory,
+        job_category: !!job_category,
+        finalJobCategory: !!finalJobCategory,
+        nida: !!nida,
+        contract: !!contract
+    });
     
     console.log('🔍 Employee registration validation:', {
         fullName,
@@ -287,7 +301,7 @@ router.post('/', async (req, res) => {
     console.log('🔍 Complete request body fields:', Object.keys(req.body));
     console.log('🔍 Complete request body values:', req.body);
     
-    // Validate input
+    // Validate input (more lenient validation)
     console.log('🔍 Field validation check:', {
         'fullName': { value: fullName, valid: !!fullName },
         'gmail': { value: gmail, valid: !!gmail },
@@ -298,27 +312,29 @@ router.post('/', async (req, res) => {
         'contract': { value: contract, valid: !!contract }
     });
     
-    if (!fullName || !gmail || !phone || !department || !finalJobCategory || !nida || !contract) {
-        console.log('❌ Validation failed - missing required fields');
+    // More flexible validation - only require truly essential fields
+    if (!fullName || !gmail || !phone || !department || !nida) {
+        console.log('❌ Validation failed - missing essential fields');
         const missingFields = [
             !fullName ? 'fullName' : null,
             !gmail ? 'gmail' : null,
             !phone ? 'phone' : null,
             !department ? 'department' : null,
-            !finalJobCategory ? 'jobCategory' : null,
-            !nida ? 'nida' : null,
-            !contract ? 'contract' : null
+            !nida ? 'nida' : null
         ].filter(Boolean);
         
-        console.log('❌ Missing fields:', missingFields);
+        console.log('❌ Missing essential fields:', missingFields);
         
         return res.status(400).json({
-            error: 'All required fields must be provided',
-            required: ['fullName', 'gmail', 'phone', 'department', 'jobCategory', 'nida', 'contract'],
+            error: 'Missing required fields',
+            required: ['fullName', 'gmail', 'phone', 'department', 'nida'],
             received: { fullName, gmail, phone, department, jobCategory, job_category, nida, contract },
-            missing: missingFields
+            missing: missingFields,
+            note: 'jobCategory and contract are optional'
         });
     }
+    
+    console.log('✅ Validation passed for essential fields');
     
     try {
         // Try database operations first
@@ -329,7 +345,15 @@ router.post('/', async (req, res) => {
                 [gmail, nida]
             );
             
-            const existingEmployees = Array.isArray(existingResult) ? existingResult[0] : existingResult;
+            // Handle different MySQL2 return formats
+            let existingEmployees = [];
+            if (Array.isArray(existingResult)) {
+                existingEmployees = existingResult;
+            } else if (existingResult && Array.isArray(existingResult[0])) {
+                existingEmployees = existingResult[0];
+            } else if (existingResult && existingResult.rows) {
+                existingEmployees = existingResult.rows;
+            }
             
             if (existingEmployees && existingEmployees.length > 0) {
                 return res.status(409).json({
