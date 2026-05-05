@@ -258,15 +258,15 @@ router.post('/', async (req, res) => {
                 emergency_contact_name, emergency_contact_number, emergency_relationship,
                 license_issue_date, license_expiry_date, employment_status, hire_date,
                 driver_status, registration_date, created_at, updated_at
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())
         `, [
             driverId,
             driverName,
-            licenseType,
+            driverDescription,
             parseInt(experience) || 0,
-            'class-c', // Default license type
-            '+2557123456', // Default phone number
-            'driver@example.com', // Default email
+            licenseType,
+            phone,
+            email,
             'NIDA-' + driverId, // Default NIDA number
             '1990-01-01', // Default date of birth
             'other', // Default gender
@@ -284,37 +284,6 @@ router.post('/', async (req, res) => {
         ]);
         
         console.log('💾 Sample driver data inserted successfully');
-            INSERT INTO drivers (
-                driver_id, full_name, description, years_of_experience, 
-                license_type, phone_number, email_address, nida_number, 
-                date_of_birth, gender, residential_address, region,
-                emergency_contact_name, emergency_contact_number, emergency_relationship,
-                license_issue_date, license_expiry_date, employment_status, hire_date,
-                driver_status, registration_date, created_at, updated_at
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())
-        `, [
-            driverId,
-            driverName,
-            driverDescription || 'Professional driver',
-            parseInt(experience) || 0,
-            licenseType,
-            phone || '0000000000',
-            email || 'driver@example.com',
-            'NIDA-' + driverId, // Generate NIDA number if not provided
-            '1990-01-01', // Default date of birth
-            'other', // Default gender
-            'Default Address', // Default residential address
-            'dar-es-salaam', // Default region
-            'Emergency Contact', // Default emergency contact name
-            '0000000000', // Default emergency contact number
-            'relative', // Default emergency relationship
-            new Date().toISOString().split('T')[0], // License issue date (today)
-            '2026-12-31', // License expiry date (end of year)
-            'full-time', // Default employment status
-            new Date().toISOString().split('T')[0], // Hire date (today)
-            'active', // Driver status
-            new Date().toISOString().split('T')[0] // Registration date (today)
-        ]);
         
         // Handle different MySQL2 return formats
         const result = Array.isArray(resultResult) ? resultResult[0] : resultResult;

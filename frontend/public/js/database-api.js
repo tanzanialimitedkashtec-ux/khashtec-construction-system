@@ -270,6 +270,9 @@ class DatabaseAPI {
 // Create global apiService instance
 window.apiService = new DatabaseAPI();
 
+// Backward compatibility - also expose as dbAPI
+window.dbAPI = window.apiService;
+
 // Utility functions for UI
 window.DatabaseUI = {
     // Load and display users

@@ -1,33 +1,30 @@
-// ===== API SERVICE FOR KASHTEC CONSTRUCTION SYSTEM =====
-// This file replaces all localStorage usage with secure database API calls
+// ===== CONSOLIDATED API SERVICE FOR KASHTEC CONSTRUCTION SYSTEM =====
+// This file now delegates to the main DatabaseAPI class (database-api.js) to avoid duplication
+// Ensure database-api.js is loaded before this file
 
-// Dynamic API base URL - use Railway production when running from localhost/127.0.0.1
-const PRODUCTION_API_ORIGIN = 'https://khashtec-construction-system-production-e297.up.railway.app';
-const API_BASE_URL = window.location.origin.includes('localhost') || window.location.origin.includes('127.0.0.1')
-    ? `${PRODUCTION_API_ORIGIN}/api`
-    : `${window.location.origin}/api`;
+// Note: API configuration is now handled in database-api.js
+// This file provides convenience wrapper functions
 
-// ===== AUTHENTICATION =====
+// Get API base URL from apiService
+function getAPIBaseURL() {
+    return window.apiService ? window.apiService.baseURL : 'http://localhost:8080/api';
+}
+
+// ===== AUTHENTICATION FUNCTIONS =====
 async function login(username, password, role) {
     try {
-        const response = await fetch(`${API_BASE_URL}/auth/login`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ username, password, role })
-        });
-        
-        const data = await response.json();
-        if (data.success) {
-            // Store token securely (TODO: Implement secure storage)
-            sessionStorage.setItem('kashtec_token', data.token);
-            sessionStorage.setItem('kashtec_user', JSON.stringify(data.user));
+        if (!window.apiService) {
+            throw new Error('API service not initialized. Ensure database-api.js is loaded.');
         }
-        return data;
+        const result = await window.apiService.login(username, password, role);
+        if (result.token) {
+            sessionStorage.setItem('kashtec_token', result.token);
+            sessionStorage.setItem('kashtec_user', JSON.stringify(result.user || { id: username, role }));
+        }
+        return result;
     } catch (error) {
         console.error('Login error:', error);
-        return { success: false, error: 'Login failed' };
+        return { success: false, error: error.message || 'Login failed' };
     }
 }
 
@@ -43,38 +40,21 @@ function getCurrentUser() {
 // ===== API HELPER FUNCTION =====
 async function apiCall(endpoint, method = 'GET', data = null) {
     try {
-        const config = {
-            method,
-            headers: {
-                'Content-Type': 'application/json',
-            }
-        };
-        
-        const token = getAuthToken();
-        if (token) {
-            config.headers.Authorization = `Bearer ${token}`;
+        if (!window.apiService) {
+            throw new Error('API service not initialized');
         }
         
-        if (data && method !== 'GET') {
-            config.body = JSON.stringify(data);
+        if (method === 'GET') {
+            return await window.apiService.get(endpoint);
+        } else if (method === 'POST') {
+            return await window.apiService.post(endpoint, data);
+        } else if (method === 'PUT') {
+            return await window.apiService.put(endpoint, data);
+        } else if (method === 'DELETE') {
+            return await window.apiService.delete(endpoint);
         }
-        
-        const response = await fetch(`${API_BASE_URL}${endpoint}`, config);
-        
-        if (!response.ok) {
-            if (response.status === 401 || response.status === 403) {
-                // Clear stored auth data and redirect to login
-                sessionStorage.removeItem('kashtec_token');
-                sessionStorage.removeItem('kashtec_user');
-                window.location.reload(); // This will redirect to login
-                throw new Error('Authentication expired. Please login again.');
-            }
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        
-        return await response.json();
     } catch (error) {
-        console.error('API call error:', error);
+        console.error(`API call error [${method} ${endpoint}]:`, error);
         throw error;
     }
 }
@@ -568,6 +548,7 @@ async function deleteDocument(id) {
 // Download document
 async function downloadDocument(id) {
     const token = getAuthToken();
+    const API_BASE_URL = getAPIBaseURL();
     const response = await fetch(`${API_BASE_URL}/documents/${id}/download`, {
         headers: {
             'Authorization': `Bearer ${token}`
@@ -624,6 +605,8 @@ function handleApiError(error, customMessage = 'Operation failed') {
 // Verify all API endpoints are properly mapped
 async function verifyAllEndpoints() {
     console.log('🔍 Verifying all API endpoints...');
+    
+    const API_BASE_URL = getAPIBaseURL();
     
     const endpoints = [
         // Authentication
@@ -781,3 +764,5 @@ if (typeof module !== 'undefined' && module.exports) {
         formatDateTime
     };
 }
+
+console.log('✅ Consolidated API Service (api.js) Loaded - Using DatabaseAPI from database-api.js');
