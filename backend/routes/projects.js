@@ -93,14 +93,25 @@ router.get('/', async (req, res) => {
             isArray: Array.isArray(projects),
             length: projects.length,
             firstItem: projects[0] || 'No items',
-            sampleKeys: projects[0] ? Object.keys(projects[0]) : 'No keys'
+            sampleKeys: projects[0] ? Object.keys(projects[0]) : 'No keys',
+            responseType: 'JSON object with success, projects, and total fields'
         });
         
-        res.json({
+        const response = {
             success: true,
             projects: projects,
             total: projects.length
+        };
+        
+        console.log('📤 Sending response structure:', {
+            hasSuccess: 'success' in response,
+            hasProjects: 'projects' in response,
+            projectsIsArray: Array.isArray(response.projects),
+            projectsLength: response.projects.length,
+            responseKeys: Object.keys(response)
         });
+        
+        res.json(response);
     } catch (error) {
         console.error('❌ Error fetching projects:', error);
         
