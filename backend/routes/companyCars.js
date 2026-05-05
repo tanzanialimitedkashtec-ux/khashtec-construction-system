@@ -213,7 +213,7 @@ router.post('/', async (req, res) => {
         const car_details = carDetails;
         const description = carDetails;
         const assigned_driver = driver;
-        const registration_date = purchaseDate;
+        const registration_date = purchaseDate || new Date().toISOString().split('T')[0]; // Default to today if not provided
         const vehicle_status = status?.toLowerCase() || 'active';
 
         // Generate track number
