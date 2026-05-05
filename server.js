@@ -2896,6 +2896,12 @@ app.get('/api/attendance', async (req, res) => {
 
 
         console.log(`✅ Found ${attendance.length} attendance records`);
+        console.log('📊 Attendance data structure:', {
+            isArray: Array.isArray(attendance),
+            length: attendance.length,
+            firstItem: attendance[0] || 'No items',
+            sampleKeys: attendance[0] ? Object.keys(attendance[0]) : 'No keys'
+        });
         
         res.status(200).json({
 
