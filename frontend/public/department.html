@@ -29729,7 +29729,13 @@ async function savePaymentTracking() {
             created_by: getCurrentUserId()
         };
 
-        const response = await KashTecAPI.post('/api/language-payment-tracking', trackingData);
+        // Check if KashTecAPI is available
+        if (!window.KashTecAPI || typeof window.KashTecAPI.post !== 'function') {
+            console.error('❌ KashTecAPI.post is not available');
+            throw new Error('API service not loaded properly');
+        }
+
+        const response = await window.KashTecAPI.post('/api/language-payment-tracking', trackingData);
         
         if (response.success) {
             customAlert(`Payment tracking created successfully! Tracking Number: ${response.data.tracking_number}`, 'Success', 'success');
