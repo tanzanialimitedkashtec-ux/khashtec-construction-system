@@ -43,30 +43,12 @@ body.logged-in {
     z-index: -1;
     background-color: #0b3d91;
     background-image: linear-gradient(rgba(3,16,47,0.45), rgba(3,16,47,0.45)), url('images/WhatsApp Image 2026-05-05 at 2.55.12 PM.jpeg');
-    background-size: 120% 100%;
+    background-size: cover;
     background-position: center center;
     background-repeat: no-repeat;
-    background-attachment: scroll;
-    filter: brightness(0.95) saturate(1.08) contrast(1.05);
     opacity: 1;
     visibility: visible;
-    transition: opacity 0.35s ease, visibility 0.35s ease;
-    animation: loginBackgroundSlide 24s ease-in-out infinite alternate;
-}
-
-@keyframes loginBackgroundSlide {
-    0% {
-        background-position: left center;
-        filter: brightness(0.95) saturate(1.08) contrast(1.05);
-    }
-    50% {
-        background-position: center center;
-        filter: brightness(1) saturate(1.12) contrast(1.08);
-    }
-    100% {
-        background-position: right center;
-        filter: brightness(0.95) saturate(1.08) contrast(1.05);
-    }
+    transition: opacity 0.5s ease-in-out, background-image 0.5s ease-in-out;
 }
 
 body.logged-in #loginBackground {
@@ -10635,6 +10617,43 @@ const roleDescriptions = {
     "REALESTATE": "Real Estate Manager",
     "ASSISTANT": "Admin Assistant"
 };
+
+// Background Image Slideshow
+let currentImageIndex = 0;
+const backgroundImages = [
+    'images/WhatsApp Image 2026-05-05 at 2.55.12 PM.jpeg',
+    'images/pexels-rezwan-1216589.jpg'
+];
+
+function changeBackgroundImage() {
+    const loginBackground = document.getElementById('loginBackground');
+    if (!loginBackground) return;
+    
+    // Fade out
+    loginBackground.style.transition = 'opacity 0.5s ease-in-out';
+    loginBackground.style.opacity = '0';
+    
+    setTimeout(() => {
+        // Change image
+        currentImageIndex = (currentImageIndex + 1) % backgroundImages.length;
+        loginBackground.style.backgroundImage = `linear-gradient(rgba(3,16,47,0.45), rgba(3,16,47,0.45)), url('${backgroundImages[currentImageIndex]}')`;
+        
+        // Fade in
+        loginBackground.style.opacity = '1';
+    }, 500);
+}
+
+// Initialize background slideshow when page loads
+document.addEventListener('DOMContentLoaded', function() {
+    // Set initial background image
+    const loginBackground = document.getElementById('loginBackground');
+    if (loginBackground) {
+        loginBackground.style.backgroundImage = `linear-gradient(rgba(3,16,47,0.45), rgba(3,16,47,0.45)), url('${backgroundImages[0]}')`;
+    }
+    
+    // Start slideshow - change image every 6 seconds
+    setInterval(changeBackgroundImage, 6000);
+});
 
 function updatePasswordPlaceholder(){
     const role = document.getElementById("roleSelect").value;
@@ -29729,7 +29748,13 @@ async function savePaymentTracking() {
             created_by: getCurrentUserId()
         };
 
-        const response = await KashTecAPI.post('/api/language-payment-tracking', trackingData);
+        // Check if KashTecAPI is available
+        if (!window.KashTecAPI || typeof window.KashTecAPI.post !== 'function') {
+            console.error('❌ KashTecAPI.post is not available');
+            throw new Error('API service not loaded properly');
+        }
+
+        const response = await window.KashTecAPI.post('/api/language-payment-tracking', trackingData);
         
         if (response.success) {
             customAlert(`Payment tracking created successfully! Tracking Number: ${response.data.tracking_number}`, 'Success', 'success');
