@@ -19268,6 +19268,28 @@ function saveWorkerAccount() {
         const notes = document.getElementById('workerNotes')?.value;
         
         console.log('📝 Worker account data:', { empID, fullName, email, phone, department, jobTitle, accountType, accessLevel });
+        console.log('🔍 Worker form field elements:', {
+            workerEmpID: document.getElementById('workerEmpID'),
+            workerFullName: document.getElementById('workerFullName'),
+            workerEmail: document.getElementById('workerEmail'),
+            workerPhone: document.getElementById('workerPhone'),
+            workerDepartment: document.getElementById('workerDepartment'),
+            workerJobTitle: document.getElementById('workerJobTitle'),
+            workerAccountType: document.getElementById('workerAccountType'),
+            workerAccessLevel: document.getElementById('workerAccessLevel'),
+            workerPassword: document.getElementById('workerPassword')
+        });
+        console.log('🔍 Worker form field values with types:', {
+            empID: { value: empID, type: typeof empID, empty: !empID },
+            fullName: { value: fullName, type: typeof fullName, empty: !fullName },
+            email: { value: email, type: typeof email, empty: !email },
+            phone: { value: phone, type: typeof phone, empty: !phone },
+            department: { value: department, type: typeof department, empty: !department },
+            jobTitle: { value: jobTitle, type: typeof jobTitle, empty: !jobTitle },
+            accountType: { value: accountType, type: typeof accountType, empty: !accountType },
+            accessLevel: { value: accessLevel, type: typeof accessLevel, empty: !accessLevel },
+            password: { value: password, type: typeof password, empty: !password }
+        });
         
         // Validate required fields
         if (!empID || !fullName || !email || !phone || !department || !jobTitle || !accountType || !accessLevel || !password) {

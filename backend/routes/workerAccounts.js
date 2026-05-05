@@ -301,12 +301,42 @@ router.post('/', async (req, res) => {
         accessLevel 
     });
     
+    console.log('🔍 Complete request body fields:', Object.keys(req.body));
+    console.log('🔍 Complete request body values:', req.body);
+    
     // Validate input
+    console.log('🔍 Field validation check:', {
+        'employeeId': { value: employeeId, valid: !!employeeId },
+        'fullName': { value: fullName, valid: !!fullName },
+        'workEmail': { value: workEmail, valid: !!workEmail },
+        'phoneNumber': { value: phoneNumber, valid: !!phoneNumber },
+        'department': { value: department, valid: !!department },
+        'jobTitle': { value: jobTitle, valid: !!jobTitle },
+        'accountType': { value: accountType, valid: !!accountType },
+        'accessLevel': { value: accessLevel, valid: !!accessLevel },
+        'temporaryPassword': { value: temporaryPassword, valid: !!temporaryPassword }
+    });
+    
     if (!employeeId || !fullName || !workEmail || !phoneNumber || !department || !jobTitle || !accountType || !accessLevel || !temporaryPassword) {
         console.log('❌ Validation failed - missing required fields');
+        const missingFields = [
+            !employeeId ? 'employeeId' : null,
+            !fullName ? 'fullName' : null,
+            !workEmail ? 'workEmail' : null,
+            !phoneNumber ? 'phoneNumber' : null,
+            !department ? 'department' : null,
+            !jobTitle ? 'jobTitle' : null,
+            !accountType ? 'accountType' : null,
+            !accessLevel ? 'accessLevel' : null,
+            !temporaryPassword ? 'temporaryPassword' : null
+        ].filter(Boolean);
+        
+        console.log('❌ Missing fields:', missingFields);
+        
         return res.status(400).json({
             error: 'All required fields must be provided',
-            received: { employeeId, fullName, workEmail, phoneNumber, department, jobTitle, accountType, accessLevel, temporaryPassword }
+            received: { employeeId, fullName, workEmail, phoneNumber, department, jobTitle, accountType, accessLevel, temporaryPassword },
+            missing: missingFields
         });
     }
     

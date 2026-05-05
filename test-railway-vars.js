@@ -3,19 +3,30 @@ require('dotenv').config();
 console.log('🔍 Railway Variables Status Check:');
 console.log('='.repeat(50));
 
-// Check all Railway-specific variables
+// Check all Railway-specific variables (including MySQL. prefixed)
 const railwayVars = [
     'DATABASE_URL',
     'MYSQL_URL',
+    'MySQL.MYSQL_URL',
+    'MYSQL_PUBLIC_URL',
+    'MySQL.MYSQL_PUBLIC_URL',
     'MYSQLUSER',
-    'MYSQLHOST', 
+    'MySQL.MYSQLUSER',
+    'MYSQLHOST',
+    'MySQL.MYSQLHOST', 
     'MYSQLPORT',
+    'MySQL.MYSQLPORT',
     'MYSQLDATABASE',
+    'MySQL.MYSQLDATABASE',
     'MYSQLPASSWORD',
+    'MySQL.MYSQLPASSWORD',
     'RAILWAY_PUBLIC_DOMAIN',
     'RAILWAY_TCP_PROXY_DOMAIN',
+    'MySQL.RAILWAY_TCP_PROXY_DOMAIN',
     'RAILWAY_TCP_PROXY_PORT',
-    'RAILWAY_PRIVATE_DOMAIN'
+    'MySQL.RAILWAY_TCP_PROXY_PORT',
+    'RAILWAY_PRIVATE_DOMAIN',
+    'MySQL.RAILWAY_PRIVATE_DOMAIN'
 ];
 
 railwayVars.forEach(varName => {
