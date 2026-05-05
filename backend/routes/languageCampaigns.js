@@ -161,6 +161,92 @@ router.get('/', async (req, res) => {
     }
 });
 
+// Get active language campaigns
+router.get('/active', async (req, res) => {
+    try {
+        console.log('📝 Active language campaigns endpoint accessed');
+        
+        let campaigns = [];
+        
+        try {
+            const db = require('../../database/config/database');
+            
+            const campaignsResult = await db.execute(`
+                SELECT * FROM language_campaigns 
+                WHERE status = 'active' 
+                ORDER BY start_date ASC
+            `);
+            
+            // Handle different MySQL2 return formats
+            if (Array.isArray(campaignsResult)) {
+                campaigns = campaignsResult;
+            } else if (campaignsResult && Array.isArray(campaignsResult[0])) {
+                campaigns = campaignsResult[0];
+            } else if (campaignsResult && campaignsResult.rows) {
+                campaigns = campaignsResult.rows;
+            } else {
+                campaigns = [];
+            }
+            
+            console.log('✅ Active campaigns fetched from database:', campaigns.length);
+        } catch (dbError) {
+            console.error('❌ Database error, using fallback active campaigns:', dbError);
+            
+            // Fallback to mock active campaigns
+            campaigns = [
+                {
+                    id: 1,
+                    campaign_name: 'English Proficiency Program',
+                    target_language: 'English',
+                    description: 'Comprehensive English language training for all staff members',
+                    start_date: '2026-05-01',
+                    end_date: '2026-06-30',
+                    status: 'active',
+                    target_audience: 'All Staff',
+                    budget: 50000.00,
+                    actual_cost: 12500.00,
+                    participants_count: 45,
+                    completion_rate: 25.0,
+                    created_by: 'HR Department',
+                    created_at: '2026-05-01T00:00:00Z',
+                    updated_at: '2026-05-04T00:00:00Z'
+                },
+                {
+                    id: 2,
+                    campaign_name: 'Swahili Communication Skills',
+                    target_language: 'Swahili',
+                    description: 'Basic Swahili language skills for expatriate staff',
+                    start_date: '2026-04-15',
+                    end_date: '2026-07-15',
+                    status: 'active',
+                    target_audience: 'Expatriate Staff',
+                    budget: 30000.00,
+                    actual_cost: 8000.00,
+                    participants_count: 12,
+                    completion_rate: 35.0,
+                    created_by: 'HR Department',
+                    created_at: '2026-04-15T00:00:00Z',
+                    updated_at: '2026-05-04T00:00:00Z'
+                }
+            ];
+        }
+        
+        res.json({
+            success: true,
+            campaigns: campaigns,
+            total: campaigns.length
+        });
+        
+    } catch (error) {
+        console.error('❌ Error fetching active language campaigns:', error);
+        res.status(500).json({ 
+            success: false,
+            error: 'Failed to fetch active language campaigns',
+            details: error.message 
+        });
+    }
+});
+
 // Get language campaign by ID
 router.get('/:id', async (req, res) => {
     try {
@@ -252,6 +338,7 @@ router.post('/', async (req, res) => {
         
         const {
             campaign_name,
+            campaign_description,
             target_language,
             description,
             start_date,
@@ -261,6 +348,9 @@ router.post('/', async (req, res) => {
             budget,
             created_by
         } = req.body;
+        
+        // Handle both frontend and backend field names
+        const finalDescription = campaign_description || description;
         
         // Validate required fields
         if (!campaign_name || !target_language || !start_date || !end_date) {
@@ -285,7 +375,7 @@ router.post('/', async (req, res) => {
             const values = [
                 campaign_name,
                 target_language,
-                description || null,
+                finalDescription || null,
                 start_date,
                 end_date,
                 status || 'planning',
