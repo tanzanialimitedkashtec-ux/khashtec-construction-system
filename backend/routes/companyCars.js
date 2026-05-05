@@ -209,7 +209,14 @@ router.post('/', async (req, res) => {
             carDetails,
             purchaseDate,
             status,
-            driver
+            driver,
+            vehicleType,
+            fuelType,
+            color,
+            yearOfManufacture,
+            odometerReading,
+            insuranceStatus,
+            additionalNotes
         } = req.body;
 
         // Map frontend field names to database field names
@@ -222,6 +229,8 @@ router.post('/', async (req, res) => {
         const assigned_driver = driver;
         const registration_date = purchaseDate || new Date().toISOString().split('T')[0]; // Default to today if not provided
         const vehicle_status = status?.toLowerCase() || 'active';
+        const vehicle_type = vehicleType?.toLowerCase() || 'pickup';
+        const fuel_type = fuelType?.toLowerCase() || 'diesel';
 
         // Generate track number
         const track_number = 'TK' + Date.now().toString().slice(-6);
@@ -269,8 +278,8 @@ router.post('/', async (req, res) => {
             ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())
         `, [
             track_number, car_name, brand_name, registration_number, plate_number,
-            car_details || 'Company vehicle', description || 'Company vehicle', assigned_driver || null, registration_date, vehicle_status || 'active',
-            vehicle_type || 'pickup', fuel_type || 'diesel', color || null, yearOfManufacture || null, odometerReading || null,
+            car_details || 'Company vehicle', description || 'Company vehicle', assigned_driver || null, registration_date, vehicle_status,
+            vehicle_type, fuel_type, color || null, yearOfManufacture || null, odometerReading || null,
             insuranceStatus || 'pending', additionalNotes || null
         ]);
 
