@@ -88,7 +88,8 @@ router.get('/', async (req, res) => {
                     INDEX idx_registration_number (registration_number),
                     INDEX idx_plate_number (plate_number),
                     INDEX idx_vehicle_status (vehicle_status),
-                    INDEX idx_created_at (created_at)
+                    INDEX idx_created_at (created_at),
+                    CONSTRAINT fk_vehicles_driver FOREIGN KEY (assigned_driver) REFERENCES drivers(driver_id) ON DELETE SET NULL
                 )
             `);
             console.log('✅ Vehicles table verified/created successfully');
