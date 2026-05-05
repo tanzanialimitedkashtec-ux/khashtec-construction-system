@@ -52,27 +52,47 @@ router.get('/test', (req, res) => {
     });
 });
 
-// Root endpoint - list available endpoints
-router.get('/', (req, res) => {
-    res.status(200).json({
-        success: true,
-        message: 'Company Cars API',
-        endpoints: {
-            'GET /': 'List available endpoints',
-            'GET /test': 'Test endpoint',
-            'GET /all': 'Get all company cars',
-            'POST /': 'Register new company car',
-            'GET /:id': 'Get specific car',
-            'PUT /:id': 'Update car',
-            'DELETE /:id': 'Delete car'
-        }
-    });
-});
-
-// Get all company cars
-router.get('/all', async (req, res) => {
+// Root endpoint - get all company cars (main endpoint)
+router.get('/', async (req, res) => {
     try {
+        console.log('🚗 Company cars endpoint called - fetching vehicles from database');
         const db = require('../../database/config/database');
+        
+        // Ensure vehicles table exists
+        try {
+            await db.execute(`
+                CREATE TABLE IF NOT EXISTS vehicles (
+                    id INT AUTO_INCREMENT PRIMARY KEY,
+                    track_number VARCHAR(50) UNIQUE NOT NULL,
+                    car_name VARCHAR(255) NOT NULL,
+                    brand_name VARCHAR(100) NOT NULL,
+                    registration_number VARCHAR(50) UNIQUE NOT NULL,
+                    plate_number VARCHAR(50) UNIQUE NOT NULL,
+                    car_details TEXT NULL,
+                    description TEXT NULL,
+                    assigned_driver VARCHAR(255) NULL,
+                    registration_date DATE NULL,
+                    vehicle_status ENUM('Active', 'Inactive', 'Under Maintenance', 'Retired') DEFAULT 'Active',
+                    vehicle_type VARCHAR(50) DEFAULT 'pickup',
+                    fuel_type VARCHAR(20) DEFAULT 'diesel',
+                    color VARCHAR(50) NULL,
+                    year_manufacture INT NULL,
+                    odometer_reading INT NULL,
+                    insurance_status ENUM('Insured', 'Pending', 'Expired') DEFAULT 'Pending',
+                    additional_notes TEXT NULL,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+                    INDEX idx_track_number (track_number),
+                    INDEX idx_registration_number (registration_number),
+                    INDEX idx_plate_number (plate_number),
+                    INDEX idx_vehicle_status (vehicle_status),
+                    INDEX idx_created_at (created_at)
+                )
+            `);
+            console.log('✅ Vehicles table verified/created successfully');
+        } catch (tableError) {
+            console.log('⚠️ Could not create vehicles table:', tableError.message);
+        }
         
         const carsResult = await db.execute(`
             SELECT * FROM vehicles 
@@ -80,7 +100,16 @@ router.get('/all', async (req, res) => {
         `);
         
         // Handle different MySQL2 return formats
-        const cars = Array.isArray(carsResult) ? carsResult[0] : carsResult;
+        let cars = [];
+        if (Array.isArray(carsResult)) {
+            cars = carsResult;
+        } else if (carsResult && Array.isArray(carsResult[0])) {
+            cars = carsResult[0];
+        } else if (carsResult && carsResult.rows) {
+            cars = carsResult.rows;
+        }
+        
+        console.log(`✅ Found ${cars.length} company cars in database`);
         
         res.status(200).json({
             success: true,
@@ -89,7 +118,9 @@ router.get('/all', async (req, res) => {
         });
         
     } catch (error) {
-        console.error('Error fetching company cars:', error);
+        console.error('❌ Error fetching company cars from database:', error);
+        console.log('🔄 Database connection failed, returning mock data...');
+        
         // Return mock data when database fails
         res.status(200).json({
             success: true,
@@ -99,9 +130,28 @@ router.get('/all', async (req, res) => {
     }
 });
 
-// Get all company cars (main endpoint)
-router.get('/', async (req, res) => {
+// Endpoint info endpoint
+router.get('/info', (req, res) => {
+    res.status(200).json({
+        success: true,
+        message: 'Company Cars API',
+        endpoints: {
+            'GET /': 'Get all company cars',
+            'GET /info': 'List available endpoints',
+            'GET /test': 'Test endpoint',
+            'GET /all': 'Get all company cars (alternative)',
+            'POST /': 'Register new company car',
+            'GET /:id': 'Get specific car',
+            'PUT /:id': 'Update car',
+            'DELETE /:id': 'Delete car'
+        }
+    });
+});
+
+// Get all company cars (alternative endpoint)
+router.get('/all', async (req, res) => {
     try {
+        console.log('🚗 Company cars /all endpoint called');
         const db = require('../../database/config/database');
         
         const carsResult = await db.execute(`
@@ -110,7 +160,14 @@ router.get('/', async (req, res) => {
         `);
         
         // Handle different MySQL2 return formats
-        const cars = Array.isArray(carsResult) ? carsResult[0] : carsResult;
+        let cars = [];
+        if (Array.isArray(carsResult)) {
+            cars = carsResult;
+        } else if (carsResult && Array.isArray(carsResult[0])) {
+            cars = carsResult[0];
+        } else if (carsResult && carsResult.rows) {
+            cars = carsResult.rows;
+        }
         
         res.status(200).json({
             success: true,
