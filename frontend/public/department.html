@@ -42,7 +42,7 @@ body.logged-in {
     inset: 0;
     z-index: -1;
     background-color: #0b3d91;
-    background-image: linear-gradient(rgba(3,16,47,0.45), rgba(3,16,47,0.45)), url('images/WhatsApp Image 2026-05-05 at 2.55.12 PM (1).jpeg');
+    background-image: linear-gradient(rgba(3,16,47,0.45), rgba(3,16,47,0.45)), url('images/whatsapp-bg-1.jpeg');
     background-size: cover;
     background-position: center center;
     background-repeat: no-repeat;
@@ -10621,18 +10621,13 @@ const roleDescriptions = {
 // Background Image Slideshow
 let currentImageIndex = 0;
 const backgroundImages = [
-    'images/WhatsApp Image 2026-05-05 at 2.55.12 PM (1).jpeg',
+    'images/whatsapp-bg-1.jpeg',
     'images/pexels-rezwan-1216589.jpg'
 ];
 
 function changeBackgroundImage() {
     const loginBackground = document.getElementById('loginBackground');
-    if (!loginBackground) {
-        console.log('Login background element not found');
-        return;
-    }
-    
-    console.log('Changing background image from index:', currentImageIndex);
+    if (!loginBackground) return;
     
     // Fade out
     loginBackground.style.transition = 'opacity 0.5s ease-in-out';
@@ -10641,34 +10636,22 @@ function changeBackgroundImage() {
     setTimeout(() => {
         // Change image
         currentImageIndex = (currentImageIndex + 1) % backgroundImages.length;
-        const newImage = backgroundImages[currentImageIndex];
-        console.log('Changing to image:', newImage, 'at index:', currentImageIndex);
-        
-        loginBackground.style.backgroundImage = `linear-gradient(rgba(3,16,47,0.45), rgba(3,16,47,0.45)), url('${newImage}')`;
+        loginBackground.style.backgroundImage = `linear-gradient(rgba(3,16,47,0.45), rgba(3,16,47,0.45)), url('${backgroundImages[currentImageIndex]}')`;
         
         // Fade in
         loginBackground.style.opacity = '1';
-        console.log('Background image changed successfully');
     }, 500);
 }
 
 // Initialize background slideshow when page loads
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('Initializing background slideshow');
-    console.log('Available images:', backgroundImages);
-    
     // Set initial background image
     const loginBackground = document.getElementById('loginBackground');
     if (loginBackground) {
-        console.log('Setting initial background image to:', backgroundImages[0]);
         loginBackground.style.backgroundImage = `linear-gradient(rgba(3,16,47,0.45), rgba(3,16,47,0.45)), url('${backgroundImages[0]}')`;
-        console.log('Initial background image set');
-    } else {
-        console.log('Login background element not found during initialization');
     }
     
     // Start slideshow - change image every 6 seconds
-    console.log('Starting slideshow with 6-second interval');
     setInterval(changeBackgroundImage, 6000);
 });
 
