@@ -43,34 +43,35 @@ body.logged-in {
     z-index: -1;
     background-color: #0b3d91;
     background-image: linear-gradient(rgba(3,16,47,0.45), rgba(3,16,47,0.45)), url('images/WhatsApp Image 2026-05-05 at 2.55.12 PM.jpeg');
-    background-size: cover;
-    background-position: left center;
+    background-size: 120% 100%;
+    background-position: center center;
     background-repeat: no-repeat;
-    background-attachment: fixed;
+    background-attachment: scroll;
     filter: brightness(0.95) saturate(1.08) contrast(1.05);
-    transform: scale(1.04);
     opacity: 1;
     visibility: visible;
-    transition: opacity 0.35s ease, visibility 0.35s ease, transform 0.35s ease;
-    animation: loginBackgroundSlide 22s ease-in-out infinite alternate;
+    transition: opacity 0.35s ease, visibility 0.35s ease;
+    animation: loginBackgroundSlide 24s ease-in-out infinite alternate;
 }
 
 @keyframes loginBackgroundSlide {
     0% {
         background-position: left center;
-        transform: scale(1.04) translateX(0px);
         filter: brightness(0.95) saturate(1.08) contrast(1.05);
     }
     50% {
         background-position: center center;
-        transform: scale(1.06) translateX(-8px);
         filter: brightness(1) saturate(1.12) contrast(1.08);
     }
     100% {
         background-position: right center;
-        transform: scale(1.04) translateX(0px);
         filter: brightness(0.95) saturate(1.08) contrast(1.05);
     }
+}
+
+body.logged-in #loginBackground {
+    opacity: 0;
+    visibility: hidden;
 }
 
 body.logged-in #loginBackground {
@@ -29692,7 +29693,13 @@ async function saveLanguagePurchase() {
             created_by: getCurrentUserId()
         };
 
-        const response = await KashTecAPI.post('/api/language-purchases', purchaseData);
+        // Check if KashTecAPI is available
+        if (!window.KashTecAPI || typeof window.KashTecAPI.post !== 'function') {
+            console.error('❌ KashTecAPI.post is not available');
+            throw new Error('API service not loaded properly');
+        }
+
+        const response = await window.KashTecAPI.post('/api/language-purchases', purchaseData);
         
         if (response.success) {
             customAlert(`Purchase recorded successfully! Tracking Number: ${response.data.tracking_number}`, 'Success', 'success');
