@@ -23271,7 +23271,13 @@ async function loadCompanyCars() {
         const recordsList = document.getElementById('carRecordsList');
         recordsList.innerHTML = '<tr><td colspan="16" class="loading">Loading vehicle records...</td></tr>';
         
-        const response = await KashTecAPI.get('/api/company-cars');
+        // Check if KashTecAPI is available
+        if (!window.KashTecAPI || typeof window.KashTecAPI.get !== 'function') {
+            console.error('❌ KashTecAPI.get is not available');
+            throw new Error('API service not loaded properly');
+        }
+        
+        const response = await window.KashTecAPI.get('/api/company-cars');
         
         if (response.success && response.data.length > 0) {
             recordsList.innerHTML = response.data.map(car => `

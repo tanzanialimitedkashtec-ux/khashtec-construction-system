@@ -260,14 +260,14 @@ router.post('/', async (req, res) => {
                 driver_status, registration_date, created_at, updated_at
             ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())
         `, [
-            driverId,
-            driverName,
-            driverDescription,
+            driverId || null,
+            driverName || null,
+            driverDescription || 'Professional driver',
             parseInt(experience) || 0,
-            licenseType,
-            phone,
-            email,
-            'NIDA-' + driverId, // Default NIDA number
+            licenseType || 'class-c',
+            phone || '+255712345678',
+            email || 'driver@example.com',
+            'NIDA-' + (driverId || 'UNKNOWN'), // Default NIDA number
             '1990-01-01', // Default date of birth
             'other', // Default gender
             'Default Address', // Default residential address
