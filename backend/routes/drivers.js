@@ -232,7 +232,24 @@ router.post('/', async (req, res) => {
             });
         }
         
+        // Test database connection first
+        console.log('🔍 Testing database connection before driver registration...');
+        try {
+            const testResult = await db.execute('SELECT 1 as test');
+            console.log('✅ Database connection test successful:', testResult);
+        } catch (testError) {
+            console.error('❌ Database connection test failed:', testError);
+            throw new Error('Database connection failed: ' + testError.message);
+        }
+        
         // Insert driver into database with proper field mapping
+        console.log('💾 Executing driver INSERT with values:', {
+            driverId,
+            driverName,
+            licenseType,
+            experience: parseInt(experience) || 0
+        });
+        
         const resultResult = await db.execute(`
             INSERT INTO drivers (
                 driver_id, full_name, description, years_of_experience, 
@@ -280,13 +297,21 @@ router.post('/', async (req, res) => {
         
     } catch (error) {
         console.error('❌ Error registering driver:', error);
+        console.error('❌ Error details:', {
+            message: error.message,
+            code: error.code,
+            errno: error.errno,
+            sqlState: error.sqlState,
+            sql: error.sql
+        });
         
-        // If database fails, still return success with mock response
-        res.status(201).json({
-            success: true,
-            message: 'Driver registered successfully (mock mode)',
+        // If database fails, return error response instead of mock success
+        res.status(500).json({
+            success: false,
+            message: 'Failed to register driver',
+            error: error.message,
             driverId: req.body.driverId,
-            note: 'Database unavailable - using mock response'
+            note: 'Database error occurred'
         });
     }
 });
