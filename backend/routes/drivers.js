@@ -258,7 +258,7 @@ router.post('/', async (req, res) => {
                 emergency_contact_name, emergency_contact_number, emergency_relationship,
                 license_issue_date, license_expiry_date, employment_status, hire_date,
                 driver_status, registration_date, created_at, updated_at
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())
         `, [
             driverId || null,
             driverName || null,
@@ -280,7 +280,7 @@ router.post('/', async (req, res) => {
             'full-time', // Default employment status
             new Date().toISOString().split('T')[0], // Hire date (today)
             'active', // Default driver status
-            new Date().toISOString().split('T')[0] // Registration date (today)
+            new Date().toISOString().split('T')[0], // Registration date (today)
         ]);
         
         console.log('💾 Sample driver data inserted successfully');

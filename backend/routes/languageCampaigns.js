@@ -70,9 +70,12 @@ router.get('/', async (req, res) => {
             
             console.log('✅ Language Campaigns records fetched from database:', campaigns.length);
         } catch (dbError) {
-            console.error('❌ Database error, using fallback language campaigns:', dbError);
-            
-            // Fallback to mock language campaigns
+            console.error('❌ Database error:', dbError);
+        }
+        
+        // If no campaigns in database, use fallback data
+        if (campaigns.length === 0) {
+            console.log('📋 No campaigns in database, using fallback data...');
             campaigns = [
                 {
                     id: 1,

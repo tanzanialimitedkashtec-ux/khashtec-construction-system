@@ -29804,53 +29804,71 @@ async function loadLanguageCampaigns() {
         
         const response = await window.KashTecAPI.get('/api/language-campaigns');
         
-        if (response.success && response.data.length > 0) {
-            recordsList.innerHTML = response.data.map(campaign => `
+        // Handle different response formats
+        const campaigns = response.data || response.campaigns || response;
+        
+        if (campaigns && campaigns.length > 0) {
+            recordsList.innerHTML = campaigns.map(campaign => {
+                // Map backend fields to frontend expected fields
+                const mappedCampaign = {
+                    id: campaign.id,
+                    campaign_name: campaign.campaign_name || 'Unknown Campaign',
+                    language_name: campaign.target_language || campaign.language_name || 'Unknown',
+                    language_code: campaign.target_language ? campaign.target_language.substring(0, 3).toUpperCase() : 'UNK',
+                    price_per_unit: campaign.budget || campaign.price_per_unit || 0,
+                    total_units_available: campaign.participants_count || campaign.total_units_available || 0,
+                    units_sold: Math.floor((campaign.completion_rate || 0) / 100 * (campaign.participants_count || 0)),
+                    status: campaign.status || 'planning',
+                    start_date: campaign.start_date,
+                    end_date: campaign.end_date
+                };
+                
+                return `
                 <tr>
                     <td>
                         <div class="campaign-info">
-                            <div class="campaign-name">${campaign.campaign_name}</div>
-                            <div class="campaign-id">ID: ${campaign.id}</div>
+                            <div class="campaign-name">${mappedCampaign.campaign_name}</div>
+                            <div class="campaign-id">ID: ${mappedCampaign.id}</div>
                         </div>
                     </td>
                     <td>
                         <div class="language-info">
-                            <div class="language-name">${campaign.language_name}</div>
+                            <div class="language-name">${mappedCampaign.language_name}</div>
                         </div>
                     </td>
                     <td>
                         <div class="language-code">
-                            <span class="code-badge">${campaign.language_code}</span>
+                            <span class="code-badge">${mappedCampaign.language_code}</span>
                         </div>
                     </td>
                     <td>
                         <div class="price-info">
-                            <div class="price-amount">TZS ${parseFloat(campaign.price_per_unit).toLocaleString()}</div>
+                            <div class="price-amount">TZS ${parseFloat(mappedCampaign.price_per_unit).toLocaleString()}</div>
                         </div>
                     </td>
                     <td>
                         <div class="units-info">
-                            <div class="total-units">${campaign.total_units_available}</div>
+                            <div class="total-units">${mappedCampaign.total_units_available}</div>
                         </div>
                     </td>
                     <td>
                         <div class="units-info">
-                            <div class="units-sold">${campaign.units_sold || 0}</div>
+                            <div class="units-sold">${mappedCampaign.units_sold || 0}</div>
                         </div>
                     </td>
                     <td>
                         <div class="status-info">
-                            <span class="status-badge status-${campaign.status.toLowerCase()}">${campaign.status}</span>
+                            <span class="status-badge status-${mappedCampaign.status.toLowerCase()}">${mappedCampaign.status}</span>
                         </div>
                     </td>
                     <td>
                         <div class="date-info">
-                            <div class="campaign-date">${campaign.start_date ? new Date(campaign.start_date).toLocaleDateString() : 'N/A'}</div>
+                            <div class="campaign-date">${mappedCampaign.start_date ? new Date(mappedCampaign.start_date).toLocaleDateString() : 'N/A'}</div>
                         </div>
                     </td>
                     <td>
                         <div class="date-info">
-                            <div class="campaign-date">${campaign.end_date ? new Date(campaign.end_date).toLocaleDateString() : 'N/A'}</div>
+                            <div class="campaign-date">${mappedCampaign.end_date ? new Date(mappedCampaign.end_date).toLocaleDateString() : 'N/A'}</div>
                         </div>
                     </td>
                     <td>
@@ -30045,58 +30063,81 @@ async function loadLanguagePurchases() {
         
         const response = await window.KashTecAPI.get('/api/language-purchases');
         
-        if (response.success && response.data.length > 0) {
-            recordsList.innerHTML = response.data.map(purchase => `
+        // Handle different response formats
+        const purchases = response.data || response.purchases || response;
+        
+        if (purchases && purchases.length > 0) {
+            recordsList.innerHTML = purchases.map(purchase => {
+                // Map backend fields to frontend expected fields
+                const mappedPurchase = {
+                    purchase_id: purchase.purchase_reference || purchase.purchase_id || 'Unknown',
+                    tracking_number: purchase.purchase_reference || purchase.tracking_number || 'Unknown',
+                    payment_status: purchase.payment_status || 'pending',
+                    campaign_name: purchase.campaign_name || 'Unknown Campaign',
+                    campaign_language: purchase.language || purchase.campaign_language || 'Unknown',
+                    employee_name: purchase.employee_name || 'Unknown Employee',
+                    department: purchase.department || 'Unknown',
+                    course_type: purchase.course_type || 'basic',
+                    amount: purchase.amount || 0,
+                    currency: purchase.currency || 'USD',
+                    purchase_date: purchase.purchase_date,
+                    enrollment_status: purchase.enrollment_status || 'enrolled',
+                    progress_percentage: purchase.progress_percentage || 0,
+                    instructor: purchase.instructor || 'Not Assigned',
+                    location: purchase.location || 'TBD'
+                };
+                
+                return `
                 <tr>
                     <td>
                         <div class="purchase-info">
-                            <div class="purchase-id">${purchase.purchase_id}</div>
-                            <div class="tracking-number">Tracking: ${purchase.tracking_number}</div>
-                            <div class="purchase-status">Status: ${purchase.payment_status}</div>
+                            <div class="purchase-id">${mappedPurchase.purchase_id}</div>
+                            <div class="tracking-number">Tracking: ${mappedPurchase.tracking_number}</div>
+                            <div class="purchase-status">Status: ${mappedPurchase.payment_status}</div>
                         </div>
                     </td>
                     <td>
                         <div class="campaign-info">
-                            <div class="campaign-name">${purchase.campaign_name}</div>
-                            <div class="campaign-details">${purchase.campaign_language || 'N/A'}</div>
+                            <div class="campaign-name">${mappedPurchase.campaign_name}</div>
+                            <div class="campaign-details">${mappedPurchase.campaign_language || 'N/A'}</div>
                         </div>
                     </td>
                     <td>
                         <div class="buyer-info">
-                            <div class="buyer-name">${purchase.buyer_name}</div>
-                            <div class="buyer-id">ID: ${purchase.buyer_id || 'N/A'}</div>
+                            <div class="buyer-name">${mappedPurchase.employee_name}</div>
+                            <div class="buyer-id">ID: ${purchase.employee_id || 'N/A'}</div>
                         </div>
                     </td>
                     <td>
                         <div class="contact-info">
-                            <div class="buyer-email">${purchase.buyer_email}</div>
-                            <div class="buyer-phone">${purchase.buyer_phone || 'N/A'}</div>
+                            <div class="buyer-email">${purchase.employee_id ? purchase.employee_id + '@khashtec.com' : 'N/A'}</div>
+                            <div class="buyer-phone">${purchase.employee_phone || 'N/A'}</div>
                         </div>
                     </td>
                     <td>
                         <div class="units-info">
-                            <div class="units-purchased">${purchase.units_purchased}</div>
-                            <div class="unit-price">TZS ${purchase.unit_price || 'N/A'}</div>
+                            <div class="units-purchased">${mappedPurchase.course_type}</div>
+                            <div class="unit-price">${mappedPurchase.currency} ${mappedPurchase.amount.toLocaleString()}</div>
                         </div>
                     </td>
                     <td>
                         <div class="payment-info">
-                            <span class="payment-badge payment-${purchase.payment_method.toLowerCase().replace(' ', '-')}">${purchase.payment_method}</span>
+                            <span class="payment-badge payment-${mappedPurchase.payment_method.toLowerCase().replace('_', '-')}">${mappedPurchase.payment_method}</span>
                         </div>
                     </td>
                     <td>
                         <div class="address-info">
-                            <div class="buyer-address">${purchase.buyer_address || 'N/A'}</div>
+                            <div class="buyer-address">${mappedPurchase.location}</div>
                         </div>
                     </td>
                     <td>
                         <div class="notes-info">
-                            <div class="purchase-notes">${purchase.purchase_notes || 'No notes'}</div>
+                            <div class="purchase-notes">${mappedPurchase.instructor ? 'Instructor: ' + mappedPurchase.instructor : 'No notes'}</div>
                         </div>
                     </td>
                     <td>
                         <div class="date-info">
-                            <div class="purchase-date">${new Date(purchase.purchase_date).toLocaleDateString()}</div>
+                            <div class="purchase-date">${mappedPurchase.purchase_date ? new Date(mappedPurchase.purchase_date).toLocaleDateString() : 'N/A'}</div>
                         </div>
                     </td>
                     <td>

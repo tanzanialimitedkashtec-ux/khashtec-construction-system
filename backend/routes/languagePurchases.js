@@ -85,11 +85,11 @@ router.get('/', async (req, res) => {
             }
             
             console.log('✅ Language Purchases records fetched from database:', purchases.length);
-        } catch (dbError) {
-            console.error('❌ Database error, using fallback language purchases:', dbError);
             
-            // Fallback to mock language purchases
-            purchases = [
+            // If no purchases in database, use fallback data
+            if (purchases.length === 0) {
+                console.log('📋 No purchases in database, using fallback data...');
+                purchases = [
                 {
                     id: 1,
                     purchase_reference: 'LP202605001',
@@ -241,6 +241,10 @@ router.get('/', async (req, res) => {
                     updated_at: '2026-05-04T00:00:00Z'
                 }
             ];
+            }
+            
+        } catch (dbError) {
+            console.error('❌ Database error:', dbError);
         }
         
         res.json({

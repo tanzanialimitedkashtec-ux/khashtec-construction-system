@@ -421,6 +421,12 @@ window.KashTecAPI = {
     validateApiResponse,
     apiCall,
     
+    // Direct HTTP methods
+    get: (endpoint) => apiCall(endpoint, 'GET'),
+    post: (endpoint, data) => apiCall(endpoint, 'POST', data),
+    put: (endpoint, data) => apiCall(endpoint, 'PUT', data),
+    delete: (endpoint) => apiCall(endpoint, 'DELETE'),
+    
     // Document Management
     getDocuments,
     getDocument,
