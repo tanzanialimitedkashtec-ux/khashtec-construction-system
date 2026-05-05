@@ -67,29 +67,35 @@ router.get('/', async (req, res) => {
                     id INT AUTO_INCREMENT PRIMARY KEY,
                     track_number VARCHAR(50) UNIQUE NOT NULL,
                     car_name VARCHAR(255) NOT NULL,
-                    brand_name VARCHAR(100) NOT NULL,
+                    brand_name ENUM('toyota', 'nissan', 'mitsubishi', 'isuzu', 'ford', 'mazda', 'honda', 'bmw', 'mercedes', 'volkswagen', 'other') NOT NULL,
                     registration_number VARCHAR(50) UNIQUE NOT NULL,
-                    plate_number VARCHAR(50) UNIQUE NOT NULL,
-                    car_details TEXT NULL,
-                    description TEXT NULL,
-                    assigned_driver VARCHAR(255) NULL,
-                    registration_date DATE NULL,
-                    vehicle_status ENUM('Active', 'Inactive', 'Under Maintenance', 'Retired') DEFAULT 'Active',
-                    vehicle_type VARCHAR(50) DEFAULT 'pickup',
-                    fuel_type VARCHAR(20) DEFAULT 'diesel',
-                    color VARCHAR(50) NULL,
-                    year_manufacture INT NULL,
-                    odometer_reading INT NULL,
-                    insurance_status ENUM('Insured', 'Pending', 'Expired') DEFAULT 'Pending',
-                    additional_notes TEXT NULL,
+                    plate_number VARCHAR(50) NOT NULL,
+                    car_details TEXT NOT NULL,
+                    description TEXT NOT NULL,
+                    assigned_driver VARCHAR(50),
+                    registration_date DATE NOT NULL,
+                    vehicle_type ENUM('pickup', 'suv', 'sedan', 'van', 'truck', 'motorcycle') NOT NULL,
+                    fuel_type ENUM('petrol', 'diesel', 'hybrid', 'electric') NOT NULL,
+                    color VARCHAR(50),
+                    year_of_manufacture INT,
+                    odometer_reading INT,
+                    insurance_status ENUM('insured', 'pending', 'expired', 'not-required') NOT NULL,
+                    vehicle_status ENUM('active', 'maintenance', 'inactive', 'retired') NOT NULL,
+                    additional_notes TEXT,
                     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+                    
+                    -- Foreign key relationship to drivers table
+                    FOREIGN KEY (assigned_driver) REFERENCES drivers(driver_id) ON DELETE SET NULL,
+                    
+                    -- Indexes for performance
                     INDEX idx_track_number (track_number),
+                    INDEX idx_car_name (car_name),
+                    INDEX idx_brand_name (brand_name),
                     INDEX idx_registration_number (registration_number),
                     INDEX idx_plate_number (plate_number),
                     INDEX idx_vehicle_status (vehicle_status),
-                    INDEX idx_created_at (created_at),
-                    CONSTRAINT fk_vehicles_driver FOREIGN KEY (assigned_driver) REFERENCES drivers(driver_id) ON DELETE SET NULL
+                    INDEX idx_created_at (created_at)
                 )
             `);
             console.log('✅ Vehicles table verified/created successfully');
@@ -258,11 +264,14 @@ router.post('/', async (req, res) => {
             INSERT INTO vehicles (
                 track_number, car_name, brand_name, registration_number, plate_number,
                 car_details, description, assigned_driver, registration_date, vehicle_status,
-                vehicle_type, fuel_type, created_at, updated_at
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pickup', 'diesel', NOW(), NOW())
+                vehicle_type, fuel_type, color, year_of_manufacture, odometer_reading,
+                insurance_status, additional_notes, created_at, updated_at
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())
         `, [
             track_number, car_name, brand_name, registration_number, plate_number,
-            car_details, description, assigned_driver || null, registration_date || null, vehicle_status || 'active'
+            car_details || 'Company vehicle', description || 'Company vehicle', assigned_driver || null, registration_date, vehicle_status || 'active',
+            vehicle_type || 'pickup', fuel_type || 'diesel', color || null, yearOfManufacture || null, odometerReading || null,
+            insuranceStatus || 'pending', additionalNotes || null
         ]);
 
         console.log('✅ Car registered successfully, ID:', resultResult.insertId);
