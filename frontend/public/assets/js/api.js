@@ -353,6 +353,9 @@ function validateApiResponse(response, expectedType = 'object') {
 
 // Export all functions for global use
 window.KashTecAPI = {
+    // Base URL for API calls
+    baseUrl: window.location.origin,
+    
     // Authentication
     login,
     getAuthToken,
@@ -761,7 +764,45 @@ if (typeof module !== 'undefined' && module.exports) {
         handleApiError,
         generateId,
         formatDate,
-        formatDateTime
+        formatDateTime,
+        
+        // Generic API request method
+        apiRequest: async function(endpoint, options = {}) {
+            const defaultOptions = {
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    'Authorization': `Bearer ${this.getAuthToken()}`
+                }
+            };
+            
+            const finalOptions = { ...defaultOptions, ...options };
+            
+            try {
+                console.log(`📡 API Request: ${endpoint}`, finalOptions);
+                
+                // Add cache-busting parameter for GET requests
+                let url = `${this.baseUrl}${endpoint}`;
+                if (!finalOptions.method || finalOptions.method.toUpperCase() === 'GET') {
+                    const cacheBuster = Date.now();
+                    const separator = url.includes('?') ? '&' : '?';
+                    url = `${url}${separator}_cb=${cacheBuster}`;
+                }
+                
+                const response = await fetch(url, finalOptions);
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
+                const data = await response.json();
+                console.log(`✅ API Response: ${endpoint}`, data);
+                return data;
+            } catch (error) {
+                console.error(`❌ API Error: ${endpoint}`, error);
+                throw error;
+            }
+        }
     };
 }
 
