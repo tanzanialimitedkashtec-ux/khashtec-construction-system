@@ -30,6 +30,7 @@ router.get('/', async (req, res) => {
                     email_address VARCHAR(255) NULL,
                     driver_status ENUM('Active', 'Inactive', 'On Leave', 'Suspended') DEFAULT 'Active',
                     hire_date DATE NULL,
+                    registration_date DATE NULL,
                     assigned_vehicle VARCHAR(100) NULL,
                     license_number VARCHAR(100) NULL,
                     license_expiry DATE NULL,
@@ -234,9 +235,9 @@ router.post('/', async (req, res) => {
         // Insert driver into database with proper field mapping
         const resultResult = await db.execute(`
             INSERT INTO drivers (
-                driver_id, full_name, description, years_of_experience, license_type, 
-                phone_number, email_address, driver_status, created_at, updated_at
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, 'active', NOW(), NOW())
+                driver_id, full_name, description, years_of_experience, 
+                license_type, phone_number, email_address, driver_status, registration_date, created_at, updated_at
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, 'active', ?, NOW(), NOW())
         `, [
             driverId,
             driverName,
@@ -244,7 +245,8 @@ router.post('/', async (req, res) => {
             parseInt(experience) || 0,
             licenseType,
             phone || '',
-            email || ''
+            email || '',
+            new Date().toISOString().split('T')[0]
         ]);
         
         // Handle different MySQL2 return formats
