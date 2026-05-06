@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const db = require('../../database/config/database');
+const upload = require('../middleware/upload');
 
 // Get all employees
 router.get('/', async (req, res) => {
@@ -261,12 +262,13 @@ router.get('/', async (req, res) => {
 });
 
 // Create new employee
-router.post('/', async (req, res) => {
+router.post('/', upload.any(), async (req, res) => {
     console.log('🔍 POST /api/employees endpoint called');
     console.log('📋 Request method:', req.method);
     console.log('📋 Request URL:', req.url);
     console.log('📋 Request headers:', req.headers);
     console.log('📋 Request body:', req.body);
+    console.log('📋 Uploaded files:', req.files ? req.files.map(f => ({ fieldname: f.fieldname, originalname: f.originalname, size: f.size })) : 'none');
     
     const { fullName, gmail, phone, department, jobCategory, job_category, status = 'active', nida, passport, contract } = req.body;
     
@@ -379,11 +381,20 @@ router.post('/', async (req, res) => {
             
             const employeeDbId = Array.isArray(employeeResult) ? employeeResult[0].insertId : employeeResult.insertId;
             
+            // Get profile image path if file was uploaded
+            let profileImagePath = '';
+            if (req.files && req.files.length > 0) {
+                const profileFile = req.files.find(f => f.fieldname === 'profileImage');
+                if (profileFile) {
+                    profileImagePath = profileFile.path;
+                }
+            }
+            
             // Create employee details
             const detailsResult = await db.execute(
                 `INSERT INTO employee_details (employee_id, full_name, gmail, phone, nida, passport, contract_type, profile_image)
                  VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-                [employeeDbId, fullName, gmail, phone, nida, passport || '', contract, '']
+                [employeeDbId, fullName, gmail, phone, nida, passport || '', contract, profileImagePath]
             );
             
             // Return success response
