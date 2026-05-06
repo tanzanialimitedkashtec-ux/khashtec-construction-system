@@ -226,8 +226,8 @@ header{
 
 input, select, textarea{
     width:100%;
-    padding:4px;
-    margin:4px 0;
+    padding:10px;
+    margin:10px 0;
     font-size: 10px;
     border: 1px solid #ddd;
     border-radius: 3px;
@@ -239,7 +239,7 @@ button.action{
     padding:4px 8px;
     border:none;
     cursor:pointer;
-    font-size: 10px;
+    font-size: 15px;
     border-radius: 3px;
     margin: 2px;
 }
@@ -1440,7 +1440,7 @@ button.action{
     margin:40px auto;
     background: rgba(255,255,255,0.92);
     padding:30px 28px;
-    border-radius: 18px;
+    border-radius: 1px;
     border: 1px solid rgba(255,255,255,0.65);
     box-shadow: 0 18px 40px rgba(2,24,70,0.16);
     -webkit-backdrop-filter: blur(18px);
@@ -23511,93 +23511,117 @@ async function loadCompanyCars() {
             throw new Error('API service not loaded properly');
         }
         
-        const response = await window.KashTecAPI.get('/api/company-cars');
+        const response = await window.KashTecAPI.get('/company-cars');
         
         if (response.success && response.data.length > 0) {
-            recordsList.innerHTML = response.data.map(car => `
+            recordsList.innerHTML = response.data.map(car => {
+                // Map database fields to frontend display fields
+                const mappedCar = {
+                    id: car.id,
+                    car_name: car.car_name,
+                    track_number: car.track_number,
+                    car_details: car.car_details,
+                    registration_number: car.registration_number,
+                    plate_number: car.plate_number,
+                    brand_name: car.brand_name,
+                    vehicle_type: car.vehicle_type,
+                    assigned_driver: car.assigned_driver,
+                    fuel_type: car.fuel_type,
+                    color: car.color,
+                    year_of_manufacture: car.year_of_manufacture,
+                    odometer_reading: car.odometer_reading,
+                    insurance_status: car.insurance_status,
+                    vehicle_status: car.vehicle_status,
+                    registration_date: car.registration_date,
+                    description: car.description,
+                    additional_notes: car.additional_notes
+                };
+                
+                return `
                 <tr>
                     <td>
                         <div class="vehicle-info">
-                            <div class="car-name">${car.car_name}</div>
-                            <div class="track-number">ID: ${car.track_number}</div>
-                            <div class="car-details">${car.car_details}</div>
+                            <div class="car-name">${mappedCar.car_name}</div>
+                            <div class="track-number">ID: ${mappedCar.track_number}</div>
+                            <div class="car-details">${mappedCar.car_details}</div>
                         </div>
                     </td>
                     <td>
                         <div class="registration-info">
-                            <div class="reg-number">${car.reg_no}</div>
-                            <div class="plate-number">Plate: ${car.plate_number}</div>
+                            <div class="reg-number">${mappedCar.registration_number}</div>
+                            <div class="plate-number">Plate: ${mappedCar.plate_number}</div>
                         </div>
                     </td>
                     <td>
                         <div class="brand-info">
-                            <div class="brand-name">${car.brand_name}</div>
+                            <div class="brand-name">${mappedCar.brand_name}</div>
                         </div>
                     </td>
                     <td>
                         <div class="type-info">
-                            <span class="type-badge">${car.vehicle_type}</span>
+                            <span class="type-badge">${mappedCar.vehicle_type}</span>
                         </div>
                     </td>
                     <td>
                         <div class="driver-info">
-                            <div class="driver-name">${car.driver}</div>
+                            <div class="driver-name">${mappedCar.assigned_driver || 'Unassigned'}</div>
                         </div>
                     </td>
                     <td>
                         <div class="fuel-info">
-                            <span class="fuel-badge">${car.fuel_type}</span>
+                            <span class="fuel-badge">${mappedCar.fuel_type}</span>
                         </div>
                     </td>
                     <td>
                         <div class="color-info">
-                            <div class="car-color">${car.car_color || 'N/A'}</div>
+                            <div class="car-color">${mappedCar.color || 'N/A'}</div>
                         </div>
                     </td>
                     <td>
                         <div class="year-info">
-                            <div class="year-manufacture">${car.year_of_manufacture || 'N/A'}</div>
+                            <div class="year-manufacture">${mappedCar.year_of_manufacture || 'N/A'}</div>
                         </div>
                     </td>
                     <td>
                         <div class="odometer-info">
-                            <div class="odometer-reading">${car.odometer_reading ? car.odometer_reading.toLocaleString() + ' km' : 'N/A'}</div>
+                            <div class="odometer-reading">${mappedCar.odometer_reading ? mappedCar.odometer_reading.toLocaleString() + ' km' : 'N/A'}</div>
                         </div>
                     </td>
                     <td>
                         <div class="insurance-info">
-                            <span class="insurance-badge insurance-${car.insurance_status.toLowerCase()}">${car.insurance_status}</span>
+                            <span class="insurance-badge insurance-${mappedCar.insurance_status.toLowerCase()}">${mappedCar.insurance_status}</span>
                         </div>
                     </td>
                     <td>
                         <div class="status-info">
-                            <span class="status-badge status-${car.vehicle_status.toLowerCase()}">${car.vehicle_status}</span>
+                            <span class="status-badge status-${mappedCar.vehicle_status.toLowerCase()}">${mappedCar.vehicle_status}</span>
                         </div>
                     </td>
                     <td>
                         <div class="date-info">
-                            <div class="registration-date">${new Date(car.registration_date).toLocaleDateString()}</div>
+                            <div class="registration-date">${new Date(mappedCar.registration_date).toLocaleDateString()}</div>
                         </div>
                     </td>
                     <td>
                         <div class="description-info">
-                            <div class="car-description" title="${car.car_description || 'No description provided'}">${car.car_description ? (car.car_description.length > 30 ? car.car_description.substring(0, 30) + '...' : car.car_description) : '—'}</div>
+                            <div class="car-description" title="${mappedCar.description || 'No description provided'}">${mappedCar.description ? (mappedCar.description.length > 30 ? mappedCar.description.substring(0, 30) + '...' : mappedCar.description) : '—'}</div>
                         </div>
                     </td>
                     <td>
                         <div class="notes-info">
-                            <div class="additional-notes" title="${car.additional_notes || 'No additional notes'}">${car.additional_notes ? (car.additional_notes.length > 25 ? car.additional_notes.substring(0, 25) + '...' : car.additional_notes) : '—'}</div>
+                            <div class="additional-notes" title="${mappedCar.additional_notes || 'No additional notes'}">${mappedCar.additional_notes ? (mappedCar.additional_notes.length > 25 ? mappedCar.additional_notes.substring(0, 25) + '...' : mappedCar.additional_notes) : '—'}</div>
                         </div>
                     </td>
                     <td>
                         <div class="car-actions">
-                            <button class="action-btn view" onclick="viewCarDetails('${car.track_number}')" title="View Details">👁️</button>
-                            <button class="action-btn edit" onclick="editCar('${car.track_number}')" title="Edit Vehicle">✏️</button>
-                            <button class="action-btn delete" onclick="deleteCar('${car.track_number}')" title="Delete Vehicle">🗑️</button>
+                            <button class="action-btn view" onclick="viewCarDetails('${mappedCar.track_number}')" title="View Details">👁️</button>
+                            <button class="action-btn edit" onclick="editCar('${mappedCar.track_number}')" title="Edit Vehicle">✏️</button>
+                            <button class="action-btn delete" onclick="deleteCar('${mappedCar.track_number}')" title="Delete Vehicle">🗑️</button>
                         </div>
                     </td>
                 </tr>
-            `).join('');
+                `;
+            }).join('');
         } else {
             recordsList.innerHTML = '<tr><td colspan="16" class="no-records">No vehicles found. Register your first company car!</td></tr>';
         }
@@ -27276,8 +27300,8 @@ function saveSafetyPolicy() {
         document: document.getElementById('policyDocument').files.length,
         effectiveDate: document.getElementById('effectiveDate').value,
         reviewDate: document.getElementById('reviewDate').value,
-        applicableTo: document.getElementById('applicableTo').value,
-        complianceLevel: document.getElementById('complianceLevel').value,
+        applicableTo: document.getElementById('policyScope').value,
+        complianceLevel: document.getElementById('policyPriority').value,
         training: getSelectedTraining(),
         uploadedBy: 'HSE Manager',
         uploadDate: new Date().toLocaleString()
@@ -27307,7 +27331,7 @@ function saveSafetyPolicy() {
     
     // Send data to backend API
     const baseUrl = window.location.origin;
-    fetch(`${baseUrl}/api/hse/work`, {
+    fetch(`${baseUrl}/api/hse/hse`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -27322,6 +27346,16 @@ function saveSafetyPolicy() {
         
         if (!response.ok) {
             // Handle HTTP errors
+            if (response.status === 401) {
+                // Authentication error - don't redirect, show error message
+                console.error('❌ Authentication failed - token may be expired or missing');
+                throw new Error('Authentication failed. Please log in again to save policies.');
+            } else if (response.status === 403) {
+                // Authorization error - user doesn't have permission
+                console.error('❌ Authorization failed - insufficient permissions');
+                throw new Error('You do not have permission to save safety policies.');
+            }
+            
             return response.text().then(text => {
                 console.error('❌ HTTP Error Response:', text);
                 throw new Error(`HTTP ${response.status}: ${text || response.statusText}`);
@@ -27383,7 +27417,7 @@ async function loadPolicyRecords() {
         
         // Try to get policy records from API
         try {
-            response = await fetch(`${baseUrl}/api/hse/work`, {
+            response = await fetch(`${baseUrl}/api/hse/hse`, {
                 method: 'GET',
                 headers: {
                     'Content-Type': 'application/json',
@@ -27392,6 +27426,15 @@ async function loadPolicyRecords() {
             });
             
             if (!response.ok) {
+                if (response.status === 401) {
+                    // Authentication error - don't redirect, show error message
+                    console.error('❌ Authentication failed - token may be expired or missing');
+                    throw new Error('Authentication failed. Please log in again to view policies.');
+                } else if (response.status === 403) {
+                    // Authorization error - user doesn't have permission
+                    console.error('❌ Authorization failed - insufficient permissions');
+                    throw new Error('You do not have permission to view safety policies.');
+                }
                 throw new Error(`HTTP ${response.status}: ${response.statusText}`);
             }
         } catch (primaryError) {

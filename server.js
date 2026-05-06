@@ -786,7 +786,7 @@ app.use('/api/work', authenticateToken, asyncHandler(async (req, res, next) => {
 
 
 
-app.use('/api/meetings', authenticateToken, asyncHandler(async (req, res, next) => {
+app.use('/api/meetings', asyncHandler(async (req, res, next) => {
 
     return scheduleMeetingsRoutes(req, res, next);
 
@@ -3679,7 +3679,11 @@ app.post('/api/clients', async (req, res) => {
 
             clientType,
 
-            notes
+            notes,
+
+            tin,
+
+            budgetRange
 
         } = req.body;
 
@@ -3791,19 +3795,21 @@ app.post('/api/clients', async (req, res) => {
 
             INSERT INTO clients (
 
-                client_id, client_type, full_name, company_name, phone_number,
+                client_name, client_type, company_name, phone, email, address,
 
-                email_address, nida_number, physical_address, property_interest, additional_notes,
+                nida_number, tin_number, property_interest, budget_range,
 
-                registered_by, status, registration_date, created_at, updated_at
+                additional_notes, registered_by, registration_date, status
 
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW(), NOW())
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, CURDATE(), 'Active')
 
         `, [
 
-            clientId, clientType || 'individual', name, companyName, phone,
+            name, clientType || 'individual', companyName || '', phone,
 
-            email, 'NIDA' + Date.now(), address, industry, notes, 'Admin Assistant', 'active'
+            email, address || '', 'NIDA' + Date.now(), tin || '',
+
+            industry || '', budgetRange || '', notes || '', 'Admin Assistant'
 
         ]);
 
@@ -3815,9 +3821,9 @@ app.post('/api/clients', async (req, res) => {
 
             message: 'Client registered successfully',
 
-            clientId: clientId,
+            clientId: result.insertId,
 
-            id: clientId
+            id: result.insertId
 
         });
 
