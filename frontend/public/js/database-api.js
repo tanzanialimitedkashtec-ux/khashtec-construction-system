@@ -413,6 +413,9 @@ window.DatabaseUI = {
     }
 };
 
+// Initialize API service
+window.apiService = new DatabaseAPI();
+
 // Auto-initialize when DOM is ready
 document.addEventListener('DOMContentLoaded', function() {
     // Check database connection on page load
