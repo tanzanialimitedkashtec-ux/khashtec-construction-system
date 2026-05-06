@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const db = require('../../database/config/database');
-const upload = require('../middleware/upload');
+const upload = require('../src/middleware/upload');
 
 // Get all employees
 router.get('/', async (req, res) => {
