@@ -3247,9 +3247,21 @@ router.get('/workforce-requests', async (req, res) => {
 
 // Create new workforce request
 router.post('/workforce-requests', async (req, res) => {
+    // Check if request body exists and is properly parsed
+    if (!req.body || Object.keys(req.body).length === 0) {
+        console.log('❌ Empty or missing request body');
+        return res.status(400).json({
+            error: 'Request body is empty or missing',
+            contentType: req.headers['content-type'],
+            body: req.body
+        });
+    }
+    
     try {
         console.log('📝 Creating new workforce request...');
+        console.log('📊 Request headers:', req.headers);
         console.log('📊 Request body:', req.body);
+        console.log('📊 Content-Type:', req.headers['content-type']);
         
         const {
             project,
@@ -3278,10 +3290,21 @@ router.post('/workforce-requests', async (req, res) => {
         });
         
         // Validate required fields
-        if (!project || !requestType || !workersNeeded || !duration || !startDate || !justification) {
+        console.log('🔍 Validating required fields...');
+        const missingFields = [];
+        if (!project) missingFields.push('project');
+        if (!requestType) missingFields.push('requestType');
+        if (!workersNeeded) missingFields.push('workersNeeded');
+        if (!duration) missingFields.push('duration');
+        if (!startDate) missingFields.push('startDate');
+        if (!justification) missingFields.push('justification');
+        
+        if (missingFields.length > 0) {
+            console.log('❌ Missing required fields:', missingFields);
             return res.status(400).json({
                 error: 'Missing required fields',
                 required: ['project', 'requestType', 'workersNeeded', 'jobCategories', 'duration', 'startDate', 'justification'],
+                missing: missingFields,
                 received: {
                     project: !!project,
                     requestType: !!requestType,
@@ -3289,18 +3312,36 @@ router.post('/workforce-requests', async (req, res) => {
                     jobCategories: jobCategories,
                     duration: !!duration,
                     startDate: !!startDate,
-                    justification: !!justification
+                    justification: !!justification,
+                    fullBody: req.body
                 }
             });
         }
         
         // Validate job categories separately
+        console.log('🔍 Validating job categories...');
+        console.log('📊 Job categories details:', {
+            exists: !!jobCategories,
+            isArray: Array.isArray(jobCategories),
+            type: typeof jobCategories,
+            length: Array.isArray(jobCategories) ? jobCategories.length : 'N/A',
+            value: jobCategories
+        });
+        
         if (!jobCategories || (Array.isArray(jobCategories) && jobCategories.length === 0)) {
+            console.log('❌ Job categories validation failed');
             return res.status(400).json({
                 error: 'At least one job category must be selected',
-                received: jobCategories
+                received: jobCategories,
+                details: {
+                    exists: !!jobCategories,
+                    isArray: Array.isArray(jobCategories),
+                    length: Array.isArray(jobCategories) ? jobCategories.length : 'N/A'
+                }
             });
         }
+        
+        console.log('✅ Job categories validation passed');
         
         // Generate unique request ID
         const requestId = `WFR-${Date.now().toString().slice(-6)}`;

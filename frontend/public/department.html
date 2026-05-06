@@ -11382,7 +11382,7 @@ function fetchPoliciesForApproval() {
     console.log('🔄 Fetching policies for approval...');
     console.log('🔍 About to call /api/policies endpoint...');
     
-    fetch('/policies')
+    fetch('/api/policies')
         .then(response => {
             console.log('📡 Policies API Response status:', response.status);
             console.log('📡 Response OK:', response.ok);
@@ -17357,10 +17357,10 @@ function fetchUpcomingMeetings() {
     
     // Try different API endpoints in case one doesn't work
     const apiEndpoints = [
-        '/meetings/upcoming',  // Best endpoint - returns only upcoming meetings
-        '/meetings/all',       // Returns all meetings
-        '/meetings',
-        '/meetings'
+        '/api/meetings/upcoming',  // Best endpoint - returns only upcoming meetings
+        '/api/meetings/all',       // Returns all meetings
+        '/api/meetings',
+        '/api/meetings'
     ];
     
     // Try the first endpoint, then fallback to others if needed
@@ -18261,13 +18261,17 @@ async function loadTodayAttendanceSummary() {
         const totalEmployeesData = await totalEmployeesResponse.json();
         const totalEmployees = totalEmployeesData.length || 0;
         
-        // Update summary display
-        totalEmployeesElement.textContent = totalEmployees;
-        presentCountElement.textContent = presentCount;
-        absentCountElement.textContent = absentCount;
-        leaveCountElement.textContent = leaveCount;
-        
-        console.log(`✅ Attendance summary updated - Total: ${totalEmployees}, Present: ${presentCount}, Absent: ${absentCount}, Leave: ${leaveCount}`);
+        // Update summary display only if elements exist
+        if (totalEmployeesElement && presentCountElement && absentCountElement && leaveCountElement) {
+            totalEmployeesElement.textContent = totalEmployees;
+            presentCountElement.textContent = presentCount;
+            absentCountElement.textContent = absentCount;
+            leaveCountElement.textContent = leaveCount;
+            
+            console.log(`✅ Attendance summary updated - Total: ${totalEmployees}, Present: ${presentCount}, Absent: ${absentCount}, Leave: ${leaveCount}`);
+        } else {
+            console.log('ℹ️ Attendance summary elements not found - cannot update display');
+        }
         
     } catch (error) {
         console.error('❌ Error loading attendance summary:', error);
@@ -24276,74 +24280,62 @@ async function loadDrivers() {
         
         const response = await KashTecAPI.get('/drivers');
         
-        if (response.success && response.data.length > 0) {
-            recordsList.innerHTML = response.data.map(driver => `
+        if (response.success && response.drivers && response.drivers.length > 0) {
+            recordsList.innerHTML = response.drivers.map(driver => `
                 <tr>
                     <td>
                         <div class="driver-info">
-                            <div class="driver-id">${driver.driverId}</div>
-                            <div class="driver-name">${driver.driverName}</div>
-                            <div class="driver-description">${driver.driverDescription || 'No description'}</div>
+                            <div class="driver-id">${driver.driver_id}</div>
+                            <div class="driver-name">${driver.full_name}</div>
+                            <div class="driver-description">${driver.description || 'No description'}</div>
                         </div>
                     </td>
                     <td>
                         <div class="personal-details">
-                            <div class="experience">Experience: ${driver.experience} years</div>
-                            <div class="dob">DOB: ${new Date(driver.dateOfBirth).toLocaleDateString()}</div>
-                            <div class="gender">Gender: ${driver.gender}</div>
-                            <div class="address">${driver.address}</div>
-                            <div class="region">Region: ${driver.region || 'N/A'}</div>
-                            <div class="blood-group">Blood: ${driver.bloodGroup || 'N/A'}</div>
+                            <div class="experience">Experience: ${driver.years_of_experience} years</div>
+                            <div class="license">License: ${driver.license_type}</div>
+                            <div class="phone">Phone: ${driver.phone_number}</div>
+                            <div class="email">Email: ${driver.email_address}</div>
+                            <div class="status">Status: ${driver.driver_status}</div>
                         </div>
                     </td>
                     <td>
                         <div class="contact-info">
-                            <div class="phone">📱 ${driver.phoneNumber}</div>
-                            <div class="email">📧 ${driver.email}</div>
-                            <div class="nida">NIDA: ${driver.nidaNumber}</div>
-                            <div class="passport">Passport: ${driver.passportNumber || 'N/A'}</div>
+                            <div class="phone">📱 ${driver.phone_number}</div>
+                            <div class="email">📧 ${driver.email_address}</div>
                         </div>
                     </td>
                     <td>
                         <div class="license-info">
-                            <div class="license-type">Type: ${driver.licenseType}</div>
-                            <div class="license-issue">Issue: ${new Date(driver.licenseIssueDate).toLocaleDateString()}</div>
-                            <div class="license-expiry">Expiry: ${new Date(driver.licenseExpiryDate).toLocaleDateString()}</div>
-                            <div class="medical">Medical: ${driver.medicalCertificate || 'N/A'}</div>
-                            <div class="medical-expiry">Medical Exp: ${driver.medicalExpiryDate ? new Date(driver.medicalExpiryDate).toLocaleDateString() : 'N/A'}</div>
+                            <div class="license-type">Type: ${driver.license_type}</div>
                         </div>
                     </td>
                     <td>
                         <div class="employment-info">
-                            <div class="status">Status: ${driver.employmentStatus}</div>
-                            <div class="hire-date">Hired: ${new Date(driver.hireDate).toLocaleDateString()}</div>
-                            <div class="salary">Salary: TZS ${driver.salary ? parseInt(driver.salary).toLocaleString() : 'N/A'}</div>
-                            <div class="payment">Payment: ${driver.paymentMethod || 'N/A'}</div>
-                            <div class="skills">Skills: ${driver.skills || 'N/A'}</div>
+                            <div class="status">Status: ${driver.driver_status}</div>
                         </div>
                     </td>
                     <td>
                         <div class="emergency-info">
-                            <div class="emergency-name">${driver.emergencyContactName}</div>
-                            <div class="emergency-phone">📱 ${driver.emergencyContactNumber}</div>
-                            <div class="emergency-relation">Relation: ${driver.emergencyRelationship}</div>
+                            <div class="emergency-name">Emergency Contact</div>
+                            <div class="emergency-phone">📱 ${driver.phone_number}</div>
                         </div>
                     </td>
                     <td>
                         <div class="vehicle-info">
-                            <div class="assigned-vehicle">${driver.assignedVehicle || 'Unassigned'}</div>
+                            <div class="assigned-vehicle">Available</div>
                         </div>
                     </td>
                     <td>
                         <div class="status-info">
-                            <span class="status-badge status-${driver.driverStatus.toLowerCase()}">${driver.driverStatus}</span>
+                            <span class="status-badge status-${driver.driver_status.toLowerCase()}">${driver.driver_status}</span>
                         </div>
                     </td>
                     <td>
                         <div class="driver-actions">
-                            <button class="action-btn view" onclick="viewDriverDetails('${driver.driverId}')" title="View Details">👁️</button>
-                            <button class="action-btn edit" onclick="editDriver('${driver.driverId}')" title="Edit Driver">✏️</button>
-                            <button class="action-btn delete" onclick="deleteDriver('${driver.driverId}')" title="Delete Driver">🗑️</button>
+                            <button class="action-btn view" onclick="viewDriverDetails('${driver.id}')" title="View Details">👁️</button>
+                            <button class="action-btn edit" onclick="editDriver('${driver.id}')" title="Edit Driver">✏️</button>
+                            <button class="action-btn delete" onclick="deleteDriver('${driver.id}')" title="Delete Driver">🗑️</button>
                         </div>
                     </td>
                 </tr>
@@ -24592,18 +24584,71 @@ function loadSampleDrivers() {
 }
 
 // Driver Action Functions
-function viewDriverDetails(driverId) {
-    customAlert(`Viewing details for driver: ${driverId}`, 'Driver Details', 'info');
+async function viewDriverDetails(driverId) {
+    try {
+        const response = await fetch(`http://localhost:8080/api/drivers/${driverId}`, {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${localStorage.getItem('token')}`,
+                'Content-Type': 'application/json'
+            }
+        });
+
+        if (!response.ok) {
+            throw new Error('Failed to fetch driver details');
+        }
+
+        const driver = await response.json();
+        showDriverDetailsModal(driver);
+    } catch (error) {
+        console.error('❌ Error fetching driver details:', error);
+        customAlert('Failed to load driver details. Please try again.', 'Error', 'error');
+    }
 }
 
-function editDriver(driverId) {
-    customAlert(`Editing driver: ${driverId}`, 'Edit Driver', 'info');
+async function editDriver(driverId) {
+    try {
+        const response = await fetch(`http://localhost:3000/api/drivers/${driverId}`, {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${localStorage.getItem('token')}`,
+                'Content-Type': 'application/json'
+            }
+        });
+
+        if (!response.ok) {
+            throw new Error('Failed to fetch driver details');
+        }
+
+        const driver = await response.json();
+        showEditDriverModal(driver);
+    } catch (error) {
+        console.error('❌ Error fetching driver details:', error);
+        customAlert('Failed to load driver details. Please try again.', 'Error', 'error');
+    }
 }
 
-function deleteDriver(driverId) {
+async function deleteDriver(driverId) {
     if (confirm(`Are you sure you want to delete driver: ${driverId}?`)) {
-        customAlert(`Driver ${driverId} deleted successfully!`, 'Success', 'success');
-        loadDrivers();
+        try {
+            const response = await fetch(`http://localhost:3000/api/drivers/${driverId}`, {
+                method: 'DELETE',
+                headers: {
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to delete driver');
+            }
+
+            customAlert(`Driver ${driverId} deleted successfully!`, 'Success', 'success');
+            loadDriverRecords();
+        } catch (error) {
+            console.error('❌ Error deleting driver:', error);
+            customAlert('Failed to delete driver. Please try again.', 'Error', 'error');
+        }
     }
 }
 
@@ -40908,28 +40953,195 @@ async function reactivateUser(userId) {
     }
 }
 
-async function viewUserDetails(userId) {
-    console.log('👁️ Viewing user details:', userId);
-    
+async function viewDriverDetails(driverId) {
     try {
-        const baseUrl = window.location.origin;
-        const response = await fetch(`${baseUrl}/api/users/${userId}`, {
+        const response = await fetch(`http://localhost:3000/api/drivers/${driverId}`, {
             method: 'GET',
             headers: {
-                'Content-Type': 'application/json',
-                'Accept': 'application/json'
+                'Authorization': `Bearer ${localStorage.getItem('token')}`,
+                'Content-Type': 'application/json'
             }
         });
-        
-        if (response.ok) {
-            const result = await response.json();
-            showUserDetailsModal(result.data);
-        } else {
-            showNotification('Failed to load user details', 'error');
+
+        if (!response.ok) {
+            throw new Error('Failed to fetch driver details');
         }
+
+        const driver = await response.json();
+        showDriverDetailsModal(driver);
     } catch (error) {
-        console.error('❌ Error loading user details:', error);
-        showNotification('Error loading user details. Please try again.', 'error');
+        console.error('❌ Error fetching driver details:', error);
+        alert('Failed to load driver details. Please try again.');
+    }
+}
+
+async function editDriver(driverId) {
+    try {
+        const response = await fetch(`http://localhost:3000/api/drivers/${driverId}`, {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${localStorage.getItem('token')}`,
+                'Content-Type': 'application/json'
+            }
+        });
+
+        if (!response.ok) {
+            throw new Error('Failed to fetch driver details');
+        }
+
+        const driver = await response.json();
+        showEditDriverModal(driver);
+    } catch (error) {
+        console.error('❌ Error fetching driver details:', error);
+        alert('Failed to load driver details. Please try again.');
+    }
+}
+
+function showDriverDetailsModal(driver) {
+    const modal = document.createElement('div');
+    modal.className = 'modal-overlay';
+    modal.style.display = 'flex';
+    
+    modal.innerHTML = `
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Driver Details</h2>
+                <button class="modal-close" onclick="this.closest('.modal-overlay').remove()">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="driver-details">
+                    <div class="detail-row">
+                        <strong>Driver ID:</strong> ${driver.id}
+                    </div>
+                    <div class="detail-row">
+                        <strong>Name:</strong> ${driver.full_name}
+                    </div>
+                    <div class="detail-row">
+                        <strong>License Number:</strong> ${driver.license_number}
+                    </div>
+                    <div class="detail-row">
+                        <strong>License Type:</strong> ${driver.license_type}
+                    </div>
+                    <div class="detail-row">
+                        <strong>Phone:</strong> ${driver.phone_number}
+                    </div>
+                    <div class="detail-row">
+                        <strong>Email:</strong> ${driver.gmail || 'N/A'}
+                    </div>
+                    <div class="detail-row">
+                        <strong>Status:</strong> <span class="status-badge status-${driver.driver_status.toLowerCase()}">${driver.driver_status}</span>
+                    </div>
+                    <div class="detail-row">
+                        <strong>Emergency Contact:</strong> ${driver.phone_number}
+                    </div>
+                    <div class="detail-row">
+                        <strong>Assigned Vehicle:</strong> Available
+                    </div>
+                    <div class="detail-row">
+                        <strong>Created At:</strong> ${new Date(driver.created_at).toLocaleString()}
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-cancel" onclick="this.closest('.modal-overlay').remove()">Close</button>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(modal);
+}
+
+function showEditDriverModal(driver) {
+    const modal = document.createElement('div');
+    modal.className = 'modal-overlay';
+    modal.style.display = 'flex';
+    
+    modal.innerHTML = `
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Edit Driver</h2>
+                <button class="modal-close" onclick="this.closest('.modal-overlay').remove()">×</button>
+            </div>
+            <div class="modal-body">
+                <form id="editDriverForm" class="driver-form">
+                    <div class="form-group">
+                        <label for="editFullName">Full Name:</label>
+                        <input type="text" id="editFullName" name="full_name" value="${driver.full_name || ''}" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="editLicenseNumber">License Number:</label>
+                        <input type="text" id="editLicenseNumber" name="license_number" value="${driver.license_number || ''}" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="editLicenseType">License Type:</label>
+                        <select id="editLicenseType" name="license_type" required>
+                            <option value="Class C" ${driver.license_type === 'Class C' ? 'selected' : ''}>Class C</option>
+                            <option value="Class B" ${driver.license_type === 'Class B' ? 'selected' : ''}>Class B</option>
+                            <option value="Class A" ${driver.license_type === 'Class A' ? 'selected' : ''}>Class A</option>
+                            <option value="Motorcycle" ${driver.license_type === 'Motorcycle' ? 'selected' : ''}>Motorcycle</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="editPhoneNumber">Phone Number:</label>
+                        <input type="tel" id="editPhoneNumber" name="phone_number" value="${driver.phone_number || ''}" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="editEmail">Email:</label>
+                        <input type="email" id="editEmail" name="gmail" value="${driver.gmail || ''}">
+                    </div>
+                    <div class="form-group">
+                        <label for="editStatus">Status:</label>
+                        <select id="editStatus" name="driver_status" required>
+                            <option value="active" ${driver.driver_status === 'active' ? 'selected' : ''}>Active</option>
+                            <option value="inactive" ${driver.driver_status === 'inactive' ? 'selected' : ''}>Inactive</option>
+                            <option value="suspended" ${driver.driver_status === 'suspended' ? 'selected' : ''}>Suspended</option>
+                        </select>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-cancel" onclick="this.closest('.modal-overlay').remove()">Cancel</button>
+                <button class="btn btn-primary" onclick="updateDriver('${driver.id}')">Update Driver</button>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(modal);
+}
+
+async function updateDriver(driverId) {
+    try {
+        const form = document.getElementById('editDriverForm');
+        const formData = new FormData(form);
+        
+        const driverData = {
+            full_name: formData.get('full_name'),
+            license_number: formData.get('license_number'),
+            license_type: formData.get('license_type'),
+            phone_number: formData.get('phone_number'),
+            gmail: formData.get('gmail'),
+            driver_status: formData.get('driver_status')
+        };
+
+        const response = await fetch(`http://localhost:3000/api/drivers/${driverId}`, {
+            method: 'PUT',
+            headers: {
+                'Authorization': `Bearer ${localStorage.getItem('token')}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(driverData)
+        });
+
+        if (!response.ok) {
+            throw new Error('Failed to update driver');
+        }
+
+        customAlert('Driver updated successfully!', 'Success', 'success');
+        document.querySelector('.modal-overlay').remove();
+        loadDriverRecords(); // Refresh the driver list
+    } catch (error) {
+        console.error('❌ Error updating driver:', error);
+        customAlert('Failed to update driver. Please try again.', 'Error', 'error');
     }
 }
 
