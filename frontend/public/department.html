@@ -239,7 +239,7 @@ button.action{
     padding:4px 8px;
     border:none;
     cursor:pointer;
-    font-size: 15px;
+    font-size: 9px;
     border-radius: 3px;
     margin: 2px;
 }
@@ -11099,22 +11099,22 @@ window.KashTecAPI = {
     
     // Document Management APIs
     async getDocument(docId) {
-        return this.apiRequest(`/api/documents/${docId}`);
+        return this.apiRequest(`/documents/${docId}`);
     },
     
     async getAllDocuments() {
-        return this.apiRequest('/api/documents');
+        return this.apiRequest('/documents');
     },
     
     async updateDocument(docId, documentData) {
-        return this.apiRequest(`/api/documents/${docId}`, {
+        return this.apiRequest(`/documents/${docId}`, {
             method: 'PUT',
             body: JSON.stringify(documentData)
         });
     },
     
     async downloadDocument(docId) {
-        const response = await fetch(`${this.baseUrl}/api/documents/${docId}/download`, {
+        const response = await fetch(`${this.baseUrl}/documents/${docId}/download`, {
             headers: {
                 'Authorization': `Bearer ${this.getAuthToken()}`
             }
@@ -11128,14 +11128,14 @@ window.KashTecAPI = {
     },
     
     async createDocument(documentData) {
-        return this.apiRequest('/api/documents', {
+        return this.apiRequest('/documents', {
             method: 'POST',
             body: JSON.stringify(documentData)
         });
     },
     
     async deleteDocument(docId) {
-        return this.apiRequest(`/api/documents/${docId}`, {
+        return this.apiRequest(`/documents/${docId}`, {
             method: 'DELETE'
         });
     },
@@ -11145,7 +11145,7 @@ window.KashTecAPI = {
         let response;
         try {
             // Try to get safety data from HSE work items first
-            response = await this.apiRequest('/api/work/hse');
+            response = await this.apiRequest('/work/hse');
             
             // Transform HSE data to safety status format
             console.log('🔍 Raw HSE response:', response);
@@ -11200,7 +11200,7 @@ window.KashTecAPI = {
             
             // Fallback to site reports for safety data
             try {
-                response = await this.apiRequest('/api/work/site-reports');
+                response = await this.apiRequest('/work/site-reports');
                 
                 // Transform site reports to safety status format
                 const safetyData = {
@@ -11237,32 +11237,32 @@ window.KashTecAPI = {
     
     // HR Work APIs
     async createHRWork(workData) {
-        return this.apiRequest('/api/hr/work', {
+        return this.apiRequest('/hr/work', {
             method: 'POST',
             body: JSON.stringify(workData)
         });
     },
     
     async getHRWork() {
-        return this.apiRequest('/api/hr/work');
+        return this.apiRequest('/hr/work');
     },
     
     // HSE Work APIs
     async createHSEWork(workData) {
-        return this.apiRequest('/api/hse/work', {
+        return this.apiRequest('/hse/work', {
             method: 'POST',
             body: JSON.stringify(workData)
         });
     },
     
     async getHSEWork() {
-        return this.apiRequest('/api/hse/work');
+        return this.apiRequest('/hse/work');
     },
     
     // Test API connectivity
     async testConnection() {
         try {
-            const result = await this.apiRequest('/api/test');
+            const result = await this.apiRequest('/test');
             return { success: true, data: result };
         } catch (error) {
             return { success: false, error: error.message };
@@ -11382,7 +11382,7 @@ function fetchPoliciesForApproval() {
     console.log('🔄 Fetching policies for approval...');
     console.log('🔍 About to call /api/policies endpoint...');
     
-    fetch('/api/policies')
+    fetch('/policies')
         .then(response => {
             console.log('📡 Policies API Response status:', response.status);
             console.log('📡 Response OK:', response.ok);
@@ -17357,9 +17357,9 @@ function fetchUpcomingMeetings() {
     
     // Try different API endpoints in case one doesn't work
     const apiEndpoints = [
-        '/api/meetings/upcoming',  // Best endpoint - returns only upcoming meetings
-        '/api/meetings/all',       // Returns all meetings
-        '/api/meetings',
+        '/meetings/upcoming',  // Best endpoint - returns only upcoming meetings
+        '/meetings/all',       // Returns all meetings
+        '/meetings',
         '/meetings'
     ];
     
@@ -19632,7 +19632,7 @@ function loadEmployeeForUpdate() {
     resultsDiv.innerHTML = '<p style="color: #666;">Searching...</p>';
     
     // Load employees from API
-    fetch('/api/employees')
+    fetch('/employees')
         .then(response => response.json())
         .then(data => {
             console.log('📊 Employees loaded:', data);
@@ -19745,7 +19745,7 @@ function showAllEmployees() {
     resultsDiv.innerHTML = '<p style="color: #666;">Loading all employees...</p>';
     
     // Load employees from API
-    fetch('/api/employees')
+    fetch('/employees')
         .then(response => response.json())
         .then(data => {
             // Handle different response formats
@@ -19893,7 +19893,7 @@ function selectEmployeeForUpdate(email) {
     console.log('🔄 Selecting employee for update:', email);
     
     // Load employees from API to get the selected employee
-    fetch('/api/employees')
+    fetch('/employees')
         .then(response => response.json())
         .then(data => {
             // Handle different response formats
@@ -22026,7 +22026,7 @@ function debugAPIConnection() {
     
     // Test 2: Try basic health check
     console.log('🧪 Testing health endpoint...');
-    fetch('/api/health')
+    fetch('/health')
         .then(response => {
             console.log('📡 Health response status:', response.status);
             console.log('📡 Health response headers:', [...response.headers.entries()]);
@@ -22037,7 +22037,7 @@ function debugAPIConnection() {
             
             // Test 3: Try simple GET test
             console.log('🧪 Testing simple GET endpoint...');
-            return fetch('/api/test');
+            return fetch('/test');
         })
         .then(response => {
             console.log('📡 GET test response status:', response.status);
@@ -22048,7 +22048,7 @@ function debugAPIConnection() {
             
             // Test 4: Try simple POST test
             console.log('🧪 Testing simple POST endpoint...');
-            return fetch('/api/test', {
+            return fetch('/test', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -22069,7 +22069,7 @@ function debugAPIConnection() {
             
             // Test 5: Try work API test
             console.log('🧪 Testing work API...');
-            return fetch('/api/work/test', {
+            return fetch('/work/test', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -22091,7 +22091,7 @@ function debugAPIConnection() {
             
             // Test 6: Try actual HSE submission
             console.log('🧪 Testing actual HSE submission...');
-            return fetch('/api/hse/work', {
+            return fetch('/hse/work', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -22332,7 +22332,7 @@ function saveEmployeeManual() {
         
         // First test if employees API is reachable
         console.log('🧪 Testing employees API endpoint...');
-        fetch('/api/employees', {
+        fetch('/employees', {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
@@ -22407,7 +22407,7 @@ function saveEmployeeManual() {
                 console.log('📄 No Agreement Document selected');
             }
             
-            return fetch('/api/employees', {
+            return fetch('/employees', {
                 method: 'POST',
                 headers: {
                     'Accept': 'application/json'
@@ -24274,7 +24274,7 @@ async function loadDrivers() {
         const recordsList = document.getElementById('driverRecordsList');
         recordsList.innerHTML = '<tr><td colspan="9" class="loading">Loading driver records...</td></tr>';
         
-        const response = await KashTecAPI.get('/api/drivers');
+        const response = await KashTecAPI.get('/drivers');
         
         if (response.success && response.data.length > 0) {
             recordsList.innerHTML = response.data.map(driver => `
@@ -27195,13 +27195,13 @@ function testAPIConnectivity() {
     console.log('🧪 Testing API connectivity...');
     
     // Test basic API endpoint
-    fetch('/api/work/test')
+    fetch('/work/test')
         .then(response => response.json())
         .then(data => {
             console.log('✅ Basic API test successful:', data);
             
             // Test database connection
-            return fetch('/api/work/test-db');
+            return fetch('/work/test-db');
         })
         .then(response => response.json())
         .then(data => {
@@ -29870,7 +29870,7 @@ async function saveLanguageCampaign() {
             throw new Error('API service not loaded properly');
         }
 
-        const response = await window.KashTecAPI.post('/api/language-campaigns', campaignData);
+        const response = await window.KashTecAPI.post('/language-campaigns', campaignData);
         
         if (response.success) {
             customAlert('Campaign created successfully!', 'Success', 'success');
@@ -29907,7 +29907,7 @@ async function saveLanguagePurchase() {
             throw new Error('API service not loaded properly');
         }
 
-        const response = await window.KashTecAPI.post('/api/language-purchases', purchaseData);
+        const response = await window.KashTecAPI.post('/language-purchases', purchaseData);
         
         if (response.success) {
             customAlert(`Purchase recorded successfully! Tracking Number: ${response.data.tracking_number}`, 'Success', 'success');
@@ -29943,7 +29943,7 @@ async function savePaymentTracking() {
             throw new Error('API service not loaded properly');
         }
 
-        const response = await window.KashTecAPI.post('/api/language-payment-tracking', trackingData);
+        const response = await window.KashTecAPI.post('/language-payment-tracking', trackingData);
         
         if (response.success) {
             customAlert(`Payment tracking created successfully! Tracking Number: ${response.data.tracking_number}`, 'Success', 'success');
@@ -29969,7 +29969,7 @@ async function loadLanguageCampaigns() {
             throw new Error('API service not loaded properly');
         }
         
-        const response = await window.KashTecAPI.get('/api/language-campaigns');
+        const response = await window.KashTecAPI.get('/language-campaigns');
         
         // Handle different response formats
         const campaigns = response.data || response.campaigns || response;
@@ -30229,7 +30229,7 @@ async function loadLanguagePurchases() {
             throw new Error('API service not loaded properly');
         }
         
-        const response = await window.KashTecAPI.get('/api/language-purchases');
+        const response = await window.KashTecAPI.get('/language-purchases');
         
         // Handle different response formats
         const purchases = response.data || response.purchases || response;
@@ -30510,7 +30510,7 @@ async function loadPaymentTracking() {
             throw new Error('API service not loaded properly');
         }
         
-        const response = await window.KashTecAPI.get('/api/language-payment-tracking');
+        const response = await window.KashTecAPI.get('/language-payment-tracking');
         
         if (response.success && response.data.length > 0) {
             recordsList.innerHTML = response.data.map(tracking => `
@@ -30725,7 +30725,7 @@ async function loadCampaignsForPurchase() {
         const campaignSelect = document.getElementById('campaignSelect');
         campaignSelect.innerHTML = '<option value="">Choose a campaign...</option>';
         
-        const response = await KashTecAPI.get('/api/language-campaigns/active');
+        const response = await KashTecAPI.get('/language-campaigns/active');
         
         if (response.success && response.data.length > 0) {
             response.data.forEach(campaign => {
@@ -30745,7 +30745,7 @@ async function loadPurchasesForTracking() {
         const purchaseSelect = document.getElementById('purchaseSelect');
         purchaseSelect.innerHTML = '<option value="">Choose a purchase...</option>';
         
-        const response = await KashTecAPI.get('/api/language-purchases/for-tracking');
+        const response = await KashTecAPI.get('/language-purchases/for-tracking');
         
         if (response.success && response.data.length > 0) {
             response.data.forEach(purchase => {
@@ -30779,7 +30779,7 @@ async function viewCampaignDetails(campaignId) {
             </div>
         `);
         
-        const response = await KashTecAPI.get('/api/language-campaigns');
+        const response = await KashTecAPI.get('/language-campaigns');
         
         if (response.success) {
             const campaign = response.data.find(c => c.id == campaignId);
@@ -30833,7 +30833,7 @@ async function viewPurchaseDetails(purchaseId) {
             </div>
         `);
         
-        const response = await KashTecAPI.get('/api/language-purchases');
+        const response = await KashTecAPI.get('/language-purchases');
         
         if (response.success) {
             const purchase = response.data.find(p => p.id == purchaseId);
@@ -30890,7 +30890,7 @@ async function viewTrackingDetails(trackingId) {
             </div>
         `);
         
-        const response = await KashTecAPI.get('/api/language-payment-tracking');
+        const response = await KashTecAPI.get('/language-payment-tracking');
         
         if (response.success) {
             const tracking = response.data.find(t => t.id == trackingId);
@@ -31538,7 +31538,7 @@ function rejectExpense(expenseId) {
         customAlert(`Expense ${expenseId} rejected.\n\nReason: ${formData.rejectionReason}\nDetails: ${formData.rejectionDetails}\n\nSubmitter has been notified.`, "Expense Rejected", "error");
         
         // API call would go here
-        // fetch('/api/finance/reject-expense', {
+        // fetch('/finance/reject-expense', {
         //     method: 'POST',
         //     headers: { 'Content-Type': 'application/json' },
         //     body: JSON.stringify({ ...formData, expenseId })
@@ -34337,7 +34337,7 @@ function loadTasks() {
     let tasks = [];
     
     // Try to fetch from API
-    fetch('/api/tasks')
+    fetch('/tasks')
         .then(response => response.json())
         .then(data => {
             if (data.success && data.tasks) {
@@ -34996,7 +34996,7 @@ function requestRework(workId) {
         customAlert(`Work ${workId} sent for rework.\n\nType: ${formData.revisionType}\nDetails: ${formData.revisionDetails}\nPriority: ${formData.revisionPriority}\n\nWorker has been notified.`, "Rework Requested", "warning");
         
         // In a real application, you would make an API call here:
-        // fetch('/api/work/request-revision', {
+        // fetch('/work/request-revision', {
         //     method: 'POST',
         //     headers: { 'Content-Type': 'application/json' },
         //     body: JSON.stringify(formData)
@@ -35013,7 +35013,7 @@ function rejectWork(workId) {
         customAlert(`Work ${workId} rejected successfully.\n\nReason: ${formData.rejectionReason}\nDetails: ${formData.rejectionDetails}\n\nSubmitter has been notified.`, "Work Rejected", "error");
         
         // In a real application, you would make an API call here:
-        // fetch('/api/work/reject', {
+        // fetch('/work/reject', {
         //     method: 'POST',
         //     headers: { 'Content-Type': 'application/json' },
         //     body: JSON.stringify(formData)
@@ -36274,7 +36274,7 @@ async function loadSales() {
         const recordsList = document.getElementById('salesRecordsList');
         recordsList.innerHTML = '<tr><td colspan="10" class="loading">Loading sales records...</td></tr>';
         
-        const response = await KashTecAPI.get('/api/sales');
+        const response = await KashTecAPI.get('/sales');
         
         if (response.success && response.data.length > 0) {
             recordsList.innerHTML = response.data.map(sale => `
@@ -36655,7 +36655,7 @@ async function loadPaymentData() {
 }
 
 async function loadPaymentTrackingData() {
-    const response = await KashTecAPI.get('/api/payment-tracking');
+    const response = await KashTecAPI.get('/payment-tracking');
     
     if (response.success) {
         updatePaymentTable(response.data);
@@ -36665,7 +36665,7 @@ async function loadPaymentTrackingData() {
 }
 
 async function loadPaymentStatistics() {
-    const response = await KashTecAPI.get('/api/payment-tracking/statistics');
+    const response = await KashTecAPI.get('/payment-tracking/statistics');
     
     if (response.success) {
         const stats = response.data.statistics;
@@ -36677,7 +36677,7 @@ async function loadPaymentStatistics() {
 }
 
 async function loadMonthlyCollections() {
-    const response = await KashTecAPI.get('/api/payment-tracking/statistics');
+    const response = await KashTecAPI.get('/payment-tracking/statistics');
     
     if (response.success) {
         const monthlyData = response.data.monthly_collections || [];
@@ -36863,7 +36863,7 @@ function filterPaymentTable() {
 async function recordPayment(saleId) {
     try {
         // Get sale details first
-        const response = await KashTecAPI.get('/api/payment-tracking');
+        const response = await KashTecAPI.get('/payment-tracking');
         if (response.success) {
             const sale = response.data.find(s => s.sale_id === saleId);
             if (sale) {
@@ -36947,7 +36947,7 @@ async function savePaymentRecord(saleId) {
             created_by: getCurrentUserId()
         };
 
-        const response = await KashTecAPI.post('/api/payment-tracking/record-payment', paymentData);
+        const response = await KashTecAPI.post('/payment-tracking/record-payment', paymentData);
         
         if (response.success) {
             customAlert('Payment recorded successfully!', 'Success', 'success');
@@ -36963,7 +36963,7 @@ async function savePaymentRecord(saleId) {
 
 async function viewPaymentHistory(saleId) {
     try {
-        const response = await KashTecAPI.get(`/api/payment-tracking/history/${saleId}`);
+        const response = await KashTecAPI.get(`/payment-tracking/history/${saleId}`);
         
         if (response.success) {
             showPaymentHistoryView(response.data);
@@ -37012,7 +37012,7 @@ async function sendPaymentReminder(saleId) {
             created_by: getCurrentUserId()
         };
 
-        const response = await KashTecAPI.post(`/api/payment-tracking/send-reminder/${saleId}`, reminderData);
+        const response = await KashTecAPI.post(`/payment-tracking/send-reminder/${saleId}`, reminderData);
         
         if (response.success) {
             customAlert(response.message, 'Success', 'success');
@@ -38532,7 +38532,7 @@ function uploadDocument() {
     customAlert('Uploading document...', "Processing", "info");
     
     // Send data to backend API
-    fetch('/api/documents', {
+    fetch('/documents', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
