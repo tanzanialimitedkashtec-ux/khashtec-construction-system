@@ -1030,15 +1030,17 @@ button.action{
 /* Document Management Styles */
 .search-section {
     display: flex;
-    gap: 10px;
-    margin-bottom: 20px;
+    gap: 3px;
+    margin-bottom: 8px;
     flex-wrap: wrap;
 }
 
 .search-section input,
 .search-section select {
     flex: 1;
-    min-width: 200px;
+    min-width: 150px;
+    font-size: 8px;
+    padding: 2px 4px;
 }
 
 .docs-grid {
@@ -1545,11 +1547,11 @@ button.action{
 .stat-item {
     display: flex;
     justify-content: space-between;
-    padding: 3px 6px;
+    padding: 1px 3px;
     background: rgba(255, 255, 255, 0.1);
-    border-radius: 4px;
-    margin-bottom: 4px;
-    font-size: 10px;
+    border-radius: 2px;
+    margin-bottom: 2px;
+    font-size: 6px;
 }
 
 .stat-label {
@@ -1783,16 +1785,24 @@ button.action{
 .search-section {
     display: flex;
     gap: 1px;
-    margin: 2px 0;
+    margin: 1px 0;
     align-items: center;
 }
 
 .search-section input {
     flex: 1;
-    padding: 12px;
-    border: 2px solid #ddd;
-    border-radius: 8px;
-    font-size: 14px;
+    padding: 3px 5px;
+    border: 1px solid #ddd;
+    border-radius: 3px;
+    font-size: 8px;
+}
+
+.search-section select {
+    flex: 1;
+    padding: 3px 5px;
+    border: 1px solid #ddd;
+    border-radius: 3px;
+    font-size: 8px;
 }
 
 .search-results {
@@ -8598,11 +8608,11 @@ background: #f8f9fa;
 .stat-item {
     background: rgba(76, 175, 80, 0.2);
     color: #4CAF50;
-    padding: 2px 4px;
-    border-radius: 3px;
-    margin-bottom: 2px;
+    padding: 1px 2px;
+    border-radius: 2px;
+    margin-bottom: 1px;
     font-weight: bold;
-    font-size: 8px;
+    font-size: 6px;
 }
 
 .personnel-header {
@@ -9565,12 +9575,12 @@ background: #f8f9fa;
 .stat-item {
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     color: white;
-    padding: 2px 4px;
-    border-radius: 3px;
+    padding: 1px 2px;
+    border-radius: 2px;
     text-align: center;
-    margin-bottom: 2px;
+    margin-bottom: 1px;
     transition: transform 0.3s ease;
-    font-size: 7px;
+    font-size: 6px;
 }
 
 .stat-item:hover {
@@ -17355,12 +17365,15 @@ function fetchUpcomingMeetings() {
         headers['Authorization'] = `Bearer ${authToken}`;
     }
     
+    // Add base URL to endpoints
+    const baseUrl = window.location.origin;
+    
     // Try different API endpoints in case one doesn't work
     const apiEndpoints = [
-        '/api/meetings/upcoming',  // Best endpoint - returns only upcoming meetings
-        '/api/meetings/all',       // Returns all meetings
-        '/api/meetings',
-        '/api/meetings'
+        `${baseUrl}/api/meetings/upcoming`,  // Best endpoint - returns only upcoming meetings
+        `${baseUrl}/api/meetings/all`,       // Returns all meetings
+        `${baseUrl}/api/meetings`,
+        `${baseUrl}/api/meetings`
     ];
     
     // Try the first endpoint, then fallback to others if needed

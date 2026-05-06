@@ -59,65 +59,12 @@ router.get('/users/:id', async (req, res) => {
             console.log('✅ User details retrieved successfully');
             res.json({ success: true, data: formattedUser });
         } else {
-            console.log('❌ User not found in database, providing fallback data:', userId);
-            
-            // Provide fallback data for missing users
-            const fallbackUser = {
-                id: parseInt(userId),
-                name: `User ${userId}`,
-                email: `user${userId}@kashtec.com`,
-                phone: `+255 7${userId.toString().padStart(8, '0')}`,
-                role: 'Employee',
-                department: 'General',
-                status: 'Active',
-                position: 'Staff Member',
-                salary: 1500000.00,
-                hire_date: '2025-01-01',
-                full_name: `User ${userId}`,
-                gmail: `user${userId}@kashtec.com`,
-                nida: null,
-                passport: null,
-                profile_image: null,
-                contract_type: 'permanent',
-                passport_image: null,
-                address: 'Dar es Salaam, Tanzania',
-                created_at: new Date().toISOString(),
-                updated_at: new Date().toISOString()
-            };
-            
-            console.log('✅ Fallback user details provided');
-            res.json({ success: true, data: fallbackUser, fallback: true });
+            console.log('❌ User not found:', userId);
+            res.status(404).json({ success: false, error: 'User not found' });
         }
     } catch (error) {
         console.error('❌ Error fetching user details:', error);
-        
-        // Provide fallback data even on database errors
-        const userId = req.params.id;
-        const errorFallbackUser = {
-            id: parseInt(userId),
-            name: `User ${userId}`,
-            email: `user${userId}@kashtec.com`,
-            phone: `+255 7${userId.toString().padStart(8, '0')}`,
-            role: 'Employee',
-            department: 'General',
-            status: 'Active',
-            position: 'Staff Member',
-            salary: 1500000.00,
-            hire_date: '2025-01-01',
-            full_name: `User ${userId}`,
-            gmail: `user${userId}@kashtec.com`,
-            nida: null,
-            passport: null,
-            profile_image: null,
-            contract_type: 'permanent',
-            passport_image: null,
-            address: 'Dar es Salaam, Tanzania',
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString()
-        };
-        
-        console.log('✅ Error fallback user details provided');
-        res.json({ success: true, data: errorFallbackUser, fallback: true, error: error.message });
+        res.status(500).json({ success: false, error: error.message });
     }
 });
 
