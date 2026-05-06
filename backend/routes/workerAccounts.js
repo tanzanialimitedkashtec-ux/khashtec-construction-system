@@ -452,18 +452,11 @@ router.post('/', upload.fields([
         console.log('?? Worker account creation request received');
         console.log('?? Request data:', { finalEmployeeId, fullName, finalWorkEmail, finalPhoneNumber, department, jobTitle, accountType, accessLevel });
         
-        // Map frontend account_type values to database ENUM values
-        const mappedAccountType = accountType === 'staff' ? 'worker' : 
-                                 accountType === 'admin' ? 'manager' : 
-                                 accountType === 'supervisor' ? 'supervisor' : 
-                                 'worker'; // default fallback
+        // Use account type directly (matches database ENUM)
+        const mappedAccountType = accountType;
         
-        // Map frontend access_level values to database ENUM values  
-        const mappedAccessLevel = accessLevel === 'standard' ? 'basic' :
-                                 accessLevel === 'admin' ? 'admin' :
-                                 accessLevel === 'supervisor' ? 'supervisor' :
-                                 accessLevel === 'manager' ? 'manager' :
-                                 'basic'; // default fallback
+        // Use access level directly (matches database ENUM)  
+        const mappedAccessLevel = accessLevel;
         
         console.log('?? Mapped account_type:', accountType, '->', mappedAccountType);
         console.log('?? Mapped access_level:', accessLevel, '->', mappedAccessLevel);
