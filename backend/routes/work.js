@@ -997,7 +997,7 @@ router.get('/:department', async (req, res) => {
         
         try {
             const [dbWorkItems] = await db.execute(
-                `SELECT * FROM ${department}_work ORDER BY submitted_date DESC`
+                `SELECT * FROM \`${department}_work\` ORDER BY submitted_date DESC`
             );
             workItems = dbWorkItems;
             console.log(`📊 Found ${workItems.length} ${department} work items from database`);

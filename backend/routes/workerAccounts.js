@@ -157,10 +157,10 @@ router.get('/assignments', async (req, res) => {
                 wa.id,
                 wa.employee_id,
                 wa.project_id,
-                wa.task_description,
+                wa.role_in_project,
                 wa.status,
-                wa.assigned_date,
-                wa.notes,
+                wa.start_date as assigned_date,
+                wa.assignment_notes as notes,
                 w.full_name as worker_name,
                 w.employee_id as worker_employee_id,
                 w.department as department,
@@ -212,10 +212,10 @@ router.get('/assignments', async (req, res) => {
                     wa.id,
                     wa.employee_id,
                     wa.project_id,
-                    wa.task_description,
+                    wa.role_in_project,
                     wa.status,
-                    wa.assigned_date,
-                    wa.notes,
+                    wa.start_date as assigned_date,
+                    wa.assignment_notes as notes,
                     w.full_name as worker_name,
                     w.employee_id as worker_employee_id,
                     w.department as department,
@@ -224,7 +224,7 @@ router.get('/assignments', async (req, res) => {
                 FROM worker_assignments wa
                 LEFT JOIN worker_accounts w ON wa.employee_id = w.employee_id
                 LEFT JOIN projects p ON wa.project_id = p.id
-                ORDER BY wa.assigned_date DESC
+                ORDER BY wa.start_date DESC
             `);
             
             console.log('Sample worker assignments inserted:', newAssignments.length);

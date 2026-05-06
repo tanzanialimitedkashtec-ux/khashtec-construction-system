@@ -2835,7 +2835,7 @@ app.get('/api/attendance', async (req, res) => {
 
             FROM attendance a 
 
-            LEFT JOIN employees e ON a.employee_id = e.employee_id
+            LEFT JOIN employees e ON a.employee_id = e.id
 
             WHERE 1=1
 

@@ -127,22 +127,62 @@ router.get('/', async (req, res) => {
         }
         
         // Format policies for frontend
-        const formattedPolicies = policies.map(policy => ({
-            id: policy.id,
-            title: policy.title,
-            description: policy.description,
-            submitted_by: policy.submitted_by,
-            submitted_by_role: policy.submitted_by_role,
-            submitted_date: policy.submission_date,
-            impact: policy.impact || 'Medium',
-            status: policy.status.toLowerCase(),
-            approved_by: policy.approved_by,
-            approved_date: policy.approved_date,
-            rejection_reason: policy.rejection_reason,
-            revision_request: policy.revision_request,
-            created_at: policy.created_at,
-            updated_at: policy.updated_at
-        }));
+        const formattedPolicies = policies.map(policy => {
+            // Clean description field - remove HTML contamination
+            let cleanDescription = policy.description || '';
+            
+            // Remove HTML table content and car fleet data
+            if (cleanDescription.includes('<div class="card">') || cleanDescription.includes('car-name')) {
+                // Extract the actual policy content before HTML contamination
+                const lines = cleanDescription.split('\n');
+                const policyLines = [];
+                let foundCategory = false;
+                
+                for (const line of lines) {
+                    if (line.includes('Category:')) {
+                        foundCategory = true;
+                        policyLines.push(line.trim());
+                    } else if (foundCategory && line.includes('Description:')) {
+                        policyLines.push(line.trim());
+                        break; // Stop after finding the actual description
+                    } else if (foundCategory && !line.includes('<div') && !line.includes('car-')) {
+                        const trimmed = line.trim();
+                        if (trimmed && !trimmed.startsWith('<') && !trimmed.includes('onclick')) {
+                            policyLines.push(trimmed);
+                        }
+                    }
+                }
+                
+                if (policyLines.length > 0) {
+                    cleanDescription = policyLines.join('\n');
+                } else {
+                    // Fallback: extract text before HTML contamination
+                    const htmlIndex = cleanDescription.indexOf('<div');
+                    if (htmlIndex > 0) {
+                        cleanDescription = cleanDescription.substring(0, htmlIndex).trim();
+                    } else {
+                        cleanDescription = 'Policy description available - see full details in management system';
+                    }
+                }
+            }
+            
+            return {
+                id: policy.id,
+                title: policy.title,
+                description: cleanDescription,
+                submitted_by: policy.submitted_by,
+                submitted_by_role: policy.submitted_by_role,
+                submitted_date: policy.submission_date,
+                impact: policy.impact || 'Medium',
+                status: policy.status.toLowerCase(),
+                approved_by: policy.approved_by,
+                approved_date: policy.approved_date,
+                rejection_reason: policy.rejection_reason,
+                revision_request: policy.revision_request,
+                created_at: policy.created_at,
+                updated_at: policy.updated_at
+            };
+        });
         
         res.json(formattedPolicies);
     } catch (error) {

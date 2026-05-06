@@ -53,7 +53,7 @@ router.get('/', async (req, res) => {
         
         const { status, manager, search } = req.query;
         
-        let query = `SELECT id, name, description, location, start_date, end_date, status, contract_value, priority_level, project_manager, client_name, project_code, project_type, created_at, updated_at FROM projects WHERE 1=1`;
+        let query = `SELECT id, name, description, location, start_date, end_date, status, priority_level, project_manager, client_name, project_code, project_type, created_at, updated_at FROM projects WHERE 1=1`;
         const params = [];
         
         if (status) {

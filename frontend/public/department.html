@@ -27407,7 +27407,7 @@ async function loadPolicyRecords() {
         
         // Try to get policy records from API
         try {
-            response = await fetch(`${baseUrl}/api/hse/work`, {
+            response = await fetch(`${baseUrl}/api/hse/hse`, {
                 method: 'GET',
                 headers: {
                     'Content-Type': 'application/json',
