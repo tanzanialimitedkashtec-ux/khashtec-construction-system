@@ -268,6 +268,36 @@ router.post('/', async (req, res) => {
             });
         }
 
+        // Validate driver exists if provided
+        let validDriverId = null;
+        if (assigned_driver) {
+            try {
+                const driverResult = await db.execute(
+                    'SELECT driver_id FROM drivers WHERE driver_id = ?',
+                    [assigned_driver]
+                );
+                
+                // Handle different MySQL2 return formats
+                let driver = [];
+                if (Array.isArray(driverResult)) {
+                    driver = driverResult;
+                } else if (driverResult && Array.isArray(driverResult[0])) {
+                    driver = driverResult[0];
+                } else if (driverResult && driverResult.rows) {
+                    driver = driverResult.rows;
+                }
+                
+                if (driver && driver.length > 0) {
+                    validDriverId = assigned_driver;
+                    console.log('✅ Valid driver found:', assigned_driver);
+                } else {
+                    console.log('⚠️ Driver not found in database, setting driver to null:', assigned_driver);
+                }
+            } catch (driverCheckError) {
+                console.log('⚠️ Error checking driver, setting driver to null:', driverCheckError.message);
+            }
+        }
+
         // Insert new company car
         const resultResult = await db.execute(`
             INSERT INTO vehicles (
@@ -278,7 +308,7 @@ router.post('/', async (req, res) => {
             ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())
         `, [
             track_number, car_name, brand_name, registration_number, plate_number,
-            car_details || 'Company vehicle', description || 'Company vehicle', assigned_driver || null, registration_date, vehicle_status,
+            car_details || 'Company vehicle', description || 'Company vehicle', validDriverId, registration_date, vehicle_status,
             vehicle_type, fuel_type, color || null, yearOfManufacture || null, odometerReading || null,
             insuranceStatus || 'pending', additionalNotes || null
         ]);

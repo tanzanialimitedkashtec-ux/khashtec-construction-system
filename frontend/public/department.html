@@ -23237,14 +23237,9 @@ function registerCompanyCar(){
                 
                 <div class="form-row">
                     <div class="form-group">
-                        <label>Assigned Driver *</label>
-                        <select id="driver" required>
-                            <option value="">Select Driver</option>
-                            <option value="driver001">John Michael - Driver ID: D001</option>
-                            <option value="driver002">James Wilson - Driver ID: D002</option>
-                            <option value="driver003">Robert Kimaro - Driver ID: D003</option>
-                            <option value="driver004">David Mwanga - Driver ID: D004</option>
-                            <option value="unassigned">Unassigned</option>
+                        <label>Assigned Driver</label>
+                        <select id="driver">
+                            <option value="">Loading drivers...</option>
                         </select>
                     </div>
                     <div class="form-group">
@@ -23335,6 +23330,66 @@ function registerCompanyCar(){
             </form>
         </div>
     `);
+    
+    // Load drivers for the dropdown
+    loadDriversForCarRegistration();
+}
+
+// Load drivers for car registration dropdown
+async function loadDriversForCarRegistration() {
+    try {
+        console.log('🚗 Loading drivers for car registration...');
+        const baseUrl = window.location.origin;
+        const response = await fetch(`${baseUrl}/api/drivers`);
+        
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+        
+        const data = await response.json();
+        const drivers = Array.isArray(data) ? data : (data.data || []);
+        
+        const driverSelect = document.getElementById('driver');
+        if (!driverSelect) {
+            console.log('⚠️ Driver select element not found');
+            return;
+        }
+        
+        // Clear existing options except the first one
+        driverSelect.innerHTML = '<option value="">Select Driver</option>';
+        
+        // Add real drivers
+        drivers.forEach(driver => {
+            const option = document.createElement('option');
+            option.value = driver.driver_id;
+            option.textContent = `${driver.full_name} - Driver ID: ${driver.driver_id}`;
+            driverSelect.appendChild(option);
+        });
+        
+        // Add unassigned option
+        const unassignedOption = document.createElement('option');
+        unassignedOption.value = '';
+        unassignedOption.textContent = 'Unassigned';
+        driverSelect.appendChild(unassignedOption);
+        
+        console.log(`✅ Loaded ${drivers.length} drivers for car registration`);
+        
+    } catch (error) {
+        console.error('❌ Error loading drivers for car registration:', error);
+        
+        // Fallback to hardcoded options if API fails
+        const driverSelect = document.getElementById('driver');
+        if (driverSelect) {
+            driverSelect.innerHTML = `
+                <option value="">Select Driver</option>
+                <option value="D001">John Michael - Driver ID: D001</option>
+                <option value="D002">James Wilson - Driver ID: D002</option>
+                <option value="D003">Robert Kimaro - Driver ID: D003</option>
+                <option value="D004">David Mwanga - Driver ID: D004</option>
+                <option value="">Unassigned</option>
+            `;
+        }
+    }
 }
 
 function saveCarRegistration(){
