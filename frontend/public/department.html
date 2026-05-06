@@ -29923,7 +29923,8 @@ async function loadLanguageCampaigns() {
                         </div>
                     </td>
                 </tr>
-            `).join('');
+            `;
+            }).join('');
         } else {
             recordsList.innerHTML = '<tr><td colspan="11" class="no-records">No campaigns found. Create your first campaign!</td></tr>';
         }
@@ -30161,7 +30162,7 @@ async function loadLanguagePurchases() {
                     </td>
                     <td>
                         <div class="payment-info">
-                            <span class="payment-badge payment-${mappedPurchase.payment_method.toLowerCase().replace('_', '-')}">${mappedPurchase.payment_method}</span>
+                            <span class="payment-badge payment-${mappedPurchase.payment_status.toLowerCase().replace('_', '-')}">${mappedPurchase.payment_status}</span>
                         </div>
                     </td>
                     <td>
@@ -30187,7 +30188,8 @@ async function loadLanguagePurchases() {
                         </div>
                     </td>
                 </tr>
-            `).join('');
+            `;
+            }).join('');
         } else {
             recordsList.innerHTML = '<tr><td colspan="10" class="no-records">No purchases found. Record your first purchase!</td></tr>';
         }
@@ -44515,3 +44517,6 @@ document.addEventListener('DOMContentLoaded', function() {
 <!-- Include Login Functions -->
 <script src="js/script.js"></script>
 <script src="js/database-api.js"></script>
+
+
+
