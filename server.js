@@ -3665,6 +3665,8 @@ app.post('/api/clients', async (req, res) => {
 
             clientName,
 
+            fullName,
+
             companyName,
 
             email,
@@ -3681,11 +3683,31 @@ app.post('/api/clients', async (req, res) => {
 
         } = req.body;
 
+        
+        const name = clientName || fullName;
 
 
         console.log('Extracted fields:', {
 
-            clientName, companyName, email, phone, address, industry, clientType, notes
+            clientName,
+
+            fullName,
+
+            name,
+
+            companyName,
+
+            email,
+
+            phone,
+
+            address,
+
+            industry,
+
+            clientType,
+
+            notes
 
         });
 
@@ -3693,11 +3715,11 @@ app.post('/api/clients', async (req, res) => {
 
         // Validate required fields
 
-        if (!clientName || !email || !phone) {
+        if (!name || !email || !phone) {
 
             console.log('Validation failed - missing fields:', {
 
-                clientName: !!clientName,
+                name: !!name,
 
                 email: !!email,
 
@@ -3773,13 +3795,13 @@ app.post('/api/clients', async (req, res) => {
 
                 email_address, nida_number, physical_address, property_interest, additional_notes,
 
-                registered_by, registration_date, status, created_at, updated_at
+                registered_by, status, registration_date, created_at, updated_at
 
             ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW(), NOW())
 
         `, [
 
-            clientId, clientType || 'individual', clientName, companyName, phone,
+            clientId, clientType || 'individual', name, companyName, phone,
 
             email, 'NIDA' + Date.now(), address, industry, notes, 'Admin Assistant', 'active'
 
@@ -3793,7 +3815,9 @@ app.post('/api/clients', async (req, res) => {
 
             message: 'Client registered successfully',
 
-            clientId: clientId
+            clientId: clientId,
+
+            id: clientId
 
         });
 

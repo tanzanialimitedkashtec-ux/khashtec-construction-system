@@ -37638,6 +37638,7 @@ function saveNewClient() {
         },
         body: JSON.stringify({
             id: client.id,
+            clientName: client.fullName,
             type: client.type,
             fullName: client.fullName,
             companyName: client.companyName,
@@ -37665,7 +37666,7 @@ function saveNewClient() {
             throw new Error(data.error);
         }
         
-        customAlert(`Client registered successfully!\n\nName: ${client.fullName}\nID: ${client.id}\nPhone: ${client.phone}\nEmail: ${client.email}\nNIDA: ${client.nida}\nRegistration ID: ${data.id}\n\n🎉 Client saved to database!`, "Client Registered", "success");
+        customAlert(`Client registered successfully!\n\nName: ${client.fullName}\nID: ${client.id}\nPhone: ${client.phone}\nEmail: ${client.email}\nNIDA: ${client.nida}\nRegistration ID: ${data.clientId || data.id}\n\n🎉 Client saved to database!`, "Client Registered", "success");
         
         document.getElementById('clientForm').reset();
     })
