@@ -23500,6 +23500,30 @@ function manageCompanyCars() {
     loadCompanyCars();
 }
 
+// Sanitize car field to remove HTML contamination
+function sanitizeCarField(fieldValue) {
+    if (!fieldValue || typeof fieldValue !== 'string') {
+        return fieldValue;
+    }
+    
+    // Check for HTML contamination indicators
+    if (fieldValue.includes('<div class="card">') || 
+        fieldValue.includes('policyFormContainer') ||
+        fieldValue.includes('HSE Safety Policy Management')) {
+        
+        // Extract text before HTML contamination
+        const htmlIndex = fieldValue.indexOf('<div');
+        if (htmlIndex > 0) {
+            return fieldValue.substring(0, htmlIndex).trim();
+        } else {
+            // Fallback to generic text
+            return 'Company vehicle information';
+        }
+    }
+    
+    return fieldValue;
+}
+
 async function loadCompanyCars() {
     try {
         const recordsList = document.getElementById('carRecordsList');
@@ -23515,12 +23539,17 @@ async function loadCompanyCars() {
         
         if (response.success && response.data.length > 0) {
             recordsList.innerHTML = response.data.map(car => {
+                // Clean up HTML contamination in car data
+                const cleanDescription = sanitizeCarField(car.description || '');
+                const cleanNotes = sanitizeCarField(car.additional_notes || '');
+                const cleanDetails = sanitizeCarField(car.car_details || '');
+                
                 // Map database fields to frontend display fields
                 const mappedCar = {
                     id: car.id,
                     car_name: car.car_name,
                     track_number: car.track_number,
-                    car_details: car.car_details,
+                    car_details: cleanDetails,
                     registration_number: car.registration_number,
                     plate_number: car.plate_number,
                     brand_name: car.brand_name,
@@ -23533,8 +23562,8 @@ async function loadCompanyCars() {
                     insurance_status: car.insurance_status,
                     vehicle_status: car.vehicle_status,
                     registration_date: car.registration_date,
-                    description: car.description,
-                    additional_notes: car.additional_notes
+                    description: cleanDescription,
+                    additional_notes: cleanNotes
                 };
                 
                 return `
