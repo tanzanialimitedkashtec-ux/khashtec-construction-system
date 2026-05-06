@@ -27300,8 +27300,8 @@ function saveSafetyPolicy() {
         document: document.getElementById('policyDocument').files.length,
         effectiveDate: document.getElementById('effectiveDate').value,
         reviewDate: document.getElementById('reviewDate').value,
-        applicableTo: document.getElementById('policyScope').value,
-        complianceLevel: document.getElementById('policyPriority').value,
+        applicableTo: document.getElementById('applicableTo').value,
+        complianceLevel: document.getElementById('complianceLevel').value,
         training: getSelectedTraining(),
         uploadedBy: 'HSE Manager',
         uploadDate: new Date().toLocaleString()
@@ -27346,16 +27346,6 @@ function saveSafetyPolicy() {
         
         if (!response.ok) {
             // Handle HTTP errors
-            if (response.status === 401) {
-                // Authentication error - don't redirect, show error message
-                console.error('❌ Authentication failed - token may be expired or missing');
-                throw new Error('Authentication failed. Please log in again to save policies.');
-            } else if (response.status === 403) {
-                // Authorization error - user doesn't have permission
-                console.error('❌ Authorization failed - insufficient permissions');
-                throw new Error('You do not have permission to save safety policies.');
-            }
-            
             return response.text().then(text => {
                 console.error('❌ HTTP Error Response:', text);
                 throw new Error(`HTTP ${response.status}: ${text || response.statusText}`);
@@ -27417,7 +27407,7 @@ async function loadPolicyRecords() {
         
         // Try to get policy records from API
         try {
-            response = await fetch(`${baseUrl}/api/hse/hse`, {
+            response = await fetch(`${baseUrl}/api/hse/work`, {
                 method: 'GET',
                 headers: {
                     'Content-Type': 'application/json',
@@ -27426,15 +27416,6 @@ async function loadPolicyRecords() {
             });
             
             if (!response.ok) {
-                if (response.status === 401) {
-                    // Authentication error - don't redirect, show error message
-                    console.error('❌ Authentication failed - token may be expired or missing');
-                    throw new Error('Authentication failed. Please log in again to view policies.');
-                } else if (response.status === 403) {
-                    // Authorization error - user doesn't have permission
-                    console.error('❌ Authorization failed - insufficient permissions');
-                    throw new Error('You do not have permission to view safety policies.');
-                }
                 throw new Error(`HTTP ${response.status}: ${response.statusText}`);
             }
         } catch (primaryError) {
