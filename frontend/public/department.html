@@ -19452,8 +19452,20 @@ function saveWorkerAccount() {
         });
         
         // Validate required fields
-        if (!empID || !fullName || !email || !phone || !department || !jobTitle || !accountType || !accessLevel || !password) {
-            customAlert('Please fill in all required fields.', "Validation Error", "error");
+        const missingFields = [];
+        if (!empID) missingFields.push('Employee ID');
+        if (!fullName) missingFields.push('Full Name');
+        if (!email) missingFields.push('Email');
+        if (!phone) missingFields.push('Phone Number');
+        if (!department) missingFields.push('Department');
+        if (!jobTitle) missingFields.push('Job Title');
+        if (!accountType) missingFields.push('Account Type');
+        if (!accessLevel) missingFields.push('Access Level');
+        if (!password) missingFields.push('Temporary Password');
+        
+        if (missingFields.length > 0) {
+            const missingFieldsText = missingFields.map(field => `• ${field}`).join('\n');
+            customAlert(`Please fill in all required fields:\n\n${missingFieldsText}`, "Validation Error", "error");
             window.workerAccountSubmitting = false;
             return false;
         }
@@ -19532,7 +19544,14 @@ function saveWorkerAccount() {
             }
             
             if (response.status === 400) {
-                throw new Error('Invalid worker data - Check all required fields');
+                // Parse the JSON response to get specific missing fields
+                return response.json().then(errorData => {
+                    const missingFields = errorData.missing || [];
+                    const missingFieldsText = missingFields.length > 0 
+                        ? '\n\n❌ Missing required fields:\n' + missingFields.map(field => `• ${field}`).join('\n')
+                        : '';
+                    throw new Error(`Invalid worker data - Check all required fields${missingFieldsText}`);
+                });
             }
             if (response.status >= 500) {
                 throw new Error('Server error during worker account creation');
@@ -19571,8 +19590,9 @@ function saveWorkerAccount() {
             
             if (error.message.includes('NetworkError') || error.message.includes('fetch')) {
                 errorMessage = 'Network connection failed. Please check internet connection and try again.';
-            } else if (error.message.includes('400')) {
-                errorMessage = 'Invalid worker data. Please fill all required fields correctly.';
+            } else if (error.message.includes('Invalid worker data')) {
+                // Keep the specific error message that includes missing fields
+                errorMessage = error.message;
             } else if (error.message.includes('409')) {
                 errorMessage = 'Worker with this email already exists. Please use a different email.';
             } else if (error.message.includes('404')) {
