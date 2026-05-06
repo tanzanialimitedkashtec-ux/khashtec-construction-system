@@ -1,6 +1,45 @@
 const express = require('express');
 const router = express.Router();
 const db = require('../../database/config/database');
+const multer = require('multer');
+const path = require('path');
+const fs = require('fs').promises;
+
+// Configure multer for file uploads
+const storage = multer.diskStorage({
+    destination: async (req, file, cb) => {
+        const uploadDir = path.join(__dirname, '../../uploads/worker-documents');
+        try {
+            await fs.mkdir(uploadDir, { recursive: true });
+            cb(null, uploadDir);
+        } catch (error) {
+            cb(error);
+        }
+    },
+    filename: (req, file, cb) => {
+        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+        cb(null, file.fieldname + '-' + uniqueSuffix + path.extname(file.originalname));
+    }
+});
+
+const upload = multer({
+    storage: storage,
+    limits: {
+        fileSize: 10 * 1024 * 1024 // 10MB limit
+    },
+    fileFilter: (req, file, cb) => {
+        // Allow images, PDFs, and documents
+        const allowedTypes = /jpeg|jpg|png|gif|pdf|doc|docx/;
+        const extname = allowedTypes.test(path.extname(file.originalname).toLowerCase());
+        const mimetype = allowedTypes.test(file.mimetype);
+
+        if (mimetype && extname) {
+            return cb(null, true);
+        } else {
+            cb(new Error('Invalid file type'));
+        }
+    }
+});
 
 // Get all worker accounts
 router.get('/', async (req, res) => {
@@ -314,7 +353,11 @@ router.get('/:id', async (req, res) => {
 });
 
 // Create new worker account
-router.post('/', async (req, res) => {
+router.post('/', upload.fields([
+    { name: 'workerProfile', maxCount: 1 },
+    { name: 'workerID', maxCount: 1 },
+    { name: 'workerContract', maxCount: 1 }
+]), async (req, res) => {
     console.log('🔍 Worker account creation request received');
     console.log('📋 Request body:', req.body);
     
@@ -343,6 +386,17 @@ router.post('/', async (req, res) => {
     const finalWorkEmail = email || workEmail;
     const finalPhoneNumber = phone || phoneNumber;
     const finalTemporaryPassword = password || temporaryPassword;
+    
+    // Handle uploaded files
+    const profilePicturePath = req.files?.workerProfile?.[0]?.path || null;
+    const idDocumentPath = req.files?.workerID?.[0]?.path || null;
+    const contractDocumentPath = req.files?.workerContract?.[0]?.path || null;
+    
+    console.log('📁 Uploaded files:', {
+        profilePicture: profilePicturePath,
+        idDocument: idDocumentPath,
+        contractDocument: contractDocumentPath
+    });
     
     console.log('📝 Extracted worker data:', { 
         finalEmployeeId, 
@@ -464,9 +518,9 @@ router.post('/', async (req, res) => {
                 mappedAccessLevel,
                 finalTemporaryPassword,
                 accountNotes || null,
-                profilePicture || null,
-                idDocument || null,
-                contractDocument || null
+                profilePicturePath,
+                idDocumentPath,
+                contractDocumentPath
             ]);
             
             console.log('?? Worker account inserted successfully:', result);
@@ -486,9 +540,9 @@ router.post('/', async (req, res) => {
                     access_level: mappedAccessLevel,
                     temporary_password: temporaryPassword,
                     account_notes: accountNotes,
-                    profile_picture: profilePicture,
-                    id_document: idDocument,
-                    contract_document: contractDocument,
+                    profile_picture: profilePicturePath,
+                    id_document: idDocumentPath,
+                    contract_document: contractDocumentPath,
                     status: 'active',
                     hire_date: new Date().toISOString().split('T')[0],
                     created_at: new Date().toISOString()
