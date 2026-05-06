@@ -39165,9 +39165,16 @@ async function loadNotifications() {
         
         const data = await response.json();
         console.log('📊 Notifications data:', data);
+        console.log('📊 Raw notifications array:', data.notifications || data.data || data);
         
         // Handle different response formats
         const notifications = data.notifications || data.data || data;
+        
+        // Log first notification for debugging
+        if (notifications && notifications.length > 0) {
+            console.log('📊 First notification fields:', Object.keys(notifications[0]));
+            console.log('📊 First notification data:', notifications[0]);
+        }
         
         displayNotifications(notifications);
         
@@ -39389,44 +39396,67 @@ function displayNotifications(notifications) {
     }
     
     // Sort notifications by date (newest first)
-    notifications.sort((a, b) => new Date(b.sentDate) - new Date(a.sentDate));
+    notifications.sort((a, b) => new Date(b.sent_date || b.sentDate || b.created_at) - new Date(a.sent_date || a.sentDate || a.created_at));
     
     let notificationsHTML = '';
     
     notifications.forEach(notif => {
+        // Map API fields to expected fields
+        const mappedNotif = {
+            id: notif.id || notif.notification_id,
+            title: notif.title || notif.message_title || 'Untitled',
+            recipientType: notif.recipient_type || notif.recipientType || 'all',
+            recipients: notif.recipients || notif.target_recipients || 'All Staff',
+            sentDate: notif.sent_date || notif.sentDate || notif.created_at,
+            priority: notif.priority || notif.notification_priority || 'normal',
+            status: notif.status || notif.notification_status || 'sent',
+            sentBy: notif.sent_by || notif.sender_name || notif.created_by || 'System',
+            readRate: notif.read_rate || notif.readRate || 0
+        };
+        
         // Get recipient type display
-        const recipientTypeDisplay = getRecipientTypeDisplayName(notif.recipientType);
+        const recipientTypeDisplay = getRecipientTypeDisplayName(mappedNotif.recipientType);
         
         // Get priority display
-        const priorityDisplay = getPriorityDisplayName(notif.priority);
+        const priorityDisplay = getPriorityDisplayName(mappedNotif.priority);
         
         // Get status display
-        const statusDisplay = notif.status === 'sent' ? '✅ Sent' : 
-                             notif.status === 'scheduled' ? '⏰ Scheduled' : 
-                             notif.status === 'draft' ? '📝 Draft' : 
-                             notif.status === 'failed' ? '❌ Failed' : notif.status;
+        const statusDisplay = mappedNotif.status === 'sent' ? '✅ Sent' : 
+                             mappedNotif.status === 'scheduled' ? '⏰ Scheduled' : 
+                             mappedNotif.status === 'draft' ? '📝 Draft' : 
+                             mappedNotif.status === 'failed' ? '❌ Failed' : mappedNotif.status;
         
-        const statusClass = notif.status === 'sent' ? 'status-sent' : 
-                           notif.status === 'scheduled' ? 'status-scheduled' : 
-                           notif.status === 'draft' ? 'status-draft' : 
-                           notif.status === 'failed' ? 'status-failed' : '';
+        const statusClass = mappedNotif.status === 'sent' ? 'status-sent' : 
+                           mappedNotif.status === 'scheduled' ? 'status-scheduled' : 
+                           mappedNotif.status === 'draft' ? 'status-draft' : 
+                           mappedNotif.status === 'failed' ? 'status-failed' : '';
         
-        // Format date
-        const sentDate = new Date(notif.sentDate).toLocaleDateString();
+        // Format date - handle invalid dates
+        let sentDate = 'Invalid Date';
+        try {
+            if (mappedNotif.sentDate) {
+                const date = new Date(mappedNotif.sentDate);
+                if (!isNaN(date.getTime())) {
+                    sentDate = date.toLocaleDateString();
+                }
+            }
+        } catch (e) {
+            console.warn('Invalid date:', mappedNotif.sentDate);
+        }
         
         // Format read rate
-        const readRateDisplay = notif.readRate !== undefined ? `${notif.readRate}%` : 'N/A';
+        const readRateDisplay = mappedNotif.readRate !== undefined ? `${mappedNotif.readRate}%` : 'N/A';
         
         notificationsHTML += `
             <tr class="notification-row">
                 <td>
                     <div class="notification-id-info">
-                        <div class="notification-id">${notif.id}</div>
+                        <div class="notification-id">${mappedNotif.id}</div>
                     </div>
                 </td>
                 <td>
                     <div class="title-info">
-                        <div class="notification-title">${notif.title}</div>
+                        <div class="notification-title">${mappedNotif.title}</div>
                     </div>
                 </td>
                 <td>
@@ -39436,7 +39466,7 @@ function displayNotifications(notifications) {
                 </td>
                 <td>
                     <div class="recipients-info">
-                        <div class="recipients">${notif.recipients}</div>
+                        <div class="recipients">${mappedNotif.recipients}</div>
                     </div>
                 </td>
                 <td>
@@ -39446,7 +39476,7 @@ function displayNotifications(notifications) {
                 </td>
                 <td>
                     <div class="priority-info">
-                        <div class="priority-badge priority-${notif.priority}">${priorityDisplay}</div>
+                        <div class="priority-badge priority-${mappedNotif.priority}">${priorityDisplay}</div>
                     </div>
                 </td>
                 <td>
@@ -39454,7 +39484,7 @@ function displayNotifications(notifications) {
                 </td>
                 <td>
                     <div class="sender-info">
-                        <div class="sender-name">${notif.sentBy}</div>
+                        <div class="sender-name">${mappedNotif.sentBy}</div>
                     </div>
                 </td>
                 <td>
@@ -39464,9 +39494,9 @@ function displayNotifications(notifications) {
                 </td>
                 <td>
                     <div class="notification-actions">
-                        <button class="action-btn view" onclick="viewNotification('${notif.id}')" title="View Notification">👁️</button>
-                        <button class="action-btn resend" onclick="resendNotification('${notif.id}')" title="Resend Notification">📤</button>
-                        <button class="action-btn delete" onclick="deleteNotification('${notif.id}')" title="Delete Notification">🗑️</button>
+                        <button class="action-btn view" onclick="viewNotification('${mappedNotif.id}')" title="View Notification">👁️</button>
+                        <button class="action-btn resend" onclick="resendNotification('${mappedNotif.id}')" title="Resend Notification">📤</button>
+                        <button class="action-btn delete" onclick="deleteNotification('${mappedNotif.id}')" title="Delete Notification">🗑️</button>
                     </div>
                 </td>
             </tr>
