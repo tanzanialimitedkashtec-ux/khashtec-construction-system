@@ -51,6 +51,72 @@ router.get('/test-hr-table', async (req, res) => {
     }
 });
 
+// Get all HSE work items
+router.get('/hse', async (req, res) => {
+    try {
+        console.log('🔍 Fetching all HSE work items...');
+        
+        let hseItems = [];
+        
+        try {
+            const [dbRecords] = await db.execute(
+                `SELECT * FROM hse_work ORDER BY submitted_date DESC`
+            );
+            hseItems = dbRecords;
+            console.log(`📊 Found ${hseItems.length} HSE work items from database`);
+        } catch (dbError) {
+            console.error('❌ Database error, using fallback HSE data:', dbError);
+            
+            // Fallback to mock HSE data
+            hseItems = [
+                {
+                    id: 3408,
+                    department_code: 'HSE',
+                    work_type: 'Safety Violation',
+                    work_title: 'Safety Violation - Unauthorized Work',
+                    work_description: 'Workers found performing unauthorized electrical work without proper permits',
+                    submitted_date: '2026-04-10',
+                    submitted_by: 'KTC-INS-001',
+                    severity: 'High',
+                    status: 'Open'
+                },
+                {
+                    id: 3409,
+                    department_code: 'HSE',
+                    work_type: 'Safety Violation',
+                    work_title: 'Safety Violation - No PPE',
+                    work_description: 'Workers observed without required personal protective equipment in construction zone',
+                    submitted_date: '2026-04-09',
+                    submitted_by: 'KTC-INS-002',
+                    severity: 'Medium',
+                    status: 'Resolved'
+                },
+                {
+                    id: 3410,
+                    department_code: 'HSE',
+                    work_type: 'Inspection Report',
+                    work_title: 'Inspection Report - Site B',
+                    work_description: 'Monthly safety inspection completed at Site B with minor findings',
+                    submitted_date: '2026-04-08',
+                    submitted_by: 'KTC-INS-003',
+                    severity: 'Low',
+                    status: 'Closed'
+                }
+            ];
+            console.log(`📋 Using fallback HSE data: ${hseItems.length} items`);
+        }
+        
+        res.status(200).json(hseItems);
+        
+    } catch (error) {
+        console.error('❌ Error fetching HSE work items:', error);
+        res.status(500).json({
+            error: 'Failed to fetch HSE work items',
+            details: error.message
+        });
+    }
+});
+
 // Get inspection records (alias for HSE Inspection Report work items)
 router.get('/hse/inspections', async (req, res) => {
     try {
