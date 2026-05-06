@@ -53,7 +53,7 @@ router.get('/', async (req, res) => {
         
         const { status, manager, search } = req.query;
         
-        let query = `SELECT id, name, description, location, start_date, end_date, status, priority_level, project_manager, client_name, project_code, project_type, created_at, updated_at FROM projects WHERE 1=1`;
+        let query = `SELECT id, name, description, location, start_date, end_date, status, budget, actual_cost, manager_id, client_id, created_at, updated_at FROM projects WHERE 1=1`;
         const params = [];
         
         if (status) {
@@ -62,14 +62,14 @@ router.get('/', async (req, res) => {
         }
         
         if (manager) {
-            query += ` AND project_manager = ?`;
+            query += ` AND manager_id = ?`;
             params.push(manager);
         }
         
         if (search) {
-            query += ` AND (name LIKE ? OR description LIKE ? OR location LIKE ? OR client_name LIKE ?)`;
+            query += ` AND (name LIKE ? OR description LIKE ? OR location LIKE ?)`;
             const searchTerm = `%${search}%`;
-            params.push(searchTerm, searchTerm, searchTerm, searchTerm);
+            params.push(searchTerm, searchTerm, searchTerm);
         }
         
         query += ` ORDER BY created_at DESC`;

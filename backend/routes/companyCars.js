@@ -118,6 +118,45 @@ router.get('/', async (req, res) => {
             cars = carsResult.rows;
         }
         
+        // Clean up HTML contamination in car data
+        cars = cars.map(car => {
+            const cleanedCar = { ...car };
+            
+            // Clean description field - remove HTML policy form content
+            if (cleanedCar.description && typeof cleanedCar.description === 'string') {
+                if (cleanedCar.description.includes('<div class="card">') || 
+                    cleanedCar.description.includes('policyFormContainer') ||
+                    cleanedCar.description.includes('HSE Safety Policy Management')) {
+                    
+                    // Extract text before HTML contamination
+                    const htmlIndex = cleanedCar.description.indexOf('<div');
+                    if (htmlIndex > 0) {
+                        cleanedCar.description = cleanedCar.description.substring(0, htmlIndex).trim();
+                    } else {
+                        cleanedCar.description = 'Company vehicle - see details for more information';
+                    }
+                }
+            }
+            
+            // Clean notes field - remove HTML policy form content
+            if (cleanedCar.notes && typeof cleanedCar.notes === 'string') {
+                if (cleanedCar.notes.includes('<div class="card">') || 
+                    cleanedCar.notes.includes('policyFormContainer') ||
+                    cleanedCar.notes.includes('HSE Safety Policy Management')) {
+                    
+                    // Extract text before HTML contamination
+                    const htmlIndex = cleanedCar.notes.indexOf('<div');
+                    if (htmlIndex > 0) {
+                        cleanedCar.notes = cleanedCar.notes.substring(0, htmlIndex).trim();
+                    } else {
+                        cleanedCar.notes = 'No additional notes';
+                    }
+                }
+            }
+            
+            return cleanedCar;
+        });
+        
         console.log(`✅ Found ${cars.length} company cars in database`);
         
         res.status(200).json({
