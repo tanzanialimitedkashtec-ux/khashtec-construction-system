@@ -1443,8 +1443,8 @@ button.action{
     border-radius: 18px;
     border: 1px solid rgba(255,255,255,0.65);
     box-shadow: 0 18px 40px rgba(2,24,70,0.16);
-    backdrop-filter: blur(18px);
     -webkit-backdrop-filter: blur(18px);
+    backdrop-filter: blur(18px);
 }
 
 .login-box select{
@@ -10013,8 +10013,8 @@ background: #f8f9fa;
     text-align: left;
     border: none;
     cursor: pointer;
-    user-select: none;
     -webkit-user-select: none;
+    user-select: none;
     transition: background 0.3s ease;
 }
 
@@ -15694,7 +15694,8 @@ function updateActionForm() {
 }
 
 function saveEmploymentAction() {
-    const action = {
+    // Get raw values
+    const rawAction = {
         employeeId: document.getElementById('actionEmployee').value,
         actionType: document.getElementById('actionType').value,
         actionDate: document.getElementById('actionDate').value,
@@ -15707,10 +15708,33 @@ function saveEmploymentAction() {
     };
     
     // Validate required fields
-    if (!action.employeeId || !action.actionType || !action.actionDate || !action.reasonCategory || !action.actionDetails) {
+    if (!rawAction.employeeId || !rawAction.actionType || !rawAction.actionDate || !rawAction.reasonCategory || !rawAction.actionDetails) {
         customAlert('Please fill in all required fields:\n\n• Employee\n• Action Type\n• Effective Date\n• Reason Category\n• Detailed Reason', "Validation Error", "error");
         return false;
     }
+    
+    // Clean action data - remove empty strings for optional fields
+    const action = {
+        employeeId: rawAction.employeeId,
+        actionType: rawAction.actionType,
+        actionDate: rawAction.actionDate,
+        reasonCategory: rawAction.reasonCategory,
+        actionDetails: rawAction.actionDetails,
+        decidedBy: rawAction.decidedBy
+    };
+    
+    // Only include optional fields if they have values
+    if (rawAction.suspensionDays && rawAction.suspensionDays.trim() !== '') {
+        action.suspensionDays = rawAction.suspensionDays;
+    }
+    if (rawAction.finalPaymentDate && rawAction.finalPaymentDate.trim() !== '') {
+        action.finalPaymentDate = rawAction.finalPaymentDate;
+    }
+    if (rawAction.mdNotes && rawAction.mdNotes.trim() !== '') {
+        action.mdNotes = rawAction.mdNotes;
+    }
+    
+    console.log('📤 Sending action data:', action);
     
     // Show loading message
     customAlert('Processing employment action...', "Processing", "info");
@@ -15721,15 +15745,18 @@ function saveEmploymentAction() {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
-            'Accept': 'application/json',
-            'Authorization': `Bearer ${sessionManager.getAuthToken()}`
+            'Accept': 'application/json'
         },
         body: JSON.stringify(action)
     })
     .then(response => {
         console.log('📡 Employment Action API Response status:', response.status);
+        console.log('📡 Response headers:', response.headers);
         if (!response.ok) {
-            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            return response.text().then(text => {
+                console.error('❌ Error response body:', text);
+                throw new Error(`HTTP ${response.status}: ${response.statusText} - ${text}`);
+            });
         }
         return response.json();
     })
@@ -15748,7 +15775,10 @@ function saveEmploymentAction() {
     })
     .catch(error => {
         console.error('❌ Error processing employment action:', error);
-        customAlert(`Failed to process employment action: ${error.message}\n\nPlease check:\n• All required fields are filled\n• Network connection is stable\n• Server is running properly`, "Processing Error", "error");
+        console.error('❌ Error stack:', error.stack);
+        console.error('❌ Error name:', error.name);
+        console.error('❌ Error message:', error.message);
+        customAlert(`Failed to process employment action: ${error.message}\n\nPlease check:\n• All required fields are filled\n• Network connection is stable\n• Server is running properly\n\nCheck browser console for more details.`, "Processing Error", "error");
     });
     
     return false;
