@@ -1444,6 +1444,7 @@ button.action{
     border: 1px solid rgba(255,255,255,0.65);
     box-shadow: 0 18px 40px rgba(2,24,70,0.16);
     backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
 }
 
 .login-box select{
@@ -10013,6 +10014,7 @@ background: #f8f9fa;
     border: none;
     cursor: pointer;
     user-select: none;
+    -webkit-user-select: none;
     transition: background 0.3s ease;
 }
 
@@ -11797,7 +11799,7 @@ function displayFilteredPolicies(policies) {
         return;
     }
     
-    // Filter for pending policies
+    // Filter for pending policies (handle both lowercase and capitalized status)
     const pendingPolicies = policies.filter(policy => 
         policy.status === 'pending' || policy.status === 'Pending'
     );
@@ -11807,13 +11809,19 @@ function displayFilteredPolicies(policies) {
         return;
     }
     
-    const policiesHTML = pendingPolicies.map(policy => `
+    const policiesHTML = pendingPolicies.map(policy => {
+        // Map backend fields to frontend expected fields
+        const submittedBy = policy.submittedBy || policy.submitted_by || 'Unknown';
+        const submittedByRole = policy.submittedByRole || policy.submitted_by_role || submittedBy;
+        const submissionDate = policy.submissionDate || policy.submitted_date || policy.created_at;
+        
+        return `
         <div class="policy-item">
             <h5>${policy.title}</h5>
             <p>${policy.description}</p>
             <div class="policy-details">
-                <span><strong>Submitted by:</strong> ${policy.submitted_by_role || policy.submitted_by}</span>
-                <span><strong>Date:</strong> ${policy.submitted_date ? new Date(policy.submitted_date).toLocaleDateString() : (policy.created_at ? new Date(policy.created_at).toLocaleDateString() : 'No date available')}</span>
+                <span><strong>Submitted by:</strong> ${submittedByRole}</span>
+                <span><strong>Date:</strong> ${submissionDate ? new Date(submissionDate).toLocaleDateString() : 'No date available'}</span>
                 <span><strong>Impact:</strong> ${policy.impact || 'Medium'}</span>
             </div>
             <div class="policy-actions">
@@ -11822,7 +11830,8 @@ function displayFilteredPolicies(policies) {
                 <button class="action" onclick="rejectPolicy('${policy.id}')" style="background: #dc3545;">Reject</button>
             </div>
         </div>
-    `).join('');
+    `;
+    }).join('');
     
     container.innerHTML = policiesHTML;
 }
