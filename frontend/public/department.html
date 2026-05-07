@@ -625,30 +625,31 @@ button.action{
     background: white;
     border: 1px solid #dee2e6;
     border-radius: 8px;
-    overflow: hidden;
+    overflow-x: auto;
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
 .budget-table {
     width: 100%;
     border-collapse: collapse;
-    font-size: 9px;
+    font-size: 10px;
     background: white;
+    min-width: 700px;
 }
 
 .budget-table th {
     background: #0b3d91;
     color: white;
-    padding: 10px 8px;
+    padding: 9px 7px;
     text-align: left;
     font-weight: bold;
-    font-size: 8px;
+    font-size: 9px;
     border-bottom: 2px solid #0a2c6a;
     white-space: nowrap;
 }
 
 .budget-table td {
-    padding: 8px;
+    padding: 7px 8px;
     border-bottom: 1px solid #e9ecef;
     vertical-align: middle;
     font-size: 9px;
@@ -2087,34 +2088,37 @@ color: #666;
 .workforce-table-container {
     background: white;
     border: 1px solid #dee2e6;
-    border-radius: 8px;
+    border-radius: 6px;
     overflow: hidden;
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    margin-top: 20px;
+    margin-top: 15px;
+    overflow-x: auto; /* Enable horizontal scrolling on small screens */
 }
 
 .workforce-table {
     width: 100%;
     border-collapse: collapse;
-    font-size: 12px;
+    font-size: 11px;
     background: white;
+    min-width: 500px; /* Minimum width to prevent excessive compression */
 }
 
 .workforce-table th {
     background: #0b3d91;
     color: white;
-    padding: 12px 8px;
+    padding: 8px 6px;
     text-align: left;
     font-weight: 600;
     border-bottom: 2px solid #093278;
     white-space: nowrap;
+    font-size: 10px;
 }
 
 .workforce-table td {
-    padding: 10px 8px;
+    padding: 6px 4px;
     border-bottom: 1px solid #e9ecef;
     vertical-align: middle;
-    font-size: 12px;
+    font-size: 11px;
 }
 
 .workforce-table tr:hover {
@@ -2128,22 +2132,22 @@ color: #666;
 .category-info {
     display: flex;
     flex-direction: column;
-    gap: 2px;
+    gap: 1px;
 }
 
 .category-name {
     font-weight: 600;
     color: #333;
-    font-size: 13px;
+    font-size: 11px;
 }
 
 .category-desc {
-    font-size: 11px;
+    font-size: 9px;
     color: #666;
 }
 
 .count-number {
-    font-size: 18px;
+    font-size: 14px;
     font-weight: 700;
     color: #0b3d91;
     text-align: center;
@@ -2190,34 +2194,37 @@ color: #666;
 .department-table-container {
     background: white;
     border: 1px solid #dee2e6;
-    border-radius: 8px;
+    border-radius: 6px;
     overflow: hidden;
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    margin-top: 15px;
+    margin-top: 12px;
+    overflow-x: auto; /* Enable horizontal scrolling on small screens */
 }
 
 .department-table {
     width: 100%;
     border-collapse: collapse;
-    font-size: 11px;
+    font-size: 10px;
     background: white;
+    min-width: 400px; /* Minimum width to prevent excessive compression */
 }
 
 .department-table th {
     background: #0b3d91;
     color: white;
-    padding: 10px 8px;
+    padding: 6px 4px;
     text-align: left;
     font-weight: 600;
     border-bottom: 2px solid #093278;
     white-space: nowrap;
+    font-size: 9px;
 }
 
 .department-table td {
-    padding: 8px;
+    padding: 4px 3px;
     border-bottom: 1px solid #e9ecef;
     vertical-align: middle;
-    font-size: 11px;
+    font-size: 10px;
 }
 
 .department-table tr:hover {
@@ -2231,17 +2238,18 @@ color: #666;
 .department-info {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 6px;
 }
 
 .department-name {
     font-weight: 600;
     color: #333;
     text-transform: capitalize;
+    font-size: 10px;
 }
 
 .employee-count {
-    font-size: 14px;
+    font-size: 12px;
     font-weight: 600;
     color: #0b3d91;
     text-align: center;
@@ -2250,16 +2258,16 @@ color: #666;
 .percentage-bar {
     position: relative;
     background: #e9ecef;
-    border-radius: 10px;
-    height: 16px;
-    min-width: 60px;
-    max-width: 100px;
+    border-radius: 8px;
+    height: 12px;
+    min-width: 50px;
+    max-width: 80px;
 }
 
 .percentage-fill {
     background: linear-gradient(90deg, #0b3d91, #1e5bb8);
     height: 100%;
-    border-radius: 10px;
+    border-radius: 8px;
     transition: width 0.3s ease;
 }
 
@@ -2268,16 +2276,16 @@ color: #666;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    font-size: 9px;
+    font-size: 8px;
     font-weight: 600;
     color: #333;
 }
 
 .trend-indicator {
-    font-size: 10px;
+    font-size: 9px;
     font-weight: 600;
-    padding: 2px 6px;
-    border-radius: 12px;
+    padding: 1px 4px;
+    border-radius: 10px;
     display: inline-block;
 }
 
@@ -2297,11 +2305,16 @@ color: #666;
 }
 
 /* Meeting Table Styles */
+.scheduled-meetings {
+    margin-top: 20px;
+}
+
 .meeting-table-container {
     background: white;
     border: 1px solid #dee2e6;
     border-radius: 8px;
     overflow: hidden;
+    overflow-x: auto;
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     margin-top: 15px;
 }
@@ -2309,25 +2322,27 @@ color: #666;
 .meeting-table {
     width: 100%;
     border-collapse: collapse;
-    font-size: 11px;
+    font-size: 10px;
     background: white;
+    min-width: 1100px;
 }
 
 .meeting-table th {
     background: #0b3d91;
     color: white;
-    padding: 10px 8px;
+    padding: 8px 6px;
     text-align: left;
     font-weight: 600;
     border-bottom: 2px solid #093278;
     white-space: nowrap;
+    font-size: 10px;
 }
 
 .meeting-table td {
-    padding: 8px;
+    padding: 6px 5px;
     border-bottom: 1px solid #e9ecef;
     vertical-align: middle;
-    font-size: 11px;
+    font-size: 10px;
 }
 
 .meeting-table tr:hover {
@@ -2342,24 +2357,24 @@ color: #666;
     display: flex;
     flex-direction: column;
     gap: 2px;
-    min-width: 150px;
+    min-width: 120px;
 }
 
 .meeting-title {
     font-weight: 600;
     color: #333;
-    font-size: 12px;
+    font-size: 11px;
     line-height: 1.2;
 }
 
 .meeting-type {
-    font-size: 10px;
+    font-size: 9px;
     color: #666;
     text-transform: uppercase;
 }
 
 .past-indicator {
-    font-size: 9px;
+    font-size: 8px;
     font-weight: 600;
     color: #dc3545;
     background: #f8d7da;
@@ -2373,7 +2388,7 @@ color: #666;
     display: flex;
     flex-direction: column;
     gap: 2px;
-    min-width: 100px;
+    min-width: 80px;
 }
 
 .meeting-date {
@@ -2383,111 +2398,63 @@ color: #666;
 }
 
 .meeting-time {
-    font-size: 10px;
+    font-size: 9px;
     color: #666;
 }
 
-.location-info {
-    min-width: 80px;
+.location-info,
+.department-info,
+.resources-info,
+.description-info,
+.meeting-type-info,
+.date-info,
+.start-time-info,
+.end-time-info {
+    min-width: 70px;
 }
 
-.meeting-location {
+.meeting-location,
+.start-time,
+.end-time {
     font-weight: 500;
     color: #333;
-    font-size: 11px;
+    font-size: 10px;
 }
 
-.department-info {
-    min-width: 80px;
-}
-
-.department-badge {
+.department-badge,
+.type-badge {
     font-size: 8px;
     font-weight: 600;
     color: white;
     background: #6c757d;
-    padding: 1px 4px;
-    border-radius: 6px;
-    text-transform: capitalize;
-    display: inline-block;
-    white-space: nowrap;
-}
-
-.attendee-info {
-    text-align: center;
-    min-width: 60px;
-}
-
-.attendee-count {
-    font-size: 14px;
-    font-weight: 700;
-    color: #0b3d91;
-}
-
-.attendee-label {
-    font-size: 9px;
-    color: #666;
-    text-transform: uppercase;
-}
-
-.resources-info {
-    min-width: 80px;
-}
-
-.resources-text {
-    font-size: 10px;
-    color: #666;
-    line-height: 1.2;
-    max-width: 100px;
-    word-wrap: break-word;
-}
-
-.meeting-title-info {
-    min-width: 120px;
-}
-
-.meeting-type-info {
-    min-width: 80px;
-}
-
-.type-badge {
-    font-size: 9px;
-    font-weight: 600;
-    color: white;
-    background: #6c757d;
-    padding: 2px 6px;
+    padding: 1px 5px;
     border-radius: 8px;
     display: inline-block;
     text-transform: capitalize;
 }
 
-.date-info {
-    min-width: 80px;
+.attendee-info {
+    text-align: center;
+    min-width: 45px;
 }
 
-.start-time-info {
-    min-width: 60px;
+.attendee-count {
+    font-size: 13px;
+    font-weight: 700;
+    color: #0b3d91;
 }
 
-.start-time {
-    font-size: 10px;
-    color: #333;
-    font-weight: 500;
-}
-
-.end-time-info {
-    min-width: 60px;
-}
-
-.end-time {
-    font-size: 10px;
-    color: #333;
-    font-weight: 500;
+.resources-text {
+    font-size: 9px;
+    color: #666;
+    line-height: 1.2;
+    max-width: 130px;
+    word-wrap: break-word;
 }
 
 .description-info {
-    min-width: 150px;
-    max-width: 200px;
+    min-width: 130px;
+    max-width: 180px;
 }
 
 .meeting-description {
@@ -2503,11 +2470,11 @@ color: #666;
 }
 
 .meeting-actions .action-btn {
-    padding: 4px 6px;
+    padding: 4px 5px;
     border: none;
     border-radius: 4px;
     cursor: pointer;
-    font-size: 10px;
+    font-size: 9px;
     transition: all 0.2s ease;
     min-width: 24px;
     height: 24px;
@@ -2536,34 +2503,29 @@ color: #666;
     box-shadow: 0 2px 4px rgba(0,0,0,0.2);
 }
 
-.status-badge.status-confirmed {
-    background: #d4edda;
-    color: #155724;
+.status-badge.status-confirmed,
+.status-badge.status-pending,
+.status-badge.status-cancelled {
     font-size: 9px;
     font-weight: 600;
     padding: 2px 6px;
     border-radius: 8px;
     display: inline-block;
+}
+
+.status-badge.status-confirmed {
+    background: #d4edda;
+    color: #155724;
 }
 
 .status-badge.status-pending {
     background: #fff3cd;
     color: #856404;
-    font-size: 9px;
-    font-weight: 600;
-    padding: 2px 6px;
-    border-radius: 8px;
-    display: inline-block;
 }
 
 .status-badge.status-cancelled {
     background: #f8d7da;
     color: #721c24;
-    font-size: 9px;
-    font-weight: 600;
-    padding: 2px 6px;
-    border-radius: 8px;
-    display: inline-block;
 }
 
 .past-meeting {
@@ -2573,6 +2535,82 @@ color: #666;
 
 .past-meeting .meeting-title {
     color: #666;
+}
+
+@media (max-width: 1024px) {
+    .meeting-table {
+        min-width: 1000px;
+        font-size: 10px;
+    }
+
+    .meeting-table th,
+    .meeting-table td {
+        padding: 6px 4px;
+    }
+
+    .meeting-table th {
+        font-size: 9px;
+    }
+
+    .meeting-title,
+    .meeting-location,
+    .meeting-date,
+    .start-time,
+    .end-time,
+    .department-badge,
+    .type-badge,
+    .meeting-description {
+        font-size: 9px;
+    }
+}
+
+@media (max-width: 768px) {
+    .meeting-table {
+        min-width: 860px;
+    }
+
+    .meeting-table th,
+    .meeting-table td {
+        padding: 5px 4px;
+    }
+
+    .meeting-actions {
+        flex-wrap: wrap;
+        justify-content: flex-start;
+    }
+
+    .meeting-actions .action-btn {
+        width: 100%;
+        min-width: unset;
+    }
+}
+
+@media (max-width: 480px) {
+    .meeting-table {
+        min-width: 760px;
+    }
+
+    .meeting-table th {
+        font-size: 8px;
+        padding: 4px 3px;
+    }
+
+    .meeting-table td {
+        font-size: 8px;
+        padding: 3px 2px;
+    }
+
+    .meeting-title {
+        font-size: 10px;
+    }
+
+    .meeting-description,
+    .meeting-location,
+    .meeting-date,
+    .start-time,
+    .end-time {
+        font-size: 8px;
+    }
 }
 
 /* Attendance Table Styles */
@@ -7958,6 +7996,7 @@ color: #666;
     background: white;
     border-radius: 8px;
     overflow: hidden;
+    overflow-x: auto;
     box-shadow: 0 2px 8px rgba(0,0,0,0.1);
     margin-top: 20px;
 }
@@ -7965,20 +8004,21 @@ color: #666;
 .employee-table {
     width: 100%;
     border-collapse: collapse;
-    font-size: 12px;
+    font-size: 11px;
+    min-width: 720px;
 }
 
 .employee-table th {
     background: #0b3d91;
     color: white;
-    padding: 12px 8px;
+    padding: 10px 6px;
     text-align: left;
     font-weight: 600;
     border-bottom: 2px solid #093278;
 }
 
 .employee-table td {
-    padding: 10px 8px;
+    padding: 8px 6px;
     border-bottom: 1px solid #e9ecef;
     vertical-align: top;
 }
@@ -7995,6 +8035,7 @@ color: #666;
     font-weight: 600;
     color: #2c3e50;
     margin-bottom: 2px;
+    font-size: 12px;
 }
 
 .employee-id-cell {
@@ -8005,17 +8046,18 @@ color: #666;
 
 .employee-email {
     color: #0b3d91;
-    font-size: 11px;
+    font-size: 10px;
 }
 
 .employee-phone {
     color: #495057;
-    font-size: 11px;
+    font-size: 10px;
 }
 
 .employee-position {
     color: #495057;
     font-weight: 500;
+    font-size: 11px;
 }
 
 .employee-dept-badge {
@@ -8023,31 +8065,32 @@ color: #666;
     color: #0b3d91;
     padding: 2px 6px;
     border-radius: 3px;
-    font-size: 10px;
+    font-size: 9px;
     font-weight: 500;
     text-transform: uppercase;
 }
 
 .employee-hire-date {
     color: #6c757d;
-    font-size: 11px;
+    font-size: 10px;
 }
 
 .employee-table-actions {
     display: flex;
     gap: 6px;
     flex-wrap: wrap;
+    align-items: center;
 }
 
 .employee-table-actions button {
-    padding: 4px 8px;
+    padding: 4px 6px;
     border: none;
     border-radius: 3px;
     cursor: pointer;
     font-size: 9px;
     font-weight: 500;
     transition: all 0.2s ease;
-    min-width: 60px;
+    min-width: 56px;
 }
 
 .employee-table-actions button:hover {
@@ -8087,29 +8130,34 @@ color: #666;
     color: #212529;
 }
 
-/* Employee overview stats in table format */
+.employee-overview {
+    margin-bottom: 12px;
+}
+
 .employee-overview-table {
     width: 100%;
     border-collapse: collapse;
-    margin-bottom: 20px;
+    margin-bottom: 16px;
     background: white;
     border-radius: 8px;
     overflow: hidden;
     box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    font-size: 12px;
 }
 
 .employee-overview-table th {
     background: #0b3d91;
     color: white;
-    padding: 10px;
+    padding: 8px 10px;
     text-align: left;
     font-weight: 600;
+    font-size: 11px;
 }
 
 .employee-overview-table td {
-    padding: 8px 10px;
+    padding: 6px 10px;
     border-bottom: 1px solid #e9ecef;
-    font-size: 14px;
+    font-size: 12px;
 }
 
 .employee-overview-table tr:last-child td {
@@ -8119,7 +8167,132 @@ color: #666;
 .stat-value-table {
     font-weight: 600;
     color: #0b3d91;
-    font-size: 16px;
+    font-size: 14px;
+}
+
+.employee-directory {
+    margin-bottom: 12px;
+}
+
+.search-section {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    flex-wrap: wrap;
+    margin-bottom: 12px;
+}
+
+.search-section input,
+.search-section select {
+    font-size: 11px;
+    padding: 8px 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    min-height: 34px;
+}
+
+.search-section input {
+    flex: 1;
+    min-width: 200px;
+}
+
+.search-section select {
+    width: 220px;
+    max-width: 100%;
+}
+
+@media (max-width: 768px) {
+    .employee-table {
+        min-width: 620px;
+        font-size: 10px;
+    }
+
+    .employee-table th,
+    .employee-table td {
+        padding: 6px 4px;
+    }
+
+    .employee-name,
+    .employee-position,
+    .employee-email,
+    .employee-phone,
+    .employee-hire-date {
+        font-size: 10px;
+    }
+
+    .employee-id-cell {
+        font-size: 9px;
+    }
+
+    .employee-dept-badge {
+        font-size: 8px;
+        padding: 1px 4px;
+    }
+
+    .employee-table-actions button {
+        font-size: 8px;
+        padding: 3px 5px;
+        min-width: 50px;
+    }
+
+    .employee-overview-table {
+        font-size: 11px;
+    }
+
+    .employee-overview-table th,
+    .employee-overview-table td {
+        padding: 6px 8px;
+    }
+
+    .stat-value-table {
+        font-size: 13px;
+    }
+
+    .search-section {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .search-section input,
+    .search-section select {
+        width: 100%;
+        min-width: unset;
+    }
+}
+
+@media (max-width: 480px) {
+    .employee-table {
+        min-width: 520px;
+    }
+
+    .employee-table th {
+        font-size: 9px;
+        padding: 5px 4px;
+    }
+
+    .employee-table td {
+        font-size: 9px;
+        padding: 4px 3px;
+    }
+
+    .employee-table-actions {
+        justify-content: flex-start;
+    }
+
+    .employee-table-actions button {
+        width: 100%;
+        min-width: unset;
+    }
+
+    .employee-overview-table th,
+    .employee-overview-table td {
+        font-size: 10px;
+        padding: 5px 6px;
+    }
+
+    .stat-value-table {
+        font-size: 12px;
+    }
 }
 
 .worker-list h4 {
@@ -10589,6 +10762,106 @@ background: #f8f9fa;
     .data-table th,
     .data-table td {
         padding: 6px 4px;
+    }
+}
+
+/* Responsive styles for workforce and department tables */
+@media (max-width: 768px) {
+    .workforce-table-container,
+    .department-table-container {
+        margin: 8px -8px;
+        border-radius: 4px;
+    }
+
+    .workforce-table {
+        font-size: 10px;
+        min-width: 450px;
+    }
+
+    .workforce-table th,
+    .workforce-table td {
+        padding: 4px 3px;
+    }
+
+    .category-name {
+        font-size: 10px;
+    }
+
+    .category-desc {
+        font-size: 8px;
+    }
+
+    .count-number {
+        font-size: 13px;
+    }
+
+    .department-table {
+        font-size: 9px;
+        min-width: 350px;
+    }
+
+    .department-table th,
+    .department-table td {
+        padding: 3px 2px;
+    }
+
+    .department-name {
+        font-size: 9px;
+    }
+
+    .employee-count {
+        font-size: 11px;
+    }
+
+    .percentage-bar {
+        height: 10px;
+        min-width: 40px;
+        max-width: 60px;
+    }
+
+    .percentage-text {
+        font-size: 7px;
+    }
+
+    .trend-indicator {
+        font-size: 8px;
+        padding: 1px 3px;
+    }
+}
+
+@media (max-width: 480px) {
+    .workforce-table {
+        min-width: 400px;
+    }
+
+    .department-table {
+        min-width: 320px;
+    }
+
+    .workforce-table th {
+        padding: 4px 2px;
+        font-size: 9px;
+    }
+
+    .workforce-table td {
+        padding: 3px 2px;
+    }
+
+    .department-table th {
+        padding: 3px 2px;
+        font-size: 8px;
+    }
+
+    .department-table td {
+        padding: 2px 1px;
+    }
+
+    .count-number {
+        font-size: 12px;
+    }
+
+    .employee-count {
+        font-size: 10px;
     }
 }
 </style>
@@ -28388,7 +28661,7 @@ function showPolicyModal(policy) {
         .status-badge {
             padding: 4px 8px;
             border-radius: 4px;
-            font-size: 12px;
+        font-size: 12px;
             font-weight: bold;
         }
         .status-badge.Pending { background: #ffc107; color: #856404; }
@@ -44191,21 +44464,25 @@ function filterPpeRecords() {
 .user-table {
     width: 100%;
     border-collapse: collapse;
-    font-size: 14px;
+    font-size: 12px;
+    min-width: 700px;
 }
 
 .user-table th {
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     color: white;
-    padding: 12px;
+    padding: 10px 8px;
     text-align: left;
     font-weight: 600;
     border-bottom: 2px solid #ddd;
+    font-size: 10px;
+    white-space: nowrap;
 }
 
 .user-table td {
-    padding: 10px 12px;
+    padding: 8px 10px;
     border-bottom: 1px solid #eee;
+    font-size: 11px;
 }
 
 .user-row:hover {
@@ -44269,6 +44546,12 @@ function filterPpeRecords() {
 
 .view-btn:hover {
     background-color: #0056b3;
+}
+
+@media (max-width: 768px) {
+    .user-table {
+        min-width: 640px;
+    }
 }
 
 /* Department Structure Review Styles */
@@ -44349,24 +44632,26 @@ function filterPpeRecords() {
 .doc-management {
     display: grid;
     grid-template-columns: 1fr 2fr;
-    gap: 30px;
+    gap: 24px;
     margin: 20px 0;
+    align-items: start;
 }
 
 .doc-upload {
     background: #f8f9fa;
-    padding: 20px;
+    padding: 18px;
     border-radius: 8px;
     border: 1px solid #dee2e6;
 }
 
 .doc-upload h4 {
     color: #2c3e50;
-    margin-bottom: 15px;
+    margin-bottom: 14px;
+    font-size: 16px;
 }
 
 .doc-upload .form-group {
-    margin-bottom: 15px;
+    margin-bottom: 14px;
 }
 
 .doc-upload label {
@@ -44374,6 +44659,7 @@ function filterPpeRecords() {
     margin-bottom: 5px;
     font-weight: 600;
     color: #495057;
+    font-size: 13px;
 }
 
 .doc-upload select,
@@ -44383,7 +44669,7 @@ function filterPpeRecords() {
     padding: 10px;
     border: 1px solid #ced4da;
     border-radius: 4px;
-    font-size: 14px;
+    font-size: 13px;
 }
 
 .doc-upload textarea {
@@ -44393,31 +44679,40 @@ function filterPpeRecords() {
 
 .doc-list {
     background: white;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    padding: 16px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
 }
 
 .doc-list h4 {
     color: #2c3e50;
     margin-bottom: 15px;
+    font-size: 16px;
 }
 
 .doc-table {
     width: 100%;
     border-collapse: collapse;
-    font-size: 14px;
+    font-size: 12px;
+    min-width: 700px;
 }
 
 .doc-table th {
     background: linear-gradient(135deg, #6c757d 0%, #495057 100%);
     color: white;
-    padding: 12px;
+    padding: 10px 8px;
     text-align: left;
     font-weight: 600;
     border-bottom: 2px solid #ddd;
+    font-size: 10px;
+    white-space: nowrap;
 }
 
 .doc-table td {
-    padding: 10px 12px;
+    padding: 8px 10px;
     border-bottom: 1px solid #eee;
+    font-size: 11px;
 }
 
 .doc-row:hover {
