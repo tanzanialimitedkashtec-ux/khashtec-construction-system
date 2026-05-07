@@ -268,100 +268,100 @@ class DatabaseAPI {
 
     // Tax Payments API
     async saveTaxPayment(taxData) {
-        return this.request('/tax/payments', {
+        return this.request('/tax', {
             method: 'POST',
             body: JSON.stringify(taxData)
         });
     }
 
     async getTaxPayments() {
-        return this.request('/tax/payments');
+        return this.request('/tax');
     }
 
     async updateTaxPayment(id, taxData) {
-        return this.request(`/tax/payments/${id}`, {
+        return this.request(`/tax/${id}`, {
             method: 'PUT',
             body: JSON.stringify(taxData)
         });
     }
 
     async deleteTaxPayment(id) {
-        return this.request(`/tax/payments/${id}`, {
+        return this.request(`/tax/${id}`, {
             method: 'DELETE'
         });
     }
 
     // Procurement Sales API
     async saveProcurementSale(procurementData) {
-        return this.request('/procurement/sales', {
+        return this.request('/procurement-sales', {
             method: 'POST',
             body: JSON.stringify(procurementData)
         });
     }
 
     async getProcurementSales() {
-        return this.request('/procurement/sales');
+        return this.request('/procurement-sales');
     }
 
     async updateProcurementSale(id, procurementData) {
-        return this.request(`/procurement/sales/${id}`, {
+        return this.request(`/procurement-sales/${id}`, {
             method: 'PUT',
             body: JSON.stringify(procurementData)
         });
     }
 
     async deleteProcurementSale(id) {
-        return this.request(`/procurement/sales/${id}`, {
+        return this.request(`/procurement-sales/${id}`, {
             method: 'DELETE'
         });
     }
 
     // NHIF Contributions API
     async saveNHIFContribution(nhifData) {
-        return this.request('/nhif/contributions', {
+        return this.request('/nhif', {
             method: 'POST',
             body: JSON.stringify(nhifData)
         });
     }
 
     async getNHIFContributions() {
-        return this.request('/nhif/contributions');
+        return this.request('/nhif');
     }
 
     async updateNHIFContribution(id, nhifData) {
-        return this.request(`/nhif/contributions/${id}`, {
+        return this.request(`/nhif/${id}`, {
             method: 'PUT',
             body: JSON.stringify(nhifData)
         });
     }
 
     async deleteNHIFContribution(id) {
-        return this.request(`/nhif/contributions/${id}`, {
+        return this.request(`/nhif/${id}`, {
             method: 'DELETE'
         });
     }
 
     // Senior Roles API
     async saveSeniorRole(seniorData) {
-        return this.request('/senior/roles', {
+        return this.request('/senior', {
             method: 'POST',
             body: JSON.stringify(seniorData)
         });
     }
 
     async getSeniorRoles() {
-        return this.request('/senior/roles');
+        return this.request('/senior');
     }
 
     async updateSeniorRole(id, seniorData) {
-        return this.request(`/senior/roles/${id}`, {
+        return this.request(`/senior/${id}`, {
             method: 'PUT',
             body: JSON.stringify(seniorData)
         });
     }
 
     async deleteSeniorRole(id) {
-        return this.request(`/senior/roles/${id}`, {
+        return this.request(`/senior/${id}`, {
             method: 'DELETE'
         });
     }
@@ -389,6 +389,27 @@ class DatabaseAPI {
         return this.request(`/suggestions/${id}`, {
             method: 'DELETE'
         });
+    }
+
+    // Create methods (aliases for save methods)
+    async createTaxPayment(taxData) {
+        return this.saveTaxPayment(taxData);
+    }
+
+    async createNHIFContribution(nhifData) {
+        return this.saveNHIFContribution(nhifData);
+    }
+
+    async createProcurementSale(procurementData) {
+        return this.saveProcurementSale(procurementData);
+    }
+
+    async createSeniorRole(seniorData) {
+        return this.saveSeniorRole(seniorData);
+    }
+
+    async createSuggestion(suggestionData) {
+        return this.saveSuggestion(suggestionData);
     }
 }
 
