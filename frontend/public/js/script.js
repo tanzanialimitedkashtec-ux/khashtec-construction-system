@@ -1211,23 +1211,23 @@ async function loadDrivers() {
 
 // Toggle car registration form visibility
 function toggleCarForm() {
-    const carForm = document.getElementById('carRegistrationForm');
+    const carFormContainer = document.getElementById('carFormContainer');
     const toggleBtn = document.getElementById('toggleCarFormBtn');
     
-    if (carForm) {
-        const isHidden = carForm.style.display === 'none' || !carForm.style.display;
+    if (carFormContainer) {
+        const isHidden = carFormContainer.style.display === 'none' || !carFormContainer.style.display;
         
         if (isHidden) {
-            // Show form
-            carForm.style.display = 'block';
+            // Show form container
+            carFormContainer.style.display = 'block';
             if (toggleBtn) {
                 toggleBtn.textContent = '🚗 Close Vehicle Registration Form';
                 toggleBtn.style.background = '#dc3545';
             }
             console.log('✅ Car registration form shown');
         } else {
-            // Hide form
-            carForm.style.display = 'none';
+            // Hide form container
+            carFormContainer.style.display = 'none';
             if (toggleBtn) {
                 toggleBtn.textContent = '🚗 Open Vehicle Registration Form';
                 toggleBtn.style.background = '#007bff';
@@ -1235,7 +1235,7 @@ function toggleCarForm() {
             console.log('🚗 Car registration form hidden');
         }
     } else {
-        console.error('❌ Car registration form not found');
+        console.error('❌ Car form container not found');
     }
 }
 
