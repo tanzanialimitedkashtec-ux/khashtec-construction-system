@@ -1031,6 +1031,235 @@ function handleLogout() {
     }, 1000);
 }
 
+// ===== CAR REGISTRATION FUNCTIONS =====
+
+// Save car registration
+async function saveCarRegistration() {
+    try {
+        // Get form values
+        const carData = {
+            carName: document.getElementById('carName').value,
+            brandName: document.getElementById('brandName').value,
+            regNo: document.getElementById('regNo').value,
+            plateNumber: document.getElementById('plateNumber').value,
+            carDetails: document.getElementById('carDetails').value,
+            carDescription: document.getElementById('carDescription').value,
+            driver: document.getElementById('driver').value,
+            registrationDate: document.getElementById('registrationDate').value,
+            trackNumber: document.getElementById('trackNumber').value,
+            vehicleType: document.getElementById('vehicleType').value,
+            fuelType: document.getElementById('fuelType').value,
+            carColor: document.getElementById('carColor').value,
+            yearOfManufacture: document.getElementById('yearOfManufacture').value,
+            odometerReading: document.getElementById('odometerReading').value,
+            insuranceStatus: document.getElementById('insuranceStatus').value,
+            vehicleStatus: document.getElementById('vehicleStatus').value,
+            additionalNotes: document.getElementById('additionalNotes').value,
+            registeredBy: getCurrentUser(),
+            registrationTimestamp: new Date().toISOString()
+        };
+
+        // Validate required fields
+        const requiredFields = ['carName', 'brandName', 'regNo', 'plateNumber', 'carDetails', 'carDescription', 'registrationDate', 'trackNumber', 'vehicleType', 'fuelType', 'insuranceStatus', 'vehicleStatus'];
+        
+        for (const field of requiredFields) {
+            if (!carData[field] || carData[field].trim() === '') {
+                showNotification(`Please fill in all required fields marked with *`, 'error', 5000);
+                return false;
+            }
+        }
+
+        // Show loading state
+        const submitBtn = document.querySelector('#carRegistrationForm button[type="submit"]');
+        const originalText = submitBtn.textContent;
+        submitBtn.disabled = true;
+        submitBtn.textContent = '🔄 Registering...';
+
+        // Check if apiService is available
+        if (!window.apiService) {
+            console.error('❌ apiService not available');
+            showNotification('API service not available. Please refresh the page.', 'error', 5000);
+            submitBtn.disabled = false;
+            submitBtn.textContent = originalText;
+            return false;
+        }
+
+        // Send data to backend
+        console.log('🚗 Registering car:', carData);
+        const response = await window.apiService.post('/fleet/vehicles', carData);
+        
+        console.log('✅ Car registration successful:', response);
+
+        // Reset button
+        submitBtn.disabled = false;
+        submitBtn.textContent = originalText;
+
+        // Show success message
+        showNotification(`Vehicle "${carData.carName}" (${carData.regNo}) registered successfully!`, 'success', 6000);
+
+        // Reset form
+        resetCarForm();
+
+        // Generate new track number for next registration
+        generateTrackNumber();
+
+        return false;
+
+    } catch (error) {
+        console.error('❌ Car registration failed:', error);
+        
+        // Reset button
+        const submitBtn = document.querySelector('#carRegistrationForm button[type="submit"]');
+        submitBtn.disabled = false;
+        submitBtn.textContent = '🚗 Register Vehicle';
+
+        // Show error message
+        let errorMsg = 'Vehicle registration failed. ';
+        if (error.message.includes('duplicate')) {
+            errorMsg = 'A vehicle with this registration number already exists.';
+        } else if (error.message.includes('network') || error.message.includes('fetch')) {
+            errorMsg = 'Network error. Please check your internet connection.';
+        } else {
+            errorMsg = error.message || 'Unknown error occurred.';
+        }
+        
+        showNotification(errorMsg, 'error', 8000);
+        return false;
+    }
+}
+
+// Reset car registration form
+function resetCarForm() {
+    const form = document.getElementById('carRegistrationForm');
+    if (form) {
+        // Reset all form fields
+        form.reset();
+        
+        // Generate new track number
+        generateTrackNumber();
+        
+        // Set today's date as default registration date
+        const today = new Date().toISOString().split('T')[0];
+        const regDateField = document.getElementById('registrationDate');
+        if (regDateField) {
+            regDateField.value = today;
+        }
+        
+        showNotification('Form has been reset', 'info', 3000);
+    }
+}
+
+// Generate auto track number
+function generateTrackNumber() {
+    const trackNumberField = document.getElementById('trackNumber');
+    if (trackNumberField) {
+        const now = new Date();
+        const dateStr = now.getDate().toString().padStart(2, '0') + 
+                       (now.getMonth() + 1).toString().padStart(2, '0') + 
+                       now.getFullYear().toString().slice(-2);
+        const timeStr = now.getHours().toString().padStart(2, '0') + 
+                       now.getMinutes().toString().padStart(2, '0') + 
+                       now.getSeconds().toString().padStart(2, '0');
+        
+        const trackNumber = `KTC-CAR-${dateStr}${timeStr}`;
+        trackNumberField.value = trackNumber;
+    }
+}
+
+// Load drivers for assignment
+async function loadDrivers() {
+    try {
+        const driverSelect = document.getElementById('driver');
+        if (!driverSelect) return;
+
+        // Check if apiService is available
+        if (!window.apiService) {
+            console.error('❌ apiService not available');
+            driverSelect.innerHTML = '<option value="">API service not available</option>';
+            return;
+        }
+
+        // Get drivers from API
+        const response = await window.apiService.get('/employees/drivers');
+        console.log('👥 Drivers response:', response);
+
+        // Clear existing options
+        driverSelect.innerHTML = '<option value="">Select Driver</option><option value="">Unassigned</option>';
+
+        // Add drivers to dropdown
+        if (response && response.drivers && response.drivers.length > 0) {
+            response.drivers.forEach(driver => {
+                const option = document.createElement('option');
+                option.value = driver.id;
+                option.textContent = `${driver.name} (${driver.employee_id})`;
+                driverSelect.appendChild(option);
+            });
+            
+            console.log(`✅ Loaded ${response.drivers.length} drivers`);
+        } else {
+            console.log('⚠️ No drivers found');
+        }
+
+    } catch (error) {
+        console.error('❌ Failed to load drivers:', error);
+        const driverSelect = document.getElementById('driver');
+        if (driverSelect) {
+            driverSelect.innerHTML = '<option value="">Failed to load drivers</option>';
+        }
+    }
+}
+
+// Get current user info
+function getCurrentUser() {
+    // Try to get from session manager first
+    if (window.sessionManager) {
+        const currentUser = window.sessionManager.getCurrentUser();
+        if (currentUser) {
+            return currentUser.name || currentUser.email || 'Unknown User';
+        }
+    }
+    
+    // Fallback to role from global variable
+    if (typeof currentRole !== 'undefined' && currentRole) {
+        return currentRole;
+    }
+    
+    return 'System User';
+}
+
+// Initialize car registration form when page loads
+document.addEventListener('DOMContentLoaded', function() {
+    // Previous initializations...
+    const projectSelect = document.getElementById('progressProject');
+    if (projectSelect) {
+        loadProjects();
+    }
+    
+    const workerResults = document.getElementById('workerResults');
+    if (workerResults) {
+        loadWorkerAssignments();
+    }
+    
+    // Initialize car registration form
+    const carForm = document.getElementById('carRegistrationForm');
+    if (carForm) {
+        // Generate initial track number
+        generateTrackNumber();
+        
+        // Set today's date as default
+        const today = new Date().toISOString().split('T')[0];
+        const regDateField = document.getElementById('registrationDate');
+        if (regDateField) {
+            regDateField.value = today;
+        }
+        
+        // Load drivers
+        loadDrivers();
+        
+        console.log('✅ Car registration form initialized');
+    }
+});
+
 // HR Policy Management Functions
 async function approvePolicy(policyId) {
     try {
