@@ -19649,7 +19649,7 @@ function loadEmployeeForUpdate() {
     resultsDiv.innerHTML = '<p style="color: #666;">Searching...</p>';
     
     // Load employees from API
-    fetch('/employees')
+    fetch('/api/employees')
         .then(response => response.json())
         .then(data => {
             console.log('📊 Employees loaded:', data);
@@ -19762,7 +19762,7 @@ function showAllEmployees() {
     resultsDiv.innerHTML = '<p style="color: #666;">Loading all employees...</p>';
     
     // Load employees from API
-    fetch('/employees')
+    fetch('/api/employees')
         .then(response => response.json())
         .then(data => {
             // Handle different response formats
@@ -19910,7 +19910,7 @@ function selectEmployeeForUpdate(email) {
     console.log('🔄 Selecting employee for update:', email);
     
     // Load employees from API to get the selected employee
-    fetch('/employees')
+    fetch('/api/employees')
         .then(response => response.json())
         .then(data => {
             // Handle different response formats
