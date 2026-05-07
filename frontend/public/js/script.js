@@ -62,7 +62,7 @@ function submitAccountForm() {
 // Load projects into the select dropdown
 async function loadProjects() {
     try {
-        const response = await window.ApiService.get('/projects');
+        const response = await window.apiService.get('/projects');
         const projectSelect = document.getElementById('progressProject');
         
         if (response.projects && response.projects.length > 0) {

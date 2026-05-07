@@ -39522,7 +39522,9 @@ function getPriorityDisplayName(priority) {
     const priorityMap = {
         'normal': 'Normal',
         'important': 'Important',
-        'urgent': 'Urgent'
+        'urgent': 'Urgent',
+        'medium': 'Medium',  // Handle database stored as 'medium'
+        'high': 'High'       // Handle database stored as 'high'
     };
     return priorityMap[priority] || priority;
 }
