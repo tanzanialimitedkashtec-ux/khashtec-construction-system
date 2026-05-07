@@ -1209,6 +1209,36 @@ async function loadDrivers() {
     }
 }
 
+// Toggle car registration form visibility
+function toggleCarForm() {
+    const carForm = document.getElementById('carRegistrationForm');
+    const toggleBtn = document.getElementById('toggleCarFormBtn');
+    
+    if (carForm) {
+        const isHidden = carForm.style.display === 'none' || !carForm.style.display;
+        
+        if (isHidden) {
+            // Show form
+            carForm.style.display = 'block';
+            if (toggleBtn) {
+                toggleBtn.textContent = '🚗 Close Vehicle Registration Form';
+                toggleBtn.style.background = '#dc3545';
+            }
+            console.log('✅ Car registration form shown');
+        } else {
+            // Hide form
+            carForm.style.display = 'none';
+            if (toggleBtn) {
+                toggleBtn.textContent = '🚗 Open Vehicle Registration Form';
+                toggleBtn.style.background = '#007bff';
+            }
+            console.log('🚗 Car registration form hidden');
+        }
+    } else {
+        console.error('❌ Car registration form not found');
+    }
+}
+
 // Get current user info
 function getCurrentUser() {
     // Try to get from session manager first
@@ -1243,6 +1273,9 @@ document.addEventListener('DOMContentLoaded', function() {
     // Initialize car registration form
     const carForm = document.getElementById('carRegistrationForm');
     if (carForm) {
+        // Hide form by default
+        carForm.style.display = 'none';
+        
         // Generate initial track number
         generateTrackNumber();
         
@@ -1256,7 +1289,7 @@ document.addEventListener('DOMContentLoaded', function() {
         // Load drivers
         loadDrivers();
         
-        console.log('✅ Car registration form initialized');
+        console.log('✅ Car registration form initialized (hidden by default)');
     }
 });
 
