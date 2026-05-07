@@ -45691,6 +45691,7 @@ function showTaxPayments() {
         const taxForm = document.getElementById('taxForm');
         if (taxForm) {
             taxForm.addEventListener('submit', async function(e) {
+                console.log('💰 Tax form submitted');
                 e.preventDefault();
                 
                 const formData = {
@@ -45907,6 +45908,7 @@ function showSuggestionsManagement() {
         const suggestionsForm = document.getElementById('suggestionsForm');
         if (suggestionsForm) {
             suggestionsForm.addEventListener('submit', async function(e) {
+                console.log('🎯 Suggestions form submitted');
                 e.preventDefault();
                 
                 const formData = {
