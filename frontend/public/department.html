@@ -1661,7 +1661,8 @@ button.action{
 #toggleNotificationFormBtn:hover,
 #toggleWorkerViewBtn:hover,
 #toggleMinutesFormBtn:hover,
-#togglePolicySearchBtn:hover {
+#togglePolicySearchBtn:hover,
+#toggleCarFormBtn:hover {
     transform: scale(1.05);
     box-shadow: 0 4px 8px rgba(0,0,0,0.2);
 }
@@ -1694,7 +1695,8 @@ button.action{
 #notificationFormContainer,
 #workerViewContainer,
 #minutesFormContainer,
-#policySearchContainer {
+#policySearchContainer,
+#carFormContainer {
     transition: all 0.4s ease;
     opacity: 0;
     transform: translateY(-20px);
@@ -1727,7 +1729,8 @@ button.action{
 #notificationFormContainer.show,
 #workerViewContainer.show,
 #minutesFormContainer.show,
-#policySearchContainer.show {
+#policySearchContainer.show,
+#carFormContainer.show {
     opacity: 1;
     transform: translateY(0);
 }
@@ -23198,10 +23201,16 @@ function registerCompanyCar(){
     
     showContent(`
         <div class="card">
-            <h3>Register Company Car</h3>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h3>Register Company Car</h3>
+                <button type="button" id="toggleCarFormBtn" onclick="toggleCarForm()" class="action" style="background: #007bff;">
+                    🚗 Open Vehicle Registration Form
+                </button>
+            </div>
             <p><strong>Fleet Management:</strong> Register new company vehicles for tracking and management</p>
             
-            <div class="form-header">
+            <div id="carFormContainer" style="display: none;">
+                <div class="form-header">
                 <h4>Vehicle Registration Form</h4>
                 <p>Complete this form to register a new company vehicle in the fleet management system. All fields marked with * are required.</p>
             </div>
@@ -39563,7 +39572,7 @@ function filterNotifications() {
         const status = row.querySelector('.status-badge')?.textContent || '';
         
         const matchesSearch = title.includes(searchTerm) || recipients.includes(searchTerm);
-        const matchesPriority = !selectedPriority || priority === getPriorityDisplayName(selectedPriority);
+        const matchesPriority = !selectedPriority || priority.includes(getPriorityDisplayName(selectedPriority));
         const matchesStatus = !selectedStatus || status.includes(selectedStatus.charAt(0).toUpperCase() + selectedStatus.slice(1));
         
         row.style.display = matchesSearch && matchesPriority && matchesStatus ? '' : 'none';

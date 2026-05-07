@@ -1607,6 +1607,26 @@ app.get('/api/properties', async (req, res) => {
     }
 });
 
+// ===== PROJECTS ROUTES =====
+console.log('🔍 Loading projects routes...');
+try {
+    const projectsRoutes = require('./routes/projects');
+    console.log('✅ Projects routes loaded successfully');
+    app.use('/api/projects', projectsRoutes);
+    console.log('✅ Projects routes mounted at /api/projects');
+    
+    // Add a test endpoint to verify mounting
+    app.get('/api/projects-status', (req, res) => {
+        res.json({ 
+            status: 'Projects routes are mounted and working',
+            timestamp: new Date().toISOString()
+        });
+    });
+} catch (error) {
+    console.error('❌ Failed to load projects routes:', error);
+    console.log('⚠️ Continuing without projects routes...');
+}
+
 // ===== POLICIES ROUTES =====
 console.log('🔍 Loading policies routes...');
 try {

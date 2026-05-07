@@ -37,7 +37,7 @@ router.get('/', async (req, res) => {
         
         const { userId, type, category, read, unread } = req.query;
         
-        let query = 'SELECT * FROM notifications WHERE 1=1';
+        let query = 'SELECT *, recipient_type as recipientType, recipients, sent_by as sentBy FROM notifications WHERE 1=1';
         const params = [];
         
         if (userId) {
@@ -456,7 +456,16 @@ router.post('/broadcast', async (req, res) => {
         console.log('📢 Broadcast notification request received');
         console.log('📝 Request body:', req.body);
         
-        const { title, message, type = 'info', category = 'system' } = req.body;
+        const { 
+            title, 
+            message, 
+            type = 'info', 
+            category = 'system',
+            priority = 'Medium',
+            recipientType = 'all',
+            recipients = 'All Staff',
+            sentBy = 'System'
+        } = req.body;
         
         // Validate input
         if (!title || !message) {
@@ -470,14 +479,26 @@ router.post('/broadcast', async (req, res) => {
         
         // Create broadcast notification with proper handling of foreign key constraints
         try {
-            // Insert notification with NULL recipient_id for system-wide broadcasts
+            // First, let's check if we need to add columns for recipient_type, recipients, and sent_by
+            await db.execute(`
+                ALTER TABLE notifications 
+                ADD COLUMN IF NOT EXISTS recipient_type VARCHAR(50) DEFAULT 'all',
+                ADD COLUMN IF NOT EXISTS recipients VARCHAR(255) DEFAULT 'All Staff',
+                ADD COLUMN IF NOT EXISTS sent_by VARCHAR(255) DEFAULT 'System'
+            `);
+            
+            // Insert notification with all the required fields
             const result = await db.execute(
-                `INSERT INTO notifications (title, message, type, recipient_id, sender_id, created_at) 
-                 VALUES (?, ?, ?, NULL, NULL, NOW())`,
+                `INSERT INTO notifications (title, message, type, priority, recipient_type, recipients, sent_by, recipient_id, sender_id, created_at) 
+                 VALUES (?, ?, ?, ?, ?, ?, ?, NULL, NULL, NOW())`,
                 [
                     title,
                     message,
-                    type.charAt(0).toUpperCase() + type.slice(1) // Capitalize for ENUM: Info, Warning, Error, Success
+                    type.charAt(0).toUpperCase() + type.slice(1), // Capitalize for ENUM: Info, Warning, Error, Success
+                    priority.charAt(0).toUpperCase() + priority.slice(1), // Capitalize for ENUM: Low, Medium, High, Urgent
+                    recipientType,
+                    recipients,
+                    sentBy
                 ]
             );
             
@@ -503,12 +524,16 @@ router.post('/broadcast', async (req, res) => {
                 try {
                     console.log('🔄 Trying alternative approach without foreign key constraints...');
                     const altResult = await db.execute(
-                        `INSERT INTO notifications (title, message, type, created_at) 
-                         VALUES (?, ?, ?, NOW())`,
+                        `INSERT INTO notifications (title, message, type, priority, recipient_type, recipients, sent_by, created_at) 
+                         VALUES (?, ?, ?, ?, ?, ?, ?, NOW())`,
                         [
                             title,
                             message,
-                            type.charAt(0).toUpperCase() + type.slice(1)
+                            type.charAt(0).toUpperCase() + type.slice(1),
+                            priority.charAt(0).toUpperCase() + priority.slice(1),
+                            recipientType,
+                            recipients,
+                            sentBy
                         ]
                     );
                     

@@ -62,10 +62,28 @@ function submitAccountForm() {
 // Load projects into the select dropdown
 async function loadProjects() {
     try {
-        const response = await window.apiService.get('/projects');
-        const projectSelect = document.getElementById('progressProject');
+        console.log('🔍 Loading projects...');
         
-        if (response.projects && response.projects.length > 0) {
+        // Check if apiService is available
+        if (!window.apiService) {
+            console.error('❌ apiService not available');
+            const projectSelect = document.getElementById('progressProject');
+            if (projectSelect) {
+                projectSelect.innerHTML = '<option value="">API service not available</option>';
+            }
+            return;
+        }
+        
+        const response = await window.apiService.get('/projects');
+        console.log('📊 Projects response:', response);
+        
+        const projectSelect = document.getElementById('progressProject');
+        if (!projectSelect) {
+            console.error('❌ progressProject element not found');
+            return;
+        }
+        
+        if (response && response.projects && response.projects.length > 0) {
             projectSelect.innerHTML = '<option value="">Select Project to Update</option>';
             
             response.projects.forEach(project => {
@@ -74,13 +92,18 @@ async function loadProjects() {
                 option.textContent = `${project.name} - ${project.location}`;
                 projectSelect.appendChild(option);
             });
+            
+            console.log(`✅ Loaded ${response.projects.length} projects`);
         } else {
             projectSelect.innerHTML = '<option value="">No projects available</option>';
+            console.log('⚠️ No projects found in response');
         }
     } catch (error) {
-        console.error('Failed to load projects:', error);
+        console.error('❌ Failed to load projects:', error);
         const projectSelect = document.getElementById('progressProject');
-        projectSelect.innerHTML = '<option value="">Failed to load projects</option>';
+        if (projectSelect) {
+            projectSelect.innerHTML = '<option value="">Failed to load projects</option>';
+        }
     }
 }
 
