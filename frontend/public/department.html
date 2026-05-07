@@ -1661,8 +1661,7 @@ button.action{
 #toggleNotificationFormBtn:hover,
 #toggleWorkerViewBtn:hover,
 #toggleMinutesFormBtn:hover,
-#togglePolicySearchBtn:hover,
-#toggleCarFormBtn:hover {
+#togglePolicySearchBtn:hover {
     transform: scale(1.05);
     box-shadow: 0 4px 8px rgba(0,0,0,0.2);
 }
@@ -1695,8 +1694,7 @@ button.action{
 #notificationFormContainer,
 #workerViewContainer,
 #minutesFormContainer,
-#policySearchContainer,
-#carFormContainer {
+#policySearchContainer {
     transition: all 0.4s ease;
     opacity: 0;
     transform: translateY(-20px);
@@ -1729,8 +1727,7 @@ button.action{
 #notificationFormContainer.show,
 #workerViewContainer.show,
 #minutesFormContainer.show,
-#policySearchContainer.show,
-#carFormContainer.show {
+#policySearchContainer.show {
     opacity: 1;
     transform: translateY(0);
 }
@@ -23352,8 +23349,11 @@ function registerCompanyCar(){
                 <div class="form-actions">
                     <button type="submit" class="btn-primary">🚗 Register Vehicle</button>
                     <button type="button" onclick="resetCarForm()" class="btn-secondary">🔄 Reset Form</button>
+                    <button type="button" onclick="toggleCarForm()" class="btn-secondary" style="background: #dc3545; margin-left: 10px;">❌ Close Form</button>
                 </div>
             </form>
+            </div>
+        </div>
         </div>
     `);
     
@@ -39085,7 +39085,11 @@ function sendNotification() {
         title: notification.title,
         message: notification.message,
         type: notification.priority === 'urgent' ? 'error' : notification.priority === 'important' ? 'warning' : 'info',
-        category: 'internal'
+        category: 'internal',
+        priority: notification.priority,
+        recipientType: notification.recipientType,
+        recipients: notification.recipientType === 'all' ? 'All Staff' : notification.recipient,
+        sentBy: notification.sentBy
     };
     
     // Choose API endpoint based on recipient type
@@ -39533,7 +39537,12 @@ function getPriorityDisplayName(priority) {
         'important': 'Important',
         'urgent': 'Urgent',
         'medium': 'Medium',  // Handle database stored as 'medium'
-        'high': 'High'       // Handle database stored as 'high'
+        'high': 'High',      // Handle database stored as 'high'
+        'low': 'Low',        // Handle database stored as 'low'
+        'Medium': 'Medium',  // Handle capitalized database values
+        'High': 'High',
+        'Low': 'Low',
+        'Urgent': 'Urgent'
     };
     return priorityMap[priority] || priority;
 }
@@ -39572,7 +39581,7 @@ function filterNotifications() {
         const status = row.querySelector('.status-badge')?.textContent || '';
         
         const matchesSearch = title.includes(searchTerm) || recipients.includes(searchTerm);
-        const matchesPriority = !selectedPriority || priority.includes(getPriorityDisplayName(selectedPriority));
+        const matchesPriority = !selectedPriority || priority === getPriorityDisplayName(selectedPriority);
         const matchesStatus = !selectedStatus || status.includes(selectedStatus.charAt(0).toUpperCase() + selectedStatus.slice(1));
         
         row.style.display = matchesSearch && matchesPriority && matchesStatus ? '' : 'none';
@@ -44910,8 +44919,8 @@ document.addEventListener('DOMContentLoaded', function() {
 </script>
 
 <!-- Include Login Functions -->
-<script src="js/script.js"></script>
 <script src="js/database-api.js"></script>
+<script src="js/script.js"></script>
 
 
 
