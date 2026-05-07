@@ -6,10 +6,10 @@ const db = require('../src/config/database');
 router.get('/', async (req, res) => {
     try {
         const [suggestions] = await db.execute(`
-            SELECT s.*, u.full_name as submitted_by_name
+            SELECT s.*, u.name as submitted_by_name
             FROM suggestions s
-            LEFT JOIN users u ON s.submitted_by = u.id
-            ORDER BY s.submitted_date DESC
+            LEFT JOIN users u ON s.employee_id = u.id
+            ORDER BY s.created_at DESC
         `);
         
         res.json({
@@ -36,8 +36,12 @@ router.post('/', async (req, res) => {
             impact,
             implementation,
             submittedBy,
-            submittedByRole
+            submittedByRole,
+            department,
+            status
         } = req.body;
+
+        console.log('📝 Creating suggestion with data:', req.body);
 
         if (!title || !category || !priority || !description) {
             return res.status(400).json({
@@ -46,34 +50,97 @@ router.post('/', async (req, res) => {
             });
         }
 
-        // Get user ID from role name
-        const [userRows] = await db.execute(
-            'SELECT id FROM users WHERE role = ? LIMIT 1',
-            [submittedByRole]
-        );
+        // Handle user identification - try multiple approaches
+        let userId = null;
+        let userRole = submittedByRole || 'Employee';
 
-        if (userRows.length === 0) {
-            return res.status(400).json({
-                success: false,
-                error: 'Invalid user role'
-            });
+        // First try to find user by submittedBy (if it's a name)
+        if (submittedBy && submittedBy !== 'undefined' && submittedBy !== 'null') {
+            const [userByNameRows] = await db.execute(
+                'SELECT id, role FROM users WHERE name = ? OR email = ? LIMIT 1',
+                [submittedBy, submittedBy]
+            );
+            
+            if (userByNameRows.length > 0) {
+                userId = userByNameRows[0].id;
+                userRole = userByNameRows[0].role;
+            }
         }
 
-        const userId = userRows[0].id;
+        // If no user found, try by role
+        if (!userId && submittedByRole) {
+            const [userByRoleRows] = await db.execute(
+                'SELECT id FROM users WHERE role = ? LIMIT 1',
+                [submittedByRole]
+            );
+            
+            if (userByRoleRows.length > 0) {
+                userId = userByRoleRows[0].id;
+            }
+        }
+
+        // If still no user found, use a default or create a placeholder
+        if (!userId) {
+            // Try to find any user as fallback
+            const [fallbackUserRows] = await db.execute('SELECT id, role FROM users LIMIT 1');
+            if (fallbackUserRows.length > 0) {
+                userId = fallbackUserRows[0].id;
+                userRole = fallbackUserRows[0].role;
+            } else {
+                // Create a placeholder user ID
+                userId = 1;
+                userRole = 'System';
+            }
+        }
+
+        // Map frontend category values to database ENUM values
+        const categoryMapping = {
+            'Cost Saving': 'cost-saving',
+            'Safety': 'safety',
+            'Productivity': 'productivity',
+            'Quality': 'quality',
+            'Environment': 'environment',
+            'Training': 'training',
+            'Equipment': 'equipment',
+            'Process': 'process',
+            'Other': 'other'
+        };
+        
+        // Map frontend status values to database ENUM values
+        const statusMapping = {
+            'Pending': 'pending',
+            'Under Review': 'under-review',
+            'Approved': 'approved',
+            'Rejected': 'rejected',
+            'Implemented': 'implemented'
+        };
+        
+        // Map frontend priority values to database ENUM values
+        const priorityMapping = {
+            'Low': 'low',
+            'Medium': 'medium',
+            'High': 'high',
+            'Urgent': 'urgent'
+        };
+        
+        const mappedCategory = categoryMapping[category] || category;
+        const mappedPriority = priorityMapping[priority] || priority;
+        const suggestionStatus = statusMapping[status] || 'pending';
 
         const [result] = await db.execute(`
             INSERT INTO suggestions (
-                title, category, priority, description, impact, 
-                implementation, submitted_by, submitted_by_role, 
-                status, submitted_date
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'Pending', NOW())
-        `, [title, category, priority, description, impact, implementation, userId, submittedByRole]);
+                employee_id, title, category, priority, description, 
+                current_situation, proposed_solution, expected_benefits, 
+                resources_required, timeline, status
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        `, [userId, title, mappedCategory, mappedPriority, description, 
+            impact || null, implementation || null, null, null, null, suggestionStatus]);
 
         // Get the created suggestion
         const [newSuggestion] = await db.execute(`
-            SELECT s.*, u.full_name as submitted_by_name
+            SELECT s.*, u.name as submitted_by_name
             FROM suggestions s
-            LEFT JOIN users u ON s.submitted_by = u.id
+            LEFT JOIN users u ON s.employee_id = u.id
             WHERE s.id = ?
         `, [result.insertId]);
 
@@ -143,9 +210,9 @@ router.put('/:id/status', async (req, res) => {
 
         // Get updated suggestion
         const [updatedSuggestion] = await db.execute(`
-            SELECT s.*, u.full_name as submitted_by_name
+            SELECT s.*, u.name as submitted_by_name
             FROM suggestions s
-            LEFT JOIN users u ON s.submitted_by = u.id
+            LEFT JOIN users u ON s.employee_id = u.id
             WHERE s.id = ?
         `, [id]);
 
@@ -216,9 +283,9 @@ router.get('/category/:category', async (req, res) => {
         const { category } = req.params;
 
         const [suggestions] = await db.execute(`
-            SELECT s.*, u.full_name as submitted_by_name
+            SELECT s.*, u.name as submitted_by_name
             FROM suggestions s
-            LEFT JOIN users u ON s.submitted_by = u.id
+            LEFT JOIN users u ON s.employee_id = u.id
             WHERE s.category = ?
             ORDER BY s.submitted_date DESC
         `, [category]);
@@ -242,9 +309,9 @@ router.get('/priority/:priority', async (req, res) => {
         const { priority } = req.params;
 
         const [suggestions] = await db.execute(`
-            SELECT s.*, u.full_name as submitted_by_name
+            SELECT s.*, u.name as submitted_by_name
             FROM suggestions s
-            LEFT JOIN users u ON s.submitted_by = u.id
+            LEFT JOIN users u ON s.employee_id = u.id
             WHERE s.priority = ?
             ORDER BY s.submitted_date DESC
         `, [priority]);
@@ -268,9 +335,9 @@ router.get('/status/:status', async (req, res) => {
         const { status } = req.params;
 
         const [suggestions] = await db.execute(`
-            SELECT s.*, u.full_name as submitted_by_name, r.full_name as reviewed_by_name
+            SELECT s.*, u.name as submitted_by_name, r.name as reviewed_by_name
             FROM suggestions s
-            LEFT JOIN users u ON s.submitted_by = u.id
+            LEFT JOIN users u ON s.employee_id = u.id
             LEFT JOIN users r ON s.reviewed_by = r.id
             WHERE s.status = ?
             ORDER BY s.submitted_date DESC
@@ -356,7 +423,7 @@ router.post('/:id/comments', async (req, res) => {
 
         // Get the created comment
         const [newComment] = await db.execute(`
-            SELECT sc.*, u.full_name as commented_by_name
+            SELECT sc.*, u.name as commented_by_name
             FROM suggestion_comments sc
             LEFT JOIN users u ON sc.commented_by = u.id
             WHERE sc.id = ?
@@ -394,7 +461,7 @@ router.get('/:id/comments', async (req, res) => {
         const { id } = req.params;
 
         const [comments] = await db.execute(`
-            SELECT sc.*, u.full_name as commented_by_name
+            SELECT sc.*, u.name as commented_by_name
             FROM suggestion_comments sc
             LEFT JOIN users u ON sc.commented_by = u.id
             WHERE sc.suggestion_id = ?
@@ -487,7 +554,7 @@ router.get('/:id/votes', async (req, res) => {
         const { id } = req.params;
 
         const [votes] = await db.execute(`
-            SELECT sv.*, u.full_name as voted_by_name
+            SELECT sv.*, u.name as voted_by_name
             FROM suggestion_votes sv
             LEFT JOIN users u ON sv.voted_by = u.id
             WHERE sv.suggestion_id = ?
