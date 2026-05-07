@@ -1239,6 +1239,229 @@ function toggleCarForm() {
     }
 }
 
+// ===== DRIVER REGISTRATION FUNCTIONS =====
+
+// Save driver registration
+async function saveDriverRegistration() {
+    try {
+        // Get form values
+        const driverData = {
+            driverId: document.getElementById('driverId').value,
+            driverName: document.getElementById('driverName').value,
+            driverDescription: document.getElementById('driverDescription').value,
+            experience: parseInt(document.getElementById('experience').value),
+            licenseType: document.getElementById('licenseType').value,
+            phoneNumber: document.getElementById('phoneNumber').value,
+            email: document.getElementById('email').value,
+            nidaNumber: document.getElementById('nidaNumber').value,
+            passportNumber: document.getElementById('passportNumber').value,
+            dateOfBirth: document.getElementById('dateOfBirth').value,
+            gender: document.getElementById('gender').value,
+            address: document.getElementById('address').value,
+            region: document.getElementById('region').value,
+            emergencyContactName: document.getElementById('emergencyContactName').value,
+            emergencyContactNumber: document.getElementById('emergencyContactNumber').value,
+            emergencyRelationship: document.getElementById('emergencyRelationship').value,
+            bloodGroup: document.getElementById('bloodGroup').value,
+            licenseIssueDate: document.getElementById('licenseIssueDate').value,
+            licenseExpiryDate: document.getElementById('licenseExpiryDate').value,
+            employmentStatus: document.getElementById('employmentStatus').value,
+            hireDate: document.getElementById('hireDate').value,
+            salary: parseFloat(document.getElementById('salary').value) || 0,
+            paymentMethod: document.getElementById('paymentMethod').value,
+            bankDetails: document.getElementById('bankDetails').value,
+            medicalCertificate: document.getElementById('medicalCertificate').value,
+            medicalExpiryDate: document.getElementById('medicalExpiryDate').value,
+            driverStatus: document.getElementById('driverStatus').value,
+            assignedVehicle: document.getElementById('assignedVehicle').value,
+            skills: document.getElementById('skills').value,
+            employmentHistory: document.getElementById('employmentHistory').value,
+            additionalNotes: document.getElementById('additionalNotes').value,
+            registeredBy: getCurrentUser(),
+            registrationTimestamp: new Date().toISOString()
+        };
+
+        // Validate required fields
+        const requiredFields = ['driverName', 'driverDescription', 'experience', 'licenseType', 'phoneNumber', 'email', 'nidaNumber', 'dateOfBirth', 'gender', 'address', 'emergencyContactName', 'emergencyContactNumber', 'emergencyRelationship', 'licenseIssueDate', 'licenseExpiryDate', 'employmentStatus', 'hireDate', 'driverStatus'];
+        
+        for (const field of requiredFields) {
+            if (!driverData[field] || driverData[field].toString().trim() === '') {
+                showNotification(`Please fill in all required fields marked with *`, 'error', 5000);
+                return false;
+            }
+        }
+
+        // Show loading state
+        const submitBtn = document.querySelector('#driverRegistrationForm button[type="submit"]');
+        const originalText = submitBtn.textContent;
+        submitBtn.disabled = true;
+        submitBtn.textContent = '🔄 Registering...';
+
+        // Check if apiService is available
+        if (!window.apiService) {
+            console.error('❌ apiService not available');
+            showNotification('API service not available. Please refresh the page.', 'error', 5000);
+            submitBtn.disabled = false;
+            submitBtn.textContent = originalText;
+            return false;
+        }
+
+        // Send data to backend
+        console.log('👤 Registering driver:', driverData);
+        const response = await window.apiService.post('/fleet/drivers', driverData);
+        
+        console.log('✅ Driver registration successful:', response);
+
+        // Reset button
+        submitBtn.disabled = false;
+        submitBtn.textContent = originalText;
+
+        // Show success message
+        showNotification(`Driver "${driverData.driverName}" (${driverData.driverId}) registered successfully!`, 'success', 6000);
+
+        // Reset form
+        resetDriverForm();
+
+        // Generate new driver ID for next registration
+        generateDriverId();
+
+        return false;
+
+    } catch (error) {
+        console.error('❌ Driver registration failed:', error);
+        
+        // Reset button
+        const submitBtn = document.querySelector('#driverRegistrationForm button[type="submit"]');
+        submitBtn.disabled = false;
+        submitBtn.textContent = '👤 Register Driver';
+
+        // Show error message
+        let errorMsg = 'Driver registration failed. ';
+        if (error.message.includes('duplicate')) {
+            errorMsg = 'A driver with this email or NIDA number already exists.';
+        } else if (error.message.includes('network') || error.message.includes('fetch')) {
+            errorMsg = 'Network error. Please check your internet connection.';
+        } else {
+            errorMsg = error.message || 'Unknown error occurred.';
+        }
+        
+        showNotification(errorMsg, 'error', 8000);
+        return false;
+    }
+}
+
+// Reset driver registration form
+function resetDriverForm() {
+    const form = document.getElementById('driverRegistrationForm');
+    if (form) {
+        // Reset all form fields
+        form.reset();
+        
+        // Generate new driver ID
+        generateDriverId();
+        
+        // Set today's date as default for relevant fields
+        const today = new Date().toISOString().split('T')[0];
+        const hireDateField = document.getElementById('hireDate');
+        const licenseIssueField = document.getElementById('licenseIssueDate');
+        
+        if (hireDateField) hireDateField.value = today;
+        if (licenseIssueField) licenseIssueField.value = today;
+        
+        showNotification('Driver form has been reset', 'info', 3000);
+    }
+}
+
+// Generate auto driver ID
+function generateDriverId() {
+    const driverIdField = document.getElementById('driverId');
+    if (driverIdField) {
+        const now = new Date();
+        const dateStr = now.getDate().toString().padStart(2, '0') + 
+                       (now.getMonth() + 1).toString().padStart(2, '0') + 
+                       now.getFullYear().toString().slice(-2);
+        const timeStr = now.getHours().toString().padStart(2, '0') + 
+                       now.getMinutes().toString().padStart(2, '0') + 
+                       now.getSeconds().toString().padStart(2, '0');
+        
+        const driverId = `KTC-DRV-${dateStr}${timeStr}`;
+        driverIdField.value = driverId;
+    }
+}
+
+// Toggle driver registration form visibility
+function toggleDriverForm() {
+    const driverFormContainer = document.getElementById('driverFormContainer');
+    const toggleBtn = document.getElementById('toggleDriverFormBtn');
+    
+    if (driverFormContainer) {
+        const isHidden = driverFormContainer.style.display === 'none' || !driverFormContainer.style.display;
+        
+        if (isHidden) {
+            // Show form container
+            driverFormContainer.style.display = 'block';
+            if (toggleBtn) {
+                toggleBtn.textContent = '👤 Close Driver Registration Form';
+                toggleBtn.style.background = '#dc3545';
+            }
+            console.log('✅ Driver registration form shown');
+        } else {
+            // Hide form container
+            driverFormContainer.style.display = 'none';
+            if (toggleBtn) {
+                toggleBtn.textContent = '👤 Open Driver Registration Form';
+                toggleBtn.style.background = '#007bff';
+            }
+            console.log('👤 Driver registration form hidden');
+        }
+    } else {
+        console.error('❌ Driver form container not found');
+    }
+}
+
+// Load vehicles for assignment dropdown
+async function loadVehiclesForDriver() {
+    try {
+        const vehicleSelect = document.getElementById('assignedVehicle');
+        if (!vehicleSelect) return;
+
+        // Check if apiService is available
+        if (!window.apiService) {
+            console.error('❌ apiService not available');
+            vehicleSelect.innerHTML = '<option value="">API service not available</option>';
+            return;
+        }
+
+        // Get vehicles from API
+        const response = await window.apiService.get('/fleet/vehicles');
+        console.log('🚗 Vehicles response:', response);
+
+        // Clear existing options
+        vehicleSelect.innerHTML = '<option value="">Select Vehicle</option><option value="">Unassigned</option>';
+
+        // Add vehicles to dropdown
+        if (response && response.vehicles && response.vehicles.length > 0) {
+            response.vehicles.forEach(vehicle => {
+                const option = document.createElement('option');
+                option.value = vehicle.id;
+                option.textContent = `${vehicle.name} - ${vehicle.regNo}`;
+                vehicleSelect.appendChild(option);
+            });
+            
+            console.log(`✅ Loaded ${response.vehicles.length} vehicles`);
+        } else {
+            console.log('⚠️ No vehicles found');
+        }
+
+    } catch (error) {
+        console.error('❌ Failed to load vehicles:', error);
+        const vehicleSelect = document.getElementById('assignedVehicle');
+        if (vehicleSelect) {
+            vehicleSelect.innerHTML = '<option value="">Failed to load vehicles</option>';
+        }
+    }
+}
+
 // Get current user info
 function getCurrentUser() {
     // Try to get from session manager first
@@ -1290,6 +1513,29 @@ document.addEventListener('DOMContentLoaded', function() {
         loadDrivers();
         
         console.log('✅ Car registration form initialized (hidden by default)');
+    }
+    
+    // Initialize driver registration form
+    const driverForm = document.getElementById('driverRegistrationForm');
+    if (driverForm) {
+        // Hide form by default
+        driverForm.style.display = 'none';
+        
+        // Generate initial driver ID
+        generateDriverId();
+        
+        // Set today's date as default for relevant fields
+        const today = new Date().toISOString().split('T')[0];
+        const hireDateField = document.getElementById('hireDate');
+        const licenseIssueField = document.getElementById('licenseIssueDate');
+        
+        if (hireDateField) hireDateField.value = today;
+        if (licenseIssueField) licenseIssueField.value = today;
+        
+        // Load vehicles for assignment
+        loadVehiclesForDriver();
+        
+        console.log('✅ Driver registration form initialized (hidden by default)');
     }
 });
 
