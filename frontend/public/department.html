@@ -45497,6 +45497,46 @@ function showNHIFContributions() {
         </div>
     `;
     document.body.insertAdjacentHTML('beforeend', formHTML);
+    
+    // Add form submission handler
+    setTimeout(() => {
+        const nhifForm = document.getElementById('nhifForm');
+        if (nhifForm) {
+            nhifForm.addEventListener('submit', async function(e) {
+                e.preventDefault();
+                
+                const formData = {
+                    employeeName: document.getElementById('nhifEmployeeName').value,
+                    employeeId: document.getElementById('nhifEmployeeId').value,
+                    amount: parseFloat(document.getElementById('nhifAmount').value),
+                    month: document.getElementById('nhifMonth').value,
+                    status: document.getElementById('nhifStatus').value,
+                    createdAt: new Date().toISOString()
+                };
+                
+                try {
+                    const submitBtn = nhifForm.querySelector('button[type="submit"]');
+                    const originalText = submitBtn.textContent;
+                    submitBtn.textContent = 'Saving...';
+                    submitBtn.disabled = true;
+                    
+                    await window.apiService.saveNHIFContribution(formData);
+                    
+                    showNotification('NHIF contribution saved successfully!', 'success');
+                    closeForm();
+                    nhifForm.reset();
+                    
+                } catch (error) {
+                    console.error('Error saving NHIF contribution:', error);
+                    showNotification('Error saving NHIF contribution. Please try again.', 'error');
+                } finally {
+                    const submitBtn = nhifForm.querySelector('button[type="submit"]');
+                    submitBtn.textContent = 'Submit';
+                    submitBtn.disabled = false;
+                }
+            });
+        }
+    }, 100);
 }
 
 // Function to show Procurement Sales form
@@ -45551,6 +45591,48 @@ function showProcurementSales() {
         </div>
     `;
     document.body.insertAdjacentHTML('beforeend', formHTML);
+    
+    // Add form submission handler
+    setTimeout(() => {
+        const procurementForm = document.getElementById('procurementForm');
+        if (procurementForm) {
+            procurementForm.addEventListener('submit', async function(e) {
+                e.preventDefault();
+                
+                const formData = {
+                    itemName: document.getElementById('procurementItemName').value,
+                    quantity: parseInt(document.getElementById('procurementQuantity').value),
+                    unitPrice: parseFloat(document.getElementById('procurementUnitPrice').value),
+                    totalAmount: parseFloat(document.getElementById('procurementTotalAmount').value),
+                    supplier: document.getElementById('procurementSupplier').value,
+                    purchaseDate: document.getElementById('procurementDate').value,
+                    status: document.getElementById('procurementStatus').value,
+                    createdAt: new Date().toISOString()
+                };
+                
+                try {
+                    const submitBtn = procurementForm.querySelector('button[type="submit"]');
+                    const originalText = submitBtn.textContent;
+                    submitBtn.textContent = 'Saving...';
+                    submitBtn.disabled = true;
+                    
+                    await window.apiService.saveProcurementSale(formData);
+                    
+                    showNotification('Procurement sale saved successfully!', 'success');
+                    closeForm();
+                    procurementForm.reset();
+                    
+                } catch (error) {
+                    console.error('Error saving procurement sale:', error);
+                    showNotification('Error saving procurement sale. Please try again.', 'error');
+                } finally {
+                    const submitBtn = procurementForm.querySelector('button[type="submit"]');
+                    submitBtn.textContent = 'Submit';
+                    submitBtn.disabled = false;
+                }
+            });
+        }
+    }, 100);
 }
 
 // Function to show Tax Payments form
@@ -45603,6 +45685,46 @@ function showTaxPayments() {
         </div>
     `;
     document.body.insertAdjacentHTML('beforeend', formHTML);
+    
+    // Add form submission handler
+    setTimeout(() => {
+        const taxForm = document.getElementById('taxForm');
+        if (taxForm) {
+            taxForm.addEventListener('submit', async function(e) {
+                e.preventDefault();
+                
+                const formData = {
+                    taxType: document.getElementById('taxType').value,
+                    amount: parseFloat(document.getElementById('taxAmount').value),
+                    period: document.getElementById('taxPeriod').value,
+                    dueDate: document.getElementById('taxDueDate').value,
+                    status: document.getElementById('taxStatus').value,
+                    createdAt: new Date().toISOString()
+                };
+                
+                try {
+                    const submitBtn = taxForm.querySelector('button[type="submit"]');
+                    const originalText = submitBtn.textContent;
+                    submitBtn.textContent = 'Saving...';
+                    submitBtn.disabled = true;
+                    
+                    await window.apiService.saveTaxPayment(formData);
+                    
+                    showNotification('Tax payment saved successfully!', 'success');
+                    closeForm();
+                    taxForm.reset();
+                    
+                } catch (error) {
+                    console.error('Error saving tax payment:', error);
+                    showNotification('Error saving tax payment. Please try again.', 'error');
+                } finally {
+                    const submitBtn = taxForm.querySelector('button[type="submit"]');
+                    submitBtn.textContent = 'Submit';
+                    submitBtn.disabled = false;
+                }
+            });
+        }
+    }, 100);
 }
 
 // Function to show Senior Roles Management form
@@ -45661,6 +45783,46 @@ function showSeniorRoles() {
         </div>
     `;
     document.body.insertAdjacentHTML('beforeend', formHTML);
+    
+    // Add form submission handler
+    setTimeout(() => {
+        const seniorForm = document.getElementById('seniorForm');
+        if (seniorForm) {
+            seniorForm.addEventListener('submit', async function(e) {
+                e.preventDefault();
+                
+                const formData = {
+                    roleName: document.getElementById('roleName').value,
+                    department: document.getElementById('roleDepartment').value,
+                    salary: parseFloat(document.getElementById('roleSalary').value),
+                    requirements: document.getElementById('roleRequirements').value,
+                    status: document.getElementById('roleStatus').value,
+                    createdAt: new Date().toISOString()
+                };
+                
+                try {
+                    const submitBtn = seniorForm.querySelector('button[type="submit"]');
+                    const originalText = submitBtn.textContent;
+                    submitBtn.textContent = 'Saving...';
+                    submitBtn.disabled = true;
+                    
+                    await window.apiService.saveSeniorRole(formData);
+                    
+                    showNotification('Senior role saved successfully!', 'success');
+                    closeForm();
+                    seniorForm.reset();
+                    
+                } catch (error) {
+                    console.error('Error saving senior role:', error);
+                    showNotification('Error saving senior role. Please try again.', 'error');
+                } finally {
+                    const submitBtn = seniorForm.querySelector('button[type="submit"]');
+                    submitBtn.textContent = 'Submit';
+                    submitBtn.disabled = false;
+                }
+            });
+        }
+    }, 100);
 }
 
 // Function to show Suggestions Management form
@@ -45739,6 +45901,47 @@ function showSuggestionsManagement() {
         </div>
     `;
     document.body.insertAdjacentHTML('beforeend', formHTML);
+    
+    // Add form submission handler
+    setTimeout(() => {
+        const suggestionsForm = document.getElementById('suggestionsForm');
+        if (suggestionsForm) {
+            suggestionsForm.addEventListener('submit', async function(e) {
+                e.preventDefault();
+                
+                const formData = {
+                    title: document.getElementById('suggestionTitle').value,
+                    category: document.getElementById('suggestionCategory').value,
+                    description: document.getElementById('suggestionDescription').value,
+                    department: document.getElementById('suggestionDepartment').value,
+                    priority: document.getElementById('suggestionPriority').value,
+                    status: document.getElementById('suggestionStatus').value,
+                    createdAt: new Date().toISOString()
+                };
+                
+                try {
+                    const submitBtn = suggestionsForm.querySelector('button[type="submit"]');
+                    const originalText = submitBtn.textContent;
+                    submitBtn.textContent = 'Saving...';
+                    submitBtn.disabled = true;
+                    
+                    await window.apiService.saveSuggestion(formData);
+                    
+                    showNotification('Suggestion saved successfully!', 'success');
+                    closeForm();
+                    suggestionsForm.reset();
+                    
+                } catch (error) {
+                    console.error('Error saving suggestion:', error);
+                    showNotification('Error saving suggestion. Please try again.', 'error');
+                } finally {
+                    const submitBtn = suggestionsForm.querySelector('button[type="submit"]');
+                    submitBtn.textContent = 'Submit';
+                    submitBtn.disabled = false;
+                }
+            });
+        }
+    }, 100);
 }
 
 // Function to close form overlay

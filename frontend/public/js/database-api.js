@@ -265,6 +265,131 @@ class DatabaseAPI {
     async checkDatabaseHealth() {
         return this.get('/db-health');
     }
+
+    // Tax Payments API
+    async saveTaxPayment(taxData) {
+        return this.request('/tax/payments', {
+            method: 'POST',
+            body: JSON.stringify(taxData)
+        });
+    }
+
+    async getTaxPayments() {
+        return this.request('/tax/payments');
+    }
+
+    async updateTaxPayment(id, taxData) {
+        return this.request(`/tax/payments/${id}`, {
+            method: 'PUT',
+            body: JSON.stringify(taxData)
+        });
+    }
+
+    async deleteTaxPayment(id) {
+        return this.request(`/tax/payments/${id}`, {
+            method: 'DELETE'
+        });
+    }
+
+    // Procurement Sales API
+    async saveProcurementSale(procurementData) {
+        return this.request('/procurement/sales', {
+            method: 'POST',
+            body: JSON.stringify(procurementData)
+        });
+    }
+
+    async getProcurementSales() {
+        return this.request('/procurement/sales');
+    }
+
+    async updateProcurementSale(id, procurementData) {
+        return this.request(`/procurement/sales/${id}`, {
+            method: 'PUT',
+            body: JSON.stringify(procurementData)
+        });
+    }
+
+    async deleteProcurementSale(id) {
+        return this.request(`/procurement/sales/${id}`, {
+            method: 'DELETE'
+        });
+    }
+
+    // NHIF Contributions API
+    async saveNHIFContribution(nhifData) {
+        return this.request('/nhif/contributions', {
+            method: 'POST',
+            body: JSON.stringify(nhifData)
+        });
+    }
+
+    async getNHIFContributions() {
+        return this.request('/nhif/contributions');
+    }
+
+    async updateNHIFContribution(id, nhifData) {
+        return this.request(`/nhif/contributions/${id}`, {
+            method: 'PUT',
+            body: JSON.stringify(nhifData)
+        });
+    }
+
+    async deleteNHIFContribution(id) {
+        return this.request(`/nhif/contributions/${id}`, {
+            method: 'DELETE'
+        });
+    }
+
+    // Senior Roles API
+    async saveSeniorRole(seniorData) {
+        return this.request('/senior/roles', {
+            method: 'POST',
+            body: JSON.stringify(seniorData)
+        });
+    }
+
+    async getSeniorRoles() {
+        return this.request('/senior/roles');
+    }
+
+    async updateSeniorRole(id, seniorData) {
+        return this.request(`/senior/roles/${id}`, {
+            method: 'PUT',
+            body: JSON.stringify(seniorData)
+        });
+    }
+
+    async deleteSeniorRole(id) {
+        return this.request(`/senior/roles/${id}`, {
+            method: 'DELETE'
+        });
+    }
+
+    // Suggestions API
+    async saveSuggestion(suggestionData) {
+        return this.request('/suggestions', {
+            method: 'POST',
+            body: JSON.stringify(suggestionData)
+        });
+    }
+
+    async getSuggestions() {
+        return this.request('/suggestions');
+    }
+
+    async updateSuggestion(id, suggestionData) {
+        return this.request(`/suggestions/${id}`, {
+            method: 'PUT',
+            body: JSON.stringify(suggestionData)
+        });
+    }
+
+    async deleteSuggestion(id) {
+        return this.request(`/suggestions/${id}`, {
+            method: 'DELETE'
+        });
+    }
 }
 
 // Create global apiService instance
@@ -409,6 +534,81 @@ window.DatabaseUI = {
             if (statusElement) {
                 statusElement.innerHTML = '<span style="color: red;">❌ Error</span>';
             }
+        }
+    },
+
+    // Save Senior Role
+    async saveSeniorRole(roleData) {
+        try {
+            const response = await window.dbAPI.createSeniorRole(roleData);
+            if (response.success) {
+                return response;
+            } else {
+                throw new Error(response.message || 'Failed to save senior role');
+            }
+        } catch (error) {
+            console.error('Error saving senior role:', error);
+            throw error;
+        }
+    },
+
+    // Save Suggestion
+    async saveSuggestion(suggestionData) {
+        try {
+            const response = await window.dbAPI.createSuggestion(suggestionData);
+            if (response.success) {
+                return response;
+            } else {
+                throw new Error(response.message || 'Failed to save suggestion');
+            }
+        } catch (error) {
+            console.error('Error saving suggestion:', error);
+            throw error;
+        }
+    },
+
+    // Save NHIF Contribution
+    async saveNHIFContribution(nhifData) {
+        try {
+            const response = await window.dbAPI.createNHIFContribution(nhifData);
+            if (response.success) {
+                return response;
+            } else {
+                throw new Error(response.message || 'Failed to save NHIF contribution');
+            }
+        } catch (error) {
+            console.error('Error saving NHIF contribution:', error);
+            throw error;
+        }
+    },
+
+    // Save Procurement Sale
+    async saveProcurementSale(procurementData) {
+        try {
+            const response = await window.dbAPI.createProcurementSale(procurementData);
+            if (response.success) {
+                return response;
+            } else {
+                throw new Error(response.message || 'Failed to save procurement sale');
+            }
+        } catch (error) {
+            console.error('Error saving procurement sale:', error);
+            throw error;
+        }
+    },
+
+    // Save Tax Payment
+    async saveTaxPayment(taxData) {
+        try {
+            const response = await window.dbAPI.createTaxPayment(taxData);
+            if (response.success) {
+                return response;
+            } else {
+                throw new Error(response.message || 'Failed to save tax payment');
+            }
+        } catch (error) {
+            console.error('Error saving tax payment:', error);
+            throw error;
         }
     }
 };
