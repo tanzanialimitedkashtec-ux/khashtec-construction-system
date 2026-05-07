@@ -2527,6 +2527,47 @@ try {
     console.error('❌ Error loading suggestions routes:', error);
 }
 
+// ===== NEW FORM ROUTES =====
+// Load NHIF routes
+try {
+    const nhifRoutes = require('./routes/nhif');
+    console.log('✅ NHIF routes loaded successfully');
+    app.use('/api/nhif', nhifRoutes);
+    console.log('✅ NHIF routes mounted at /api/nhif');
+} catch (error) {
+    console.error('❌ Error loading NHIF routes:', error);
+}
+
+// Load procurement sales routes
+try {
+    const procurementSalesRoutes = require('./routes/procurementSales');
+    console.log('✅ Procurement sales routes loaded successfully');
+    app.use('/api/procurement-sales', procurementSalesRoutes);
+    console.log('✅ Procurement sales routes mounted at /api/procurement-sales');
+} catch (error) {
+    console.error('❌ Error loading procurement sales routes:', error);
+}
+
+// Load tax routes
+try {
+    const taxRoutes = require('./routes/tax');
+    console.log('✅ Tax routes loaded successfully');
+    app.use('/api/tax', taxRoutes);
+    console.log('✅ Tax routes mounted at /api/tax');
+} catch (error) {
+    console.error('❌ Error loading tax routes:', error);
+}
+
+// Load senior routes
+try {
+    const seniorRoutes = require('./routes/senior');
+    console.log('✅ Senior routes loaded successfully');
+    app.use('/api/senior', seniorRoutes);
+    console.log('✅ Senior routes mounted at /api/senior');
+} catch (error) {
+    console.error('❌ Error loading senior routes:', error);
+}
+
 try {
     const driversRoutes = require('./routes/drivers');
     console.log('✅ Drivers routes loaded successfully');

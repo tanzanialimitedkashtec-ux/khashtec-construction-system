@@ -1389,6 +1389,8 @@ CREATE TABLE IF NOT EXISTS suggestions (
   admin_feedback TEXT,
   admin_decision VARCHAR(255),
   decision_date TIMESTAMP NULL,
+  up_votes INT DEFAULT 0,
+  down_votes INT DEFAULT 0,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   INDEX idx_employee_id (employee_id),
@@ -1398,3 +1400,194 @@ CREATE TABLE IF NOT EXISTS suggestions (
   INDEX idx_created_at (created_at),
   FOREIGN KEY (employee_id) REFERENCES users(id) ON DELETE CASCADE
 );
+
+-- ===== NEW FORMS DATABASE TABLES =====
+-- Created for NHIF, Procurement Sales, Enhanced Suggestions, Tax, and Senior Roles forms
+
+-- NHIF Contributions Table
+CREATE TABLE IF NOT EXISTS nhif_contributions (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    employee_id INT NOT NULL,
+    contribution_month DATE NOT NULL,
+    employee_contribution DECIMAL(10,2) NOT NULL,
+    employer_contribution DECIMAL(10,2) NOT NULL,
+    total_contribution DECIMAL(10,2) NOT NULL,
+    payment_status ENUM('Pending', 'Paid', 'Overdue') DEFAULT 'Pending',
+    payment_date DATE NULL,
+    receipt_number VARCHAR(100) NULL,
+    submitted_by INT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NULL,
+    updated_by INT NULL,
+    FOREIGN KEY (employee_id) REFERENCES employees(id),
+    FOREIGN KEY (submitted_by) REFERENCES users(id),
+    FOREIGN KEY (updated_by) REFERENCES users(id),
+    INDEX idx_employee_id (employee_id),
+    INDEX idx_contribution_month (contribution_month),
+    INDEX idx_payment_status (payment_status)
+);
+
+-- Procurement Sales Table
+CREATE TABLE IF NOT EXISTS procurement_sales (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    request_title VARCHAR(255) NOT NULL,
+    procurement_type ENUM('Goods', 'Services', 'Works', 'Consultancy') NOT NULL,
+    item_description TEXT NOT NULL,
+    quantity INT NOT NULL,
+    unit_price DECIMAL(12,2) DEFAULT 0,
+    total_budget DECIMAL(12,2) NOT NULL,
+    purpose TEXT NOT NULL,
+    urgency_level ENUM('Low', 'Normal', 'High', 'Urgent') DEFAULT 'Normal',
+    expected_delivery_date DATE NULL,
+    supplier_requirements TEXT NULL,
+    technical_specifications TEXT NULL,
+    budget_allocation VARCHAR(100) NULL,
+    department VARCHAR(100) NOT NULL,
+    requested_by VARCHAR(255) NOT NULL,
+    requested_by_role VARCHAR(100) NOT NULL,
+    justification TEXT NULL,
+    approval_requirements ENUM('Standard', 'Enhanced', 'Board') DEFAULT 'Standard',
+    status ENUM('Pending', 'Under Review', 'Approved', 'Rejected', 'Procurement In Progress', 'Completed', 'Cancelled') DEFAULT 'Pending',
+    reviewed_by INT NULL,
+    reviewed_date TIMESTAMP NULL,
+    review_comments TEXT NULL,
+    approved_budget DECIMAL(12,2) NULL,
+    rejection_reason TEXT NULL,
+    submitted_by INT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NULL,
+    updated_by INT NULL,
+    FOREIGN KEY (submitted_by) REFERENCES users(id),
+    FOREIGN KEY (reviewed_by) REFERENCES users(id),
+    FOREIGN KEY (updated_by) REFERENCES users(id),
+    INDEX idx_department (department),
+    INDEX idx_status (status),
+    INDEX idx_procurement_type (procurement_type),
+    INDEX idx_urgency_level (urgency_level)
+);
+
+-- Suggestion Comments Table
+CREATE TABLE IF NOT EXISTS suggestion_comments (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    suggestion_id INT NOT NULL,
+    comment TEXT NOT NULL,
+    commented_by INT NOT NULL,
+    commented_by_role VARCHAR(100) NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (suggestion_id) REFERENCES suggestions(id) ON DELETE CASCADE,
+    FOREIGN KEY (commented_by) REFERENCES users(id),
+    INDEX idx_suggestion_id (suggestion_id),
+    INDEX idx_commented_by (commented_by)
+);
+
+-- Suggestion Votes Table
+CREATE TABLE IF NOT EXISTS suggestion_votes (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    suggestion_id INT NOT NULL,
+    vote_type ENUM('up', 'down') NOT NULL,
+    voted_by INT NOT NULL,
+    voted_by_role VARCHAR(100) NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (suggestion_id) REFERENCES suggestions(id) ON DELETE CASCADE,
+    FOREIGN KEY (voted_by) REFERENCES users(id),
+    UNIQUE KEY unique_suggestion_vote (suggestion_id, voted_by),
+    INDEX idx_suggestion_id (suggestion_id),
+    INDEX idx_voted_by (voted_by)
+);
+
+-- Tax Payments Table
+CREATE TABLE IF NOT EXISTS tax_payments (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    tax_type ENUM('PAYE', 'VAT', 'Corporate Tax', 'Withholding Tax', 'Skills Development Levy', 'Service Levy', 'Other') NOT NULL,
+    tax_period VARCHAR(50) NOT NULL,
+    payment_date DATE NOT NULL,
+    due_date DATE NULL,
+    amount DECIMAL(12,2) NOT NULL,
+    penalties DECIMAL(12,2) DEFAULT 0,
+    interest DECIMAL(12,2) DEFAULT 0,
+    total_amount DECIMAL(12,2) NOT NULL,
+    payment_method ENUM('Bank Transfer', 'Cash', 'Cheque', 'Mobile Money', 'Other') DEFAULT 'Bank Transfer',
+    payment_reference VARCHAR(100) NULL,
+    payment_status ENUM('Paid', 'Pending', 'Overdue', 'Cancelled', 'Refunded') DEFAULT 'Paid',
+    description TEXT NULL,
+    department VARCHAR(100) NOT NULL,
+    recorded_by INT NOT NULL,
+    recorded_by_role VARCHAR(100) NOT NULL,
+    attachments TEXT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NULL,
+    updated_by INT NULL,
+    FOREIGN KEY (recorded_by) REFERENCES users(id),
+    FOREIGN KEY (updated_by) REFERENCES users(id),
+    INDEX idx_tax_type (tax_type),
+    INDEX idx_tax_period (tax_period),
+    INDEX idx_payment_status (payment_status),
+    INDEX idx_payment_date (payment_date),
+    INDEX idx_department (department)
+);
+
+-- Senior Roles Table
+CREATE TABLE IF NOT EXISTS senior_roles (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    employee_id INT NOT NULL,
+    senior_role_type ENUM('Manager', 'Senior Manager', 'Director', 'Senior Director', 'VP', 'C-Level', 'Other') NOT NULL,
+    proposed_title VARCHAR(255) NOT NULL,
+    department VARCHAR(100) NOT NULL,
+    proposed_salary DECIMAL(12,2) NOT NULL,
+    effective_date DATE NOT NULL,
+    reason_for_promotion TEXT NULL,
+    responsibilities TEXT NULL,
+    qualifications TEXT NULL,
+    experience TEXT NULL,
+    achievements TEXT NULL,
+    reporting_structure TEXT NULL,
+    budget_impact TEXT NULL,
+    submitted_by INT NOT NULL,
+    submitted_by_role VARCHAR(100) NOT NULL,
+    priority ENUM('Low', 'Medium', 'High') DEFAULT 'Medium',
+    status ENUM('Pending', 'Under Review', 'Approved', 'Rejected', 'Implemented', 'Cancelled') DEFAULT 'Pending',
+    reviewed_by INT NULL,
+    reviewed_date TIMESTAMP NULL,
+    review_comments TEXT NULL,
+    approved_salary DECIMAL(12,2) NULL,
+    rejection_reason TEXT NULL,
+    final_title VARCHAR(255) NULL,
+    sent_to_md_by INT NULL,
+    sent_to_md_date TIMESTAMP NULL,
+    attachments TEXT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NULL,
+    updated_by INT NULL,
+    FOREIGN KEY (employee_id) REFERENCES employees(id),
+    FOREIGN KEY (submitted_by) REFERENCES users(id),
+    FOREIGN KEY (reviewed_by) REFERENCES users(id),
+    FOREIGN KEY (updated_by) REFERENCES users(id),
+    FOREIGN KEY (sent_to_md_by) REFERENCES users(id),
+    INDEX idx_employee_id (employee_id),
+    INDEX idx_department (department),
+    INDEX idx_status (status),
+    INDEX idx_senior_role_type (senior_role_type),
+    INDEX idx_priority (priority)
+);
+
+-- Sample Data for New Forms Tables (Optional)
+-- NHIF Sample Data
+INSERT IGNORE INTO nhif_contributions (employee_id, contribution_month, employee_contribution, employer_contribution, total_contribution, payment_status, payment_date, receipt_number) VALUES
+(1, '2024-01-01', 50000.00, 100000.00, 150000.00, 'Paid', '2024-01-15', 'NHIF-2024-001'),
+(2, '2024-01-01', 45000.00, 90000.00, 135000.00, 'Paid', '2024-01-16', 'NHIF-2024-002'),
+(1, '2024-02-01', 50000.00, 100000.00, 150000.00, 'Pending', NULL, NULL);
+
+-- Procurement Sales Sample Data
+INSERT IGNORE INTO procurement_sales (request_title, procurement_type, item_description, quantity, unit_price, total_budget, purpose, urgency_level, expected_delivery_date, department, requested_by, requested_by_role, submitted_by) VALUES
+('Office Computers Purchase', 'Goods', 'High-performance laptops for staff', 10, 2500000.00, 25000000.00, 'Replace outdated office equipment', 'Normal', '2024-02-15', 'IT', 'John Doe', 'IT Manager', 1),
+('Website Development', 'Services', 'Company website redesign and development', 1, 15000000.00, 15000000.00, 'Improve online presence', 'High', '2024-03-01', 'Marketing', 'Jane Smith', 'Marketing Manager', 1);
+
+-- Tax Payments Sample Data
+INSERT IGNORE INTO tax_payments (tax_type, tax_period, payment_date, due_date, amount, penalties, interest, total_amount, payment_method, payment_reference, payment_status, department, recorded_by, recorded_by_role) VALUES
+('PAYE', 'January 2024', '2024-01-15', '2024-01-10', 2500000.00, 0, 0, 2500000.00, 'Bank Transfer', 'TRRA-2024-001', 'Paid', 'Finance', 1, 'Finance Manager'),
+('VAT', 'Q4 2023', '2024-01-20', '2024-01-31', 1800000.00, 0, 0, 1800000.00, 'Bank Transfer', 'TRRA-2024-002', 'Paid', 'Finance', 1, 'Finance Manager');
+
+-- Senior Roles Sample Data
+INSERT IGNORE INTO senior_roles (employee_id, senior_role_type, proposed_title, department, proposed_salary, effective_date, reason_for_promotion, submitted_by, submitted_by_role) VALUES
+(1, 'Manager', 'Senior Project Manager', 'Projects', 3500000.00, '2024-02-01', 'Outstanding performance and leadership in project management', 1, 'HR Manager'),
+(2, 'Director', 'Finance Director', 'Finance', 8000000.00, '2024-03-01', 'Extensive experience in financial management and strategic planning', 1, 'HR Manager');

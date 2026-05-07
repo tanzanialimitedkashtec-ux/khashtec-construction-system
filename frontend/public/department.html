@@ -44738,6 +44738,130 @@ function filterPpeRecords() {
         grid-template-columns: 1fr;
     }
 }
+
+/* Form Overlay Styles */
+.form-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.7);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10000;
+    animation: fadeIn 0.3s ease;
+}
+
+.form-container {
+    background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+    border-radius: 20px;
+    padding: 30px;
+    max-width: 600px;
+    width: 90%;
+    max-height: 80vh;
+    overflow-y: auto;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    animation: slideIn 0.3s ease;
+    border: 1px solid #e9ecef;
+}
+
+.form-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 25px;
+    padding-bottom: 15px;
+    border-bottom: 2px solid #e9ecef;
+}
+
+.form-header h3 {
+    color: #2c3e50;
+    margin: 0;
+    font-size: 24px;
+    font-weight: 600;
+}
+
+.close-btn {
+    background: none;
+    border: none;
+    font-size: 28px;
+    color: #6c757d;
+    cursor: pointer;
+    padding: 0;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: all 0.3s ease;
+}
+
+.close-btn:hover {
+    background-color: #f8f9fa;
+    color: #dc3545;
+}
+
+.form-actions {
+    display: flex;
+    gap: 15px;
+    justify-content: flex-end;
+    margin-top: 25px;
+    padding-top: 20px;
+    border-top: 1px solid #e9ecef;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 10px;
+    cursor: pointer;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.btn-primary:hover {
+    background: linear-gradient(135deg, #0056b3 0%, #004085 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0, 123, 255, 0.3);
+}
+
+.btn-secondary {
+    background: linear-gradient(135deg, #6c757d 0%, #495057 100%);
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 10px;
+    cursor: pointer;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.btn-secondary:hover {
+    background: linear-gradient(135deg, #495057 0%, #343a40 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(108, 117, 125, 0.3);
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes slideIn {
+    from { 
+        opacity: 0;
+        transform: translateY(-50px);
+    }
+    to { 
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
 </style>
 
 <!-- Custom Modal Functions -->
@@ -45102,7 +45226,11 @@ const roleMenus = {
             'Track PPE Issuance',
             'Mark Safety Violations',
             'Upload Inspection Reports',
-            'View Project Safety Status'
+            'View Project Safety Status',
+            'NHIF Contributions',
+            'Procurement Sales',
+            'Tax Payments',
+            'Senior Roles Management'
         ]
     },
     'ADMIN': {
@@ -45140,7 +45268,10 @@ const roleMenus = {
             'Send Notifications',
             'Record Meeting Minutes',
             'View Employee List',
-            'Office Portal'
+            'Office Portal',
+            'NHIF Contributions',
+            'Senior Roles Management',
+            'Suggestions Management'
         ]
     },
     'HSE': {
@@ -45168,7 +45299,10 @@ const roleMenus = {
             'Manage Leave & Contracts',
             'Manage Policies',
             'Approve Senior Staff Hiring',
-            'Approve Workforce Budget'
+            'Approve Workforce Budget',
+            'NHIF Contributions',
+            'Tax Payments',
+            'Procurement Sales'
         ]
     },
     'PROJECT': {
@@ -45182,7 +45316,8 @@ const roleMenus = {
             'Manage Leave & Contracts',
             'Manage Policies',
             'Approve Senior Staff Hiring',
-            'Approve Workforce Budget'
+            'Approve Workforce Budget',
+            'Procurement Sales'
         ]
     },
     'REALESTATE': {
@@ -45257,8 +45392,28 @@ function handleMenuClick(menuItem) {
     const menuConfig = roleMenus[getCurrentUserRole()];
     if (menuConfig && menuConfig.buttons.includes(menuItem)) {
         console.log(`Access granted: ${menuItem}`);
-        // Here you can add specific functionality for each menu item
-        alert(`Opening: ${menuItem}`);
+        
+        // Handle specific menu items
+        switch(menuItem) {
+            case 'NHIF Contributions':
+                showNHIFContributions();
+                break;
+            case 'Procurement Sales':
+                showProcurementSales();
+                break;
+            case 'Tax Payments':
+                showTaxPayments();
+                break;
+            case 'Senior Roles Management':
+                showSeniorRoles();
+                break;
+            case 'Suggestions Management':
+                showSuggestionsManagement();
+                break;
+            default:
+                // For existing menu items, keep the current behavior
+                alert(`Opening: ${menuItem}`);
+        }
     } else {
         console.log(`Access denied: ${menuItem}`);
         alert('Access denied: You do not have permission to access this feature.');
@@ -45290,6 +45445,300 @@ function disableMenuItems() {
         button.disabled = true;
         button.style.boxShadow = '0 0 5px rgba(0,0,0,0.3)';
     });
+}
+
+// Function to show NHIF Contributions form
+function showNHIFContributions() {
+    const formHTML = `
+        <div class="form-overlay">
+            <div class="form-container">
+                <div class="form-header">
+                    <h3>NHIF Contributions</h3>
+                    <button onclick="closeForm()" class="close-btn">&times;</button>
+                </div>
+                <form id="nhifForm">
+                    <div class="form-group">
+                        <label for="nhifAmount">Amount:</label>
+                        <input type="number" id="nhifAmount" name="nhifAmount" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="nhifMonth">Month:</label>
+                        <input type="month" id="nhifMonth" name="nhifMonth" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="nhifEmployee">Employee:</label>
+                        <select id="nhifEmployee" name="nhifEmployee" required>
+                            <option value="">Select Employee</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="nhifStatus">Status:</label>
+                        <select id="nhifStatus" name="nhifStatus" required>
+                            <option value="">Select Status</option>
+                            <option value="Pending">Pending</option>
+                            <option value="Paid">Paid</option>
+                            <option value="Overdue">Overdue</option>
+                        </select>
+                    </div>
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-primary">Submit</button>
+                        <button type="button" onclick="closeForm()" class="btn btn-secondary">Cancel</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    `;
+    document.body.insertAdjacentHTML('beforeend', formHTML);
+}
+
+// Function to show Procurement Sales form
+function showProcurementSales() {
+    const formHTML = `
+        <div class="form-overlay">
+            <div class="form-container">
+                <div class="form-header">
+                    <h3>Procurement Sales</h3>
+                    <button onclick="closeForm()" class="close-btn">&times;</button>
+                </div>
+                <form id="procurementForm">
+                    <div class="form-group">
+                        <label for="procurementType">Type:</label>
+                        <select id="procurementType" name="procurementType" required>
+                            <option value="">Select Type</option>
+                            <option value="Purchase">Purchase</option>
+                            <option value="Sale">Sale</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="procurementName">Name:</label>
+                        <input type="text" id="procurementName" name="procurementName" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="procurementQuantity">Quantity:</label>
+                        <input type="number" id="procurementQuantity" name="procurementQuantity" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="procurementPrice">Price:</label>
+                        <input type="number" id="procurementPrice" name="procurementPrice" step="0.01" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="procurementDate">Date:</label>
+                        <input type="date" id="procurementDate" name="procurementDate" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="procurementStatus">Status:</label>
+                        <select id="procurementStatus" name="procurementStatus" required>
+                            <option value="">Select Status</option>
+                            <option value="Pending">Pending</option>
+                            <option value="Completed">Completed</option>
+                            <option value="Cancelled">Cancelled</option>
+                        </select>
+                    </div>
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-primary">Submit</button>
+                        <button type="button" onclick="closeForm()" class="btn btn-secondary">Cancel</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    `;
+    document.body.insertAdjacentHTML('beforeend', formHTML);
+}
+
+// Function to show Tax Payments form
+function showTaxPayments() {
+    const formHTML = `
+        <div class="form-overlay">
+            <div class="form-container">
+                <div class="form-header">
+                    <h3>Tax Payments</h3>
+                    <button onclick="closeForm()" class="close-btn">&times;</button>
+                </div>
+                <form id="taxForm">
+                    <div class="form-group">
+                        <label for="taxType">Tax Type:</label>
+                        <select id="taxType" name="taxType" required>
+                            <option value="">Select Tax Type</option>
+                            <option value="PAYE">PAYE</option>
+                            <option value="VAT">VAT</option>
+                            <option value="Corporate Tax">Corporate Tax</option>
+                            <option value="Withholding Tax">Withholding Tax</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="taxAmount">Amount:</label>
+                        <input type="number" id="taxAmount" name="taxAmount" step="0.01" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="taxPeriod">Period:</label>
+                        <input type="month" id="taxPeriod" name="taxPeriod" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="taxDueDate">Due Date:</label>
+                        <input type="date" id="taxDueDate" name="taxDueDate" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="taxStatus">Status:</label>
+                        <select id="taxStatus" name="taxStatus" required>
+                            <option value="">Select Status</option>
+                            <option value="Pending">Pending</option>
+                            <option value="Paid">Paid</option>
+                            <option value="Overdue">Overdue</option>
+                        </select>
+                    </div>
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-primary">Submit</button>
+                        <button type="button" onclick="closeForm()" class="btn btn-secondary">Cancel</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    `;
+    document.body.insertAdjacentHTML('beforeend', formHTML);
+}
+
+// Function to show Senior Roles Management form
+function showSeniorRoles() {
+    const formHTML = `
+        <div class="form-overlay">
+            <div class="form-container">
+                <div class="form-header">
+                    <h3>Senior Roles Management</h3>
+                    <button onclick="closeForm()" class="close-btn">&times;</button>
+                </div>
+                <form id="seniorRolesForm">
+                    <div class="form-group">
+                        <label for="roleTitle">Role Title:</label>
+                        <input type="text" id="roleTitle" name="roleTitle" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="roleDepartment">Department:</label>
+                        <select id="roleDepartment" name="roleDepartment" required>
+                            <option value="">Select Department</option>
+                            <option value="HR">HR</option>
+                            <option value="FINANCE">Finance</option>
+                            <option value="PROJECT">Project</option>
+                            <option value="HSE">HSE</option>
+                            <option value="REALESTATE">Real Estate</option>
+                            <option value="ADMIN">Admin</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="roleDescription">Description:</label>
+                        <textarea id="roleDescription" name="roleDescription" rows="3" required></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="roleSalary">Salary Range:</label>
+                        <input type="text" id="roleSalary" name="roleSalary" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="roleRequirements">Requirements:</label>
+                        <textarea id="roleRequirements" name="roleRequirements" rows="3" required></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="roleStatus">Status:</label>
+                        <select id="roleStatus" name="roleStatus" required>
+                            <option value="">Select Status</option>
+                            <option value="Active">Active</option>
+                            <option value="Inactive">Inactive</option>
+                            <option value="Pending Approval">Pending Approval</option>
+                        </select>
+                    </div>
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-primary">Submit</button>
+                        <button type="button" onclick="closeForm()" class="btn btn-secondary">Cancel</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    `;
+    document.body.insertAdjacentHTML('beforeend', formHTML);
+}
+
+// Function to show Suggestions Management form
+function showSuggestionsManagement() {
+    const formHTML = `
+        <div class="form-overlay">
+            <div class="form-container">
+                <div class="form-header">
+                    <h3>Suggestions Management</h3>
+                    <button onclick="closeForm()" class="close-btn">&times;</button>
+                </div>
+                <form id="suggestionsForm">
+                    <div class="form-group">
+                        <label for="suggestionTitle">Suggestion Title:</label>
+                        <input type="text" id="suggestionTitle" name="suggestionTitle" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="suggestionCategory">Category:</label>
+                        <select id="suggestionCategory" name="suggestionCategory" required>
+                            <option value="">Select Category</option>
+                            <option value="Process Improvement">Process Improvement</option>
+                            <option value="Safety">Safety</option>
+                            <option value="Cost Saving">Cost Saving</option>
+                            <option value="Technology">Technology</option>
+                            <option value="HR Policy">HR Policy</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="suggestionDescription">Description:</label>
+                        <textarea id="suggestionDescription" name="suggestionDescription" rows="4" required></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="suggestionSubmittedBy">Submitted By:</label>
+                        <input type="text" id="suggestionSubmittedBy" name="suggestionSubmittedBy" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="suggestionDepartment">Department:</label>
+                        <select id="suggestionDepartment" name="suggestionDepartment" required>
+                            <option value="">Select Department</option>
+                            <option value="HR">HR</option>
+                            <option value="FINANCE">Finance</option>
+                            <option value="PROJECT">Project</option>
+                            <option value="HSE">HSE</option>
+                            <option value="REALESTATE">Real Estate</option>
+                            <option value="ADMIN">Admin</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="suggestionPriority">Priority:</label>
+                        <select id="suggestionPriority" name="suggestionPriority" required>
+                            <option value="">Select Priority</option>
+                            <option value="Low">Low</option>
+                            <option value="Medium">Medium</option>
+                            <option value="High">High</option>
+                            <option value="Critical">Critical</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="suggestionStatus">Status:</label>
+                        <select id="suggestionStatus" name="suggestionStatus" required>
+                            <option value="">Select Status</option>
+                            <option value="Submitted">Submitted</option>
+                            <option value="Under Review">Under Review</option>
+                            <option value="Approved">Approved</option>
+                            <option value="Rejected">Rejected</option>
+                            <option value="Implemented">Implemented</option>
+                        </select>
+                    </div>
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-primary">Submit</button>
+                        <button type="button" onclick="closeForm()" class="btn btn-secondary">Cancel</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    `;
+    document.body.insertAdjacentHTML('beforeend', formHTML);
+}
+
+// Function to close form overlay
+function closeForm() {
+    const overlay = document.querySelector('.form-overlay');
+    if (overlay) {
+        overlay.remove();
+    }
 }
 
 // Initialize navigation when page loads
