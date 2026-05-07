@@ -88,6 +88,8 @@ const inspectionsRoutes = require('./backend/routes/inspections');
 
 const suggestionsRoutes = require('./backend/routes/suggestions');
 
+const taxRoutes = require('./backend/routes/tax');
+
 
 
 const app = express();
@@ -879,6 +881,14 @@ app.use('/api/inspections', asyncHandler(async (req, res, next) => {
 app.use('/api/suggestions', asyncHandler(async (req, res, next) => {
 
     return suggestionsRoutes(req, res, next);
+
+}));
+
+
+
+app.use('/api/tax', asyncHandler(async (req, res, next) => {
+
+    return taxRoutes(req, res, next);
 
 }));
 

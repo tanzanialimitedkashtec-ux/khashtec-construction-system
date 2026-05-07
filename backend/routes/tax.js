@@ -6,7 +6,7 @@ const db = require('../src/config/database');
 router.get('/', async (req, res) => {
     try {
         const [taxRecords] = await db.execute(`
-            SELECT t.*, u.full_name as recorded_by_name
+            SELECT t.*, u.name as recorded_by_name
             FROM tax_payments t
             LEFT JOIN users u ON t.recorded_by = u.id
             ORDER BY t.payment_date DESC
@@ -31,7 +31,7 @@ router.get('/type/:taxType', async (req, res) => {
         const { taxType } = req.params;
         
         const [taxRecords] = await db.execute(`
-            SELECT t.*, u.full_name as recorded_by_name
+            SELECT t.*, u.name as recorded_by_name
             FROM tax_payments t
             LEFT JOIN users u ON t.recorded_by = u.id
             WHERE t.tax_type = ?
@@ -57,7 +57,7 @@ router.get('/status/:status', async (req, res) => {
         const { status } = req.params;
         
         const [taxRecords] = await db.execute(`
-            SELECT t.*, u.full_name as recorded_by_name
+            SELECT t.*, u.name as recorded_by_name
             FROM tax_payments t
             LEFT JOIN users u ON t.recorded_by = u.id
             WHERE t.payment_status = ?
@@ -152,7 +152,7 @@ router.post('/', async (req, res) => {
 
         // Get the created tax record
         const [newRecord] = await db.execute(`
-            SELECT t.*, u.full_name as recorded_by_name
+            SELECT t.*, u.name as recorded_by_name
             FROM tax_payments t
             LEFT JOIN users u ON t.recorded_by = u.id
             WHERE t.id = ?
@@ -232,7 +232,7 @@ router.put('/:id/status', async (req, res) => {
 
         // Get updated record
         const [updatedRecord] = await db.execute(`
-            SELECT t.*, u.full_name as recorded_by_name
+            SELECT t.*, u.name as recorded_by_name
             FROM tax_payments t
             LEFT JOIN users u ON t.recorded_by = u.id
             WHERE t.id = ?
@@ -292,7 +292,7 @@ router.get('/period/:period', async (req, res) => {
         const { period } = req.params;
         
         const [taxRecords] = await db.execute(`
-            SELECT t.*, u.full_name as recorded_by_name
+            SELECT t.*, u.name as recorded_by_name
             FROM tax_payments t
             LEFT JOIN users u ON t.recorded_by = u.id
             WHERE t.tax_period = ?
@@ -316,7 +316,7 @@ router.get('/period/:period', async (req, res) => {
 router.get('/upcoming', async (req, res) => {
     try {
         const [upcomingPayments] = await db.execute(`
-            SELECT t.*, u.full_name as recorded_by_name
+            SELECT t.*, u.name as recorded_by_name
             FROM tax_payments t
             LEFT JOIN users u ON t.recorded_by = u.id
             WHERE t.payment_status IN ('Pending', 'Overdue')
