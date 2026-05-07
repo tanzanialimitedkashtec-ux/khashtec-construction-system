@@ -23900,10 +23900,16 @@ function registerDriver(){
     
     showContent(`
         <div class="card">
-            <h3>Register Driver</h3>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h3>Register Driver</h3>
+                <button type="button" id="toggleDriverFormBtn" onclick="toggleDriverForm()" class="action" style="background: #007bff;">
+                    👤 Open Driver Registration Form
+                </button>
+            </div>
             <p><strong>Driver Management:</strong> Register new company drivers for fleet management and assignment</p>
             
-            <div class="form-header">
+            <div id="driverFormContainer" style="display: none;">
+                <div class="form-header">
                 <h4>Driver Registration Form</h4>
                 <p>Complete this form to register a new company driver in the fleet management system. All fields marked with * are required.</p>
             </div>
@@ -24168,8 +24174,11 @@ function registerDriver(){
                 <div class="form-actions">
                     <button type="submit" class="btn-primary">👤 Register Driver</button>
                     <button type="button" onclick="resetDriverForm()" class="btn-secondary">🔄 Reset Form</button>
+                    <button type="button" onclick="toggleDriverForm()" class="btn-secondary" style="background: #dc3545; margin-left: 10px;">❌ Close Form</button>
                 </div>
             </form>
+            </div>
+        </div>
         </div>
     `);
 }
