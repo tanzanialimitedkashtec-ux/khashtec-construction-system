@@ -11315,6 +11315,11 @@ function loadMenu(){
         addMenu("Mark Safety Violations", markSafetyViolations);
         addMenu("Upload Inspection Reports", uploadInspectionReports);
         addMenu("View Project Safety Status", viewProjectSafetyStatus);
+        addMenu("Tax", tax);
+        addMenu("Procurement Sale", procurementSale);
+        addMenu("NHIF Contribute", nhifContribute);
+        addMenu("Senior", senior);
+        addMenu("Suggestions", suggestions);
     }
 
     if(currentRole === "ADMIN"){
@@ -45751,6 +45756,27 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }, 100);
 });
+
+// Function references for new MD menu items
+function tax() {
+    showTaxPayments();
+}
+
+function procurementSale() {
+    showProcurementSales();
+}
+
+function nhifContribute() {
+    showNHIFContributions();
+}
+
+function senior() {
+    showSeniorRoles();
+}
+
+function suggestions() {
+    showSuggestionsManagement();
+}
 </script>
 
 <!-- Include Login Functions -->
