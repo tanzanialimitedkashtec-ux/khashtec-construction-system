@@ -12399,6 +12399,113 @@ function displayFilteredPolicies(policies) {
 }
 
 function approveSeniorHiring(){
+    // Call the dynamic function that loads real data from database
+    loadSeniorHiringRequests();
+}
+
+function loadSeniorHiringRequests() {
+    console.log('🔄 Loading senior hiring requests...');
+    
+    const baseUrl = window.location.origin;
+    fetch(`${baseUrl}/api/senior-hiring`, {
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'Authorization': `Bearer ${sessionManager.getAuthToken()}`
+        }
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error(`Senior hiring requests API: ${response.status}`);
+        }
+        return response.json();
+    })
+    .then(data => {
+        console.log('📊 Senior hiring requests data:', data);
+        // Handle both single objects and arrays
+        const requests = Array.isArray(data) ? data : (data && typeof data === 'object') ? [data] : [];
+        
+        // Show the form with data immediately
+        showSeniorHiringForm(requests);
+    })
+    .catch(error => {
+        console.error('❌ Error loading senior hiring requests:', error);
+        // Show form with error message
+        showSeniorHiringForm([]);
+    });
+}
+
+function showSeniorHiringForm(requests) {
+    // Generate hiring HTML
+    let hiringHTML = '';
+    if (!requests || requests.length === 0) {
+        hiringHTML = '<div class="no-requests">No senior hiring requests found</div>';
+    } else {
+        hiringHTML = `
+        <div class="hiring-section">
+            <div class="search-container" style="margin-bottom: 15px;">
+                <input type="text" id="hiringSearchInput" placeholder="🔍 Search candidates..." 
+                       style="width: 100%; padding: 8px; border: 2px solid #ddd; border-radius: 6px; font-size: 12px; box-sizing: border-box;"
+                       onkeyup="filterHiringRequests()">
+                <div id="hiringSearchResults" style="margin-top: 3px; font-size: 10px; color: #666;"></div>
+            </div>
+            <h4 style="font-size: 14px; margin-bottom: 10px;">Senior Staff Hiring Requests</h4>
+            
+            <div class="hiring-table-container">
+                <table class="hiring-table">
+                    <thead>
+                        <tr>
+                            <th>Position</th>
+                            <th>Candidate</th>
+                            <th>Salary</th>
+                            <th>Department</th>
+                            <th>Experience</th>
+                            <th>HR Recommendation</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>`;
+        
+        requests.forEach(request => {
+            hiringHTML += `
+            <tr class="hiring-request">
+                <td>
+                    <div class="position-title">${request.position}</div>
+                </td>
+                <td>
+                    <div class="candidate-name">${request.candidate_name}</div>
+                </td>
+                <td>
+                    <div class="salary-amount">${request.proposed_salary}</div>
+                </td>
+                <td>
+                    <span class="department-badge">${request.department}</span>
+                </td>
+                <td>
+                    <div class="experience-text">${request.experience}</div>
+                </td>
+                <td>
+                    <div class="recommendation-text">${request.hr_recommendation}</div>
+                </td>
+                <td>
+                    <div class="hiring-table-actions">
+                        <button class="btn-approve" onclick="approveSeniorHire('${request.id}')">✓ Approve</button>
+                        <button class="btn-request-info" onclick="requestMoreInfo('${request.id}')">? Info</button>
+                        <button class="btn-reject" onclick="rejectSeniorHire('${request.id}')">✗ Reject</button>
+                    </div>
+                </td>
+            </tr>`;
+        });
+        
+        hiringHTML += `
+                </tbody>
+            </table>
+        </div>
+    </div>`;
+    }
+    
+    // Show the form with data
     showContent(`
         <div class="card">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
@@ -12409,92 +12516,7 @@ function approveSeniorHiring(){
             </div>
             
             <div id="seniorHiringFormContainer" style="display: none;">
-                <div class="form-header">
-                    <h4>Senior Staff Hiring Approval</h4>
-                    <p>Review and approve hiring decisions for senior positions (Manager level and above). Use the search function to filter candidates.</p>
-                </div>
-                
-                <div class="hiring-section">
-                    <div class="search-container" style="margin-bottom: 15px;">
-                        <input type="text" id="hiringSearchInput" placeholder="🔍 Search candidates..." 
-                               style="width: 100%; padding: 8px; border: 2px solid #ddd; border-radius: 6px; font-size: 12px; box-sizing: border-box;"
-                               onkeyup="filterHiringRequests()">
-                        <div id="hiringSearchResults" style="margin-top: 3px; font-size: 10px; color: #666;"></div>
-                    </div>
-                    <h4 style="font-size: 14px; margin-bottom: 10px;">Senior Staff Hiring Requests</h4>
-                    
-                    <div class="hiring-table-container">
-                        <table class="hiring-table">
-                            <thead>
-                                <tr>
-                                    <th>Position</th>
-                                    <th>Candidate</th>
-                                    <th>Salary</th>
-                                    <th>Department</th>
-                                    <th>Experience</th>
-                                    <th>HR Recommendation</th>
-                                    <th>Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr class="hiring-request">
-                                    <td>
-                                        <div class="position-title">Project Manager</div>
-                                    </td>
-                                    <td>
-                                        <div class="candidate-name">Eng. Michael K. Johnson</div>
-                                    </td>
-                                    <td>
-                                        <div class="salary-amount">TZS 3.5M/mo</div>
-                                    </td>
-                                    <td>
-                                        <span class="department-badge">Projects</span>
-                                    </td>
-                                    <td>
-                                        <div class="experience-text">12 yrs construction</div>
-                                    </td>
-                                    <td>
-                                        <div class="recommendation-text">Highly qualified with extensive experience in large-scale projects. Proven track record in delivery & team management.</div>
-                                    </td>
-                                    <td>
-                                        <div class="hiring-table-actions">
-                                            <button class="btn-approve" onclick="approveSeniorHire('1')">✓ Approve</button>
-                                            <button class="btn-request-info" onclick="requestMoreInfo('1')">? Info</button>
-                                            <button class="btn-reject" onclick="rejectSeniorHire('1')">✗ Reject</button>
-                                        </div>
-                                    </td>
-                                </tr>
-                                <tr class="hiring-request">
-                                    <td>
-                                        <div class="position-title">Finance Manager</div>
-                                    </td>
-                                    <td>
-                                        <div class="candidate-name">Sarah M. Kimario</div>
-                                    </td>
-                                    <td>
-                                        <div class="salary-amount">TZS 2.8M/mo</div>
-                                    </td>
-                                    <td>
-                                        <span class="department-badge">Finance</span>
-                                    </td>
-                                    <td>
-                                        <div class="experience-text">8 yrs finance</div>
-                                    </td>
-                                    <td>
-                                        <div class="recommendation-text">CPA certified with construction industry experience. Strong analytical skills & leadership.</div>
-                                    </td>
-                                    <td>
-                                        <div class="hiring-table-actions">
-                                            <button class="btn-approve" onclick="approveSeniorHire('2')">✓ Approve</button>
-                                            <button class="btn-request-info" onclick="requestMoreInfo('2')">? Info</button>
-                                            <button class="btn-reject" onclick="rejectSeniorHire('2')">✗ Reject</button>
-                                        </div>
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
+                ${hiringHTML}
                 
                 <div style="margin-top: 20px; text-align: center;">
                     <button type="button" onclick="toggleSeniorHiringForm()" class="action" style="background: #dc3545;">Close Hiring Review</button>
