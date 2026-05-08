@@ -11097,8 +11097,12 @@ window.fetch = function(resource, init) {
         if (typeof resource === 'string') {
             if (resource.startsWith('/api')) {
                 resource = `${PRODUCTION_API_ORIGIN}${resource}`;
+            } else if (resource.startsWith('/transport-costs')) {
+                resource = `${PRODUCTION_API_ORIGIN}/api${resource}`;
             } else if (resource.startsWith(window.location.origin + '/api')) {
                 resource = resource.replace(window.location.origin, PRODUCTION_API_ORIGIN);
+            } else if (resource.startsWith(window.location.origin + '/transport-costs')) {
+                resource = resource.replace(window.location.origin, `${PRODUCTION_API_ORIGIN}/api`);
             } else if (/^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?/.test(resource)) {
                 resource = resource.replace(/^(https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?)/, PRODUCTION_API_ORIGIN);
             }
@@ -11106,8 +11110,12 @@ window.fetch = function(resource, init) {
             let url = resource.url;
             if (url.startsWith('/api')) {
                 url = `${PRODUCTION_API_ORIGIN}${url}`;
+            } else if (url.startsWith('/transport-costs')) {
+                url = `${PRODUCTION_API_ORIGIN}/api${url}`;
             } else if (url.startsWith(window.location.origin + '/api')) {
                 url = url.replace(window.location.origin, PRODUCTION_API_ORIGIN);
+            } else if (url.startsWith(window.location.origin + '/transport-costs')) {
+                url = url.replace(window.location.origin, `${PRODUCTION_API_ORIGIN}/api`);
             } else if (/^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?/.test(url)) {
                 url = url.replace(/^(https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?)/, PRODUCTION_API_ORIGIN);
             }
@@ -11291,16 +11299,34 @@ function loadSeniorHiringRequests() {
         <h3>Approve Senior Staff Hiring</h3>
         <p><strong>HR Authority:</strong> Review and approve senior staff hiring requests</p>
         
-        <div class="hiring-list">
-            <div class="search-container" style="margin-bottom: 20px;">
-                <input type="text" id="hrHiringSearchInput" placeholder="🔍 Search candidates by name, department, salary, or experience..." 
-                       style="width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 8px; font-size: 14px; box-sizing: border-box;"
-                       onkeyup="filterHRHiringRequests()">
-                <div id="hrHiringSearchResults" style="margin-top: 5px; font-size: 12px; color: #666;"></div>
+        <div class="hiring-section">
+            <div class="search-container" style="margin-bottom: 15px;">
+                <input type="text" id="hiringSearchInput" placeholder="🔍 Search candidates..." style="width: 100%; padding: 8px; border: 2px solid #ddd; border-radius: 6px; font-size: 12px; box-sizing: border-box;" onkeyup="filterHiringRequests()">
+                <div id="hiringSearchResults" style="margin-top:3px; font-size: 10px; color: #666;"></div>
             </div>
-            <h4>Pending Senior Hiring Requests</h4>
-            <div id="hiringContainer">
-                <div class="loading">Loading hiring requests...</div>
+            <h4 style="font-size: 14px; margin-bottom: 10px;">Senior Staff Hiring Requests</h4>
+            
+            <div class="hiring-table-container">
+                <table class="hiring-table">
+                    <thead>
+                        <tr>
+                            <th>Position</th>
+                            <th>Candidate</th>
+                            <th>Salary</th>
+                            <th>Department</th>
+                            <th>Experience</th>
+                            <th>HR Recommendation</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="hiringTableBody">
+                        <tr class="hiring-request">
+                            <td colspan="7" style="text-align: center; padding: 20px;">
+                                <div class="loading">Loading hiring requests...</div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
             </div>
         </div>
     </div>`);
@@ -11327,63 +11353,67 @@ function loadHiringRequestsFromBackend() {
     })
     .then(data => {
         console.log('📊 Senior hiring data:', data);
-        const container = document.getElementById('hiringContainer');
+        const tableBody = document.getElementById('hiringTableBody');
         
         if (!data || !Array.isArray(data)) {
-            container.innerHTML = '<div class="error">No hiring requests found or error loading requests</div>';
+            tableBody.innerHTML = '<tr><td colspan="7" style="text-align: center; padding: 20px;">No hiring requests found</td></tr>';
             return;
         }
         
         if (data.length === 0) {
-            container.innerHTML = '<div class="info">No pending senior hiring requests</div>';
+            tableBody.innerHTML = '<tr><td colspan="7" style="text-align: center; padding: 20px;">No pending senior hiring requests</td></tr>';
             return;
         }
         
-        let html = '<div class="hiring-items">';
+        let html = '';
         data.forEach(request => {
+            const salary = request.proposed_salary ? 
+                (request.proposed_salary.startsWith('TZS') ? request.proposed_salary : `TZS ${parseInt(request.proposed_salary).toLocaleString()}`) : 
+                'N/A';
+            
             html += `
-                <div class="hiring-item">
-                    <h5>${request.position || 'Position not specified'}</h5>
-                    <div class="candidate-info">
-                        <div class="form-row">
-                            <div class="form-group">
-                                <label for="candidate-name-${request.id}">Candidate Name</label>
-                                <input type="text" id="candidate-name-${request.id}" name="candidate_name" value="${request.candidate_name || 'N/A'}" readonly>
-                            </div>
-                            <div class="form-group">
-                                <label for="proposed-salary-${request.id}">Proposed Salary</label>
-                                <input type="text" id="proposed-salary-${request.id}" name="proposed_salary" value="${request.proposed_salary ? 'TZS ' + parseInt(request.proposed_salary).toLocaleString() : 'N/A'}" readonly>
-                            </div>
+                <tr class="hiring-request">
+                    <td>
+                        <div class="position-title">${request.position || 'Position not specified'}</div>
+                    </td>
+                    <td>
+                        <div class="candidate-name">${request.candidate_name || 'N/A'}</div>
+                    </td>
+                    <td>
+                        <div class="salary-amount">${salary}</div>
+                    </td>
+                    <td>
+                        <span class="department-badge">${request.department || 'N/A'}</span>
+                    </td>
+                    <td>
+                        <div class="experience-text">${request.experience || 'N/A'}</div>
+                    </td>
+                    <td>
+                        <div class="recommendation-text">${request.hr_recommendation || 'No recommendation provided'}</div>
+                    </td>
+                    <td>
+                        <div class="hiring-table-actions">
+                            <button class="btn-approve" onclick="approveSeniorHire('${request.id}')">✓ Approve</button>
+                            <button class="btn-request-info" onclick="requestMoreInfo('${request.id}')">? Info</button>
+                            <button class="btn-reject" onclick="rejectSeniorHire('${request.id}')">✗ Reject</button>
                         </div>
-                        <div class="form-row">
-                            <div class="form-group">
-                                <label for="department-${request.id}">Department</label>
-                                <input type="text" id="department-${request.id}" name="department" value="${request.department || 'N/A'}" readonly>
-                            </div>
-                            <div class="form-group">
-                                <label for="experience-${request.id}">Experience</label>
-                                <input type="text" id="experience-${request.id}" name="experience" value="${request.experience || 'N/A'}" readonly>
-                            </div>
-                        </div>
-                        <div class="form-group">
-                            <label for="hr-recommendation-${request.id}">HR Recommendation</label>
-                            <textarea id="hr-recommendation-${request.id}" name="hr_recommendation" rows="3" readonly>${request.hr_recommendation || 'No recommendation provided'}</textarea>
-                        </div>
-                    </div>
-                    <div class="hiring-actions">
-                        <button class="action" onclick="approveSeniorHire('${request.id}')" style="background: #28a745;">Approve Hiring</button>
-                        <button class="action" onclick="requestMoreInfo('${request.id}')" style="background: #ffc107;">Request More Info</button>
-                        <button class="action" onclick="rejectSeniorHire('${request.id}')" style="background: #dc3545;">Reject Hiring</button>
-                    </div>
-                </div>
+                    </td>
+                </tr>
             `;
         });
-        html += '</div>';
-        container.innerHTML = html;
+        
+        tableBody.innerHTML = html;
+        
+        // Update search results
+        const searchResults = document.getElementById('hiringSearchResults');
+        if (searchResults) {
+            searchResults.textContent = `Found ${data.length} hiring request${data.length !== 1 ? 's' : ''}`;
+        }
     })
     .catch(error => {
         console.error('❌ Error loading hiring requests:', error);
-        document.getElementById('hiringContainer').innerHTML = '<div class="error">Error loading hiring requests: ' + error.message + '</div>';
+        const tableBody = document.getElementById('hiringTableBody');
+        tableBody.innerHTML = '<tr><td colspan="7" style="text-align: center; padding: 20px; color: #dc3545;">Error loading hiring requests: ' + error.message + '</td></tr>';
     });
 }
 
@@ -46251,7 +46281,7 @@ async function loadTransportCosts() {
     try {
         console.log('🚚 Loading transport costs...');
         
-        const response = await fetch('/transport-costs');
+        const response = await fetch('/api/transport-costs');
         
         if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);
@@ -46450,7 +46480,7 @@ async function loadTransportCostSummary() {
     try {
         console.log('📊 Loading transport cost summary...');
         
-        const response = await fetch('/transport-costs/summary');
+        const response = await fetch('/api/transport-costs/summary');
         
         if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);
@@ -46661,7 +46691,7 @@ function showAddTransportCostForm() {
                     submitBtn.textContent = 'Saving...';
                     submitBtn.disabled = true;
                     
-                    const response = await fetch('/transport-costs', {
+                    const response = await fetch('/api/transport-costs', {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json'
