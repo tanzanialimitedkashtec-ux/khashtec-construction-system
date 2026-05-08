@@ -53,7 +53,7 @@ router.get('/', async (req, res) => {
         
         const { status, manager, search } = req.query;
         
-        let query = `SELECT id, name, description, location, start_date, end_date, status, budget, actual_cost, manager_id, client_id, created_at, updated_at FROM projects WHERE 1=1`;
+        let query = `SELECT id, name, description, location, start_date, end_date, status, contract_value as budget, priority_level, project_manager as manager_id, client_name as client_id, project_code, project_type, created_at, updated_at FROM projects WHERE 1=1`;
         const params = [];
         
         if (status) {
@@ -273,19 +273,23 @@ router.post('/', async (req, res) => {
         const result = await db.execute(`
             INSERT INTO projects (
                 name, description, location, 
-                start_date, end_date, status, budget, 
-                manager_id, client_id, created_at, updated_at
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())
+                start_date, end_date, status, contract_value, 
+                project_manager, client_name, project_code, project_type, 
+                priority_level, created_at, updated_at
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())
         `, [
             name, 
             description || '', 
             location, 
             startDate, 
             endDate, 
-            'planning', 
+            'Planning', 
             parseFloat(budget), 
-            1, // manager_id (temporary - should be resolved from manager name)
-            1  // client_id (temporary - should be resolved from client name)
+            manager,
+            client,
+            code || null,
+            type || null,
+            priority || 'Medium'
         ]);
         
         // Get the created project
@@ -356,12 +360,13 @@ router.put('/:id', async (req, res) => {
             updateValues.push(status);
         }
         if (budget) {
-            updateFields.push('budget = ?');
+            updateFields.push('contract_value = ?');
             updateValues.push(parseFloat(budget));
         }
         if (progress !== undefined) {
-            updateFields.push('actual_cost = ?'); // Using actual_cost field for progress temporarily
-            updateValues.push(parseFloat(progress));
+            // Note: progress field doesn't exist in current table structure
+            // This might need to be added to the table schema
+            console.log('⚠️ Progress update requested but field not available in table');
         }
         
         updateFields.push('updated_at = NOW()');
