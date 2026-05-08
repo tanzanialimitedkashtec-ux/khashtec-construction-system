@@ -82,11 +82,13 @@ router.post('/', async (req, res) => {
 
         // Check if table exists and has correct columns, recreate if needed
         try {
-            // Drop and recreate table to ensure correct structure
+            // Drop all senior hiring related tables in correct order to avoid foreign key constraints
+            await db.execute(`DROP TABLE IF EXISTS senior_hiring_info_request`);
+            await db.execute(`DROP TABLE IF EXISTS senior_hiring_rejection`);
             await db.execute(`DROP TABLE IF EXISTS senior_hiring_approval`);
-            console.log('🗑️ Dropped existing senior_hiring_approval table');
+            console.log('🗑️ Dropped all senior hiring tables');
             
-            // Create table with correct structure
+            // Create main table with correct structure
             await db.execute(`
                 CREATE TABLE senior_hiring_approval (
                     id INT AUTO_INCREMENT PRIMARY KEY,
@@ -110,7 +112,38 @@ router.post('/', async (req, res) => {
                 )
             `);
             
-            console.log('✅ Senior hiring approval table recreated with correct structure');
+            // Recreate related tables
+            await db.execute(`
+                CREATE TABLE senior_hiring_info_request (
+                    id INT AUTO_INCREMENT PRIMARY KEY,
+                    request_id INT NOT NULL,
+                    info_request TEXT NOT NULL,
+                    requested_by VARCHAR(255) NOT NULL,
+                    requested_by_role VARCHAR(100),
+                    request_date DATE NOT NULL,
+                    response TEXT,
+                    response_date DATE,
+                    responded_by VARCHAR(255),
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    FOREIGN KEY (request_id) REFERENCES senior_hiring_approval(id) ON DELETE CASCADE
+                )
+            `);
+            
+            await db.execute(`
+                CREATE TABLE senior_hiring_rejection (
+                    id INT AUTO_INCREMENT PRIMARY KEY,
+                    request_id INT NOT NULL,
+                    rejection_reason TEXT NOT NULL,
+                    rejected_by VARCHAR(255) NOT NULL,
+                    rejected_by_role VARCHAR(100),
+                    rejection_date DATE NOT NULL,
+                    notified_hr BOOLEAN DEFAULT FALSE,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    FOREIGN KEY (request_id) REFERENCES senior_hiring_approval(id) ON DELETE CASCADE
+                )
+            `);
+            
+            console.log('✅ Senior hiring tables recreated with correct structure');
         } catch (tableError) {
             console.error('Error creating table:', tableError);
         }
