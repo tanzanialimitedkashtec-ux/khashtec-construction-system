@@ -80,17 +80,10 @@ router.post('/', async (req, res) => {
         // Generate unique request ID
         const requestId = 'SHR' + Date.now() + Math.random().toString(36).substr(2, 9).toUpperCase();
 
-        // Check if table exists and has correct columns, recreate if needed
+        // Ensure senior hiring tables exist without dropping existing data
         try {
-            // Drop all senior hiring related tables in correct order to avoid foreign key constraints
-            await db.execute(`DROP TABLE IF EXISTS senior_hiring_info_request`);
-            await db.execute(`DROP TABLE IF EXISTS senior_hiring_rejection`);
-            await db.execute(`DROP TABLE IF EXISTS senior_hiring_approval`);
-            console.log('🗑️ Dropped all senior hiring tables');
-            
-            // Create main table with correct structure
             await db.execute(`
-                CREATE TABLE senior_hiring_approval (
+                CREATE TABLE IF NOT EXISTS senior_hiring_approval (
                     id INT AUTO_INCREMENT PRIMARY KEY,
                     candidate_name VARCHAR(255) NOT NULL,
                     position VARCHAR(255) NOT NULL,
@@ -112,9 +105,8 @@ router.post('/', async (req, res) => {
                 )
             `);
             
-            // Recreate related tables
             await db.execute(`
-                CREATE TABLE senior_hiring_info_request (
+                CREATE TABLE IF NOT EXISTS senior_hiring_info_request (
                     id INT AUTO_INCREMENT PRIMARY KEY,
                     request_id INT NOT NULL,
                     info_request TEXT NOT NULL,
@@ -130,7 +122,7 @@ router.post('/', async (req, res) => {
             `);
             
             await db.execute(`
-                CREATE TABLE senior_hiring_rejection (
+                CREATE TABLE IF NOT EXISTS senior_hiring_rejection (
                     id INT AUTO_INCREMENT PRIMARY KEY,
                     request_id INT NOT NULL,
                     rejection_reason TEXT NOT NULL,
@@ -143,9 +135,9 @@ router.post('/', async (req, res) => {
                 )
             `);
             
-            console.log('✅ Senior hiring tables recreated with correct structure');
+            console.log('✅ Senior hiring tables ensured to exist');
         } catch (tableError) {
-            console.error('Error creating table:', tableError);
+            console.error('Error ensuring senior hiring tables exist:', tableError);
         }
 
         // Insert into senior_hiring_approval table
