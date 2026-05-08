@@ -55,6 +55,67 @@ router.get('/:id', async (req, res) => {
     }
 });
 
+// Create new senior hiring request
+router.post('/', async (req, res) => {
+    try {
+        console.log('📝 Creating new senior hiring request');
+        const {
+            candidateName,
+            position,
+            department,
+            proposedSalary,
+            experience,
+            recommendation,
+            requestedBy,
+            requestedByRole
+        } = req.body;
+
+        // Validate required fields
+        if (!candidateName || !position || !department || !proposedSalary) {
+            return res.status(400).json({
+                error: 'Missing required fields: candidateName, position, department, proposedSalary'
+            });
+        }
+
+        // Generate unique request ID
+        const requestId = 'SHR' + Date.now() + Math.random().toString(36).substr(2, 9).toUpperCase();
+
+        // Insert into senior_hiring_approval table
+        const result = await db.execute(`
+            INSERT INTO senior_hiring_approval 
+            (id, candidate_name, position, department, proposed_salary, experience, 
+             hr_recommendation, requested_by, requested_by_role, status, request_date)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending', NOW())
+        `, [
+            requestId,
+            candidateName,
+            position,
+            department,
+            proposedSalary,
+            experience || '',
+            recommendation || '',
+            requestedBy || 'HR Manager',
+            requestedByRole || 'HR'
+        ]);
+
+        console.log('✅ Senior hiring request created successfully:', requestId);
+
+        res.json({
+            message: 'Senior hiring request created successfully',
+            request_id: requestId,
+            candidate_name: candidateName,
+            position: position,
+            department: department,
+            proposed_salary: proposedSalary,
+            status: 'pending',
+            timestamp: new Date().toISOString()
+        });
+    } catch (error) {
+        console.error('Error creating senior hiring request:', error);
+        res.status(500).json({ error: 'Failed to create senior hiring request' });
+    }
+});
+
 // Approve senior hiring request
 router.post('/:id/approve', async (req, res) => {
     try {

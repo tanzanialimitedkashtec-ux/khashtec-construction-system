@@ -366,6 +366,32 @@ class DatabaseAPI {
         });
     }
 
+    // Senior Hiring API
+    async saveSeniorHiringRequest(hiringData) {
+        return this.request('/senior-hiring', {
+            method: 'POST',
+            body: JSON.stringify(hiringData)
+        });
+    }
+
+    async getSeniorHiringRequests() {
+        return this.request('/senior-hiring');
+    }
+
+    async approveSeniorHiringRequest(id, approvedBy) {
+        return this.request(`/senior-hiring/${id}/approve`, {
+            method: 'POST',
+            body: JSON.stringify({ approved_by: approvedBy })
+        });
+    }
+
+    async rejectSeniorHiringRequest(id, rejectionReason) {
+        return this.request(`/senior-hiring/${id}/reject`, {
+            method: 'POST',
+            body: JSON.stringify({ rejection_reason: rejectionReason })
+        });
+    }
+
     // Suggestions API
     async saveSuggestion(suggestionData) {
         return this.request('/suggestions', {
@@ -412,12 +438,6 @@ class DatabaseAPI {
         return this.saveSuggestion(suggestionData);
     }
 }
-
-// Create global apiService instance
-window.apiService = new DatabaseAPI();
-
-// Backward compatibility - also expose as dbAPI
-window.dbAPI = window.apiService;
 
 // Utility functions for UI
 window.DatabaseUI = {
