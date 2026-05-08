@@ -32925,56 +32925,76 @@ function displayProjects(projects) {
     }
     
     // Sort projects by start date (newest first)
-    projects.sort((a, b) => new Date(b.startDate) - new Date(a.startDate));
+    projects.sort((a, b) => new Date(b.start_date || b.startDate) - new Date(a.start_date || a.startDate));
     
     let projectsHTML = '';
     
     projects.forEach(project => {
+        // Map API fields to display fields
+        const projectData = {
+            id: project.id,
+            projectId: project.id, // Use id as projectId
+            name: project.name,
+            projectCode: project.project_code || project.code || 'N/A',
+            client: project.client || 'Not specified', // API has client_id, we'll need to resolve this later
+            type: project.type || 'Not specified',
+            startDate: project.start_date || project.startDate,
+            endDate: project.end_date || project.endDate,
+            contractValue: project.budget || project.contract_value || 0,
+            projectDescription: project.description || 'Not specified',
+            keyDeliverables: project.deliverables || 'Not specified',
+            siteLocation: project.location || 'Not specified',
+            priorityLevel: project.priority || 'medium',
+            manager: project.manager || 'Not assigned', // API has manager_id, we'll need to resolve this later
+            status: project.status,
+            progress: project.progress || 0
+        };
+        
         // Get project type display
-        const typeDisplay = project.type === 'construction' ? '🏗️ Construction' : 
-                           project.type === 'renovation' ? '🔧 Renovation' : 
-                           project.type === 'infrastructure' ? '🌉 Infrastructure' : 
-                           project.type === 'maintenance' ? '🔨 Maintenance' : 
-                           project.type === 'consulting' ? '📋 Consulting' : project.type;
+        const typeDisplay = projectData.type === 'construction' ? '🏗️ Construction' : 
+                           projectData.type === 'renovation' ? '🔧 Renovation' : 
+                           projectData.type === 'infrastructure' ? '🌉 Infrastructure' : 
+                           projectData.type === 'maintenance' ? '🔨 Maintenance' : 
+                           projectData.type === 'consulting' ? '📋 Consulting' : projectData.type;
         
         // Get status display
-        const statusDisplay = project.status === 'active' ? '🟢 Active' : 
-                             project.status === 'completed' ? '✅ Completed' : 
-                             project.status === 'planning' ? '📋 Planning' : 
-                             project.status === 'on-hold' ? '⏸️ On Hold' : 
-                             project.status === 'cancelled' ? '❌ Cancelled' : project.status;
+        const statusDisplay = projectData.status === 'active' ? '🟢 Active' : 
+                             projectData.status === 'completed' ? '✅ Completed' : 
+                             projectData.status === 'planning' ? '📋 Planning' : 
+                             projectData.status === 'on-hold' ? '⏸️ On Hold' : 
+                             projectData.status === 'cancelled' ? '❌ Cancelled' : projectData.status;
         
-        const statusClass = project.status === 'active' ? 'status-active' : 
-                           project.status === 'completed' ? 'status-completed' : 
-                           project.status === 'planning' ? 'status-planning' : 
-                           project.status === 'on-hold' ? 'status-on-hold' : 
-                           project.status === 'cancelled' ? 'status-cancelled' : '';
+        const statusClass = projectData.status === 'active' ? 'status-active' : 
+                           projectData.status === 'completed' ? 'status-completed' : 
+                           projectData.status === 'planning' ? 'status-planning' : 
+                           projectData.status === 'on-hold' ? 'status-on-hold' : 
+                           projectData.status === 'cancelled' ? 'status-cancelled' : '';
         
         // Format contract value
-        const contractValue = project.contractValue ? 
-            (project.contractValue / 1000000).toFixed(1) + 'M TZS' : 
+        const contractValue = projectData.contractValue ? 
+            (parseFloat(projectData.contractValue) / 1000000).toFixed(1) + 'M TZS' : 
             'N/A';
         
         // Get priority display
-        const priorityDisplay = project.priorityLevel === 'high' ? '🔴 High' : 
-                               project.priorityLevel === 'medium' ? '🟡 Medium' : 
-                               project.priorityLevel === 'low' ? '🟢 Low' : project.priorityLevel;
+        const priorityDisplay = projectData.priorityLevel === 'high' ? '🔴 High' : 
+                               projectData.priorityLevel === 'medium' ? '🟡 Medium' : 
+                               projectData.priorityLevel === 'low' ? '🟢 Low' : projectData.priorityLevel;
         
-        const priorityClass = project.priorityLevel === 'high' ? 'priority-high' : 
-                             project.priorityLevel === 'medium' ? 'priority-medium' : 
-                             project.priorityLevel === 'low' ? 'priority-low' : '';
+        const priorityClass = projectData.priorityLevel === 'high' ? 'priority-high' : 
+                             projectData.priorityLevel === 'medium' ? 'priority-medium' : 
+                             projectData.priorityLevel === 'low' ? 'priority-low' : '';
         
         // Truncate text fields for display
-        const projectDescription = project.projectDescription && project.projectDescription.length > 50 ? 
-            project.projectDescription.substring(0, 50) + '...' : 
-            (project.projectDescription || 'Not specified');
+        const projectDescription = projectData.projectDescription && projectData.projectDescription.length > 50 ? 
+            projectData.projectDescription.substring(0, 50) + '...' : 
+            (projectData.projectDescription || 'Not specified');
         
-        const keyDeliverables = project.keyDeliverables && project.keyDeliverables.length > 40 ? 
-            project.keyDeliverables.substring(0, 40) + '...' : 
-            (project.keyDeliverables || 'Not specified');
+        const keyDeliverables = projectData.keyDeliverables && projectData.keyDeliverables.length > 40 ? 
+            projectData.keyDeliverables.substring(0, 40) + '...' : 
+            (projectData.keyDeliverables || 'Not specified');
         
         // Get progress bar
-        const progress = project.progress || 0;
+        const progress = projectData.progress || 0;
         const progressBar = `
             <div class="progress-bar-container">
                 <div class="progress-bar" style="width: ${progress}%"></div>
@@ -32982,26 +33002,37 @@ function displayProjects(projects) {
             </div>
         `;
         
+        // Format dates safely
+        const formatDate = (dateStr) => {
+            if (!dateStr) return 'Invalid Date';
+            try {
+                const date = new Date(dateStr);
+                return isNaN(date.getTime()) ? 'Invalid Date' : date.toLocaleDateString();
+            } catch (e) {
+                return 'Invalid Date';
+            }
+        };
+        
         projectsHTML += `
             <tr class="project-row">
                 <td>
                     <div class="project-id-info">
-                        <div class="project-id">${project.projectId}</div>
+                        <div class="project-id">${projectData.projectId}</div>
                     </div>
                 </td>
                 <td>
                     <div class="project-name-info">
-                        <div class="project-name" title="${project.name || 'Not specified'}">${project.name || 'Not specified'}</div>
+                        <div class="project-name" title="${projectData.name || 'Not specified'}">${projectData.name || 'Not specified'}</div>
                     </div>
                 </td>
                 <td>
                     <div class="project-code-info">
-                        <div class="project-code">${project.projectCode || 'N/A'}</div>
+                        <div class="project-code">${projectData.projectCode}</div>
                     </div>
                 </td>
                 <td>
                     <div class="client-info">
-                        <div class="client-name">${project.client || 'Not specified'}</div>
+                        <div class="client-name">${projectData.client}</div>
                     </div>
                 </td>
                 <td>
@@ -33009,12 +33040,12 @@ function displayProjects(projects) {
                 </td>
                 <td>
                     <div class="date-info">
-                        <div class="start-date">${new Date(project.startDate).toLocaleDateString()}</div>
+                        <div class="start-date">${formatDate(projectData.startDate)}</div>
                     </div>
                 </td>
                 <td>
                     <div class="date-info">
-                        <div class="end-date">${new Date(project.endDate).toLocaleDateString()}</div>
+                        <div class="end-date">${formatDate(projectData.endDate)}</div>
                     </div>
                 </td>
                 <td>
@@ -33022,17 +33053,17 @@ function displayProjects(projects) {
                 </td>
                 <td>
                     <div class="description-info">
-                        <div class="project-description" title="${project.projectDescription || 'Not specified'}">${projectDescription}</div>
+                        <div class="project-description" title="${projectData.projectDescription || 'Not specified'}">${projectDescription}</div>
                     </div>
                 </td>
                 <td>
                     <div class="deliverables-info">
-                        <div class="key-deliverables" title="${project.keyDeliverables || 'Not specified'}">${keyDeliverables}</div>
+                        <div class="key-deliverables" title="${projectData.keyDeliverables || 'Not specified'}">${keyDeliverables}</div>
                     </div>
                 </td>
                 <td>
                     <div class="location-info">
-                        <div class="site-location">${project.siteLocation || 'Not specified'}</div>
+                        <div class="site-location">${projectData.siteLocation}</div>
                     </div>
                 </td>
                 <td>
@@ -33040,7 +33071,7 @@ function displayProjects(projects) {
                 </td>
                 <td>
                     <div class="manager-info">
-                        <div class="manager-name">${project.manager || 'Not assigned'}</div>
+                        <div class="manager-name">${projectData.manager}</div>
                     </div>
                 </td>
                 <td>
@@ -33051,9 +33082,9 @@ function displayProjects(projects) {
                 </td>
                 <td>
                     <div class="project-actions">
-                        <button class="action-btn view" onclick="viewProject('${project.id}')" title="View Details">👁️</button>
-                        <button class="action-btn edit" onclick="editProject('${project.id}')" title="Edit Project">✏️</button>
-                        <button class="action-btn progress" onclick="updateProgress('${project.id}')" title="Update Progress">📊</button>
+                        <button class="action-btn view" onclick="viewProject('${projectData.id}')" title="View Details">👁️</button>
+                        <button class="action-btn edit" onclick="editProject('${projectData.id}')" title="Edit Project">✏️</button>
+                        <button class="action-btn progress" onclick="updateProgress('${projectData.id}')" title="Update Progress">📊</button>
                     </div>
                 </td>
             </tr>
