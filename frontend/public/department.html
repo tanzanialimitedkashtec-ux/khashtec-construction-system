@@ -8967,6 +8967,165 @@ background: #f8f9fa;
     background: linear-gradient(45deg, #f44336, #d32f2f);
 }
 
+/* Compact Portal Styles */
+.portal-header.compact {
+    padding: 12px;
+    margin-bottom: 15px;
+}
+
+.portal-header.compact .portal-title {
+    gap: 10px;
+}
+
+.portal-header.compact .portal-logo {
+    font-size: 1.5rem;
+    padding: 8px;
+}
+
+.portal-header.compact .portal-name h3 {
+    font-size: 1.3rem;
+}
+
+.portal-header.compact .portal-name p {
+    font-size: 0.8rem;
+}
+
+.portal-tabs.compact {
+    gap: 5px;
+    margin-bottom: 15px;
+}
+
+.tab-btn-compact {
+    background: linear-gradient(45deg, #2196F3, #1976D2);
+    color: white;
+    border: none;
+    padding: 6px 10px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    min-width: 40px;
+}
+
+.tab-btn-compact:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+}
+
+.tab-btn-compact.active {
+    background: linear-gradient(45deg, #4CAF50, #45a049);
+    box-shadow: 0 4px 12px rgba(76, 175, 80, 0.4);
+}
+
+.portal-search.compact {
+    padding: 10px;
+    margin-bottom: 15px;
+}
+
+.portal-search.compact input {
+    padding: 8px 12px;
+    font-size: 0.85rem;
+}
+
+.portal-search.compact select {
+    padding: 8px 12px;
+    font-size: 0.85rem;
+}
+
+.section-header.compact {
+    padding: 8px 12px;
+    margin-bottom: 12px;
+}
+
+.section-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.section-icon {
+    font-size: 1.1rem;
+}
+
+.section-header.compact h4 {
+    font-size: 1rem;
+}
+
+.section-stats.compact {
+    gap: 6px;
+}
+
+.stat-compact {
+    background: rgba(76, 175, 80, 0.2);
+    color: #4CAF50;
+    padding: 3px 6px;
+    border-radius: 3px;
+    font-weight: 600;
+    font-size: 0.7rem;
+    min-width: 18px;
+    text-align: center;
+}
+
+.analytics-dashboard.compact {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 12px;
+}
+
+.analytics-card.compact {
+    background: rgba(255,255,255,0.05);
+    border-radius: 8px;
+    padding: 12px;
+    border: 1px solid rgba(255,255,255,0.1);
+}
+
+.analytics-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 10px;
+}
+
+.analytics-icon {
+    font-size: 1.1rem;
+}
+
+.analytics-card.compact h5 {
+    margin: 0;
+    color: #4CAF50;
+    font-size: 0.9rem;
+    font-weight: 600;
+}
+
+.analytics-stats.compact {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.analytics-stat-compact {
+    text-align: center;
+    background: rgba(76, 175, 80, 0.1);
+    padding: 6px 8px;
+    border-radius: 4px;
+    min-width: 50px;
+}
+
+.analytics-number-compact {
+    display: block;
+    font-size: 1rem;
+    font-weight: 700;
+    color: #4CAF50;
+}
+
+.analytics-label-compact {
+    font-size: 0.65rem;
+    opacity: 0.8;
+    color: white;
+}
+
 /* Document Cards */
 .document-card {
     background: rgba(255,255,255,255,0.05);
@@ -42454,61 +42613,48 @@ function renderOfficePortal(officePortalUsers, documents, policies, contracts) {
         return icons[impact] || '📋';
     }
     
-    // Generate HTML for registered users in table format
+    // Generate HTML for registered users in compact table format with small circular images
     const registeredUsersHTML = `
         <div class="personnel-table-container">
-            <table class="personnel-table">
+            <table class="personnel-table compact">
                 <thead>
                     <tr>
-                        <th>Photo</th>
+                        <th style="width: 60px;">Photo</th>
                         <th>Name</th>
                         <th>Position</th>
                         <th>Department</th>
-                        <th>Email</th>
-                        <th>Phone</th>
-                        <th>Role</th>
-                        <th>Files</th>
-                        <th>Actions</th>
+                        <th>Contact</th>
+                        <th style="width: 80px;">Actions</th>
                     </tr>
                 </thead>
                 <tbody>
                     ${officePortalUsers.map(user => `
-                        <tr class="personnel-row" data-department="${user.department}" data-role="${user.position}" data-person-id="${user.id}">
+                        <tr class="personnel-row compact" data-department="${user.department}" data-role="${user.position}" data-person-id="${user.id}">
                             <td>
-                                <div class="personnel-avatar">
-                                    <img src="${user.profileImage}" alt="${user.name}" onerror="this.src='https://picsum.photos/seed/default/50/50.jpg'">
+                                <div class="personnel-avatar-small">
+                                    <img src="${user.profileImage}" alt="${user.name}" onerror="this.src='https://picsum.photos/seed/default/40/40.jpg'">
                                 </div>
                             </td>
                             <td>
-                                <div class="personnel-name">
-                                    <strong>${user.name}</strong>
-                                    <div class="role-badge small">${user.position}</div>
+                                <div class="personnel-info-compact">
+                                    <div class="personnel-name-compact">${user.name}</div>
+                                    <div class="personnel-role-compact">${user.position}</div>
                                 </div>
                             </td>
                             <td>
-                                <span class="department-badge">${user.department}</span>
+                                <span class="department-badge-compact">${user.department}</span>
                             </td>
                             <td>
-                                <div class="contact-info">
-                                    <span class="contact-item">📧 ${user.email}</span>
+                                <div class="contact-info-compact">
+                                    <div class="contact-item-compact">📧 ${user.email}</div>
+                                    <div class="contact-item-compact">📱 ${user.phone}</div>
                                 </div>
                             </td>
                             <td>
-                                <div class="contact-info">
-                                    <span class="contact-item">📱 ${user.phone}</span>
-                                </div>
-                            </td>
-                            <td>
-                                <span class="position-badge">${user.position}</span>
-                            </td>
-                            <td>
-                                ${user.files && user.files.length > 0 ? `<span class="files-count">📁 ${user.files.length} files</span>` : '<span class="files-count">📁 0 files</span>'}
-                            </td>
-                            <td>
-                                <div class="personnel-actions">
-                                    <button class="action-btn view" onclick="viewPersonnelDetails('${user.id}')" title="View Details">👁️</button>
-                                    <button class="action-btn edit" onclick="editPersonnel('${user.id}')" title="Edit Personnel">✏️</button>
-                                    <button class="action-btn delete" onclick="deletePersonnel('${user.id}')" title="Delete Personnel">🗑️</button>
+                                <div class="personnel-actions-compact">
+                                    <button class="action-btn-compact view" onclick="viewPersonnelDetails('${user.id}')" title="View Details">👁️</button>
+                                    <button class="action-btn-compact edit" onclick="editPersonnel('${user.id}')" title="Edit Personnel">✏️</button>
+                                    <button class="action-btn-compact delete" onclick="deletePersonnel('${user.id}')" title="Delete Personnel">🗑️</button>
                                 </div>
                             </td>
                         </tr>
@@ -42582,24 +42728,29 @@ function renderOfficePortal(officePortalUsers, documents, policies, contracts) {
     
     // Generate comprehensive portal HTML
     const portalHTML = `
-        <div class="card">
-            <div class="portal-header">
-                <h3>🏢 KASHTEC Office Portal</h3>
-                <p><strong>Complete Office Management:</strong> View personnel, documents, policies, and contracts with role-based access control</p>
+        <div class="card compact">
+            <div class="portal-header compact">
+                <div class="portal-title">
+                    <div class="portal-logo">🏢</div>
+                    <div class="portal-name">
+                        <h3>KASHTEC Office Portal</h3>
+                        <p>Complete Office Management</p>
+                    </div>
+                </div>
             </div>
             
-            <div class="portal-tabs">
-                <button class="tab-btn active" onclick="showPortalSection('personnel')">👥 Personnel</button>
-                <button class="tab-btn" onclick="showPortalSection('documents')">📄 Documents</button>
-                <button class="tab-btn" onclick="showPortalSection('policies')">📋 Policies</button>
-                <button class="tab-btn" onclick="showPortalSection('contracts')">📝 Contracts</button>
-                <button class="tab-btn" onclick="showPortalSection('analytics')">📊 Analytics</button>
+            <div class="portal-tabs compact">
+                <button class="tab-btn-compact active" onclick="showPortalSection('personnel')">👥</button>
+                <button class="tab-btn-compact" onclick="showPortalSection('documents')">📄</button>
+                <button class="tab-btn-compact" onclick="showPortalSection('policies')">📋</button>
+                <button class="tab-btn-compact" onclick="showPortalSection('contracts')">📝</button>
+                <button class="tab-btn-compact" onclick="showPortalSection('analytics')">📊</button>
             </div>
             
-            <div class="portal-search">
-                <input type="text" placeholder="Search personnel, documents, policies, contracts..." onkeyup="searchPortal(this.value)">
+            <div class="portal-search compact">
+                <input type="text" placeholder="Search..." onkeyup="searchPortal(this.value)">
                 <select onchange="filterPortal(this.value)">
-                    <option value="">All Categories</option>
+                    <option value="">All</option>
                     <option value="hr">HR</option>
                     <option value="projects">Projects</option>
                     <option value="admin">Admin</option>
@@ -42613,12 +42764,15 @@ function renderOfficePortal(officePortalUsers, documents, policies, contracts) {
             
             <!-- Personnel Section -->
             <div id="personnel-section" class="portal-section">
-                <div class="section-header">
-                    <h4>👥 Personnel Directory</h4>
-                    <div class="section-stats">
-                        <span class="stat-item">${officePortalUsers.length} Total Staff</span>
-                        <span class="stat-item">${employeeCount} Employees</span>
-                        <span class="stat-item">${workerCount} Workers</span>
+                <div class="section-header compact">
+                    <div class="section-title">
+                        <span class="section-icon">👥</span>
+                        <h4>Personnel Directory</h4>
+                    </div>
+                    <div class="section-stats compact">
+                        <span class="stat-compact">${officePortalUsers.length}</span>
+                        <span class="stat-compact">${employeeCount}</span>
+                        <span class="stat-compact">${workerCount}</span>
                     </div>
                 </div>
                 <div class="personnel-grid">
@@ -42628,12 +42782,15 @@ function renderOfficePortal(officePortalUsers, documents, policies, contracts) {
             
             <!-- Documents Section -->
             <div id="documents-section" class="portal-section" style="display: none;">
-                <div class="section-header">
-                    <h4>📄 Documents Repository</h4>
-                    <div class="section-stats">
-                        <span class="stat-item">${documents.length} Total Documents</span>
-                        <span class="stat-item">${documents.filter(d => d.type === 'Policy').length} Policies</span>
-                        <span class="stat-item">${documents.filter(d => d.type === 'Contract').length} Contracts</span>
+                <div class="section-header compact">
+                    <div class="section-title">
+                        <span class="section-icon">📄</span>
+                        <h4>Documents Repository</h4>
+                    </div>
+                    <div class="section-stats compact">
+                        <span class="stat-compact">${documents.length}</span>
+                        <span class="stat-compact">${documents.filter(d => d.type === 'Policy').length}</span>
+                        <span class="stat-compact">${documents.filter(d => d.type === 'Contract').length}</span>
                     </div>
                 </div>
                 <div class="document-grid">
@@ -42643,12 +42800,15 @@ function renderOfficePortal(officePortalUsers, documents, policies, contracts) {
             
             <!-- Policies Section -->
             <div id="policies-section" class="portal-section" style="display: none;">
-                <div class="section-header">
-                    <h4>📋 Company Policies</h4>
-                    <div class="section-stats">
-                        <span class="stat-item">${policies.length} Total Policies</span>
-                        <span class="stat-item">${policies.filter(p => p.status === 'Active').length} Active</span>
-                        <span class="stat-item">${policies.filter(p => p.status === 'Draft').length} Draft</span>
+                <div class="section-header compact">
+                    <div class="section-title">
+                        <span class="section-icon">📋</span>
+                        <h4>Company Policies</h4>
+                    </div>
+                    <div class="section-stats compact">
+                        <span class="stat-compact">${policies.length}</span>
+                        <span class="stat-compact">${policies.filter(p => p.status === 'Active').length}</span>
+                        <span class="stat-compact">${policies.filter(p => p.status === 'Draft').length}</span>
                     </div>
                 </div>
                 <div class="policy-grid">
@@ -42658,12 +42818,15 @@ function renderOfficePortal(officePortalUsers, documents, policies, contracts) {
             
             <!-- Contracts Section -->
             <div id="contracts-section" class="portal-section" style="display: none;">
-                <div class="section-header">
-                    <h4>📝 Contracts Management</h4>
-                    <div class="section-stats">
-                        <span class="stat-item">${contracts.length} Total Contracts</span>
-                        <span class="stat-item">${contracts.filter(c => c.status === 'Active').length} Active</span>
-                        <span class="stat-item">${contracts.filter(c => c.status === 'Pending').length} Pending</span>
+                <div class="section-header compact">
+                    <div class="section-title">
+                        <span class="section-icon">📝</span>
+                        <h4>Contracts Management</h4>
+                    </div>
+                    <div class="section-stats compact">
+                        <span class="stat-compact">${contracts.length}</span>
+                        <span class="stat-compact">${contracts.filter(c => c.status === 'Active').length}</span>
+                        <span class="stat-compact">${contracts.filter(c => c.status === 'Pending').length}</span>
                     </div>
                 </div>
                 <div class="contract-grid">
@@ -42673,54 +42836,72 @@ function renderOfficePortal(officePortalUsers, documents, policies, contracts) {
             
             <!-- Analytics Section -->
             <div id="analytics-section" class="portal-section" style="display: none;">
-                <div class="section-header">
-                    <h4>📊 Office Analytics</h4>
+                <div class="section-header compact">
+                    <div class="section-title">
+                        <span class="section-icon">📊</span>
+                        <h4>Office Analytics</h4>
+                    </div>
                 </div>
-                <div class="analytics-dashboard">
-                    <div class="analytics-card">
-                        <h5>👥 Personnel Overview</h5>
-                        <div class="analytics-stats">
-                            <div class="analytics-stat">
-                                <span class="analytics-number">${officePortalUsers.length}</span>
-                                <span class="analytics-label">Total Personnel</span>
+                <div class="analytics-dashboard compact">
+                    <div class="analytics-card compact">
+                        <div class="analytics-title">
+                            <span class="analytics-icon">👥</span>
+                            <h5>Personnel</h5>
+                        </div>
+                        <div class="analytics-stats compact">
+                            <div class="analytics-stat-compact">
+                                <span class="analytics-number-compact">${officePortalUsers.length}</span>
+                                <span class="analytics-label-compact">Total</span>
                             </div>
-                            <div class="analytics-stat">
-                                <span class="analytics-number">${employeeCount}</span>
-                                <span class="analytics-label">Employees</span>
+                            <div class="analytics-stat-compact">
+                                <span class="analytics-number-compact">${employeeCount}</span>
+                                <span class="analytics-label-compact">Employees</span>
                             </div>
-                            <div class="analytics-stat">
-                                <span class="analytics-number">${workerCount}</span>
-                                <span class="analytics-label">Workers</span>
+                            <div class="analytics-stat-compact">
+                                <span class="analytics-number-compact">${workerCount}</span>
+                                <span class="analytics-label-compact">Workers</span>
                             </div>
                         </div>
                     </div>
-                    <div class="analytics-card">
-                        <h5>📄 Document Statistics</h5>
-                        <div class="analytics-stats">
-                            <div class="analytics-stat">
-                                <span class="analytics-number">${documents.length}</span>
-                                <span class="analytics-label">Total Documents</span>
+                    
+                    <div class="analytics-card compact">
+                        <div class="analytics-title">
+                            <span class="analytics-icon">📄</span>
+                            <h5>Documents</h5>
+                        </div>
+                        <div class="analytics-stats compact">
+                            <div class="analytics-stat-compact">
+                                <span class="analytics-number-compact">${documents.length}</span>
+                                <span class="analytics-label-compact">Total</span>
                             </div>
-                            <div class="analytics-stat">
-                                <span class="analytics-number">${documents.filter(d => d.type === 'Policy').length}</span>
-                                <span class="analytics-label">Policies</span>
+                            <div class="analytics-stat-compact">
+                                <span class="analytics-number-compact">${policies.length}</span>
+                                <span class="analytics-label-compact">Policies</span>
                             </div>
-                            <div class="analytics-stat">
-                                <span class="analytics-number">${documents.filter(d => d.type === 'Contract').length}</span>
-                                <span class="analytics-label">Contracts</span>
+                            <div class="analytics-stat-compact">
+                                <span class="analytics-number-compact">${contracts.length}</span>
+                                <span class="analytics-label-compact">Contracts</span>
                             </div>
                         </div>
                     </div>
-                    <div class="analytics-card">
-                        <h5>📋 Policy Compliance</h5>
-                        <div class="analytics-stats">
-                            <div class="analytics-stat">
-                                <span class="analytics-number">${policies.filter(p => p.status === 'Active').length}</span>
-                                <span class="analytics-label">Active Policies</span>
+                    
+                    <div class="analytics-card compact">
+                        <div class="analytics-title">
+                            <span class="analytics-icon">📊</span>
+                            <h5>Status</h5>
+                        </div>
+                        <div class="analytics-stats compact">
+                            <div class="analytics-stat-compact">
+                                <span class="analytics-number-compact">${policies.filter(p => p.status === 'Active').length}</span>
+                                <span class="analytics-label-compact">Active Policies</span>
                             </div>
-                            <div class="analytics-stat">
-                                <span class="analytics-number">${policies.filter(p => p.status === 'Draft').length}</span>
-                                <span class="analytics-label">Pending Review</span>
+                            <div class="analytics-stat-compact">
+                                <span class="analytics-number-compact">${contracts.filter(c => c.status === 'Active').length}</span>
+                                <span class="analytics-label-compact">Active Contracts</span>
+                            </div>
+                            <div class="analytics-stat-compact">
+                                <span class="analytics-number-compact">${contracts.filter(c => c.status === 'Pending').length}</span>
+                                <span class="analytics-label-compact">Pending</span>
                             </div>
                         </div>
                     </div>
@@ -42749,7 +42930,7 @@ function showPortalSection(section) {
     });
     
     // Remove active class from all tabs
-    document.querySelectorAll('.tab-btn').forEach(btn => {
+    document.querySelectorAll('.tab-btn, .tab-btn-compact').forEach(btn => {
         btn.classList.remove('active');
     });
     
