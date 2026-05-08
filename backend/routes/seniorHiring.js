@@ -80,6 +80,35 @@ router.post('/', async (req, res) => {
         // Generate unique request ID
         const requestId = 'SHR' + Date.now() + Math.random().toString(36).substr(2, 9).toUpperCase();
 
+        // Check if table exists, create if needed
+        try {
+            await db.execute(`
+                CREATE TABLE IF NOT EXISTS senior_hiring_approval (
+                    id INT AUTO_INCREMENT PRIMARY KEY,
+                    candidate_name VARCHAR(255) NOT NULL,
+                    position VARCHAR(255) NOT NULL,
+                    department VARCHAR(100) NOT NULL,
+                    proposed_salary VARCHAR(50) NOT NULL,
+                    experience TEXT,
+                    hr_recommendation TEXT,
+                    status ENUM('pending', 'approved', 'rejected', 'info_requested') DEFAULT 'pending',
+                    request_date DATE NOT NULL,
+                    approval_date DATE,
+                    approved_by VARCHAR(255),
+                    requested_by VARCHAR(255) NOT NULL,
+                    requested_by_role VARCHAR(100),
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+                    INDEX idx_status (status),
+                    INDEX idx_department (department),
+                    INDEX idx_date (request_date)
+                )
+            `);
+            console.log('✅ Senior hiring approval table verified/created');
+        } catch (tableError) {
+            console.error('Error creating table:', tableError);
+        }
+
         // Insert into senior_hiring_approval table
         const result = await db.execute(`
             INSERT INTO senior_hiring_approval 
@@ -112,7 +141,16 @@ router.post('/', async (req, res) => {
         });
     } catch (error) {
         console.error('Error creating senior hiring request:', error);
-        res.status(500).json({ error: 'Failed to create senior hiring request' });
+        console.error('SQL Error Details:', {
+            code: error.code,
+            errno: error.errno,
+            sqlState: error.sqlState,
+            sqlMessage: error.sqlMessage
+        });
+        res.status(500).json({ 
+            error: 'Failed to create senior hiring request',
+            details: error.sqlMessage || error.message
+        });
     }
 });
 
