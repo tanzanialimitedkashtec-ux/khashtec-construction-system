@@ -106,20 +106,28 @@ router.post('/', async (req, res) => {
             });
         }
 
-        // Get user ID from role name
-        const [userRows] = await db.execute(
-            'SELECT id FROM users WHERE role = ? LIMIT 1',
-            [recordedByRole]
-        );
-
-        if (userRows.length === 0) {
-            return res.status(400).json({
-                success: false,
-                error: 'Invalid user role'
-            });
+        // Get user ID from role name or use default
+        let userId = null;
+        if (recordedByRole) {
+            const [userRows] = await db.execute(
+                'SELECT id FROM users WHERE role = ? LIMIT 1',
+                [recordedByRole]
+            );
+            
+            if (userRows.length > 0) {
+                userId = userRows[0].id;
+            }
         }
-
-        const userId = userRows[0].id;
+        
+        // Fallback to any user if no specific role found
+        if (!userId) {
+            const [defaultUserRows] = await db.execute(
+                'SELECT id FROM users LIMIT 1'
+            );
+            if (defaultUserRows.length > 0) {
+                userId = defaultUserRows[0].id;
+            }
+        }
 
         // Calculate total amount with penalties and interest
         const totalAmount = parseFloat(amount) + (parseFloat(penalties) || 0) + (parseFloat(interest) || 0);
@@ -146,7 +154,7 @@ router.post('/', async (req, res) => {
             description || null,
             department,
             userId,
-            recordedByRole,
+            recordedByRole || 'System',
             attachments || null
         ]);
 
