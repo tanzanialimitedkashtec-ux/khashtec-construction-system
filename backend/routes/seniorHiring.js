@@ -80,8 +80,9 @@ router.post('/', async (req, res) => {
         // Generate unique request ID
         const requestId = 'SHR' + Date.now() + Math.random().toString(36).substr(2, 9).toUpperCase();
 
-        // Check if table exists, create if needed
+        // Check if table exists and has correct columns, add missing columns if needed
         try {
+            // First, ensure table exists with basic structure
             await db.execute(`
                 CREATE TABLE IF NOT EXISTS senior_hiring_approval (
                     id INT AUTO_INCREMENT PRIMARY KEY,
@@ -95,8 +96,6 @@ router.post('/', async (req, res) => {
                     request_date DATE NOT NULL,
                     approval_date DATE,
                     approved_by VARCHAR(255),
-                    requested_by VARCHAR(255) NOT NULL,
-                    requested_by_role VARCHAR(100),
                     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
                     INDEX idx_status (status),
@@ -104,6 +103,22 @@ router.post('/', async (req, res) => {
                     INDEX idx_date (request_date)
                 )
             `);
+            
+            // Add missing columns if they don't exist
+            try {
+                await db.execute(`ALTER TABLE senior_hiring_approval ADD COLUMN requested_by VARCHAR(255) NOT NULL DEFAULT 'HR Manager'`);
+                console.log('✅ Added requested_by column');
+            } catch (e) {
+                // Column might already exist
+            }
+            
+            try {
+                await db.execute(`ALTER TABLE senior_hiring_approval ADD COLUMN requested_by_role VARCHAR(100) DEFAULT 'HR'`);
+                console.log('✅ Added requested_by_role column');
+            } catch (e) {
+                // Column might already exist
+            }
+            
             console.log('✅ Senior hiring approval table verified/created');
         } catch (tableError) {
             console.error('Error creating table:', tableError);
@@ -112,11 +127,10 @@ router.post('/', async (req, res) => {
         // Insert into senior_hiring_approval table
         const result = await db.execute(`
             INSERT INTO senior_hiring_approval 
-            (id, candidate_name, position, department, proposed_salary, experience, 
+            (candidate_name, position, department, proposed_salary, experience, 
              hr_recommendation, requested_by, requested_by_role, status, request_date)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending', NOW())
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'pending', NOW())
         `, [
-            requestId,
             candidateName,
             position,
             department,
