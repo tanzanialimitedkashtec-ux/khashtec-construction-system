@@ -80,11 +80,15 @@ router.post('/', async (req, res) => {
         // Generate unique request ID
         const requestId = 'SHR' + Date.now() + Math.random().toString(36).substr(2, 9).toUpperCase();
 
-        // Check if table exists and has correct columns, add missing columns if needed
+        // Check if table exists and has correct columns, recreate if needed
         try {
-            // First, ensure table exists with basic structure
+            // Drop and recreate table to ensure correct structure
+            await db.execute(`DROP TABLE IF EXISTS senior_hiring_approval`);
+            console.log('🗑️ Dropped existing senior_hiring_approval table');
+            
+            // Create table with correct structure
             await db.execute(`
-                CREATE TABLE IF NOT EXISTS senior_hiring_approval (
+                CREATE TABLE senior_hiring_approval (
                     id INT AUTO_INCREMENT PRIMARY KEY,
                     candidate_name VARCHAR(255) NOT NULL,
                     position VARCHAR(255) NOT NULL,
@@ -106,30 +110,7 @@ router.post('/', async (req, res) => {
                 )
             `);
             
-            // Fix existing table if needed - add missing columns
-            try {
-                await db.execute(`ALTER TABLE senior_hiring_approval ADD COLUMN requested_by VARCHAR(255) NOT NULL DEFAULT 'HR Manager'`);
-                console.log('✅ Added requested_by column');
-            } catch (e) {
-                // Column might already exist
-            }
-            
-            try {
-                await db.execute(`ALTER TABLE senior_hiring_approval ADD COLUMN requested_by_role VARCHAR(100) DEFAULT 'HR'`);
-                console.log('✅ Added requested_by_role column');
-            } catch (e) {
-                // Column might already exist
-            }
-            
-            // Fix ID column if not auto_increment
-            try {
-                await db.execute(`ALTER TABLE senior_hiring_approval MODIFY COLUMN id INT AUTO_INCREMENT PRIMARY KEY`);
-                console.log('✅ Fixed ID column auto_increment');
-            } catch (e) {
-                // Column might already be correct
-            }
-            
-            console.log('✅ Senior hiring approval table verified/created');
+            console.log('✅ Senior hiring approval table recreated with correct structure');
         } catch (tableError) {
             console.error('Error creating table:', tableError);
         }
