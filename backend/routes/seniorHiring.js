@@ -96,6 +96,8 @@ router.post('/', async (req, res) => {
                     request_date DATE NOT NULL,
                     approval_date DATE,
                     approved_by VARCHAR(255),
+                    requested_by VARCHAR(255) NOT NULL DEFAULT 'HR Manager',
+                    requested_by_role VARCHAR(100) DEFAULT 'HR',
                     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
                     INDEX idx_status (status),
@@ -104,7 +106,7 @@ router.post('/', async (req, res) => {
                 )
             `);
             
-            // Add missing columns if they don't exist
+            // Fix existing table if needed - add missing columns
             try {
                 await db.execute(`ALTER TABLE senior_hiring_approval ADD COLUMN requested_by VARCHAR(255) NOT NULL DEFAULT 'HR Manager'`);
                 console.log('✅ Added requested_by column');
@@ -117,6 +119,14 @@ router.post('/', async (req, res) => {
                 console.log('✅ Added requested_by_role column');
             } catch (e) {
                 // Column might already exist
+            }
+            
+            // Fix ID column if not auto_increment
+            try {
+                await db.execute(`ALTER TABLE senior_hiring_approval MODIFY COLUMN id INT AUTO_INCREMENT PRIMARY KEY`);
+                console.log('✅ Fixed ID column auto_increment');
+            } catch (e) {
+                // Column might already be correct
             }
             
             console.log('✅ Senior hiring approval table verified/created');
