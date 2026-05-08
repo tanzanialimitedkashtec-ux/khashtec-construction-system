@@ -1972,85 +1972,95 @@ async function loadSeniorHiringRequests() {
 }
 
 function displaySeniorHiringRequests(requests) {
+    const escapeHtml = (text) => {
+        if (text === null || text === undefined) {
+            return '';
+        }
+        return String(text)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#39;');
+    };
+
     let html = `<div class="card">
         <h3>Approve Senior Staff Hiring</h3>
         <p><strong>High-Level Authority:</strong> Approve hiring decisions for senior positions (Manager level and above)</p>
         
         <div class="hiring-section">
-            <h4>Senior Staff Hiring Requests Pending Approval</h4>`;
-    
-    if (requests.length === 0) {
-        html += '<p>No senior hiring requests pending approval.</p>';
+            <h4>Senior Staff Hiring Requests Pending Approval</h4>
+            <div class="hiring-table-container">
+                <table class="hiring-table">
+                    <thead>
+                        <tr>
+                            <th>Position</th>
+                            <th>Candidate</th>
+                            <th>Salary</th>
+                            <th>Department</th>
+                            <th>Experience</th>
+                            <th>HR Recommendation</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>`;
+
+    if (!requests || requests.length === 0) {
+        html += `<tr><td colspan="7" style="text-align: center; padding: 20px;">No senior hiring requests pending approval.</td></tr>`;
     } else {
         requests.forEach(request => {
-                const statusClass = request.status.toLowerCase().replace(' ', '-');
-                const statusColor = {
-                        'pending': '#ffc107',
-                        'approved': '#28a745',
-                        'rejected': '#dc3545',
-                        'more-info-requested': '#17a2b8'
-                }[statusClass] || '#6c757d';
-                
-                html += `
-                        <div class="hiring-request">
-                                <h5>${request.position_level} Position</h5>
-                                <div class="candidate-info">
-                                        <div class="form-row">
-                                                <div class="form-group">
-                                                        <label>Candidate Name</label>
-                                                        <input type="text" value="${request.candidate_name}" readonly>
-                                                </div>
-                                                <div class="form-group">
-                                                        <label>Proposed Salary</label>
-                                                        <input type="text" value="${request.proposed_salary}" readonly>
-                                                </div>
-                                        </div>
-                                        <div class="form-row">
-                                                <div class="form-group">
-                                                        <label>Department</label>
-                                                        <input type="text" value="${request.department}" readonly>
-                                                </div>
-                                                <div class="form-group">
-                                                        <label>Experience</label>
-                                                        <input type="text" value="${request.experience}" readonly>
-                                                </div>
-                                        </div>
-                                        <div class="form-group">
-                                                <label>HR Recommendation</label>
-                                                <textarea rows="3" readonly>${request.hr_recommendation}</textarea>
-                                        </div>
+            const position = escapeHtml(request.position || request.position_level || 'Position not specified');
+            const candidate = escapeHtml(request.candidate_name || request.candidate || 'N/A');
+            const salaryValue = request.proposed_salary || request.salary || 'N/A';
+            const salary = typeof salaryValue === 'string' && salaryValue.trim().toUpperCase().startsWith('TZS') ?
+                escapeHtml(salaryValue) :
+                escapeHtml(`TZS ${parseInt(salaryValue) || salaryValue || 'N/A'}`);
+            const department = escapeHtml(request.department || 'N/A');
+            const experience = escapeHtml(request.experience || 'N/A');
+            const recommendation = escapeHtml(request.hr_recommendation || request.recommendation || 'No recommendation provided');
+
+            html += `
+                        <tr class="hiring-request">
+                            <td>${position}</td>
+                            <td>${candidate}</td>
+                            <td>${salary}</td>
+                            <td>${department}</td>
+                            <td>${experience}</td>
+                            <td>${recommendation}</td>
+                            <td>
+                                <div class="hiring-table-actions">
+                                    <button class="btn-approve" onclick="approveSeniorHire('${escapeHtml(request.id)}')">✓ Approve</button>
+                                    <button class="btn-request-info" onclick="requestMoreInfo('${escapeHtml(request.id)}')">? Info</button>
+                                    <button class="btn-reject" onclick="rejectSeniorHire('${escapeHtml(request.id)}')">✗ Reject</button>
                                 </div>
-                                <div class="hiring-actions">
-                                        <button class="action" onclick="approveSeniorHire('${request.id}')" style="background: #28a745;">Approve Hiring</button>
-                                        <button class="action" onclick="requestMoreInfo('${request.id}')" style="background: #ffc107;">Request More Info</button>
-                                        <button class="action" onclick="rejectSeniorHire('${request.id}')" style="background: #dc3545;">Reject Hiring</button>
-                                </div>
-                        </div>
-                `;
+                            </td>
+                        </tr>`;
         });
     }
-    
+
     html += `
+                    </tbody>
+                </table>
             </div>
             
             <div class="approval-summary">
                 <h4>Senior Hiring Authority</h4>
                 <div class="authority-item">
-                        <span>✅ Can approve all senior staff hires</span>
+                    <span>✅ Can approve all senior staff hires</span>
                 </div>
                 <div class="authority-item">
-                        <span>✅ Can approve manager-level positions and above</span>
+                    <span>✅ Can approve manager-level positions and above</span>
                 </div>
                 <div class="authority-item">
-                        <span>✅ Final authority on senior recruitment</span>
+                    <span>✅ Final authority on senior recruitment</span>
                 </div>
                 <div class="authority-item restriction">
-                        <span>❌ Cannot directly register workers (HR function)</span>
+                    <span>❌ Cannot directly register workers (HR function)</span>
                 </div>
             </div>
         </div>
     </div>`;
-    
+
     showContent(html);
 }
 
