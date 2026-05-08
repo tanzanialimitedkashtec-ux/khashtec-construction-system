@@ -188,7 +188,7 @@ router.post('/', async (req, res) => {
 router.post('/:id/approve', async (req, res) => {
     try {
         console.log('✅ Approving senior hiring request:', req.params.id);
-        const approvedBy = req.body.approved_by || 'Managing Director';
+        const approvedBy = req.body.approved_by || req.body.approvedBy || 'Managing Director';
         const approvalDate = new Date().toISOString().split('T')[0];
         
         // Update the senior_hiring_approval table
@@ -224,16 +224,16 @@ router.post('/:id/approve', async (req, res) => {
 router.post('/:id/request-info', async (req, res) => {
     try {
         console.log('🔄 Requesting more info for senior hiring request:', req.params.id);
-        const { info_request } = req.body;
-        const requestedBy = req.body.requested_by || 'Managing Director';
+        const infoRequest = req.body.info_request || req.body.infoRequired || req.body.info_required;
+        const requestedBy = req.body.requested_by || req.body.requestedBy || 'Managing Director';
         const requestedDate = new Date().toISOString().split('T')[0];
         
         // Insert into senior_hiring_info_request table
         const result = await db.execute(`
             INSERT INTO senior_hiring_info_request 
-            (hiring_request_id, info_request, requested_by, requested_date, status)
+            (request_id, info_request, requested_by, requested_date, status)
             VALUES (?, ?, ?, ?, 'pending')
-        `, [req.params.id, info_request || 'Please provide additional information', requestedBy, requestedDate]);
+        `, [req.params.id, infoRequest || 'Please provide additional information', requestedBy, requestedDate]);
         
         // Update the main request status
         await db.execute(`
@@ -248,14 +248,14 @@ router.post('/:id/request-info', async (req, res) => {
             message: 'Information requested successfully',
             request_id: req.params.id,
             status: 'info_requested',
-            info_request: info_request || 'Please provide additional information',
+            info_request: infoRequest || 'Please provide additional information',
             requested_by: requestedBy,
             requested_date: requestedDate,
             timestamp: new Date().toISOString()
         });
     } catch (error) {
         console.error('Error requesting more info:', error);
-        res.status(500).json({ error: 'Failed to request more information' });
+        res.status(500).json({ error: 'Failed to request more information', details: error.message });
     }
 });
 
@@ -263,16 +263,16 @@ router.post('/:id/request-info', async (req, res) => {
 router.post('/:id/reject', async (req, res) => {
     console.log('❌ Rejecting senior hiring request:', req.params.id);
     try {
-        const { rejection_reason } = req.body;
-        const rejectedBy = req.body.rejected_by || 'Managing Director';
+        const rejectionReason = req.body.rejection_reason || req.body.rejectionReason || req.body.rejection_reason;
+        const rejectedBy = req.body.rejected_by || req.body.rejectedBy || 'Managing Director';
         const rejectedDate = new Date().toISOString().split('T')[0];
         
         // Insert into senior_hiring_rejection table
         const result = await db.execute(`
             INSERT INTO senior_hiring_rejection 
-            (hiring_request_id, rejection_reason, rejected_by, rejected_date)
+            (request_id, rejection_reason, rejected_by, rejected_date)
             VALUES (?, ?, ?, ?)
-        `, [req.params.id, rejection_reason || 'Candidate does not meet requirements', rejectedBy, rejectedDate]);
+        `, [req.params.id, rejectionReason || 'Candidate does not meet requirements', rejectedBy, rejectedDate]);
         
         // Update the main request status
         await db.execute(`
@@ -287,14 +287,14 @@ router.post('/:id/reject', async (req, res) => {
             message: 'Senior hiring request rejected successfully',
             request_id: req.params.id,
             status: 'rejected',
-            rejection_reason: rejection_reason || 'Candidate does not meet requirements',
+            rejection_reason: rejectionReason || 'Candidate does not meet requirements',
             rejected_by: rejectedBy,
             rejected_date: rejectedDate,
             timestamp: new Date().toISOString()
         });
     } catch (error) {
         console.error('Error rejecting senior hiring request:', error);
-        res.status(500).json({ error: 'Failed to reject senior hiring request' });
+        res.status(500).json({ error: 'Failed to reject senior hiring request', details: error.message });
     }
 });
 
