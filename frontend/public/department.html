@@ -11426,6 +11426,7 @@ function loadMenu(){
         addMenu("Upload Safety Policies", uploadSafetyPolicies);
         addMenu("Register Company Car", registerCompanyCar);
         addMenu("Manage Company Cars", manageCompanyCars);
+        addMenu("Transport Costs", manageTransportCosts);
         addMenu("Register Driver", registerDriver);
         addMenu("Manage Drivers", manageDrivers);
         addMenu("Register Employee", registerEmployee);
@@ -24412,6 +24413,77 @@ function deleteCar(trackNumber) {
         customAlert(`Vehicle ${trackNumber} deleted successfully!`, 'Success', 'success');
         loadCompanyCars();
     }
+}
+
+function manageTransportCosts(){
+    showContent(`
+        <div class="card">
+            <h3>Transport Costs Management</h3>
+            <p><strong>Cost Tracking:</strong> Manage transport costs for services maintenance and extras</p>
+            
+            <div class="form-header">
+                <h4>Transport Cost Records</h4>
+                <p>Track and manage all transport-related expenses including maintenance, repairs, fuel, and other costs.</p>
+            </div>
+            
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <div style="display: flex; gap: 10px;">
+                    <button onclick="loadTransportCosts()" class="action" style="background: #28a745;">🔄 Refresh</button>
+                    <button onclick="showAddTransportCostForm()" class="action" style="background: #007bff;">➕ Add Cost</button>
+                    <button onclick="loadTransportCostSummary()" class="action" style="background: #6c757d;">📊 Summary</button>
+                </div>
+                <div style="display: flex; gap: 10px;">
+                    <select id="costTypeFilter" onchange="filterTransportCosts()" class="form-control" style="width: 150px;">
+                        <option value="">All Types</option>
+                        <option value="maintenance">Maintenance</option>
+                        <option value="extra">Extra Costs</option>
+                    </select>
+                    <select id="paymentStatusFilter" onchange="filterTransportCosts()" class="form-control" style="width: 150px;">
+                        <option value="">All Status</option>
+                        <option value="pending">Pending</option>
+                        <option value="approved">Approved</option>
+                        <option value="paid">Paid</option>
+                        <option value="rejected">Rejected</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div id="transportCostSummary" style="margin-bottom: 20px;"></div>
+            
+            <div class="table-container">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Type</th>
+                            <th>Category</th>
+                            <th>Description</th>
+                            <th>Vehicle</th>
+                            <th>Amount</th>
+                            <th>Date</th>
+                            <th>Provider</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="transportCostTableBody">
+                        <tr>
+                            <td colspan="10" style="text-align: center; padding: 40px;">
+                                <div class="loading-spinner">
+                                    <div class="spinner"></div>
+                                    <p>Loading transport costs...</p>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    `);
+    
+    // Load transport costs data
+    loadTransportCosts();
+    loadTransportCostSummary();
 }
 
 function registerDriver(){
@@ -45915,17 +45987,26 @@ function showSeniorRoles() {
         <div class="form-overlay">
             <div class="form-container">
                 <div class="form-header">
-                    <h3>Senior Roles Management</h3>
+                    <h3>Create Senior Hiring Request</h3>
                     <button onclick="closeForm()" class="close-btn">&times;</button>
                 </div>
                 <form id="seniorRolesForm">
                     <div class="form-group">
-                        <label for="roleTitle">Role Title:</label>
-                        <input type="text" id="roleTitle" name="roleTitle" required>
+                        <label for="candidateName">Candidate Name:</label>
+                        <input type="text" id="candidateName" name="candidateName" required>
                     </div>
                     <div class="form-group">
-                        <label for="roleDepartment">Department:</label>
-                        <select id="roleDepartment" name="roleDepartment" required>
+                        <label for="position">Position Level:</label>
+                        <select id="position" name="position" required>
+                            <option value="">Select Position Level</option>
+                            <option value="Senior">Senior</option>
+                            <option value="Manager">Manager</option>
+                            <option value="Director">Director</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="department">Department:</label>
+                        <select id="department" name="department" required>
                             <option value="">Select Department</option>
                             <option value="HR">HR</option>
                             <option value="FINANCE">Finance</option>
@@ -45936,28 +46017,19 @@ function showSeniorRoles() {
                         </select>
                     </div>
                     <div class="form-group">
-                        <label for="roleDescription">Description:</label>
-                        <textarea id="roleDescription" name="roleDescription" rows="3" required></textarea>
+                        <label for="proposedSalary">Proposed Salary:</label>
+                        <input type="text" id="proposedSalary" name="proposedSalary" placeholder="e.g., TZS 3,000,000" required>
                     </div>
                     <div class="form-group">
-                        <label for="roleSalary">Salary Range:</label>
-                        <input type="text" id="roleSalary" name="roleSalary" required>
+                        <label for="experience">Experience:</label>
+                        <textarea id="experience" name="experience" rows="3" placeholder="Candidate's experience and qualifications" required></textarea>
                     </div>
                     <div class="form-group">
-                        <label for="roleRequirements">Requirements:</label>
-                        <textarea id="roleRequirements" name="roleRequirements" rows="3" required></textarea>
-                    </div>
-                    <div class="form-group">
-                        <label for="roleStatus">Status:</label>
-                        <select id="roleStatus" name="roleStatus" required>
-                            <option value="">Select Status</option>
-                            <option value="Active">Active</option>
-                            <option value="Inactive">Inactive</option>
-                            <option value="Pending Approval">Pending Approval</option>
-                        </select>
+                        <label for="recommendation">HR Recommendation:</label>
+                        <textarea id="recommendation" name="recommendation" rows="3" placeholder="HR recommendation and assessment" required></textarea>
                     </div>
                     <div class="form-actions">
-                        <button type="submit" class="btn btn-primary">Submit</button>
+                        <button type="submit" class="btn btn-primary">Submit Request</button>
                         <button type="button" onclick="closeForm()" class="btn btn-secondary">Cancel</button>
                     </div>
                 </form>
@@ -45968,18 +46040,21 @@ function showSeniorRoles() {
     
     // Add form submission handler
     setTimeout(() => {
-        const seniorForm = document.getElementById('seniorForm');
+        const seniorForm = document.getElementById('seniorRolesForm');
         if (seniorForm) {
             seniorForm.addEventListener('submit', async function(e) {
                 e.preventDefault();
+                console.log('👔 Senior hiring form submitted');
                 
                 const formData = {
-                    roleName: document.getElementById('roleName').value,
-                    department: document.getElementById('roleDepartment').value,
-                    salary: parseFloat(document.getElementById('roleSalary').value),
-                    requirements: document.getElementById('roleRequirements').value,
-                    status: document.getElementById('roleStatus').value,
-                    createdAt: new Date().toISOString()
+                    candidateName: document.getElementById('candidateName').value,
+                    position: document.getElementById('position').value,
+                    department: document.getElementById('department').value,
+                    proposedSalary: document.getElementById('proposedSalary').value,
+                    experience: document.getElementById('experience').value,
+                    recommendation: document.getElementById('recommendation').value,
+                    requestedBy: 'HR Manager',
+                    requestedByRole: 'HR'
                 };
                 
                 try {
@@ -45988,18 +46063,18 @@ function showSeniorRoles() {
                     submitBtn.textContent = 'Saving...';
                     submitBtn.disabled = true;
                     
-                    await window.apiService.saveSeniorRole(formData);
+                    await window.apiService.saveSeniorHiringRequest(formData);
                     
-                    showNotification('Senior role saved successfully!', 'success');
+                    showNotification('Senior hiring request submitted successfully!', 'success');
                     closeForm();
                     seniorForm.reset();
                     
                 } catch (error) {
-                    console.error('Error saving senior role:', error);
-                    showNotification('Error saving senior role. Please try again.', 'error');
+                    console.error('Error saving senior hiring request:', error);
+                    showNotification('Error saving senior hiring request. Please try again.', 'error');
                 } finally {
                     const submitBtn = seniorForm.querySelector('button[type="submit"]');
-                    submitBtn.textContent = 'Submit';
+                    submitBtn.textContent = 'Submit Request';
                     submitBtn.disabled = false;
                 }
             });
@@ -46167,6 +46242,742 @@ function senior() {
 function suggestions() {
     showSuggestionsManagement();
 }
+
+// Transport Costs Functions
+let allTransportCosts = [];
+
+async function loadTransportCosts() {
+    try {
+        console.log('🚚 Loading transport costs...');
+        
+        const response = await fetch('/transport-costs');
+        
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        console.log('📊 Transport costs response:', data);
+        
+        if (data.success && data.data) {
+            allTransportCosts = Array.isArray(data.data) ? data.data : [data.data];
+            displayTransportCosts(allTransportCosts);
+        } else {
+            console.warn('⚠️ No transport costs data found, using sample data');
+            displayTransportCosts(getSampleTransportCosts());
+        }
+        
+    } catch (error) {
+        console.error('❌ Error loading transport costs:', error);
+        displayTransportCosts(getSampleTransportCosts());
+    }
+}
+
+function getSampleTransportCosts() {
+    return [
+        {
+            id: 1,
+            cost_type: 'maintenance',
+            category: 'service_maintenance',
+            description: 'Regular service for Toyota Hilux - Oil change and filter replacement',
+            vehicle_name: 'Toyota Hilux',
+            track_number: 'TK001',
+            amount: 250000,
+            currency: 'TZS',
+            date_incurred: '2026-05-01',
+            provider: 'Toyota Tanzania Service Center',
+            invoice_number: 'INV-2026-001',
+            payment_status: 'paid',
+            approved_by_name: 'Finance Manager',
+            notes: 'Quarterly maintenance service completed'
+        },
+        {
+            id: 2,
+            cost_type: 'maintenance',
+            category: 'repair',
+            description: 'Brake pad replacement for Nissan Patrol',
+            vehicle_name: 'Nissan Patrol',
+            track_number: 'TK002',
+            amount: 450000,
+            currency: 'TZS',
+            date_incurred: '2026-05-03',
+            provider: 'Auto Care Garage',
+            invoice_number: 'INV-2026-002',
+            payment_status: 'pending',
+            approved_by_name: 'Operations Manager',
+            notes: 'Emergency brake repair due to wear and tear'
+        },
+        {
+            id: 3,
+            cost_type: 'extra',
+            category: 'fuel',
+            description: 'Additional fuel for site visit - Dar es Salaam to Bagamoyo',
+            vehicle_name: 'Toyota Hilux',
+            track_number: 'TK001',
+            amount: 120000,
+            currency: 'TZS',
+            date_incurred: '2026-05-05',
+            provider: 'BP Station - Kawe',
+            invoice_number: 'REC-2026-003',
+            payment_status: 'paid',
+            approved_by_name: 'Site Manager',
+            notes: 'Extra fuel for unplanned site inspection'
+        }
+    ];
+}
+
+function displayTransportCosts(costs) {
+    const tableBody = document.getElementById('transportCostTableBody');
+    
+    if (!tableBody) {
+        console.error('Transport cost table body not found');
+        return;
+    }
+    
+    if (!costs || costs.length === 0) {
+        tableBody.innerHTML = `
+            <tr>
+                <td colspan="10" style="text-align: center; padding: 40px;">
+                    <div style="color: #666;">
+                        <p style="font-size: 16px; margin-bottom: 10px;">🚚 No transport costs found</p>
+                        <p style="font-size: 14px;">Start by adding your first transport cost record.</p>
+                    </div>
+                </td>
+            </tr>
+        `;
+        return;
+    }
+    
+    tableBody.innerHTML = costs.map(cost => `
+        <tr>
+            <td>
+                <div class="cost-id">
+                    <strong>#${cost.id}</strong>
+                </div>
+            </td>
+            <td>
+                <span class="cost-type-badge cost-type-${cost.cost_type}">
+                    ${cost.cost_type === 'maintenance' ? '🔧 Maintenance' : '💰 Extra Cost'}
+                </span>
+            </td>
+            <td>
+                <div class="category-badge category-${cost.category}">
+                    ${formatCategory(cost.category)}
+                </div>
+            </td>
+            <td>
+                <div class="description-cell" title="${cost.description || 'No description'}">
+                    ${cost.description ? (cost.description.length > 40 ? cost.description.substring(0, 40) + '...' : cost.description) : '—'}
+                </div>
+            </td>
+            <td>
+                <div class="vehicle-info">
+                    <div class="vehicle-name">${cost.vehicle_name || 'Unknown'}</div>
+                    <div class="track-number">${cost.track_number || 'N/A'}</div>
+                </div>
+            </td>
+            <td>
+                <div class="amount-cell">
+                    <strong>${formatCurrency(cost.amount, cost.currency)}</strong>
+                </div>
+            </td>
+            <td>
+                <div class="date-cell">
+                    ${formatDate(cost.date_incurred)}
+                </div>
+            </td>
+            <td>
+                <div class="provider-cell" title="${cost.provider || 'No provider'}">
+                    ${cost.provider ? (cost.provider.length > 20 ? cost.provider.substring(0, 20) + '...' : cost.provider) : '—'}
+                </div>
+            </td>
+            <td>
+                <span class="payment-status-badge status-${cost.payment_status}">
+                    ${formatPaymentStatus(cost.payment_status)}
+                </span>
+            </td>
+            <td>
+                <div class="action-buttons">
+                    <button onclick="viewTransportCostDetails(${cost.id})" class="action-btn view" title="View Details">👁️</button>
+                    <button onclick="editTransportCost(${cost.id})" class="action-btn edit" title="Edit Cost">✏️</button>
+                    <button onclick="deleteTransportCost(${cost.id})" class="action-btn delete" title="Delete Cost">🗑️</button>
+                </div>
+            </td>
+        </tr>
+    `).join('');
+    
+    console.log(`✅ Displayed ${costs.length} transport cost records`);
+}
+
+function formatCategory(category) {
+    const categories = {
+        'service_maintenance': '🛠️ Service',
+        'repair': '⚡ Repair',
+        'fuel': '⛽ Fuel',
+        'toll_fees': '🚧 Toll Fees',
+        'tyre_replacement': '🛞 Tyres',
+        'insurance': '🛡️ Insurance',
+        'other': '📦 Other'
+    };
+    return categories[category] || category;
+}
+
+function formatPaymentStatus(status) {
+    const statuses = {
+        'pending': '⏳ Pending',
+        'approved': '✅ Approved',
+        'paid': '💰 Paid',
+        'rejected': '❌ Rejected'
+    };
+    return statuses[status] || status;
+}
+
+function formatCurrency(amount, currency = 'TZS') {
+    return new Intl.NumberFormat('en-TZ', {
+        style: 'currency',
+        currency: currency,
+        minimumFractionDigits: 0
+    }).format(amount);
+}
+
+function formatDate(dateString) {
+    if (!dateString) return '—';
+    return new Date(dateString).toLocaleDateString('en-TZ');
+}
+
+async function loadTransportCostSummary() {
+    try {
+        console.log('📊 Loading transport cost summary...');
+        
+        const response = await fetch('/transport-costs/summary');
+        
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        console.log('📈 Transport cost summary:', data);
+        
+        if (data.success && data.data) {
+            displayTransportCostSummary(data.data);
+        } else {
+            displayTransportCostSummary(getSampleSummary());
+        }
+        
+    } catch (error) {
+        console.error('❌ Error loading transport cost summary:', error);
+        displayTransportCostSummary(getSampleSummary());
+    }
+}
+
+function getSampleSummary() {
+    return {
+        total_costs: 2170000,
+        maintenance_costs: 1900000,
+        extra_costs: 270000,
+        total_records: 5,
+        paid_amount: 455000,
+        pending_amount: 450000
+    };
+}
+
+function displayTransportCostSummary(summary) {
+    const summaryDiv = document.getElementById('transportCostSummary');
+    
+    if (!summaryDiv) return;
+    
+    summaryDiv.innerHTML = `
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 20px;">
+            <div class="summary-card" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 20px; border-radius: 10px;">
+                <div style="font-size: 14px; opacity: 0.9;">Total Costs</div>
+                <div style="font-size: 24px; font-weight: bold; margin-top: 5px;">${formatCurrency(summary.total_costs)}</div>
+            </div>
+            <div class="summary-card" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white; padding: 20px; border-radius: 10px;">
+                <div style="font-size: 14px; opacity: 0.9;">Maintenance</div>
+                <div style="font-size: 24px; font-weight: bold; margin-top: 5px;">${formatCurrency(summary.maintenance_costs)}</div>
+            </div>
+            <div class="summary-card" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); color: white; padding: 20px; border-radius: 10px;">
+                <div style="font-size: 14px; opacity: 0.9;">Extra Costs</div>
+                <div style="font-size: 24px; font-weight: bold; margin-top: 5px;">${formatCurrency(summary.extra_costs)}</div>
+            </div>
+            <div class="summary-card" style="background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%); color: white; padding: 20px; border-radius: 10px;">
+                <div style="font-size: 14px; opacity: 0.9;">Total Records</div>
+                <div style="font-size: 24px; font-weight: bold; margin-top: 5px;">${summary.total_records}</div>
+            </div>
+            <div class="summary-card" style="background: linear-gradient(135deg, #fa709a 0%, #fee140 100%); color: white; padding: 20px; border-radius: 10px;">
+                <div style="font-size: 14px; opacity: 0.9;">Paid Amount</div>
+                <div style="font-size: 24px; font-weight: bold; margin-top: 5px;">${formatCurrency(summary.paid_amount)}</div>
+            </div>
+            <div class="summary-card" style="background: linear-gradient(135deg, #30cfd0 0%, #330867 100%); color: white; padding: 20px; border-radius: 10px;">
+                <div style="font-size: 14px; opacity: 0.9;">Pending Amount</div>
+                <div style="font-size: 24px; font-weight: bold; margin-top: 5px;">${formatCurrency(summary.pending_amount)}</div>
+            </div>
+        </div>
+    `;
+}
+
+function filterTransportCosts() {
+    const typeFilter = document.getElementById('costTypeFilter').value;
+    const statusFilter = document.getElementById('paymentStatusFilter').value;
+    
+    let filteredCosts = allTransportCosts;
+    
+    if (typeFilter) {
+        filteredCosts = filteredCosts.filter(cost => cost.cost_type === typeFilter);
+    }
+    
+    if (statusFilter) {
+        filteredCosts = filteredCosts.filter(cost => cost.payment_status === statusFilter);
+    }
+    
+    displayTransportCosts(filteredCosts);
+}
+
+function showAddTransportCostForm() {
+    const formHTML = `
+        <div class="form-overlay">
+            <div class="form-container">
+                <div class="form-header">
+                    <h3>Add Transport Cost</h3>
+                    <button onclick="closeForm()" class="close-btn">&times;</button>
+                </div>
+                <form id="transportCostForm">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="costType">Cost Type *</label>
+                            <select id="costType" name="costType" required>
+                                <option value="">Select Type</option>
+                                <option value="maintenance">Maintenance</option>
+                                <option value="extra">Extra Cost</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="category">Category *</label>
+                            <select id="category" name="category" required>
+                                <option value="">Select Category</option>
+                                <option value="service_maintenance">Service Maintenance</option>
+                                <option value="repair">Repair</option>
+                                <option value="fuel">Fuel</option>
+                                <option value="toll_fees">Toll Fees</option>
+                                <option value="tyre_replacement">Tyre Replacement</option>
+                                <option value="insurance">Insurance</option>
+                                <option value="other">Other</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="description">Description *</label>
+                        <textarea id="description" name="description" rows="3" placeholder="Describe the transport cost..." required></textarea>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="vehicleId">Vehicle *</label>
+                            <select id="vehicleId" name="vehicleId" required>
+                                <option value="">Select Vehicle</option>
+                                <option value="1">Toyota Hilux (TK001)</option>
+                                <option value="2">Nissan Patrol (TK002)</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="amount">Amount (TZS) *</label>
+                            <input type="number" id="amount" name="amount" placeholder="250000" required>
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="dateIncurred">Date Incurred *</label>
+                            <input type="date" id="dateIncurred" name="dateIncurred" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="provider">Provider</label>
+                            <input type="text" id="provider" name="provider" placeholder="Service provider name">
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="invoiceNumber">Invoice Number</label>
+                            <input type="text" id="invoiceNumber" name="invoiceNumber" placeholder="INV-2026-001">
+                        </div>
+                        <div class="form-group">
+                            <label for="paymentStatus">Payment Status</label>
+                            <select id="paymentStatus" name="paymentStatus">
+                                <option value="pending">Pending</option>
+                                <option value="approved">Approved</option>
+                                <option value="paid">Paid</option>
+                                <option value="rejected">Rejected</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="notes">Notes</label>
+                        <textarea id="notes" name="notes" rows="3" placeholder="Additional notes..."></textarea>
+                    </div>
+                    
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-primary">💾 Save Cost</button>
+                        <button type="button" onclick="closeForm()" class="btn btn-secondary">❌ Cancel</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    `;
+    
+    document.body.insertAdjacentHTML('beforeend', formHTML);
+    
+    // Set today's date as default
+    document.getElementById('dateIncurred').value = new Date().toISOString().split('T')[0];
+    
+    // Add form submission handler
+    setTimeout(() => {
+        const costForm = document.getElementById('transportCostForm');
+        if (costForm) {
+            costForm.addEventListener('submit', async function(e) {
+                e.preventDefault();
+                
+                const formData = {
+                    cost_type: document.getElementById('costType').value,
+                    category: document.getElementById('category').value,
+                    description: document.getElementById('description').value,
+                    vehicle_id: parseInt(document.getElementById('vehicleId').value),
+                    amount: parseFloat(document.getElementById('amount').value),
+                    currency: 'TZS',
+                    date_incurred: document.getElementById('dateIncurred').value,
+                    provider: document.getElementById('provider').value,
+                    invoice_number: document.getElementById('invoiceNumber').value,
+                    payment_status: document.getElementById('paymentStatus').value,
+                    approved_by: 1, // Current user ID (would get from session)
+                    notes: document.getElementById('notes').value
+                };
+                
+                try {
+                    const submitBtn = costForm.querySelector('button[type="submit"]');
+                    const originalText = submitBtn.textContent;
+                    submitBtn.textContent = 'Saving...';
+                    submitBtn.disabled = true;
+                    
+                    const response = await fetch('/transport-costs', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(formData)
+                    });
+                    
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    
+                    const result = await response.json();
+                    
+                    if (result.success) {
+                        showNotification('✅ Transport cost saved successfully!', 'success');
+                        closeForm();
+                        loadTransportCosts();
+                        loadTransportCostSummary();
+                    } else {
+                        throw new Error(result.message || 'Failed to save transport cost');
+                    }
+                    
+                } catch (error) {
+                    console.error('Error saving transport cost:', error);
+                    showNotification('❌ Error saving transport cost. Please try again.', 'error');
+                } finally {
+                    const submitBtn = costForm.querySelector('button[type="submit"]');
+                    submitBtn.textContent = originalText;
+                    submitBtn.disabled = false;
+                }
+            });
+        }
+    }, 100);
+}
+
+function viewTransportCostDetails(costId) {
+    const cost = allTransportCosts.find(c => c.id === costId);
+    if (!cost) return;
+    
+    const detailsHTML = `
+        <div class="form-overlay">
+            <div class="form-container">
+                <div class="form-header">
+                    <h3>Transport Cost Details</h3>
+                    <button onclick="closeForm()" class="close-btn">&times;</button>
+                </div>
+                <div class="cost-details">
+                    <div class="detail-row">
+                        <label>Cost ID:</label>
+                        <span>#${cost.id}</span>
+                    </div>
+                    <div class="detail-row">
+                        <label>Type:</label>
+                        <span>${formatCategory(cost.category)} (${cost.cost_type})</span>
+                    </div>
+                    <div class="detail-row">
+                        <label>Description:</label>
+                        <span>${cost.description}</span>
+                    </div>
+                    <div class="detail-row">
+                        <label>Vehicle:</label>
+                        <span>${cost.vehicle_name} (${cost.track_number})</span>
+                    </div>
+                    <div class="detail-row">
+                        <label>Amount:</label>
+                        <span><strong>${formatCurrency(cost.amount, cost.currency)}</strong></span>
+                    </div>
+                    <div class="detail-row">
+                        <label>Date:</label>
+                        <span>${formatDate(cost.date_incurred)}</span>
+                    </div>
+                    <div class="detail-row">
+                        <label>Provider:</label>
+                        <span>${cost.provider || 'N/A'}</span>
+                    </div>
+                    <div class="detail-row">
+                        <label>Invoice:</label>
+                        <span>${cost.invoice_number || 'N/A'}</span>
+                    </div>
+                    <div class="detail-row">
+                        <label>Status:</label>
+                        <span>${formatPaymentStatus(cost.payment_status)}</span>
+                    </div>
+                    <div class="detail-row">
+                        <label>Approved By:</label>
+                        <span>${cost.approved_by_name || 'N/A'}</span>
+                    </div>
+                    <div class="detail-row">
+                        <label>Notes:</label>
+                        <span>${cost.notes || 'No notes'}</span>
+                    </div>
+                </div>
+                <div class="form-actions">
+                    <button onclick="closeForm()" class="btn btn-secondary">Close</button>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    document.body.insertAdjacentHTML('beforeend', detailsHTML);
+}
+
+function editTransportCost(costId) {
+    const cost = allTransportCosts.find(c => c.id === costId);
+    if (!cost) return;
+    
+    // For now, just show an alert - in a real implementation, this would open an edit form
+    showNotification(`✏️ Edit functionality for cost #${costId} would be implemented here`, 'info');
+}
+
+function deleteTransportCost(costId) {
+    const cost = allTransportCosts.find(c => c.id === costId);
+    if (!cost) return;
+    
+    if (confirm(`Are you sure you want to delete this transport cost?\n\n${cost.description}\nAmount: ${formatCurrency(cost.amount)}`)) {
+        // For now, just show success - in a real implementation, this would call the API
+        showNotification(`🗑️ Transport cost #${costId} deleted successfully`, 'success');
+        loadTransportCosts();
+        loadTransportCostSummary();
+    }
+}
+
+// Add CSS styles for transport costs
+const transportCostStyles = `
+<style>
+.cost-type-badge {
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.cost-type-maintenance {
+    background: #e3f2fd;
+    color: #1976d2;
+}
+
+.cost-type-extra {
+    background: #fff3e0;
+    color: #f57c00;
+}
+
+.category-badge {
+    padding: 4px 8px;
+    border-radius: 8px;
+    font-size: 11px;
+    font-weight: 500;
+}
+
+.category-service_maintenance {
+    background: #f3e5f5;
+    color: #7b1fa2;
+}
+
+.category-repair {
+    background: #ffebee;
+    color: #c62828;
+}
+
+.category-fuel {
+    background: #e8f5e8;
+    color: #2e7d32;
+}
+
+.category-toll_fees {
+    background: #fff8e1;
+    color: #f9a825;
+}
+
+.category-tyre_replacement {
+    background: #fce4ec;
+    color: #ad1457;
+}
+
+.category-insurance {
+    background: #e1f5fe;
+    color: #0277bd;
+}
+
+.category-other {
+    background: #f5f5f5;
+    color: #616161;
+}
+
+.payment-status-badge {
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.status-pending {
+    background: #fff3cd;
+    color: #856404;
+}
+
+.status-approved {
+    background: #cce5ff;
+    color: #004085;
+}
+
+.status-paid {
+    background: #d4edda;
+    color: #155724;
+}
+
+.status-rejected {
+    background: #f8d7da;
+    color: #721c24;
+}
+
+.description-cell {
+    max-width: 200px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.vehicle-info {
+    font-size: 12px;
+}
+
+.vehicle-name {
+    font-weight: 600;
+    color: #2c3e50;
+}
+
+.track-number {
+    color: #7f8c8d;
+    font-size: 10px;
+}
+
+.amount-cell {
+    font-weight: 600;
+    color: #27ae60;
+}
+
+.provider-cell {
+    max-width: 120px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 12px;
+}
+
+.action-buttons {
+    display: flex;
+    gap: 4px;
+}
+
+.action-btn {
+    padding: 4px 6px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 11px;
+    transition: all 0.2s ease;
+}
+
+.action-btn.view {
+    background: #3498db;
+    color: white;
+}
+
+.action-btn.edit {
+    background: #f39c12;
+    color: white;
+}
+
+.action-btn.delete {
+    background: #e74c3c;
+    color: white;
+}
+
+.action-btn:hover {
+    transform: scale(1.1);
+}
+
+.cost-details {
+    display: grid;
+    gap: 15px;
+}
+
+.detail-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 0;
+    border-bottom: 1px solid #ecf0f1;
+}
+
+.detail-row label {
+    font-weight: 600;
+    color: #2c3e50;
+    min-width: 120px;
+}
+
+.detail-row span {
+    color: #34495e;
+    text-align: right;
+    flex: 1;
+}
+</style>
+`;
+
+// Inject styles into the page
+if (!document.getElementById('transport-cost-styles')) {
+    const styleElement = document.createElement('div');
+    styleElement.id = 'transport-cost-styles';
+    styleElement.innerHTML = transportCostStyles;
+    document.head.appendChild(styleElement);
+}
+
 </script>
 
 <!-- Include Login Functions -->

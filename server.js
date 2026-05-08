@@ -90,6 +90,8 @@ const suggestionsRoutes = require('./backend/routes/suggestions');
 
 const taxRoutes = require('./backend/routes/tax');
 
+const transportCostsRoutes = require('./backend/routes/transportCosts');
+
 
 
 const app = express();
@@ -889,6 +891,14 @@ app.use('/api/suggestions', asyncHandler(async (req, res, next) => {
 app.use('/api/tax', asyncHandler(async (req, res, next) => {
 
     return taxRoutes(req, res, next);
+
+}));
+
+
+
+app.use('/api/transport-costs', asyncHandler(async (req, res, next) => {
+
+    return transportCostsRoutes(req, res, next);
 
 }));
 
