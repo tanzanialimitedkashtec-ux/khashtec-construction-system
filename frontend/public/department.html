@@ -46077,16 +46077,31 @@ function showSeniorRoles() {
                 e.preventDefault();
                 console.log('👔 Senior hiring form submitted');
                 
+                // Validate required fields
+                const candidateName = document.getElementById('candidateName').value.trim();
+                const position = document.getElementById('position').value.trim();
+                const department = document.getElementById('department').value.trim();
+                const proposedSalary = document.getElementById('proposedSalary').value.trim();
+                const experience = document.getElementById('experience').value.trim();
+                const recommendation = document.getElementById('recommendation').value.trim();
+                
+                if (!candidateName || !position || !department || !proposedSalary || !experience || !recommendation) {
+                    showNotification('Please fill in all required fields', 'error');
+                    return;
+                }
+                
                 const formData = {
-                    candidateName: document.getElementById('candidateName').value,
-                    position: document.getElementById('position').value,
-                    department: document.getElementById('department').value,
-                    proposedSalary: document.getElementById('proposedSalary').value,
-                    experience: document.getElementById('experience').value,
-                    recommendation: document.getElementById('recommendation').value,
+                    candidateName,
+                    position,
+                    department,
+                    proposedSalary,
+                    experience,
+                    recommendation,
                     requestedBy: 'HR Manager',
                     requestedByRole: 'HR'
                 };
+                
+                console.log('📝 Senior hiring form data:', formData);
                 
                 try {
                     const submitBtn = seniorForm.querySelector('button[type="submit"]');
