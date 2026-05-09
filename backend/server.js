@@ -2965,6 +2965,331 @@ try {
     console.error('❌ Full error stack:', error.stack);
 }
 
+// Transport Costs API endpoints for Fleet Management
+app.get('/api/transport-costs', async (req, res) => {
+    try {
+        console.log('📋 Transport costs endpoint accessed');
+        const connection = await db.getConnection();
+        
+        const [costs] = await connection.query(`
+            SELECT tc.*, v.car_name, v.track_number, v.registration_number,
+                   u.name as approved_by_name
+            FROM transport_costs tc
+            LEFT JOIN vehicles v ON tc.vehicle_id = v.id
+            LEFT JOIN users u ON tc.approved_by = u.id
+            ORDER BY tc.date_incurred DESC, tc.created_at DESC
+        `);
+        
+        connection.release();
+        
+        res.json({
+            success: true,
+            data: costs,
+            message: 'Transport costs retrieved successfully'
+        });
+    } catch (error) {
+        console.error('❌ Error fetching transport costs:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Failed to fetch transport costs',
+            details: error.message
+        });
+    }
+});
+
+app.get('/api/transport-costs/summary', async (req, res) => {
+    try {
+        console.log('📊 Transport costs summary endpoint accessed');
+        const connection = await db.getConnection();
+        
+        // Get total costs by category
+        const [categorySummary] = await connection.query(`
+            SELECT 
+                category,
+                COUNT(*) as count,
+                SUM(amount) as total_amount,
+                AVG(amount) as average_amount
+            FROM transport_costs 
+            GROUP BY category
+            ORDER BY total_amount DESC
+        `);
+        
+        // Get monthly trends
+        const [monthlyTrends] = await connection.query(`
+            SELECT 
+                DATE_FORMAT(date_incurred, '%Y-%m') as month,
+                COUNT(*) as count,
+                SUM(amount) as total_amount
+            FROM transport_costs 
+            WHERE date_incurred >= DATE_SUB(CURDATE(), INTERVAL 12 MONTH)
+            GROUP BY DATE_FORMAT(date_incurred, '%Y-%m')
+            ORDER BY month DESC
+        `);
+        
+        // Get costs by vehicle
+        const [vehicleCosts] = await connection.query(`
+            SELECT 
+                tc.vehicle_id,
+                v.car_name,
+                v.track_number,
+                COUNT(*) as cost_count,
+                SUM(tc.amount) as total_cost
+            FROM transport_costs tc
+            LEFT JOIN vehicles v ON tc.vehicle_id = v.id
+            GROUP BY tc.vehicle_id, v.car_name, v.track_number
+            ORDER BY total_cost DESC
+        `);
+        
+        // Get payment status summary
+        const [paymentStatus] = await connection.query(`
+            SELECT 
+                payment_status,
+                COUNT(*) as count,
+                SUM(amount) as total_amount
+            FROM transport_costs 
+            GROUP BY payment_status
+        `);
+        
+        // Overall totals
+        const [totals] = await connection.query(`
+            SELECT 
+                COUNT(*) as total_costs,
+                SUM(amount) as total_amount,
+                AVG(amount) as average_amount,
+                MIN(amount) as min_amount,
+                MAX(amount) as max_amount
+            FROM transport_costs
+        `);
+        
+        connection.release();
+        
+        res.json({
+            success: true,
+            data: {
+                categorySummary,
+                monthlyTrends,
+                vehicleCosts,
+                paymentStatus,
+                totals: totals[0]
+            },
+            message: 'Transport costs summary retrieved successfully'
+        });
+    } catch (error) {
+        console.error('❌ Error fetching transport costs summary:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Failed to fetch transport costs summary',
+            details: error.message
+        });
+    }
+});
+
+app.post('/api/transport-costs', async (req, res) => {
+    try {
+        console.log('➕ Adding new transport cost');
+        const {
+            cost_type,
+            category,
+            description,
+            vehicle_id,
+            amount,
+            currency = 'TZS',
+            date_incurred,
+            provider,
+            invoice_number,
+            payment_status = 'pending',
+            approved_by,
+            notes
+        } = req.body;
+        
+        // Validate required fields
+        if (!cost_type || !category || !description || !vehicle_id || !amount || !date_incurred) {
+            return res.status(400).json({
+                success: false,
+                error: 'Missing required fields'
+            });
+        }
+        
+        const connection = await db.getConnection();
+        
+        // Verify vehicle exists
+        const [vehicleCheck] = await connection.query(
+            'SELECT id FROM vehicles WHERE id = ?',
+            [vehicle_id]
+        );
+        
+        if (vehicleCheck.length === 0) {
+            connection.release();
+            return res.status(400).json({
+                success: false,
+                error: 'Invalid vehicle ID'
+            });
+        }
+        
+        // Insert new transport cost
+        const [result] = await connection.query(`
+            INSERT INTO transport_costs (
+                cost_type, category, description, vehicle_id, amount, currency,
+                date_incurred, provider, invoice_number, payment_status, 
+                approved_by, notes
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        `, [
+            cost_type, category, description, vehicle_id, amount, currency,
+            date_incurred, provider, invoice_number, payment_status,
+            approved_by, notes
+        ]);
+        
+        connection.release();
+        
+        res.status(201).json({
+            success: true,
+            data: {
+                id: result.insertId,
+                cost_type,
+                category,
+                description,
+                vehicle_id,
+                amount,
+                currency,
+                date_incurred,
+                provider,
+                invoice_number,
+                payment_status,
+                approved_by,
+                notes
+            },
+            message: 'Transport cost added successfully'
+        });
+    } catch (error) {
+        console.error('❌ Error adding transport cost:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Failed to add transport cost',
+            details: error.message
+        });
+    }
+});
+
+app.put('/api/transport-costs/:id', async (req, res) => {
+    try {
+        console.log('✏️ Updating transport cost:', req.params.id);
+        const { id } = req.params;
+        const {
+            cost_type,
+            category,
+            description,
+            vehicle_id,
+            amount,
+            currency,
+            date_incurred,
+            provider,
+            invoice_number,
+            payment_status,
+            approved_by,
+            notes
+        } = req.body;
+        
+        const connection = await db.getConnection();
+        
+        // Check if transport cost exists
+        const [existing] = await connection.query(
+            'SELECT id FROM transport_costs WHERE id = ?',
+            [id]
+        );
+        
+        if (existing.length === 0) {
+            connection.release();
+            return res.status(404).json({
+                success: false,
+                error: 'Transport cost not found'
+            });
+        }
+        
+        // Update transport cost
+        await connection.query(`
+            UPDATE transport_costs SET
+                cost_type = ?, category = ?, description = ?, vehicle_id = ?,
+                amount = ?, currency = ?, date_incurred = ?, provider = ?,
+                invoice_number = ?, payment_status = ?, approved_by = ?, notes = ?
+            WHERE id = ?
+        `, [
+            cost_type, category, description, vehicle_id, amount, currency,
+            date_incurred, provider, invoice_number, payment_status,
+            approved_by, notes, id
+        ]);
+        
+        connection.release();
+        
+        res.json({
+            success: true,
+            message: 'Transport cost updated successfully'
+        });
+    } catch (error) {
+        console.error('❌ Error updating transport cost:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Failed to update transport cost',
+            details: error.message
+        });
+    }
+});
+
+app.delete('/api/transport-costs/:id', async (req, res) => {
+    try {
+        console.log('🗑️ Deleting transport cost:', req.params.id);
+        const { id } = req.params;
+        
+        const connection = await db.getConnection();
+        
+        // Check if transport cost exists
+        const [existing] = await connection.query(
+            'SELECT id FROM transport_costs WHERE id = ?',
+            [id]
+        );
+        
+        if (existing.length === 0) {
+            connection.release();
+            return res.status(404).json({
+                success: false,
+                error: 'Transport cost not found'
+            });
+        }
+        
+        // Delete transport cost
+        await connection.query('DELETE FROM transport_costs WHERE id = ?', [id]);
+        
+        connection.release();
+        
+        res.json({
+            success: true,
+            message: 'Transport cost deleted successfully'
+        });
+    } catch (error) {
+        console.error('❌ Error deleting transport cost:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Failed to delete transport cost',
+            details: error.message
+        });
+    }
+});
+
+// Transport costs test endpoint
+app.get('/api/transport-costs-test', (req, res) => {
+    console.log('🧪 Transport costs test endpoint accessed');
+    res.json({ 
+        message: 'Transport costs API is working!',
+        endpoints: [
+            'GET /api/transport-costs - Get all transport costs',
+            'GET /api/transport-costs/summary - Get transport costs summary',
+            'POST /api/transport-costs - Add new transport cost',
+            'PUT /api/transport-costs/:id - Update transport cost',
+            'DELETE /api/transport-costs/:id - Delete transport cost'
+        ],
+        timestamp: new Date().toISOString()
+    });
+});
+
 // Start server
 app.listen(PORT, async () => {
     console.log(`🚀 KASHTEC Server v2.0.1-PROPERTIES-FIX starting on port ${PORT}`);
