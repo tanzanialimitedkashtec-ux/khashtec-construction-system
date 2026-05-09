@@ -452,11 +452,25 @@ router.post('/', upload.fields([
         console.log('?? Worker account creation request received');
         console.log('?? Request data:', { finalEmployeeId, fullName, finalWorkEmail, finalPhoneNumber, department, jobTitle, accountType, accessLevel });
         
-        // Use account type directly (matches database ENUM)
-        const mappedAccountType = accountType;
+        // Map account type to match database ENUM
+        const accountTypeMapping = {
+            'staff': 'staff',
+            'worker': 'worker', 
+            'contractor': 'contractor',
+            'supervisor': 'worker',
+            'manager': 'staff'
+        };
+        const mappedAccountType = accountTypeMapping[accountType] || 'worker';
         
-        // Use access level directly (matches database ENUM)  
-        const mappedAccessLevel = accessLevel;
+        // Map access level to match database ENUM
+        const accessLevelMapping = {
+            'basic': 'basic',
+            'standard': 'standard',
+            'supervisor': 'supervisor',
+            'manager': 'supervisor',
+            'admin': 'supervisor'
+        };
+        const mappedAccessLevel = accessLevelMapping[accessLevel] || 'basic';
         
         console.log('?? Mapped account_type:', accountType, '->', mappedAccountType);
         console.log('?? Mapped access_level:', accessLevel, '->', mappedAccessLevel);
@@ -567,9 +581,9 @@ router.post('/', upload.fields([
                         phone_number VARCHAR(50),
                         department VARCHAR(100),
                         job_title VARCHAR(255),
-                        account_type ENUM('worker', 'supervisor', 'manager') DEFAULT 'worker',
-                        access_level ENUM('basic', 'supervisor', 'manager', 'admin') DEFAULT 'basic',
-                        temporary_password VARCHAR(255),
+                        account_type ENUM('staff', 'worker', 'contractor') NOT NULL,
+                        access_level ENUM('basic', 'standard', 'supervisor') NOT NULL,
+                        temporary_password VARCHAR(255) NOT NULL,
                         account_notes TEXT,
                         profile_picture VARCHAR(500),
                         id_document VARCHAR(500),
