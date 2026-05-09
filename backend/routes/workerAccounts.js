@@ -112,12 +112,35 @@ router.get('/', async (req, res) => {
         
         // Handle different MySQL2 return formats
         let workers = [];
+        console.log('🔍 Raw workersResult type:', typeof workersResult);
+        console.log('🔍 Raw workersResult constructor:', workersResult?.constructor?.name);
+        
         if (Array.isArray(workersResult)) {
-            workers = workersResult;
-        } else if (workersResult && Array.isArray(workersResult[0])) {
-            workers = workersResult[0];
+            console.log('🔍 Result is array, length:', workersResult.length);
+            // MySQL2 with mysql2/promise returns [rows, fields, metadata]
+            if (workersResult.length >= 1 && Array.isArray(workersResult[0])) {
+                workers = workersResult[0];
+                console.log('🔍 Using workersResult[0] as data rows:', workers.length);
+            } else if (workersResult.length > 0 && workersResult[0] && typeof workersResult[0] === 'object') {
+                // Check if first element has actual worker data (not metadata)
+                const firstItem = workersResult[0];
+                if (firstItem.full_name || firstItem.employee_id || firstItem.id) {
+                    workers = workersResult;
+                    console.log('🔍 Using workersResult directly as data rows:', workers.length);
+                } else {
+                    workers = [];
+                    console.log('🔍 First item is metadata, using empty array');
+                }
+            } else {
+                workers = [];
+                console.log('🔍 No recognizable data format, using empty array');
+            }
         } else if (workersResult && workersResult.rows) {
             workers = workersResult.rows;
+            console.log('🔍 Using workersResult.rows as data:', workers.length);
+        } else {
+            workers = [];
+            console.log('🔍 Unknown result format, using empty array');
         }
         
         console.log('📊 Returning workers array:', workers.length, 'items');

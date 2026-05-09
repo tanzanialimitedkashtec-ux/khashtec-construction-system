@@ -27655,8 +27655,13 @@ function loadAllWorkersData() {
     .then(([employeesData, workerAccountsData]) => {
 
         console.log('📊 Employees data:', employeesData);
-
         console.log('📊 Worker accounts data:', workerAccountsData);
+        console.log('📊 Worker accounts data type:', typeof workerAccountsData);
+        console.log('📊 Worker accounts is array:', Array.isArray(workerAccountsData));
+        if (workerAccountsData && workerAccountsData.length > 0) {
+            console.log('📊 First worker account:', workerAccountsData[0]);
+            console.log('📊 First worker account fields:', Object.keys(workerAccountsData[0]));
+        }
 
         
 
@@ -27799,6 +27804,8 @@ function displayAllWorkers(employees, workerAccounts) {
     
 
     console.log('📊 Combined workers data:', allWorkers);
+    console.log('📊 First worker details:', allWorkers[0]);
+    console.log('📊 First worker fields:', Object.keys(allWorkers[0] || {}));
 
     
 
