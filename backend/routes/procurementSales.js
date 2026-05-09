@@ -143,6 +143,27 @@ router.post('/', async (req, res) => {
             approvalRequirements
         } = req.body;
 
+        // Debug logging to see what fields are received
+        console.log('📥 Received procurement sale request body:', req.body);
+        console.log('🔍 Field values:', {
+            requestTitle: typeof requestTitle,
+            procurementType: typeof procurementType,
+            itemDescription: typeof itemDescription,
+            quantity: typeof quantity,
+            totalBudget: typeof totalBudget,
+            purpose: typeof purpose,
+            department: typeof department
+        });
+        console.log('🔍 Field existence check:', {
+            requestTitle: !!requestTitle,
+            procurementType: !!procurementType,
+            itemDescription: !!itemDescription,
+            quantity: !!quantity,
+            totalBudget: !!totalBudget,
+            purpose: !!purpose,
+            department: !!department
+        });
+
         // Validate required fields
         if (!requestTitle || !procurementType || !itemDescription || !quantity || !totalBudget || !purpose || !department) {
             return res.status(400).json({

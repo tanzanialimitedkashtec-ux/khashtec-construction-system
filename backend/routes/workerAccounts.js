@@ -378,6 +378,70 @@ router.get('/:id', async (req, res) => {
     }
 });
 
+// Check worker account availability
+router.get('/check-availability', async (req, res) => {
+    try {
+        const { employee_id, email } = req.query;
+        
+        if (!employee_id && !email) {
+            return res.status(400).json({
+                error: 'At least one of employee_id or email parameter is required'
+            });
+        }
+        
+        let query = 'SELECT employee_id, work_email FROM worker_accounts WHERE ';
+        let params = [];
+        let conditions = [];
+        
+        if (employee_id) {
+            conditions.push('employee_id = ?');
+            params.push(employee_id);
+        }
+        
+        if (email) {
+            conditions.push('work_email = ?');
+            params.push(email);
+        }
+        
+        query += conditions.join(' OR ');
+        
+        const [existingWorkers] = await db.execute(query, params);
+        
+        const availability = {
+            employee_id: { 
+                available: true, 
+                message: '' 
+            },
+            email: { 
+                available: true, 
+                message: '' 
+            }
+        };
+        
+        existingWorkers.forEach(worker => {
+            if (worker.employee_id === employee_id) {
+                availability.employee_id.available = false;
+                availability.employee_id.message = `Employee ID '${employee_id}' is already registered`;
+            }
+            if (worker.work_email === email) {
+                availability.email.available = false;
+                availability.email.message = `Email '${email}' is already registered`;
+            }
+        });
+        
+        res.json({
+            available: availability.employee_id.available && availability.email.available,
+            details: availability
+        });
+        
+    } catch (error) {
+        console.error('Error checking worker account availability:', error);
+        res.status(500).json({
+            error: 'Failed to check worker account availability'
+        });
+    }
+});
+
 // Create new worker account
 router.post('/', upload.fields([
     { name: 'workerProfile', maxCount: 1 },
@@ -512,31 +576,7 @@ router.post('/', upload.fields([
         
         // Try direct insertion first - if table schema is wrong, we'll handle the error
         try {
-            console.log('?? Checking if worker account already exists...');
-            // Check if worker account already exists
-            const existingWorkersResult = await db.execute(
-                'SELECT id FROM worker_accounts WHERE employee_id = ? OR work_email = ?',
-                [finalEmployeeId, finalWorkEmail]
-            );
-            
-            // Handle different MySQL2 return formats
-            let existingWorkers = [];
-            if (Array.isArray(existingWorkersResult)) {
-                existingWorkers = existingWorkersResult;
-            } else if (existingWorkersResult && Array.isArray(existingWorkersResult[0])) {
-                existingWorkers = existingWorkersResult[0];
-            } else if (existingWorkersResult && existingWorkersResult.rows) {
-                existingWorkers = existingWorkersResult.rows;
-            }
-            
-            console.log('?? Existing workers check result:', existingWorkers);
-            
-            if (existingWorkers && existingWorkers.length > 0) {
-                console.log('?? Worker account already exists');
-                return res.status(409).json({
-                    error: 'Worker account with this Employee ID or Email already exists'
-                });
-            }
+            console.log('?? Attempting to create worker account directly...');
             
             console.log('?? Creating new worker account...');
             console.log('?? Validating account_type value:', { 
@@ -744,8 +784,32 @@ router.post('/', upload.fields([
         console.error('❌ Error details:', error.message);
         
         if (error.code === 'ER_DUP_ENTRY') {
+            // Parse the error message to determine which field caused the duplicate
+            let conflictField = 'unknown';
+            let conflictMessage = 'Worker account with this Employee ID or Email already exists';
+            
+            if (error.message) {
+                if (error.message.includes('employee_id')) {
+                    conflictField = 'employee_id';
+                    conflictMessage = `Employee ID '${finalEmployeeId}' is already registered`;
+                } else if (error.message.includes('work_email')) {
+                    conflictField = 'work_email';
+                    conflictMessage = `Email '${finalWorkEmail}' is already registered`;
+                }
+            }
+            
             return res.status(409).json({
-                error: 'Worker account with this Employee ID or Email already exists'
+                error: 'Worker account already exists',
+                message: conflictMessage,
+                field_conflicts: {
+                    employee_id: conflictField === 'employee_id',
+                    work_email: conflictField === 'work_email'
+                },
+                details: {
+                    conflict_field: conflictField,
+                    employee_id: finalEmployeeId,
+                    work_email: finalWorkEmail
+                }
             });
         }
         
