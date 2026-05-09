@@ -94581,11 +94581,10 @@ function showAddTransportCostForm() {
 
                 
 
+                const submitBtn = costForm.querySelector('button[type="submit"]');
+                const originalText = submitBtn.textContent;
+
                 try {
-
-                    const submitBtn = costForm.querySelector('button[type="submit"]');
-
-                    const originalText = submitBtn.textContent;
 
                     submitBtn.textContent = 'Saving...';
 
@@ -94646,8 +94645,6 @@ function showAddTransportCostForm() {
                     showNotification('❌ Error saving transport cost. Please try again.', 'error');
 
                 } finally {
-
-                    const submitBtn = costForm.querySelector('button[type="submit"]');
 
                     submitBtn.textContent = originalText;
 

@@ -3274,6 +3274,58 @@ app.delete('/api/transport-costs/:id', async (req, res) => {
     }
 });
 
+// Transport costs table migration endpoint
+app.post('/api/transport-costs-migrate', async (req, res) => {
+    try {
+        console.log('🔄 Creating transport_costs table...');
+        const connection = await db.getConnection();
+        
+        // Create transport_costs table
+        await connection.query(`
+            CREATE TABLE IF NOT EXISTS transport_costs (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                cost_type ENUM('maintenance', 'extra') NOT NULL,
+                category ENUM('service_maintenance', 'repair', 'fuel', 'toll_fees', 'tyre_replacement', 'insurance', 'other') NOT NULL,
+                description TEXT NOT NULL,
+                vehicle_id INT NOT NULL,
+                amount DECIMAL(12, 2) NOT NULL,
+                currency VARCHAR(3) DEFAULT 'TZS',
+                date_incurred DATE NOT NULL,
+                provider VARCHAR(255),
+                invoice_number VARCHAR(100),
+                payment_status ENUM('pending', 'approved', 'paid', 'rejected') DEFAULT 'pending',
+                approved_by INT,
+                notes TEXT,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+                
+                FOREIGN KEY (vehicle_id) REFERENCES vehicles(id) ON DELETE CASCADE,
+                FOREIGN KEY (approved_by) REFERENCES users(id) ON DELETE SET NULL,
+                
+                INDEX idx_cost_type (cost_type),
+                INDEX idx_category (category),
+                INDEX idx_vehicle_id (vehicle_id),
+                INDEX idx_date_incurred (date_incurred),
+                INDEX idx_payment_status (payment_status)
+            )
+        `);
+        
+        connection.release();
+        
+        res.json({
+            success: true,
+            message: 'Transport costs table created successfully'
+        });
+    } catch (error) {
+        console.error('❌ Error creating transport_costs table:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Failed to create transport costs table',
+            details: error.message
+        });
+    }
+});
+
 // Transport costs test endpoint
 app.get('/api/transport-costs-test', (req, res) => {
     console.log('🧪 Transport costs test endpoint accessed');
@@ -3284,7 +3336,8 @@ app.get('/api/transport-costs-test', (req, res) => {
             'GET /api/transport-costs/summary - Get transport costs summary',
             'POST /api/transport-costs - Add new transport cost',
             'PUT /api/transport-costs/:id - Update transport cost',
-            'DELETE /api/transport-costs/:id - Delete transport cost'
+            'DELETE /api/transport-costs/:id - Delete transport cost',
+            'POST /api/transport-costs-migrate - Create transport_costs table'
         ],
         timestamp: new Date().toISOString()
     });
