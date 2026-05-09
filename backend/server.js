@@ -3481,6 +3481,77 @@ app.listen(PORT, async () => {
     console.log('🔍 Check /api/railway-db-status for database connection status');
 });
 
+// Vehicles API endpoint
+app.get('/api/vehicles', async (req, res) => {
+    try {
+        console.log('🚗 Vehicles endpoint accessed');
+        const connection = await db.getConnection();
+        
+        try {
+            const [vehicles] = await connection.query(`
+                SELECT 
+                    id,
+                    track_number,
+                    car_name,
+                    brand_name,
+                    registration_number,
+                    plate_number,
+                    car_details,
+                    description,
+                    assigned_driver,
+                    registration_date,
+                    vehicle_type,
+                    fuel_type,
+                    color,
+                    year_of_manufacture,
+                    odometer_reading,
+                    insurance_status,
+                    vehicle_status,
+                    additional_notes,
+                    created_at,
+                    updated_at
+                FROM vehicles
+                WHERE vehicle_status = 'active'
+                ORDER BY car_name ASC
+            `);
+            
+            connection.release();
+            
+            res.json({
+                success: true,
+                data: vehicles,
+                message: 'Vehicles retrieved successfully'
+            });
+        } catch (queryError) {
+            console.log('⚠️ Vehicles query failed:', queryError.message);
+            connection.release();
+            
+            res.json({
+                success: true,
+                data: [],
+                message: 'No vehicles found'
+            });
+        }
+    } catch (error) {
+        console.error('❌ Error fetching vehicles:', error);
+        
+        // Check if table doesn't exist
+        if (error.message.includes("doesn't exist") || error.message.includes("Unknown table")) {
+            return res.status(400).json({
+                success: false,
+                error: 'Vehicles table not found. Please run migration first.',
+                details: error.message
+            });
+        }
+        
+        res.status(500).json({
+            success: false,
+            error: 'Failed to fetch vehicles',
+            details: error.message
+        });
+    }
+});
+
 // Health check endpoint for Railway
 app.get('/health', (req, res) => {
     res.status(200).json({

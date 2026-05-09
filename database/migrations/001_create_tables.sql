@@ -1302,6 +1302,11 @@ CREATE TABLE IF NOT EXISTS transport_costs (
     INDEX idx_payment_status (payment_status)
 );
 
+-- Sample Vehicles Data
+INSERT IGNORE INTO vehicles (id, track_number, car_name, brand_name, registration_number, plate_number, car_details, description, assigned_driver, registration_date, vehicle_type, fuel_type, color, year_of_manufacture, odometer_reading, insurance_status, vehicle_status, additional_notes) VALUES
+(1, 'TK001', 'Toyota Hilux', 'toyota', 'T123456', 'ABC123', 'Double cabin pickup truck', 'Reliable pickup for construction site transport', 'driver001', '2023-01-15', 'pickup', 'diesel', 'White', 2022, 15000, 'insured', 'active', 'Regular maintenance schedule'),
+(2, 'TK002', 'Nissan Patrol', 'nissan', 'T789012', 'XYZ789', '4x4 SUV', 'Heavy duty SUV for rough terrain', 'driver002', '2023-03-20', 'suv', 'diesel', 'Black', 2023, 8000, 'insured', 'active', 'Off-road capable');
+
 -- Language Campaigns Table
 CREATE TABLE IF NOT EXISTS language_campaigns (
   id INT AUTO_INCREMENT PRIMARY KEY,

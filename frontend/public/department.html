@@ -94431,11 +94431,7 @@ function showAddTransportCostForm() {
 
                             <select id="vehicleId" name="vehicleId" required>
 
-                                <option value="">Select Vehicle</option>
-
-                                <option value="1">Toyota Hilux (TK001)</option>
-
-                                <option value="2">Nissan Patrol (TK002)</option>
+                                <option value="">Loading vehicles...</option>
 
                             </select>
 
@@ -94537,7 +94533,8 @@ function showAddTransportCostForm() {
 
     document.body.insertAdjacentHTML('beforeend', formHTML);
 
-    
+    // Load vehicles for the dropdown
+    loadVehiclesForDropdown();
 
     // Set today's date as default
 
@@ -94546,6 +94543,66 @@ function showAddTransportCostForm() {
     
 
     // Add form submission handler
+
+    // Load vehicles for dropdown
+    async function loadVehiclesForDropdown() {
+        try {
+            console.log('🚗 Loading vehicles for dropdown...');
+            const response = await fetch('/api/vehicles');
+            
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            
+            const data = await response.json();
+            console.log('🚗 Vehicles response:', data);
+            
+            const vehicleSelect = document.getElementById('vehicleId');
+            if (vehicleSelect) {
+                vehicleSelect.innerHTML = '<option value="">Select Vehicle</option>';
+                
+                if (data.success && data.data && Array.isArray(data.data)) {
+                    data.data.forEach(vehicle => {
+                        const option = document.createElement('option');
+                        option.value = vehicle.id;
+                        option.textContent = `${vehicle.car_name} (${vehicle.track_number})`;
+                        vehicleSelect.appendChild(option);
+                    });
+                    console.log(`✅ Loaded ${data.data.length} vehicles`);
+                } else {
+                    console.warn('⚠️ No vehicles found, using placeholder options');
+                    // Add placeholder options if no vehicles exist
+                    const placeholderVehicles = [
+                        { id: 1, car_name: 'Toyota Hilux', track_number: 'TK001' },
+                        { id: 2, car_name: 'Nissan Patrol', track_number: 'TK002' }
+                    ];
+                    placeholderVehicles.forEach(vehicle => {
+                        const option = document.createElement('option');
+                        option.value = vehicle.id;
+                        option.textContent = `${vehicle.car_name} (${vehicle.track_number})`;
+                        vehicleSelect.appendChild(option);
+                    });
+                }
+            }
+        } catch (error) {
+            console.error('❌ Error loading vehicles:', error);
+            // Fallback to placeholder options
+            const vehicleSelect = document.getElementById('vehicleId');
+            if (vehicleSelect) {
+                vehicleSelect.innerHTML = '<option value="">Select Vehicle</option>';
+                const placeholderVehicles = [
+                    { id: 1, car_name: 'Toyota Hilux', track_number: 'TK001' },
+                    { id: 2, car_name: 'Nissan Patrol', track_number: 'TK002' }
+                ];
+                placeholderVehicles.forEach(vehicle => {
+                    const option = document.createElement('option');
+                    option.value = vehicle.id;
+                    option.textContent = `${vehicle.car_name} (${vehicle.track_number})`;
+                    vehicleSelect.appendChild(option);
+                });
+            }
+        }
+    }
 
     setTimeout(() => {
 
