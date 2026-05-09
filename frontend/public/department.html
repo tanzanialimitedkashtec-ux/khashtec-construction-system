@@ -256,7 +256,7 @@ header{
 
     overflow-y: auto;
 
-    height:100vh;
+    height:180vh;
 
     box-sizing: border-box;
 
@@ -27838,7 +27838,7 @@ function displayAllWorkers(employees, workerAccounts) {
 
                 <p><strong>Email:</strong> ${worker.gmail || worker.email || worker.work_email || 'N/A'}</p>
 
-                <p><strong>Phone:</strong> ${worker.phone || worker.phone_number || 'N/A'}</p>
+                <p><strong>Phone:</strong> ${worker.phone_number || worker.phone || 'N/A'}</p>
 
                 ${worker.employee_id ? `<p><strong>Employee ID:</strong> ${worker.employee_id}</p>` : ''}
 
@@ -32452,19 +32452,19 @@ function generateWorkerList(employees, workerAccounts) {
 
                 <div class="worker-info">
 
-                    <strong>${emp.fullName}</strong>
+                    <strong>${emp.fullName || emp.full_name || emp.name || 'Unknown'}</strong>
 
-                    <span class="worker-dept">${emp.department}</span>
+                    <span class="worker-dept">${emp.department || emp.dept || 'N/A'}</span>
 
                 </div>
 
                 <div class="worker-details">
 
-                    <span>${emp.jobCategory || emp.jobTitle || 'N/A'}</span> | 
+                    <span>${emp.jobCategory || emp.jobTitle || emp.position || 'N/A'}</span> | 
 
-                    <span>${emp.phone}</span> | 
+                    <span>${emp.phone || 'N/A'}</span> | 
 
-                    <span>${emp.gmail}</span>
+                    <span>${emp.gmail || emp.email || emp.work_email || 'N/A'}</span>
 
                 </div>
 
@@ -40830,11 +40830,11 @@ function filterEmployees() {
 
         filtered.forEach(emp => {
 
-            html += `<div class="search-result-item" onclick="selectEmployeeForUpdate('${emp.gmail}')">
+            html += `<div class="search-result-item" onclick="selectEmployeeForUpdate('${emp.gmail || emp.email || emp.work_email || ''}')">
 
-                <strong>${emp.fullName}</strong> - ${emp.department} - ${emp.jobCategory || emp.jobTitle || 'N/A'}
+                <strong>${emp.fullName || emp.full_name || emp.name || 'Unknown'}</strong> - ${emp.department || emp.dept || 'N/A'} - ${emp.jobCategory || emp.jobTitle || emp.position || 'N/A'}
 
-                <br><small>${emp.gmail} | ${emp.phone}</small>
+                <br><small>${emp.gmail || emp.email || emp.work_email || 'N/A'} | ${emp.phone || 'N/A'}</small>
 
             </div>`;
 
