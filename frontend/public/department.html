@@ -65663,27 +65663,36 @@ function showFinanceReportTab(tabName) {
 
 function showAuditTab(tabName) {
 
-    // Hide all audit tabs
+    // Map tab names to element IDs
+    const tabMapping = {
+        'internal': 'internalAudits',
+        'external': 'externalAudits', 
+        'compliance': 'complianceChecks'
+    };
 
-    document.getElementById('internalAudits').classList.add('hidden');
-
-    document.getElementById('externalAudits').classList.add('hidden');
-
-    document.getElementById('complianceChecks').classList.add('hidden');
-
-    
+    // Hide all audit tabs safely
+    const tabsToHide = ['internalAudits', 'externalAudits', 'complianceChecks'];
+    tabsToHide.forEach(tabId => {
+        const element = document.getElementById(tabId);
+        if (element) {
+            element.classList.add('hidden');
+        }
+    });
 
     // Remove active class from all buttons
-
     document.querySelectorAll('.audit-tabs .tab-btn').forEach(btn => btn.classList.remove('active'));
 
-    
-
     // Show selected tab
+    const targetTabId = tabMapping[tabName] || tabName;
+    const targetElement = document.getElementById(targetTabId);
+    if (targetElement) {
+        targetElement.classList.remove('hidden');
+    }
 
-    document.getElementById(tabName).classList.remove('hidden');
-
-    event.target.classList.add('active');
+    // Add active class to clicked button
+    if (event && event.target) {
+        event.target.classList.add('active');
+    }
 
 }
 
