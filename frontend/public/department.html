@@ -32460,7 +32460,7 @@ function generateWorkerList(employees, workerAccounts) {
 
                 <div class="worker-details">
 
-                    <span>${emp.jobCategory}</span> | 
+                    <span>${emp.jobCategory || emp.jobTitle || 'N/A'}</span> | 
 
                     <span>${emp.phone}</span> | 
 
@@ -40832,7 +40832,7 @@ function filterEmployees() {
 
             html += `<div class="search-result-item" onclick="selectEmployeeForUpdate('${emp.gmail}')">
 
-                <strong>${emp.fullName}</strong> - ${emp.department} - ${emp.jobCategory}
+                <strong>${emp.fullName}</strong> - ${emp.department} - ${emp.jobCategory || emp.jobTitle || 'N/A'}
 
                 <br><small>${emp.gmail} | ${emp.phone}</small>
 
