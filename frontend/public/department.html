@@ -94551,6 +94551,29 @@ function showAddTransportCostForm() {
             const response = await fetch('/api/vehicles');
             
             if (!response.ok) {
+                // If API endpoint doesn't exist (404), use fallback immediately
+                if (response.status === 404) {
+                    console.log('🚗 Vehicles API not found, using fallback vehicles');
+                    const vehicleSelect = document.getElementById('vehicleId');
+                    if (vehicleSelect) {
+                        vehicleSelect.innerHTML = '<option value="">Select Vehicle</option>';
+                        
+                        const fallbackVehicles = [
+                            { id: 1, car_name: 'Toyota Hilux', track_number: 'TK001' },
+                            { id: 2, car_name: 'Nissan Patrol', track_number: 'TK002' }
+                        ];
+                        
+                        fallbackVehicles.forEach(vehicle => {
+                            const option = document.createElement('option');
+                            option.value = vehicle.id;
+                            option.textContent = `${vehicle.car_name} (${vehicle.track_number})`;
+                            vehicleSelect.appendChild(option);
+                        });
+                        
+                        console.log('🚗 Fallback vehicles loaded:', fallbackVehicles.length, 'vehicles');
+                    }
+                    return; // Exit early, don't throw error
+                }
                 throw new Error(`HTTP error! status: ${response.status}`);
             }
             
@@ -94586,20 +94609,25 @@ function showAddTransportCostForm() {
             }
         } catch (error) {
             console.error('❌ Error loading vehicles:', error);
-            // Fallback to placeholder options
+            // Fallback to placeholder options - this ensures we always have vehicles available
             const vehicleSelect = document.getElementById('vehicleId');
             if (vehicleSelect) {
                 vehicleSelect.innerHTML = '<option value="">Select Vehicle</option>';
-                const placeholderVehicles = [
+                
+                // Use the same sample vehicles that should exist in database
+                const fallbackVehicles = [
                     { id: 1, car_name: 'Toyota Hilux', track_number: 'TK001' },
                     { id: 2, car_name: 'Nissan Patrol', track_number: 'TK002' }
                 ];
-                placeholderVehicles.forEach(vehicle => {
+                
+                fallbackVehicles.forEach(vehicle => {
                     const option = document.createElement('option');
                     option.value = vehicle.id;
                     option.textContent = `${vehicle.car_name} (${vehicle.track_number})`;
                     vehicleSelect.appendChild(option);
                 });
+                
+                console.log('🚗 Using fallback vehicles:', fallbackVehicles.length, 'vehicles loaded');
             }
         }
     }
