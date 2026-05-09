@@ -2938,6 +2938,33 @@ async function runMigrationsOnStartup() {
     }
 }
 
+// ===== AUDIT ROUTES =====
+console.log('🔍 Loading audit routes...');
+try {
+    const auditRoutes = require('./routes/audit');
+    console.log('✅ Audit routes loaded successfully');
+    app.use('/api/audit', auditRoutes);
+    console.log('✅ Audit routes mounted at /api/audit');
+    
+    // Add a test endpoint to verify mounting
+    app.get('/api/audit-status', (req, res) => {
+        res.json({ 
+            status: 'Audit routes are mounted',
+            timestamp: new Date().toISOString(),
+            endpoints: [
+                '/api/audit/dashboard - Comprehensive system audit',
+                '/api/audit/category/:category - Specific category data',
+                '/api/audit/report - Generate audit report',
+                '/api/audit/test - Test endpoint'
+            ]
+        });
+    });
+    
+} catch (error) {
+    console.error('❌ Error loading audit routes:', error);
+    console.error('❌ Full error stack:', error.stack);
+}
+
 // Start server
 app.listen(PORT, async () => {
     console.log(`🚀 KASHTEC Server v2.0.1-PROPERTIES-FIX starting on port ${PORT}`);

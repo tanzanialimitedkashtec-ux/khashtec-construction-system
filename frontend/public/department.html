@@ -4626,7 +4626,7 @@ font-weight: bold;
 
     border: 1px solid #dee2e6;
 
-    border-radius: 8px;
+    border-radius: 2px;
 
     overflow: hidden;
 
@@ -4634,7 +4634,7 @@ font-weight: bold;
 
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 
-    margin-top: 15px;
+    margin-top: 12px;
 
 }
 
@@ -6542,13 +6542,13 @@ font-weight: bold;
 
     border: 1px solid #dee2e6;
 
-    border-radius: 8px;
+    border-radius: 2px;
 
     overflow: hidden;
 
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 
-    margin-top: 15px;
+    margin-top: 12px;
 
     overflow-x: auto;
 
@@ -6578,7 +6578,7 @@ font-weight: bold;
 
     color: white;
 
-    padding: 10px 8px;
+    padding: 6px 8px;
 
     text-align: left;
 
@@ -6588,7 +6588,7 @@ font-weight: bold;
 
     white-space: nowrap;
 
-    font-size: 10px;
+    font-size: 2px;
 
 }
 
@@ -6596,13 +6596,13 @@ font-weight: bold;
 
 .car-table td {
 
-    padding: 8px;
+    padding: 2px;
 
     border-bottom: 1px solid #e9ecef;
 
     vertical-align: middle;
 
-    font-size: 11px;
+    font-size: 8px;
 
 }
 
@@ -7996,13 +7996,13 @@ font-weight: bold;
 
     border: 1px solid #dee2e6;
 
-    border-radius: 8px;
+    border-radius: 2px;
 
     overflow: hidden;
 
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 
-    margin-top: 15px;
+    margin-top: 12px;
 
     overflow-x: auto;
 
@@ -8016,7 +8016,7 @@ font-weight: bold;
 
     border-collapse: collapse;
 
-    font-size: 11px;
+    font-size: 9px;
 
     background: white;
 
@@ -8042,7 +8042,7 @@ font-weight: bold;
 
     white-space: nowrap;
 
-    font-size: 10px;
+    font-size: 9px;
 
 }
 
@@ -9034,13 +9034,13 @@ font-weight: bold;
 
     border: 1px solid #dee2e6;
 
-    border-radius: 8px;
+    border-radius: 2px;
 
     overflow: hidden;
 
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 
-    margin-top: 15px;
+    margin-top: 12px;
 
 }
 
@@ -9052,7 +9052,7 @@ font-weight: bold;
 
     border-collapse: collapse;
 
-    font-size: 11px;
+    font-size: 9px;
 
     background: white;
 
@@ -9082,13 +9082,13 @@ font-weight: bold;
 
 .policy-table td {
 
-    padding: 8px;
+    padding: 6px;
 
     border-bottom: 1px solid #e9ecef;
 
     vertical-align: middle;
 
-    font-size: 11px;
+    font-size: 9px;
 
 }
 
@@ -16012,9 +16012,9 @@ font-weight: bold;
 
     border-collapse: collapse;
 
-    font-size: 11px;
+    font-size: 9px;
 
-    min-width: 720px;
+    min-width: 600px;
 
 }
 
@@ -16282,13 +16282,13 @@ font-weight: bold;
 
     background: white;
 
-    border-radius: 8px;
+    border-radius: 2px;
 
     overflow: hidden;
 
     box-shadow: 0 2px 8px rgba(0,0,0,0.1);
 
-    font-size: 12px;
+    font-size: 9px;
 
 }
 
@@ -22050,6 +22050,440 @@ background: #f8f9fa;
 
     }
 
+}
+
+/* ===== AUDIT DASHBOARD STYLES ===== */
+.audit-dashboard-container {
+    padding: 20px 0;
+}
+
+.audit-overview-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 20px;
+    margin-bottom: 30px;
+}
+
+.audit-card {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 12px;
+    padding: 20px;
+    display: flex;
+    align-items: center;
+    color: white;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    transition: transform 0.3s ease;
+}
+
+.audit-card:hover {
+    transform: translateY(-5px);
+}
+
+.audit-icon {
+    font-size: 2.5rem;
+    margin-right: 15px;
+}
+
+.audit-info h4 {
+    font-size: 1.8rem;
+    margin: 0;
+    font-weight: bold;
+}
+
+.audit-info p {
+    margin: 5px 0 0 0;
+    opacity: 0.9;
+    font-size: 0.9rem;
+}
+
+.audit-tabs {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 25px;
+    border-bottom: 2px solid #e0e0e0;
+    padding-bottom: 10px;
+    overflow-x: auto;
+}
+
+.audit-tabs .tab-btn {
+    background: transparent;
+    border: none;
+    padding: 12px 20px;
+    cursor: pointer;
+    border-radius: 8px 8px 0 0;
+    font-weight: 500;
+    color: #666;
+    transition: all 0.3s ease;
+    white-space: nowrap;
+}
+
+.audit-tabs .tab-btn:hover {
+    background: #f5f5f5;
+}
+
+.audit-tabs .tab-btn.active {
+    background: #4CAF50;
+    color: white;
+    border-bottom: 2px solid #4CAF50;
+}
+
+.audit-section {
+    animation: fadeIn 0.5s ease;
+}
+
+.audit-section.hidden {
+    display: none;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.audit-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 20px;
+    margin-bottom: 30px;
+}
+
+.audit-panel {
+    background: white;
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    border: 1px solid #e0e0e0;
+}
+
+.audit-panel h4 {
+    margin: 0 0 15px 0;
+    color: #333;
+    font-size: 1.1rem;
+    border-bottom: 2px solid #4CAF50;
+    padding-bottom: 8px;
+}
+
+.alert-list, .health-indicators, .activity-list, .metrics-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.alert-item {
+    padding: 10px;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.alert-item.danger {
+    background: #ffebee;
+    color: #c62828;
+    border-left: 4px solid #f44336;
+}
+
+.alert-item.warning {
+    background: #fff3e0;
+    color: #f57c00;
+    border-left: 4px solid #ff9800;
+}
+
+.alert-item.success {
+    background: #e8f5e8;
+    color: #2e7d32;
+    border-left: 4px solid #4CAF50;
+}
+
+.alert-item.info {
+    background: #e3f2fd;
+    color: #1565c0;
+    border-left: 4px solid #2196F3;
+}
+
+.health-item, .activity-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 0;
+    border-bottom: 1px solid #f0f0f0;
+    font-size: 0.9rem;
+}
+
+.health-label, .activity-time {
+    color: #666;
+}
+
+.health-value.success, .health-value.active {
+    color: #4CAF50;
+    font-weight: 500;
+}
+
+.metrics-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 15px;
+}
+
+.metric-item {
+    text-align: center;
+    padding: 15px;
+    background: #f8f9fa;
+    border-radius: 8px;
+}
+
+.metric-value {
+    display: block;
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: #4CAF50;
+    margin-bottom: 5px;
+}
+
+.metric-label {
+    font-size: 0.8rem;
+    color: #666;
+    text-transform: uppercase;
+}
+
+.audit-content h4 {
+    margin: 0 0 20px 0;
+    color: #333;
+    font-size: 1.3rem;
+    border-bottom: 2px solid #4CAF50;
+    padding-bottom: 8px;
+}
+
+.audit-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 20px;
+    margin-bottom: 25px;
+}
+
+.stat-item {
+    background: #f8f9fa;
+    padding: 15px;
+    border-radius: 8px;
+    border-left: 4px solid #4CAF50;
+}
+
+.stat-label {
+    display: block;
+    font-size: 0.9rem;
+    color: #666;
+    margin-bottom: 8px;
+}
+
+.stat-value {
+    font-size: 1.2rem;
+    font-weight: bold;
+    color: #333;
+}
+
+.stat-value.danger {
+    color: #f44336;
+}
+
+.stat-value.success {
+    color: #4CAF50;
+}
+
+.stat-chart {
+    margin-top: 10px;
+}
+
+.dept-stat, .leave-stat, .trans-stat {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 0;
+    border-bottom: 1px solid #e0e0e0;
+    font-size: 0.9rem;
+}
+
+.dept-name, .leave-status, .trans-type {
+    font-weight: 500;
+    color: #333;
+}
+
+.dept-count, .leave-count, .trans-count {
+    color: #666;
+}
+
+.dept-overdue {
+    color: #f44336;
+    font-weight: 500;
+}
+
+.audit-table-container {
+    overflow-x: auto;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.audit-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.9rem;
+}
+
+.audit-table th {
+    background: #4CAF50;
+    color: white;
+    padding: 12px;
+    text-align: left;
+    font-weight: 500;
+}
+
+.audit-table td {
+    padding: 12px;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.audit-table tr:hover {
+    background: #f8f9fa;
+}
+
+.loading-row, .no-data {
+    text-align: center;
+    color: #666;
+    font-style: italic;
+}
+
+.status-badge, .severity-badge, .type-badge, .compliance-badge {
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 0.8rem;
+    font-weight: 500;
+    text-transform: uppercase;
+}
+
+.status-badge.active, .severity-badge.medium, .type-badge.income, .compliance-badge.good {
+    background: #e8f5e8;
+    color: #2e7d32;
+}
+
+.status-badge.pending, .severity-badge.low, .type-badge.expense, .compliance-badge.fair {
+    background: #fff3e0;
+    color: #f57c00;
+}
+
+.status-badge.completed, .severity-badge.high, .compliance-badge.excellent {
+    background: #e3f2fd;
+    color: #1565c0;
+}
+
+.status-badge.overdue {
+    background: #ffebee;
+    color: #c62828;
+}
+
+.audit-actions {
+    margin-top: 30px;
+    padding: 20px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    border-top: 3px solid #4CAF50;
+}
+
+.action-buttons {
+    display: flex;
+    gap: 15px;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.action-btn {
+    padding: 12px 24px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    font-size: 0.9rem;
+}
+
+.action-btn.primary {
+    background: #4CAF50;
+    color: white;
+}
+
+.action-btn.primary:hover {
+    background: #45a049;
+    transform: translateY(-2px);
+}
+
+.action-btn.secondary {
+    background: white;
+    color: #4CAF50;
+    border: 2px solid #4CAF50;
+}
+
+.action-btn.secondary:hover {
+    background: #4CAF50;
+    color: white;
+}
+
+.audit-error {
+    text-align: center;
+    padding: 40px;
+    color: #666;
+}
+
+.audit-error h4 {
+    color: #f44336;
+    margin-bottom: 15px;
+}
+
+.audit-error button {
+    margin-top: 20px;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .audit-overview-cards {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 15px;
+    }
+    
+    .audit-tabs {
+        flex-wrap: wrap;
+    }
+    
+    .audit-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .metrics-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .action-buttons {
+        flex-direction: column;
+    }
+    
+    .action-btn {
+        width: 100%;
+    }
+}
+
+@media (max-width: 480px) {
+    .audit-overview-cards {
+        grid-template-columns: 1fr;
+    }
+    
+    .audit-card {
+        flex-direction: column;
+        text-align: center;
+    }
+    
+    .audit-icon {
+        margin-right: 0;
+        margin-bottom: 10px;
+    }
 }
 
 </style>
@@ -60461,7 +60895,599 @@ function financeCompliance(){
 
 }
 
+// ===== SYSTEM AUDIT DASHBOARD =====
+function systemAuditDashboard() {
+    showContent(`
+        <div class="card">
+            <h3>🔍 System Audit Dashboard</h3>
+            <p><strong>Comprehensive System Analysis:</strong> Real-time overview of all system components, projects, employees, safety, and financial status</p>
+            
+            <div class="audit-dashboard-container">
+                <!-- System Overview Cards -->
+                <div class="audit-overview-cards">
+                    <div class="audit-card">
+                        <div class="audit-icon">👥</div>
+                        <div class="audit-info">
+                            <h4 id="totalEmployeesCount">Loading...</h4>
+                            <p>Total Employees</p>
+                        </div>
+                    </div>
+                    <div class="audit-card">
+                        <div class="audit-icon">🚀</div>
+                        <div class="audit-info">
+                            <h4 id="activeProjectsCount">Loading...</h4>
+                            <p>Active Projects</p>
+                        </div>
+                    </div>
+                    <div class="audit-card">
+                        <div class="audit-icon">🏢</div>
+                        <div class="audit-info">
+                            <h4 id="departmentsCount">Loading...</h4>
+                            <p>Departments</p>
+                        </div>
+                    </div>
+                    <div class="audit-card">
+                        <div class="audit-icon">🛡️</div>
+                        <div class="audit-info">
+                            <h4 id="safetyScore">Loading...</h4>
+                            <p>Safety Score</p>
+                        </div>
+                    </div>
+                </div>
 
+                <!-- Audit Navigation Tabs -->
+                <div class="audit-tabs">
+                    <button class="tab-btn active" onclick="showAuditSection('overview')">📊 Overview</button>
+                    <button class="tab-btn" onclick="showAuditSection('projects')">🚀 Projects</button>
+                    <button class="tab-btn" onclick="showAuditSection('employees')">👥 Employees</button>
+                    <button class="tab-btn" onclick="showAuditSection('safety')">🛡️ Safety</button>
+                    <button class="tab-btn" onclick="showAuditSection('financial')">💰 Financial</button>
+                    <button class="tab-btn" onclick="showAuditSection('compliance')">📋 Compliance</button>
+                    <button class="tab-btn" onclick="showAuditSection('system')">⚙️ System</button>
+                </div>
+
+                <!-- Audit Content Sections -->
+                <div id="auditContent">
+                    <!-- Overview Section -->
+                    <div id="overview-section" class="audit-section">
+                        <div class="audit-grid">
+                            <div class="audit-panel">
+                                <h4>🔥 Critical Alerts</h4>
+                                <div id="criticalAlerts">Loading critical alerts...</div>
+                            </div>
+                            <div class="audit-panel">
+                                <h4>📈 System Health</h4>
+                                <div id="systemHealth">Loading system health...</div>
+                            </div>
+                            <div class="audit-panel">
+                                <h4>⏰ Recent Activity</h4>
+                                <div id="recentActivity">Loading recent activity...</div>
+                            </div>
+                            <div class="audit-panel">
+                                <h4>🎯 Key Metrics</h4>
+                                <div id="keyMetrics">Loading key metrics...</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Projects Section -->
+                    <div id="projects-section" class="audit-section hidden">
+                        <div class="audit-content">
+                            <h4>🚀 Projects Analysis</h4>
+                            <div class="audit-stats-grid">
+                                <div class="stat-item">
+                                    <span class="stat-label">Overdue Projects:</span>
+                                    <span id="overdueProjects" class="stat-value">Loading...</span>
+                                </div>
+                                <div class="stat-item">
+                                    <span class="stat-label">By Department:</span>
+                                    <div id="projectsByDept" class="stat-chart">Loading...</div>
+                                </div>
+                            </div>
+                            <div class="audit-table-container">
+                                <table class="audit-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Project</th>
+                                            <th>Department</th>
+                                            <th>Status</th>
+                                            <th>Days Remaining</th>
+                                            <th>Manager</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="projectsTableBody">
+                                        <tr><td colspan="5" class="loading-row">Loading projects data...</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Employees Section -->
+                    <div id="employees-section" class="audit-section hidden">
+                        <div class="audit-content">
+                            <h4>👥 Employee Status Analysis</h4>
+                            <div class="audit-stats-grid">
+                                <div class="stat-item">
+                                    <span class="stat-label">Average Attendance:</span>
+                                    <span id="avgAttendance" class="stat-value">Loading...</span>
+                                </div>
+                                <div class="stat-item">
+                                    <span class="stat-label">Leave Requests:</span>
+                                    <div id="leaveRequests" class="stat-chart">Loading...</div>
+                                </div>
+                            </div>
+                            <div class="audit-table-container">
+                                <table class="audit-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Department</th>
+                                            <th>Status</th>
+                                            <th>Count</th>
+                                            <th>Attendance (7 days)</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="employeesTableBody">
+                                        <tr><td colspan="4" class="loading-row">Loading employee data...</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Safety Section -->
+                    <div id="safety-section" class="audit-section hidden">
+                        <div class="audit-content">
+                            <h4>🛡️ Safety & Incident Analysis</h4>
+                            <div class="audit-stats-grid">
+                                <div class="stat-item">
+                                    <span class="stat-label">Total Violations:</span>
+                                    <span id="totalViolations" class="stat-value danger">Loading...</span>
+                                </div>
+                                <div class="stat-item">
+                                    <span class="stat-label">Inspections:</span>
+                                    <span id="inspectionsCount" class="stat-value">Loading...</span>
+                                </div>
+                            </div>
+                            <div class="audit-table-container">
+                                <table class="audit-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Date</th>
+                                            <th>Incident Type</th>
+                                            <th>Department</th>
+                                            <th>Description</th>
+                                            <th>Severity</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="safetyTableBody">
+                                        <tr><td colspan="5" class="loading-row">Loading safety data...</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Financial Section -->
+                    <div id="financial-section" class="audit-section hidden">
+                        <div class="audit-content">
+                            <h4>💰 Financial Overview</h4>
+                            <div class="audit-stats-grid">
+                                <div class="stat-item">
+                                    <span class="stat-label">Total Expenses (30 days):</span>
+                                    <span id="totalExpenses" class="stat-value">Loading...</span>
+                                </div>
+                                <div class="stat-item">
+                                    <span class="stat-label">Transaction Types:</span>
+                                    <div id="transactionTypes" class="stat-chart">Loading...</div>
+                                </div>
+                            </div>
+                            <div class="audit-table-container">
+                                <table class="audit-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Date</th>
+                                            <th>Type</th>
+                                            <th>Description</th>
+                                            <th>Amount</th>
+                                            <th>Status</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="financialTableBody">
+                                        <tr><td colspan="5" class="loading-row">Loading financial data...</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Compliance Section -->
+                    <div id="compliance-section" class="audit-section hidden">
+                        <div class="audit-content">
+                            <h4>📋 Compliance Status</h4>
+                            <div class="audit-stats-grid">
+                                <div class="stat-item">
+                                    <span class="stat-label">Overall Compliance:</span>
+                                    <span id="overallCompliance" class="stat-value">Loading...</span>
+                                </div>
+                                <div class="stat-item">
+                                    <span class="stat-label">Active Policies:</span>
+                                    <span id="activePolicies" class="stat-value">Loading...</span>
+                                </div>
+                            </div>
+                            <div class="audit-table-container">
+                                <table class="audit-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Department</th>
+                                            <th>Policy Status</th>
+                                            <th>Training Completion</th>
+                                            <th>Documents Status</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="complianceTableBody">
+                                        <tr><td colspan="4" class="loading-row">Loading compliance data...</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- System Section -->
+                    <div id="system-section" class="audit-section hidden">
+                        <div class="audit-content">
+                            <h4>⚙️ System Health & Performance</h4>
+                            <div class="audit-stats-grid">
+                                <div class="stat-item">
+                                    <span class="stat-label">Database Status:</span>
+                                    <span id="dbStatus" class="stat-value success">Loading...</span>
+                                </div>
+                                <div class="stat-item">
+                                    <span class="stat-label">API Status:</span>
+                                    <span id="apiStatus" class="stat-value success">Loading...</span>
+                                </div>
+                            </div>
+                            <div class="audit-table-container">
+                                <table class="audit-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Action</th>
+                                            <th>Count (24h)</th>
+                                            <th>Last Activity</th>
+                                            <th>Status</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="systemTableBody">
+                                        <tr><td colspan="4" class="loading-row">Loading system data...</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Audit Actions -->
+                <div class="audit-actions">
+                    <div class="action-buttons">
+                        <button class="action-btn primary" onclick="refreshAuditData()">🔄 Refresh Data</button>
+                        <button class="action-btn secondary" onclick="generateAuditReport()">📊 Generate Report</button>
+                        <button class="action-btn secondary" onclick="exportAuditData()">📥 Export Data</button>
+                        <button class="action-btn secondary" onclick="scheduleAudit()">📅 Schedule Audit</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `);
+    
+    // Load audit data when dashboard is shown
+    setTimeout(() => {
+        loadAuditDashboard();
+    }, 100);
+}
+
+// Load audit data
+async function loadAuditDashboard() {
+    try {
+        const response = await KashTecAPI.get('/audit/dashboard');
+        if (response && response.data) {
+            updateAuditDashboard(response.data);
+        }
+    } catch (error) {
+        console.error('Audit dashboard error:', error);
+    }
+}
+
+// Update dashboard with data
+function updateAuditDashboard(data) {
+    updateOverviewCards(data.overview);
+    updateOverviewSection(data);
+    updateProjectsSection(data.projects);
+    updateEmployeesSection(data.employees);
+    updateSafetySection(data.safety);
+    updateFinancialSection(data.financial);
+    updateComplianceSection(data.compliance);
+    updateSystemSection(data.system);
+}
+
+// Update overview section
+function updateOverviewSection(data) {
+    const alertsHtml = `
+        <div class="alert-list">
+            ${data.projects && data.projects.totalOverdue > 0 ? 
+                `<div class="alert-item danger">🚨 ${data.projects.totalOverdue} overdue projects</div>` : 
+                '<div class="alert-item success">✅ No overdue projects</div>'
+            }
+            ${data.safety && data.safety.totalViolations > 0 ? 
+                `<div class="alert-item warning">⚠️ ${data.safety.totalViolations} safety violations</div>` : 
+                '<div class="alert-item success">✅ No safety violations</div>'
+            }
+            <div class="alert-item info">ℹ️ System operational</div>
+        </div>
+    `;
+    document.getElementById('criticalAlerts').innerHTML = alertsHtml;
+    
+    const healthHtml = `
+        <div class="health-indicators">
+            <div class="health-item">
+                <span class="health-label">System Status:</span>
+                <span class="health-value success">Operational</span>
+            </div>
+            <div class="health-item">
+                <span class="health-label">Database:</span>
+                <span class="health-value success">Connected</span>
+            </div>
+            <div class="health-item">
+                <span class="health-label">Last Sync:</span>
+                <span class="health-value">${new Date().toLocaleTimeString()}</span>
+            </div>
+        </div>
+    `;
+    document.getElementById('systemHealth').innerHTML = healthHtml;
+    
+    const activityHtml = `
+        <div class="activity-list">
+            <div class="activity-item">
+                <span class="activity-time">Just now</span>
+                <span class="activity-desc">Audit dashboard loaded</span>
+            </div>
+            <div class="activity-item">
+                <span class="activity-time">${new Date().toLocaleTimeString()}</span>
+                <span class="activity-desc">System scan completed</span>
+            </div>
+        </div>
+    `;
+    document.getElementById('recentActivity').innerHTML = activityHtml;
+    
+    const metricsHtml = `
+        <div class="metrics-grid">
+            <div class="metric-item">
+                <span class="metric-value">${data.overview.totalEmployees || 0}</span>
+                <span class="metric-label">Employees</span>
+            </div>
+            <div class="metric-item">
+                <span class="metric-value">${data.overview.activeProjects || 0}</span>
+                <span class="metric-label">Projects</span>
+            </div>
+            <div class="metric-item">
+                <span class="metric-value">${data.safety ? data.safety.safetyScore + '%' : 'N/A'}</span>
+                <span class="metric-label">Safety Score</span>
+            </div>
+        </div>
+    `;
+    document.getElementById('keyMetrics').innerHTML = metricsHtml;
+}
+
+// Update projects section
+function updateProjectsSection(projects) {
+    if (!projects || projects.error) {
+        document.getElementById('overdueProjects').textContent = 'Error';
+        document.getElementById('projectsByDept').innerHTML = '<span class="error">Data unavailable</span>';
+        return;
+    }
+    
+    document.getElementById('overdueProjects').textContent = projects.totalOverdue || 0;
+    
+    const deptHtml = projects.byDepartment ? projects.byDepartment.map(dept => 
+        `<div class="dept-stat">
+            <span class="dept-name">${dept.department}</span>
+            <span class="dept-count">${dept.count} projects</span>
+            ${dept.overdue > 0 ? `<span class="dept-overdue">${dept.overdue} overdue</span>` : ''}
+        </div>`
+    ).join('') : '<span>No data available</span>';
+    
+    document.getElementById('projectsByDept').innerHTML = deptHtml;
+    
+    const tableHtml = projects.recentActivity ? projects.recentActivity.map(project => `
+        <tr>
+            <td>${project.project_name}</td>
+            <td>${project.department}</td>
+            <td><span class="status-badge ${project.status.toLowerCase()}">${project.status}</span></td>
+            <td>${project.days_remaining >= 0 ? project.days_remaining + ' days' : 'Overdue'}</td>
+            <td>${project.manager_name || 'N/A'}</td>
+        </tr>
+    `).join('') : '<tr><td colspan="5" class="no-data">No project data available</td></tr>';
+    
+    document.getElementById('projectsTableBody').innerHTML = tableHtml;
+}
+
+// Update employees section
+function updateEmployeesSection(employees) {
+    if (!employees || employees.error) {
+        document.getElementById('avgAttendance').textContent = 'Error';
+        document.getElementById('leaveRequests').innerHTML = '<span class="error">Data unavailable</span>';
+        return;
+    }
+    
+    document.getElementById('avgAttendance').textContent = (employees.averageAttendance || 0) + ' employees/day';
+    
+    const leaveHtml = employees.leaveRequests ? employees.leaveRequests.map(leave => 
+        `<div class="leave-stat">
+            <span class="leave-status ${leave.status.toLowerCase()}">${leave.status}</span>
+            <span class="leave-count">${leave.count} requests</span>
+        </div>`
+    ).join('') : '<span>No leave data available</span>';
+    
+    document.getElementById('leaveRequests').innerHTML = leaveHtml;
+    
+    const tableHtml = employees.statusByDepartment ? employees.statusByDepartment.map(emp => `
+        <tr>
+            <td>${emp.department}</td>
+            <td><span class="status-badge ${emp.status.toLowerCase()}">${emp.status}</span></td>
+            <td>${emp.count}</td>
+            <td>${emp.attendance_days || 0} days</td>
+        </tr>
+    `).join('') : '<tr><td colspan="4" class="no-data">No employee data available</td></tr>';
+    
+    document.getElementById('employeesTableBody').innerHTML = tableHtml;
+}
+
+// Update safety section
+function updateSafetySection(safety) {
+    if (!safety || safety.error) {
+        document.getElementById('totalViolations').textContent = 'Error';
+        document.getElementById('inspectionsCount').textContent = 'Error';
+        return;
+    }
+    
+    document.getElementById('totalViolations').textContent = safety.totalViolations || 0;
+    document.getElementById('inspectionsCount').textContent = safety.inspections ? safety.inspections.inspections || 0 : 0;
+    
+    const tableHtml = safety.recentIssues ? safety.recentIssues.map(incident => `
+        <tr>
+            <td>${new Date(incident.created_at).toLocaleDateString()}</td>
+            <td>${incident.work_type}</td>
+            <td>${incident.department_code}</td>
+            <td>${incident.work_title}</td>
+            <td><span class="severity-badge high">High</span></td>
+        </tr>
+    `).join('') : '<tr><td colspan="5" class="no-data">No safety incidents reported</td></tr>';
+    
+    document.getElementById('safetyTableBody').innerHTML = tableHtml;
+    
+    // Update safety score in overview
+    const safetyScoreElement = document.getElementById('safetyScore');
+    if (safetyScoreElement) {
+        safetyScoreElement.textContent = (safety.safetyScore || 0) + '%';
+    }
+}
+
+// Update financial section
+function updateFinancialSection(financial) {
+    if (!financial || financial.error) {
+        document.getElementById('totalExpenses').textContent = 'Error';
+        document.getElementById('transactionTypes').innerHTML = '<span class="error">Data unavailable</span>';
+        return;
+    }
+    
+    document.getElementById('totalExpenses').textContent = 'TSh ' + (financial.totalExpenses || 0).toLocaleString();
+    
+    const transHtml = financial.transactionSummary ? financial.transactionSummary.map(trans => 
+        `<div class="trans-stat">
+            <span class="trans-type">${trans.type}</span>
+            <span class="trans-count">${trans.count} transactions</span>
+            <span class="trans-amount">TSh ${(trans.total || 0).toLocaleString()}</span>
+        </div>`
+    ).join('') : '<span>No transaction data available</span>';
+    
+    document.getElementById('transactionTypes').innerHTML = transHtml;
+    
+    const tableHtml = financial.recentTransactions ? financial.recentTransactions.map(trans => `
+        <tr>
+            <td>${new Date(trans.transaction_date).toLocaleDateString()}</td>
+            <td><span class="type-badge ${trans.type.toLowerCase()}">${trans.type}</span></td>
+            <td>${trans.description}</td>
+            <td>TSh ${(trans.amount || 0).toLocaleString()}</td>
+            <td><span class="status-badge ${trans.status ? trans.status.toLowerCase() : 'unknown'}">${trans.status || 'Unknown'}</span></td>
+        </tr>
+    `).join('') : '<tr><td colspan="5" class="no-data">No financial transactions available</td></tr>';
+    
+    document.getElementById('financialTableBody').innerHTML = tableHtml;
+}
+
+// Update compliance section
+function updateComplianceSection(compliance) {
+    if (!compliance || compliance.error) {
+        document.getElementById('overallCompliance').textContent = 'Error';
+        document.getElementById('activePolicies').textContent = 'Error';
+        return;
+    }
+    
+    document.getElementById('overallCompliance').textContent = (compliance.overallCompliance || 0) + '%';
+    
+    const activePoliciesCount = compliance.policies ? compliance.policies.reduce((sum, dept) => sum + dept.active, 0) : 0;
+    document.getElementById('activePolicies').textContent = activePoliciesCount;
+    
+    const tableHtml = compliance.policies ? compliance.policies.map(policy => `
+        <tr>
+            <td>${policy.department}</td>
+            <td><span class="compliance-badge good">${policy.active}/${policy.policies} active</span></td>
+            <td><span class="compliance-badge fair">Training data N/A</span></td>
+            <td><span class="compliance-badge good">Documents OK</span></td>
+        </tr>
+    `).join('') : '<tr><td colspan="4" class="no-data">No compliance data available</td></tr>';
+    
+    document.getElementById('complianceTableBody').innerHTML = tableHtml;
+}
+
+// Update system section
+function updateSystemSection(system) {
+    if (!system || system.error) {
+        document.getElementById('dbStatus').textContent = 'Error';
+        document.getElementById('apiStatus').textContent = 'Error';
+        return;
+    }
+    
+    document.getElementById('dbStatus').textContent = system.databaseStatus || 'Unknown';
+    document.getElementById('apiStatus').textContent = system.apiStatus || 'Unknown';
+    
+    const tableHtml = system.activity ? system.activity.map(activity => `
+        <tr>
+            <td>${activity.action}</td>
+            <td>${activity.count}</td>
+            <td>Last 24 hours</td>
+            <td><span class="status-badge success">Active</span></td>
+        </tr>
+    `).join('') : '<tr><td colspan="4" class="no-data">No system activity data available</td></tr>';
+    
+    document.getElementById('systemTableBody').innerHTML = tableHtml;
+}
+
+// Update overview cards
+function updateOverviewCards(overview) {
+    document.getElementById('totalEmployeesCount').textContent = overview.totalEmployees || 0;
+    document.getElementById('activeProjectsCount').textContent = overview.activeProjects || 0;
+    document.getElementById('departmentsCount').textContent = overview.departments || 0;
+    document.getElementById('safetyScore').textContent = 'N/A';
+}
+
+// Show audit section
+function showAuditSection(sectionName) {
+    document.querySelectorAll('.audit-section').forEach(s => s.classList.add('hidden'));
+    document.querySelectorAll('.audit-tabs .tab-btn').forEach(t => t.classList.remove('active'));
+    document.getElementById(sectionName + '-section')?.classList.remove('hidden');
+    event.target.classList.add('active');
+}
+
+// Refresh audit data
+function refreshAuditData() {
+    loadAuditDashboard();
+    customAlert('Audit data refreshed!', 'Success', 'success');
+}
+
+// Generate audit report
+function generateAuditReport() {
+    customAlert('Generating comprehensive audit report...', 'Report Generation', 'info');
+}
+
+// Export audit data
+function exportAuditData() {
+    customAlert('Exporting audit data to CSV...', 'Export', 'info');
+}
+
+// Schedule audit
+function scheduleAudit() {
+    customAlert('Configure automated audit schedule...', 'Schedule', 'info');
+}
 
 /* ===== LANGUAGE PURCHASE FUNCTIONS ===== */
 
@@ -91101,7 +92127,9 @@ const roleMenus = {
 
             'Tax Payments',
 
-            'Senior Roles Management'
+            'Senior Roles Management',
+
+            'System Audit Dashboard'
 
         ]
 
@@ -91452,6 +92480,12 @@ function handleMenuClick(menuItem) {
             case 'Senior Roles Management':
 
                 showSeniorRoles();
+
+                break;
+
+            case 'System Audit Dashboard':
+
+                showAuditDashboard();
 
                 break;
 
