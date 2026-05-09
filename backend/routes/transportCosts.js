@@ -140,11 +140,12 @@ router.get('/', async (req, res) => {
         const [rows] = await db.execute(`
             SELECT 
                 tc.*,
-                cc.car_name,
-                cc.track_number,
+                v.car_name,
+                v.track_number,
+                v.registration_number,
                 u.name as approved_by_name
             FROM transport_costs tc
-            LEFT JOIN company_cars cc ON tc.vehicle_id = cc.id
+            LEFT JOIN vehicles v ON tc.vehicle_id = v.id
             LEFT JOIN users u ON tc.approved_by = u.id
             ORDER BY tc.date_incurred DESC
         `);
@@ -191,11 +192,12 @@ router.get('/type/:type', async (req, res) => {
         const [rows] = await db.execute(`
             SELECT 
                 tc.*,
-                cc.car_name,
-                cc.track_number,
+                v.car_name,
+                v.track_number,
+                v.registration_number,
                 u.name as approved_by_name
             FROM transport_costs tc
-            LEFT JOIN company_cars cc ON tc.vehicle_id = cc.id
+            LEFT JOIN vehicles v ON tc.vehicle_id = v.id
             LEFT JOIN users u ON tc.approved_by = u.id
             WHERE tc.cost_type = ?
             ORDER BY tc.date_incurred DESC
@@ -244,11 +246,12 @@ router.get('/category/:category', async (req, res) => {
         const [rows] = await db.execute(`
             SELECT 
                 tc.*,
-                cc.car_name,
-                cc.track_number,
+                v.car_name,
+                v.track_number,
+                v.registration_number,
                 u.name as approved_by_name
             FROM transport_costs tc
-            LEFT JOIN company_cars cc ON tc.vehicle_id = cc.id
+            LEFT JOIN vehicles v ON tc.vehicle_id = v.id
             LEFT JOIN users u ON tc.approved_by = u.id
             WHERE tc.category = ?
             ORDER BY tc.date_incurred DESC
@@ -289,11 +292,12 @@ router.get('/vehicle/:vehicleId', async (req, res) => {
         const [rows] = await db.execute(`
             SELECT 
                 tc.*,
-                cc.car_name,
-                cc.track_number,
+                v.car_name,
+                v.track_number,
+                v.registration_number,
                 u.name as approved_by_name
             FROM transport_costs tc
-            LEFT JOIN company_cars cc ON tc.vehicle_id = cc.id
+            LEFT JOIN vehicles v ON tc.vehicle_id = v.id
             LEFT JOIN users u ON tc.approved_by = u.id
             WHERE tc.vehicle_id = ?
             ORDER BY tc.date_incurred DESC
@@ -452,11 +456,12 @@ router.post('/', async (req, res) => {
         const [newRow] = await db.execute(`
             SELECT 
                 tc.*,
-                cc.car_name,
-                cc.track_number,
+                v.car_name,
+                v.track_number,
+                v.registration_number,
                 u.name as approved_by_name
             FROM transport_costs tc
-            LEFT JOIN company_cars cc ON tc.vehicle_id = cc.id
+            LEFT JOIN vehicles v ON tc.vehicle_id = v.id
             LEFT JOIN users u ON tc.approved_by = u.id
             WHERE tc.id = ?
         `, [result.insertId]);
@@ -518,11 +523,12 @@ router.put('/:id', async (req, res) => {
         const [updatedRow] = await db.execute(`
             SELECT 
                 tc.*,
-                cc.car_name,
-                cc.track_number,
+                v.car_name,
+                v.track_number,
+                v.registration_number,
                 u.name as approved_by_name
             FROM transport_costs tc
-            LEFT JOIN company_cars cc ON tc.vehicle_id = cc.id
+            LEFT JOIN vehicles v ON tc.vehicle_id = v.id
             LEFT JOIN users u ON tc.approved_by = u.id
             WHERE tc.id = ?
         `, [id]);

@@ -2967,12 +2967,15 @@ try {
 
 // Transport Costs API endpoints for Fleet Management
 app.get('/api/transport-costs', async (req, res) => {
+    let connection = null;
     try {
         console.log('📋 Transport costs endpoint accessed');
-        const connection = await db.getConnection();
+        connection = await db.getConnection();
+        console.log('✅ Database connection established');
         
         // First try the full query with joins
         try {
+            console.log('🔍 Trying full query with joins...');
             const [costs] = await connection.query(`
                 SELECT tc.*, v.car_name, v.track_number, v.registration_number,
                        u.name as approved_by_name
@@ -2982,9 +2985,10 @@ app.get('/api/transport-costs', async (req, res) => {
                 ORDER BY tc.date_incurred DESC, tc.created_at DESC
             `);
             
+            console.log(`✅ Full query successful, returned ${costs.length} records`);
             connection.release();
             
-            res.json({
+            return res.json({
                 success: true,
                 data: costs,
                 message: 'Transport costs retrieved successfully'
@@ -2993,28 +2997,53 @@ app.get('/api/transport-costs', async (req, res) => {
             console.log('⚠️ Join query failed, trying fallback:', joinError.message);
             
             // Fallback to basic query without joins
-            const [costs] = await connection.query(`
-                SELECT * FROM transport_costs
-                ORDER BY date_incurred DESC, created_at DESC
-            `);
-            
-            connection.release();
-            
-            res.json({
-                success: true,
-                data: costs,
-                message: 'Transport costs retrieved successfully (fallback mode)'
-            });
+            try {
+                const [costs] = await connection.query(`
+                    SELECT * FROM transport_costs
+                    ORDER BY date_incurred DESC, created_at DESC
+                `);
+                
+                console.log(`✅ Fallback query successful, returned ${costs.length} records`);
+                connection.release();
+                
+                return res.json({
+                    success: true,
+                    data: costs,
+                    message: 'Transport costs retrieved successfully (fallback mode)'
+                });
+            } catch (fallbackError) {
+                console.error('❌ Fallback query also failed:', fallbackError);
+                throw fallbackError;
+            }
         }
     } catch (error) {
         console.error('❌ Error fetching transport costs:', error);
+        console.error('❌ Full error details:', {
+            message: error.message,
+            code: error.code,
+            errno: error.errno,
+            sqlState: error.sqlState,
+            sqlMessage: error.sqlMessage
+        });
+        
+        // Ensure connection is released
+        if (connection) {
+            try {
+                connection.release();
+            } catch (releaseError) {
+                console.error('❌ Error releasing connection:', releaseError);
+            }
+        }
         
         // Check if table doesn't exist
-        if (error.message.includes("doesn't exist") || error.message.includes("Unknown table")) {
+        if (error.message.includes("doesn't exist") || error.message.includes("Unknown table") || error.code === 'ER_NO_SUCH_TABLE') {
             console.log('🔄 Transport costs table missing, attempting auto-creation...');
             
             try {
-                // Auto-create the table
+                connection = await db.getConnection();
+                console.log('✅ New connection for table creation');
+                
+                // Auto-create table
                 await connection.query(`
                     CREATE TABLE IF NOT EXISTS transport_costs (
                         id INT AUTO_INCREMENT PRIMARY KEY,
@@ -3043,7 +3072,7 @@ app.get('/api/transport-costs', async (req, res) => {
                 
                 console.log('✅ Transport costs table created successfully');
                 
-                // Try the query again after creating table
+                // Try query again after creating table
                 const [costs] = await connection.query(`
                     SELECT * FROM transport_costs
                     ORDER BY date_incurred DESC, created_at DESC
@@ -3058,8 +3087,8 @@ app.get('/api/transport-costs', async (req, res) => {
                 });
                 
             } catch (createError) {
-                connection.release();
                 console.error('❌ Failed to auto-create transport costs table:', createError);
+                if (connection) connection.release();
                 return res.status(500).json({
                     success: false,
                     error: 'Transport costs table not found and auto-creation failed',
@@ -3072,12 +3101,18 @@ app.get('/api/transport-costs', async (req, res) => {
         res.status(500).json({
             success: false,
             error: 'Failed to fetch transport costs',
-            details: error.message
+            details: error.message,
+            debug: {
+                code: error.code,
+                errno: error.errno,
+                sqlState: error.sqlState
+            }
         });
     }
 });
 
 app.get('/api/transport-costs/summary', async (req, res) => {
+    // ... (rest of the code remains the same)
     try {
         console.log('📊 Transport costs summary endpoint accessed');
         const connection = await db.getConnection();
