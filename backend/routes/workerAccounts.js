@@ -56,7 +56,7 @@ router.get('/', async (req, res) => {
                     full_name VARCHAR(255) NOT NULL,
                     work_email VARCHAR(255) NOT NULL,
                     phone_number VARCHAR(50) NOT NULL,
-                    department VARCHAR(100) NOT NULL,
+                    department ENUM('projects', 'admin', 'finance', 'hr', 'hse', 'realestate') NOT NULL,
                     job_title VARCHAR(255) NOT NULL,
                     account_type ENUM('staff', 'worker', 'contractor') NOT NULL,
                     access_level ENUM('basic', 'standard', 'supervisor') NOT NULL,
@@ -513,6 +513,22 @@ router.post('/', upload.fields([
             }
             
             console.log('?? Creating new worker account...');
+            console.log('?? Insert Query:', insertQuery);
+            console.log('?? Insert Values:', [
+                finalEmployeeId,
+                fullName,
+                finalWorkEmail,
+                finalPhoneNumber,
+                department,
+                jobTitle,
+                mappedAccountType,
+                mappedAccessLevel,
+                finalTemporaryPassword,
+                accountNotes || null,
+                profilePicturePath,
+                idDocumentPath,
+                contractDocumentPath
+            ]);
             
             const result = await db.execute(insertQuery, [
                 finalEmployeeId,
@@ -579,7 +595,7 @@ router.post('/', upload.fields([
                         full_name VARCHAR(255) NOT NULL,
                         work_email VARCHAR(255) NOT NULL,
                         phone_number VARCHAR(50),
-                        department VARCHAR(100),
+                        department ENUM('projects', 'admin', 'finance', 'hr', 'hse', 'realestate'),
                         job_title VARCHAR(255),
                         account_type ENUM('staff', 'worker', 'contractor') NOT NULL,
                         access_level ENUM('basic', 'standard', 'supervisor') NOT NULL,

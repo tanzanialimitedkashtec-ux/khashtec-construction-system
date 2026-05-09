@@ -91818,15 +91818,13 @@ function showProcurementSales() {
 
                 const formData = {
 
-                    itemName: document.getElementById('procurementItemName').value,
+                    type: document.getElementById('procurementType').value,
+
+                    name: document.getElementById('procurementName').value,
 
                     quantity: parseInt(document.getElementById('procurementQuantity').value),
 
-                    unitPrice: parseFloat(document.getElementById('procurementUnitPrice').value),
-
-                    totalAmount: parseFloat(document.getElementById('procurementTotalAmount').value),
-
-                    supplier: document.getElementById('procurementSupplier').value,
+                    price: parseFloat(document.getElementById('procurementPrice').value),
 
                     purchaseDate: document.getElementById('procurementDate').value,
 
