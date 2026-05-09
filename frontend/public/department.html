@@ -93788,12 +93788,20 @@ async function loadTransportCosts() {
         const data = await response.json();
 
         console.log('📊 Transport costs response:', data);
+        console.log('📊 First cost item structure:', data.data && data.data[0] ? data.data[0] : 'No data');
 
         
 
         if (data.success && data.data) {
 
             allTransportCosts = Array.isArray(data.data) ? data.data : [data.data];
+            
+            // Clean up description fields that contain error logs
+            allTransportCosts = allTransportCosts.map(cost => ({
+                ...cost,
+                description: cost.description && cost.description.includes('sessionManager.js') ? 
+                    'Transport cost entry' : cost.description || 'No description'
+            }));
 
             displayTransportCosts(allTransportCosts);
 
@@ -93833,7 +93841,7 @@ function getSampleTransportCosts() {
 
             description: 'Regular service for Toyota Hilux - Oil change and filter replacement',
 
-            vehicle_name: 'Toyota Hilux',
+            car_name: 'Toyota Hilux',
 
             track_number: 'TK001',
 
@@ -93865,7 +93873,7 @@ function getSampleTransportCosts() {
 
             description: 'Brake pad replacement for Nissan Patrol',
 
-            vehicle_name: 'Nissan Patrol',
+            car_name: 'Nissan Patrol',
 
             track_number: 'TK002',
 
@@ -93897,7 +93905,7 @@ function getSampleTransportCosts() {
 
             description: 'Additional fuel for site visit - Dar es Salaam to Bagamoyo',
 
-            vehicle_name: 'Toyota Hilux',
+            car_name: 'Toyota Hilux',
 
             track_number: 'TK001',
 
@@ -94017,9 +94025,9 @@ function displayTransportCosts(costs) {
 
                 <div class="vehicle-info">
 
-                    <div class="vehicle-name">${cost.vehicle_name || 'Unknown'}</div>
+                    <div class="vehicle-name">${cost.car_name || cost.vehicle_name || 'Unknown Vehicle'}</div>
 
-                    <div class="track-number">${cost.track_number || 'N/A'}</div>
+                    <div class="track-number">${cost.track_number || cost.registration_number || 'N/A'}</div>
 
                 </div>
 
