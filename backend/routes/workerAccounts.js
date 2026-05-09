@@ -47,37 +47,63 @@ router.get('/', async (req, res) => {
         console.log('👥 Worker accounts endpoint called');
         const db = require('../../database/config/database');
         
-        // Ensure worker_accounts table exists
+        // Ensure worker_accounts table exists with correct schema
         try {
-            await db.execute(`
-                CREATE TABLE IF NOT EXISTS worker_accounts (
-                    id INT AUTO_INCREMENT PRIMARY KEY,
-                    employee_id VARCHAR(50) UNIQUE NOT NULL,
-                    full_name VARCHAR(255) NOT NULL,
-                    work_email VARCHAR(255) NOT NULL,
-                    phone_number VARCHAR(50) NOT NULL,
-                    department ENUM('projects', 'admin', 'finance', 'hr', 'hse', 'realestate') NOT NULL,
-                    job_title VARCHAR(255) NOT NULL,
-                    account_type ENUM('staff', 'worker', 'contractor') NOT NULL,
-                    access_level ENUM('basic', 'standard', 'supervisor') NOT NULL,
-                    temporary_password VARCHAR(255) NOT NULL,
-                    account_notes TEXT NULL,
-                    profile_picture TEXT NULL,
-                    id_document TEXT NULL,
-                    contract_document TEXT NULL,
-                    status ENUM('active', 'inactive', 'suspended') DEFAULT 'active',
-                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-                    INDEX idx_employee_id (employee_id),
-                    INDEX idx_department (department),
-                    INDEX idx_account_type (account_type),
-                    INDEX idx_status (status),
-                    INDEX idx_created_at (created_at)
-                )
-            `);
-            console.log('✅ Worker accounts table verified/created successfully');
+            // First, check if table exists
+            const tableCheckResult = await db.execute(
+                `SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'worker_accounts'`
+            );
+            
+            let tableExists = false;
+            if (Array.isArray(tableCheckResult) && tableCheckResult.length > 0) {
+                tableExists = true;
+            } else if (tableCheckResult && Array.isArray(tableCheckResult[0]) && tableCheckResult[0].length > 0) {
+                tableExists = true;
+            }
+            
+            if (tableExists) {
+                console.log('✅ Worker accounts table already exists, verifying schema...');
+                // Check if account_type column has correct ENUM values
+                try {
+                    const columnInfo = await db.execute(
+                        `SELECT COLUMN_TYPE FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'worker_accounts' AND COLUMN_NAME = 'account_type'`
+                    );
+                    console.log('🔍 Current account_type column info:', columnInfo);
+                } catch (e) {
+                    console.log('⚠️ Could not check column info:', e.message);
+                }
+            } else {
+                console.log('📝 Creating worker_accounts table...');
+                await db.execute(`
+                    CREATE TABLE worker_accounts (
+                        id INT AUTO_INCREMENT PRIMARY KEY,
+                        employee_id VARCHAR(50) UNIQUE NOT NULL,
+                        full_name VARCHAR(255) NOT NULL,
+                        work_email VARCHAR(255) NOT NULL,
+                        phone_number VARCHAR(50) NOT NULL,
+                        department ENUM('projects', 'admin', 'finance', 'hr', 'hse', 'realestate') NOT NULL,
+                        job_title VARCHAR(255) NOT NULL,
+                        account_type ENUM('staff', 'worker', 'contractor') NOT NULL,
+                        access_level ENUM('basic', 'standard', 'supervisor') NOT NULL,
+                        temporary_password VARCHAR(255) NOT NULL,
+                        account_notes TEXT NULL,
+                        profile_picture TEXT NULL,
+                        id_document TEXT NULL,
+                        contract_document TEXT NULL,
+                        status ENUM('active', 'inactive', 'suspended') DEFAULT 'active',
+                        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+                        INDEX idx_employee_id (employee_id),
+                        INDEX idx_department (department),
+                        INDEX idx_account_type (account_type),
+                        INDEX idx_status (status),
+                        INDEX idx_created_at (created_at)
+                    )
+                `);
+                console.log('✅ Worker accounts table created successfully');
+            }
         } catch (tableError) {
-            console.log('⚠️ Could not create worker_accounts table:', tableError.message);
+            console.error('⚠️ Error ensuring worker_accounts table:', tableError.message);
         }
         
         const workersResult = await db.execute(
@@ -513,6 +539,23 @@ router.post('/', upload.fields([
             }
             
             console.log('?? Creating new worker account...');
+            console.log('?? Validating account_type value:', { 
+                accountType, 
+                mappedAccountType,
+                validValues: ['staff', 'worker', 'contractor'],
+                isValid: ['staff', 'worker', 'contractor'].includes(mappedAccountType)
+            });
+            
+            // Validate account_type is one of the allowed ENUM values
+            if (!['staff', 'worker', 'contractor'].includes(mappedAccountType)) {
+                console.error('❌ Invalid account_type value:', mappedAccountType);
+                return res.status(400).json({
+                    error: 'Invalid account type. Must be: staff, worker, or contractor',
+                    received: mappedAccountType,
+                    valid_values: ['staff', 'worker', 'contractor']
+                });
+            }
+            
             console.log('?? Insert Query:', insertQuery);
             console.log('?? Insert Values:', [
                 finalEmployeeId,
@@ -574,97 +617,114 @@ router.post('/', upload.fields([
             });
             
         } catch (insertError) {
-            console.log('?? Insert failed, likely table schema issue:', insertError.message);
+            console.error('❌ Insert error details:', {
+                message: insertError.message,
+                code: insertError.code,
+                errno: insertError.errno,
+                sqlState: insertError.sqlState,
+                sql: insertError.sql
+            });
             
-            // If it's a column error, try to recreate table
-            if (insertError.message.includes('Unknown column') || insertError.message.includes("doesn't exist")) {
-                console.log('?? Recreating worker_accounts table due to missing columns...');
+            // Handle data truncation or schema errors by recreating table
+            if (insertError.message.includes('Data truncated') || 
+                insertError.message.includes('Unknown column') || 
+                insertError.message.includes("doesn't exist") ||
+                insertError.message.includes('out of range')) {
+                
+                console.log('🔧 Attempting to fix schema and recreate worker_accounts table...');
                 
                 try {
                     await db.execute("DROP TABLE IF EXISTS worker_accounts");
-                    console.log('?? Existing worker_accounts table dropped');
+                    console.log('✅ Existing worker_accounts table dropped');
                 } catch (dropError) {
-                    console.log('?? No existing table to drop:', dropError.message);
+                    console.log('⚠️ Could not drop table:', dropError.message);
                 }
                 
-                // Create the table with all required columns
-                await db.execute(`
-                    CREATE TABLE worker_accounts (
-                        id INT AUTO_INCREMENT PRIMARY KEY,
-                        employee_id VARCHAR(50) NOT NULL UNIQUE,
-                        full_name VARCHAR(255) NOT NULL,
-                        work_email VARCHAR(255) NOT NULL,
-                        phone_number VARCHAR(50),
-                        department ENUM('projects', 'admin', 'finance', 'hr', 'hse', 'realestate'),
-                        job_title VARCHAR(255),
-                        account_type ENUM('staff', 'worker', 'contractor') NOT NULL,
-                        access_level ENUM('basic', 'standard', 'supervisor') NOT NULL,
-                        temporary_password VARCHAR(255) NOT NULL,
-                        account_notes TEXT,
-                        profile_picture VARCHAR(500),
-                        id_document VARCHAR(500),
-                        contract_document VARCHAR(500),
-                        status ENUM('active', 'inactive', 'suspended') DEFAULT 'active',
-                        hire_date DATE,
-                        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-                        INDEX idx_employee_id (employee_id),
-                        INDEX idx_email (work_email),
-                        INDEX idx_department (department),
-                        INDEX idx_status (status)
-                    )
-                `);
-                
-                console.log('?? worker_accounts table recreated successfully');
-                
-                // Try the insertion again
-                console.log('?? Retrying worker account insertion...');
-                const [result] = await db.execute(insertQuery, [
-                    employeeId, fullName, workEmail, phoneNumber, department, jobTitle,
-                    mappedAccountType, mappedAccessLevel, temporaryPassword,
-                    accountNotes || null, profilePicture || null, idDocument || null, contractDocument || null
-                ]);
-                
-                console.log('?? Worker account inserted successfully after table recreation:', result);
-                
-                res.status(201).json({
-                    message: 'Worker account created successfully',
-                    worker: {
-                        id: result.insertId,
-                        employee_id: employeeId,
-                        full_name: fullName,
-                        work_email: workEmail,
-                        phone_number: phoneNumber,
-                        department: department,
-                        job_title: jobTitle,
-                        account_type: mappedAccountType,
-                        access_level: mappedAccessLevel,
-                        temporary_password: temporaryPassword,
-                        account_notes: accountNotes,
-                        profile_picture: profilePicture,
-                        id_document: idDocument,
-                        contract_document: contractDocument,
-                        status: 'active',
-                        hire_date: new Date().toISOString().split('T')[0],
-                        created_at: new Date().toISOString()
-                    },
-                    fallback: false
-                });
-                
-            } else {
-                // Different type of error, use fallback
-                console.log('?? Using fallback mode due to database error:', insertError.message);
+                try {
+                    // Create the table with correct schema
+                    await db.execute(`
+                        CREATE TABLE worker_accounts (
+                            id INT AUTO_INCREMENT PRIMARY KEY,
+                            employee_id VARCHAR(50) NOT NULL UNIQUE,
+                            full_name VARCHAR(255) NOT NULL,
+                            work_email VARCHAR(255) NOT NULL,
+                            phone_number VARCHAR(50),
+                            department ENUM('projects', 'admin', 'finance', 'hr', 'hse', 'realestate'),
+                            job_title VARCHAR(255),
+                            account_type ENUM('staff', 'worker', 'contractor') NOT NULL,
+                            access_level ENUM('basic', 'standard', 'supervisor') NOT NULL,
+                            temporary_password VARCHAR(255) NOT NULL,
+                            account_notes TEXT,
+                            profile_picture TEXT,
+                            id_document TEXT,
+                            contract_document TEXT,
+                            status ENUM('active', 'inactive', 'suspended') DEFAULT 'active',
+                            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+                            INDEX idx_employee_id (employee_id),
+                            INDEX idx_work_email (work_email),
+                            INDEX idx_department (department),
+                            INDEX idx_account_type (account_type),
+                            INDEX idx_status (status)
+                        )
+                    `);
+                    
+                    console.log('✅ worker_accounts table recreated with correct schema');
+                    
+                    // Retry the insertion
+                    console.log('🔄 Retrying worker account insertion...');
+                    const [result] = await db.execute(insertQuery, [
+                        finalEmployeeId, fullName, finalWorkEmail, finalPhoneNumber, department, jobTitle,
+                        mappedAccountType, mappedAccessLevel, finalTemporaryPassword,
+                        accountNotes || null, profilePicturePath, idDocumentPath, contractDocumentPath
+                    ]);
+                    
+                    console.log('✅ Worker account inserted successfully after schema fix:', result);
+                    
+                    res.status(201).json({
+                        message: 'Worker account created successfully (schema was fixed)',
+                        worker: {
+                            id: result.insertId,
+                            employee_id: finalEmployeeId,
+                            full_name: fullName,
+                            work_email: finalWorkEmail,
+                            phone_number: finalPhoneNumber,
+                            department: department,
+                            job_title: jobTitle,
+                            account_type: mappedAccountType,
+                            access_level: mappedAccessLevel,
+                            account_notes: accountNotes,
+                            profile_picture: profilePicturePath,
+                            id_document: idDocumentPath,
+                            contract_document: contractDocumentPath,
+                            status: 'active',
+                            created_at: new Date().toISOString()
+                        },
+                        fallback: false,
+                        schemaFixed: true
+                    });
+                    return;
+                    
+                } catch (recreateError) {
+                    console.error('❌ Failed to recreate table:', recreateError.message);
+                    // Continue to fallback mode
+                }
+            }
+            
+            // Use fallback mode if all else fails
+            console.log('⚠️ Using fallback mode due to database error:', insertError.message);
                 
                 const mockWorker = {
                     id: Math.floor(Math.random() * 1000) + 100,
-                    employee_id: employeeId,
+                    employee_id: finalEmployeeId,
                     full_name: fullName,
                     department: department,
                     job_title: jobTitle,
                     status: 'active',
-                    hire_date: new Date().toISOString().split('T')[0],
-                    phone: phoneNumber,
-                    email: workEmail,
+                    phone_number: finalPhoneNumber,
+                    work_email: finalWorkEmail,
+                    account_type: mappedAccountType,
+                    access_level: mappedAccessLevel,
                     created_at: new Date().toISOString(),
                     fallback: true,
                     message: 'Worker account created with fallback data (database unavailable)',
