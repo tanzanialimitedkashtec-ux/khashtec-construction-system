@@ -92,6 +92,8 @@ const taxRoutes = require('./backend/routes/tax');
 
 const transportCostsRoutes = require('./backend/routes/transportCosts');
 
+const procurementSalesRoutes = require('./backend/routes/procurementSales');
+
 
 
 const app = express();
@@ -899,6 +901,14 @@ app.use('/api/tax', asyncHandler(async (req, res, next) => {
 app.use('/api/transport-costs', asyncHandler(async (req, res, next) => {
 
     return transportCostsRoutes(req, res, next);
+
+}));
+
+
+
+app.use('/api/procurement-sales', asyncHandler(async (req, res, next) => {
+
+    return procurementSalesRoutes(req, res, next);
 
 }));
 

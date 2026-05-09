@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const db = require('../../database/config/database');
+const db = require('../src/config/database');
 const multer = require('multer');
 const path = require('path');
 const fs = require('fs').promises;
@@ -45,7 +45,7 @@ const upload = multer({
 router.get('/', async (req, res) => {
     try {
         console.log('👥 Worker accounts endpoint called');
-        const db = require('../../database/config/database');
+        const db = require('../src/config/database');
         
         // Ensure worker_accounts table exists with correct schema
         try {
@@ -739,8 +739,6 @@ router.post('/', upload.fields([
                     warning: 'This is fallback mode - the account was not saved to the database'
                 });
             }
-        }
-        
     } catch (error) {
         console.error('❌ Error creating worker account:', error);
         console.error('❌ Error details:', error.message);
