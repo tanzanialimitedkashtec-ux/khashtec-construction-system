@@ -2971,24 +2971,104 @@ app.get('/api/transport-costs', async (req, res) => {
         console.log('📋 Transport costs endpoint accessed');
         const connection = await db.getConnection();
         
-        const [costs] = await connection.query(`
-            SELECT tc.*, v.car_name, v.track_number, v.registration_number,
-                   u.name as approved_by_name
-            FROM transport_costs tc
-            LEFT JOIN vehicles v ON tc.vehicle_id = v.id
-            LEFT JOIN users u ON tc.approved_by = u.id
-            ORDER BY tc.date_incurred DESC, tc.created_at DESC
-        `);
-        
-        connection.release();
-        
-        res.json({
-            success: true,
-            data: costs,
-            message: 'Transport costs retrieved successfully'
-        });
+        // First try the full query with joins
+        try {
+            const [costs] = await connection.query(`
+                SELECT tc.*, v.car_name, v.track_number, v.registration_number,
+                       u.name as approved_by_name
+                FROM transport_costs tc
+                LEFT JOIN vehicles v ON tc.vehicle_id = v.id
+                LEFT JOIN users u ON tc.approved_by = u.id
+                ORDER BY tc.date_incurred DESC, tc.created_at DESC
+            `);
+            
+            connection.release();
+            
+            res.json({
+                success: true,
+                data: costs,
+                message: 'Transport costs retrieved successfully'
+            });
+        } catch (joinError) {
+            console.log('⚠️ Join query failed, trying fallback:', joinError.message);
+            
+            // Fallback to basic query without joins
+            const [costs] = await connection.query(`
+                SELECT * FROM transport_costs
+                ORDER BY date_incurred DESC, created_at DESC
+            `);
+            
+            connection.release();
+            
+            res.json({
+                success: true,
+                data: costs,
+                message: 'Transport costs retrieved successfully (fallback mode)'
+            });
+        }
     } catch (error) {
         console.error('❌ Error fetching transport costs:', error);
+        
+        // Check if table doesn't exist
+        if (error.message.includes("doesn't exist") || error.message.includes("Unknown table")) {
+            console.log('🔄 Transport costs table missing, attempting auto-creation...');
+            
+            try {
+                // Auto-create the table
+                await connection.query(`
+                    CREATE TABLE IF NOT EXISTS transport_costs (
+                        id INT AUTO_INCREMENT PRIMARY KEY,
+                        cost_type ENUM('maintenance', 'extra') NOT NULL,
+                        category ENUM('service_maintenance', 'repair', 'fuel', 'toll_fees', 'tyre_replacement', 'insurance', 'other') NOT NULL,
+                        description TEXT NOT NULL,
+                        vehicle_id INT NOT NULL,
+                        amount DECIMAL(12, 2) NOT NULL,
+                        currency VARCHAR(3) DEFAULT 'TZS',
+                        date_incurred DATE NOT NULL,
+                        provider VARCHAR(255),
+                        invoice_number VARCHAR(100),
+                        payment_status ENUM('pending', 'approved', 'paid', 'rejected') DEFAULT 'pending',
+                        approved_by INT,
+                        notes TEXT,
+                        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+                        
+                        INDEX idx_cost_type (cost_type),
+                        INDEX idx_category (category),
+                        INDEX idx_vehicle_id (vehicle_id),
+                        INDEX idx_date_incurred (date_incurred),
+                        INDEX idx_payment_status (payment_status)
+                    )
+                `);
+                
+                console.log('✅ Transport costs table created successfully');
+                
+                // Try the query again after creating table
+                const [costs] = await connection.query(`
+                    SELECT * FROM transport_costs
+                    ORDER BY date_incurred DESC, created_at DESC
+                `);
+                
+                connection.release();
+                
+                return res.json({
+                    success: true,
+                    data: costs,
+                    message: 'Transport costs retrieved successfully (table auto-created)'
+                });
+                
+            } catch (createError) {
+                connection.release();
+                console.error('❌ Failed to auto-create transport costs table:', createError);
+                return res.status(500).json({
+                    success: false,
+                    error: 'Transport costs table not found and auto-creation failed',
+                    action: 'POST /api/transport-costs-migrate',
+                    details: createError.message
+                });
+            }
+        }
+        
         res.status(500).json({
             success: false,
             error: 'Failed to fetch transport costs',
