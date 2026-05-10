@@ -193,6 +193,7 @@ router.get('/', async (req, res) => {
                 realDocuments = documentsArray.map(item => ({
                     id: item.id,
                     title: item.title,
+                    name: item.title,
                     description: item.description,
                     category: item.category,
                     type: item.file_type,
@@ -201,8 +202,10 @@ router.get('/', async (req, res) => {
                     uploadedDate: item.created_at,
                     status: item.status,
                     fileName: item.file_name,
+                    filename: item.file_name,
                     filePath: item.file_path,
                     fileSize: item.file_size,
+                    expiry_date: item.expiry_date,
                     source: 'documents'
                 }));
                 
