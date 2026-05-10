@@ -94338,6 +94338,8 @@ function visionMission() {
 
             
 
+            <form id="visionMissionForm" onsubmit="return saveVisionMissionForm(event);">
+
             <div class="vision-mission-container">
 
                 <div class="vision-section">
@@ -94346,7 +94348,7 @@ function visionMission() {
 
                     <div class="vision-content">
 
-                        <textarea id="visionStatement" rows="4" placeholder="To be the leading construction company in Tanzania, recognized for excellence, innovation, and sustainable development..." style="width: 100%; padding: 8px; border: 2px solid #ddd; border-radius: 4px; font-size: 12px; margin-bottom: 10px;">To be the leading construction company in Tanzania, recognized for excellence, innovation, and sustainable development that transforms communities and builds lasting infrastructure for future generations.</textarea>
+                        <textarea id="visionStatement" name="visionStatement" rows="4" placeholder="To be the leading construction company in Tanzania, recognized for excellence, innovation, and sustainable development..." style="width: 100%; padding: 8px; border: 2px solid #ddd; border-radius: 4px; font-size: 12px; margin-bottom: 10px;" required>To be the leading construction company in Tanzania, recognized for excellence, innovation, and sustainable development that transforms communities and builds lasting infrastructure for future generations.</textarea>
 
                     </div>
 
@@ -94360,7 +94362,7 @@ function visionMission() {
 
                     <div class="mission-content">
 
-                        <textarea id="missionStatement" rows="4" placeholder="To deliver exceptional construction services through quality workmanship, safety, and customer satisfaction..." style="width: 100%; padding: 8px; border: 2px solid #ddd; border-radius: 4px; font-size: 12px; margin-bottom: 10px;">To deliver exceptional construction services through quality workmanship, safety innovation, and customer satisfaction while maintaining the highest standards of integrity and environmental responsibility in every project we undertake.</textarea>
+                        <textarea id="missionStatement" name="missionStatement" rows="4" placeholder="To deliver exceptional construction services through quality workmanship, safety, and customer satisfaction..." style="width: 100%; padding: 8px; border: 2px solid #ddd; border-radius: 4px; font-size: 12px; margin-bottom: 10px;" required>To deliver exceptional construction services through quality workmanship, safety innovation, and customer satisfaction while maintaining the highest standards of integrity and environmental responsibility in every project we undertake.</textarea>
 
                     </div>
 
@@ -94372,41 +94374,53 @@ function visionMission() {
 
                     <h4>🏆 Core Values</h4>
 
-                    <div class="values-grid">
+                    <div class="values-form">
 
-                        <div class="value-item">
+                        <div class="value-input-group">
 
-                            <strong>Excellence:</strong> Commitment to highest quality standards
+                            <input type="text" id="value1" name="value1" placeholder="Value 1" value="Excellence" style="width: 48%; margin: 5px; padding: 8px; border: 2px solid #ddd; border-radius: 4px; font-size: 12px;">
 
-                        </div>
-
-                        <div class="value-item">
-
-                            <strong>Integrity:</strong> Honest and ethical business practices
+                            <input type="text" id="value1Desc" name="value1Desc" placeholder="Description" value="Commitment to highest quality standards" style="width: 48%; margin: 5px; padding: 8px; border: 2px solid #ddd; border-radius: 4px; font-size: 12px;">
 
                         </div>
 
-                        <div class="value-item">
+                        <div class="value-input-group">
 
-                            <strong>Safety:</strong> Zero harm to people and environment
+                            <input type="text" id="value2" name="value2" placeholder="Value 2" value="Integrity" style="width: 48%; margin: 5px; padding: 8px; border: 2px solid #ddd; border-radius: 4px; font-size: 12px;">
 
-                        </div>
-
-                        <div class="value-item">
-
-                            <strong>Innovation:</strong> Continuous improvement and modern techniques
+                            <input type="text" id="value2Desc" name="value2Desc" placeholder="Description" value="Honest and ethical business practices" style="width: 48%; margin: 5px; padding: 8px; border: 2px solid #ddd; border-radius: 4px; font-size: 12px;">
 
                         </div>
 
-                        <div class="value-item">
+                        <div class="value-input-group">
 
-                            <strong>Teamwork:</strong> Collaborative success and mutual respect
+                            <input type="text" id="value3" name="value3" placeholder="Value 3" value="Safety" style="width: 48%; margin: 5px; padding: 8px; border: 2px solid #ddd; border-radius: 4px; font-size: 12px;">
+
+                            <input type="text" id="value3Desc" name="value3Desc" placeholder="Description" value="Zero harm to people and environment" style="width: 48%; margin: 5px; padding: 8px; border: 2px solid #ddd; border-radius: 4px; font-size: 12px;">
 
                         </div>
 
-                        <div class="value-item">
+                        <div class="value-input-group">
 
-                            <strong>Sustainability:</strong> Environmental and social responsibility
+                            <input type="text" id="value4" name="value4" placeholder="Value 4" value="Innovation" style="width: 48%; margin: 5px; padding: 8px; border: 2px solid #ddd; border-radius: 4px; font-size: 12px;">
+
+                            <input type="text" id="value4Desc" name="value4Desc" placeholder="Description" value="Continuous improvement and modern techniques" style="width: 48%; margin: 5px; padding: 8px; border: 2px solid #ddd; border-radius: 4px; font-size: 12px;">
+
+                        </div>
+
+                        <div class="value-input-group">
+
+                            <input type="text" id="value5" name="value5" placeholder="Value 5" value="Teamwork" style="width: 48%; margin: 5px; padding: 8px; border: 2px solid #ddd; border-radius: 4px; font-size: 12px;">
+
+                            <input type="text" id="value5Desc" name="value5Desc" placeholder="Description" value="Collaborative success and mutual respect" style="width: 48%; margin: 5px; padding: 8px; border: 2px solid #ddd; border-radius: 4px; font-size: 12px;">
+
+                        </div>
+
+                        <div class="value-input-group">
+
+                            <input type="text" id="value6" name="value6" placeholder="Value 6" value="Sustainability" style="width: 48%; margin: 5px; padding: 8px; border: 2px solid #ddd; border-radius: 4px; font-size: 12px;">
+
+                            <input type="text" id="value6Desc" name="value6Desc" placeholder="Description" value="Environmental and social responsibility" style="width: 48%; margin: 5px; padding: 8px; border: 2px solid #ddd; border-radius: 4px; font-size: 12px;">
 
                         </div>
 
@@ -94420,21 +94434,45 @@ function visionMission() {
 
                     <h4>📈 Strategic Objectives</h4>
 
-                    <ul class="objectives-list">
+                    <div class="objectives-form">
 
-                        <li>Achieve 95% customer satisfaction rate across all projects</li>
+                        <div class="objective-input">
 
-                        <li>Maintain zero lost-time injury incidents</li>
+                            <input type="text" id="objective1" name="objective1" placeholder="Objective 1" value="Achieve 95% customer satisfaction rate across all projects" style="width: 100%; margin: 5px 0; padding: 8px; border: 2px solid #ddd; border-radius: 4px; font-size: 12px;">
 
-                        <li>Complete all projects within budget and timeline</li>
+                        </div>
 
-                        <li>Develop and retain top talent in the construction industry</li>
+                        <div class="objective-input">
 
-                        <li>Expand market presence across Tanzania and East Africa</li>
+                            <input type="text" id="objective2" name="objective2" placeholder="Objective 2" value="Maintain zero lost-time injury incidents" style="width: 100%; margin: 5px 0; padding: 8px; border: 2px solid #ddd; border-radius: 4px; font-size: 12px;">
 
-                        <li>Implement sustainable construction practices in all projects</li>
+                        </div>
 
-                    </ul>
+                        <div class="objective-input">
+
+                            <input type="text" id="objective3" name="objective3" placeholder="Objective 3" value="Complete all projects within budget and timeline" style="width: 100%; margin: 5px 0; padding: 8px; border: 2px solid #ddd; border-radius: 4px; font-size: 12px;">
+
+                        </div>
+
+                        <div class="objective-input">
+
+                            <input type="text" id="objective4" name="objective4" placeholder="Objective 4" value="Develop and retain top talent in the construction industry" style="width: 100%; margin: 5px 0; padding: 8px; border: 2px solid #ddd; border-radius: 4px; font-size: 12px;">
+
+                        </div>
+
+                        <div class="objective-input">
+
+                            <input type="text" id="objective5" name="objective5" placeholder="Objective 5" value="Expand market presence across Tanzania and East Africa" style="width: 100%; margin: 5px 0; padding: 8px; border: 2px solid #ddd; border-radius: 4px; font-size: 12px;">
+
+                        </div>
+
+                        <div class="objective-input">
+
+                            <input type="text" id="objective6" name="objective6" placeholder="Objective 6" value="Implement sustainable construction practices in all projects" style="width: 100%; margin: 5px 0; padding: 8px; border: 2px solid #ddd; border-radius: 4px; font-size: 12px;">
+
+                        </div>
+
+                    </div>
 
                 </div>
 
@@ -94444,13 +94482,15 @@ function visionMission() {
 
             <div class="form-actions">
 
-                <button type="button" class="action" onclick="saveVisionMission()" style="background: #28a745;">💾 Save Vision & Mission</button>
+                <button type="submit" class="action" style="background: #28a745;">💾 Save Vision & Mission</button>
 
                 <button type="button" class="action" onclick="printVisionMission()" style="background: #007bff;">🖨️ Print</button>
 
                 <button type="button" class="action" onclick="shareVisionMission()" style="background: #17a2b8;">📤 Share</button>
 
             </div>
+
+            </form>
 
         </div>
 
@@ -94478,65 +94518,61 @@ function leadership() {
 
             
 
+            <form id="leadershipForm" onsubmit="return saveLeadershipForm(event);">
+
             <div class="leadership-container">
 
                 <div class="executive-team">
 
                     <h4>👔 Executive Leadership Team</h4>
 
-                    <div class="leaders-grid">
+                    <div class="leadership-form">
 
-                        <div class="leader-card">
+                        <div class="leader-input-group">
 
-                            <div class="leader-avatar">👨‍💼</div>
+                            <input type="text" id="leader1Title" name="leader1Title" placeholder="Position Title" value="Managing Director" style="width: 48%; margin: 5px; padding: 8px; border: 2px solid #ddd; border-radius: 4px; font-size: 12px;">
 
-                            <h5>Managing Director</h5>
+                            <input type="text" id="leader1Name" name="leader1Name" placeholder="Name" value="" style="width: 48%; margin: 5px; padding: 8px; border: 2px solid #ddd; border-radius: 4px; font-size: 12px;">
 
-                            <p>Strategic direction, overall company management, stakeholder relations</p>
+                            <textarea id="leader1Desc" name="leader1Desc" placeholder="Responsibilities" rows="2" style="width: 100%; margin: 5px; padding: 8px; border: 2px solid #ddd; border-radius: 4px; font-size: 12px;">Strategic direction, overall company management, stakeholder relations</textarea>
 
-                            <div class="leader-contact">md@kashtec.com</div>
-
-                        </div>
-
-                        
-
-                        <div class="leader-card">
-
-                            <div class="leader-avatar">👩‍💼</div>
-
-                            <h5>Director of Administration</h5>
-
-                            <p>Administrative operations, HR management, compliance</p>
-
-                            <div class="leader-contact">admin@kashtec.com</div>
+                            <input type="email" id="leader1Email" name="leader1Email" placeholder="Email" value="md@kashtec.com" style="width: 100%; margin: 5px; padding: 8px; border: 2px solid #ddd; border-radius: 4px; font-size: 12px;">
 
                         </div>
 
-                        
+                        <div class="leader-input-group">
 
-                        <div class="leader-card">
+                            <input type="text" id="leader2Title" name="leader2Title" placeholder="Position Title" value="Director of Administration" style="width: 48%; margin: 5px; padding: 8px; border: 2px solid #ddd; border-radius: 4px; font-size: 12px;">
 
-                            <div class="leader-avatar">👨‍🔧</div>
+                            <input type="text" id="leader2Name" name="leader2Name" placeholder="Name" value="" style="width: 48%; margin: 5px; padding: 8px; border: 2px solid #ddd; border-radius: 4px; font-size: 12px;">
 
-                            <h5>Operations Director</h5>
+                            <textarea id="leader2Desc" name="leader2Desc" placeholder="Responsibilities" rows="2" style="width: 100%; margin: 5px; padding: 8px; border: 2px solid #ddd; border-radius: 4px; font-size: 12px;">Administrative operations, HR management, compliance</textarea>
 
-                            <p>Project execution, quality control, safety management</p>
-
-                            <div class="leader-contact">operations@kashtec.com</div>
+                            <input type="email" id="leader2Email" name="leader2Email" placeholder="Email" value="admin@kashtec.com" style="width: 100%; margin: 5px; padding: 8px; border: 2px solid #ddd; border-radius: 4px; font-size: 12px;">
 
                         </div>
 
-                        
+                        <div class="leader-input-group">
 
-                        <div class="leader-card">
+                            <input type="text" id="leader3Title" name="leader3Title" placeholder="Position Title" value="Operations Director" style="width: 48%; margin: 5px; padding: 8px; border: 2px solid #ddd; border-radius: 4px; font-size: 12px;">
 
-                            <div class="leader-avatar">👩‍💰</div>
+                            <input type="text" id="leader3Name" name="leader3Name" placeholder="Name" value="" style="width: 48%; margin: 5px; padding: 8px; border: 2px solid #ddd; border-radius: 4px; font-size: 12px;">
 
-                            <h5>Finance Director</h5>
+                            <textarea id="leader3Desc" name="leader3Desc" placeholder="Responsibilities" rows="2" style="width: 100%; margin: 5px; padding: 8px; border: 2px solid #ddd; border-radius: 4px; font-size: 12px;">Project execution, quality control, safety management</textarea>
 
-                            <p>Financial planning, budget control, financial reporting</p>
+                            <input type="email" id="leader3Email" name="leader3Email" placeholder="Email" value="operations@kashtec.com" style="width: 100%; margin: 5px; padding: 8px; border: 2px solid #ddd; border-radius: 4px; font-size: 12px;">
 
-                            <div class="leader-contact">finance@kashtec.com</div>
+                        </div>
+
+                        <div class="leader-input-group">
+
+                            <input type="text" id="leader4Title" name="leader4Title" placeholder="Position Title" value="Finance Director" style="width: 48%; margin: 5px; padding: 8px; border: 2px solid #ddd; border-radius: 4px; font-size: 12px;">
+
+                            <input type="text" id="leader4Name" name="leader4Name" placeholder="Name" value="" style="width: 48%; margin: 5px; padding: 8px; border: 2px solid #ddd; border-radius: 4px; font-size: 12px;">
+
+                            <textarea id="leader4Desc" name="leader4Desc" placeholder="Responsibilities" rows="2" style="width: 100%; margin: 5px; padding: 8px; border: 2px solid #ddd; border-radius: 4px; font-size: 12px;">Financial planning, budget control, financial reporting</textarea>
+
+                            <input type="email" id="leader4Email" name="leader4Email" placeholder="Email" value="finance@kashtec.com" style="width: 100%; margin: 5px; padding: 8px; border: 2px solid #ddd; border-radius: 4px; font-size: 12px;">
 
                         </div>
 
@@ -94550,31 +94586,29 @@ function leadership() {
 
                     <h4>🏢 Management Structure</h4>
 
-                    <div class="org-chart">
+                    <div class="structure-form">
 
-                        <div class="chart-level">
+                        <div class="structure-level">
 
-                            <div class="chart-box top-level">Managing Director</div>
+                            <label>Top Level:</label>
 
-                        </div>
-
-                        <div class="chart-level">
-
-                            <div class="chart-box">Admin Director</div>
-
-                            <div class="chart-box">Operations Director</div>
-
-                            <div class="chart-box">Finance Director</div>
+                            <input type="text" id="topLevel" name="topLevel" value="Managing Director" style="width: 100%; margin: 5px; padding: 8px; border: 2px solid #ddd; border-radius: 4px; font-size: 12px;">
 
                         </div>
 
-                        <div class="chart-level">
+                        <div class="structure-level">
 
-                            <div class="chart-box">Department Heads</div>
+                            <label>Second Level (comma-separated):</label>
 
-                            <div class="chart-box">Project Managers</div>
+                            <input type="text" id="secondLevel" name="secondLevel" value="Admin Director, Operations Director, Finance Director" style="width: 100%; margin: 5px; padding: 8px; border: 2px solid #ddd; border-radius: 4px; font-size: 12px;">
 
-                            <div class="chart-box">Team Leaders</div>
+                        </div>
+
+                        <div class="structure-level">
+
+                            <label>Third Level (comma-separated):</label>
+
+                            <input type="text" id="thirdLevel" name="thirdLevel" value="Department Heads, Project Managers, Team Leaders" style="width: 100%; margin: 5px; padding: 8px; border: 2px solid #ddd; border-radius: 4px; font-size: 12px;">
 
                         </div>
 
@@ -94588,43 +94622,37 @@ function leadership() {
 
                     <h4>📚 Leadership Development Programs</h4>
 
-                    <div class="programs-grid">
+                    <div class="programs-form">
 
-                        <div class="program-item">
+                        <div class="program-input">
 
-                            <h5>Executive Leadership Training</h5>
+                            <input type="text" id="program1Title" name="program1Title" placeholder="Program Title" value="Executive Leadership Training" style="width: 100%; margin: 5px; padding: 8px; border: 2px solid #ddd; border-radius: 4px; font-size: 12px;">
 
-                            <p>Quarterly strategic leadership workshops for senior management</p>
-
-                        </div>
-
-                        
-
-                        <div class="program-item">
-
-                            <h5>Emerging Leaders Program</h5>
-
-                            <p>6-month development program for high-potential employees</p>
+                            <textarea id="program1Desc" name="program1Desc" placeholder="Description" rows="2" style="width: 100%; margin: 5px; padding: 8px; border: 2px solid #ddd; border-radius: 4px; font-size: 12px;">Quarterly strategic leadership workshops for senior management</textarea>
 
                         </div>
 
-                        
+                        <div class="program-input">
 
-                        <div class="program-item">
+                            <input type="text" id="program2Title" name="program2Title" placeholder="Program Title" value="Emerging Leaders Program" style="width: 100%; margin: 5px; padding: 8px; border: 2px solid #ddd; border-radius: 4px; font-size: 12px;">
 
-                            <h5>Project Management Certification</h5>
-
-                            <p>PMP certification support and training for project leads</p>
+                            <textarea id="program2Desc" name="program2Desc" placeholder="Description" rows="2" style="width: 100%; margin: 5px; padding: 8px; border: 2px solid #ddd; border-radius: 4px; font-size: 12px;">6-month development program for high-potential employees</textarea>
 
                         </div>
 
-                        
+                        <div class="program-input">
 
-                        <div class="program-item">
+                            <input type="text" id="program3Title" name="program3Title" placeholder="Program Title" value="Project Management Certification" style="width: 100%; margin: 5px; padding: 8px; border: 2px solid #ddd; border-radius: 4px; font-size: 12px;">
 
-                            <h5>Mentorship Program</h5>
+                            <textarea id="program3Desc" name="program3Desc" placeholder="Description" rows="2" style="width: 100%; margin: 5px; padding: 8px; border: 2px solid #ddd; border-radius: 4px; font-size: 12px;">PMP certification support and training for project leads</textarea>
 
-                            <p>Senior executives mentoring junior staff members</p>
+                        </div>
+
+                        <div class="program-input">
+
+                            <input type="text" id="program4Title" name="program4Title" placeholder="Program Title" value="Mentorship Program" style="width: 100%; margin: 5px; padding: 8px; border: 2px solid #ddd; border-radius: 4px; font-size: 12px;">
+
+                            <textarea id="program4Desc" name="program4Desc" placeholder="Description" rows="2" style="width: 100%; margin: 5px; padding: 8px; border: 2px solid #ddd; border-radius: 4px; font-size: 12px;">Senior executives mentoring junior staff members</textarea>
 
                         </div>
 
@@ -94638,37 +94666,37 @@ function leadership() {
 
                     <h4>📊 Leadership Performance Metrics</h4>
 
-                    <div class="metrics-grid">
+                    <div class="metrics-form">
 
-                        <div class="metric-item">
+                        <div class="metric-input-group">
 
-                            <span class="metric-label">Employee Engagement:</span>
+                            <label>Employee Engagement (%):</label>
 
-                            <span class="metric-value">87%</span>
-
-                        </div>
-
-                        <div class="metric-item">
-
-                            <span class="metric-label">Leadership Satisfaction:</span>
-
-                            <span class="metric-value">92%</span>
+                            <input type="number" id="metric1" name="metric1" value="87" min="0" max="100" style="width: 100%; margin: 5px; padding: 8px; border: 2px solid #ddd; border-radius: 4px; font-size: 12px;">
 
                         </div>
 
-                        <div class="metric-item">
+                        <div class="metric-input-group">
 
-                            <span class="metric-label">Decision Making Speed:</span>
+                            <label>Leadership Satisfaction (%):</label>
 
-                            <span class="metric-value">4.2 days avg</span>
+                            <input type="number" id="metric2" name="metric2" value="92" min="0" max="100" style="width: 100%; margin: 5px; padding: 8px; border: 2px solid #ddd; border-radius: 4px; font-size: 12px;">
 
                         </div>
 
-                        <div class="metric-item">
+                        <div class="metric-input-group">
 
-                            <span class="metric-label">Team Productivity:</span>
+                            <label>Decision Making Speed (days):</label>
 
-                            <span class="metric-value">+15% YoY</span>
+                            <input type="text" id="metric3" name="metric3" value="4.2 days avg" style="width: 100%; margin: 5px; padding: 8px; border: 2px solid #ddd; border-radius: 4px; font-size: 12px;">
+
+                        </div>
+
+                        <div class="metric-input-group">
+
+                            <label>Team Productivity:</label>
+
+                            <input type="text" id="metric4" name="metric4" value="+15% YoY" style="width: 100%; margin: 5px; padding: 8px; border: 2px solid #ddd; border-radius: 4px; font-size: 12px;">
 
                         </div>
 
@@ -94682,13 +94710,15 @@ function leadership() {
 
             <div class="form-actions">
 
-                <button type="button" class="action" onclick="updateLeadershipTeam()" style="background: #28a745;">🔄 Update Team</button>
+                <button type="submit" class="action" style="background: #28a745;">💾 Save Leadership Info</button>
 
                 <button type="button" class="action" onclick="viewLeadershipReports()" style="background: #007bff;">📊 View Reports</button>
 
                 <button type="button" class="action" onclick="scheduleLeadershipMeeting()" style="background: #17a2b8;">📅 Schedule Meeting</button>
 
             </div>
+
+            </form>
 
         </div>
 
@@ -94708,7 +94738,7 @@ function longTermGrowth() {
 
             <div class="form-header">
 
-                <h4>Strategic Growth Planning & Development</h4>
+                <h4>Strategic Growth Planning & Vision</h4>
 
                 <p>Long-term strategic planning for sustainable growth, market expansion, and organizational development at KASHTEC Construction.</p>
 
@@ -94716,87 +94746,52 @@ function longTermGrowth() {
 
             
 
+            <form id="growthForm" onsubmit="return saveGrowthForm(event);">
+
             <div class="growth-container">
 
                 <div class="growth-vision">
 
                     <h4>🚀 5-Year Growth Vision</h4>
 
-                    <div class="vision-timeline">
+                    <div class="vision-form">
 
-                        <div class="timeline-item">
+                        <div class="timeline-input">
 
-                            <div class="year">Year 1</div>
+                            <label>Year 1-2 Focus:</label>
 
-                            <div class="goals">
+                            <input type="text" id="year1Title" name="year1Title" value="Foundation Building" style="width: 100%; margin: 5px; padding: 8px; border: 2px solid #ddd; border-radius: 4px; font-size: 12px;">
 
-                                <strong>Foundation Building:</strong>
-
-                                <ul>
-
-                                    <li>Strengthen operational capabilities</li>
-
-                                    <li>Implement quality management systems</li>
-
-                                    <li>Achieve ISO certification</li>
-
-                                    <li>Expand client base by 25%</li>
-
-                                </ul>
-
-                            </div>
+                            <textarea id="year1Goals" name="year1Goals" rows="4" style="width: 100%; margin: 5px; padding: 8px; border: 2px solid #ddd; border-radius: 4px; font-size: 12px;">Establish operational excellence across all departments
+Achieve ISO certification for quality management
+Develop comprehensive training programs
+Implement advanced project management systems</textarea>
 
                         </div>
 
-                        
+                        <div class="timeline-input">
 
-                        <div class="timeline-item">
+                            <label>Year 3-4 Focus:</label>
 
-                            <div class="year">Year 2-3</div>
+                            <input type="text" id="year2Title" name="year2Title" value="Market Expansion" style="width: 100%; margin: 5px; padding: 8px; border: 2px solid #ddd; border-radius: 4px; font-size: 12px;">
 
-                            <div class="goals">
-
-                                <strong>Market Expansion:</strong>
-
-                                <ul>
-
-                                    <li>Enter new regional markets</li>
-
-                                    <li>Diversify service offerings</li>
-
-                                    <li>Establish strategic partnerships</li>
-
-                                    <li>Increase revenue by 40%</li>
-
-                                </ul>
-
-                            </div>
+                            <textarea id="year2Goals" name="year2Goals" rows="4" style="width: 100%; margin: 5px; padding: 8px; border: 2px solid #ddd; border-radius: 4px; font-size: 12px;">Expand operations to 3 new regions in Tanzania
+Enter 2 neighboring countries' markets
+Achieve 50% revenue growth
+Establish strategic partnerships</textarea>
 
                         </div>
 
-                        
+                        <div class="timeline-input">
 
-                        <div class="timeline-item">
+                            <label>Year 5 Focus:</label>
 
-                            <div class="year">Year 4-5</div>
+                            <input type="text" id="year3Title" name="year3Title" value="Industry Leadership" style="width: 100%; margin: 5px; padding: 8px; border: 2px solid #ddd; border-radius: 4px; font-size: 12px;">
 
-                            <div class="goals">
-
-                                <strong>Industry Leadership:</strong>
-
-                                <ul>
-
-                                    <li>Become market leader in Tanzania</li>
-
-                                    <li>Expand to East African markets</li>
-
-                                    <li>Develop innovative construction methods</li>
-
-                                    <li>Achieve 100% revenue growth</li>
-
-                                </ul>
-
-                            </div>
+                            <textarea id="year3Goals" name="year3Goals" rows="4" style="width: 100%; margin: 5px; padding: 8px; border: 2px solid #ddd; border-radius: 4px; font-size: 12px;">Become top 3 construction company in East Africa
+Achieve 100+ completed projects
+Establish training academy
+Launch innovation hub for construction technology</textarea>
 
                         </div>
 
@@ -94810,63 +94805,53 @@ function longTermGrowth() {
 
                     <h4>📈 Growth Strategies</h4>
 
-                    <div class="strategies-grid">
+                    <div class="strategies-form">
 
-                        <div class="strategy-item">
+                        <div class="strategy-input">
 
-                            <h5>🏗️ Service Excellence</h5>
+                            <input type="text" id="strategy1Title" name="strategy1Title" placeholder="Strategy Title" value="Service Excellence" style="width: 100%; margin: 5px; padding: 8px; border: 2px solid #ddd; border-radius: 4px; font-size: 12px;">
 
-                            <p>Deliver exceptional quality and service to build strong client relationships and reputation</p>
-
-                        </div>
-
-                        
-
-                        <div class="strategy-item">
-
-                            <h5>🌍 Geographic Expansion</h5>
-
-                            <p>Strategic expansion into new regions and markets across Tanzania and East Africa</p>
+                            <textarea id="strategy1Desc" name="strategy1Desc" placeholder="Description" rows="2" style="width: 100%; margin: 5px; padding: 8px; border: 2px solid #ddd; border-radius: 4px; font-size: 12px;">Maintain 95%+ customer satisfaction through quality service delivery and continuous improvement</textarea>
 
                         </div>
 
-                        
+                        <div class="strategy-input">
 
-                        <div class="strategy-item">
+                            <input type="text" id="strategy2Title" name="strategy2Title" placeholder="Strategy Title" value="Geographic Expansion" style="width: 100%; margin: 5px; padding: 8px; border: 2px solid #ddd; border-radius: 4px; font-size: 12px;">
 
-                            <h5>💡 Innovation & Technology</h5>
-
-                            <p>Adopt modern construction technologies and sustainable building practices</p>
+                            <textarea id="strategy2Desc" name="strategy2Desc" placeholder="Description" rows="2" style="width: 100%; margin: 5px; padding: 8px; border: 2px solid #ddd; border-radius: 4px; font-size: 12px;">Systematic expansion into new markets across Tanzania and East Africa with local partnerships</textarea>
 
                         </div>
 
-                        
+                        <div class="strategy-input">
 
-                        <div class="strategy-item">
+                            <input type="text" id="strategy3Title" name="strategy3Title" placeholder="Strategy Title" value="Innovation & Technology" style="width: 100%; margin: 5px; padding: 8px; border: 2px solid #ddd; border-radius: 4px; font-size: 12px;">
 
-                            <h5>👥 Talent Development</h5>
-
-                            <p>Build skilled workforce and leadership pipeline for sustainable growth</p>
+                            <textarea id="strategy3Desc" name="strategy3Desc" placeholder="Description" rows="2" style="width: 100%; margin: 5px; padding: 8px; border: 2px solid #ddd; border-radius: 4px; font-size: 12px;">Adopt modern construction technologies and sustainable building practices</textarea>
 
                         </div>
 
-                        
+                        <div class="strategy-input">
 
-                        <div class="strategy-item">
+                            <input type="text" id="strategy4Title" name="strategy4Title" placeholder="Strategy Title" value="Talent Development" style="width: 100%; margin: 5px; padding: 8px; border: 2px solid #ddd; border-radius: 4px; font-size: 12px;">
 
-                            <h5>🤝 Strategic Partnerships</h5>
-
-                            <p>Form alliances with key stakeholders and industry partners</p>
+                            <textarea id="strategy4Desc" name="strategy4Desc" placeholder="Description" rows="2" style="width: 100%; margin: 5px; padding: 8px; border: 2px solid #ddd; border-radius: 4px; font-size: 12px;">Build skilled workforce through training programs and career development opportunities</textarea>
 
                         </div>
 
-                        
+                        <div class="strategy-input">
 
-                        <div class="strategy-item">
+                            <input type="text" id="strategy5Title" name="strategy5Title" placeholder="Strategy Title" value="Financial Strength" style="width: 100%; margin: 5px; padding: 8px; border: 2px solid #ddd; border-radius: 4px; font-size: 12px;">
 
-                            <h5>🌱 Sustainability Focus</h5>
+                            <textarea id="strategy5Desc" name="strategy5Desc" placeholder="Description" rows="2" style="width: 100%; margin: 5px; padding: 8px; border: 2px solid #ddd; border-radius: 4px; font-size: 12px;">Maintain strong financial position through profitable growth and strategic investments</textarea>
 
-                            <p>Integrate environmental and social responsibility into all operations</p>
+                        </div>
+
+                        <div class="strategy-input">
+
+                            <input type="text" id="strategy6Title" name="strategy6Title" placeholder="Strategy Title" value="Sustainability Focus" style="width: 100%; margin: 5px; padding: 8px; border: 2px solid #ddd; border-radius: 4px; font-size: 12px;">
+
+                            <textarea id="strategy6Desc" name="strategy6Desc" placeholder="Description" rows="2" style="width: 100%; margin: 5px; padding: 8px; border: 2px solid #ddd; border-radius: 4px; font-size: 12px;">Integrate environmental and social responsibility into all business operations</textarea>
 
                         </div>
 
@@ -94880,53 +94865,53 @@ function longTermGrowth() {
 
                     <h4>🎯 Key Performance Targets</h4>
 
-                    <div class="targets-grid">
+                    <div class="targets-form">
 
-                        <div class="target-item">
+                        <div class="target-input-group">
 
-                            <span class="target-label">Revenue Growth:</span>
+                            <label>Annual Revenue Growth (%):</label>
 
-                            <span class="target-value">100% by Year 5</span>
-
-                        </div>
-
-                        <div class="target-item">
-
-                            <span class="target-label">Market Share:</span>
-
-                            <span class="target-value">25% in Tanzania</span>
+                            <input type="number" id="target1" name="target1" value="25" min="0" max="100" style="width: 100%; margin: 5px; padding: 8px; border: 2px solid #ddd; border-radius: 4px; font-size: 12px;">
 
                         </div>
 
-                        <div class="target-item">
+                        <div class="target-input-group">
 
-                            <span class="target-label">Employee Count:</span>
+                            <label>Market Share (%):</label>
 
-                            <span class="target-value">500+ by Year 5</span>
-
-                        </div>
-
-                        <div class="target-item">
-
-                            <span class="target-label">Project Portfolio:</span>
-
-                            <span class="target-value">50+ major projects</span>
+                            <input type="number" id="target2" name="target2" value="15" min="0" max="100" style="width: 100%; margin: 5px; padding: 8px; border: 2px solid #ddd; border-radius: 4px; font-size: 12px;">
 
                         </div>
 
-                        <div class="target-item">
+                        <div class="target-input-group">
 
-                            <span class="target-label">Customer Satisfaction:</span>
+                            <label>Employee Count Target:</label>
 
-                            <span class="target-value">95%+ consistently</span>
+                            <input type="text" id="target3" name="target3" value="500+" style="width: 100%; margin: 5px; padding: 8px; border: 2px solid #ddd; border-radius: 4px; font-size: 12px;">
 
                         </div>
 
-                        <div class="target-item">
+                        <div class="target-input-group">
 
-                            <span class="target-label">Safety Record:</span>
+                            <label>Project Completion Rate (%):</label>
 
-                            <span class="target-value">Zero lost-time injuries</span>
+                            <input type="number" id="target4" name="target4" value="98" min="0" max="100" style="width: 100%; margin: 5px; padding: 8px; border: 2px solid #ddd; border-radius: 4px; font-size: 12px;">
+
+                        </div>
+
+                        <div class="target-input-group">
+
+                            <label>Customer Satisfaction (%):</label>
+
+                            <input type="number" id="target5" name="target5" value="95" min="0" max="100" style="width: 100%; margin: 5px; padding: 8px; border: 2px solid #ddd; border-radius: 4px; font-size: 12px;">
+
+                        </div>
+
+                        <div class="target-input-group">
+
+                            <label>Safety Record:</label>
+
+                            <input type="text" id="target6" name="target6" value="Zero LTIs" style="width: 100%; margin: 5px; padding: 8px; border: 2px solid #ddd; border-radius: 4px; font-size: 12px;">
 
                         </div>
 
@@ -94938,45 +94923,39 @@ function longTermGrowth() {
 
                 <div class="growth-initiatives">
 
-                    <h4>🏆 Strategic Initiatives</h4>
+                    <h4>🌟 Strategic Initiatives</h4>
 
-                    <div class="initiatives-list">
+                    <div class="initiatives-form">
 
-                        <div class="initiative-item">
+                        <div class="initiative-input">
 
-                            <h5>🏢 Infrastructure Development</h5>
+                            <input type="text" id="initiative1Title" name="initiative1Title" placeholder="Initiative Title" value="Digital Transformation" style="width: 100%; margin: 5px; padding: 8px; border: 2px solid #ddd; border-radius: 4px; font-size: 12px;">
 
-                            <p>Focus on large-scale infrastructure projects including roads, bridges, and public facilities</p>
-
-                        </div>
-
-                        
-
-                        <div class="initiative-item">
-
-                            <h5>🏭 Industrial Construction</h5>
-
-                            <p>Expand into industrial and commercial construction sectors</p>
+                            <textarea id="initiative1Desc" name="initiative1Desc" placeholder="Description" rows="2" style="width: 100%; margin: 5px; padding: 8px; border: 2px solid #ddd; border-radius: 4px; font-size: 12px;">Implement construction management software, BIM technology, and digital project tracking systems</textarea>
 
                         </div>
 
-                        
+                        <div class="initiative-input">
 
-                        <div class="initiative-item">
+                            <input type="text" id="initiative2Title" name="initiative2Title" placeholder="Initiative Title" value="Sustainability Program" style="width: 100%; margin: 5px; padding: 8px; border: 2px solid #ddd; border-radius: 4px; font-size: 12px;">
 
-                            <h5>🏘️ Real Estate Development</h5>
-
-                            <p>Develop residential and commercial real estate projects</p>
+                            <textarea id="initiative2Desc" name="initiative2Desc" placeholder="Description" rows="2" style="width: 100%; margin: 5px; padding: 8px; border: 2px solid #ddd; border-radius: 4px; font-size: 12px;">Develop green building capabilities and sustainable construction practices</textarea>
 
                         </div>
 
-                        
+                        <div class="initiative-input">
 
-                        <div class="initiative-item">
+                            <input type="text" id="initiative3Title" name="initiative3Title" placeholder="Initiative Title" value="Strategic Partnerships" style="width: 100%; margin: 5px; padding: 8px; border: 2px solid #ddd; border-radius: 4px; font-size: 12px;">
 
-                            <h5>🔧 Maintenance Services</h5>
+                            <textarea id="initiative3Desc" name="initiative3Desc" placeholder="Description" rows="2" style="width: 100%; margin: 5px; padding: 8px; border: 2px solid #ddd; border-radius: 4px; font-size: 12px;">Form alliances with international construction firms and technology providers</textarea>
 
-                            <p>Establish facilities maintenance and renovation services division</p>
+                        </div>
+
+                        <div class="initiative-input">
+
+                            <input type="text" id="initiative4Title" name="initiative4Title" placeholder="Initiative Title" value="Training Academy" style="width: 100%; margin: 5px; padding: 8px; border: 2px solid #ddd; border-radius: 4px; font-size: 12px;">
+
+                            <textarea id="initiative4Desc" name="initiative4Desc" placeholder="Description" rows="2" style="width: 100%; margin: 5px; padding: 8px; border: 2px solid #ddd; border-radius: 4px; font-size: 12px;">Establish in-house training center for skill development and capacity building</textarea>
 
                         </div>
 
@@ -94990,7 +94969,7 @@ function longTermGrowth() {
 
             <div class="form-actions">
 
-                <button type="button" class="action" onclick="updateGrowthPlan()" style="background: #28a745;">📝 Update Plan</button>
+                <button type="submit" class="action" style="background: #28a745;">💾 Save Growth Plan</button>
 
                 <button type="button" class="action" onclick="trackGrowthProgress()" style="background: #007bff;">📊 Track Progress</button>
 
@@ -94998,27 +94977,285 @@ function longTermGrowth() {
 
             </div>
 
+            </form>
+
         </div>
 
     `);
-
-}
 
 
 
 // Supporting functions for the new features
 
-function saveVisionMission() {
+function saveVisionMissionForm(event) {
 
-    const vision = document.getElementById('visionStatement').value;
-
-    const mission = document.getElementById('missionStatement').value;
+    event.preventDefault();
 
     
 
-    console.log('💾 Saving Vision & Mission:', { vision, mission });
+    const formData = new FormData(document.getElementById('visionMissionForm'));
+
+    
+
+    const visionMissionData = {
+
+        visionStatement: formData.get('visionStatement'),
+
+        missionStatement: formData.get('missionStatement'),
+
+        values: [],
+
+        objectives: []
+
+    };
+
+    
+
+    // Collect values
+
+    for (let i = 1; i <= 6; i++) {
+
+        const value = formData.get(`value${i}`);
+
+        const valueDesc = formData.get(`value${i}Desc`);
+
+        if (value && valueDesc) {
+
+            visionMissionData.values.push({ value, description: valueDesc });
+
+        }
+
+    }
+
+    
+
+    // Collect objectives
+
+    for (let i = 1; i <= 6; i++) {
+
+        const objective = formData.get(`objective${i}`);
+
+        if (objective) {
+
+            visionMissionData.objectives.push(objective);
+
+        }
+
+    }
+
+    
+
+    console.log('💾 Saving Vision & Mission:', visionMissionData);
 
     showNotification('Vision & Mission saved successfully!', 'success');
+
+    return false;
+
+}
+
+
+
+function saveLeadershipForm(event) {
+
+    event.preventDefault();
+
+    
+
+    const formData = new FormData(document.getElementById('leadershipForm'));
+
+    
+
+    const leadershipData = {
+
+        leaders: [],
+
+        structure: {
+
+            topLevel: formData.get('topLevel'),
+
+            secondLevel: formData.get('secondLevel').split(',').map(s => s.trim()),
+
+            thirdLevel: formData.get('thirdLevel').split(',').map(s => s.trim())
+
+        },
+
+        programs: [],
+
+        metrics: []
+
+    };
+
+    
+
+    // Collect leaders
+
+    for (let i = 1; i <= 4; i++) {
+
+        const title = formData.get(`leader${i}Title`);
+
+        const name = formData.get(`leader${i}Name`);
+
+        const desc = formData.get(`leader${i}Desc`);
+
+        const email = formData.get(`leader${i}Email`);
+
+        if (title && desc && email) {
+
+            leadershipData.leaders.push({ title, name, description: desc, email });
+
+        }
+
+    }
+
+    
+
+    // Collect programs
+
+    for (let i = 1; i <= 4; i++) {
+
+        const title = formData.get(`program${i}Title`);
+
+        const desc = formData.get(`program${i}Desc`);
+
+        if (title && desc) {
+
+            leadershipData.programs.push({ title, description: desc });
+
+        }
+
+    }
+
+    
+
+    // Collect metrics
+
+    const metricLabels = ['Employee Engagement', 'Leadership Satisfaction', 'Decision Making Speed', 'Team Productivity'];
+
+    for (let i = 1; i <= 4; i++) {
+
+        const value = formData.get(`metric${i}`);
+
+        if (value) {
+
+            leadershipData.metrics.push({ label: metricLabels[i-1], value });
+
+        }
+
+    }
+
+    
+
+    console.log('💾 Saving Leadership Data:', leadershipData);
+
+    showNotification('Leadership information saved successfully!', 'success');
+
+    return false;
+
+}
+
+
+
+function saveGrowthForm(event) {
+
+    event.preventDefault();
+
+    
+
+    const formData = new FormData(document.getElementById('growthForm'));
+
+    
+
+    const growthData = {
+
+        vision: [],
+
+        strategies: [],
+
+        targets: [],
+
+        initiatives: []
+
+    };
+
+    
+
+    // Collect vision timeline
+
+    for (let i = 1; i <= 3; i++) {
+
+        const title = formData.get(`year${i}Title`);
+
+        const goals = formData.get(`year${i}Goals`);
+
+        if (title && goals) {
+
+            growthData.vision.push({ period: title, goals: goals.split('\n').filter(g => g.trim()) });
+
+        }
+
+    }
+
+    
+
+    // Collect strategies
+
+    for (let i = 1; i <= 6; i++) {
+
+        const title = formData.get(`strategy${i}Title`);
+
+        const desc = formData.get(`strategy${i}Desc`);
+
+        if (title && desc) {
+
+            growthData.strategies.push({ title, description: desc });
+
+        }
+
+    }
+
+    
+
+    // Collect targets
+
+    const targetLabels = ['Annual Revenue Growth', 'Market Share', 'Employee Count Target', 'Project Completion Rate', 'Customer Satisfaction', 'Safety Record'];
+
+    for (let i = 1; i <= 6; i++) {
+
+        const value = formData.get(`target${i}`);
+
+        if (value) {
+
+            growthData.targets.push({ label: targetLabels[i-1], value });
+
+        }
+
+    }
+
+    
+
+    // Collect initiatives
+
+    for (let i = 1; i <= 4; i++) {
+
+        const title = formData.get(`initiative${i}Title`);
+
+        const desc = formData.get(`initiative${i}Desc`);
+
+        if (title && desc) {
+
+            growthData.initiatives.push({ title, description: desc });
+
+        }
+
+    }
+
+    
+
+    console.log('💾 Saving Growth Plan:', growthData);
+
+    showNotification('Growth plan saved successfully!', 'success');
+
+    return false;
 
 }
 
