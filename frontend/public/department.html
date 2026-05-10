@@ -88344,17 +88344,36 @@ document.addEventListener('DOMContentLoaded', function() {
 
         </div>
 
+        <div style="margin-top: 20px;">
+            <button class="action" onclick="documentManagement()">Open Document Management</button>
+            <button class="action" onclick="testUploadFunction()">Test Upload Function</button>
+        </div>
+
     </div>`);
 
     
 
     // Load assigned workers data
-
     loadAssignedWorkers();
 
 });
 
-
+// Test function to verify uploadCertificate is working
+function testUploadFunction() {
+    console.log('🧪 Testing uploadCertificate function...');
+    try {
+        if (typeof uploadCertificate === 'function') {
+            console.log('✅ uploadCertificate function exists and is callable');
+            alert('uploadCertificate function is available! Click "Open Document Management" to access the upload form.');
+        } else {
+            console.error('❌ uploadCertificate function not found');
+            alert('uploadCertificate function not found!');
+        }
+    } catch (error) {
+        console.error('❌ Error testing uploadCertificate:', error);
+        alert('Error testing uploadCertificate: ' + error.message);
+    }
+}
 
 // Edit document - opens document editor
 
@@ -91956,11 +91975,6 @@ function updateComplianceDoc(docType) {
 
 
 
-function uploadCertificate() {
-
-    customAlert('Certificate upload interface...\n\nThis will open the certificate upload form where you can add new certificates to the system.', "Upload Certificate", "info");
-
-}
 
 
 
