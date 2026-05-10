@@ -1925,7 +1925,7 @@ app.post('/api/workforce-requests', async (req, res) => {
 
         // Insert workforce request
 
-        const [result] = await db.execute(`
+        const queryResult = await db.execute(`
 
             INSERT INTO workforce_requests (
 
@@ -1955,7 +1955,7 @@ app.post('/api/workforce-requests', async (req, res) => {
 
             message: 'Workforce request submitted successfully',
 
-            requestId: result.insertId
+            requestId: (queryResult[0] || queryResult).insertId
 
         });
 

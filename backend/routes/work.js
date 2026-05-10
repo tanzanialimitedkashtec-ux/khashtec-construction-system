@@ -3751,7 +3751,7 @@ router.post('/workforce-requests', async (req, res) => {
         }
         
         // Insert workforce request
-        const [result] = await db.execute(`
+        const queryResult = await db.execute(`
             INSERT INTO workforce_requests (
                 id, request_id, project, request_type, workers_needed, job_categories,
                 duration, start_date, end_date, submitted_date, status, justification,
