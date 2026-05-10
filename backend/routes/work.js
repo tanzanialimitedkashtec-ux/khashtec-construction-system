@@ -117,6 +117,188 @@ router.get('/hse', async (req, res) => {
     }
 });
 
+// POST route for HSE work items (handles safety policy submissions)
+router.post('/hse', async (req, res) => {
+    try {
+        console.log('🔍 HSE POST request received');
+        console.log('📊 Request body:', req.body);
+        
+        // Set department to hse for this route
+        const department = 'hse';
+        
+        const {
+            work_type,
+            work_title,
+            work_description,
+            priority = 'Medium',
+            due_date,
+            assigned_to,
+            submitted_by,
+            // HSE-specific fields
+            incident_type,
+            severity,
+            location,
+            project_name,
+            status = 'pending'
+        } = req.body;
+        
+        console.log('📝 Extracted HSE data:', {
+            work_type,
+            work_title,
+            work_description,
+            priority,
+            due_date,
+            assigned_to,
+            submitted_by,
+            hse_specific: {
+                incident_type,
+                severity,
+                location,
+                project_name
+            }
+        });
+        
+        // Validate required fields
+        if (!work_type || !work_title || !work_description) {
+            console.log('❌ Validation failed - missing required fields');
+            return res.status(400).json({ 
+                error: 'Missing required fields: work_type, work_title, work_description',
+                received: { work_type, work_title, work_description }
+            });
+        }
+        
+        // Map HSE work types to database ENUM values
+        const hseWorkTypeMapping = {
+            'Safety Policy Upload': 'Safety Policy Upload',
+            'Incident Reporting': 'Incident Reporting',
+            'Toolbox Meeting': 'Toolbox Meeting',
+            'PPE Issuance': 'PPE Issuance',
+            'Safety Violation': 'Safety Violation',
+            'Inspection Report': 'Inspection Report',
+            'Safety Training': 'Safety Training',
+            'Project Safety Status': 'Project Safety Status'
+        };
+        
+        const mapped_work_type = hseWorkTypeMapping[work_type] || work_type;
+        console.log('🔄 Mapped work type:', work_type, '->', mapped_work_type);
+        
+        // Build the query for HSE department
+        let query = `
+            INSERT INTO hse_work (
+                department_code,
+                work_type,
+                work_title,
+                work_description,
+                priority,
+                due_date,
+                assigned_to,
+                submitted_by,
+                submitted_date,
+                status
+        `;
+        
+        let values = [
+            department,
+            mapped_work_type,
+            work_title,
+            work_description,
+            priority,
+            due_date,
+            assigned_to,
+            submitted_by,
+            new Date().toISOString().split('T')[0], // submitted_date
+            status
+        ];
+        
+        // Add HSE-specific fields if provided
+        let additionalFields = [];
+        let additionalValues = [];
+        
+        if (incident_type) {
+            additionalFields.push('incident_type');
+            additionalValues.push(incident_type);
+        }
+        if (severity) {
+            additionalFields.push('severity');
+            additionalValues.push(severity);
+        }
+        if (location) {
+            additionalFields.push('location');
+            additionalValues.push(location);
+        }
+        if (project_name) {
+            additionalFields.push('project_name');
+            additionalValues.push(project_name);
+        }
+        
+        // Add additional fields to query if any
+        if (additionalFields.length > 0) {
+            query += ', ' + additionalFields.join(', ');
+            query += ') VALUES (';
+        } else {
+            query += ') VALUES (';
+        }
+        
+        // Build the placeholders for values
+        const placeholders = values.map(() => '?').join(', ');
+        query += placeholders;
+        
+        if (additionalValues.length > 0) {
+            query += ', ' + additionalValues.map(() => '?').join(', ');
+        }
+        query += ')';
+        
+        // Combine all values
+        const allValues = values.concat(additionalValues);
+        
+        console.log('🔍 Final query:', query);
+        console.log('🔍 Final values:', allValues);
+        
+        // Execute the query
+        const [result] = await db.execute(query, allValues);
+        
+        console.log('✅ HSE work item created successfully:', result);
+        
+        res.status(201).json({
+            success: true,
+            message: 'HSE work item created successfully',
+            id: result.insertId,
+            data: {
+                id: result.insertId,
+                department_code: department,
+                work_type: mapped_work_type,
+                work_title,
+                work_description,
+                priority,
+                due_date,
+                assigned_to,
+                submitted_by,
+                status,
+                submitted_date: new Date().toISOString().split('T')[0],
+                // Include HSE-specific fields if provided
+                ...(incident_type && { incident_type }),
+                ...(severity && { severity }),
+                ...(location && { location }),
+                ...(project_name && { project_name })
+            }
+        });
+        
+    } catch (error) {
+        console.error('❌ Error creating HSE work item:', error);
+        console.error('❌ Error details:', {
+            message: error.message,
+            stack: error.stack,
+            name: error.name
+        });
+        
+        res.status(500).json({
+            success: false,
+            error: 'Failed to create HSE work item',
+            details: error.message
+        });
+    }
+});
+
 // Get inspection records (alias for HSE Inspection Report work items)
 router.get('/hse/inspections', async (req, res) => {
     try {

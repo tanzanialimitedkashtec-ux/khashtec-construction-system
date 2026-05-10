@@ -6588,7 +6588,7 @@ font-weight: bold;
 
     white-space: nowrap;
 
-    font-size: 2px;
+    font-size: 9px;
 
 }
 
@@ -22264,8 +22264,8 @@ background: #f8f9fa;
 
 .stat-item {
     background: #f8f9fa;
-    padding: 15px;
-    border-radius: 8px;
+    padding: 2px;
+    border-radius: 2px;
     border-left: 4px solid #4CAF50;
 }
 
@@ -56545,9 +56545,9 @@ function saveSafetyPolicy() {
 
         reviewDate: document.getElementById('reviewDate').value,
 
-        applicableTo: document.getElementById('applicableTo').value,
+        applicableTo: document.getElementById('policyScope').value,
 
-        complianceLevel: document.getElementById('complianceLevel').value,
+        complianceLevel: document.getElementById('policyPriority').value,
 
         training: getSelectedTraining(),
 
@@ -56607,7 +56607,7 @@ function saveSafetyPolicy() {
 
     const baseUrl = window.location.origin;
 
-    fetch(`${baseUrl}/api/hse/hse`, {
+    fetch(`${baseUrl}/api/hse`, {
 
         method: 'POST',
 
