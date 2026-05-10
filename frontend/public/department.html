@@ -23348,6 +23348,10 @@ function loadMenu(){
 
         addMenu("Upload Safety Policies", uploadSafetyPolicies);
 
+        addMenu("Project Manage", showCreateProjectForm);
+
+        addMenu("Accountant Management", showAccountantForm);
+
         addMenu("Register Company Car", registerCompanyCar);
 
         addMenu("Manage Company Cars", manageCompanyCars);
@@ -83101,6 +83105,8 @@ function goBack() {
 
                         <button class="action" onclick="showContent('')">📋 Dashboard</button>
 
+                        <button class="action" onclick="showCreateProjectForm()">🚀 Project Manage</button>
+
                     </div>
 
                 </div>
@@ -95471,6 +95477,645 @@ if (!document.getElementById('transport-cost-styles')) {
 <script src="js/database-api.js"></script>
 
 <script src="js/script.js"></script>
+
+<script>
+// Show Create Project Form
+function showCreateProjectForm() {
+    showContent(`
+        <div class="card">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h3>🚀 Create New Project</h3>
+                <button type="button" onclick="showContent('')" class="action" style="background: #dc3545;">❌ Close</button>
+            </div>
+            
+            <div class="form-header">
+                <h4>Project Planning & Management</h4>
+                <p>Create comprehensive project plans for civil engineering, real estate development, and head projects management. This system is responsible for planning, coordinating, executing, and monitoring projects to ensure they are delivered on time, within budget, and to quality standards.</p>
+            </div>
+            
+            <form id="createProjectForm" onsubmit="return submitNewProject()">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Project Name *</label>
+                        <input type="text" id="projectName" placeholder="e.g., Highway Bridge Construction" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Project Type *</label>
+                        <select id="projectType" required onchange="updateProjectFields()">
+                            <option value="">Select Project Type</option>
+                            <option value="civil-engineering">🏗️ Civil Engineering</option>
+                            <option value="real-estate">🏘️ Real Estate Development</option>
+                            <option value="head-management">🎯 Head Projects Management</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Client/Owner *</label>
+                        <input type="text" id="projectClient" placeholder="e.g., Ministry of Infrastructure" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Project Manager *</label>
+                        <input type="text" id="projectManager" placeholder="e.g., John Smith" required>
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Start Date *</label>
+                        <input type="date" id="projectStartDate" required>
+                    </div>
+                    <div class="form-group">
+                        <label>End Date *</label>
+                        <input type="date" id="projectEndDate" required>
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Total Budget *</label>
+                        <input type="number" id="projectBudget" placeholder="e.g., 5000000" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Priority *</label>
+                        <select id="projectPriority" required>
+                            <option value="">Select Priority</option>
+                            <option value="high">🔴 High Priority</option>
+                            <option value="medium">🟡 Medium Priority</option>
+                            <option value="low">🟢 Low Priority</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label>Project Description *</label>
+                    <textarea id="projectDescription" rows="4" placeholder="Detailed project description, objectives, and scope..." required></textarea>
+                </div>
+                
+                <!-- Civil Engineering Specific Fields -->
+                <div id="civilEngineeringFields" style="display: none;" class="project-specific-fields">
+                    <h5>🏗️ Civil Engineering Specifications</h5>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Engineering Discipline</label>
+                            <select id="engineeringDiscipline">
+                                <option value="">Select Discipline</option>
+                                <option value="structural">Structural Engineering</option>
+                                <option value="transportation">Transportation Engineering</option>
+                                <option value="geotechnical">Geotechnical Engineering</option>
+                                <option value="water-resources">Water Resources</option>
+                                <option value="environmental">Environmental Engineering</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Project Scale</label>
+                            <select id="projectScale">
+                                <option value="">Select Scale</option>
+                                <option value="small">Small (Local)</option>
+                                <option value="medium">Medium (Regional)</option>
+                                <option value="large">Large (National)</option>
+                                <option value="mega">Mega (International)</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Real Estate Development Fields -->
+                <div id="realEstateFields" style="display: none;" class="project-specific-fields">
+                    <h5>🏘️ Real Estate Development Specifications</h5>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Property Type</label>
+                            <select id="propertyType">
+                                <option value="">Select Property Type</option>
+                                <option value="residential">Residential Complex</option>
+                                <option value="commercial">Commercial Building</option>
+                                <option value="mixed-use">Mixed-Use Development</option>
+                                <option value="industrial">Industrial Park</option>
+                                <option value="retail">Shopping Center</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Total Units</label>
+                            <input type="number" id="totalUnits" placeholder="e.g., 150">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Land Area (sqm)</label>
+                            <input type="number" id="landArea" placeholder="e.g., 5000">
+                        </div>
+                        <div class="form-group">
+                            <label>Location</label>
+                            <input type="text" id="projectLocation" placeholder="e.g., Dar es Salaam City Center">
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Head Projects Management Fields -->
+                <div id="headManagementFields" style="display: none;" class="project-specific-fields">
+                    <h5>🎯 Head Projects Management Specifications</h5>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Management Scope</label>
+                            <select id="managementScope">
+                                <option value="">Select Scope</option>
+                                <option value="program">Program Management</option>
+                                <option value="portfolio">Portfolio Management</option>
+                                <option value="multi-project">Multi-Project Coordination</option>
+                                <option value="enterprise">Enterprise Project Management</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Team Size</label>
+                            <input type="number" id="teamSize" placeholder="e.g., 25">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Sub-Projects Count</label>
+                            <input type="number" id="subProjectsCount" placeholder="e.g., 8">
+                        </div>
+                        <div class="form-group">
+                            <label>Stakeholders</label>
+                            <input type="text" id="stakeholders" placeholder="e.g., Government, Private Sector, Community">
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label>Key Deliverables *</label>
+                    <textarea id="keyDeliverables" rows="3" placeholder="List major project deliverables and milestones..." required></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label>Risk Assessment</label>
+                    <textarea id="riskAssessment" rows="3" placeholder="Identify potential risks and mitigation strategies..."></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label>Quality Standards</label>
+                    <textarea id="qualityStandards" rows="2" placeholder="e.g., ISO 9001, Local Building Codes, Safety Regulations..."></textarea>
+                </div>
+                
+                <div class="form-actions">
+                    <button type="submit" class="action" style="background: #28a745;">🚀 Create Project</button>
+                    <button type="button" class="action" onclick="clearProjectForm()" style="background: #6c757d;">Clear Form</button>
+                    <button type="button" class="action" onclick="showContent('')" style="background: #dc3545;">Cancel</button>
+                </div>
+            </form>
+        </div>
+        
+        <style>
+        .project-specific-fields {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 15px 0;
+        }
+        
+        .project-specific-fields h5 {
+            margin: 0 0 15px 0;
+            color: #495057;
+            font-weight: 600;
+        }
+        
+        .form-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .form-header h4 {
+            margin: 0 0 10px 0;
+            font-size: 1.2em;
+        }
+        
+        .form-header p {
+            margin: 0;
+            opacity: 0.9;
+            line-height: 1.4;
+        }
+        </style>
+    `);
+}
+
+// Update project fields based on project type
+function updateProjectFields() {
+    const projectType = document.getElementById('projectType').value;
+    
+    // Hide all specific fields
+    document.getElementById('civilEngineeringFields').style.display = 'none';
+    document.getElementById('realEstateFields').style.display = 'none';
+    document.getElementById('headManagementFields').style.display = 'none';
+    
+    // Show relevant fields
+    if (projectType === 'civil-engineering') {
+        document.getElementById('civilEngineeringFields').style.display = 'block';
+    } else if (projectType === 'real-estate') {
+        document.getElementById('realEstateFields').style.display = 'block';
+    } else if (projectType === 'head-management') {
+        document.getElementById('headManagementFields').style.display = 'block';
+    }
+}
+
+// Clear project form
+function clearProjectForm() {
+    document.getElementById('createProjectForm').reset();
+    updateProjectFields(); // Reset field visibility
+}
+
+// Submit new project
+async function submitNewProject() {
+    try {
+        const projectData = {
+            name: document.getElementById('projectName').value,
+            type: document.getElementById('projectType').value,
+            client: document.getElementById('projectClient').value,
+            manager: document.getElementById('projectManager').value,
+            startDate: document.getElementById('projectStartDate').value,
+            endDate: document.getElementById('projectEndDate').value,
+            budget: parseFloat(document.getElementById('projectBudget').value),
+            priority: document.getElementById('projectPriority').value,
+            description: document.getElementById('projectDescription').value,
+            keyDeliverables: document.getElementById('keyDeliverables').value,
+            riskAssessment: document.getElementById('riskAssessment').value,
+            qualityStandards: document.getElementById('qualityStandards').value,
+            status: 'planning',
+            submittedBy: 'Project Manager',
+            submittedDate: new Date().toISOString().split('T')[0]
+        };
+        
+        // Add type-specific data
+        if (projectData.type === 'civil-engineering') {
+            projectData.engineeringDiscipline = document.getElementById('engineeringDiscipline').value;
+            projectData.projectScale = document.getElementById('projectScale').value;
+        } else if (projectData.type === 'real-estate') {
+            projectData.propertyType = document.getElementById('propertyType').value;
+            projectData.totalUnits = parseInt(document.getElementById('totalUnits').value) || 0;
+            projectData.landArea = parseFloat(document.getElementById('landArea').value) || 0;
+            projectData.location = document.getElementById('projectLocation').value;
+        } else if (projectData.type === 'head-management') {
+            projectData.managementScope = document.getElementById('managementScope').value;
+            projectData.teamSize = parseInt(document.getElementById('teamSize').value) || 0;
+            projectData.subProjectsCount = parseInt(document.getElementById('subProjectsCount').value) || 0;
+            projectData.stakeholders = document.getElementById('stakeholders').value;
+        }
+        
+        console.log('📤 Submitting new project:', projectData);
+        
+        const baseUrl = window.location.origin;
+        const response = await fetch(`${baseUrl}/api/projects/create`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${sessionManager.getAuthToken()}`
+            },
+            body: JSON.stringify(projectData)
+        });
+        
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+        
+        const result = await response.json();
+        console.log('✅ Project created successfully:', result);
+        
+        customAlert(`Project created successfully!\n\nProject Name: ${projectData.name}\nProject Type: ${projectData.type}\nBudget: ${projectData.budget.toLocaleString()}\nStatus: Planning Phase`, "Project Created", "success");
+        
+        // Reset form and return to dashboard
+        document.getElementById('createProjectForm').reset();
+        updateProjectFields();
+        showContent(''); // Return to dashboard
+        
+        return false;
+        
+    } catch (error) {
+        console.error('❌ Error creating project:', error);
+        customAlert(`Failed to create project: ${error.message}`, 'Creation Error', 'error');
+        return false;
+    }
+}
+
+// Show Accountant Form
+function showAccountantForm() {
+    showContent(`
+        <div class="card">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h3>💰 Accountant Management</h3>
+                <button type="button" onclick="showContent('')" class="action" style="background: #dc3545;">❌ Close</button>
+            </div>
+            
+            <div class="form-header">
+                <h4>Financial Reporting & Bookkeeping</h4>
+                <p>Manage day-to-day bookkeeping, regulatory compliance, and financial reporting. The accountant is responsible for maintaining accurate financial records, ensuring regulatory adherence, and reporting to the senior accountant.</p>
+            </div>
+            
+            <form id="accountantForm" onsubmit="return submitAccountantForm()">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Accountant Name *</label>
+                        <input type="text" id="accountantName" placeholder="e.g., Jane Smith" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Employee ID *</label>
+                        <input type="text" id="accountantId" placeholder="e.g., ACC-2024-001" required>
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Email Address *</label>
+                        <input type="email" id="accountantEmail" placeholder="e.g., jane.smith@khashtec.com" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Phone Number *</label>
+                        <input type="tel" id="accountantPhone" placeholder="e.g., +255 123 456 789" required>
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Department *</label>
+                        <select id="accountantDepartment" required>
+                            <option value="">Select Department</option>
+                            <option value="finance">Finance Department</option>
+                            <option value="accounting">Accounting Department</option>
+                            <option value="admin">Administration</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Reporting To *</label>
+                        <select id="reportingTo" required>
+                            <option value="">Select Senior Accountant</option>
+                            <option value="senior-accountant-1">Senior Accountant - John Doe</option>
+                            <option value="senior-accountant-2">Senior Accountant - Mary Johnson</option>
+                            <option value="finance-manager">Finance Manager</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Start Date *</label>
+                        <input type="date" id="accountantStartDate" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Employment Type *</label>
+                        <select id="employmentType" required>
+                            <option value="">Select Type</option>
+                            <option value="full-time">Full-Time</option>
+                            <option value="part-time">Part-Time</option>
+                            <option value="contract">Contract</option>
+                            <option value="intern">Intern</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <!-- Financial Reporting Responsibilities -->
+                <div class="form-section">
+                    <h5>📊 Financial Reporting Responsibilities</h5>
+                    <div class="checkbox-group">
+                        <label><input type="checkbox" name="financialReporting" value="monthly-reports"> Monthly Financial Reports</label>
+                        <label><input type="checkbox" name="financialReporting" value="quarterly-reports"> Quarterly Financial Statements</label>
+                        <label><input type="checkbox" name="financialReporting" value="annual-reports"> Annual Financial Reports</label>
+                        <label><input type="checkbox" name="financialReporting" value="budget-analysis"> Budget Analysis & Variance Reports</label>
+                        <label><input type="checkbox" name="financialReporting" value="cash-flow"> Cash Flow Statements</label>
+                        <label><input type="checkbox" name="financialReporting" value="profit-loss"> Profit & Loss Statements</label>
+                        <label><input type="checkbox" name="financialReporting" value="balance-sheet"> Balance Sheet Preparation</label>
+                        <label><input type="checkbox" name="financialReporting" value="audit-support"> Audit Support Documentation</label>
+                    </div>
+                </div>
+                
+                <!-- Day-to-Day Bookkeeping -->
+                <div class="form-section">
+                    <h5>📝 Day-to-Day Bookkeeping</h5>
+                    <div class="checkbox-group">
+                        <label><input type="checkbox" name="bookkeeping" value="accounts-payable"> Accounts Payable Management</label>
+                        <label><input type="checkbox" name="bookkeeping" value="accounts-receivable"> Accounts Receivable Management</label>
+                        <label><input type="checkbox" name="bookkeeping" value="bank-reconciliation"> Bank Reconciliation</label>
+                        <label><input type="checkbox" name="bookkeeping" value="expense-tracking"> Expense Tracking & Categorization</label>
+                        <label><input type="checkbox" name="bookkeeping" value="invoice-processing"> Invoice Processing</label>
+                        <label><input type="checkbox" name="bookkeeping" value="payroll-processing"> Payroll Processing Support</label>
+                        <label><input type="checkbox" name="bookkeeping" value="tax-calculations"> Tax Calculations</label>
+                        <label><input type="checkbox" name="bookkeeping" value="fixed-assets"> Fixed Asset Management</label>
+                    </div>
+                </div>
+                
+                <!-- Regulatory Adherence -->
+                <div class="form-section">
+                    <h5>⚖️ Regulatory Adherence</h5>
+                    <div class="checkbox-group">
+                        <label><input type="checkbox" name="regulatory" value="tax-compliance"> Tax Compliance (VAT, PAYE, etc.)</label>
+                        <label><input type="checkbox" name="regulatory" value="financial-regulations"> Financial Regulations Compliance</label>
+                        <label><input type="checkbox" name="regulatory" value="trra-compliance"> TRRA (Tanzania Revenue) Compliance</label>
+                        <label><input type="checkbox" name="regulatory" value="audit-readiness"> Audit Readiness Preparation</label>
+                        <label><input type="checkbox" name="regulatory" value="internal-controls"> Internal Controls Implementation</label>
+                        <label><input type="checkbox" name="regulatory" value="policy-compliance"> Company Financial Policy Compliance</label>
+                        <label><input type="checkbox" name="regulatory" value="documentation"> Regulatory Documentation Maintenance</label>
+                        <label><input type="checkbox" name="regulatory" value="reporting-deadlines"> Regulatory Reporting Deadlines</label>
+                    </div>
+                </div>
+                
+                <!-- Qualifications & Certifications -->
+                <div class="form-section">
+                    <h5>🎓 Qualifications & Certifications</h5>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Professional Qualification</label>
+                            <select id="professionalQualification">
+                                <option value="">Select Qualification</option>
+                                <option value="cpa">CPA (Certified Public Accountant)</option>
+                                <option value="acca">ACCA (Association of Chartered Certified Accountants)</option>
+                                <option value="cima">CIMA (Chartered Institute of Management Accountants)</option>
+                                <option value="bachelor-degree">Bachelor's Degree in Accounting</option>
+                                <option value="diploma">Diploma in Accounting</option>
+                                <option value="certificate">Certificate in Accounting</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Years of Experience</label>
+                            <input type="number" id="yearsExperience" placeholder="e.g., 3" min="0" max="50">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Additional Certifications</label>
+                        <textarea id="additionalCertifications" rows="3" placeholder="e.g., Taxation Certificate, Financial Analysis Certification, etc."></textarea>
+                    </div>
+                </div>
+                
+                <!-- System Access -->
+                <div class="form-section">
+                    <h5>🔐 System Access & Permissions</h5>
+                    <div class="checkbox-group">
+                        <label><input type="checkbox" name="systemAccess" value="accounting-software"> Accounting Software Access</label>
+                        <label><input type="checkbox" name="systemAccess" value="banking-portal"> Online Banking Portal</label>
+                        <label><input type="checkbox" name="systemAccess" value="tax-portal"> Tax Authority Portal</label>
+                        <label><input type="checkbox" name="systemAccess" value="payroll-system"> Payroll System Access</label>
+                        <label><input type="checkbox" name="systemAccess" value="reporting-tools"> Financial Reporting Tools</label>
+                        <label><input type="checkbox" name="systemAccess" value="document-management"> Document Management System</label>
+                    </div>
+                </div>
+                
+                <!-- Additional Notes -->
+                <div class="form-group">
+                    <label>Additional Responsibilities & Notes</label>
+                    <textarea id="accountantNotes" rows="4" placeholder="Any additional responsibilities, special requirements, or notes about the accountant role..."></textarea>
+                </div>
+                
+                <div class="form-row">
+                    <button type="submit" class="action" style="background: #28a745;">💾 Save Accountant Details</button>
+                    <button type="button" onclick="clearAccountantForm()" class="action" style="background: #ffc107;">🔄 Clear Form</button>
+                </div>
+            </form>
+        </div>
+        
+        <style>
+            .form-section {
+                background: #f8f9fa;
+                border: 1px solid #dee2e6;
+                border-radius: 5px;
+                padding: 15px;
+                margin: 15px 0;
+            }
+            
+            .form-section h5 {
+                color: #0b3d91;
+                margin-bottom: 10px;
+                font-size: 11px;
+                border-bottom: 2px solid #0b3d91;
+                padding-bottom: 5px;
+            }
+            
+            .checkbox-group {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+                gap: 8px;
+                margin-top: 10px;
+            }
+            
+            .checkbox-group label {
+                display: flex;
+                align-items: center;
+                font-size: 9px;
+                cursor: pointer;
+                padding: 5px;
+                border-radius: 3px;
+                transition: background-color 0.2s;
+            }
+            
+            .checkbox-group label:hover {
+                background-color: #e9ecef;
+            }
+            
+            .checkbox-group input[type="checkbox"] {
+                margin-right: 8px;
+                transform: scale(1.1);
+            }
+            
+            .form-header {
+                background: linear-gradient(135deg, #0b3d91 0%, #1a4a7a 100%);
+                color: white;
+                padding: 15px;
+                border-radius: 5px;
+                margin-bottom: 20px;
+            }
+            
+            .form-header h4 {
+                margin: 0 0 8px 0;
+                font-size: 14px;
+            }
+            
+            .form-header p {
+                margin: 0;
+                font-size: 9px;
+                opacity: 0.9;
+                line-height: 1.4;
+            }
+        </style>
+    `);
+}
+
+// Get selected checkboxes for a given name
+function getSelectedCheckboxes(name) {
+    const checkboxes = document.querySelectorAll(`input[name="${name}"]:checked`);
+    return Array.from(checkboxes).map(cb => cb.value);
+}
+
+// Clear accountant form
+function clearAccountantForm() {
+    document.getElementById('accountantForm').reset();
+}
+
+// Submit accountant form
+async function submitAccountantForm() {
+    try {
+        const accountantData = {
+            name: document.getElementById('accountantName').value,
+            employeeId: document.getElementById('accountantId').value,
+            email: document.getElementById('accountantEmail').value,
+            phone: document.getElementById('accountantPhone').value,
+            department: document.getElementById('accountantDepartment').value,
+            reportingTo: document.getElementById('reportingTo').value,
+            startDate: document.getElementById('accountantStartDate').value,
+            employmentType: document.getElementById('employmentType').value,
+            professionalQualification: document.getElementById('professionalQualification').value,
+            yearsExperience: parseInt(document.getElementById('yearsExperience').value) || 0,
+            additionalCertifications: document.getElementById('additionalCertifications').value,
+            notes: document.getElementById('accountantNotes').value,
+            
+            // Responsibilities
+            financialReporting: getSelectedCheckboxes('financialReporting'),
+            bookkeeping: getSelectedCheckboxes('bookkeeping'),
+            regulatory: getSelectedCheckboxes('regulatory'),
+            systemAccess: getSelectedCheckboxes('systemAccess'),
+            
+            // Metadata
+            role: 'Accountant',
+            submittedBy: 'Managing Director',
+            submittedDate: new Date().toISOString().split('T')[0],
+            status: 'active'
+        };
+        
+        console.log('📤 Submitting accountant data:', accountantData);
+        
+        const baseUrl = window.location.origin;
+        const response = await fetch(`${baseUrl}/api/finance/accountant`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${sessionManager.getAuthToken()}`
+            },
+            body: JSON.stringify(accountantData)
+        });
+        
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+        
+        const result = await response.json();
+        console.log('✅ Accountant details saved successfully:', result);
+        
+        customAlert(`Accountant details saved successfully!\n\nName: ${accountantData.name}\nEmployee ID: ${accountantData.employeeId}\nDepartment: ${accountantData.department}\nReporting To: ${accountantData.reportingTo}\nFinancial Reporting Tasks: ${accountantData.financialReporting.length}\nBookkeeping Tasks: ${accountantData.bookkeeping.length}\nRegulatory Tasks: ${accountantData.regulatory.length}`, "Accountant Created", "success");
+        
+        // Reset form and return to dashboard
+        document.getElementById('accountantForm').reset();
+        showContent(''); // Return to dashboard
+        
+        return false;
+        
+    } catch (error) {
+        console.error('❌ Error saving accountant details:', error);
+        customAlert(`Failed to save accountant details: ${error.message}`, 'Save Error', 'error');
+        return false;
+    }
+}
+
+</script>
 
 
 
