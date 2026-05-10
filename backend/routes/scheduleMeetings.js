@@ -457,6 +457,22 @@ router.post('/', async (req, res) => {
             created_by
         } = req.body;
         
+        // Extract user ID from JWT token
+        let userId = null;
+        try {
+            const authHeader = req.headers.authorization;
+            if (authHeader && authHeader.startsWith('Bearer ')) {
+                const token = authHeader.substring(7);
+                const jwt = require('jsonwebtoken');
+                const decoded = jwt.verify(token, process.env.JWT_SECRET || 'your-secret-key');
+                userId = decoded.id || 1;
+                console.log('🔍 Extracted user ID from JWT:', userId);
+            }
+        } catch (tokenError) {
+            console.warn('⚠️ Could not extract user ID from token, using fallback:', tokenError.message);
+            userId = 1; // Default fallback
+        }
+        
         // Log all received parameters for debugging
         console.log('🔍 Received meeting parameters:', {
             meeting_title,
@@ -472,7 +488,8 @@ router.post('/', async (req, res) => {
             whiteboard_required,
             refreshments_required,
             parking_required,
-            created_by
+            created_by: created_by,
+            userId: userId
         });
         
         // Validate required fields
@@ -517,7 +534,7 @@ router.post('/', async (req, res) => {
             whiteboard_required || false,
             refreshments_required || false,
             parking_required || false,
-            created_by || null
+            userId || null
         ]);
         
         // MySQL2 returns [rows, fields] array - we need the first element (rows)
