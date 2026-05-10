@@ -85316,7 +85316,7 @@ async function documentManagement(){
 
             const result = await response.json();
 
-            documents = result.data || [];
+            documents = result.documents || [];
 
             console.log(`✅ Loaded ${documents.length} documents from database`);
 
