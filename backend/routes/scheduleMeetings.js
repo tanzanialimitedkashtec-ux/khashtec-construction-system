@@ -457,6 +457,24 @@ router.post('/', async (req, res) => {
             created_by
         } = req.body;
         
+        // Log all received parameters for debugging
+        console.log('🔍 Received meeting parameters:', {
+            meeting_title,
+            meeting_type,
+            meeting_date,
+            start_time,
+            end_time,
+            location,
+            organizing_department,
+            expected_attendees,
+            meeting_description,
+            projector_required,
+            whiteboard_required,
+            refreshments_required,
+            parking_required,
+            created_by
+        });
+        
         // Validate required fields
         if (!meeting_title || !meeting_type || !meeting_date || !start_time || !end_time || !organizing_department) {
             return res.status(400).json({
@@ -499,7 +517,7 @@ router.post('/', async (req, res) => {
             whiteboard_required || false,
             refreshments_required || false,
             parking_required || false,
-            (created_by !== undefined && created_by !== null && created_by !== '') ? parseInt(created_by) : null
+            created_by || null
         ]);
         
         // MySQL2 returns [rows, fields] array - we need the first element (rows)
