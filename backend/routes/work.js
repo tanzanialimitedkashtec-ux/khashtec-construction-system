@@ -125,10 +125,10 @@ router.post('/', async (req, res) => {
         console.log('📊 Request body:', req.body);
         
         // Check if this is an HSE request by examining the request body
-        const { work_type } = req.body;
-        if (!work_type || !work_type.includes('Safety') && !work_type.includes('Incident') && 
-            !work_type.includes('Inspection') && !work_type.includes('Training') && 
-            !work_type.includes('Toolbox') && !work_type.includes('PPE')) {
+        const { work_type: requestWorkType } = req.body;
+        if (!requestWorkType || !requestWorkType.includes('Safety') && !requestWorkType.includes('Incident') && 
+            !requestWorkType.includes('Inspection') && !requestWorkType.includes('Training') && 
+            !requestWorkType.includes('Toolbox') && !requestWorkType.includes('PPE')) {
             // Not an HSE request, let it fall through to other routes
             return next();
         }
