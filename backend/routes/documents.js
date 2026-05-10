@@ -7,7 +7,7 @@ const router = express.Router();
 // Try to load database, but don't fail if it's not available
 let db;
 try {
-    db = require('../../../database/config/database');
+    db = require('../../database/config/database');
 } catch (error) {
     console.warn('⚠️ Database module not available in documents route:', error.message);
     db = null;
@@ -160,7 +160,7 @@ router.get('/', async (req, res) => {
         let documents = [];
         
         try {
-            const db = require('../../../database/config/database');
+            const db = require('../../database/config/database');
             
             // Fetch from documents table first
             let realDocuments = [];
@@ -354,7 +354,7 @@ router.get('/:id', async (req, res) => {
         
         // Try database first, fallback to mock data
         try {
-            const db = require('../../../database/config/database');
+            const db = require('../../database/config/database');
             const [adminWorkItems] = await db.execute(
                 'SELECT * FROM admin_work WHERE id = ?', [docId]
             );
@@ -478,7 +478,7 @@ router.post('/upload', async (req, res) => {
         });
         
         try {
-            const db = require('../../../database/config/database');
+            const db = require('../../database/config/database');
             
             // Ensure documents table exists
             await db.execute(`
@@ -602,7 +602,7 @@ router.post('/', upload.single('file'), async (req, res) => {
             // This is a work item submission from frontend forms
             console.log('🔄 Processing work item submission...');
             
-            const db = require('../../../database/config/database');
+            const db = require('../../database/config/database');
             const {
                 work_type,
                 work_title,
@@ -888,7 +888,7 @@ router.delete('/:id', async (req, res) => {
         console.log(`🗑️ Delete request for document ID: ${docId}`);
         
         // Try database first
-        const db = require('../../../database/config/database');
+        const db = require('../../database/config/database');
         
         // Delete from admin_work table
         const [result] = await db.execute(
