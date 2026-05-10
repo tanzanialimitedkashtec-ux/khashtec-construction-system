@@ -501,6 +501,22 @@ router.post('/', async (req, res) => {
             });
         }
         
+        // Process description with HTML stripping and validation
+        let processedDescription = null;
+        try {
+            if (meeting_description) {
+                processedDescription = stripHtmlTags(meeting_description);
+                // Truncate if too long to prevent database issues
+                if (processedDescription.length > 10000) {
+                    console.warn('⚠️ Meeting description too long, truncating to 10000 characters');
+                    processedDescription = processedDescription.substring(0, 10000) + '...';
+                }
+            }
+        } catch (error) {
+            console.warn('⚠️ Error processing meeting description:', error.message);
+            processedDescription = null;
+        }
+        
         // Validate all parameters before database insertion
         const insertParams = [
             meeting_title,
@@ -511,7 +527,7 @@ router.post('/', async (req, res) => {
             location || null,
             organizing_department,
             expected_attendees || 1,
-            stripHtmlTags(meeting_description) || null,
+            processedDescription,
             projector_required || false,
             whiteboard_required || false,
             refreshments_required || false,
@@ -524,7 +540,8 @@ router.post('/', async (req, res) => {
             value: param,
             type: typeof param,
             isUndefined: param === undefined,
-            isNull: param === null
+            isNull: param === null,
+            length: typeof param === 'string' ? param.length : null
         })));
         
         // Check for undefined parameters
