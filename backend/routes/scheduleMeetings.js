@@ -2,6 +2,12 @@ const express = require('express');
 const router = express.Router();
 const db = require('../../database/config/database');
 
+// Helper function to strip HTML tags from text
+const stripHtmlTags = (text) => {
+    if (!text) return '';
+    return text.replace(/<[^>]*>/g, '').trim();
+};
+
 // Test endpoint to verify API is working
 router.get('/test', (req, res) => {
     console.log('🧪 Schedule Meetings API test endpoint accessed');
@@ -101,6 +107,12 @@ router.get('/all', async (req, res) => {
             // If it's [rows, fields] format
             meetings = meetingsResult[0];
         }
+        
+        // Strip HTML tags from meeting descriptions
+        meetings = meetings.map(meeting => ({
+            ...meeting,
+            meeting_description: stripHtmlTags(meeting.meeting_description)
+        }));
         
         console.log(`✅ Found ${meetings.length} scheduled meetings`);
         res.json({
@@ -227,6 +239,12 @@ router.get('/upcoming', async (req, res) => {
             // If it's [rows, fields] format
             meetings = meetingsResult[0];
         }
+        
+        // Strip HTML tags from meeting descriptions
+        meetings = meetings.map(meeting => ({
+            ...meeting,
+            meeting_description: stripHtmlTags(meeting.meeting_description)
+        }));
         
         console.log(`✅ Found ${meetings.length} upcoming meetings`);
         res.json({
@@ -397,10 +415,14 @@ router.get('/:id', async (req, res) => {
             });
         }
         
-        console.log(`✅ Found meeting: ${meetings[0].meeting_title}`);
+        // Strip HTML tags from meeting description
+        const meeting = meetings[0];
+        meeting.meeting_description = stripHtmlTags(meeting.meeting_description);
+        
+        console.log(`✅ Found meeting: ${meeting.meeting_title}`);
         res.json({
             success: true,
-            meeting: meetings[0]
+            meeting: meeting
         });
     } catch (error) {
         console.error('❌ Error fetching meeting:', error);
@@ -472,12 +494,12 @@ router.post('/', async (req, res) => {
             location || null,
             organizing_department,
             expected_attendees || 1,
-            meeting_description || null,
+            stripHtmlTags(meeting_description) || null,
             projector_required || false,
             whiteboard_required || false,
             refreshments_required || false,
             parking_required || false,
-            parseInt(created_by) || null
+            (created_by !== undefined && created_by !== null && created_by !== '') ? parseInt(created_by) : null
         ]);
         
         // MySQL2 returns [rows, fields] array - we need the first element (rows)
@@ -589,7 +611,7 @@ router.put('/:id', async (req, res) => {
             location || null,
             organizing_department,
             expected_attendees || 1,
-            meeting_description || null,
+            stripHtmlTags(meeting_description) || null,
             projector_required || false,
             whiteboard_required || false,
             refreshments_required || false,
