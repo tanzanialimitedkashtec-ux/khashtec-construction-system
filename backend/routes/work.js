@@ -4180,5 +4180,168 @@ router.delete('/notifications/:id', async (req, res) => {
     }
 });
 
+// Accountant Management API
+router.post('/finance/accountant', async (req, res) => {
+    try {
+        console.log('🔍 Accountant creation request received');
+        console.log('📊 Request body:', req.body);
+        
+        const {
+            name,
+            employeeId,
+            email,
+            phone,
+            department,
+            reportingTo,
+            startDate,
+            employmentType,
+            professionalQualification,
+            yearsExperience,
+            additionalCertifications,
+            notes,
+            financialReporting,
+            bookkeeping,
+            regulatory,
+            systemAccess
+        } = req.body;
+        
+        // Validate required fields
+        if (!name || !employeeId || !email || !department || !reportingTo || !startDate) {
+            console.log('❌ Validation failed - missing required fields');
+            return res.status(400).json({ 
+                error: 'Missing required fields',
+                required: ['name', 'employeeId', 'email', 'department', 'reportingTo', 'startDate'],
+                received: { name, employeeId, email, department, reportingTo, startDate }
+            });
+        }
+        
+        // Convert arrays to JSON strings for database storage
+        const financialReportingJson = financialReporting ? JSON.stringify(financialReporting) : null;
+        const bookkeepingJson = bookkeeping ? JSON.stringify(bookkeeping) : null;
+        const regulatoryJson = regulatory ? JSON.stringify(regulatory) : null;
+        const systemAccessJson = systemAccess ? JSON.stringify(systemAccess) : null;
+        
+        // Get user ID from session (assuming authentication middleware sets req.user)
+        const submittedBy = req.user?.id || 1; // Default to 1 for testing
+        const submittedByRole = req.user?.role || 'Managing Director';
+        
+        console.log('📝 Extracted accountant data:', {
+            name,
+            employeeId,
+            email,
+            department,
+            reportingTo,
+            startDate,
+            employmentType,
+            professionalQualification,
+            yearsExperience,
+            financialReporting: financialReportingJson,
+            bookkeeping: bookkeepingJson,
+            regulatory: regulatoryJson,
+            systemAccess: systemAccessJson
+        });
+        
+        // Check if employee ID already exists
+        const [existingAccountant] = await db.execute(`
+            SELECT id FROM accountants WHERE employee_id = ?
+        `, [employeeId]);
+        
+        if (existingAccountant.length > 0) {
+            console.log('❌ Employee ID already exists:', employeeId);
+            return res.status(400).json({
+                error: 'Employee ID already exists',
+                employeeId: employeeId
+            });
+        }
+        
+        // Check if email already exists
+        const [existingEmail] = await db.execute(`
+            SELECT id FROM accountants WHERE email = ?
+        `, [email]);
+        
+        if (existingEmail.length > 0) {
+            console.log('❌ Email already exists:', email);
+            return res.status(400).json({
+                error: 'Email already exists',
+                email: email
+            });
+        }
+        
+        // Insert accountant data
+        const [result] = await db.execute(`
+            INSERT INTO accountants (
+                employee_id, name, email, phone, department, reporting_to, 
+                start_date, employment_type, professional_qualification, years_of_experience,
+                additional_certifications, status, notes,
+                financial_reporting, bookkeeping, regulatory, system_access,
+                role, submitted_by, submitted_by_role, submitted_date
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        `, [
+            employeeId,
+            name,
+            email,
+            phone,
+            department,
+            reportingTo,
+            startDate,
+            employmentType,
+            professionalQualification,
+            parseInt(yearsExperience) || 0,
+            additionalCertifications,
+            'Active',
+            notes,
+            financialReportingJson,
+            bookkeepingJson,
+            regulatoryJson,
+            systemAccessJson,
+            'Accountant',
+            submittedBy,
+            submittedByRole,
+            new Date().toISOString().split('T')[0] // submitted_date
+        ]);
+        
+        console.log('✅ Accountant created successfully:', result);
+        
+        res.status(201).json({
+            success: true,
+            message: 'Accountant details saved successfully',
+            id: result.insertId,
+            data: {
+                id: result.insertId,
+                employeeId,
+                name,
+                email,
+                department,
+                reportingTo,
+                startDate,
+                employmentType,
+                professionalQualification,
+                yearsExperience: parseInt(yearsExperience) || 0,
+                financialReporting: financialReporting || [],
+                bookkeeping: bookkeeping || [],
+                regulatory: regulatory || [],
+                systemAccess: systemAccess || [],
+                status: 'Active',
+                submittedBy: submittedByRole,
+                submittedDate: new Date().toISOString().split('T')[0]
+            }
+        });
+        
+    } catch (error) {
+        console.error('❌ Error creating accountant:', error);
+        console.error('❌ Error details:', {
+            message: error.message,
+            stack: error.stack,
+            name: error.name
+        });
+        
+        res.status(500).json({
+            success: false,
+            error: 'Failed to save accountant details',
+            details: error.message
+        });
+    }
+});
+
 
 module.exports = router;
