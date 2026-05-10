@@ -71788,6 +71788,23 @@ async function submitWorkforceRequest() {
 
         
 
+        // Check authentication token
+        const authToken = sessionManager.getAuthToken();
+        console.log('🔑 Auth token check:', {
+            exists: !!authToken,
+            length: authToken ? authToken.length : 0,
+            startsWithBearer: authToken ? authToken.startsWith('eyJ') : false,
+            tokenPreview: authToken ? authToken.substring(0, 20) + '...' : 'null'
+        });
+
+        if (!authToken) {
+            console.error('❌ No auth token found');
+            customAlert('Please log in to submit workforce requests.', 'Authentication Required', 'error');
+            return false;
+        }
+
+        
+
         // Validate required fields
 
         if (!request.project || !request.requestType || !request.workersNeeded || !request.jobCategories.length || 
@@ -71875,8 +71892,24 @@ async function submitWorkforceRequest() {
     } catch (error) {
 
         console.error('❌ Error submitting workforce request:', error);
+        console.error('❌ Error details:', {
+            message: error.message,
+            stack: error.stack,
+            name: error.name
+        });
 
-        customAlert('Failed to submit workforce request. Please try again.', 'Submission Error', 'error');
+        // Check if it's an authentication error
+        if (error.message.includes('401') || error.message.includes('403')) {
+            customAlert('Authentication error. Please log in again.', 'Authentication Required', 'error');
+            // Optionally redirect to login
+            setTimeout(() => {
+                window.location.href = '/';
+            }, 2000);
+        } else if (error.message.includes('400')) {
+            customAlert('Invalid request data. Please check all required fields.', 'Validation Error', 'error');
+        } else {
+            customAlert(`Failed to submit workforce request: ${error.message}`, 'Submission Error', 'error');
+        }
 
         return false;
 
