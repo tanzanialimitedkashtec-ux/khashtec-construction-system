@@ -3552,6 +3552,29 @@ app.get('/api/vehicles', async (req, res) => {
     }
 });
 
+// ===== NOTIFICATION SERVICE =====
+const notificationService = require('./services/notificationService');
+
+// Schedule notification monitoring every 5 minutes
+setInterval(async () => {
+    try {
+        console.log('🔔 Running scheduled notification monitoring...');
+        await notificationService.monitorDepartmentChanges();
+    } catch (error) {
+        console.error('❌ Error in scheduled notification monitoring:', error);
+    }
+}, 5 * 60 * 1000); // 5 minutes
+
+// Run initial monitoring after server starts
+setTimeout(async () => {
+    try {
+        console.log('🔔 Running initial notification monitoring...');
+        await notificationService.monitorDepartmentChanges();
+    } catch (error) {
+        console.error('❌ Error in initial notification monitoring:', error);
+    }
+}, 10000); // 10 seconds after server starts
+
 // Health check endpoint for Railway
 app.get('/health', (req, res) => {
     res.status(200).json({

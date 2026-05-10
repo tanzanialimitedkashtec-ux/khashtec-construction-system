@@ -85623,23 +85623,24 @@ function formatDate(dateString) {
 // Document action functions
 
 async function uploadCertificate() {
-
+    console.log('🚀 uploadCertificate function called');
+    
     const certType = document.getElementById('certType').value;
-
     const certFile = document.getElementById('certFile').files[0];
-
     const certExpiry = document.getElementById('certExpiry').value;
-
     const certDescription = document.getElementById('certDescription').value;
 
-    
+    console.log('📋 Form values:', {
+        certType,
+        certFile: certFile ? certFile.name : 'No file selected',
+        certExpiry,
+        certDescription
+    });
 
     if (!certType) {
-
+        console.log('❌ Validation failed: No certificate type selected');
         showNotification('Please select certificate type', 'error');
-
         return;
-
     }
 
     
@@ -85655,13 +85656,23 @@ async function uploadCertificate() {
     
 
     console.log('📤 Uploading certificate:', certType, fileName);
-
-    
+    console.log('🌐 Making request to:', `${window.location.origin}/api/documents/upload`);
 
     try {
-
         const baseUrl = window.location.origin;
-
+        const requestBody = {
+            type: certType,
+            name: `${certType} Certificate`,
+            filename: fileName,
+            file_size: fileSize,
+            mime_type: mimeType,
+            expiry_date: certExpiry,
+            description: certDescription,
+            uploaded_by: 1 // Default user for now
+        };
+        
+        console.log('📤 Request body:', requestBody);
+        
         const response = await fetch(`${baseUrl}/api/documents/upload`, {
 
             method: 'POST',
@@ -85672,25 +85683,7 @@ async function uploadCertificate() {
 
             },
 
-            body: JSON.stringify({
-
-                type: certType,
-
-                name: `${certType} Certificate`,
-
-                filename: fileName,
-
-                file_size: fileSize,
-
-                mime_type: mimeType,
-
-                expiry_date: certExpiry,
-
-                description: certDescription,
-
-                uploaded_by: 1 // Default user for now
-
-            })
+            body: JSON.stringify(requestBody)
 
         });
 
@@ -85701,6 +85694,8 @@ async function uploadCertificate() {
             const result = await response.json();
 
             console.log('✅ Upload response:', result);
+            console.log('📊 Response status:', response.status);
+            console.log('📊 Response headers:', response.headers);
 
             showNotification('Certificate uploaded successfully', 'success');
 
@@ -85719,21 +85714,23 @@ async function uploadCertificate() {
             documentManagement();
 
         } else {
-
+            console.log('❌ Upload failed with status:', response.status);
+            console.log('❌ Response headers:', response.headers);
+            
             const errorData = await response.json().catch(() => ({}));
-
             console.error('❌ Upload error:', errorData);
-
+            
             showNotification(errorData.error || 'Failed to upload certificate', 'error');
-
         }
 
     } catch (error) {
-
-        console.error('❌ Error uploading certificate:', error);
-
-        showNotification('Error uploading certificate. Please try again.', 'error');
-
+        console.error('❌ Network error uploading certificate:', error);
+        console.error('❌ Error details:', {
+            message: error.message,
+            stack: error.stack,
+            name: error.name
+        });
+        showNotification('Network error uploading certificate. Please check your connection.', 'error');
     }
 
 }
@@ -85741,65 +85738,158 @@ async function uploadCertificate() {
 
 
 async function viewDocument(docId) {
-
     console.log('👁️ Viewing document:', docId);
+    const baseUrl = window.location.origin;
+    console.log('🌐 API URL:', `${baseUrl}/api/documents/${docId}`);
+    console.log('🔑 Auth token:', token ? 'Present' : 'Missing');
 
-    showNotification(`Opening document ID: ${docId}`, 'info');
+    try {
+        const response = await fetch(`${baseUrl}/api/documents/${docId}`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                ...(token && { 'Authorization': `Bearer ${token}` })
+            }
+        });
 
-    // In a real implementation, this would open the document in a viewer
-
+        if (response.ok) {
+            const document = await response.json();
+            console.log('✅ Document details retrieved:', document);
+            
+            // Create a modal to display document information
+            const modal = document.createElement('div');
+            modal.className = 'modal-overlay';
+            modal.innerHTML = `
+                <div class="modal-content" style="max-width: 600px; margin: 50px auto; background: white; padding: 30px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+                    <div class="modal-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                        <h2>Document Details</h2>
+                        <button onclick="this.closest('.modal-overlay').remove()" style="background: none; border: none; font-size: 24px; cursor: pointer;">&times;</button>
+                    </div>
+                    <div class="modal-body">
+                        <p><strong>Title:</strong> ${document.title || document.work_title || 'N/A'}</p>
+                        <p><strong>Type:</strong> ${document.type || document.work_type || 'N/A'}</p>
+                        <p><strong>Category:</strong> ${document.category || 'N/A'}</p>
+                        <p><strong>Description:</strong> ${document.description || document.work_description || 'N/A'}</p>
+                        <p><strong>Status:</strong> <span class="status-${document.status || 'pending'}">${document.status || 'pending'}</span></p>
+                        <p><strong>Uploaded Date:</strong> ${formatDate(document.uploadedDate || document.submitted_date)}</p>
+                        <p><strong>File Name:</strong> ${document.fileName || 'N/A'}</p>
+                    </div>
+                    <div class="modal-footer" style="margin-top: 20px; text-align: right;">
+                        <button onclick="downloadDocument(${docId}); this.closest('.modal-overlay').remove();" style="background: #28a745; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; margin-right: 10px;">Download</button>
+                        <button onclick="this.closest('.modal-overlay').remove()" style="background: #6c757d; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer;">Close</button>
+                    </div>
+                </div>
+            `;
+            
+            // Add modal styles if not already present
+            if (!document.querySelector('#modal-styles')) {
+                const style = document.createElement('style');
+                style.id = 'modal-styles';
+                style.textContent = `
+                    .modal-overlay {
+                        position: fixed;
+                        top: 0;
+                        left: 0;
+                        width: 100%;
+                        height: 100%;
+                        background: rgba(0,0,0,0.5);
+                        z-index: 1000;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                    }
+                    .status-pending { color: #ffc107; }
+                    .status-approved { color: #28a745; }
+                    .status-rejected { color: #dc3545; }
+                    .status-active { color: #28a745; }
+                `;
+                document.head.appendChild(style);
+            }
+            
+            document.body.appendChild(modal);
+            showNotification('Document details loaded successfully', 'success');
+            
+        } else {
+            const errorData = await response.json().catch(() => ({}));
+            console.error('❌ Failed to load document:', errorData);
+            showNotification(errorData.error || 'Failed to load document details', 'error');
+        }
+        
+    } catch (error) {
+        console.error('❌ Error viewing document:', error);
+        showNotification('Error loading document. Please try again.', 'error');
+    }
 }
 
 
 
-async function downloadDocument(docId) {
+// Helper function to format dates
+function formatDate(dateString) {
+    if (!dateString) return 'N/A';
+    try {
+        const date = new Date(dateString);
+        return date.toLocaleDateString('en-US', {
+            year: 'numeric',
+            month: 'short',
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+        });
+    } catch (error) {
+        return dateString;
+    }
+}
 
-    console.log('⬇️ Downloading document:', docId);
+async function downloadDocument(docId) {
+    console.log('💾 Downloading document:', docId);
+    const baseUrl = window.location.origin;
+    console.log('🌐 API URL:', `${baseUrl}/api/documents/${docId}/download`);
+    console.log('🔑 Auth token:', token ? 'Present' : 'Missing');
 
     try {
-
-        const baseUrl = window.location.origin;
-
-        const response = await fetch(`${baseUrl}/api/documents/${docId}/download`);
-
-        
+        const response = await fetch(`${baseUrl}/api/documents/${docId}/download`, {
+            method: 'GET',
+            headers: {
+                ...(token && { 'Authorization': `Bearer ${token}` })
+            }
+        });
 
         if (response.ok) {
-
             const blob = await response.blob();
-
+            console.log('✅ Blob created, size:', blob.size, 'type:', blob.type);
+            
+            // Get filename from response headers or create a default one
+            const contentDisposition = response.headers.get('Content-Disposition');
+            let fileName = `document-${docId}.pdf`;
+            
+            if (contentDisposition) {
+                const fileNameMatch = contentDisposition.match(/filename="(.+)"/);
+                if (fileNameMatch) {
+                    fileName = fileNameMatch[1];
+                }
+            }
+            
             const url = window.URL.createObjectURL(blob);
-
             const a = document.createElement('a');
-
             a.href = url;
-
-            a.download = `document-${docId}`;
-
+            a.download = fileName;
             document.body.appendChild(a);
-
             a.click();
-
             window.URL.revokeObjectURL(url);
-
             document.body.removeChild(a);
 
-            showNotification('Document downloaded successfully', 'success');
-
+            showNotification(`Document "${fileName}" downloaded successfully`, 'success');
+            
         } else {
-
-            showNotification('Failed to download document', 'error');
-
+            const errorData = await response.json().catch(() => ({}));
+            console.error('❌ Failed to download document:', errorData);
+            showNotification(errorData.error || 'Failed to download document', 'error');
         }
 
     } catch (error) {
-
         console.error('❌ Error downloading document:', error);
-
         showNotification('Error downloading document. Please try again.', 'error');
-
     }
-
 }
 
 
