@@ -85740,6 +85740,7 @@ async function uploadCertificate() {
 async function viewDocument(docId) {
     console.log('👁️ Viewing document:', docId);
     const baseUrl = window.location.origin;
+    const token = sessionStorage.getItem('kashtec_token') || sessionManager.getAuthToken();
     console.log('🌐 API URL:', `${baseUrl}/api/documents/${docId}`);
     console.log('🔑 Auth token:', token ? 'Present' : 'Missing');
 
@@ -85843,6 +85844,7 @@ function formatDate(dateString) {
 async function downloadDocument(docId) {
     console.log('💾 Downloading document:', docId);
     const baseUrl = window.location.origin;
+    const token = sessionStorage.getItem('kashtec_token') || sessionManager.getAuthToken();
     console.log('🌐 API URL:', `${baseUrl}/api/documents/${docId}/download`);
     console.log('🔑 Auth token:', token ? 'Present' : 'Missing');
 
