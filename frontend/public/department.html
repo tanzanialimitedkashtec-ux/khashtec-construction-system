@@ -85426,6 +85426,8 @@ async function documentManagement(){
 
                                     <th>Name</th>
 
+                                    <th>Description</th>
+
                                     <th>Status</th>
 
                                     <th>Expiry Date</th>
@@ -85449,6 +85451,8 @@ async function documentManagement(){
                                             <td>${getDocumentTypeLabel(doc.type)}</td>
 
                                             <td>${doc.name || doc.filename || 'N/A'}</td>
+
+                                            <td>${doc.description || 'No description'}</td>
 
                                             <td>
 
