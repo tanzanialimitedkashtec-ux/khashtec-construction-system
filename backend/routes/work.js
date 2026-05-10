@@ -286,10 +286,10 @@ router.post('/', async (req, res) => {
                 status,
                 submitted_date: new Date().toISOString().split('T')[0],
                 // Include HSE-specific fields if provided
-                ...(incident_type && { incident_type }),
-                ...(severity && { severity }),
-                ...(location && { location }),
-                ...(project_name && { project_name })
+                incident_type: incident_type || null,
+                severity: severity || null,
+                location: location || null,
+                project_name: project_name || null
             }
         });
         
@@ -2635,10 +2635,10 @@ router.post('/hse', async (req, res) => {
                 status,
                 submitted_date: new Date().toISOString().split('T')[0],
                 // Include HSE-specific fields if provided
-                ...(incident_type && { incident_type }),
-                ...(severity && { severity }),
-                ...(location && { location }),
-                ...(project_name && { project_name })
+                incident_type: incident_type || null,
+                severity: severity || null,
+                location: location || null,
+                project_name: project_name || null
             }
         });
         
