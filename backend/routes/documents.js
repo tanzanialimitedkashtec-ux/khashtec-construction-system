@@ -4,6 +4,12 @@ const path = require('path');
 const fs = require('fs');
 const router = express.Router();
 
+// Helper function to strip HTML tags from text
+const stripHtmlTags = (text) => {
+    if (!text) return '';
+    return text.replace(/<[^>]*>/g, '').trim();
+};
+
 // Try to load database, but don't fail if it's not available
 let db;
 try {
@@ -244,7 +250,7 @@ router.get('/', async (req, res) => {
                 adminWorkDocuments = adminWorkArray.map(item => ({
                     id: item.id,
                     title: item.work_title,
-                    description: item.work_description,
+                    description: stripHtmlTags(item.work_description),
                     category: item.work_type || 'general',
                     type: 'PDF', // Default type
                     uploadedBy: item.assigned_to || 1,
@@ -374,7 +380,7 @@ router.get('/:id', async (req, res) => {
             const document = {
                 id: item.id,
                 title: item.work_title,
-                description: item.work_description,
+                description: stripHtmlTags(item.work_description),
                 category: item.work_type || 'general',
                 type: 'PDF',
                 uploadedBy: item.assigned_to || 1,
