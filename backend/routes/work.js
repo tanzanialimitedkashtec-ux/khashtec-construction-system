@@ -265,7 +265,8 @@ router.post('/', async (req, res) => {
         console.log('🔍 Final values:', allValues);
         
         // Execute the query
-        const [result] = await db.execute(query, allValues);
+        const queryResult = await db.execute(query, allValues);
+        const result = queryResult[0] || queryResult;
         
         console.log('✅ HSE work item created successfully:', result);
         
@@ -2614,7 +2615,8 @@ router.post('/hse', async (req, res) => {
         console.log('🔍 Final values:', allValues);
         
         // Execute the query
-        const [result] = await db.execute(query, allValues);
+        const queryResult = await db.execute(query, allValues);
+        const result = queryResult[0] || queryResult;
         
         console.log('✅ HSE work item created successfully:', result);
         
