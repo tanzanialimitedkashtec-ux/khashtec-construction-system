@@ -501,6 +501,38 @@ router.post('/', async (req, res) => {
             });
         }
         
+        // Validate all parameters before database insertion
+        const insertParams = [
+            meeting_title,
+            meeting_type,
+            meeting_date,
+            start_time,
+            end_time,
+            location || null,
+            organizing_department,
+            expected_attendees || 1,
+            stripHtmlTags(meeting_description) || null,
+            projector_required || false,
+            whiteboard_required || false,
+            refreshments_required || false,
+            parking_required || false,
+            userId || null
+        ];
+        
+        console.log('🔍 INSERT Parameters validation:', insertParams.map((param, index) => ({
+            index,
+            value: param,
+            type: typeof param,
+            isUndefined: param === undefined,
+            isNull: param === null
+        })));
+        
+        // Check for undefined parameters
+        const undefinedParams = insertParams.filter(param => param === undefined);
+        if (undefinedParams.length > 0) {
+            throw new Error(`Undefined parameters found at indices: ${insertParams.map((param, i) => param === undefined ? i : -1).filter(i => i >= 0).join(', ')}`);
+        }
+        
         // Insert new meeting
         const queryResult = await db.execute(`
             INSERT INTO schedule_meetings (
@@ -520,22 +552,7 @@ router.post('/', async (req, res) => {
                 status,
                 created_by
             ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'Scheduled', ?)
-        `, [
-            meeting_title,
-            meeting_type,
-            meeting_date,
-            start_time,
-            end_time,
-            location || null,
-            organizing_department,
-            expected_attendees || 1,
-            stripHtmlTags(meeting_description) || null,
-            projector_required || false,
-            whiteboard_required || false,
-            refreshments_required || false,
-            parking_required || false,
-            userId || null
-        ]);
+        `, insertParams);
         
         // MySQL2 returns [rows, fields] array - we need the first element (rows)
         const result = queryResult[0] || {};
