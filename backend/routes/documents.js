@@ -503,6 +503,28 @@ router.post('/upload', async (req, res) => {
             `);
             console.log('✅ Documents table verified/created successfully');
             
+            // Check if expiry_date column exists, if not add it
+            try {
+                const [columns] = await db.execute(`
+                    SHOW COLUMNS FROM documents LIKE 'expiry_date'
+                `);
+                
+                if (columns.length === 0) {
+                    console.log('🔧 Adding expiry_date column to documents table...');
+                    await db.execute(`
+                        ALTER TABLE documents ADD COLUMN expiry_date DATE AFTER status
+                    `);
+                    await db.execute(`
+                        ALTER TABLE documents ADD INDEX idx_expiry_date (expiry_date)
+                    `);
+                    console.log('✅ expiry_date column added successfully');
+                } else {
+                    console.log('✅ expiry_date column already exists');
+                }
+            } catch (alterError) {
+                console.log('⚠️ Could not add expiry_date column (may already exist):', alterError.message);
+            }
+            
             // Map certificate types to categories
             const categoryMap = {
                 'tin': 'Certificate',
