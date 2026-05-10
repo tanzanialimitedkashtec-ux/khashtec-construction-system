@@ -1603,6 +1603,55 @@ CREATE TABLE IF NOT EXISTS senior_roles (
     INDEX idx_priority (priority)
 );
 
+-- Accountants table for managing accountant roles and responsibilities
+CREATE TABLE IF NOT EXISTS accountants (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  employee_id VARCHAR(50) UNIQUE NOT NULL,
+  name VARCHAR(255) NOT NULL,
+  email VARCHAR(255) UNIQUE NOT NULL,
+  phone VARCHAR(50),
+  department ENUM('Finance', 'Accounting', 'Administration') DEFAULT 'Finance',
+  reporting_to VARCHAR(255) NOT NULL,
+  start_date DATE NOT NULL,
+  employment_type ENUM('Full-Time', 'Part-Time', 'Contract', 'Intern') DEFAULT 'Full-Time',
+  professional_qualification ENUM('CPA', 'ACCA', 'CIMA', 'Bachelor Degree', 'Diploma', 'Certificate') NULL,
+  years_of_experience INT DEFAULT 0,
+  additional_certifications TEXT NULL,
+  status ENUM('Active', 'Inactive', 'On Leave', 'Terminated') DEFAULT 'Active',
+  notes TEXT NULL,
+  
+  -- Financial Reporting Responsibilities (JSON array)
+  financial_reporting JSON NULL,
+  
+  -- Bookkeeping Responsibilities (JSON array)
+  bookkeeping JSON NULL,
+  
+  -- Regulatory Compliance Responsibilities (JSON array)
+  regulatory JSON NULL,
+  
+  -- System Access Permissions (JSON array)
+  system_access JSON NULL,
+  
+  -- Metadata
+  role VARCHAR(50) DEFAULT 'Accountant',
+  submitted_by INT NOT NULL,
+  submitted_by_role VARCHAR(100) NOT NULL,
+  submitted_date DATE NOT NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  updated_by INT NULL,
+  
+  FOREIGN KEY (submitted_by) REFERENCES users(id),
+  FOREIGN KEY (updated_by) REFERENCES users(id),
+  INDEX idx_employee_id (employee_id),
+  INDEX idx_email (email),
+  INDEX idx_department (department),
+  INDEX idx_status (status),
+  INDEX idx_employment_type (employment_type),
+  INDEX idx_qualification (professional_qualification),
+  INDEX idx_submitted_by (submitted_by)
+);
+
 -- Sample Data for New Forms Tables (Optional)
 -- NHIF Sample Data
 INSERT IGNORE INTO nhif_contributions (employee_id, contribution_month, employee_contribution, employer_contribution, total_contribution, payment_status, payment_date, receipt_number) VALUES
@@ -1619,6 +1668,41 @@ INSERT IGNORE INTO procurement_sales (request_title, procurement_type, item_desc
 INSERT IGNORE INTO tax_payments (tax_type, tax_period, payment_date, due_date, amount, penalties, interest, total_amount, payment_method, payment_reference, payment_status, department, recorded_by, recorded_by_role) VALUES
 ('PAYE', 'January 2024', '2024-01-15', '2024-01-10', 2500000.00, 0, 0, 2500000.00, 'Bank Transfer', 'TRRA-2024-001', 'Paid', 'Finance', 1, 'Finance Manager'),
 ('VAT', 'Q4 2023', '2024-01-20', '2024-01-31', 1800000.00, 0, 0, 1800000.00, 'Bank Transfer', 'TRRA-2024-002', 'Paid', 'Finance', 1, 'Finance Manager');
+
+-- Accountants Sample Data
+INSERT IGNORE INTO accountants (
+  employee_id, name, email, phone, department, reporting_to, start_date, employment_type, 
+  professional_qualification, years_of_experience, additional_certifications, status, notes,
+  financial_reporting, bookkeeping, regulatory, system_access,
+  submitted_by, submitted_by_role, submitted_date
+) VALUES
+(
+  'ACC-2024-001', 'Jane Smith', 'jane.smith@khashtec.com', '+255 712 345 678', 'Finance', 'Senior Accountant - John Doe', '2024-01-15', 'Full-Time',
+  'CPA', 5, 'Taxation Certificate, Financial Analysis Certification', 'Active', 'Senior accountant with expertise in financial reporting and tax compliance',
+  '["monthly-reports", "quarterly-reports", "annual-reports", "budget-analysis", "cash-flow"]',
+  '["accounts-payable", "accounts-receivable", "bank-reconciliation", "expense-tracking", "invoice-processing"]',
+  '["tax-compliance", "financial-regulations", "trra-compliance", "audit-readiness", "internal-controls"]',
+  '["accounting-software", "banking-portal", "tax-portal", "reporting-tools"]',
+  1, 'Managing Director', '2024-01-15'
+),
+(
+  'ACC-2024-002', 'Mary Johnson', 'mary.johnson@khashtec.com', '+255 713 456 789', 'Accounting', 'Finance Manager - Robert Kim', '2024-02-01', 'Full-Time',
+  'ACCA', 3, 'Advanced Excel, QuickBooks Certification', 'Active', 'Detail-oriented accountant specializing in bookkeeping and payroll',
+  '["monthly-reports", "profit-loss", "balance-sheet", "audit-support"]',
+  '["accounts-payable", "accounts-receivable", "bank-reconciliation", "payroll-processing", "tax-calculations"]',
+  '["tax-compliance", "policy-compliance", "documentation", "reporting-deadlines"]',
+  '["accounting-software", "payroll-system", "document-management", "reporting-tools"]',
+  1, 'Managing Director', '2024-02-01'
+),
+(
+  'ACC-2024-003', 'David Wilson', 'david.wilson@khashtec.com', '+255 714 567 890', 'Finance', 'Senior Accountant - John Doe', '2024-03-10', 'Contract',
+  'Bachelor Degree', 2, 'Financial Modeling Certificate, Data Analysis', 'Active', 'Junior accountant focusing on financial analysis and reporting',
+  '["monthly-reports", "quarterly-reports", "budget-analysis", "cash-flow", "profit-loss"]',
+  '["expense-tracking", "invoice-processing", "fixed-assets"]',
+  '["financial-regulations", "internal-controls", "policy-compliance"]',
+  '["accounting-software", "reporting-tools", "document-management"]',
+  1, 'Managing Director', '2024-03-10'
+);
 
 -- Senior Roles Sample Data
 INSERT IGNORE INTO senior_roles (employee_id, senior_role_type, proposed_title, department, proposed_salary, effective_date, reason_for_promotion, submitted_by, submitted_by_role) VALUES
