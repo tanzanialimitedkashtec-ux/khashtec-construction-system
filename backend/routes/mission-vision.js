@@ -36,42 +36,71 @@ router.post('/mission-vision', async (req, res) => {
     }
     
     try {
-        // Create mission & vision data object
-        const missionVisionData = {
-            mission_statement: missionStatement,
-            mission_category: missionCategory || '',
-            mission_last_reviewed: missionLastReviewed || '',
-            vision_statement: visionStatement,
-            vision_timeframe: visionTimeframe || '',
-            vision_last_reviewed: visionLastReviewed || '',
-            core_values: JSON.stringify(coreValues),
-            additional_values: additionalValues,
-            short_term_objectives: strategicObjectives.shortTerm || '',
-            long_term_objectives: strategicObjectives.longTerm || '',
-            stakeholder_focus: JSON.stringify(stakeholderFocus),
-            communication_strategy: implementation.communicationStrategy || '',
-            integration_strategy: implementation.integrationStrategy || '',
-            review_frequency: implementation.reviewFrequency || '',
-            next_review_date: implementation.nextReviewDate || '',
-            success_metrics: successMetrics,
-            notes,
-            submitted_by: submittedBy,
-            submitted_date: submittedDate || new Date().toISOString().split('T')[0],
-            status: 'active',
-            created_at: new Date().toISOString()
-        };
+        // Check if mission & vision already exists (we'll use the first record as the main one)
+        const existingMissionVision = await db.execute(
+            'SELECT id FROM mission_vision WHERE status = ? LIMIT 1',
+            ['active']
+        );
         
-        console.log('📝 Processing mission & vision data:', missionVisionData);
+        let result;
+        if (existingMissionVision.length > 0) {
+            // Update existing mission & vision
+            await db.execute(`
+                UPDATE mission_vision SET 
+                    mission_statement = ?, mission_category = ?, mission_last_reviewed = ?,
+                    vision_statement = ?, vision_timeframe = ?, vision_last_reviewed = ?,
+                    core_values = ?, additional_values = ?, short_term_objectives = ?,
+                    long_term_objectives = ?, stakeholder_focus = ?, communication_strategy = ?,
+                    integration_strategy = ?, review_frequency = ?, next_review_date = ?,
+                    success_metrics = ?, notes = ?, submitted_by = ?, submitted_date = ?,
+                    status = 'active', updated_at = CURRENT_TIMESTAMP
+                WHERE id = ?
+            `, [
+                missionStatement, missionCategory || null, missionLastReviewed || null,
+                visionStatement, visionTimeframe || null, visionLastReviewed || null,
+                JSON.stringify(coreValues), additionalValues, strategicObjectives.shortTerm || '',
+                strategicObjectives.longTerm || '', JSON.stringify(stakeholderFocus),
+                implementation.communicationStrategy || '', implementation.integrationStrategy || '',
+                implementation.reviewFrequency || null, implementation.nextReviewDate || null,
+                successMetrics, notes, submittedBy,
+                submittedDate || new Date().toISOString().split('T')[0], existingMissionVision[0].id
+            ]);
+            
+            result = { 
+                action: 'updated',
+                id: existingMissionVision[0].id,
+                note: 'Mission & Vision details updated successfully'
+            };
+        } else {
+            // Insert new mission & vision
+            const insertResult = await db.execute(`
+                INSERT INTO mission_vision (
+                    mission_statement, mission_category, mission_last_reviewed,
+                    vision_statement, vision_timeframe, vision_last_reviewed,
+                    core_values, additional_values, short_term_objectives,
+                    long_term_objectives, stakeholder_focus, communication_strategy,
+                    integration_strategy, review_frequency, next_review_date,
+                    success_metrics, notes, submitted_by, submitted_date, status
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            `, [
+                missionStatement, missionCategory || null, missionLastReviewed || null,
+                visionStatement, visionTimeframe || null, visionLastReviewed || null,
+                JSON.stringify(coreValues), additionalValues, strategicObjectives.shortTerm || '',
+                strategicObjectives.longTerm || '', JSON.stringify(stakeholderFocus),
+                implementation.communicationStrategy || '', implementation.integrationStrategy || '',
+                implementation.reviewFrequency || null, implementation.nextReviewDate || null,
+                successMetrics, notes, submittedBy,
+                submittedDate || new Date().toISOString().split('T')[0], 'active'
+            ]);
+            
+            result = { 
+                action: 'created',
+                id: insertResult.insertId,
+                note: 'Mission & Vision details created successfully'
+            };
+        }
         
-        // For now, return success with processed data (simulating database save)
-        const result = { 
-            ...missionVisionData, 
-            id: `MV-${Date.now()}`, 
-            action: 'created',
-            note: 'Mission & Vision data processed successfully and saved to memory'
-        };
-        
-        console.log('✅ Mission & Vision details processed successfully:', result);
+        console.log('✅ Mission & Vision details saved successfully:', result);
         
         res.json({
             success: true,
@@ -93,39 +122,24 @@ router.get('/mission-vision', async (req, res) => {
     console.log('📝 GET /api/mission-vision accessed');
     
     try {
-        // Return mock data for now - this ensures frontend works
-        const mockMissionVision = [
-            {
-                id: 'MV-1715432000000',
-                mission_statement: 'To deliver exceptional construction services that exceed client expectations through innovation, quality craftsmanship, and sustainable practices.',
-                mission_category: 'quality',
-                mission_last_reviewed: '2024-03-15',
-                vision_statement: 'To become East Africa\'s leading construction company known for sustainable development, innovative solutions, and community impact.',
-                vision_timeframe: '10-years',
-                vision_last_reviewed: '2024-03-15',
-                core_values: JSON.stringify(['integrity', 'excellence', 'innovation', 'teamwork', 'customer-focus']),
-                additional_values: 'Continuous learning and environmental stewardship',
-                short_term_objectives: 'Expand operations to 3 new regions, achieve 20% revenue growth',
-                long_term_objectives: 'Establish presence in 5 African countries, become carbon neutral',
-                stakeholder_focus: JSON.stringify(['customers', 'employees', 'community', 'environment']),
-                communication_strategy: 'Quarterly town halls, monthly newsletters, intranet portal',
-                integration_strategy: 'Performance reviews aligned with values, training programs',
-                review_frequency: 'annual',
-                next_review_date: '2025-03-15',
-                success_metrics: 'Client satisfaction scores, employee engagement, revenue growth, environmental impact',
-                notes: 'Mission and vision reviewed and approved by board of directors',
-                submitted_by: 'Managing Director',
-                submitted_date: '2024-01-01',
-                status: 'active',
-                created_at: '2024-01-01T00:00:00.000Z'
-            }
-        ];
+        // Retrieve mission & vision data from database
+        const missionVision = await db.execute(`
+            SELECT id, mission_statement, mission_category, mission_last_reviewed,
+                   vision_statement, vision_timeframe, vision_last_reviewed,
+                   core_values, additional_values, short_term_objectives,
+                   long_term_objectives, stakeholder_focus, communication_strategy,
+                   integration_strategy, review_frequency, next_review_date,
+                   success_metrics, notes, submitted_by, submitted_date, status,
+                   created_at, updated_at
+            FROM mission_vision 
+            ORDER BY created_at DESC
+        `);
         
-        console.log('✅ Returning mock mission & vision data:', mockMissionVision.length);
+        console.log('✅ Retrieved mission & vision data:', missionVision.length);
         
         res.json({
             success: true,
-            data: mockMissionVision
+            data: missionVision
         });
         
     } catch (error) {

@@ -41,41 +41,66 @@ router.post('/accountant', async (req, res) => {
     }
     
     try {
-        // Create accountant data object
-        const accountantData = {
-            name,
-            employee_id: employeeId,
-            email,
-            phone,
-            department,
-            reporting_to: reportingTo,
-            start_date: startDate,
-            employment_type: employmentType,
-            professional_qualification: professionalQualification,
-            years_experience: yearsExperience,
-            additional_certifications: additionalCertifications,
-            notes,
-            financial_reporting: JSON.stringify(financialReporting),
-            bookkeeping: JSON.stringify(bookkeeping),
-            regulatory: JSON.stringify(regulatory),
-            system_access: JSON.stringify(systemAccess),
-            submitted_by: submittedBy,
-            submitted_date: submittedDate || new Date().toISOString().split('T')[0],
-            status,
-            created_at: new Date().toISOString()
-        };
+        // Check if accountant already exists
+        const existingAccountant = await db.execute(
+            'SELECT id FROM accountants WHERE employee_id = ? OR email = ?',
+            [employeeId, email]
+        );
         
-        console.log('📝 Processing accountant data:', accountantData);
+        let result;
+        if (existingAccountant.length > 0) {
+            // Update existing accountant
+            await db.execute(`
+                UPDATE accountants SET 
+                    name = ?, phone = ?, department = ?, reporting_to = ?, 
+                    start_date = ?, employment_type = ?, professional_qualification = ?,
+                    years_of_experience = ?, additional_certifications = ?, notes = ?,
+                    financial_reporting = ?, bookkeeping = ?, regulatory = ?, 
+                    system_access = ?, status = ?, updated_by = ?,
+                    submitted_by_role = ?, submitted_date = ?
+                WHERE employee_id = ?
+            `, [
+                name, phone, department, reportingTo, startDate, employmentType,
+                professionalQualification, yearsExperience, additionalCertifications, notes,
+                JSON.stringify(financialReporting), JSON.stringify(bookkeeping), 
+                JSON.stringify(regulatory), JSON.stringify(systemAccess), status, 1,
+                submittedBy, submittedDate || new Date().toISOString().split('T')[0], employeeId
+            ]);
+            
+            result = { 
+                action: 'updated',
+                id: existingAccountant[0].id,
+                employee_id: employeeId,
+                note: 'Accountant details updated successfully'
+            };
+        } else {
+            // Insert new accountant
+            const insertResult = await db.execute(`
+                INSERT INTO accountants (
+                    employee_id, name, email, phone, department, reporting_to,
+                    start_date, employment_type, professional_qualification,
+                    years_of_experience, additional_certifications, notes,
+                    financial_reporting, bookkeeping, regulatory, system_access,
+                    role, submitted_by, submitted_by_role, submitted_date, status
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            `, [
+                employeeId, name, email, phone, department, reportingTo,
+                startDate, employmentType, professionalQualification,
+                yearsExperience, additionalCertifications, notes,
+                JSON.stringify(financialReporting), JSON.stringify(bookkeeping),
+                JSON.stringify(regulatory), JSON.stringify(systemAccess),
+                role, 1, submittedBy, submittedDate || new Date().toISOString().split('T')[0], status
+            ]);
+            
+            result = { 
+                action: 'created',
+                id: insertResult.insertId,
+                employee_id: employeeId,
+                note: 'Accountant details created successfully'
+            };
+        }
         
-        // For now, return success with processed data (simulating database save)
-        const result = { 
-            ...accountantData, 
-            id: `ACC-${Date.now()}`, 
-            action: 'created',
-            note: 'Data processed successfully and saved to memory'
-        };
-        
-        console.log('✅ Accountant details processed successfully:', result);
+        console.log('✅ Accountant details saved successfully:', result);
         
         res.json({
             success: true,
@@ -97,38 +122,20 @@ router.get('/accountant', async (req, res) => {
     console.log('📝 GET /api/accountant accessed');
     
     try {
-        // Return mock data for now - this ensures frontend works
-        const mockAccountants = [
-            {
-                id: 'ACC-1715432000000',
-                name: 'Jane Smith',
-                employee_id: 'ACC-2024-001',
-                email: 'jane.smith@khashtec.com',
-                phone: '+255123456789',
-                department: 'finance',
-                reporting_to: 'finance-manager',
-                start_date: '2024-01-01',
-                employment_type: 'full-time',
-                professional_qualification: 'cpa',
-                years_experience: 5,
-                additional_certifications: 'Tax Certificate',
-                notes: 'Senior Accountant with 5 years experience',
-                financial_reporting: JSON.stringify(['monthly-reports', 'quarterly-reports', 'annual-reports']),
-                bookkeeping: JSON.stringify(['accounts-payable', 'accounts-receivable', 'bank-reconciliation']),
-                regulatory: JSON.stringify(['tax-compliance', 'financial-regulations']),
-                system_access: JSON.stringify(['accounting-software', 'reporting-tools']),
-                submitted_by: 'Managing Director',
-                submitted_date: '2024-01-01',
-                status: 'active',
-                created_at: '2024-01-01T00:00:00.000Z'
-            }
-        ];
+        // Retrieve accountants from database
+        const accountants = await db.execute(`
+            SELECT id, employee_id, name, email, phone, department, reporting_to,
+                   start_date, employment_type, professional_qualification, years_of_experience,
+                   additional_certifications, notes, financial_reporting, bookkeeping,
+                   regulatory, system_access, role, submitted_by, submitted_by_role,
+                   submitted_date, status, created_at, updated_at
+            FROM accountants 
+            ORDER BY created_at DESC
+        `);
         
-        console.log('✅ Returning mock accountant data:', mockAccountants.length);
-        
-        res.json({
-            success: true,
-            data: mockAccountants
+        res.json({ 
+            success: true, 
+            data: accountants 
         });
         
     } catch (error) {
