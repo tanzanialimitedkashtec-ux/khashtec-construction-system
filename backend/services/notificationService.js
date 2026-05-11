@@ -1,4 +1,4 @@
-const db = require('../database/config/database');
+const db = require('../../database/config/database');
 
 class NotificationService {
     constructor() {

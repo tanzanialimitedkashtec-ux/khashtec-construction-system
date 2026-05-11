@@ -96584,12 +96584,19 @@ async function submitAccountantForm() {
         console.log('📤 Submitting accountant data:', accountantData);
         
         const baseUrl = window.location.origin;
+        const authToken = sessionManager.getAuthToken();
+        const headers = {
+            'Content-Type': 'application/json'
+        };
+        
+        // Only add Authorization header if token exists
+        if (authToken) {
+            headers['Authorization'] = `Bearer ${authToken}`;
+        }
+        
         const response = await fetch(`${baseUrl}/api/finance/accountant`, {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${sessionManager.getAuthToken()}`
-            },
+            headers: headers,
             body: JSON.stringify(accountantData)
         });
         
@@ -96599,8 +96606,11 @@ async function submitAccountantForm() {
         if (!response.ok) {
             const errorData = await response.json().catch(() => ({}));
             console.error('❌ API Error Response:', errorData);
+            console.error('❌ Response Status:', response.status);
+            console.error('❌ Response Text:', response.statusText);
             
-            if (response.status === 401) {
+            // Only redirect on actual authentication failures with valid tokens
+            if (response.status === 401 && authToken && errorData.error && errorData.error.toLowerCase().includes('unauthorized')) {
                 customAlert('Session expired. Please login again.', 'Authentication Error', 'error');
                 // Redirect to login after a short delay
                 setTimeout(() => {
@@ -96610,11 +96620,15 @@ async function submitAccountantForm() {
             } else if (response.status === 400) {
                 customAlert(`Validation Error: ${errorData.error || 'Invalid data provided'}`, 'Validation Error', 'error');
                 return false;
+            } else if (response.status === 404) {
+                customAlert('API endpoint not found. The server may need to be restarted.', 'Endpoint Error', 'error');
+                return false;
             } else if (response.status === 500) {
                 customAlert(`Server Error: ${errorData.error || 'Internal server error occurred'}`, 'Server Error', 'error');
                 return false;
             } else {
-                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                customAlert(`Error: ${errorData.error || `HTTP ${response.status}: ${response.statusText}`}`, 'Request Error', 'error');
+                return false;
             }
         }
         
