@@ -718,6 +718,90 @@ CREATE TABLE IF NOT EXISTS work_comments (
   INDEX idx_commented_by (commented_by)
 );
 
+-- Mission & Vision Management Table
+CREATE TABLE IF NOT EXISTS mission_vision (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  mission_statement TEXT NOT NULL,
+  mission_category VARCHAR(100),
+  mission_last_reviewed DATE,
+  vision_statement TEXT NOT NULL,
+  vision_timeframe VARCHAR(50),
+  vision_last_reviewed DATE,
+  core_values JSON,
+  additional_values TEXT,
+  short_term_objectives TEXT,
+  long_term_objectives TEXT,
+  stakeholder_focus JSON,
+  communication_strategy TEXT,
+  integration_strategy TEXT,
+  review_frequency VARCHAR(50),
+  next_review_date DATE,
+  success_metrics TEXT,
+  notes TEXT,
+  submitted_by VARCHAR(255),
+  submitted_date DATE,
+  status ENUM('active', 'inactive', 'archived') DEFAULT 'active',
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  INDEX idx_status (status),
+  INDEX idx_submitted_date (submitted_date)
+);
+
+-- Leadership Management Table
+CREATE TABLE IF NOT EXISTS leadership_management (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  position VARCHAR(255) NOT NULL,
+  department VARCHAR(100) NOT NULL,
+  current_holder VARCHAR(255) NOT NULL,
+  reports_to VARCHAR(255) NOT NULL,
+  leadership_level VARCHAR(50) NOT NULL,
+  appointment_date DATE NOT NULL,
+  responsibilities JSON,
+  strategic_thinking VARCHAR(50),
+  decision_making VARCHAR(50),
+  communication_skills VARCHAR(50),
+  team_leadership VARCHAR(50),
+  succession_status VARCHAR(50),
+  potential_successors TEXT,
+  development_timeline TEXT,
+  kpis TEXT,
+  review_frequency VARCHAR(50),
+  last_review_date DATE,
+  notes TEXT,
+  submitted_by VARCHAR(255),
+  submitted_date DATE,
+  status ENUM('active', 'inactive', 'archived') DEFAULT 'active',
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  INDEX idx_status (status),
+  INDEX idx_department (department),
+  INDEX idx_submitted_date (submitted_date)
+);
+
+-- Long-Term Growth Strategy Table
+CREATE TABLE IF NOT EXISTS long_term_growth (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  growth_title VARCHAR(255) NOT NULL,
+  growth_category VARCHAR(100) NOT NULL,
+  timeframe VARCHAR(50) NOT NULL,
+  target_markets JSON,
+  expansion_strategy TEXT,
+  investment_requirements TEXT,
+  risk_assessment TEXT,
+  milestones JSON,
+  success_metrics TEXT,
+  implementation_plan TEXT,
+  notes TEXT,
+  submitted_by VARCHAR(255),
+  submitted_date DATE,
+  status ENUM('active', 'inactive', 'archived') DEFAULT 'active',
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  INDEX idx_status (status),
+  INDEX idx_growth_category (growth_category),
+  INDEX idx_submitted_date (submitted_date)
+);
+
 CREATE TABLE IF NOT EXISTS work_actions (
   id INT AUTO_INCREMENT PRIMARY KEY,
   work_id INT NOT NULL,
@@ -874,6 +958,131 @@ INSERT IGNORE INTO worker_assignments (
 ('emp002', 'Jane Smith', 'proj002', 'Residential Buildings - Kinondoni', 'Project Manager', '2026-02-01', '2026-03-15', 'Successfully completed residential project', 'Completed', 'HR Manager', 'HR Manager'),
 ('emp003', 'Mike Johnson', 'proj003', 'Fukayosi Real Estate Project', 'Construction Worker', '2026-01-20', NULL, 'Skilled labor for real estate development', 'Active', 'HR Manager', 'HR Manager'),
 ('emp004', 'Sarah Wilson', 'proj004', 'Road Construction - Bagamoyo', 'Engineer', '2026-03-01', NULL, 'Road construction and infrastructure work', 'Active', 'HR Manager', 'HR Manager');
+
+-- Insert sample mission & vision data
+INSERT IGNORE INTO mission_vision (
+    mission_statement, 
+    mission_category, 
+    mission_last_reviewed, 
+    vision_statement, 
+    vision_timeframe, 
+    vision_last_reviewed, 
+    core_values, 
+    additional_values, 
+    short_term_objectives, 
+    long_term_objectives, 
+    stakeholder_focus, 
+    communication_strategy, 
+    integration_strategy, 
+    review_frequency, 
+    next_review_date, 
+    success_metrics, 
+    notes, 
+    submitted_by, 
+    submitted_date, 
+    status
+) VALUES (
+    'To deliver exceptional construction services that exceed client expectations through innovation, quality craftsmanship, and sustainable practices.', 
+    'quality', 
+    '2024-03-15', 
+    'To become East Africa\'s leading construction company known for sustainable development, innovative solutions, and community impact.', 
+    '10-years', 
+    '2024-03-15', 
+    '["integrity", "excellence", "innovation", "teamwork", "customer-focus"]', 
+    'Continuous learning and environmental stewardship', 
+    'Expand operations to 3 new regions, achieve 20% revenue growth', 
+    'Establish presence in 5 African countries, become carbon neutral', 
+    '["customers", "employees", "community", "environment"]', 
+    'Quarterly town halls, monthly newsletters, intranet portal', 
+    'Performance reviews aligned with values, training programs', 
+    'annual', 
+    '2025-03-15', 
+    'Client satisfaction scores, employee engagement, revenue growth, environmental impact', 
+    'Mission and vision reviewed and approved by board of directors', 
+    'Managing Director', 
+    '2024-01-01', 
+    'active'
+);
+
+-- Insert sample leadership management data
+INSERT IGNORE INTO leadership_management (
+    position, 
+    department, 
+    current_holder, 
+    reports_to, 
+    leadership_level, 
+    appointment_date, 
+    responsibilities, 
+    strategic_thinking, 
+    decision_making, 
+    communication_skills, 
+    team_leadership, 
+    succession_status, 
+    potential_successors, 
+    development_timeline, 
+    kpis, 
+    review_frequency, 
+    last_review_date, 
+    notes, 
+    submitted_by, 
+    submitted_date, 
+    status
+) VALUES (
+    'Chief Executive Officer', 
+    'Executive Office', 
+    'John Smith', 
+    'Board of Directors', 
+    'c-suite', 
+    '2024-01-01', 
+    '["strategic-planning", "team-management", "financial-oversight"]', 
+    'expert', 
+    'expert', 
+    'expert', 
+    'expert', 
+    'identified', 
+    'Jane Doe, Mike Johnson', 
+    '12-month development plan', 
+    'Revenue growth, Market expansion, Team satisfaction', 
+    'quarterly', 
+    '2024-03-15', 
+    'Strategic leader with 10+ years experience', 
+    'Managing Director', 
+    '2024-01-01', 
+    'active'
+);
+
+-- Insert sample long-term growth strategy data
+INSERT IGNORE INTO long_term_growth (
+    growth_title, 
+    growth_category, 
+    timeframe, 
+    target_markets, 
+    expansion_strategy, 
+    investment_requirements, 
+    risk_assessment, 
+    milestones, 
+    success_metrics, 
+    implementation_plan, 
+    notes, 
+    submitted_by, 
+    submitted_date, 
+    status
+) VALUES (
+    'East African Expansion Strategy', 
+    'market-expansion', 
+    '5-years', 
+    '["Kenya", "Uganda", "Rwanda", "Burundi", "South Sudan"]', 
+    'Strategic partnerships with local construction firms, government infrastructure projects, commercial real estate development', 
+    'USD 50M for equipment, partnerships, and local operations setup', 
+    'Political stability, currency fluctuations, regulatory compliance, local competition', 
+    '["Year 1: Market research and partnerships", "Year 1-3: Project acquisition", "Year 4-6: Scale operations"]', 
+    'Market share growth, revenue targets, project completion rates, local employment creation', 
+    'Phase 1: Research and partnerships, Phase 2: Pilot projects, Phase 3: Scale operations', 
+    'Aligned with company vision to become East Africa\'s leading construction company', 
+    'Managing Director', 
+    '2024-01-01', 
+    'active'
+);
 
 -- Insert admin user (only if not exists)
 INSERT IGNORE INTO users (name, email, password, role, status) VALUES

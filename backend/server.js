@@ -3468,6 +3468,35 @@ app.get('/api/transport-costs-test', (req, res) => {
     });
 });
 
+// ===== API ROUTES =====
+
+try {
+    const apiRoutes = require('./routes/api');
+    console.log('✅ API routes loaded successfully');
+    app.use('/api', apiRoutes);
+    console.log('✅ API routes mounted at /api');
+    
+    // Add a test endpoint to verify mounting
+    app.get('/api/status', (req, res) => {
+        res.json({ 
+            status: 'API routes are mounted from routes/api.js',
+            timestamp: new Date().toISOString(),
+            endpoints: [
+                'GET /api/accountant/accountant',
+                'POST /api/accountant/accountant',
+                'GET /api/leadership/leadership',
+                'POST /api/leadership/leadership',
+                'GET /api/mission-vision/mission-vision',
+                'POST /api/mission-vision/mission-vision',
+                'GET /api/long-term-growth/long-term-growth',
+                'POST /api/long-term-growth/long-term-growth'
+            ]
+        });
+    });
+} catch (error) {
+    console.error('❌ Error mounting API routes:', error);
+}
+
 // Start server
 app.listen(PORT, async () => {
     console.log(`🚀 KASHTEC Server v2.0.1-PROPERTIES-FIX starting on port ${PORT}`);

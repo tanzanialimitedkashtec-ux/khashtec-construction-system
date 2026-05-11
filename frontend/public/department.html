@@ -96594,7 +96594,7 @@ async function submitAccountantForm() {
             headers['Authorization'] = `Bearer ${authToken}`;
         }
         
-        const response = await fetch(`${baseUrl}/api/finance/accountant`, {
+        const response = await fetch(`${baseUrl}/api/accountant/accountant`, {
             method: 'POST',
             headers: headers,
             body: JSON.stringify(accountantData)
@@ -97484,7 +97484,7 @@ async function submitLeadershipForm() {
         console.log('📤 Submitting leadership data:', leadershipData);
         
         const baseUrl = window.location.origin;
-        const response = await fetch(`${baseUrl}/api/leadership`, {
+        const response = await fetch(`${baseUrl}/api/leadership/leadership`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -97545,7 +97545,7 @@ async function submitMissionVisionForm() {
         console.log('📤 Submitting mission & vision data:', missionVisionData);
         
         const baseUrl = window.location.origin;
-        const response = await fetch(`${baseUrl}/api/mission-vision`, {
+        const response = await fetch(`${baseUrl}/api/mission-vision/mission-vision`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',

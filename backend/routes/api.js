@@ -2,6 +2,18 @@ const express = require('express');
 const router = express.Router();
 const db = require('../../database/config/database');
 
+// Import route modules
+const accountantRoutes = require('./accountant');
+const leadershipRoutes = require('./leadership');
+const missionVisionRoutes = require('./mission-vision');
+const longTermGrowthRoutes = require('./long-term-growth');
+
+// Mount new routes
+router.use('/accountant', accountantRoutes);
+router.use('/leadership', leadershipRoutes);
+router.use('/mission-vision', missionVisionRoutes);
+router.use('/long-term-growth', longTermGrowthRoutes);
+
 // Get all users
 router.get('/users', async (req, res) => {
     try {
