@@ -97636,16 +97636,21 @@ async function submitMissionVisionForm(event) {
         
         console.log('📤 Submitting mission & vision data:', missionVisionData);
         
-        const baseUrl = window.location.origin;
-        const authToken = sessionManager.getAuthToken();
-        const headers = {
-            'Content-Type': 'application/json'
-        };
-        
-        // Only add Authorization header if token exists
-        if (authToken) {
-            headers['Authorization'] = `Bearer ${authToken}`;
+        // Check authentication
+        const token = sessionManager.getAuthToken();
+        if (!token) {
+            console.error('❌ No authentication token found');
+            customAlert('Your session has expired. Please log in again.', 'Authentication Error', 'error');
+            // Only redirect on actual authentication failure
+            window.location.href = '/';
+            return false;
         }
+        
+        const baseUrl = window.location.origin;
+        const headers = {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+        };
         
         const response = await fetch(`${baseUrl}/api/mission-vision/mission-vision`, {
             method: 'POST',
