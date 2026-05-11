@@ -96315,7 +96315,7 @@ function showAccountantForm() {
                 <p>Manage day-to-day bookkeeping, regulatory compliance, and financial reporting. The accountant is responsible for maintaining accurate financial records, ensuring regulatory adherence, and reporting to the senior accountant.</p>
             </div>
             
-            <form id="accountantForm" onsubmit="return submitAccountantForm()">
+            <form id="accountantForm" onsubmit="submitAccountantForm(event); return false;">
                 <div class="form-row">
                     <div class="form-group">
                         <label>Accountant Name *</label>
@@ -96551,8 +96551,20 @@ function clearAccountantForm() {
     document.getElementById('accountantForm').reset();
 }
 
-// Submit accountant form
-async function submitAccountantForm() {
+// Submit Accountant Form
+async function submitAccountantForm(event) {
+    console.log('📊 Submitting Accountant Form...');
+    console.log('📊 Event object:', event);
+    
+    // Prevent default form submission immediately
+    if (event) {
+        event.preventDefault();
+        event.stopPropagation();
+        console.log('📊 Default form submission prevented');
+    } else {
+        console.warn('📊 No event object provided to submitAccountantForm');
+    }
+    
     try {
         const accountantData = {
             name: document.getElementById('accountantName').value,
@@ -96658,8 +96670,12 @@ async function submitAccountantForm() {
             customAlert(`Failed to save accountant details: ${error.message}`, 'Save Error', 'error');
         }
         
+        // Always return false to prevent form submission
         return false;
     }
+    
+    // Final safety net - always prevent form submission
+    return false;
 }
 
 // Show Leadership Management Form
