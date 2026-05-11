@@ -97466,7 +97466,19 @@ function clearLongTermGrowthForm() {
 }
 
 // Submit form functions
-async function submitLeadershipForm() {
+async function submitLeadershipForm(event) {
+    console.log('👥 Submitting Leadership Form...');
+    console.log('👥 Event object:', event);
+    
+    // Prevent default form submission immediately
+    if (event) {
+        event.preventDefault();
+        event.stopPropagation();
+        console.log('👥 Default form submission prevented');
+    } else {
+        console.warn('👥 No event object provided to submitLeadershipForm');
+    }
+    
     try {
         const leadershipData = {
             position: document.getElementById('leadershipPosition').value,
@@ -97500,34 +97512,86 @@ async function submitLeadershipForm() {
         console.log('📤 Submitting leadership data:', leadershipData);
         
         const baseUrl = window.location.origin;
+        const authToken = sessionManager.getAuthToken();
+        const headers = {
+            'Content-Type': 'application/json'
+        };
+        
+        // Only add Authorization header if token exists
+        if (authToken) {
+            headers['Authorization'] = `Bearer ${authToken}`;
+        }
+        
         const response = await fetch(`${baseUrl}/api/leadership/leadership`, {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${sessionManager.getAuthToken()}`
-            },
+            headers: headers,
             body: JSON.stringify(leadershipData)
         });
         
+        console.log('👥 Response status:', response.status);
+        console.log('👥 Response headers:', response.headers);
+        
         if (!response.ok) {
-            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            const errorData = await response.json().catch(() => ({}));
+            console.error('❌ API Error Response:', errorData);
+            console.error('❌ Response Status:', response.status);
+            console.error('❌ Response Text:', response.statusText);
+            
+            // Only redirect on actual authentication failures with valid tokens
+            if (response.status === 401 && authToken && errorData.error && errorData.error.toLowerCase().includes('unauthorized')) {
+                customAlert('Session expired. Please login again.', 'Authentication Error', 'error');
+                // Redirect to login after a short delay
+                setTimeout(() => {
+                    window.location.href = '/login.html';
+                }, 2000);
+                return false;
+            } else if (response.status === 400) {
+                customAlert(`Validation Error: ${errorData.error || 'Invalid data provided'}`, 'Validation Error', 'error');
+                return false;
+            } else if (response.status === 404) {
+                customAlert('API endpoint not found. The server may need to be restarted.', 'Endpoint Error', 'error');
+                return false;
+            } else if (response.status === 500) {
+                customAlert(`Server Error: ${errorData.error || 'Internal server error occurred'}`, 'Server Error', 'error');
+                return false;
+            } else {
+                customAlert(`Error: ${errorData.error || `HTTP ${response.status}: ${response.statusText}`}`, 'Request Error', 'error');
+                return false;
+            }
         }
         
         const result = await response.json();
         console.log('✅ Leadership data saved successfully:', result);
         
-        customAlert(`Leadership details saved successfully!\n\nPosition: ${leadershipData.position}\nCurrent Holder: ${leadershipData.currentHolder}\nDepartment: ${leadershipData.department}\nLeadership Level: ${leadershipData.leadershipLevel}`, "Leadership Created", "success");
-        
-        document.getElementById('leadershipForm').reset();
-        showContent('');
+        if (result.success) {
+            customAlert(`Leadership details saved successfully!\n\nPosition: ${leadershipData.position}\nCurrent Holder: ${leadershipData.currentHolder}\nDepartment: ${leadershipData.department}\nLeadership Level: ${leadershipData.leadershipLevel}`, "Leadership Created", "success");
+            
+            // Reset form and return to dashboard
+            document.getElementById('leadershipForm').reset();
+            showContent(''); // Return to dashboard
+        } else {
+            customAlert(`Error: ${result.error || 'Unknown error occurred'}`, 'Save Error', 'error');
+        }
         
         return false;
         
     } catch (error) {
         console.error('❌ Error saving leadership details:', error);
-        customAlert(`Failed to save leadership details: ${error.message}`, 'Save Error', 'error');
+        console.error('❌ Error stack:', error.stack);
+        
+        // Handle network errors
+        if (error.name === 'TypeError' && error.message.includes('fetch')) {
+            customAlert('Network error. Please check your internet connection and try again.', 'Network Error', 'error');
+        } else {
+            customAlert(`Failed to save leadership details: ${error.message}`, 'Save Error', 'error');
+        }
+        
+        // Always return false to prevent form submission
         return false;
     }
+    
+    // Final safety net - always prevent form submission
+    return false;
 }
 
 async function submitMissionVisionForm() {
