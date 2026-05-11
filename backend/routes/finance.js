@@ -515,4 +515,203 @@ router.get('/summary', async (req, res) => {
     }
 });
 
+// ===== ACCOUNTANT MANAGEMENT =====
+
+// POST - Create/update accountant details
+router.post('/accountant', async (req, res) => {
+    console.log('📝 POST /api/finance/accountant accessed');
+    console.log('📊 Request body:', req.body);
+    
+    const {
+        name,
+        employeeId,
+        email,
+        phone,
+        department,
+        reportingTo,
+        startDate,
+        employmentType,
+        professionalQualification,
+        yearsExperience = 0,
+        additionalCertifications,
+        notes,
+        financialReporting = [],
+        bookkeeping = [],
+        regulatory = [],
+        systemAccess = [],
+        role = 'Accountant',
+        submittedBy = 'Managing Director',
+        submittedDate,
+        status = 'active'
+    } = req.body;
+    
+    // Validate required fields
+    if (!name || !employeeId || !email || !phone || !department || !reportingTo || !startDate || !employmentType) {
+        return res.status(400).json({
+            error: 'Missing required fields',
+            required: ['name', 'employeeId', 'email', 'phone', 'department', 'reportingTo', 'startDate', 'employmentType']
+        });
+    }
+    
+    try {
+        const connection = await db.getConnection();
+        
+        // Check if accountant already exists
+        const [existing] = await connection.query(
+            'SELECT id FROM finance_work WHERE work_type = "Accountant Details" AND employee_id = ?',
+            [employeeId]
+        );
+        
+        const accountantData = {
+            name,
+            employee_id: employeeId,
+            email,
+            phone,
+            department,
+            reporting_to: reportingTo,
+            start_date: startDate,
+            employment_type: employmentType,
+            professional_qualification: professionalQualification,
+            years_experience: yearsExperience,
+            additional_certifications: additionalCertifications,
+            notes,
+            financial_reporting: JSON.stringify(financialReporting),
+            bookkeeping: JSON.stringify(bookkeeping),
+            regulatory: JSON.stringify(regulatory),
+            system_access: JSON.stringify(systemAccess),
+            role,
+            submitted_by: submittedBy,
+            submitted_date: submittedDate || new Date().toISOString().split('T')[0],
+            status,
+            created_at: new Date().toISOString()
+        };
+        
+        let result;
+        if (existing.length > 0) {
+            // Update existing accountant
+            const [updateResult] = await connection.query(
+                `UPDATE finance_work SET 
+                    name = ?, employee_id = ?, email = ?, phone = ?, department = ?, 
+                    reporting_to = ?, start_date = ?, employment_type = ?, 
+                    professional_qualification = ?, years_experience = ?, 
+                    additional_certifications = ?, notes = ?, financial_reporting = ?, 
+                    bookkeeping = ?, regulatory = ?, system_access = ?, 
+                    submitted_by = ?, submitted_date = ?, status = ?
+                    WHERE work_type = 'Accountant Details' AND employee_id = ?`,
+                [
+                    accountantData.name,
+                    accountantData.employee_id,
+                    accountantData.email,
+                    accountantData.phone,
+                    accountantData.department,
+                    accountantData.reporting_to,
+                    accountantData.start_date,
+                    accountantData.employment_type,
+                    accountantData.professional_qualification,
+                    accountantData.years_experience,
+                    accountantData.additional_certifications,
+                    accountantData.notes,
+                    accountantData.financial_reporting,
+                    accountantData.bookkeeping,
+                    accountantData.regulatory,
+                    accountantData.system_access,
+                    accountantData.submitted_by,
+                    accountantData.submitted_date,
+                    accountantData.status,
+                    employeeId
+                ]
+            );
+            result = { ...accountantData, id: existing[0].id, action: 'updated' };
+        } else {
+            // Insert new accountant
+            const [insertResult] = await connection.query(
+                `INSERT INTO finance_work (
+                    work_type, name, employee_id, email, phone, department, 
+                    reporting_to, start_date, employment_type, professional_qualification, 
+                    years_experience, additional_certifications, notes, financial_reporting, 
+                    bookkeeping, regulatory, system_access, submitted_by, submitted_date, 
+                    status, created_at
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+                [
+                    'Accountant Details',
+                    accountantData.name,
+                    accountantData.employee_id,
+                    accountantData.email,
+                    accountantData.phone,
+                    accountantData.department,
+                    accountantData.reporting_to,
+                    accountantData.start_date,
+                    accountantData.employment_type,
+                    accountantData.professional_qualification,
+                    accountantData.years_experience,
+                    accountantData.additional_certifications,
+                    accountantData.notes,
+                    accountantData.financial_reporting,
+                    accountantData.bookkeeping,
+                    accountantData.regulatory,
+                    accountantData.system_access,
+                    accountantData.submitted_by,
+                    accountantData.submitted_date,
+                    accountantData.status,
+                    accountantData.created_at
+                ]
+            );
+            result = { ...accountantData, id: insertResult.insertId, action: 'created' };
+        }
+        
+        connection.release();
+        
+        console.log('✅ Accountant details saved successfully:', result);
+        
+        res.json({
+            success: true,
+            message: `Accountant details ${result.action} successfully`,
+            data: result
+        });
+        
+    } catch (error) {
+        console.error('❌ Error saving accountant details:', error);
+        res.status(500).json({
+            error: 'Failed to save accountant details',
+            details: error.message
+        });
+    }
+});
+
+// GET - Retrieve accountant details
+router.get('/accountant', async (req, res) => {
+    console.log('📝 GET /api/finance/accountant accessed');
+    
+    try {
+        const connection = await db.getConnection();
+        
+        const [accountants] = await connection.query(
+            `SELECT * FROM finance_work WHERE work_type = 'Accountant Details' ORDER BY created_at DESC`
+        );
+        
+        // Parse JSON fields for each accountant
+        const parsedAccountants = accountants.map(accountant => ({
+            ...accountant,
+            financial_reporting: accountant.financial_reporting ? JSON.parse(accountant.financial_reporting) : [],
+            bookkeeping: accountant.bookkeeping ? JSON.parse(accountant.bookkeeping) : [],
+            regulatory: accountant.regulatory ? JSON.parse(accountant.regulatory) : [],
+            system_access: accountant.system_access ? JSON.parse(accountant.system_access) : []
+        }));
+        
+        connection.release();
+        
+        res.json({
+            success: true,
+            data: parsedAccountants
+        });
+        
+    } catch (error) {
+        console.error('❌ Error retrieving accountant details:', error);
+        res.status(500).json({
+            error: 'Failed to retrieve accountant details',
+            details: error.message
+        });
+    }
+});
+
 module.exports = router;

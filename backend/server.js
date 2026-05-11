@@ -2577,6 +2577,16 @@ try {
     console.error('❌ Error loading drivers routes:', error);
 }
 
+// Load finance routes
+try {
+    const financeRoutes = require('./routes/finance');
+    console.log('✅ Finance routes loaded successfully');
+    app.use('/api/finance', financeRoutes);
+    console.log('✅ Finance routes mounted at /api/finance');
+} catch (error) {
+    console.error('❌ Error loading finance routes:', error);
+}
+
 // Fallback project details endpoint
 app.get('/api/projects/:id', async (req, res) => {
     try {
