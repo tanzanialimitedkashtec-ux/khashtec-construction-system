@@ -23758,6 +23758,12 @@ function loadMenu(){
 
         addMenu("Accountant Management", showAccountantForm);
 
+        addMenu("Leadership Management", showLeadershipForm);
+
+        addMenu("Mission & Vision", showMissionVisionForm);
+
+        addMenu("Long-Term Growth Strategy", showLongTermGrowthForm);
+
         addMenu("Register Company Car", registerCompanyCar);
 
         addMenu("Manage Company Cars", manageCompanyCars);
@@ -97354,6 +97360,998 @@ async function submitAccountantForm() {
             customAlert(`Failed to save accountant details: ${error.message}`, 'Save Error', 'error');
         }
         
+        return false;
+    }
+}
+
+// Show Leadership Management Form
+function showLeadershipForm() {
+    showContent(`
+        <div class="card">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h3>👥 Leadership Management</h3>
+                <button type="button" onclick="showContent('')" class="action" style="background: #dc3545;">❌ Close</button>
+            </div>
+            
+            <div class="form-header">
+                <h4>Leadership Team Structure & Development</h4>
+                <p>Manage company leadership structure, define roles, responsibilities, and development plans for executive team members. Establish clear leadership hierarchy and succession planning.</p>
+            </div>
+            
+            <form id="leadershipForm" onsubmit="return submitLeadershipForm()">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Leadership Position *</label>
+                        <input type="text" id="leadershipPosition" placeholder="e.g., Chief Executive Officer" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Department/Division *</label>
+                        <input type="text" id="leadershipDepartment" placeholder="e.g., Executive Office" required>
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Current Holder *</label>
+                        <input type="text" id="currentHolder" placeholder="e.g., John Smith" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Reports To *</label>
+                        <select id="reportsTo" required>
+                            <option value="">Select Reporting Structure</option>
+                            <option value="board-of-directors">Board of Directors</option>
+                            <option value="ceo">Chief Executive Officer</option>
+                            <option value="coo">Chief Operating Officer</option>
+                            <option value="cfo">Chief Financial Officer</option>
+                            <option value="cto">Chief Technology Officer</option>
+                            <option value="cmo">Chief Marketing Officer</option>
+                            <option value="chro">Chief Human Resources Officer</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Leadership Level *</label>
+                        <select id="leadershipLevel" required>
+                            <option value="">Select Level</option>
+                            <option value="c-suite">C-Suite Executive</option>
+                            <option value="vp">Vice President</option>
+                            <option value="director">Director</option>
+                            <option value="senior-manager">Senior Manager</option>
+                            <option value="department-head">Department Head</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Appointment Date *</label>
+                        <input type="date" id="appointmentDate" required>
+                    </div>
+                </div>
+                
+                <!-- Leadership Responsibilities -->
+                <div class="form-section">
+                    <h5>🎯 Leadership Responsibilities</h5>
+                    <div class="checkbox-group">
+                        <label><input type="checkbox" name="leadershipResponsibilities" value="strategic-planning"> Strategic Planning & Vision Setting</label>
+                        <label><input type="checkbox" name="leadershipResponsibilities" value="team-management"> Team Management & Development</label>
+                        <label><input type="checkbox" name="leadershipResponsibilities" value="financial-oversight"> Financial Oversight & Budget Management</label>
+                        <label><input type="checkbox" name="leadershipResponsibilities" value="stakeholder-relations"> Stakeholder Relations</label>
+                        <label><input type="checkbox" name="leadershipResponsibilities" value="risk-management"> Risk Management & Compliance</label>
+                        <label><input type="checkbox" name="leadershipResponsibilities" value="innovation"> Innovation & Technology Strategy</label>
+                        <label><input type="checkbox" name="leadershipResponsibilities" value="operational-excellence"> Operational Excellence</label>
+                        <label><input type="checkbox" name="leadershipResponsibilities" value="talent-development"> Talent Development & Succession</label>
+                        <label><input type="checkbox" name="leadershipResponsibilities" value="corporate-governance"> Corporate Governance</label>
+                        <label><input type="checkbox" name="leadershipResponsibilities" value="market-development"> Market Development & Growth</label>
+                    </div>
+                </div>
+                
+                <!-- Leadership Competencies -->
+                <div class="form-section">
+                    <h5>📈 Leadership Competencies</h5>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Strategic Thinking</label>
+                            <select id="strategicThinking">
+                                <option value="">Select Level</option>
+                                <option value="expert">Expert</option>
+                                <option value="advanced">Advanced</option>
+                                <option value="intermediate">Intermediate</option>
+                                <option value="developing">Developing</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Decision Making</label>
+                            <select id="decisionMaking">
+                                <option value="">Select Level</option>
+                                <option value="expert">Expert</option>
+                                <option value="advanced">Advanced</option>
+                                <option value="intermediate">Intermediate</option>
+                                <option value="developing">Developing</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Communication Skills</label>
+                            <select id="communicationSkills">
+                                <option value="">Select Level</option>
+                                <option value="expert">Expert</option>
+                                <option value="advanced">Advanced</option>
+                                <option value="intermediate">Intermediate</option>
+                                <option value="developing">Developing</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Team Leadership</label>
+                            <select id="teamLeadership">
+                                <option value="">Select Level</option>
+                                <option value="expert">Expert</option>
+                                <option value="advanced">Advanced</option>
+                                <option value="intermediate">Intermediate</option>
+                                <option value="developing">Developing</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Succession Planning -->
+                <div class="form-section">
+                    <h5>🔄 Succession Planning</h5>
+                    <div class="form-group">
+                        <label>Succession Status</label>
+                        <select id="successionStatus">
+                            <option value="">Select Status</option>
+                            <option value="identified">Successor Identified</option>
+                            <option value="in-development">Successor in Development</option>
+                            <option value="searching">Searching for Successor</option>
+                            <option value="not-required">Not Required (Critical Role)</option>
+                            <option value="pending">Pending Review</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Potential Successors</label>
+                        <textarea id="potentialSuccessors" rows="3" placeholder="List potential internal candidates for this leadership position..."></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>Development Timeline</label>
+                        <textarea id="developmentTimeline" rows="2" placeholder="Timeline for successor development and readiness..."></textarea>
+                    </div>
+                </div>
+                
+                <!-- Performance Metrics -->
+                <div class="form-section">
+                    <h5>📊 Performance Metrics</h5>
+                    <div class="form-group">
+                        <label>Key Performance Indicators</label>
+                        <textarea id="kpis" rows="4" placeholder="List 3-5 key performance indicators for this leadership role..."></textarea>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Performance Review Frequency</label>
+                            <select id="reviewFrequency">
+                                <option value="">Select Frequency</option>
+                                <option value="monthly">Monthly</option>
+                                <option value="quarterly">Quarterly</option>
+                                <option value="semi-annual">Semi-Annual</option>
+                                <option value="annual">Annual</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Last Review Date</label>
+                            <input type="date" id="lastReviewDate">
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Additional Information -->
+                <div class="form-group">
+                    <label>Leadership Notes & Development Plans</label>
+                    <textarea id="leadershipNotes" rows="4" placeholder="Additional notes about leadership responsibilities, development plans, or special considerations..."></textarea>
+                </div>
+                
+                <div class="form-row">
+                    <button type="submit" class="action" style="background: #28a745;">💾 Save Leadership Details</button>
+                    <button type="button" onclick="clearLeadershipForm()" class="action" style="background: #ffc107;">🔄 Clear Form</button>
+                </div>
+            </form>
+        </div>
+        
+        <style>
+            .form-section {
+                background: #f8f9fa;
+                border: 1px solid #dee2e6;
+                border-radius: 5px;
+                padding: 15px;
+                margin: 15px 0;
+            }
+            
+            .form-section h5 {
+                color: #0b3d91;
+                margin-bottom: 10px;
+                font-size: 11px;
+                border-bottom: 2px solid #0b3d91;
+                padding-bottom: 5px;
+            }
+            
+            .checkbox-group {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+                gap: 8px;
+                margin-top: 10px;
+            }
+            
+            .checkbox-group label {
+                display: flex;
+                align-items: center;
+                font-size: 9px;
+                cursor: pointer;
+                padding: 5px;
+                border-radius: 3px;
+                transition: background-color 0.2s;
+            }
+            
+            .checkbox-group label:hover {
+                background-color: #e9ecef;
+            }
+            
+            .checkbox-group input[type="checkbox"] {
+                margin-right: 8px;
+                transform: scale(1.1);
+            }
+            
+            .form-header {
+                background: linear-gradient(135deg, #0b3d91 0%, #1a4a7a 100%);
+                color: white;
+                padding: 15px;
+                border-radius: 5px;
+                margin-bottom: 20px;
+            }
+            
+            .form-header h4 {
+                margin: 0 0 8px 0;
+                font-size: 14px;
+            }
+            
+            .form-header p {
+                margin: 0;
+                font-size: 9px;
+                opacity: 0.9;
+                line-height: 1.4;
+            }
+        </style>
+    `);
+}
+
+// Show Mission & Vision Form
+function showMissionVisionForm() {
+    showContent(`
+        <div class="card">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h3>🎯 Mission & Vision Management</h3>
+                <button type="button" onclick="showContent('')" class="action" style="background: #dc3545;">❌ Close</button>
+            </div>
+            
+            <div class="form-header">
+                <h4>Company Mission, Vision & Core Values</h4>
+                <p>Define and manage the company's mission statement, vision for the future, and core values that guide organizational culture and decision-making.</p>
+            </div>
+            
+            <form id="missionVisionForm" onsubmit="return submitMissionVisionForm()">
+                <!-- Mission Statement -->
+                <div class="form-section">
+                    <h5>🎯 Mission Statement</h5>
+                    <div class="form-group">
+                        <label>Mission Statement *</label>
+                        <textarea id="missionStatement" rows="4" placeholder="What is our purpose? What do we do? Who do we serve? How do we do it?" required></textarea>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Mission Category</label>
+                            <select id="missionCategory">
+                                <option value="">Select Category</option>
+                                <option value="customer-service">Customer Service Excellence</option>
+                                <option value="innovation">Innovation & Technology</option>
+                                <option value="quality">Quality & Craftsmanship</option>
+                                <option value="sustainability">Sustainability & Environment</option>
+                                <option value="community">Community Impact</option>
+                                <option value="growth">Growth & Expansion</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Last Reviewed</label>
+                            <input type="date" id="missionLastReviewed">
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Vision Statement -->
+                <div class="form-section">
+                    <h5>🔮 Vision Statement</h5>
+                    <div class="form-group">
+                        <label>Vision Statement *</label>
+                        <textarea id="visionStatement" rows="4" placeholder="What is our future aspiration? What do we want to become? Where are we heading?" required></textarea>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Vision Timeframe</label>
+                            <select id="visionTimeframe">
+                                <option value="">Select Timeframe</option>
+                                <option value="1-year">1 Year</option>
+                                <option value="3-years">3 Years</option>
+                                <option value="5-years">5 Years</option>
+                                <option value="10-years">10 Years</option>
+                                <option value="long-term">Long-term (10+ Years)</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Last Reviewed</label>
+                            <input type="date" id="visionLastReviewed">
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Core Values -->
+                <div class="form-section">
+                    <h5>💎 Core Values</h5>
+                    <div class="checkbox-group">
+                        <label><input type="checkbox" name="coreValues" value="integrity"> Integrity</label>
+                        <label><input type="checkbox" name="coreValues" value="excellence"> Excellence</label>
+                        <label><input type="checkbox" name="coreValues" value="innovation"> Innovation</label>
+                        <label><input type="checkbox" name="coreValues" value="teamwork"> Teamwork</label>
+                        <label><input type="checkbox" name="coreValues" value="customer-focus"> Customer Focus</label>
+                        <label><input type="checkbox" name="coreValues" value="accountability"> Accountability</label>
+                        <label><input type="checkbox" name="coreValues" value="sustainability"> Sustainability</label>
+                        <label><input type="checkbox" name="coreValues" value="respect"> Respect</label>
+                        <label><input type="checkbox" name="coreValues" value="transparency"> Transparency</label>
+                        <label><input type="checkbox" name="coreValues" value="adaptability"> Adaptability</label>
+                    </div>
+                    <div class="form-group">
+                        <label>Additional Core Values</label>
+                        <textarea id="additionalValues" rows="2" placeholder="Any additional core values specific to your organization..."></textarea>
+                    </div>
+                </div>
+                
+                <!-- Strategic Objectives -->
+                <div class="form-section">
+                    <h5>🎯 Strategic Objectives</h5>
+                    <div class="form-group">
+                        <label>Short-term Objectives (1-2 years)</label>
+                        <textarea id="shortTermObjectives" rows="3" placeholder="Key objectives to achieve in the next 1-2 years..."></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>Long-term Objectives (3-5 years)</label>
+                        <textarea id="longTermObjectives" rows="3" placeholder="Key objectives to achieve in the next 3-5 years..."></textarea>
+                    </div>
+                </div>
+                
+                <!-- Stakeholder Focus -->
+                <div class="form-section">
+                    <h5>👥 Stakeholder Focus</h5>
+                    <div class="checkbox-group">
+                        <label><input type="checkbox" name="stakeholderFocus" value="customers"> Customers</label>
+                        <label><input type="checkbox" name="stakeholderFocus" value="employees"> Employees</label>
+                        <label><input type="checkbox" name="stakeholderFocus" value="shareholders"> Shareholders</label>
+                        <label><input type="checkbox" name="stakeholderFocus" value="partners"> Business Partners</label>
+                        <label><input type="checkbox" name="stakeholderFocus" value="community"> Community</label>
+                        <label><input type="checkbox" name="stakeholderFocus" value="environment"> Environment</label>
+                        <label><input type="checkbox" name="stakeholderFocus" value="suppliers"> Suppliers</label>
+                        <label><input type="checkbox" name="stakeholderFocus" value="government"> Government</label>
+                    </div>
+                </div>
+                
+                <!-- Implementation Strategy -->
+                <div class="form-section">
+                    <h5>🚀 Implementation Strategy</h5>
+                    <div class="form-group">
+                        <label>Communication Strategy</label>
+                        <textarea id="communicationStrategy" rows="3" placeholder="How will we communicate mission, vision, and values to all stakeholders?"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>Integration Strategy</label>
+                        <textarea id="integrationStrategy" rows="3" placeholder="How will we integrate mission, vision, and values into daily operations and decision-making?"></textarea>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Review Frequency</label>
+                            <select id="reviewFrequency">
+                                <option value="">Select Frequency</option>
+                                <option value="quarterly">Quarterly</option>
+                                <option value="semi-annual">Semi-Annual</option>
+                                <option value="annual">Annual</option>
+                                <option value="biennial">Biennial</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Next Review Date</label>
+                            <input type="date" id="nextReviewDate">
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Success Metrics -->
+                <div class="form-section">
+                    <h5>📊 Success Metrics</h5>
+                    <div class="form-group">
+                        <label>Key Performance Indicators</label>
+                        <textarea id="successMetrics" rows="4" placeholder="How will we measure success in achieving our mission and vision?"></textarea>
+                    </div>
+                </div>
+                
+                <!-- Additional Information -->
+                <div class="form-group">
+                    <label>Additional Notes & Context</label>
+                    <textarea id="missionVisionNotes" rows="4" placeholder="Any additional context, historical background, or special considerations..."></textarea>
+                </div>
+                
+                <div class="form-row">
+                    <button type="submit" class="action" style="background: #28a745;">💾 Save Mission & Vision</button>
+                    <button type="button" onclick="clearMissionVisionForm()" class="action" style="background: #ffc107;">🔄 Clear Form</button>
+                </div>
+            </form>
+        </div>
+        
+        <style>
+            .form-section {
+                background: #f8f9fa;
+                border: 1px solid #dee2e6;
+                border-radius: 5px;
+                padding: 15px;
+                margin: 15px 0;
+            }
+            
+            .form-section h5 {
+                color: #0b3d91;
+                margin-bottom: 10px;
+                font-size: 11px;
+                border-bottom: 2px solid #0b3d91;
+                padding-bottom: 5px;
+            }
+            
+            .checkbox-group {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+                gap: 8px;
+                margin-top: 10px;
+            }
+            
+            .checkbox-group label {
+                display: flex;
+                align-items: center;
+                font-size: 9px;
+                cursor: pointer;
+                padding: 5px;
+                border-radius: 3px;
+                transition: background-color 0.2s;
+            }
+            
+            .checkbox-group label:hover {
+                background-color: #e9ecef;
+            }
+            
+            .checkbox-group input[type="checkbox"] {
+                margin-right: 8px;
+                transform: scale(1.1);
+            }
+            
+            .form-header {
+                background: linear-gradient(135deg, #0b3d91 0%, #1a4a7a 100%);
+                color: white;
+                padding: 15px;
+                border-radius: 5px;
+                margin-bottom: 20px;
+            }
+            
+            .form-header h4 {
+                margin: 0 0 8px 0;
+                font-size: 14px;
+            }
+            
+            .form-header p {
+                margin: 0;
+                font-size: 9px;
+                opacity: 0.9;
+                line-height: 1.4;
+            }
+        </style>
+    `);
+}
+
+// Show Long-Term Growth Strategy Form
+function showLongTermGrowthForm() {
+    showContent(`
+        <div class="card">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h3>📈 Long-Term Growth Strategy</h3>
+                <button type="button" onclick="showContent('')" class="action" style="background: #dc3545;">❌ Close</button>
+            </div>
+            
+            <div class="form-header">
+                <h4>Strategic Growth Planning & Roadmap</h4>
+                <p>Develop comprehensive long-term growth strategies, market expansion plans, and strategic initiatives to drive sustainable business growth and competitive advantage.</p>
+            </div>
+            
+            <form id="longTermGrowthForm" onsubmit="return submitLongTermGrowthForm()">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Strategy Name *</label>
+                        <input type="text" id="strategyName" placeholder="e.g., Digital Transformation Strategy 2025-2030" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Strategy Type *</label>
+                        <select id="strategyType" required>
+                            <option value="">Select Strategy Type</option>
+                            <option value="market-expansion">Market Expansion</option>
+                            <option value="product-development">Product Development</option>
+                            <option value="digital-transformation">Digital Transformation</option>
+                            <option value="operational-excellence">Operational Excellence</option>
+                            <option value="strategic-partnerships">Strategic Partnerships</option>
+                            <option value="sustainability-growth">Sustainability Growth</option>
+                            <option value="talent-growth">Talent & Organizational Growth</option>
+                            <option value="financial-growth">Financial Growth Strategy</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Start Date *</label>
+                        <input type="date" id="strategyStartDate" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Target Completion Date *</label>
+                        <input type="date" id="targetCompletionDate" required>
+                    </div>
+                </div>
+                
+                <!-- Growth Objectives -->
+                <div class="form-section">
+                    <h5>🎯 Growth Objectives</h5>
+                    <div class="form-group">
+                        <label>Primary Growth Objective *</label>
+                        <textarea id="primaryObjective" rows="3" placeholder="What is the main goal of this growth strategy?" required></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>Secondary Objectives</label>
+                        <textarea id="secondaryObjectives" rows="3" placeholder="Additional objectives that support the primary goal..."></textarea>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Revenue Growth Target (%)</label>
+                            <input type="number" id="revenueGrowthTarget" placeholder="e.g., 25" min="0" max="500">
+                        </div>
+                        <div class="form-group">
+                            <label>Market Share Target (%)</label>
+                            <input type="number" id="marketShareTarget" placeholder="e.g., 15" min="0" max="100">
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Market Analysis -->
+                <div class="form-section">
+                    <h5>🌍 Market Analysis & Opportunities</h5>
+                    <div class="form-group">
+                        <label>Target Markets</label>
+                        <textarea id="targetMarkets" rows="3" placeholder="Which markets are we targeting for growth?"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>Market Opportunities</label>
+                        <textarea id="marketOpportunities" rows="3" placeholder="What opportunities exist in the target markets?"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>Competitive Landscape</label>
+                        <textarea id="competitiveLandscape" rows="3" placeholder="Who are our main competitors and what is our competitive advantage?"></textarea>
+                    </div>
+                </div>
+                
+                <!-- Strategic Initiatives -->
+                <div class="form-section">
+                    <h5>🚀 Strategic Initiatives</h5>
+                    <div class="checkbox-group">
+                        <label><input type="checkbox" name="strategicInitiatives" value="technology-investment"> Technology Investment</label>
+                        <label><input type="checkbox" name="strategicInitiatives" value="talent-acquisition"> Talent Acquisition & Development</label>
+                        <label><input type="checkbox" name="strategicInitiatives" value="process-optimization"> Process Optimization</label>
+                        <label><input type="checkbox" name="strategicInitiatives" value="customer-experience"> Customer Experience Enhancement</label>
+                        <label><input type="checkbox" name="strategicInitiatives" value="product-innovation"> Product Innovation</label>
+                        <label><input type="checkbox" name="strategicInitiatives" value="strategic-acquisitions"> Strategic Acquisitions</label>
+                        <label><input type="checkbox" name="strategicInitiatives" value="partnership-development"> Partnership Development</label>
+                        <label><input type="checkbox" name="strategicInitiatives" value="brand-enhancement"> Brand Enhancement</label>
+                        <label><input type="checkbox" name="strategicInitiatives" value="international-expansion"> International Expansion</label>
+                        <label><input type="checkbox" name="strategicInitiatives" value="sustainability-initiatives"> Sustainability Initiatives</label>
+                    </div>
+                </div>
+                
+                <!-- Resource Requirements -->
+                <div class="form-section">
+                    <h5>💰 Resource Requirements</h5>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Estimated Budget (TZS)</label>
+                            <input type="number" id="estimatedBudget" placeholder="e.g., 500000000" min="0">
+                        </div>
+                        <div class="form-group">
+                            <label>Required Team Size</label>
+                            <input type="number" id="requiredTeamSize" placeholder="e.g., 25" min="1">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Key Resources Needed</label>
+                        <textarea id="keyResources" rows="3" placeholder="What resources (technology, equipment, facilities, etc.) are needed?"></textarea>
+                    </div>
+                </div>
+                
+                <!-- Risk Assessment -->
+                <div class="form-section">
+                    <h5>⚠️ Risk Assessment & Mitigation</h5>
+                    <div class="form-group">
+                        <label>Primary Risks</label>
+                        <textarea id="primaryRisks" rows="3" placeholder="What are the main risks associated with this growth strategy?"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>Risk Mitigation Strategies</label>
+                        <textarea id="riskMitigation" rows="3" placeholder="How will we mitigate these risks?"></textarea>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Risk Level</label>
+                            <select id="riskLevel">
+                                <option value="">Select Risk Level</option>
+                                <option value="low">Low</option>
+                                <option value="medium">Medium</option>
+                                <option value="high">High</option>
+                                <option value="very-high">Very High</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Risk Tolerance</label>
+                            <select id="riskTolerance">
+                                <option value="">Select Tolerance</option>
+                                <option value="conservative">Conservative</option>
+                                <option value="moderate">Moderate</option>
+                                <option value="aggressive">Aggressive</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Implementation Timeline -->
+                <div class="form-section">
+                    <h5>📅 Implementation Timeline</h5>
+                    <div class="form-group">
+                        <label>Phase 1 (0-6 months)</label>
+                        <textarea id="phase1" rows="2" placeholder="Key activities and milestones for the first 6 months..."></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>Phase 2 (6-18 months)</label>
+                        <textarea id="phase2" rows="2" placeholder="Key activities and milestones for months 6-18..."></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>Phase 3 (18+ months)</label>
+                        <textarea id="phase3" rows="2" placeholder="Key activities and milestones for 18+ months..."></textarea>
+                    </div>
+                </div>
+                
+                <!-- Success Metrics -->
+                <div class="form-section">
+                    <h5>📊 Success Metrics & KPIs</h5>
+                    <div class="form-group">
+                        <label>Key Performance Indicators</label>
+                        <textarea id="kpis" rows="4" placeholder="How will we measure the success of this growth strategy?"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>Success Criteria</label>
+                        <textarea id="successCriteria" rows="3" placeholder="What specific outcomes indicate success?"></textarea>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Review Frequency</label>
+                            <select id="reviewFrequency">
+                                <option value="">Select Frequency</option>
+                                <option value="monthly">Monthly</option>
+                                <option value="quarterly">Quarterly</option>
+                                <option value="semi-annual">Semi-Annual</option>
+                                <option value="annual">Annual</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>First Review Date</label>
+                            <input type="date" id="firstReviewDate">
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Additional Information -->
+                <div class="form-group">
+                    <label>Additional Notes & Considerations</label>
+                    <textarea id="growthNotes" rows="4" placeholder="Any additional information, dependencies, or special considerations..."></textarea>
+                </div>
+                
+                <div class="form-row">
+                    <button type="submit" class="action" style="background: #28a745;">💾 Save Growth Strategy</button>
+                    <button type="button" onclick="clearLongTermGrowthForm()" class="action" style="background: #ffc107;">🔄 Clear Form</button>
+                </div>
+            </form>
+        </div>
+        
+        <style>
+            .form-section {
+                background: #f8f9fa;
+                border: 1px solid #dee2e6;
+                border-radius: 5px;
+                padding: 15px;
+                margin: 15px 0;
+            }
+            
+            .form-section h5 {
+                color: #0b3d91;
+                margin-bottom: 10px;
+                font-size: 11px;
+                border-bottom: 2px solid #0b3d91;
+                padding-bottom: 5px;
+            }
+            
+            .checkbox-group {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+                gap: 8px;
+                margin-top: 10px;
+            }
+            
+            .checkbox-group label {
+                display: flex;
+                align-items: center;
+                font-size: 9px;
+                cursor: pointer;
+                padding: 5px;
+                border-radius: 3px;
+                transition: background-color 0.2s;
+            }
+            
+            .checkbox-group label:hover {
+                background-color: #e9ecef;
+            }
+            
+            .checkbox-group input[type="checkbox"] {
+                margin-right: 8px;
+                transform: scale(1.1);
+            }
+            
+            .form-header {
+                background: linear-gradient(135deg, #0b3d91 0%, #1a4a7a 100%);
+                color: white;
+                padding: 15px;
+                border-radius: 5px;
+                margin-bottom: 20px;
+            }
+            
+            .form-header h4 {
+                margin: 0 0 8px 0;
+                font-size: 14px;
+            }
+            
+            .form-header p {
+                margin: 0;
+                font-size: 9px;
+                opacity: 0.9;
+                line-height: 1.4;
+            }
+        </style>
+    `);
+}
+
+// Clear form functions
+function clearLeadershipForm() {
+    document.getElementById('leadershipForm').reset();
+}
+
+function clearMissionVisionForm() {
+    document.getElementById('missionVisionForm').reset();
+}
+
+function clearLongTermGrowthForm() {
+    document.getElementById('longTermGrowthForm').reset();
+}
+
+// Submit form functions
+async function submitLeadershipForm() {
+    try {
+        const leadershipData = {
+            position: document.getElementById('leadershipPosition').value,
+            department: document.getElementById('leadershipDepartment').value,
+            currentHolder: document.getElementById('currentHolder').value,
+            reportsTo: document.getElementById('reportsTo').value,
+            leadershipLevel: document.getElementById('leadershipLevel').value,
+            appointmentDate: document.getElementById('appointmentDate').value,
+            responsibilities: getSelectedCheckboxes('leadershipResponsibilities'),
+            competencies: {
+                strategicThinking: document.getElementById('strategicThinking').value,
+                decisionMaking: document.getElementById('decisionMaking').value,
+                communicationSkills: document.getElementById('communicationSkills').value,
+                teamLeadership: document.getElementById('teamLeadership').value
+            },
+            successionPlanning: {
+                status: document.getElementById('successionStatus').value,
+                potentialSuccessors: document.getElementById('potentialSuccessors').value,
+                developmentTimeline: document.getElementById('developmentTimeline').value
+            },
+            performanceMetrics: {
+                kpis: document.getElementById('kpis').value,
+                reviewFrequency: document.getElementById('reviewFrequency').value,
+                lastReviewDate: document.getElementById('lastReviewDate').value
+            },
+            notes: document.getElementById('leadershipNotes').value,
+            submittedBy: 'Managing Director',
+            submittedDate: new Date().toISOString().split('T')[0]
+        };
+        
+        console.log('📤 Submitting leadership data:', leadershipData);
+        
+        const baseUrl = window.location.origin;
+        const response = await fetch(`${baseUrl}/api/leadership`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${sessionManager.getAuthToken()}`
+            },
+            body: JSON.stringify(leadershipData)
+        });
+        
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+        
+        const result = await response.json();
+        console.log('✅ Leadership data saved successfully:', result);
+        
+        customAlert(`Leadership details saved successfully!\n\nPosition: ${leadershipData.position}\nCurrent Holder: ${leadershipData.currentHolder}\nDepartment: ${leadershipData.department}\nLeadership Level: ${leadershipData.leadershipLevel}`, "Leadership Created", "success");
+        
+        document.getElementById('leadershipForm').reset();
+        showContent('');
+        
+        return false;
+        
+    } catch (error) {
+        console.error('❌ Error saving leadership details:', error);
+        customAlert(`Failed to save leadership details: ${error.message}`, 'Save Error', 'error');
+        return false;
+    }
+}
+
+async function submitMissionVisionForm() {
+    try {
+        const missionVisionData = {
+            missionStatement: document.getElementById('missionStatement').value,
+            missionCategory: document.getElementById('missionCategory').value,
+            missionLastReviewed: document.getElementById('missionLastReviewed').value,
+            visionStatement: document.getElementById('visionStatement').value,
+            visionTimeframe: document.getElementById('visionTimeframe').value,
+            visionLastReviewed: document.getElementById('visionLastReviewed').value,
+            coreValues: getSelectedCheckboxes('coreValues'),
+            additionalValues: document.getElementById('additionalValues').value,
+            strategicObjectives: {
+                shortTerm: document.getElementById('shortTermObjectives').value,
+                longTerm: document.getElementById('longTermObjectives').value
+            },
+            stakeholderFocus: getSelectedCheckboxes('stakeholderFocus'),
+            implementation: {
+                communicationStrategy: document.getElementById('communicationStrategy').value,
+                integrationStrategy: document.getElementById('integrationStrategy').value,
+                reviewFrequency: document.getElementById('reviewFrequency').value,
+                nextReviewDate: document.getElementById('nextReviewDate').value
+            },
+            successMetrics: document.getElementById('successMetrics').value,
+            notes: document.getElementById('missionVisionNotes').value,
+            submittedBy: 'Managing Director',
+            submittedDate: new Date().toISOString().split('T')[0]
+        };
+        
+        console.log('📤 Submitting mission & vision data:', missionVisionData);
+        
+        const baseUrl = window.location.origin;
+        const response = await fetch(`${baseUrl}/api/mission-vision`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${sessionManager.getAuthToken()}`
+            },
+            body: JSON.stringify(missionVisionData)
+        });
+        
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+        
+        const result = await response.json();
+        console.log('✅ Mission & Vision data saved successfully:', result);
+        
+        customAlert(`Mission & Vision saved successfully!\n\nMission: ${missionVisionData.missionStatement.substring(0, 50)}...\nVision: ${missionVisionData.visionStatement.substring(0, 50)}...\nCore Values: ${missionVisionData.coreValues.length}`, "Mission & Vision Created", "success");
+        
+        document.getElementById('missionVisionForm').reset();
+        showContent('');
+        
+        return false;
+        
+    } catch (error) {
+        console.error('❌ Error saving mission & vision details:', error);
+        customAlert(`Failed to save mission & vision details: ${error.message}`, 'Save Error', 'error');
+        return false;
+    }
+}
+
+async function submitLongTermGrowthForm() {
+    try {
+        const growthData = {
+            strategyName: document.getElementById('strategyName').value,
+            strategyType: document.getElementById('strategyType').value,
+            startDate: document.getElementById('strategyStartDate').value,
+            targetCompletionDate: document.getElementById('targetCompletionDate').value,
+            objectives: {
+                primary: document.getElementById('primaryObjective').value,
+                secondary: document.getElementById('secondaryObjectives').value,
+                revenueGrowthTarget: document.getElementById('revenueGrowthTarget').value,
+                marketShareTarget: document.getElementById('marketShareTarget').value
+            },
+            marketAnalysis: {
+                targetMarkets: document.getElementById('targetMarkets').value,
+                opportunities: document.getElementById('marketOpportunities').value,
+                competitiveLandscape: document.getElementById('competitiveLandscape').value
+            },
+            strategicInitiatives: getSelectedCheckboxes('strategicInitiatives'),
+            resourceRequirements: {
+                estimatedBudget: document.getElementById('estimatedBudget').value,
+                requiredTeamSize: document.getElementById('requiredTeamSize').value,
+                keyResources: document.getElementById('keyResources').value
+            },
+            riskAssessment: {
+                primaryRisks: document.getElementById('primaryRisks').value,
+                riskMitigation: document.getElementById('riskMitigation').value,
+                riskLevel: document.getElementById('riskLevel').value,
+                riskTolerance: document.getElementById('riskTolerance').value
+            },
+            timeline: {
+                phase1: document.getElementById('phase1').value,
+                phase2: document.getElementById('phase2').value,
+                phase3: document.getElementById('phase3').value
+            },
+            successMetrics: {
+                kpis: document.getElementById('kpis').value,
+                successCriteria: document.getElementById('successCriteria').value,
+                reviewFrequency: document.getElementById('reviewFrequency').value,
+                firstReviewDate: document.getElementById('firstReviewDate').value
+            },
+            notes: document.getElementById('growthNotes').value,
+            submittedBy: 'Managing Director',
+            submittedDate: new Date().toISOString().split('T')[0]
+        };
+        
+        console.log('📤 Submitting growth strategy data:', growthData);
+        
+        const baseUrl = window.location.origin;
+        const response = await fetch(`${baseUrl}/api/growth-strategy`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${sessionManager.getAuthToken()}`
+            },
+            body: JSON.stringify(growthData)
+        });
+        
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+        
+        const result = await response.json();
+        console.log('✅ Growth strategy saved successfully:', result);
+        
+        customAlert(`Growth strategy saved successfully!\n\nStrategy: ${growthData.strategyName}\nType: ${growthData.strategyType}\nDuration: ${growthData.startDate} to ${growthData.targetCompletionDate}\nRevenue Target: ${growthData.objectives.revenueGrowthTarget}%`, "Growth Strategy Created", "success");
+        
+        document.getElementById('longTermGrowthForm').reset();
+        showContent('');
+        
+        return false;
+        
+    } catch (error) {
+        console.error('❌ Error saving growth strategy:', error);
+        customAlert(`Failed to save growth strategy: ${error.message}`, 'Save Error', 'error');
         return false;
     }
 }
