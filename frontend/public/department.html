@@ -97184,7 +97184,7 @@ function showLongTermGrowthForm() {
                 <p>Develop comprehensive long-term growth strategies, market expansion plans, and strategic initiatives to drive sustainable business growth and competitive advantage.</p>
             </div>
             
-            <form id="longTermGrowthForm" onsubmit="return submitLongTermGrowthForm()">
+            <form id="longTermGrowthForm" onsubmit="return submitLongTermGrowthForm(event)">
                 <div class="form-row">
                     <div class="form-group">
                         <label>Strategy Name *</label>
@@ -97719,65 +97719,103 @@ async function submitMissionVisionForm(event) {
     return false;
 }
 
-async function submitLongTermGrowthForm() {
+async function submitLongTermGrowthForm(event) {
+    // Prevent form submission and page refresh immediately
+    if (event) {
+        event.preventDefault();
+        event.stopPropagation();
+    }
+    
     try {
+        console.log('🚀 Starting Long-Term Growth Strategy form submission...');
+        
+        // Validate required fields
+        const strategyName = document.getElementById('strategyName').value.trim();
+        const strategyType = document.getElementById('strategyType').value;
+        const startDate = document.getElementById('strategyStartDate').value;
+        const targetDate = document.getElementById('targetCompletionDate').value;
+        const primaryObjective = document.getElementById('primaryObjective').value.trim();
+        
+        if (!strategyName || !strategyType || !startDate || !targetDate || !primaryObjective) {
+            customAlert('Please fill in all required fields (*) before submitting.', 'Validation Error', 'warning');
+            return false;
+        }
+        
+        // Validate dates
+        if (new Date(startDate) >= new Date(targetDate)) {
+            customAlert('Target completion date must be after the start date.', 'Date Validation Error', 'warning');
+            return false;
+        }
+        
         const growthData = {
-            strategyName: document.getElementById('strategyName').value,
-            strategyType: document.getElementById('strategyType').value,
-            startDate: document.getElementById('strategyStartDate').value,
-            targetCompletionDate: document.getElementById('targetCompletionDate').value,
+            strategyName: strategyName,
+            strategyType: strategyType,
+            startDate: startDate,
+            targetCompletionDate: targetDate,
             objectives: {
-                primary: document.getElementById('primaryObjective').value,
-                secondary: document.getElementById('secondaryObjectives').value,
+                primary: primaryObjective,
+                secondary: document.getElementById('secondaryObjectives').value.trim(),
                 revenueGrowthTarget: document.getElementById('revenueGrowthTarget').value,
                 marketShareTarget: document.getElementById('marketShareTarget').value
             },
             marketAnalysis: {
-                targetMarkets: document.getElementById('targetMarkets').value,
-                opportunities: document.getElementById('marketOpportunities').value,
-                competitiveLandscape: document.getElementById('competitiveLandscape').value
+                targetMarkets: document.getElementById('targetMarkets').value.trim(),
+                opportunities: document.getElementById('marketOpportunities').value.trim(),
+                competitiveLandscape: document.getElementById('competitiveLandscape').value.trim()
             },
             strategicInitiatives: getSelectedCheckboxes('strategicInitiatives'),
             resourceRequirements: {
                 estimatedBudget: document.getElementById('estimatedBudget').value,
                 requiredTeamSize: document.getElementById('requiredTeamSize').value,
-                keyResources: document.getElementById('keyResources').value
+                keyResources: document.getElementById('keyResources').value.trim()
             },
             riskAssessment: {
-                primaryRisks: document.getElementById('primaryRisks').value,
-                riskMitigation: document.getElementById('riskMitigation').value,
+                primaryRisks: document.getElementById('primaryRisks').value.trim(),
+                riskMitigation: document.getElementById('riskMitigation').value.trim(),
                 riskLevel: document.getElementById('riskLevel').value,
                 riskTolerance: document.getElementById('riskTolerance').value
             },
             timeline: {
-                phase1: document.getElementById('phase1').value,
-                phase2: document.getElementById('phase2').value,
-                phase3: document.getElementById('phase3').value
+                phase1: document.getElementById('phase1').value.trim(),
+                phase2: document.getElementById('phase2').value.trim(),
+                phase3: document.getElementById('phase3').value.trim()
             },
             successMetrics: {
-                kpis: document.getElementById('kpis').value,
-                successCriteria: document.getElementById('successCriteria').value,
+                kpis: document.getElementById('kpis').value.trim(),
+                successCriteria: document.getElementById('successCriteria').value.trim(),
                 reviewFrequency: document.getElementById('reviewFrequency').value,
                 firstReviewDate: document.getElementById('firstReviewDate').value
             },
-            notes: document.getElementById('growthNotes').value,
+            notes: document.getElementById('growthNotes').value.trim(),
             submittedBy: 'Managing Director',
             submittedDate: new Date().toISOString().split('T')[0]
         };
         
         console.log('📤 Submitting growth strategy data:', growthData);
         
+        // Check authentication
+        const token = sessionManager.getAuthToken();
+        if (!token) {
+            console.error('❌ No authentication token found');
+            customAlert('Your session has expired. Please log in again.', 'Authentication Error', 'error');
+            // Only redirect on actual authentication failure
+            window.location.href = '/';
+            return false;
+        }
+        
         const baseUrl = window.location.origin;
         const response = await fetch(`${baseUrl}/api/growth-strategy`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization': `Bearer ${sessionManager.getAuthToken()}`
+                'Authorization': `Bearer ${token}`
             },
             body: JSON.stringify(growthData)
         });
         
         if (!response.ok) {
+            const errorText = await response.text();
+            console.error('❌ Server response error:', response.status, errorText);
             throw new Error(`HTTP ${response.status}: ${response.statusText}`);
         }
         
@@ -97786,6 +97824,7 @@ async function submitLongTermGrowthForm() {
         
         customAlert(`Growth strategy saved successfully!\n\nStrategy: ${growthData.strategyName}\nType: ${growthData.strategyType}\nDuration: ${growthData.startDate} to ${growthData.targetCompletionDate}\nRevenue Target: ${growthData.objectives.revenueGrowthTarget}%`, "Growth Strategy Created", "success");
         
+        // Reset form and close only after successful submission
         document.getElementById('longTermGrowthForm').reset();
         showContent('');
         
