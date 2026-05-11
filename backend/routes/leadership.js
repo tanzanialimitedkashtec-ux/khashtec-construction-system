@@ -34,43 +34,74 @@ router.post('/leadership', async (req, res) => {
     }
     
     try {
-        // Create leadership data object
-        const leadershipData = {
-            position,
-            department,
-            current_holder: currentHolder,
-            reports_to: reportsTo,
-            leadership_level: leadershipLevel,
-            appointment_date: appointmentDate,
-            responsibilities: JSON.stringify(responsibilities),
-            strategic_thinking: competencies.strategicThinking || '',
-            decision_making: competencies.decisionMaking || '',
-            communication_skills: competencies.communicationSkills || '',
-            team_leadership: competencies.teamLeadership || '',
-            succession_status: successionPlanning.status || '',
-            potential_successors: successionPlanning.potentialSuccessors || '',
-            development_timeline: successionPlanning.developmentTimeline || '',
-            kpis: performanceMetrics.kpis || '',
-            review_frequency: performanceMetrics.reviewFrequency || '',
-            last_review_date: performanceMetrics.lastReviewDate || '',
-            notes,
-            submitted_by: submittedBy,
-            submitted_date: submittedDate || new Date().toISOString().split('T')[0],
-            status: 'active',
-            created_at: new Date().toISOString()
-        };
+        // Check if leadership position already exists
+        const existingLeadership = await db.execute(
+            'SELECT id FROM leadership_management WHERE position = ? AND department = ?',
+            [position, department]
+        );
         
-        console.log('📝 Processing leadership data:', leadershipData);
+        let result;
+        if (existingLeadership.length > 0) {
+            // Update existing leadership
+            await db.execute(`
+                UPDATE leadership_management SET 
+                    current_holder = ?, reports_to = ?, leadership_level = ?,
+                    appointment_date = ?, responsibilities = ?, strategic_thinking = ?,
+                    decision_making = ?, communication_skills = ?, team_leadership = ?,
+                    succession_status = ?, potential_successors = ?, development_timeline = ?,
+                    kpis = ?, review_frequency = ?, last_review_date = ?,
+                    notes = ?, submitted_by = ?, submitted_date = ?,
+                    status = 'active', updated_at = CURRENT_TIMESTAMP
+                WHERE position = ? AND department = ?
+            `, [
+                currentHolder, reportsTo, leadershipLevel, appointmentDate,
+                JSON.stringify(responsibilities), competencies.strategicThinking || '',
+                competencies.decisionMaking || '', competencies.communicationSkills || '',
+                competencies.teamLeadership || '', successionPlanning.status || '',
+                successionPlanning.potentialSuccessors || '', successionPlanning.developmentTimeline || '',
+                performanceMetrics.kpis || '', performanceMetrics.reviewFrequency || '',
+                performanceMetrics.lastReviewDate || '', notes, submittedBy,
+                submittedDate || new Date().toISOString().split('T')[0], position, department
+            ]);
+            
+            result = { 
+                action: 'updated',
+                id: existingLeadership[0].id,
+                position: position,
+                department: department,
+                note: 'Leadership details updated successfully'
+            };
+        } else {
+            // Insert new leadership
+            const insertResult = await db.execute(`
+                INSERT INTO leadership_management (
+                    position, department, current_holder, reports_to, leadership_level,
+                    appointment_date, responsibilities, strategic_thinking, decision_making,
+                    communication_skills, team_leadership, succession_status,
+                    potential_successors, development_timeline, kpis, review_frequency,
+                    last_review_date, notes, submitted_by, submitted_date, status
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            `, [
+                position, department, currentHolder, reportsTo, leadershipLevel,
+                appointmentDate, JSON.stringify(responsibilities), competencies.strategicThinking || '',
+                competencies.decisionMaking || '', competencies.communicationSkills || '',
+                competencies.teamLeadership || '', successionPlanning.status || '',
+                successionPlanning.potentialSuccessors || '', successionPlanning.developmentTimeline || '',
+                performanceMetrics.kpis || '', performanceMetrics.reviewFrequency || '',
+                performanceMetrics.lastReviewDate || '', notes, submittedBy,
+                submittedDate || new Date().toISOString().split('T')[0], 'active'
+            ]);
+            
+            result = { 
+                action: 'created',
+                id: insertResult.insertId,
+                position: position,
+                department: department,
+                note: 'Leadership details created successfully'
+            };
+        }
         
-        // For now, return success with processed data (simulating database save)
-        const result = { 
-            ...leadershipData, 
-            id: `LD-${Date.now()}`, 
-            action: 'created',
-            note: 'Leadership data processed successfully and saved to memory'
-        };
-        
-        console.log('✅ Leadership details processed successfully:', result);
+        console.log('✅ Leadership details saved successfully:', result);
         
         res.json({
             success: true,
@@ -92,40 +123,23 @@ router.get('/leadership', async (req, res) => {
     console.log('📝 GET /api/leadership accessed');
     
     try {
-        // Return mock data for now - this ensures frontend works
-        const mockLeadership = [
-            {
-                id: 'LD-1715432000000',
-                position: 'Chief Executive Officer',
-                department: 'Executive Office',
-                current_holder: 'John Smith',
-                reports_to: 'Board of Directors',
-                leadership_level: 'c-suite',
-                appointment_date: '2024-01-01',
-                responsibilities: JSON.stringify(['strategic-planning', 'team-management', 'financial-oversight']),
-                strategic_thinking: 'expert',
-                decision_making: 'expert',
-                communication_skills: 'expert',
-                team_leadership: 'expert',
-                succession_status: 'identified',
-                potential_successors: 'Jane Doe, Mike Johnson',
-                development_timeline: '12-month development plan',
-                kpis: 'Revenue growth, Market expansion, Team satisfaction',
-                review_frequency: 'quarterly',
-                last_review_date: '2024-03-15',
-                notes: 'Strategic leader with 10+ years experience',
-                submitted_by: 'Managing Director',
-                submitted_date: '2024-01-01',
-                status: 'active',
-                created_at: '2024-01-01T00:00:00.000Z'
-            }
-        ];
+        // Retrieve leadership data from database
+        const leadership = await db.execute(`
+            SELECT id, position, department, current_holder, reports_to, leadership_level,
+                   appointment_date, responsibilities, strategic_thinking, decision_making,
+                   communication_skills, team_leadership, succession_status,
+                   potential_successors, development_timeline, kpis, review_frequency,
+                   last_review_date, notes, submitted_by, submitted_date, status,
+                   created_at, updated_at
+            FROM leadership_management 
+            ORDER BY created_at DESC
+        `);
         
-        console.log('✅ Returning mock leadership data:', mockLeadership.length);
+        console.log('✅ Retrieved leadership data:', leadership.length);
         
         res.json({
             success: true,
-            data: mockLeadership
+            data: leadership
         });
         
     } catch (error) {
