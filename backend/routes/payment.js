@@ -32,7 +32,7 @@ router.post('/payment', async (req, res) => {
         department,
         projectCode,
         workOrderNumber,
-        approvedBy = 'Managing Director',
+        approvedBy,
         submittedBy
     } = req.body;
     
@@ -81,12 +81,12 @@ router.post('/payment', async (req, res) => {
                 amount, currency, equivalent_amount_tzs, exchange_rate, description, notes,
                 payment_type, urgency, payment_method, expected_payment_date, department,
                 project_code, work_order_number, status, approved_by, submitted_by, submitted_date
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         `, [
             trackingNumber, employeeId, employeeName, employeeEmail, employeePhone,
             amount, currency, equivalentAmount, exchangeRate, description, notes,
             paymentType, urgency, paymentMethod, expectedPaymentDate || null, department,
-            projectCode, workOrderNumber, 'pending_finance_approval', approvedBy, submittedBy, submittedDate
+            projectCode || null, workOrderNumber || null, 'pending_finance_approval', approvedBy || null, submittedBy, submittedDate
         ]);
         
         console.log('✅ Payment request created successfully:', { trackingNumber, id: result.insertId });
