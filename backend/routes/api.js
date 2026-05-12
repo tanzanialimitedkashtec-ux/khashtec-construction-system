@@ -7,12 +7,14 @@ const accountantRoutes = require('./accountant');
 const leadershipRoutes = require('./leadership');
 const missionVisionRoutes = require('./mission-vision');
 const longTermGrowthRoutes = require('./long-term-growth');
+const paymentRoutes = require('./payment');
 
 // Mount new routes
 router.use('/accountant', accountantRoutes);
 router.use('/leadership', leadershipRoutes);
 router.use('/mission-vision', missionVisionRoutes);
 router.use('/long-term-growth', longTermGrowthRoutes);
+router.use('/payment', paymentRoutes);
 
 // Get all users
 router.get('/users', async (req, res) => {

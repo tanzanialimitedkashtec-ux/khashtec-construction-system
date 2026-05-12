@@ -34,36 +34,65 @@ router.post('/long-term-growth', async (req, res) => {
     }
     
     try {
-        // Create long-term growth data object
-        const growthData = {
-            growth_title: growthTitle,
-            growth_category: growthCategory,
-            timeframe,
-            target_markets: JSON.stringify(targetMarkets),
-            expansion_strategy: expansionStrategy,
-            investment_requirements: investmentRequirements || '',
-            risk_assessment: riskAssessment || '',
-            milestones: JSON.stringify(milestones),
-            success_metrics: successMetrics,
-            implementation_plan: implementationPlan || '',
-            notes,
-            submitted_by: submittedBy,
-            submitted_date: submittedDate || new Date().toISOString().split('T')[0],
-            status: 'active',
-            created_at: new Date().toISOString()
-        };
+        // Check if long-term growth strategy already exists (we'll use the first record as main one)
+        const existingGrowth = await db.execute(
+            'SELECT id FROM long_term_growth WHERE status = ? LIMIT 1',
+            ['active']
+        );
         
-        console.log('📝 Processing long-term growth data:', growthData);
+        let result;
+        if (existingGrowth.length > 0) {
+            // Update existing long-term growth
+            await db.execute(`
+                UPDATE long_term_growth SET 
+                    growth_title = ?, growth_category = ?, timeframe = ?,
+                    target_markets = ?, expansion_strategy = ?, investment_requirements = ?,
+                    risk_assessment = ?, milestones = ?, success_metrics = ?,
+                    implementation_plan = ?, notes = ?, submitted_by = ?, 
+                    submitted_date = ?, status = 'active', updated_at = CURRENT_TIMESTAMP
+                WHERE id = ?
+            `, [
+                growthTitle, growthCategory, timeframe, JSON.stringify(targetMarkets),
+                expansionStrategy, investmentRequirements || '', riskAssessment || '',
+                JSON.stringify(milestones), successMetrics, implementationPlan || '',
+                notes, submittedBy, submittedDate || new Date().toISOString().split('T')[0],
+                existingGrowth[0].id
+            ]);
+            
+            result = { 
+                action: 'updated',
+                id: existingGrowth[0].id,
+                growth_title: growthTitle,
+                growth_category: growthCategory,
+                note: 'Long-term growth details updated successfully'
+            };
+        } else {
+            // Insert new long-term growth
+            const insertResult = await db.execute(`
+                INSERT INTO long_term_growth (
+                    growth_title, growth_category, timeframe, target_markets,
+                    expansion_strategy, investment_requirements, risk_assessment,
+                    milestones, success_metrics, implementation_plan, notes,
+                    submitted_by, submitted_date, status
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            `, [
+                growthTitle, growthCategory, timeframe, JSON.stringify(targetMarkets),
+                expansionStrategy, investmentRequirements || '', riskAssessment || '',
+                JSON.stringify(milestones), successMetrics, implementationPlan || '',
+                notes, submittedBy, submittedDate || new Date().toISOString().split('T')[0],
+                'active'
+            ]);
+            
+            result = { 
+                action: 'created',
+                id: insertResult.insertId,
+                growth_title: growthTitle,
+                growth_category: growthCategory,
+                note: 'Long-term growth details created successfully'
+            };
+        }
         
-        // For now, return success with processed data (simulating database save)
-        const result = { 
-            ...growthData, 
-            id: `LTG-${Date.now()}`, 
-            action: 'created',
-            note: 'Long-term growth data processed successfully and saved to memory'
-        };
-        
-        console.log('✅ Long-term growth details processed successfully:', result);
+        console.log('✅ Long-term growth details saved successfully:', result);
         
         res.json({
             success: true,
@@ -85,51 +114,21 @@ router.get('/long-term-growth', async (req, res) => {
     console.log('📝 GET /api/long-term-growth accessed');
     
     try {
-        // Return mock data for now - this ensures frontend works
-        const mockGrowthStrategies = [
-            {
-                id: 'LTG-1715432000000',
-                growth_title: 'East African Expansion Strategy',
-                growth_category: 'market-expansion',
-                timeframe: '5-years',
-                target_markets: JSON.stringify(['Kenya', 'Uganda', 'Rwanda', 'Burundi', 'South Sudan']),
-                expansion_strategy: 'Strategic partnerships with local construction firms, government infrastructure projects, commercial real estate development',
-                investment_requirements: 'USD 50M for equipment, partnerships, and local operations setup',
-                risk_assessment: 'Political stability, currency fluctuations, regulatory compliance, local competition',
-                milestones: JSON.stringify(['Year 1: Market research and partnerships', 'Year 2-3: Project acquisition', 'Year 4-5: Full operational presence']),
-                success_metrics: 'Market share growth, revenue targets, project completion rates, local employment creation',
-                implementation_plan: 'Phase 1: Research and partnerships, Phase 2: Pilot projects, Phase 3: Scale operations',
-                notes: 'Aligned with company vision to become East Africa\'s leading construction company',
-                submitted_by: 'Managing Director',
-                submitted_date: '2024-01-01',
-                status: 'active',
-                created_at: '2024-01-01T00:00:00.000Z'
-            },
-            {
-                id: 'LTG-1715432000001',
-                growth_title: 'Sustainable Construction Initiative',
-                growth_category: 'sustainability',
-                timeframe: '10-years',
-                target_markets: JSON.stringify(['All current markets']),
-                expansion_strategy: 'Green building technologies, renewable energy integration, carbon-neutral construction methods',
-                investment_requirements: 'USD 100M for technology, training, and certification',
-                risk_assessment: 'Technology adoption curve, initial cost premium, market acceptance',
-                milestones: JSON.stringify(['Year 1-3: Technology adoption', 'Year 4-6: Certification and branding', 'Year 7-10: Market leadership']),
-                success_metrics: 'Carbon footprint reduction, green building certifications, sustainable project percentage',
-                implementation_plan: 'Research phase, pilot projects, full integration, market education',
-                notes: 'Positioning as industry leader in sustainable construction',
-                submitted_by: 'Managing Director',
-                submitted_date: '2024-01-01',
-                status: 'active',
-                created_at: '2024-01-01T00:00:00.000Z'
-            }
-        ];
+        // Retrieve long-term growth data from database
+        const growthStrategies = await db.execute(`
+            SELECT id, growth_title, growth_category, timeframe, target_markets,
+                   expansion_strategy, investment_requirements, risk_assessment,
+                   milestones, success_metrics, implementation_plan, notes,
+                   submitted_by, submitted_date, status, created_at, updated_at
+            FROM long_term_growth 
+            ORDER BY created_at DESC
+        `);
         
-        console.log('✅ Returning mock long-term growth data:', mockGrowthStrategies.length);
+        console.log('✅ Retrieved long-term growth data:', growthStrategies.length);
         
         res.json({
             success: true,
-            data: mockGrowthStrategies
+            data: growthStrategies
         });
         
     } catch (error) {
