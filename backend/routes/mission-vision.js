@@ -83,14 +83,14 @@ router.post('/mission-vision', async (req, res) => {
                     success_metrics, notes, submitted_by, submitted_date, status
                 ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             `, [
-                missionStatement, missionCategory || null, missionLastReviewed || null,
-                visionStatement, visionTimeframe || null, visionLastReviewed || null,
+                missionStatement, missionCategory || '', missionLastReviewed || '',
+                visionStatement, visionTimeframe || '', visionLastReviewed || '',
                 JSON.stringify(coreValues), additionalValues, strategicObjectives.shortTerm || '',
-                strategicObjectives.longTerm || '', JSON.stringify(stakeholderFocus),
+                strategicObjectives.longTerm || '', JSON.stringify(stakeholderFocus), 
                 implementation.communicationStrategy || '', implementation.integrationStrategy || '',
-                implementation.reviewFrequency || null, implementation.nextReviewDate || null,
-                successMetrics, notes, submittedBy,
-                submittedDate || new Date().toISOString().split('T')[0], 'active'
+                implementation.reviewFrequency || '', implementation.nextReviewDate || '',
+                successMetrics, notes, submittedBy, submittedDate || new Date().toISOString().split('T')[0],
+                'active'
             ]);
             
             result = { 

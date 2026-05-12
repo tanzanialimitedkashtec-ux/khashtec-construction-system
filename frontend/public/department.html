@@ -23764,6 +23764,8 @@ function loadMenu(){
 
         addMenu("Long-Term Growth Strategy", showLongTermGrowthForm);
 
+        addMenu("Payment Management", showPaymentManagement);
+
         addMenu("Register Company Car", registerCompanyCar);
 
         addMenu("Manage Company Cars", manageCompanyCars);
@@ -97839,6 +97841,588 @@ async function submitLongTermGrowthForm(event) {
         console.error('❌ Error saving growth strategy:', error);
         customAlert(`Failed to save growth strategy: ${error.message}`, 'Save Error', 'error');
         return false;
+    }
+}
+
+/* ===== PAYMENT MANAGEMENT FUNCTIONS ===== */
+
+function showPaymentManagement() {
+    showContent(`
+        <div class="card">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h3>💳 Payment Management</h3>
+                <div>
+                    <button type="button" onclick="loadPaymentRequests()" class="action" style="background: #007bff;">
+                        🔄 Refresh
+                    </button>
+                    <button type="button" onclick="showPaymentStatistics()" class="action" style="background: #28a745;">
+                        📊 Statistics
+                    </button>
+                </div>
+            </div>
+
+            <!-- Payment Request Form -->
+            <div class="form-section">
+                <h4>📝 Create New Payment Request</h4>
+                <form id="paymentRequestForm" onsubmit="submitPaymentRequest(event)">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="employeeSelect">Select Employee *</label>
+                            <select id="employeeSelect" required onchange="loadEmployeeDetails()">
+                                <option value="">Choose employee...</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="paymentType">Payment Type *</label>
+                            <select id="paymentType" required onchange="updatePaymentFields()">
+                                <option value="">Select type...</option>
+                                <option value="salary">Salary</option>
+                                <option value="bonus">Bonus</option>
+                                <option value="allowance">Allowance</option>
+                                <option value="reimbursement">Reimbursement</option>
+                                <option value="overtime">Overtime</option>
+                                <option value="commission">Commission</option>
+                                <option value="severance">Severance</option>
+                                <option value="other">Other</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="employeeName">Employee Name *</label>
+                            <input type="text" id="employeeName" readonly required placeholder="Auto-filled from employee selection">
+                        </div>
+                        <div class="form-group">
+                            <label for="employeeEmail">Employee Email *</label>
+                            <input type="email" id="employeeEmail" readonly required placeholder="Auto-filled from employee selection">
+                        </div>
+                        <div class="form-group">
+                            <label for="employeePhone">Phone Number *</label>
+                            <input type="tel" id="employeePhone" readonly required placeholder="Auto-filled from employee selection">
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="amount">Amount *</label>
+                            <input type="number" id="amount" step="0.01" min="0" required placeholder="Enter amount" oninput="calculateEquivalent()">
+                        </div>
+                        <div class="form-group">
+                            <label for="currency">Currency *</label>
+                            <select id="currency" required onchange="calculateEquivalent()">
+                                <option value="TZS">TZS - Tanzanian Shilling</option>
+                                <option value="USD">USD - US Dollar</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="equivalentAmount">Equivalent (TZS)</label>
+                            <input type="text" id="equivalentAmount" readonly placeholder="Auto-calculated">
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="urgency">Urgency Level</label>
+                            <select id="urgency">
+                                <option value="low">Low</option>
+                                <option value="normal" selected>Normal</option>
+                                <option value="high">High</option>
+                                <option value="urgent">Urgent</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="paymentMethod">Payment Method</label>
+                            <select id="paymentMethod">
+                                <option value="bank_transfer" selected>Bank Transfer</option>
+                                <option value="mobile_money">Mobile Money</option>
+                                <option value="cash">Cash</option>
+                                <option value="cheque">Cheque</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="expectedPaymentDate">Expected Payment Date</label>
+                            <input type="date" id="expectedPaymentDate">
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="department">Department</label>
+                            <input type="text" id="department" readonly placeholder="Auto-filled from employee selection">
+                        </div>
+                        <div class="form-group">
+                            <label for="projectCode">Project Code</label>
+                            <input type="text" id="projectCode" placeholder="Optional project code">
+                        </div>
+                        <div class="form-group">
+                            <label for="workOrderNumber">Work Order Number</label>
+                            <input type="text" id="workOrderNumber" placeholder="Optional work order number">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="description">Description *</label>
+                        <textarea id="description" required rows="3" placeholder="Describe the payment purpose and details"></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="notes">Additional Notes</label>
+                        <textarea id="notes" rows="2" placeholder="Any additional information or special instructions"></textarea>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="submit" class="action" style="background: #28a745;">
+                            💳 Submit Payment Request
+                        </button>
+                        <button type="button" onclick="resetPaymentForm()" class="action" style="background: #6c757d;">
+                            🔄 Reset Form
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Payment Requests List -->
+            <div class="form-section">
+                <h4>📋 Payment Requests</h4>
+                <div class="filter-controls">
+                    <select id="statusFilter" onchange="filterPaymentRequests()">
+                        <option value="">All Status</option>
+                        <option value="pending_finance_approval">Pending Finance Approval</option>
+                        <option value="approved">Approved</option>
+                        <option value="rejected">Rejected</option>
+                        <option value="processed">Processed</option>
+                        <option value="paid">Paid</option>
+                        <option value="cancelled">Cancelled</option>
+                    </select>
+                    <select id="currencyFilter" onchange="filterPaymentRequests()">
+                        <option value="">All Currencies</option>
+                        <option value="TZS">TZS</option>
+                        <option value="USD">USD</option>
+                    </select>
+                    <input type="text" id="searchPayment" placeholder="Search payments..." oninput="filterPaymentRequests()">
+                </div>
+                <div id="paymentRequestsList">
+                    <p>Loading payment requests...</p>
+                </div>
+            </div>
+        </div>
+    `);
+
+    // Initialize payment management
+    loadEmployeesForPayment();
+    loadPaymentRequests();
+}
+
+// Load employees for payment selection
+async function loadEmployeesForPayment() {
+    try {
+        const response = await fetch('/api/payment/employees');
+        const result = await response.json();
+        
+        if (result.success) {
+            const select = document.getElementById('employeeSelect');
+            select.innerHTML = '<option value="">Choose employee...</option>';
+            
+            result.data.forEach(employee => {
+                select.innerHTML += `<option value="${employee.id}" data-name="${employee.name}" data-email="${employee.email}" data-phone="${employee.phone}" data-department="${employee.department}">${employee.name} - ${employee.department}</option>`;
+            });
+        }
+    } catch (error) {
+        console.error('❌ Error loading employees:', error);
+    }
+}
+
+// Load employee details when selected
+function loadEmployeeDetails() {
+    const select = document.getElementById('employeeSelect');
+    const selectedOption = select.options[select.selectedIndex];
+    
+    if (select.value) {
+        document.getElementById('employeeName').value = selectedOption.dataset.name;
+        document.getElementById('employeeEmail').value = selectedOption.dataset.email;
+        document.getElementById('employeePhone').value = selectedOption.dataset.phone;
+        document.getElementById('department').value = selectedOption.dataset.department;
+    } else {
+        document.getElementById('employeeName').value = '';
+        document.getElementById('employeeEmail').value = '';
+        document.getElementById('employeePhone').value = '';
+        document.getElementById('department').value = '';
+    }
+}
+
+// Calculate equivalent amount
+function calculateEquivalent() {
+    const amount = parseFloat(document.getElementById('amount').value) || 0;
+    const currency = document.getElementById('currency').value;
+    const equivalentField = document.getElementById('equivalentAmount');
+    
+    if (currency === 'USD') {
+        const exchangeRate = 2500; // Default exchange rate
+        const equivalent = amount * exchangeRate;
+        equivalentField.value = equivalent.toLocaleString('en-TZ', { minimumFractionDigits: 2 }) + ' TZS';
+    } else {
+        equivalentField.value = amount.toLocaleString('en-TZ', { minimumFractionDigits: 2 }) + ' TZS';
+    }
+}
+
+// Submit payment request
+async function submitPaymentRequest(event) {
+    event.preventDefault();
+    
+    try {
+        const formData = {
+            employeeId: document.getElementById('employeeSelect').value,
+            employeeName: document.getElementById('employeeName').value,
+            employeeEmail: document.getElementById('employeeEmail').value,
+            employeePhone: document.getElementById('employeePhone').value,
+            amount: parseFloat(document.getElementById('amount').value),
+            currency: document.getElementById('currency').value,
+            description: document.getElementById('description').value,
+            notes: document.getElementById('notes').value,
+            paymentType: document.getElementById('paymentType').value,
+            urgency: document.getElementById('urgency').value,
+            paymentMethod: document.getElementById('paymentMethod').value,
+            expectedPaymentDate: document.getElementById('expectedPaymentDate').value,
+            department: document.getElementById('department').value,
+            projectCode: document.getElementById('projectCode').value,
+            workOrderNumber: document.getElementById('workOrderNumber').value,
+            submittedBy: sessionManager.getCurrentUser()?.name || 'Managing Director'
+        };
+        
+        const response = await fetch('/api/payment', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(formData)
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            customAlert(`Payment request created successfully!\n\nTracking Number: ${result.data.trackingNumber}\nAmount: ${result.data.currency} ${result.data.amount}\nStatus: ${result.data.status}`, "Payment Request Created", "success");
+            resetPaymentForm();
+            loadPaymentRequests();
+        } else {
+            throw new Error(result.error || 'Failed to create payment request');
+        }
+    } catch (error) {
+        console.error('❌ Error submitting payment request:', error);
+        customAlert(`Failed to submit payment request: ${error.message}`, 'Error', 'error');
+    }
+}
+
+// Load payment requests
+async function loadPaymentRequests() {
+    try {
+        const response = await fetch('/api/payment');
+        const result = await response.json();
+        
+        if (result.success) {
+            displayPaymentRequests(result.data);
+        } else {
+            throw new Error(result.error || 'Failed to load payment requests');
+        }
+    } catch (error) {
+        console.error('❌ Error loading payment requests:', error);
+        document.getElementById('paymentRequestsList').innerHTML = '<p class="error">Failed to load payment requests</p>';
+    }
+}
+
+// Display payment requests
+function displayPaymentRequests(payments) {
+    const container = document.getElementById('paymentRequestsList');
+    
+    if (!payments || payments.length === 0) {
+        container.innerHTML = '<p>No payment requests found</p>';
+        return;
+    }
+    
+    let html = `
+        <div class="table-responsive">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Tracking #</th>
+                        <th>Employee</th>
+                        <th>Amount</th>
+                        <th>Type</th>
+                        <th>Status</th>
+                        <th>Submitted</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+    `;
+    
+    payments.forEach(payment => {
+        const statusBadge = getStatusBadge(payment.status);
+        const urgencyBadge = getUrgencyBadge(payment.urgency);
+        
+        html += `
+            <tr>
+                <td><strong>${payment.tracking_number}</strong></td>
+                <td>${payment.employee_name}</td>
+                <td>${payment.currency} ${parseFloat(payment.amount).toLocaleString()}</td>
+                <td>${payment.payment_type}</td>
+                <td>${statusBadge} ${urgencyBadge}</td>
+                <td>${new Date(payment.submitted_date).toLocaleDateString()}</td>
+                <td>
+                    <button onclick="viewPaymentDetails(${payment.id})" class="action-btn" title="View Details">👁️</button>
+                    ${payment.status === 'pending_finance_approval' ? `<button onclick="cancelPayment(${payment.id})" class="action-btn" title="Cancel">❌</button>` : ''}
+                </td>
+            </tr>
+        `;
+    });
+    
+    html += `
+                </tbody>
+            </table>
+        </div>
+    `;
+    
+    container.innerHTML = html;
+}
+
+// Get status badge HTML
+function getStatusBadge(status) {
+    const badges = {
+        'pending_finance_approval': '<span class="badge badge-warning">Pending Finance</span>',
+        'approved': '<span class="badge badge-success">Approved</span>',
+        'rejected': '<span class="badge badge-danger">Rejected</span>',
+        'processed': '<span class="badge badge-info">Processed</span>',
+        'paid': '<span class="badge badge-success">Paid</span>',
+        'cancelled': '<span class="badge badge-secondary">Cancelled</span>'
+    };
+    return badges[status] || '<span class="badge badge-secondary">Unknown</span>';
+}
+
+// Get urgency badge HTML
+function getUrgencyBadge(urgency) {
+    const badges = {
+        'low': '<span class="badge badge-secondary">Low</span>',
+        'normal': '<span class="badge badge-primary">Normal</span>',
+        'high': '<span class="badge badge-warning">High</span>',
+        'urgent': '<span class="badge badge-danger">Urgent</span>'
+    };
+    return badges[urgency] || '';
+}
+
+// View payment details
+async function viewPaymentDetails(paymentId) {
+    try {
+        const response = await fetch(`/api/payment/${paymentId}`);
+        const result = await response.json();
+        
+        if (result.success) {
+            const payment = result.data;
+            const history = result.history || [];
+            
+            let historyHtml = '';
+            if (history.length > 0) {
+                historyHtml = `
+                    <h5>📜 Payment History</h5>
+                    <div class="timeline">
+                `;
+                history.forEach(item => {
+                    historyHtml += `
+                        <div class="timeline-item">
+                            <strong>${new Date(item.created_at).toLocaleString()}</strong><br>
+                            Status: ${getStatusBadge(item.status)}<br>
+                            Changed by: ${item.changed_by}<br>
+                            ${item.notes ? `Notes: ${item.notes}` : ''}
+                        </div>
+                    `;
+                });
+                historyHtml += '</div>';
+            }
+            
+            showContent(`
+                <div class="card">
+                    <h3>💳 Payment Details</h3>
+                    <div class="payment-details">
+                        <div class="detail-row">
+                            <strong>Tracking Number:</strong> ${payment.tracking_number}
+                        </div>
+                        <div class="detail-row">
+                            <strong>Employee:</strong> ${payment.employee_name} (${payment.employee_email})
+                        </div>
+                        <div class="detail-row">
+                            <strong>Phone:</strong> ${payment.employee_phone}
+                        </div>
+                        <div class="detail-row">
+                            <strong>Amount:</strong> ${payment.currency} ${parseFloat(payment.amount).toLocaleString()}
+                        </div>
+                        <div class="detail-row">
+                            <strong>Equivalent (TZS):</strong> ${parseFloat(payment.equivalent_amount_tzs).toLocaleString()} TZS
+                        </div>
+                        <div class="detail-row">
+                            <strong>Payment Type:</strong> ${payment.payment_type}
+                        </div>
+                        <div class="detail-row">
+                            <strong>Status:</strong> ${getStatusBadge(payment.status)}
+                        </div>
+                        <div class="detail-row">
+                            <strong>Urgency:</strong> ${getUrgencyBadge(payment.urgency)}
+                        </div>
+                        <div class="detail-row">
+                            <strong>Payment Method:</strong> ${payment.payment_method}
+                        </div>
+                        <div class="detail-row">
+                            <strong>Department:</strong> ${payment.department}
+                        </div>
+                        <div class="detail-row">
+                            <strong>Description:</strong> ${payment.description}
+                        </div>
+                        ${payment.notes ? `<div class="detail-row"><strong>Notes:</strong> ${payment.notes}</div>` : ''}
+                        ${payment.finance_notes ? `<div class="detail-row"><strong>Finance Notes:</strong> ${payment.finance_notes}</div>` : ''}
+                        <div class="detail-row">
+                            <strong>Submitted Date:</strong> ${new Date(payment.submitted_date).toLocaleString()}
+                        </div>
+                        ${payment.approved_date ? `<div class="detail-row"><strong>Approved Date:</strong> ${new Date(payment.approved_date).toLocaleString()}</div>` : ''}
+                    </div>
+                    
+                    ${historyHtml}
+                    
+                    <div class="form-actions">
+                        <button onclick="showPaymentManagement()" class="action" style="background: #6c757d;">← Back to Payments</button>
+                    </div>
+                </div>
+            `);
+        } else {
+            throw new Error(result.error || 'Failed to load payment details');
+        }
+    } catch (error) {
+        console.error('❌ Error viewing payment details:', error);
+        customAlert(`Failed to load payment details: ${error.message}`, 'Error', 'error');
+    }
+}
+
+// Cancel payment
+async function cancelPayment(paymentId) {
+    if (!confirm('Are you sure you want to cancel this payment request?')) return;
+    
+    try {
+        const response = await fetch(`/api/payment/${paymentId}/status`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                status: 'cancelled',
+                approvedBy: sessionManager.getCurrentUser()?.name || 'Managing Director',
+                notes: 'Cancelled by Managing Director'
+            })
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            customAlert('Payment request cancelled successfully', 'Success', 'success');
+            loadPaymentRequests();
+        } else {
+            throw new Error(result.error || 'Failed to cancel payment');
+        }
+    } catch (error) {
+        console.error('❌ Error cancelling payment:', error);
+        customAlert(`Failed to cancel payment: ${error.message}`, 'Error', 'error');
+    }
+}
+
+// Reset payment form
+function resetPaymentForm() {
+    document.getElementById('paymentRequestForm').reset();
+    document.getElementById('equivalentAmount').value = '';
+}
+
+// Filter payment requests
+function filterPaymentRequests() {
+    const statusFilter = document.getElementById('statusFilter').value;
+    const currencyFilter = document.getElementById('currencyFilter').value;
+    const searchTerm = document.getElementById('searchPayment').value.toLowerCase();
+    
+    // This would need to be implemented with server-side filtering
+    // For now, just reload all requests
+    loadPaymentRequests();
+}
+
+// Show payment statistics
+async function showPaymentStatistics() {
+    try {
+        const response = await fetch('/api/payment/stats');
+        const result = await response.json();
+        
+        if (result.success) {
+            const stats = result.data.stats;
+            const monthlyTrend = result.data.monthlyTrend || [];
+            const departmentBreakdown = result.data.departmentBreakdown || [];
+            
+            let trendHtml = '';
+            if (monthlyTrend.length > 0) {
+                trendHtml = '<h5>📈 Monthly Trend</h5><div class="chart-container">';
+                monthlyTrend.forEach(month => {
+                    trendHtml += `<div class="chart-item">
+                        <strong>${month.month}:</strong> ${month.requests} requests, TZS ${parseFloat(month.total_amount).toLocaleString()}
+                    </div>`;
+                });
+                trendHtml += '</div>';
+            }
+            
+            let deptHtml = '';
+            if (departmentBreakdown.length > 0) {
+                deptHtml = '<h5>🏢 Department Breakdown</h5><div class="dept-grid">';
+                departmentBreakdown.forEach(dept => {
+                    deptHtml += `<div class="dept-item">
+                        <strong>${dept.department}:</strong><br>
+                        ${dept.requests} requests<br>
+                        TZS ${parseFloat(dept.total_amount).toLocaleString()}
+                    </div>`;
+                });
+                deptHtml += '</div>';
+            }
+            
+            showContent(`
+                <div class="card">
+                    <h3>📊 Payment Statistics</h3>
+                    
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <h4>Total Requests</h4>
+                            <div class="stat-number">${stats.total_requests}</div>
+                        </div>
+                        <div class="stat-card">
+                            <h4>Pending Approval</h4>
+                            <div class="stat-number">${stats.pending}</div>
+                        </div>
+                        <div class="stat-card">
+                            <h4>Approved</h4>
+                            <div class="stat-number">${stats.approved}</div>
+                        </div>
+                        <div class="stat-card">
+                            <h4>Paid</h4>
+                            <div class="stat-number">${stats.paid}</div>
+                        </div>
+                        <div class="stat-card">
+                            <h4>Total TZS</h4>
+                            <div class="stat-number">TZS ${parseFloat(stats.total_tzs || 0).toLocaleString()}</div>
+                        </div>
+                        <div class="stat-card">
+                            <h4>Total USD</h4>
+                            <div class="stat-number">$ ${parseFloat(stats.total_usd || 0).toLocaleString()}</div>
+                        </div>
+                    </div>
+                    
+                    ${trendHtml}
+                    ${deptHtml}
+                    
+                    <div class="form-actions">
+                        <button onclick="showPaymentManagement()" class="action" style="background: #6c757d;">← Back to Payments</button>
+                    </div>
+                </div>
+            `);
+        } else {
+            throw new Error(result.error || 'Failed to load statistics');
+        }
+    } catch (error) {
+        console.error('❌ Error loading statistics:', error);
+        customAlert(`Failed to load statistics: ${error.message}`, 'Error', 'error');
     }
 }
 

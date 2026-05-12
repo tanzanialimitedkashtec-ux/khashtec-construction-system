@@ -1917,3 +1917,112 @@ INSERT IGNORE INTO accountants (
 INSERT IGNORE INTO senior_roles (employee_id, senior_role_type, proposed_title, department, proposed_salary, effective_date, reason_for_promotion, submitted_by, submitted_by_role) VALUES
 (1, 'Manager', 'Senior Project Manager', 'Projects', 3500000.00, '2024-02-01', 'Outstanding performance and leadership in project management', 1, 'HR Manager'),
 (2, 'Director', 'Finance Director', 'Finance', 8000000.00, '2024-03-01', 'Extensive experience in financial management and strategic planning', 1, 'HR Manager');
+
+-- ===== PAYMENT MANAGEMENT SYSTEM =====
+
+-- Payment Requests Table
+CREATE TABLE IF NOT EXISTS payment_requests (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    tracking_number VARCHAR(50) UNIQUE NOT NULL,
+    employee_id INT NOT NULL,
+    employee_name VARCHAR(255) NOT NULL,
+    employee_email VARCHAR(255) NOT NULL,
+    employee_phone VARCHAR(50) NOT NULL,
+    amount DECIMAL(15,2) NOT NULL,
+    currency ENUM('TZS', 'USD') DEFAULT 'TZS',
+    equivalent_amount_tzs DECIMAL(15,2) NOT NULL,
+    exchange_rate DECIMAL(10,6) DEFAULT 1.000000,
+    description TEXT NOT NULL,
+    notes TEXT,
+    payment_type ENUM('salary', 'bonus', 'allowance', 'reimbursement', 'overtime', 'commission', 'severance', 'other') DEFAULT 'salary',
+    urgency ENUM('low', 'normal', 'high', 'urgent') DEFAULT 'normal',
+    payment_method ENUM('bank_transfer', 'mobile_money', 'cash', 'cheque') DEFAULT 'bank_transfer',
+    expected_payment_date DATE,
+    department VARCHAR(100),
+    project_code VARCHAR(50),
+    work_order_number VARCHAR(100),
+    status ENUM('pending_finance_approval', 'approved', 'rejected', 'processed', 'paid', 'cancelled') DEFAULT 'pending_finance_approval',
+    approved_by INT,
+    approved_date DATE,
+    finance_notes TEXT,
+    payment_reference VARCHAR(100),
+    actual_amount DECIMAL(15,2),
+    actual_currency ENUM('TZS', 'USD'),
+    processed_date DATE,
+    paid_date DATE,
+    submitted_by INT NOT NULL,
+    submitted_date DATE NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (employee_id) REFERENCES employees(id) ON DELETE RESTRICT,
+    FOREIGN KEY (approved_by) REFERENCES users(id) ON DELETE SET NULL,
+    FOREIGN KEY (submitted_by) REFERENCES users(id) ON DELETE RESTRICT,
+    INDEX idx_tracking_number (tracking_number),
+    INDEX idx_employee_id (employee_id),
+    INDEX idx_status (status),
+    INDEX idx_currency (currency),
+    INDEX idx_payment_type (payment_type),
+    INDEX idx_urgency (urgency),
+    INDEX idx_department (department),
+    INDEX idx_submitted_date (submitted_date),
+    INDEX idx_expected_payment_date (expected_payment_date)
+);
+
+-- Payment History Table
+CREATE TABLE IF NOT EXISTS payment_history (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    payment_id INT NOT NULL,
+    status ENUM('pending_finance_approval', 'approved', 'rejected', 'processed', 'paid', 'cancelled') NOT NULL,
+    changed_by INT NOT NULL,
+    notes TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (payment_id) REFERENCES payment_requests(id) ON DELETE CASCADE,
+    FOREIGN KEY (changed_by) REFERENCES users(id) ON DELETE RESTRICT,
+    INDEX idx_payment_id (payment_id),
+    INDEX idx_status (status),
+    INDEX idx_changed_by (changed_by),
+    INDEX idx_created_at (created_at)
+);
+
+-- Payment Attachments Table
+CREATE TABLE IF NOT EXISTS payment_attachments (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    payment_id INT NOT NULL,
+    file_name VARCHAR(255) NOT NULL,
+    file_path VARCHAR(500) NOT NULL,
+    file_size INT,
+    file_type VARCHAR(100),
+    description TEXT,
+    uploaded_by INT NOT NULL,
+    uploaded_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (payment_id) REFERENCES payment_requests(id) ON DELETE CASCADE,
+    FOREIGN KEY (uploaded_by) REFERENCES users(id) ON DELETE RESTRICT,
+    INDEX idx_payment_id (payment_id),
+    INDEX idx_uploaded_by (uploaded_by),
+    INDEX idx_uploaded_at (uploaded_at)
+);
+
+-- Enhanced Notifications Table for Payment System
+ALTER TABLE notifications ADD COLUMN recipient_role VARCHAR(100) AFTER recipient_id;
+ALTER TABLE notifications ADD COLUMN reference_id INT AFTER related_id;
+ALTER TABLE notifications ADD COLUMN reference_type VARCHAR(100) AFTER reference_id;
+
+-- Payment Requests Sample Data
+INSERT IGNORE INTO payment_requests (
+    tracking_number, employee_id, employee_name, employee_email, employee_phone,
+    amount, currency, equivalent_amount_tzs, exchange_rate, description, notes,
+    payment_type, urgency, payment_method, expected_payment_date, department,
+    project_code, status, submitted_by, submitted_date
+) VALUES
+('PAY-1XYZ2A3B4', 1, 'John Doe', 'john.doe@khashtec.com', '+255 712 345 678',
+ 2500000.00, 'TZS', 2500000.00, 1.000000, 'Monthly salary payment for January 2024', 'Regular monthly salary',
+ 'salary', 'normal', 'bank_transfer', '2024-01-25', 'Projects',
+ 'PRJ-001', 'pending_finance_approval', 1, '2024-01-15'),
+('PAY-2YZ3B4C5D', 2, 'Jane Smith', 'jane.smith@khashtec.com', '+255 713 456 789',
+ 1500.00, 'USD', 3750000.00, 2500.000000, 'Performance bonus for Q4 2023', 'Exceeded sales targets',
+ 'bonus', 'high', 'bank_transfer', '2024-01-20', 'Sales',
+ 'SAL-001', 'approved', 1, '2024-01-10'),
+('PAY-3Z4C5D6E7', 3, 'Mary Johnson', 'mary.johnson@khashtec.com', '+255 714 567 890',
+ 500000.00, 'TZS', 500000.00, 1.000000, 'Travel reimbursement for site visit', 'Travel to Dodoma project site',
+ 'reimbursement', 'normal', 'mobile_money', '2024-01-18', 'Projects',
+ 'PRJ-002', 'processed', 1, '2024-01-12');
