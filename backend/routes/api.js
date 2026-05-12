@@ -8,6 +8,7 @@ const leadershipRoutes = require('./leadership');
 const missionVisionRoutes = require('./mission-vision');
 const longTermGrowthRoutes = require('./long-term-growth');
 const paymentRoutes = require('./payment');
+console.log('✅ Payment routes imported successfully');
 
 // Mount new routes
 router.use('/accountant', accountantRoutes);

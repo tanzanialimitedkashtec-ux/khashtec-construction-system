@@ -12,7 +12,7 @@ function generateTrackingNumber() {
 }
 
 // POST - Create new payment request
-router.post('/payment', async (req, res) => {
+router.post('/', async (req, res) => {
     console.log('💳 POST /api/payment accessed');
     console.log('📊 Request body:', req.body);
     
@@ -130,7 +130,7 @@ router.post('/payment', async (req, res) => {
 });
 
 // GET - Retrieve all payment requests
-router.get('/payment', async (req, res) => {
+router.get('/', async (req, res) => {
     console.log('💳 GET /api/payment accessed');
     
     try {
@@ -164,8 +164,14 @@ router.get('/payment', async (req, res) => {
             params.push(currency);
         }
         
-        query += ' ORDER BY pr.created_at DESC LIMIT ? OFFSET ?';
-        params.push(parseInt(limit), (parseInt(page) - 1) * parseInt(limit));
+        query += ' ORDER BY pr.created_at DESC';
+        
+        // Add pagination
+        const limitNum = parseInt(limit) || 50;
+        const pageNum = parseInt(page) || 1;
+        const offsetNum = (pageNum - 1) * limitNum;
+        
+        query += ' LIMIT ' + limitNum + ' OFFSET ' + offsetNum;
         
         const payments = await db.execute(query, params);
         
@@ -216,7 +222,7 @@ router.get('/payment', async (req, res) => {
 });
 
 // GET - Retrieve specific payment request
-router.get('/payment/:id', async (req, res) => {
+router.get('/:id', async (req, res) => {
     console.log(`💳 GET /api/payment/${req.params.id} accessed`);
     
     try {
@@ -265,7 +271,7 @@ router.get('/payment/:id', async (req, res) => {
 });
 
 // PUT - Update payment status (Finance approval/rejection)
-router.put('/payment/:id/status', async (req, res) => {
+router.put('/:id/status', async (req, res) => {
     console.log(`💳 PUT /api/payment/${req.params.id}/status accessed`);
     
     const { id } = req.params;
@@ -378,7 +384,7 @@ router.put('/payment/:id/status', async (req, res) => {
 });
 
 // GET - Get payment statistics
-router.get('/payment/stats', async (req, res) => {
+router.get('/stats', async (req, res) => {
     console.log('💳 GET /api/payment/stats accessed');
     
     try {
@@ -443,7 +449,7 @@ router.get('/payment/stats', async (req, res) => {
 });
 
 // GET - Get employees for payment selection
-router.get('/payment/employees', async (req, res) => {
+router.get('/employees', async (req, res) => {
     console.log('💳 GET /api/payment/employees accessed');
     
     try {
