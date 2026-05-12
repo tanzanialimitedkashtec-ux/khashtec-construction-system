@@ -1857,6 +1857,28 @@ try {
     console.error('❌ Error loading documents routes:', error);
 }
 
+// ===== PAYMENT ROUTES =====
+console.log('🔍 Mounting payment routes from routes/payment.js...');
+try {
+    const paymentRoutes = require('./routes/payment');
+    console.log('✅ Payment routes loaded successfully');
+    app.use('/api/payment', paymentRoutes);
+    console.log('✅ Payment routes mounted at /api/payment');
+    
+    // Add a test endpoint to verify mounting
+    app.get('/api/payment-status', (req, res) => {
+        res.json({ 
+            status: 'Payment routes are mounted from routes/payment.js',
+            timestamp: new Date().toISOString(),
+            endpoints: ['GET /api/payment', 'POST /api/payment', 'GET /api/payment/:id', 'PUT /api/payment/:id/status', 'GET /api/payment/stats', 'GET /api/payment/employees']
+        });
+    });
+    
+} catch (error) {
+    console.error('❌ Error loading payment routes:', error);
+    console.error('❌ Full error stack:', error.stack);
+}
+
 // ===== OFFICE PORTAL ROUTES =====
 console.log('🔍 Loading office portal routes...');
 try {

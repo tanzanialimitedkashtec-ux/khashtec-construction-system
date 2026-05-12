@@ -221,6 +221,53 @@ router.get('/', async (req, res) => {
     }
 });
 
+// GET - Get employees for payment selection
+router.get('/employees', async (req, res) => {
+    console.log('💳 GET /api/payment/employees accessed');
+    
+    try {
+        const { department, active = true } = req.query;
+        
+        let query = `
+            SELECT e.id, e.employee_id, e.position, e.department, e.salary,
+                   e.status, e.hire_date, e.department as department_name,
+                   ed.full_name as name, ed.gmail as email, ed.phone
+            FROM employees e
+            LEFT JOIN employee_details ed ON e.id = ed.employee_id
+            WHERE 1=1
+        `;
+        const params = [];
+        
+        if (active === 'true') {
+            query += ' AND e.status = ?';
+            params.push('active');
+        }
+        
+        if (department) {
+            query += ' AND e.department = ?';
+            params.push(department);
+        }
+        
+        query += ' ORDER BY ed.full_name LIMIT 100';
+        
+        const employees = await db.execute(query, params);
+        
+        console.log('✅ Retrieved employees for payment:', employees.length);
+        
+        res.json({
+            success: true,
+            data: employees
+        });
+        
+    } catch (error) {
+        console.error('❌ Error retrieving employees:', error);
+        res.status(500).json({
+            error: 'Failed to retrieve employees',
+            details: error.message
+        });
+    }
+});
+
 // GET - Retrieve specific payment request
 router.get('/:id', async (req, res) => {
     console.log(`💳 GET /api/payment/${req.params.id} accessed`);
@@ -443,52 +490,6 @@ router.get('/stats', async (req, res) => {
         console.error('❌ Error retrieving payment statistics:', error);
         res.status(500).json({
             error: 'Failed to retrieve payment statistics',
-            details: error.message
-        });
-    }
-});
-
-// GET - Get employees for payment selection
-router.get('/employees', async (req, res) => {
-    console.log('💳 GET /api/payment/employees accessed');
-    
-    try {
-        const { department, active = true } = req.query;
-        
-        let query = `
-            SELECT e.id, e.name, e.email, e.phone, e.department, e.position, e.salary,
-                   e.status, e.hire_date, d.name as department_name
-            FROM employees e
-            LEFT JOIN departments d ON e.department = d.code
-            WHERE 1=1
-        `;
-        const params = [];
-        
-        if (active === 'true') {
-            query += ' AND e.status = ?';
-            params.push('active');
-        }
-        
-        if (department) {
-            query += ' AND e.department = ?';
-            params.push(department);
-        }
-        
-        query += ' ORDER BY e.name LIMIT 100';
-        
-        const employees = await db.execute(query, params);
-        
-        console.log('✅ Retrieved employees for payment:', employees.length);
-        
-        res.json({
-            success: true,
-            data: employees
-        });
-        
-    } catch (error) {
-        console.error('❌ Error retrieving employees:', error);
-        res.status(500).json({
-            error: 'Failed to retrieve employees',
             details: error.message
         });
     }
