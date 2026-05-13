@@ -788,7 +788,7 @@ app.use('/api/workforce-budget', asyncHandler(async (req, res, next) => {
 
 
 
-app.use('/api/work', authenticateToken, asyncHandler(async (req, res, next) => {
+app.use('/api/work', asyncHandler(async (req, res, next) => {
 
     return workRoutes(req, res, next);
 
