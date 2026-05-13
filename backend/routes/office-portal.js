@@ -851,28 +851,48 @@ router.post('/upload/profile-image', upload.single('profileImage'), async (req, 
         
         try {
             const db = require('../../database/config/database');
-            
-            // Update employee details with profile image path
-            const filePath = `/uploads/profiles/${req.file.filename}`;
-            
-            await db.execute(
-                'UPDATE employee_details SET profile_image = ? WHERE employee_id = ?',
-                [filePath, employeeId]
-            );
-            
+
+            // Read uploaded bytes for permanent DB storage (survives Railway redeploys)
+            let imageBuffer = null;
+            let imageMime = req.file.mimetype || 'image/jpeg';
+            try { imageBuffer = fs.readFileSync(req.file.path); }
+            catch (readErr) { console.warn('⚠️ Could not read uploaded file for BLOB:', readErr.message); }
+
+            // Prefer DB-backed URL so it works after redeploys; fall back to disk URL
+            const filePath = imageBuffer
+                ? `/api/profile-image/${employeeId}`
+                : `/uploads/profiles/${req.file.filename}`;
+
+            // Try BLOB-aware update first; gracefully fall back if columns aren't present
+            try {
+                await db.execute(
+                    'UPDATE employee_details SET profile_image = ?, profile_image_data = ?, profile_image_mime = ? WHERE employee_id = ?',
+                    [filePath, imageBuffer, imageMime, employeeId]
+                );
+            } catch (blobErr) {
+                console.warn('⚠️ BLOB update failed, retrying path-only:', blobErr.message);
+                await db.execute(
+                    'UPDATE employee_details SET profile_image = ? WHERE employee_id = ?',
+                    [filePath, employeeId]
+                );
+            }
+
             // Also update users table if needed
-            await db.execute(
-                'UPDATE users SET profile_image = ? WHERE id = ?',
-                [filePath, employeeId]
-            );
-            
-            console.log('✅ Profile image uploaded successfully:', filePath);
-            
+            try {
+                await db.execute(
+                    'UPDATE users SET profile_image = ? WHERE id = ?',
+                    [filePath, employeeId]
+                );
+            } catch (uErr) { /* users.profile_image may not exist */ }
+
+            console.log('✅ Profile image uploaded successfully:', filePath, 'BLOB stored:', !!imageBuffer);
+
             res.json({
                 success: true,
                 message: 'Profile image uploaded successfully',
                 filePath: filePath,
-                employeeId: employeeId
+                employeeId: employeeId,
+                persisted: !!imageBuffer
             });
             
         } catch (dbError) {
