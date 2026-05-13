@@ -16,8 +16,9 @@ router.get('/', async (req, res) => {
         console.log('👤 Drivers endpoint called - fetching from database');
         const db = require('../../database/config/database');
         
-        // Ensure drivers table exists
+        // Ensure drivers table exists and has all required columns
         try {
+            // First create the table if it doesn't exist
             await db.execute(`
                 CREATE TABLE IF NOT EXISTS drivers (
                     id INT AUTO_INCREMENT PRIMARY KEY,
@@ -28,31 +29,17 @@ router.get('/', async (req, res) => {
                     license_type VARCHAR(50) NULL,
                     phone_number VARCHAR(50) NULL,
                     email_address VARCHAR(255) NULL,
-                    nida_number VARCHAR(100) NULL,
-                    date_of_birth DATE NULL,
-                    gender ENUM('male', 'female', 'other') NULL,
-                    residential_address TEXT NULL,
-                    region VARCHAR(100) NULL,
-                    emergency_contact_name VARCHAR(255) NULL,
-                    emergency_contact_number VARCHAR(50) NULL,
-                    emergency_relationship VARCHAR(50) NULL,
-                    blood_group VARCHAR(10) NULL,
-                    license_issue_date DATE NULL,
-                    license_expiry DATE NULL,
-                    employment_status ENUM('full-time', 'part-time', 'contract', 'temporary') NULL,
-                    hire_date DATE NULL,
-                    salary DECIMAL(10,2) NULL,
-                    payment_method VARCHAR(50) NULL,
-                    bank_details TEXT NULL,
-                    medical_certificate VARCHAR(50) NULL,
-                    medical_expiry_date DATE NULL,
                     driver_status ENUM('Active', 'Inactive', 'On Leave', 'Suspended') DEFAULT 'Active',
-                    assigned_vehicle VARCHAR(100) NULL,
-                    skills TEXT NULL,
-                    employment_history TEXT NULL,
-                    additional_notes TEXT NULL,
-                    passport_number VARCHAR(100) NULL,
+                    hire_date DATE NULL,
                     registration_date DATE NULL,
+                    assigned_vehicle VARCHAR(100) NULL,
+                    license_number VARCHAR(100) NULL,
+                    license_expiry DATE NULL,
+                    emergency_contact VARCHAR(255) NULL,
+                    emergency_phone VARCHAR(50) NULL,
+                    address TEXT NULL,
+                    city VARCHAR(100) NULL,
+                    country VARCHAR(100) NULL,
                     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
                     INDEX idx_driver_id (driver_id),
@@ -61,9 +48,46 @@ router.get('/', async (req, res) => {
                     INDEX idx_created_at (created_at)
                 )
             `);
-            console.log('✅ Drivers table verified/created successfully');
+            
+            // Now add missing columns if they don't exist
+            const alterStatements = [
+                'ALTER TABLE drivers ADD COLUMN IF NOT EXISTS nida_number VARCHAR(100) NULL',
+                'ALTER TABLE drivers ADD COLUMN IF NOT EXISTS date_of_birth DATE NULL',
+                'ALTER TABLE drivers ADD COLUMN IF NOT EXISTS gender ENUM("male", "female", "other") NULL',
+                'ALTER TABLE drivers ADD COLUMN IF NOT EXISTS residential_address TEXT NULL',
+                'ALTER TABLE drivers ADD COLUMN IF NOT EXISTS region VARCHAR(100) NULL',
+                'ALTER TABLE drivers ADD COLUMN IF NOT EXISTS emergency_contact_name VARCHAR(255) NULL',
+                'ALTER TABLE drivers ADD COLUMN IF NOT EXISTS emergency_contact_number VARCHAR(50) NULL',
+                'ALTER TABLE drivers ADD COLUMN IF NOT EXISTS emergency_relationship VARCHAR(50) NULL',
+                'ALTER TABLE drivers ADD COLUMN IF NOT EXISTS blood_group VARCHAR(10) NULL',
+                'ALTER TABLE drivers ADD COLUMN IF NOT EXISTS license_issue_date DATE NULL',
+                'ALTER TABLE drivers ADD COLUMN IF NOT EXISTS employment_status ENUM("full-time", "part-time", "contract", "temporary") NULL',
+                'ALTER TABLE drivers ADD COLUMN IF NOT EXISTS salary DECIMAL(10,2) NULL',
+                'ALTER TABLE drivers ADD COLUMN IF NOT EXISTS payment_method VARCHAR(50) NULL',
+                'ALTER TABLE drivers ADD COLUMN IF NOT EXISTS bank_details TEXT NULL',
+                'ALTER TABLE drivers ADD COLUMN IF NOT EXISTS medical_certificate VARCHAR(50) NULL',
+                'ALTER TABLE drivers ADD COLUMN IF NOT EXISTS medical_expiry_date DATE NULL',
+                'ALTER TABLE drivers ADD COLUMN IF NOT EXISTS skills TEXT NULL',
+                'ALTER TABLE drivers ADD COLUMN IF NOT EXISTS employment_history TEXT NULL',
+                'ALTER TABLE drivers ADD COLUMN IF NOT EXISTS additional_notes TEXT NULL',
+                'ALTER TABLE drivers ADD COLUMN IF NOT EXISTS passport_number VARCHAR(100) NULL'
+            ];
+            
+            for (const sql of alterStatements) {
+                try {
+                    await db.execute(sql);
+                    console.log('✅ Column added successfully:', sql);
+                } catch (alterError) {
+                    // Column might already exist, which is fine
+                    if (!alterError.message.includes('Duplicate column name') && !alterError.message.includes('already exists')) {
+                        console.log('⚠️ Could not add column:', alterError.message);
+                    }
+                }
+            }
+            
+            console.log('✅ Drivers table schema updated successfully');
         } catch (tableError) {
-            console.log('⚠️ Could not create drivers table:', tableError.message);
+            console.log('⚠️ Could not update drivers table:', tableError.message);
         }
         
         const driversResult = await db.execute(`
