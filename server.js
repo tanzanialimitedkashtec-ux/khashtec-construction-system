@@ -3697,6 +3697,135 @@ app.get('/api/properties/all', async (req, res) => {
 
 
 
+// GET single property by ID
+app.get('/api/properties/:id', async (req, res) => {
+    try {
+        const { id } = req.params;
+        console.log('🔍 Fetching property by ID:', id);
+
+        const db = require('./database/config/database');
+        const result = await db.execute('SELECT * FROM properties WHERE id = ?', [id]);
+        const rows = Array.isArray(result) && Array.isArray(result[0]) ? result[0] : (Array.isArray(result) ? result : []);
+
+        if (!rows || rows.length === 0) {
+            return res.status(404).json({ success: false, error: 'Property not found' });
+        }
+
+        const property = rows[0];
+        // Normalize DB ENUM values for frontend forms
+        const typeMap = { 'Residential':'residential','Commercial':'commercial','Industrial':'industrial','Land':'agricultural','Mixed Use':'commercial' };
+        const statusMap = { 'Available':'available','Sold':'sold','Under Offer':'reserved','Off Market':'under-development','Rented':'reserved' };
+        const normalized = {
+            ...property,
+            plotNumber: (property.title && property.title.replace(/^Property\s+/i, '')) || `PLT-${property.id}`,
+            type: typeMap[property.type] || (property.type ? String(property.type).toLowerCase() : 'residential'),
+            status: statusMap[property.status] || (property.status ? String(property.status).toLowerCase() : 'available'),
+            area: property.size_sqm
+        };
+
+        console.log('✅ Property retrieved:', normalized.id);
+        res.json(normalized);
+    } catch (error) {
+        console.error('❌ Error fetching property by ID:', error);
+        res.status(500).json({ success: false, error: 'Failed to fetch property', details: error.message });
+    }
+});
+
+// PUT update property by ID
+app.put('/api/properties/:id', async (req, res) => {
+    try {
+        const { id } = req.params;
+        const data = req.body || {};
+        console.log('🔄 Updating property:', id, data);
+
+        const db = require('./database/config/database');
+
+        // Map frontend values back to DB schema/ENUMs
+        const typeToDb = { 'residential':'Residential','commercial':'Commercial','industrial':'Industrial','agricultural':'Land','land':'Land','mixed-use':'Mixed Use' };
+        const statusToDb = { 'available':'Available','reserved':'Under Offer','sold':'Sold','under-development':'Off Market','rented':'Rented','off-market':'Off Market' };
+
+        const fields = [];
+        const values = [];
+
+        if (data.plotNumber !== undefined) {
+            fields.push('title = ?');
+            values.push(`Property ${data.plotNumber}`);
+        }
+        if (data.title !== undefined) {
+            fields.push('title = ?');
+            values.push(data.title);
+        }
+        if (data.type !== undefined) {
+            fields.push('type = ?');
+            values.push(typeToDb[String(data.type).toLowerCase()] || data.type);
+        }
+        if (data.location !== undefined) {
+            fields.push('location = ?');
+            values.push(data.location);
+        }
+        if (data.area !== undefined || data.size_sqm !== undefined) {
+            fields.push('size_sqm = ?');
+            values.push(parseFloat(data.size_sqm !== undefined ? data.size_sqm : data.area) || 0);
+        }
+        if (data.price !== undefined) {
+            fields.push('price = ?');
+            values.push(parseFloat(data.price) || 0);
+        }
+        if (data.status !== undefined) {
+            fields.push('status = ?');
+            values.push(statusToDb[String(data.status).toLowerCase()] || data.status);
+        }
+        if (data.description !== undefined) {
+            fields.push('description = ?');
+            values.push(data.description);
+        }
+
+        if (fields.length === 0) {
+            return res.status(400).json({ success: false, error: 'No valid fields to update' });
+        }
+
+        fields.push('updated_at = NOW()');
+        values.push(id);
+
+        const query = `UPDATE properties SET ${fields.join(', ')} WHERE id = ?`;
+        console.log('🔍 Query:', query, 'values:', values);
+
+        const result = await db.execute(query, values);
+        const r = Array.isArray(result) ? result[0] : result;
+
+        if (!r || r.affectedRows === 0) {
+            return res.status(404).json({ success: false, error: 'Property not found' });
+        }
+
+        console.log('✅ Property updated successfully, affectedRows:', r.affectedRows);
+        res.json({ success: true, message: 'Property updated successfully', affected_rows: r.affectedRows });
+    } catch (error) {
+        console.error('❌ Error updating property:', error);
+        res.status(500).json({ success: false, error: 'Failed to update property', details: error.message });
+    }
+});
+
+// DELETE property by ID
+app.delete('/api/properties/:id', async (req, res) => {
+    try {
+        const { id } = req.params;
+        const db = require('./database/config/database');
+        const result = await db.execute('DELETE FROM properties WHERE id = ?', [id]);
+        const r = Array.isArray(result) ? result[0] : result;
+
+        if (!r || r.affectedRows === 0) {
+            return res.status(404).json({ success: false, error: 'Property not found' });
+        }
+
+        res.json({ success: true, message: 'Property deleted successfully', affected_rows: r.affectedRows });
+    } catch (error) {
+        console.error('❌ Error deleting property:', error);
+        res.status(500).json({ success: false, error: 'Failed to delete property', details: error.message });
+    }
+});
+
+
+
 // Clients API endpoints
 
 app.post('/api/clients', async (req, res) => {
