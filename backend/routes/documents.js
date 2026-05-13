@@ -364,10 +364,15 @@ router.get('/:id', async (req, res) => {
 
         // 1) Try the `documents` table first (this is where the upload endpoint
         //    stores the record and returns its insertId to the frontend).
+        // NOTE: db.execute() in this project's wrapper returns rows directly
+        // (not a [rows, fields] tuple), so do NOT destructure.
         try {
-            const [docRows] = await db.execute(
+            const docRowsRaw = await db.execute(
                 'SELECT * FROM documents WHERE id = ?', [docId]
             );
+            const docRows = Array.isArray(docRowsRaw)
+                ? (Array.isArray(docRowsRaw[0]) ? docRowsRaw[0] : docRowsRaw)
+                : [];
             if (docRows && docRows.length > 0) {
                 const d = docRows[0];
                 return res.json({

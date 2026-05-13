@@ -68536,7 +68536,7 @@ function requestWorkforce(){
 
                 
 
-                <form id="workforceRequestForm" onsubmit="return submitWorkforceRequest()">
+                <form id="workforceRequestForm" onsubmit="event.preventDefault(); return submitWorkforceRequest(event);">
 
                     <div class="form-row">
 
@@ -72316,7 +72316,11 @@ function deleteTask(taskId) {
 
 
 
-async function submitWorkforceRequest() {
+async function submitWorkforceRequest(event) {
+    
+    if (event) {
+        event.preventDefault();
+    }
 
     try {
 

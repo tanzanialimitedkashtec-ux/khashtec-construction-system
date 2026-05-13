@@ -3,6 +3,16 @@ const router = express.Router();
 const db = require('../../database/config/database');
 const upload = require('../middleware/upload');
 
+// Normalize legacy/absolute upload paths (e.g. /app/uploads/...) to web URLs
+function normalizeImagePath(p) {
+    if (!p || typeof p !== 'string') return p || null;
+    let s = p.replace(/\\/g, '/').trim();
+    const idx = s.toLowerCase().lastIndexOf('uploads/');
+    if (idx !== -1) return '/' + s.slice(idx);
+    if (!s.startsWith('/') && !/^https?:\/\//i.test(s)) return '/' + s;
+    return s;
+}
+
 // Get all employees
 router.get('/', async (req, res) => {
     console.log('🔍 GET /api/employees endpoint called');
@@ -203,6 +213,10 @@ router.get('/', async (req, res) => {
         
         // Ensure we always return an array
         const employeesArray = Array.isArray(employees) ? employees : [employees];
+        // Normalize image paths so legacy /app/uploads/... values resolve to /uploads/...
+        for (const e of employeesArray) {
+            if (e && e.profile_image) e.profile_image = normalizeImagePath(e.profile_image);
+        }
         console.log('📊 Returning employees array:', employeesArray.length, 'items');
         res.json(employeesArray);
     } catch (error) {
@@ -527,6 +541,7 @@ router.get('/:id', async (req, res) => {
             }
         }
         
+        if (employee && employee.profile_image) employee.profile_image = normalizeImagePath(employee.profile_image);
         res.json(employee);
     } catch (error) {
         console.error('Error fetching employee:', error);

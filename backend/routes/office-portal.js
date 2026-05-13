@@ -6,6 +6,25 @@ const fs = require('fs');
 
 console.log('🚀 Office portal route file is being loaded...');
 
+// Normalize legacy/absolute upload paths to web-accessible relative URLs.
+// Handles values like:
+//   /app/uploads/profileImage-123.jpg  -> /uploads/profileImage-123.jpg
+//   uploads/profiles/file.jpg          -> /uploads/profiles/file.jpg
+//   C:\\path\\to\\uploads\\file.jpg    -> /uploads/file.jpg
+//   null/empty                         -> default avatar
+function normalizeImagePath(p, fallback = '/assets/images/default-avatar.png') {
+    if (!p || typeof p !== 'string') return fallback;
+    let s = p.replace(/\\/g, '/').trim();
+    // Strip everything up to and including 'uploads/'
+    const idx = s.toLowerCase().lastIndexOf('uploads/');
+    if (idx !== -1) {
+        s = '/' + s.slice(idx);
+    } else if (!s.startsWith('/') && !/^https?:\/\//i.test(s)) {
+        s = '/' + s;
+    }
+    return s;
+}
+
 // Configure multer for file uploads
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
@@ -85,7 +104,7 @@ router.get('/users', async (req, res) => {
                 status: emp.status,
                 nida: emp.nida,
                 passport: emp.passport,
-                profileImage: emp.profile_image || '/assets/images/default-avatar.png',
+                profileImage: normalizeImagePath(emp.profile_image),
                 passportImage: emp.passport ? `/uploads/passports/${emp.passport}.jpg` : null,
                 contractType: emp.contract_type,
                 registrationDate: emp.registration_date || emp.created_at,
@@ -989,8 +1008,8 @@ router.get('/users/:id', async (req, res) => {
                     status: emp.status,
                     nida: emp.nida,
                     passport: emp.passport,
-                    profileImage: emp.profile_image || '/assets/images/default-avatar.png',
-                    passportImage: emp.passport_image || (emp.passport ? `/uploads/passports/${emp.passport}.jpg` : null),
+                    profileImage: normalizeImagePath(emp.profile_image),
+                    passportImage: normalizeImagePath(emp.passport_image, emp.passport ? `/uploads/passports/${emp.passport}.jpg` : null),
                     contractType: emp.contract_type,
                     registrationDate: emp.registration_date || emp.created_at,
                     type: emp.role === 'Worker' ? 'worker' : 'employee',
