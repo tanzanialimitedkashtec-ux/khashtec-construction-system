@@ -244,40 +244,56 @@ router.post('/', async (req, res) => {
         // Ensure drivers table has all required columns before inserting
         try {
             console.log('🔧 Checking and updating drivers table schema...');
-            const alterStatements = [
-                'ALTER TABLE drivers ADD COLUMN IF NOT EXISTS nida_number VARCHAR(100) NULL',
-                'ALTER TABLE drivers ADD COLUMN IF NOT EXISTS date_of_birth DATE NULL',
-                'ALTER TABLE drivers ADD COLUMN IF NOT EXISTS gender ENUM("male", "female", "other") NULL',
-                'ALTER TABLE drivers ADD COLUMN IF NOT EXISTS residential_address TEXT NULL',
-                'ALTER TABLE drivers ADD COLUMN IF NOT EXISTS region VARCHAR(100) NULL',
-                'ALTER TABLE drivers ADD COLUMN IF NOT EXISTS emergency_contact_name VARCHAR(255) NULL',
-                'ALTER TABLE drivers ADD COLUMN IF NOT EXISTS emergency_contact_number VARCHAR(50) NULL',
-                'ALTER TABLE drivers ADD COLUMN IF NOT EXISTS emergency_relationship VARCHAR(50) NULL',
-                'ALTER TABLE drivers ADD COLUMN IF NOT EXISTS blood_group VARCHAR(10) NULL',
-                'ALTER TABLE drivers ADD COLUMN IF NOT EXISTS license_issue_date DATE NULL',
-                'ALTER TABLE drivers ADD COLUMN IF NOT EXISTS employment_status ENUM("full-time", "part-time", "contract", "temporary") NULL',
-                'ALTER TABLE drivers ADD COLUMN IF NOT EXISTS salary DECIMAL(10,2) NULL',
-                'ALTER TABLE drivers ADD COLUMN IF NOT EXISTS payment_method VARCHAR(50) NULL',
-                'ALTER TABLE drivers ADD COLUMN IF NOT EXISTS bank_details TEXT NULL',
-                'ALTER TABLE drivers ADD COLUMN IF NOT EXISTS medical_certificate VARCHAR(50) NULL',
-                'ALTER TABLE drivers ADD COLUMN IF NOT EXISTS medical_expiry_date DATE NULL',
-                'ALTER TABLE drivers ADD COLUMN IF NOT EXISTS skills TEXT NULL',
-                'ALTER TABLE drivers ADD COLUMN IF NOT EXISTS employment_history TEXT NULL',
-                'ALTER TABLE drivers ADD COLUMN IF NOT EXISTS additional_notes TEXT NULL',
-                'ALTER TABLE drivers ADD COLUMN IF NOT EXISTS passport_number VARCHAR(100) NULL'
-            ];
             
-            for (const sql of alterStatements) {
-                try {
-                    await db.execute(sql);
-                    console.log('✅ Column verified/added:', sql.split('ADD COLUMN')[1]);
-                } catch (alterError) {
-                    // Column might already exist, which is fine
-                    if (!alterError.message.includes('Duplicate column name') && !alterError.message.includes('already exists')) {
-                        console.log('⚠️ Could not add column:', alterError.message);
+            // First, get existing columns
+            const columnsResult = await db.execute(`
+                SELECT COLUMN_NAME 
+                FROM INFORMATION_SCHEMA.COLUMNS 
+                WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'drivers'
+            `);
+            
+            const existingColumns = columnsResult.map(row => row.COLUMN_NAME);
+            console.log('📋 Existing columns:', existingColumns);
+            
+            // Define required columns with their SQL definitions
+            const requiredColumns = {
+                'nida_number': 'VARCHAR(100) NULL',
+                'date_of_birth': 'DATE NULL',
+                'gender': "ENUM('male', 'female', 'other') NULL",
+                'residential_address': 'TEXT NULL',
+                'region': 'VARCHAR(100) NULL',
+                'emergency_contact_name': 'VARCHAR(255) NULL',
+                'emergency_contact_number': 'VARCHAR(50) NULL',
+                'emergency_relationship': 'VARCHAR(50) NULL',
+                'blood_group': 'VARCHAR(10) NULL',
+                'license_issue_date': 'DATE NULL',
+                'employment_status': "ENUM('full-time', 'part-time', 'contract', 'temporary') NULL",
+                'salary': 'DECIMAL(10,2) NULL',
+                'payment_method': 'VARCHAR(50) NULL',
+                'bank_details': 'TEXT NULL',
+                'medical_certificate': 'VARCHAR(50) NULL',
+                'medical_expiry_date': 'DATE NULL',
+                'skills': 'TEXT NULL',
+                'employment_history': 'TEXT NULL',
+                'additional_notes': 'TEXT NULL',
+                'passport_number': 'VARCHAR(100) NULL'
+            };
+            
+            // Add missing columns
+            for (const [columnName, columnDefinition] of Object.entries(requiredColumns)) {
+                if (!existingColumns.includes(columnName)) {
+                    try {
+                        const alterSql = `ALTER TABLE drivers ADD COLUMN ${columnName} ${columnDefinition}`;
+                        await db.execute(alterSql);
+                        console.log(`✅ Column added: ${columnName}`);
+                    } catch (alterError) {
+                        console.log(`⚠️ Could not add column ${columnName}:`, alterError.message);
                     }
+                } else {
+                    console.log(`✅ Column already exists: ${columnName}`);
                 }
             }
+            
             console.log('✅ Drivers table schema verified/updated');
         } catch (schemaError) {
             console.log('⚠️ Schema update failed:', schemaError.message);
