@@ -364,16 +364,12 @@ router.get('/:id', async (req, res) => {
 
         // 1) Try the `documents` table first (this is where the upload endpoint
         //    stores the record and returns its insertId to the frontend).
-        // NOTE: db.execute() in this project's wrapper returns rows directly
-        // (not a [rows, fields] tuple), so do NOT destructure.
+        // NOTE: db.execute() already destructures internally and returns the rows array directly.
         try {
-            const docRowsRaw = await db.execute(
+            const docRows = await db.execute(
                 'SELECT * FROM documents WHERE id = ?', [docId]
             );
-            const docRows = Array.isArray(docRowsRaw)
-                ? (Array.isArray(docRowsRaw[0]) ? docRowsRaw[0] : docRowsRaw)
-                : [];
-            if (docRows && docRows.length > 0) {
+            if (Array.isArray(docRows) && docRows.length > 0) {
                 const d = docRows[0];
                 return res.json({
                     id: d.id,
@@ -397,10 +393,10 @@ router.get('/:id', async (req, res) => {
 
         // 2) Fallback: try admin_work (legacy / work-item documents)
         try {
-            const [adminWorkItems] = await db.execute(
+            const adminWorkItems = await db.execute(
                 'SELECT * FROM admin_work WHERE id = ?', [docId]
             );
-            if (adminWorkItems && adminWorkItems.length > 0) {
+            if (Array.isArray(adminWorkItems) && adminWorkItems.length > 0) {
                 const item = adminWorkItems[0];
                 return res.json({
                     id: item.id,

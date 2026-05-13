@@ -5764,6 +5764,10 @@ async function startServer() {
         await createWorkforceBudgetTables();
         console.log('✅ Step 8 completed: Workforce budget tables ready');
 
+        console.log('🔄 Step 8b: Ensuring profile image BLOB columns exist...');
+        await ensureProfileImageBlobColumns();
+        console.log('✅ Step 8b completed: Profile image BLOB columns ready');
+
         
 
         console.log('🔄 Step 9: Initializing database connection...');
