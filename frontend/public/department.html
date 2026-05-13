@@ -62804,9 +62804,25 @@ async function savePaymentTracking() {
 
         
 
+        const cachedPurchases = window._trackingPurchasesCache || [];
+
+        const selectedPurchase = cachedPurchases.find(p => p.id === purchaseId) || {};
+
+        const trackingAmount = parseFloat(document.getElementById('trackingAmount').value) || 0;
+
         const trackingData = {
 
             purchase_id: purchaseId,
+
+            employee_id: selectedPurchase.employee_id || '',
+
+            employee_name: selectedPurchase.employee_name || '',
+
+            language: selectedPurchase.language || '',
+
+            course_name: selectedPurchase.campaign_name || selectedPurchase.course_name || '',
+
+            total_amount: selectedPurchase.amount || selectedPurchase.total_amount || trackingAmount,
 
             payment_stage: document.getElementById('paymentStage').value,
 
@@ -62816,7 +62832,7 @@ async function savePaymentTracking() {
 
             transaction_id: document.getElementById('transactionId').value,
 
-            amount: parseFloat(document.getElementById('trackingAmount').value),
+            amount: trackingAmount,
 
             notes: document.getElementById('trackingNotes').value,
 
@@ -64447,6 +64463,8 @@ async function loadPurchasesForTracking() {
         
 
         const purchases = response.purchases || response.data || [];
+
+        window._trackingPurchasesCache = purchases;
 
         if (response.success && purchases.length > 0) {
 

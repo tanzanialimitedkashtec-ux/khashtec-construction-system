@@ -269,7 +269,11 @@ router.get('/', async (req, res) => {
 });
 
 // Get payment tracking by ID
-router.get('/:id', async (req, res) => {
+router.get('/:id', async (req, res, next) => {
+    // Skip non-numeric ids so they fall through to named routes like /statistics
+    if (!/^\d+$/.test(req.params.id)) {
+        return next();
+    }
     try {
         const trackingId = req.params.id;
         console.log('🔍 Fetching payment tracking:', trackingId);
