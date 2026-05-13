@@ -631,42 +631,67 @@ router.put('/:id/progress', saveProgressUpdate);
 // Get recent progress updates across all projects (joined with project name)
 // NOTE: This path has two segments so it does NOT collide with GET /:id
 router.get('/progress-updates/recent', async (req, res) => {
+    const limit = Math.min(parseInt(req.query.limit, 10) || 50, 200);
     try {
         await ensureProgressUpdatesTable();
 
-        const limit = Math.min(parseInt(req.query.limit, 10) || 50, 200);
+        // First try the full query with JOIN to projects for the project name
+        let rows = [];
+        try {
+            rows = asRows(await db.execute(`
+                SELECT
+                    u.id,
+                    u.project_id           AS projectId,
+                    p.name                 AS projectName,
+                    u.progress_percentage  AS progressPercentage,
+                    u.status,
+                    u.report,
+                    u.completed_milestones AS completedMilestones,
+                    u.next_milestones      AS nextMilestones,
+                    u.budget_used          AS budgetUsed,
+                    u.issues,
+                    u.created_at           AS updateDate
+                FROM project_progress_updates u
+                LEFT JOIN projects p ON p.id = u.project_id
+                ORDER BY u.created_at DESC
+                LIMIT ${limit}
+            `));
+        } catch (joinErr) {
+            // Fallback: query just the updates table without the JOIN (in case projects.name is missing)
+            console.warn('⚠️ progress-updates JOIN query failed, retrying without join:', joinErr.message);
+            rows = asRows(await db.execute(`
+                SELECT
+                    id,
+                    project_id            AS projectId,
+                    progress_percentage   AS progressPercentage,
+                    status,
+                    report,
+                    completed_milestones  AS completedMilestones,
+                    next_milestones       AS nextMilestones,
+                    budget_used           AS budgetUsed,
+                    issues,
+                    created_at            AS updateDate
+                FROM project_progress_updates
+                ORDER BY created_at DESC
+                LIMIT ${limit}
+            `));
+        }
 
-        const rows = asRows(await db.execute(`
-            SELECT
-                u.id,
-                u.project_id      AS projectId,
-                p.name            AS projectName,
-                u.progress_percentage AS progressPercentage,
-                u.status,
-                u.report,
-                u.completed_milestones AS completedMilestones,
-                u.next_milestones      AS nextMilestones,
-                u.budget_used          AS budgetUsed,
-                u.issues,
-                u.created_at           AS updateDate
-            FROM project_progress_updates u
-            LEFT JOIN projects p ON p.id = u.project_id
-            ORDER BY u.created_at DESC
-            LIMIT ${limit}
-        `));
-
-        res.json({
+        return res.json({
             success: true,
-            updates: rows,
-            total: rows.length
+            updates: rows || [],
+            total: (rows || []).length
         });
     } catch (error) {
-        console.error('Error fetching recent progress updates:', error);
-        res.status(500).json({
+        // Log full error server-side for Railway logs, but return 200 + empty list
+        // so the frontend doesn't display a 500 in the console for an optional list.
+        console.error('❌ Error fetching recent progress updates:', error && error.stack || error);
+        return res.json({
             success: false,
+            updates: [],
+            total: 0,
             error: 'Failed to fetch recent progress updates',
-            details: error.message,
-            updates: []
+            details: error && error.message
         });
     }
 });
