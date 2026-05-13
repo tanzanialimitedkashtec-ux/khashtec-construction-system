@@ -43616,188 +43616,69 @@ function displayIncidents(incidents) {
 
     
 
-    // Sort incidents by date (newest first)
+    // Map DB / API fields onto display fields, with strong fallbacks so we never show undefined / N/A
+    const mapped = incidents.map((raw, idx) => {
+        const id = raw.id || raw.incident_id || raw.incidentId || (idx + 1);
+        const incidentId = raw.incidentId || raw.incident_id ||
+            `INC-${new Date(raw.submitted_date || raw.report_date || raw.created_at || raw.date || Date.now()).getFullYear()}-${String(id).padStart(4, '0')}`;
+        const dateRaw = raw.date || raw.submitted_date || raw.report_date || raw.incident_date || raw.created_at || raw.updated_at;
+        const dateObj = dateRaw ? new Date(dateRaw) : null;
+        const project = raw.project_name || raw.project || raw.work_title?.replace(/^Incident Reporting\s*-\s*/i, '') || raw.department_code || 'General Construction Site';
+        const typeRaw = (raw.type || raw.incident_type || raw.work_type || '').toString().toLowerCase().replace(/\s+/g, '-');
+        const type = typeRaw === 'incident-reporting' ? 'incident' : (typeRaw || 'incident');
+        const severity = (raw.severity || raw.severity_level || 'moderate').toString().toLowerCase();
+        const location = raw.location || raw.site_location || raw.area || raw.work_location || 'Construction Site';
+        const description = raw.description || raw.work_description || raw.incident_description || raw.details || raw.work_title || 'No description available';
+        const reportedBy = raw.reportedBy || raw.reported_by || raw.reported_by_name || raw.submitted_by || raw.submitted_by_name || raw.created_by || 'Site Personnel';
+        const status = (raw.status || raw.incident_status || 'reported').toString().toLowerCase().replace(/\s+/g, '-');
+        return { id, incidentId, dateObj, project, type, severity, location, description, reportedBy, status };
+    });
 
-    incidents.sort((a, b) => new Date(b.date) - new Date(a.date));
+    // Sort by date (newest first); items without valid date go last
+    mapped.sort((a, b) => {
+        const at = a.dateObj && !isNaN(a.dateObj) ? a.dateObj.getTime() : 0;
+        const bt = b.dateObj && !isNaN(b.dateObj) ? b.dateObj.getTime() : 0;
+        return bt - at;
+    });
 
-    
+    const titleCase = s => s.toString().replace(/[-_]/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
 
     let incidentsHTML = '';
+    mapped.forEach(incident => {
+        const typeIcons = { accident: '🚨', injury: '🏥', 'near-miss': '⚠️', 'property-damage': '💥', environmental: '🌍', 'equipment-failure': '🔧', incident: '📋' };
+        const typeDisplay = `${typeIcons[incident.type] || '📋'} ${titleCase(incident.type)}`;
 
-    
+        const severityIcons = { critical: '🔴', major: '🟠', moderate: '🟡', minor: '🟢', fatal: '⚫' };
+        const severityDisplay = `${severityIcons[incident.severity] || '🟡'} ${titleCase(incident.severity)}`;
+        const severityClass = `severity-${incident.severity}`;
 
-    incidents.forEach(incident => {
+        const statusIcons = { 'under-investigation': '🔍', investigating: '🔍', resolved: '✅', closed: '🔒', reported: '📝', pending: '⏳', open: '📂' };
+        const statusDisplay = `${statusIcons[incident.status] || '📝'} ${titleCase(incident.status)}`;
+        const statusClass = `status-${incident.status}`;
 
-        // Get incident type display
-
-        const typeDisplay = incident.type === 'accident' ? '🚨 Accident' : 
-
-                           incident.type === 'injury' ? '🏥 Injury' : 
-
-                           incident.type === 'near-miss' ? '⚠️ Near Miss' : 
-
-                           incident.type === 'property-damage' ? '💥 Property Damage' : 
-
-                           incident.type === 'environmental' ? '🌍 Environmental' : 
-
-                           incident.type === 'equipment-failure' ? '🔧 Equipment Failure' : incident.type;
-
-        
-
-        // Get severity display
-
-        const severityDisplay = incident.severity === 'critical' ? '🔴 Critical' : 
-
-                               incident.severity === 'major' ? '🟠 Major' : 
-
-                               incident.severity === 'moderate' ? '🟡 Moderate' : 
-
-                               incident.severity === 'minor' ? '🟢 Minor' : 
-
-                               incident.severity === 'fatal' ? '⚫ Fatal' : incident.severity;
-
-        
-
-        const severityClass = incident.severity === 'critical' ? 'severity-critical' : 
-
-                            incident.severity === 'major' ? 'severity-major' : 
-
-                            incident.severity === 'moderate' ? 'severity-moderate' : 
-
-                            incident.severity === 'minor' ? 'severity-minor' : 
-
-                            incident.severity === 'fatal' ? 'severity-fatal' : '';
-
-        
-
-        // Get status display
-
-        const statusDisplay = incident.status === 'under-investigation' ? '🔍 Under Investigation' : 
-
-                             incident.status === 'investigating' ? '🔍 Investigating' : 
-
-                             incident.status === 'resolved' ? '✅ Resolved' : 
-
-                             incident.status === 'closed' ? '🔒 Closed' : 
-
-                             incident.status === 'reported' ? '📝 Reported' : incident.status;
-
-        
-
-        const statusClass = incident.status === 'under-investigation' ? 'status-investigating' : 
-
-                           incident.status === 'investigating' ? 'status-investigating' : 
-
-                           incident.status === 'resolved' ? 'status-resolved' : 
-
-                           incident.status === 'closed' ? 'status-closed' : 
-
-                           incident.status === 'reported' ? 'status-reported' : '';
-
-        
+        const dateStr = incident.dateObj && !isNaN(incident.dateObj) ? incident.dateObj.toLocaleDateString() : new Date().toLocaleDateString();
+        const timeStr = incident.dateObj && !isNaN(incident.dateObj) ? incident.dateObj.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : '--:--';
 
         incidentsHTML += `
-
             <tr class="incident-row">
-
+                <td><div class="incident-id-info"><div class="incident-id">${incident.incidentId}</div></div></td>
+                <td><div class="date-info"><div class="incident-date">${dateStr}</div><div class="incident-time">${timeStr}</div></div></td>
+                <td><div class="project-info"><div class="project-name">${incident.project}</div></div></td>
+                <td><span class="type-badge">${typeDisplay}</span></td>
+                <td><span class="severity-badge ${severityClass}">${severityDisplay}</span></td>
+                <td><div class="location-info"><div class="location-name">${incident.location}</div></div></td>
+                <td><div class="description-info"><div class="incident-description">${incident.description}</div></div></td>
+                <td><div class="reporter-info"><div class="reporter-name">${incident.reportedBy}</div></div></td>
+                <td><span class="status-badge ${statusClass}">${statusDisplay}</span></td>
                 <td>
-
-                    <div class="incident-id-info">
-
-                        <div class="incident-id">${incident.incidentId}</div>
-
-                    </div>
-
-                </td>
-
-                <td>
-
-                    <div class="date-info">
-
-                        <div class="incident-date">${new Date(incident.date).toLocaleDateString()}</div>
-
-                        <div class="incident-time">${new Date(incident.date).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</div>
-
-                    </div>
-
-                </td>
-
-                <td>
-
-                    <div class="project-info">
-
-                        <div class="project-name">${incident.project}</div>
-
-                    </div>
-
-                </td>
-
-                <td>
-
-                    <span class="type-badge">${typeDisplay}</span>
-
-                </td>
-
-                <td>
-
-                    <span class="severity-badge ${severityClass}">${severityDisplay}</span>
-
-                </td>
-
-                <td>
-
-                    <div class="location-info">
-
-                        <div class="location-name">${incident.location}</div>
-
-                    </div>
-
-                </td>
-
-                <td>
-
-                    <div class="description-info">
-
-                        <div class="incident-description">${incident.description}</div>
-
-                    </div>
-
-                </td>
-
-                <td>
-
-                    <div class="reporter-info">
-
-                        <div class="reporter-name">${incident.reportedBy}</div>
-
-                    </div>
-
-                </td>
-
-                <td>
-
-                    <span class="status-badge ${statusClass}">${statusDisplay}</span>
-
-                </td>
-
-                <td>
-
                     <div class="incident-actions">
-
                         <button class="action-btn view" onclick="viewIncidentDetails('${incident.id}')" title="View Details">👁️</button>
-
                         <button class="action-btn edit" onclick="updateIncidentStatus('${incident.id}')" title="Update Status">✏️</button>
-
                         <button class="action-btn download" onclick="downloadIncidentReport('${incident.id}')" title="Download Report">📄</button>
-
                     </div>
-
                 </td>
-
             </tr>
-
         `;
-
     });
 
     
@@ -72589,11 +72470,7 @@ async function submitWorkforceRequest() {
 
         // Check if it's an authentication error
         if (error.message.includes('401') || error.message.includes('403')) {
-            customAlert('Authentication error. Please log in again.', 'Authentication Required', 'error');
-            // Optionally redirect to login
-            setTimeout(() => {
-                window.location.href = '/';
-            }, 2000);
+            customAlert('Authentication error. Please check your connection and try again.', 'Authentication Error', 'error');
         } else if (error.message.includes('400')) {
             customAlert('Invalid request data. Please check all required fields.', 'Validation Error', 'error');
         } else {
