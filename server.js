@@ -256,8 +256,26 @@ app.use(express.static(path.join(__dirname, 'frontend/public'), {
 
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
+// Inline SVG default avatar (no external file dependency, survives all redeploys)
+function sendDefaultAvatar(res, seed = '') {
+    // Deterministic color from seed
+    const colors = ['#4F46E5', '#059669', '#DC2626', '#D97706', '#0EA5E9', '#7C3AED', '#DB2777', '#0891B2'];
+    let hash = 0;
+    for (let i = 0; i < String(seed).length; i++) hash = (hash * 31 + String(seed).charCodeAt(i)) | 0;
+    const bg = colors[Math.abs(hash) % colors.length];
+    const svg = `<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100">
+  <rect width="100" height="100" fill="${bg}"/>
+  <circle cx="50" cy="38" r="18" fill="#ffffff" opacity="0.95"/>
+  <path d="M18,92 C18,72 32,62 50,62 C68,62 82,72 82,92 Z" fill="#ffffff" opacity="0.95"/>
+</svg>`;
+    res.set('Content-Type', 'image/svg+xml');
+    res.set('Cache-Control', 'public, max-age=86400');
+    return res.end(svg);
+}
+
 // Serve profile image from DB BLOB (persists across Railway redeploys).
-// Order: DB BLOB -> on-disk file referenced by profile_image -> default avatar.
+// Order: DB BLOB -> on-disk file referenced by profile_image -> inline SVG fallback.
 app.get('/api/profile-image/:employeeId', async (req, res) => {
     try {
         const db = require('./database/config/database');
@@ -285,12 +303,15 @@ app.get('/api/profile-image/:employeeId', async (req, res) => {
                 }
             }
         }
-        return res.redirect('/assets/images/default-avatar.png');
+        return sendDefaultAvatar(res, req.params.employeeId);
     } catch (err) {
         console.error('Profile image serve error:', err.message);
-        return res.redirect('/assets/images/default-avatar.png');
+        return sendDefaultAvatar(res, req.params.employeeId);
     }
 });
+
+// Also catch direct requests to the (non-existent) default avatar file
+app.get('/assets/images/default-avatar.png', (req, res) => sendDefaultAvatar(res, 'default'));
 
 
 
