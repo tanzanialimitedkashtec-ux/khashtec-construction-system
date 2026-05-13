@@ -96833,17 +96833,26 @@ function showAccountantForm() {
                             <tr style="background: #f8f9fa;">
                                 <th style="text-align: left; padding: 8px; border-bottom: 1px solid #dee2e6;">Name</th>
                                 <th style="text-align: left; padding: 8px; border-bottom: 1px solid #dee2e6;">Employee ID</th>
-                                <th style="text-align: left; padding: 8px; border-bottom: 1px solid #dee2e6;">Department</th>
-                                <th style="text-align: left; padding: 8px; border-bottom: 1px solid #dee2e6;">Reporting To</th>
                                 <th style="text-align: left; padding: 8px; border-bottom: 1px solid #dee2e6;">Email</th>
                                 <th style="text-align: left; padding: 8px; border-bottom: 1px solid #dee2e6;">Phone</th>
+                                <th style="text-align: left; padding: 8px; border-bottom: 1px solid #dee2e6;">Department</th>
+                                <th style="text-align: left; padding: 8px; border-bottom: 1px solid #dee2e6;">Reporting To</th>
                                 <th style="text-align: left; padding: 8px; border-bottom: 1px solid #dee2e6;">Start Date</th>
+                                <th style="text-align: left; padding: 8px; border-bottom: 1px solid #dee2e6;">Employment Type</th>
+                                <th style="text-align: left; padding: 8px; border-bottom: 1px solid #dee2e6;">Professional Qualification</th>
+                                <th style="text-align: left; padding: 8px; border-bottom: 1px solid #dee2e6;">Years Experience</th>
+                                <th style="text-align: left; padding: 8px; border-bottom: 1px solid #dee2e6;">Additional Certifications</th>
+                                <th style="text-align: left; padding: 8px; border-bottom: 1px solid #dee2e6;">Notes</th>
+                                <th style="text-align: left; padding: 8px; border-bottom: 1px solid #dee2e6;">Financial Reporting</th>
+                                <th style="text-align: left; padding: 8px; border-bottom: 1px solid #dee2e6;">Bookkeeping</th>
+                                <th style="text-align: left; padding: 8px; border-bottom: 1px solid #dee2e6;">Regulatory</th>
+                                <th style="text-align: left; padding: 8px; border-bottom: 1px solid #dee2e6;">System Access</th>
                                 <th style="text-align: left; padding: 8px; border-bottom: 1px solid #dee2e6;">Status</th>
                             </tr>
                         </thead>
                         <tbody id="accountantRecordsTbody">
                             <tr>
-                                <td colspan="8" style="text-align: center; padding: 10px;">Loading...</td>
+                                <td colspan="17" style="text-align: center; padding: 10px;">Loading...</td>
                             </tr>
                         </tbody>
                     </table>
@@ -96927,7 +96936,7 @@ async function loadAccountantRecords() {
 
     tbody.innerHTML = `
         <tr>
-            <td colspan="8" style="text-align: center; padding: 10px;">Loading...</td>
+            <td colspan="17" style="text-align: center; padding: 10px;">Loading...</td>
         </tr>
     `;
 
@@ -96947,7 +96956,7 @@ async function loadAccountantRecords() {
         if (!response.ok) {
             tbody.innerHTML = `
                 <tr>
-                    <td colspan="8" style="text-align: center; padding: 10px; color: #dc3545;">Failed to load records (HTTP ${response.status})</td>
+                    <td colspan="17" style="text-align: center; padding: 10px; color: #dc3545;">Failed to load records (HTTP ${response.status})</td>
                 </tr>
             `;
             return;
@@ -96964,11 +96973,85 @@ async function loadAccountantRecords() {
         if (records.length === 0) {
             tbody.innerHTML = `
                 <tr>
-                    <td colspan="8" style="text-align: center; padding: 10px;">No accountant records found.</td>
+                    <td colspan="17" style="text-align: center; padding: 10px;">No accountant records found.</td>
                 </tr>
             `;
             return;
         }
+
+        const departmentLabels = {
+            finance: 'Finance Department',
+            accounting: 'Accounting Department',
+            admin: 'Administration'
+        };
+
+        const reportingToLabels = {
+            'senior-accountant-1': 'Senior Accountant - John Doe',
+            'senior-accountant-2': 'Senior Accountant - Mary Johnson',
+            'finance-manager': 'Finance Manager'
+        };
+
+        const employmentTypeLabels = {
+            'full-time': 'Full-Time',
+            'part-time': 'Part-Time',
+            contract: 'Contract',
+            intern: 'Intern'
+        };
+
+        const qualificationLabels = {
+            cpa: 'CPA (Certified Public Accountant)',
+            acca: 'ACCA (Association of Chartered Certified Accountants)',
+            cima: 'CIMA (Chartered Institute of Management Accountants)',
+            'bachelor-degree': "Bachelor's Degree in Accounting",
+            diploma: 'Diploma in Accounting',
+            certificate: 'Certificate in Accounting'
+        };
+
+        const mapLabel = (value, labels) => {
+            if (value == null || value === '') {
+                return '';
+            }
+            const key = String(value);
+            return labels[key] || key;
+        };
+
+        const formatDate = (value) => {
+            if (!value) {
+                return '';
+            }
+            const d = new Date(value);
+            if (!Number.isNaN(d.getTime())) {
+                return d.toISOString().split('T')[0];
+            }
+            return String(value).split('T')[0];
+        };
+
+        const parseJsonArray = (value) => {
+            if (Array.isArray(value)) {
+                return value;
+            }
+            if (typeof value === 'string' && value.trim()) {
+                try {
+                    const parsed = JSON.parse(value);
+                    return Array.isArray(parsed) ? parsed : [];
+                } catch (e) {
+                    return [];
+                }
+            }
+            return [];
+        };
+
+        const prettifyListItem = (value) => {
+            if (value == null) {
+                return '';
+            }
+            const s = String(value);
+            return s
+                .split('-')
+                .filter(Boolean)
+                .map(w => w.charAt(0).toUpperCase() + w.slice(1))
+                .join(' ');
+        };
 
         for (const record of records) {
             const tr = document.createElement('tr');
@@ -96983,11 +97066,34 @@ async function loadAccountantRecords() {
 
             addCell(record.name);
             addCell(record.employee_id || record.employeeId);
-            addCell(record.department);
-            addCell(record.reporting_to || record.reportingTo);
             addCell(record.email);
             addCell(record.phone);
-            addCell(record.start_date || record.startDate);
+            addCell(mapLabel(record.department, departmentLabels));
+            addCell(mapLabel(record.reporting_to || record.reportingTo, reportingToLabels));
+            addCell(formatDate(record.start_date || record.startDate));
+            addCell(mapLabel(record.employment_type || record.employmentType, employmentTypeLabels));
+            addCell(mapLabel(record.professional_qualification || record.professionalQualification, qualificationLabels));
+            addCell(record.years_of_experience ?? record.yearsExperience ?? '');
+            addCell(record.additional_certifications || record.additionalCertifications || '');
+            addCell(record.notes || '');
+
+            const financialReporting = parseJsonArray(record.financial_reporting || record.financialReporting)
+                .map(prettifyListItem)
+                .join(', ');
+            const bookkeeping = parseJsonArray(record.bookkeeping)
+                .map(prettifyListItem)
+                .join(', ');
+            const regulatory = parseJsonArray(record.regulatory)
+                .map(prettifyListItem)
+                .join(', ');
+            const systemAccess = parseJsonArray(record.system_access || record.systemAccess)
+                .map(prettifyListItem)
+                .join(', ');
+
+            addCell(financialReporting);
+            addCell(bookkeeping);
+            addCell(regulatory);
+            addCell(systemAccess);
 
             const statusTd = document.createElement('td');
             statusTd.style.padding = '8px';
@@ -97004,7 +97110,7 @@ async function loadAccountantRecords() {
         console.error('❌ Error loading accountant records:', error);
         tbody.innerHTML = `
             <tr>
-                <td colspan="8" style="text-align: center; padding: 10px; color: #dc3545;">Failed to load records: ${error.message}</td>
+                <td colspan="17" style="text-align: center; padding: 10px; color: #dc3545;">Failed to load records: ${error.message}</td>
             </tr>
         `;
     }
