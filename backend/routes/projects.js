@@ -506,56 +506,111 @@ router.get('/:id/progress', async (req, res) => {
     }
 });
 
-// Add project progress update
-router.post('/:id/progress', async (req, res) => {
+// Helper: ensure the project_progress_updates table exists
+async function ensureProgressUpdatesTable() {
+    try {
+        await db.execute(`
+            CREATE TABLE IF NOT EXISTS project_progress_updates (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                project_id INT NOT NULL,
+                progress_percentage DECIMAL(5,2) DEFAULT 0,
+                status VARCHAR(50) NULL,
+                report TEXT NULL,
+                completed_milestones TEXT NULL,
+                next_milestones TEXT NULL,
+                budget_used DECIMAL(15,2) DEFAULT 0,
+                issues TEXT NULL,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                INDEX idx_project_id (project_id),
+                INDEX idx_created_at (created_at)
+            )
+        `);
+    } catch (e) {
+        console.warn('⚠️ Could not ensure project_progress_updates table:', e.message);
+    }
+}
+
+// Normalize a MySQL2 result into a plain array of rows
+function asRows(result) {
+    if (Array.isArray(result) && Array.isArray(result[0])) return result[0];
+    if (Array.isArray(result)) return result;
+    if (result && Array.isArray(result.rows)) return result.rows;
+    return [];
+}
+
+// Shared handler for saving a progress update (supports POST and PUT)
+async function saveProgressUpdate(req, res) {
     try {
         const projectId = req.params.id;
         const {
             progressPercentage,
             status,
             report,
+            progressReport,
             completedMilestones,
             nextMilestones,
             budgetUsed,
             issues
         } = req.body;
-        
+
+        await ensureProgressUpdatesTable();
+
         // Check if project exists
-        const projects = await db.execute('SELECT * FROM projects WHERE id = ?', [projectId]);
-        
+        const projects = asRows(await db.execute('SELECT * FROM projects WHERE id = ?', [projectId]));
+
         if (projects.length === 0) {
-            return res.status(404).json({
-                error: 'Project not found'
-            });
+            return res.status(404).json({ error: 'Project not found' });
         }
-        
-        // Use status directly since frontend now sends correct database values
+
         const mappedStatus = status || projects[0].status;
-        
-        // Update project with progress data
-        await db.execute(`
-            UPDATE projects SET 
-                actual_cost = ?,
-                status = ?,
-                updated_at = NOW()
-            WHERE id = ?
+        const finalReport = report || progressReport || null;
+        const pct = parseFloat(progressPercentage);
+        const budget = parseFloat(budgetUsed);
+
+        // Insert into history table
+        const insertResult = await db.execute(`
+            INSERT INTO project_progress_updates
+                (project_id, progress_percentage, status, report,
+                 completed_milestones, next_milestones, budget_used, issues, created_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, NOW())
         `, [
-            parseFloat(progressPercentage) || 0,
+            projectId,
+            isNaN(pct) ? 0 : pct,
             mappedStatus,
-            projectId
+            finalReport,
+            completedMilestones || null,
+            nextMilestones || null,
+            isNaN(budget) ? 0 : budget,
+            issues || null
         ]);
-        
-        // For now, return success since we don't have a progress table
+
+        // Also update the parent project's latest status / actual_cost so the dashboard stays in sync
+        try {
+            await db.execute(`
+                UPDATE projects SET
+                    actual_cost = ?,
+                    status = ?,
+                    updated_at = NOW()
+                WHERE id = ?
+            `, [isNaN(pct) ? 0 : pct, mappedStatus, projectId]);
+        } catch (e) {
+            console.warn('⚠️ Could not update parent project row:', e.message);
+        }
+
         res.status(201).json({
+            success: true,
             message: 'Progress update saved successfully',
             projectId: projectId,
+            updateId: insertResult && (insertResult.insertId || (insertResult[0] && insertResult[0].insertId)) || null,
             progressData: {
-                progressPercentage,
-                status,
-                report,
+                projectId,
+                projectName: projects[0].name,
+                progressPercentage: pct,
+                status: mappedStatus,
+                report: finalReport,
                 completedMilestones,
                 nextMilestones,
-                budgetUsed,
+                budgetUsed: budget,
                 issues,
                 createdAt: new Date().toISOString()
             }
@@ -565,6 +620,53 @@ router.post('/:id/progress', async (req, res) => {
         res.status(500).json({
             error: 'Failed to save progress update',
             details: error.message
+        });
+    }
+}
+
+// Add project progress update (POST and PUT both supported)
+router.post('/:id/progress', saveProgressUpdate);
+router.put('/:id/progress', saveProgressUpdate);
+
+// Get recent progress updates across all projects (joined with project name)
+// NOTE: This path has two segments so it does NOT collide with GET /:id
+router.get('/progress-updates/recent', async (req, res) => {
+    try {
+        await ensureProgressUpdatesTable();
+
+        const limit = Math.min(parseInt(req.query.limit, 10) || 50, 200);
+
+        const rows = asRows(await db.execute(`
+            SELECT
+                u.id,
+                u.project_id      AS projectId,
+                p.name            AS projectName,
+                u.progress_percentage AS progressPercentage,
+                u.status,
+                u.report,
+                u.completed_milestones AS completedMilestones,
+                u.next_milestones      AS nextMilestones,
+                u.budget_used          AS budgetUsed,
+                u.issues,
+                u.created_at           AS updateDate
+            FROM project_progress_updates u
+            LEFT JOIN projects p ON p.id = u.project_id
+            ORDER BY u.created_at DESC
+            LIMIT ${limit}
+        `));
+
+        res.json({
+            success: true,
+            updates: rows,
+            total: rows.length
+        });
+    } catch (error) {
+        console.error('Error fetching recent progress updates:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Failed to fetch recent progress updates',
+            details: error.message,
+            updates: []
         });
     }
 });

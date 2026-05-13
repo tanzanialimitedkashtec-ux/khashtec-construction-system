@@ -571,8 +571,13 @@ router.post('/', async (req, res) => {
             ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'Scheduled', ?)
         `, insertParams);
         
-        // MySQL2 returns [rows, fields] array - we need the first element (rows)
-        const result = queryResult[0] || {};
+        // db.execute wrapper already unwraps to rows/ResultSetHeader
+        const result = (queryResult && queryResult.insertId != null)
+            ? queryResult
+            : (Array.isArray(queryResult) ? (queryResult[0] || {}) : {});
+        if (result.insertId == null) {
+            throw new Error('INSERT did not return an insertId');
+        }
         console.log(`✅ Meeting created successfully with ID: ${result.insertId}`);
         
         // Fetch the created meeting to return complete data
