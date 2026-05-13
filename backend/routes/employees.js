@@ -1,5 +1,6 @@
 const express = require('express');
 const router = express.Router();
+const fs = require('fs');
 const db = require('../../database/config/database');
 const upload = require('../middleware/upload');
 
@@ -396,23 +397,44 @@ router.post('/', upload.any(), async (req, res) => {
             const employeeDbId = Array.isArray(employeeResult) ? employeeResult[0].insertId : employeeResult.insertId;
             
             // Get profile image path if file was uploaded.
-            // IMPORTANT: store a web-accessible relative URL (e.g. /uploads/<file>),
-            // NOT multer's absolute filesystem path (e.g. /app/uploads/<file>) which
-            // leaks the container path and produces 404s when used as a URL.
+            // IMPORTANT: store a web-accessible URL, NOT multer's absolute filesystem
+            // path (e.g. /app/uploads/<file>). Also persist the bytes into a LONGBLOB
+            // column so the image survives Railway redeploys (ephemeral filesystem).
             let profileImagePath = '';
+            let profileImageBuffer = null;
+            let profileImageMime = null;
             if (req.files && req.files.length > 0) {
                 const profileFile = req.files.find(f => f.fieldname === 'profileImage');
                 if (profileFile) {
-                    profileImagePath = `/uploads/${profileFile.filename}`;
+                    profileImageMime = profileFile.mimetype || 'image/jpeg';
+                    try {
+                        profileImageBuffer = fs.readFileSync(profileFile.path);
+                    } catch (readErr) {
+                        console.warn('⚠️ Could not read uploaded profile image for BLOB storage:', readErr.message);
+                    }
+                    // Prefer DB-backed URL so it works after redeploys; fall back to /uploads.
+                    profileImagePath = profileImageBuffer
+                        ? `/api/profile-image/${employeeDbId}`
+                        : `/uploads/${profileFile.filename}`;
                 }
             }
             
-            // Create employee details
-            const detailsResult = await db.execute(
-                `INSERT INTO employee_details (employee_id, full_name, gmail, phone, nida, passport, contract_type, profile_image)
-                 VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-                [employeeDbId, fullName, gmail, phone, nida, passport || '', contract, profileImagePath]
-            );
+            // Create employee details (try with BLOB columns; gracefully fall back if missing)
+            let detailsResult;
+            try {
+                detailsResult = await db.execute(
+                    `INSERT INTO employee_details (employee_id, full_name, gmail, phone, nida, passport, contract_type, profile_image, profile_image_data, profile_image_mime)
+                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+                    [employeeDbId, fullName, gmail, phone, nida, passport || '', contract, profileImagePath, profileImageBuffer, profileImageMime]
+                );
+            } catch (blobErr) {
+                console.warn('⚠️ BLOB insert failed, retrying without BLOB columns:', blobErr.message);
+                detailsResult = await db.execute(
+                    `INSERT INTO employee_details (employee_id, full_name, gmail, phone, nida, passport, contract_type, profile_image)
+                     VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+                    [employeeDbId, fullName, gmail, phone, nida, passport || '', contract, profileImagePath]
+                );
+            }
             
             // Return success response
             res.status(201).json({

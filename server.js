@@ -256,6 +256,26 @@ app.use(express.static(path.join(__dirname, 'frontend/public'), {
 
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
+// Serve profile image from DB BLOB (persists across Railway redeploys)
+app.get('/api/profile-image/:employeeId', async (req, res) => {
+    try {
+        const db = require('./database/config/database');
+        const [rows] = await db.execute(
+            'SELECT profile_image_data, profile_image_mime FROM employee_details WHERE employee_id = ? LIMIT 1',
+            [req.params.employeeId]
+        );
+        if (!rows || rows.length === 0 || !rows[0].profile_image_data) {
+            return res.redirect('/assets/images/default-avatar.png');
+        }
+        res.set('Content-Type', rows[0].profile_image_mime || 'image/jpeg');
+        res.set('Cache-Control', 'public, max-age=86400');
+        return res.end(rows[0].profile_image_data);
+    } catch (err) {
+        console.error('Profile image serve error:', err.message);
+        return res.redirect('/assets/images/default-avatar.png');
+    }
+});
+
 
 
 // Ensure uploads directory exists
@@ -5695,6 +5715,25 @@ async function createWorkforceBudgetTables() {
 }
 
 
+
+// Ensure LONGBLOB columns exist on employee_details for DB-persisted profile images
+async function ensureProfileImageBlobColumns() {
+    try {
+        const db = require('./database/config/database');
+        const [cols] = await db.execute("SHOW COLUMNS FROM employee_details");
+        const has = (name) => cols.some(c => c.Field === name);
+        if (!has('profile_image_data')) {
+            console.log('Adding employee_details.profile_image_data LONGBLOB...');
+            await db.execute("ALTER TABLE employee_details ADD COLUMN profile_image_data LONGBLOB NULL");
+        }
+        if (!has('profile_image_mime')) {
+            console.log('Adding employee_details.profile_image_mime VARCHAR(100)...');
+            await db.execute("ALTER TABLE employee_details ADD COLUMN profile_image_mime VARCHAR(100) NULL");
+        }
+    } catch (err) {
+        console.error('ensureProfileImageBlobColumns error:', err.message);
+    }
+}
 
 // Start server after migrations and authentication table creation
 
