@@ -74875,9 +74875,19 @@ function registerClient(){
 
                                 <th>Contact Information</th>
 
+                                <th>Address</th>
+
+                                <th>TIN Number</th>
+
                                 <th>Property Interest</th>
 
                                 <th>Budget Range</th>
+
+                                <th>Notes</th>
+
+                                <th>Registered By</th>
+
+                                <th>Status</th>
 
                                 <th>Registration Date</th>
 
@@ -74891,7 +74901,7 @@ function registerClient(){
 
                             <tr>
 
-                                <td colspan="8">
+                                <td colspan="13">
 
                                     <div class="loading">Loading clients records...</div>
 
@@ -74985,7 +74995,7 @@ async function loadClientsRecords() {
 
                 <tr>
 
-                    <td colspan="8">
+                    <td colspan="13">
 
                         <div class="no-records">Failed to load clients records. Please try again later.</div>
 
@@ -75079,7 +75089,7 @@ function displayClientsRecords(data) {
 
             <tr>
 
-                <td colspan="8">
+                <td colspan="13">
 
                     <div class="no-records">No clients records found</div>
 
@@ -75123,7 +75133,13 @@ function displayClientsRecords(data) {
 
         budgetRange: record.budget_range || record.budgetRange || '50m-100m',
 
-        registrationDate: record.created_at || record.registration_date || new Date().toISOString().split('T')[0]
+        additionalNotes: record.additional_notes || record.notes || '',
+
+        registeredBy: record.registered_by || record.registeredBy || 'system',
+
+        status: record.status || 'active',
+
+        registrationDate: record.registration_date || record.created_at || new Date().toISOString().split('T')[0]
 
     }));
 
@@ -75175,6 +75191,24 @@ function displayClientsRecords(data) {
 
         
 
+        // Status badge with color
+
+        const statusKey = (record.status || 'active').toString().toLowerCase();
+
+        const statusColors = { active: '#28a745', inactive: '#6c757d', prospective: '#ffc107' };
+
+        const statusColor = statusColors[statusKey] || '#17a2b8';
+
+        const statusLabel = statusKey.charAt(0).toUpperCase() + statusKey.slice(1);
+
+        
+
+        // Escape helpers for safe HTML
+
+        const esc = (v) => String(v == null ? '' : v).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\'':'&#39;'}[c]));
+
+        
+
         recordsHTML += `
 
             <tr class="client-row">
@@ -75213,11 +75247,23 @@ function displayClientsRecords(data) {
 
                     <div class="contact-info">
 
-                        <div class="phone">📱 ${record.phone}</div>
+                        <div class="phone">📱 ${esc(record.phone)}</div>
 
-                        <div class="email">📧 ${record.email}</div>
+                        <div class="email">📧 ${esc(record.email)}</div>
 
                     </div>
+
+                </td>
+
+                <td>
+
+                    <div class="address-info" title="${esc(record.address)}">${esc(record.address)}</div>
+
+                </td>
+
+                <td>
+
+                    <div class="tin-info">${esc(record.tinNumber) || '<span style="color:#999">—</span>'}</div>
 
                 </td>
 
@@ -75234,6 +75280,24 @@ function displayClientsRecords(data) {
                         <div class="budget-range">${budgetDisplay}</div>
 
                     </div>
+
+                </td>
+
+                <td>
+
+                    <div class="notes-info" title="${esc(record.additionalNotes)}" style="max-width:200px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${esc(record.additionalNotes) || '<span style="color:#999">—</span>'}</div>
+
+                </td>
+
+                <td>
+
+                    <div class="registered-by">${esc(record.registeredBy)}</div>
+
+                </td>
+
+                <td>
+
+                    <span class="status-badge" style="background:${statusColor};color:#fff;padding:2px 8px;border-radius:10px;font-size:12px;">${statusLabel}</span>
 
                 </td>
 
