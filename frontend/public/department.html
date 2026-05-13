@@ -64446,15 +64446,17 @@ async function loadPurchasesForTracking() {
 
         
 
-        if (response.success && response.data.length > 0) {
+        const purchases = response.purchases || response.data || [];
 
-            response.data.forEach(purchase => {
+        if (response.success && purchases.length > 0) {
+
+            purchases.forEach(purchase => {
 
                 const option = document.createElement('option');
 
                 option.value = purchase.id;
 
-                option.textContent = `${purchase.purchase_id} - ${purchase.buyer_name} (TZS ${purchase.total_amount})`;
+                option.textContent = `${purchase.purchase_reference || purchase.purchase_id} - ${purchase.employee_name || purchase.buyer_name} (${purchase.currency || 'TZS'} ${purchase.amount || purchase.total_amount})`;
 
                 purchaseSelect.appendChild(option);
 
