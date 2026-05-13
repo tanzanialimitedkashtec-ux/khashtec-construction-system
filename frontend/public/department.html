@@ -42722,18 +42722,6 @@ function recordIncidentReports(){
 
                     <div class="form-actions">
 
-                        <button type="button" onclick="testServerConnection()" class="action" style="background: #ffc107; color: black;">
-
-                            🔗 Test Connection
-
-                        </button>
-
-                        <button type="button" onclick="testPageFreeze()" class="action" style="background: #dc3545;">
-
-                            🧪 TEST FREEZE
-
-                        </button>
-
                         <button type="button" onclick="submitIncidentToDatabase()" class="action" style="background: #28a745;">
 
                             💾 SAVE TO DATABASE
@@ -56570,13 +56558,21 @@ function saveIncidentReport() {
 
         const baseUrl = window.location.origin;
 
+        const authToken = (window.sessionManager && typeof sessionManager.getAuthToken === 'function')
+            ? sessionManager.getAuthToken()
+            : (sessionStorage.getItem('authToken') || localStorage.getItem('authToken') || '');
+
     fetch(`${baseUrl}/api/hse/work`, {
 
             method: 'POST',
 
             headers: {
 
-                'Content-Type': 'application/json'
+                'Content-Type': 'application/json',
+
+                'Accept': 'application/json',
+
+                ...(authToken ? { 'Authorization': `Bearer ${authToken}` } : {})
 
             },
 
@@ -56624,9 +56620,18 @@ function saveIncidentReport() {
 
             
 
-            // Reset form
+            // Reset form (incidentForm is a <div>, so clear inputs manually)
 
-            document.getElementById('incidentForm').reset();
+            const formContainer = document.getElementById('incidentForm');
+            if (formContainer) {
+                formContainer.querySelectorAll('input, select, textarea').forEach(el => {
+                    if (el.type === 'checkbox' || el.type === 'radio') {
+                        el.checked = false;
+                    } else {
+                        el.value = '';
+                    }
+                });
+            }
 
             
 
