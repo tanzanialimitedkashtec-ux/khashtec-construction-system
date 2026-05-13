@@ -214,9 +214,11 @@ router.get('/', async (req, res) => {
         
         // Ensure we always return an array
         const employeesArray = Array.isArray(employees) ? employees : [employees];
-        // Normalize image paths so legacy /app/uploads/... values resolve to /uploads/...
+        // Always route image URLs through /api/profile-image/:id which gracefully
+        // falls back to the default avatar when the on-disk file or DB BLOB is missing.
+        // This eliminates 404s for legacy rows whose files were lost on Railway redeploy.
         for (const e of employeesArray) {
-            if (e && e.profile_image) e.profile_image = normalizeImagePath(e.profile_image);
+            if (e && e.id) e.profile_image = `/api/profile-image/${e.id}`;
         }
         console.log('📊 Returning employees array:', employeesArray.length, 'items');
         res.json(employeesArray);
@@ -563,7 +565,7 @@ router.get('/:id', async (req, res) => {
             }
         }
         
-        if (employee && employee.profile_image) employee.profile_image = normalizeImagePath(employee.profile_image);
+        if (employee && employee.id) employee.profile_image = `/api/profile-image/${employee.id}`;
         res.json(employee);
     } catch (error) {
         console.error('Error fetching employee:', error);

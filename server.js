@@ -256,20 +256,36 @@ app.use(express.static(path.join(__dirname, 'frontend/public'), {
 
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
-// Serve profile image from DB BLOB (persists across Railway redeploys)
+// Serve profile image from DB BLOB (persists across Railway redeploys).
+// Order: DB BLOB -> on-disk file referenced by profile_image -> default avatar.
 app.get('/api/profile-image/:employeeId', async (req, res) => {
     try {
         const db = require('./database/config/database');
         const [rows] = await db.execute(
-            'SELECT profile_image_data, profile_image_mime FROM employee_details WHERE employee_id = ? LIMIT 1',
+            'SELECT profile_image, profile_image_data, profile_image_mime FROM employee_details WHERE employee_id = ? LIMIT 1',
             [req.params.employeeId]
         );
-        if (!rows || rows.length === 0 || !rows[0].profile_image_data) {
-            return res.redirect('/assets/images/default-avatar.png');
+        if (rows && rows.length > 0) {
+            const row = rows[0];
+            // 1) BLOB in DB
+            if (row.profile_image_data) {
+                res.set('Content-Type', row.profile_image_mime || 'image/jpeg');
+                res.set('Cache-Control', 'public, max-age=86400');
+                return res.end(row.profile_image_data);
+            }
+            // 2) On-disk file referenced by profile_image
+            if (row.profile_image && typeof row.profile_image === 'string') {
+                const raw = row.profile_image.replace(/\\/g, '/');
+                const idx = raw.toLowerCase().lastIndexOf('uploads/');
+                const rel = idx !== -1 ? raw.slice(idx) : raw.replace(/^\/+/, '');
+                const filePath = path.join(__dirname, rel);
+                if (fs.existsSync(filePath)) {
+                    res.set('Cache-Control', 'public, max-age=86400');
+                    return res.sendFile(filePath);
+                }
+            }
         }
-        res.set('Content-Type', rows[0].profile_image_mime || 'image/jpeg');
-        res.set('Cache-Control', 'public, max-age=86400');
-        return res.end(rows[0].profile_image_data);
+        return res.redirect('/assets/images/default-avatar.png');
     } catch (err) {
         console.error('Profile image serve error:', err.message);
         return res.redirect('/assets/images/default-avatar.png');

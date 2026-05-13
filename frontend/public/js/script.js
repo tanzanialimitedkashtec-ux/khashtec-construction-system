@@ -79,7 +79,7 @@ async function loadProjects() {
         
         const projectSelect = document.getElementById('progressProject');
         if (!projectSelect) {
-            console.error('❌ progressProject element not found');
+            console.log('ℹ️ progressProject element not found - skipping project load for this element');
             return;
         }
         
