@@ -63996,7 +63996,23 @@ async function loadPaymentTracking() {
 
         if (response.success && response.tracking.length > 0) {
 
-            recordsList.innerHTML = response.tracking.map(tracking => `
+            recordsList.innerHTML = response.tracking.map(raw => {
+                // Map backend fields to template fields (backend returns
+                // tracking_reference / payment_status / total_amount / course_name etc.)
+                const tracking = {
+                    ...raw,
+                    tracking_number: raw.tracking_number || raw.tracking_reference || `LPT-${raw.id}`,
+                    purchase_name: raw.purchase_name || raw.course_name || raw.employee_name || 'N/A',
+                    payment_stage: raw.payment_stage || raw.approval_status || raw.payment_status || 'pending',
+                    amount: raw.amount != null ? raw.amount : (raw.total_amount != null ? raw.total_amount : 0),
+                    payment_date: raw.payment_date || raw.next_payment_date || raw.created_at || null
+                };
+                const stageStr = String(tracking.payment_stage || 'pending');
+                const stageClass = stageStr.toLowerCase().replace(/[^a-z0-9_-]/g, '-');
+                const paymentDateStr = tracking.payment_date
+                    ? new Date(tracking.payment_date).toLocaleDateString()
+                    : 'N/A';
+                return `
 
                 <tr>
 
@@ -64028,7 +64044,7 @@ async function loadPaymentTracking() {
 
                         <div class="stage-info">
 
-                            <span class="stage-badge stage-${tracking.payment_stage.toLowerCase()}">${tracking.payment_stage}</span>
+                            <span class="stage-badge stage-${stageClass}">${stageStr}</span>
 
                         </div>
 
@@ -64080,7 +64096,7 @@ async function loadPaymentTracking() {
 
                         <div class="date-info">
 
-                            <div class="payment-date">${new Date(tracking.payment_date).toLocaleDateString()}</div>
+                            <div class="payment-date">${paymentDateStr}</div>
 
                         </div>
 
@@ -64102,7 +64118,8 @@ async function loadPaymentTracking() {
 
                 </tr>
 
-            `).join('');
+            `;
+            }).join('');
 
         } else {
 
@@ -67814,6 +67831,124 @@ async function loadProjectsForProgressUpdate() {
         showNotification('Using demo projects - API unavailable', 'warning', 3000);
 
     }
+
+}
+
+
+
+// Render the Recent Progress Updates table from the database
+
+async function loadRecentProgressUpdates() {
+
+    const tbody = document.getElementById('recentProgressTableBody');
+
+    if (!tbody) return;
+
+    
+
+    tbody.innerHTML = '<tr><td colspan="10" style="padding:10px;text-align:center;color:#888;">Loading...</td></tr>';
+
+    
+
+    let updates = [];
+
+    try {
+
+        const baseUrl = window.location.origin;
+
+        const res = await fetch(`${baseUrl}/api/projects/progress-updates/recent?limit=50`);
+
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+
+        const data = await res.json();
+
+        updates = Array.isArray(data.updates) ? data.updates : [];
+
+    } catch (e) {
+
+        console.error('Could not load recent progress updates from API:', e);
+
+        tbody.innerHTML = '<tr><td colspan="10" style="padding:10px;text-align:center;color:#c00;">Failed to load progress updates from the database</td></tr>';
+
+        return;
+
+    }
+
+    
+
+    if (!Array.isArray(updates) || updates.length === 0) {
+
+        tbody.innerHTML = '<tr><td colspan="10" style="padding:10px;text-align:center;color:#888;">No progress updates yet</td></tr>';
+
+        return;
+
+    }
+
+    
+
+    const fmtMoney = (v) => {
+
+        const n = parseFloat(v);
+
+        return isNaN(n) ? '-' : 'TZS ' + n.toLocaleString();
+
+    };
+
+    const fmtDate = (v) => {
+
+        if (!v) return '-';
+
+        const d = new Date(v);
+
+        return isNaN(d.getTime()) ? '-' : d.toLocaleString();
+
+    };
+
+    const esc = (s) => (s === undefined || s === null || s === '') ? '-' :
+
+        String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+
+    const statusBadge = (s) => {
+
+        if (!s) return '-';
+
+        const colors = { 'Planning':'#6c757d','In Progress':'#0d6efd','Completed':'#198754','On Hold':'#fd7e14','Cancelled':'#dc3545' };
+
+        const c = colors[s] || '#495057';
+
+        return `<span style="background:${c};color:#fff;padding:3px 8px;border-radius:12px;font-size:12px;">${esc(s)}</span>`;
+
+    };
+
+    
+
+    tbody.innerHTML = updates.map((u, i) => `
+
+        <tr>
+
+            <td style="padding:8px;border:1px solid #ddd;">${i + 1}</td>
+
+            <td style="padding:8px;border:1px solid #ddd;"><strong>${esc(u.projectName || ('Project ' + (u.projectId || '')))}</strong></td>
+
+            <td style="padding:8px;border:1px solid #ddd;">${esc(u.progressPercentage)}%</td>
+
+            <td style="padding:8px;border:1px solid #ddd;">${statusBadge(u.status)}</td>
+
+            <td style="padding:8px;border:1px solid #ddd;">${esc(u.progressReport || u.report)}</td>
+
+            <td style="padding:8px;border:1px solid #ddd;">${esc(u.completedMilestones)}</td>
+
+            <td style="padding:8px;border:1px solid #ddd;">${esc(u.nextMilestones)}</td>
+
+            <td style="padding:8px;border:1px solid #ddd;">${fmtMoney(u.budgetUsed)}</td>
+
+            <td style="padding:8px;border:1px solid #ddd;">${esc(u.issues)}</td>
+
+            <td style="padding:8px;border:1px solid #ddd;">${fmtDate(u.updateDate)}</td>
+
+        </tr>
+
+    `).join('');
 
 }
 
@@ -71583,9 +71718,13 @@ function saveProjectProgress() {
 
         
 
-        if (data.success) {
+        if (data.success || data.message || data.projectId) {
 
-            customAlert(`Project progress updated successfully!\n\nProject: ID ${projectId}\nProgress: ${progressData.progressPercentage}%\nStatus: ${progressData.status}\nUpdated: ${new Date().toLocaleString()}`, "Progress Updated", "success");
+            // Update is persisted server-side; no localStorage usage.
+
+            
+
+            customAlert(`Project progress updated successfully!\n\nProject: ${progressData.projectName}\nProgress: ${progressData.progressPercentage}%\nStatus: ${progressData.status}\nUpdated: ${new Date().toLocaleString()}`, "Progress Updated", "success");
 
             
 
@@ -71600,6 +71739,10 @@ function saveProjectProgress() {
             // Reload projects to show updated progress
 
             loadProjectsForProgressUpdate();
+
+            // Refresh the recent progress updates table
+
+            loadRecentProgressUpdates();
 
         } else {
 
