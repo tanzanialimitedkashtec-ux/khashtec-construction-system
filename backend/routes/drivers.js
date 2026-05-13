@@ -91,9 +91,7 @@ router.get('/', async (req, res) => {
         }
         
         const driversResult = await db.execute(`
-            SELECT id, driver_id, full_name, description, years_of_experience, 
-                   license_type, phone_number, email_address, driver_status,
-                   created_at, updated_at
+            SELECT *
             FROM drivers 
             ORDER BY created_at DESC
         `);
@@ -168,9 +166,7 @@ router.get('/all', async (req, res) => {
         const db = require('../../database/config/database');
         
         const driversResult = await db.execute(`
-            SELECT id, driver_id, full_name, description, years_of_experience, 
-                   license_type, phone_number, email_address, driver_status,
-                   created_at, updated_at
+            SELECT *
             FROM drivers 
             ORDER BY created_at DESC
         `);
@@ -498,13 +494,12 @@ router.get('/:id', async (req, res) => {
         const db = require('../../database/config/database');
         const driverId = req.params.id;
         
-        const [drivers] = await db.execute(`
-            SELECT id, driver_id, full_name, description, years_of_experience, 
-                   license_type, phone_number, email_address, driver_status,
-                   created_at, updated_at
+        const driversRes = await db.execute(`
+            SELECT *
             FROM drivers 
             WHERE driver_id = ?
         `, [driverId]);
+        const drivers = Array.isArray(driversRes) ? driversRes : [];
         
         if (drivers.length === 0) {
             return res.status(404).json({

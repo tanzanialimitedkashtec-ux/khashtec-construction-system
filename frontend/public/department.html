@@ -43132,29 +43132,49 @@ async function loadIncidents() {
 
         
 
-        // Ensure we have an array
+        // Ensure we have an array - support many response wrappers
 
         let incidents = [];
 
-        if (Array.isArray(incidentsData)) {
+        const extractArray = (d) => {
 
-            incidents = incidentsData;
+            if (!d) return null;
 
-        } else if (incidentsData.incidents && Array.isArray(incidentsData.incidents)) {
+            if (Array.isArray(d)) return d;
 
-            incidents = incidentsData.incidents;
+            for (const key of ['incidents', 'data', 'records', 'rows', 'results', 'result', 'items', 'list']) {
 
-        } else if (incidentsData.data && Array.isArray(incidentsData.data)) {
+                if (Array.isArray(d[key])) return d[key];
 
-            incidents = incidentsData.data;
+                if (d[key] && typeof d[key] === 'object') {
 
-        } else if (incidentsData) {
+                    const inner = extractArray(d[key]);
 
-            // Single object, convert to array
+                    if (inner) return inner;
+
+                }
+
+            }
+
+            return null;
+
+        };
+
+        const arr = extractArray(incidentsData);
+
+        if (arr) {
+
+            incidents = arr;
+
+        } else if (incidentsData && typeof incidentsData === 'object' && (incidentsData.id || incidentsData.work_title || incidentsData.incident_type)) {
+
+            // Genuine single record
 
             incidents = [incidentsData];
 
         }
+
+        console.log(`📋 Parsed ${incidents.length} incident record(s) from API response`);
 
         
 
@@ -50820,123 +50840,91 @@ async function loadDrivers() {
 
         if (response.success && response.drivers && response.drivers.length > 0) {
 
-            recordsList.innerHTML = response.drivers.map(driver => `
+            // Helpers
+            const esc = (v) => String(v == null || v === '' ? '' : v).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\'':'&#39;'}[c]));
+            const dash = (v) => (v == null || v === '') ? '<span style="color:#999">—</span>' : esc(v);
+            const fmtDate = (v) => { if (!v) return '<span style="color:#999">—</span>'; const d = new Date(v); return isNaN(d) ? esc(v) : d.toLocaleDateString(); };
+            const fmtMoney = (v) => (v == null || v === '') ? '<span style="color:#999">—</span>' : 'TZS ' + Number(v).toLocaleString();
+            const titleCase = (s) => !s ? '' : String(s).replace(/[-_]/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+            const statusColors = { active:'#28a745', 'on-leave':'#ffc107', suspended:'#fd7e14', terminated:'#dc3545', inactive:'#6c757d' };
 
+            recordsList.innerHTML = response.drivers.map(driver => {
+                const statusKey = (driver.driver_status || 'active').toString().toLowerCase();
+                const statusColor = statusColors[statusKey] || '#17a2b8';
+                return `
                 <tr>
-
                     <td>
-
                         <div class="driver-info">
-
-                            <div class="driver-id">${driver.driver_id}</div>
-
-                            <div class="driver-name">${driver.full_name}</div>
-
-                            <div class="driver-description">${driver.description || 'No description'}</div>
-
+                            <div class="driver-id"><strong>${dash(driver.driver_id)}</strong></div>
+                            <div class="driver-name">${dash(driver.full_name)}</div>
+                            <div class="driver-description" style="font-size:11px;color:#666;max-width:220px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="${esc(driver.description)}">${dash(driver.description)}</div>
+                            <div style="font-size:11px;color:#888;">Exp: ${dash(driver.years_of_experience)} yrs</div>
                         </div>
-
                     </td>
-
                     <td>
-
-                        <div class="personal-details">
-
-                            <div class="experience">Experience: ${driver.years_of_experience} years</div>
-
-                            <div class="license">License: ${driver.license_type}</div>
-
-                            <div class="phone">Phone: ${driver.phone_number}</div>
-
-                            <div class="email">Email: ${driver.email_address}</div>
-
-                            <div class="status">Status: ${driver.driver_status}</div>
-
+                        <div class="personal-details" style="font-size:12px;">
+                            <div>🎂 DOB: ${fmtDate(driver.date_of_birth)}</div>
+                            <div>⚧ Gender: ${dash(titleCase(driver.gender))}</div>
+                            <div>🩸 Blood: ${dash((driver.blood_group||'').toUpperCase())}</div>
+                            <div>🆔 NIDA: ${dash(driver.nida_number)}</div>
+                            <div>📔 Passport: ${dash(driver.passport_number)}</div>
                         </div>
-
                     </td>
-
                     <td>
-
-                        <div class="contact-info">
-
-                            <div class="phone">📱 ${driver.phone_number}</div>
-
-                            <div class="email">📧 ${driver.email_address}</div>
-
+                        <div class="contact-info" style="font-size:12px;">
+                            <div>📱 ${dash(driver.phone_number)}</div>
+                            <div>📧 ${dash(driver.email_address)}</div>
+                            <div>📍 ${dash(driver.residential_address)}</div>
+                            <div>🌍 Region: ${dash(titleCase(driver.region))}</div>
                         </div>
-
                     </td>
-
                     <td>
-
-                        <div class="license-info">
-
-                            <div class="license-type">Type: ${driver.license_type}</div>
-
+                        <div class="license-info" style="font-size:12px;">
+                            <div><strong>Type:</strong> ${dash(titleCase(driver.license_type))}</div>
+                            <div><strong>Issued:</strong> ${fmtDate(driver.license_issue_date)}</div>
+                            <div><strong>Expires:</strong> ${fmtDate(driver.license_expiry_date)}</div>
+                            <div><strong>Medical:</strong> ${dash(titleCase(driver.medical_certificate))}</div>
+                            <div><strong>Med. Exp:</strong> ${fmtDate(driver.medical_expiry_date)}</div>
                         </div>
-
                     </td>
-
                     <td>
-
-                        <div class="employment-info">
-
-                            <div class="status">Status: ${driver.driver_status}</div>
-
+                        <div class="employment-info" style="font-size:12px;">
+                            <div><strong>Status:</strong> ${dash(titleCase(driver.employment_status))}</div>
+                            <div><strong>Hire Date:</strong> ${fmtDate(driver.hire_date)}</div>
+                            <div><strong>Salary:</strong> ${fmtMoney(driver.salary)}</div>
+                            <div><strong>Payment:</strong> ${dash(titleCase(driver.payment_method))}</div>
+                            <div title="${esc(driver.bank_details)}" style="max-width:200px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;"><strong>Bank:</strong> ${dash(driver.bank_details)}</div>
                         </div>
-
                     </td>
-
                     <td>
-
-                        <div class="emergency-info">
-
-                            <div class="emergency-name">Emergency Contact</div>
-
-                            <div class="emergency-phone">📱 ${driver.phone_number}</div>
-
+                        <div class="emergency-info" style="font-size:12px;">
+                            <div><strong>${dash(driver.emergency_contact_name)}</strong></div>
+                            <div>📱 ${dash(driver.emergency_contact_number)}</div>
+                            <div>👥 ${dash(titleCase(driver.emergency_relationship))}</div>
                         </div>
-
                     </td>
-
                     <td>
-
-                        <div class="vehicle-info">
-
-                            <div class="assigned-vehicle">Available</div>
-
+                        <div class="vehicle-info" style="font-size:12px;">
+                            <div>🚗 ${dash(driver.assigned_vehicle)}</div>
+                            <div title="${esc(driver.skills)}" style="max-width:180px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;"><strong>Skills:</strong> ${dash(driver.skills)}</div>
+                            <div title="${esc(driver.additional_notes)}" style="max-width:180px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;"><strong>Notes:</strong> ${dash(driver.additional_notes)}</div>
                         </div>
-
                     </td>
-
                     <td>
-
                         <div class="status-info">
-
-                            <span class="status-badge status-${driver.driver_status.toLowerCase()}">${driver.driver_status}</span>
-
+                            <span class="status-badge" style="background:${statusColor};color:#fff;padding:3px 10px;border-radius:12px;font-size:12px;text-transform:capitalize;">${esc(titleCase(driver.driver_status || 'active'))}</span>
+                            <div style="font-size:10px;color:#888;margin-top:4px;">Registered: ${fmtDate(driver.created_at)}</div>
                         </div>
-
                     </td>
-
                     <td>
-
                         <div class="driver-actions">
-
-                            <button class="action-btn view" onclick="viewDriverDetails('${driver.id}')" title="View Details">👁️</button>
-
-                            <button class="action-btn edit" onclick="editDriver('${driver.id}')" title="Edit Driver">✏️</button>
-
-                            <button class="action-btn delete" onclick="deleteDriver('${driver.id}')" title="Delete Driver">🗑️</button>
-
+                            <button class="action-btn view" onclick="viewDriverDetails('${esc(driver.driver_id || driver.id)}')" title="View Details">👁️</button>
+                            <button class="action-btn edit" onclick="editDriver('${esc(driver.driver_id || driver.id)}')" title="Edit Driver">✏️</button>
+                            <button class="action-btn delete" onclick="deleteDriver('${esc(driver.driver_id || driver.id)}')" title="Delete Driver">🗑️</button>
                         </div>
-
                     </td>
-
                 </tr>
-
-            `).join('');
+            `;}).join('');
 
         } else {
 
@@ -50948,9 +50936,10 @@ async function loadDrivers() {
 
         console.error('❌ Error loading driver records:', error);
 
-        // Load sample data on error
-
-        loadSampleDrivers();
+        const recordsList = document.getElementById('driverRecordsList');
+        if (recordsList) {
+            recordsList.innerHTML = `<tr><td colspan="9" class="no-records" style="padding:20px;text-align:center;color:#dc3545;">Failed to load driver records: ${String(error && error.message || error).replace(/[<>]/g,'')}. Please try again later.</td></tr>`;
+        }
 
     }
 
@@ -74420,21 +74409,105 @@ function downloadPropertyDocs(propertyId) {
 
 
 
-function editPropertyDetails(){
+async function editPropertyDetails(){
 
-    // Load existing properties
+    // Show the page first with a loading state
+    showContent(`<div class="card">
+        <h3>Edit Property Details</h3>
+        <p><strong>Real Estate Authority:</strong> Loading properties from database...</p>
+        <div id="editPropertyContainer" style="margin-top:20px;">
+            <div style="padding:20px;text-align:center;color:#666;">⏳ Loading properties...</div>
+        </div>
+    </div>`);
 
-    const properties = []; // TODO: Load from API
+    // Fetch properties from real database
+    let properties = [];
+    try {
+        const apiCandidates = [
+            () => window.KashTecAPI && typeof KashTecAPI.get === 'function' ? KashTecAPI.get('/properties/all') : null,
+            () => fetch('/api/properties/all').then(r => r.json()),
+            () => fetch('/api/properties').then(r => r.json())
+        ];
+        let raw = null;
+        for (const fn of apiCandidates) {
+            try {
+                const res = await fn();
+                if (res) { raw = res; break; }
+            } catch (e) { /* try next */ }
+        }
+        // Normalize possible response shapes
+        if (Array.isArray(raw)) properties = raw;
+        else if (raw && Array.isArray(raw.data)) properties = raw.data;
+        else if (raw && Array.isArray(raw.properties)) properties = raw.properties;
+        else if (raw && typeof raw === 'object' && raw.id) properties = [raw];
+        else properties = [];
+    } catch (err) {
+        console.error('❌ Failed to load properties for edit screen:', err);
+    }
 
-    
+    // Map DB rows to a normalized shape used by the form & table
+    const mapped = properties.map(p => {
+        const typeMap = { 'Residential':'residential','Commercial':'commercial','Industrial':'industrial','Land':'agricultural','Mixed Use':'commercial' };
+        const statusMap = { 'Available':'available','Sold':'sold','Under Offer':'reserved','Off Market':'under-development','Rented':'reserved' };
+        return {
+            id: p.id,
+            plotNumber: p.plotNumber || p.title || `PLT-${p.id}`,
+            type: typeMap[p.type] || (p.type ? String(p.type).toLowerCase() : 'residential'),
+            location: p.location || '',
+            area: p.area || p.size_sqm || 0,
+            price: p.price || 0,
+            status: statusMap[p.status] || (p.status ? String(p.status).toLowerCase() : 'available'),
+            tpNumber: p.tpNumber || p.tp_number || '',
+            description: p.description || '',
+            createdAt: p.created_at || p.dateAdded || ''
+        };
+    });
 
+    // Cache for use by loadPropertyDetails / savePropertyEdits
+    window._editPropertiesCache = mapped;
+
+    const tableRows = mapped.length ? mapped.map(p => `
+        <tr>
+            <td>${p.id}</td>
+            <td>${p.plotNumber}</td>
+            <td style="text-transform:capitalize;">${p.type}</td>
+            <td>${p.location}</td>
+            <td>${Number(p.area).toLocaleString()} sqm</td>
+            <td>TZS ${Number(p.price).toLocaleString()}</td>
+            <td><span class="status-badge status-${p.status}">${p.status}</span></td>
+            <td>${p.tpNumber || '-'}</td>
+            <td>${p.createdAt ? new Date(p.createdAt).toLocaleDateString() : '-'}</td>
+            <td><button type="button" class="action" onclick="document.getElementById('editPropertySelect').value='${p.id}';loadPropertyDetails();window.scrollTo({top:document.getElementById('propertyEditForm').offsetTop-20,behavior:'smooth'});">✏️ Edit</button></td>
+        </tr>
+    `).join('') : `<tr><td colspan="10" style="text-align:center;color:#666;padding:15px;">No properties found in database</td></tr>`;
+
+    const properties_for_select = mapped;
     showContent(`<div class="card">
 
         <h3>Edit Property Details</h3>
 
         <p><strong>Real Estate Authority:</strong> Update property information and status</p>
 
-        
+        <div style="margin:15px 0;overflow-x:auto;">
+            <h4 style="margin:10px 0;">📋 Properties from Database (${mapped.length})</h4>
+            <table class="data-table" style="width:100%;border-collapse:collapse;">
+                <thead>
+                    <tr style="background:#f4f6f8;">
+                        <th style="padding:8px;border:1px solid #ddd;text-align:left;">ID</th>
+                        <th style="padding:8px;border:1px solid #ddd;text-align:left;">Plot Number</th>
+                        <th style="padding:8px;border:1px solid #ddd;text-align:left;">Type</th>
+                        <th style="padding:8px;border:1px solid #ddd;text-align:left;">Location</th>
+                        <th style="padding:8px;border:1px solid #ddd;text-align:left;">Area</th>
+                        <th style="padding:8px;border:1px solid #ddd;text-align:left;">Price</th>
+                        <th style="padding:8px;border:1px solid #ddd;text-align:left;">Status</th>
+                        <th style="padding:8px;border:1px solid #ddd;text-align:left;">TP Number</th>
+                        <th style="padding:8px;border:1px solid #ddd;text-align:left;">Date Added</th>
+                        <th style="padding:8px;border:1px solid #ddd;text-align:left;">Action</th>
+                    </tr>
+                </thead>
+                <tbody>${tableRows}</tbody>
+            </table>
+        </div>
 
         <div class="property-selection">
 
@@ -74446,7 +74519,7 @@ function editPropertyDetails(){
 
                     <option value="">Select Property</option>
 
-                    ${properties.map(property => 
+                    ${properties_for_select.map(property => 
 
                         `<option value="${property.id}">${property.plotNumber} - ${property.location} (${property.status})</option>`
 
@@ -78892,31 +78965,135 @@ function loadPropertyDetails() {
 
     const propertyId = document.getElementById('editPropertySelect').value;
 
-    if (propertyId) {
+    const formContainer = document.getElementById('propertyEditForm');
 
-        document.getElementById('propertyEditForm').classList.remove('hidden');
+    if (!propertyId) {
 
-        // Load property details into form fields
+        formContainer.classList.add('hidden');
 
-        customAlert(`Loading details for property ${propertyId}...`, "Loading Property", "info");
-
-    } else {
-
-        document.getElementById('propertyEditForm').classList.add('hidden');
+        return;
 
     }
+
+    const cache = window._editPropertiesCache || [];
+
+    const property = cache.find(p => String(p.id) === String(propertyId));
+
+    if (!property) {
+
+        customAlert('Property not found in loaded list. Please refresh.', 'Error', 'error');
+
+        return;
+
+    }
+
+    formContainer.classList.remove('hidden');
+
+    // Populate form fields with property values
+
+    document.getElementById('editPlotNumber').value = property.plotNumber || '';
+
+    document.getElementById('editPropertyType').value = property.type || '';
+
+    document.getElementById('editPropertyLocation').value = property.location || '';
+
+    document.getElementById('editPropertyArea').value = property.area || '';
+
+    document.getElementById('editPropertyPrice').value = property.price || '';
+
+    document.getElementById('editPropertyStatus').value = property.status || '';
+
+    document.getElementById('editTpNumber').value = property.tpNumber || '';
+
+    document.getElementById('editPropertyDescription').value = property.description || '';
+
+    const reasonEl = document.getElementById('updateReason');
+
+    if (reasonEl) reasonEl.value = '';
 
 }
 
 
 
-function savePropertyEdits() {
+async function savePropertyEdits() {
 
     const propertyId = document.getElementById('editPropertySelect').value;
 
-    customAlert(`Property ${propertyId} updated successfully!\n\nChanges have been saved and property status updated.`, "Property Updated", "success");
+    if (!propertyId) {
 
-    document.getElementById('editPropertyForm').reset();
+        customAlert('Please select a property to edit.', 'Validation', 'warning');
+
+        return false;
+
+    }
+
+    // Map frontend values back to DB ENUMs
+
+    const typeToDb = { 'residential':'Residential','commercial':'Commercial','industrial':'Industrial','agricultural':'Land' };
+
+    const statusToDb = { 'available':'Available','reserved':'Under Offer','sold':'Sold','under-development':'Off Market' };
+
+    const plotNumber = document.getElementById('editPlotNumber').value.trim();
+
+    const payload = {
+
+        title: `Property ${plotNumber}`,
+
+        type: typeToDb[document.getElementById('editPropertyType').value] || 'Residential',
+
+        location: document.getElementById('editPropertyLocation').value.trim(),
+
+        size_sqm: parseFloat(document.getElementById('editPropertyArea').value) || 0,
+
+        price: parseFloat(document.getElementById('editPropertyPrice').value) || 0,
+
+        status: statusToDb[document.getElementById('editPropertyStatus').value] || 'Available',
+
+        description: document.getElementById('editPropertyDescription').value.trim()
+
+    };
+
+    try {
+
+        let response;
+
+        if (window.KashTecAPI && typeof KashTecAPI.put === 'function') {
+
+            response = await KashTecAPI.put(`/properties/${propertyId}`, payload);
+
+        } else {
+
+            const r = await fetch(`/api/properties/${propertyId}`, {
+
+                method: 'PUT',
+
+                headers: { 'Content-Type':'application/json' },
+
+                body: JSON.stringify(payload)
+
+            });
+
+            if (!r.ok) throw new Error(`HTTP ${r.status}`);
+
+            response = await r.json();
+
+        }
+
+        console.log('✅ Property updated:', response);
+
+        customAlert(`Property ${plotNumber} (ID: ${propertyId}) updated successfully.`, 'Property Updated', 'success');
+
+        // Refresh the edit screen to show new data
+
+        if (typeof editPropertyDetails === 'function') editPropertyDetails();
+
+    } catch (err) {
+
+        console.error('❌ Failed to update property:', err);
+
+        customAlert(`Failed to update property: ${err.message || err}`, 'Update Failed', 'error');
+
+    }
 
     return false;
 
