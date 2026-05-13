@@ -25580,11 +25580,9 @@ function displayFilteredPolicies(policies) {
     
 
     // Filter for pending policies (handle both lowercase and capitalized status)
-
+    // If no status field exists, assume policy is pending
     const pendingPolicies = policies.filter(policy => 
-
-        policy.status === 'pending' || policy.status === 'Pending'
-
+        !policy.status || policy.status === 'pending' || policy.status === 'Pending'
     );
 
     
@@ -50018,7 +50016,7 @@ function registerDriver(){
 
             
 
-            <form id="driverRegistrationForm" onsubmit="return saveDriverRegistration()">
+            <form id="driverRegistrationForm" onsubmit="event.preventDefault(); saveDriverRegistration(); return false;">
 
                 <div class="form-row">
 
