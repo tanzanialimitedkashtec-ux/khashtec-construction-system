@@ -210,7 +210,31 @@ router.post('/', async (req, res) => {
             experience,
             licenseType,
             phone,
-            email
+            email,
+            nidaNumber,
+            passportNumber,
+            dateOfBirth,
+            gender,
+            address,
+            region,
+            emergencyContactName,
+            emergencyContactNumber,
+            emergencyRelationship,
+            bloodGroup,
+            licenseIssueDate,
+            licenseExpiryDate,
+            employmentStatus,
+            hireDate,
+            salary,
+            paymentMethod,
+            bankDetails,
+            medicalCertificate,
+            medicalExpiryDate,
+            driverStatus,
+            assignedVehicle,
+            skills,
+            employmentHistory,
+            additionalNotes
         } = req.body;
         
         console.log('Extracted driver data:', {
@@ -220,7 +244,20 @@ router.post('/', async (req, res) => {
             experience,
             licenseType,
             phone,
-            email
+            email,
+            nidaNumber,
+            dateOfBirth,
+            gender,
+            address,
+            region,
+            emergencyContactName,
+            emergencyContactNumber,
+            emergencyRelationship,
+            licenseIssueDate,
+            licenseExpiryDate,
+            employmentStatus,
+            hireDate,
+            driverStatus
         });
         
         // Validate required fields
@@ -262,28 +299,28 @@ router.post('/', async (req, res) => {
         `, [
             driverId || null,
             driverName || null,
-            driverDescription || 'Professional driver',
+            driverDescription || null,
             parseInt(experience) || 0,
-            licenseType || 'class-c',
-            phone || '+255712345678',
-            email || 'driver@example.com',
-            'NIDA-' + (driverId || 'UNKNOWN'), // Default NIDA number
-            '1990-01-01', // Default date of birth
-            'other', // Default gender
-            'Default Address', // Default residential address
-            'dar-es-salaam', // Default region
-            'Emergency Contact', // Default emergency contact
-            '+2557123456', // Default emergency contact number
-            'relative', // Default emergency relationship
-            new Date().toISOString().split('T')[0], // License issue date (today)
-            '2026-12-31', // License expiry date (end of year)
-            'full-time', // Default employment status
-            new Date().toISOString().split('T')[0], // Hire date (today)
-            'active', // Default driver status
+            licenseType || null,
+            phone || null,
+            email || null,
+            nidaNumber || null,
+            dateOfBirth || null,
+            gender || null,
+            address || null,
+            region || null,
+            emergencyContactName || null,
+            emergencyContactNumber || null,
+            emergencyRelationship || null,
+            licenseIssueDate || null,
+            licenseExpiryDate || null,
+            employmentStatus || null,
+            hireDate || null,
+            driverStatus || 'active',
             new Date().toISOString().split('T')[0], // Registration date (today)
         ]);
         
-        console.log('💾 Sample driver data inserted successfully');
+        console.log('💾 Driver data inserted successfully with all fields');
         
         // Handle different MySQL2 return formats
         const result = Array.isArray(resultResult) ? resultResult[0] : resultResult;
