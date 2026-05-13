@@ -1086,7 +1086,7 @@ async function saveCarRegistration() {
 
         // Send data to backend
         console.log('🚗 Registering car:', carData);
-        const response = await window.apiService.post('/fleet/vehicles', carData);
+        const response = await window.apiService.post('/company-cars', carData);
         
         console.log('✅ Car registration successful:', response);
 
@@ -1308,7 +1308,7 @@ async function saveDriverRegistration() {
 
         // Send data to backend
         console.log('👤 Registering driver:', driverData);
-        const response = await window.apiService.post('/fleet/drivers', driverData);
+        const response = await window.apiService.post('/drivers', driverData);
         
         console.log('✅ Driver registration successful:', response);
 
@@ -1433,7 +1433,7 @@ async function loadVehiclesForDriver() {
         }
 
         // Get vehicles from API
-        const response = await window.apiService.get('/fleet/vehicles');
+        const response = await window.apiService.get('/company-cars');
         console.log('🚗 Vehicles response:', response);
 
         // Clear existing options
