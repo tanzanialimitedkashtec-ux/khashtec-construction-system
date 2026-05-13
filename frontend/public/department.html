@@ -72433,7 +72433,20 @@ async function submitWorkforceRequest(event) {
 
         if (!response.ok) {
 
-            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            // Surface the server's JSON error so we can see *which* field failed
+            let serverDetail = '';
+            try {
+                const errBody = await response.clone().json();
+                console.error('❌ Server error body:', errBody);
+                serverDetail = errBody.error || '';
+                if (errBody.missing && errBody.missing.length) {
+                    serverDetail += ` (missing: ${errBody.missing.join(', ')})`;
+                }
+                if (errBody.details) serverDetail += ` - ${errBody.details}`;
+            } catch (_) {
+                try { serverDetail = await response.text(); } catch (__) {}
+            }
+            throw new Error(`HTTP ${response.status}: ${response.statusText} ${serverDetail}`);
 
         }
 
@@ -96808,6 +96821,34 @@ function showAccountantForm() {
                     <button type="button" onclick="clearAccountantForm()" class="action" style="background: #ffc107;">🔄 Clear Form</button>
                 </div>
             </form>
+
+            <div style="margin-top: 25px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                    <h4 style="margin: 0;">📋 Recorded Accountants</h4>
+                    <button type="button" class="action" style="background: #0b3d91;" onclick="loadAccountantRecords()">🔄 Refresh</button>
+                </div>
+                <div style="overflow: auto; border: 1px solid #dee2e6; border-radius: 5px;">
+                    <table id="accountantRecordsTable" style="width: 100%; border-collapse: collapse;">
+                        <thead>
+                            <tr style="background: #f8f9fa;">
+                                <th style="text-align: left; padding: 8px; border-bottom: 1px solid #dee2e6;">Name</th>
+                                <th style="text-align: left; padding: 8px; border-bottom: 1px solid #dee2e6;">Employee ID</th>
+                                <th style="text-align: left; padding: 8px; border-bottom: 1px solid #dee2e6;">Department</th>
+                                <th style="text-align: left; padding: 8px; border-bottom: 1px solid #dee2e6;">Reporting To</th>
+                                <th style="text-align: left; padding: 8px; border-bottom: 1px solid #dee2e6;">Email</th>
+                                <th style="text-align: left; padding: 8px; border-bottom: 1px solid #dee2e6;">Phone</th>
+                                <th style="text-align: left; padding: 8px; border-bottom: 1px solid #dee2e6;">Start Date</th>
+                                <th style="text-align: left; padding: 8px; border-bottom: 1px solid #dee2e6;">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="accountantRecordsTbody">
+                            <tr>
+                                <td colspan="8" style="text-align: center; padding: 10px;">Loading...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
         </div>
         
         <style>
@@ -96874,6 +96915,99 @@ function showAccountantForm() {
             }
         </style>
     `);
+
+    setTimeout(loadAccountantRecords, 100);
+}
+
+async function loadAccountantRecords() {
+    const tbody = document.getElementById('accountantRecordsTbody');
+    if (!tbody) {
+        return;
+    }
+
+    tbody.innerHTML = `
+        <tr>
+            <td colspan="8" style="text-align: center; padding: 10px;">Loading...</td>
+        </tr>
+    `;
+
+    try {
+        const baseUrl = window.location.origin;
+        const authToken = sessionManager.getAuthToken();
+        const headers = {};
+        if (authToken) {
+            headers['Authorization'] = `Bearer ${authToken}`;
+        }
+
+        const response = await fetch(`${baseUrl}/api/accountant/accountant`, {
+            method: 'GET',
+            headers: headers
+        });
+
+        if (!response.ok) {
+            tbody.innerHTML = `
+                <tr>
+                    <td colspan="8" style="text-align: center; padding: 10px; color: #dc3545;">Failed to load records (HTTP ${response.status})</td>
+                </tr>
+            `;
+            return;
+        }
+
+        const payload = await response.json();
+        let records = payload?.data || payload?.accountants || payload?.records || payload;
+        if (!Array.isArray(records)) {
+            records = records ? [records] : [];
+        }
+
+        tbody.innerHTML = '';
+
+        if (records.length === 0) {
+            tbody.innerHTML = `
+                <tr>
+                    <td colspan="8" style="text-align: center; padding: 10px;">No accountant records found.</td>
+                </tr>
+            `;
+            return;
+        }
+
+        for (const record of records) {
+            const tr = document.createElement('tr');
+            tr.style.borderBottom = '1px solid #dee2e6';
+
+            const addCell = (value) => {
+                const td = document.createElement('td');
+                td.style.padding = '8px';
+                td.textContent = value == null ? '' : String(value);
+                tr.appendChild(td);
+            };
+
+            addCell(record.name);
+            addCell(record.employee_id || record.employeeId);
+            addCell(record.department);
+            addCell(record.reporting_to || record.reportingTo);
+            addCell(record.email);
+            addCell(record.phone);
+            addCell(record.start_date || record.startDate);
+
+            const statusTd = document.createElement('td');
+            statusTd.style.padding = '8px';
+            const statusValue = (record.status || 'unknown');
+            const statusSpan = document.createElement('span');
+            statusSpan.className = `status-badge status-${String(statusValue).toLowerCase().replace(/\s+/g, '-')}`;
+            statusSpan.textContent = String(statusValue);
+            statusTd.appendChild(statusSpan);
+            tr.appendChild(statusTd);
+
+            tbody.appendChild(tr);
+        }
+    } catch (error) {
+        console.error('❌ Error loading accountant records:', error);
+        tbody.innerHTML = `
+            <tr>
+                <td colspan="8" style="text-align: center; padding: 10px; color: #dc3545;">Failed to load records: ${error.message}</td>
+            </tr>
+        `;
+    }
 }
 
 // Get selected checkboxes for a given name
@@ -96988,7 +97122,7 @@ async function submitAccountantForm(event) {
             
             // Reset form and return to dashboard
             document.getElementById('accountantForm').reset();
-            showContent(''); // Return to dashboard
+            await loadAccountantRecords();
         } else {
             customAlert(`Error: ${result.error || 'Unknown error occurred'}`, 'Save Error', 'error');
         }

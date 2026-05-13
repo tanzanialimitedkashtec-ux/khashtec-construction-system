@@ -96,6 +96,8 @@ const procurementSalesRoutes = require('./backend/routes/procurementSales');
 
 const paymentRoutes = require('./backend/routes/payment');
 
+const accountantRoutes = require('./backend/routes/accountant');
+
 
 
 const app = express();
@@ -966,6 +968,14 @@ app.use('/api/procurement-sales', asyncHandler(async (req, res, next) => {
 app.use('/api/payment', asyncHandler(async (req, res, next) => {
 
     return paymentRoutes(req, res, next);
+
+}));
+
+
+
+app.use('/api/accountant', asyncHandler(async (req, res, next) => {
+
+    return accountantRoutes(req, res, next);
 
 }));
 
