@@ -506,7 +506,9 @@ router.get('/:id/progress', async (req, res) => {
     }
 });
 
-// Helper: ensure the project_progress_updates table exists
+// Helper: ensure the project_progress_updates table exists AND has all required columns.
+// Older deploys may have an earlier version of the table without some columns (e.g. `report`),
+// and CREATE TABLE IF NOT EXISTS will not add them — so we explicitly ALTER for each.
 async function ensureProgressUpdatesTable() {
     try {
         await db.execute(`
@@ -525,6 +527,30 @@ async function ensureProgressUpdatesTable() {
                 INDEX idx_created_at (created_at)
             )
         `);
+
+        // Backfill missing columns on pre-existing tables
+        const requiredCols = [
+            { name: 'progress_percentage',  ddl: 'DECIMAL(5,2) DEFAULT 0' },
+            { name: 'status',               ddl: 'VARCHAR(50) NULL' },
+            { name: 'report',               ddl: 'TEXT NULL' },
+            { name: 'completed_milestones', ddl: 'TEXT NULL' },
+            { name: 'next_milestones',      ddl: 'TEXT NULL' },
+            { name: 'budget_used',          ddl: 'DECIMAL(15,2) DEFAULT 0' },
+            { name: 'issues',               ddl: 'TEXT NULL' },
+            { name: 'created_at',           ddl: 'TIMESTAMP DEFAULT CURRENT_TIMESTAMP' }
+        ];
+        const existing = asRows(await db.execute('SHOW COLUMNS FROM project_progress_updates'));
+        const existingNames = new Set(existing.map(c => c.Field));
+        for (const col of requiredCols) {
+            if (!existingNames.has(col.name)) {
+                try {
+                    console.log(`🛠️ Adding missing column project_progress_updates.${col.name}`);
+                    await db.execute(`ALTER TABLE project_progress_updates ADD COLUMN ${col.name} ${col.ddl}`);
+                } catch (alterErr) {
+                    console.warn(`⚠️ Could not add column ${col.name}:`, alterErr.message);
+                }
+            }
+        }
     } catch (e) {
         console.warn('⚠️ Could not ensure project_progress_updates table:', e.message);
     }

@@ -5747,8 +5747,11 @@ async function createWorkforceBudgetTables() {
 async function ensureProfileImageBlobColumns() {
     try {
         const db = require('./database/config/database');
-        const [cols] = await db.execute("SHOW COLUMNS FROM employee_details");
-        const has = (name) => cols.some(c => c.Field === name);
+        // db.execute() already destructures internally and returns the rows array directly,
+        // so do NOT destructure again here.
+        const cols = await db.execute("SHOW COLUMNS FROM employee_details");
+        const colsArr = Array.isArray(cols) ? cols : [];
+        const has = (name) => colsArr.some(c => c && c.Field === name);
         if (!has('profile_image_data')) {
             console.log('Adding employee_details.profile_image_data LONGBLOB...');
             await db.execute("ALTER TABLE employee_details ADD COLUMN profile_image_data LONGBLOB NULL");
