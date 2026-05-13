@@ -62860,7 +62860,9 @@ async function savePaymentTracking() {
 
         if (response.success) {
 
-            customAlert(`Payment tracking created successfully! Tracking Number: ${response.data.tracking_number}`, 'Success', 'success');
+            const trackingRef = (response.data && (response.data.tracking_number || response.data.tracking_reference)) || response.tracking_number || response.tracking_reference || response.trackingId || 'N/A';
+
+            customAlert(`Payment tracking created successfully! Tracking Number: ${trackingRef}`, 'Success', 'success');
 
             trackLanguagePayments();
 
@@ -68039,37 +68041,59 @@ function updateProjectProgress(){
 
         
 
-        <div class="recent-updates">
+        <div class="recent-updates" style="margin-top:20px;">
 
             <h4>Recent Progress Updates</h4>
 
-            <div class="update-list">
+            <div style="overflow-x:auto;">
 
-                <div class="update-item">
+            <table class="data-table" id="recentProgressTable" style="width:100%;border-collapse:collapse;">
 
-                    <strong>Port Modernization Phase 1</strong>
+                <thead>
 
-                    <span>Updated: March 15, 2026</span>
+                    <tr style="background:#f4f6f8;">
 
-                    <span>Progress: 75% (On Track)</span>
+                        <th style="padding:8px;border:1px solid #ddd;text-align:left;">#</th>
 
-                </div>
+                        <th style="padding:8px;border:1px solid #ddd;text-align:left;">Project</th>
 
-                <div class="update-item">
+                        <th style="padding:8px;border:1px solid #ddd;text-align:left;">Progress %</th>
 
-                    <strong>Warehouse Construction</strong>
+                        <th style="padding:8px;border:1px solid #ddd;text-align:left;">Status</th>
 
-                    <span>Updated: March 14, 2026</span>
+                        <th style="padding:8px;border:1px solid #ddd;text-align:left;">Report</th>
 
-                    <span>Progress: 45% (At Risk)</span>
+                        <th style="padding:8px;border:1px solid #ddd;text-align:left;">Completed Milestones</th>
 
-                </div>
+                        <th style="padding:8px;border:1px solid #ddd;text-align:left;">Next Milestones</th>
+
+                        <th style="padding:8px;border:1px solid #ddd;text-align:left;">Budget Used (TZS)</th>
+
+                        <th style="padding:8px;border:1px solid #ddd;text-align:left;">Issues/Concerns</th>
+
+                        <th style="padding:8px;border:1px solid #ddd;text-align:left;">Updated</th>
+
+                    </tr>
+
+                </thead>
+
+                <tbody id="recentProgressTableBody">
+
+                    <tr><td colspan="10" style="padding:10px;text-align:center;color:#888;">No progress updates yet</td></tr>
+
+                </tbody>
+
+            </table>
 
             </div>
 
         </div>
 
     </div>`);
+
+    // Render any persisted progress updates
+
+    setTimeout(loadRecentProgressUpdates, 50);
 
 }
 
@@ -70627,7 +70651,7 @@ function loadSampleSiteReports() {
 
 // Display site reports in the table
 
-function displaySiteReports(reports) {
+function displaySiteReports(reports, _retry) {
 
     const reportsList = document.getElementById('siteReportsList');
 
@@ -70635,7 +70659,13 @@ function displaySiteReports(reports) {
 
     if (!reportsList) {
 
-        console.error('❌ Site reports list container not found!');
+        // The tbody is rendered by recordSiteReports() via showContent.
+        // If it's missing, the user likely navigated away while the fetch was in flight,
+        // or the DOM hadn't been painted yet. Retry once on next frame, then bail quietly.
+        if (!_retry) {
+            return requestAnimationFrame(() => displaySiteReports(reports, true));
+        }
+        console.warn('⚠️ Site reports container not present (view changed); skipping render.');
 
         return;
 
@@ -71447,9 +71477,25 @@ function saveNewProject() {
 
 
 
+function saveProjectProgressSubmit() {
+
+    return saveProjectProgress();
+
+}
+
+
+
 function saveProjectProgress() {
 
-    const projectId = document.getElementById('progressProject').value;
+    const projectSelect = document.getElementById('progressProject');
+
+    const projectId = projectSelect.value;
+
+    const projectName = projectSelect.options[projectSelect.selectedIndex]
+
+        ? projectSelect.options[projectSelect.selectedIndex].text.split(' - ')[0]
+
+        : `Project ${projectId}`;
 
     
 
@@ -71465,11 +71511,17 @@ function saveProjectProgress() {
 
     const progressData = {
 
+        projectId: projectId,
+
+        projectName: projectName,
+
         progressPercentage: document.getElementById('progressPercentage').value,
 
         status: document.getElementById('projectStatus').value,
 
         progressReport: document.getElementById('progressReport').value,
+
+        report: document.getElementById('progressReport').value,
 
         completedMilestones: document.getElementById('completedMilestones').value,
 
@@ -76330,7 +76382,7 @@ async function loadPaymentTrackingData() {
 
     if (response.success) {
 
-        updatePaymentTable(response.data);
+        updatePaymentTable(response.tracking || response.data || []);
 
     } else {
 
@@ -76348,17 +76400,49 @@ async function loadPaymentStatistics() {
 
     
 
-    if (response.success) {
+    if (response && response.success) {
 
-        const stats = response.data.statistics;
+        const stats = response.statistics || (response.data && response.data.statistics) || {};
 
-        document.getElementById('activeInstallments').textContent = stats.active_installments || 0;
+        const byStatus = stats.by_payment_status || {};
 
-        document.getElementById('outstandingBalance').textContent = `TZS ${(stats.total_outstanding || 0).toLocaleString()}`;
+        const pendingAmt = (byStatus.pending && byStatus.pending.total_amount) || 0;
 
-        document.getElementById('monthlyCollections').textContent = `TZS ${(stats.this_month_collections || 0).toLocaleString()}`;
+        const processingAmt = (byStatus.processing && byStatus.processing.total_amount) || 0;
 
-        document.getElementById('overdueCount').textContent = stats.overdue_count || 0;
+        const outstanding = stats.total_outstanding != null ? stats.total_outstanding : (pendingAmt + processingAmt);
+
+        const pendingCount = (byStatus.pending && byStatus.pending.count) || 0;
+
+        const processingCount = (byStatus.processing && byStatus.processing.count) || 0;
+
+        const activeInstallments = stats.active_installments != null ? stats.active_installments : (pendingCount + processingCount);
+
+        const monthlySummary = stats.monthly_summary || [];
+
+        const currentMonth = new Date().toISOString().slice(0, 7);
+
+        const thisMonth = monthlySummary.find(m => m.month === currentMonth);
+
+        const monthlyCollections = stats.this_month_collections != null ? stats.this_month_collections : (thisMonth ? thisMonth.amount : 0);
+
+        const overdueCount = stats.overdue_count != null ? stats.overdue_count : ((byStatus.failed && byStatus.failed.count) || 0);
+
+        const elActive = document.getElementById('activeInstallments');
+
+        const elOutstanding = document.getElementById('outstandingBalance');
+
+        const elMonthly = document.getElementById('monthlyCollections');
+
+        const elOverdue = document.getElementById('overdueCount');
+
+        if (elActive) elActive.textContent = activeInstallments;
+
+        if (elOutstanding) elOutstanding.textContent = `TZS ${Number(outstanding).toLocaleString()}`;
+
+        if (elMonthly) elMonthly.textContent = `TZS ${Number(monthlyCollections).toLocaleString()}`;
+
+        if (elOverdue) elOverdue.textContent = overdueCount;
 
     }
 
@@ -76372,9 +76456,11 @@ async function loadMonthlyCollections() {
 
     
 
-    if (response.success) {
+    if (response && response.success) {
 
-        const monthlyData = response.data.monthly_collections || [];
+        const stats = response.statistics || (response.data && response.data.statistics) || {};
+
+        const monthlyData = stats.monthly_collections || stats.monthly_summary || [];
 
         updateMonthlyChart(monthlyData);
 
@@ -93504,19 +93590,55 @@ function showProcurementSales() {
 
                 
 
+                const procType = document.getElementById('procurementType').value;
+
+                const procName = document.getElementById('procurementName').value;
+
+                const procQty = parseInt(document.getElementById('procurementQuantity').value) || 0;
+
+                const procPrice = parseFloat(document.getElementById('procurementPrice').value) || 0;
+
+                const procDate = document.getElementById('procurementDate').value;
+
+                const procStatus = document.getElementById('procurementStatus').value;
+
+                const currentUserDept = (typeof getCurrentUserDepartment === 'function' ? getCurrentUserDepartment() : null) || (window.currentUser && (window.currentUser.department_name || window.currentUser.department)) || 'General';
+
                 const formData = {
 
-                    type: document.getElementById('procurementType').value,
+                    // Backend-required fields
 
-                    name: document.getElementById('procurementName').value,
+                    requestTitle: procName,
 
-                    quantity: parseInt(document.getElementById('procurementQuantity').value),
+                    procurementType: procType,
 
-                    price: parseFloat(document.getElementById('procurementPrice').value),
+                    itemDescription: procName,
 
-                    purchaseDate: document.getElementById('procurementDate').value,
+                    quantity: procQty,
 
-                    status: document.getElementById('procurementStatus').value,
+                    unitPrice: procPrice,
+
+                    totalBudget: procQty * procPrice,
+
+                    purpose: `Procurement of ${procName}`,
+
+                    department: currentUserDept,
+
+                    urgencyLevel: 'Normal',
+
+                    expectedDeliveryDate: procDate,
+
+                    // Legacy/extra fields
+
+                    type: procType,
+
+                    name: procName,
+
+                    price: procPrice,
+
+                    purchaseDate: procDate,
+
+                    status: procStatus,
 
                     createdAt: new Date().toISOString()
 

@@ -74,19 +74,28 @@ router.post('/', async (req, res) => {
                 property_interest, budget_range, additional_notes, registered_by, status
             ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
         
+        // Normalize ENUM-bound fields: empty strings are invalid for ENUM columns, use NULL instead.
+        // Also normalize client_type casing to match ENUM ('individual','company','investor').
+        const normalizedType = (client_type || 'individual').toString().toLowerCase();
+        const validTypes = ['individual', 'company', 'investor'];
+        const safeClientType = validTypes.includes(normalizedType) ? normalizedType : 'individual';
+
+        const safePropertyInterest = property_interest && property_interest.trim() !== '' ? property_interest : null;
+        const safeBudgetRange = budget_range && budget_range.trim() !== '' ? budget_range : null;
+
         const values = [
             client_id || `CLT${Date.now().toString().slice(-6)}`,
-            client_type || 'Individual',
-            full_name, 
-            company_name || '', 
+            safeClientType,
+            full_name,
+            company_name || null,
             phone_number,
-            email_address, 
-            nida_number, 
-            tin_number || '', 
+            email_address,
+            nida_number,
+            tin_number || null,
             physical_address,
-            property_interest || '', 
-            budget_range || '', 
-            additional_notes || '', 
+            safePropertyInterest,
+            safeBudgetRange,
+            additional_notes || null,
             registered_by || 'system',
             'active'  // Default status for new clients
         ];
@@ -133,14 +142,16 @@ router.get('/', async (req, res) => {
         
         console.log('🔍 Executing clients query:', query);
         
-        const [results] = await db.execute(query);
+        // db.execute already returns rows array, do NOT destructure again
+        const results = await db.execute(query);
+        const rows = Array.isArray(results) ? results : [];
         
-        console.log('✅ Clients fetched successfully:', results.length);
+        console.log('✅ Clients fetched successfully:', rows.length);
         
         res.json({
             success: true,
-            clients: results,
-            total: results.length
+            clients: rows,
+            total: rows.length
         });
         
     } catch (error) {
@@ -174,20 +185,21 @@ router.get('/:id', async (req, res) => {
             
             console.log('🔍 Executing client query:', query);
             
-            const [results] = await db.execute(query, [id]);
+            const results = await db.execute(query, [id]);
+            const rows = Array.isArray(results) ? results : [];
             
-            if (results.length === 0) {
+            if (rows.length === 0) {
                 return res.status(404).json({
                     success: false,
                     error: 'Client not found'
                 });
             }
             
-            console.log('✅ Client fetched successfully:', results[0].client_id);
+            console.log('✅ Client fetched successfully:', rows[0].client_id);
             
             res.json({
                 success: true,
-                client: results[0]
+                client: rows[0]
             });
             
         } catch (dbError) {
