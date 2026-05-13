@@ -540,14 +540,27 @@ async function ensureProgressUpdatesTable() {
             { name: 'created_at',           ddl: 'TIMESTAMP DEFAULT CURRENT_TIMESTAMP' }
         ];
         const existing = asRows(await db.execute('SHOW COLUMNS FROM project_progress_updates'));
-        const existingNames = new Set(existing.map(c => c.Field));
+        const existingByName = new Map(existing.map(c => [c.Field, c]));
         for (const col of requiredCols) {
-            if (!existingNames.has(col.name)) {
+            const current = existingByName.get(col.name);
+            if (!current) {
                 try {
                     console.log(`🛠️ Adding missing column project_progress_updates.${col.name}`);
                     await db.execute(`ALTER TABLE project_progress_updates ADD COLUMN ${col.name} ${col.ddl}`);
                 } catch (alterErr) {
                     console.warn(`⚠️ Could not add column ${col.name}:`, alterErr.message);
+                }
+            } else if (col.name === 'status') {
+                // Old deploys defined `status` as a narrow ENUM/short VARCHAR which causes
+                // "Data truncated for column 'status'" on insert. Widen it to VARCHAR(50) NULL.
+                const type = String(current.Type || '').toLowerCase();
+                if (type.startsWith('enum(') || (type.startsWith('varchar(') && !type.includes('(50)') && !type.includes('(100)') && !type.includes('(255)'))) {
+                    try {
+                        console.log(`🛠️ Widening project_progress_updates.status from ${current.Type} to VARCHAR(50) NULL`);
+                        await db.execute('ALTER TABLE project_progress_updates MODIFY COLUMN status VARCHAR(50) NULL');
+                    } catch (modErr) {
+                        console.warn('⚠️ Could not widen status column:', modErr.message);
+                    }
                 }
             }
         }

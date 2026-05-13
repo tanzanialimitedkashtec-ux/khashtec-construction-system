@@ -232,17 +232,21 @@ async function loadProgressUpdates(projectId) {
         
         const response = await window.apiService.getProjectProgressUpdates(projectId);
         const updateList = document.querySelector('.update-list');
-        
-        if (response.updates && response.updates.length > 0) {
+        if (!updateList) {
+            // Container not present on this page — nothing to render to.
+            return;
+        }
+
+        if (response && response.updates && response.updates.length > 0) {
             updateList.innerHTML = '';
-            
+
             response.updates.slice(0, 5).forEach(update => {
                 const updateItem = document.createElement('div');
                 updateItem.className = 'update-item';
                 updateItem.innerHTML = `
                     <strong>${update.projectName || 'Project'}</strong>
-                    <span>Updated: ${new Date(update.updateDate).toLocaleDateString()}</span>
-                    <span>Progress: ${update.progressPercentage}% (${update.status})</span>
+                    <span>Updated: ${new Date(update.updateDate || update.createdAt).toLocaleDateString()}</span>
+                    <span>Progress: ${update.progressPercentage}% (${update.status || ''})</span>
                 `;
                 updateList.appendChild(updateItem);
             });
@@ -252,7 +256,9 @@ async function loadProgressUpdates(projectId) {
     } catch (error) {
         console.error('Failed to load progress updates:', error);
         const updateList = document.querySelector('.update-list');
-        updateList.innerHTML = '<div class="update-item">Failed to load updates</div>';
+        if (updateList) {
+            updateList.innerHTML = '<div class="update-item">Failed to load updates</div>';
+        }
     }
 }
 
