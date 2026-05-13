@@ -48438,7 +48438,7 @@ function registerCompanyCar(){
 
             
 
-            <form id="carRegistrationForm" onsubmit="return saveCarRegistration()">
+            <form id="carRegistrationForm" onsubmit="event.preventDefault(); saveCarRegistration(); return false;">
 
                 <div class="form-row">
 
@@ -48850,79 +48850,109 @@ async function loadDriversForCarRegistration() {
 
 
 
-function saveCarRegistration(){
+async function saveCarRegistration(){
 
-    const formData = {
+    try {
 
-        carName: document.getElementById('carName').value,
+        const formData = {
 
-        brandName: document.getElementById('brandName').value,
+            carName: document.getElementById('carName').value,
 
-        regNo: document.getElementById('regNo').value,
+            brandName: document.getElementById('brandName').value,
 
-        plateNumber: document.getElementById('plateNumber').value,
+            regNo: document.getElementById('regNo').value,
 
-        carDetails: document.getElementById('carDetails').value,
+            plateNumber: document.getElementById('plateNumber').value,
 
-        carDescription: document.getElementById('carDescription').value,
+            carDetails: document.getElementById('carDetails').value,
 
-        driver: document.getElementById('driver').value,
+            carDescription: document.getElementById('carDescription').value,
 
-        registrationDate: document.getElementById('registrationDate').value,
+            driver: document.getElementById('driver').value,
 
-        trackNumber: document.getElementById('trackNumber').value,
+            registrationDate: document.getElementById('registrationDate').value,
 
-        vehicleType: document.getElementById('vehicleType').value,
+            trackNumber: document.getElementById('trackNumber').value,
 
-        fuelType: document.getElementById('fuelType').value,
+            vehicleType: document.getElementById('vehicleType').value,
 
-        carColor: document.getElementById('carColor').value,
+            fuelType: document.getElementById('fuelType').value,
 
-        yearOfManufacture: document.getElementById('yearOfManufacture').value,
+            carColor: document.getElementById('carColor').value,
 
-        odometerReading: document.getElementById('odometerReading').value,
+            yearOfManufacture: document.getElementById('yearOfManufacture').value,
 
-        insuranceStatus: document.getElementById('insuranceStatus').value,
+            odometerReading: document.getElementById('odometerReading').value,
 
-        vehicleStatus: document.getElementById('vehicleStatus').value,
+            insuranceStatus: document.getElementById('insuranceStatus').value,
 
-        additionalNotes: document.getElementById('additionalNotes').value,
+            vehicleStatus: document.getElementById('vehicleStatus').value,
 
-        registeredBy: sessionManager.getCurrentUser()?.name || 'Managing Director',
+            additionalNotes: document.getElementById('additionalNotes').value,
 
-        registrationTimestamp: new Date().toISOString()
+            registeredBy: sessionManager.getCurrentUser()?.name || 'Managing Director',
 
-    };
+            registrationTimestamp: new Date().toISOString()
 
-    
+        };
 
-    console.log('🚗 Registering company car:', formData);
+        
 
-    
+        // Validate required fields
 
-    // Save to database
+        const requiredFields = ['carName', 'brandName', 'regNo', 'plateNumber', 'carDetails', 'carDescription', 'registrationDate', 'trackNumber', 'vehicleType', 'fuelType', 'insuranceStatus', 'vehicleStatus'];
 
-    const baseUrl = window.location.origin;
+        const missingFields = requiredFields.filter(field => !formData[field]);
 
-    fetch(`${baseUrl}/api/company-cars`, {
+        if (missingFields.length > 0) {
 
-        method: 'POST',
+            showNotification('❌ Validation Error', `Please fill in all required fields: ${missingFields.join(', ')}`, 'error');
 
-        headers: {
+            return false;
 
-            'Content-Type': 'application/json',
+        }
 
-            'Authorization': `Bearer ${sessionManager.getAuthToken()}`
+        
 
-        },
+        console.log('🚗 Registering company car:', formData);
 
-        body: JSON.stringify(formData)
+        
 
-    })
+        // Save to database
 
-    .then(response => response.json())
+        const baseUrl = window.location.origin;
 
-    .then(data => {
+        const response = await fetch(`${baseUrl}/api/company-cars`, {
+
+            method: 'POST',
+
+            headers: {
+
+                'Content-Type': 'application/json',
+
+                'Authorization': `Bearer ${sessionManager.getAuthToken()}`
+
+            },
+
+            body: JSON.stringify(formData)
+
+        });
+
+        
+
+        if (!response.ok) {
+
+            const errorText = await response.text();
+
+            console.error('❌ Server response error:', errorText);
+
+            throw new Error(`HTTP ${response.status}: ${response.statusText} - ${errorText}`);
+
+        }
+
+        
+
+        const data = await response.json();
 
         console.log('✅ Car registered successfully:', data);
 
@@ -48942,19 +48972,23 @@ function saveCarRegistration(){
 
         }, 2000);
 
-    })
+        
 
-    .catch(error => {
+        return true;
+
+        
+
+    } catch (error) {
 
         console.error('❌ Error registering car:', error);
 
-        showNotification('❌ Registration Failed', 'Please try again or contact system administrator', 'error');
+        console.error('❌ Error details:', error.message);
 
-    });
+        showNotification('❌ Registration Failed', `Please try again or contact system administrator\n\nError: ${error.message}`, 'error');
 
-    
+        return false;
 
-    return false; // Prevent form submission
+    }
 
 }
 
