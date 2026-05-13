@@ -63976,9 +63976,9 @@ async function loadPaymentTracking() {
 
         
 
-        if (response.success && response.data.length > 0) {
+        if (response.success && response.tracking.length > 0) {
 
-            recordsList.innerHTML = response.data.map(tracking => `
+            recordsList.innerHTML = response.tracking.map(tracking => `
 
                 <tr>
 
