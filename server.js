@@ -3700,247 +3700,132 @@ app.get('/api/properties/all', async (req, res) => {
 // Clients API endpoints
 
 app.post('/api/clients', async (req, res) => {
-
     try {
-
         console.log('Clients endpoint called');
-
         console.log('Request body:', req.body);
 
-        
-
         const db = require('./database/config/database');
-
         const {
-
+            id: incomingClientId,
             clientName,
-
             fullName,
-
             companyName,
-
             email,
-
             phone,
-
             address,
-
-            industry,
-
+            propertyInterest,
             clientType,
-
             notes,
-
+            nida,
             tin,
-
-            budgetRange
-
+            budgetRange,
+            registeredBy
         } = req.body;
 
-        
-        const name = clientName || fullName;
+        const name = fullName || clientName;
 
-
-        console.log('Extracted fields:', {
-
-            clientName,
-
-            fullName,
-
-            name,
-
-            companyName,
-
-            email,
-
-            phone,
-
-            address,
-
-            industry,
-
-            clientType,
-
-            notes
-
-        });
-
-
-
-        // Validate required fields
-
-        if (!name || !email || !phone) {
-
+        // Validate required fields (match actual schema NOT NULL columns)
+        if (!name || !email || !phone || !address || !nida) {
             console.log('Validation failed - missing fields:', {
-
-                name: !!name,
-
-                email: !!email,
-
-                phone: !!phone
-
+                name: !!name, email: !!email, phone: !!phone,
+                address: !!address, nida: !!nida
             });
-
             return res.status(400).json({
-
                 success: false,
-
-                message: 'Missing required fields'
-
+                message: 'Missing required fields: fullName, email, phone, address, nida'
             });
-
         }
-
-        
 
         // Validate email format
-
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
         if (!emailRegex.test(email)) {
-
-            console.log('Invalid email format:', email);
-
-            return res.status(400).json({
-
-                success: false,
-
-                message: 'Invalid email format'
-
-            });
-
+            return res.status(400).json({ success: false, message: 'Invalid email format' });
         }
 
-        
-
-        // Validate phone format (basic validation)
-
+        // Validate phone format
         const phoneRegex = /^\+?[0-9\s\-\(\)]+$/;
-
         if (!phoneRegex.test(phone)) {
-
-            console.log('Invalid phone format:', phone);
-
-            return res.status(400).json({
-
-                success: false,
-
-                message: 'Invalid phone format'
-
-            });
-
+            return res.status(400).json({ success: false, message: 'Invalid phone format' });
         }
 
+        // Normalize ENUM-bound fields (empty strings are invalid for ENUM)
+        const validTypes = ['individual', 'company', 'investor'];
+        const normalizedType = (clientType || 'individual').toString().toLowerCase();
+        const safeClientType = validTypes.includes(normalizedType) ? normalizedType : 'individual';
 
+        const safePropertyInterest = propertyInterest && propertyInterest.trim() !== '' ? propertyInterest : null;
+        const safeBudgetRange = budgetRange && budgetRange.trim() !== '' ? budgetRange : null;
 
-        // Generate client ID
+        const clientId = incomingClientId || ('CLT' + Date.now().toString().slice(-6));
 
-        const clientId = 'CLIENT' + Date.now();
-
-
-
-        // Insert client
-
-        const [result] = await db.execute(`
-
+        // Insert client using ACTUAL schema columns (full_name, phone_number, email_address, physical_address)
+        const result = await db.execute(`
             INSERT INTO clients (
-
-                client_name, client_type, company_name, phone, email, address,
-
-                nida_number, tin_number, property_interest, budget_range,
-
-                additional_notes, registered_by, registration_date, status
-
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, CURDATE(), 'Active')
-
+                client_id, client_type, full_name, company_name, phone_number,
+                email_address, nida_number, tin_number, physical_address,
+                property_interest, budget_range, additional_notes, registered_by, status
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'active')
         `, [
-
-            name, clientType || 'individual', companyName || '', phone,
-
-            email, address || '', 'NIDA' + Date.now(), tin || '',
-
-            industry || '', budgetRange || '', notes || '', 'Admin Assistant'
-
+            clientId,
+            safeClientType,
+            name,
+            companyName || null,
+            phone,
+            email,
+            nida,
+            tin || null,
+            address,
+            safePropertyInterest,
+            safeBudgetRange,
+            notes || null,
+            registeredBy || 'system'
         ]);
 
-
+        const insertId = (result && result.insertId) || (Array.isArray(result) && result[0] && result[0].insertId);
 
         res.status(201).json({
-
             success: true,
-
             message: 'Client registered successfully',
-
-            clientId: result.insertId,
-
-            id: result.insertId
-
+            clientId: clientId,
+            id: insertId || clientId
         });
-
-
 
     } catch (error) {
-
         console.error('Error creating client:', error);
-
         res.status(500).json({
-
             success: false,
-
             message: 'Failed to register client',
-
             error: error.message
-
         });
-
     }
-
 });
 
 
 
 app.get('/api/clients', async (req, res) => {
-
     try {
-
         const db = require('./database/config/database');
-
-        const [clients] = await db.execute(`
-
-            SELECT * FROM clients 
-
+        // db.execute already returns the rows array — do NOT destructure again
+        const rows = await db.execute(`
+            SELECT * FROM clients
             ORDER BY created_at DESC
-
         `);
-
-
+        const clients = Array.isArray(rows) ? rows : [];
 
         res.status(200).json({
-
             success: true,
-
-            clients: clients
-
+            clients: clients,
+            total: clients.length
         });
-
-
 
     } catch (error) {
-
         console.error('Error fetching clients:', error);
-
         res.status(500).json({
-
             success: false,
-
             message: 'Failed to fetch clients',
-
             error: error.message
-
         });
-
     }
-
 });
 
 
