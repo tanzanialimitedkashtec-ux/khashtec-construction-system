@@ -87408,8 +87408,6 @@ function renderOfficePortal(officePortalUsers, documents, policies, contracts) {
 
                         <th>Contact</th>
 
-                        <th style="width: 80px;">Actions</th>
-
                     </tr>
 
                 </thead>
@@ -87455,20 +87453,6 @@ function renderOfficePortal(officePortalUsers, documents, policies, contracts) {
                                     <div class="contact-item-compact">📧 ${user.email}</div>
 
                                     <div class="contact-item-compact">📱 ${user.phone}</div>
-
-                                </div>
-
-                            </td>
-
-                            <td>
-
-                                <div class="personnel-actions-compact">
-
-                                    <button class="action-btn-compact view" onclick="viewPersonnelDetails('${user.id}')" title="View Details">👁️</button>
-
-                                    <button class="action-btn-compact edit" onclick="editPersonnel('${user.id}')" title="Edit Personnel">✏️</button>
-
-                                    <button class="action-btn-compact delete" onclick="deletePersonnel('${user.id}')" title="Delete Personnel">🗑️</button>
 
                                 </div>
 
