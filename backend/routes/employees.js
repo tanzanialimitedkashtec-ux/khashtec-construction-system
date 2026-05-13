@@ -381,12 +381,15 @@ router.post('/', upload.any(), async (req, res) => {
             
             const employeeDbId = Array.isArray(employeeResult) ? employeeResult[0].insertId : employeeResult.insertId;
             
-            // Get profile image path if file was uploaded
+            // Get profile image path if file was uploaded.
+            // IMPORTANT: store a web-accessible relative URL (e.g. /uploads/<file>),
+            // NOT multer's absolute filesystem path (e.g. /app/uploads/<file>) which
+            // leaks the container path and produces 404s when used as a URL.
             let profileImagePath = '';
             if (req.files && req.files.length > 0) {
                 const profileFile = req.files.find(f => f.fieldname === 'profileImage');
                 if (profileFile) {
-                    profileImagePath = profileFile.path;
+                    profileImagePath = `/uploads/${profileFile.filename}`;
                 }
             }
             

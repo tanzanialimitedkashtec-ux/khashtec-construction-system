@@ -358,68 +358,72 @@ router.get('/', async (req, res) => {
 
 // Get document by ID
 router.get('/:id', async (req, res) => {
+    const docId = req.params.id;
     try {
-        const docId = req.params.id;
-        
-        // Try database first, fallback to mock data
+        const db = require('../../database/config/database');
+
+        // 1) Try the `documents` table first (this is where the upload endpoint
+        //    stores the record and returns its insertId to the frontend).
         try {
-            const db = require('../../database/config/database');
+            const [docRows] = await db.execute(
+                'SELECT * FROM documents WHERE id = ?', [docId]
+            );
+            if (docRows && docRows.length > 0) {
+                const d = docRows[0];
+                return res.json({
+                    id: d.id,
+                    title: d.title,
+                    description: stripHtmlTags(d.description || ''),
+                    category: d.category || 'Other',
+                    type: d.file_type || 'PDF',
+                    uploadedBy: d.uploaded_by,
+                    uploadedDate: d.created_at ? new Date(d.created_at).toISOString().split('T')[0] : null,
+                    status: d.status || 'Pending',
+                    fileName: d.file_name,
+                    filePath: `/uploads/documents/${d.file_name}`,
+                    size: d.file_size || 0,
+                    department: d.department || 'admin',
+                    source: 'documents_table'
+                });
+            }
+        } catch (docTableErr) {
+            console.warn('⚠️ documents table lookup failed, will try admin_work:', docTableErr.message);
+        }
+
+        // 2) Fallback: try admin_work (legacy / work-item documents)
+        try {
             const [adminWorkItems] = await db.execute(
                 'SELECT * FROM admin_work WHERE id = ?', [docId]
             );
-            
-            if (adminWorkItems.length === 0) {
-                return res.status(404).json({
-                    error: 'Document not found'
+            if (adminWorkItems && adminWorkItems.length > 0) {
+                const item = adminWorkItems[0];
+                return res.json({
+                    id: item.id,
+                    title: item.work_title,
+                    description: stripHtmlTags(item.work_description || ''),
+                    category: item.work_type || 'general',
+                    type: 'PDF',
+                    uploadedBy: item.assigned_to || 1,
+                    uploadedDate: item.submitted_date,
+                    status: item.status || 'active',
+                    fileName: `${(item.work_title || 'document').replace(/[^a-zA-Z0-9]/g, '_')}.pdf`,
+                    filePath: `/uploads/documents/${item.id}`,
+                    department: item.department_code || 'admin',
+                    source: 'admin_work_table'
                 });
             }
-            
-            const item = adminWorkItems[0];
-            
-            // Transform admin_work data to document format
-            const document = {
-                id: item.id,
-                title: item.work_title,
-                description: stripHtmlTags(item.work_description),
-                category: item.work_type || 'general',
-                type: 'PDF',
-                uploadedBy: item.assigned_to || 1,
-                uploadedDate: item.submitted_date,
-                status: item.status || 'active',
-                fileName: `${item.work_title.replace(/[^a-zA-Z0-9]/g, '_')}.pdf`,
-                filePath: `/uploads/documents/${item.id}`,
-            department: item.department_code || 'admin'
-        };
-        
-        res.json(document);
-            
-        } catch (dbError) {
-            console.error('Database error, using fallback document data:', dbError.message);
-            
-            // Fallback mock document data
-            const mockDocument = {
-                id: parseInt(docId) || 1,
-                title: 'Sample Document',
-                description: 'This is a sample document for demonstration purposes',
-                category: 'general',
-                type: 'PDF',
-                uploadedBy: 1,
-                uploadedDate: new Date().toISOString().split('T')[0],
-                status: 'active',
-                fileName: 'sample_document.pdf',
-                filePath: '/uploads/documents/sample',
-                department: 'admin',
-                fallback: true
-            };
-            
-            res.json(mockDocument);
+        } catch (awErr) {
+            console.warn('⚠️ admin_work lookup failed:', awErr.message);
         }
-        
+
+        // 3) Genuinely not found in either table
+        return res.status(404).json({ error: 'Document not found', id: docId });
+
     } catch (error) {
         console.error('Error fetching document:', error);
-        res.status(500).json({ 
+        res.status(500).json({
             error: 'Failed to fetch document',
-            details: error.message 
+            details: error.message
         });
     }
 });

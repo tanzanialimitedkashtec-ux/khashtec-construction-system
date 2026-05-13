@@ -500,10 +500,11 @@ router.post('/', upload.fields([
     const finalPhoneNumber = phone || phoneNumber;
     const finalTemporaryPassword = password || temporaryPassword;
     
-    // Handle uploaded files
-    const profilePicturePath = req.files?.workerProfile?.[0]?.path || null;
-    const idDocumentPath = req.files?.workerID?.[0]?.path || null;
-    const contractDocumentPath = req.files?.workerContract?.[0]?.path || null;
+    // Handle uploaded files - store web-accessible URL paths, not absolute container paths
+    const toUrl = (f) => f ? `/uploads/${f.filename}` : null;
+    const profilePicturePath = toUrl(req.files?.workerProfile?.[0]);
+    const idDocumentPath = toUrl(req.files?.workerID?.[0]);
+    const contractDocumentPath = toUrl(req.files?.workerContract?.[0]);
     
     console.log('📁 Uploaded files:', {
         profilePicture: profilePicturePath,
