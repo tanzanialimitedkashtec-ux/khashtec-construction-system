@@ -96553,6 +96553,150 @@ function showCreateProjectForm() {
     `);
 }
 
+async function loadLeadershipRecords() {
+    const tbody = document.getElementById('leadershipRecordsTbody');
+    if (!tbody) {
+        return;
+    }
+
+    tbody.innerHTML = `
+        <tr>
+            <td colspan="19" style="text-align: center; padding: 10px;">Loading...</td>
+        </tr>
+    `;
+
+    try {
+        const baseUrl = window.location.origin;
+        const authToken = sessionManager.getAuthToken();
+        const headers = {};
+        if (authToken) {
+            headers['Authorization'] = `Bearer ${authToken}`;
+        }
+
+        const response = await fetch(`${baseUrl}/api/leadership/leadership`, {
+            method: 'GET',
+            headers: headers
+        });
+
+        if (!response.ok) {
+            tbody.innerHTML = `
+                <tr>
+                    <td colspan="19" style="text-align: center; padding: 10px; color: #dc3545;">Failed to load records (HTTP ${response.status})</td>
+                </tr>
+            `;
+            return;
+        }
+
+        const payload = await response.json();
+        let records = payload?.data || payload?.leadership || payload?.records || payload;
+        if (!Array.isArray(records)) {
+            records = records ? [records] : [];
+        }
+
+        tbody.innerHTML = '';
+
+        if (records.length === 0) {
+            tbody.innerHTML = `
+                <tr>
+                    <td colspan="19" style="text-align: center; padding: 10px;">No leadership records found.</td>
+                </tr>
+            `;
+            return;
+        }
+
+        const formatDate = (value) => {
+            if (!value) {
+                return '';
+            }
+            const d = new Date(value);
+            if (!Number.isNaN(d.getTime())) {
+                return d.toISOString().split('T')[0];
+            }
+            return String(value).split('T')[0];
+        };
+
+        const parseJsonArray = (value) => {
+            if (Array.isArray(value)) {
+                return value;
+            }
+            if (typeof value === 'string' && value.trim()) {
+                try {
+                    const parsed = JSON.parse(value);
+                    return Array.isArray(parsed) ? parsed : [];
+                } catch (e) {
+                    return [];
+                }
+            }
+            return [];
+        };
+
+        const prettifyListItem = (value) => {
+            if (value == null) {
+                return '';
+            }
+            const s = String(value);
+            return s
+                .split('-')
+                .filter(Boolean)
+                .map(w => w.charAt(0).toUpperCase() + w.slice(1))
+                .join(' ');
+        };
+
+        for (const record of records) {
+            const tr = document.createElement('tr');
+            tr.style.borderBottom = '1px solid #dee2e6';
+
+            const addCell = (value) => {
+                const td = document.createElement('td');
+                td.style.padding = '8px';
+                td.textContent = value == null ? '' : String(value);
+                tr.appendChild(td);
+            };
+
+            const responsibilities = parseJsonArray(record.responsibilities)
+                .map(prettifyListItem)
+                .join(', ');
+
+            addCell(record.position);
+            addCell(record.department);
+            addCell(record.current_holder || record.currentHolder);
+            addCell(record.reports_to || record.reportsTo);
+            addCell(record.leadership_level || record.leadershipLevel);
+            addCell(formatDate(record.appointment_date || record.appointmentDate));
+            addCell(responsibilities);
+            addCell(record.strategic_thinking || record.strategicThinking || '');
+            addCell(record.decision_making || record.decisionMaking || '');
+            addCell(record.communication_skills || record.communicationSkills || '');
+            addCell(record.team_leadership || record.teamLeadership || '');
+            addCell(record.succession_status || record.successionStatus || '');
+            addCell(record.potential_successors || record.potentialSuccessors || '');
+            addCell(record.development_timeline || record.developmentTimeline || '');
+            addCell(record.kpis || '');
+            addCell(record.review_frequency || record.reviewFrequency || '');
+            addCell(formatDate(record.last_review_date || record.lastReviewDate));
+            addCell(record.notes || '');
+
+            const statusTd = document.createElement('td');
+            statusTd.style.padding = '8px';
+            const statusValue = (record.status || 'unknown');
+            const statusSpan = document.createElement('span');
+            statusSpan.className = `status-badge status-${String(statusValue).toLowerCase().replace(/\s+/g, '-')}`;
+            statusSpan.textContent = String(statusValue);
+            statusTd.appendChild(statusSpan);
+            tr.appendChild(statusTd);
+
+            tbody.appendChild(tr);
+        }
+    } catch (error) {
+        console.error('❌ Error loading leadership records:', error);
+        tbody.innerHTML = `
+            <tr>
+                <td colspan="19" style="text-align: center; padding: 10px; color: #dc3545;">Failed to load records: ${error.message}</td>
+            </tr>
+        `;
+    }
+}
+
 // Update project fields based on project type
 function updateProjectFields() {
     const projectType = document.getElementById('projectType').value;
@@ -97444,6 +97588,45 @@ function showLeadershipForm() {
                     <button type="button" onclick="clearLeadershipForm()" class="action" style="background: #ffc107;">🔄 Clear Form</button>
                 </div>
             </form>
+
+            <div style="margin-top: 25px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                    <h4 style="margin: 0;">📋 Recorded Leadership</h4>
+                    <button type="button" class="action" style="background: #0b3d91;" onclick="loadLeadershipRecords()">🔄 Refresh</button>
+                </div>
+                <div style="overflow: auto; border: 1px solid #dee2e6; border-radius: 5px;">
+                    <table id="leadershipRecordsTable" style="width: 100%; border-collapse: collapse;">
+                        <thead>
+                            <tr style="background: #f8f9fa;">
+                                <th style="text-align: left; padding: 8px; border-bottom: 1px solid #dee2e6;">Position</th>
+                                <th style="text-align: left; padding: 8px; border-bottom: 1px solid #dee2e6;">Department</th>
+                                <th style="text-align: left; padding: 8px; border-bottom: 1px solid #dee2e6;">Current Holder</th>
+                                <th style="text-align: left; padding: 8px; border-bottom: 1px solid #dee2e6;">Reports To</th>
+                                <th style="text-align: left; padding: 8px; border-bottom: 1px solid #dee2e6;">Leadership Level</th>
+                                <th style="text-align: left; padding: 8px; border-bottom: 1px solid #dee2e6;">Appointment Date</th>
+                                <th style="text-align: left; padding: 8px; border-bottom: 1px solid #dee2e6;">Responsibilities</th>
+                                <th style="text-align: left; padding: 8px; border-bottom: 1px solid #dee2e6;">Strategic Thinking</th>
+                                <th style="text-align: left; padding: 8px; border-bottom: 1px solid #dee2e6;">Decision Making</th>
+                                <th style="text-align: left; padding: 8px; border-bottom: 1px solid #dee2e6;">Communication Skills</th>
+                                <th style="text-align: left; padding: 8px; border-bottom: 1px solid #dee2e6;">Team Leadership</th>
+                                <th style="text-align: left; padding: 8px; border-bottom: 1px solid #dee2e6;">Succession Status</th>
+                                <th style="text-align: left; padding: 8px; border-bottom: 1px solid #dee2e6;">Potential Successors</th>
+                                <th style="text-align: left; padding: 8px; border-bottom: 1px solid #dee2e6;">Development Timeline</th>
+                                <th style="text-align: left; padding: 8px; border-bottom: 1px solid #dee2e6;">KPIs</th>
+                                <th style="text-align: left; padding: 8px; border-bottom: 1px solid #dee2e6;">Review Frequency</th>
+                                <th style="text-align: left; padding: 8px; border-bottom: 1px solid #dee2e6;">Last Review Date</th>
+                                <th style="text-align: left; padding: 8px; border-bottom: 1px solid #dee2e6;">Notes</th>
+                                <th style="text-align: left; padding: 8px; border-bottom: 1px solid #dee2e6;">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="leadershipRecordsTbody">
+                            <tr>
+                                <td colspan="19" style="text-align: center; padding: 10px;">Loading...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
         </div>
         
         <style>
@@ -97510,6 +97693,8 @@ function showLeadershipForm() {
             }
         </style>
     `);
+
+    setTimeout(loadLeadershipRecords, 100);
 }
 
 // Show Mission & Vision Form
@@ -98144,7 +98329,7 @@ async function submitLeadershipForm(event) {
             
             // Reset form and return to dashboard
             document.getElementById('leadershipForm').reset();
-            showContent(''); // Return to dashboard
+            await loadLeadershipRecords();
         } else {
             customAlert(`Error: ${result.error || 'Unknown error occurred'}`, 'Save Error', 'error');
         }
