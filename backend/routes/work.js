@@ -2645,8 +2645,8 @@ router.post('/hse', async (req, res) => {
         });
         
     } catch (error) {
-        console.error('❌ Error creating HSE work item:', error);
-        console.error('❌ Error details:', {
+        console.error(' Error creating HSE work item:', error);
+        console.error(' Error details:', {
             message: error.message,
             stack: error.stack,
             name: error.name
@@ -2660,15 +2660,38 @@ router.post('/hse', async (req, res) => {
     }
 });
 
-// Create new work item
-router.post('/:department', async (req, res) => {
+// Root-level POST route for HSE work items (handles safety policy submissions when mounted via server.js)
+// This catches POST requests to /api/hse when mounted through server.js
+router.post('/', async (req, res, next) => {
     try {
-        console.log('🔍 Work request received');
-        console.log('📋 Request headers:', req.headers);
-        console.log('🌐 Request URL:', req.url);
-        console.log('📝 Request method:', req.method);
-        console.log('📂 Department parameter:', req.params.department);
-        console.log('📊 Request body:', req.body);
+        console.log(' Root-level HSE POST request received');
+        console.log(' Request body:', req.body);
+
+    } catch (error) {
+        console.error(' Error creating HSE work item:', error);
+        console.error(' Error details:', {
+            message: error.message,
+            stack: error.stack,
+            name: error.name
+        });
+
+        res.status(500).json({
+            success: false,
+            error: 'Failed to create HSE work item',
+            details: error.message
+        });
+    }
+});
+
+// Create new work item
+router.post('/:department', async (req, res, next) => {
+    try {
+        console.log(' Work request received');
+        console.log(' Request headers:', req.headers);
+        console.log(' Request URL:', req.url);
+        console.log(' Request method:', req.method);
+        console.log(' Department parameter:', req.params.department);
+        console.log(' Request body:', req.body);
         
         // Fix department detection
         let department = req.params.department;
@@ -2696,6 +2719,12 @@ router.post('/:department', async (req, res) => {
         
         console.log('✅ Determined department:', department);
         
+        const validDepartments = ['hr', 'hse', 'finance', 'projects', 'realestate', 'admin'];
+        if (!validDepartments.includes(department)) {
+            console.log('➡️ Passing request to a more specific route:', department);
+            return next();
+        }
+        
         const {
             work_type,
             work_title,
@@ -2704,14 +2733,14 @@ router.post('/:department', async (req, res) => {
             due_date,
             assigned_to,
             submitted_by,
-            // Department-specific fields
-            amount, // Finance
-            incident_type, severity, location, // HSE
-            employee_name, employee_email, // HR
-            project_name, client_name, // Project
-            property_name, property_type, // Real Estate
-            affected_systems, // Admin
-            // Additional fields
+            amount,
+            vendor_name,
+            invoice_number,
+            incident_type, severity, location,
+            employee_name, employee_email,
+            project_name, client_name,
+            property_name, property_type,
+            affected_systems,
             status = 'pending'
         } = req.body;
         
@@ -2735,7 +2764,6 @@ router.post('/:department', async (req, res) => {
             }
         });
         
-        // Validate required fields
         if (!work_type || !work_title || !work_description) {
             console.log('❌ Validation failed - missing required fields');
             return res.status(400).json({ 
@@ -2744,16 +2772,6 @@ router.post('/:department', async (req, res) => {
             });
         }
         
-        const validDepartments = ['hr', 'hse', 'finance', 'projects', 'realestate', 'admin'];
-        if (!validDepartments.includes(department)) {
-            console.log('❌ Invalid department:', department);
-            return res.status(400).json({ 
-                error: 'Invalid department',
-                department
-            });
-        }
-        
-        // Map frontend work types to database ENUM values
         const getMappedWorkType = (department, workType) => {
             const mappings = {
                 'hr': {
@@ -2762,7 +2780,7 @@ router.post('/:department', async (req, res) => {
                     'Worker Account Creation': 'Worker Account Creation',
                     'Project Assignment': 'Project Assignment',
                     'Leave Management': 'Leave Management',
-                    'Leave Request': 'Leave Management', // Added mapping for Leave Request
+                    'Leave Request': 'Leave Management',
                     'Contract Management': 'Contract Management',
                     'Policy Management': 'Policy Management',
                     'Senior Staff Hiring': 'Senior Staff Hiring',
@@ -2827,9 +2845,6 @@ router.post('/:department', async (req, res) => {
         const mapped_work_type = getMappedWorkType(department, work_type);
         console.log('🔄 Mapped work type:', work_type, '->', mapped_work_type);
         console.log('🔍 Department:', department);
-        console.log('🔍 Original work_type length:', work_type ? work_type.length : 'undefined');
-        console.log('🔍 Mapped work_type length:', mapped_work_type ? mapped_work_type.length : 'undefined');
-        console.log('🔍 Mapped work_type chars:', mapped_work_type ? mapped_work_type.split('').map(c => `${c}(${c.charCodeAt(0)})`).join(' ') : 'undefined');
         
         console.log('✅ Validation passed, proceeding to database insertion...');
         
