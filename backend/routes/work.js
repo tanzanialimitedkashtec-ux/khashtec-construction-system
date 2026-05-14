@@ -3524,6 +3524,110 @@ router.delete('/assignments/:id', async (req, res) => {
     }
 });
 
+const workforceProjectNames = {
+    prj001: 'Port Modernization Phase 1',
+    prj002: 'Warehouse Construction',
+    prj003: 'Road Infrastructure'
+};
+
+function getFallbackWorkforceProjectName(projectValue) {
+    const normalizedProject = String(projectValue || '').trim().toLowerCase();
+    return workforceProjectNames[normalizedProject] || projectValue;
+}
+
+async function getWorkforceRequestSchema() {
+    const [columns] = await db.execute('SHOW COLUMNS FROM workforce_requests');
+    return new Map((columns || []).map(column => [column.Field, String(column.Type || '').toLowerCase()]));
+}
+
+async function resolveWorkforceProject(projectValue) {
+    const normalizedProject = String(projectValue || '').trim();
+    const projectNumberMatch = normalizedProject.match(/(\d+)/);
+    const numericProjectId = /^\d+$/.test(normalizedProject)
+        ? parseInt(normalizedProject, 10)
+        : (projectNumberMatch ? parseInt(projectNumberMatch[1], 10) : null);
+
+    try {
+        const [projectColumns] = await db.execute('SHOW COLUMNS FROM projects');
+        const projectSchema = new Set((projectColumns || []).map(column => column.Field));
+        const selectableColumns = ['id', 'name'];
+        const whereClauses = [];
+        const queryValues = [];
+
+        if (projectSchema.has('project_code')) {
+            selectableColumns.push('project_code');
+            whereClauses.push('project_code = ?');
+            queryValues.push(normalizedProject);
+        }
+
+        if (projectSchema.has('code')) {
+            selectableColumns.push('code');
+            whereClauses.push('code = ?');
+            queryValues.push(normalizedProject);
+        }
+
+        if (projectSchema.has('name')) {
+            whereClauses.push('name = ?');
+            queryValues.push(normalizedProject);
+        }
+
+        if (projectSchema.has('id')) {
+            whereClauses.unshift('id = ?');
+            queryValues.unshift(numericProjectId || 0);
+        }
+
+        const [rows] = await db.execute(`
+            SELECT ${selectableColumns.join(', ')}
+            FROM projects
+            WHERE ${whereClauses.join(' OR ')}
+            LIMIT 1
+        `, queryValues);
+
+        if (rows && rows.length > 0) {
+            return rows[0];
+        }
+    } catch (error) {
+        console.error('⚠️ Error resolving workforce project:', error.message);
+    }
+
+    return {
+        id: numericProjectId,
+        name: getFallbackWorkforceProjectName(normalizedProject),
+        project_code: normalizedProject,
+        code: normalizedProject
+    };
+}
+
+function normalizeWorkforceRequestRecord(record) {
+    let projectLabel = record.project || record.project_name;
+
+    if (!projectLabel && record.project_id != null) {
+        const projectIdValue = String(record.project_id).trim();
+        projectLabel = /^\d+$/.test(projectIdValue)
+            ? getFallbackWorkforceProjectName(`prj${projectIdValue.padStart(3, '0')}`)
+            : getFallbackWorkforceProjectName(projectIdValue);
+    }
+
+    const submittedDate = record.submitted_date || record.created_at || record.updated_at || null;
+
+    return {
+        ...record,
+        requestId: record.request_id || String(record.id || ''),
+        project: projectLabel || 'Unknown Project',
+        requestType: record.request_type || record.requestType || '',
+        workersNeeded: record.workers_needed ?? record.workersNeeded ?? 0,
+        jobCategories: record.job_categories ?? record.jobCategories ?? [],
+        duration: record.duration || '',
+        startDate: record.start_date || record.startDate || null,
+        endDate: record.end_date || record.endDate || null,
+        submittedDate,
+        justification: record.justification || '',
+        specialRequirements: record.special_requirements || record.specialRequirements || '',
+        submittedBy: record.submitted_by || record.requested_by || record.submittedBy || '',
+        status: record.status || 'pending'
+    };
+}
+
 // Workforce Requests Routes
 // Get all workforce requests
 router.get('/workforce-requests', async (req, res) => {
@@ -3533,11 +3637,16 @@ router.get('/workforce-requests', async (req, res) => {
         let workforceRequests = [];
         
         try {
+            const workforceSchema = await getWorkforceRequestSchema();
+            const orderField = workforceSchema.has('submitted_date')
+                ? 'submitted_date'
+                : (workforceSchema.has('created_at') ? 'created_at' : 'id');
+
             const [dbRequests] = await db.execute(`
                 SELECT * FROM workforce_requests 
-                ORDER BY submitted_date DESC
+                ORDER BY ${orderField} DESC
             `);
-            workforceRequests = dbRequests;
+            workforceRequests = dbRequests.map(normalizeWorkforceRequestRecord);
             console.log(`📊 Found ${workforceRequests.length} workforce requests from database`);
             
             // If fewer than 3 records, add sample data for demonstration
@@ -3583,7 +3692,7 @@ router.get('/workforce-requests', async (req, res) => {
                 // Add sample data that doesn't conflict with real IDs
                 const additionalSampleData = sampleRequests.filter(sample => 
                     !workforceRequests.some(real => real.id === sample.id)
-                );
+                ).map(normalizeWorkforceRequestRecord);
                 workforceRequests = [...workforceRequests, ...additionalSampleData];
                 console.log(`📊 Total workforce requests after adding sample data: ${workforceRequests.length}`);
             }
@@ -3738,6 +3847,9 @@ router.post('/workforce-requests', async (req, res) => {
         // Generate unique request ID
         const requestId = `WFR-${Date.now().toString().slice(-6)}`;
         const id = `WFR-${new Date().getFullYear()}-${Date.now().toString().slice(-6)}`;
+        const normalizedJobCategories = JSON.stringify(Array.isArray(jobCategories) ? jobCategories : [jobCategories]);
+        const resolvedProject = await resolveWorkforceProject(project);
+        const projectDisplayName = resolvedProject.name || getFallbackWorkforceProjectName(project);
         
         // Ensure table exists
         try {
@@ -3766,46 +3878,84 @@ router.post('/workforce-requests', async (req, res) => {
         }
         
         // Insert workforce request
+        const workforceSchema = await getWorkforceRequestSchema();
+        const insertColumns = [];
+        const insertValues = [];
+        const idColumnType = workforceSchema.get('id') || '';
+
+        const addColumnValue = (columnName, value) => {
+            if (workforceSchema.has(columnName)) {
+                insertColumns.push(columnName);
+                insertValues.push(value);
+            }
+        };
+
+        if (workforceSchema.has('id') && !idColumnType.includes('int')) {
+            addColumnValue('id', id);
+        }
+
+        addColumnValue('request_id', requestId);
+        addColumnValue('project', projectDisplayName);
+        addColumnValue('project_name', projectDisplayName);
+
+        if (workforceSchema.has('project_id')) {
+            const projectIdColumnType = workforceSchema.get('project_id') || '';
+            const resolvedProjectId = projectIdColumnType.includes('int')
+                ? (resolvedProject.id || null)
+                : String(project);
+            addColumnValue('project_id', resolvedProjectId);
+        }
+
+        addColumnValue('request_type', requestType);
+        addColumnValue('workers_needed', parseInt(workersNeeded, 10));
+        addColumnValue('job_categories', normalizedJobCategories);
+        addColumnValue('duration', duration);
+        addColumnValue('start_date', startDate);
+        addColumnValue('end_date', endDate || null);
+        addColumnValue('submitted_date', new Date().toISOString().split('T')[0]);
+        addColumnValue('status', 'pending');
+        addColumnValue('justification', justification);
+        addColumnValue('special_requirements', specialRequirements || null);
+        addColumnValue('submitted_by', submittedBy);
+        addColumnValue('requested_by', submittedBy);
+
+        if (insertColumns.length === 0) {
+            throw new Error('No compatible workforce_requests columns were found for insert');
+        }
+
         const queryResult = await db.execute(`
             INSERT INTO workforce_requests (
-                id, request_id, project, request_type, workers_needed, job_categories,
-                duration, start_date, end_date, submitted_date, status, justification,
-                special_requirements, submitted_by
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, CURDATE(), ?, ?, ?, ?)
-        `, [
-            id,
-            requestId,
-            project,
-            requestType,
-            workersNeeded,
-            JSON.stringify(Array.isArray(jobCategories) ? jobCategories : [jobCategories]),
-            duration,
-            startDate,
-            endDate || null,
-            'pending',
-            justification,
-            specialRequirements || null,
-            submittedBy
-        ]);
+                ${insertColumns.join(', ')}
+            ) VALUES (
+                ${insertColumns.map(() => '?').join(', ')}
+            )
+        `, insertValues);
         
         console.log('✅ Workforce request created successfully:', requestId);
         
         res.status(201).json({
             message: 'Workforce request created successfully',
             requestId: requestId,
-            id: id,
-            data: {
-                project,
-                requestType,
-                workersNeeded,
-                jobCategories,
+            id: workforceSchema.has('id') && !idColumnType.includes('int') ? id : ((queryResult[0] || queryResult).insertId || id),
+            data: normalizeWorkforceRequestRecord({
+                id: workforceSchema.has('id') && !idColumnType.includes('int') ? id : ((queryResult[0] || queryResult).insertId || id),
+                request_id: requestId,
+                project: projectDisplayName,
+                project_name: projectDisplayName,
+                project_id: resolvedProject.id || project,
+                request_type: requestType,
+                workers_needed: parseInt(workersNeeded, 10),
+                job_categories: normalizedJobCategories,
                 duration,
-                startDate,
-                endDate,
+                start_date: startDate,
+                end_date: endDate || null,
+                submitted_date: new Date().toISOString().split('T')[0],
                 justification,
-                specialRequirements,
+                special_requirements: specialRequirements || null,
+                submitted_by: submittedBy,
+                requested_by: submittedBy,
                 status: 'pending'
-            }
+            })
         });
         
     } catch (error) {
