@@ -119,7 +119,7 @@ router.get('/hse', async (req, res) => {
 
 // Root-level POST route for HSE work items (handles safety policy submissions when mounted via server.js)
 // This catches POST requests to /api/hse when mounted through server.js
-router.post('/', async (req, res) => {
+router.post('/', async (req, res, next) => {
     try {
         console.log('🔍 Root-level HSE POST request received');
         console.log('📊 Request body:', req.body);
@@ -1732,7 +1732,7 @@ router.get('/assignments-test', async (req, res) => {
 });
 
 // Direct work assignment endpoint for HR department
-router.post('/', async (req, res) => {
+router.post('/', async (req, res, next) => {
     try {
         console.log('🔍 Direct HR work assignment request received');
         console.log('📊 Request body:', req.body);
@@ -4360,3 +4360,4 @@ router.post('/finance/accountant', async (req, res) => {
 
 
 module.exports = router;
+
