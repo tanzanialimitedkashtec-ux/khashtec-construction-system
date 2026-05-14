@@ -100,6 +100,8 @@ const accountantRoutes = require('./backend/routes/accountant');
 
 const leadershipRoutes = require('./backend/routes/leadership');
 
+const missionVisionRoutes = require('./backend/routes/mission-vision');
+
 
 
 const app = express();
@@ -986,6 +988,14 @@ app.use('/api/accountant', asyncHandler(async (req, res, next) => {
 app.use('/api/leadership', asyncHandler(async (req, res, next) => {
 
     return leadershipRoutes(req, res, next);
+
+}));
+
+
+
+app.use('/api/mission-vision', asyncHandler(async (req, res, next) => {
+
+    return missionVisionRoutes(req, res, next);
 
 }));
 

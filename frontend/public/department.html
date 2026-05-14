@@ -96553,8 +96553,6 @@ function showCreateProjectForm() {
         }
         </style>
     `);
-
-    setTimeout(loadMissionVisionRecords, 100);
 }
 
 async function loadMissionVisionRecords() {
@@ -98117,6 +98115,8 @@ function showMissionVisionForm() {
             }
         </style>
     `);
+
+    setTimeout(loadMissionVisionRecords, 100);
 }
 
 // Show Long-Term Growth Strategy Form
@@ -98617,7 +98617,7 @@ async function submitMissionVisionForm(event) {
             console.error('❌ Response Text:', response.statusText);
             
             // Only redirect on actual authentication failures with valid tokens
-            if (response.status === 401 && authToken && errorData.error && errorData.error.toLowerCase().includes('unauthorized')) {
+            if (response.status === 401 && token && errorData.error && errorData.error.toLowerCase().includes('unauthorized')) {
                 customAlert('Session expired. Please login again.', 'Authentication Error', 'error');
                 // Redirect to login after a short delay
                 setTimeout(() => {
