@@ -60444,11 +60444,11 @@ function expenseControl(){
 
             <div class="expense-tabs">
 
-                <button class="tab-btn active" onclick="showExpenseTab('pending')">Pending Expenses</button>
+                <button class="tab-btn active" onclick="showExpenseTab('pending', event)">Pending Expenses</button>
 
-                <button class="tab-btn" onclick="showExpenseTab('approved')">Approved Expenses</button>
+                <button class="tab-btn" onclick="showExpenseTab('approved', event)">Approved Expenses</button>
 
-                <button class="tab-btn" onclick="showExpenseTab('new')">New Expense</button>
+                <button class="tab-btn" onclick="showExpenseTab('new', event)">New Expense</button>
 
             </div>
 
@@ -60652,13 +60652,13 @@ function financialReporting(){
 
             <div class="report-tabs">
 
-                <button class="tab-btn active" onclick="showFinanceReportTab('income')">Income Statement</button>
+                <button class="tab-btn active" onclick="showFinanceReportTab('income', event)">Income Statement</button>
 
-                <button class="tab-btn" onclick="showFinanceReportTab('balance')">Balance Sheet</button>
+                <button class="tab-btn" onclick="showFinanceReportTab('balance', event)">Balance Sheet</button>
 
-                <button class="tab-btn" onclick="showFinanceReportTab('cashflow')">Cash Flow</button>
+                <button class="tab-btn" onclick="showFinanceReportTab('cashflow', event)">Cash Flow</button>
 
-                <button class="tab-btn" onclick="showFinanceReportTab('budget')">Budget vs Actual</button>
+                <button class="tab-btn" onclick="showFinanceReportTab('budget', event)">Budget vs Actual</button>
 
             </div>
 
@@ -65997,15 +65997,31 @@ function showPayrollTab(tabName) {
 
 
 
-function showExpenseTab(tabName) {
+function showExpenseTab(tabName, evt) {
 
     // Hide all expense tabs
 
-    document.getElementById('pendingExpenses').classList.add('hidden');
+    const tabMapping = {
 
-    document.getElementById('approvedExpenses').classList.add('hidden');
+        pending: 'pendingExpenses',
 
-    document.getElementById('newExpense').classList.add('hidden');
+        approved: 'approvedExpenses',
+
+        new: 'newExpense'
+
+    };
+
+    ['pendingExpenses', 'approvedExpenses', 'newExpense'].forEach(tabId => {
+
+        const element = document.getElementById(tabId);
+
+        if (element) {
+
+            element.classList.add('hidden');
+
+        }
+
+    });
 
     
 
@@ -66017,39 +66033,91 @@ function showExpenseTab(tabName) {
 
     // Show selected tab
 
-    document.getElementById(tabName).classList.remove('hidden');
+    const targetTabId = tabMapping[tabName] || tabName;
 
-    event.target.classList.add('active');
+    const targetElement = document.getElementById(targetTabId);
+
+    if (targetElement) {
+
+        targetElement.classList.remove('hidden');
+
+    } else {
+
+        console.error('❌ Expense tab content not found:', targetTabId);
+
+    }
+
+    const clickEvent = evt || (typeof event !== 'undefined' ? event : null);
+
+    if (clickEvent && clickEvent.target) {
+
+        clickEvent.target.classList.add('active');
+
+    }
 
 }
 
 
 
-function showFinanceReportTab(tabName) {
+function showFinanceReportTab(tabName, evt) {
 
     // Hide all report tabs
 
-    document.getElementById('incomeStatement').classList.add('hidden');
+    const tabMapping = {
 
-    document.getElementById('balanceSheet').classList.add('hidden');
+        income: 'incomeStatement',
 
-    document.getElementById('cashFlow').classList.add('hidden');
+        balance: 'balanceSheet',
 
-    document.getElementById('budgetActual').classList.add('hidden');
+        cashflow: 'cashFlow',
+
+        budget: 'budgetActual'
+
+    };
+
+    ['incomeStatement', 'balanceSheet', 'cashFlow', 'budgetActual'].forEach(tabId => {
+
+        const element = document.getElementById(tabId);
+
+        if (element) {
+
+            element.classList.add('hidden');
+
+        }
+
+    });
 
     
 
     // Remove active class from all buttons
 
-    document.querySelectorAll('.reporting-dashboard .tab-btn').forEach(btn => btn.classList.remove('active'));
+    document.querySelectorAll('.report-tabs .tab-btn').forEach(btn => btn.classList.remove('active'));
 
     
 
     // Show selected tab
 
-    document.getElementById(tabName).classList.remove('hidden');
+    const targetTabId = tabMapping[tabName] || tabName;
 
-    event.target.classList.add('active');
+    const targetElement = document.getElementById(targetTabId);
+
+    if (targetElement) {
+
+        targetElement.classList.remove('hidden');
+
+    } else {
+
+        console.error('❌ Finance report tab content not found:', targetTabId);
+
+    }
+
+    const clickEvent = evt || (typeof event !== 'undefined' ? event : null);
+
+    if (clickEvent && clickEvent.target) {
+
+        clickEvent.target.classList.add('active');
+
+    }
 
 }
 
@@ -99045,6 +99113,8 @@ async function submitPaymentRequest(event) {
     event.preventDefault();
     
     try {
+        const currentUser = sessionManager.getCurrentUser();
+
         const formData = {
             employeeId: document.getElementById('employeeSelect').value,
             employeeName: document.getElementById('employeeName').value,
@@ -99061,7 +99131,9 @@ async function submitPaymentRequest(event) {
             department: document.getElementById('department').value,
             projectCode: document.getElementById('projectCode').value,
             workOrderNumber: document.getElementById('workOrderNumber').value,
-            submittedBy: sessionManager.getCurrentUser()?.name || 'Managing Director'
+            submittedBy: currentUser?.id,
+            submittedByEmail: currentUser?.email,
+            submittedByName: currentUser?.manager_name || currentUser?.name || 'Managing Director'
         };
         
         const response = await fetch('/api/payment', {
@@ -99069,15 +99141,20 @@ async function submitPaymentRequest(event) {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(formData)
         });
-        
-        const result = await response.json();
+
+        const result = await response.json().catch(() => ({}));
+
+        if (!response.ok) {
+            const message = result.details ? `${result.error || 'Error'}: ${result.details}` : (result.error || `HTTP ${response.status}: ${response.statusText}`);
+            throw new Error(message);
+        }
         
         if (result.success) {
             customAlert(`Payment request created successfully!\n\nTracking Number: ${result.data.trackingNumber}\nAmount: ${result.data.currency} ${result.data.amount}\nStatus: ${result.data.status}`, "Payment Request Created", "success");
             resetPaymentForm();
             loadPaymentRequests();
         } else {
-            throw new Error(result.error || 'Failed to create payment request');
+            throw new Error(result.details ? `${result.error || 'Failed to create payment request'}: ${result.details}` : (result.error || 'Failed to create payment request'));
         }
     } catch (error) {
         console.error('❌ Error submitting payment request:', error);

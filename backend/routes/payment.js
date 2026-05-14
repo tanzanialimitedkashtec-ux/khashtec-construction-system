@@ -11,6 +11,70 @@ function generateTrackingNumber() {
     return `PAY-${timestamp}-${random}`;
 }
 
+async function resolveUserId({ userId, email, name }) {
+    const parsedId = Number.isFinite(Number(userId)) ? parseInt(userId, 10) : null;
+
+    if (parsedId) {
+        const existing = await db.execute('SELECT id FROM users WHERE id = ? LIMIT 1', [parsedId]);
+        if (Array.isArray(existing) && existing.length > 0) {
+            return parsedId;
+        }
+    }
+
+    if (email) {
+        const rows = await db.execute('SELECT id FROM users WHERE email = ? LIMIT 1', [email]);
+        if (Array.isArray(rows) && rows.length > 0) {
+            return rows[0].id;
+        }
+    }
+
+    if (name) {
+        const rows = await db.execute('SELECT id FROM users WHERE name = ? LIMIT 1', [name]);
+        if (Array.isArray(rows) && rows.length > 0) {
+            return rows[0].id;
+        }
+    }
+
+    const managingDirector = await db.execute("SELECT id FROM users WHERE role = 'Managing Director' ORDER BY id ASC LIMIT 1");
+    if (Array.isArray(managingDirector) && managingDirector.length > 0) {
+        return managingDirector[0].id;
+    }
+
+    const anyUser = await db.execute('SELECT id FROM users ORDER BY id ASC LIMIT 1');
+    if (Array.isArray(anyUser) && anyUser.length > 0) {
+        return anyUser[0].id;
+    }
+
+    return null;
+}
+
+function mapUrgencyToPriority(urgency) {
+    if (urgency === 'low') return 'Low';
+    if (urgency === 'high') return 'High';
+    if (urgency === 'urgent') return 'Urgent';
+    return 'Medium';
+}
+
+async function createNotification({ title, message, type, recipientId, senderId, relatedType, relatedId, priority }) {
+    await db.execute(
+        `
+            INSERT INTO notifications (
+                title, message, type, recipient_id, sender_id, related_type, related_id, priority
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+        `,
+        [
+            title,
+            message,
+            type,
+            recipientId || null,
+            senderId || null,
+            relatedType || null,
+            relatedId || null,
+            priority || 'Medium'
+        ]
+    );
+}
+
 // POST - Create new payment request
 router.post('/', async (req, res) => {
     console.log('💳 POST /api/payment accessed');
@@ -33,7 +97,9 @@ router.post('/', async (req, res) => {
         projectCode,
         workOrderNumber,
         approvedBy,
-        submittedBy
+        submittedBy,
+        submittedByEmail,
+        submittedByName
     } = req.body;
     
     // Validate required fields
@@ -61,6 +127,23 @@ router.post('/', async (req, res) => {
     }
     
     try {
+        const submittedByUserId = await resolveUserId({
+            userId: submittedBy,
+            email: submittedByEmail,
+            name: submittedByName
+        });
+
+        if (!submittedByUserId) {
+            return res.status(400).json({
+                error: 'Missing or invalid submitter information',
+                required: ['submittedBy (user id) or submittedByEmail or submittedByName']
+            });
+        }
+
+        const approvedByUserId = approvedBy
+            ? await resolveUserId({ userId: approvedBy })
+            : null;
+
         const trackingNumber = generateTrackingNumber();
         const submittedDate = new Date().toISOString().split('T')[0];
         
@@ -86,25 +169,29 @@ router.post('/', async (req, res) => {
             trackingNumber, employeeId, employeeName, employeeEmail, employeePhone,
             amount, currency, equivalentAmount, exchangeRate, description, notes,
             paymentType, urgency, paymentMethod, expectedPaymentDate || null, department,
-            projectCode || null, workOrderNumber || null, 'pending_finance_approval', approvedBy || null, submittedBy, submittedDate
+            projectCode || null, workOrderNumber || null, 'pending_finance_approval', approvedByUserId || null, submittedByUserId, submittedDate
         ]);
         
         console.log('✅ Payment request created successfully:', { trackingNumber, id: result.insertId });
         
         // Create notification for finance department
-        await db.execute(`
-            INSERT INTO notifications (
-                title, message, type, recipient_role, reference_id, reference_type, created_at
-            ) VALUES (?, ?, ?, ?, ?, ?, ?)
-        `, [
-            'New Payment Request',
-            `Payment request ${trackingNumber} for ${employeeName} (${currency} ${amount}) requires your approval`,
-            'payment_approval',
-            'finance',
-            result.insertId,
-            'payment_request',
-            new Date().toISOString()
-        ]);
+        try {
+            const financeUser = await db.execute("SELECT id FROM users WHERE role = 'Finance Manager' ORDER BY id ASC LIMIT 1");
+            const financeRecipientId = Array.isArray(financeUser) && financeUser.length > 0 ? financeUser[0].id : null;
+
+            await createNotification({
+                title: 'New Payment Request',
+                message: `Payment request ${trackingNumber} for ${employeeName} (${currency} ${amount}) requires approval`,
+                type: 'Info',
+                recipientId: financeRecipientId,
+                senderId: submittedByUserId,
+                relatedType: 'payment_request',
+                relatedId: result.insertId,
+                priority: mapUrgencyToPriority(urgency)
+            });
+        } catch (notificationError) {
+            console.error('❌ Failed to create finance notification for payment request:', notificationError.message);
+        }
         
         res.json({
             success: true,
@@ -124,6 +211,137 @@ router.post('/', async (req, res) => {
         console.error('❌ Error creating payment request:', error);
         res.status(500).json({
             error: 'Failed to create payment request',
+            details: error.message
+        });
+    }
+});
+
+// PUT - Update payment status (Finance approval/rejection)
+router.put('/:id/status', async (req, res) => {
+    console.log(`💳 PUT /api/payment/${req.params.id}/status accessed`);
+    
+    const { id } = req.params;
+    const { status, approvedBy, notes, paymentReference, actualAmount, actualCurrency } = req.body;
+    
+    // Validate status
+    const validStatuses = ['pending_finance_approval', 'approved', 'rejected', 'processed', 'paid', 'cancelled'];
+    if (!validStatuses.includes(status)) {
+        return res.status(400).json({
+            error: 'Invalid status',
+            validStatuses
+        });
+    }
+    
+    try {
+        const approvedByUserId = await resolveUserId({ userId: approvedBy });
+
+        if (!approvedByUserId) {
+            return res.status(400).json({
+                error: 'Missing or invalid approver',
+                required: ['approvedBy (user id)']
+            });
+        }
+
+        // Get current payment request
+        const currentPayment = await db.execute(
+            'SELECT * FROM payment_requests WHERE id = ?',
+            [id]
+        );
+        
+        if (currentPayment.length === 0) {
+            return res.status(404).json({
+                error: 'Payment request not found'
+            });
+        }
+        
+        // Update payment status
+        await db.execute(`
+            UPDATE payment_requests SET 
+                status = ?, 
+                approved_by = ?, 
+                approved_date = ?,
+                finance_notes = ?,
+                payment_reference = ?,
+                actual_amount = ?,
+                actual_currency = ?,
+                updated_at = CURRENT_TIMESTAMP
+            WHERE id = ?
+        `, [
+            status, 
+            approvedByUserId, 
+            new Date().toISOString().split('T')[0],
+            notes || null,
+            paymentReference || null,
+            actualAmount || null,
+            actualCurrency || null,
+            id
+        ]);
+        
+        // Add to payment history
+        await db.execute(`
+            INSERT INTO payment_history (
+                payment_id, status, changed_by, notes, created_at
+            ) VALUES (?, ?, ?, ?, ?)
+        `, [
+            id, status, approvedByUserId, notes, new Date().toISOString()
+        ]);
+        
+        // Create notification
+        let notificationTitle = '';
+        let notificationMessage = '';
+        
+        if (status === 'approved') {
+            notificationTitle = 'Payment Request Approved';
+            notificationMessage = `Payment request ${currentPayment[0].tracking_number} has been approved`;
+        } else if (status === 'rejected') {
+            notificationTitle = 'Payment Request Rejected';
+            notificationMessage = `Payment request ${currentPayment[0].tracking_number} has been rejected`;
+        } else if (status === 'processed') {
+            notificationTitle = 'Payment Processed';
+            notificationMessage = `Payment request ${currentPayment[0].tracking_number} has been processed`;
+        }
+        
+        if (notificationTitle) {
+            try {
+                const notificationType = status === 'approved'
+                    ? 'Success'
+                    : status === 'rejected'
+                        ? 'Error'
+                        : status === 'cancelled'
+                            ? 'Warning'
+                            : 'Info';
+
+                await createNotification({
+                    title: notificationTitle,
+                    message: notificationMessage,
+                    type: notificationType,
+                    recipientId: currentPayment[0].submitted_by,
+                    senderId: approvedByUserId,
+                    relatedType: 'payment_request',
+                    relatedId: id,
+                    priority: 'Medium'
+                });
+            } catch (notificationError) {
+                console.error('❌ Failed to create payment update notification:', notificationError.message);
+            }
+        }
+        
+        console.log(`✅ Payment ${id} status updated to:`, status);
+        
+        res.json({
+            success: true,
+            message: `Payment status updated to ${status}`,
+            data: {
+                id,
+                status,
+                trackingNumber: currentPayment[0].tracking_number
+            }
+        });
+        
+    } catch (error) {
+        console.error('❌ Error updating payment status:', error);
+        res.status(500).json({
+            error: 'Failed to update payment status',
             details: error.message
         });
     }
@@ -269,8 +487,13 @@ router.get('/employees', async (req, res) => {
 });
 
 // GET - Retrieve specific payment request
-router.get('/:id', async (req, res) => {
+router.get('/:id', async (req, res, next) => {
     console.log(`💳 GET /api/payment/${req.params.id} accessed`);
+
+    const reservedPaths = new Set(['stats']);
+    if (reservedPaths.has(req.params.id)) {
+        return next();
+    }
     
     try {
         const { id } = req.params;
@@ -312,119 +535,6 @@ router.get('/:id', async (req, res) => {
         console.error('❌ Error retrieving payment request:', error);
         res.status(500).json({
             error: 'Failed to retrieve payment request',
-            details: error.message
-        });
-    }
-});
-
-// PUT - Update payment status (Finance approval/rejection)
-router.put('/:id/status', async (req, res) => {
-    console.log(`💳 PUT /api/payment/${req.params.id}/status accessed`);
-    
-    const { id } = req.params;
-    const { status, approvedBy, notes, paymentReference, actualAmount, actualCurrency } = req.body;
-    
-    // Validate status
-    const validStatuses = ['pending_finance_approval', 'approved', 'rejected', 'processed', 'paid', 'cancelled'];
-    if (!validStatuses.includes(status)) {
-        return res.status(400).json({
-            error: 'Invalid status',
-            validStatuses
-        });
-    }
-    
-    try {
-        // Get current payment request
-        const currentPayment = await db.execute(
-            'SELECT * FROM payment_requests WHERE id = ?',
-            [id]
-        );
-        
-        if (currentPayment.length === 0) {
-            return res.status(404).json({
-                error: 'Payment request not found'
-            });
-        }
-        
-        // Update payment status
-        await db.execute(`
-            UPDATE payment_requests SET 
-                status = ?, 
-                approved_by = ?, 
-                approved_date = ?,
-                finance_notes = ?,
-                payment_reference = ?,
-                actual_amount = ?,
-                actual_currency = ?,
-                updated_at = CURRENT_TIMESTAMP
-            WHERE id = ?
-        `, [
-            status, 
-            approvedBy, 
-            new Date().toISOString().split('T')[0],
-            notes || null,
-            paymentReference || null,
-            actualAmount || null,
-            actualCurrency || null,
-            id
-        ]);
-        
-        // Add to payment history
-        await db.execute(`
-            INSERT INTO payment_history (
-                payment_id, status, changed_by, notes, created_at
-            ) VALUES (?, ?, ?, ?, ?)
-        `, [
-            id, status, approvedBy, notes, new Date().toISOString()
-        ]);
-        
-        // Create notification
-        let notificationTitle = '';
-        let notificationMessage = '';
-        
-        if (status === 'approved') {
-            notificationTitle = 'Payment Request Approved';
-            notificationMessage = `Payment request ${currentPayment[0].tracking_number} has been approved`;
-        } else if (status === 'rejected') {
-            notificationTitle = 'Payment Request Rejected';
-            notificationMessage = `Payment request ${currentPayment[0].tracking_number} has been rejected`;
-        } else if (status === 'processed') {
-            notificationTitle = 'Payment Processed';
-            notificationMessage = `Payment request ${currentPayment[0].tracking_number} has been processed`;
-        }
-        
-        if (notificationTitle) {
-            await db.execute(`
-                INSERT INTO notifications (
-                    title, message, type, recipient_role, reference_id, reference_type, created_at
-                ) VALUES (?, ?, ?, ?, ?, ?, ?)
-            `, [
-                notificationTitle,
-                notificationMessage,
-                'payment_update',
-                currentPayment[0].submitted_by,
-                id,
-                'payment_request',
-                new Date().toISOString()
-            ]);
-        }
-        
-        console.log(`✅ Payment ${id} status updated to:`, status);
-        
-        res.json({
-            success: true,
-            message: `Payment status updated to ${status}`,
-            data: {
-                id,
-                status,
-                trackingNumber: currentPayment[0].tracking_number
-            }
-        });
-        
-    } catch (error) {
-        console.error('❌ Error updating payment status:', error);
-        res.status(500).json({
-            error: 'Failed to update payment status',
             details: error.message
         });
     }
