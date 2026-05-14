@@ -3535,8 +3535,23 @@ function getFallbackWorkforceProjectName(projectValue) {
     return workforceProjectNames[normalizedProject] || projectValue;
 }
 
+function getDbRows(result) {
+    if (Array.isArray(result)) {
+        if (result.length > 0 && Array.isArray(result[0])) {
+            return result[0];
+        }
+        return result;
+    }
+
+    if (result && Array.isArray(result.rows)) {
+        return result.rows;
+    }
+
+    return [];
+}
+
 async function getWorkforceRequestSchema() {
-    const [columns] = await db.execute('SHOW COLUMNS FROM workforce_requests');
+    const columns = getDbRows(await db.execute('SHOW COLUMNS FROM workforce_requests'));
     return new Map((columns || []).map(column => [column.Field, String(column.Type || '').toLowerCase()]));
 }
 
@@ -3548,7 +3563,7 @@ async function resolveWorkforceProject(projectValue) {
         : (projectNumberMatch ? parseInt(projectNumberMatch[1], 10) : null);
 
     try {
-        const [projectColumns] = await db.execute('SHOW COLUMNS FROM projects');
+        const projectColumns = getDbRows(await db.execute('SHOW COLUMNS FROM projects'));
         const projectSchema = new Set((projectColumns || []).map(column => column.Field));
         const selectableColumns = ['id', 'name'];
         const whereClauses = [];
@@ -3576,15 +3591,17 @@ async function resolveWorkforceProject(projectValue) {
             queryValues.unshift(numericProjectId || 0);
         }
 
-        const [rows] = await db.execute(`
+        const rows = await db.execute(`
             SELECT ${selectableColumns.join(', ')}
             FROM projects
             WHERE ${whereClauses.join(' OR ')}
             LIMIT 1
         `, queryValues);
 
-        if (rows && rows.length > 0) {
-            return rows[0];
+        const normalizedRows = getDbRows(rows);
+
+        if (normalizedRows.length > 0) {
+            return normalizedRows[0];
         }
     } catch (error) {
         console.error('⚠️ Error resolving workforce project:', error.message);
@@ -3642,11 +3659,11 @@ router.get('/workforce-requests', async (req, res) => {
                 ? 'submitted_date'
                 : (workforceSchema.has('created_at') ? 'created_at' : 'id');
 
-            const [dbRequests] = await db.execute(`
+            const dbRequests = await db.execute(`
                 SELECT * FROM workforce_requests 
                 ORDER BY ${orderField} DESC
             `);
-            workforceRequests = dbRequests.map(normalizeWorkforceRequestRecord);
+            workforceRequests = getDbRows(dbRequests).map(normalizeWorkforceRequestRecord);
             console.log(`📊 Found ${workforceRequests.length} workforce requests from database`);
             
             // If fewer than 3 records, add sample data for demonstration
