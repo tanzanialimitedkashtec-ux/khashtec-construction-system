@@ -164,7 +164,7 @@ router.post('/', async (req, res) => {
                 amount, currency, equivalent_amount_tzs, exchange_rate, description, notes,
                 payment_type, urgency, payment_method, expected_payment_date, department,
                 project_code, work_order_number, status, approved_by, submitted_by, submitted_date
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         `, [
             trackingNumber, employeeId, employeeName, employeeEmail, employeePhone,
             amount, currency, equivalentAmount, exchangeRate, description, notes,
