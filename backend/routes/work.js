@@ -1220,9 +1220,19 @@ router.get('/site-reports', async (req, res) => {
 });
 
 // Get all work items for a specific department
-router.get('/:department', async (req, res) => {
+router.get('/:department', async (req, res, next) => {
+    let department = req.params.department;
+
+    const reservedPaths = new Set([
+        'workforce-requests',
+        'notifications'
+    ]);
+
+    if (reservedPaths.has(String(department || '').toLowerCase())) {
+        return next();
+    }
+
     try {
-        let department = req.params.department;
         
         // Fix department detection for GET requests too
         if (department === 'work') {

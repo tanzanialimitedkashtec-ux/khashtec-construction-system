@@ -68864,19 +68864,21 @@ async function loadWorkforceRequests() {
 
             requestsArray = workforceRequests;
 
-        } else if (workforceRequests.data && Array.isArray(workforceRequests.data)) {
+        } else if (workforceRequests && Array.isArray(workforceRequests.requests)) {
+
+            requestsArray = workforceRequests.requests;
+
+        } else if (workforceRequests && Array.isArray(workforceRequests.data)) {
 
             requestsArray = workforceRequests.data;
 
-        } else if (workforceRequests.success) {
+        } else if (workforceRequests && workforceRequests.success) {
 
-            // API returned success but no data - use sample data
+            // API returned success but with no recognizable array payload
 
-            console.log('⚠️ API returned success but no workforce requests data');
+            console.log('⚠️ API returned success but workforce requests list was not found in response');
 
-            loadSampleWorkforceRequests();
-
-            return;
+            requestsArray = [];
 
         } else {
 
@@ -96551,6 +96553,154 @@ function showCreateProjectForm() {
         }
         </style>
     `);
+
+    setTimeout(loadMissionVisionRecords, 100);
+}
+
+async function loadMissionVisionRecords() {
+    const tbody = document.getElementById('missionVisionRecordsTbody');
+    if (!tbody) {
+        return;
+    }
+
+    tbody.innerHTML = `
+        <tr>
+            <td colspan="18" style="text-align: center; padding: 10px;">Loading...</td>
+        </tr>
+    `;
+
+    try {
+        const token = sessionManager.getAuthToken();
+        const baseUrl = window.location.origin;
+        const headers = {};
+        if (token) {
+            headers['Authorization'] = `Bearer ${token}`;
+        }
+
+        const response = await fetch(`${baseUrl}/api/mission-vision/mission-vision`, {
+            method: 'GET',
+            headers: headers
+        });
+
+        if (!response.ok) {
+            tbody.innerHTML = `
+                <tr>
+                    <td colspan="18" style="text-align: center; padding: 10px; color: #dc3545;">Failed to load records (HTTP ${response.status})</td>
+                </tr>
+            `;
+            return;
+        }
+
+        const payload = await response.json();
+        let records = payload?.data || payload?.missionVision || payload?.records || payload;
+        if (!Array.isArray(records)) {
+            records = records ? [records] : [];
+        }
+
+        tbody.innerHTML = '';
+
+        if (records.length === 0) {
+            tbody.innerHTML = `
+                <tr>
+                    <td colspan="18" style="text-align: center; padding: 10px;">No mission & vision records found.</td>
+                </tr>
+            `;
+            return;
+        }
+
+        const formatDate = (value) => {
+            if (!value) {
+                return '';
+            }
+            const d = new Date(value);
+            if (!Number.isNaN(d.getTime())) {
+                return d.toISOString().split('T')[0];
+            }
+            return String(value).split('T')[0];
+        };
+
+        const parseJsonArray = (value) => {
+            if (Array.isArray(value)) {
+                return value;
+            }
+            if (typeof value === 'string' && value.trim()) {
+                try {
+                    const parsed = JSON.parse(value);
+                    return Array.isArray(parsed) ? parsed : [];
+                } catch (e) {
+                    return [];
+                }
+            }
+            return [];
+        };
+
+        const prettifyListItem = (value) => {
+            if (value == null) {
+                return '';
+            }
+            const s = String(value);
+            return s
+                .split('-')
+                .filter(Boolean)
+                .map(w => w.charAt(0).toUpperCase() + w.slice(1))
+                .join(' ');
+        };
+
+        for (const record of records) {
+            const tr = document.createElement('tr');
+            tr.style.borderBottom = '1px solid #dee2e6';
+
+            const addCell = (value) => {
+                const td = document.createElement('td');
+                td.style.padding = '8px';
+                td.textContent = value == null ? '' : String(value);
+                tr.appendChild(td);
+            };
+
+            const coreValues = parseJsonArray(record.core_values || record.coreValues)
+                .map(prettifyListItem)
+                .join(', ');
+            const stakeholderFocus = parseJsonArray(record.stakeholder_focus || record.stakeholderFocus)
+                .map(prettifyListItem)
+                .join(', ');
+
+            addCell(record.mission_statement || record.missionStatement);
+            addCell(record.mission_category || record.missionCategory || '');
+            addCell(formatDate(record.mission_last_reviewed || record.missionLastReviewed));
+            addCell(record.vision_statement || record.visionStatement);
+            addCell(record.vision_timeframe || record.visionTimeframe || '');
+            addCell(formatDate(record.vision_last_reviewed || record.visionLastReviewed));
+            addCell(coreValues);
+            addCell(record.additional_values || record.additionalValues || '');
+            addCell(record.short_term_objectives || record.shortTermObjectives || '');
+            addCell(record.long_term_objectives || record.longTermObjectives || '');
+            addCell(stakeholderFocus);
+            addCell(record.communication_strategy || record.communicationStrategy || '');
+            addCell(record.integration_strategy || record.integrationStrategy || '');
+            addCell(record.review_frequency || record.reviewFrequency || '');
+            addCell(formatDate(record.next_review_date || record.nextReviewDate));
+            addCell(record.success_metrics || record.successMetrics || '');
+            addCell(record.notes || '');
+
+            const statusTd = document.createElement('td');
+            statusTd.style.padding = '8px';
+            const statusValue = (record.status || 'unknown');
+            const statusSpan = document.createElement('span');
+            statusSpan.className = `status-badge status-${String(statusValue).toLowerCase().replace(/\s+/g, '-')}`;
+            statusSpan.textContent = String(statusValue);
+            statusTd.appendChild(statusSpan);
+            tr.appendChild(statusTd);
+
+            tbody.appendChild(tr);
+        }
+    } catch (error) {
+        console.error('❌ Error loading mission & vision records:', error);
+        tbody.innerHTML = `
+            <tr>
+                <td colspan="18" style="text-align: center; padding: 10px; color: #dc3545;">Failed to load records: ${error.message}</td>
+            </tr>
+        `;
+    }
 }
 
 async function loadLeadershipRecords() {
@@ -97863,6 +98013,44 @@ function showMissionVisionForm() {
                     <button type="button" onclick="clearMissionVisionForm()" class="action" style="background: #ffc107;">🔄 Clear Form</button>
                 </div>
             </form>
+
+            <div style="margin-top: 25px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                    <h4 style="margin: 0;">📋 Recorded Mission & Vision</h4>
+                    <button type="button" class="action" style="background: #0b3d91;" onclick="loadMissionVisionRecords()">🔄 Refresh</button>
+                </div>
+                <div style="overflow: auto; border: 1px solid #dee2e6; border-radius: 5px;">
+                    <table id="missionVisionRecordsTable" style="width: 100%; border-collapse: collapse;">
+                        <thead>
+                            <tr style="background: #f8f9fa;">
+                                <th style="text-align: left; padding: 8px; border-bottom: 1px solid #dee2e6;">Mission Statement</th>
+                                <th style="text-align: left; padding: 8px; border-bottom: 1px solid #dee2e6;">Mission Category</th>
+                                <th style="text-align: left; padding: 8px; border-bottom: 1px solid #dee2e6;">Mission Last Reviewed</th>
+                                <th style="text-align: left; padding: 8px; border-bottom: 1px solid #dee2e6;">Vision Statement</th>
+                                <th style="text-align: left; padding: 8px; border-bottom: 1px solid #dee2e6;">Vision Timeframe</th>
+                                <th style="text-align: left; padding: 8px; border-bottom: 1px solid #dee2e6;">Vision Last Reviewed</th>
+                                <th style="text-align: left; padding: 8px; border-bottom: 1px solid #dee2e6;">Core Values</th>
+                                <th style="text-align: left; padding: 8px; border-bottom: 1px solid #dee2e6;">Additional Core Values</th>
+                                <th style="text-align: left; padding: 8px; border-bottom: 1px solid #dee2e6;">Short-term Objectives</th>
+                                <th style="text-align: left; padding: 8px; border-bottom: 1px solid #dee2e6;">Long-term Objectives</th>
+                                <th style="text-align: left; padding: 8px; border-bottom: 1px solid #dee2e6;">Stakeholder Focus</th>
+                                <th style="text-align: left; padding: 8px; border-bottom: 1px solid #dee2e6;">Communication Strategy</th>
+                                <th style="text-align: left; padding: 8px; border-bottom: 1px solid #dee2e6;">Integration Strategy</th>
+                                <th style="text-align: left; padding: 8px; border-bottom: 1px solid #dee2e6;">Review Frequency</th>
+                                <th style="text-align: left; padding: 8px; border-bottom: 1px solid #dee2e6;">Next Review Date</th>
+                                <th style="text-align: left; padding: 8px; border-bottom: 1px solid #dee2e6;">Success Metrics</th>
+                                <th style="text-align: left; padding: 8px; border-bottom: 1px solid #dee2e6;">Notes</th>
+                                <th style="text-align: left; padding: 8px; border-bottom: 1px solid #dee2e6;">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="missionVisionRecordsTbody">
+                            <tr>
+                                <td colspan="18" style="text-align: center; padding: 10px;">Loading...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
         </div>
         
         <style>
@@ -98455,11 +98643,11 @@ async function submitMissionVisionForm(event) {
         console.log('✅ Mission & Vision data saved successfully:', result);
         
         if (result.success) {
-            customAlert(`Mission & Vision saved successfully!\n\nMission: ${missionVisionData.missionStatement.substring(0, 50)}...\nVision: ${missionVisionData.visionStatement.substring(0, 50)}...\nCore Values: ${missionVisionData.coreValues.length}`, "Mission & Vision Created", "success");
+            customAlert(`Mission & Vision saved successfully!\n\nMission Category: ${missionVisionData.missionCategory}\nVision Timeframe: ${missionVisionData.visionTimeframe}`, "Mission & Vision Created", "success");
             
             // Reset form and return to dashboard
             document.getElementById('missionVisionForm').reset();
-            showContent(''); // Return to dashboard
+            await loadMissionVisionRecords();
         } else {
             customAlert(`Error: ${result.error || 'Unknown error occurred'}`, 'Save Error', 'error');
         }
