@@ -23784,6 +23784,8 @@ function loadMenu(){
 
         addMenu("Update Employee Records", updateEmployeeRecords);
 
+        addMenu("Team Management", showTeamManagementDashboard);
+
         addMenu("Track Attendance", attendance);
 
         addMenu("Manage Leave & Contracts", manageLeaveContracts);
@@ -93053,6 +93055,8 @@ const roleMenus = {
 
             'Update Employee Records',
 
+            'Team Management',
+
             'Track Attendance',
 
             'Manage Leave & Contracts',
@@ -93412,6 +93416,12 @@ function handleMenuClick(menuItem) {
         // Handle specific menu items
 
         switch(menuItem) {
+
+            case 'Team Management':
+
+                showTeamManagementDashboard();
+
+                break;
 
             case 'NHIF Contributions':
 
@@ -96395,6 +96405,8 @@ if (!document.getElementById('transport-cost-styles')) {
 
 <script src="js/database-api.js"></script>
 
+<script src="js/team-management.js"></script>
+
 <script src="js/script.js"></script>
 
 <script>
@@ -96764,6 +96776,163 @@ async function loadMissionVisionRecords() {
         tbody.innerHTML = `
             <tr>
                 <td colspan="18" style="text-align: center; padding: 10px; color: #dc3545;">Failed to load records: ${error.message}</td>
+            </tr>
+        `;
+    }
+}
+
+async function loadLongTermGrowthRecords() {
+    const tbody = document.getElementById('longTermGrowthRecordsTbody');
+    if (!tbody) {
+        return;
+    }
+
+    tbody.innerHTML = `
+        <tr>
+            <td colspan="16" style="text-align: center; padding: 10px;">Loading...</td>
+        </tr>
+    `;
+
+    try {
+        const token = sessionManager.getAuthToken();
+        const baseUrl = window.location.origin;
+        const headers = {};
+        if (token) {
+            headers['Authorization'] = `Bearer ${token}`;
+        }
+
+        const response = await fetch(`${baseUrl}/api/long-term-growth/long-term-growth`, {
+            method: 'GET',
+            headers: headers
+        });
+
+        if (!response.ok) {
+            tbody.innerHTML = `
+                <tr>
+                    <td colspan="16" style="text-align: center; padding: 10px; color: #dc3545;">Failed to load records (HTTP ${response.status})</td>
+                </tr>
+            `;
+            return;
+        }
+
+        const payload = await response.json();
+        let records = payload?.data || payload?.records || payload;
+        if (!Array.isArray(records)) {
+            records = records ? [records] : [];
+        }
+
+        tbody.innerHTML = '';
+
+        if (records.length === 0) {
+            tbody.innerHTML = `
+                <tr>
+                    <td colspan="16" style="text-align: center; padding: 10px;">No long-term growth records found.</td>
+                </tr>
+            `;
+            return;
+        }
+
+        const formatDate = (value) => {
+            if (!value) {
+                return '';
+            }
+            const d = new Date(value);
+            if (!Number.isNaN(d.getTime())) {
+                return d.toISOString().split('T')[0];
+            }
+            return String(value).split('T')[0];
+        };
+
+        const parseJson = (value) => {
+            if (!value) {
+                return null;
+            }
+            if (typeof value === 'object') {
+                return value;
+            }
+            if (typeof value === 'string' && value.trim()) {
+                try {
+                    return JSON.parse(value);
+                } catch (e) {
+                    return null;
+                }
+            }
+            return null;
+        };
+
+        const parseJsonArray = (value) => {
+            if (Array.isArray(value)) {
+                return value;
+            }
+            const parsed = parseJson(value);
+            return Array.isArray(parsed) ? parsed : [];
+        };
+
+        const prettifyListItem = (value) => {
+            if (value == null) {
+                return '';
+            }
+            const s = String(value);
+            return s
+                .split('-')
+                .filter(Boolean)
+                .map(w => w.charAt(0).toUpperCase() + w.slice(1))
+                .join(' ');
+        };
+
+        const joinArray = (arr) => {
+            if (!arr || !arr.length) {
+                return '';
+            }
+            return arr.map(prettifyListItem).join(', ');
+        };
+
+        for (const record of records) {
+            const tr = document.createElement('tr');
+            tr.style.borderBottom = '1px solid #dee2e6';
+
+            const addCell = (value) => {
+                const td = document.createElement('td');
+                td.style.padding = '8px';
+                td.textContent = value == null ? '' : String(value);
+                tr.appendChild(td);
+            };
+
+            const targetMarkets = joinArray(parseJsonArray(record.target_markets || record.targetMarkets));
+            const milestones = joinArray(parseJsonArray(record.milestones || record.milestone || record.milestonesJson));
+
+            addCell(record.growth_title || record.growthTitle || '');
+            addCell(prettifyListItem(record.growth_category || record.growthCategory || ''));
+            addCell(record.timeframe || '');
+            addCell(targetMarkets);
+            addCell(record.expansion_strategy || record.expansionStrategy || '');
+            addCell(record.investment_requirements || record.investmentRequirements || '');
+            addCell(record.risk_assessment || record.riskAssessment || '');
+            addCell(milestones);
+            addCell(record.success_metrics || record.successMetrics || '');
+            addCell(record.implementation_plan || record.implementationPlan || '');
+            addCell(record.notes || '');
+            addCell(record.submitted_by || record.submittedBy || '');
+            addCell(formatDate(record.submitted_date || record.submittedDate));
+            addCell(formatDate(record.created_at || record.createdAt));
+            addCell(formatDate(record.updated_at || record.updatedAt));
+
+            const statusTd = document.createElement('td');
+            statusTd.style.padding = '8px';
+            const statusValue = (record.status || 'unknown');
+            const statusSpan = document.createElement('span');
+            statusSpan.className = `status-badge status-${String(statusValue).toLowerCase().replace(/\s+/g, '-')}`;
+            statusSpan.textContent = String(statusValue);
+            statusTd.appendChild(statusSpan);
+            tr.appendChild(statusTd);
+
+            tbody.appendChild(tr);
+        }
+    } catch (error) {
+        console.error('❌ Error loading long-term growth records:', error);
+        tbody.innerHTML = `
+            <tr>
+                <td colspan="16" style="text-align: center; padding: 10px; color: #dc3545;">Failed to load records: ${error.message}</td>
             </tr>
         `;
     }
@@ -98401,6 +98570,42 @@ function showLongTermGrowthForm() {
                     <button type="button" onclick="clearLongTermGrowthForm()" class="action" style="background: #ffc107;">🔄 Clear Form</button>
                 </div>
             </form>
+
+            <div style="margin-top: 25px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                    <h4 style="margin: 0;">📋 Recorded Long-Term Growth</h4>
+                    <button type="button" class="action" style="background: #0b3d91;" onclick="loadLongTermGrowthRecords()">🔄 Refresh</button>
+                </div>
+                <div style="overflow: auto; border: 1px solid #dee2e6; border-radius: 5px;">
+                    <table id="longTermGrowthRecordsTable" style="width: 100%; border-collapse: collapse;">
+                        <thead>
+                            <tr style="background: #f8f9fa;">
+                                <th style="text-align: left; padding: 8px; border-bottom: 1px solid #dee2e6;">Growth Title</th>
+                                <th style="text-align: left; padding: 8px; border-bottom: 1px solid #dee2e6;">Growth Category</th>
+                                <th style="text-align: left; padding: 8px; border-bottom: 1px solid #dee2e6;">Timeframe</th>
+                                <th style="text-align: left; padding: 8px; border-bottom: 1px solid #dee2e6;">Target Markets</th>
+                                <th style="text-align: left; padding: 8px; border-bottom: 1px solid #dee2e6;">Expansion Strategy</th>
+                                <th style="text-align: left; padding: 8px; border-bottom: 1px solid #dee2e6;">Investment Requirements</th>
+                                <th style="text-align: left; padding: 8px; border-bottom: 1px solid #dee2e6;">Risk Assessment</th>
+                                <th style="text-align: left; padding: 8px; border-bottom: 1px solid #dee2e6;">Milestones</th>
+                                <th style="text-align: left; padding: 8px; border-bottom: 1px solid #dee2e6;">Success Metrics</th>
+                                <th style="text-align: left; padding: 8px; border-bottom: 1px solid #dee2e6;">Implementation Plan</th>
+                                <th style="text-align: left; padding: 8px; border-bottom: 1px solid #dee2e6;">Notes</th>
+                                <th style="text-align: left; padding: 8px; border-bottom: 1px solid #dee2e6;">Submitted By</th>
+                                <th style="text-align: left; padding: 8px; border-bottom: 1px solid #dee2e6;">Submitted Date</th>
+                                <th style="text-align: left; padding: 8px; border-bottom: 1px solid #dee2e6;">Created At</th>
+                                <th style="text-align: left; padding: 8px; border-bottom: 1px solid #dee2e6;">Updated At</th>
+                                <th style="text-align: left; padding: 8px; border-bottom: 1px solid #dee2e6;">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="longTermGrowthRecordsTbody">
+                            <tr>
+                                <td colspan="16" style="text-align: center; padding: 10px;">Loading...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
         </div>
         
         <style>
@@ -98467,6 +98672,8 @@ function showLongTermGrowthForm() {
             }
         </style>
     `);
+
+    setTimeout(loadLongTermGrowthRecords, 100);
 }
 
 // Clear form functions
@@ -98826,19 +99033,94 @@ async function submitLongTermGrowthForm(event) {
         }
         
         const baseUrl = window.location.origin;
-        const response = await fetch(`${baseUrl}/api/growth-strategy`, {
+
+        const splitList = (value) => {
+            if (!value) {
+                return [];
+            }
+            return String(value)
+                .split(/\r?\n|,/)
+                .map(s => s.trim())
+                .filter(Boolean);
+        };
+
+        const timeframe = `${growthData.startDate} to ${growthData.targetCompletionDate}`;
+        const milestones = [growthData.timeline.phase1, growthData.timeline.phase2, growthData.timeline.phase3]
+            .map(s => (s || '').trim())
+            .filter(Boolean);
+
+        const successMetricsText = [
+            growthData.successMetrics.kpis ? `KPIs: ${growthData.successMetrics.kpis}` : '',
+            growthData.successMetrics.successCriteria ? `Success Criteria: ${growthData.successMetrics.successCriteria}` : '',
+            growthData.successMetrics.reviewFrequency ? `Review Frequency: ${growthData.successMetrics.reviewFrequency}` : '',
+            growthData.successMetrics.firstReviewDate ? `First Review Date: ${growthData.successMetrics.firstReviewDate}` : ''
+        ].filter(Boolean).join(' | ');
+
+        const investmentRequirementsText = [
+            growthData.resourceRequirements.estimatedBudget ? `Estimated Budget (TZS): ${growthData.resourceRequirements.estimatedBudget}` : '',
+            growthData.resourceRequirements.requiredTeamSize ? `Required Team Size: ${growthData.resourceRequirements.requiredTeamSize}` : '',
+            growthData.resourceRequirements.keyResources ? `Key Resources: ${growthData.resourceRequirements.keyResources}` : ''
+        ].filter(Boolean).join(' | ');
+
+        const riskAssessmentText = [
+            growthData.riskAssessment.riskLevel ? `Risk Level: ${growthData.riskAssessment.riskLevel}` : '',
+            growthData.riskAssessment.riskTolerance ? `Risk Tolerance: ${growthData.riskAssessment.riskTolerance}` : '',
+            growthData.riskAssessment.primaryRisks ? `Primary Risks: ${growthData.riskAssessment.primaryRisks}` : '',
+            growthData.riskAssessment.riskMitigation ? `Mitigation: ${growthData.riskAssessment.riskMitigation}` : ''
+        ].filter(Boolean).join(' | ');
+
+        const implementationPlan = JSON.stringify(growthData);
+
+        const payload = {
+            growthTitle: growthData.strategyName,
+            growthCategory: growthData.strategyType,
+            timeframe: timeframe,
+            targetMarkets: splitList(growthData.marketAnalysis.targetMarkets),
+            expansionStrategy: growthData.objectives.primary,
+            investmentRequirements: investmentRequirementsText,
+            riskAssessment: riskAssessmentText,
+            milestones: milestones,
+            successMetrics: successMetricsText || growthData.successMetrics.kpis,
+            implementationPlan: implementationPlan,
+            notes: growthData.notes,
+            submittedBy: growthData.submittedBy,
+            submittedDate: growthData.submittedDate
+        };
+
+        const response = await fetch(`${baseUrl}/api/long-term-growth/long-term-growth`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${token}`
             },
-            body: JSON.stringify(growthData)
+            body: JSON.stringify(payload)
         });
         
         if (!response.ok) {
-            const errorText = await response.text();
-            console.error('❌ Server response error:', response.status, errorText);
-            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            const errorData = await response.json().catch(() => ({}));
+            console.error('❌ API Error Response:', errorData);
+            console.error('❌ Response Status:', response.status);
+            console.error('❌ Response Text:', response.statusText);
+
+            if (response.status === 401 && token && errorData.error && errorData.error.toLowerCase().includes('unauthorized')) {
+                customAlert('Session expired. Please login again.', 'Authentication Error', 'error');
+                setTimeout(() => {
+                    window.location.href = '/login.html';
+                }, 2000);
+                return false;
+            } else if (response.status === 400) {
+                customAlert(`Validation Error: ${errorData.error || 'Invalid data provided'}`, 'Validation Error', 'error');
+                return false;
+            } else if (response.status === 404) {
+                customAlert('API endpoint not found. The server may need to be restarted.', 'Endpoint Error', 'error');
+                return false;
+            } else if (response.status === 500) {
+                customAlert(`Server Error: ${errorData.error || 'Internal server error occurred'}`, 'Server Error', 'error');
+                return false;
+            } else {
+                customAlert(`Error: ${errorData.error || `HTTP ${response.status}: ${response.statusText}`}`, 'Request Error', 'error');
+                return false;
+            }
         }
         
         const result = await response.json();
@@ -98848,7 +99130,8 @@ async function submitLongTermGrowthForm(event) {
         
         // Reset form and close only after successful submission
         document.getElementById('longTermGrowthForm').reset();
-        showContent('');
+
+        await loadLongTermGrowthRecords();
         
         return false;
         

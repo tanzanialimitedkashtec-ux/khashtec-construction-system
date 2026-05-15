@@ -74,7 +74,7 @@ router.post('/long-term-growth', async (req, res) => {
                     expansion_strategy, investment_requirements, risk_assessment,
                     milestones, success_metrics, implementation_plan, notes,
                     submitted_by, submitted_date, status
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             `, [
                 growthTitle, growthCategory, timeframe, JSON.stringify(targetMarkets),
                 expansionStrategy, investmentRequirements || '', riskAssessment || '',

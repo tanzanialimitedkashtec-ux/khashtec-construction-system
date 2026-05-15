@@ -102,6 +102,10 @@ const leadershipRoutes = require('./backend/routes/leadership');
 
 const missionVisionRoutes = require('./backend/routes/mission-vision');
 
+const longTermGrowthRoutes = require('./backend/routes/long-term-growth');
+
+const teamManagementRoutes = require('./backend/routes/team-management');
+
 
 
 const app = express();
@@ -996,6 +1000,22 @@ app.use('/api/leadership', asyncHandler(async (req, res, next) => {
 app.use('/api/mission-vision', asyncHandler(async (req, res, next) => {
 
     return missionVisionRoutes(req, res, next);
+
+}));
+
+
+
+app.use('/api/long-term-growth', asyncHandler(async (req, res, next) => {
+
+    return longTermGrowthRoutes(req, res, next);
+
+}));
+
+
+
+app.use('/api/team-management', asyncHandler(async (req, res, next) => {
+
+    return teamManagementRoutes(req, res, next);
 
 }));
 
