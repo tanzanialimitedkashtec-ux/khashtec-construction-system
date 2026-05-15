@@ -23882,6 +23882,14 @@ function loadMenu(){
 
         addMenu("Suggestions", suggestions);
 
+        addMenu("Materials Inventory", showMaterialsInventory);
+
+        addMenu("Record Materials In", showMaterialsInForm);
+
+        addMenu("Record Materials Out", showMaterialsOutForm);
+
+        addMenu("Materials Dashboard", showMaterialsDashboard);
+
         
     }
 
@@ -23990,6 +23998,10 @@ function loadMenu(){
         addMenu("Record Site Reports", recordSiteReports);
 
         addMenu("Approve Completed Work", approveCompletedWork);
+
+        addMenu("Materials Inventory", showMaterialsInventory);
+
+        addMenu("Record Materials Out", showMaterialsOutForm);
 
     }
 
@@ -93097,7 +93109,9 @@ const roleMenus = {
 
             'Senior Roles Management',
 
-            'System Audit Dashboard'
+            'System Audit Dashboard',
+
+            'Materials Management'
 
         ]
 
@@ -93179,7 +93193,9 @@ const roleMenus = {
 
             'Senior Roles Management',
 
-            'Suggestions Management'
+            'Suggestions Management',
+
+            'Materials Management'
 
         ]
 
@@ -93241,7 +93257,9 @@ const roleMenus = {
 
             'Tax Payments',
 
-            'Procurement Sales'
+            'Procurement Sales',
+
+            'Materials Management'
 
         ]
 
@@ -93466,6 +93484,12 @@ function handleMenuClick(menuItem) {
             case 'Suggestions Management':
 
                 showSuggestionsManagement();
+
+                break;
+
+            case 'Materials Management':
+
+                showMaterialsDashboard();
 
                 break;
 
@@ -94191,6 +94215,1828 @@ function showTaxPayments() {
                     const submitBtn = taxForm.querySelector('button[type="submit"]');
 
                     submitBtn.textContent = 'Submit';
+
+                    submitBtn.disabled = false;
+
+                }
+
+            });
+
+        }
+
+    }, 100);
+
+}
+
+
+
+// ===== MATERIALS MANAGEMENT FUNCTIONS =====
+
+function showMaterialsDashboard() {
+
+    const contentArea = document.getElementById('contentArea');
+
+    if (!contentArea) return;
+
+    contentArea.innerHTML = `
+
+        <div class="section">
+
+            <div class="section-header">
+
+                <h3>Materials Management Dashboard</h3>
+
+                <button onclick="goBack()" class="back-btn">Back</button>
+
+            </div>
+
+            <div class="dashboard-cards">
+
+                <div class="card" onclick="showMaterialsInventory()">
+
+                    <h4>Inventory</h4>
+
+                    <p>View all materials in stock</p>
+
+                </div>
+
+                <div class="card" onclick="showMaterialsInForm()">
+
+                    <h4>Materials In</h4>
+
+                    <p>Record incoming materials</p>
+
+                </div>
+
+                <div class="card" onclick="showMaterialsOutForm()">
+
+                    <h4>Materials Out</h4>
+
+                    <p>Record outgoing materials</p>
+
+                </div>
+
+                <div class="card" onclick="loadMaterialsTransactions()">
+
+                    <h4>Transactions</h4>
+
+                    <p>View in/out history</p>
+
+                </div>
+
+                <div class="card" onclick="showAddMaterialForm()">
+
+                    <h4>Add Material</h4>
+
+                    <p>Register new material</p>
+
+                </div>
+
+            </div>
+
+            <div id="materialsContent" style="margin-top: 20px;"></div>
+
+        </div>
+
+    `;
+
+    loadMaterialsDashboardStats();
+
+}
+
+
+
+async function loadMaterialsDashboardStats() {
+
+    try {
+
+        const response = await fetch(`${KashTecAPI.baseUrl}/materials/dashboard`);
+
+        const data = await response.json();
+
+        const stats = data.data || data;
+
+        const contentDiv = document.getElementById('materialsContent');
+
+        if (contentDiv) {
+
+            contentDiv.innerHTML = `
+
+                <div class="stats-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; margin-top: 15px;">
+
+                    <div class="stat-card" style="background: #e3f2fd; padding: 15px; border-radius: 8px; text-align: center;">
+
+                        <div style="font-size: 24px; font-weight: bold; color: #0b3d91;">${stats.totalMaterials || 0}</div>
+
+                        <div style="font-size: 12px; color: #666;">Total Materials</div>
+
+                    </div>
+
+                    <div class="stat-card" style="background: #e8f5e9; padding: 15px; border-radius: 8px; text-align: center;">
+
+                        <div style="font-size: 24px; font-weight: bold; color: #2e7d32;">TZS ${(stats.totalStockValue || 0).toLocaleString()}</div>
+
+                        <div style="font-size: 12px; color: #666;">Stock Value</div>
+
+                    </div>
+
+                    <div class="stat-card" style="background: #fff3e0; padding: 15px; border-radius: 8px; text-align: center;">
+
+                        <div style="font-size: 24px; font-weight: bold; color: #ef6c00;">${stats.totalInTransactions || 0}</div>
+
+                        <div style="font-size: 12px; color: #666;">In Transactions</div>
+
+                    </div>
+
+                    <div class="stat-card" style="background: #fce4ec; padding: 15px; border-radius: 8px; text-align: center;">
+
+                        <div style="font-size: 24px; font-weight: bold; color: #c62828;">${stats.totalOutTransactions || 0}</div>
+
+                        <div style="font-size: 12px; color: #666;">Out Transactions</div>
+
+                    </div>
+
+                    <div class="stat-card" style="background: #f3e5f5; padding: 15px; border-radius: 8px; text-align: center;">
+
+                        <div style="font-size: 24px; font-weight: bold; color: #6a1b9a;">${stats.lowStockItems || 0}</div>
+
+                        <div style="font-size: 12px; color: #666;">Low Stock Alerts</div>
+
+                    </div>
+
+                </div>
+
+            `;
+
+        }
+
+    } catch (error) {
+
+        console.error('Error loading materials stats:', error);
+
+    }
+
+}
+
+
+
+async function showMaterialsInventory() {
+
+    const contentArea = document.getElementById('contentArea');
+
+    if (!contentArea) return;
+
+    contentArea.innerHTML = `
+
+        <div class="section">
+
+            <div class="section-header">
+
+                <h3>Materials Inventory</h3>
+
+                <button onclick="goBack()" class="back-btn">Back</button>
+
+            </div>
+
+            <div style="margin-bottom: 15px;">
+
+                <input type="text" id="materialSearch" placeholder="Search materials..." 
+
+                    style="padding: 8px; border: 1px solid #ddd; border-radius: 4px; width: 300px;"
+
+                    onkeyup="searchMaterials()">
+
+            </div>
+
+            <div id="materialsInventoryTable"></div>
+
+        </div>
+
+    `;
+
+    await loadMaterialsInventoryTable();
+
+}
+
+
+
+async function loadMaterialsInventoryTable() {
+
+    try {
+
+        const response = await fetch(`${KashTecAPI.baseUrl}/materials/inventory`);
+
+        const data = await response.json();
+
+        const materials = data.data || data;
+
+        const tableDiv = document.getElementById('materialsInventoryTable');
+
+        if (!tableDiv) return;
+
+        if (!Array.isArray(materials) || materials.length === 0) {
+
+            tableDiv.innerHTML = '<p style="text-align: center; color: #666;">No materials found.</p>';
+
+            return;
+
+        }
+
+        tableDiv.innerHTML = `
+
+            <table class="data-table" style="width: 100%; border-collapse: collapse;">
+
+                <thead>
+
+                    <tr style="background: #0b3d91; color: white;">
+
+                        <th style="padding: 10px; text-align: left;">Code</th>
+
+                        <th style="padding: 10px; text-align: left;">Name</th>
+
+                        <th style="padding: 10px; text-align: left;">Category</th>
+
+                        <th style="padding: 10px; text-align: center;">Stock</th>
+
+                        <th style="padding: 10px; text-align: center;">Unit</th>
+
+                        <th style="padding: 10px; text-align: right;">Unit Cost</th>
+
+                        <th style="padding: 10px; text-align: center;">Status</th>
+
+                        <th style="padding: 10px; text-align: left;">Location</th>
+
+                    </tr>
+
+                </thead>
+
+                <tbody>
+
+                    ${materials.map(m => `
+
+                        <tr style="border-bottom: 1px solid #ddd;" class="${m.current_stock <= m.reorder_point ? 'low-stock' : ''}">
+
+                            <td style="padding: 8px;">${m.material_code}</td>
+
+                            <td style="padding: 8px;">${m.material_name}</td>
+
+                            <td style="padding: 8px;">${m.material_category}</td>
+
+                            <td style="padding: 8px; text-align: center; font-weight: bold; ${m.current_stock <= m.reorder_point ? 'color: #c62828;' : ''}">${m.current_stock}</td>
+
+                            <td style="padding: 8px; text-align: center;">${m.unit_of_measure}</td>
+
+                            <td style="padding: 8px; text-align: right;">TZS ${(m.unit_cost || 0).toLocaleString()}</td>
+
+                            <td style="padding: 8px; text-align: center;">
+
+                                <span class="status-badge ${m.status === 'Active' ? 'status-active' : m.status === 'Low Stock' ? 'status-pending' : 'status-inactive'}">${m.status}</span>
+
+                            </td>
+
+                            <td style="padding: 8px;">${m.storage_location || '-'}</td>
+
+                        </tr>
+
+                    `).join('')}
+
+                </tbody>
+
+            </table>
+
+        `;
+
+    } catch (error) {
+
+        console.error('Error loading materials inventory:', error);
+
+        const tableDiv = document.getElementById('materialsInventoryTable');
+
+        if (tableDiv) {
+
+            tableDiv.innerHTML = '<p style="text-align: center; color: #c62828;">Error loading materials. Please try again.</p>';
+
+        }
+
+    }
+
+}
+
+
+
+async function searchMaterials() {
+
+    const query = document.getElementById('materialSearch')?.value;
+
+    if (!query) {
+
+        await loadMaterialsInventoryTable();
+
+        return;
+
+    }
+
+    try {
+
+        const response = await fetch(`${KashTecAPI.baseUrl}/materials/search?q=${encodeURIComponent(query)}`);
+
+        const data = await response.json();
+
+        const materials = data.data || data;
+
+        const tableDiv = document.getElementById('materialsInventoryTable');
+
+        if (!tableDiv) return;
+
+        if (!Array.isArray(materials) || materials.length === 0) {
+
+            tableDiv.innerHTML = '<p style="text-align: center; color: #666;">No materials found matching your search.</p>';
+
+            return;
+
+        }
+
+        tableDiv.innerHTML = `
+
+            <table class="data-table" style="width: 100%; border-collapse: collapse;">
+
+                <thead>
+
+                    <tr style="background: #0b3d91; color: white;">
+
+                        <th style="padding: 10px; text-align: left;">Code</th>
+
+                        <th style="padding: 10px; text-align: left;">Name</th>
+
+                        <th style="padding: 10px; text-align: left;">Category</th>
+
+                        <th style="padding: 10px; text-align: center;">Stock</th>
+
+                        <th style="padding: 10px; text-align: center;">Unit</th>
+
+                        <th style="padding: 10px; text-align: right;">Unit Cost</th>
+
+                        <th style="padding: 10px; text-align: center;">Status</th>
+
+                        <th style="padding: 10px; text-align: left;">Location</th>
+
+                    </tr>
+
+                </thead>
+
+                <tbody>
+
+                    ${materials.map(m => `
+
+                        <tr style="border-bottom: 1px solid #ddd;">
+
+                            <td style="padding: 8px;">${m.material_code}</td>
+
+                            <td style="padding: 8px;">${m.material_name}</td>
+
+                            <td style="padding: 8px;">${m.material_category}</td>
+
+                            <td style="padding: 8px; text-align: center; font-weight: bold;">${m.current_stock}</td>
+
+                            <td style="padding: 8px; text-align: center;">${m.unit_of_measure}</td>
+
+                            <td style="padding: 8px; text-align: right;">TZS ${(m.unit_cost || 0).toLocaleString()}</td>
+
+                            <td style="padding: 8px; text-align: center;">
+
+                                <span class="status-badge ${m.status === 'Active' ? 'status-active' : 'status-pending'}">${m.status}</span>
+
+                            </td>
+
+                            <td style="padding: 8px;">${m.storage_location || '-'}</td>
+
+                        </tr>
+
+                    `).join('')}
+
+                </tbody>
+
+            </table>
+
+        `;
+
+    } catch (error) {
+
+        console.error('Error searching materials:', error);
+
+    }
+
+}
+
+
+
+function showMaterialsInForm() {
+
+    const formHTML = `
+
+        <div class="form-overlay">
+
+            <div class="form-container" style="max-width: 700px;">
+
+                <div class="form-header">
+
+                    <h3>Record Materials In (Receiving)</h3>
+
+                    <button onclick="closeForm()" class="close-btn">&times;</button>
+
+                </div>
+
+                <form id="materialsInForm">
+
+                    <div class="form-row" style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+
+                        <div class="form-group">
+
+                            <label for="minMaterialId">Material:</label>
+
+                            <select id="minMaterialId" name="material_id" required>
+
+                                <option value="">Select Material</option>
+
+                            </select>
+
+                        </div>
+
+                        <div class="form-group">
+
+                            <label for="minTrackNumber">Track Number:</label>
+
+                            <input type="text" id="minTrackNumber" name="track_number" placeholder="Auto-generated if blank">
+
+                        </div>
+
+                    </div>
+
+                    <div class="form-row" style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+
+                        <div class="form-group">
+
+                            <label for="minReceiptDate">Receipt Date:</label>
+
+                            <input type="date" id="minReceiptDate" name="receipt_date" required>
+
+                        </div>
+
+                        <div class="form-group">
+
+                            <label for="minQuantity">Quantity Received:</label>
+
+                            <input type="number" id="minQuantity" name="quantity_received" step="0.01" required>
+
+                        </div>
+
+                    </div>
+
+                    <div class="form-row" style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+
+                        <div class="form-group">
+
+                            <label for="minUnitMeasure">Unit of Measure:</label>
+
+                            <select id="minUnitMeasure" name="unit_of_measure" required>
+
+                                <option value="Bag">Bag</option>
+
+                                <option value="KG">KG</option>
+
+                                <option value="Ton">Ton</option>
+
+                                <option value="Piece">Piece</option>
+
+                                <option value="Meter">Meter</option>
+
+                                <option value="Square Meter">Square Meter</option>
+
+                                <option value="Cubic Meter">Cubic Meter</option>
+
+                                <option value="Liter">Liter</option>
+
+                                <option value="Roll">Roll</option>
+
+                                <option value="Box">Box</option>
+
+                                <option value="Set">Set</option>
+
+                                <option value="Sheet">Sheet</option>
+
+                            </select>
+
+                        </div>
+
+                        <div class="form-group">
+
+                            <label for="minUnitPrice">Unit Price (TZS):</label>
+
+                            <input type="number" id="minUnitPrice" name="unit_price" step="0.01" required>
+
+                        </div>
+
+                    </div>
+
+                    <div class="form-row" style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+
+                        <div class="form-group">
+
+                            <label for="minTransportCost">Transport Cost (TZS):</label>
+
+                            <input type="number" id="minTransportCost" name="transport_cost" step="0.01" value="0">
+
+                        </div>
+
+                        <div class="form-group">
+
+                            <label for="minDeliveryCondition">Delivery Condition:</label>
+
+                            <select id="minDeliveryCondition" name="delivery_condition">
+
+                                <option value="Good">Good</option>
+
+                                <option value="Damaged">Damaged</option>
+
+                                <option value="Partial">Partial</option>
+
+                                <option value="Rejected">Rejected</option>
+
+                            </select>
+
+                        </div>
+
+                    </div>
+
+                    <div class="form-group">
+
+                        <label for="minTransportIssue">Transport Issue:</label>
+
+                        <textarea id="minTransportIssue" name="transport_issue" rows="2" placeholder="Describe any transport issues..."></textarea>
+
+                    </div>
+
+                    <div class="form-row" style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+
+                        <div class="form-group">
+
+                            <label for="minSupplierName">Supplier Name:</label>
+
+                            <input type="text" id="minSupplierName" name="supplier_name" required>
+
+                        </div>
+
+                        <div class="form-group">
+
+                            <label for="minSupplierContact">Supplier Contact:</label>
+
+                            <input type="text" id="minSupplierContact" name="supplier_contact">
+
+                        </div>
+
+                    </div>
+
+                    <div class="form-row" style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px;">
+
+                        <div class="form-group">
+
+                            <label for="minInvoiceNumber">Invoice Number:</label>
+
+                            <input type="text" id="minInvoiceNumber" name="invoice_number">
+
+                        </div>
+
+                        <div class="form-group">
+
+                            <label for="minPONumber">Purchase Order #:</label>
+
+                            <input type="text" id="minPONumber" name="purchase_order_number">
+
+                        </div>
+
+                        <div class="form-group">
+
+                            <label for="minDeliveryNote">Delivery Note #:</label>
+
+                            <input type="text" id="minDeliveryNote" name="delivery_note_number">
+
+                        </div>
+
+                    </div>
+
+                    <div class="form-row" style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+
+                        <div class="form-group">
+
+                            <label for="minQualityStatus">Quality Check:</label>
+
+                            <select id="minQualityStatus" name="quality_check_status">
+
+                                <option value="Pending">Pending</option>
+
+                                <option value="Passed">Passed</option>
+
+                                <option value="Failed">Failed</option>
+
+                                <option value="Conditional">Conditional</option>
+
+                            </select>
+
+                        </div>
+
+                        <div class="form-group">
+
+                            <label for="minReceivedBy">Received By:</label>
+
+                            <input type="text" id="minReceivedBy" name="received_by" required>
+
+                        </div>
+
+                    </div>
+
+                    <div class="form-group">
+
+                        <label for="minQualityRemarks">Quality Remarks:</label>
+
+                        <textarea id="minQualityRemarks" name="quality_remarks" rows="2" placeholder="Quality check remarks..."></textarea>
+
+                    </div>
+
+                    <div class="form-group">
+
+                        <label for="minProjectName">Project Name:</label>
+
+                        <input type="text" id="minProjectName" name="project_name" placeholder="Associated project">
+
+                    </div>
+
+                    <div class="form-group">
+
+                        <label for="minWarehouseLocation">Warehouse Location:</label>
+
+                        <input type="text" id="minWarehouseLocation" name="warehouse_location">
+
+                    </div>
+
+                    <div class="form-group">
+
+                        <label for="minNotes">Notes:</label>
+
+                        <textarea id="minNotes" name="notes" rows="2" placeholder="Additional notes..."></textarea>
+
+                    </div>
+
+                    <div class="form-actions">
+
+                        <button type="submit" class="btn btn-primary">Record Materials In</button>
+
+                        <button type="button" onclick="closeForm()" class="btn btn-secondary">Cancel</button>
+
+                    </div>
+
+                </form>
+
+            </div>
+
+        </div>
+
+    `;
+
+    document.body.insertAdjacentHTML('beforeend', formHTML);
+
+    loadMaterialDropdown('minMaterialId');
+
+    document.getElementById('minReceiptDate').valueAsDate = new Date();
+
+    setTimeout(() => {
+
+        const form = document.getElementById('materialsInForm');
+
+        if (form) {
+
+            form.addEventListener('submit', async function(e) {
+
+                e.preventDefault();
+
+                const formData = {
+
+                    material_id: parseInt(document.getElementById('minMaterialId').value),
+
+                    track_number: document.getElementById('minTrackNumber').value || undefined,
+
+                    receipt_date: document.getElementById('minReceiptDate').value,
+
+                    quantity_received: parseFloat(document.getElementById('minQuantity').value),
+
+                    unit_of_measure: document.getElementById('minUnitMeasure').value,
+
+                    unit_price: parseFloat(document.getElementById('minUnitPrice').value) || 0,
+
+                    transport_cost: parseFloat(document.getElementById('minTransportCost').value) || 0,
+
+                    transport_issue: document.getElementById('minTransportIssue').value,
+
+                    supplier_name: document.getElementById('minSupplierName').value,
+
+                    supplier_contact: document.getElementById('minSupplierContact').value,
+
+                    invoice_number: document.getElementById('minInvoiceNumber').value,
+
+                    purchase_order_number: document.getElementById('minPONumber').value,
+
+                    delivery_note_number: document.getElementById('minDeliveryNote').value,
+
+                    delivery_condition: document.getElementById('minDeliveryCondition').value,
+
+                    quality_check_status: document.getElementById('minQualityStatus').value,
+
+                    quality_remarks: document.getElementById('minQualityRemarks').value,
+
+                    received_by: document.getElementById('minReceivedBy').value,
+
+                    project_name: document.getElementById('minProjectName').value,
+
+                    warehouse_location: document.getElementById('minWarehouseLocation').value,
+
+                    notes: document.getElementById('minNotes').value
+
+                };
+
+                try {
+
+                    const submitBtn = form.querySelector('button[type="submit"]');
+
+                    submitBtn.textContent = 'Saving...';
+
+                    submitBtn.disabled = true;
+
+                    const response = await fetch(`${KashTecAPI.baseUrl}/materials/in`, {
+
+                        method: 'POST',
+
+                        headers: { 'Content-Type': 'application/json' },
+
+                        body: JSON.stringify(formData)
+
+                    });
+
+                    const result = await response.json();
+
+                    if (result.success) {
+
+                        showNotification('Materials In recorded successfully! Track #: ' + (result.data.track_number || result.data.trackNumber), 'success');
+
+                        closeForm();
+
+                    } else {
+
+                        showNotification('Error: ' + result.message, 'error');
+
+                    }
+
+                } catch (error) {
+
+                    console.error('Error saving materials in:', error);
+
+                    showNotification('Error saving record. Please try again.', 'error');
+
+                } finally {
+
+                    const submitBtn = form.querySelector('button[type="submit"]');
+
+                    submitBtn.textContent = 'Record Materials In';
+
+                    submitBtn.disabled = false;
+
+                }
+
+            });
+
+        }
+
+    }, 100);
+
+}
+
+
+
+function showMaterialsOutForm() {
+
+    const formHTML = `
+
+        <div class="form-overlay">
+
+            <div class="form-container" style="max-width: 700px;">
+
+                <div class="form-header">
+
+                    <h3>Record Materials Out (Issue/Sale)</h3>
+
+                    <button onclick="closeForm()" class="close-btn">&times;</button>
+
+                </div>
+
+                <form id="materialsOutForm">
+
+                    <div class="form-row" style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+
+                        <div class="form-group">
+
+                            <label for="moutMaterialId">Material:</label>
+
+                            <select id="moutMaterialId" name="material_id" required>
+
+                                <option value="">Select Material</option>
+
+                            </select>
+
+                        </div>
+
+                        <div class="form-group">
+
+                            <label for="moutTrackNumber">Track Number:</label>
+
+                            <input type="text" id="moutTrackNumber" name="track_number" placeholder="Auto-generated if blank">
+
+                        </div>
+
+                    </div>
+
+                    <div class="form-row" style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+
+                        <div class="form-group">
+
+                            <label for="moutIssueDate">Issue Date:</label>
+
+                            <input type="date" id="moutIssueDate" name="issue_date" required>
+
+                        </div>
+
+                        <div class="form-group">
+
+                            <label for="moutQuantity">Quantity Out:</label>
+
+                            <input type="number" id="moutQuantity" name="quantity_out" step="0.01" required>
+
+                        </div>
+
+                    </div>
+
+                    <div class="form-row" style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+
+                        <div class="form-group">
+
+                            <label for="moutUnitMeasure">Unit of Measure:</label>
+
+                            <select id="moutUnitMeasure" name="unit_of_measure" required>
+
+                                <option value="Bag">Bag</option>
+
+                                <option value="KG">KG</option>
+
+                                <option value="Ton">Ton</option>
+
+                                <option value="Piece">Piece</option>
+
+                                <option value="Meter">Meter</option>
+
+                                <option value="Square Meter">Square Meter</option>
+
+                                <option value="Cubic Meter">Cubic Meter</option>
+
+                                <option value="Liter">Liter</option>
+
+                                <option value="Roll">Roll</option>
+
+                                <option value="Box">Box</option>
+
+                                <option value="Set">Set</option>
+
+                                <option value="Sheet">Sheet</option>
+
+                            </select>
+
+                        </div>
+
+                        <div class="form-group">
+
+                            <label for="moutUnitPrice">Unit Price (TZS):</label>
+
+                            <input type="number" id="moutUnitPrice" name="unit_price" step="0.01" value="0">
+
+                        </div>
+
+                    </div>
+
+                    <div class="form-row" style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+
+                        <div class="form-group">
+
+                            <label for="moutIssueType">Issue Type:</label>
+
+                            <select id="moutIssueType" name="issue_type">
+
+                                <option value="Project Use">Project Use</option>
+
+                                <option value="Sale">Sale</option>
+
+                                <option value="Transfer">Transfer</option>
+
+                                <option value="Waste">Waste</option>
+
+                                <option value="Damage">Damage</option>
+
+                                <option value="Return to Supplier">Return to Supplier</option>
+
+                            </select>
+
+                        </div>
+
+                        <div class="form-group">
+
+                            <label for="moutIssuedTo">Issued To:</label>
+
+                            <input type="text" id="moutIssuedTo" name="issued_to" required placeholder="Person/Company receiving">
+
+                        </div>
+
+                    </div>
+
+                    <div class="form-row" style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+
+                        <div class="form-group">
+
+                            <label for="moutIssuedToRole">Role:</label>
+
+                            <input type="text" id="moutIssuedToRole" name="issued_to_role" placeholder="Role of recipient">
+
+                        </div>
+
+                        <div class="form-group">
+
+                            <label for="moutIssuedToDept">Department:</label>
+
+                            <select id="moutIssuedToDept" name="issued_to_department">
+
+                                <option value="Project Management">Project Management</option>
+
+                                <option value="Management">Management</option>
+
+                                <option value="Human Resources">Human Resources</option>
+
+                                <option value="Finance">Finance</option>
+
+                                <option value="Real Estate">Real Estate</option>
+
+                                <option value="Health & Safety">Health & Safety</option>
+
+                                <option value="Administrative">Administrative</option>
+
+                                <option value="Workers">Workers</option>
+
+                                <option value="Clients">Clients</option>
+
+                                <option value="External">External</option>
+
+                            </select>
+
+                        </div>
+
+                    </div>
+
+                    <div class="form-group">
+
+                        <label for="moutProjectName">Project Name:</label>
+
+                        <input type="text" id="moutProjectName" name="project_name" placeholder="Associated project (if applicable)">
+
+                    </div>
+
+                    <div class="form-row" style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+
+                        <div class="form-group">
+
+                            <label for="moutDestination">Destination:</label>
+
+                            <input type="text" id="moutDestination" name="destination" placeholder="Where materials are going">
+
+                        </div>
+
+                        <div class="form-group">
+
+                            <label for="moutPurpose">Purpose:</label>
+
+                            <input type="text" id="moutPurpose" name="purpose" placeholder="Purpose of issue">
+
+                        </div>
+
+                    </div>
+
+                    <div class="form-row" style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+
+                        <div class="form-group">
+
+                            <label for="moutAuthorizedBy">Authorized By:</label>
+
+                            <input type="text" id="moutAuthorizedBy" name="authorized_by" required>
+
+                        </div>
+
+                        <div class="form-group">
+
+                            <label for="moutAuthorizedRole">Authorizer Role:</label>
+
+                            <input type="text" id="moutAuthorizedRole" name="authorized_by_role" placeholder="Role of authorizer">
+
+                        </div>
+
+                    </div>
+
+                    <div class="form-row" style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+
+                        <div class="form-group">
+
+                            <label for="moutDeliveryMethod">Delivery Method:</label>
+
+                            <select id="moutDeliveryMethod" name="delivery_method">
+
+                                <option value="Company Vehicle">Company Vehicle</option>
+
+                                <option value="Supplier Delivery">Supplier Delivery</option>
+
+                                <option value="Third Party">Third Party</option>
+
+                                <option value="Self Pickup">Self Pickup</option>
+
+                            </select>
+
+                        </div>
+
+                        <div class="form-group">
+
+                            <label for="moutDeliveryReceipt">Delivery Receipt #:</label>
+
+                            <input type="text" id="moutDeliveryReceipt" name="delivery_receipt_number">
+
+                        </div>
+
+                    </div>
+
+                    <div class="form-row" style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+
+                        <div class="form-group">
+
+                            <label for="moutCondition">Condition on Issue:</label>
+
+                            <select id="moutCondition" name="condition_on_issue">
+
+                                <option value="New">New</option>
+
+                                <option value="Good">Good</option>
+
+                                <option value="Fair">Fair</option>
+
+                                <option value="Damaged">Damaged</option>
+
+                            </select>
+
+                        </div>
+
+                        <div class="form-group">
+
+                            <label for="moutReturnExpected">Return Expected:</label>
+
+                            <select id="moutReturnExpected" name="return_expected">
+
+                                <option value="false">No</option>
+
+                                <option value="true">Yes</option>
+
+                            </select>
+
+                        </div>
+
+                    </div>
+
+                    <div class="form-group">
+
+                        <label for="moutExpectedReturn">Expected Return Date:</label>
+
+                        <input type="date" id="moutExpectedReturn" name="expected_return_date">
+
+                    </div>
+
+                    <div class="form-group">
+
+                        <label for="moutNotes">Notes:</label>
+
+                        <textarea id="moutNotes" name="notes" rows="2" placeholder="Additional notes..."></textarea>
+
+                    </div>
+
+                    <div class="form-actions">
+
+                        <button type="submit" class="btn btn-primary">Record Materials Out</button>
+
+                        <button type="button" onclick="closeForm()" class="btn btn-secondary">Cancel</button>
+
+                    </div>
+
+                </form>
+
+            </div>
+
+        </div>
+
+    `;
+
+    document.body.insertAdjacentHTML('beforeend', formHTML);
+
+    loadMaterialDropdown('moutMaterialId');
+
+    document.getElementById('moutIssueDate').valueAsDate = new Date();
+
+    setTimeout(() => {
+
+        const form = document.getElementById('materialsOutForm');
+
+        if (form) {
+
+            form.addEventListener('submit', async function(e) {
+
+                e.preventDefault();
+
+                const formData = {
+
+                    material_id: parseInt(document.getElementById('moutMaterialId').value),
+
+                    track_number: document.getElementById('moutTrackNumber').value || undefined,
+
+                    issue_date: document.getElementById('moutIssueDate').value,
+
+                    quantity_out: parseFloat(document.getElementById('moutQuantity').value),
+
+                    unit_of_measure: document.getElementById('moutUnitMeasure').value,
+
+                    unit_price: parseFloat(document.getElementById('moutUnitPrice').value) || 0,
+
+                    issue_type: document.getElementById('moutIssueType').value,
+
+                    issued_to: document.getElementById('moutIssuedTo').value,
+
+                    issued_to_role: document.getElementById('moutIssuedToRole').value,
+
+                    issued_to_department: document.getElementById('moutIssuedToDept').value,
+
+                    project_name: document.getElementById('moutProjectName').value,
+
+                    destination: document.getElementById('moutDestination').value,
+
+                    purpose: document.getElementById('moutPurpose').value,
+
+                    authorized_by: document.getElementById('moutAuthorizedBy').value,
+
+                    authorized_by_role: document.getElementById('moutAuthorizedRole').value,
+
+                    delivery_method: document.getElementById('moutDeliveryMethod').value,
+
+                    delivery_receipt_number: document.getElementById('moutDeliveryReceipt').value,
+
+                    condition_on_issue: document.getElementById('moutCondition').value,
+
+                    return_expected: document.getElementById('moutReturnExpected').value === 'true',
+
+                    expected_return_date: document.getElementById('moutExpectedReturn').value || null,
+
+                    notes: document.getElementById('moutNotes').value
+
+                };
+
+                try {
+
+                    const submitBtn = form.querySelector('button[type="submit"]');
+
+                    submitBtn.textContent = 'Saving...';
+
+                    submitBtn.disabled = true;
+
+                    const response = await fetch(`${KashTecAPI.baseUrl}/materials/out`, {
+
+                        method: 'POST',
+
+                        headers: { 'Content-Type': 'application/json' },
+
+                        body: JSON.stringify(formData)
+
+                    });
+
+                    const result = await response.json();
+
+                    if (result.success) {
+
+                        showNotification('Materials Out recorded successfully! Track #: ' + (result.data.track_number || result.data.trackNumber), 'success');
+
+                        closeForm();
+
+                    } else {
+
+                        showNotification('Error: ' + result.message, 'error');
+
+                    }
+
+                } catch (error) {
+
+                    console.error('Error saving materials out:', error);
+
+                    showNotification('Error saving record. Please try again.', 'error');
+
+                } finally {
+
+                    const submitBtn = form.querySelector('button[type="submit"]');
+
+                    submitBtn.textContent = 'Record Materials Out';
+
+                    submitBtn.disabled = false;
+
+                }
+
+            });
+
+        }
+
+    }, 100);
+
+}
+
+
+
+async function loadMaterialDropdown(selectId) {
+
+    try {
+
+        const response = await fetch(`${KashTecAPI.baseUrl}/materials/inventory`);
+
+        const data = await response.json();
+
+        const materials = data.data || data;
+
+        const select = document.getElementById(selectId);
+
+        if (!select || !Array.isArray(materials)) return;
+
+        materials.forEach(m => {
+
+            const option = document.createElement('option');
+
+            option.value = m.id;
+
+            option.textContent = `${m.material_name} (${m.material_code}) - Stock: ${m.current_stock} ${m.unit_of_measure}`;
+
+            select.appendChild(option);
+
+        });
+
+    } catch (error) {
+
+        console.error('Error loading material dropdown:', error);
+
+    }
+
+}
+
+
+
+async function loadMaterialsTransactions() {
+
+    const contentArea = document.getElementById('contentArea');
+
+    if (!contentArea) return;
+
+    contentArea.innerHTML = `
+
+        <div class="section">
+
+            <div class="section-header">
+
+                <h3>Materials Transactions</h3>
+
+                <button onclick="goBack()" class="back-btn">Back</button>
+
+            </div>
+
+            <div style="margin-bottom: 15px;">
+
+                <button onclick="loadMaterialsInRecords()" class="btn btn-primary" style="margin-right: 10px;">Materials In</button>
+
+                <button onclick="loadMaterialsOutRecords()" class="btn btn-primary">Materials Out</button>
+
+            </div>
+
+            <div id="transactionsTable"></div>
+
+        </div>
+
+    `;
+
+    await loadMaterialsInRecords();
+
+}
+
+
+
+async function loadMaterialsInRecords() {
+
+    try {
+
+        const response = await fetch(`${KashTecAPI.baseUrl}/materials/in`);
+
+        const data = await response.json();
+
+        const records = data.data || data;
+
+        const tableDiv = document.getElementById('transactionsTable');
+
+        if (!tableDiv) return;
+
+        if (!Array.isArray(records) || records.length === 0) {
+
+            tableDiv.innerHTML = '<p style="text-align: center; color: #666;">No materials in records found.</p>';
+
+            return;
+
+        }
+
+        tableDiv.innerHTML = `
+
+            <h4 style="margin-bottom: 10px;">Materials In (Receiving Records)</h4>
+
+            <table class="data-table" style="width: 100%; border-collapse: collapse;">
+
+                <thead>
+
+                    <tr style="background: #0b3d91; color: white;">
+
+                        <th style="padding: 10px;">Track #</th>
+
+                        <th style="padding: 10px;">Material</th>
+
+                        <th style="padding: 10px;">Date</th>
+
+                        <th style="padding: 10px;">Qty</th>
+
+                        <th style="padding: 10px;">Unit Price</th>
+
+                        <th style="padding: 10px;">Total Cost</th>
+
+                        <th style="padding: 10px;">Supplier</th>
+
+                        <th style="padding: 10px;">Condition</th>
+
+                        <th style="padding: 10px;">Received By</th>
+
+                    </tr>
+
+                </thead>
+
+                <tbody>
+
+                    ${records.map(r => `
+
+                        <tr style="border-bottom: 1px solid #ddd;">
+
+                            <td style="padding: 8px;">${r.track_number}</td>
+
+                            <td style="padding: 8px;">${r.material_name || r.material_id}</td>
+
+                            <td style="padding: 8px;">${r.receipt_date}</td>
+
+                            <td style="padding: 8px; text-align: center;">${r.quantity_received}</td>
+
+                            <td style="padding: 8px; text-align: right;">TZS ${(r.unit_price || 0).toLocaleString()}</td>
+
+                            <td style="padding: 8px; text-align: right;">TZS ${(r.total_cost || 0).toLocaleString()}</td>
+
+                            <td style="padding: 8px;">${r.supplier_name}</td>
+
+                            <td style="padding: 8px; text-align: center;">
+
+                                <span class="status-badge ${r.delivery_condition === 'Good' ? 'status-active' : r.delivery_condition === 'Partial' ? 'status-pending' : 'status-inactive'}">${r.delivery_condition}</span>
+
+                            </td>
+
+                            <td style="padding: 8px;">${r.received_by}</td>
+
+                        </tr>
+
+                    `).join('')}
+
+                </tbody>
+
+            </table>
+
+        `;
+
+    } catch (error) {
+
+        console.error('Error loading materials in records:', error);
+
+    }
+
+}
+
+
+
+async function loadMaterialsOutRecords() {
+
+    try {
+
+        const response = await fetch(`${KashTecAPI.baseUrl}/materials/out`);
+
+        const data = await response.json();
+
+        const records = data.data || data;
+
+        const tableDiv = document.getElementById('transactionsTable');
+
+        if (!tableDiv) return;
+
+        if (!Array.isArray(records) || records.length === 0) {
+
+            tableDiv.innerHTML = '<p style="text-align: center; color: #666;">No materials out records found.</p>';
+
+            return;
+
+        }
+
+        tableDiv.innerHTML = `
+
+            <h4 style="margin-bottom: 10px;">Materials Out (Issue/Sale Records)</h4>
+
+            <table class="data-table" style="width: 100%; border-collapse: collapse;">
+
+                <thead>
+
+                    <tr style="background: #0b3d91; color: white;">
+
+                        <th style="padding: 10px;">Track #</th>
+
+                        <th style="padding: 10px;">Material</th>
+
+                        <th style="padding: 10px;">Date</th>
+
+                        <th style="padding: 10px;">Qty</th>
+
+                        <th style="padding: 10px;">Type</th>
+
+                        <th style="padding: 10px;">Issued To</th>
+
+                        <th style="padding: 10px;">Project</th>
+
+                        <th style="padding: 10px;">Authorized By</th>
+
+                    </tr>
+
+                </thead>
+
+                <tbody>
+
+                    ${records.map(r => `
+
+                        <tr style="border-bottom: 1px solid #ddd;">
+
+                            <td style="padding: 8px;">${r.track_number}</td>
+
+                            <td style="padding: 8px;">${r.material_name || r.material_id}</td>
+
+                            <td style="padding: 8px;">${r.issue_date}</td>
+
+                            <td style="padding: 8px; text-align: center;">${r.quantity_out}</td>
+
+                            <td style="padding: 8px;">${r.issue_type}</td>
+
+                            <td style="padding: 8px;">${r.issued_to}</td>
+
+                            <td style="padding: 8px;">${r.project_name || '-'}</td>
+
+                            <td style="padding: 8px;">${r.authorized_by}</td>
+
+                        </tr>
+
+                    `).join('')}
+
+                </tbody>
+
+            </table>
+
+        `;
+
+    } catch (error) {
+
+        console.error('Error loading materials out records:', error);
+
+    }
+
+}
+
+
+
+function showAddMaterialForm() {
+
+    const formHTML = `
+
+        <div class="form-overlay">
+
+            <div class="form-container">
+
+                <div class="form-header">
+
+                    <h3>Add New Material</h3>
+
+                    <button onclick="closeForm()" class="close-btn">&times;</button>
+
+                </div>
+
+                <form id="addMaterialForm">
+
+                    <div class="form-row" style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+
+                        <div class="form-group">
+
+                            <label for="newMaterialCode">Material Code:</label>
+
+                            <input type="text" id="newMaterialCode" name="material_code" placeholder="Auto-generated if blank">
+
+                        </div>
+
+                        <div class="form-group">
+
+                            <label for="newMaterialName">Material Name:</label>
+
+                            <input type="text" id="newMaterialName" name="material_name" required>
+
+                        </div>
+
+                    </div>
+
+                    <div class="form-row" style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+
+                        <div class="form-group">
+
+                            <label for="newMaterialCategory">Category:</label>
+
+                            <select id="newMaterialCategory" name="material_category" required>
+
+                                <option value="">Select Category</option>
+
+                                <option value="Cement">Cement</option>
+
+                                <option value="Sand">Sand</option>
+
+                                <option value="Gravel">Gravel</option>
+
+                                <option value="Steel/Rebar">Steel/Rebar</option>
+
+                                <option value="Bricks">Bricks</option>
+
+                                <option value="Blocks">Blocks</option>
+
+                                <option value="Timber">Timber</option>
+
+                                <option value="Pipes">Pipes</option>
+
+                                <option value="Electrical">Electrical</option>
+
+                                <option value="Paint">Paint</option>
+
+                                <option value="Roofing">Roofing</option>
+
+                                <option value="Tiles">Tiles</option>
+
+                                <option value="Glass">Glass</option>
+
+                                <option value="Hardware">Hardware</option>
+
+                                <option value="Tools">Tools</option>
+
+                                <option value="Safety Equipment">Safety Equipment</option>
+
+                                <option value="Other">Other</option>
+
+                            </select>
+
+                        </div>
+
+                        <div class="form-group">
+
+                            <label for="newUnitMeasure">Unit of Measure:</label>
+
+                            <select id="newUnitMeasure" name="unit_of_measure" required>
+
+                                <option value="Bag">Bag</option>
+
+                                <option value="KG">KG</option>
+
+                                <option value="Ton">Ton</option>
+
+                                <option value="Piece">Piece</option>
+
+                                <option value="Meter">Meter</option>
+
+                                <option value="Square Meter">Square Meter</option>
+
+                                <option value="Cubic Meter">Cubic Meter</option>
+
+                                <option value="Liter">Liter</option>
+
+                                <option value="Roll">Roll</option>
+
+                                <option value="Box">Box</option>
+
+                                <option value="Set">Set</option>
+
+                                <option value="Sheet">Sheet</option>
+
+                            </select>
+
+                        </div>
+
+                    </div>
+
+                    <div class="form-group">
+
+                        <label for="newMaterialDescription">Description:</label>
+
+                        <textarea id="newMaterialDescription" name="description" rows="2"></textarea>
+
+                    </div>
+
+                    <div class="form-row" style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px;">
+
+                        <div class="form-group">
+
+                            <label for="newMinStock">Min Stock Level:</label>
+
+                            <input type="number" id="newMinStock" name="min_stock_level" value="10">
+
+                        </div>
+
+                        <div class="form-group">
+
+                            <label for="newMaxStock">Max Stock Level:</label>
+
+                            <input type="number" id="newMaxStock" name="max_stock_level" value="1000">
+
+                        </div>
+
+                        <div class="form-group">
+
+                            <label for="newReorderPoint">Reorder Point:</label>
+
+                            <input type="number" id="newReorderPoint" name="reorder_point" value="50">
+
+                        </div>
+
+                    </div>
+
+                    <div class="form-row" style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+
+                        <div class="form-group">
+
+                            <label for="newUnitCost">Unit Cost (TZS):</label>
+
+                            <input type="number" id="newUnitCost" name="unit_cost" step="0.01" value="0">
+
+                        </div>
+
+                        <div class="form-group">
+
+                            <label for="newStorageLocation">Storage Location:</label>
+
+                            <input type="text" id="newStorageLocation" name="storage_location">
+
+                        </div>
+
+                    </div>
+
+                    <div class="form-row" style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+
+                        <div class="form-group">
+
+                            <label for="newSupplierName">Supplier Name:</label>
+
+                            <input type="text" id="newSupplierName" name="supplier_name">
+
+                        </div>
+
+                        <div class="form-group">
+
+                            <label for="newSupplierContact">Supplier Contact:</label>
+
+                            <input type="text" id="newSupplierContact" name="supplier_contact">
+
+                        </div>
+
+                    </div>
+
+                    <div class="form-actions">
+
+                        <button type="submit" class="btn btn-primary">Add Material</button>
+
+                        <button type="button" onclick="closeForm()" class="btn btn-secondary">Cancel</button>
+
+                    </div>
+
+                </form>
+
+            </div>
+
+        </div>
+
+    `;
+
+    document.body.insertAdjacentHTML('beforeend', formHTML);
+
+    setTimeout(() => {
+
+        const form = document.getElementById('addMaterialForm');
+
+        if (form) {
+
+            form.addEventListener('submit', async function(e) {
+
+                e.preventDefault();
+
+                const formData = {
+
+                    material_code: document.getElementById('newMaterialCode').value || undefined,
+
+                    material_name: document.getElementById('newMaterialName').value,
+
+                    material_category: document.getElementById('newMaterialCategory').value,
+
+                    description: document.getElementById('newMaterialDescription').value,
+
+                    unit_of_measure: document.getElementById('newUnitMeasure').value,
+
+                    min_stock_level: parseFloat(document.getElementById('newMinStock').value) || 10,
+
+                    max_stock_level: parseFloat(document.getElementById('newMaxStock').value) || 1000,
+
+                    reorder_point: parseFloat(document.getElementById('newReorderPoint').value) || 50,
+
+                    unit_cost: parseFloat(document.getElementById('newUnitCost').value) || 0,
+
+                    storage_location: document.getElementById('newStorageLocation').value,
+
+                    supplier_name: document.getElementById('newSupplierName').value,
+
+                    supplier_contact: document.getElementById('newSupplierContact').value
+
+                };
+
+                try {
+
+                    const submitBtn = form.querySelector('button[type="submit"]');
+
+                    submitBtn.textContent = 'Saving...';
+
+                    submitBtn.disabled = true;
+
+                    const response = await fetch(`${KashTecAPI.baseUrl}/materials/inventory`, {
+
+                        method: 'POST',
+
+                        headers: { 'Content-Type': 'application/json' },
+
+                        body: JSON.stringify(formData)
+
+                    });
+
+                    const result = await response.json();
+
+                    if (result.success) {
+
+                        showNotification('Material added successfully!', 'success');
+
+                        closeForm();
+
+                    } else {
+
+                        showNotification('Error: ' + result.message, 'error');
+
+                    }
+
+                } catch (error) {
+
+                    console.error('Error adding material:', error);
+
+                    showNotification('Error adding material. Please try again.', 'error');
+
+                } finally {
+
+                    const submitBtn = form.querySelector('button[type="submit"]');
+
+                    submitBtn.textContent = 'Add Material';
 
                     submitBtn.disabled = false;
 
@@ -99768,6 +101614,559 @@ async function showPaymentStatistics() {
         console.error('❌ Error loading statistics:', error);
         customAlert(`Failed to load statistics: ${error.message}`, 'Error', 'error');
     }
+}
+
+// ===== MATERIALS MANAGEMENT FUNCTIONS =====
+
+let materialsInventoryData = [];
+let materialsInData = [];
+let materialsOutData = [];
+
+async function fetchMaterialsInventory() {
+    try {
+        const response = await fetch('/api/materials/inventory');
+        const result = await response.json();
+        if (result.success) { materialsInventoryData = result.data || []; return materialsInventoryData; }
+        return [];
+    } catch (e) { console.error('Error loading inventory:', e); return []; }
+}
+
+async function fetchMaterialsIn() {
+    try {
+        const response = await fetch('/api/materials/in');
+        const result = await response.json();
+        if (result.success) { materialsInData = result.data || []; return materialsInData; }
+        return [];
+    } catch (e) { console.error('Error loading materials in:', e); return []; }
+}
+
+async function fetchMaterialsOut() {
+    try {
+        const response = await fetch('/api/materials/out');
+        const result = await response.json();
+        if (result.success) { materialsOutData = result.data || []; return materialsOutData; }
+        return [];
+    } catch (e) { console.error('Error loading materials out:', e); return []; }
+}
+
+async function showMaterialsDashboard() {
+    showContent(`
+        <div class="card">
+            <h3>Materials Management Dashboard</h3>
+            <div id="materialsDashboardStats"><p>Loading statistics...</p></div>
+            <div class="form-actions">
+                <button onclick="showMaterialsInventory()" class="action">View Inventory</button>
+                <button onclick="showMaterialsInForm()" class="action" style="background:#28a745;">Record Materials In</button>
+                <button onclick="showMaterialsOutForm()" class="action" style="background:#fd7e14;">Record Materials Out</button>
+            </div>
+        </div>
+    `);
+    try {
+        const response = await fetch('/api/materials/dashboard');
+        const result = await response.json();
+        const dDiv = document.getElementById('materialsDashboardStats');
+        if (result.success && dDiv) {
+            const d = result.data;
+            dDiv.innerHTML = `
+                <div class="stats-grid">
+                    <div class="stat-card"><h4>Total Materials</h4><div class="stat-number">${d.totalMaterials || 0}</div></div>
+                    <div class="stat-card"><h4>Stock Value (TZS)</h4><div class="stat-number">${parseFloat(d.totalStockValue || 0).toLocaleString()}</div></div>
+                    <div class="stat-card"><h4>Low Stock Items</h4><div class="stat-number" style="color:${(d.lowStockItems||0)>0?'#dc3545':'#28a745'}">${d.lowStockItems || 0}</div></div>
+                    <div class="stat-card"><h4>Materials In (30d)</h4><div class="stat-number">${parseFloat(d.recentInValue || 0).toLocaleString()}</div></div>
+                    <div class="stat-card"><h4>Materials Out (30d)</h4><div class="stat-number">${parseFloat(d.recentOutValue || 0).toLocaleString()}</div></div>
+                    <div class="stat-card"><h4>Total Transactions</h4><div class="stat-number">${(d.totalInTransactions||0)+(d.totalOutTransactions||0)}</div></div>
+                </div>
+            `;
+        }
+    } catch (e) { console.error('Dashboard error:', e); }
+}
+
+async function showMaterialsInventory() {
+    const inventory = await fetchMaterialsInventory();
+    let rowsHtml = '';
+    if (inventory.length === 0) {
+        rowsHtml = '<tr><td colspan="9" style="text-align:center;">No materials found.</td></tr>';
+    } else {
+        inventory.forEach(m => {
+            const stock = parseFloat(m.current_stock || 0);
+            const reorder = parseFloat(m.reorder_point || 0);
+            let statusBadge = stock === 0 ? '<span style="color:#dc3545;font-weight:bold;">Out of Stock</span>' :
+                stock <= reorder ? '<span style="color:#fd7e14;font-weight:bold;">Low Stock</span>' :
+                '<span style="color:#28a745;font-weight:bold;">OK</span>';
+            rowsHtml += `<tr>
+                <td>${m.material_code||''}</td>
+                <td><strong>${m.material_name||''}</strong><br><small>${m.description||''}</small></td>
+                <td>${m.material_category||''}</td>
+                <td>${stock.toLocaleString()} ${m.unit_of_measure||''}</td>
+                <td>${statusBadge}</td>
+                <td>${m.storage_location||''}</td>
+                <td>${m.supplier_name||''}</td>
+                <td>TZS ${parseFloat(m.unit_cost||0).toLocaleString()}</td>
+                <td><button onclick="showMaterialsOutForm(${m.id},'${m.material_name}')" class="action-btn" style="background:#fd7e14;padding:4px 8px;font-size:11px;">Issue Out</button></td>
+            </tr>`;
+        });
+    }
+    showContent(`
+        <div class="card">
+            <h3>Materials Inventory</h3>
+            <div style="margin-bottom:15px;display:flex;gap:10px;flex-wrap:wrap;">
+                <input type="text" id="inventorySearch" placeholder="Search materials..." onkeyup="filterMaterialsInventory()" style="padding:8px;border:1px solid #ddd;border-radius:4px;flex:1;min-width:200px;">
+                <select id="categoryFilter" onchange="filterMaterialsInventory()" style="padding:8px;border:1px solid #ddd;border-radius:4px;">
+                    <option value="">All Categories</option>
+                    <option>Cement</option><option>Sand</option><option>Gravel</option><option>Steel/Rebar</option>
+                    <option>Bricks</option><option>Blocks</option><option>Timber</option><option>Pipes</option>
+                    <option>Electrical</option><option>Paint</option><option>Roofing</option><option>Tiles</option>
+                    <option>Glass</option><option>Hardware</option><option>Tools</option><option>Safety Equipment</option><option>Other</option>
+                </select>
+                <button onclick="showMaterialsInForm()" class="action" style="background:#28a745;">+ Record In</button>
+                <button onclick="showMaterialsOutForm()" class="action" style="background:#fd7e14;">+ Record Out</button>
+            </div>
+            <div class="table-responsive">
+                <table class="projects-table" id="inventoryTable">
+                    <thead><tr><th>Code</th><th>Material Name</th><th>Category</th><th>Stock</th><th>Status</th><th>Location</th><th>Supplier</th><th>Unit Cost</th><th>Action</th></tr></thead>
+                    <tbody>${rowsHtml}</tbody>
+                </table>
+            </div>
+            <div class="form-actions" style="margin-top:15px;">
+                <button onclick="showMaterialsInRecords()" class="action" style="background:#6c757d;">View In Records</button>
+                <button onclick="showMaterialsOutRecords()" class="action" style="background:#6c757d;">View Out Records</button>
+                <button onclick="showMaterialsDashboard()" class="action" style="background:#17a2b8;">Dashboard</button>
+            </div>
+        </div>
+    `);
+}
+
+function filterMaterialsInventory() {
+    const search = document.getElementById('inventorySearch').value.toLowerCase();
+    const category = document.getElementById('categoryFilter').value;
+    document.querySelectorAll('#inventoryTable tbody tr').forEach(row => {
+        const cells = row.querySelectorAll('td');
+        if (cells.length < 2) return;
+        const matchSearch = row.textContent.toLowerCase().includes(search);
+        const matchCategory = !category || (cells[2] && cells[2].textContent.trim() === category);
+        row.style.display = matchSearch && matchCategory ? '' : 'none';
+    });
+}
+
+function getUnitMeasureOptions(selected) {
+    const units = ['Bag','KG','Ton','Piece','Meter','Square Meter','Cubic Meter','Liter','Roll','Box','Set','Sheet'];
+    return units.map(u => `<option value="${u}" ${selected === u ? 'selected' : ''}>${u}</option>`).join('');
+}
+
+function showMaterialsInForm(preselectedMaterialId, preselectedMaterialName) {
+    const today = new Date().toISOString().split('T')[0];
+    let materialOptions = '<option value="">Select Material</option>';
+    materialsInventoryData.forEach(m => {
+        const selected = preselectedMaterialId && m.id == preselectedMaterialId ? 'selected' : '';
+        materialOptions += `<option value="${m.id}" ${selected}>${m.material_code} - ${m.material_name}</option>`;
+    });
+
+    const formHTML = `
+        <div class="form-overlay" id="materialInOverlay">
+            <div class="form-container" style="max-width:750px;max-height:92vh;overflow-y:auto;">
+                <div class="form-header">
+                    <h3>Record Materials In (Receiving)</h3>
+                    <button onclick="closeForm()" class="close-btn">&times;</button>
+                </div>
+                <form id="materialsInForm">
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:15px;">
+                        <div class="form-group">
+                            <label for="minMaterial">Material *</label>
+                            <select id="minMaterial" name="material_id" required>${materialOptions}</select>
+                        </div>
+                        <div class="form-group">
+                            <label for="minTrackNumber">Track / Delivery Note No *</label>
+                            <input type="text" id="minTrackNumber" name="track_number" placeholder="e.g. DN-2026-001" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="minReceiptDate">Receipt Date *</label>
+                            <input type="date" id="minReceiptDate" name="receipt_date" value="${today}" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="minQuantity">Quantity Received *</label>
+                            <input type="number" id="minQuantity" name="quantity_received" step="0.01" min="0.01" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="minUnitMeasure">Unit of Measure</label>
+                            <select id="minUnitMeasure" name="unit_of_measure">${getUnitMeasureOptions('Bag')}</select>
+                        </div>
+                        <div class="form-group">
+                            <label for="minUnitPrice">Unit Price (TZS) *</label>
+                            <input type="number" id="minUnitPrice" name="unit_price" step="0.01" min="0" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="minTransportCost">Transport Cost (TZS)</label>
+                            <input type="number" id="minTransportCost" name="transport_cost" step="0.01" min="0" value="0">
+                        </div>
+                        <div class="form-group">
+                            <label for="minSupplierName">Supplier Name *</label>
+                            <input type="text" id="minSupplierName" name="supplier_name" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="minSupplierContact">Supplier Contact</label>
+                            <input type="text" id="minSupplierContact" name="supplier_contact" placeholder="Phone or email">
+                        </div>
+                        <div class="form-group">
+                            <label for="minInvoiceNumber">Invoice Number</label>
+                            <input type="text" id="minInvoiceNumber" name="invoice_number">
+                        </div>
+                        <div class="form-group">
+                            <label for="minPurchaseOrder">Purchase Order Number</label>
+                            <input type="text" id="minPurchaseOrder" name="purchase_order_number">
+                        </div>
+                        <div class="form-group">
+                            <label for="minDeliveryNote">Delivery Note Number</label>
+                            <input type="text" id="minDeliveryNote" name="delivery_note_number">
+                        </div>
+                        <div class="form-group">
+                            <label for="minDeliveryCondition">Delivery Condition</label>
+                            <select id="minDeliveryCondition" name="delivery_condition">
+                                <option>Good</option><option>Damaged</option><option>Partial</option><option>Rejected</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="minQualityStatus">Quality Check Status</label>
+                            <select id="minQualityStatus" name="quality_check_status">
+                                <option>Pending</option><option>Passed</option><option>Failed</option><option>Conditional</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="minReceivedBy">Received By *</label>
+                            <input type="text" id="minReceivedBy" name="received_by" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="minReceivedByRole">Receiver Role</label>
+                            <input type="text" id="minReceivedByRole" name="received_by_role" value="Store Keeper">
+                        </div>
+                        <div class="form-group">
+                            <label for="minWarehouseLocation">Warehouse Location</label>
+                            <input type="text" id="minWarehouseLocation" name="warehouse_location" placeholder="e.g. Warehouse A - Section 1">
+                        </div>
+                        <div class="form-group">
+                            <label for="minProjectName">Project Name</label>
+                            <input type="text" id="minProjectName" name="project_name" placeholder="Project this material is for">
+                        </div>
+                    </div>
+                    <div class="form-group" style="margin-top:10px;">
+                        <label for="minTransportIssue">Transport Issue / Remarks</label>
+                        <textarea id="minTransportIssue" name="transport_issue" rows="2" placeholder="Any transport problems, delays, damage..."></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="minQualityRemarks">Quality Remarks</label>
+                        <textarea id="minQualityRemarks" name="quality_remarks" rows="2" placeholder="Quality inspection notes"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="minNotes">General Notes</label>
+                        <textarea id="minNotes" name="notes" rows="2"></textarea>
+                    </div>
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-primary">Save Materials In Record</button>
+                        <button type="button" onclick="closeForm()" class="btn btn-secondary">Cancel</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    `;
+    document.body.insertAdjacentHTML('beforeend', formHTML);
+    setTimeout(() => {
+        const form = document.getElementById('materialsInForm');
+        if (form) form.addEventListener('submit', async (e) => { e.preventDefault(); await saveMaterialsIn(); });
+    }, 100);
+}
+
+async function saveMaterialsIn() {
+    const payload = {
+        material_id: document.getElementById('minMaterial').value,
+        track_number: document.getElementById('minTrackNumber').value,
+        receipt_date: document.getElementById('minReceiptDate').value,
+        quantity_received: parseFloat(document.getElementById('minQuantity').value),
+        unit_of_measure: document.getElementById('minUnitMeasure').value,
+        unit_price: parseFloat(document.getElementById('minUnitPrice').value),
+        transport_cost: parseFloat(document.getElementById('minTransportCost').value) || 0,
+        supplier_name: document.getElementById('minSupplierName').value,
+        supplier_contact: document.getElementById('minSupplierContact').value,
+        invoice_number: document.getElementById('minInvoiceNumber').value,
+        purchase_order_number: document.getElementById('minPurchaseOrder').value,
+        delivery_note_number: document.getElementById('minDeliveryNote').value,
+        delivery_condition: document.getElementById('minDeliveryCondition').value,
+        quality_check_status: document.getElementById('minQualityStatus').value,
+        received_by: document.getElementById('minReceivedBy').value,
+        received_by_role: document.getElementById('minReceivedByRole').value,
+        warehouse_location: document.getElementById('minWarehouseLocation').value,
+        project_name: document.getElementById('minProjectName').value,
+        transport_issue: document.getElementById('minTransportIssue').value,
+        quality_remarks: document.getElementById('minQualityRemarks').value,
+        notes: document.getElementById('minNotes').value
+    };
+
+    try {
+        const response = await fetch('/api/materials/in', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+        const result = await response.json();
+        if (result.success) {
+            showNotification('Materials In recorded successfully!', 'success');
+            closeForm();
+            fetchMaterialsInventory();
+            showMaterialsInventory();
+        } else {
+            showNotification(result.message || 'Failed to save record.', 'error');
+        }
+    } catch (error) {
+        console.error('Error saving materials in:', error);
+        showNotification('Error saving record.', 'error');
+    }
+}
+
+function showMaterialsOutForm(preselectedMaterialId, preselectedMaterialName) {
+    const today = new Date().toISOString().split('T')[0];
+    let materialOptions = '<option value="">Select Material</option>';
+    materialsInventoryData.forEach(m => {
+        const selected = preselectedMaterialId && m.id == preselectedMaterialId ? 'selected' : '';
+        materialOptions += `<option value="${m.id}" ${selected}>${m.material_code} - ${m.material_name}</option>`;
+    });
+
+    const formHTML = `
+        <div class="form-overlay" id="materialOutOverlay">
+            <div class="form-container" style="max-width:750px;max-height:92vh;overflow-y:auto;">
+                <div class="form-header">
+                    <h3>Record Materials Out (Issue / Sale)</h3>
+                    <button onclick="closeForm()" class="close-btn">&times;</button>
+                </div>
+                <form id="materialsOutForm">
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:15px;">
+                        <div class="form-group">
+                            <label for="moutMaterial">Material *</label>
+                            <select id="moutMaterial" name="material_id" required>${materialOptions}</select>
+                        </div>
+                        <div class="form-group">
+                            <label for="moutTrackNumber">Track / Issue Number *</label>
+                            <input type="text" id="moutTrackNumber" name="track_number" placeholder="e.g. MOUT-2026-001" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="moutIssueDate">Issue Date *</label>
+                            <input type="date" id="moutIssueDate" name="issue_date" value="${today}" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="moutQuantity">Quantity Out *</label>
+                            <input type="number" id="moutQuantity" name="quantity_out" step="0.01" min="0.01" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="moutUnitMeasure">Unit of Measure</label>
+                            <select id="moutUnitMeasure" name="unit_of_measure">${getUnitMeasureOptions('Bag')}</select>
+                        </div>
+                        <div class="form-group">
+                            <label for="moutUnitPrice">Unit Price (TZS)</label>
+                            <input type="number" id="moutUnitPrice" name="unit_price" step="0.01" min="0" value="0">
+                        </div>
+                        <div class="form-group">
+                            <label for="moutIssueType">Issue Type</label>
+                            <select id="moutIssueType" name="issue_type">
+                                <option>Project Use</option><option>Sale</option><option>Transfer</option><option>Waste</option><option>Damage</option><option>Return to Supplier</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="moutIssuedTo">Issued To *</label>
+                            <input type="text" id="moutIssuedTo" name="issued_to" placeholder="Person or company name" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="moutIssuedToRole">Issued To Role</label>
+                            <input type="text" id="moutIssuedToRole" name="issued_to_role" placeholder="e.g. Site Engineer">
+                        </div>
+                        <div class="form-group">
+                            <label for="moutIssuedToDepartment">Department</label>
+                            <select id="moutIssuedToDepartment" name="issued_to_department">
+                                <option>Project Management</option><option>Management</option><option>Human Resources</option><option>Finance</option><option>Real Estate</option><option>Health & Safety</option><option>Administrative</option><option>Workers</option><option>Clients</option><option>External</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="moutProjectName">Project Name</label>
+                            <input type="text" id="moutProjectName" name="project_name">
+                        </div>
+                        <div class="form-group">
+                            <label for="moutDestination">Destination</label>
+                            <input type="text" id="moutDestination" name="destination" placeholder="Site address or location">
+                        </div>
+                        <div class="form-group">
+                            <label for="moutAuthorizedBy">Authorized By *</label>
+                            <input type="text" id="moutAuthorizedBy" name="authorized_by" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="moutAuthorizedByRole">Authorizer Role</label>
+                            <input type="text" id="moutAuthorizedByRole" name="authorized_by_role" value="Project Manager">
+                        </div>
+                        <div class="form-group">
+                            <label for="moutDeliveryMethod">Delivery Method</label>
+                            <select id="moutDeliveryMethod" name="delivery_method">
+                                <option>Company Vehicle</option><option>Supplier Delivery</option><option>Third Party</option><option>Self Pickup</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="moutDeliveryReceipt">Delivery Receipt Number</label>
+                            <input type="text" id="moutDeliveryReceipt" name="delivery_receipt_number">
+                        </div>
+                        <div class="form-group">
+                            <label for="moutCondition">Condition on Issue</label>
+                            <select id="moutCondition" name="condition_on_issue">
+                                <option>New</option><option>Good</option><option>Fair</option><option>Damaged</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="moutReturnExpected">Return Expected?</label>
+                            <select id="moutReturnExpected" name="return_expected">
+                                <option value="false">No</option><option value="true">Yes</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="moutExpectedReturnDate">Expected Return Date</label>
+                            <input type="date" id="moutExpectedReturnDate" name="expected_return_date">
+                        </div>
+                    </div>
+                    <div class="form-group" style="margin-top:10px;">
+                        <label for="moutPurpose">Purpose</label>
+                        <textarea id="moutPurpose" name="purpose" rows="2" placeholder="Reason for issuing material..."></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="moutNotes">General Notes</label>
+                        <textarea id="moutNotes" name="notes" rows="2"></textarea>
+                    </div>
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-primary">Save Materials Out Record</button>
+                        <button type="button" onclick="closeForm()" class="btn btn-secondary">Cancel</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    `;
+    document.body.insertAdjacentHTML('beforeend', formHTML);
+    setTimeout(() => {
+        const form = document.getElementById('materialsOutForm');
+        if (form) form.addEventListener('submit', async (e) => { e.preventDefault(); await saveMaterialsOut(); });
+    }, 100);
+}
+
+async function saveMaterialsOut() {
+    const payload = {
+        material_id: document.getElementById('moutMaterial').value,
+        track_number: document.getElementById('moutTrackNumber').value,
+        issue_date: document.getElementById('moutIssueDate').value,
+        quantity_out: parseFloat(document.getElementById('moutQuantity').value),
+        unit_of_measure: document.getElementById('moutUnitMeasure').value,
+        unit_price: parseFloat(document.getElementById('moutUnitPrice').value) || 0,
+        issue_type: document.getElementById('moutIssueType').value,
+        issued_to: document.getElementById('moutIssuedTo').value,
+        issued_to_role: document.getElementById('moutIssuedToRole').value,
+        issued_to_department: document.getElementById('moutIssuedToDepartment').value,
+        project_name: document.getElementById('moutProjectName').value,
+        destination: document.getElementById('moutDestination').value,
+        authorized_by: document.getElementById('moutAuthorizedBy').value,
+        authorized_by_role: document.getElementById('moutAuthorizedByRole').value,
+        delivery_method: document.getElementById('moutDeliveryMethod').value,
+        delivery_receipt_number: document.getElementById('moutDeliveryReceipt').value,
+        condition_on_issue: document.getElementById('moutCondition').value,
+        return_expected: document.getElementById('moutReturnExpected').value === 'true',
+        expected_return_date: document.getElementById('moutExpectedReturnDate').value || null,
+        purpose: document.getElementById('moutPurpose').value,
+        notes: document.getElementById('moutNotes').value
+    };
+
+    try {
+        const response = await fetch('/api/materials/out', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+        const result = await response.json();
+        if (result.success) {
+            showNotification('Materials Out recorded successfully!', 'success');
+            closeForm();
+            fetchMaterialsInventory();
+            showMaterialsInventory();
+        } else {
+            showNotification(result.message || 'Failed to save record.', 'error');
+        }
+    } catch (error) {
+        console.error('Error saving materials out:', error);
+        showNotification('Error saving record.', 'error');
+    }
+}
+
+async function showMaterialsInRecords() {
+    const records = await fetchMaterialsIn();
+    let rowsHtml = '';
+    if (records.length === 0) {
+        rowsHtml = '<tr><td colspan="10" style="text-align:center;">No materials in records found.</td></tr>';
+    } else {
+        records.forEach(r => {
+            rowsHtml += `<tr>
+                <td>${r.track_number||''}</td>
+                <td>${r.receipt_date||''}</td>
+                <td>${r.material_code||''} - ${r.material_name||''}</td>
+                <td>${parseFloat(r.quantity_received||0).toLocaleString()} ${r.unit_of_measure||''}</td>
+                <td>TZS ${parseFloat(r.total_cost||0).toLocaleString()}</td>
+                <td>${r.supplier_name||''}</td>
+                <td>${r.delivery_condition||''}</td>
+                <td>${r.quality_check_status||''}</td>
+                <td>${r.received_by||''}</td>
+                <td>${r.warehouse_location||''}</td>
+            </tr>`;
+        });
+    }
+    showContent(`
+        <div class="card">
+            <h3>Materials In Records</h3>
+            <div class="table-responsive">
+                <table class="projects-table">
+                    <thead><tr><th>Track No</th><th>Date</th><th>Material</th><th>Qty</th><th>Total Cost</th><th>Supplier</th><th>Condition</th><th>Quality</th><th>Received By</th><th>Location</th></tr></thead>
+                    <tbody>${rowsHtml}</tbody>
+                </table>
+            </div>
+            <div class="form-actions" style="margin-top:15px;">
+                <button onclick="showMaterialsInventory()" class="action" style="background:#6c757d;">Back to Inventory</button>
+                <button onclick="showMaterialsDashboard()" class="action" style="background:#17a2b8;">Dashboard</button>
+            </div>
+        </div>
+    `);
+}
+
+async function showMaterialsOutRecords() {
+    const records = await fetchMaterialsOut();
+    let rowsHtml = '';
+    if (records.length === 0) {
+        rowsHtml = '<tr><td colspan="10" style="text-align:center;">No materials out records found.</td></tr>';
+    } else {
+        records.forEach(r => {
+            rowsHtml += `<tr>
+                <td>${r.track_number||''}</td>
+                <td>${r.issue_date||''}</td>
+                <td>${r.material_code||''} - ${r.material_name||''}</td>
+                <td>${parseFloat(r.quantity_out||0).toLocaleString()} ${r.unit_of_measure||''}</td>
+                <td>${r.issue_type||''}</td>
+                <td>${r.issued_to||''}</td>
+                <td>${r.project_name||''}</td>
+                <td>${r.authorized_by||''}</td>
+                <td>${r.delivery_method||''}</td>
+                <td>${r.condition_on_issue||''}</td>
+            </tr>`;
+        });
+    }
+    showContent(`
+        <div class="card">
+            <h3>Materials Out Records</h3>
+            <div class="table-responsive">
+                <table class="projects-table">
+                    <thead><tr><th>Track No</th><th>Date</th><th>Material</th><th>Qty</th><th>Type</th><th>Issued To</th><th>Project</th><th>Authorized By</th><th>Delivery</th><th>Condition</th></tr></thead>
+                    <tbody>${rowsHtml}</tbody>
+                </table>
+            </div>
+            <div class="form-actions" style="margin-top:15px;">
+                <button onclick="showMaterialsInventory()" class="action" style="background:#6c757d;">Back to Inventory</button>
+                <button onclick="showMaterialsDashboard()" class="action" style="background:#17a2b8;">Dashboard</button>
+            </div>
+        </div>
+    `);
 }
 
 </script>

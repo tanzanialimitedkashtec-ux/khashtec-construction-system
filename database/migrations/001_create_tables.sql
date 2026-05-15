@@ -2059,3 +2059,145 @@ INSERT IGNORE INTO payment_requests (
  500000.00, 'TZS', 500000.00, 1.000000, 'Travel reimbursement for site visit', 'Travel to Dodoma project site',
  'reimbursement', 'normal', 'mobile_money', '2024-01-18', 'Projects',
  'PRJ-002', 'processed', 1, '2024-01-12');
+
+-- ===== MATERIALS MANAGEMENT SYSTEM =====
+
+-- Materials Inventory (Master catalog of all building materials)
+CREATE TABLE IF NOT EXISTS materials_inventory (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  material_code VARCHAR(50) UNIQUE NOT NULL,
+  material_name VARCHAR(255) NOT NULL,
+  material_category ENUM('Cement', 'Sand', 'Gravel', 'Steel/Rebar', 'Bricks', 'Blocks', 'Timber', 'Pipes', 'Electrical', 'Paint', 'Roofing', 'Tiles', 'Glass', 'Hardware', 'Tools', 'Safety Equipment', 'Other') DEFAULT 'Other',
+  description TEXT,
+  unit_of_measure ENUM('Bag', 'KG', 'Ton', 'Piece', 'Meter', 'Square Meter', 'Cubic Meter', 'Liter', 'Roll', 'Box', 'Set', 'Sheet') DEFAULT 'Piece',
+  current_stock DECIMAL(12,2) DEFAULT 0,
+  min_stock_level DECIMAL(12,2) DEFAULT 10,
+  max_stock_level DECIMAL(12,2) DEFAULT 1000,
+  reorder_point DECIMAL(12,2) DEFAULT 50,
+  storage_location VARCHAR(255),
+  supplier_name VARCHAR(255),
+  supplier_contact VARCHAR(255),
+  unit_cost DECIMAL(12,2) DEFAULT 0,
+  status ENUM('Active', 'Discontinued', 'Out of Stock', 'Low Stock') DEFAULT 'Active',
+  created_by INT,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  FOREIGN KEY (created_by) REFERENCES users(id) ON DELETE SET NULL,
+  INDEX idx_material_code (material_code),
+  INDEX idx_material_name (material_name),
+  INDEX idx_category (material_category),
+  INDEX idx_status (status),
+  INDEX idx_storage_location (storage_location)
+);
+
+-- Materials In (Receiving/Purchasing records)
+CREATE TABLE IF NOT EXISTS materials_in (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  material_id INT NOT NULL,
+  track_number VARCHAR(100) UNIQUE NOT NULL,
+  receipt_date DATE NOT NULL,
+  quantity_received DECIMAL(12,2) NOT NULL,
+  unit_of_measure ENUM('Bag', 'KG', 'Ton', 'Piece', 'Meter', 'Square Meter', 'Cubic Meter', 'Liter', 'Roll', 'Box', 'Set', 'Sheet') DEFAULT 'Piece',
+  unit_price DECIMAL(12,2) NOT NULL,
+  total_cost DECIMAL(12,2) NOT NULL,
+  transport_cost DECIMAL(12,2) DEFAULT 0,
+  transport_issue TEXT,
+  supplier_name VARCHAR(255) NOT NULL,
+  supplier_contact VARCHAR(255),
+  supplier_tin VARCHAR(50),
+  invoice_number VARCHAR(100),
+  purchase_order_number VARCHAR(100),
+  delivery_note_number VARCHAR(100),
+  delivery_condition ENUM('Good', 'Damaged', 'Partial', 'Rejected') DEFAULT 'Good',
+  quality_check_status ENUM('Pending', 'Passed', 'Failed', 'Conditional') DEFAULT 'Pending',
+  quality_remarks TEXT,
+  received_by VARCHAR(255) NOT NULL,
+  received_by_role VARCHAR(100),
+  project_id INT,
+  project_name VARCHAR(255),
+  warehouse_location VARCHAR(255),
+  notes TEXT,
+  created_by INT,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  FOREIGN KEY (material_id) REFERENCES materials_inventory(id) ON DELETE CASCADE,
+  FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE SET NULL,
+  FOREIGN KEY (created_by) REFERENCES users(id) ON DELETE SET NULL,
+  INDEX idx_track_number (track_number),
+  INDEX idx_material_id (material_id),
+  INDEX idx_receipt_date (receipt_date),
+  INDEX idx_supplier_name (supplier_name),
+  INDEX idx_project_id (project_id),
+  INDEX idx_quality_status (quality_check_status)
+);
+
+-- Materials Out (Sales/Usage/Issue records)
+CREATE TABLE IF NOT EXISTS materials_out (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  material_id INT NOT NULL,
+  track_number VARCHAR(100) UNIQUE NOT NULL,
+  issue_date DATE NOT NULL,
+  quantity_out DECIMAL(12,2) NOT NULL,
+  unit_of_measure ENUM('Bag', 'KG', 'Ton', 'Piece', 'Meter', 'Square Meter', 'Cubic Meter', 'Liter', 'Roll', 'Box', 'Set', 'Sheet') DEFAULT 'Piece',
+  unit_price DECIMAL(12,2) DEFAULT 0,
+  total_value DECIMAL(12,2) DEFAULT 0,
+  issue_type ENUM('Project Use', 'Sale', 'Transfer', 'Waste', 'Damage', 'Return to Supplier') DEFAULT 'Project Use',
+  issued_to VARCHAR(255) NOT NULL,
+  issued_to_role VARCHAR(100),
+  issued_to_department ENUM('Management', 'Human Resources', 'Finance', 'Project Management', 'Real Estate', 'Health & Safety', 'Administrative', 'Workers', 'Clients', 'External') DEFAULT 'Project Management',
+  project_id INT,
+  project_name VARCHAR(255),
+  destination VARCHAR(255),
+  purpose TEXT,
+  authorized_by VARCHAR(255) NOT NULL,
+  authorized_by_role VARCHAR(100),
+  delivery_method ENUM('Company Vehicle', 'Supplier Delivery', 'Third Party', 'Self Pickup') DEFAULT 'Company Vehicle',
+  delivery_receipt_number VARCHAR(100),
+  condition_on_issue ENUM('New', 'Good', 'Fair', 'Damaged') DEFAULT 'New',
+  return_expected BOOLEAN DEFAULT FALSE,
+  expected_return_date DATE,
+  actual_return_date DATE,
+  return_condition ENUM('Good', 'Damaged', 'Partial', 'Not Returned') DEFAULT 'Not Returned',
+  notes TEXT,
+  created_by INT,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  FOREIGN KEY (material_id) REFERENCES materials_inventory(id) ON DELETE CASCADE,
+  FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE SET NULL,
+  FOREIGN KEY (created_by) REFERENCES users(id) ON DELETE SET NULL,
+  INDEX idx_track_number (track_number),
+  INDEX idx_material_id (material_id),
+  INDEX idx_issue_date (issue_date),
+  INDEX idx_issue_type (issue_type),
+  INDEX idx_project_id (project_id),
+  INDEX idx_issued_to (issued_to)
+);
+
+-- Insert sample materials inventory data
+INSERT IGNORE INTO materials_inventory (material_code, material_name, material_category, description, unit_of_measure, current_stock, min_stock_level, max_stock_level, reorder_point, storage_location, supplier_name, supplier_contact, unit_cost, status) VALUES
+('MAT-CEM-001', 'Ordinary Portland Cement', 'Cement', 'Dangote Cement 50kg bags for general construction', 'Bag', 500, 100, 2000, 200, 'Warehouse A - Section 1', 'Dangote Tanzania Ltd', '+255 222 123 456', 18500.00, 'Active'),
+('MAT-SND-001', 'Fine River Sand', 'Sand', 'Clean washed river sand for mortar and plastering', 'Cubic Meter', 150, 50, 500, 80, 'Yard B - Sand Pile', 'Local Supplier', '+255 713 987 654', 45000.00, 'Active'),
+('MAT-RBL-001', 'Steel Rebar 12mm', 'Steel/Rebar', 'High tensile steel reinforcement bars 12mm diameter', 'Meter', 2000, 500, 10000, 1000, 'Warehouse A - Section 3', 'Steel Rolling Mills', '+255 222 456 789', 8500.00, 'Active'),
+('MAT-PVC-001', 'PVC Pressure Pipe 4 inch', 'Pipes', 'UPVC pressure pipe Class C, 4 inch diameter for water supply', 'Meter', 300, 100, 1000, 150, 'Warehouse C - Pipe Rack', 'P Pipe Industries', '+255 713 456 123', 12000.00, 'Active'),
+('MAT-BRK-001', 'Clay Facing Bricks', 'Bricks', 'Red clay facing bricks 230x110x76mm', 'Piece', 10000, 2000, 50000, 5000, 'Yard B - Brick Stack', 'Kiln Masters Ltd', '+255 714 321 654', 350.00, 'Active'),
+('MAT-TIM-001', 'Construction Timber 2x4', 'Timber', 'Treated pine timber 2x4 inches for formwork and framing', 'Meter', 500, 200, 2000, 300, 'Warehouse D - Timber Shed', 'Forest Products Ltd', '+255 715 654 321', 8000.00, 'Active'),
+('MAT-ELC-001', 'Electrical Cable 2.5mm', 'Electrical', 'Twin and earth electrical cable 2.5mm for lighting circuits', 'Meter', 1000, 300, 5000, 500, 'Warehouse E - Electrical', 'Electro Supplies', '+255 716 123 789', 2500.00, 'Active'),
+('MAT-PNT-001', 'Weather Shield Exterior Paint', 'Paint', 'White exterior weather shield paint 20 liter drums', 'Liter', 200, 50, 500, 80, 'Warehouse F - Paint Store', 'ColorMaster Paints', '+255 717 987 123', 15000.00, 'Active'),
+('MAT-RFG-001', 'Galvanized Roofing Sheets', 'Roofing', 'Corrugated galvanized iron roofing sheets 3 meter length', 'Sheet', 300, 100, 1000, 150, 'Warehouse G - Roofing', 'Mabati Rolling Mills', '+255 718 456 987', 35000.00, 'Active'),
+('MAT-TLE-001', 'Ceramic Floor Tiles', 'Tiles', '400x400mm ceramic floor tiles beige color', 'Square Meter', 500, 150, 2000, 250, 'Warehouse H - Tiles', 'Tile World Ltd', '+255 719 321 456', 22000.00, 'Active');
+
+-- Insert sample materials in records
+INSERT IGNORE INTO materials_in (material_id, track_number, receipt_date, quantity_received, unit_of_measure, unit_price, total_cost, transport_cost, transport_issue, supplier_name, supplier_contact, invoice_number, purchase_order_number, delivery_note_number, delivery_condition, quality_check_status, received_by, received_by_role, project_name, warehouse_location, notes) VALUES
+(1, 'MIN-2026-0001', '2026-05-01', 200, 'Bag', 18500.00, 3700000.00, 150000.00, 'Minor delay due to road construction on Bagamoyo road', 'Dangote Tanzania Ltd', '+255 222 123 456', 'INV-DG-2026-001', 'PO-KT-2026-045', 'DN-DG-2026-089', 'Good', 'Passed', 'John Doe', 'Store Keeper', 'Dar es Salaam Port Modernization', 'Warehouse A - Section 1', 'Delivered on time, quality verified'),
+(2, 'MIN-2026-0002', '2026-05-02', 50, 'Cubic Meter', 45000.00, 2250000.00, 80000.00, NULL, 'Local Supplier', '+255 713 987 654', 'INV-LS-2026-015', 'PO-KT-2026-046', 'DN-LS-2026-034', 'Good', 'Passed', 'Jane Smith', 'Procurement Officer', 'Residential Buildings - Kinondoni', 'Yard B - Sand Pile', 'Clean washed sand, approved by engineer'),
+(3, 'MIN-2026-0003', '2026-05-03', 500, 'Meter', 8500.00, 4250000.00, 120000.00, 'Truck breakdown caused 2-day delay', 'Steel Rolling Mills', '+255 222 456 789', 'INV-SRM-2026-008', 'PO-KT-2026-047', 'DN-SRM-2026-012', 'Good', 'Passed', 'Mike Johnson', 'Site Supervisor', 'Office Building Project', 'Warehouse A - Section 3', 'High quality rebar with mill certificates'),
+(4, 'MIN-2026-0004', '2026-05-04', 100, 'Meter', 12000.00, 1200000.00, 50000.00, NULL, 'P Pipe Industries', '+255 713 456 123', 'INV-PPI-2026-005', 'PO-KT-2026-048', 'DN-PPI-2026-007', 'Good', 'Passed', 'Sarah Wilson', 'Project Manager', 'Fukayosi Real Estate Project', 'Warehouse C - Pipe Rack', 'Pressure tested before acceptance'),
+(5, 'MIN-2026-0005', '2026-05-05', 2000, 'Piece', 350.00, 700000.00, 60000.00, 'Some bricks damaged during offloading - 50 pieces broken', 'Kiln Masters Ltd', '+255 714 321 654', 'INV-KM-2026-011', 'PO-KT-2026-049', 'DN-KM-2026-015', 'Partial', 'Conditional', 'David Brown', 'Quantity Surveyor', 'Road Construction - Bagamoyo', 'Yard B - Brick Stack', '50 damaged bricks recorded and will be replaced by supplier');
+
+-- Insert sample materials out records
+INSERT IGNORE INTO materials_out (material_id, track_number, issue_date, quantity_out, unit_of_measure, unit_price, total_value, issue_type, issued_to, issued_to_role, issued_to_department, project_name, destination, purpose, authorized_by, authorized_by_role, delivery_method, delivery_receipt_number, condition_on_issue, return_expected, notes) VALUES
+(1, 'MOUT-2026-0001', '2026-05-06', 50, 'Bag', 18500.00, 925000.00, 'Project Use', 'Eng. Michael K. Johnson', 'Site Engineer', 'Project Management', 'Dar es Salaam Port Modernization', 'Site A - Port Area', 'Foundation works for new warehouse', 'Project Manager', 'Project Manager', 'Company Vehicle', 'DR-2026-001', 'New', FALSE, 'Issued for Phase 1 foundation concrete'),
+(3, 'MOUT-2026-0002', '2026-05-07', 200, 'Meter', 8500.00, 1700000.00, 'Project Use', 'Sarah Wilson', 'Site Supervisor', 'Project Management', 'Office Building Project', 'Site B - CBD', 'Column reinforcement for ground floor', 'Project Manager', 'Project Manager', 'Supplier Delivery', 'DR-2026-002', 'New', FALSE, 'Delivered directly to site by supplier truck'),
+(4, 'MOUT-2026-0003', '2026-05-08', 30, 'Meter', 12000.00, 360000.00, 'Project Use', 'John Doe', 'Plumbing Supervisor', 'Project Management', 'Residential Buildings - Kinondoni', 'Site C - Kinondoni', 'Main water supply line installation', 'Project Manager', 'Project Manager', 'Company Vehicle', 'DR-2026-003', 'New', FALSE, 'Schedule 40 PVC pipes for potable water'),
+(2, 'MOUT-2026-0004', '2026-05-09', 20, 'Cubic Meter', 45000.00, 900000.00, 'Project Use', 'Jane Smith', 'Mason Foreman', 'Workers', 'Road Construction - Bagamoyo', 'Site D - Bagamoyo Road', 'Mortar mixing for culvert construction', 'Site Engineer', 'Site Engineer', 'Company Vehicle', 'DR-2026-004', 'New', FALSE, 'Fine sand for cement mortar'),
+(5, 'MOUT-2026-0005', '2026-05-10', 500, 'Piece', 350.00, 175000.00, 'Sale', 'ABC Hardware Ltd', 'Manager', 'External', NULL, 'ABC Hardware - Kariakoo', 'Retail sale to external customer', 'Sales Manager', 'Sales Manager', 'Third Party', 'DR-2026-005', 'New', FALSE, 'Sold as excess stock to external hardware store');
