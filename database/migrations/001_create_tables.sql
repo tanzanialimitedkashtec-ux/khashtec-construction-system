@@ -1861,6 +1861,39 @@ CREATE TABLE IF NOT EXISTS accountants (
   INDEX idx_submitted_by (submitted_by)
 );
 
+-- Team Management Tables
+CREATE TABLE IF NOT EXISTS teams (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  name VARCHAR(255) NOT NULL,
+  department VARCHAR(100) NULL,
+  description TEXT NULL,
+  leader_employee_id INT NULL,
+  status ENUM('Active', 'Inactive') DEFAULT 'Active',
+  created_by INT NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  FOREIGN KEY (leader_employee_id) REFERENCES employees(id) ON DELETE SET NULL,
+  FOREIGN KEY (created_by) REFERENCES users(id) ON DELETE SET NULL,
+  INDEX idx_department (department),
+  INDEX idx_status (status),
+  INDEX idx_leader_employee_id (leader_employee_id)
+);
+
+CREATE TABLE IF NOT EXISTS team_members (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  team_id INT NOT NULL,
+  employee_id INT NOT NULL,
+  member_role VARCHAR(100) NULL,
+  status ENUM('Active', 'Inactive') DEFAULT 'Active',
+  joined_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (team_id) REFERENCES teams(id) ON DELETE CASCADE,
+  FOREIGN KEY (employee_id) REFERENCES employees(id) ON DELETE CASCADE,
+  UNIQUE KEY unique_team_member (team_id, employee_id),
+  INDEX idx_team_id (team_id),
+  INDEX idx_employee_id (employee_id),
+  INDEX idx_status (status)
+);
+
 -- Sample Data for New Forms Tables (Optional)
 -- NHIF Sample Data
 INSERT IGNORE INTO nhif_contributions (employee_id, contribution_month, employee_contribution, employer_contribution, total_contribution, payment_status, payment_date, receipt_number) VALUES
