@@ -1780,6 +1780,17 @@ try {
     console.error('❌ Error loading work routes:', error);
 }
 
+// ===== MATERIALS ROUTES =====
+console.log('🔍 Mounting materials routes from routes/materials.js...');
+try {
+    const materialsRoutes = require('./routes/materials');
+    console.log('✅ Materials routes loaded successfully');
+    app.use('/api/materials', materialsRoutes);
+    console.log('✅ Materials routes mounted at /api/materials');
+} catch (error) {
+    console.error('❌ Error loading materials routes:', error);
+}
+
 // ===== ATTENDANCE ROUTES =====
 console.log('🔍 Mounting attendance routes from routes/attendance.js...');
 try {

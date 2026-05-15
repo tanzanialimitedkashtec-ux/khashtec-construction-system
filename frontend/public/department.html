@@ -94310,7 +94310,7 @@ async function loadMaterialsDashboardStats() {
 
     try {
 
-        const response = await fetch(`${KashTecAPI.baseUrl}/materials/dashboard`);
+        const response = await fetch(`${KashTecAPI.baseUrl}/api/materials/dashboard`);
 
         const data = await response.json();
 
@@ -94424,7 +94424,7 @@ async function loadMaterialsInventoryTable() {
 
     try {
 
-        const response = await fetch(`${KashTecAPI.baseUrl}/materials/inventory`);
+        const response = await fetch(`${KashTecAPI.baseUrl}/api/materials/inventory`);
 
         const data = await response.json();
 
@@ -94538,7 +94538,7 @@ async function searchMaterials() {
 
     try {
 
-        const response = await fetch(`${KashTecAPI.baseUrl}/materials/search?q=${encodeURIComponent(query)}`);
+        const response = await fetch(`${KashTecAPI.baseUrl}/api/materials/search?q=${encodeURIComponent(query)}`);
 
         const data = await response.json();
 
@@ -94970,7 +94970,7 @@ function showMaterialsInForm() {
 
                     submitBtn.disabled = true;
 
-                    const response = await fetch(`${KashTecAPI.baseUrl}/materials/in`, {
+                    const response = await fetch(`${KashTecAPI.baseUrl}/api/materials/in`, {
 
                         method: 'POST',
 
@@ -95420,7 +95420,7 @@ function showMaterialsOutForm() {
 
                     submitBtn.disabled = true;
 
-                    const response = await fetch(`${KashTecAPI.baseUrl}/materials/out`, {
+                    const response = await fetch(`${KashTecAPI.baseUrl}/api/materials/out`, {
 
                         method: 'POST',
 
@@ -95474,7 +95474,7 @@ async function loadMaterialDropdown(selectId) {
 
     try {
 
-        const response = await fetch(`${KashTecAPI.baseUrl}/materials/inventory`);
+        const response = await fetch(`${KashTecAPI.baseUrl}/api/materials/inventory`);
 
         const data = await response.json();
 
@@ -95548,7 +95548,7 @@ async function loadMaterialsInRecords() {
 
     try {
 
-        const response = await fetch(`${KashTecAPI.baseUrl}/materials/in`);
+        const response = await fetch(`${KashTecAPI.baseUrl}/api/materials/in`);
 
         const data = await response.json();
 
@@ -95650,7 +95650,7 @@ async function loadMaterialsOutRecords() {
 
     try {
 
-        const response = await fetch(`${KashTecAPI.baseUrl}/materials/out`);
+        const response = await fetch(`${KashTecAPI.baseUrl}/api/materials/out`);
 
         const data = await response.json();
 
@@ -96002,7 +96002,7 @@ function showAddMaterialForm() {
 
                     submitBtn.disabled = true;
 
-                    const response = await fetch(`${KashTecAPI.baseUrl}/materials/inventory`, {
+                    const response = await fetch(`${KashTecAPI.baseUrl}/api/materials/inventory`, {
 
                         method: 'POST',
 
