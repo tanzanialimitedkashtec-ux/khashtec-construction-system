@@ -101626,7 +101626,7 @@ async function fetchMaterialsInventory() {
     try {
         const response = await fetch('/api/materials/inventory');
         const result = await response.json();
-        if (result.success) { materialsInventoryData = result.data || []; return materialsInventoryData; }
+        if (result.success) { materialsInventoryData = Array.isArray(result.data) ? result.data : []; return materialsInventoryData; }
         return [];
     } catch (e) { console.error('Error loading inventory:', e); return []; }
 }
@@ -101635,7 +101635,7 @@ async function fetchMaterialsIn() {
     try {
         const response = await fetch('/api/materials/in');
         const result = await response.json();
-        if (result.success) { materialsInData = result.data || []; return materialsInData; }
+        if (result.success) { materialsInData = Array.isArray(result.data) ? result.data : []; return materialsInData; }
         return [];
     } catch (e) { console.error('Error loading materials in:', e); return []; }
 }
@@ -101644,7 +101644,7 @@ async function fetchMaterialsOut() {
     try {
         const response = await fetch('/api/materials/out');
         const result = await response.json();
-        if (result.success) { materialsOutData = result.data || []; return materialsOutData; }
+        if (result.success) { materialsOutData = Array.isArray(result.data) ? result.data : []; return materialsOutData; }
         return [];
     } catch (e) { console.error('Error loading materials out:', e); return []; }
 }
@@ -101684,7 +101684,7 @@ async function showMaterialsDashboard() {
 async function showMaterialsInventory() {
     const inventory = await fetchMaterialsInventory();
     let rowsHtml = '';
-    if (inventory.length === 0) {
+    if (!Array.isArray(inventory) || inventory.length === 0) {
         rowsHtml = '<tr><td colspan="9" style="text-align:center;">No materials found.</td></tr>';
     } else {
         inventory.forEach(m => {
@@ -101756,6 +101756,9 @@ function getUnitMeasureOptions(selected) {
 function showMaterialsInForm(preselectedMaterialId, preselectedMaterialName) {
     const today = new Date().toISOString().split('T')[0];
     let materialOptions = '<option value="">Select Material</option>';
+    if (!Array.isArray(materialsInventoryData)) {
+        materialsInventoryData = [];
+    }
     materialsInventoryData.forEach(m => {
         const selected = preselectedMaterialId && m.id == preselectedMaterialId ? 'selected' : '';
         materialOptions += `<option value="${m.id}" ${selected}>${m.material_code} - ${m.material_name}</option>`;
@@ -101923,6 +101926,9 @@ async function saveMaterialsIn() {
 function showMaterialsOutForm(preselectedMaterialId, preselectedMaterialName) {
     const today = new Date().toISOString().split('T')[0];
     let materialOptions = '<option value="">Select Material</option>';
+    if (!Array.isArray(materialsInventoryData)) {
+        materialsInventoryData = [];
+    }
     materialsInventoryData.forEach(m => {
         const selected = preselectedMaterialId && m.id == preselectedMaterialId ? 'selected' : '';
         materialOptions += `<option value="${m.id}" ${selected}>${m.material_code} - ${m.material_name}</option>`;
@@ -102096,7 +102102,7 @@ async function saveMaterialsOut() {
 async function showMaterialsInRecords() {
     const records = await fetchMaterialsIn();
     let rowsHtml = '';
-    if (records.length === 0) {
+    if (!Array.isArray(records) || records.length === 0) {
         rowsHtml = '<tr><td colspan="10" style="text-align:center;">No materials in records found.</td></tr>';
     } else {
         records.forEach(r => {
@@ -102134,7 +102140,7 @@ async function showMaterialsInRecords() {
 async function showMaterialsOutRecords() {
     const records = await fetchMaterialsOut();
     let rowsHtml = '';
-    if (records.length === 0) {
+    if (!Array.isArray(records) || records.length === 0) {
         rowsHtml = '<tr><td colspan="10" style="text-align:center;">No materials out records found.</td></tr>';
     } else {
         records.forEach(r => {
