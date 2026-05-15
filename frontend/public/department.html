@@ -95482,7 +95482,26 @@ async function loadMaterialDropdown(selectId) {
 
         const select = document.getElementById(selectId);
 
-        if (!select || !Array.isArray(materials)) return;
+        if (!select) return;
+
+        // Clear existing options
+        select.innerHTML = '';
+
+        // Add default placeholder
+        const placeholder = document.createElement('option');
+        placeholder.value = '';
+        placeholder.textContent = '-- Select Material --';
+        placeholder.disabled = true;
+        placeholder.selected = true;
+        select.appendChild(placeholder);
+
+        // Add sample option
+        const sampleOption = document.createElement('option');
+        sampleOption.value = 'sample';
+        sampleOption.textContent = 'Sample Material (SMP-001) - Stock: 100 Bags';
+        select.appendChild(sampleOption);
+
+        if (!Array.isArray(materials)) return;
 
         materials.forEach(m => {
 
