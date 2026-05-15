@@ -46577,7 +46577,7 @@ function saveEmployeeManual() {
 
         console.log('🧪 Testing employees API endpoint...');
 
-        fetch('/employees', {
+        fetch('/api/employees', {
 
             method: 'GET',
 
@@ -46727,7 +46727,7 @@ function saveEmployeeManual() {
 
             
 
-            return fetch('/employees', {
+            return fetch('/api/employees', {
 
                 method: 'POST',
 
@@ -78575,7 +78575,17 @@ function saveNewProperty() {
 
         if (!response.ok) {
 
-            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            return response.json()
+
+            .catch(() => null)
+
+            .then(err => {
+
+                const detail = (err && (err.message || err.error)) ? (err.message || err.error) : (response.statusText || 'Request failed');
+
+                throw new Error(`HTTP ${response.status}: ${detail}`);
+
+            });
 
         }
 
@@ -78597,7 +78607,7 @@ function saveNewProperty() {
 
         
 
-        customAlert(`Property added successfully!\n\nPlot: ${property.plotNumber}\nLocation: ${property.location}\nPrice: TZS ${parseInt(property.price).toLocaleString()}\nStatus: ${property.status}\nProperty ID: ${data.id}\n\n🎉 Property saved to database!`, "Property Added", "success");
+        customAlert(`Property added successfully!\n\nPlot: ${property.propertyName}\nLocation: ${property.location}\nPrice: TZS ${parseInt(property.value).toLocaleString()}\nStatus: ${property.status}\nProperty ID: ${data.id}\n\n🎉 Property saved to database!`, "Property Added", "success");
 
         
 

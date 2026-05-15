@@ -3546,40 +3546,151 @@ app.post('/api/properties', async (req, res) => {
 
         // Insert property
 
-        const resultResult = await db.execute(`
+        const columns = await db.execute('SHOW COLUMNS FROM properties');
+        const columnNames = new Set((columns || []).map(col => col.Field));
 
+        const statusMapping = {
+            available: 'Available',
+            sold: 'Sold',
+            reserved: 'Under Offer',
+            'under-offer': 'Under Offer',
+            'under-contract': 'Under Contract',
+            rented: 'Rented',
+            'off-market': 'Off Market',
+            'under-development': 'Off Market'
+        };
+
+        const normalizeStatus = (input) => {
+            if (!input) return 'Available';
+            const key = String(input).trim().toLowerCase();
+            return statusMapping[key] || input;
+        };
+
+        const typeMappingTitleSchema = {
+            residential: 'Residential',
+            commercial: 'Commercial',
+            industrial: 'Industrial',
+            agricultural: 'Land',
+            land: 'Land',
+            'mixed-use': 'Mixed Use',
+            mixed: 'Mixed Use'
+        };
+
+        const normalizeTypeForTitleSchema = (input) => {
+            if (!input) return 'Residential';
+            const key = String(input).trim().toLowerCase();
+            return typeMappingTitleSchema[key] || input;
+        };
+
+        const typeMappingPropertyTypeSchema = {
+            residential: 'residential',
+            commercial: 'commercial',
+            industrial: 'industrial',
+            agricultural: 'agricultural',
+            land: 'agricultural'
+        };
+
+        const normalizeTypeForPropertyTypeSchema = (input) => {
+            if (!input) return 'residential';
+            const key = String(input).trim().toLowerCase();
+            return typeMappingPropertyTypeSchema[key] || 'residential';
+        };
+
+        let insertQuery;
+        let insertParams;
+        let insertedId;
+
+        // Schema A (migrations/001_create_tables.sql): title/price/size_sqm + enums
+        if (columnNames.has('title') && columnNames.has('price') && columnNames.has('size_sqm')) {
+            const mappedType = normalizeTypeForTitleSchema(propertyType);
+            const mappedStatus = normalizeStatus(status);
+
+            insertQuery = `
             INSERT INTO properties (
-
                 title, description, location, type, price, status, 
-
                 size_sqm, created_at, updated_at
-
             ) VALUES (?, ?, ?, ?, ?, ?, ?, NOW(), NOW())
+        `;
 
-        `, [
+            insertParams = [
+                `Property ${propertyName}`,
+                description || '',
+                location,
+                mappedType,
+                parsedPrice,
+                mappedStatus,
+                parsedSize
+            ];
 
-            propertyName, description, location, propertyType, parsedPrice, 
+            const result = await db.execute(insertQuery, insertParams);
+            insertedId = result && typeof result.insertId !== 'undefined' ? result.insertId : undefined;
+        }
+        // Schema B (server.js createPropertiesAndClientsTables): property_name/value/size + property_type enum
+        else if (columnNames.has('property_name') && columnNames.has('property_type') && columnNames.has('value')) {
+            const mappedType = normalizeTypeForPropertyTypeSchema(propertyType);
+            const mappedStatus = normalizeStatus(status);
 
-            status || 'Available', parsedSize
+            insertQuery = `
+            INSERT INTO properties (
+                property_name, property_type, location, size, value, status,
+                description, owner, contact_info, created_at, updated_at
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())
+        `;
 
-        ]);
+            insertParams = [
+                propertyName,
+                mappedType,
+                location,
+                parsedSize,
+                parsedPrice,
+                mappedStatus,
+                description || '',
+                owner || null,
+                contactInfo || null
+            ];
 
-        
+            const result = await db.execute(insertQuery, insertParams);
+            insertedId = result && typeof result.insertId !== 'undefined' ? result.insertId : undefined;
+        }
+        // Schema C (migrations/002_essential_tables.sql): name/value/size + status enum includes Under Contract
+        else if (columnNames.has('name') && columnNames.has('value') && columnNames.has('size')) {
+            const mappedStatus = normalizeStatus(status);
+            const mappedStatusForSchemaC = mappedStatus === 'Under Offer' ? 'Under Contract' : mappedStatus;
 
-        // Handle different MySQL2 return formats
+            insertQuery = `
+            INSERT INTO properties (
+                name, type, location, size, value, description, status, owner, contact_info,
+                created_at, updated_at
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())
+        `;
 
-        const result = Array.isArray(resultResult) ? resultResult[0] : resultResult;
+            insertParams = [
+                propertyName,
+                propertyType,
+                location,
+                String(size),
+                parsedPrice,
+                description || '',
+                mappedStatusForSchemaC,
+                owner || null,
+                contactInfo || null
+            ];
 
-
+            const result = await db.execute(insertQuery, insertParams);
+            insertedId = result && typeof result.insertId !== 'undefined' ? result.insertId : undefined;
+        } else {
+            console.error('Unknown properties table schema. Columns:', Array.from(columnNames));
+            return res.status(500).json({
+                success: false,
+                message: 'Failed to create property: unknown properties table schema'
+            });
+        }
 
         res.status(201).json({
-
             success: true,
-
             message: 'Property created successfully',
-
+            id: insertedId || propertyId,
             propertyId: propertyId
-
         });
 
 
@@ -3610,7 +3721,7 @@ app.get('/api/properties', async (req, res) => {
 
         const db = require('./database/config/database');
 
-        const [properties] = await db.execute(`
+        const properties = await db.execute(`
 
             SELECT * FROM properties 
 
