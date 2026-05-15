@@ -101755,14 +101755,6 @@ function getUnitMeasureOptions(selected) {
 
 function showMaterialsInForm(preselectedMaterialId, preselectedMaterialName) {
     const today = new Date().toISOString().split('T')[0];
-    let materialOptions = '<option value="">Select Material</option>';
-    if (!Array.isArray(materialsInventoryData)) {
-        materialsInventoryData = [];
-    }
-    materialsInventoryData.forEach(m => {
-        const selected = preselectedMaterialId && m.id == preselectedMaterialId ? 'selected' : '';
-        materialOptions += `<option value="${m.id}" ${selected}>${m.material_code} - ${m.material_name}</option>`;
-    });
 
     const formHTML = `
         <div class="form-overlay" id="materialInOverlay">
@@ -101775,7 +101767,7 @@ function showMaterialsInForm(preselectedMaterialId, preselectedMaterialName) {
                     <div style="display:grid;grid-template-columns:1fr 1fr;gap:15px;">
                         <div class="form-group">
                             <label for="minMaterial">Material *</label>
-                            <select id="minMaterial" name="material_id" required>${materialOptions}</select>
+                            <select id="minMaterial" name="material_id" required><option value="">Loading materials...</option></select>
                         </div>
                         <div class="form-group">
                             <label for="minTrackNumber">Track / Delivery Note No *</label>
@@ -101874,6 +101866,11 @@ function showMaterialsInForm(preselectedMaterialId, preselectedMaterialName) {
     setTimeout(() => {
         const form = document.getElementById('materialsInForm');
         if (form) form.addEventListener('submit', async (e) => { e.preventDefault(); await saveMaterialsIn(); });
+        loadMaterialDropdown('minMaterial');
+        if (preselectedMaterialId) {
+            const select = document.getElementById('minMaterial');
+            if (select) select.value = preselectedMaterialId;
+        }
     }, 100);
 }
 
@@ -101925,14 +101922,6 @@ async function saveMaterialsIn() {
 
 function showMaterialsOutForm(preselectedMaterialId, preselectedMaterialName) {
     const today = new Date().toISOString().split('T')[0];
-    let materialOptions = '<option value="">Select Material</option>';
-    if (!Array.isArray(materialsInventoryData)) {
-        materialsInventoryData = [];
-    }
-    materialsInventoryData.forEach(m => {
-        const selected = preselectedMaterialId && m.id == preselectedMaterialId ? 'selected' : '';
-        materialOptions += `<option value="${m.id}" ${selected}>${m.material_code} - ${m.material_name}</option>`;
-    });
 
     const formHTML = `
         <div class="form-overlay" id="materialOutOverlay">
@@ -101945,7 +101934,7 @@ function showMaterialsOutForm(preselectedMaterialId, preselectedMaterialName) {
                     <div style="display:grid;grid-template-columns:1fr 1fr;gap:15px;">
                         <div class="form-group">
                             <label for="moutMaterial">Material *</label>
-                            <select id="moutMaterial" name="material_id" required>${materialOptions}</select>
+                            <select id="moutMaterial" name="material_id" required><option value="">Loading materials...</option></select>
                         </div>
                         <div class="form-group">
                             <label for="moutTrackNumber">Track / Issue Number *</label>
@@ -102050,6 +102039,11 @@ function showMaterialsOutForm(preselectedMaterialId, preselectedMaterialName) {
     setTimeout(() => {
         const form = document.getElementById('materialsOutForm');
         if (form) form.addEventListener('submit', async (e) => { e.preventDefault(); await saveMaterialsOut(); });
+        loadMaterialDropdown('moutMaterial');
+        if (preselectedMaterialId) {
+            const select = document.getElementById('moutMaterial');
+            if (select) select.value = preselectedMaterialId;
+        }
     }, 100);
 }
 
