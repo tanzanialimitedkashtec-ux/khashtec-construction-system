@@ -37674,6 +37674,8 @@ function expenseControl(){
 
 function financialReporting(){
 
+    console.log('📊 financialReporting() called');
+
     showContent(`<div class="card">
 
         <h3>Financial Reporting</h3>
@@ -37784,6 +37786,8 @@ function financialReporting(){
 
     // Load financial data from database
 
+    console.log('📊 Calling loadFinancialReportingData...');
+
     loadFinancialReportingData();
 
 }
@@ -37792,15 +37796,45 @@ function financialReporting(){
 
 async function loadFinancialReportingData() {
 
+    console.log('📊 Starting loadFinancialReportingData...');
+
     try {
+
+        console.log('🔗 Fetching from /api/finance/records...');
 
         const response = await fetch('/api/finance/records');
 
-        const records = await response.json() || [];
+        console.log('📡 Response status:', response.status);
+
+        
+
+        if (!response.ok) {
+
+            throw new Error(`HTTP error! status: ${response.status}`);
+
+        }
+
+        
+
+        const records = await response.json();
+
+        console.log('✅ Successfully fetched records:', records);
+
+        console.log('📈 Total records received:', records.length);
+
+        
+
+        if (!records || records.length === 0) {
+
+            console.warn('⚠️ No records received, showing empty state');
+
+        }
 
         
 
         // Load income statement data
+
+        console.log('📋 Displaying income statement...');
 
         displayIncomeStatement(records);
 
@@ -37808,11 +37842,15 @@ async function loadFinancialReportingData() {
 
         // Load balance sheet data
 
+        console.log('📊 Displaying balance sheet...');
+
         displayBalanceSheet(records);
 
         
 
         // Load cash flow data
+
+        console.log('💰 Displaying cash flow...');
 
         displayCashFlow(records);
 
@@ -37820,11 +37858,19 @@ async function loadFinancialReportingData() {
 
         // Load budget vs actual data
 
+        console.log('📊 Displaying budget analysis...');
+
         displayBudgetVsActual(records);
+
+        
+
+        console.log('✅ All financial reports loaded successfully!');
 
     } catch (error) {
 
         console.error('❌ Error loading financial reporting data:', error);
+
+        console.error('❌ Error details:', error.message, error.stack);
 
         showNotification('Error loading financial data: ' + error.message, 'error');
 
@@ -37846,6 +37892,8 @@ function displayIncomeStatement(records) {
 
     try {
 
+        console.log('📋 displayIncomeStatement called with records:', records.length);
+
         // Calculate totals by type
 
         const revenue = records
@@ -37853,6 +37901,8 @@ function displayIncomeStatement(records) {
             .filter(r => r.type === 'income')
 
             .reduce((sum, r) => sum + (r.amount || 0), 0);
+
+        console.log('💰 Total revenue:', revenue);
 
             
 
@@ -37862,9 +37912,13 @@ function displayIncomeStatement(records) {
 
             .reduce((sum, r) => sum + (r.amount || 0), 0);
 
+        console.log('💸 Total expenses:', expenses);
+
         
 
         const netProfit = revenue - expenses;
+
+        console.log('📈 Net profit:', netProfit);
 
         
 
@@ -37883,6 +37937,8 @@ function displayIncomeStatement(records) {
                 expensesByCategory[cat] = (expensesByCategory[cat] || 0) + (r.amount || 0);
 
             });
+
+        console.log('📊 Expenses by category:', expensesByCategory);
 
         
 
@@ -37972,13 +38028,31 @@ function displayIncomeStatement(records) {
 
         
 
-        document.getElementById('incomeStatementContent').innerHTML = html;
+        const container = document.getElementById('incomeStatementContent');
+
+        if (container) {
+
+            container.innerHTML = html;
+
+            console.log('✅ Income statement displayed successfully');
+
+        } else {
+
+            console.error('❌ Container incomeStatementContent not found');
+
+        }
 
     } catch (error) {
 
         console.error('❌ Error displaying income statement:', error);
 
-        document.getElementById('incomeStatementContent').innerHTML = `<div class="error">Error loading income statement data</div>`;
+        const container = document.getElementById('incomeStatementContent');
+
+        if (container) {
+
+            container.innerHTML = `<div class="error">Error loading income statement data</div>`;
+
+        }
 
     }
 
@@ -37990,6 +38064,8 @@ function displayBalanceSheet(records) {
 
     try {
 
+        console.log('📊 displayBalanceSheet called with records:', records.length);
+
         // Calculate assets
 
         const cash = records
@@ -37997,6 +38073,8 @@ function displayBalanceSheet(records) {
             .filter(r => (r.account === 'Cash' || r.account === 'Bank') && r.type === 'income')
 
             .reduce((sum, r) => sum + (r.amount || 0), 0);
+
+        console.log('🏦 Cash & Bank:', cash);
 
             
 
@@ -38006,11 +38084,15 @@ function displayBalanceSheet(records) {
 
             .reduce((sum, r) => sum + (r.amount || 0), 0);
 
+        console.log('💳 Accounts Receivable:', receivables);
+
         
 
         const equipment = 280000000; // Base equipment value
 
         const totalAssets = cash + receivables + equipment;
+
+        console.log('📈 Total Assets:', totalAssets);
 
         
 
@@ -38022,6 +38104,8 @@ function displayBalanceSheet(records) {
 
             .reduce((sum, r) => sum + (r.amount || 0), 0);
 
+        console.log('📋 Accounts Payable:', payables);
+
         
 
         const taxLiabilities = 15000000;
@@ -38029,6 +38113,8 @@ function displayBalanceSheet(records) {
         const totalLiabilities = payables + taxLiabilities;
 
         const totalEquity = totalAssets - totalLiabilities;
+
+        console.log('💰 Total Liabilities:', totalLiabilities, 'Total Equity:', totalEquity);
 
         
 
@@ -38124,13 +38210,31 @@ function displayBalanceSheet(records) {
 
         
 
-        document.getElementById('balanceSheetContent').innerHTML = html;
+        const container = document.getElementById('balanceSheetContent');
+
+        if (container) {
+
+            container.innerHTML = html;
+
+            console.log('✅ Balance sheet displayed successfully');
+
+        } else {
+
+            console.error('❌ Container balanceSheetContent not found');
+
+        }
 
     } catch (error) {
 
         console.error('❌ Error displaying balance sheet:', error);
 
-        document.getElementById('balanceSheetContent').innerHTML = `<div class="error">Error loading balance sheet data</div>`;
+        const container = document.getElementById('balanceSheetContent');
+
+        if (container) {
+
+            container.innerHTML = `<div class="error">Error loading balance sheet data</div>`;
+
+        }
 
     }
 
@@ -38142,6 +38246,8 @@ function displayCashFlow(records) {
 
     try {
 
+        console.log('💰 displayCashFlow called with records:', records.length);
+
         // Operating activities
 
         const cashFromCustomers = records
@@ -38149,6 +38255,8 @@ function displayCashFlow(records) {
             .filter(r => r.type === 'income' && r.status === 'completed')
 
             .reduce((sum, r) => sum + (r.amount || 0), 0);
+
+        console.log('📥 Cash from Customers:', cashFromCustomers);
 
             
 
@@ -38158,6 +38266,8 @@ function displayCashFlow(records) {
 
             .reduce((sum, r) => sum + (r.amount || 0), 0);
 
+        console.log('📤 Cash paid:', cashToPaid);
+
         
 
         const netOperatingCash = cashFromCustomers - cashToPaid;
@@ -38165,6 +38275,8 @@ function displayCashFlow(records) {
         const beginningCash = 50000000;
 
         const endingCash = beginningCash + netOperatingCash;
+
+        console.log('📊 Net Operating Cash:', netOperatingCash, 'Ending Cash:', endingCash);
 
         
 
@@ -38236,13 +38348,31 @@ function displayCashFlow(records) {
 
         
 
-        document.getElementById('cashFlowContent').innerHTML = html;
+        const container = document.getElementById('cashFlowContent');
+
+        if (container) {
+
+            container.innerHTML = html;
+
+            console.log('✅ Cash flow displayed successfully');
+
+        } else {
+
+            console.error('❌ Container cashFlowContent not found');
+
+        }
 
     } catch (error) {
 
         console.error('❌ Error displaying cash flow:', error);
 
-        document.getElementById('cashFlowContent').innerHTML = `<div class="error">Error loading cash flow data</div>`;
+        const container = document.getElementById('cashFlowContent');
+
+        if (container) {
+
+            container.innerHTML = `<div class="error">Error loading cash flow data</div>`;
+
+        }
 
     }
 
@@ -38253,6 +38383,8 @@ function displayCashFlow(records) {
 function displayBudgetVsActual(records) {
 
     try {
+
+        console.log('📊 displayBudgetVsActual called with records:', records.length);
 
         // Group by category to compare budget vs actual
 
@@ -38271,6 +38403,8 @@ function displayBudgetVsActual(records) {
             byCategory[cat].actual += r.amount || 0;
 
         });
+
+        console.log('📈 Data by category:', byCategory);
 
         
 
@@ -38306,6 +38440,10 @@ function displayBudgetVsActual(records) {
 
             
 
+            console.log(`📊 ${category}: Budget ${budget}, Actual ${data.actual}, Variance ${variance} (${variancePercent}%)`);
+
+            
+
             html += `
 
                 <div class="analysis-item">
@@ -38326,13 +38464,31 @@ function displayBudgetVsActual(records) {
 
         
 
-        document.getElementById('budgetActualContent').innerHTML = html || '<div class="no-data">No budget data available</div>';
+        const container = document.getElementById('budgetActualContent');
+
+        if (container) {
+
+            container.innerHTML = html || '<div class="no-data">No budget data available</div>';
+
+            console.log('✅ Budget analysis displayed successfully');
+
+        } else {
+
+            console.error('❌ Container budgetActualContent not found');
+
+        }
 
     } catch (error) {
 
         console.error('❌ Error displaying budget analysis:', error);
 
-        document.getElementById('budgetActualContent').innerHTML = `<div class="error">Error loading budget analysis data</div>`;
+        const container = document.getElementById('budgetActualContent');
+
+        if (container) {
+
+            container.innerHTML = `<div class="error">Error loading budget analysis data</div>`;
+
+        }
 
     }
 
@@ -38341,6 +38497,8 @@ function displayBudgetVsActual(records) {
 // Tab switching function
 
 function showFinanceReportTab(tabName, event) {
+
+    console.log('📑 Switching to tab:', tabName);
 
     if (event) event.preventDefault();
 
@@ -38378,7 +38536,19 @@ function showFinanceReportTab(tabName, event) {
 
     
 
-    document.getElementById(tabId).classList.remove('hidden');
+    const tabElement = document.getElementById(tabId);
+
+    if (tabElement) {
+
+        tabElement.classList.remove('hidden');
+
+        console.log('✅ Tab displayed:', tabId);
+
+    } else {
+
+        console.error('❌ Tab element not found:', tabId);
+
+    }
 
     
 
