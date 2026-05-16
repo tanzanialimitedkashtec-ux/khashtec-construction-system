@@ -523,21 +523,15 @@ router.get('/records', async (req, res) => {
         
         const [records] = await connection.query(`
             SELECT 
-                id,
-                transaction_id as id,
-                transaction_type as type,
+                transaction_id,
+                transaction_type,
                 category,
                 amount,
                 description,
                 department,
-                transaction_date as date,
+                transaction_date,
                 status,
-                reference_id as reference,
-                CASE 
-                    WHEN transaction_type IN ('revenue', 'income', 'payment_received', 'client_payment') THEN 'income'
-                    ELSE 'expense'
-                END as transaction_type,
-                reference_id as account,
+                reference_id,
                 created_by,
                 created_at
             FROM financial_transactions
@@ -546,21 +540,28 @@ router.get('/records', async (req, res) => {
         `);
         
         connection.release();
+        console.log('✅ Records fetched from database:', records.length);
         
         // Transform data to match frontend expectations
-        const transformedRecords = records.map(record => ({
-            id: record.id || record.transaction_id,
-            type: record.transaction_type === 'income' ? 'income' : 'expense',
-            category: record.category || 'Other',
-            amount: record.amount || 0,
-            description: record.description || '',
-            date: record.date || new Date().toISOString().split('T')[0],
-            status: record.status || 'pending',
-            reference: record.reference || '',
-            account: record.account || 'General Account',
-            department: record.department || 'General'
-        }));
+        const transformedRecords = records.map(record => {
+            // Determine if it's income or expense based on transaction_type
+            const isIncome = ['revenue', 'income', 'payment_received', 'client_payment'].includes(record.transaction_type);
+            
+            return {
+                id: record.transaction_id,
+                type: isIncome ? 'income' : 'expense',
+                category: record.category || 'Other',
+                amount: record.amount || 0,
+                description: record.description || '',
+                date: record.transaction_date ? record.transaction_date.toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
+                status: record.status || 'pending',
+                reference: record.reference_id || '',
+                account: record.department || 'General Account',
+                department: record.department || 'General'
+            };
+        });
         
+        console.log('✅ Transformed records:', transformedRecords.length);
         res.json(transformedRecords);
     } catch (error) {
         console.error('❌ Error fetching financial records:', error);
