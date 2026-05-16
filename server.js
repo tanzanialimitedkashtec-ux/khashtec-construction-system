@@ -108,6 +108,8 @@ const longTermGrowthRoutes = require('./backend/routes/long-term-growth');
 
 const teamManagementRoutes = require('./backend/routes/team-management');
 
+const payrollRoutes = require('./backend/routes/payroll');
+
 
 
 const app = express();
@@ -1024,6 +1026,13 @@ app.use('/api/long-term-growth', asyncHandler(async (req, res, next) => {
 app.use('/api/team-management', asyncHandler(async (req, res, next) => {
 
     return teamManagementRoutes(req, res, next);
+
+}));
+
+// Payroll routes (no auth middleware for now to match local testing)
+app.use('/payroll', asyncHandler(async (req, res, next) => {
+
+    return payrollRoutes(req, res, next);
 
 }));
 
