@@ -148,10 +148,7 @@ router.post('/in', async (req, res) => {
         res.status(201).json({ success: true, message: 'Material received recorded successfully', data: { id: result.insertId, track_number: track } });
     } catch (error) {
         console.error('Error creating materials in:', error.message);
-        const newId = mockMaterialsIn.length + 1;
-        const newRecord = { id: newId, ...req.body, track_number: req.body.track_number || generateTrackNumber('in'), total_cost: (req.body.quantity_received || 0) * (req.body.unit_price || 0), created_at: new Date().toISOString() };
-        mockMaterialsIn.push(newRecord);
-        res.status(201).json({ success: true, message: 'Material received recorded (mock)', data: newRecord });
+        res.status(500).json({ success: false, message: error.message || 'Failed to save record to database' });
     }
 });
 
@@ -198,10 +195,7 @@ router.post('/out', async (req, res) => {
         res.status(201).json({ success: true, message: 'Material out recorded successfully', data: { id: result.insertId, track_number: track } });
     } catch (error) {
         console.error('Error creating materials out:', error.message);
-        const newId = mockMaterialsOut.length + 1;
-        const newRecord = { id: newId, ...req.body, track_number: req.body.track_number || generateTrackNumber('out'), total_value: (req.body.quantity_out || 0) * (req.body.unit_price || 0), created_at: new Date().toISOString() };
-        mockMaterialsOut.push(newRecord);
-        res.status(201).json({ success: true, message: 'Material out recorded (mock)', data: newRecord });
+        res.status(500).json({ success: false, message: error.message || 'Failed to save record to database' });
     }
 });
 

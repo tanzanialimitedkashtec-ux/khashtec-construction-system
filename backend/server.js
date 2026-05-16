@@ -2620,6 +2620,16 @@ try {
     console.error('❌ Error loading finance routes:', error);
 }
 
+// Load payroll routes
+try {
+    const payrollRoutes = require('./routes/payroll');
+    console.log('✅ Payroll routes loaded successfully');
+    app.use('/api/payroll', payrollRoutes);
+    console.log('✅ Payroll routes mounted at /api/payroll');
+} catch (error) {
+    console.error('❌ Error loading payroll routes:', error);
+}
+
 // Fallback project details endpoint
 app.get('/api/projects/:id', async (req, res) => {
     try {

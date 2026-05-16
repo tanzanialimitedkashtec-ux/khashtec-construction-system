@@ -60026,13 +60026,13 @@ function payrollProcessing(){
 
         <div class="payroll-tabs">
 
-            <button class="tab-btn active" onclick="showPayrollTab('overview')">Payroll Overview</button>
+            <button class="tab-btn active" onclick="showPayrollTab('overview', this)">Payroll Overview</button>
 
-            <button class="tab-btn" onclick="showPayrollTab('salary')">Salary Structure</button>
+            <button class="tab-btn" onclick="showPayrollTab('salary', this)">Salary Structure</button>
 
-            <button class="tab-btn" onclick="showPayrollTab('process')">Process Payroll</button>
+            <button class="tab-btn" onclick="showPayrollTab('process', this)">Process Payroll</button>
 
-            <button class="tab-btn" onclick="showPayrollTab('payslips')">Generate Payslips</button>
+            <button class="tab-btn" onclick="showPayrollTab('payslips', this)">Generate Payslips</button>
 
         </div>
 
@@ -60048,7 +60048,7 @@ function payrollProcessing(){
 
                     <h5>Total Employees</h5>
 
-                    <div class="stat-number">45</div>
+                    <div class="stat-number" id="overviewTotalEmployees">--</div>
 
                     <div class="stat-change">Active Staff</div>
 
@@ -60060,9 +60060,9 @@ function payrollProcessing(){
 
                     <h5>Monthly Payroll</h5>
 
-                    <div class="stat-number">TZS 28,500,000</div>
+                    <div class="stat-number" id="overviewMonthlyPayroll">--</div>
 
-                    <div class="stat-change">March 2026</div>
+                    <div class="stat-change" id="overviewMonthLabel">Current Month</div>
 
                 </div>
 
@@ -60072,7 +60072,7 @@ function payrollProcessing(){
 
                     <h5>Average Salary</h5>
 
-                    <div class="stat-number">TZS 633,333</div>
+                    <div class="stat-number" id="overviewAvgSalary">--</div>
 
                     <div class="stat-change">Per Employee</div>
 
@@ -60084,9 +60084,9 @@ function payrollProcessing(){
 
                     <h5>Next Pay Date</h5>
 
-                    <div class="stat-number">March 31</div>
+                    <div class="stat-number" id="overviewNextPayDate">--</div>
 
-                    <div class="stat-change">5 Days</div>
+                    <div class="stat-change" id="overviewDaysLeft">--</div>
 
                 </div>
 
@@ -60096,11 +60096,21 @@ function payrollProcessing(){
 
             <div class="payroll-actions">
 
-                <button class="action" onclick="processMonthlyPayroll()">Process March Payroll</button>
+                <button class="action" onclick="processMonthlyPayroll()">Process Monthly Payroll</button>
 
                 <button class="action" onclick="approveOvertime()">Approve Overtime</button>
 
                 <button class="action" onclick="manageAllowances()">Manage Allowances</button>
+
+            </div>
+
+            
+
+            <div id="payrollHistorySection" style="margin-top: 20px;">
+
+                <h5>Recent Payroll History</h5>
+
+                <div id="payrollHistoryContainer"><p>Loading payroll history...</p></div>
 
             </div>
 
@@ -60122,13 +60132,7 @@ function payrollProcessing(){
 
                         <select id="salaryEmployee" required>
 
-                            <option value="">Select Employee</option>
-
-                            <option value="emp001">John Doe - Senior Engineer</option>
-
-                            <option value="emp002">Jane Smith - HR Manager</option>
-
-                            <option value="emp003">Mike Johnson - Project Manager</option>
+                            <option value="">Loading employees...</option>
 
                         </select>
 
@@ -60138,7 +60142,7 @@ function payrollProcessing(){
 
                         <label>Basic Salary (TZS) *</label>
 
-                        <input type="number" id="basicSalary" placeholder="e.g., 2500000" required>
+                        <input type="number" id="basicSalary" placeholder="e.g., 2500000" required oninput="calculateGrossSalary()">
 
                     </div>
 
@@ -60152,7 +60156,7 @@ function payrollProcessing(){
 
                         <label>Housing Allowance</label>
 
-                        <input type="number" id="housingAllowance" placeholder="e.g., 300000">
+                        <input type="number" id="housingAllowance" placeholder="e.g., 300000" oninput="calculateGrossSalary()">
 
                     </div>
 
@@ -60160,7 +60164,7 @@ function payrollProcessing(){
 
                         <label>Transport Allowance</label>
 
-                        <input type="number" id="transportAllowance" placeholder="e.g., 150000">
+                        <input type="number" id="transportAllowance" placeholder="e.g., 150000" oninput="calculateGrossSalary()">
 
                     </div>
 
@@ -60174,7 +60178,7 @@ function payrollProcessing(){
 
                         <label>Medical Allowance</label>
 
-                        <input type="number" id="medicalAllowance" placeholder="e.g., 100000">
+                        <input type="number" id="medicalAllowance" placeholder="e.g., 100000" oninput="calculateGrossSalary()">
 
                     </div>
 
@@ -60182,7 +60186,7 @@ function payrollProcessing(){
 
                         <label>Other Allowances</label>
 
-                        <input type="number" id="otherAllowances" placeholder="e.g., 50000">
+                        <input type="number" id="otherAllowances" placeholder="e.g., 50000" oninput="calculateGrossSalary()">
 
                     </div>
 
@@ -60224,15 +60228,9 @@ function payrollProcessing(){
 
                         <label>Payroll Month *</label>
 
-                        <select id="payrollMonth" required>
+                        <select id="payrollMonth" required onchange="updatePayrollPreview()">
 
                             <option value="">Select Month</option>
-
-                            <option value="2026-03">March 2026</option>
-
-                            <option value="2026-04">April 2026</option>
-
-                            <option value="2026-05">May 2026</option>
 
                         </select>
 
@@ -60272,13 +60270,13 @@ function payrollProcessing(){
 
                 <div class="payroll-preview">
 
-                    <h5>Payroll Preview</h5>
+                    <h5>Payroll Preview (Based on Active Employees)</h5>
 
                     <div class="preview-item">
 
                         <span>Total Employees:</span>
 
-                        <span>45</span>
+                        <span id="previewTotalEmployees">--</span>
 
                     </div>
 
@@ -60286,7 +60284,7 @@ function payrollProcessing(){
 
                         <span>Total Gross Pay:</span>
 
-                        <span>TZS 28,500,000</span>
+                        <span id="previewTotalGross">--</span>
 
                     </div>
 
@@ -60294,7 +60292,7 @@ function payrollProcessing(){
 
                         <span>Total Deductions:</span>
 
-                        <span>TZS 4,275,000</span>
+                        <span id="previewTotalDeductions">--</span>
 
                     </div>
 
@@ -60302,7 +60300,7 @@ function payrollProcessing(){
 
                         <span>Net Payment:</span>
 
-                        <span>TZS 24,225,000</span>
+                        <span id="previewNetPayment">--</span>
 
                     </div>
 
@@ -60334,12 +60332,6 @@ function payrollProcessing(){
 
                             <option value="all">All Employees</option>
 
-                            <option value="emp001">John Doe</option>
-
-                            <option value="emp002">Jane Smith</option>
-
-                            <option value="emp003">Mike Johnson</option>
-
                         </select>
 
                     </div>
@@ -60350,17 +60342,17 @@ function payrollProcessing(){
 
                         <select id="payslipMonth">
 
-                            <option value="2026-03">March 2026</option>
-
-                            <option value="2026-02">February 2026</option>
-
-                            <option value="2026-01">January 2026</option>
+                            <option value="">Loading months...</option>
 
                         </select>
 
                     </div>
 
                 </div>
+
+                
+
+                <div id="payslipResults" style="margin-top: 15px;"></div>
 
                 
 
@@ -60379,6 +60371,16 @@ function payrollProcessing(){
         </div>
 
     </div>`);
+
+    
+
+    // Load real payroll data after rendering
+
+    setTimeout(() => {
+
+        loadPayrollData();
+
+    }, 100);
 
 }
 
@@ -65981,7 +65983,33 @@ function rejectExpense(expenseId) {
 
 // Tab switching functions
 
-function showPayrollTab(tabName) {
+function showPayrollTab(tabName, btnElement) {
+
+    // Map tab names to actual element IDs
+
+    const tabMapping = {
+
+        'overview': 'payrollOverview',
+
+        'salary': 'salaryStructure',
+
+        'process': 'processPayroll',
+
+        'payslips': 'generatePayslips'
+
+    };
+
+    const targetId = tabMapping[tabName];
+
+    if (!targetId) {
+
+        console.error('❌ Unknown payroll tab:', tabName);
+
+        return;
+
+    }
+
+    
 
     // Hide all payroll tabs
 
@@ -66003,9 +66031,27 @@ function showPayrollTab(tabName) {
 
     // Show selected tab
 
-    document.getElementById(tabName).classList.remove('hidden');
+    const targetTab = document.getElementById(targetId);
 
-    event.target.classList.add('active');
+    if (targetTab) {
+
+        targetTab.classList.remove('hidden');
+
+    }
+
+    
+
+    // Add active class to clicked button
+
+    if (btnElement) {
+
+        btnElement.classList.add('active');
+
+    } else if (event && event.target) {
+
+        event.target.classList.add('active');
+
+    }
 
 }
 
@@ -101894,8 +101940,14 @@ function showMaterialsInForm(preselectedMaterialId, preselectedMaterialName) {
 }
 
 async function saveMaterialsIn() {
+    const materialId = document.getElementById('minMaterial').value;
+    if (!materialId || materialId === 'sample' || isNaN(parseInt(materialId))) {
+        showNotification('Please select a valid material from the dropdown.', 'error');
+        return;
+    }
+
     const payload = {
-        material_id: document.getElementById('minMaterial').value,
+        material_id: parseInt(materialId),
         track_number: document.getElementById('minTrackNumber').value,
         receipt_date: document.getElementById('minReceiptDate').value,
         quantity_received: parseFloat(document.getElementById('minQuantity').value),
@@ -101925,13 +101977,13 @@ async function saveMaterialsIn() {
             body: JSON.stringify(payload)
         });
         const result = await response.json();
-        if (result.success) {
+        if (result.success && !result.message.includes('mock')) {
             showNotification('Materials In recorded successfully!', 'success');
             closeForm();
             fetchMaterialsInventory();
             showMaterialsInventory();
         } else {
-            showNotification(result.message || 'Failed to save record.', 'error');
+            showNotification(result.message || 'Failed to save record to database.', 'error');
         }
     } catch (error) {
         console.error('Error saving materials in:', error);
@@ -102067,8 +102119,14 @@ function showMaterialsOutForm(preselectedMaterialId, preselectedMaterialName) {
 }
 
 async function saveMaterialsOut() {
+    const materialId = document.getElementById('moutMaterial').value;
+    if (!materialId || materialId === 'sample' || isNaN(parseInt(materialId))) {
+        showNotification('Please select a valid material from the dropdown.', 'error');
+        return;
+    }
+
     const payload = {
-        material_id: document.getElementById('moutMaterial').value,
+        material_id: parseInt(materialId),
         track_number: document.getElementById('moutTrackNumber').value,
         issue_date: document.getElementById('moutIssueDate').value,
         quantity_out: parseFloat(document.getElementById('moutQuantity').value),
@@ -102098,13 +102156,13 @@ async function saveMaterialsOut() {
             body: JSON.stringify(payload)
         });
         const result = await response.json();
-        if (result.success) {
+        if (result.success && !result.message.includes('mock')) {
             showNotification('Materials Out recorded successfully!', 'success');
             closeForm();
             fetchMaterialsInventory();
             showMaterialsInventory();
         } else {
-            showNotification(result.message || 'Failed to save record.', 'error');
+            showNotification(result.message || 'Failed to save record to database.', 'error');
         }
     } catch (error) {
         console.error('Error saving materials out:', error);
