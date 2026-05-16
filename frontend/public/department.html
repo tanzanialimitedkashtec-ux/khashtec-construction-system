@@ -99676,7 +99676,9 @@ function showAccountantForm() {
         <div class="card">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
                 <h3>💰 Accountant Management</h3>
-                <button type="button" onclick="showContent('')" class="action" style="background: #dc3545;">❌ Close</button>
+                <button type="button" id="toggleAccountantFormBtn" onclick="toggleAccountantForm()" class="action" style="background: #007bff;">
+                    📝 Open Accountant Form
+                </button>
             </div>
             
             <div class="form-header">
@@ -99684,6 +99686,7 @@ function showAccountantForm() {
                 <p>Manage day-to-day bookkeeping, regulatory compliance, and financial reporting. The accountant is responsible for maintaining accurate financial records, ensuring regulatory adherence, and reporting to the senior accountant.</p>
             </div>
             
+            <div id="accountantFormContainer" style="display: none;">
             <form id="accountantForm" onsubmit="submitAccountantForm(event); return false;">
                 <div class="form-row">
                     <div class="form-group">
@@ -99839,8 +99842,10 @@ function showAccountantForm() {
                 <div class="form-row">
                     <button type="submit" class="action" style="background: #28a745;">💾 Save Accountant Details</button>
                     <button type="button" onclick="clearAccountantForm()" class="action" style="background: #ffc107;">🔄 Clear Form</button>
+                    <button type="button" onclick="toggleAccountantForm()" class="action" style="background: #dc3545; margin-left: 10px;">Close Form</button>
                 </div>
             </form>
+            </div>
 
             <div style="margin-top: 25px;">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
@@ -99946,6 +99951,35 @@ function showAccountantForm() {
     `);
 
     setTimeout(loadAccountantRecords, 100);
+}
+
+// Toggle accountant form visibility
+function toggleAccountantForm() {
+    const formContainer = document.getElementById('accountantFormContainer');
+    const toggleBtn = document.getElementById('toggleAccountantFormBtn');
+
+    if (formContainer.style.display === 'none' || !formContainer.classList.contains('show')) {
+        // Show form
+        formContainer.style.display = 'block';
+        formContainer.classList.add('show');
+        toggleBtn.innerHTML = '❌ Close Accountant Form';
+        toggleBtn.style.background = '#dc3545';
+
+        // Smooth scroll to form
+        setTimeout(() => {
+            formContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }, 100);
+    } else {
+        // Hide form
+        formContainer.classList.remove('show');
+        toggleBtn.innerHTML = '📝 Open Accountant Form';
+        toggleBtn.style.background = '#007bff';
+
+        // Hide after animation
+        setTimeout(() => {
+            formContainer.style.display = 'none';
+        }, 400);
+    }
 }
 
 async function loadAccountantRecords() {
@@ -100280,7 +100314,9 @@ function showLeadershipForm() {
         <div class="card">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
                 <h3>👥 Leadership Management</h3>
-                <button type="button" onclick="showContent('')" class="action" style="background: #dc3545;">❌ Close</button>
+                <button type="button" id="toggleLeadershipFormBtn" onclick="toggleLeadershipForm()" class="action" style="background: #007bff;">
+                    📝 Open Leadership Form
+                </button>
             </div>
             
             <div class="form-header">
@@ -100288,6 +100324,7 @@ function showLeadershipForm() {
                 <p>Manage company leadership structure, define roles, responsibilities, and development plans for executive team members. Establish clear leadership hierarchy and succession planning.</p>
             </div>
             
+            <div id="leadershipFormContainer" style="display: none;">
             <form id="leadershipForm" onsubmit="return submitLeadershipForm(event)">
                 <div class="form-row">
                     <div class="form-group">
@@ -100462,8 +100499,10 @@ function showLeadershipForm() {
                 <div class="form-row">
                     <button type="submit" class="action" style="background: #28a745;">💾 Save Leadership Details</button>
                     <button type="button" onclick="clearLeadershipForm()" class="action" style="background: #ffc107;">🔄 Clear Form</button>
+                    <button type="button" onclick="toggleLeadershipForm()" class="action" style="background: #dc3545; margin-left: 10px;">Close Form</button>
                 </div>
             </form>
+            </div>
 
             <div style="margin-top: 25px;">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
@@ -100573,13 +100612,44 @@ function showLeadershipForm() {
     setTimeout(loadLeadershipRecords, 100);
 }
 
+// Toggle leadership form visibility
+function toggleLeadershipForm() {
+    const formContainer = document.getElementById('leadershipFormContainer');
+    const toggleBtn = document.getElementById('toggleLeadershipFormBtn');
+
+    if (formContainer.style.display === 'none' || !formContainer.classList.contains('show')) {
+        // Show form
+        formContainer.style.display = 'block';
+        formContainer.classList.add('show');
+        toggleBtn.innerHTML = '❌ Close Leadership Form';
+        toggleBtn.style.background = '#dc3545';
+
+        // Smooth scroll to form
+        setTimeout(() => {
+            formContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }, 100);
+    } else {
+        // Hide form
+        formContainer.classList.remove('show');
+        toggleBtn.innerHTML = '📝 Open Leadership Form';
+        toggleBtn.style.background = '#007bff';
+
+        // Hide after animation
+        setTimeout(() => {
+            formContainer.style.display = 'none';
+        }, 400);
+    }
+}
+
 // Show Mission & Vision Form
 function showMissionVisionForm() {
     showContent(`
         <div class="card">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
                 <h3>🎯 Mission & Vision Management</h3>
-                <button type="button" onclick="showContent('')" class="action" style="background: #dc3545;">❌ Close</button>
+                <button type="button" id="toggleMissionVisionFormBtn" onclick="toggleMissionVisionForm()" class="action" style="background: #007bff;">
+                    📝 Open Mission & Vision Form
+                </button>
             </div>
             
             <div class="form-header">
@@ -100587,6 +100657,7 @@ function showMissionVisionForm() {
                 <p>Define and manage the company's mission statement, vision for the future, and core values that guide organizational culture and decision-making.</p>
             </div>
             
+            <div id="missionVisionFormContainer" style="display: none;">
             <form id="missionVisionForm" onsubmit="return submitMissionVisionForm(event)">
                 <!-- Mission Statement -->
                 <div class="form-section">
@@ -100737,8 +100808,10 @@ function showMissionVisionForm() {
                 <div class="form-row">
                     <button type="submit" class="action" style="background: #28a745;">💾 Save Mission & Vision</button>
                     <button type="button" onclick="clearMissionVisionForm()" class="action" style="background: #ffc107;">🔄 Clear Form</button>
+                    <button type="button" onclick="toggleMissionVisionForm()" class="action" style="background: #dc3545; margin-left: 10px;">Close Form</button>
                 </div>
             </form>
+            </div>
 
             <div style="margin-top: 25px;">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
@@ -100847,13 +100920,44 @@ function showMissionVisionForm() {
     setTimeout(loadMissionVisionRecords, 100);
 }
 
+// Toggle Mission & Vision form visibility
+function toggleMissionVisionForm() {
+    const formContainer = document.getElementById('missionVisionFormContainer');
+    const toggleBtn = document.getElementById('toggleMissionVisionFormBtn');
+
+    if (formContainer.style.display === 'none' || !formContainer.classList.contains('show')) {
+        // Show form
+        formContainer.style.display = 'block';
+        formContainer.classList.add('show');
+        toggleBtn.innerHTML = '❌ Close Mission & Vision Form';
+        toggleBtn.style.background = '#dc3545';
+
+        // Smooth scroll to form
+        setTimeout(() => {
+            formContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }, 100);
+    } else {
+        // Hide form
+        formContainer.classList.remove('show');
+        toggleBtn.innerHTML = '📝 Open Mission & Vision Form';
+        toggleBtn.style.background = '#007bff';
+
+        // Hide after animation
+        setTimeout(() => {
+            formContainer.style.display = 'none';
+        }, 400);
+    }
+}
+
 // Show Long-Term Growth Strategy Form
 function showLongTermGrowthForm() {
     showContent(`
         <div class="card">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
                 <h3>📈 Long-Term Growth Strategy</h3>
-                <button type="button" onclick="showContent('')" class="action" style="background: #dc3545;">❌ Close</button>
+                <button type="button" id="toggleLongTermGrowthFormBtn" onclick="toggleLongTermGrowthForm()" class="action" style="background: #007bff;">
+                    📝 Open Growth Strategy Form
+                </button>
             </div>
             
             <div class="form-header">
@@ -100861,6 +100965,7 @@ function showLongTermGrowthForm() {
                 <p>Develop comprehensive long-term growth strategies, market expansion plans, and strategic initiatives to drive sustainable business growth and competitive advantage.</p>
             </div>
             
+            <div id="longTermGrowthFormContainer" style="display: none;">
             <form id="longTermGrowthForm" onsubmit="return submitLongTermGrowthForm(event)">
                 <div class="form-row">
                     <div class="form-group">
@@ -101059,8 +101164,10 @@ function showLongTermGrowthForm() {
                 <div class="form-row">
                     <button type="submit" class="action" style="background: #28a745;">💾 Save Growth Strategy</button>
                     <button type="button" onclick="clearLongTermGrowthForm()" class="action" style="background: #ffc107;">🔄 Clear Form</button>
+                    <button type="button" onclick="toggleLongTermGrowthForm()" class="action" style="background: #dc3545; margin-left: 10px;">Close Form</button>
                 </div>
             </form>
+            </div>
 
             <div style="margin-top: 25px;">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
@@ -101165,6 +101272,35 @@ function showLongTermGrowthForm() {
     `);
 
     setTimeout(loadLongTermGrowthRecords, 100);
+}
+
+// Toggle Long-Term Growth Strategy form visibility
+function toggleLongTermGrowthForm() {
+    const formContainer = document.getElementById('longTermGrowthFormContainer');
+    const toggleBtn = document.getElementById('toggleLongTermGrowthFormBtn');
+
+    if (formContainer.style.display === 'none' || !formContainer.classList.contains('show')) {
+        // Show form
+        formContainer.style.display = 'block';
+        formContainer.classList.add('show');
+        toggleBtn.innerHTML = '❌ Close Growth Strategy Form';
+        toggleBtn.style.background = '#dc3545';
+
+        // Smooth scroll to form
+        setTimeout(() => {
+            formContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }, 100);
+    } else {
+        // Hide form
+        formContainer.classList.remove('show');
+        toggleBtn.innerHTML = '📝 Open Growth Strategy Form';
+        toggleBtn.style.background = '#007bff';
+
+        // Hide after animation
+        setTimeout(() => {
+            formContainer.style.display = 'none';
+        }, 400);
+    }
 }
 
 // Clear form functions
