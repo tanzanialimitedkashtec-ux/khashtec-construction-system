@@ -56,7 +56,7 @@ router.get('/test', (req, res) => {
 router.get('/inventory', async (req, res) => {
     try {
         if (!db) throw new Error('Database not available');
-        const [rows] = await db.execute('SELECT * FROM materials_inventory ORDER BY material_name ASC');
+        const rows = await db.execute('SELECT * FROM materials_inventory ORDER BY material_name ASC');
         res.json({ success: true, data: rows });
     } catch (error) {
         console.error('Error fetching inventory:', error.message);
@@ -68,7 +68,7 @@ router.get('/inventory', async (req, res) => {
 router.get('/inventory/:id', async (req, res) => {
     try {
         if (!db) throw new Error('Database not available');
-        const [rows] = await db.execute('SELECT * FROM materials_inventory WHERE id = ?', [req.params.id]);
+        const rows = await db.execute('SELECT * FROM materials_inventory WHERE id = ?', [req.params.id]);
         if (rows.length === 0) return res.status(404).json({ success: false, message: 'Material not found' });
         res.json({ success: true, data: rows[0] });
     } catch (error) {
@@ -109,7 +109,7 @@ router.post('/inventory', async (req, res) => {
 router.get('/in', async (req, res) => {
     try {
         if (!db) throw new Error('Database not available');
-        const [rows] = await db.execute(`
+        const rows = await db.execute(`
             SELECT mi.*, inv.material_name, inv.material_code
             FROM materials_in mi
             JOIN materials_inventory inv ON mi.material_id = inv.id
@@ -156,7 +156,7 @@ router.post('/in', async (req, res) => {
 router.get('/out', async (req, res) => {
     try {
         if (!db) throw new Error('Database not available');
-        const [rows] = await db.execute(`
+        const rows = await db.execute(`
             SELECT mo.*, inv.material_name, inv.material_code
             FROM materials_out mo
             JOIN materials_inventory inv ON mo.material_id = inv.id
@@ -245,7 +245,7 @@ router.get('/dashboard', async (req, res) => {
 router.get('/alerts', async (req, res) => {
     try {
         if (!db) throw new Error('Database not available');
-        const [rows] = await db.execute('SELECT * FROM materials_inventory WHERE current_stock <= reorder_point OR current_stock = 0 ORDER BY material_name ASC');
+        const rows = await db.execute('SELECT * FROM materials_inventory WHERE current_stock <= reorder_point OR current_stock = 0 ORDER BY material_name ASC');
         res.json({ success: true, data: rows });
     } catch (error) {
         console.error('Error fetching alerts:', error.message);
@@ -257,7 +257,7 @@ router.get('/alerts', async (req, res) => {
 router.get('/by-category/:category', async (req, res) => {
     try {
         if (!db) throw new Error('Database not available');
-        const [rows] = await db.execute('SELECT * FROM materials_inventory WHERE material_category = ?', [req.params.category]);
+        const rows = await db.execute('SELECT * FROM materials_inventory WHERE material_category = ?', [req.params.category]);
         res.json({ success: true, data: rows });
     } catch (error) {
         console.error('Error fetching by category:', error.message);
@@ -272,7 +272,7 @@ router.get('/search', async (req, res) => {
         if (!q) return res.json({ success: true, data: [] });
 
         if (!db) throw new Error('Database not available');
-        const [rows] = await db.execute(
+        const rows = await db.execute(
             'SELECT * FROM materials_inventory WHERE material_name LIKE ? OR material_code LIKE ? OR material_category LIKE ?',
             [`%${q}%`, `%${q}%`, `%${q}%`]
         );
