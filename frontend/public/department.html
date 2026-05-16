@@ -68864,11 +68864,23 @@ async function assignTasks(){
 
         <div class="card">
 
-            <h3>Assign Tasks</h3>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+
+                <h3>Assign Tasks</h3>
+
+                <button type="button" id="toggleTaskFormBtn" onclick="toggleTaskForm()" class="action" style="background: #007bff;">
+
+                    📝 Open Task Form
+
+                </button>
+
+            </div>
 
             <p><strong>Project Authority:</strong> Coordinate execution by assigning tasks to team members</p>
 
             
+
+            <div id="taskFormContainer" style="display: none;">
 
             <form id="taskForm" onsubmit="return saveTaskAssignment()">
 
@@ -69014,7 +69026,11 @@ async function assignTasks(){
 
                 <button type="submit" class="action">Assign Task</button>
 
+                <button type="button" onclick="toggleTaskForm()" class="action" style="background: #dc3545; margin-left: 10px;">Close Form</button>
+
             </form>
+
+            </div>
 
             
 
@@ -69089,6 +69105,64 @@ async function assignTasks(){
     // Load task records when the page loads
 
     loadTasks();
+
+}
+
+
+
+// Toggle task assignment form visibility
+
+function toggleTaskForm() {
+
+    const formContainer = document.getElementById('taskFormContainer');
+
+    const toggleBtn = document.getElementById('toggleTaskFormBtn');
+
+    
+
+    if (formContainer.style.display === 'none' || !formContainer.classList.contains('show')) {
+
+        // Show form
+
+        formContainer.style.display = 'block';
+
+        formContainer.classList.add('show');
+
+        toggleBtn.innerHTML = '❌ Close Task Form';
+
+        toggleBtn.style.background = '#dc3545';
+
+        
+
+        // Smooth scroll to form
+
+        setTimeout(() => {
+
+            formContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+        }, 100);
+
+    } else {
+
+        // Hide form
+
+        formContainer.classList.remove('show');
+
+        toggleBtn.innerHTML = '📝 Open Task Form';
+
+        toggleBtn.style.background = '#007bff';
+
+        
+
+        // Hide after animation
+
+        setTimeout(() => {
+
+            formContainer.style.display = 'none';
+
+        }, 400);
+
+    }
 
 }
 
