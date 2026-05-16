@@ -37736,51 +37736,27 @@ function financialReporting(){
 
                     <button class="action" onclick="shareReport('balance')">Share Report</button>
 
+                </div>
+
+            </div>
+
             
 
             <div id="cashFlow" class="tab-content hidden">
 
-                <h4>Cash Flow Statement - Q1 2026</h4>
+                <h4>Cash Flow Statement</h4>
 
-                <div class="cash-flow">
+                <div id="cashFlowContent" class="cash-flow">
 
-                    <div class="flow-section">
+                    <div class="loading">Loading cash flow data...</div>
 
-                        <h5>Operating Activities</h5>
+                </div>
 
-                        <div class="flow-item">
+                <div class="report-actions">
 
-                            <span>Cash from Customers</span>
+                    <button class="action" onclick="exportCashFlow()">Export PDF</button>
 
-                            <span>TZS 380,000,000</span>
-
-                        </div>
-
-                        <div class="flow-item">
-
-                            <span>Cash paid to Suppliers</span>
-
-                            <span>-TZS 180,000,000</span>
-
-                        </div>
-
-                        <div class="flow-item">
-
-                            <span>Salaries Paid</span>
-
-                            <span>-TZS 85,500,000</span>
-
-                        </div>
-
-                        <div class="flow-item total">
-
-                            <span>Net Operating Cash</span>
-
-                            <span>TZS 114,500,000</span>
-
-                        </div>
-
-                    </div>
+                    <button class="action" onclick="shareReport('cashflow')">Share Report</button>
 
                 </div>
 
@@ -37818,7 +37794,7 @@ async function loadFinancialReportingData() {
 
     try {
 
-        const response = await fetch('/api/financial-records');
+        const response = await fetch('/api/finance/records');
 
         const records = await response.json() || [];
 

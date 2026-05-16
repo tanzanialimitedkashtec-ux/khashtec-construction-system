@@ -515,4 +515,60 @@ router.get('/summary', async (req, res) => {
     }
 });
 
+// GET - Fetch all financial records for reporting dashboard
+router.get('/records', async (req, res) => {
+    console.log('📊 GET /api/finance/records accessed');
+    try {
+        const connection = await db.getConnection();
+        
+        const [records] = await connection.query(`
+            SELECT 
+                id,
+                transaction_id as id,
+                transaction_type as type,
+                category,
+                amount,
+                description,
+                department,
+                transaction_date as date,
+                status,
+                reference_id as reference,
+                CASE 
+                    WHEN transaction_type IN ('revenue', 'income', 'payment_received', 'client_payment') THEN 'income'
+                    ELSE 'expense'
+                END as transaction_type,
+                reference_id as account,
+                created_by,
+                created_at
+            FROM financial_transactions
+            ORDER BY transaction_date DESC
+            LIMIT 500
+        `);
+        
+        connection.release();
+        
+        // Transform data to match frontend expectations
+        const transformedRecords = records.map(record => ({
+            id: record.id || record.transaction_id,
+            type: record.transaction_type === 'income' ? 'income' : 'expense',
+            category: record.category || 'Other',
+            amount: record.amount || 0,
+            description: record.description || '',
+            date: record.date || new Date().toISOString().split('T')[0],
+            status: record.status || 'pending',
+            reference: record.reference || '',
+            account: record.account || 'General Account',
+            department: record.department || 'General'
+        }));
+        
+        res.json(transformedRecords);
+    } catch (error) {
+        console.error('❌ Error fetching financial records:', error);
+        res.status(500).json({ 
+            error: 'Failed to fetch financial records',
+            message: error.message 
+        });
+    }
+});
+
 module.exports = router;
