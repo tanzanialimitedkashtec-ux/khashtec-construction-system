@@ -37700,111 +37700,19 @@ function financialReporting(){
 
             <div id="incomeStatement" class="tab-content">
 
-                <h4>Income Statement - Q1 2026</h4>
+                <h4>Income Statement</h4>
 
-                <div class="income-statement">
+                <div id="incomeStatementContent" class="income-statement">
 
-                    <div class="statement-section">
-
-                        <h5>Revenue</h5>
-
-                        <div class="statement-item">
-
-                            <span>Construction Services</span>
-
-                            <span>TZS 420,000,000</span>
-
-                        </div>
-
-                        <div class="statement-item">
-
-                            <span>Consulting Services</span>
-
-                            <span>TZS 30,000,000</span>
-
-                        </div>
-
-                        <div class="statement-item total">
-
-                            <span>Total Revenue</span>
-
-                            <span>TZS 450,000,000</span>
-
-                        </div>
-
-                    </div>
-
-                    
-
-                    <div class="statement-section">
-
-                        <h5>Expenses</h5>
-
-                        <div class="statement-item">
-
-                            <span>Salaries & Wages</span>
-
-                            <span>TZS 85,500,000</span>
-
-                        </div>
-
-                        <div class="statement-item">
-
-                            <span>Materials & Supplies</span>
-
-                            <span>TZS 120,000,000</span>
-
-                        </div>
-
-                        <div class="statement-item">
-
-                            <span>Equipment Costs</span>
-
-                            <span>TZS 45,000,000</span>
-
-                        </div>
-
-                        <div class="statement-item">
-
-                            <span>Operating Expenses</span>
-
-                            <span>TZS 29,500,000</span>
-
-                        </div>
-
-                        <div class="statement-item total">
-
-                            <span>Total Expenses</span>
-
-                            <span>TZS 280,000,000</span>
-
-                        </div>
-
-                    </div>
-
-                    
-
-                    <div class="statement-section profit">
-
-                        <div class="statement-item total">
-
-                            <span>Net Profit</span>
-
-                            <span>TZS 170,000,000</span>
-
-                        </div>
-
-                    </div>
+                    <div class="loading">Loading income statement data...</div>
 
                 </div>
-
-                
 
                 <div class="report-actions">
 
                     <button class="action" onclick="exportIncomeStatement()">Export PDF</button>
 
-                    <button class="action" onclick="shareReport()">Share Report</button>
+                    <button class="action" onclick="shareReport('income')">Share Report</button>
 
                 </div>
 
@@ -37814,99 +37722,19 @@ function financialReporting(){
 
             <div id="balanceSheet" class="tab-content hidden">
 
-                <h4>Balance Sheet - March 2026</h4>
+                <h4>Balance Sheet</h4>
 
-                <div class="balance-sheet">
+                <div id="balanceSheetContent" class="balance-sheet">
 
-                    <div class="balance-section">
-
-                        <h5>Assets</h5>
-
-                        <div class="balance-item">
-
-                            <span>Cash & Bank</span>
-
-                            <span>TZS 85,000,000</span>
-
-                        </div>
-
-                        <div class="balance-item">
-
-                            <span>Accounts Receivable</span>
-
-                            <span>TZS 45,000,000</span>
-
-                        </div>
-
-                        <div class="balance-item">
-
-                            <span>Equipment & Machinery</span>
-
-                            <span>TZS 280,000,000</span>
-
-                        </div>
-
-                        <div class="balance-item total">
-
-                            <span>Total Assets</span>
-
-                            <span>TZS 410,000,000</span>
-
-                        </div>
-
-                    </div>
-
-                    
-
-                    <div class="balance-section">
-
-                        <h5>Liabilities</h5>
-
-                        <div class="balance-item">
-
-                            <span>Accounts Payable</span>
-
-                            <span>TZS 35,000,000</span>
-
-                        </div>
-
-                        <div class="balance-item">
-
-                            <span>Tax Liabilities</span>
-
-                            <span>TZS 15,000,000</span>
-
-                        </div>
-
-                        <div class="balance-item total">
-
-                            <span>Total Liabilities</span>
-
-                            <span>TZS 50,000,000</span>
-
-                        </div>
-
-                    </div>
-
-                    
-
-                    <div class="balance-section">
-
-                        <h5>Equity</h5>
-
-                        <div class="balance-item total">
-
-                            <span>Total Equity</span>
-
-                            <span>TZS 360,000,000</span>
-
-                        </div>
-
-                    </div>
+                    <div class="loading">Loading balance sheet data...</div>
 
                 </div>
 
-            </div>
+                <div class="report-actions">
+
+                    <button class="action" onclick="exportBalanceSheet()">Export PDF</button>
+
+                    <button class="action" onclick="shareReport('balance')">Share Report</button>
 
             
 
@@ -37964,31 +37792,9 @@ function financialReporting(){
 
                 <h4>Budget vs Actual Analysis</h4>
 
-                <div class="budget-analysis">
+                <div id="budgetActualContent" class="budget-analysis">
 
-                    <div class="analysis-item">
-
-                        <span>Projects Department</span>
-
-                        <span>Budget: TZS 25M</span>
-
-                        <span>Actual: TZS 22.5M</span>
-
-                        <span class="variance positive">Variance: -10%</span>
-
-                    </div>
-
-                    <div class="analysis-item">
-
-                        <span>Administration</span>
-
-                        <span>Budget: TZS 8M</span>
-
-                        <span>Actual: TZS 8.7M</span>
-
-                        <span class="variance negative">Variance: +8.75%</span>
-
-                    </div>
+                    <div class="loading">Loading budget analysis data...</div>
 
                 </div>
 
@@ -37997,6 +37803,648 @@ function financialReporting(){
         </div>
 
     </div>`);
+
+    
+
+    // Load financial data from database
+
+    loadFinancialReportingData();
+
+}
+
+// Load all financial reporting data from API
+
+async function loadFinancialReportingData() {
+
+    try {
+
+        const response = await fetch('/api/financial-records');
+
+        const records = await response.json() || [];
+
+        
+
+        // Load income statement data
+
+        displayIncomeStatement(records);
+
+        
+
+        // Load balance sheet data
+
+        displayBalanceSheet(records);
+
+        
+
+        // Load cash flow data
+
+        displayCashFlow(records);
+
+        
+
+        // Load budget vs actual data
+
+        displayBudgetVsActual(records);
+
+    } catch (error) {
+
+        console.error('❌ Error loading financial reporting data:', error);
+
+        showNotification('Error loading financial data: ' + error.message, 'error');
+
+        // Show fallback message
+
+        document.querySelectorAll('[id*="Content"]').forEach(el => {
+
+            el.innerHTML = '<div class="error">Unable to load data. Please try refreshing the page.</div>';
+
+        });
+
+    }
+
+}
+
+// Display income statement with real data
+
+function displayIncomeStatement(records) {
+
+    try {
+
+        // Calculate totals by type
+
+        const revenue = records
+
+            .filter(r => r.type === 'income')
+
+            .reduce((sum, r) => sum + (r.amount || 0), 0);
+
+            
+
+        const expenses = records
+
+            .filter(r => r.type === 'expense')
+
+            .reduce((sum, r) => sum + (r.amount || 0), 0);
+
+        
+
+        const netProfit = revenue - expenses;
+
+        
+
+        // Group expenses by category
+
+        const expensesByCategory = {};
+
+        records
+
+            .filter(r => r.type === 'expense')
+
+            .forEach(r => {
+
+                const cat = r.category || 'Other';
+
+                expensesByCategory[cat] = (expensesByCategory[cat] || 0) + (r.amount || 0);
+
+            });
+
+        
+
+        // Generate HTML
+
+        let html = `
+
+            <div class="statement-section">
+
+                <h5>Revenue</h5>
+
+                <div class="statement-item">
+
+                    <span>Total Revenue from Services</span>
+
+                    <span>TZS ${revenue.toLocaleString()}</span>
+
+                </div>
+
+                <div class="statement-item total">
+
+                    <span>Total Revenue</span>
+
+                    <span>TZS ${revenue.toLocaleString()}</span>
+
+                </div>
+
+            </div>
+
+            
+
+            <div class="statement-section">
+
+                <h5>Expenses</h5>
+
+        `;
+
+        
+
+        // Add expense categories
+
+        Object.entries(expensesByCategory).sort().forEach(([category, amount]) => {
+
+            html += `
+
+                <div class="statement-item">
+
+                    <span>${category}</span>
+
+                    <span>TZS ${amount.toLocaleString()}</span>
+
+                </div>
+
+            `;
+
+        });
+
+        
+
+        html += `
+
+                <div class="statement-item total">
+
+                    <span>Total Expenses</span>
+
+                    <span>TZS ${expenses.toLocaleString()}</span>
+
+                </div>
+
+            </div>
+
+            
+
+            <div class="statement-section profit">
+
+                <div class="statement-item total">
+
+                    <span>Net Profit</span>
+
+                    <span>TZS ${netProfit.toLocaleString()}</span>
+
+                </div>
+
+            </div>
+
+        `;
+
+        
+
+        document.getElementById('incomeStatementContent').innerHTML = html;
+
+    } catch (error) {
+
+        console.error('❌ Error displaying income statement:', error);
+
+        document.getElementById('incomeStatementContent').innerHTML = `<div class="error">Error loading income statement data</div>`;
+
+    }
+
+}
+
+// Display balance sheet with real data
+
+function displayBalanceSheet(records) {
+
+    try {
+
+        // Calculate assets
+
+        const cash = records
+
+            .filter(r => (r.account === 'Cash' || r.account === 'Bank') && r.type === 'income')
+
+            .reduce((sum, r) => sum + (r.amount || 0), 0);
+
+            
+
+        const receivables = records
+
+            .filter(r => r.type === 'income' && r.status === 'pending')
+
+            .reduce((sum, r) => sum + (r.amount || 0), 0);
+
+        
+
+        const equipment = 280000000; // Base equipment value
+
+        const totalAssets = cash + receivables + equipment;
+
+        
+
+        // Calculate liabilities
+
+        const payables = records
+
+            .filter(r => r.type === 'expense' && r.status === 'pending')
+
+            .reduce((sum, r) => sum + (r.amount || 0), 0);
+
+        
+
+        const taxLiabilities = 15000000;
+
+        const totalLiabilities = payables + taxLiabilities;
+
+        const totalEquity = totalAssets - totalLiabilities;
+
+        
+
+        const html = `
+
+            <div class="balance-section">
+
+                <h5>Assets</h5>
+
+                <div class="balance-item">
+
+                    <span>Cash &amp; Bank</span>
+
+                    <span>TZS ${cash.toLocaleString()}</span>
+
+                </div>
+
+                <div class="balance-item">
+
+                    <span>Accounts Receivable</span>
+
+                    <span>TZS ${receivables.toLocaleString()}</span>
+
+                </div>
+
+                <div class="balance-item">
+
+                    <span>Equipment &amp; Machinery</span>
+
+                    <span>TZS ${equipment.toLocaleString()}</span>
+
+                </div>
+
+                <div class="balance-item total">
+
+                    <span>Total Assets</span>
+
+                    <span>TZS ${totalAssets.toLocaleString()}</span>
+
+                </div>
+
+            </div>
+
+            
+
+            <div class="balance-section">
+
+                <h5>Liabilities</h5>
+
+                <div class="balance-item">
+
+                    <span>Accounts Payable</span>
+
+                    <span>TZS ${payables.toLocaleString()}</span>
+
+                </div>
+
+                <div class="balance-item">
+
+                    <span>Tax Liabilities</span>
+
+                    <span>TZS ${taxLiabilities.toLocaleString()}</span>
+
+                </div>
+
+                <div class="balance-item total">
+
+                    <span>Total Liabilities</span>
+
+                    <span>TZS ${totalLiabilities.toLocaleString()}</span>
+
+                </div>
+
+            </div>
+
+            
+
+            <div class="balance-section">
+
+                <h5>Equity</h5>
+
+                <div class="balance-item total">
+
+                    <span>Total Equity</span>
+
+                    <span>TZS ${totalEquity.toLocaleString()}</span>
+
+                </div>
+
+            </div>
+
+        `;
+
+        
+
+        document.getElementById('balanceSheetContent').innerHTML = html;
+
+    } catch (error) {
+
+        console.error('❌ Error displaying balance sheet:', error);
+
+        document.getElementById('balanceSheetContent').innerHTML = `<div class="error">Error loading balance sheet data</div>`;
+
+    }
+
+}
+
+// Display cash flow with real data
+
+function displayCashFlow(records) {
+
+    try {
+
+        // Operating activities
+
+        const cashFromCustomers = records
+
+            .filter(r => r.type === 'income' && r.status === 'completed')
+
+            .reduce((sum, r) => sum + (r.amount || 0), 0);
+
+            
+
+        const cashToPaid = records
+
+            .filter(r => r.type === 'expense' && r.status === 'completed')
+
+            .reduce((sum, r) => sum + (r.amount || 0), 0);
+
+        
+
+        const netOperatingCash = cashFromCustomers - cashToPaid;
+
+        const beginningCash = 50000000;
+
+        const endingCash = beginningCash + netOperatingCash;
+
+        
+
+        const html = `
+
+            <div class="flow-section">
+
+                <h5>Operating Activities</h5>
+
+                <div class="flow-item">
+
+                    <span>Cash from Customers</span>
+
+                    <span>TZS ${cashFromCustomers.toLocaleString()}</span>
+
+                </div>
+
+                <div class="flow-item">
+
+                    <span>Cash paid to Suppliers &amp; Expenses</span>
+
+                    <span>-TZS ${cashToPaid.toLocaleString()}</span>
+
+                </div>
+
+                <div class="flow-item total">
+
+                    <span>Net Operating Cash Flow</span>
+
+                    <span>TZS ${netOperatingCash.toLocaleString()}</span>
+
+                </div>
+
+            </div>
+
+            
+
+            <div class="flow-section">
+
+                <h5>Summary</h5>
+
+                <div class="flow-item">
+
+                    <span>Beginning Cash Balance</span>
+
+                    <span>TZS ${beginningCash.toLocaleString()}</span>
+
+                </div>
+
+                <div class="flow-item">
+
+                    <span>Cash Flow from Operations</span>
+
+                    <span>TZS ${netOperatingCash.toLocaleString()}</span>
+
+                </div>
+
+                <div class="flow-item total">
+
+                    <span>Ending Cash Balance</span>
+
+                    <span>TZS ${endingCash.toLocaleString()}</span>
+
+                </div>
+
+            </div>
+
+        `;
+
+        
+
+        document.getElementById('cashFlowContent').innerHTML = html;
+
+    } catch (error) {
+
+        console.error('❌ Error displaying cash flow:', error);
+
+        document.getElementById('cashFlowContent').innerHTML = `<div class="error">Error loading cash flow data</div>`;
+
+    }
+
+}
+
+// Display budget vs actual analysis
+
+function displayBudgetVsActual(records) {
+
+    try {
+
+        // Group by category to compare budget vs actual
+
+        const byCategory = {};
+
+        records.forEach(r => {
+
+            const cat = r.category || 'Other';
+
+            if (!byCategory[cat]) {
+
+                byCategory[cat] = { actual: 0, budget: 0 };
+
+            }
+
+            byCategory[cat].actual += r.amount || 0;
+
+        });
+
+        
+
+        // Sample budgets for comparison
+
+        const budgets = {
+
+            'Payroll': 90000000,
+
+            'Materials': 120000000,
+
+            'Capital Expenditure': 50000000,
+
+            'Operating Expenses': 35000000,
+
+            'Professional Services': 20000000
+
+        };
+
+        
+
+        let html = '';
+
+        Object.entries(byCategory).sort().forEach(([category, data]) => {
+
+            const budget = budgets[category] || 50000000;
+
+            const variance = data.actual - budget;
+
+            const variancePercent = budget > 0 ? ((variance / budget) * 100).toFixed(2) : 0;
+
+            const varianceClass = variance > 0 ? 'negative' : 'positive';
+
+            
+
+            html += `
+
+                <div class="analysis-item">
+
+                    <span><strong>${category}</strong></span>
+
+                    <span>Budget: TZS ${budget.toLocaleString()}</span>
+
+                    <span>Actual: TZS ${data.actual.toLocaleString()}</span>
+
+                    <span class="variance ${varianceClass}">Variance: ${variance > 0 ? '+' : ''}${variancePercent}%</span>
+
+                </div>
+
+            `;
+
+        });
+
+        
+
+        document.getElementById('budgetActualContent').innerHTML = html || '<div class="no-data">No budget data available</div>';
+
+    } catch (error) {
+
+        console.error('❌ Error displaying budget analysis:', error);
+
+        document.getElementById('budgetActualContent').innerHTML = `<div class="error">Error loading budget analysis data</div>`;
+
+    }
+
+}
+
+// Tab switching function
+
+function showFinanceReportTab(tabName, event) {
+
+    if (event) event.preventDefault();
+
+    
+
+    // Hide all tabs
+
+    document.querySelectorAll('.reporting-dashboard .tab-content').forEach(tab => {
+
+        tab.classList.add('hidden');
+
+    });
+
+    
+
+    // Remove active from all buttons
+
+    document.querySelectorAll('.reporting-dashboard .tab-btn').forEach(btn => {
+
+        btn.classList.remove('active');
+
+    });
+
+    
+
+    // Show selected tab
+
+    const tabId = tabName === 'income' ? 'incomeStatement' :
+
+                  tabName === 'balance' ? 'balanceSheet' :
+
+                  tabName === 'cashflow' ? 'cashFlow' :
+
+                  tabName === 'budget' ? 'budgetActual' : 'cashFlow';
+
+    
+
+    document.getElementById(tabId).classList.remove('hidden');
+
+    
+
+    // Add active to clicked button
+
+    if (event && event.target) {
+
+        event.target.classList.add('active');
+
+    }
+
+}
+
+// Export and share functions
+
+function exportIncomeStatement() {
+
+    customAlert('Exporting income statement as PDF...', 'Export', 'info');
+
+}
+
+function exportBalanceSheet() {
+
+    customAlert('Exporting balance sheet as PDF...', 'Export', 'info');
+
+}
+
+function exportCashFlow() {
+
+    customAlert('Exporting cash flow statement as PDF...', 'Export', 'info');
+
+}
+
+function exportBudgetAnalysis() {
+
+    customAlert('Exporting budget analysis as PDF...', 'Export', 'info');
+
+}
+
+function shareReport(reportType) {
+
+    customAlert(`Sharing ${reportType} report with stakeholders...`, 'Share', 'info');
 
 }
 

@@ -65807,43 +65807,95 @@ function deleteBudget(recordId) {
 
 function saveSalaryStructure() {
 
-    const salary = {
+    const employeeId = document.getElementById('salaryEmployee').value;
 
-        employee: document.getElementById('salaryEmployee').value,
+    const basicSalary = parseFloat(document.getElementById('basicSalary').value) || 0;
 
-        basicSalary: document.getElementById('basicSalary').value,
+    const housingAllowance = parseFloat(document.getElementById('housingAllowance').value) || 0;
 
-        housingAllowance: document.getElementById('housingAllowance').value,
+    const transportAllowance = parseFloat(document.getElementById('transportAllowance').value) || 0;
 
-        transportAllowance: document.getElementById('transportAllowance').value,
+    const medicalAllowance = parseFloat(document.getElementById('medicalAllowance').value) || 0;
 
-        medicalAllowance: document.getElementById('medicalAllowance').value,
+    const otherAllowances = parseFloat(document.getElementById('otherAllowances').value) || 0;
 
-        otherAllowances: document.getElementById('otherAllowances').value,
+    const grossSalary = basicSalary + housingAllowance + transportAllowance + medicalAllowance + otherAllowances;
 
-        grossSalary: document.getElementById('grossSalary').value,
+    
 
-        approvedDate: new Date().toLocaleString()
+    if (!employeeId) {
+
+        customAlert('Please select an employee.', "Validation Error", "error");
+
+        return false;
+
+    }
+
+    
+
+    const payload = {
+
+        employeeId: employeeId,
+
+        basicSalary: basicSalary,
+
+        housingAllowance: housingAllowance,
+
+        transportAllowance: transportAllowance,
+
+        medicalAllowance: medicalAllowance,
+
+        otherAllowances: otherAllowances,
+
+        grossSalary: grossSalary,
+
+        approvedBy: sessionStorage.getItem('userName') || 'Finance Manager'
 
     };
 
     
 
-    // Save to secure API storage
+    fetch(`${window.KashTecAPI && window.KashTecAPI.baseUrl ? window.KashTecAPI.baseUrl : window.location.origin}/payroll/salary-structure`, {
 
-    const salaryStructures = [];
+        method: 'POST',
 
-    salaryStructures.push(salary);
+        headers: { 'Content-Type': 'application/json' },
 
-    // TODO: Save to API
+        body: JSON.stringify(payload)
+
+    })
+
+    .then(res => res.json())
+
+    .then(data => {
+
+        if (data.success) {
+
+            customAlert(`Salary structure saved!\n\nEmployee: ${employeeId}\nGross Salary: TZS ${formatTZS(grossSalary)}`, "Salary Structure Approved", "success");
+
+            document.getElementById('salaryForm').reset();
+
+            document.getElementById('grossSalary').value = '';
+
+            loadPayrollData();
+
+        } else {
+
+            customAlert(`Error: ${data.error || 'Failed to save salary structure'}`, "Save Failed", "error");
+
+        }
+
+    })
+
+    .catch(err => {
+
+        console.error('❌ Error saving salary structure:', err);
+
+        customAlert('Failed to save salary structure. Please check your connection.', "Save Failed", "error");
+
+    });
 
     
-
-    customAlert(`Salary structure approved!\n\nEmployee: ${salary.employee}\nGross Salary: TZS ${salary.grossSalary}`, "Salary Structure Approved", "success");
-
-    
-
-    document.getElementById('salaryForm').reset();
 
     return false;
 
@@ -65853,45 +65905,79 @@ function saveSalaryStructure() {
 
 function processPayroll() {
 
-    const payroll = {
+    const month = document.getElementById('payrollMonth').value;
 
-        month: document.getElementById('payrollMonth').value,
+    const paymentDate = document.getElementById('paymentDate').value;
 
-        paymentDate: document.getElementById('paymentDate').value,
+    const payrollType = document.getElementById('payrollType').value;
 
-        payrollType: document.getElementById('payrollType').value,
+    
 
-        totalEmployees: 45,
+    if (!month || !paymentDate) {
 
-        totalGross: '28,500,000',
+        customAlert('Please select payroll month and payment date.', "Validation Error", "error");
 
-        totalDeductions: '4,275,000',
+        return false;
 
-        netPayment: '24,225,000',
+    }
 
-        processedBy: 'Finance Manager',
+    
 
-        processedDate: new Date().toLocaleString()
+    const payload = {
+
+        payrollMonth: month,
+
+        paymentDate: paymentDate,
+
+        payrollType: payrollType,
+
+        processedBy: sessionStorage.getItem('userName') || 'Finance Manager'
 
     };
 
     
 
-    // Save to secure API storage
+    fetch(`${window.KashTecAPI && window.KashTecAPI.baseUrl ? window.KashTecAPI.baseUrl : window.location.origin}/payroll/process`, {
 
-    const payrolls = [];
+        method: 'POST',
 
-    payrolls.push(payroll);
+        headers: { 'Content-Type': 'application/json' },
 
-    // TODO: Save to API
+        body: JSON.stringify(payload)
+
+    })
+
+    .then(res => res.json())
+
+    .then(data => {
+
+        if (data.success) {
+
+            const d = data.data;
+
+            customAlert(`Payroll processed!\nMonth: ${d.payrollMonth}\nEmployees: ${d.totalEmployees}\nNet: TZS ${formatTZS(d.netPayment)}`, "Payroll Processed", "success");
+
+            document.getElementById('payrollProcessForm').reset();
+
+            loadPayrollData();
+
+        } else {
+
+            customAlert(`Error: ${data.error || 'Failed to process payroll'}`, "Process Failed", "error");
+
+        }
+
+    })
+
+    .catch(err => {
+
+        console.error('❌ Error processing payroll:', err);
+
+        customAlert('Failed to process payroll. Please check your connection.', "Process Failed", "error");
+
+    });
 
     
-
-    customAlert(`Payroll processed successfully!\n\nMonth: ${payroll.month}\nNet Payment: TZS ${payroll.netPayment}\nPayment Date: ${payroll.paymentDate}`, "Payroll Processed", "success");
-
-    
-
-    document.getElementById('payrollProcessForm').reset();
 
     return false;
 
@@ -66050,6 +66136,20 @@ function showPayrollTab(tabName, btnElement) {
     } else if (event && event.target) {
 
         event.target.classList.add('active');
+
+    }
+
+    
+
+    if (tabName === 'overview') {
+
+        loadPayrollData();
+
+    }
+
+    if (tabName === 'process') {
+
+        updatePayrollPreview();
 
     }
 
@@ -66412,51 +66512,447 @@ function taxPlanning() {
 
 function processMonthlyPayroll() {
 
-    customAlert('Processing monthly payroll...\n\nThis will calculate salaries, deductions, and process payments for all employees.', "Payroll Processing", "info");
+    showPayrollTab('process', document.querySelector('.payroll-tabs .tab-btn:nth-child(3)'));
 
 }
-
-
 
 function approveOvertime() {
 
-    customAlert('Opening overtime approval interface...\n\nThis will show pending overtime requests for approval.', "Overtime Approval", "info");
+    customAlert('Overtime approval - integrate with attendance module for pending overtime requests.', "Overtime Approval", "info");
 
 }
-
-
 
 function manageAllowances() {
 
-    customAlert('Opening allowance management...\n\nThis will show and manage employee allowances and benefits.', "Allowance Management", "info");
+    showPayrollTab('salary', document.querySelector('.payroll-tabs .tab-btn:nth-child(2)'));
 
 }
-
-
 
 function generateIndividualPayslip() {
 
-    customAlert('Generating individual payslip...\n\nEmployee payslip will be generated with all salary details and deductions.', "Generate Payslip", "info");
+    const employeeId = document.getElementById('payslipEmployee').value;
+
+    const month = document.getElementById('payslipMonth').value;
+
+    if (!month) { customAlert('Select a month.', "Missing Month", "error"); return; }
+
+    
+
+    fetch(`${window.KashTecAPI && window.KashTecAPI.baseUrl ? window.KashTecAPI.baseUrl : window.location.origin}/payroll/payslips/${month}`)
+
+    .then(res => res.json())
+
+    .then(data => {
+
+        if (data.success) {
+
+            const payslips = employeeId === 'all' ? data.data : data.data.filter(p => String(p.employee_id) === String(employeeId));
+
+            displayPayslipResults(payslips, month);
+
+        } else {
+
+            customAlert(`Error: ${data.error}`, "Fetch Failed", "error");
+
+        }
+
+    })
+
+    .catch(err => {
+
+        console.error('❌ Error fetching payslips:', err);
+
+        customAlert('Failed to fetch payslips.', "Fetch Failed", "error");
+
+    });
 
 }
-
-
 
 function generateBulkPayslips() {
 
-    customAlert('Generating payslips for all employees...\n\nAll payslips will be generated and available for distribution.', "Generate Bulk Payslips", "info");
+    document.getElementById('payslipEmployee').value = 'all';
+
+    generateIndividualPayslip();
 
 }
-
-
 
 function emailPayslips() {
 
-    customAlert('Emailing payslips to employees...\n\nAll payslips will be securely emailed to respective employees.', "Email Payslips", "info");
+    const employeeId = document.getElementById('payslipEmployee').value;
+
+    const month = document.getElementById('payslipMonth').value;
+
+    if (!month) { customAlert('Select a month.', "Missing Month", "error"); return; }
+
+    
+
+    fetch(`${window.KashTecAPI && window.KashTecAPI.baseUrl ? window.KashTecAPI.baseUrl : window.location.origin}/payroll/payslips/email`, {
+
+        method: 'POST',
+
+        headers: { 'Content-Type': 'application/json' },
+
+        body: JSON.stringify({ month: month, employeeId: employeeId })
+
+    })
+
+    .then(res => res.json())
+
+    .then(data => {
+
+        if (data.success) {
+
+            customAlert(`Payslips emailed successfully! Updated: ${data.updated || 0}`, "Email Sent", "success");
+
+        } else {
+
+            customAlert(`Error: ${data.error}`, "Email Failed", "error");
+
+        }
+
+    })
+
+    .catch(err => {
+
+        console.error('❌ Error emailing payslips:', err);
+
+        customAlert('Failed to email payslips.', "Email Failed", "error");
+
+    });
 
 }
 
+function formatTZS(amount) {
 
+    if (amount == null) return '0';
+
+    return Number(amount).toLocaleString('en-TZ', { minimumFractionDigits: 0, maximumFractionDigits: 2 });
+
+}
+
+function loadPayrollData() {
+
+    const baseUrl = window.KashTecAPI && window.KashTecAPI.baseUrl ? window.KashTecAPI.baseUrl : window.location.origin;
+
+    
+
+    fetch(`${baseUrl}/api/employees`)
+
+    .then(res => res.json())
+
+    .then(data => {
+
+        const employees = Array.isArray(data) ? data : (data.employees || data.data || []);
+
+        populateEmployeeDropdowns(employees);
+
+    })
+
+    .catch(err => console.error('❌ Error loading employees:', err));
+
+    
+
+    fetch(`${baseUrl}/payroll/salary-structures`)
+
+    .then(res => res.json())
+
+    .then(data => {
+
+        if (data.success) updateOverviewStats(data.data || []);
+
+    })
+
+    .catch(err => console.error('❌ Error loading salary structures:', err));
+
+    
+
+    fetch(`${baseUrl}/payroll/history`)
+
+    .then(res => res.json())
+
+    .then(data => {
+
+        if (data.success) {
+
+            populatePayrollMonthDropdowns(data.data || []);
+
+            renderPayrollHistory(data.data || []);
+
+        }
+
+    })
+
+    .catch(err => console.error('❌ Error loading payroll history:', err));
+
+    
+
+    const today = new Date();
+
+    const endOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+
+    const paymentDateInput = document.getElementById('paymentDate');
+
+    if (paymentDateInput) paymentDateInput.value = endOfMonth.toISOString().split('T')[0];
+
+}
+
+function populateEmployeeDropdowns(employees) {
+
+    const active = employees.filter(e => (e.status || '').toString().toLowerCase() === 'active');
+
+    const opts = active.map(e => `<option value="${e.id || e.employee_id}">${e.name || e.full_name || e.first_name + ' ' + e.last_name} - ${e.position || e.role || 'Staff'}</option>`).join('');
+
+    const salarySelect = document.getElementById('salaryEmployee');
+
+    if (salarySelect) salarySelect.innerHTML = `<option value="">Select Employee</option>` + opts;
+
+    const payslipSelect = document.getElementById('payslipEmployee');
+
+    if (payslipSelect) payslipSelect.innerHTML = `<option value="all">All Employees</option>` + opts;
+
+}
+
+function updateOverviewStats(structures) {
+
+    const totalEmployees = structures.length;
+
+    const totalMonthly = structures.reduce((sum, s) => sum + (parseFloat(s.gross_salary) || 0), 0);
+
+    const avgSalary = totalEmployees > 0 ? totalMonthly / totalEmployees : 0;
+
+    
+
+    const today = new Date();
+
+    const endOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+
+    const daysLeft = Math.max(0, Math.ceil((endOfMonth - today) / (1000 * 60 * 60 * 24)));
+
+    const monthNames = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+
+    
+
+    const totalEl = document.getElementById('overviewTotalEmployees');
+
+    if (totalEl) totalEl.textContent = totalEmployees;
+
+    const payrollEl = document.getElementById('overviewMonthlyPayroll');
+
+    if (payrollEl) payrollEl.textContent = `TZS ${formatTZS(totalMonthly)}`;
+
+    const avgEl = document.getElementById('overviewAvgSalary');
+
+    if (avgEl) avgEl.textContent = `TZS ${formatTZS(avgSalary)}`;
+
+    const nextDateEl = document.getElementById('overviewNextPayDate');
+
+    if (nextDateEl) nextDateEl.textContent = `${endOfMonth.getDate()} ${monthNames[endOfMonth.getMonth()]}`;
+
+    const daysEl = document.getElementById('overviewDaysLeft');
+
+    if (daysEl) daysEl.textContent = daysLeft > 0 ? `${daysLeft} Day${daysLeft !== 1 ? 's' : ''}` : 'Today';
+
+    const monthLabelEl = document.getElementById('overviewMonthLabel');
+
+    if (monthLabelEl) monthLabelEl.textContent = `${monthNames[today.getMonth()]} ${today.getFullYear()}`;
+
+}
+
+function populatePayrollMonthDropdowns(records) {
+
+    const months = [...new Set(records.map(r => r.payroll_month).filter(Boolean))].sort().reverse();
+
+    const monthOptions = months.map(m => `<option value="${m}">${m}</option>`).join('');
+
+    
+
+    const payrollMonth = document.getElementById('payrollMonth');
+
+    if (payrollMonth) payrollMonth.innerHTML = `<option value="">Select Month</option>` + monthOptions;
+
+    const payslipMonth = document.getElementById('payslipMonth');
+
+    if (payslipMonth) payslipMonth.innerHTML = monthOptions || `<option value="">No processed months</option>`;
+
+}
+
+function renderPayrollHistory(records) {
+
+    const container = document.getElementById('payrollHistoryContainer');
+
+    if (!container) return;
+
+    if (!records || records.length === 0) {
+
+        container.innerHTML = '<p>No payroll history found.</p>';
+
+        return;
+
+    }
+
+    let html = `<table style="width:100%;border-collapse:collapse;margin-top:10px;">
+
+        <thead><tr style="background:#f8f9fa;">
+
+            <th style="padding:8px;border:1px solid #ddd;text-align:left;">Month</th>
+
+            <th style="padding:8px;border:1px solid #ddd;text-align:left;">Type</th>
+
+            <th style="padding:8px;border:1px solid #ddd;text-align:right;">Employees</th>
+
+            <th style="padding:8px;border:1px solid #ddd;text-align:right;">Net Payment</th>
+
+            <th style="padding:8px;border:1px solid #ddd;text-align:center;">Status</th>
+
+        </tr></thead><tbody>`;
+
+    records.slice(0, 10).forEach(r => {
+
+        html += `<tr>
+
+            <td style="padding:8px;border:1px solid #ddd;">${r.payroll_month || '-'}</td>
+
+            <td style="padding:8px;border:1px solid #ddd;">${r.payroll_type || 'regular'}</td>
+
+            <td style="padding:8px;border:1px solid #ddd;text-align:right;">${r.total_employees || 0}</td>
+
+            <td style="padding:8px;border:1px solid #ddd;text-align:right;">TZS ${formatTZS(r.net_payment)}</td>
+
+            <td style="padding:8px;border:1px solid #ddd;text-align:center;"><span style="padding:2px 8px;border-radius:4px;background:${(r.status || 'draft') === 'processed' ? '#d4edda;color:#155724;' : '#fff3cd;color:#856404;'};">${r.status || 'draft'}</span></td>
+
+        </tr>`;
+
+    });
+
+    html += '</tbody></table>';
+
+    container.innerHTML = html;
+
+}
+
+function calculateGrossSalary() {
+
+    const basic = parseFloat(document.getElementById('basicSalary').value) || 0;
+
+    const housing = parseFloat(document.getElementById('housingAllowance').value) || 0;
+
+    const transport = parseFloat(document.getElementById('transportAllowance').value) || 0;
+
+    const medical = parseFloat(document.getElementById('medicalAllowance').value) || 0;
+
+    const other = parseFloat(document.getElementById('otherAllowances').value) || 0;
+
+    const gross = basic + housing + transport + medical + other;
+
+    const grossInput = document.getElementById('grossSalary');
+
+    if (grossInput) grossInput.value = `TZS ${formatTZS(gross)}`;
+
+}
+
+function updatePayrollPreview() {
+
+    const baseUrl = window.KashTecAPI && window.KashTecAPI.baseUrl ? window.KashTecAPI.baseUrl : window.location.origin;
+
+    fetch(`${baseUrl}/payroll/salary-structures`)
+
+    .then(res => res.json())
+
+    .then(data => {
+
+        if (data.success) {
+
+            const structures = data.data || [];
+
+            const totalEmployees = structures.length;
+
+            const totalGross = structures.reduce((sum, s) => sum + (parseFloat(s.gross_salary) || 0), 0);
+
+            const totalDeductions = totalGross * 0.15;
+
+            const netPayment = totalGross - totalDeductions;
+
+            const empEl = document.getElementById('previewTotalEmployees');
+
+            if (empEl) empEl.textContent = totalEmployees;
+
+            const grossEl = document.getElementById('previewTotalGross');
+
+            if (grossEl) grossEl.textContent = `TZS ${formatTZS(totalGross)}`;
+
+            const dedEl = document.getElementById('previewTotalDeductions');
+
+            if (dedEl) dedEl.textContent = `TZS ${formatTZS(totalDeductions)}`;
+
+            const netEl = document.getElementById('previewNetPayment');
+
+            if (netEl) netEl.textContent = `TZS ${formatTZS(netPayment)}`;
+
+        }
+
+    })
+
+    .catch(err => console.error('❌ Error updating preview:', err));
+
+}
+
+function displayPayslipResults(payslips, month) {
+
+    const container = document.getElementById('payslipResults');
+
+    if (!container) return;
+
+    if (!payslips || payslips.length === 0) {
+
+        container.innerHTML = `<p>No payslips found for ${month}.</p>`;
+
+        return;
+
+    }
+
+    let html = `<h5>Payslips for ${month}</h5><table style="width:100%;border-collapse:collapse;margin-top:10px;">
+
+        <thead><tr style="background:#f8f9fa;">
+
+            <th style="padding:8px;border:1px solid #ddd;text-align:left;">Employee</th>
+
+            <th style="padding:8px;border:1px solid #ddd;text-align:right;">Gross</th>
+
+            <th style="padding:8px;border:1px solid #ddd;text-align:right;">NSSF</th>
+
+            <th style="padding:8px;border:1px solid #ddd;text-align:right;">PAYE</th>
+
+            <th style="padding:8px;border:1px solid #ddd;text-align:right;">Net</th>
+
+            <th style="padding:8px;border:1px solid #ddd;text-align:center;">Emailed</th>
+
+        </tr></thead><tbody>`;
+
+    payslips.forEach(p => {
+
+        html += `<tr>
+
+            <td style="padding:8px;border:1px solid #ddd;">${p.employee_name || p.employee_id}</td>
+
+            <td style="padding:8px;border:1px solid #ddd;text-align:right;">TZS ${formatTZS(p.gross_salary)}</td>
+
+            <td style="padding:8px;border:1px solid #ddd;text-align:right;">TZS ${formatTZS(p.nssf_deduction)}</td>
+
+            <td style="padding:8px;border:1px solid #ddd;text-align:right;">TZS ${formatTZS(p.paye_tax)}</td>
+
+            <td style="padding:8px;border:1px solid #ddd;text-align:right;">TZS ${formatTZS(p.net_salary)}</td>
+
+            <td style="padding:8px;border:1px solid #ddd;text-align:center;">${p.emailed ? 'Yes' : 'No'}</td>
+
+        </tr>`;
+
+    });
+
+    html += '</tbody></table>';
+
+    container.innerHTML = html;
+
+}
 
 function exportIncomeStatement() {
 
