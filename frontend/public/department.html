@@ -96111,12 +96111,6 @@ async function loadMaterialDropdown(selectId) {
         placeholder.selected = true;
         select.appendChild(placeholder);
 
-        // Add sample option
-        const sampleOption = document.createElement('option');
-        sampleOption.value = 'sample';
-        sampleOption.textContent = 'Sample Material (SMP-001) - Stock: 100 Bags';
-        select.appendChild(sampleOption);
-
         if (!Array.isArray(materials)) return;
 
         materials.forEach(m => {
@@ -102694,7 +102688,7 @@ function showMaterialsInForm(preselectedMaterialId, preselectedMaterialName) {
 
 async function saveMaterialsIn() {
     const materialId = document.getElementById('minMaterial').value;
-    if (!materialId || materialId === 'sample' || isNaN(parseInt(materialId))) {
+    if (!materialId || isNaN(parseInt(materialId))) {
         showNotification('Please select a valid material from the dropdown.', 'error');
         return;
     }
@@ -102873,7 +102867,7 @@ function showMaterialsOutForm(preselectedMaterialId, preselectedMaterialName) {
 
 async function saveMaterialsOut() {
     const materialId = document.getElementById('moutMaterial').value;
-    if (!materialId || materialId === 'sample' || isNaN(parseInt(materialId))) {
+    if (!materialId || isNaN(parseInt(materialId))) {
         showNotification('Please select a valid material from the dropdown.', 'error');
         return;
     }
