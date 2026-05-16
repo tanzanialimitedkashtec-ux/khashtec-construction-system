@@ -101777,6 +101777,9 @@ function showPaymentManagement() {
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
                 <h3>💳 Payment Management</h3>
                 <div>
+                    <button type="button" onclick="togglePaymentForm()" id="togglePaymentFormBtn" class="action" style="background: #007bff;">
+                        📝 Open Payment Form
+                    </button>
                     <button type="button" onclick="loadPaymentRequests()" class="action" style="background: #007bff;">
                         🔄 Refresh
                     </button>
@@ -101787,6 +101790,7 @@ function showPaymentManagement() {
             </div>
 
             <!-- Payment Request Form -->
+            <div id="paymentFormContainer" style="display: none;">
             <div class="form-section">
                 <h4>📝 Create New Payment Request</h4>
                 <form id="paymentRequestForm" onsubmit="submitPaymentRequest(event)">
@@ -101903,8 +101907,12 @@ function showPaymentManagement() {
                         <button type="button" onclick="resetPaymentForm()" class="action" style="background: #6c757d;">
                             🔄 Reset Form
                         </button>
+                        <button type="button" onclick="togglePaymentForm()" class="action" style="background: #dc3545; margin-left: 10px;">
+                            Close Form
+                        </button>
                     </div>
                 </form>
+            </div>
             </div>
 
             <!-- Payment Requests List -->
@@ -102284,6 +102292,35 @@ async function cancelPayment(paymentId) {
     } catch (error) {
         console.error('❌ Error cancelling payment:', error);
         customAlert(`Failed to cancel payment: ${error.message}`, 'Error', 'error');
+    }
+}
+
+// Toggle Payment form visibility
+function togglePaymentForm() {
+    const formContainer = document.getElementById('paymentFormContainer');
+    const toggleBtn = document.getElementById('togglePaymentFormBtn');
+
+    if (formContainer.style.display === 'none' || !formContainer.classList.contains('show')) {
+        // Show form
+        formContainer.style.display = 'block';
+        formContainer.classList.add('show');
+        toggleBtn.innerHTML = '❌ Close Payment Form';
+        toggleBtn.style.background = '#dc3545';
+
+        // Smooth scroll to form
+        setTimeout(() => {
+            formContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }, 100);
+    } else {
+        // Hide form
+        formContainer.classList.remove('show');
+        toggleBtn.innerHTML = '📝 Open Payment Form';
+        toggleBtn.style.background = '#007bff';
+
+        // Hide after animation
+        setTimeout(() => {
+            formContainer.style.display = 'none';
+        }, 400);
     }
 }
 
