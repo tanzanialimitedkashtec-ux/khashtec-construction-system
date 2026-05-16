@@ -2099,7 +2099,7 @@ CREATE TABLE IF NOT EXISTS materials_in (
   quantity_received DECIMAL(12,2) NOT NULL,
   unit_of_measure ENUM('Bag', 'KG', 'Ton', 'Piece', 'Meter', 'Square Meter', 'Cubic Meter', 'Liter', 'Roll', 'Box', 'Set', 'Sheet') DEFAULT 'Piece',
   unit_price DECIMAL(12,2) NOT NULL,
-  total_cost DECIMAL(12,2) NOT NULL,
+  total_cost DECIMAL(15,2) NOT NULL,
   transport_cost DECIMAL(12,2) DEFAULT 0,
   transport_issue TEXT,
   supplier_name VARCHAR(255) NOT NULL,
@@ -2140,7 +2140,7 @@ CREATE TABLE IF NOT EXISTS materials_out (
   quantity_out DECIMAL(12,2) NOT NULL,
   unit_of_measure ENUM('Bag', 'KG', 'Ton', 'Piece', 'Meter', 'Square Meter', 'Cubic Meter', 'Liter', 'Roll', 'Box', 'Set', 'Sheet') DEFAULT 'Piece',
   unit_price DECIMAL(12,2) DEFAULT 0,
-  total_value DECIMAL(12,2) DEFAULT 0,
+  total_value DECIMAL(15,2) DEFAULT 0,
   issue_type ENUM('Project Use', 'Sale', 'Transfer', 'Waste', 'Damage', 'Return to Supplier') DEFAULT 'Project Use',
   issued_to VARCHAR(255) NOT NULL,
   issued_to_role VARCHAR(100),
@@ -2172,6 +2172,10 @@ CREATE TABLE IF NOT EXISTS materials_out (
   INDEX idx_project_id (project_id),
   INDEX idx_issued_to (issued_to)
 );
+
+-- Fix column precision for existing tables (Railway deployments)
+ALTER TABLE materials_in MODIFY COLUMN total_cost DECIMAL(15,2) NOT NULL;
+ALTER TABLE materials_out MODIFY COLUMN total_value DECIMAL(15,2) DEFAULT 0;
 
 -- Insert sample materials inventory data
 INSERT IGNORE INTO materials_inventory (material_code, material_name, material_category, description, unit_of_measure, current_stock, min_stock_level, max_stock_level, reorder_point, storage_location, supplier_name, supplier_contact, unit_cost, status) VALUES
