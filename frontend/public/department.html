@@ -102432,9 +102432,12 @@ let materialsOutData = [];
 
 async function fetchMaterialsInventory() {
     try {
-        const response = await fetch('/api/materials/inventory');
+        const baseUrl = window.KashTecAPI && window.KashTecAPI.baseUrl ? window.KashTecAPI.baseUrl : window.location.origin;
+        const response = await fetch(`${baseUrl}/api/materials/inventory`);
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
         const result = await response.json();
         if (result.success) { materialsInventoryData = Array.isArray(result.data) ? result.data : []; return materialsInventoryData; }
+        console.warn('Materials inventory API returned success=false');
         return [];
     } catch (e) { console.error('Error loading inventory:', e); return []; }
 }
@@ -102490,10 +102493,42 @@ async function showMaterialsDashboard() {
 }
 
 async function showMaterialsInventory() {
+    // Render UI immediately with loading state
+    showContent(`
+        <div class="card">
+            <h3>Materials Inventory</h3>
+            <div style="margin-bottom:15px;display:flex;gap:10px;flex-wrap:wrap;">
+                <input type="text" id="inventorySearch" placeholder="Search materials..." onkeyup="filterMaterialsInventory()" style="padding:8px;border:1px solid #ddd;border-radius:4px;flex:1;min-width:200px;">
+                <select id="categoryFilter" onchange="filterMaterialsInventory()" style="padding:8px;border:1px solid #ddd;border-radius:4px;">
+                    <option value="">All Categories</option>
+                    <option>Cement</option><option>Sand</option><option>Gravel</option><option>Steel/Rebar</option>
+                    <option>Bricks</option><option>Blocks</option><option>Timber</option><option>Pipes</option>
+                    <option>Electrical</option><option>Paint</option><option>Roofing</option><option>Tiles</option>
+                    <option>Glass</option><option>Hardware</option><option>Tools</option><option>Safety Equipment</option><option>Other</option>
+                </select>
+                <button onclick="showMaterialsInForm()" class="action" style="background:#28a745;">+ Record In</button>
+                <button onclick="showMaterialsOutForm()" class="action" style="background:#fd7e14;">+ Record Out</button>
+            </div>
+            <div class="table-responsive">
+                <table class="projects-table" id="inventoryTable">
+                    <thead><tr><th>Code</th><th>Material Name</th><th>Category</th><th>Stock</th><th>Status</th><th>Location</th><th>Supplier</th><th>Unit Cost</th><th>Action</th></tr></thead>
+                    <tbody><tr><td colspan="9" style="text-align:center;">Loading materials from database...</td></tr></tbody>
+                </table>
+            </div>
+            <div class="form-actions" style="margin-top:15px;">
+                <button onclick="showMaterialsInRecords()" class="action" style="background:#6c757d;">View In Records</button>
+                <button onclick="showMaterialsOutRecords()" class="action" style="background:#6c757d;">View Out Records</button>
+                <button onclick="showMaterialsDashboard()" class="action" style="background:#17a2b8;">Dashboard</button>
+            </div>
+        </div>
+    `);
+
     const inventory = await fetchMaterialsInventory();
     let rowsHtml = '';
-    if (!Array.isArray(inventory) || inventory.length === 0) {
-        rowsHtml = '<tr><td colspan="9" style="text-align:center;">No materials found.</td></tr>';
+    if (!Array.isArray(inventory)) {
+        rowsHtml = '<tr><td colspan="9" style="text-align:center;color:#c62828;">Error loading materials. Please check your connection and try again.</td></tr>';
+    } else if (inventory.length === 0) {
+        rowsHtml = '<tr><td colspan="9" style="text-align:center;">No materials found in database.</td></tr>';
     } else {
         inventory.forEach(m => {
             const stock = parseFloat(m.current_stock || 0);
@@ -102514,34 +102549,9 @@ async function showMaterialsInventory() {
             </tr>`;
         });
     }
-    showContent(`
-        <div class="card">
-            <h3>Materials Inventory</h3>
-            <div style="margin-bottom:15px;display:flex;gap:10px;flex-wrap:wrap;">
-                <input type="text" id="inventorySearch" placeholder="Search materials..." onkeyup="filterMaterialsInventory()" style="padding:8px;border:1px solid #ddd;border-radius:4px;flex:1;min-width:200px;">
-                <select id="categoryFilter" onchange="filterMaterialsInventory()" style="padding:8px;border:1px solid #ddd;border-radius:4px;">
-                    <option value="">All Categories</option>
-                    <option>Cement</option><option>Sand</option><option>Gravel</option><option>Steel/Rebar</option>
-                    <option>Bricks</option><option>Blocks</option><option>Timber</option><option>Pipes</option>
-                    <option>Electrical</option><option>Paint</option><option>Roofing</option><option>Tiles</option>
-                    <option>Glass</option><option>Hardware</option><option>Tools</option><option>Safety Equipment</option><option>Other</option>
-                </select>
-                <button onclick="showMaterialsInForm()" class="action" style="background:#28a745;">+ Record In</button>
-                <button onclick="showMaterialsOutForm()" class="action" style="background:#fd7e14;">+ Record Out</button>
-            </div>
-            <div class="table-responsive">
-                <table class="projects-table" id="inventoryTable">
-                    <thead><tr><th>Code</th><th>Material Name</th><th>Category</th><th>Stock</th><th>Status</th><th>Location</th><th>Supplier</th><th>Unit Cost</th><th>Action</th></tr></thead>
-                    <tbody>${rowsHtml}</tbody>
-                </table>
-            </div>
-            <div class="form-actions" style="margin-top:15px;">
-                <button onclick="showMaterialsInRecords()" class="action" style="background:#6c757d;">View In Records</button>
-                <button onclick="showMaterialsOutRecords()" class="action" style="background:#6c757d;">View Out Records</button>
-                <button onclick="showMaterialsDashboard()" class="action" style="background:#17a2b8;">Dashboard</button>
-            </div>
-        </div>
-    `);
+
+    const tbody = document.querySelector('#inventoryTable tbody');
+    if (tbody) tbody.innerHTML = rowsHtml;
 }
 
 function filterMaterialsInventory() {
