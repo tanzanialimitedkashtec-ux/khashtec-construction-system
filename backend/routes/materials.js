@@ -137,7 +137,7 @@ router.post('/in', async (req, res) => {
 
         if (!db) throw new Error('Database not available');
 
-        const [result] = await db.execute(
+        const result = await db.execute(
             `INSERT INTO materials_in (material_id, track_number, receipt_date, quantity_received, unit_of_measure, unit_price, total_cost, transport_cost, transport_issue, supplier_name, supplier_contact, invoice_number, purchase_order_number, delivery_note_number, delivery_condition, quality_check_status, quality_remarks, received_by, received_by_role, project_id, project_name, warehouse_location, notes)
              VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
             [material_id, track, date, quantity_received, unit_of_measure || 'Piece', unit_price || 0, totalCost, transport_cost || 0, transport_issue || '', supplier_name, supplier_contact || '', invoice_number || '', purchase_order_number || '', delivery_note_number || '', delivery_condition || 'Good', quality_check_status || 'Pending', quality_remarks || '', received_by, received_by_role || '', project_id || null, project_name || '', warehouse_location || '', notes || '']
@@ -184,7 +184,7 @@ router.post('/out', async (req, res) => {
 
         if (!db) throw new Error('Database not available');
 
-        const [result] = await db.execute(
+        const result = await db.execute(
             `INSERT INTO materials_out (material_id, track_number, issue_date, quantity_out, unit_of_measure, unit_price, total_value, issue_type, issued_to, issued_to_role, issued_to_department, project_id, project_name, destination, purpose, authorized_by, authorized_by_role, delivery_method, delivery_receipt_number, condition_on_issue, return_expected, expected_return_date, notes)
              VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
             [material_id, track, date, quantity_out, unit_of_measure || 'Piece', unit_price || 0, totalValue, issue_type || 'Project Use', issued_to, issued_to_role || '', issued_to_department || 'Project Management', project_id || null, project_name || '', destination || '', purpose || '', authorized_by, authorized_by_role || '', delivery_method || 'Company Vehicle', delivery_receipt_number || '', condition_on_issue || 'New', return_expected || false, expected_return_date || null, notes || '']
