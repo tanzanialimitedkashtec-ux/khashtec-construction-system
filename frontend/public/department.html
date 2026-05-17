@@ -199,39 +199,6 @@ header{
 }
 
 
-/* User topbar (name, role, email, avatar) */
-.user-topbar {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-}
-.user-topbar .user-avatar {
-    width: 32px;
-    height: 32px;
-    border-radius: 50%;
-    background: rgba(11, 61, 145, 0.95);
-    color: #fff;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: 700;
-    font-size: 14px;
-}
-.user-topbar .user-meta {
-    display: flex;
-    flex-direction: column;
-    line-height: 1.1;
-}
-.user-topbar .user-name {
-    font-size: 14px;
-    font-weight: 600;
-}
-.user-topbar .user-sub {
-    font-size: 12px;
-    color: #666;
-}
-
-
 
 .container .notification-btn,
 
@@ -22990,8 +22957,6 @@ background: #f8f9fa;
     <div class="top-controls">
 
         <button type="button" class="menu-toggle" onclick="toggleSidebar()">☰</button>
-
-        <div id="userInfoBar" class="user-topbar"></div>
 
         <button type="button" class="notification-btn" onclick="showNotifications()">🔔</button>
 
@@ -59267,7 +59232,7 @@ function financialManagement(){
 
                     <h5>Total Revenue</h5>
 
-                    <div class="stat-number" id="fmTotalRevenue">--</div>
+                    <div class="stat-number" id="fmTotalRevenue">Loading...</div>
 
                     <div class="stat-change positive">+12.5% YTD</div>
 
@@ -59279,7 +59244,7 @@ function financialManagement(){
 
                     <h5>Total Expenses</h5>
 
-                    <div class="stat-number" id="fmTotalExpenses">--</div>
+                    <div class="stat-number" id="fmTotalExpenses">Loading...</div>
 
                     <div class="stat-change negative">+8.3% YTD</div>
 
@@ -59291,7 +59256,7 @@ function financialManagement(){
 
                     <h5>Net Profit</h5>
 
-                    <div class="stat-number" id="fmNetProfit">--</div>
+                    <div class="stat-number" id="fmNetProfit">Loading...</div>
 
                     <div class="stat-change positive">+18.7% YTD</div>
 
@@ -59303,7 +59268,7 @@ function financialManagement(){
 
                     <h5>Cash Balance</h5>
 
-                    <div class="stat-number" id="fmCashBalance">--</div>
+                    <div class="stat-number" id="fmCashBalance">Loading...</div>
 
                     <div class="stat-change neutral">Stable</div>
 
@@ -59395,29 +59360,10 @@ function financialManagement(){
 
     
 
-    // Load finance summary and records
-
-    fetchFinanceSummary();
+    // Load summary + financial records
+    loadFinanceSummary();
     loadFinancialRecords();
 
-}
-
-// Fetch and display finance summary cards
-async function fetchFinanceSummary() {
-    try {
-        const baseUrl = window.location.origin;
-        const res = await fetch(`${baseUrl}/api/finance/summary`, { method: 'GET' });
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        const data = await res.json();
-        const nf = new Intl.NumberFormat('en-TZ', { style: 'currency', currency: 'TZS', minimumFractionDigits: 0, maximumFractionDigits: 0 });
-        const set = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = nf.format(Number(val || 0)); };
-        set('fmTotalRevenue', data.total_revenue ?? data.totalRevenue ?? 0);
-        set('fmTotalExpenses', data.total_expenses ?? data.totalExpenses ?? 0);
-        set('fmNetProfit', data.net_profit ?? data.netProfit ?? 0);
-        set('fmCashBalance', data.cash_balance ?? data.cashBalance ?? 0);
-    } catch (e) {
-        console.warn('⚠️ Failed to load finance summary:', e);
-    }
 }
 
 
@@ -59442,7 +59388,7 @@ async function loadFinancialRecords() {
 
         try {
 
-            response = await fetch(`${baseUrl}/api/finance/records`, {
+            response = await fetch(`${baseUrl}/api/finance/transactions`, {
 
                 method: 'GET',
 
@@ -66789,26 +66735,39 @@ function updateOverviewStats(structures) {
     const totalEl = document.getElementById('overviewTotalEmployees');
 
     if (totalEl) totalEl.textContent = totalEmployees;
+    const ovTblTotalEl = document.getElementById('ovTblTotalEmployees');
+    if (ovTblTotalEl) ovTblTotalEl.textContent = totalEmployees;
 
     const payrollEl = document.getElementById('overviewMonthlyPayroll');
 
     if (payrollEl) payrollEl.textContent = `TZS ${formatTZS(totalMonthly)}`;
+    const ovTblMonthlyEl = document.getElementById('ovTblMonthlyPayroll');
+    if (ovTblMonthlyEl) ovTblMonthlyEl.textContent = `TZS ${formatTZS(totalMonthly)}`;
 
     const avgEl = document.getElementById('overviewAvgSalary');
 
     if (avgEl) avgEl.textContent = `TZS ${formatTZS(avgSalary)}`;
+    const ovTblAvgEl = document.getElementById('ovTblAvgSalary');
+    if (ovTblAvgEl) ovTblAvgEl.textContent = `TZS ${formatTZS(avgSalary)}`;
 
     const nextDateEl = document.getElementById('overviewNextPayDate');
 
     if (nextDateEl) nextDateEl.textContent = `${endOfMonth.getDate()} ${monthNames[endOfMonth.getMonth()]}`;
+    const ovTblNextEl = document.getElementById('ovTblNextPayDate');
+    if (ovTblNextEl) ovTblNextEl.textContent = `${endOfMonth.getDate()} ${monthNames[endOfMonth.getMonth()]}`;
 
     const daysEl = document.getElementById('overviewDaysLeft');
 
     if (daysEl) daysEl.textContent = daysLeft > 0 ? `${daysLeft} Day${daysLeft !== 1 ? 's' : ''}` : 'Today';
+    const ovTblDaysEl = document.getElementById('ovTblDaysLeft');
+    if (ovTblDaysEl) ovTblDaysEl.textContent = daysLeft > 0 ? `${daysLeft} Day${daysLeft !== 1 ? 's' : ''}` : 'Today';
 
     const monthLabelEl = document.getElementById('overviewMonthLabel');
 
     if (monthLabelEl) monthLabelEl.textContent = `${monthNames[today.getMonth()]} ${today.getFullYear()}`;
+
+    // Render salary structures table if container exists
+    renderSalaryStructuresTable(structures);
 
 }
 
@@ -66947,6 +66906,66 @@ function updatePayrollPreview() {
     })
 
     .catch(err => console.error('❌ Error updating preview:', err));
+
+}
+
+function renderSalaryStructuresTable(structures) {
+
+    const container = document.getElementById('salaryStructuresTable');
+
+    if (!container) return;
+
+    if (!structures || structures.length === 0) {
+
+        container.innerHTML = '<p>No salary structures found.</p>';
+
+        return;
+
+    }
+
+    let html = `<h5>Salary Structures</h5>
+        <table style="width:100%;border-collapse:collapse;margin-top:10px;">
+            <thead>
+                <tr style="background:#f8f9fa;">
+                    <th style="padding:8px;border:1px solid #ddd;text-align:left;">Employee</th>
+                    <th style="padding:8px;border:1px solid #ddd;text-align:left;">Department</th>
+                    <th style="padding:8px;border:1px solid #ddd;text-align:left;">Position</th>
+                    <th style="padding:8px;border:1px solid #ddd;text-align:right;">Basic</th>
+                    <th style="padding:8px;border:1px solid #ddd;text-align:right;">Allowances</th>
+                    <th style="padding:8px;border:1px solid #ddd;text-align:right;">Gross</th>
+                    <th style="padding:8px;border:1px solid #ddd;text-align:left;">Approved By</th>
+                    <th style="padding:8px;border:1px solid #ddd;text-align:left;">Approved Date</th>
+                </tr>
+            </thead>
+            <tbody>`;
+
+    structures.forEach(s => {
+
+        const basic = parseFloat(s.basic_salary) || 0;
+
+        const allowances = (parseFloat(s.housing_allowance) || 0) +
+                           (parseFloat(s.transport_allowance) || 0) +
+                           (parseFloat(s.medical_allowance) || 0) +
+                           (parseFloat(s.other_allowances) || 0);
+
+        const gross = parseFloat(s.gross_salary) || (basic + allowances);
+
+        html += `<tr>
+            <td style="padding:8px;border:1px solid #ddd;">${s.full_name || s.employee_id || '-'}</td>
+            <td style="padding:8px;border:1px solid #ddd;">${s.department || '-'}</td>
+            <td style="padding:8px;border:1px solid #ddd;">${s.position || '-'}</td>
+            <td style="padding:8px;border:1px solid #ddd;text-align:right;">TZS ${formatTZS(basic)}</td>
+            <td style="padding:8px;border:1px solid #ddd;text-align:right;">TZS ${formatTZS(allowances)}</td>
+            <td style="padding:8px;border:1px solid #ddd;text-align:right;">TZS ${formatTZS(gross)}</td>
+            <td style="padding:8px;border:1px solid #ddd;">${s.approved_by || '—'}</td>
+            <td style="padding:8px;border:1px solid #ddd;">${(s.approved_date || '').toString().substring(0,10) || '—'}</td>
+        </tr>`;
+
+    });
+
+    html += '</tbody></table>';
+
+    container.innerHTML = html;
 
 }
 

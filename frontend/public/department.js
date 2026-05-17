@@ -10966,6 +10966,60 @@ function registerEmployee(){
 
 }
 
+// Handle Generate Payslips form submit
+function handleGeneratePayslips(event){
+    if (event) event.preventDefault();
+    // Reuse existing logic (handles both single and all employees)
+    if (typeof generateIndividualPayslip === 'function') {
+        return generateIndividualPayslip(), false;
+    }
+    return false;
+}
+
+// Toggle Email Payslips form visibility and sync options
+function toggleEmailPayslipsForm(){
+    const container = document.getElementById('emailPayslipsFormContainer');
+    if (!container) return;
+    const isHidden = container.classList.contains('hidden');
+
+    // Sync employee/month options from main selects when showing
+    if (isHidden) {
+        const srcEmp = document.getElementById('payslipEmployee');
+        const dstEmp = document.getElementById('emailPayslipsEmployee');
+        const srcMon = document.getElementById('payslipMonth');
+        const dstMon = document.getElementById('emailPayslipsMonth');
+        if (srcEmp && dstEmp) {
+            dstEmp.innerHTML = srcEmp.innerHTML;
+            dstEmp.value = srcEmp.value;
+        }
+        if (srcMon && dstMon) {
+            dstMon.innerHTML = srcMon.innerHTML;
+            dstMon.value = srcMon.value;
+        }
+    }
+
+    container.classList.toggle('hidden');
+}
+
+// Submit Email Payslips form
+function submitEmailPayslipsForm(event){
+    if (event) event.preventDefault();
+    // Copy selected values back to main controls that emailPayslips() uses
+    const emailEmp = document.getElementById('emailPayslipsEmployee');
+    const emailMon = document.getElementById('emailPayslipsMonth');
+    const mainEmp = document.getElementById('payslipEmployee');
+    const mainMon = document.getElementById('payslipMonth');
+    if (emailEmp && mainEmp) mainEmp.value = emailEmp.value;
+    if (emailMon && mainMon) mainMon.value = emailMon.value;
+
+    if (typeof emailPayslips === 'function') {
+        emailPayslips();
+    }
+    const container = document.getElementById('emailPayslipsFormContainer');
+    if (container) container.classList.add('hidden');
+    return false;
+}
+
 
 
 // Toggle employee registration form visibility
@@ -37122,6 +37176,36 @@ function payrollProcessing(){
 
             </div>
 
+            <div class="table-wrapper" style="margin-top: 15px;">
+                <h5>Overview Summary</h5>
+                <table class="simple-table" style="width:100%;border-collapse:collapse;">
+                    <tbody>
+                        <tr>
+                            <th style="text-align:left;padding:8px;border:1px solid #ddd;">Total Employees</th>
+                            <td id="ovTblTotalEmployees" style="padding:8px;border:1px solid #ddd;">--</td>
+                        </tr>
+                        <tr>
+                            <th style="text-align:left;padding:8px;border:1px solid #ddd;">Monthly Payroll</th>
+                            <td id="ovTblMonthlyPayroll" style="padding:8px;border:1px solid #ddd;">--</td>
+                        </tr>
+                        <tr>
+                            <th style="text-align:left;padding:8px;border:1px solid #ddd;">Average Salary</th>
+                            <td id="ovTblAvgSalary" style="padding:8px;border:1px solid #ddd;">--</td>
+                        </tr>
+                        <tr>
+                            <th style="text-align:left;padding:8px;border:1px solid #ddd;">Next Pay Date</th>
+                            <td id="ovTblNextPayDate" style="padding:8px;border:1px solid #ddd;">--</td>
+                        </tr>
+                        <tr>
+                            <th style="text-align:left;padding:8px;border:1px solid #ddd;">Days Left</th>
+                            <td id="ovTblDaysLeft" style="padding:8px;border:1px solid #ddd;">--</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div id="salaryStructuresTable" style="margin-top: 15px;"></div>
+
             
 
             <div id="payrollHistorySection" style="margin-top: 20px;">
@@ -37340,33 +37424,25 @@ function payrollProcessing(){
 
             <div class="payslip-options">
 
-                <div class="form-row">
-
-                    <div class="form-group">
-
-                        <label>Employee</label>
-
-                        <select id="payslipEmployee">
-
-                            <option value="all">All Employees</option>
-
-                        </select>
-
+                <form id="generatePayslipsForm" onsubmit="return handleGeneratePayslips(event)">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Employee</label>
+                            <select id="payslipEmployee">
+                                <option value="all">All Employees</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Month</label>
+                            <select id="payslipMonth">
+                                <option value="">Loading months...</option>
+                            </select>
+                        </div>
                     </div>
-
-                    <div class="form-group">
-
-                        <label>Month</label>
-
-                        <select id="payslipMonth">
-
-                            <option value="">Loading months...</option>
-
-                        </select>
-
+                    <div class="form-actions">
+                        <button type="submit" class="action">Generate Payslips</button>
                     </div>
-
-                </div>
+                </form>
 
                 
 
@@ -37375,13 +37451,30 @@ function payrollProcessing(){
                 
 
                 <div class="payslip-actions">
+                    <button class="action" onclick="toggleEmailPayslipsForm()">Email Payslips</button>
+                </div>
 
-                    <button class="action" onclick="generateIndividualPayslip()">Generate Individual Payslip</button>
-
-                    <button class="action" onclick="generateBulkPayslips()">Generate All Payslips</button>
-
-                    <button class="action" onclick="emailPayslips()">Email Payslips</button>
-
+                <div id="emailPayslipsFormContainer" class="hidden" style="margin-top: 10px;">
+                    <form id="emailPayslipsForm" onsubmit="return submitEmailPayslipsForm(event)">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Employee</label>
+                                <select id="emailPayslipsEmployee">
+                                    <option value="all">All Employees</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Month</label>
+                                <select id="emailPayslipsMonth">
+                                    <option value="">Select Month</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-actions">
+                            <button type="submit" class="action">Send Payslips</button>
+                            <button type="button" class="action" onclick="toggleEmailPayslipsForm()">Cancel</button>
+                        </div>
+                    </form>
                 </div>
 
             </div>
