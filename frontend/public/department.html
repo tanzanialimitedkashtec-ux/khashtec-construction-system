@@ -30,6 +30,117 @@
 
         // }
 
+function handleGeneratePayslips(event) {
+
+    if (event && event.preventDefault) event.preventDefault();
+
+    const monthSel = document.getElementById('payslipMonth');
+
+    if (!monthSel || !monthSel.value) {
+
+        customAlert('Select a month.', "Missing Month", "error");
+
+        return false;
+
+    }
+
+    // Reuse existing logic which reads #payslipEmployee and #payslipMonth
+    generateIndividualPayslip();
+
+    return false;
+
+}
+
+function toggleEmailPayslipsForm() {
+
+    const container = document.getElementById('emailPayslipsFormContainer');
+
+    if (!container) return;
+
+    const isHidden = container.classList.contains('hidden');
+
+    // Sync dropdown options with main selectors when showing the form
+    if (isHidden) {
+
+        const srcEmp = document.getElementById('payslipEmployee');
+
+        const srcMonth = document.getElementById('payslipMonth');
+
+        const dstEmp = document.getElementById('emailPayslipsEmployee');
+
+        const dstMonth = document.getElementById('emailPayslipsMonth');
+
+        if (srcEmp && dstEmp) {
+
+            dstEmp.innerHTML = srcEmp.innerHTML;
+
+            dstEmp.value = srcEmp.value;
+
+        }
+
+        if (srcMonth && dstMonth) {
+
+            dstMonth.innerHTML = srcMonth.innerHTML;
+
+            dstMonth.value = srcMonth.value;
+
+        }
+
+    }
+
+    container.classList.toggle('hidden');
+
+}
+
+function submitEmailPayslipsForm(event) {
+
+    if (event && event.preventDefault) event.preventDefault();
+
+    const empSel = document.getElementById('emailPayslipsEmployee');
+
+    const monthSel = document.getElementById('emailPayslipsMonth');
+
+    if (!monthSel || !monthSel.value) {
+
+        customAlert('Select a month.', "Missing Month", "error");
+
+        return false;
+
+    }
+
+    // Temporarily apply selected values to the main selectors and reuse emailPayslips()
+    const mainEmp = document.getElementById('payslipEmployee');
+
+    const mainMonth = document.getElementById('payslipMonth');
+
+    const prevEmp = mainEmp ? mainEmp.value : null;
+
+    const prevMonth = mainMonth ? mainMonth.value : null;
+
+    if (mainEmp && empSel) mainEmp.value = empSel.value;
+
+    if (mainMonth && monthSel) mainMonth.value = monthSel.value;
+
+    try {
+
+        emailPayslips();
+
+    } finally {
+
+        if (mainEmp && prevEmp !== null) mainEmp.value = prevEmp;
+
+        if (mainMonth && prevMonth !== null) mainMonth.value = prevMonth;
+
+    }
+
+    const container = document.getElementById('emailPayslipsFormContainer');
+
+    if (container) container.classList.add('hidden');
+
+    return false;
+
+}
+
     </script>
 
     
@@ -59388,7 +59499,7 @@ async function loadFinancialRecords() {
 
         try {
 
-            response = await fetch(`${baseUrl}/api/finance/transactions`, {
+            response = await fetch(`/api/finance/records`, {
 
                 method: 'GET',
 
@@ -59418,7 +59529,7 @@ async function loadFinancialRecords() {
 
             try {
 
-                response = await fetch(`${baseUrl}/api/transactions`, {
+                response = await fetch(`/api/finance/expenses`, {
 
                     method: 'GET',
 
@@ -59456,13 +59567,39 @@ async function loadFinancialRecords() {
 
         
 
-        const financialRecords = await response.json();
+        const raw = await response.json();
 
-        console.log('📊 Financial records data:', financialRecords);
+        console.log('📊 Financial records data (raw):', raw);
 
-        
+        let records = Array.isArray(raw) ? raw : (raw.data || raw.records || []);
 
-        displayFinancialRecords(financialRecords);
+        if (records && records.length && !('type' in records[0])) {
+
+            records = records.map(r => ({
+
+                id: r.id || r.transaction_id || `EXP-${Date.now()}`,
+
+                date: r.date || r.transaction_date || new Date().toISOString().slice(0,10),
+
+                description: r.description || (r.category ? `Expense - ${r.category}` : 'Expense'),
+
+                category: r.category || 'Expense',
+
+                type: 'expense',
+
+                amount: Number(r.amount) || 0,
+
+                status: String(r.status || 'Pending').toLowerCase(),
+
+                reference: r.reference || '',
+
+                account: 'General Account'
+
+            }));
+
+        }
+
+        displayFinancialRecords(records);
 
         
 
@@ -60104,7 +60241,35 @@ function payrollProcessing(){
 
             </div>
 
-            
+            <div class="table-wrapper" style="margin-top: 15px;">
+                <h5>Overview Summary</h5>
+                <table class="simple-table" style="width:100%;border-collapse:collapse;">
+                    <tbody>
+                        <tr>
+                            <th style="text-align:left;padding:8px;border:1px solid #ddd;">Total Employees</th>
+                            <td id="ovTblTotalEmployees" style="padding:8px;border:1px solid #ddd;">--</td>
+                        </tr>
+                        <tr>
+                            <th style="text-align:left;padding:8px;border:1px solid #ddd;">Monthly Payroll</th>
+                            <td id="ovTblMonthlyPayroll" style="padding:8px;border:1px solid #ddd;">--</td>
+                        </tr>
+                        <tr>
+                            <th style="text-align:left;padding:8px;border:1px solid #ddd;">Average Salary</th>
+                            <td id="ovTblAvgSalary" style="padding:8px;border:1px solid #ddd;">--</td>
+                        </tr>
+                        <tr>
+                            <th style="text-align:left;padding:8px;border:1px solid #ddd;">Next Pay Date</th>
+                            <td id="ovTblNextPayDate" style="padding:8px;border:1px solid #ddd;">--</td>
+                        </tr>
+                        <tr>
+                            <th style="text-align:left;padding:8px;border:1px solid #ddd;">Days Left</th>
+                            <td id="ovTblDaysLeft" style="padding:8px;border:1px solid #ddd;">--</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div id="salaryStructuresTable" style="margin-top: 15px;"></div>
 
             <div id="payrollHistorySection" style="margin-top: 20px;">
 
@@ -60322,48 +60487,53 @@ function payrollProcessing(){
 
             <div class="payslip-options">
 
-                <div class="form-row">
-
-                    <div class="form-group">
-
-                        <label>Employee</label>
-
-                        <select id="payslipEmployee">
-
-                            <option value="all">All Employees</option>
-
-                        </select>
-
+                <form id="generatePayslipsForm" onsubmit="return handleGeneratePayslips(event)">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Employee</label>
+                            <select id="payslipEmployee">
+                                <option value="all">All Employees</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Month</label>
+                            <select id="payslipMonth">
+                                <option value="">Loading months...</option>
+                            </select>
+                        </div>
                     </div>
-
-                    <div class="form-group">
-
-                        <label>Month</label>
-
-                        <select id="payslipMonth">
-
-                            <option value="">Loading months...</option>
-
-                        </select>
-
+                    <div class="form-actions">
+                        <button type="submit" class="action">Generate Payslips</button>
                     </div>
-
-                </div>
-
-                
+                </form>
 
                 <div id="payslipResults" style="margin-top: 15px;"></div>
 
-                
-
                 <div class="payslip-actions">
+                    <button class="action" onclick="toggleEmailPayslipsForm()">Email Payslips</button>
+                </div>
 
-                    <button class="action" onclick="generateIndividualPayslip()">Generate Individual Payslip</button>
-
-                    <button class="action" onclick="generateBulkPayslips()">Generate All Payslips</button>
-
-                    <button class="action" onclick="emailPayslips()">Email Payslips</button>
-
+                <div id="emailPayslipsFormContainer" class="hidden" style="margin-top: 10px;">
+                    <form id="emailPayslipsForm" onsubmit="return submitEmailPayslipsForm(event)">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Employee</label>
+                                <select id="emailPayslipsEmployee">
+                                    <option value="all">All Employees</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Month</label>
+                                <select id="emailPayslipsMonth">
+                                    <option value="">Select Month</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-actions">
+                            <button type="submit" class="action">Send Payslips</button>
+                            <button type="button" class="action" onclick="toggleEmailPayslipsForm()">Cancel</button>
+                        </div>
+                    </form>
                 </div>
 
             </div>
@@ -65855,7 +66025,7 @@ function saveSalaryStructure() {
 
     
 
-    fetch(`${window.KashTecAPI && window.KashTecAPI.baseUrl ? window.KashTecAPI.baseUrl : window.location.origin}/payroll/salary-structure`, {
+    fetch(`${window.KashTecAPI && window.KashTecAPI.baseUrl ? window.KashTecAPI.baseUrl : window.location.origin}/api/payroll/salary-structure`, {
 
         method: 'POST',
 
@@ -65937,7 +66107,7 @@ function processPayroll() {
 
     
 
-    fetch(`${window.KashTecAPI && window.KashTecAPI.baseUrl ? window.KashTecAPI.baseUrl : window.location.origin}/payroll/process`, {
+    fetch(`${window.KashTecAPI && window.KashTecAPI.baseUrl ? window.KashTecAPI.baseUrl : window.location.origin}/api/payroll/process`, {
 
         method: 'POST',
 
@@ -66629,6 +66799,50 @@ function formatTZS(amount) {
     return Number(amount).toLocaleString('en-TZ', { minimumFractionDigits: 0, maximumFractionDigits: 2 });
 
 }
+
+function loadFinanceSummary() {
+
+    fetch(`/api/finance/summary`)
+
+    .then(res => res.json())
+
+    .then(s => {
+
+        const setText = (id, value) => {
+
+            const el = document.getElementById(id);
+
+            if (el) el.textContent = `TZS ${formatTZS(value || 0)}`;
+
+        };
+
+        setText('fmTotalRevenue', s.total_revenue);
+
+        setText('fmTotalExpenses', s.total_expenses);
+
+        setText('fmNetProfit', s.net_profit);
+
+        setText('fmCashBalance', s.cash_balance);
+
+    })
+
+    .catch(err => {
+
+        console.error('❌ Error loading finance summary:', err);
+
+        ['fmTotalRevenue','fmTotalExpenses','fmNetProfit','fmCashBalance'].forEach(id => {
+
+            const el = document.getElementById(id);
+
+            if (el) el.textContent = '--';
+
+        });
+
+    });
+
+}
+
+
 
 function loadPayrollData() {
 
