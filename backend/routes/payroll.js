@@ -74,10 +74,11 @@ router.get('/overview', async (req, res) => {
     try {
         console.log('📊 GET /api/payroll/overview called');
 
-        const [employees] = await db.execute(`
-            SELECT id, employee_id, full_name, position, department, salary, status, hire_date
-            FROM employees
-            WHERE status = 'active'
+        const employees = await db.execute(`
+            SELECT e.id, e.employee_id, e.position, e.department, e.salary, e.status, e.hire_date, ed.full_name
+            FROM employees e
+            LEFT JOIN employee_details ed ON ed.employee_id = e.id
+            WHERE e.status IN ('Active','active')
         `);
 
         const totalEmployees = employees ? employees.length : 0;
@@ -87,7 +88,7 @@ router.get('/overview', async (req, res) => {
         const avgSalary = totalEmployees > 0 ? totalMonthlyPayroll / totalEmployees : 0;
 
         // Get last processed payroll
-        const [lastPayroll] = await db.execute(`
+        const lastPayroll = await db.execute(`
             SELECT payroll_month, payment_date, status
             FROM payroll_records
             ORDER BY created_at DESC
@@ -95,7 +96,7 @@ router.get('/overview', async (req, res) => {
         `);
 
         // Get salary structures count
-        const [salaryStructures] = await db.execute(`
+        const salaryStructures = await db.execute(`
             SELECT COUNT(*) as count FROM salary_structures
         `);
 
@@ -121,11 +122,12 @@ router.get('/employees', async (req, res) => {
     try {
         console.log('👥 GET /api/payroll/employees called');
 
-        const [employees] = await db.execute(`
-            SELECT id, employee_id, full_name, position, department, salary
-            FROM employees
-            WHERE status = 'active'
-            ORDER BY full_name ASC
+        const employees = await db.execute(`
+            SELECT e.id, e.employee_id, e.position, e.department, e.salary, ed.full_name
+            FROM employees e
+            LEFT JOIN employee_details ed ON ed.employee_id = e.id
+            WHERE e.status IN ('Active','active')
+            ORDER BY ed.full_name ASC
         `);
 
         res.json({
@@ -197,10 +199,17 @@ router.post('/salary-structure', async (req, res) => {
 // GET /api/payroll/salary-structures - Get all salary structures
 router.get('/salary-structures', async (req, res) => {
     try {
-        const [structures] = await db.execute(`
-            SELECT s.*, e.full_name, e.department, e.position
+        const structures = await db.execute(`
+            SELECT 
+                s.*, 
+                COALESCE(ed.full_name, e.employee_id) AS full_name, 
+                e.department, 
+                e.position
             FROM salary_structures s
-            LEFT JOIN employees e ON s.employee_id = e.employee_id OR s.employee_id = e.id
+            LEFT JOIN employees e 
+                ON s.employee_id = e.employee_id OR s.employee_id = e.id
+            LEFT JOIN employee_details ed 
+                ON ed.employee_id = e.id
             ORDER BY s.created_at DESC
         `);
 
@@ -224,8 +233,8 @@ router.post('/process', async (req, res) => {
         }
 
         // Get all active employees with salary structures
-        const [employees] = await db.execute(`
-            SELECT e.id, e.employee_id, e.full_name, e.department, e.position,
+        const employees = await db.execute(`
+            SELECT e.id, e.employee_id, ed.full_name AS full_name, e.department, e.position,
                    COALESCE(s.gross_salary, e.salary, 0) as gross_salary,
                    COALESCE(s.basic_salary, e.salary, 0) as basic_salary,
                    COALESCE(s.housing_allowance, 0) as housing_allowance,
@@ -234,7 +243,8 @@ router.post('/process', async (req, res) => {
                    COALESCE(s.other_allowances, 0) as other_allowances
             FROM employees e
             LEFT JOIN salary_structures s ON e.employee_id = s.employee_id OR e.id = s.employee_id
-            WHERE e.status = 'active'
+            LEFT JOIN employee_details ed ON ed.employee_id = e.id
+            WHERE e.status IN ('Active','active')
         `);
 
         if (!employees || employees.length === 0) {
@@ -335,7 +345,7 @@ router.post('/process', async (req, res) => {
 // GET /api/payroll/history - Get payroll processing history
 router.get('/history', async (req, res) => {
     try {
-        const [records] = await db.execute(`
+        const records = await db.execute(`
             SELECT * FROM payroll_records ORDER BY created_at DESC LIMIT 20
         `);
 
@@ -352,7 +362,7 @@ router.get('/payslips/:month', async (req, res) => {
         const { month } = req.params;
         console.log('📄 GET /api/payroll/payslips/' + month);
 
-        const [payslips] = await db.execute(`
+        const payslips = await db.execute(`
             SELECT * FROM payslip_records WHERE payroll_month = ? ORDER BY employee_name ASC
         `, [month]);
 
@@ -369,7 +379,7 @@ router.get('/payslips/employee/:employeeId/:month', async (req, res) => {
         const { employeeId, month } = req.params;
         console.log('📄 GET /api/payroll/payslips/employee/' + employeeId + '/' + month);
 
-        const [payslips] = await db.execute(`
+        const payslips = await db.execute(`
             SELECT * FROM payslip_records 
             WHERE employee_id = ? AND payroll_month = ?
             LIMIT 1
@@ -396,7 +406,7 @@ router.post('/payslips/email', async (req, res) => {
             params.push(employeeId);
         }
 
-        const [result] = await db.execute(query, params);
+        const result = await db.execute(query, params);
 
         res.json({ success: true, message: 'Payslips marked as emailed', updated: result ? result.affectedRows : 0 });
     } catch (error) {
