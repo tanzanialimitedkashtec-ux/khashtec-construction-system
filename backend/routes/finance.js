@@ -4,6 +4,26 @@ const db = require('../../database/config/database');
 
 console.log('🚀 Finance routes loaded with database connection');
 
+async function resolveUserId(preferredRole) {
+    try {
+        if (preferredRole) {
+            const roleRows = await db.execute('SELECT id FROM users WHERE role = ? LIMIT 1', [preferredRole]);
+            if (Array.isArray(roleRows) && roleRows.length > 0) return roleRows[0].id;
+        }
+        const anyRows = await db.execute('SELECT id FROM users ORDER BY id ASC LIMIT 1');
+        if (Array.isArray(anyRows) && anyRows.length > 0) return anyRows[0].id;
+    } catch (_) {}
+    return null;
+}
+
+function sqlSumRow(rows, keyCandidates = ['sum', 'total']) {
+    if (!Array.isArray(rows) || rows.length === 0) return 0;
+    for (const k of keyCandidates) {
+        if (rows[0][k] != null) return parseFloat(rows[0][k]) || 0;
+    }
+    return 0;
+}
+
 // Test GET route
 router.get('/test', (req, res) => {
     console.log('🧪 GET /api/finance/test accessed');
@@ -15,11 +35,10 @@ router.get('/test', (req, res) => {
 
 // ===== BUDGET MANAGEMENT =====
 
-// POST - Create department budget
+// POST - Create department budget (records request in finance_work)
 router.post('/budget', async (req, res) => {
     console.log('📝 POST /api/finance/budget accessed');
     console.log('📊 Request body:', req.body);
-    
     const {
         department,
         period,
@@ -35,71 +54,46 @@ router.post('/budget', async (req, res) => {
         justification,
         createdBy = 'Finance Manager'
     } = req.body;
-    
-    // Validate required fields
+
     if (!department || !period || !startDate || !endDate || !totalBudget || !justification) {
         return res.status(400).json({
             error: 'Missing required fields',
             required: ['department', 'period', 'startDate', 'endDate', 'totalBudget', 'justification']
         });
     }
-    
+
     try {
-        const connection = await db.getConnection();
-        
-        // Insert budget into finance_work table
-        const [result] = await connection.query(`
-            INSERT INTO finance_work 
-            (work_type, work_title, work_description, department, priority, due_date, 
-             assigned_to, submitted_by, status, created_at, updated_at)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-        `, [
-            'Budget Creation',
-            `${department} Budget - ${period}`,
-            `Budget for ${department} department (${period})\n\nBudget Items:\n• Salaries & Wages: TZS ${salaries?.toLocaleString() || 0}\n• Office Supplies: TZS ${supplies?.toLocaleString() || 0}\n• Equipment & Tools: TZS ${equipment?.toLocaleString() || 0}\n• Training & Development: TZS ${training?.toLocaleString() || 0}\n• Travel & Transport: TZS ${travel?.toLocaleString() || 0}\n• Miscellaneous: TZS ${misc?.toLocaleString() || 0}\n\nTotal Budget: TZS ${totalBudget?.toLocaleString() || 0}\n\nJustification: ${justification}\n\nPeriod: ${startDate} to ${endDate}`,
-            department,
-            'High',
-            endDate,
-            'Finance Manager',
-            createdBy,
-            'pending',
-            new Date().toISOString(),
-            new Date().toISOString()
-        ]);
-        
-        // Insert budget details into financial_transactions table
-        const budgetId = `BUD-${Date.now()}`;
-        await connection.query(`
-            INSERT INTO financial_transactions 
-            (transaction_id, transaction_type, category, amount, department, description, 
-             transaction_date, status, reference_id, created_by, created_at)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-        `, [
-            budgetId,
-            'budget_allocation',
-            department,
-            totalBudget,
-            department,
-            `Budget allocation for ${department} (${period})`,
-            startDate,
-            'approved',
-            result.insertId.toString(),
-            createdBy,
-            new Date().toISOString()
-        ]);
-        
-        connection.release();
-        
-        console.log('✅ Budget created successfully:', { budgetId, department, totalBudget });
-        
+        const workTitle = `${department} Budget - ${period}`;
+        const workDesc = `Budget for ${department} department (${period})\n\nBudget Items:\n• Salaries & Wages: TZS ${Number(salaries || 0)}\n• Office Supplies: TZS ${Number(supplies || 0)}\n• Equipment & Tools: TZS ${Number(equipment || 0)}\n• Training & Development: TZS ${Number(training || 0)}\n• Travel & Transport: TZS ${Number(travel || 0)}\n• Miscellaneous: TZS ${Number(misc || 0)}\n\nTotal Budget: TZS ${Number(totalBudget)}\n\nJustification: ${justification}\n\nPeriod: ${startDate} to ${endDate}`;
+
+        const result = await db.execute(
+            `INSERT INTO finance_work 
+             (department_code, work_type, work_title, work_description, amount, vendor_name, invoice_number, status, priority, submitted_by, submitted_date, assigned_to, due_date)
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+            [
+                department,
+                'Budget Management',
+                workTitle,
+                workDesc,
+                Number(totalBudget) || 0,
+                null,
+                null,
+                'Pending',
+                'High',
+                createdBy,
+                new Date().toISOString().slice(0, 10),
+                'Finance Manager',
+                endDate
+            ]
+        );
+
         res.status(201).json({
             message: 'Budget created successfully',
-            budget_id: budgetId,
             work_id: result.insertId,
             department,
-            total_budget: totalBudget,
+            total_budget: Number(totalBudget) || 0,
             period,
-            status: 'pending'
+            status: 'Pending'
         });
     } catch (error) {
         console.error('Error creating budget:', error);
@@ -111,18 +105,21 @@ router.post('/budget', async (req, res) => {
 router.get('/budgets', async (req, res) => {
     console.log('📝 GET /api/finance/budgets accessed');
     try {
-        const connection = await db.getConnection();
-        
-        const [rows] = await connection.query(`
-            SELECT id, work_type, work_title, work_description, department, priority, 
-                   due_date, status, created_at, updated_at
+        const rows = await db.execute(`
+            SELECT id,
+                   department_code AS department,
+                   work_title,
+                   work_description,
+                   amount,
+                   status,
+                   submitted_date AS start_date,
+                   due_date AS end_date
             FROM finance_work 
-            WHERE work_type = 'Budget Creation'
-            ORDER BY created_at DESC
+            WHERE work_type IN ('Budget Management','Budget Creation','Budget')
+            ORDER BY submitted_date DESC, id DESC
+            LIMIT 200
         `);
-        
-        connection.release();
-        res.json(rows);
+        res.json(Array.isArray(rows) ? rows : []);
     } catch (error) {
         console.error('Error fetching budgets:', error);
         res.status(500).json({ error: 'Failed to fetch budgets' });
@@ -135,79 +132,66 @@ router.get('/budgets', async (req, res) => {
 router.post('/expense', async (req, res) => {
     console.log('📝 POST /api/finance/expense accessed');
     console.log('📊 Request body:', req.body);
-    
     const {
         category,
         amount,
         description,
         department,
-        submittedBy = 'Employee',
-        receiptFile
+        submittedBy = 'Employee'
     } = req.body;
-    
-    // Validate required fields
+
     if (!category || !amount || !description || !department) {
         return res.status(400).json({
             error: 'Missing required fields',
             required: ['category', 'amount', 'description', 'department']
         });
     }
-    
+
     try {
-        const connection = await db.getConnection();
-        
-        // Insert expense request into finance_work table
-        const [result] = await connection.query(`
-            INSERT INTO finance_work 
-            (work_type, work_title, work_description, department, priority, due_date, 
-             assigned_to, submitted_by, status, created_at, updated_at)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-        `, [
-            'Expense Request',
-            `Expense - ${category}`,
-            `Expense request for ${category}\n\nDescription: ${description}\nAmount: TZS ${amount?.toLocaleString() || 0}\nDepartment: ${department}\nSubmitted by: ${submittedBy}\n${receiptFile ? 'Receipt attached' : 'No receipt'}`,
-            department,
-            'Medium',
-            new Date().toISOString().split('T')[0],
-            'Finance Manager',
-            submittedBy,
-            'pending',
-            new Date().toISOString(),
-            new Date().toISOString()
-        ]);
-        
-        // Insert expense transaction into financial_transactions table
-        const expenseId = `EXP-${Date.now()}`;
-        await connection.query(`
-            INSERT INTO financial_transactions 
-            (transaction_id, transaction_type, category, amount, department, description, 
-             transaction_date, status, reference_id, created_by, created_at)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-        `, [
-            expenseId,
-            'expense',
-            category,
-            amount,
-            department,
-            description,
-            new Date().toISOString().split('T')[0],
-            'pending',
-            result.insertId.toString(),
-            submittedBy,
-            new Date().toISOString()
-        ]);
-        
-        connection.release();
-        
-        console.log('✅ Expense submitted successfully:', { expenseId, category, amount });
-        
+        const submitterId = await resolveUserId('Finance Manager');
+
+        const workRes = await db.execute(
+            `INSERT INTO finance_work 
+             (department_code, work_type, work_title, work_description, amount, vendor_name, invoice_number, status, priority, submitted_by, submitted_date, assigned_to, due_date)
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+            [
+                department,
+                'Expense Control',
+                `Expense - ${category}`,
+                `Expense request for ${category}. Description: ${description}. Amount: TZS ${Number(amount)}`,
+                Number(amount) || 0,
+                null,
+                null,
+                'Pending',
+                'Medium',
+                submittedBy,
+                new Date().toISOString().slice(0, 10),
+                'Finance Manager',
+                new Date().toISOString().slice(0, 10)
+            ]
+        );
+
+        const txRes = await db.execute(
+            `INSERT INTO financial_transactions (type, category, description, amount, date, created_by, status)
+             VALUES (?, ?, ?, ?, ?, ?, ?)`,
+            [
+                'Expense',
+                category,
+                description,
+                Number(amount) || 0,
+                new Date().toISOString().slice(0, 10),
+                submitterId,
+                'Pending'
+            ]
+        );
+
         res.status(201).json({
             message: 'Expense submitted successfully',
-            expense_id: expenseId,
-            work_id: result.insertId,
+            transaction_id: txRes.insertId,
+            work_id: workRes.insertId,
             category,
-            amount,
-            status: 'pending'
+            amount: Number(amount) || 0,
+            status: 'Pending'
         });
     } catch (error) {
         console.error('Error submitting expense:', error);
@@ -219,34 +203,23 @@ router.post('/expense', async (req, res) => {
 router.put('/expense/:id/approve', async (req, res) => {
     console.log('✅ PUT /api/finance/expense/:id/approve accessed with id:', req.params.id);
     try {
-        const connection = await db.getConnection();
-        const { approvedBy = 'Finance Manager' } = req.body;
-        
-        // Update finance_work status
-        const [workResult] = await connection.query(`
-            UPDATE finance_work 
-            SET status = 'approved', updated_at = ?
-            WHERE id = ?
-        `, [new Date().toISOString(), req.params.id]);
-        
-        // Update financial_transactions status
-        const [transResult] = await connection.query(`
-            UPDATE financial_transactions 
-            SET status = 'approved', approved_by = ?, approved_date = ?
-            WHERE reference_id = ?
-        `, [approvedBy, new Date().toISOString().split('T')[0], req.params.id]);
-        
-        connection.release();
-        
-        if (workResult.affectedRows === 0) {
-            return res.status(404).json({ error: 'Expense not found' });
+        const id = req.params.id;
+        const result = await db.execute(
+            `UPDATE financial_transactions SET status = 'Approved', updated_at = CURRENT_TIMESTAMP WHERE id = ?`,
+            [id]
+        );
+        const workRes = await db.execute(
+            `UPDATE finance_work SET status = 'Approved', updated_at = CURRENT_TIMESTAMP WHERE id = ?`,
+            [id]
+        ).catch(() => ({ affectedRows: 0 }));
+        if (!result.affectedRows && !workRes.affectedRows) {
+            return res.status(404).json({ error: 'Record not found' });
         }
-        
-        res.json({
-            message: 'Expense approved successfully',
-            expense_id: req.params.id,
-            status: 'approved',
-            approved_by: approvedBy
+        res.json({ 
+            message: 'Expense approved successfully', 
+            transaction_updated: Boolean(result.affectedRows),
+            work_updated: Boolean(workRes.affectedRows),
+            id
         });
     } catch (error) {
         console.error('Error approving expense:', error);
@@ -258,34 +231,23 @@ router.put('/expense/:id/approve', async (req, res) => {
 router.put('/expense/:id/reject', async (req, res) => {
     console.log('❌ PUT /api/finance/expense/:id/reject accessed with id:', req.params.id);
     try {
-        const connection = await db.getConnection();
-        const { rejectedBy = 'Finance Manager', rejectionReason } = req.body;
-        
-        // Update finance_work status
-        const [workResult] = await connection.query(`
-            UPDATE finance_work 
-            SET status = 'rejected', updated_at = ?
-            WHERE id = ?
-        `, [new Date().toISOString(), req.params.id]);
-        
-        // Update financial_transactions status
-        const [transResult] = await connection.query(`
-            UPDATE financial_transactions 
-            SET status = 'rejected', rejected_by = ?, rejection_reason = ?, rejected_date = ?
-            WHERE reference_id = ?
-        `, [rejectedBy, rejectionReason || 'Rejected', new Date().toISOString().split('T')[0], req.params.id]);
-        
-        connection.release();
-        
-        if (workResult.affectedRows === 0) {
-            return res.status(404).json({ error: 'Expense not found' });
+        const id = req.params.id;
+        const result = await db.execute(
+            `UPDATE financial_transactions SET status = 'Rejected', updated_at = CURRENT_TIMESTAMP WHERE id = ?`,
+            [id]
+        );
+        const workRes = await db.execute(
+            `UPDATE finance_work SET status = 'Rejected', updated_at = CURRENT_TIMESTAMP WHERE id = ?`,
+            [id]
+        ).catch(() => ({ affectedRows: 0 }));
+        if (!result.affectedRows && !workRes.affectedRows) {
+            return res.status(404).json({ error: 'Record not found' });
         }
-        
-        res.json({
-            message: 'Expense rejected successfully',
-            expense_id: req.params.id,
-            status: 'rejected',
-            rejected_by: rejectedBy
+        res.json({ 
+            message: 'Expense rejected successfully', 
+            transaction_updated: Boolean(result.affectedRows),
+            work_updated: Boolean(workRes.affectedRows),
+            id
         });
     } catch (error) {
         console.error('Error rejecting expense:', error);
@@ -297,18 +259,13 @@ router.put('/expense/:id/reject', async (req, res) => {
 router.get('/expenses', async (req, res) => {
     console.log('📝 GET /api/finance/expenses accessed');
     try {
-        const connection = await db.getConnection();
-        
-        const [rows] = await connection.query(`
-            SELECT fw.id, fw.work_type, fw.work_title, fw.work_description, fw.department, 
-                   fw.status, fw.created_at, ft.transaction_id, ft.amount, ft.category
-            FROM finance_work fw
-            LEFT JOIN financial_transactions ft ON fw.id = CAST(ft.reference_id AS UNSIGNED)
-            WHERE fw.work_type = 'Expense Request'
-            ORDER BY fw.created_at DESC
+        const rows = await db.execute(`
+            SELECT id, date, category, description, amount, status
+            FROM financial_transactions
+            WHERE type = 'Expense'
+            ORDER BY date DESC
+            LIMIT 500
         `);
-        
-        connection.release();
         res.json(rows);
     } catch (error) {
         console.error('Error fetching expenses:', error);
@@ -317,156 +274,9 @@ router.get('/expenses', async (req, res) => {
 });
 
 // ===== PAYROLL PROCESSING =====
+// Moved to /api/payroll routes. This endpoint intentionally omitted to avoid duplication.
 
-// POST - Process payroll
-router.post('/payroll', async (req, res) => {
-    console.log('📝 POST /api/finance/payroll accessed');
-    console.log('📊 Request body:', req.body);
-    
-    const {
-        payrollMonth,
-        paymentDate,
-        payrollType = 'regular',
-        totalEmployees,
-        totalGrossPay,
-        totalDeductions,
-        netPayment,
-        processedBy = 'Finance Manager'
-    } = req.body;
-    
-    // Validate required fields
-    if (!payrollMonth || !paymentDate || !totalEmployees || !totalGrossPay || !netPayment) {
-        return res.status(400).json({
-            error: 'Missing required fields',
-            required: ['payrollMonth', 'paymentDate', 'totalEmployees', 'totalGrossPay', 'netPayment']
-        });
-    }
-    
-    try {
-        const connection = await db.getConnection();
-        
-        // Insert payroll processing into finance_work table
-        const [result] = await connection.query(`
-            INSERT INTO finance_work 
-            (work_type, work_title, work_description, department, priority, due_date, 
-             assigned_to, submitted_by, status, created_at, updated_at)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-        `, [
-            'Payroll Processing',
-            `Payroll - ${payrollMonth}`,
-            `Payroll processing for ${payrollMonth}\n\nPayroll Type: ${payrollType}\nTotal Employees: ${totalEmployees}\nTotal Gross Pay: TZS ${totalGrossPay?.toLocaleString() || 0}\nTotal Deductions: TZS ${totalDeductions?.toLocaleString() || 0}\nNet Payment: TZS ${netPayment?.toLocaleString() || 0}\nPayment Date: ${paymentDate}\nProcessed by: ${processedBy}`,
-            'Finance',
-            'High',
-            paymentDate,
-            'Finance Manager',
-            processedBy,
-            'processed',
-            new Date().toISOString(),
-            new Date().toISOString()
-        ]);
-        
-        // Insert payroll transaction into financial_transactions table
-        const payrollId = `PAY-${Date.now()}`;
-        await connection.query(`
-            INSERT INTO financial_transactions 
-            (transaction_id, transaction_type, category, amount, department, description, 
-             transaction_date, status, reference_id, created_by, created_at)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-        `, [
-            payrollId,
-            'payroll',
-            payrollType,
-            netPayment,
-            'Finance',
-            `Payroll processing for ${payrollMonth} (${totalEmployees} employees)`,
-            paymentDate,
-            'processed',
-            result.insertId.toString(),
-            processedBy,
-            new Date().toISOString()
-        ]);
-        
-        connection.release();
-        
-        console.log('✅ Payroll processed successfully:', { payrollId, payrollMonth, netPayment });
-        
-        res.status(201).json({
-            message: 'Payroll processed successfully',
-            payroll_id: payrollId,
-            work_id: result.insertId,
-            payroll_month: payrollMonth,
-            net_payment: netPayment,
-            status: 'processed'
-        });
-    } catch (error) {
-        console.error('Error processing payroll:', error);
-        res.status(500).json({ error: 'Failed to process payroll' });
-    }
-});
-
-// POST - Save salary structure
-router.post('/salary-structure', async (req, res) => {
-    console.log('📝 POST /api/finance/salary-structure accessed');
-    console.log('📊 Request body:', req.body);
-    
-    const {
-        employeeId,
-        basicSalary,
-        housingAllowance,
-        transportAllowance,
-        medicalAllowance,
-        otherAllowances,
-        grossSalary,
-        approvedBy = 'Finance Manager'
-    } = req.body;
-    
-    // Validate required fields
-    if (!employeeId || !basicSalary || !grossSalary) {
-        return res.status(400).json({
-            error: 'Missing required fields',
-            required: ['employeeId', 'basicSalary', 'grossSalary']
-        });
-    }
-    
-    try {
-        const connection = await db.getConnection();
-        
-        // Insert salary structure into finance_work table
-        const [result] = await connection.query(`
-            INSERT INTO finance_work 
-            (work_type, work_title, work_description, department, priority, due_date, 
-             assigned_to, submitted_by, status, created_at, updated_at)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-        `, [
-            'Salary Structure',
-            `Salary Structure - ${employeeId}`,
-            `Salary structure approval for employee ${employeeId}\n\nSalary Breakdown:\n• Basic Salary: TZS ${basicSalary?.toLocaleString() || 0}\n• Housing Allowance: TZS ${housingAllowance?.toLocaleString() || 0}\n• Transport Allowance: TZS ${transportAllowance?.toLocaleString() || 0}\n• Medical Allowance: TZS ${medicalAllowance?.toLocaleString() || 0}\n• Other Allowances: TZS ${otherAllowances?.toLocaleString() || 0}\n\nGross Monthly Salary: TZS ${grossSalary?.toLocaleString() || 0}\n\nApproved by: ${approvedBy}`,
-            'Finance',
-            'High',
-            new Date().toISOString().split('T')[0],
-            'Finance Manager',
-            approvedBy,
-            'approved',
-            new Date().toISOString(),
-            new Date().toISOString()
-        ]);
-        
-        connection.release();
-        
-        console.log('✅ Salary structure saved successfully:', { employeeId, grossSalary });
-        
-        res.status(201).json({
-            message: 'Salary structure saved successfully',
-            work_id: result.insertId,
-            employee_id: employeeId,
-            gross_salary: grossSalary,
-            status: 'approved'
-        });
-    } catch (error) {
-        console.error('Error saving salary structure:', error);
-        res.status(500).json({ error: 'Failed to save salary structure' });
-    }
-});
+// Salary structure management is handled in /api/payroll
 
 // ===== FINANCIAL REPORTS =====
 
@@ -474,39 +284,24 @@ router.post('/salary-structure', async (req, res) => {
 router.get('/summary', async (req, res) => {
     console.log('📝 GET /api/finance/summary accessed');
     try {
-        const connection = await db.getConnection();
-        
-        // Get total expenses
-        const [expenseRows] = await connection.query(`
-            SELECT SUM(amount) as total_expenses FROM financial_transactions 
-            WHERE transaction_type = 'expense' AND status = 'approved'
-        `);
-        
-        // Get total budget allocations
-        const [budgetRows] = await connection.query(`
-            SELECT SUM(amount) as total_budget FROM financial_transactions 
-            WHERE transaction_type = 'budget_allocation' AND status = 'approved'
-        `);
-        
-        // Get total payroll
-        const [payrollRows] = await connection.query(`
-            SELECT SUM(amount) as total_payroll FROM financial_transactions 
-            WHERE transaction_type = 'payroll' AND status = 'processed'
-        `);
-        
-        // Get pending expenses
-        const [pendingRows] = await connection.query(`
-            SELECT COUNT(*) as pending_count FROM finance_work 
-            WHERE work_type = 'Expense Request' AND status = 'pending'
-        `);
-        
-        connection.release();
-        
+        const revenueRows = await db.execute(`SELECT SUM(amount) as total FROM financial_transactions WHERE type = 'Income' OR type = 'sale'`);
+        const expenseRows = await db.execute(`SELECT SUM(amount) as total FROM financial_transactions WHERE type = 'Expense'`);
+        const totalRevenue = sqlSumRow(revenueRows, ['total']);
+        const totalExpenses = sqlSumRow(expenseRows, ['total']);
+        const netProfit = totalRevenue - totalExpenses;
+        const cashBalance = netProfit;
+
+        const pendingExpensesRows = await db.execute(
+            `SELECT COUNT(*) as total FROM financial_transactions WHERE type = 'Expense' AND status = 'Pending'`
+        );
+        const pendingExpenses = sqlSumRow(pendingExpensesRows, ['total']);
+
         res.json({
-            total_expenses: expenseRows[0].total_expenses || 0,
-            total_budget: budgetRows[0].total_budget || 0,
-            total_payroll: payrollRows[0].total_payroll || 0,
-            pending_expenses: pendingRows[0].pending_count || 0,
+            total_revenue: totalRevenue,
+            total_expenses: totalExpenses,
+            net_profit: netProfit,
+            cash_balance: cashBalance,
+            pending_expenses: pendingExpenses,
             generated_at: new Date().toISOString()
         });
     } catch (error) {
@@ -519,56 +314,199 @@ router.get('/summary', async (req, res) => {
 router.get('/records', async (req, res) => {
     console.log('📊 GET /api/finance/records accessed');
     try {
-        const connection = await db.getConnection();
-        
-        const [records] = await connection.query(`
-            SELECT 
-                transaction_id,
-                transaction_type,
-                category,
-                amount,
-                description,
-                department,
-                transaction_date,
-                status,
-                reference_id,
-                created_by,
-                created_at
+        const records = await db.execute(`
+            SELECT id, type, category, amount, description, date, status, created_by, created_at
             FROM financial_transactions
-            ORDER BY transaction_date DESC
+            ORDER BY date DESC
             LIMIT 500
         `);
-        
-        connection.release();
-        console.log('✅ Records fetched from database:', records.length);
-        
-        // Transform data to match frontend expectations
-        const transformedRecords = records.map(record => {
-            // Determine if it's income or expense based on transaction_type
-            const isIncome = ['revenue', 'income', 'payment_received', 'client_payment'].includes(record.transaction_type);
-            
-            return {
-                id: record.transaction_id,
-                type: isIncome ? 'income' : 'expense',
-                category: record.category || 'Other',
-                amount: record.amount || 0,
-                description: record.description || '',
-                date: record.transaction_date ? record.transaction_date.toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
-                status: record.status || 'pending',
-                reference: record.reference_id || '',
-                account: record.department || 'General Account',
-                department: record.department || 'General'
-            };
-        });
-        
-        console.log('✅ Transformed records:', transformedRecords.length);
-        res.json(transformedRecords);
+
+        const transformed = (Array.isArray(records) ? records : []).map(r => ({
+            id: `FT-${r.id}`,
+            type: String(r.type || '').toLowerCase(),
+            category: r.category || 'Other',
+            amount: Number(r.amount) || 0,
+            description: r.description || '',
+            date: r.date ? (typeof r.date === 'string' ? r.date : new Date(r.date).toISOString().slice(0, 10)) : new Date().toISOString().slice(0, 10),
+            status: r.status || 'Pending',
+            reference: '',
+            account: 'General Account',
+            department: 'General'
+        }));
+
+        res.json(transformed);
     } catch (error) {
         console.error('❌ Error fetching financial records:', error);
         res.status(500).json({ 
             error: 'Failed to fetch financial records',
             message: error.message 
         });
+    }
+});
+
+// ===== FINANCIAL REPORTS =====
+router.get('/report/income-statement', async (req, res) => {
+    try {
+        const { from, to } = req.query;
+        const now = new Date();
+        const start = from || new Date(now.getFullYear(), 0, 1).toISOString().slice(0, 10);
+        const end = to || new Date().toISOString().slice(0, 10);
+
+        const revenue = await db.execute(
+            `SELECT COALESCE(category,'Other') as category, SUM(amount) as total 
+             FROM financial_transactions 
+             WHERE (type = 'Income' OR type = 'sale') AND date BETWEEN ? AND ?
+             GROUP BY COALESCE(category,'Other')`,
+            [start, end]
+        );
+        const expenses = await db.execute(
+            `SELECT COALESCE(category,'Other') as category, SUM(amount) as total 
+             FROM financial_transactions 
+             WHERE type = 'Expense' AND date BETWEEN ? AND ?
+             GROUP BY COALESCE(category,'Other')`,
+            [start, end]
+        );
+
+        const totalRevenue = revenue.reduce((s, r) => s + (parseFloat(r.total) || 0), 0);
+        const totalExpenses = expenses.reduce((s, r) => s + (parseFloat(r.total) || 0), 0);
+        const netProfit = totalRevenue - totalExpenses;
+
+        res.json({
+            period: { from: start, to: end },
+            revenue,
+            expenses,
+            totals: { totalRevenue, totalExpenses, netProfit }
+        });
+    } catch (error) {
+        console.error('❌ Error generating income statement:', error);
+        res.status(500).json({ error: 'Failed to generate income statement' });
+    }
+});
+
+router.get('/report/balance-sheet', async (req, res) => {
+    try {
+        const asOf = req.query.asOf || new Date().toISOString().slice(0, 10);
+        const revRows = await db.execute(`SELECT SUM(amount) as sum FROM financial_transactions WHERE (type='Income' OR type='sale') AND date <= ?`, [asOf]);
+        const expRows = await db.execute(`SELECT SUM(amount) as sum FROM financial_transactions WHERE type='Expense' AND date <= ?`, [asOf]);
+        const cash = sqlSumRow(revRows, ['sum']) - sqlSumRow(expRows, ['sum']);
+
+        const receivableRows = await db.execute(
+            `SELECT SUM(amount) as sum FROM payment_requests WHERE status IN ('approved','processed') AND (paid_date IS NULL OR paid_date > ?)`,
+            [asOf]
+        ).catch(() => []);
+        const accountsReceivable = sqlSumRow(receivableRows, ['sum']);
+
+        const payableRows = await db.execute(
+            `SELECT SUM(amount) as sum FROM payment_requests WHERE status IN ('approved','processed') AND expected_payment_date <= ? AND (paid_date IS NULL OR paid_date > ?)`,
+            [asOf, asOf]
+        ).catch(() => []);
+        const accountsPayable = sqlSumRow(payableRows, ['sum']);
+
+        const taxRows = await db.execute(
+            `SELECT SUM(total_amount) as sum FROM tax_payments WHERE payment_status IN ('Pending','Overdue') AND (due_date IS NULL OR due_date >= ?)`,
+            [asOf]
+        ).catch(() => []);
+        const taxLiabilities = sqlSumRow(taxRows, ['sum']);
+
+        const assets = cash + accountsReceivable;
+        const liabilities = accountsPayable + taxLiabilities;
+        const equity = assets - liabilities;
+
+        res.json({
+            asOf,
+            assets: {
+                cash_bank: cash,
+                accounts_receivable: accountsReceivable,
+                total_assets: assets
+            },
+            liabilities: {
+                accounts_payable: accountsPayable,
+                tax_liabilities: taxLiabilities,
+                total_liabilities: liabilities
+            },
+            equity: {
+                total_equity: equity
+            }
+        });
+    } catch (error) {
+        console.error('❌ Error generating balance sheet:', error);
+        res.status(500).json({ error: 'Failed to generate balance sheet' });
+    }
+});
+
+router.get('/report/cash-flow', async (req, res) => {
+    try {
+        const { from, to } = req.query;
+        const now = new Date();
+        const start = from || new Date(now.getFullYear(), 0, 1).toISOString().slice(0, 10);
+        const end = to || new Date().toISOString().slice(0, 10);
+
+        const cashFromCustomersRows = await db.execute(
+            `SELECT SUM(amount) as sum FROM financial_transactions WHERE (type='Income' OR type='sale') AND date BETWEEN ? AND ?`,
+            [start, end]
+        );
+        const cashPaidToSuppliersRows = await db.execute(
+            `SELECT SUM(amount) as sum FROM financial_transactions WHERE type='Expense' AND date BETWEEN ? AND ?`,
+            [start, end]
+        );
+        const salariesRows = await db.execute(
+            `SELECT SUM(net_payment) as sum FROM payroll_records WHERE payment_date BETWEEN ? AND ?`,
+            [start, end]
+        ).catch(() => []);
+
+        const cashFromCustomers = sqlSumRow(cashFromCustomersRows, ['sum']);
+        const cashPaidToSuppliers = sqlSumRow(cashPaidToSuppliersRows, ['sum']);
+        const salariesPaid = sqlSumRow(salariesRows, ['sum']);
+
+        const netOperatingCash = cashFromCustomers - cashPaidToSuppliers - salariesPaid;
+
+        res.json({
+            period: { from: start, to: end },
+            operating: {
+                cash_from_customers: cashFromCustomers,
+                cash_paid_to_suppliers: cashPaidToSuppliers,
+                salaries_paid: salariesPaid,
+                net_operating_cash: netOperatingCash
+            }
+        });
+    } catch (error) {
+        console.error('❌ Error generating cash flow:', error);
+        res.status(500).json({ error: 'Failed to generate cash flow' });
+    }
+});
+
+router.get('/report/budget-vs-actual', async (req, res) => {
+    try {
+        const { period } = req.query;
+        let budgets = [];
+        if (period) {
+            budgets = await db.execute(
+                `SELECT budget_period, total_proposed FROM workforce_budgets WHERE budget_period = ?`,
+                [period]
+            );
+        } else {
+            budgets = await db.execute(
+                `SELECT budget_period, total_proposed FROM workforce_budgets ORDER BY submission_date DESC LIMIT 2`
+            );
+        }
+
+        const now = new Date();
+        const start = new Date(now.getFullYear(), 0, 1).toISOString().slice(0, 10);
+        const end = new Date().toISOString().slice(0, 10);
+        const actualRows = await db.execute(
+            `SELECT SUM(amount) as sum FROM financial_transactions WHERE type='Expense' AND date BETWEEN ? AND ?`,
+            [start, end]
+        );
+        const actual = sqlSumRow(actualRows, ['sum']);
+
+        res.json({
+            period: period || `${now.getFullYear()}`,
+            budgets,
+            actual
+        });
+    } catch (error) {
+        console.error('❌ Error generating budget vs actual:', error);
+        res.status(500).json({ error: 'Failed to generate budget vs actual' });
     }
 });
 

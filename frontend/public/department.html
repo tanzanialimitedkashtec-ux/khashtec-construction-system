@@ -199,6 +199,39 @@ header{
 }
 
 
+/* User topbar (name, role, email, avatar) */
+.user-topbar {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+.user-topbar .user-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: rgba(11, 61, 145, 0.95);
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 14px;
+}
+.user-topbar .user-meta {
+    display: flex;
+    flex-direction: column;
+    line-height: 1.1;
+}
+.user-topbar .user-name {
+    font-size: 14px;
+    font-weight: 600;
+}
+.user-topbar .user-sub {
+    font-size: 12px;
+    color: #666;
+}
+
+
 
 .container .notification-btn,
 
@@ -22957,6 +22990,8 @@ background: #f8f9fa;
     <div class="top-controls">
 
         <button type="button" class="menu-toggle" onclick="toggleSidebar()">☰</button>
+
+        <div id="userInfoBar" class="user-topbar"></div>
 
         <button type="button" class="notification-btn" onclick="showNotifications()">🔔</button>
 
@@ -59232,7 +59267,7 @@ function financialManagement(){
 
                     <h5>Total Revenue</h5>
 
-                    <div class="stat-number">TZS 450,000,000</div>
+                    <div class="stat-number" id="fmTotalRevenue">--</div>
 
                     <div class="stat-change positive">+12.5% YTD</div>
 
@@ -59244,7 +59279,7 @@ function financialManagement(){
 
                     <h5>Total Expenses</h5>
 
-                    <div class="stat-number">TZS 280,000,000</div>
+                    <div class="stat-number" id="fmTotalExpenses">--</div>
 
                     <div class="stat-change negative">+8.3% YTD</div>
 
@@ -59256,7 +59291,7 @@ function financialManagement(){
 
                     <h5>Net Profit</h5>
 
-                    <div class="stat-number">TZS 170,000,000</div>
+                    <div class="stat-number" id="fmNetProfit">--</div>
 
                     <div class="stat-change positive">+18.7% YTD</div>
 
@@ -59268,7 +59303,7 @@ function financialManagement(){
 
                     <h5>Cash Balance</h5>
 
-                    <div class="stat-number">TZS 85,000,000</div>
+                    <div class="stat-number" id="fmCashBalance">--</div>
 
                     <div class="stat-change neutral">Stable</div>
 
@@ -59360,10 +59395,29 @@ function financialManagement(){
 
     
 
-    // Load financial records
+    // Load finance summary and records
 
+    fetchFinanceSummary();
     loadFinancialRecords();
 
+}
+
+// Fetch and display finance summary cards
+async function fetchFinanceSummary() {
+    try {
+        const baseUrl = window.location.origin;
+        const res = await fetch(`${baseUrl}/api/finance/summary`, { method: 'GET' });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const data = await res.json();
+        const nf = new Intl.NumberFormat('en-TZ', { style: 'currency', currency: 'TZS', minimumFractionDigits: 0, maximumFractionDigits: 0 });
+        const set = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = nf.format(Number(val || 0)); };
+        set('fmTotalRevenue', data.total_revenue ?? data.totalRevenue ?? 0);
+        set('fmTotalExpenses', data.total_expenses ?? data.totalExpenses ?? 0);
+        set('fmNetProfit', data.net_profit ?? data.netProfit ?? 0);
+        set('fmCashBalance', data.cash_balance ?? data.cashBalance ?? 0);
+    } catch (e) {
+        console.warn('⚠️ Failed to load finance summary:', e);
+    }
 }
 
 
@@ -59388,7 +59442,7 @@ async function loadFinancialRecords() {
 
         try {
 
-            response = await fetch(`${baseUrl}/api/finance/transactions`, {
+            response = await fetch(`${baseUrl}/api/finance/records`, {
 
                 method: 'GET',
 

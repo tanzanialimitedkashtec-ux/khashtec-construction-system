@@ -2624,8 +2624,8 @@ try {
 try {
     const payrollRoutes = require('./routes/payroll');
     console.log('✅ Payroll routes loaded successfully');
-    app.use('/payroll', payrollRoutes);
-    console.log('✅ Payroll routes mounted at /payroll');
+    app.use('/api/payroll', payrollRoutes);
+    console.log('✅ Payroll routes mounted at /api/payroll');
 } catch (error) {
     console.error('❌ Error loading payroll routes:', error);
 }
