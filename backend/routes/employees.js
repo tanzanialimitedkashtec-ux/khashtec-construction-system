@@ -491,6 +491,60 @@ router.post('/', upload.any(), async (req, res) => {
     }
 });
 
+// Reactivate a suspended employee (must be before /:id to avoid route collision)
+router.post('/reactivate', async (req, res) => {
+    console.log('🔍 Employee reactivate request received');
+    console.log('📋 Request body:', req.body);
+    
+    const { employeeId } = req.body;
+    
+    if (!employeeId) {
+        return res.status(400).json({ error: 'employeeId is required' });
+    }
+    
+    try {
+        const empResult = await db.execute('SELECT id, status FROM employees WHERE id = ?', [employeeId]);
+        const employees = Array.isArray(empResult) ? empResult : [];
+        
+        if (!employees || employees.length === 0) {
+            return res.status(404).json({ error: 'Employee not found' });
+        }
+        
+        await db.execute(
+            'UPDATE employees SET status = ? WHERE id = ?',
+            ['Active', employeeId]
+        );
+        
+        try {
+            await db.execute(`
+                INSERT INTO worker_action 
+                (employee_id, action_type, action_date, reason_category, action_details, decided_by, decided_date, status)
+                VALUES (?, 'reactivate', ?, 'other', 'Account reactivated by Director of Administration', 'Director of Administration', ?, 'completed')
+            `, [
+                employeeId,
+                new Date().toISOString().split('T')[0],
+                new Date().toISOString().split('T')[0]
+            ]);
+        } catch (logError) {
+            console.log('📝 Could not log reactivation action:', logError.message);
+        }
+        
+        console.log(`✅ Employee ${employeeId} reactivated successfully`);
+        res.json({
+            message: 'Employee reactivated successfully',
+            employeeId: employeeId,
+            status: 'Active'
+        });
+        
+    } catch (error) {
+        console.error('❌ Error reactivating employee:', error);
+        res.status(500).json({ 
+            error: 'Failed to reactivate employee',
+            details: error.message 
+        });
+    }
+});
+
 // Get employee by ID
 router.get('/:id', async (req, res) => {
     try {
@@ -580,8 +634,9 @@ router.get('/:id', async (req, res) => {
         if (employee && employee.id) employee.profile_image = `/api/profile-image/${employee.id}`;
         res.json(employee);
     } catch (error) {
-        console.error('Error fetching employee:', error);
-        res.status(500).json({ error: 'Failed to fetch employee' });
+        console.error('❌ Error fetching single employee:', error.message);
+        console.error('❌ Error stack:', error.stack);
+        res.status(500).json({ error: 'Failed to fetch employee', details: error.message });
     }
 });
 
@@ -1024,17 +1079,17 @@ router.post('/action', async (req, res) => {
         if (actionType === 'suspend') {
             await db.execute(
                 'UPDATE employees SET status = ? WHERE id = ?',
-                ['suspended', employeeId]
+                ['Suspended', employeeId]
             );
         } else if (actionType === 'terminate') {
             await db.execute(
                 'UPDATE employees SET status = ?, end_date = ? WHERE id = ?',
-                ['terminated', actionDate, employeeId]
+                ['Terminated', actionDate, employeeId]
             );
         } else if (actionType === 'demote') {
             await db.execute(
                 'UPDATE employees SET status = ? WHERE id = ?',
-                ['demoted', employeeId]
+                ['Demoted', employeeId]
             );
         }
         
@@ -1080,62 +1135,6 @@ router.post('/action', async (req, res) => {
         });
         res.status(500).json({ 
             error: 'Failed to execute employee action',
-            details: error.message 
-        });
-    }
-});
-
-// Reactivate a suspended employee
-router.post('/reactivate', async (req, res) => {
-    console.log('🔍 Employee reactivate request received');
-    console.log('📋 Request body:', req.body);
-    
-    const { employeeId } = req.body;
-    
-    if (!employeeId) {
-        return res.status(400).json({ error: 'employeeId is required' });
-    }
-    
-    try {
-        // Check if employee exists
-        const [employees] = await db.execute('SELECT id, status FROM employees WHERE id = ?', [employeeId]);
-        
-        if (!employees || employees.length === 0) {
-            return res.status(404).json({ error: 'Employee not found' });
-        }
-        
-        // Update employee status to active
-        await db.execute(
-            'UPDATE employees SET status = ? WHERE id = ?',
-            ['active', employeeId]
-        );
-        
-        // Log the reactivation in worker_action table if it exists
-        try {
-            await db.execute(`
-                INSERT INTO worker_action 
-                (employee_id, action_type, action_date, reason_category, action_details, decided_by, decided_date, status)
-                VALUES (?, 'suspend', ?, 'other', 'Account reactivated by Director of Administration', 'Director of Administration', ?, 'cancelled')
-            `, [
-                employeeId,
-                new Date().toISOString().split('T')[0],
-                new Date().toISOString().split('T')[0]
-            ]);
-        } catch (logError) {
-            console.log('📝 Could not log reactivation action:', logError.message);
-        }
-        
-        console.log(`✅ Employee ${employeeId} reactivated successfully`);
-        res.json({
-            message: 'Employee reactivated successfully',
-            employeeId: employeeId,
-            status: 'active'
-        });
-        
-    } catch (error) {
-        console.error('❌ Error reactivating employee:', error);
-        res.status(500).json({ 
-            error: 'Failed to reactivate employee',
             details: error.message 
         });
     }

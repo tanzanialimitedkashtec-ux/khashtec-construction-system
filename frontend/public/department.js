@@ -28394,14 +28394,26 @@ async function viewUserDetails(userId) {
     console.log('Viewing user details for ID:', userId);
     const baseUrl = window.location.origin;
     try {
-        const response = await fetch(`${baseUrl}/api/employees/${userId}`, {
-            method: 'GET',
-            headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' }
-        });
-        if (!response.ok) { showNotification('Failed to load user details', 'error'); return; }
-        const user = await response.json();
+        let user = null;
+        // Try single-employee endpoint first, fallback to list endpoint
+        try {
+            const response = await fetch(`${baseUrl}/api/employees/${userId}`, {
+                method: 'GET',
+                headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' }
+            });
+            if (response.ok) { user = await response.json(); }
+        } catch (e) { console.log('Single employee endpoint failed, using fallback'); }
+        if (!user) {
+            const listResponse = await fetch(`${baseUrl}/api/employees`, {
+                method: 'GET',
+                headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' }
+            });
+            if (!listResponse.ok) { showNotification('Failed to load user details', 'error'); return; }
+            const allUsers = await listResponse.json();
+            user = (Array.isArray(allUsers) ? allUsers : []).find(u => u.id == userId);
+        }
         if (!user) { showNotification('Invalid response from server', 'error'); return; }
-        const statusText = (user.status === 'suspended' || user.account_status === 'suspended') ? 'Suspended' : 'Active';
+        const statusText = ((user.status || '').toLowerCase() === 'suspended' || (user.account_status || '').toLowerCase() === 'suspended') ? 'Suspended' : 'Active';
         const initial = (user.full_name || user.fullName || 'U').charAt(0).toUpperCase();
         const overlay = document.createElement('div');
         overlay.id = 'userDetailsOverlay';
@@ -63503,9 +63515,9 @@ function showUserDetailsModal(user) {
 
                         <strong>Status:</strong> 
 
-                        <span class="status-badge ${user.status === 'suspended' || user.account_status === 'suspended' ? 'status-suspended' : 'status-active'}">
+                        <span class="status-badge ${(user.status || '').toLowerCase() === 'suspended' || (user.account_status || '').toLowerCase() === 'suspended' ? 'status-suspended' : 'status-active'}">
 
-                            ${user.status === 'suspended' || user.account_status === 'suspended' ? 'Suspended' : 'Active'}
+                            ${(user.status || '').toLowerCase() === 'suspended' || (user.account_status || '').toLowerCase() === 'suspended' ? 'Suspended' : 'Active'}
 
                         </span>
 
@@ -63562,7 +63574,7 @@ async function showReactivateUserDialog() {
         });
         if (!response.ok) { showNotification('Failed to load users', 'error'); return; }
         const users = await response.json();
-        const suspended = (Array.isArray(users) ? users : []).filter(u => u.status === 'suspended' || u.account_status === 'suspended');
+        const suspended = (Array.isArray(users) ? users : []).filter(u => (u.status || '').toLowerCase() === 'suspended' || (u.account_status || '').toLowerCase() === 'suspended');
         if (suspended.length === 0) { showNotification('No suspended accounts found', 'info'); return; }
         const overlay = document.createElement('div');
         overlay.id = 'reactivateOverlay';
@@ -63773,9 +63785,9 @@ async function reviewDeptStructure(department) {
 
                                         <td>
 
-                                            <span class="status-badge ${emp.status === 'suspended' || emp.account_status === 'suspended' ? 'status-suspended' : 'status-active'}">
+                                            <span class="status-badge ${(emp.status || '').toLowerCase() === 'suspended' || (emp.account_status || '').toLowerCase() === 'suspended' ? 'status-suspended' : 'status-active'}">
 
-                                                ${emp.status === 'suspended' || emp.account_status === 'suspended' ? 'Suspended' : 'Active'}
+                                                ${(emp.status || '').toLowerCase() === 'suspended' || (emp.account_status || '').toLowerCase() === 'suspended' ? 'Suspended' : 'Active'}
 
                                             </span>
 
@@ -64671,7 +64683,7 @@ async function userAccountManagement(){
 
             totalActiveUsers = users.length;
 
-            suspendedAccounts = users.filter(user => user.status === 'suspended' || user.account_status === 'suspended').length;
+            suspendedAccounts = users.filter(user => (user.status || '').toLowerCase() === 'suspended' || (user.account_status || '').toLowerCase() === 'suspended').length;
 
             
 
@@ -64777,9 +64789,9 @@ async function userAccountManagement(){
 
                                         <td>
 
-                                            <span class="status-badge ${user.status === 'suspended' || user.account_status === 'suspended' ? 'status-suspended' : 'status-active'}">
+                                            <span class="status-badge ${(user.status || '').toLowerCase() === 'suspended' || (user.account_status || '').toLowerCase() === 'suspended' ? 'status-suspended' : 'status-active'}">
 
-                                                ${user.status === 'suspended' || user.account_status === 'suspended' ? 'Suspended' : 'Active'}
+                                                ${(user.status || '').toLowerCase() === 'suspended' || (user.account_status || '').toLowerCase() === 'suspended' ? 'Suspended' : 'Active'}
 
                                             </span>
 
@@ -64789,7 +64801,7 @@ async function userAccountManagement(){
 
                                             <div class="action-buttons">
 
-                                                ${user.status === 'suspended' || user.account_status === 'suspended' ? 
+                                                ${(user.status || '').toLowerCase() === 'suspended' || (user.account_status || '').toLowerCase() === 'suspended' ? 
 
                                                     `<button class="action-btn reactivate-btn" onclick="reactivateUser(${user.id})">Reactivate</button>` :
 
