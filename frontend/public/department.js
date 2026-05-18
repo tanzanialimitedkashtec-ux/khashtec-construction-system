@@ -72841,8 +72841,7 @@ function showSuggestionsManagement() {
                     
 
                     await window.apiService.saveSuggestion(formData);
-
-                    
+                    await loadSuggestionsTable();
 
                     showNotification('Suggestion saved successfully!', 'success');
 
