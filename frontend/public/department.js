@@ -70104,9 +70104,9 @@ function loadProcurementTable() {
 
 
     xhrRequest('GET', '/api/procurement-sales').then(function(response) {
-
-        const data = response.data || response || [];
-
+        return response.json();
+    }).then(function(result) {
+        const data = result.data || result || [];
         const records = Array.isArray(data) ? data : [];
 
 
