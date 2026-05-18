@@ -1073,4 +1073,60 @@ router.post('/action', async (req, res) => {
     }
 });
 
+// Reactivate a suspended employee
+router.post('/reactivate', async (req, res) => {
+    console.log('🔍 Employee reactivate request received');
+    console.log('📋 Request body:', req.body);
+    
+    const { employeeId } = req.body;
+    
+    if (!employeeId) {
+        return res.status(400).json({ error: 'employeeId is required' });
+    }
+    
+    try {
+        // Check if employee exists
+        const [employees] = await db.execute('SELECT id, status FROM employees WHERE id = ?', [employeeId]);
+        
+        if (!employees || employees.length === 0) {
+            return res.status(404).json({ error: 'Employee not found' });
+        }
+        
+        // Update employee status to active
+        await db.execute(
+            'UPDATE employees SET status = ? WHERE id = ?',
+            ['active', employeeId]
+        );
+        
+        // Log the reactivation in worker_action table if it exists
+        try {
+            await db.execute(`
+                INSERT INTO worker_action 
+                (employee_id, action_type, action_date, reason_category, action_details, decided_by, decided_date, status)
+                VALUES (?, 'suspend', ?, 'other', 'Account reactivated by Director of Administration', 'Director of Administration', ?, 'cancelled')
+            `, [
+                employeeId,
+                new Date().toISOString().split('T')[0],
+                new Date().toISOString().split('T')[0]
+            ]);
+        } catch (logError) {
+            console.log('📝 Could not log reactivation action:', logError.message);
+        }
+        
+        console.log(`✅ Employee ${employeeId} reactivated successfully`);
+        res.json({
+            message: 'Employee reactivated successfully',
+            employeeId: employeeId,
+            status: 'active'
+        });
+        
+    } catch (error) {
+        console.error('❌ Error reactivating employee:', error);
+        res.status(500).json({ 
+            error: 'Failed to reactivate employee',
+            details: error.message 
+        });
+    }
+});
+
 module.exports = router;
