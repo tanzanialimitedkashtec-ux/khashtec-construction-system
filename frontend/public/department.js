@@ -27877,7 +27877,7 @@ async function loadDrivers() {
 
                         <div class="status-info">
 
-                            <span class="status-badge status-${driver.driver_status.toLowerCase()}">${driver.driver_status}</span>
+                            <span class="status-badge status-${String(driver.driver_status).toLowerCase().replace(/\s+/g, '-')}">${driver.driver_status}</span>
 
                         </div>
 
@@ -28465,13 +28465,13 @@ async function viewDriverDetails(driverId) {
 
     try {
 
-        const response = await fetch(`http://localhost:8080/api/drivers/${driverId}`, {
+        const response = await fetch(`${window.location.origin}/api/drivers/${driverId}`, {
 
             method: 'GET',
 
             headers: {
 
-                'Authorization': `Bearer ${localStorage.getItem('token')}`,
+                'Authorization': `Bearer ${window.KashTecAPI.getAuthToken()}`,
 
                 'Content-Type': 'application/json'
 
@@ -28489,7 +28489,9 @@ async function viewDriverDetails(driverId) {
 
 
 
-        const driver = await response.json();
+        const data = await response.json();
+
+        const driver = data.driver || data.data || data;
 
         showDriverDetailsModal(driver);
 
@@ -28509,13 +28511,13 @@ async function editDriver(driverId) {
 
     try {
 
-        const response = await fetch(`http://localhost:3000/api/drivers/${driverId}`, {
+        const response = await fetch(`${window.location.origin}/api/drivers/${driverId}`, {
 
             method: 'GET',
 
             headers: {
 
-                'Authorization': `Bearer ${localStorage.getItem('token')}`,
+                'Authorization': `Bearer ${window.KashTecAPI.getAuthToken()}`,
 
                 'Content-Type': 'application/json'
 
@@ -28533,7 +28535,9 @@ async function editDriver(driverId) {
 
 
 
-        const driver = await response.json();
+        const data = await response.json();
+
+        const driver = data.driver || data.data || data;
 
         showEditDriverModal(driver);
 
@@ -28555,13 +28559,13 @@ async function deleteDriver(driverId) {
 
         try {
 
-            const response = await fetch(`http://localhost:3000/api/drivers/${driverId}`, {
+            const response = await fetch(`${window.location.origin}/api/drivers/${driverId}`, {
 
                 method: 'DELETE',
 
                 headers: {
 
-                    'Authorization': `Bearer ${localStorage.getItem('token')}`,
+                    'Authorization': `Bearer ${window.KashTecAPI.getAuthToken()}`,
 
                     'Content-Type': 'application/json'
 
@@ -28581,7 +28585,7 @@ async function deleteDriver(driverId) {
 
             customAlert(`Driver ${driverId} deleted successfully!`, 'Success', 'success');
 
-            loadDriverRecords();
+            loadDrivers();
 
         } catch (error) {
 
@@ -63070,13 +63074,13 @@ async function viewDriverDetails(driverId) {
 
     try {
 
-        const response = await fetch(`http://localhost:3000/api/drivers/${driverId}`, {
+        const response = await fetch(`${window.location.origin}/api/drivers/${driverId}`, {
 
             method: 'GET',
 
             headers: {
 
-                'Authorization': `Bearer ${localStorage.getItem('token')}`,
+                'Authorization': `Bearer ${window.KashTecAPI.getAuthToken()}`,
 
                 'Content-Type': 'application/json'
 
@@ -63094,7 +63098,9 @@ async function viewDriverDetails(driverId) {
 
 
 
-        const driver = await response.json();
+        const data = await response.json();
+
+        const driver = data.driver || data.data || data;
 
         showDriverDetailsModal(driver);
 
@@ -63114,13 +63120,13 @@ async function editDriver(driverId) {
 
     try {
 
-        const response = await fetch(`http://localhost:3000/api/drivers/${driverId}`, {
+        const response = await fetch(`${window.location.origin}/api/drivers/${driverId}`, {
 
             method: 'GET',
 
             headers: {
 
-                'Authorization': `Bearer ${localStorage.getItem('token')}`,
+                'Authorization': `Bearer ${window.KashTecAPI.getAuthToken()}`,
 
                 'Content-Type': 'application/json'
 
@@ -63138,7 +63144,9 @@ async function editDriver(driverId) {
 
 
 
-        const driver = await response.json();
+        const data = await response.json();
+
+        const driver = data.driver || data.data || data;
 
         showEditDriverModal(driver);
 
@@ -72622,6 +72630,15 @@ function showSeniorRoles() {
 // Function to show Suggestions Management form
 
 function showSuggestionsManagement() {
+    const contentArea = document.getElementById('contentArea');
+    if (contentArea) {
+        contentArea.innerHTML = `
+            <h3>Suggestions Management</h3>
+            <div id="suggestionsTableContainer" style="margin-top: 16px;">
+                <p>Loading suggestions...</p>
+            </div>
+        `;
+    }
 
     const formHTML = `
 
