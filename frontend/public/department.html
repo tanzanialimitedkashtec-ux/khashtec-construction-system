@@ -95516,7 +95516,7 @@ function showProcurementForm() {
 
 
 
-                    await window.apiService.saveProcurementSale(formData);
+                    await xhrRequest('POST', '/api/procurement-sales', formData);
 
 
 
