@@ -28389,6 +28389,25 @@ function loadSampleDrivers() {
 
 // Driver Action Functions
 
+// Helper: uses XMLHttpRequest to bypass custom fetch override that redirects /api to production
+function xhrRequest(method, url, body) {
+    return new Promise(function(resolve, reject) {
+        var xhr = new XMLHttpRequest();
+        xhr.open(method, url, true);
+        xhr.setRequestHeader('Content-Type', 'application/json');
+        xhr.setRequestHeader('Accept', 'application/json');
+        xhr.onreadystatechange = function() {
+            if (xhr.readyState === 4) {
+                try {
+                    resolve({ ok: xhr.status >= 200 && xhr.status < 300, status: xhr.status, json: function() { return Promise.resolve(JSON.parse(xhr.responseText)); } });
+                } catch(e) { resolve({ ok: false, status: xhr.status, json: function() { return Promise.resolve({}); } }); }
+            }
+        };
+        xhr.onerror = function() { reject(new Error('Network error')); };
+        xhr.send(body ? JSON.stringify(body) : null);
+    });
+}
+
 async function viewUserDetails(userId) {
     if (!userId) { showNotification('No user ID provided', 'error'); return; }
     console.log('Viewing user details for ID:', userId);
@@ -28397,17 +28416,11 @@ async function viewUserDetails(userId) {
         let user = null;
         // Try single-employee endpoint first, fallback to list endpoint
         try {
-            const response = await fetch(`${baseUrl}/api/employees/${userId}`, {
-                method: 'GET',
-                headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' }
-            });
+            const response = await xhrRequest('GET', '/api/employees/' + userId);
             if (response.ok) { user = await response.json(); }
         } catch (e) { console.log('Single employee endpoint failed, using fallback'); }
         if (!user) {
-            const listResponse = await fetch(`${baseUrl}/api/employees`, {
-                method: 'GET',
-                headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' }
-            });
+            const listResponse = await xhrRequest('GET', '/api/employees');
             if (!listResponse.ok) { showNotification('Failed to load user details', 'error'); return; }
             const allUsers = await listResponse.json();
             user = (Array.isArray(allUsers) ? allUsers : []).find(u => u.id == userId);
@@ -63011,25 +63024,7 @@ async function reactivateUser(userId) {
 
                 // For now, we'll use a simple approach to reactivate by updating status
 
-                const response = await fetch(`${baseUrl}/api/employees/reactivate`, {
-
-                    method: 'POST',
-
-                    headers: {
-
-                        'Content-Type': 'application/json',
-
-                        'Accept': 'application/json'
-
-                    },
-
-                    body: JSON.stringify({
-
-                        employeeId: userId
-
-                    })
-
-                });
+                const response = await xhrRequest('POST', '/api/employees/reactivate', { employeeId: userId });
 
                 
 
@@ -63568,10 +63563,7 @@ function showSuspendUserDialog() {
 async function showReactivateUserDialog() {
     const baseUrl = window.location.origin;
     try {
-        const response = await fetch(`${baseUrl}/api/employees`, {
-            method: 'GET',
-            headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' }
-        });
+        const response = await xhrRequest('GET', '/api/employees');
         if (!response.ok) { showNotification('Failed to load users', 'error'); return; }
         const users = await response.json();
         const suspended = (Array.isArray(users) ? users : []).filter(u => (u.status || '').toLowerCase() === 'suspended' || (u.account_status || '').toLowerCase() === 'suspended');
