@@ -802,6 +802,33 @@ CREATE TABLE IF NOT EXISTS long_term_growth (
   INDEX idx_submitted_date (submitted_date)
 );
 
+-- Investment Management Table
+CREATE TABLE IF NOT EXISTS investment_management (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  investment_title VARCHAR(255) NOT NULL,
+  investment_type ENUM('equity', 'fixed-income', 'real-estate', 'project', 'equipment', 'cash-reserve', 'other') NOT NULL,
+  asset_class VARCHAR(100),
+  investment_amount DECIMAL(15,2) NOT NULL,
+  currency VARCHAR(10) DEFAULT 'TZS',
+  investment_date DATE NOT NULL,
+  expected_return DECIMAL(6,2),
+  risk_level ENUM('low', 'medium', 'high', 'very-high') DEFAULT 'medium',
+  status ENUM('planned', 'active', 'paused', 'closed') DEFAULT 'planned',
+  maturity_date DATE,
+  allocation_percentage DECIMAL(5,2),
+  counterparty VARCHAR(255),
+  investment_objective TEXT,
+  notes TEXT,
+  submitted_by VARCHAR(255),
+  submitted_date DATE,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  INDEX idx_investment_type (investment_type),
+  INDEX idx_status (status),
+  INDEX idx_investment_date (investment_date),
+  INDEX idx_risk_level (risk_level)
+);
+
 CREATE TABLE IF NOT EXISTS work_actions (
   id INT AUTO_INCREMENT PRIMARY KEY,
   work_id INT NOT NULL,
@@ -1082,6 +1109,43 @@ INSERT IGNORE INTO long_term_growth (
     'Managing Director', 
     '2024-01-01', 
     'active'
+);
+
+-- Insert sample investment management data
+INSERT IGNORE INTO investment_management (
+    investment_title,
+    investment_type,
+    asset_class,
+    investment_amount,
+    currency,
+    investment_date,
+    expected_return,
+    risk_level,
+    status,
+    maturity_date,
+    allocation_percentage,
+    counterparty,
+    investment_objective,
+    notes,
+    submitted_by,
+    submitted_date
+) VALUES (
+    'Equipment Upgrade Fund',
+    'equipment',
+    'Construction Equipment',
+    125000000.00,
+    'TZS',
+    '2026-02-01',
+    12.50,
+    'medium',
+    'active',
+    '2028-02-01',
+    20.00,
+    'KashTec Capital',
+    'Modernize fleet to improve project delivery times and reduce maintenance costs.',
+    'Aligned with operational efficiency targets.',
+    'Finance Manager',
+    '2026-02-01'
 );
 
 -- Insert admin user (only if not exists)

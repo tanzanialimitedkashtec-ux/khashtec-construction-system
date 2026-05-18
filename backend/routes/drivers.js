@@ -90,21 +90,11 @@ router.get('/', async (req, res) => {
             console.log('⚠️ Could not update drivers table:', tableError.message);
         }
         
-        const driversResult = await db.execute(`
+        const [drivers] = await db.execute(`
             SELECT *
             FROM drivers 
             ORDER BY created_at DESC
         `);
-        
-        // Handle different MySQL2 return formats
-        let drivers = [];
-        if (Array.isArray(driversResult)) {
-            drivers = driversResult;
-        } else if (driversResult && Array.isArray(driversResult[0])) {
-            drivers = driversResult[0];
-        } else if (driversResult && driversResult.rows) {
-            drivers = driversResult.rows;
-        }
         
         console.log(`✅ Found ${drivers.length} drivers in database`);
         console.log('📊 Drivers data structure:', {
@@ -165,23 +155,11 @@ router.get('/all', async (req, res) => {
     try {
         const db = require('../../database/config/database');
         
-        const driversResult = await db.execute(`
+        const [drivers] = await db.execute(`
             SELECT *
             FROM drivers 
             ORDER BY created_at DESC
         `);
-        
-        // Handle different MySQL2 return formats
-        let drivers = [];
-        if (Array.isArray(driversResult)) {
-            drivers = driversResult;
-        } else if (driversResult && Array.isArray(driversResult[0])) {
-            drivers = driversResult[0];
-        } else if (driversResult && driversResult.rows) {
-            drivers = driversResult.rows;
-        } else {
-            drivers = [];
-        }
         
         res.status(200).json({
             success: true,
@@ -494,12 +472,11 @@ router.get('/:id', async (req, res) => {
         const db = require('../../database/config/database');
         const driverId = req.params.id;
         
-        const driversRes = await db.execute(`
+        const [drivers] = await db.execute(`
             SELECT *
             FROM drivers 
             WHERE driver_id = ?
         `, [driverId]);
-        const drivers = Array.isArray(driversRes) ? driversRes : [];
         
         if (drivers.length === 0) {
             return res.status(404).json({

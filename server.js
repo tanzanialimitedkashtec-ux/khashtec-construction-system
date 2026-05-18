@@ -108,6 +108,8 @@ const longTermGrowthRoutes = require('./backend/routes/long-term-growth');
 
 const teamManagementRoutes = require('./backend/routes/team-management');
 
+const investmentManagementRoutes = require('./backend/routes/investment-management');
+
 const payrollRoutes = require('./backend/routes/payroll');
 
 
@@ -1018,6 +1020,14 @@ app.use('/api/mission-vision', asyncHandler(async (req, res, next) => {
 app.use('/api/long-term-growth', asyncHandler(async (req, res, next) => {
 
     return longTermGrowthRoutes(req, res, next);
+
+}));
+
+
+
+app.use('/api/investment-management', asyncHandler(async (req, res, next) => {
+
+    return investmentManagementRoutes(req, res, next);
 
 }));
 

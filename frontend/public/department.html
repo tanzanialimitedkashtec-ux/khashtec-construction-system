@@ -23919,6 +23919,8 @@ function loadMenu(){
 
         addMenu("Financial Management", financialManagement);
 
+        addMenu("Investment Management", showInvestmentManagement);
+
         addMenu("Payroll Processing", payrollProcessing);
 
         addMenu("Expense Control", expenseControl);
@@ -50816,129 +50818,85 @@ async function loadDrivers() {
 
         
 
-        const response = await KashTecAPI.get('/drivers');
+        const response = await KashTecAPI.get('/api/drivers');
 
         
 
-        if (response.success && response.drivers && response.drivers.length > 0) {
+        // Normalize response shape
+        const drivers = Array.isArray(response)
+            ? response
+            : (response.drivers || response.data || []);
 
-            recordsList.innerHTML = response.drivers.map(driver => `
+        if (Array.isArray(drivers) && drivers.length > 0) {
 
+            recordsList.innerHTML = drivers.map(driver => {
+                const statusText = (driver.driver_status || 'Active');
+                const statusClass = `status-${String(statusText).toLowerCase().replace(/\s+/g, '-')}`;
+                const assignedVehicle = driver.assigned_vehicle || 'Unassigned';
+                const phone = driver.phone_number || '-';
+                const email = driver.email_address || '-';
+                const licenseType = driver.license_type || '-';
+                const experienceYears = driver.years_of_experience ?? '-';
+
+                return `
                 <tr>
-
                     <td>
-
                         <div class="driver-info">
-
-                            <div class="driver-id">${driver.driver_id}</div>
-
-                            <div class="driver-name">${driver.full_name}</div>
-
+                            <div class="driver-id">${driver.driver_id || ''}</div>
+                            <div class="driver-name">${driver.full_name || ''}</div>
                             <div class="driver-description">${driver.description || 'No description'}</div>
-
                         </div>
-
                     </td>
-
                     <td>
-
                         <div class="personal-details">
-
-                            <div class="experience">Experience: ${driver.years_of_experience} years</div>
-
-                            <div class="license">License: ${driver.license_type}</div>
-
-                            <div class="phone">Phone: ${driver.phone_number}</div>
-
-                            <div class="email">Email: ${driver.email_address}</div>
-
-                            <div class="status">Status: ${driver.driver_status}</div>
-
+                            <div class="experience">Experience: ${experienceYears} years</div>
+                            <div class="license">License: ${licenseType}</div>
+                            <div class="phone">Phone: ${phone}</div>
+                            <div class="email">Email: ${email}</div>
+                            <div class="status">Status: ${statusText}</div>
                         </div>
-
                     </td>
-
                     <td>
-
                         <div class="contact-info">
-
-                            <div class="phone">📱 ${driver.phone_number}</div>
-
-                            <div class="email">📧 ${driver.email_address}</div>
-
+                            <div class="phone">📱 ${phone}</div>
+                            <div class="email">📧 ${email}</div>
                         </div>
-
                     </td>
-
                     <td>
-
                         <div class="license-info">
-
-                            <div class="license-type">Type: ${driver.license_type}</div>
-
+                            <div class="license-type">Type: ${licenseType}</div>
                         </div>
-
                     </td>
-
                     <td>
-
                         <div class="employment-info">
-
-                            <div class="status">Status: ${driver.driver_status}</div>
-
+                            <div class="status">Status: ${statusText}</div>
                         </div>
-
                     </td>
-
                     <td>
-
                         <div class="emergency-info">
-
                             <div class="emergency-name">Emergency Contact</div>
-
-                            <div class="emergency-phone">📱 ${driver.phone_number}</div>
-
+                            <div class="emergency-phone">📱 ${driver.emergency_contact_number || driver.emergency_phone || '-'}</div>
                         </div>
-
                     </td>
-
                     <td>
-
                         <div class="vehicle-info">
-
-                            <div class="assigned-vehicle">Available</div>
-
+                            <div class="assigned-vehicle">${assignedVehicle}</div>
                         </div>
-
                     </td>
-
                     <td>
-
                         <div class="status-info">
-
-                            <span class="status-badge status-${driver.driver_status.toLowerCase()}">${driver.driver_status}</span>
-
+                            <span class="status-badge ${statusClass}">${statusText}</span>
                         </div>
-
                     </td>
-
                     <td>
-
                         <div class="driver-actions">
-
-                            <button class="action-btn view" onclick="viewDriverDetails('${driver.id}')" title="View Details">👁️</button>
-
-                            <button class="action-btn edit" onclick="editDriver('${driver.id}')" title="Edit Driver">✏️</button>
-
-                            <button class="action-btn delete" onclick="deleteDriver('${driver.id}')" title="Delete Driver">🗑️</button>
-
+                            <button class="action-btn view" onclick="viewDriverDetails('${driver.driver_id || ''}')" title="View Details">👁️</button>
+                            <button class="action-btn edit" onclick="editDriver('${driver.driver_id || ''}')" title="Edit Driver">✏️</button>
+                            <button class="action-btn delete" onclick="deleteDriver('${driver.driver_id || ''}')" title="Delete Driver">🗑️</button>
                         </div>
-
                     </td>
-
-                </tr>
-
-            `).join('');
+                </tr>`;
+            }).join('');
 
         } else {
 
@@ -66666,7 +66624,7 @@ function financialForecasting() {
 
 function investmentManagement() {
 
-    customAlert('Opening investment management interface...\n\nThis will show company investments and portfolio analysis.', "Investment Management", "info");
+    showInvestmentManagement();
 
 }
 
@@ -102048,6 +102006,475 @@ async function submitLongTermGrowthForm(event) {
         customAlert(`Failed to save growth strategy: ${error.message}`, 'Save Error', 'error');
         return false;
     }
+}
+
+/* ===== INVESTMENT MANAGEMENT FUNCTIONS ===== */
+
+function showInvestmentManagement() {
+    showContent(`
+        <div class="card">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h3>💼 Investment Management</h3>
+                <div>
+                    <button type="button" id="toggleInvestmentFormBtn" onclick="toggleInvestmentForm()" class="action" style="background: #007bff;">
+                        📝 New Investment
+                    </button>
+                    <button type="button" class="action" style="background: #0b3d91;" onclick="loadInvestmentRecords()">
+                        🔄 Refresh
+                    </button>
+                </div>
+            </div>
+
+            <div class="form-header">
+                <h4>Portfolio Tracking & Capital Allocation</h4>
+                <p>Capture investment plans, track capital deployment, and monitor portfolio health with clear risk and return targets. Required fields are marked with an asterisk (*).</p>
+            </div>
+
+            <div id="investmentFormContainer" style="display: none;">
+                <form id="investmentForm" onsubmit="return submitInvestmentForm(event)">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Investment Title *</label>
+                            <input type="text" id="investmentTitle" placeholder="e.g., Quarry Expansion Fund" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Investment Type *</label>
+                            <select id="investmentType" required>
+                                <option value="">Select type</option>
+                                <option value="equity">Equity</option>
+                                <option value="fixed-income">Fixed Income</option>
+                                <option value="real-estate">Real Estate</option>
+                                <option value="project">Project Investment</option>
+                                <option value="equipment">Equipment</option>
+                                <option value="cash-reserve">Cash Reserve</option>
+                                <option value="other">Other</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Asset Class</label>
+                            <input type="text" id="assetClass" placeholder="e.g., Infrastructure, Machinery, Treasury">
+                        </div>
+                        <div class="form-group">
+                            <label>Investment Amount (TZS) *</label>
+                            <input type="number" id="investmentAmount" min="0" step="0.01" placeholder="e.g., 250000000" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Currency *</label>
+                            <select id="investmentCurrency" required>
+                                <option value="">Select currency</option>
+                                <option value="TZS">TZS</option>
+                                <option value="USD">USD</option>
+                                <option value="EUR">EUR</option>
+                                <option value="GBP">GBP</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Investment Date *</label>
+                            <input type="date" id="investmentDate" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Expected Return (%)</label>
+                            <input type="number" id="expectedReturn" min="0" max="500" step="0.01" placeholder="e.g., 12.5">
+                        </div>
+                        <div class="form-group">
+                            <label>Maturity Date</label>
+                            <input type="date" id="maturityDate">
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Risk Level *</label>
+                            <select id="riskLevel" required>
+                                <option value="">Select risk level</option>
+                                <option value="low">Low</option>
+                                <option value="medium">Medium</option>
+                                <option value="high">High</option>
+                                <option value="very-high">Very High</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Status *</label>
+                            <select id="investmentStatus" required>
+                                <option value="">Select status</option>
+                                <option value="planned">Planned</option>
+                                <option value="active">Active</option>
+                                <option value="paused">Paused</option>
+                                <option value="closed">Closed</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Allocation (%)</label>
+                            <input type="number" id="allocationPercentage" min="0" max="100" step="0.01" placeholder="e.g., 15">
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Counterparty / Manager</label>
+                            <input type="text" id="investmentCounterparty" placeholder="e.g., Bank of Tanzania">
+                        </div>
+                        <div class="form-group">
+                            <label>Submitted By</label>
+                            <input type="text" id="investmentSubmittedBy" placeholder="Auto-filled" readonly>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Investment Objective *</label>
+                        <textarea id="investmentObjective" rows="3" placeholder="Describe the purpose and strategic objective of this investment." required></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Notes</label>
+                        <textarea id="investmentNotes" rows="3" placeholder="Additional notes or monitoring instructions..."></textarea>
+                    </div>
+
+                    <div class="form-row">
+                        <button type="submit" class="action" style="background: #28a745;">💾 Save Investment</button>
+                        <button type="button" onclick="clearInvestmentForm()" class="action" style="background: #ffc107;">🔄 Clear Form</button>
+                        <button type="button" onclick="toggleInvestmentForm()" class="action" style="background: #dc3545; margin-left: 10px;">Close Form</button>
+                    </div>
+                </form>
+            </div>
+
+            <div style="margin-top: 25px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                    <h4 style="margin: 0;">📋 Investment Portfolio</h4>
+                    <button type="button" class="action" style="background: #0b3d91;" onclick="loadInvestmentRecords()">🔄 Refresh</button>
+                </div>
+                <div style="overflow: auto; border: 1px solid #dee2e6; border-radius: 5px;">
+                    <table id="investmentRecordsTable" style="width: 100%; border-collapse: collapse;">
+                        <thead>
+                            <tr style="background: #f8f9fa;">
+                                <th style="text-align: left; padding: 8px; border-bottom: 1px solid #dee2e6;">Title</th>
+                                <th style="text-align: left; padding: 8px; border-bottom: 1px solid #dee2e6;">Type</th>
+                                <th style="text-align: left; padding: 8px; border-bottom: 1px solid #dee2e6;">Asset Class</th>
+                                <th style="text-align: left; padding: 8px; border-bottom: 1px solid #dee2e6;">Amount</th>
+                                <th style="text-align: left; padding: 8px; border-bottom: 1px solid #dee2e6;">Currency</th>
+                                <th style="text-align: left; padding: 8px; border-bottom: 1px solid #dee2e6;">Investment Date</th>
+                                <th style="text-align: left; padding: 8px; border-bottom: 1px solid #dee2e6;">Expected Return</th>
+                                <th style="text-align: left; padding: 8px; border-bottom: 1px solid #dee2e6;">Risk</th>
+                                <th style="text-align: left; padding: 8px; border-bottom: 1px solid #dee2e6;">Status</th>
+                                <th style="text-align: left; padding: 8px; border-bottom: 1px solid #dee2e6;">Maturity</th>
+                                <th style="text-align: left; padding: 8px; border-bottom: 1px solid #dee2e6;">Allocation</th>
+                                <th style="text-align: left; padding: 8px; border-bottom: 1px solid #dee2e6;">Counterparty</th>
+                                <th style="text-align: left; padding: 8px; border-bottom: 1px solid #dee2e6;">Objective</th>
+                                <th style="text-align: left; padding: 8px; border-bottom: 1px solid #dee2e6;">Submitted By</th>
+                                <th style="text-align: left; padding: 8px; border-bottom: 1px solid #dee2e6;">Submitted Date</th>
+                            </tr>
+                        </thead>
+                        <tbody id="investmentRecordsTbody">
+                            <tr>
+                                <td colspan="15" style="text-align: center; padding: 10px;">Loading...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <style>
+            .investment-status-badge {
+                display: inline-block;
+                padding: 4px 10px;
+                border-radius: 999px;
+                font-size: 12px;
+                font-weight: 600;
+                color: #fff;
+                text-transform: capitalize;
+            }
+        </style>
+    `);
+
+    const submittedByField = document.getElementById('investmentSubmittedBy');
+    if (submittedByField) {
+        submittedByField.value = sessionStorage.getItem('userName') || 'Finance Manager';
+    }
+
+    setTimeout(loadInvestmentRecords, 100);
+}
+
+function toggleInvestmentForm() {
+    const formContainer = document.getElementById('investmentFormContainer');
+    const toggleBtn = document.getElementById('toggleInvestmentFormBtn');
+
+    if (!formContainer || !toggleBtn) {
+        return;
+    }
+
+    if (formContainer.style.display === 'none' || !formContainer.classList.contains('show')) {
+        formContainer.style.display = 'block';
+        formContainer.classList.add('show');
+        toggleBtn.innerHTML = '❌ Close Investment Form';
+        toggleBtn.style.background = '#dc3545';
+
+        setTimeout(() => {
+            formContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }, 100);
+    } else {
+        formContainer.classList.remove('show');
+        toggleBtn.innerHTML = '📝 New Investment';
+        toggleBtn.style.background = '#007bff';
+
+        setTimeout(() => {
+            formContainer.style.display = 'none';
+        }, 400);
+    }
+}
+
+function clearInvestmentForm() {
+    const form = document.getElementById('investmentForm');
+    if (form) {
+        form.reset();
+    }
+    const submittedByField = document.getElementById('investmentSubmittedBy');
+    if (submittedByField) {
+        submittedByField.value = sessionStorage.getItem('userName') || 'Finance Manager';
+    }
+}
+
+async function loadInvestmentRecords() {
+    const tbody = document.getElementById('investmentRecordsTbody');
+    if (!tbody) {
+        return;
+    }
+
+    tbody.innerHTML = `
+        <tr>
+            <td colspan="15" style="text-align: center; padding: 10px;">Loading investments...</td>
+        </tr>
+    `;
+
+    const baseUrl = window.KashTecAPI && window.KashTecAPI.baseUrl ? window.KashTecAPI.baseUrl : window.location.origin;
+    const token = sessionManager?.getAuthToken?.() || window.KashTecAPI?.getAuthToken?.() || localStorage.getItem('authToken');
+    const headers = { 'Content-Type': 'application/json', 'Accept': 'application/json' };
+    if (token) {
+        headers.Authorization = `Bearer ${token}`;
+    }
+
+    try {
+        const response = await fetch(`${baseUrl}/api/investment-management/investment-management`, {
+            method: 'GET',
+            headers: headers
+        });
+
+        if (!response.ok) {
+            tbody.innerHTML = `
+                <tr>
+                    <td colspan="15" style="text-align: center; padding: 10px; color: #dc3545;">Failed to load records (HTTP ${response.status})</td>
+                </tr>
+            `;
+            return;
+        }
+
+        const payload = await response.json();
+        let records = payload?.data || payload?.records || payload;
+        if (!Array.isArray(records)) {
+            records = records ? [records] : [];
+        }
+
+        tbody.innerHTML = '';
+
+        if (records.length === 0) {
+            tbody.innerHTML = `
+                <tr>
+                    <td colspan="15" style="text-align: center; padding: 10px;">No investment records found.</td>
+                </tr>
+            `;
+            return;
+        }
+
+        const formatDate = (value) => {
+            if (!value) return '';
+            const d = new Date(value);
+            if (!Number.isNaN(d.getTime())) {
+                return d.toISOString().split('T')[0];
+            }
+            return String(value).split('T')[0];
+        };
+
+        const formatAmount = (value, currency) => {
+            const num = Number(value);
+            if (Number.isNaN(num)) return '';
+            const label = currency || 'TZS';
+            return `${label} ${num.toLocaleString()}`;
+        };
+
+        const prettify = (value) => {
+            if (!value) return '';
+            return String(value)
+                .split('-')
+                .filter(Boolean)
+                .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+                .join(' ');
+        };
+
+        const statusColors = {
+            planned: '#6c757d',
+            active: '#28a745',
+            paused: '#f0ad4e',
+            closed: '#dc3545'
+        };
+
+        records.forEach(record => {
+            const tr = document.createElement('tr');
+            tr.style.borderBottom = '1px solid #dee2e6';
+
+            const addCell = (value) => {
+                const td = document.createElement('td');
+                td.style.padding = '8px';
+                td.textContent = value == null ? '' : String(value);
+                tr.appendChild(td);
+            };
+
+            const title = record.investment_title || record.investmentTitle || '';
+            const type = record.investment_type || record.investmentType || '';
+            const assetClass = record.asset_class || record.assetClass || '';
+            const amount = record.investment_amount || record.amount || record.investmentAmount || '';
+            const currency = record.currency || record.investmentCurrency || 'TZS';
+            const investmentDate = record.investment_date || record.investmentDate || '';
+            const expectedReturn = record.expected_return || record.expectedReturn || '';
+            const riskLevel = record.risk_level || record.riskLevel || '';
+            const status = record.status || record.investmentStatus || '';
+            const maturityDate = record.maturity_date || record.maturityDate || '';
+            const allocation = record.allocation_percentage || record.allocationPercentage || '';
+            const counterparty = record.counterparty || record.investmentCounterparty || '';
+            const objective = record.investment_objective || record.investmentObjective || '';
+            const submittedBy = record.submitted_by || record.submittedBy || '';
+            const submittedDate = record.submitted_date || record.submittedDate || '';
+
+            addCell(title);
+            addCell(prettify(type));
+            addCell(assetClass);
+            addCell(formatAmount(amount, currency));
+            addCell(currency || '');
+            addCell(formatDate(investmentDate));
+            addCell(expectedReturn ? `${expectedReturn}%` : '');
+            addCell(prettify(riskLevel));
+
+            const statusTd = document.createElement('td');
+            statusTd.style.padding = '8px';
+            const badge = document.createElement('span');
+            const statusKey = String(status || '').toLowerCase();
+            badge.className = 'investment-status-badge';
+            badge.style.background = statusColors[statusKey] || '#6c757d';
+            badge.textContent = prettify(statusKey) || 'Unknown';
+            statusTd.appendChild(badge);
+            tr.appendChild(statusTd);
+
+            addCell(formatDate(maturityDate));
+            addCell(allocation ? `${allocation}%` : '');
+            addCell(counterparty);
+            addCell(objective);
+            addCell(submittedBy);
+            addCell(formatDate(submittedDate));
+
+            tbody.appendChild(tr);
+        });
+    } catch (error) {
+        console.error('❌ Error loading investment records:', error);
+        tbody.innerHTML = `
+            <tr>
+                <td colspan="15" style="text-align: center; padding: 10px; color: #dc3545;">Failed to load records.</td>
+            </tr>
+        `;
+    }
+}
+
+async function submitInvestmentForm(event) {
+    if (event) {
+        event.preventDefault();
+        event.stopPropagation();
+    }
+
+    const investmentTitle = document.getElementById('investmentTitle')?.value.trim();
+    const investmentType = document.getElementById('investmentType')?.value;
+    const investmentAmountValue = document.getElementById('investmentAmount')?.value;
+    const investmentCurrency = document.getElementById('investmentCurrency')?.value;
+    const investmentDate = document.getElementById('investmentDate')?.value;
+    const riskLevel = document.getElementById('riskLevel')?.value;
+    const investmentStatus = document.getElementById('investmentStatus')?.value;
+    const investmentObjective = document.getElementById('investmentObjective')?.value.trim();
+
+    if (!investmentTitle || !investmentType || !investmentAmountValue || !investmentCurrency || !investmentDate || !riskLevel || !investmentStatus || !investmentObjective) {
+        customAlert('Please fill in all required fields (*) before submitting.', 'Validation Error', 'warning');
+        return false;
+    }
+
+    const investmentAmount = Number(investmentAmountValue);
+    if (Number.isNaN(investmentAmount) || investmentAmount <= 0) {
+        customAlert('Investment amount must be greater than zero.', 'Validation Error', 'warning');
+        return false;
+    }
+
+    const allocationValue = document.getElementById('allocationPercentage')?.value;
+    if (allocationValue) {
+        const allocationNum = Number(allocationValue);
+        if (Number.isNaN(allocationNum) || allocationNum < 0 || allocationNum > 100) {
+            customAlert('Allocation percentage must be between 0 and 100.', 'Validation Error', 'warning');
+            return false;
+        }
+    }
+
+    const payload = {
+        investmentTitle: investmentTitle,
+        investmentType: investmentType,
+        assetClass: document.getElementById('assetClass')?.value.trim(),
+        amount: investmentAmount,
+        currency: investmentCurrency,
+        investmentDate: investmentDate,
+        expectedReturn: document.getElementById('expectedReturn')?.value,
+        riskLevel: riskLevel,
+        status: investmentStatus,
+        maturityDate: document.getElementById('maturityDate')?.value,
+        allocationPercentage: allocationValue || null,
+        counterparty: document.getElementById('investmentCounterparty')?.value.trim(),
+        investmentObjective: investmentObjective,
+        notes: document.getElementById('investmentNotes')?.value.trim(),
+        submittedBy: sessionStorage.getItem('userName') || 'Finance Manager',
+        submittedDate: new Date().toISOString().split('T')[0]
+    };
+
+    const baseUrl = window.KashTecAPI && window.KashTecAPI.baseUrl ? window.KashTecAPI.baseUrl : window.location.origin;
+    const token = sessionManager?.getAuthToken?.() || window.KashTecAPI?.getAuthToken?.() || localStorage.getItem('authToken');
+    const headers = { 'Content-Type': 'application/json' };
+    if (token) {
+        headers.Authorization = `Bearer ${token}`;
+    }
+
+    try {
+        const response = await fetch(`${baseUrl}/api/investment-management/investment-management`, {
+            method: 'POST',
+            headers: headers,
+            body: JSON.stringify(payload)
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json().catch(() => ({}));
+            customAlert(`Error: ${errorData.error || `HTTP ${response.status}: ${response.statusText}`}`, 'Save Error', 'error');
+            return false;
+        }
+
+        const result = await response.json();
+        if (result.success) {
+            customAlert(`Investment saved successfully!\n\nTitle: ${investmentTitle}\nType: ${investmentType}\nAmount: ${investmentCurrency} ${investmentAmount.toLocaleString()}`, 'Investment Saved', 'success');
+            clearInvestmentForm();
+            await loadInvestmentRecords();
+        } else {
+            customAlert(`Error: ${result.error || 'Unknown error occurred'}`, 'Save Error', 'error');
+        }
+    } catch (error) {
+        console.error('❌ Error saving investment record:', error);
+        customAlert(`Failed to save investment record: ${error.message}`, 'Save Error', 'error');
+    }
+
+    return false;
 }
 
 /* ===== PAYMENT MANAGEMENT FUNCTIONS ===== */
