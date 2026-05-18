@@ -2755,7 +2755,8 @@ button.action{
 
 .details-sections {
 
-    padding: 30px;
+    padding: 12px;
+    font-size: 12px;
 
 }
 
@@ -2763,7 +2764,7 @@ button.action{
 
 .detail-section {
 
-    margin-bottom: 40px;
+    margin-bottom: 16px;
 
 }
 
@@ -2779,17 +2780,17 @@ button.action{
 
 .detail-section h4 {
 
-    margin: 0 0 20px 0;
+    margin: 0 0 8px 0;
 
     color: #2c3e50;
 
-    font-size: 18px;
+    font-size: 13px;
 
     font-weight: 600;
 
-    padding-bottom: 10px;
+    padding-bottom: 6px;
 
-    border-bottom: 2px solid #e9ecef;
+    border-bottom: 1px solid #e9ecef;
 
 }
 
@@ -2797,11 +2798,17 @@ button.action{
 
 .detail-grid {
 
-    display: grid;
+    display: table;
 
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    width: 100%;
 
-    gap: 20px;
+    border-collapse: collapse;
+
+    border: 1px solid #e9ecef;
+
+    border-radius: 6px;
+
+    overflow: hidden;
 
 }
 
@@ -2809,19 +2816,17 @@ button.action{
 
 .detail-item {
 
-    display: flex;
+    display: table-row;
 
-    justify-content: space-between;
+    background: transparent;
 
-    align-items: center;
+    border-left: none;
 
-    padding: 12px 15px;
+}
 
-    background: #f8f9fa;
+.detail-item:nth-child(even) {
 
-    border-radius: 6px;
-
-    border-left: 4px solid #0b3d91;
+    background: #f9fbfc;
 
 }
 
@@ -2829,13 +2834,23 @@ button.action{
 
 .detail-item label {
 
+    display: table-cell;
+
+    padding: 6px 8px;
+
     font-weight: 600;
 
     color: #2c3e50;
 
     margin: 0;
 
-    font-size: 14px;
+    font-size: 12px;
+
+    border-bottom: 1px solid #e9ecef;
+
+    background: #f3f5f8;
+
+    width: 150px;
 
 }
 
@@ -2843,13 +2858,27 @@ button.action{
 
 .detail-item span {
 
-    color: #6c757d;
+    display: table-cell;
 
-    font-size: 14px;
+    color: #5b6773;
 
-    text-align: right;
+    font-size: 12px;
+
+    text-align: left;
+
+    padding: 6px 8px;
+
+    border-bottom: 1px solid #e9ecef;
 
     word-break: break-word;
+
+}
+
+.detail-item:last-child label,
+
+.detail-item:last-child span {
+
+    border-bottom: none;
 
 }
 
