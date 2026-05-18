@@ -376,6 +376,71 @@ header{
 }
 
 
+.sidebar-header {
+
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 2px;
+
+}
+
+
+.menu-tools {
+
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 2px;
+
+    margin: 2px 0;
+
+    padding: 2px 0;
+
+    border-top: 1px solid #34495e;
+
+    border-bottom: 1px solid #34495e;
+
+}
+
+
+.menu-tools input {
+
+    width: 100%;
+
+    padding: 2px;
+
+    font-size: 6px;
+
+    border-radius: 2px;
+
+    border: 1px solid #4a5f7a;
+
+    background: #1e2b38;
+
+    color: #ffffff;
+
+    box-sizing: border-box;
+
+}
+
+
+.menu-tools input::placeholder {
+
+    color: rgba(255, 255, 255, 0.65);
+
+}
+
+
+.menu-tools .menu-clear {
+
+    width: 100%;
+
+}
+
+
 
 .sidebar h3{
 
@@ -398,6 +463,74 @@ header{
 .sidebar #menu {
 
     margin-bottom: 2px;
+
+}
+
+
+.sidebar .menu-list {
+
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 2px;
+
+}
+
+
+.menu-section {
+
+    border: 1px solid #34495e;
+
+    border-radius: 2px;
+
+    overflow: hidden;
+
+    background: rgba(255, 255, 255, 0.03);
+
+}
+
+
+.menu-section summary {
+
+    cursor: pointer;
+
+    list-style: none;
+
+    padding: 2px;
+
+    font-size: 6px;
+
+    font-weight: 600;
+
+    background: linear-gradient(135deg, #253545 0%, #2f4152 100%);
+
+}
+
+
+.menu-section summary::-webkit-details-marker {
+
+    display: none;
+
+}
+
+
+.menu-section[open] summary {
+
+    background: linear-gradient(135deg, #2f4358 0%, #3a5168 100%);
+
+}
+
+
+.menu-section-buttons {
+
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 1px;
+
+    padding: 1px;
 
 }
 
@@ -17932,6 +18065,44 @@ background: #f8f9fa;
 
 
 
+.personnel-avatar-small {
+
+    width: 32px;
+
+    height: 32px;
+
+    border-radius: 50%;
+
+    overflow: hidden;
+
+    border: 1px solid #d9dee5;
+
+    background: #eef2f6;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+}
+
+
+
+.personnel-avatar-small img {
+
+    width: 100%;
+
+    height: 100%;
+
+    object-fit: cover;
+
+    border-radius: 50%;
+
+}
+
+
+
 .role-badge {
 
     position: absolute;
@@ -23108,11 +23279,17 @@ background: #f8f9fa;
 
         <div class="sidebar collapsed">
 
-            <h3 id="userRole">HR Dashboard</h3>
+            <div class="sidebar-header">
+                <h3 id="userRole">HR Dashboard</h3>
+                <button type="button" onclick="handleLogout()">Logout</button>
+            </div>
 
-            <button onclick="handleLogout()">Logout</button>
+            <div class="menu-tools">
+                <input type="search" id="menuSearch" placeholder="Search menu..." oninput="filterMenuItems()">
+                <button type="button" class="menu-clear" onclick="clearMenuSearch()">Clear</button>
+            </div>
 
-            <div id="menu"><button>Register Employee</button><button>Create Worker Account</button><button>Assign Project Workers</button><button>Update Employee Records</button><button>Track Attendance</button><button>Manage Leave &amp; Contracts</button><button>Manage Policies</button><button>Approve Senior Staff Hiring</button><button>Approve Workforce Budget</button></div>
+            <div id="menu" class="menu-list"></div>
 
         </div>
 
@@ -23848,6 +24025,8 @@ function loadMenu(){
 
     menu.innerHTML = "";
 
+    resetMenuSearch();
+
     
 
     // Reset sidebar to collapsed state when loading menu
@@ -24191,7 +24370,312 @@ function loadMenu(){
 
     
 
+    filterMenuItems();
+
     console.log('Menu loaded. Total items:', menu.children.length); // Debug line
+
+}
+
+
+const menuSections = [
+
+    {
+
+        id: 'leadership',
+
+        title: 'Leadership & Strategy',
+
+        keywords: ['mission', 'vision', 'strategy', 'leadership', 'oversight', 'policy implementation']
+
+    },
+
+    {
+
+        id: 'people',
+
+        title: 'People & HR',
+
+        keywords: ['employee', 'staff', 'worker', 'workforce', 'hiring', 'recruit', 'attendance', 'leave', 'contract', 'team', 'senior', 'hr', 'suspend', 'terminate', 'user account', 'policy']
+
+    },
+
+    {
+
+        id: 'operations',
+
+        title: 'Operations & Projects',
+
+        keywords: ['project', 'task', 'site', 'progress', 'assign', 'work', 'office portal', 'request workforce', 'administrative']
+
+    },
+
+    {
+
+        id: 'safety',
+
+        title: 'Safety & Compliance',
+
+        keywords: ['safety', 'incident', 'ppe', 'inspection', 'toolbox', 'violation', 'compliance', 'hse']
+
+    },
+
+    {
+
+        id: 'finance',
+
+        title: 'Finance & Accounting',
+
+        keywords: ['budget', 'financial', 'payroll', 'payment', 'expense', 'audit', 'tax', 'procurement', 'investment', 'accountant', 'paye', 'vat', 'nhif', 'nssf']
+
+    },
+
+    {
+
+        id: 'assets',
+
+        title: 'Assets & Logistics',
+
+        keywords: ['car', 'driver', 'transport', 'property', 'materials', 'inventory', 'equipment']
+
+    },
+
+    {
+
+        id: 'sales',
+
+        title: 'Sales & Clients',
+
+        keywords: ['sale', 'sales', 'client', 'payment progress', 'sales report']
+
+    },
+
+    {
+
+        id: 'documents',
+
+        title: 'Documents & Communication',
+
+        keywords: ['document', 'notification', 'meeting', 'minutes', 'language', 'suggestion']
+
+    },
+
+    {
+
+        id: 'general',
+
+        title: 'General',
+
+        keywords: []
+
+    }
+
+];
+
+
+function getMenuSectionConfig(label) {
+
+    const normalizedLabel = label.toLowerCase();
+
+    for (const section of menuSections) {
+
+        if (!section.keywords || section.keywords.length === 0) {
+
+            continue;
+
+        }
+
+        const matchesSection = section.keywords.some((keyword) => normalizedLabel.includes(keyword));
+
+        if (matchesSection) {
+
+            return section;
+
+        }
+
+    }
+
+    return menuSections.find((section) => section.id === 'general') || { id: 'general', title: 'General', keywords: [] };
+
+}
+
+
+function ensureMenuSection(sectionConfig) {
+
+    const menuContainer = document.getElementById('menu');
+
+    if (!menuContainer) {
+
+        return null;
+
+    }
+
+    let section = menuContainer.querySelector(`.menu-section[data-section="${sectionConfig.id}"]`);
+
+    if (section) {
+
+        return section;
+
+    }
+
+    section = document.createElement('details');
+
+    section.className = 'menu-section';
+
+    section.dataset.section = sectionConfig.id;
+
+    section.open = true;
+
+    const summary = document.createElement('summary');
+
+    summary.textContent = sectionConfig.title;
+
+    const buttonsContainer = document.createElement('div');
+
+    buttonsContainer.className = 'menu-section-buttons';
+
+    section.appendChild(summary);
+
+    section.appendChild(buttonsContainer);
+
+    const insertIndex = menuSections.findIndex((entry) => entry.id === sectionConfig.id);
+
+    const existingSections = Array.from(menuContainer.querySelectorAll('.menu-section'));
+
+    const nextSection = existingSections.find((existing) => {
+
+        const existingIndex = menuSections.findIndex((entry) => entry.id === existing.dataset.section);
+
+        return existingIndex > insertIndex;
+
+    });
+
+    if (nextSection) {
+
+        menuContainer.insertBefore(section, nextSection);
+
+    } else {
+
+        menuContainer.appendChild(section);
+
+    }
+
+    return section;
+
+}
+
+
+function addMenuItem(label, onClick, options = {}) {
+
+    const sectionConfig = getMenuSectionConfig(label);
+
+    const section = ensureMenuSection(sectionConfig);
+
+    if (!section) {
+
+        return null;
+
+    }
+
+    const button = document.createElement('button');
+
+    button.textContent = label;
+
+    button.title = label;
+
+    button.onclick = onClick;
+
+    button.dataset.menuLabel = label.toLowerCase();
+
+    if (options.disabled) {
+
+        button.disabled = true;
+
+        button.style.opacity = '0.5';
+
+        button.style.cursor = 'not-allowed';
+
+    }
+
+    const buttonsContainer = section.querySelector('.menu-section-buttons');
+
+    buttonsContainer.appendChild(button);
+
+    return button;
+
+}
+
+
+function resetMenuSearch() {
+
+    const input = document.getElementById('menuSearch');
+
+    if (input) {
+
+        input.value = '';
+
+    }
+
+}
+
+
+function filterMenuItems() {
+
+    const menuContainer = document.getElementById('menu');
+
+    const input = document.getElementById('menuSearch');
+
+    if (!menuContainer || !input) {
+
+        return;
+
+    }
+
+    const query = input.value.trim().toLowerCase();
+
+    const buttons = menuContainer.querySelectorAll('.menu-section button');
+
+    buttons.forEach((button) => {
+
+        const label = button.dataset.menuLabel || button.textContent.toLowerCase();
+
+        const match = !query || label.includes(query);
+
+        button.style.display = match ? '' : 'none';
+
+    });
+
+    const sections = menuContainer.querySelectorAll('.menu-section');
+
+    sections.forEach((section) => {
+
+        const visibleButtons = section.querySelectorAll('button:not([style*="display: none"])');
+
+        const hasVisibleButtons = visibleButtons.length > 0;
+
+        section.style.display = hasVisibleButtons ? '' : 'none';
+
+        if (query && hasVisibleButtons) {
+
+            section.open = true;
+
+        }
+
+    });
+
+}
+
+
+function clearMenuSearch() {
+
+    const input = document.getElementById('menuSearch');
+
+    if (input) {
+
+        input.value = '';
+
+    }
+
+    filterMenuItems();
 
 }
 
@@ -24201,13 +24685,13 @@ function addMenu(name, func){
 
     try {
 
-        const btn = document.createElement("button");
+        const btn = addMenuItem(name, func);
 
-        btn.innerText = name;
+        if (!btn) {
 
-        btn.onclick = func;
+            return;
 
-        document.getElementById("menu").appendChild(btn);
+        }
 
         console.log('Added menu item:', name); // Debug line
 
@@ -38830,7 +39314,7 @@ function assignToOfficePortal(personnelData, type) {
 
         status: 'active',
 
-        profileImage: personnelData.profileImage || `https://picsum.photos/seed/${personnelData.fullName}/80/80.jpg`,
+        profileImage: personnelData.profileImage || '/assets/images/default-avatar.png',
 
         accessLevel: personnelData.accessLevel || 'basic',
 
@@ -84609,11 +85093,11 @@ function showEmployeeDetailsModal(employee) {
 
                     <div class="employee-avatar">
 
-                        <img src="${employee.profile_image || `https://picsum.photos/seed/employee-${employee.id || employee.employee_id}/100/100.jpg`}" 
+                        <img src="${employee.profile_image || (employee.id || employee.employee_id ? `/api/profile-image/${employee.id || employee.employee_id}` : '/assets/images/default-avatar.png')}" 
 
                              alt="${employee.fullName || employee.full_name || employee.name}" 
 
-                             onerror="this.src='https://picsum.photos/seed/default/100/100.jpg'">
+                             onerror="this.onerror=null;this.src='/assets/images/default-avatar.png';">
 
                     </div>
 
@@ -87975,7 +88459,7 @@ async function loadOfficePortalData() {
 
                     type: 'Employee',
 
-                    profileImage: emp.profile_image || `https://picsum.photos/seed/${emp.id}/100/100.jpg`,
+                    profileImage: emp.profile_image || emp.profileImage || `/api/profile-image/${emp.id}`,
 
                     accessLevel: 'user',
 
@@ -88419,7 +88903,7 @@ function renderOfficePortal(officePortalUsers, documents, policies, contracts) {
 
                                 <div class="personnel-avatar-small">
 
-                                    <img src="${user.profileImage}" alt="${user.name}" onerror="this.src='https://picsum.photos/seed/default/40/40.jpg'">
+                                    <img src="${user.profileImage || '/assets/images/default-avatar.png'}" alt="${user.name}" onerror="this.onerror=null;this.src='/assets/images/default-avatar.png';">
 
                                 </div>
 
@@ -94259,6 +94743,8 @@ function updateNavigationForRole(role) {
 
     menuContainer.innerHTML = '';
 
+    resetMenuSearch();
+
     
 
     // Get menu configuration for the role
@@ -94279,15 +94765,11 @@ function updateNavigationForRole(role) {
 
         menuConfig.buttons.forEach(buttonText => {
 
-            const button = document.createElement('button');
-
-            button.textContent = buttonText;
-
-            button.onclick = () => handleMenuClick(buttonText);
-
-            menuContainer.appendChild(button);
+            addMenuItem(buttonText, () => handleMenuClick(buttonText));
 
         });
+
+        filterMenuItems();
 
     } else {
 
@@ -94295,17 +94777,7 @@ function updateNavigationForRole(role) {
 
         userRoleElement.textContent = 'Dashboard';
 
-        const disabledButton = document.createElement('button');
-
-        disabledButton.textContent = 'No Access';
-
-        disabledButton.style.opacity = '0.5';
-
-        disabledButton.style.cursor = 'not-allowed';
-
-        disabledButton.disabled = true;
-
-        menuContainer.appendChild(disabledButton);
+        addMenuItem('No Access', () => {}, { disabled: true });
 
     }
 
@@ -95021,7 +95493,7 @@ function showTaxPayments() {
 
     // Add form submission handler
 
-    setTimeout(() => {
+    setTimeout(async () => {
 
         const taxForm = document.getElementById('taxForm');
 
@@ -95113,6 +95585,8 @@ function showTaxPayments() {
             });
 
         }
+
+        await loadTaxPaymentsTable();
 
     }, 100);
 

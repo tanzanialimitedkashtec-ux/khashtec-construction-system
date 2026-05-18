@@ -25709,7 +25709,7 @@ async function loadDriversForCarRegistration() {
 
         const data = await response.json();
 
-        const drivers = Array.isArray(data) ? data : (data.data || []);
+        const drivers = Array.isArray(data) ? data : (data.drivers || data.data || []);
 
         
 
@@ -27777,7 +27777,7 @@ async function loadDrivers() {
 
         
 
-        const response = await KashTecAPI.get('/drivers');
+        const response = await KashTecAPI.get('/api/drivers');
 
         
 
@@ -27867,7 +27867,7 @@ async function loadDrivers() {
 
                         <div class="vehicle-info">
 
-                            <div class="assigned-vehicle">Available</div>
+                            <div class="assigned-vehicle">${driver.assigned_vehicle || 'Unassigned'}</div>
 
                         </div>
 
@@ -27887,11 +27887,11 @@ async function loadDrivers() {
 
                         <div class="driver-actions">
 
-                            <button class="action-btn view" onclick="viewDriverDetails('${driver.id}')" title="View Details">👁️</button>
+                            <button class="action-btn view" onclick="viewDriverDetails('${driver.driver_id}')" title="View Details">👁️</button>
 
-                            <button class="action-btn edit" onclick="editDriver('${driver.id}')" title="Edit Driver">✏️</button>
+                            <button class="action-btn edit" onclick="editDriver('${driver.driver_id}')" title="Edit Driver">✏️</button>
 
-                            <button class="action-btn delete" onclick="deleteDriver('${driver.id}')" title="Delete Driver">🗑️</button>
+                            <button class="action-btn delete" onclick="deleteDriver('${driver.driver_id}')" title="Delete Driver">🗑️</button>
 
                         </div>
 

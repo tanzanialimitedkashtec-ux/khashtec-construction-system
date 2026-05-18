@@ -272,12 +272,18 @@ app.use(express.static(path.join(__dirname, 'frontend/public'), {
 
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
-// Default avatar fallback: redirect to pravatar.cc which returns a real human-face
-// placeholder photo deterministically seeded by employeeId (until a real photo is uploaded).
+// Default avatar fallback: neutral inline SVG placeholder (no random faces).
 function sendDefaultAvatar(res, seed = '') {
-    const s = encodeURIComponent(String(seed || 'default'));
+    const svg = `
+        <svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 200 200" role="img" aria-label="Default avatar">
+            <rect width="200" height="200" rx="100" fill="#e8edf3" />
+            <circle cx="100" cy="78" r="38" fill="#c5ced9" />
+            <path d="M36 176c10-34 36-52 64-52s54 18 64 52" fill="#c5ced9" />
+        </svg>
+    `;
+    res.set('Content-Type', 'image/svg+xml');
     res.set('Cache-Control', 'public, max-age=3600');
-    return res.redirect(302, `https://i.pravatar.cc/200?u=${s}`);
+    return res.send(svg);
 }
 
 // Serve profile image from DB BLOB (persists across Railway redeploys).
