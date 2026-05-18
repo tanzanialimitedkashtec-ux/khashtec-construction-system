@@ -496,7 +496,7 @@ router.get('/:id', async (req, res) => {
     try {
         console.log(`🔍 Fetching employee with ID: ${req.params.id}`);
         
-        const [employees] = await db.execute(`
+        const empResult = await db.execute(`
             SELECT e.*, ed.full_name, ed.gmail, ed.phone, ed.nida, ed.passport, 
                    ed.contract_type, ed.profile_image
             FROM employees e 
@@ -504,7 +504,19 @@ router.get('/:id', async (req, res) => {
             WHERE e.id = ?
         `, [req.params.id]);
         
-        if (employees.length === 0) {
+        // Handle different database response formats
+        let employees;
+        if (Array.isArray(empResult) && Array.isArray(empResult[0])) {
+            employees = empResult[0];
+        } else if (Array.isArray(empResult)) {
+            employees = empResult;
+        } else if (empResult && empResult.rows) {
+            employees = empResult.rows;
+        } else {
+            employees = [];
+        }
+        
+        if (!employees || employees.length === 0) {
             console.log(`❌ Employee with ID ${req.params.id} not found`);
             return res.status(404).json({ error: 'Employee not found' });
         }
