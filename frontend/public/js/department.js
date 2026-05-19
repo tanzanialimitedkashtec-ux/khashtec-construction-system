@@ -93,6 +93,10 @@
       form.reset();
       await loadDepartments();
       alert('Department saved successfully');
+      // Close form like risk management UX
+      if (typeof hideDepartmentForm === 'function') {
+        hideDepartmentForm();
+      }
     }catch(err){
       console.error('Failed to save department:', err);
       alert('Error: '+ err.message);
@@ -105,41 +109,11 @@
       <div style="padding:16px">
         <h2 style="margin-top:0">Department Management</h2>
         <div class="card">
-          <h3 style="margin:0 0 12px 0">Add Department</h3>
-          <form id="departmentForm" style="display:flex;flex-direction:column;gap:10px">
-            <div>
-              <label>Department Name</label>
-              <input type="text" name="departmentName" placeholder="e.g. Human Resources" required />
-            </div>
-            <div>
-              <label>Department Code</label>
-              <input type="text" name="departmentCode" placeholder="e.g. HR" required />
-            </div>
-            <div>
-              <label>Manager Email</label>
-              <input type="email" name="managerEmail" placeholder="e.g. hr@kashtec.com" />
-            </div>
-            <div>
-              <label>Status</label>
-              <select name="status">
-                <option value="Active" selected>Active</option>
-                <option value="Inactive">Inactive</option>
-                <option value="Maintenance">Maintenance</option>
-              </select>
-            </div>
-            <div>
-              <label>Description</label>
-              <textarea name="description" rows="3" placeholder="Short description..."></textarea>
-            </div>
-            <div style="margin-top:6px;display:flex;gap:8px;flex-wrap:wrap">
-              <button type="submit">Save Department</button>
-              <button type="button" id="reloadDepartmentsBtn">Reload List</button>
-            </div>
-          </form>
-        </div>
-
-        <div class="card">
           <h3 style="margin:0 0 12px 0">Departments</h3>
+          <div style="margin: 6px 0 12px 0; display:flex; gap:8px; flex-wrap:wrap;">
+            <button type="button" id="newDepartmentBtn">+ New Department</button>
+            <button type="button" id="reloadDepartmentsBtn">Reload</button>
+          </div>
           <div style="overflow:auto">
             <table style="width:100%;border-collapse:collapse">
               <thead>
@@ -156,18 +130,69 @@
             </table>
           </div>
         </div>
+        <div id="departmentFormContainer" class="card hidden"></div>
       </div>
     `;
 
-    const form = document.getElementById('departmentForm');
-    if(form){ form.addEventListener('submit', submitDepartment); }
     const reloadBtn = document.getElementById('reloadDepartmentsBtn');
     if(reloadBtn){ reloadBtn.addEventListener('click', loadDepartments); }
+    const newBtn = document.getElementById('newDepartmentBtn');
+    if(newBtn){ newBtn.addEventListener('click', showDepartmentForm); }
 
     loadDepartments();
   }
 
+  function showDepartmentForm(){
+    const container = document.getElementById('departmentFormContainer');
+    if (!container) return;
+    container.classList.remove('hidden');
+    container.innerHTML = `
+      <h4 style="margin:0 0 12px 0">Add Department</h4>
+      <form id="departmentForm" style="display:flex;flex-direction:column;gap:10px">
+        <div>
+          <label>Department Name</label>
+          <input type="text" name="departmentName" placeholder="e.g. Human Resources" required />
+        </div>
+        <div>
+          <label>Department Code</label>
+          <input type="text" name="departmentCode" placeholder="e.g. HR" required />
+        </div>
+        <div>
+          <label>Manager Email</label>
+          <input type="email" name="managerEmail" placeholder="e.g. hr@kashtec.com" />
+        </div>
+        <div>
+          <label>Status</label>
+          <select name="status">
+            <option value="Active" selected>Active</option>
+            <option value="Inactive">Inactive</option>
+            <option value="Maintenance">Maintenance</option>
+          </select>
+        </div>
+        <div>
+          <label>Description</label>
+          <textarea name="description" rows="3" placeholder="Short description..."></textarea>
+        </div>
+        <div style="margin-top:6px;display:flex;gap:8px;flex-wrap:wrap">
+          <button type="submit">Save Department</button>
+          <button type="button" onclick="hideDepartmentForm()">Cancel</button>
+        </div>
+      </form>
+    `;
+    const form = document.getElementById('departmentForm');
+    if(form){ form.addEventListener('submit', submitDepartment); }
+  }
+
+  function hideDepartmentForm(){
+    const container = document.getElementById('departmentFormContainer');
+    if (!container) return;
+    container.classList.add('hidden');
+    container.innerHTML = '';
+  }
+
   // Expose globally for menu integration
   window.showDepartmentManagement = showDepartmentManagement;
+  window.hideDepartmentForm = hideDepartmentForm;
+  window.showDepartmentForm = showDepartmentForm;
   // Optional: if contentArea exists and a global flag set later, we could auto-run
 })();
