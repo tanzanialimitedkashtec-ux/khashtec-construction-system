@@ -3018,6 +3018,87 @@ try {
     console.error('❌ Full error stack:', error.stack);
 }
 
+
+
+// ===== NEW FEATURE ROUTES =====
+
+// Claims Management routes
+console.log('🔍 Loading claims management routes...');
+try {
+    const claimsManagementRoutes = require('./routes/claimsManagement');
+    console.log('✅ Claims management routes loaded successfully');
+    app.use('/api/claims-management', claimsManagementRoutes);
+    console.log('✅ Claims management routes mounted at /api/claims-management');
+} catch (error) {
+    console.error('❌ Error loading claims management routes:', error);
+}
+
+// NSSF Registration routes
+console.log('🔍 Loading NSSF registration routes...');
+try {
+    const nssfRegistrationRoutes = require('./routes/nssfRegistration');
+    console.log('✅ NSSF registration routes loaded successfully');
+    app.use('/api/nssf-registration', nssfRegistrationRoutes);
+    console.log('✅ NSSF registration routes mounted at /api/nssf-registration');
+} catch (error) {
+    console.error('❌ Error loading NSSF registration routes:', error);
+}
+
+// Discipline Monitoring routes
+console.log('🔍 Loading discipline monitoring routes...');
+try {
+    const disciplineMonitoringRoutes = require('./routes/disciplineMonitoring');
+    console.log('✅ Discipline monitoring routes loaded successfully');
+    app.use('/api/discipline-monitoring', disciplineMonitoringRoutes);
+    console.log('✅ Discipline monitoring routes mounted at /api/discipline-monitoring');
+} catch (error) {
+    console.error('❌ Error loading discipline monitoring routes:', error);
+}
+
+// Office Resources routes
+console.log('🔍 Loading office resources routes...');
+try {
+    const officeResourcesRoutes = require('./routes/officeResources');
+    console.log('✅ Office resources routes loaded successfully');
+    app.use('/api/office-resources', officeResourcesRoutes);
+    console.log('✅ Office resources routes mounted at /api/office-resources');
+} catch (error) {
+    console.error('❌ Error loading office resources routes:', error);
+}
+
+// Talent Acquisition routes
+console.log('🔍 Loading talent acquisition routes...');
+try {
+    const talentAcquisitionRoutes = require('./routes/talentAcquisition');
+    console.log('✅ Talent acquisition routes loaded successfully');
+    app.use('/api/talent-acquisition', talentAcquisitionRoutes);
+    console.log('✅ Talent acquisition routes mounted at /api/talent-acquisition');
+} catch (error) {
+    console.error('❌ Error loading talent acquisition routes:', error);
+}
+
+// Promotions routes
+console.log('🔍 Loading promotions routes...');
+try {
+    const promotionsRoutes = require('./routes/promotions');
+    console.log('✅ Promotions routes loaded successfully');
+    app.use('/api/promotions', promotionsRoutes);
+    console.log('✅ Promotions routes mounted at /api/promotions');
+} catch (error) {
+    console.error('❌ Error loading promotions routes:', error);
+}
+
+// Risk Management routes
+console.log('🔍 Loading risk management routes...');
+try {
+    const riskManagementRoutes = require('./routes/riskManagement');
+    console.log('✅ Risk management routes loaded successfully');
+    app.use('/api/risk-management', riskManagementRoutes);
+    console.log('✅ Risk management routes mounted at /api/risk-management');
+} catch (error) {
+    console.error('❌ Error loading risk management routes:', error);
+}
+
 // Transport Costs API endpoints for Fleet Management
 app.get('/api/transport-costs', async (req, res) => {
     let connection = null;
