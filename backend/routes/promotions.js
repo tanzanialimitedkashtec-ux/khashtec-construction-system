@@ -38,10 +38,10 @@ router.get('/:id', async (req, res) => {
             WHERE p.id = ?
         `, [req.params.id]);
         const promotion = Array.isArray(result) ? result[0] : result;
-        if (promotion.length === 0) {
+        if (!promotion) {
             return res.status(404).json({ error: 'Promotion not found' });
         }
-        res.json(promotion[0]);
+        res.json(promotion);
     } catch (error) {
         console.error('Error fetching promotion:', error);
         res.status(500).json({ error: 'Failed to fetch promotion' });
@@ -132,6 +132,33 @@ router.put('/:id', async (req, res) => {
             notes
         } = req.body;
 
+        const existingResult = await db.execute('SELECT * FROM promotions WHERE id = ?', [req.params.id]);
+        const existingPromotion = Array.isArray(existingResult) ? existingResult[0] : existingResult;
+
+        if (!existingPromotion) {
+            return res.status(404).json({ error: 'Promotion not found' });
+        }
+
+        const updateValues = {
+            employee_id: employee_id ?? existingPromotion.employee_id,
+            current_position: current_position ?? existingPromotion.current_position,
+            current_department: current_department ?? existingPromotion.current_department,
+            current_salary: current_salary ?? existingPromotion.current_salary,
+            new_position: new_position ?? existingPromotion.new_position,
+            new_department: new_department ?? existingPromotion.new_department,
+            new_salary: new_salary ?? existingPromotion.new_salary,
+            promotion_type: promotion_type ?? existingPromotion.promotion_type,
+            effective_date: effective_date ?? existingPromotion.effective_date,
+            reason: reason ?? existingPromotion.reason,
+            performance_rating: performance_rating ?? existingPromotion.performance_rating,
+            approved_by: approved_by ?? existingPromotion.approved_by,
+            approval_date: approval_date ?? existingPromotion.approval_date,
+            status: status ?? existingPromotion.status,
+            benefits_change: benefits_change ?? existingPromotion.benefits_change,
+            responsibilities_change: responsibilities_change ?? existingPromotion.responsibilities_change,
+            notes: notes ?? existingPromotion.notes
+        };
+
         await db.execute(`
             UPDATE promotions SET
                 employee_id = ?, current_position = ?, current_department = ?,
@@ -142,23 +169,23 @@ router.put('/:id', async (req, res) => {
                 responsibilities_change = ?, notes = ?
             WHERE id = ?
         `, [
-            employee_id,
-            current_position,
-            current_department,
-            current_salary || null,
-            new_position,
-            new_department || null,
-            new_salary || null,
-            promotion_type,
-            effective_date,
-            reason,
-            performance_rating || null,
-            approved_by || null,
-            approval_date || null,
-            status,
-            benefits_change || null,
-            responsibilities_change || null,
-            notes || null,
+            updateValues.employee_id,
+            updateValues.current_position,
+            updateValues.current_department,
+            updateValues.current_salary,
+            updateValues.new_position,
+            updateValues.new_department,
+            updateValues.new_salary,
+            updateValues.promotion_type,
+            updateValues.effective_date,
+            updateValues.reason,
+            updateValues.performance_rating,
+            updateValues.approved_by,
+            updateValues.approval_date,
+            updateValues.status,
+            updateValues.benefits_change,
+            updateValues.responsibilities_change,
+            updateValues.notes,
             req.params.id
         ]);
 
@@ -233,11 +260,11 @@ router.put('/:id/implement', async (req, res) => {
         const promotionResult = await db.execute('SELECT * FROM promotions WHERE id = ?', [req.params.id]);
         const promotion = Array.isArray(promotionResult) ? promotionResult[0] : promotionResult;
         
-        if (promotion.length === 0) {
+        if (!promotion) {
             return res.status(404).json({ error: 'Promotion not found' });
         }
 
-        const promo = promotion[0];
+        const promo = promotion;
 
         // Update employee record
         await db.execute(`
