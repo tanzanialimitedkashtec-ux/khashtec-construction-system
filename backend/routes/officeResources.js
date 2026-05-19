@@ -12,8 +12,7 @@ router.get('/', async (req, res) => {
             LEFT JOIN employee_details ed ON e.id = ed.employee_id 
             ORDER BY ofr.created_at DESC
         `);
-        const resources = Array.isArray(result) ? result[0] : result;
-        res.json(resources);
+        res.json(Array.isArray(result) ? result : []);
     } catch (error) {
         console.error('Error fetching office resources:', error);
         res.status(500).json({ error: 'Failed to fetch office resources' });

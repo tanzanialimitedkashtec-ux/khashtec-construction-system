@@ -12,8 +12,7 @@ router.get('/', async (req, res) => {
             LEFT JOIN employee_details ed ON e.id = ed.employee_id 
             ORDER BY cm.claim_date DESC
         `);
-        const claims = Array.isArray(result) ? result[0] : result;
-        res.json(claims);
+        res.json(Array.isArray(result) ? result : []);
     } catch (error) {
         console.error('Error fetching claims:', error);
         res.status(500).json({ error: 'Failed to fetch claims' });

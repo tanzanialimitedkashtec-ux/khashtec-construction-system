@@ -16,8 +16,7 @@ router.get('/', async (req, res) => {
             LEFT JOIN users approver ON p.approved_by = approver.id
             ORDER BY p.recommendation_date DESC
         `);
-        const promotions = Array.isArray(result) ? result[0] : result;
-        res.json(promotions);
+        res.json(Array.isArray(result) ? result : []);
     } catch (error) {
         console.error('Error fetching promotions:', error);
         res.status(500).json({ error: 'Failed to fetch promotions' });
