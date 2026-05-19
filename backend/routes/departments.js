@@ -27,7 +27,7 @@ async function tableExists(tableName){
     }
 }
 
-// Get all departments (prefer departments table, fallback to office_portal)
+// Get all departments (aggregate from departments and office_portal)
 router.get(['/','/all'], async (req, res) => {
     try {
         if (!db) {
@@ -46,17 +46,34 @@ router.get(['/','/all'], async (req, res) => {
                 }
             ]);
         }
-        let useDepartments = await tableExists('departments');
-        let result;
-        if(useDepartments){
-            const q = `
+        // Try reading from both tables, combine results
+        const combined = [];
+        const byCode = new Map();
+
+        // Attempt departments table
+        try {
+            const q1 = `
                 SELECT id, name, code, manager_email, description, status, created_at, updated_at
                 FROM departments
                 ORDER BY created_at DESC
             `;
-            result = await db.execute(q);
-        } else {
-            const q = `
+            const r1 = await db.execute(q1);
+            if (Array.isArray(r1)) {
+                for (const row of r1) {
+                    const code = row.code || '';
+                    if (!byCode.has(code)) {
+                        byCode.set(code, true);
+                        combined.push(row);
+                    }
+                }
+            }
+        } catch (e) {
+            // ignore if table doesn't exist
+        }
+
+        // Attempt office_portal table
+        try {
+            const q2 = `
                 SELECT 
                     id,
                     department_name AS name,
@@ -69,10 +86,21 @@ router.get(['/','/all'], async (req, res) => {
                 FROM office_portal
                 ORDER BY created_at DESC
             `;
-            result = await db.execute(q);
+            const r2 = await db.execute(q2);
+            if (Array.isArray(r2)) {
+                for (const row of r2) {
+                    const code = row.code || '';
+                    if (!byCode.has(code)) {
+                        byCode.set(code, true);
+                        combined.push(row);
+                    }
+                }
+            }
+        } catch (e) {
+            // ignore if table doesn't exist
         }
-        const rows = Array.isArray(result) ? result[0] : result;
-        return res.json(rows);
+
+        return res.json(combined);
     } catch (error) {
         console.error('❌ Error fetching departments:', error);
         return res.status(500).json({ success: false, error: 'Failed to fetch departments', details: error.message });

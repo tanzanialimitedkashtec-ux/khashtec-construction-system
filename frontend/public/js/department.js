@@ -8,7 +8,22 @@
     try{
       const res = await fetch('/api/departments');
       const data = await res.json();
-      const rows = Array.isArray(data) ? data : (data.data || []);
+      // Normalize possible shapes
+      // Accept: [ ... ], { success:true, data:[...] }, { rows:[...] }, {0:[...]} (mysql2 rows), or fallback
+      let rows = [];
+      if (Array.isArray(data)) {
+        rows = data;
+      } else if (Array.isArray(data?.data)) {
+        rows = data.data;
+      } else if (Array.isArray(data?.rows)) {
+        rows = data.rows;
+      } else if (Array.isArray(data?.[0])) {
+        rows = data[0];
+      } else if (data && typeof data === 'object') {
+        // Sometimes API may return single object; put into array
+        rows = [data];
+      }
+      console.log('Departments loaded:', rows);
       renderDepartmentsTable(rows);
     }catch(err){
       console.error('Failed to load departments:', err);
@@ -20,7 +35,15 @@
     const tableBody = document.getElementById('departmentsTableBody');
     if(!tableBody) return;
 
-    if(!Array.isArray(items) || items.length === 0){
+    if(!Array.isArray(items)){
+      try{
+        items = Array.from(items);
+      }catch(_){
+        items = [];
+      }
+    }
+
+    if(items.length === 0){
       tableBody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:#999">No departments found</td></tr>';
       return;
     }
@@ -148,4 +171,5 @@
 
   // Expose globally for menu integration
   window.showDepartmentManagement = showDepartmentManagement;
+  // Optional: if contentArea exists and a global flag set later, we could auto-run
 })();
