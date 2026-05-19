@@ -16,8 +16,7 @@ router.get('/', async (req, res) => {
             LEFT JOIN projects p ON rm.project_id = p.id
             ORDER BY rm.identified_date DESC
         `);
-        const risks = Array.isArray(result) ? result[0] : result;
-        res.json(risks);
+        res.json(Array.isArray(result) ? result : []);
     } catch (error) {
         console.error('Error fetching risks:', error);
         res.status(500).json({ error: 'Failed to fetch risks' });

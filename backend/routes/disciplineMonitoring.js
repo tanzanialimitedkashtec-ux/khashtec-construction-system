@@ -16,8 +16,7 @@ router.get('/', async (req, res) => {
             LEFT JOIN users resolver ON dm.resolved_by = resolver.id
             ORDER BY dm.incident_date DESC
         `);
-        const cases = Array.isArray(result) ? result[0] : result;
-        res.json(cases);
+        res.json(Array.isArray(result) ? result : []);
     } catch (error) {
         console.error('Error fetching discipline cases:', error);
         res.status(500).json({ error: 'Failed to fetch discipline cases' });

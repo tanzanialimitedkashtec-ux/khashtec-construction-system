@@ -16,8 +16,7 @@ router.get('/', async (req, res) => {
             LEFT JOIN users hiring_mgr ON ta.hiring_manager = hiring_mgr.id
             ORDER BY ta.request_date DESC
         `);
-        const requisitions = Array.isArray(result) ? result[0] : result;
-        res.json(requisitions);
+        res.json(Array.isArray(result) ? result : []);
     } catch (error) {
         console.error('Error fetching talent acquisition requisitions:', error);
         res.status(500).json({ error: 'Failed to fetch talent acquisition requisitions' });
