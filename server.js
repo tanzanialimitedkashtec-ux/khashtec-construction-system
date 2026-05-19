@@ -111,6 +111,12 @@ const teamManagementRoutes = require('./backend/routes/team-management');
 const investmentManagementRoutes = require('./backend/routes/investment-management');
 
 const payrollRoutes = require('./backend/routes/payroll');
+const claimsManagementRoutes = require('./backend/routes/claimsManagement');
+const disciplineMonitoringRoutes = require('./backend/routes/disciplineMonitoring');
+const officeResourcesRoutes = require('./backend/routes/officeResources');
+const talentAcquisitionRoutes = require('./backend/routes/talentAcquisition');
+const promotionsRoutes = require('./backend/routes/promotions');
+const riskManagementRoutes = require('./backend/routes/riskManagement');
 
 
 
@@ -1049,6 +1055,42 @@ app.use('/api/team-management', asyncHandler(async (req, res, next) => {
 app.use('/payroll', asyncHandler(async (req, res, next) => {
 
     return payrollRoutes(req, res, next);
+
+}));
+
+app.use('/api/claims-management', asyncHandler(async (req, res, next) => {
+
+    return claimsManagementRoutes(req, res, next);
+
+}));
+
+app.use('/api/discipline-monitoring', asyncHandler(async (req, res, next) => {
+
+    return disciplineMonitoringRoutes(req, res, next);
+
+}));
+
+app.use('/api/office-resources', asyncHandler(async (req, res, next) => {
+
+    return officeResourcesRoutes(req, res, next);
+
+}));
+
+app.use('/api/talent-acquisition', asyncHandler(async (req, res, next) => {
+
+    return talentAcquisitionRoutes(req, res, next);
+
+}));
+
+app.use('/api/promotions', asyncHandler(async (req, res, next) => {
+
+    return promotionsRoutes(req, res, next);
+
+}));
+
+app.use('/api/risk-management', asyncHandler(async (req, res, next) => {
+
+    return riskManagementRoutes(req, res, next);
 
 }));
 

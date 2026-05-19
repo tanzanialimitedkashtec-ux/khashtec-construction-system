@@ -6,11 +6,11 @@ const db = require('../../database/config/database');
 router.get('/', async (req, res) => {
     try {
         const result = await db.execute(`
-            SELECT or.*, e.employee_id, ed.full_name 
-            FROM office_resources or 
-            LEFT JOIN employees e ON or.assigned_to = e.id 
+            SELECT ofr.*, e.employee_id, ed.full_name 
+            FROM office_resources ofr 
+            LEFT JOIN employees e ON ofr.assigned_to = e.id 
             LEFT JOIN employee_details ed ON e.id = ed.employee_id 
-            ORDER BY or.created_at DESC
+            ORDER BY ofr.created_at DESC
         `);
         const resources = Array.isArray(result) ? result[0] : result;
         res.json(resources);
@@ -24,11 +24,11 @@ router.get('/', async (req, res) => {
 router.get('/:id', async (req, res) => {
     try {
         const result = await db.execute(`
-            SELECT or.*, e.employee_id, ed.full_name 
-            FROM office_resources or 
-            LEFT JOIN employees e ON or.assigned_to = e.id 
+            SELECT ofr.*, e.employee_id, ed.full_name 
+            FROM office_resources ofr 
+            LEFT JOIN employees e ON ofr.assigned_to = e.id 
             LEFT JOIN employee_details ed ON e.id = ed.employee_id 
-            WHERE or.id = ?
+            WHERE ofr.id = ?
         `, [req.params.id]);
         const resource = Array.isArray(result) ? result[0] : result;
         if (resource.length === 0) {
