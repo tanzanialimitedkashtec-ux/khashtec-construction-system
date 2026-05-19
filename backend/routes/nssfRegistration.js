@@ -147,6 +147,29 @@ router.put('/:id', async (req, res) => {
             notes
         } = req.body;
 
+        const currentResult = await db.execute(`
+            SELECT * FROM nssf_registration WHERE id = ?
+        `, [req.params.id]);
+
+        const currentRows = Array.isArray(currentResult) ? currentResult : [];
+        if (currentRows.length === 0) {
+            return res.status(404).json({ error: 'NSSF registration not found' });
+        }
+
+        const current = currentRows[0];
+        const nextEmployeeId = employee_id ?? current.employee_id;
+        const nextNssfNumber = nssf_number ?? current.nssf_number;
+        const nextRegistrationDate = registration_date ?? current.registration_date;
+        const nextEmployerRate = employer_contribution_rate ?? current.employer_contribution_rate ?? 10.00;
+        const nextEmployeeRate = employee_contribution_rate ?? current.employee_contribution_rate ?? 10.00;
+        const nextMonthlySalary = monthly_salary ?? current.monthly_salary ?? null;
+        const nextMonthlyContribution = monthly_contribution ?? current.monthly_contribution ?? null;
+        const nextStatus = status ?? current.status ?? 'Active';
+        const nextCertificate = registration_certificate ?? current.registration_certificate ?? null;
+        const nextLastContributionDate = last_contribution_date ?? current.last_contribution_date ?? null;
+        const nextTotalContributions = total_contributions ?? current.total_contributions ?? 0;
+        const nextNotes = notes ?? current.notes ?? null;
+
         await db.execute(`
             UPDATE nssf_registration SET
                 employee_id = ?, nssf_number = ?, registration_date = ?,
@@ -156,25 +179,25 @@ router.put('/:id', async (req, res) => {
                 total_contributions = ?, notes = ?
             WHERE id = ?
         `, [
-            employee_id,
-            nssf_number,
-            registration_date,
-            employer_contribution_rate || 10.00,
-            employee_contribution_rate || 10.00,
-            monthly_salary || null,
-            monthly_contribution || null,
-            status,
-            registration_certificate || null,
-            last_contribution_date || null,
-            total_contributions || 0,
-            notes || null,
+            nextEmployeeId,
+            nextNssfNumber,
+            nextRegistrationDate,
+            nextEmployerRate,
+            nextEmployeeRate,
+            nextMonthlySalary,
+            nextMonthlyContribution,
+            nextStatus,
+            nextCertificate,
+            nextLastContributionDate,
+            nextTotalContributions,
+            nextNotes,
             req.params.id
         ]);
 
         res.json({ message: 'NSSF registration updated successfully' });
     } catch (error) {
         console.error('Error updating NSSF registration:', error);
-        res.status(500).json({ error: 'Failed to update NSSF registration' });
+        res.status(500).json({ error: 'Failed to update NSSF registration', details: error.message });
     }
 });
 
