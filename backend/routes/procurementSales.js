@@ -228,8 +228,8 @@ router.post('/', async (req, res) => {
                 technicalSpecifications || null,
                 budgetAllocation || null,
                 department,
-                requestedBy,
-                requestedByRole,
+                requestedBy || null,
+                requestedByRole || null,
                 justification || null,
                 approvalRequirements || 'Standard',
                 userId
@@ -249,7 +249,7 @@ router.post('/', async (req, res) => {
             VALUES (?, ?, 'info', 'High', NULL, NOW())
         `, [
             'New Procurement Sale Request',
-            `${requestedByRole} submitted procurement request: ${requestTitle} (Budget: ${totalBudget})`
+            `${requestedByRole || 'User'} submitted procurement request: ${requestTitle} (Budget: ${totalBudget})`
         ]);
 
         res.json({

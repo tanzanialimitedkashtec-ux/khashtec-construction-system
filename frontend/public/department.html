@@ -95178,6 +95178,181 @@ function showNHIFContributions() {
 
 function showProcurementSales() {
 
+    const mainContent = document.getElementById('main-content') || document.querySelector('.content');
+
+    if (!mainContent) return;
+
+
+
+    mainContent.innerHTML = `
+
+        <div style="padding: 20px;">
+
+            <div class="card" style="margin-bottom: 20px;">
+
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+
+                    <h3 style="margin: 0;">Procurement Sales</h3>
+
+                    <button onclick="showProcurementForm()" class="btn btn-primary" style="padding: 8px 16px; background: #2196F3; color: white; border: none; border-radius: 5px; cursor: pointer;">+ New Procurement</button>
+
+                </div>
+
+                <div id="procurementTableContainer">
+
+                    <p style="text-align: center; color: #888;">Loading records...</p>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    `;
+
+
+
+    loadProcurementTable();
+
+}
+
+
+
+function loadProcurementTable() {
+
+    const container = document.getElementById('procurementTableContainer');
+
+    if (!container) return;
+
+
+
+    xhrRequest('GET', '/api/procurement-sales').then(function(response) {
+        return response.json();
+    }).then(function(result) {
+        const data = result.data || result || [];
+
+        const records = Array.isArray(data) ? data : [];
+
+
+
+        if (records.length === 0) {
+
+            container.innerHTML = '<p style="text-align: center; color: #888; padding: 20px;">No procurement records found. Click "+ New Procurement" to add one.</p>';
+
+            return;
+
+        }
+
+
+
+        let tableHTML = `
+
+            <div style="overflow-x: auto;">
+
+                <table style="width: 100%; border-collapse: collapse; font-size: 14px;">
+
+                    <thead>
+
+                        <tr style="background: #2196F3; color: white;">
+
+                            <th style="padding: 10px; text-align: left; border: 1px solid #ddd;">#</th>
+
+                            <th style="padding: 10px; text-align: left; border: 1px solid #ddd;">Type</th>
+
+                            <th style="padding: 10px; text-align: left; border: 1px solid #ddd;">Name</th>
+
+                            <th style="padding: 10px; text-align: left; border: 1px solid #ddd;">Quantity</th>
+
+                            <th style="padding: 10px; text-align: left; border: 1px solid #ddd;">Price</th>
+
+                            <th style="padding: 10px; text-align: left; border: 1px solid #ddd;">Total</th>
+
+                            <th style="padding: 10px; text-align: left; border: 1px solid #ddd;">Date</th>
+
+                            <th style="padding: 10px; text-align: left; border: 1px solid #ddd;">Status</th>
+
+                            <th style="padding: 10px; text-align: left; border: 1px solid #ddd;">Department</th>
+
+                        </tr>
+
+                    </thead>
+
+                    <tbody>`;
+
+
+
+        records.forEach(function(rec, idx) {
+
+            const name = rec.request_title || rec.item_description || rec.name || '-';
+
+            const ptype = rec.procurement_type || rec.type || '-';
+
+            const qty = rec.quantity || 0;
+
+            const price = rec.unit_price || rec.price || 0;
+
+            const total = rec.total_budget || (qty * price) || 0;
+
+            const date = rec.expected_delivery_date || rec.purchaseDate || rec.created_at || '-';
+
+            const displayDate = date && date !== '-' ? new Date(date).toLocaleDateString() : '-';
+
+            const status = rec.status || '-';
+
+            const dept = rec.department || '-';
+
+            const statusColor = status === 'Completed' ? '#4CAF50' : status === 'Pending' ? '#FF9800' : status === 'Cancelled' ? '#f44336' : '#2196F3';
+
+            const bgColor = idx % 2 === 0 ? '#fff' : '#f9f9f9';
+
+
+
+            tableHTML += '<tr style="background: ' + bgColor + ';">';
+
+            tableHTML += '<td style="padding: 8px; border: 1px solid #ddd;">' + (idx + 1) + '</td>';
+
+            tableHTML += '<td style="padding: 8px; border: 1px solid #ddd;">' + ptype + '</td>';
+
+            tableHTML += '<td style="padding: 8px; border: 1px solid #ddd;">' + name + '</td>';
+
+            tableHTML += '<td style="padding: 8px; border: 1px solid #ddd;">' + qty + '</td>';
+
+            tableHTML += '<td style="padding: 8px; border: 1px solid #ddd;">' + Number(price).toLocaleString() + '</td>';
+
+            tableHTML += '<td style="padding: 8px; border: 1px solid #ddd; font-weight: bold;">' + Number(total).toLocaleString() + '</td>';
+
+            tableHTML += '<td style="padding: 8px; border: 1px solid #ddd;">' + displayDate + '</td>';
+
+            tableHTML += '<td style="padding: 8px; border: 1px solid #ddd;"><span style="background: ' + statusColor + '; color: white; padding: 3px 10px; border-radius: 12px; font-size: 12px;">' + status + '</span></td>';
+
+            tableHTML += '<td style="padding: 8px; border: 1px solid #ddd;">' + dept + '</td>';
+
+            tableHTML += '</tr>';
+
+        });
+
+
+
+        tableHTML += '</tbody></table></div>';
+
+        tableHTML += '<p style="text-align: right; color: #666; margin-top: 10px; font-size: 13px;">Total records: ' + records.length + '</p>';
+
+        container.innerHTML = tableHTML;
+
+    }).catch(function(err) {
+
+        console.error('Error loading procurement records:', err);
+
+        container.innerHTML = '<p style="text-align: center; color: #f44336;">Failed to load procurement records.</p>';
+
+    });
+
+}
+
+
+
+function showProcurementForm() {
+
     const formHTML = `
 
         <div class="form-overlay">
@@ -95278,11 +95453,9 @@ function showProcurementSales() {
 
     document.body.insertAdjacentHTML('beforeend', formHTML);
 
-    
 
-    // Add form submission handler
 
-    setTimeout(() => {
+    setTimeout(function() {
 
         const procurementForm = document.getElementById('procurementForm');
 
@@ -95292,7 +95465,7 @@ function showProcurementSales() {
 
                 e.preventDefault();
 
-                
+
 
                 const procType = document.getElementById('procurementType').value;
 
@@ -95310,8 +95483,6 @@ function showProcurementSales() {
 
                 const formData = {
 
-                    // Backend-required fields
-
                     requestTitle: procName,
 
                     procurementType: procType,
@@ -95324,15 +95495,13 @@ function showProcurementSales() {
 
                     totalBudget: procQty * procPrice,
 
-                    purpose: `Procurement of ${procName}`,
+                    purpose: 'Procurement of ' + procName,
 
                     department: currentUserDept,
 
                     urgencyLevel: 'Normal',
 
                     expectedDeliveryDate: procDate,
-
-                    // Legacy/extra fields
 
                     type: procType,
 
@@ -95348,31 +95517,29 @@ function showProcurementSales() {
 
                 };
 
-                
+
 
                 try {
 
                     const submitBtn = procurementForm.querySelector('button[type="submit"]');
 
-                    const originalText = submitBtn.textContent;
-
                     submitBtn.textContent = 'Saving...';
 
                     submitBtn.disabled = true;
 
-                    
 
-                    await window.apiService.saveProcurementSale(formData);
 
-                    
+                    await xhrRequest('POST', '/api/procurement-sales', formData);
+
+
 
                     showNotification('Procurement sale saved successfully!', 'success');
 
                     closeForm();
 
-                    procurementForm.reset();
+                    loadProcurementTable();
 
-                    
+
 
                 } catch (error) {
 
@@ -95384,9 +95551,13 @@ function showProcurementSales() {
 
                     const submitBtn = procurementForm.querySelector('button[type="submit"]');
 
-                    submitBtn.textContent = 'Submit';
+                    if (submitBtn) {
 
-                    submitBtn.disabled = false;
+                        submitBtn.textContent = 'Submit';
+
+                        submitBtn.disabled = false;
+
+                    }
 
                 }
 
@@ -95397,6 +95568,7 @@ function showProcurementSales() {
     }, 100);
 
 }
+
 
 
 
