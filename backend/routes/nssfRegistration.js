@@ -6,7 +6,7 @@ const db = require('../../database/config/database');
 router.get('/', async (req, res) => {
     try {
         const result = await db.execute(`
-            SELECT nr.*, e.employee_id, ed.name as full_name 
+            SELECT nr.*, e.employee_id, COALESCE(ed.full_name, CONCAT('Employee ', nr.employee_id)) AS full_name 
             FROM nssf_registration nr 
             LEFT JOIN employees e ON nr.employee_id = e.id 
             LEFT JOIN employee_details ed ON e.id = ed.employee_id 
@@ -24,7 +24,7 @@ router.get('/', async (req, res) => {
 router.get('/:id', async (req, res) => {
     try {
         const result = await db.execute(`
-            SELECT nr.*, e.employee_id, ed.name as full_name 
+            SELECT nr.*, e.employee_id, COALESCE(ed.full_name, CONCAT('Employee ', nr.employee_id)) AS full_name 
             FROM nssf_registration nr 
             LEFT JOIN employees e ON nr.employee_id = e.id 
             LEFT JOIN employee_details ed ON e.id = ed.employee_id 
