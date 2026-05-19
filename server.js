@@ -90,6 +90,8 @@ const suggestionsRoutes = require('./backend/routes/suggestions');
 
 const taxRoutes = require('./backend/routes/tax');
 
+const nssfRegistrationRoutes = require('./backend/routes/nssfRegistration');
+
 const transportCostsRoutes = require('./backend/routes/transportCosts');
 
 const materialsRoutes = require('./backend/routes/materials');
@@ -979,6 +981,14 @@ app.use('/api/suggestions', asyncHandler(async (req, res, next) => {
 app.use('/api/tax', asyncHandler(async (req, res, next) => {
 
     return taxRoutes(req, res, next);
+
+}));
+
+
+
+app.use('/api/nssf-registration', asyncHandler(async (req, res, next) => {
+
+    return nssfRegistrationRoutes(req, res, next);
 
 }));
 
