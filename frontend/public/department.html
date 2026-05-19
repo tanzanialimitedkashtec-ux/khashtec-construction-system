@@ -24193,6 +24193,8 @@ function loadMenu(){
 
         addMenu("View Project Safety Status", viewProjectSafetyStatus);
 
+        addMenu("Department Management", showDepartmentManagement);
+
         addMenu("Tax", tax);
 
         addMenu("Procurement Sale", procurementSale);
@@ -94577,7 +94579,9 @@ const roleMenus = {
 
             'System Audit Dashboard',
 
-            'Materials Management'
+            'Materials Management',
+
+            'Department Management'
 
         ]
 
@@ -94944,6 +94948,16 @@ function handleMenuClick(menuItem) {
             case 'Materials Management':
 
                 showMaterialsDashboard();
+
+                break;
+
+            case 'Department Management':
+
+                if (typeof showDepartmentManagement === 'function') {
+                    showDepartmentManagement();
+                } else {
+                    alert('Department Management module not loaded');
+                }
 
                 break;
 
@@ -99905,6 +99919,8 @@ if (!document.getElementById('transport-cost-styles')) {
 <script src="js/team-management.js"></script>
 
 <script src="js/script.js"></script>
+
+<script src="js/department.js"></script>
 
 <script src="js/new-features.js"></script>
 

@@ -303,6 +303,20 @@ INSERT IGNORE INTO office_portal (department_name, department_code, manager_emai
 ('Health & Safety', 'HSE', 'hse@manager0501', 'HSE Department ensures workplace safety, compliance, and incident reporting', '{"theme": "yellow", "notifications": true}', 'Active'),
 ('Administration', 'ADMIN', 'admin@kashtec.com', 'System Administration provides IT support, user management, and system configuration', '{"theme": "gray", "notifications": true}', 'Active');
 
+-- Departments table (explicit department registry)
+CREATE TABLE IF NOT EXISTS departments (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  name VARCHAR(255) NOT NULL,
+  code VARCHAR(50) UNIQUE NOT NULL,
+  manager_email VARCHAR(255),
+  description TEXT,
+  status ENUM('Active','Inactive','Maintenance') DEFAULT 'Active',
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  INDEX idx_code (code),
+  INDEX idx_status (status)
+);
+
 -- PPE (Personal Protective Equipment) table
 CREATE TABLE IF NOT EXISTS ppe_inventory (
   id INT AUTO_INCREMENT PRIMARY KEY,
