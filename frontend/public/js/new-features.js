@@ -1,15 +1,5 @@
 // ===== NEW FEATURES FRONTEND FUNCTIONS =====
 
-// ===== CLAIMS MANAGEMENT =====
-
-async function loadClaimsManagement() {
-    try {
-        if (!window.apiService) {
-            console.error('apiService not available');
-            showContent('<div class="card"><h3>Claims Management</h3><p>API service not available</p></div>');
-            return;
-        }
-
 // ===== ASSETS & EQUIPMENT MANAGEMENT =====
 
 async function loadAssetsEquipment() {
@@ -187,6 +177,78 @@ async function saveAsset(event, assetId = null) {
     }
 }
 
+function viewAsset(id) {
+    console.log('View asset:', id);
+    if (!window.apiService) return;
+    window.apiService.get(`/assets-equipment/${id}`).then(asset => {
+        const html = `
+            <div class="card">
+                <h3>Asset Details</h3>
+                <table style="width: 100%; border-collapse: collapse;">
+                    <tr><td style="padding: 8px; border: 1px solid #ddd; font-weight: bold;">Asset Code</td><td style="padding: 8px; border: 1px solid #ddd;">${asset.asset_code || ''}</td></tr>
+                    <tr><td style="padding: 8px; border: 1px solid #ddd; font-weight: bold;">Asset Name</td><td style="padding: 8px; border: 1px solid #ddd;">${asset.asset_name || ''}</td></tr>
+                    <tr><td style="padding: 8px; border: 1px solid #ddd; font-weight: bold;">Category</td><td style="padding: 8px; border: 1px solid #ddd;">${asset.category || ''}</td></tr>
+                    <tr><td style="padding: 8px; border: 1px solid #ddd; font-weight: bold;">Asset Type</td><td style="padding: 8px; border: 1px solid #ddd;">${asset.asset_type || ''}</td></tr>
+                    <tr><td style="padding: 8px; border: 1px solid #ddd; font-weight: bold;">Serial Number</td><td style="padding: 8px; border: 1px solid #ddd;">${asset.serial_number || ''}</td></tr>
+                    <tr><td style="padding: 8px; border: 1px solid #ddd; font-weight: bold;">Purchase Date</td><td style="padding: 8px; border: 1px solid #ddd;">${asset.purchase_date || ''}</td></tr>
+                    <tr><td style="padding: 8px; border: 1px solid #ddd; font-weight: bold;">Purchase Cost</td><td style="padding: 8px; border: 1px solid #ddd;">${asset.purchase_cost || ''}</td></tr>
+                    <tr><td style="padding: 8px; border: 1px solid #ddd; font-weight: bold;">Current Value</td><td style="padding: 8px; border: 1px solid #ddd;">${asset.current_value || ''}</td></tr>
+                    <tr><td style="padding: 8px; border: 1px solid #ddd; font-weight: bold;">Depreciation Method</td><td style="padding: 8px; border: 1px solid #ddd;">${asset.depreciation_method || ''}</td></tr>
+                    <tr><td style="padding: 8px; border: 1px solid #ddd; font-weight: bold;">Useful Life (years)</td><td style="padding: 8px; border: 1px solid #ddd;">${asset.useful_life_years || ''}</td></tr>
+                    <tr><td style="padding: 8px; border: 1px solid #ddd; font-weight: bold;">Condition</td><td style="padding: 8px; border: 1px solid #ddd;">${asset.condition || ''}</td></tr>
+                    <tr><td style="padding: 8px; border: 1px solid #ddd; font-weight: bold;">Location</td><td style="padding: 8px; border: 1px solid #ddd;">${asset.location || ''}</td></tr>
+                    <tr><td style="padding: 8px; border: 1px solid #ddd; font-weight: bold;">Department</td><td style="padding: 8px; border: 1px solid #ddd;">${asset.department || ''}</td></tr>
+                    <tr><td style="padding: 8px; border: 1px solid #ddd; font-weight: bold;">Status</td><td style="padding: 8px; border: 1px solid #ddd;">${asset.status || ''}</td></tr>
+                    <tr><td style="padding: 8px; border: 1px solid #ddd; font-weight: bold;">Supplier</td><td style="padding: 8px; border: 1px solid #ddd;">${asset.supplier || ''}</td></tr>
+                    <tr><td style="padding: 8px; border: 1px solid #ddd; font-weight: bold;">Warranty Expiry</td><td style="padding: 8px; border: 1px solid #ddd;">${asset.warranty_expiry || ''}</td></tr>
+                    <tr><td style="padding: 8px; border: 1px solid #ddd; font-weight: bold;">Notes</td><td style="padding: 8px; border: 1px solid #ddd;">${asset.notes || ''}</td></tr>
+                </table>
+                <button onclick="editAsset(${id})" style="margin-top: 10px;">Edit</button>
+                <button onclick="loadAssetsEquipment()" style="margin-top: 10px;">Back to List</button>
+            </div>
+        `;
+        showContent(html);
+    }).catch(err => {
+        console.error('Error viewing asset:', err);
+        customAlert('Error loading asset details', 'Error', 'error');
+    });
+}
+
+function editAsset(id) {
+    showAssetForm(id);
+    if (!window.apiService) return;
+    window.apiService.get(`/assets-equipment/${id}`).then(asset => {
+        if (document.getElementById('assetCode')) document.getElementById('assetCode').value = asset.asset_code || '';
+        if (document.getElementById('assetName')) document.getElementById('assetName').value = asset.asset_name || '';
+        if (document.getElementById('assetCategory')) document.getElementById('assetCategory').value = asset.category || 'IT Equipment';
+        if (document.getElementById('assetType')) document.getElementById('assetType').value = asset.asset_type || '';
+        if (document.getElementById('assetDescription')) document.getElementById('assetDescription').value = asset.description || '';
+        if (document.getElementById('assetSerial')) document.getElementById('assetSerial').value = asset.serial_number || '';
+        if (document.getElementById('assetPurchaseDate')) document.getElementById('assetPurchaseDate').value = asset.purchase_date ? asset.purchase_date.substring(0, 10) : '';
+        if (document.getElementById('assetPurchaseCost')) document.getElementById('assetPurchaseCost').value = asset.purchase_cost || '';
+        if (document.getElementById('assetCurrentValue')) document.getElementById('assetCurrentValue').value = asset.current_value || '';
+        if (document.getElementById('assetDepreciation')) document.getElementById('assetDepreciation').value = asset.depreciation_method || 'Straight Line';
+        if (document.getElementById('assetLife')) document.getElementById('assetLife').value = asset.useful_life_years || '';
+        if (document.getElementById('assetCondition')) document.getElementById('assetCondition').value = asset.condition || 'Good';
+        if (document.getElementById('assetLocation')) document.getElementById('assetLocation').value = asset.location || '';
+        if (document.getElementById('assetDepartment')) document.getElementById('assetDepartment').value = asset.department || '';
+        if (document.getElementById('assetSupplier')) document.getElementById('assetSupplier').value = asset.supplier || '';
+        if (document.getElementById('assetWarranty')) document.getElementById('assetWarranty').value = asset.warranty_expiry ? asset.warranty_expiry.substring(0, 10) : '';
+        if (document.getElementById('assetNotes')) document.getElementById('assetNotes').value = asset.notes || '';
+    }).catch(err => {
+        console.error('Error loading asset for edit:', err);
+    });
+}
+
+// ===== CLAIMS MANAGEMENT =====
+
+async function loadClaimsManagement() {
+    try {
+        if (!window.apiService) {
+            console.error('apiService not available');
+            showContent('<div class="card"><h3>Claims Management</h3><p>API service not available</p></div>');
+            return;
+        }
 
         const response = await window.apiService.get('/claims-management');
         const claims = response || [];
