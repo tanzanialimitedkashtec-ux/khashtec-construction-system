@@ -172,6 +172,17 @@ router.post('/', async (req, res) => {
             });
         }
 
+        // Map frontend procurement type values to database ENUM values
+        const procurementTypeMap = {
+            'Purchase': 'Goods',
+            'Sale': 'Services'
+        };
+        const dbProcurementType = procurementTypeMap[procurementType] || procurementType;
+
+        // Provide defaults for required DB fields not sent by the form
+        const dbRequestedBy = requestedBy || 'System User';
+        const dbRequestedByRole = requestedByRole || 'Staff';
+
         // Get user ID from role name - use fallback if no user found
         let userId = 1; // Default fallback user ID
         if (requestedByRole && db) {
@@ -216,7 +227,7 @@ router.post('/', async (req, res) => {
                 ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'Pending', ?, NOW())
             `, [
                 requestTitle,
-                procurementType,
+                dbProcurementType,
                 itemDescription,
                 quantity,
                 unitPrice || 0,
@@ -228,8 +239,8 @@ router.post('/', async (req, res) => {
                 technicalSpecifications || null,
                 budgetAllocation || null,
                 department,
-                requestedBy || null,
-                requestedByRole || null,
+                dbRequestedBy,
+                dbRequestedByRole,
                 justification || null,
                 approvalRequirements || 'Standard',
                 userId
@@ -249,7 +260,7 @@ router.post('/', async (req, res) => {
             VALUES (?, ?, 'info', 'High', NULL, NOW())
         `, [
             'New Procurement Sale Request',
-            `${requestedByRole || 'User'} submitted procurement request: ${requestTitle} (Budget: ${totalBudget})`
+            `${dbRequestedByRole} submitted procurement request: ${requestTitle} (Budget: ${totalBudget})`
         ]);
 
         res.json({
