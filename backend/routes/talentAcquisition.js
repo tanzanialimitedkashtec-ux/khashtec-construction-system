@@ -37,11 +37,12 @@ router.get('/:id', async (req, res) => {
             LEFT JOIN users hiring_mgr ON ta.hiring_manager = hiring_mgr.id
             WHERE ta.id = ?
         `, [req.params.id]);
-        const requisition = Array.isArray(result) ? result[0] : result;
-        if (requisition.length === 0) {
+        const rows = Array.isArray(result) ? result : [];
+        const requisition = Array.isArray(rows[0]) ? rows[0][0] : rows[0];
+        if (!requisition) {
             return res.status(404).json({ error: 'Talent acquisition requisition not found' });
         }
-        res.json(requisition[0]);
+        res.json(requisition);
     } catch (error) {
         console.error('Error fetching talent acquisition requisition:', error);
         res.status(500).json({ error: 'Failed to fetch talent acquisition requisition' });
