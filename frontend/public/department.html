@@ -69839,7 +69839,7 @@ async function assignTasks(){
 
             const projectsData = await projectsResponse.json();
 
-            projects = Array.isArray(projectsData) ? projectsData : [];
+            projects = Array.isArray(projectsData) ? projectsData : (projectsData.projects || projectsData.data || []);
 
             console.log('✅ Loaded projects:', projects.length, 'projects');
 
