@@ -62786,210 +62786,119 @@ async function staffOversight(){
 
     console.log('🔄 Loading staff oversight data...');
 
-    
-
-    // First show a loading message
-
+    // Show loading state
     showContent(`
-
         <div class="card">
-
-            <h3>Staff Oversight</h3>
-
-            <p><strong>Loading staff data...</strong></p>
-
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                <h3 style="margin: 0;">Staff Oversight</h3>
+            </div>
+            <div id="staffOversightTableContainer">
+                <p style="text-align: center; color: #888;">Loading staff data...</p>
+            </div>
         </div>
-
     `);
 
-    
+    loadStaffOversightTable();
+}
 
-    // Load staff data from database
+async function loadStaffOversightTable() {
+    const container = document.getElementById('staffOversightTableContainer');
+    if (!container) return;
 
     const baseUrl = window.location.origin;
-
     let employees = [];
 
-    let totalEmployees = 0;
-
-    let activeContracts = 0;
-
-    let managementStaff = 0;
-
-    let hrStaff = 0;
-
-    
-
     try {
-
-        // Load employees
-
-        const employeesResponse = await fetch(`${baseUrl}/api/employees`, {
-
+        const employeesResponse = await fetch(baseUrl + '/api/employees', {
             method: 'GET',
-
             headers: {
-
                 'Content-Type': 'application/json',
-
                 'Accept': 'application/json'
-
             }
-
         });
 
-        
-
         if (employeesResponse.ok) {
-
             const employeesData = await employeesResponse.json();
-
-            employees = Array.isArray(employeesData) ? employeesData : [];
-
-            
-
-            // Calculate statistics
-
-            totalEmployees = employees.length;
-
-            activeContracts = employees.filter(emp => emp.contract_status === 'active' || emp.status === 'active').length;
-
-            managementStaff = employees.filter(emp => emp.department === 'management' || emp.role === 'management' || emp.position?.toLowerCase().includes('manager')).length;
-
-            hrStaff = employees.filter(emp => emp.department === 'hr' || emp.department === 'human resources' || emp.position?.toLowerCase().includes('hr')).length;
-
-            
-
-            console.log('✅ Loaded staff data:', totalEmployees, 'total employees,', activeContracts, 'active contracts');
-
-        } else {
-
-            console.warn('⚠️ Failed to load staff data, using default values');
-
+            employees = Array.isArray(employeesData) ? employeesData : (employeesData.data || []);
         }
-
     } catch (error) {
-
-        console.error('❌ Error loading staff data:', error);
-
+        console.error('Error loading staff data:', error);
+        container.innerHTML = '<p style="text-align: center; color: #f44336;">Failed to load staff data.</p>';
+        return;
     }
 
-    
+    if (employees.length === 0) {
+        container.innerHTML = '<p style="text-align: center; color: #888; padding: 20px;">No employee records found.</p>';
+        return;
+    }
 
-    // Generate HTML with real data in single table format
+    // Calculate summary stats
+    var totalEmployees = employees.length;
+    var activeContracts = employees.filter(function(emp) { return emp.contract_status === 'active' || emp.status === 'active'; }).length;
 
-    const formHtml = `
+    // Group employees by department
+    var deptCounts = {};
+    employees.forEach(function(emp) {
+        var dept = emp.department || 'Unassigned';
+        deptCounts[dept] = (deptCounts[dept] || 0) + 1;
+    });
 
-        <div class="card">
+    var tableHTML = '<div style="overflow-x: auto;">';
 
-            <h3>Staff Oversight</h3>
+    // Summary cards row
+    tableHTML += '<div style="display: flex; gap: 15px; margin-bottom: 20px; flex-wrap: wrap;">';
+    tableHTML += '<div style="flex: 1; min-width: 150px; background: #2196F3; color: white; padding: 15px; border-radius: 8px; text-align: center;">';
+    tableHTML += '<div style="font-size: 24px; font-weight: bold;">' + totalEmployees + '</div>';
+    tableHTML += '<div style="font-size: 13px;">Total Employees</div></div>';
+    tableHTML += '<div style="flex: 1; min-width: 150px; background: #4CAF50; color: white; padding: 15px; border-radius: 8px; text-align: center;">';
+    tableHTML += '<div style="font-size: 24px; font-weight: bold;">' + activeContracts + '</div>';
+    tableHTML += '<div style="font-size: 13px;">Active Contracts</div></div>';
+    tableHTML += '<div style="flex: 1; min-width: 150px; background: #FF9800; color: white; padding: 15px; border-radius: 8px; text-align: center;">';
+    tableHTML += '<div style="font-size: 24px; font-weight: bold;">' + Object.keys(deptCounts).length + '</div>';
+    tableHTML += '<div style="font-size: 13px;">Departments</div></div>';
+    tableHTML += '</div>';
 
-            <p><strong>HR Monitoring:</strong> Monitor HR department and review staff structure</p>
+    // Employee table (procurement style)
+    tableHTML += '<table style="width: 100%; border-collapse: collapse; font-size: 14px;">';
+    tableHTML += '<thead><tr style="background: #2196F3; color: white;">';
+    tableHTML += '<th style="padding: 10px; text-align: left; border: 1px solid #ddd;">#</th>';
+    tableHTML += '<th style="padding: 10px; text-align: left; border: 1px solid #ddd;">Name</th>';
+    tableHTML += '<th style="padding: 10px; text-align: left; border: 1px solid #ddd;">Position</th>';
+    tableHTML += '<th style="padding: 10px; text-align: left; border: 1px solid #ddd;">Department</th>';
+    tableHTML += '<th style="padding: 10px; text-align: left; border: 1px solid #ddd;">Email</th>';
+    tableHTML += '<th style="padding: 10px; text-align: left; border: 1px solid #ddd;">Phone</th>';
+    tableHTML += '<th style="padding: 10px; text-align: left; border: 1px solid #ddd;">Status</th>';
+    tableHTML += '<th style="padding: 10px; text-align: left; border: 1px solid #ddd;">Actions</th>';
+    tableHTML += '</tr></thead><tbody>';
 
-            
+    employees.forEach(function(emp, idx) {
+        var name = emp.full_name || emp.name || ((emp.first_name || '') + ' ' + (emp.last_name || '')).trim() || '-';
+        var position = emp.position || emp.role || '-';
+        var dept = emp.department || '-';
+        var email = emp.email || '-';
+        var phone = emp.phone || emp.phone_number || '-';
+        var status = emp.status || emp.contract_status || 'active';
+        var statusColor = status === 'active' ? '#4CAF50' : status === 'inactive' ? '#f44336' : status === 'suspended' ? '#FF9800' : '#2196F3';
+        var bgColor = idx % 2 === 0 ? '#fff' : '#f9f9f9';
 
-            <div class="oversight-dashboard">
+        tableHTML += '<tr style="background: ' + bgColor + ';">';
+        tableHTML += '<td style="padding: 8px; border: 1px solid #ddd;">' + (idx + 1) + '</td>';
+        tableHTML += '<td style="padding: 8px; border: 1px solid #ddd; font-weight: bold;">' + name + '</td>';
+        tableHTML += '<td style="padding: 8px; border: 1px solid #ddd;">' + position + '</td>';
+        tableHTML += '<td style="padding: 8px; border: 1px solid #ddd;">' + dept + '</td>';
+        tableHTML += '<td style="padding: 8px; border: 1px solid #ddd;">' + email + '</td>';
+        tableHTML += '<td style="padding: 8px; border: 1px solid #ddd;">' + phone + '</td>';
+        tableHTML += '<td style="padding: 8px; border: 1px solid #ddd;"><span style="background: ' + statusColor + '; color: white; padding: 3px 10px; border-radius: 12px; font-size: 12px;">' + status + '</span></td>';
+        tableHTML += '<td style="padding: 8px; border: 1px solid #ddd;">';
+        tableHTML += '<button onclick="reviewDeptStructure(\'' + (emp.department || '') + '\')" style="padding: 4px 10px; background: #2196F3; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 12px;">Review</button>';
+        tableHTML += '</td>';
+        tableHTML += '</tr>';
+    });
 
-                <h4>Staff Overview</h4>
+    tableHTML += '</tbody></table></div>';
+    tableHTML += '<p style="text-align: right; color: #666; margin-top: 10px; font-size: 13px;">Total records: ' + employees.length + '</p>';
 
-                <table class="oversight-table">
-
-                    <thead>
-
-                        <tr>
-
-                            <th>Category</th>
-
-                            <th>Type</th>
-
-                            <th>Value/Count</th>
-
-                            <th>Status</th>
-
-                            <th>Actions</th>
-
-                        </tr>
-
-                    </thead>
-
-                    <tbody>
-
-                        <tr>
-
-                            <td rowspan="2"><strong>HR Metrics</strong></td>
-
-                            <td>Total Employees</td>
-
-                            <td>${totalEmployees}</td>
-
-                            <td><span class="status-badge active">Active</span></td>
-
-                            <td>-</td>
-
-                        </tr>
-
-                        <tr>
-
-                            <td>Active Contracts</td>
-
-                            <td>${activeContracts}</td>
-
-                            <td><span class="status-badge ${activeContracts > 0 ? 'active' : 'warning'}">${activeContracts > 0 ? 'Active' : 'Low'}</span></td>
-
-                            <td>-</td>
-
-                        </tr>
-
-                        <tr>
-
-                            <td rowspan="2"><strong>Departments</strong></td>
-
-                            <td>Management</td>
-
-                            <td>${managementStaff} staff</td>
-
-                            <td><span class="status-badge approved">Approved</span></td>
-
-                            <td>
-
-                                <button class="action-btn" onclick="reviewDeptStructure('management')">Review</button>
-
-                            </td>
-
-                        </tr>
-
-                        <tr>
-
-                            <td>Human Resources</td>
-
-                            <td>${hrStaff} staff</td>
-
-                            <td><span class="status-badge approved">Approved</span></td>
-
-                            <td>
-
-                                <button class="action-btn" onclick="reviewDeptStructure('hr')">Review</button>
-
-                            </td>
-
-                        </tr>
-
-                    </tbody>
-
-                </table>
-
-            </div>
-
-        </div>`;
-
-    
-
-    console.log('🔄 Updating content with staff oversight data...');
-
-    showContent(formHtml);
-
-    console.log('✅ Staff oversight content updated successfully');
-
+    container.innerHTML = tableHTML;
 }
 
 
