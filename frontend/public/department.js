@@ -12984,6 +12984,114 @@ function clearClientForm() {
 
 
 
+// Load properties and clients into sale form dropdowns from database
+
+async function loadSaleFormDropdowns() {
+
+    try {
+
+        // Load properties
+
+        const propertySelect = document.getElementById('saleProperty');
+
+        if (propertySelect) {
+
+            propertySelect.innerHTML = '<option value="">Loading properties...</option>';
+
+            try {
+
+                const propResponse = await KashTecAPI.get('/properties/all');
+
+                const properties = Array.isArray(propResponse) ? propResponse : (propResponse.properties || propResponse.data || []);
+
+                propertySelect.innerHTML = '<option value="">Select Property</option>';
+
+                properties.forEach(property => {
+
+                    const name = property.title || property.plotNumber || ('Property ' + property.id);
+
+                    const location = property.location || '';
+
+                    const price = property.price ? ` (TZS ${parseInt(property.price).toLocaleString()})` : '';
+
+                    const label = location ? `${name} - ${location}${price}` : `${name}${price}`;
+
+                    const option = document.createElement('option');
+
+                    option.value = property.id;
+
+                    option.textContent = label;
+
+                    propertySelect.appendChild(option);
+
+                });
+
+            } catch (propError) {
+
+                console.error('Error loading properties:', propError);
+
+                propertySelect.innerHTML = '<option value="">Select Property</option>';
+
+            }
+
+        }
+
+
+
+        // Load clients
+
+        const clientSelect = document.getElementById('saleClient');
+
+        if (clientSelect) {
+
+            clientSelect.innerHTML = '<option value="">Loading clients...</option>';
+
+            try {
+
+                const clientResponse = await KashTecAPI.get('/clients');
+
+                const clients = Array.isArray(clientResponse) ? clientResponse : (clientResponse.clients || clientResponse.data || []);
+
+                clientSelect.innerHTML = '<option value="">Select Client</option>';
+
+                clients.forEach(client => {
+
+                    const name = client.full_name || client.fullName || client.name || ('Client ' + (client.client_id || client.id));
+
+                    const type = client.client_type || client.clientType || '';
+
+                    const label = type ? `${name} - ${type}` : name;
+
+                    const option = document.createElement('option');
+
+                    option.value = client.client_id || client.id;
+
+                    option.textContent = label;
+
+                    clientSelect.appendChild(option);
+
+                });
+
+            } catch (clientError) {
+
+                console.error('Error loading clients:', clientError);
+
+                clientSelect.innerHTML = '<option value="">Select Client</option>';
+
+            }
+
+        }
+
+    } catch (error) {
+
+        console.error('Error loading sale form dropdowns:', error);
+
+    }
+
+}
+
+
+
 // Toggle sale form visibility
 
 function toggleSaleForm() {
@@ -13005,6 +13113,12 @@ function toggleSaleForm() {
         toggleBtn.innerHTML = '❌ Close Sale Form';
 
         toggleBtn.style.background = '#dc3545';
+
+        
+
+        // Load real property and client data from database
+
+        loadSaleFormDropdowns();
 
         
 
@@ -53209,12 +53323,6 @@ function recordSale(){
 
                                 <option value="">Select Property</option>
 
-                                ${properties.filter(p => p.status === 'available' || p.status === 'reserved').map(property => 
-
-                                    `<option value="${property.id}">${property.plotNumber} - ${property.location} (TZS ${parseInt(property.price).toLocaleString()})</option>`
-
-                                ).join('')}
-
                             </select>
 
                         </div>
@@ -53226,12 +53334,6 @@ function recordSale(){
                             <select id="saleClient" required>
 
                                 <option value="">Select Client</option>
-
-                                ${clients.map(client => 
-
-                                    `<option value="${client.id}">${client.fullName} - ${client.clientType}</option>`
-
-                                ).join('')}
 
                             </select>
 
