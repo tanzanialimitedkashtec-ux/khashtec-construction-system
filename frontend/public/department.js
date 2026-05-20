@@ -13000,7 +13000,7 @@ async function loadSaleFormDropdowns() {
 
             try {
 
-                const propResponse = await KashTecAPI.get('/properties/all');
+                const propResponse = await KashTecAPI.get('/api/properties/all');
 
                 const properties = Array.isArray(propResponse) ? propResponse : (propResponse.properties || propResponse.data || []);
 
@@ -13048,7 +13048,7 @@ async function loadSaleFormDropdowns() {
 
             try {
 
-                const clientResponse = await KashTecAPI.get('/clients');
+                const clientResponse = await KashTecAPI.get('/api/clients');
 
                 const clients = Array.isArray(clientResponse) ? clientResponse : (clientResponse.clients || clientResponse.data || []);
 
@@ -52229,7 +52229,7 @@ async function editPropertyDetails(){
     let properties = [];
     try {
         const apiCandidates = [
-            () => window.KashTecAPI && typeof KashTecAPI.get === 'function' ? KashTecAPI.get('/properties/all') : null,
+            () => window.KashTecAPI && typeof KashTecAPI.get === 'function' ? KashTecAPI.get('/api/properties/all') : null,
             () => fetch('/api/properties/all').then(r => r.json()),
             () => fetch('/api/properties').then(r => r.json())
         ];
