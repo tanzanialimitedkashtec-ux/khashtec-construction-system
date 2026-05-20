@@ -12767,7 +12767,7 @@ font-weight: bold;
 
     border-radius: 8px;
 
-    overflow: hidden;
+    overflow-x: auto;
 
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 
@@ -12783,9 +12783,11 @@ font-weight: bold;
 
     border-collapse: collapse;
 
-    font-size: 11px;
+    font-size: 10px;
 
     background: white;
+
+    table-layout: auto;
 
 }
 
@@ -12797,11 +12799,13 @@ font-weight: bold;
 
     color: white;
 
-    padding: 10px 8px;
+    padding: 5px 4px;
 
     text-align: left;
 
     font-weight: 600;
+
+    font-size: 9px;
 
     border-bottom: 2px solid #093278;
 
@@ -12813,13 +12817,13 @@ font-weight: bold;
 
 .projects-table td {
 
-    padding: 8px;
+    padding: 4px 3px;
 
     border-bottom: 1px solid #e9ecef;
 
     vertical-align: middle;
 
-    font-size: 11px;
+    font-size: 10px;
 
 }
 
@@ -12847,9 +12851,7 @@ font-weight: bold;
 
     flex-direction: column;
 
-    gap: 2px;
-
-    min-width: 100px;
+    gap: 1px;
 
 }
 
@@ -12861,7 +12863,7 @@ font-weight: bold;
 
     color: #333;
 
-    font-size: 11px;
+    font-size: 9px;
 
     text-transform: uppercase;
 
@@ -12870,8 +12872,6 @@ font-weight: bold;
 
 
 .project-name-info {
-
-    min-width: 160px;
 
 }
 
@@ -12883,7 +12883,7 @@ font-weight: bold;
 
     color: #333;
 
-    font-size: 11px;
+    font-size: 10px;
 
     line-height: 1.2;
 
@@ -12892,8 +12892,6 @@ font-weight: bold;
 
 
 .client-info {
-
-    min-width: 140px;
 
 }
 
@@ -12905,7 +12903,7 @@ font-weight: bold;
 
     color: #333;
 
-    font-size: 11px;
+    font-size: 10px;
 
     line-height: 1.2;
 
@@ -12917,11 +12915,11 @@ font-weight: bold;
 
     display: inline-block;
 
-    padding: 4px 8px;
+    padding: 2px 5px;
 
-    border-radius: 12px;
+    border-radius: 8px;
 
-    font-size: 9px;
+    font-size: 8px;
 
     font-weight: 600;
 
@@ -12937,17 +12935,17 @@ font-weight: bold;
 
 .date-info {
 
-    min-width: 100px;
-
 }
 
 
 
 .start-date, .end-date {
 
-    font-size: 10px;
+    font-size: 9px;
 
     color: #333;
+
+    white-space: nowrap;
 
 }
 
@@ -12959,9 +12957,9 @@ font-weight: bold;
 
     color: #333;
 
-    font-size: 11px;
+    font-size: 10px;
 
-    min-width: 80px;
+    white-space: nowrap;
 
 }
 
@@ -12971,11 +12969,11 @@ font-weight: bold;
 
     display: inline-block;
 
-    padding: 4px 8px;
+    padding: 2px 5px;
 
-    border-radius: 12px;
+    border-radius: 8px;
 
-    font-size: 9px;
+    font-size: 8px;
 
     font-weight: 600;
 
@@ -13041,9 +13039,9 @@ font-weight: bold;
 
     align-items: center;
 
-    gap: 8px;
+    gap: 4px;
 
-    min-width: 120px;
+    min-width: 60px;
 
 }
 
@@ -13051,13 +13049,13 @@ font-weight: bold;
 
 .progress-bar {
 
-    height: 8px;
+    height: 6px;
 
     background: #28a745;
 
-    border-radius: 4px;
+    border-radius: 3px;
 
-    min-width: 20px;
+    min-width: 15px;
 
 }
 
@@ -13065,21 +13063,17 @@ font-weight: bold;
 
 .progress-text {
 
-    font-size: 9px;
+    font-size: 8px;
 
     font-weight: 600;
 
     color: #333;
-
-    min-width: 30px;
 
 }
 
 
 
 .manager-info {
-
-    min-width: 120px;
 
 }
 
@@ -13091,15 +13085,13 @@ font-weight: bold;
 
     color: #333;
 
-    font-size: 11px;
+    font-size: 10px;
 
 }
 
 
 
 .project-code-info {
-
-    min-width: 110px;
 
 }
 
@@ -13111,13 +13103,13 @@ font-weight: bold;
 
     color: #333;
 
-    font-size: 10px;
+    font-size: 9px;
 
     font-family: monospace;
 
     background: #f8f9fa;
 
-    padding: 2px 4px;
+    padding: 1px 3px;
 
     border-radius: 3px;
 
@@ -13127,9 +13119,7 @@ font-weight: bold;
 
 .description-info {
 
-    min-width: 140px;
-
-    max-width: 160px;
+    max-width: 100px;
 
 }
 
@@ -13137,11 +13127,17 @@ font-weight: bold;
 
 .project-description {
 
-    font-size: 9px;
+    font-size: 8px;
 
     color: #333;
 
     line-height: 1.2;
+
+    overflow: hidden;
+
+    text-overflow: ellipsis;
+
+    white-space: nowrap;
 
 }
 
@@ -13149,9 +13145,7 @@ font-weight: bold;
 
 .deliverables-info {
 
-    min-width: 120px;
-
-    max-width: 140px;
+    max-width: 100px;
 
 }
 
@@ -13159,11 +13153,17 @@ font-weight: bold;
 
 .key-deliverables {
 
-    font-size: 9px;
+    font-size: 8px;
 
     color: #333;
 
     line-height: 1.2;
+
+    overflow: hidden;
+
+    text-overflow: ellipsis;
+
+    white-space: nowrap;
 
 }
 
@@ -13171,15 +13171,13 @@ font-weight: bold;
 
 .location-info {
 
-    min-width: 120px;
-
 }
 
 
 
 .site-location {
 
-    font-size: 10px;
+    font-size: 9px;
 
     color: #333;
 
@@ -13193,11 +13191,11 @@ font-weight: bold;
 
     display: inline-block;
 
-    padding: 4px 8px;
+    padding: 2px 5px;
 
-    border-radius: 12px;
+    border-radius: 8px;
 
-    font-size: 9px;
+    font-size: 8px;
 
     font-weight: 600;
 
@@ -13241,7 +13239,7 @@ font-weight: bold;
 
     display: flex;
 
-    gap: 4px;
+    gap: 2px;
 
     justify-content: center;
 
@@ -13251,21 +13249,21 @@ font-weight: bold;
 
 .project-actions .action-btn {
 
-    padding: 4px 6px;
+    padding: 2px 4px;
 
     border: none;
 
-    border-radius: 4px;
+    border-radius: 3px;
 
     cursor: pointer;
 
-    font-size: 10px;
+    font-size: 9px;
 
     transition: all 0.2s ease;
 
-    min-width: 24px;
+    min-width: 20px;
 
-    height: 24px;
+    height: 20px;
 
     display: flex;
 
