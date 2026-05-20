@@ -53626,31 +53626,31 @@ function manageSales() {
 
                 <div class="sales-table-container">
 
-                    <table class="sales-table">
+                    <table class="sales-table" style="width:100%;border-collapse:collapse;table-layout:fixed;font-size:13px;">
 
                         <thead>
 
                             <tr>
 
-                                <th>Sale ID</th>
+                                <th style="width:10%;">Sale ID</th>
 
-                                <th>Property</th>
+                                <th style="width:10%;">Date</th>
 
-                                <th>Client</th>
+                                <th style="width:14%;">Property</th>
 
-                                <th>Sale Details</th>
+                                <th style="width:12%;">Client</th>
 
-                                <th>Payment Method</th>
+                                <th style="width:10%;">Sale Price</th>
 
-                                <th>Installment Details</th>
+                                <th style="width:10%;">Commission</th>
 
-                                <th>Agreement</th>
+                                <th style="width:10%;">Agent</th>
 
-                                <th>Payment Status</th>
+                                <th style="width:8%;">Payment</th>
 
-                                <th>Commission Agent</th>
+                                <th style="width:8%;">Status</th>
 
-                                <th>Actions</th>
+                                <th style="width:8%;">Actions</th>
 
                             </tr>
 
@@ -53696,125 +53696,117 @@ async function loadSales() {
 
         
 
-        if (response.success && response.data.length > 0) {
+        // Handle different response formats (raw array or {success, data})
 
-            recordsList.innerHTML = response.data.map(sale => `
+        const sales = Array.isArray(response) ? response : (response.data || response.sales || []);
+
+        
+
+        if (sales && sales.length > 0) {
+
+            recordsList.innerHTML = sales.map(sale => {
+
+                const saleId = sale.id || sale.saleId || 'N/A';
+
+                const saleDate = sale.date || sale.saleDate || sale.created_at;
+
+                const property = sale.property || sale.propertyId || 'N/A';
+
+                const propertyType = sale.propertyType || sale.property_type || '';
+
+                const client = sale.client || sale.clientName || 'N/A';
+
+                const clientContact = sale.clientContact || sale.client_contact || sale.clientPhone || '';
+
+                const salePrice = sale.salePrice || sale.sale_price || 0;
+
+                const commission = sale.commission || 0;
+
+                const status = sale.status || 'N/A';
+
+                const agent = sale.agent || sale.commissionAgent || 'N/A';
+
+                const paymentStatus = sale.paymentStatus || sale.payment_status || 'N/A';
+
+                const contractSigned = sale.contractSigned || sale.contract_signed || false;
+
+                
+
+                const statusClass = status === 'completed' ? 'status-completed' :
+
+                                   status === 'pending' ? 'status-pending' :
+
+                                   status === 'cancelled' ? 'status-cancelled' : '';
+
+                
+
+                const paymentClass = paymentStatus === 'paid' ? 'status-completed' :
+
+                                    paymentStatus === 'pending' ? 'status-pending' :
+
+                                    paymentStatus === 'overdue' ? 'status-cancelled' : '';
+
+                
+
+                return `
 
                 <tr>
 
                     <td>
 
-                        <div class="sale-id">${sale.saleId}</div>
-
-                        <div class="sale-date">Date: ${new Date(sale.saleDate).toLocaleDateString()}</div>
+                        <div class="sale-id" style="font-weight:600;font-size:12px;">${saleId}</div>
 
                     </td>
 
                     <td>
 
-                        <div class="property-info">
-
-                            <div class="property-id">${sale.propertyId}</div>
-
-                            <div class="property-location">${sale.propertyLocation}</div>
-
-                            <div class="property-price">TZS ${parseInt(sale.propertyPrice).toLocaleString()}</div>
-
-                        </div>
+                        <div style="font-size:12px;">${saleDate ? new Date(saleDate).toLocaleDateString() : 'N/A'}</div>
 
                     </td>
 
                     <td>
 
-                        <div class="client-info">
+                        <div style="font-weight:500;font-size:12px;" title="${property}">${property}</div>
 
-                            <div class="client-name">${sale.clientName}</div>
-
-                            <div class="client-contact">📱 ${sale.clientPhone}</div>
-
-                            <div class="client-email">📧 ${sale.clientEmail}</div>
-
-                        </div>
+                        <div style="font-size:11px;color:#666;">${propertyType}</div>
 
                     </td>
 
                     <td>
 
-                        <div class="sale-details">
+                        <div style="font-weight:500;font-size:12px;">${client}</div>
 
-                            <div class="sale-price">Price: TZS ${parseInt(sale.salePrice).toLocaleString()}</div>
-
-                            <div class="sale-date">Date: ${new Date(sale.saleDate).toLocaleDateString()}</div>
-
-                            <div class="sale-notes">${sale.saleNotes || 'No notes'}</div>
-
-                        </div>
+                        <div style="font-size:11px;color:#666;">${clientContact}</div>
 
                     </td>
 
                     <td>
 
-                        <div class="payment-method-info">
-
-                            <div class="method">${sale.paymentMethod}</div>
-
-                        </div>
+                        <div style="font-size:12px;font-weight:600;">TZS ${parseInt(salePrice).toLocaleString()}</div>
 
                     </td>
 
                     <td>
 
-                        <div class="installment-info">
-
-                            ${sale.paymentMethod === 'installments' ? `
-
-                                <div class="period">Period: ${sale.installmentPeriod} months</div>
-
-                                <div class="down-payment">Down: TZS ${parseInt(sale.downPayment).toLocaleString()}</div>
-
-                                <div class="monthly">Monthly: TZS ${parseInt(sale.monthlyInstallment).toLocaleString()}</div>
-
-                                <div class="interest">Rate: ${sale.interestRate}%</div>
-
-                            ` : '<div class="no-installments">N/A</div>'}
-
-                        </div>
+                        <div style="font-size:12px;">TZS ${parseInt(commission).toLocaleString()}</div>
 
                     </td>
 
                     <td>
 
-                        <div class="agreement-info">
-
-                            ${sale.salesAgreement ? 
-
-                                `<div class="agreement-file">📄 ${sale.salesAgreement}</div>` : 
-
-                                '<div class="no-agreement">No Agreement</div>'
-
-                            }
-
-                        </div>
+                        <div style="font-size:12px;">${agent}</div>
 
                     </td>
 
                     <td>
 
-                        <div class="payment-status-info">
-
-                            <span class="status-badge status-${sale.paymentStatus}">${sale.paymentStatus}</span>
-
-                        </div>
+                        <span class="status-badge ${paymentClass}" style="font-size:11px;padding:2px 8px;">${paymentStatus}</span>
 
                     </td>
 
                     <td>
 
-                        <div class="commission-info">
-
-                            <div class="agent-name">${sale.commissionAgent || 'N/A'}</div>
-
-                        </div>
+                        <span class="status-badge ${statusClass}" style="font-size:11px;padding:2px 8px;">${status}</span>
 
                     </td>
 
@@ -53822,11 +53814,11 @@ async function loadSales() {
 
                         <div class="sales-actions">
 
-                            <button class="action-btn view" onclick="viewSaleDetails('${sale.saleId}')" title="View Details">👁️</button>
+                            <button class="action-btn view" onclick="viewSaleDetails('${saleId}')" title="View Details">👁️</button>
 
-                            <button class="action-btn edit" onclick="editSale('${sale.saleId}')" title="Edit Sale">✏️</button>
+                            <button class="action-btn edit" onclick="editSale('${saleId}')" title="Edit Sale">✏️</button>
 
-                            <button class="action-btn delete" onclick="deleteSale('${sale.saleId}')" title="Delete Sale">🗑️</button>
+                            <button class="action-btn delete" onclick="deleteSale('${saleId}')" title="Delete Sale">🗑️</button>
 
                         </div>
 
@@ -53834,7 +53826,7 @@ async function loadSales() {
 
                 </tr>
 
-            `).join('');
+            `}).join('');
 
         } else {
 
