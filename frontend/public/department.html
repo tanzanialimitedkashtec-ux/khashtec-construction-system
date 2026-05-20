@@ -80184,77 +80184,115 @@ function saveNewClient() {
 
 
 
-function saveNewSale() {
+async function saveNewSale() {
 
-    const sale = {
+    try {
 
-        id: 'SALE-' + Date.now(),
+        const propertySelect = document.getElementById('saleProperty');
 
-        property: document.getElementById('saleProperty').value,
+        const clientSelect = document.getElementById('saleClient');
 
-        client: document.getElementById('saleClient').value,
+        const propertyName = propertySelect.options[propertySelect.selectedIndex]?.text || propertySelect.value;
 
-        price: document.getElementById('salePrice').value,
+        const clientName = clientSelect.options[clientSelect.selectedIndex]?.text || clientSelect.value;
 
-        date: document.getElementById('saleDate').value,
+        
 
-        paymentMethod: document.getElementById('paymentMethod').value,
+        const saleData = {
 
-        installmentPeriod: document.getElementById('installmentPeriod').value,
+            propertyId: propertySelect.value,
 
-        downPayment: document.getElementById('downPayment').value,
+            propertyName: propertyName,
 
-        monthlyInstallment: document.getElementById('monthlyInstallment').value,
+            clientName: clientName,
 
-        interestRate: document.getElementById('interestRate').value,
+            clientContact: '',
 
-        salesAgreement: document.getElementById('salesAgreement').files.length,
+            salePrice: document.getElementById('salePrice').value,
 
-        paymentStatus: document.getElementById('paymentStatus').value,
+            commission: parseFloat(document.getElementById('salePrice').value) * 0.05,
 
-        commissionAgent: document.getElementById('commissionAgent').value,
+            paymentMethod: document.getElementById('paymentMethod').value,
 
-        notes: document.getElementById('saleNotes').value,
+            status: 'completed',
 
-        recordedBy: 'Real Estate Manager',
+            agent: document.getElementById('commissionAgent').value || 'System',
 
-        recordedDate: new Date().toLocaleString()
+            paymentStatus: document.getElementById('paymentStatus').value,
 
-    };
+            contractSigned: document.getElementById('salesAgreement').files.length > 0,
 
-    
+            saleDate: document.getElementById('saleDate').value,
 
-    // Save to secure API storage
+            saleNotes: document.getElementById('saleNotes').value,
 
-    const sales = [];
+            installmentPeriod: document.getElementById('installmentPeriod').value || null,
 
-    sales.push(sale);
+            downPayment: document.getElementById('downPayment').value || null,
 
-    // TODO: Save to API
+            monthlyInstallment: document.getElementById('monthlyInstallment').value || null,
 
-    
+            interestRate: document.getElementById('interestRate').value || null
 
-    // Update property status to sold
+        };
 
-    const properties = []; // TODO: Load from API
+        
 
-    const propertyIndex = properties.findIndex(p => p.id === sale.property);
+        if (!saleData.propertyId || !saleData.clientName || !saleData.salePrice) {
 
-    if (propertyIndex !== -1) {
+            customAlert('Please fill in all required fields (Property, Client, Sale Price).', 'Validation Error', 'error');
 
-        properties[propertyIndex].status = 'sold';
+            return false;
 
-        // TODO: Save to API
+        }
+
+        
+
+        console.log('💰 Submitting sale data:', saleData);
+
+        
+
+        const response = await KashTecAPI.post('/sales', saleData);
+
+        
+
+        console.log('✅ Sale saved successfully:', response);
+
+        
+
+        customAlert(
+
+            `Sale recorded successfully!\n\nProperty: ${saleData.propertyName}\nClient: ${saleData.clientName}\nPrice: TZS ${parseInt(saleData.salePrice).toLocaleString()}\nPayment Method: ${saleData.paymentMethod}\nStatus: ${saleData.paymentStatus}`,
+
+            'Sale Recorded', 'success'
+
+        );
+
+        
+
+        document.getElementById('saleForm').reset();
+
+        
+
+        // Reload the sales table to show the new record
+
+        if (typeof loadSales === 'function') {
+
+            loadSales();
+
+        }
+
+        
+
+    } catch (error) {
+
+        console.error('❌ Error saving sale:', error);
+
+        customAlert('Failed to save sale: ' + (error.message || 'Unknown error'), 'Error', 'error');
 
     }
 
     
-
-    customAlert(`Sale recorded successfully!\n\nProperty: ${sale.property}\nClient: ${sale.client}\nPrice: TZS ${parseInt(sale.price).toLocaleString()}\nPayment Method: ${sale.paymentMethod}\nStatus: ${sale.paymentStatus}`, "Sale Recorded", "success");
-
-    
-
-    document.getElementById('saleForm').reset();
 
     return false;
 
