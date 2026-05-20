@@ -36586,7 +36586,7 @@ async function loadSaleFormDropdowns() {
 
             try {
 
-                const propResponse = await KashTecAPI.get('/properties/all');
+                const propResponse = await KashTecAPI.get('/api/properties/all');
 
                 const properties = Array.isArray(propResponse) ? propResponse : (propResponse.properties || propResponse.data || []);
 
@@ -36634,7 +36634,7 @@ async function loadSaleFormDropdowns() {
 
             try {
 
-                const clientResponse = await KashTecAPI.get('/clients');
+                const clientResponse = await KashTecAPI.get('/api/clients');
 
                 const clients = Array.isArray(clientResponse) ? clientResponse : (clientResponse.clients || clientResponse.data || []);
 
@@ -75892,7 +75892,7 @@ async function editPropertyDetails(){
     let properties = [];
     try {
         const apiCandidates = [
-            () => window.KashTecAPI && typeof KashTecAPI.get === 'function' ? KashTecAPI.get('/properties/all') : null,
+            () => window.KashTecAPI && typeof KashTecAPI.get === 'function' ? KashTecAPI.get('/api/properties/all') : null,
             () => fetch('/api/properties/all').then(r => r.json()),
             () => fetch('/api/properties').then(r => r.json())
         ];
@@ -97965,7 +97965,73 @@ function showSeniorRoles() {
 
 
 
-// Suggestions Management is now handled by department.js (showSuggestionsManagement function with table view)
+// Suggestions Management fallback — full implementation is in department.js
+// This ensures the function is available even before department.js loads
+function showSuggestionsManagement() {
+    try {
+        if (!window.apiService) {
+            console.error('apiService not available');
+            const contentArea = document.getElementById('contentArea');
+            if (contentArea) contentArea.innerHTML = '<div class="card"><h3>Suggestions Management</h3><p>API service not available</p></div>';
+            return;
+        }
+
+        window.apiService.getSuggestions().then(response => {
+            const suggestions = (response && response.data) || response || [];
+
+            let html = '<div class="card"><h3>Suggestions Management</h3>';
+            html += '<button onclick="showSuggestionForm()">+ New Suggestion</button>';
+            html += '<table style="width: 100%; margin-top: 20px; border-collapse: collapse;">';
+            html += '<thead><tr style="background: #f4f4f4;">';
+            html += '<th style="padding: 10px; border: 1px solid #ddd;">#</th>';
+            html += '<th style="padding: 10px; border: 1px solid #ddd;">Title</th>';
+            html += '<th style="padding: 10px; border: 1px solid #ddd;">Category</th>';
+            html += '<th style="padding: 10px; border: 1px solid #ddd;">Priority</th>';
+            html += '<th style="padding: 10px; border: 1px solid #ddd;">Department</th>';
+            html += '<th style="padding: 10px; border: 1px solid #ddd;">Submitted By</th>';
+            html += '<th style="padding: 10px; border: 1px solid #ddd;">Status</th>';
+            html += '<th style="padding: 10px; border: 1px solid #ddd;">Date</th>';
+            html += '<th style="padding: 10px; border: 1px solid #ddd;">Actions</th>';
+            html += '</tr></thead><tbody>';
+
+            if (suggestions.length === 0) {
+                html += '<tr><td colspan="9" style="padding: 20px; border: 1px solid #ddd; text-align: center; color: #888;">No suggestions found. Click "+ New Suggestion" to add one.</td></tr>';
+            } else {
+                suggestions.forEach(function(s, index) {
+                    const priorityColor = s.priority === 'Critical' ? '#dc3545' : s.priority === 'High' ? '#fd7e14' : s.priority === 'Medium' ? '#ffc107' : '#28a745';
+                    const statusColor = s.status === 'Implemented' ? '#28a745' : s.status === 'Approved' ? '#17a2b8' : s.status === 'Rejected' ? '#dc3545' : s.status === 'Under Review' ? '#ffc107' : '#6c757d';
+                    const dateStr = s.created_at ? new Date(s.created_at).toLocaleDateString() : s.submitted_date ? new Date(s.submitted_date).toLocaleDateString() : '-';
+                    html += '<tr>';
+                    html += '<td style="padding: 10px; border: 1px solid #ddd;">' + (index + 1) + '</td>';
+                    html += '<td style="padding: 10px; border: 1px solid #ddd;">' + (s.title || '') + '</td>';
+                    html += '<td style="padding: 10px; border: 1px solid #ddd;">' + (s.category || '') + '</td>';
+                    html += '<td style="padding: 10px; border: 1px solid #ddd;"><span style="background: ' + priorityColor + '; color: #fff; padding: 2px 8px; border-radius: 4px; font-size: 12px;">' + (s.priority || '') + '</span></td>';
+                    html += '<td style="padding: 10px; border: 1px solid #ddd;">' + (s.department || '') + '</td>';
+                    html += '<td style="padding: 10px; border: 1px solid #ddd;">' + (s.submitted_by_name || s.submittedBy || '') + '</td>';
+                    html += '<td style="padding: 10px; border: 1px solid #ddd;"><span style="background: ' + statusColor + '; color: #fff; padding: 2px 8px; border-radius: 4px; font-size: 12px;">' + (s.status || '') + '</span></td>';
+                    html += '<td style="padding: 10px; border: 1px solid #ddd;">' + dateStr + '</td>';
+                    html += '<td style="padding: 10px; border: 1px solid #ddd;">';
+                    html += '<button onclick="viewSuggestion(' + s.id + ')">View</button> ';
+                    html += '<button onclick="editSuggestion(' + s.id + ')">Edit</button> ';
+                    html += '<button onclick="deleteSuggestion(' + s.id + ')" style="background: #dc3545; color: #fff; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer;">Delete</button>';
+                    html += '</td></tr>';
+                });
+            }
+
+            html += '</tbody></table></div>';
+            html += '<div id="suggestionFormContainer" class="card hidden"></div>';
+
+            const contentArea = document.getElementById('contentArea');
+            if (contentArea) contentArea.innerHTML = html;
+        }).catch(function(error) {
+            console.error('Error loading suggestions:', error);
+            const contentArea = document.getElementById('contentArea');
+            if (contentArea) contentArea.innerHTML = '<div class="card"><h3>Suggestions Management</h3><p>Error loading suggestions. Please try again.</p></div>';
+        });
+    } catch (error) {
+        console.error('Error in showSuggestionsManagement:', error);
+    }
+}
 
 
 
