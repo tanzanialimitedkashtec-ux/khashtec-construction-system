@@ -98006,10 +98006,10 @@ async function saveSuggestion(event, suggestionId) {
         }
         hideSuggestionForm();
         await showSuggestionsManagement();
-        showNotification('Suggestion saved successfully!', 'success');
+        if (typeof showNotification === 'function') showNotification('Suggestion saved successfully!', 'success');
     } catch (error) {
         console.error('Error saving suggestion:', error);
-        showNotification('Error saving suggestion. Please try again.', 'error');
+        if (typeof showNotification === 'function') showNotification('Error saving suggestion. Please try again.', 'error');
     }
 }
 
@@ -98036,29 +98036,29 @@ function viewSuggestion(id) {
         if (contentArea) contentArea.innerHTML = html;
     }).catch(function(error) {
         console.error('Error viewing suggestion:', error);
-        showNotification('Error loading suggestion details.', 'error');
+        if (typeof showNotification === 'function') showNotification('Error loading suggestion details.', 'error');
     });
 }
 
 function editSuggestion(id) {
-    showSuggestionsManagement().then(function() {
+    if (typeof showSuggestionForm === 'function') {
         showSuggestionForm(id);
-    });
+    } else {
+        if (typeof showNotification === 'function') showNotification('Edit form not available.', 'error');
+    }
 }
 
 async function deleteSuggestion(id) {
     if (!confirm('Are you sure you want to delete this suggestion?')) return;
     try {
         await window.apiService.deleteSuggestion(id);
-        showNotification('Suggestion deleted successfully!', 'success');
-        await showSuggestionsManagement();
+        if (typeof showNotification === 'function') showNotification('Suggestion deleted successfully!', 'success');
+        showSuggestionsManagement();
     } catch (error) {
         console.error('Error deleting suggestion:', error);
-        showNotification('Error deleting suggestion. Please try again.', 'error');
+        if (typeof showNotification === 'function') showNotification('Error deleting suggestion. Please try again.', 'error');
     }
 }
-
-
 
 // Function to close form overlay
 
