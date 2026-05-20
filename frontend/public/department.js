@@ -12503,6 +12503,52 @@ function clearProjectForm() {
 
 
 
+// Load projects into workforce form dropdown from database
+
+async function loadWorkforceProjectDropdown() {
+
+    const projectSelect = document.getElementById('workforceProject');
+
+    if (!projectSelect) return;
+
+    projectSelect.innerHTML = '<option value="">Loading projects...</option>';
+
+    try {
+
+        const response = await KashTecAPI.get('/projects');
+
+        const projects = Array.isArray(response) ? response : (response.projects || response.data || []);
+
+        projectSelect.innerHTML = '<option value="">Select Project</option>';
+
+        projects.forEach(project => {
+
+            const name = project.name || project.title || ('Project ' + project.id);
+
+            const status = project.status ? ` (${project.status})` : '';
+
+            const option = document.createElement('option');
+
+            option.value = project.id || project.project_code || '';
+
+            option.textContent = name + status;
+
+            projectSelect.appendChild(option);
+
+        });
+
+    } catch (error) {
+
+        console.error('Error loading projects:', error);
+
+        projectSelect.innerHTML = '<option value="">Select Project</option>';
+
+    }
+
+}
+
+
+
 // Toggle workforce form visibility
 
 function toggleWorkforceForm() {
@@ -12524,6 +12570,12 @@ function toggleWorkforceForm() {
         toggleBtn.innerHTML = '❌ Close Workforce Form';
 
         toggleBtn.style.background = '#dc3545';
+
+        
+
+        // Load real project data from database
+
+        loadWorkforceProjectDropdown();
 
         
 
@@ -46585,12 +46637,6 @@ function requestWorkforce(){
                             <select id="workforceProject" required>
 
                                 <option value="">Select Project</option>
-
-                                <option value="prj001">Port Modernization Phase 1</option>
-
-                                <option value="prj002">Warehouse Construction</option>
-
-                                <option value="prj003">Road Infrastructure</option>
 
                             </select>
 
