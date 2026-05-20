@@ -24,11 +24,11 @@ router.get('/test', (req, res) => {
 });
 
 // Root endpoint test
-router.get('/', (req, res) => {
-    console.log('🏠 Clients root endpoint accessed');
+router.get('/info', (req, res) => {
+    console.log('🏠 Clients info endpoint accessed');
     res.json({ 
         message: 'Clients API root endpoint',
-        available_endpoints: ['GET /test', 'POST /', 'GET /:id', 'PUT /:id', 'DELETE /:id']
+        available_endpoints: ['GET /test', 'GET /', 'POST /', 'GET /:id', 'PUT /:id', 'DELETE /:id']
     });
 });
 
