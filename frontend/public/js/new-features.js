@@ -10,6 +10,184 @@ async function loadClaimsManagement() {
             return;
         }
 
+// ===== ASSETS & EQUIPMENT MANAGEMENT =====
+
+async function loadAssetsEquipment() {
+    try {
+        if (!window.apiService) {
+            console.error('apiService not available');
+            showContent('<div class="card"><h3>Asset & Equipment Management</h3><p>API service not available</p></div>');
+            return;
+        }
+
+        const response = await window.apiService.get('/assets-equipment');
+        const assets = response || [];
+
+        let html = `
+            <div class="card">
+                <h3>Asset & Equipment Management</h3>
+                <button onclick="showAssetForm()">+ New Asset/Equipment</button>
+                <table style="width: 100%; margin-top: 20px; border-collapse: collapse;">
+                    <thead>
+                        <tr style="background: #f4f4f4;">
+                            <th style="padding: 10px; border: 1px solid #ddd;">Code</th>
+                            <th style="padding: 10px; border: 1px solid #ddd;">Name</th>
+                            <th style="padding: 10px; border: 1px solid #ddd;">Category</th>
+                            <th style="padding: 10px; border: 1px solid #ddd;">Condition</th>
+                            <th style="padding: 10px; border: 1px solid #ddd;">Status</th>
+                            <th style="padding: 10px; border: 1px solid #ddd;">Assigned To</th>
+                            <th style="padding: 10px; border: 1px solid #ddd;">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+        `;
+
+        assets.forEach(asset => {
+            html += `
+                <tr>
+                    <td style="padding: 10px; border: 1px solid #ddd;">${asset.asset_code}</td>
+                    <td style="padding: 10px; border: 1px solid #ddd;">${asset.asset_name}</td>
+                    <td style="padding: 10px; border: 1px solid #ddd;">${asset.category}</td>
+                    <td style="padding: 10px; border: 1px solid #ddd;">${asset.condition}</td>
+                    <td style="padding: 10px; border: 1px solid #ddd;">${asset.status}</td>
+                    <td style="padding: 10px; border: 1px solid #ddd;">${asset.full_name || 'Unassigned'}</td>
+                    <td style="padding: 10px; border: 1px solid #ddd;">
+                        <button onclick="viewAsset(${asset.id})">View</button>
+                        <button onclick="editAsset(${asset.id})">Edit</button>
+                    </td>
+                </tr>
+            `;
+        });
+
+        html += `
+                    </tbody>
+                </table>
+            </div>
+            <div id="assetFormContainer" class="card hidden"></div>
+        `;
+
+        showContent(html);
+    } catch (error) {
+        console.error('Error loading assets & equipment:', error);
+        showContent('<div class="card"><h3>Asset & Equipment Management</h3><p>Error loading records. Please try again.</p></div>');
+    }
+}
+
+function showAssetForm(assetId = null) {
+    const container = document.getElementById('assetFormContainer');
+    container.classList.remove('hidden');
+    
+    const html = `
+        <h4>${assetId ? 'Edit Asset/Equipment' : 'New Asset/Equipment'}</h4>
+        <form onsubmit="saveAsset(event, ${assetId})">
+            <label>Asset Code:</label>
+            <input type="text" id="assetCode" required>
+            <label>Asset Name:</label>
+            <input type="text" id="assetName" required>
+            <label>Category:</label>
+            <select id="assetCategory" required>
+                <option value="IT Equipment">IT Equipment</option>
+                <option value="Office Equipment">Office Equipment</option>
+                <option value="Heavy Machinery">Heavy Machinery</option>
+                <option value="Vehicle">Vehicle</option>
+                <option value="Tool">Tool</option>
+                <option value="Furniture">Furniture</option>
+                <option value="Plant">Plant</option>
+                <option value="Generator">Generator</option>
+                <option value="Other">Other</option>
+            </select>
+            <label>Asset Type:</label>
+            <input type="text" id="assetType">
+            <label>Description:</label>
+            <textarea id="assetDescription"></textarea>
+            <label>Serial Number:</label>
+            <input type="text" id="assetSerial">
+            <label>Purchase Date:</label>
+            <input type="date" id="assetPurchaseDate">
+            <label>Purchase Cost:</label>
+            <input type="number" id="assetPurchaseCost" step="0.01">
+            <label>Current Value:</label>
+            <input type="number" id="assetCurrentValue" step="0.01">
+            <label>Depreciation Method:</label>
+            <select id="assetDepreciation">
+                <option value="Straight Line">Straight Line</option>
+                <option value="Declining Balance">Declining Balance</option>
+                <option value="Units of Production">Units of Production</option>
+                <option value="None">None</option>
+            </select>
+            <label>Useful Life (years):</label>
+            <input type="number" id="assetLife" min="0">
+            <label>Condition:</label>
+            <select id="assetCondition">
+                <option value="New">New</option>
+                <option value="Good" selected>Good</option>
+                <option value="Fair">Fair</option>
+                <option value="Poor">Poor</option>
+                <option value="Damaged">Damaged</option>
+            </select>
+            <label>Location:</label>
+            <input type="text" id="assetLocation">
+            <label>Department:</label>
+            <input type="text" id="assetDepartment">
+            <label>Supplier:</label>
+            <input type="text" id="assetSupplier">
+            <label>Warranty Expiry:</label>
+            <input type="date" id="assetWarranty">
+            <label>Notes:</label>
+            <textarea id="assetNotes"></textarea>
+            <button type="submit">Save Asset</button>
+            <button type="button" onclick="hideAssetForm()">Cancel</button>
+        </form>
+    `;
+    
+    container.innerHTML = html;
+}
+
+function hideAssetForm() {
+    const el = document.getElementById('assetFormContainer');
+    if (el) el.classList.add('hidden');
+}
+
+async function saveAsset(event, assetId = null) {
+    event.preventDefault();
+    
+    const assetData = {
+        asset_code: document.getElementById('assetCode').value,
+        asset_name: document.getElementById('assetName').value,
+        category: document.getElementById('assetCategory').value,
+        asset_type: document.getElementById('assetType').value || null,
+        description: document.getElementById('assetDescription').value || null,
+        serial_number: document.getElementById('assetSerial').value || null,
+        purchase_date: document.getElementById('assetPurchaseDate').value || null,
+        purchase_cost: document.getElementById('assetPurchaseCost').value || null,
+        current_value: document.getElementById('assetCurrentValue').value || null,
+        depreciation_method: document.getElementById('assetDepreciation').value || 'Straight Line',
+        useful_life_years: document.getElementById('assetLife').value || null,
+        condition: document.getElementById('assetCondition').value,
+        location: document.getElementById('assetLocation').value || null,
+        department: document.getElementById('assetDepartment').value || null,
+        supplier: document.getElementById('assetSupplier').value || null,
+        warranty_expiry: document.getElementById('assetWarranty').value || null,
+        notes: document.getElementById('assetNotes').value || null,
+        created_by: getCurrentUserId()
+    };
+
+    try {
+        if (assetId) {
+            await window.apiService.put(`/assets-equipment/${assetId}`, assetData);
+        } else {
+            await window.apiService.post('/assets-equipment', assetData);
+        }
+        hideAssetForm();
+        loadAssetsEquipment();
+        customAlert('Asset saved successfully', 'Success', 'success');
+    } catch (error) {
+        console.error('Error saving asset:', error);
+        customAlert('Error saving asset', 'Error', 'error');
+    }
+}
+
+
         const response = await window.apiService.get('/claims-management');
         const claims = response || [];
 

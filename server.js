@@ -121,6 +121,8 @@ const talentAcquisitionRoutes = require('./backend/routes/talentAcquisition');
 const promotionsRoutes = require('./backend/routes/promotions');
 const riskManagementRoutes = require('./backend/routes/riskManagement');
 
+const assetsEquipmentRoutes = require('./backend/routes/assetsEquipment');
+
 
 
 const app = express();
@@ -1092,6 +1094,12 @@ app.use('/api/discipline-monitoring', asyncHandler(async (req, res, next) => {
 app.use('/api/office-resources', asyncHandler(async (req, res, next) => {
 
     return officeResourcesRoutes(req, res, next);
+
+}));
+
+app.use('/api/assets-equipment', asyncHandler(async (req, res, next) => {
+
+    return assetsEquipmentRoutes(req, res, next);
 
 }));
 

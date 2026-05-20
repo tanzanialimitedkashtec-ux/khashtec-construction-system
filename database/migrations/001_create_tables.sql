@@ -2415,6 +2415,46 @@ CREATE TABLE IF NOT EXISTS office_resources (
   INDEX idx_assigned_to (assigned_to)
 );
 
+-- Assets & Equipment Management table
+CREATE TABLE IF NOT EXISTS assets_equipment (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  asset_code VARCHAR(50) UNIQUE NOT NULL,
+  asset_name VARCHAR(255) NOT NULL,
+  category ENUM('IT Equipment', 'Office Equipment', 'Heavy Machinery', 'Vehicle', 'Tool', 'Furniture', 'Plant', 'Generator', 'Other') NOT NULL,
+  asset_type VARCHAR(100),
+  description TEXT,
+  serial_number VARCHAR(100),
+  purchase_date DATE,
+  purchase_cost DECIMAL(12,2),
+  current_value DECIMAL(12,2),
+  depreciation_method ENUM('Straight Line', 'Declining Balance', 'Units of Production', 'None') DEFAULT 'Straight Line',
+  useful_life_years INT,
+  `condition` ENUM('New', 'Good', 'Fair', 'Poor', 'Damaged') DEFAULT 'Good',
+  location VARCHAR(255),
+  department VARCHAR(100),
+  status ENUM('Available', 'In Use', 'Maintenance', 'Retired', 'Lost') DEFAULT 'Available',
+  assigned_to INT,
+  assigned_date DATE,
+  expected_return_date DATE,
+  actual_return_date DATE,
+  return_condition ENUM('New', 'Good', 'Fair', 'Poor', 'Damaged'),
+  supplier VARCHAR(255),
+  warranty_expiry DATE,
+  maintenance_schedule JSON,
+  maintenance_notes TEXT,
+  notes TEXT,
+  created_by INT,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  FOREIGN KEY (assigned_to) REFERENCES employees(id) ON DELETE SET NULL,
+  FOREIGN KEY (created_by) REFERENCES users(id) ON DELETE SET NULL,
+  INDEX idx_asset_code (asset_code),
+  INDEX idx_category (category),
+  INDEX idx_status (status),
+  INDEX idx_assigned_to (assigned_to),
+  INDEX idx_department (department)
+);
+
 -- Talent Acquisition table
 CREATE TABLE IF NOT EXISTS talent_acquisition (
   id INT AUTO_INCREMENT PRIMARY KEY,

@@ -29,11 +29,11 @@ router.get('/:id', async (req, res) => {
             LEFT JOIN employee_details ed ON e.id = ed.employee_id 
             WHERE ofr.id = ?
         `, [req.params.id]);
-        const resource = Array.isArray(result) ? result[0] : result;
-        if (resource.length === 0) {
+        const rows = Array.isArray(result) ? result : [];
+        if (!rows || rows.length === 0) {
             return res.status(404).json({ error: 'Office resource not found' });
         }
-        res.json(resource[0]);
+        res.json(rows[0]);
     } catch (error) {
         console.error('Error fetching office resource:', error);
         res.status(500).json({ error: 'Failed to fetch office resource' });
@@ -58,6 +58,14 @@ router.post('/', async (req, res) => {
             created_by
         } = req.body;
 
+        // Basic validation for required fields
+        if (!resource_code || !resource_name || !resource_type) {
+            return res.status(400).json({ error: 'resource_code, resource_name and resource_type are required' });
+        }
+
+        // Avoid FK violations; prefer authenticated user when available
+        const createdBy = (req.user && req.user.id) ? req.user.id : null;
+
         const result = await db.execute(`
             INSERT INTO office_resources (
                 resource_code, resource_name, resource_type, description,
@@ -76,13 +84,20 @@ router.post('/', async (req, res) => {
             condition || 'Good',
             location || null,
             department || null,
-            created_by || null
+            createdBy
         ]);
 
         const insertId = Array.isArray(result) ? result[0].insertId : result.insertId;
         res.status(201).json({ id: insertId, message: 'Office resource created successfully' });
     } catch (error) {
-        console.error('Error creating office resource:', error);
+        // Provide clearer server-side logs; keep client message generic
+        console.error('Error creating office resource:', error && (error.sqlMessage || error.message) || error);
+        if (error && error.code === 'ER_DUP_ENTRY') {
+            return res.status(409).json({ error: 'Resource code already exists' });
+        }
+        if (error && error.code === 'ER_NO_REFERENCED_ROW_2') {
+            return res.status(400).json({ error: 'Invalid reference provided' });
+        }
         res.status(500).json({ error: 'Failed to create office resource' });
     }
 });
