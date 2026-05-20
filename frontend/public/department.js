@@ -2609,27 +2609,23 @@ function displayFilteredPolicies(policies) {
 
     }
 
-    
+    // Update the stats dynamically
+    var pendingCount = policies.filter(function(p) { var s = (p.status || '').toLowerCase(); return !s || s === 'pending'; }).length;
+    var approvedCount = policies.filter(function(p) { return (p.status || '').toLowerCase() === 'approved'; }).length;
+    var revisionCount = policies.filter(function(p) { var s = (p.status || '').toLowerCase(); return s === 'revision requested' || s === 'revision'; }).length;
+    var totalCount = policies.length;
 
-    // Filter for pending policies (handle both lowercase and capitalized status)
-    // If no status field exists, assume policy is pending
-    const pendingPolicies = policies.filter(policy => 
-        !policy.status || policy.status === 'pending' || policy.status === 'Pending'
-    );
-
-    
-
-    if (pendingPolicies.length === 0) {
-
-        container.innerHTML = '<div class="no-policies">No pending policies found matching your search.</div>';
-
-        return;
-
+    var statValues = document.querySelectorAll('.policy-stats .stat-value');
+    if (statValues.length >= 4) {
+        statValues[0].textContent = pendingCount;
+        statValues[1].textContent = approvedCount;
+        statValues[2].textContent = revisionCount;
+        statValues[3].textContent = totalCount;
     }
 
     
 
-    const policiesHTML = pendingPolicies.map(policy => {
+    const policiesHTML = policies.map(policy => {
 
         // Map backend fields to frontend expected fields
 
@@ -2639,13 +2635,36 @@ function displayFilteredPolicies(policies) {
 
         const submissionDate = policy.submissionDate || policy.submitted_date || policy.created_at;
 
-        
+        const status = (policy.status || 'pending').toLowerCase();
+        const statusLabel = status.charAt(0).toUpperCase() + status.slice(1);
+        const statusColor = status === 'approved' ? '#4CAF50' : status === 'rejected' ? '#dc3545' : status === 'revision requested' || status === 'revision' ? '#ffc107' : '#2196F3';
+
+        let actionButtons = '';
+        if (status === 'pending' || !status) {
+            actionButtons = `
+                <button class="action" onclick="approvePolicy('${policy.id}')">Approve Policy</button>
+                <button class="action" onclick="requestPolicyRevision('${policy.id}')" style="background: #ffc107;">Request Revision</button>
+                <button class="action" onclick="rejectPolicy('${policy.id}')" style="background: #dc3545;">Reject</button>
+            `;
+        } else if (status === 'approved') {
+            actionButtons = '<span style="color: #4CAF50; font-weight: bold;">Approved</span>';
+        } else if (status === 'rejected') {
+            actionButtons = '<span style="color: #dc3545; font-weight: bold;">Rejected</span>';
+        } else {
+            actionButtons = `
+                <button class="action" onclick="approvePolicy('${policy.id}')">Approve Policy</button>
+                <button class="action" onclick="rejectPolicy('${policy.id}')" style="background: #dc3545;">Reject</button>
+            `;
+        }
 
         return `
 
-        <div class="policy-item">
+        <div class="policy-item" style="border-left: 4px solid ${statusColor}; margin-bottom: 15px; padding: 15px; background: #f9f9f9; border-radius: 5px;">
 
-            <h5>${policy.title}</h5>
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <h5 style="margin: 0;">${policy.title}</h5>
+                <span style="background: ${statusColor}; color: white; padding: 3px 10px; border-radius: 12px; font-size: 12px;">${statusLabel}</span>
+            </div>
 
             <p>${policy.description}</p>
 
@@ -2661,11 +2680,7 @@ function displayFilteredPolicies(policies) {
 
             <div class="policy-actions">
 
-                <button class="action" onclick="approvePolicy('${policy.id}')">Approve Policy</button>
-
-                <button class="action" onclick="requestPolicyRevision('${policy.id}')" style="background: #ffc107;">Request Revision</button>
-
-                <button class="action" onclick="rejectPolicy('${policy.id}')" style="background: #dc3545;">Reject</button>
+                ${actionButtons}
 
             </div>
 
