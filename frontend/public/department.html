@@ -12301,9 +12301,11 @@ font-weight: bold;
 
     border-collapse: collapse;
 
-    font-size: 9px;
+    font-size: 13px;
 
     background: white;
+
+    table-layout: fixed;
 
 }
 
@@ -12337,7 +12339,11 @@ font-weight: bold;
 
     vertical-align: middle;
 
-    font-size: 9px;
+    font-size: 12px;
+
+    overflow: hidden;
+
+    text-overflow: ellipsis;
 
 }
 
@@ -71646,37 +71652,29 @@ function recordSiteReports(){
 
                 <div class="site-reports-table-container">
 
-                    <table class="site-reports-table">
+                    <table class="site-reports-table" style="width:100%;border-collapse:collapse;table-layout:fixed;font-size:13px;">
 
                         <thead>
 
                             <tr>
 
-                                <th>Report ID</th>
+                                <th style="width:10%;">Report ID</th>
 
-                                <th>Project</th>
+                                <th style="width:14%;">Project</th>
 
-                                <th>Report Date</th>
+                                <th style="width:10%;">Date</th>
 
-                                <th>Supervisor</th>
+                                <th style="width:11%;">Supervisor</th>
 
-                                <th>Workers</th>
+                                <th style="width:7%;">Workers</th>
 
-                                <th>Weather</th>
+                                <th style="width:8%;">Weather</th>
 
-                                <th>Work Completed</th>
+                                <th style="width:18%;">Work Completed</th>
 
-                                <th>Issues/Challenges</th>
+                                <th style="width:14%;">Issues / Safety</th>
 
-                                <th>Safety Incidents</th>
-
-                                <th>Materials Used</th>
-
-                                <th>Equipment Used</th>
-
-                                <th>Next Day's Plan</th>
-
-                                <th>Actions</th>
+                                <th style="width:8%;">Actions</th>
 
                             </tr>
 
@@ -71686,7 +71684,7 @@ function recordSiteReports(){
 
                             <tr>
 
-                                <td colspan="13">
+                                <td colspan="9">
 
                                     <div class="loading">Loading site reports...</div>
 
@@ -72244,9 +72242,6 @@ function displaySiteReports(reports, _retry) {
 
     if (!reportsList) {
 
-        // The tbody is rendered by recordSiteReports() via showContent.
-        // If it's missing, the user likely navigated away while the fetch was in flight,
-        // or the DOM hadn't been painted yet. Retry once on next frame, then bail quietly.
         if (!_retry) {
             return requestAnimationFrame(() => displaySiteReports(reports, true));
         }
@@ -72264,7 +72259,7 @@ function displaySiteReports(reports, _retry) {
 
             <tr>
 
-                <td colspan="13">
+                <td colspan="9">
 
                     <div class="no-records">No site reports found</div>
 
@@ -72286,31 +72281,29 @@ function displaySiteReports(reports, _retry) {
 
         id: report.id,
 
-        reportId: `SR-${report.id}`,
+        reportId: report.reportId || `SR-${report.id}`,
 
-        reportDate: report.report_date || report.submitted_date || report.created_at || new Date().toISOString(),
+        reportDate: report.report_date || report.reportDate || report.submitted_date || report.created_at || new Date().toISOString(),
 
         project: report.project || report.work_title?.replace('Daily Site Report - ', '') || 'Unknown Project',
 
-        projectCode: report.project_code || `prj${String(report.id).padStart(3, '0')}`,
+        supervisor: report.site_supervisor || report.supervisor || report.submitted_by || 'Unknown',
 
-        supervisor: report.supervisor || report.submitted_by || 'Unknown Supervisor',
+        workersCount: report.workers_present || report.workersPresent || report.workers_count || report.workers || 0,
 
-        workersCount: report.workers_count || report.workers || 0,
+        weatherConditions: report.weather_conditions || report.weatherConditions || 'N/A',
 
-        weatherConditions: report.weather_conditions || 'sunny',
+        workCompleted: report.work_completed || report.workCompleted || report.work_description || 'Not specified',
 
-        workCompleted: report.work_completed || report.work_description || 'Not specified',
+        siteIssues: report.issues_challenges || report.site_issues || report.siteIssues || report.issues || 'No issues',
 
-        siteIssues: report.site_issues || report.issues || 'No issues',
+        safetyIncidents: report.safety_incidents || report.safetyIncidents || 'None',
 
-        safetyIncidents: report.safety_incidents || 'None',
+        materialsUsed: report.materials_used || report.materialsUsed || 'Not specified',
 
-        materialsUsed: report.materials_used || 'Not specified',
+        equipmentUsed: report.equipment_used || report.equipmentUsed || 'Not specified',
 
-        equipmentUsed: report.equipment_used || 'Not specified',
-
-        nextDayPlan: report.next_day_plan || 'Not specified'
+        nextDayPlan: report.next_day_plan || report.nextDayPlan || 'Not specified'
 
     }));
 
@@ -72328,73 +72321,31 @@ function displaySiteReports(reports, _retry) {
 
     mappedReports.forEach(report => {
 
-        // Get weather display
+        const weather = String(report.weatherConditions).toLowerCase();
 
-        const weatherDisplay = report.weatherConditions === 'sunny' ? '☀️ Sunny' : 
+        const weatherDisplay = weather === 'sunny' ? '☀️ Sunny' : 
 
-                              report.weatherConditions === 'cloudy' ? '☁️ Cloudy' : 
+                              weather === 'cloudy' ? '☁️ Cloudy' : 
 
-                              report.weatherConditions === 'rainy' ? '🌧️ Rainy' : 
+                              weather === 'rainy' ? '🌧️ Rainy' : 
 
-                              report.weatherConditions === 'windy' ? '💨 Windy' : report.weatherConditions;
-
-        
-
-        // Get safety status
-
-        const safetyStatus = report.safetyIncidents === 'None' || !report.safetyIncidents ? '✅ Clear' : '⚠️ Issues';
-
-        const safetyClass = report.safetyIncidents === 'None' || !report.safetyIncidents ? 'status-clear' : 'status-issues';
+                              weather === 'windy' ? '💨 Windy' : report.weatherConditions;
 
         
 
-        // Truncate text fields for display
+        const workCompleted = report.workCompleted && report.workCompleted.length > 50 ? 
 
-        const workCompleted = report.workCompleted && report.workCompleted.length > 60 ? 
-
-            report.workCompleted.substring(0, 60) + '...' : 
+            report.workCompleted.substring(0, 50) + '...' : 
 
             (report.workCompleted || 'Not specified');
 
         
 
-        const siteIssues = report.siteIssues && report.siteIssues.length > 40 ? 
+        const issuesText = report.siteIssues || 'No issues';
 
-            report.siteIssues.substring(0, 40) + '...' : 
+        const safetyText = report.safetyIncidents || 'None';
 
-            (report.siteIssues || 'No issues');
-
-        
-
-        const safetyIncidents = report.safetyIncidents && report.safetyIncidents.length > 40 ? 
-
-            report.safetyIncidents.substring(0, 40) + '...' : 
-
-            (report.safetyIncidents || 'No incidents');
-
-        
-
-        const materialsUsed = report.materialsUsed && report.materialsUsed.length > 35 ? 
-
-            report.materialsUsed.substring(0, 35) + '...' : 
-
-            (report.materialsUsed || 'Not specified');
-
-        
-
-        const equipmentUsed = report.equipmentUsed && report.equipmentUsed.length > 35 ? 
-
-            report.equipmentUsed.substring(0, 35) + '...' : 
-
-            (report.equipmentUsed || 'Not specified');
-
-        
-
-        const nextDayPlan = report.nextDayPlan && report.nextDayPlan.length > 50 ? 
-
-            report.nextDayPlan.substring(0, 50) + '...' : 
-
-            (report.nextDayPlan || 'Not specified');
+        const hasIssues = issuesText !== 'No issues' || (safetyText !== 'None' && safetyText !== 'No incidents');
 
         
 
@@ -72404,117 +72355,51 @@ function displaySiteReports(reports, _retry) {
 
                 <td>
 
-                    <div class="report-id-info">
-
-                        <div class="report-id">${report.reportId}</div>
-
-                        <div class="report-date">${new Date(report.reportDate).toLocaleDateString()}</div>
-
-                    </div>
+                    <div style="font-weight:600;font-size:12px;">${report.reportId}</div>
 
                 </td>
 
                 <td>
 
-                    <div class="project-info">
-
-                        <div class="project-name">${report.project}</div>
-
-                    </div>
+                    <div style="font-weight:500;font-size:12px;" title="${report.project}">${report.project}</div>
 
                 </td>
 
                 <td>
 
-                    <div class="date-info">
-
-                        <div class="report-date">${new Date(report.reportDate).toLocaleDateString()}</div>
-
-                    </div>
+                    <div style="font-size:12px;">${new Date(report.reportDate).toLocaleDateString()}</div>
 
                 </td>
 
                 <td>
 
-                    <div class="supervisor-info">
-
-                        <div class="supervisor-name">${report.supervisor}</div>
-
-                    </div>
+                    <div style="font-size:12px;">${report.supervisor}</div>
 
                 </td>
 
                 <td>
 
-                    <div class="workers-info">
-
-                        <div class="workers-count">${report.workersPresent} Workers</div>
-
-                    </div>
+                    <div style="font-size:12px;font-weight:600;">${report.workersCount}</div>
 
                 </td>
 
                 <td>
 
-                    <span class="weather-badge">${weatherDisplay}</span>
+                    <span class="weather-badge" style="font-size:11px;">${weatherDisplay}</span>
 
                 </td>
 
                 <td>
 
-                    <div class="work-info">
-
-                        <div class="work-completed" title="${report.workCompleted || 'Not specified'}">${workCompleted}</div>
-
-                    </div>
+                    <div style="font-size:11px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${report.workCompleted || 'Not specified'}">${workCompleted}</div>
 
                 </td>
 
                 <td>
 
-                    <div class="issues-info">
+                    <div style="font-size:11px;" title="Issues: ${issuesText} | Safety: ${safetyText}">
 
-                        <div class="site-issues" title="${report.siteIssues || 'No issues'}">${siteIssues}</div>
-
-                    </div>
-
-                </td>
-
-                <td>
-
-                    <div class="safety-info">
-
-                        <div class="safety-incidents" title="${report.safetyIncidents || 'No incidents'}">${safetyIncidents}</div>
-
-                    </div>
-
-                </td>
-
-                <td>
-
-                    <div class="materials-info">
-
-                        <div class="materials-used" title="${report.materialsUsed || 'Not specified'}">${materialsUsed}</div>
-
-                    </div>
-
-                </td>
-
-                <td>
-
-                    <div class="equipment-info">
-
-                        <div class="equipment-used" title="${report.equipmentUsed || 'Not specified'}">${equipmentUsed}</div>
-
-                    </div>
-
-                </td>
-
-                <td>
-
-                    <div class="nextday-info">
-
-                        <div class="next-day-plan" title="${report.nextDayPlan || 'Not specified'}">${nextDayPlan}</div>
+                        ${hasIssues ? '<span style="color:#dc3545;">⚠️ ' + (issuesText !== 'No issues' ? issuesText.substring(0, 30) : safetyText.substring(0, 30)) + '</span>' : '<span style="color:#28a745;">No issues</span>'}
 
                     </div>
 
