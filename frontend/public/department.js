@@ -54454,17 +54454,47 @@ async function loadPaymentData() {
 
 async function loadPaymentTrackingData() {
 
-    const response = await KashTecAPI.get('/payment-tracking');
+    // Get transaction data from statistics endpoint which has recent_transactions
+    const response = await KashTecAPI.get('/payment-tracking/statistics');
 
     
 
-    if (response.success) {
-
-        updatePaymentTable(response.tracking || response.data || []);
+    if (response && response.success) {
+        const stats = response.statistics || (response.data && response.data.statistics) || {};
+        const recentTransactions = stats.recent_transactions || [];
+        
+        // Transform transaction data to match table expectations
+        const transformedPayments = recentTransactions.map((transaction, index) => {
+            const isPaid = transaction.payment_status === 'completed';
+            const amount = parseFloat(transaction.amount) || 0;
+            
+            return {
+                sale_id: transaction.id || (index + 1),
+                sale_reference: transaction.tracking_reference || `SAL${String(index + 1).padStart(5, '0')}`,
+                client_name: transaction.transaction_type === 'sale' ? 
+                    (transaction.paid_by || 'Client') : 
+                    (transaction.transaction_type === 'purchase' ? 'Vendor' : 'Other'),
+                client_email: '',
+                property_title: transaction.description || `Transaction - ${transaction.transaction_type}`,
+                property_location: transaction.category || 'N/A',
+                total_amount: amount,
+                paid_amount: isPaid ? amount : 0,
+                outstanding_balance: isPaid ? 0 : amount,
+                installment_amount: Math.ceil(amount / 3), // Default to 3 installments
+                next_payment_date: transaction.payment_date || transaction.due_date,
+                payment_status: transaction.payment_status,
+                payment_method: transaction.payment_method,
+                paid_by: transaction.paid_by,
+                paid_to: transaction.paid_to,
+                transaction_type: transaction.transaction_type
+            };
+        });
+        
+        updatePaymentTable(transformedPayments);
 
     } else {
 
-        throw new Error(response.error || 'Failed to load payment data');
+        throw new Error(response ? (response.error || 'Failed to load payment data') : 'No response from server');
 
     }
 
