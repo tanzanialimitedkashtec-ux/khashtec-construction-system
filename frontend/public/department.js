@@ -72707,252 +72707,254 @@ function showSeniorRoles() {
 
 
 
-// Function to show Suggestions Management form
-
-function showSuggestionsManagement() {
-    const contentArea = document.getElementById('contentArea');
-    if (contentArea) {
-        contentArea.innerHTML = `
-            <h3>Suggestions Management</h3>
-            <div id="suggestionsTableContainer" style="margin-top: 16px;">
-                <p>Loading suggestions...</p>
-            </div>
-        `;
-    }
-
-    const formHTML = `
-
-        <div class="form-overlay">
-
-            <div class="form-container">
-
-                <div class="form-header">
-
-                    <h3>Suggestions Management</h3>
-
-                    <button onclick="closeForm()" class="close-btn">&times;</button>
-
-                </div>
-
-                <form id="suggestionsForm">
-
-                    <div class="form-group">
-
-                        <label for="suggestionTitle">Suggestion Title:</label>
-
-                        <input type="text" id="suggestionTitle" name="suggestionTitle" required>
-
-                    </div>
-
-                    <div class="form-group">
-
-                        <label for="suggestionCategory">Category:</label>
-
-                        <select id="suggestionCategory" name="suggestionCategory" required>
-
-                            <option value="">Select Category</option>
-
-                            <option value="Process Improvement">Process Improvement</option>
-
-                            <option value="Safety">Safety</option>
-
-                            <option value="Cost Saving">Cost Saving</option>
-
-                            <option value="Technology">Technology</option>
-
-                            <option value="HR Policy">HR Policy</option>
-
-                            <option value="Other">Other</option>
-
-                        </select>
-
-                    </div>
-
-                    <div class="form-group">
-
-                        <label for="suggestionDescription">Description:</label>
-
-                        <textarea id="suggestionDescription" name="suggestionDescription" rows="4" required></textarea>
-
-                    </div>
-
-                    <div class="form-group">
-
-                        <label for="suggestionSubmittedBy">Submitted By:</label>
-
-                        <input type="text" id="suggestionSubmittedBy" name="suggestionSubmittedBy" required>
-
-                    </div>
-
-                    <div class="form-group">
-
-                        <label for="suggestionDepartment">Department:</label>
-
-                        <select id="suggestionDepartment" name="suggestionDepartment" required>
-
-                            <option value="">Select Department</option>
-
-                            <option value="HR">HR</option>
-
-                            <option value="FINANCE">Finance</option>
-
-                            <option value="PROJECT">Project</option>
-
-                            <option value="HSE">HSE</option>
-
-                            <option value="REALESTATE">Real Estate</option>
-
-                            <option value="ADMIN">Admin</option>
-
-                        </select>
-
-                    </div>
-
-                    <div class="form-group">
-
-                        <label for="suggestionPriority">Priority:</label>
-
-                        <select id="suggestionPriority" name="suggestionPriority" required>
-
-                            <option value="">Select Priority</option>
-
-                            <option value="Low">Low</option>
-
-                            <option value="Medium">Medium</option>
-
-                            <option value="High">High</option>
-
-                            <option value="Critical">Critical</option>
-
-                        </select>
-
-                    </div>
-
-                    <div class="form-group">
-
-                        <label for="suggestionStatus">Status:</label>
-
-                        <select id="suggestionStatus" name="suggestionStatus" required>
-
-                            <option value="">Select Status</option>
-
-                            <option value="Submitted">Submitted</option>
-
-                            <option value="Under Review">Under Review</option>
-
-                            <option value="Approved">Approved</option>
-
-                            <option value="Rejected">Rejected</option>
-
-                            <option value="Implemented">Implemented</option>
-
-                        </select>
-
-                    </div>
-
-                    <div class="form-actions">
-
-                        <button type="submit" class="btn btn-primary">Submit</button>
-
-                        <button type="button" onclick="closeForm()" class="btn btn-secondary">Cancel</button>
-
-                    </div>
-
-                </form>
-
-            </div>
-
-        </div>
-
-    `;
-
-    document.body.insertAdjacentHTML('beforeend', formHTML);
-
-    
-
-    // Add form submission handler
-
-    setTimeout(() => {
-
-        const suggestionsForm = document.getElementById('suggestionsForm');
-
-        if (suggestionsForm) {
-
-            suggestionsForm.addEventListener('submit', async function(e) {
-
-                console.log('🎯 Suggestions form submitted');
-
-                e.preventDefault();
-
-                
-
-                const formData = {
-
-                    title: document.getElementById('suggestionTitle').value,
-
-                    category: document.getElementById('suggestionCategory').value,
-
-                    description: document.getElementById('suggestionDescription').value,
-
-                    submittedBy: document.getElementById('suggestionSubmittedBy').value,
-
-                    department: document.getElementById('suggestionDepartment').value,
-
-                    priority: document.getElementById('suggestionPriority').value,
-
-                    status: document.getElementById('suggestionStatus').value,
-
-                    createdAt: new Date().toISOString()
-
-                };
-
-                
-
-                try {
-
-                    const submitBtn = suggestionsForm.querySelector('button[type="submit"]');
-
-                    const originalText = submitBtn.textContent;
-
-                    submitBtn.textContent = 'Saving...';
-
-                    submitBtn.disabled = true;
-
-                    
-
-                    await window.apiService.saveSuggestion(formData);
-                    await loadSuggestionsTable();
-
-                    showNotification('Suggestion saved successfully!', 'success');
-
-                    closeForm();
-
-                    suggestionsForm.reset();
-
-                    
-
-                } catch (error) {
-
-                    console.error('Error saving suggestion:', error);
-
-                    showNotification('Error saving suggestion. Please try again.', 'error');
-
-                } finally {
-
-                    const submitBtn = suggestionsForm.querySelector('button[type="submit"]');
-
-                    submitBtn.textContent = 'Submit';
-
-                    submitBtn.disabled = false;
-
-                }
-
-            });
-
+// Function to show Suggestions Management with table (styled like Risk Management)
+
+async function showSuggestionsManagement() {
+    try {
+        if (!window.apiService) {
+            console.error('apiService not available');
+            showContent('<div class="card"><h3>Suggestions Management</h3><p>API service not available</p></div>');
+            return;
         }
 
-    }, 100);
+        let suggestions = [];
+        try {
+            const response = await window.apiService.getSuggestions();
+            suggestions = (response && response.data) || response || [];
+        } catch (fetchErr) {
+            console.error('Error fetching suggestions:', fetchErr);
+        }
 
+        let html = `
+            <div class="card">
+                <h3>Suggestions Management</h3>
+                <button onclick="showSuggestionForm()">+ New Suggestion</button>
+                <table style="width: 100%; margin-top: 20px; border-collapse: collapse;">
+                    <thead>
+                        <tr style="background: #f4f4f4;">
+                            <th style="padding: 10px; border: 1px solid #ddd;">#</th>
+                            <th style="padding: 10px; border: 1px solid #ddd;">Title</th>
+                            <th style="padding: 10px; border: 1px solid #ddd;">Category</th>
+                            <th style="padding: 10px; border: 1px solid #ddd;">Priority</th>
+                            <th style="padding: 10px; border: 1px solid #ddd;">Department</th>
+                            <th style="padding: 10px; border: 1px solid #ddd;">Submitted By</th>
+                            <th style="padding: 10px; border: 1px solid #ddd;">Status</th>
+                            <th style="padding: 10px; border: 1px solid #ddd;">Date</th>
+                            <th style="padding: 10px; border: 1px solid #ddd;">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+        `;
+
+        if (suggestions.length === 0) {
+            html += `
+                <tr>
+                    <td colspan="9" style="padding: 20px; border: 1px solid #ddd; text-align: center; color: #888;">No suggestions found. Click "+ New Suggestion" to add one.</td>
+                </tr>
+            `;
+        } else {
+            suggestions.forEach((s, index) => {
+                const priorityColor = s.priority === 'Critical' ? '#dc3545' : s.priority === 'High' ? '#fd7e14' : s.priority === 'Medium' ? '#ffc107' : '#28a745';
+                const statusColor = s.status === 'Implemented' ? '#28a745' : s.status === 'Approved' ? '#17a2b8' : s.status === 'Rejected' ? '#dc3545' : s.status === 'Under Review' ? '#ffc107' : '#6c757d';
+                const dateStr = s.created_at ? new Date(s.created_at).toLocaleDateString() : s.submitted_date ? new Date(s.submitted_date).toLocaleDateString() : '-';
+                html += `
+                    <tr>
+                        <td style="padding: 10px; border: 1px solid #ddd;">${index + 1}</td>
+                        <td style="padding: 10px; border: 1px solid #ddd;">${s.title || ''}</td>
+                        <td style="padding: 10px; border: 1px solid #ddd;">${s.category || ''}</td>
+                        <td style="padding: 10px; border: 1px solid #ddd;"><span style="background: ${priorityColor}; color: #fff; padding: 2px 8px; border-radius: 4px; font-size: 12px;">${s.priority || ''}</span></td>
+                        <td style="padding: 10px; border: 1px solid #ddd;">${s.department || ''}</td>
+                        <td style="padding: 10px; border: 1px solid #ddd;">${s.submitted_by_name || s.submittedBy || ''}</td>
+                        <td style="padding: 10px; border: 1px solid #ddd;"><span style="background: ${statusColor}; color: #fff; padding: 2px 8px; border-radius: 4px; font-size: 12px;">${s.status || ''}</span></td>
+                        <td style="padding: 10px; border: 1px solid #ddd;">${dateStr}</td>
+                        <td style="padding: 10px; border: 1px solid #ddd;">
+                            <button onclick="viewSuggestion(${s.id})">View</button>
+                            <button onclick="editSuggestion(${s.id})">Edit</button>
+                            <button onclick="deleteSuggestion(${s.id})" style="background: #dc3545; color: #fff; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer;">Delete</button>
+                        </td>
+                    </tr>
+                `;
+            });
+        }
+
+        html += `
+                    </tbody>
+                </table>
+            </div>
+            <div id="suggestionFormContainer" class="card hidden"></div>
+        `;
+
+        showContent(html);
+    } catch (error) {
+        console.error('Error loading suggestions:', error);
+        showContent('<div class="card"><h3>Suggestions Management</h3><p>Error loading suggestions. Please try again.</p></div>');
+    }
+}
+
+async function loadSuggestionsTable() {
+    await showSuggestionsManagement();
+}
+
+function showSuggestionForm(suggestionId = null) {
+    const container = document.getElementById('suggestionFormContainer');
+    if (!container) return;
+    container.classList.remove('hidden');
+
+    const html = `
+        <h4>${suggestionId ? 'Edit Suggestion' : 'New Suggestion'}</h4>
+        <form onsubmit="saveSuggestion(event, ${suggestionId})">
+            <label>Suggestion Title:</label>
+            <input type="text" id="suggestionTitle" required>
+            <label>Category:</label>
+            <select id="suggestionCategory" required>
+                <option value="">Select Category</option>
+                <option value="Process Improvement">Process Improvement</option>
+                <option value="Safety">Safety</option>
+                <option value="Cost Saving">Cost Saving</option>
+                <option value="Technology">Technology</option>
+                <option value="HR Policy">HR Policy</option>
+                <option value="Other">Other</option>
+            </select>
+            <label>Description:</label>
+            <textarea id="suggestionDescription" rows="4" required></textarea>
+            <label>Submitted By:</label>
+            <input type="text" id="suggestionSubmittedBy" required>
+            <label>Department:</label>
+            <select id="suggestionDepartment" required>
+                <option value="">Select Department</option>
+                <option value="HR">HR</option>
+                <option value="FINANCE">Finance</option>
+                <option value="PROJECT">Project</option>
+                <option value="HSE">HSE</option>
+                <option value="REALESTATE">Real Estate</option>
+                <option value="ADMIN">Admin</option>
+            </select>
+            <label>Priority:</label>
+            <select id="suggestionPriority" required>
+                <option value="">Select Priority</option>
+                <option value="Low">Low</option>
+                <option value="Medium">Medium</option>
+                <option value="High">High</option>
+                <option value="Critical">Critical</option>
+            </select>
+            <label>Status:</label>
+            <select id="suggestionStatus" required>
+                <option value="">Select Status</option>
+                <option value="Submitted">Submitted</option>
+                <option value="Under Review">Under Review</option>
+                <option value="Approved">Approved</option>
+                <option value="Rejected">Rejected</option>
+                <option value="Implemented">Implemented</option>
+            </select>
+            <button type="submit">Save Suggestion</button>
+            <button type="button" onclick="hideSuggestionForm()">Cancel</button>
+        </form>
+    `;
+
+    container.innerHTML = html;
+
+    if (suggestionId) {
+        loadSuggestionForEdit(suggestionId);
+    }
+}
+
+function hideSuggestionForm() {
+    const container = document.getElementById('suggestionFormContainer');
+    if (container) container.classList.add('hidden');
+}
+
+async function loadSuggestionForEdit(id) {
+    try {
+        const response = await window.apiService.get('/suggestions/' + id);
+        const s = (response && response.data) || response;
+        if (s) {
+            if (document.getElementById('suggestionTitle')) document.getElementById('suggestionTitle').value = s.title || '';
+            if (document.getElementById('suggestionCategory')) document.getElementById('suggestionCategory').value = s.category || '';
+            if (document.getElementById('suggestionDescription')) document.getElementById('suggestionDescription').value = s.description || '';
+            if (document.getElementById('suggestionSubmittedBy')) document.getElementById('suggestionSubmittedBy').value = s.submitted_by_name || s.submittedBy || '';
+            if (document.getElementById('suggestionDepartment')) document.getElementById('suggestionDepartment').value = s.department || '';
+            if (document.getElementById('suggestionPriority')) document.getElementById('suggestionPriority').value = s.priority || '';
+            if (document.getElementById('suggestionStatus')) document.getElementById('suggestionStatus').value = s.status || '';
+        }
+    } catch (error) {
+        console.error('Error loading suggestion for edit:', error);
+    }
+}
+
+async function saveSuggestion(event, suggestionId) {
+    event.preventDefault();
+
+    const formData = {
+        title: document.getElementById('suggestionTitle').value,
+        category: document.getElementById('suggestionCategory').value,
+        description: document.getElementById('suggestionDescription').value,
+        submittedBy: document.getElementById('suggestionSubmittedBy').value,
+        department: document.getElementById('suggestionDepartment').value,
+        priority: document.getElementById('suggestionPriority').value,
+        status: document.getElementById('suggestionStatus').value,
+        createdAt: new Date().toISOString()
+    };
+
+    try {
+        if (suggestionId) {
+            await window.apiService.updateSuggestion(suggestionId, formData);
+        } else {
+            await window.apiService.saveSuggestion(formData);
+        }
+        hideSuggestionForm();
+        await showSuggestionsManagement();
+        showNotification('Suggestion saved successfully!', 'success');
+    } catch (error) {
+        console.error('Error saving suggestion:', error);
+        showNotification('Error saving suggestion. Please try again.', 'error');
+    }
+}
+
+function viewSuggestion(id) {
+    if (!window.apiService) return;
+    window.apiService.get('/suggestions/' + id).then(response => {
+        const s = (response && response.data) || response;
+        const dateStr = s.created_at ? new Date(s.created_at).toLocaleDateString() : s.submitted_date ? new Date(s.submitted_date).toLocaleDateString() : '-';
+        const html = `
+            <div class="card">
+                <h3>Suggestion Details</h3>
+                <table style="width: 100%; border-collapse: collapse;">
+                    <tr><td style="padding: 8px; border: 1px solid #ddd; font-weight: bold;">Title</td><td style="padding: 8px; border: 1px solid #ddd;">${s.title || ''}</td></tr>
+                    <tr><td style="padding: 8px; border: 1px solid #ddd; font-weight: bold;">Category</td><td style="padding: 8px; border: 1px solid #ddd;">${s.category || ''}</td></tr>
+                    <tr><td style="padding: 8px; border: 1px solid #ddd; font-weight: bold;">Description</td><td style="padding: 8px; border: 1px solid #ddd;">${s.description || ''}</td></tr>
+                    <tr><td style="padding: 8px; border: 1px solid #ddd; font-weight: bold;">Priority</td><td style="padding: 8px; border: 1px solid #ddd;">${s.priority || ''}</td></tr>
+                    <tr><td style="padding: 8px; border: 1px solid #ddd; font-weight: bold;">Department</td><td style="padding: 8px; border: 1px solid #ddd;">${s.department || ''}</td></tr>
+                    <tr><td style="padding: 8px; border: 1px solid #ddd; font-weight: bold;">Submitted By</td><td style="padding: 8px; border: 1px solid #ddd;">${s.submitted_by_name || s.submittedBy || ''}</td></tr>
+                    <tr><td style="padding: 8px; border: 1px solid #ddd; font-weight: bold;">Status</td><td style="padding: 8px; border: 1px solid #ddd;">${s.status || ''}</td></tr>
+                    <tr><td style="padding: 8px; border: 1px solid #ddd; font-weight: bold;">Date</td><td style="padding: 8px; border: 1px solid #ddd;">${dateStr}</td></tr>
+                </table>
+                <button onclick="showSuggestionsManagement()" style="margin-top: 15px;">Back to Suggestions</button>
+                <button onclick="editSuggestion(${s.id})" style="margin-top: 15px;">Edit</button>
+            </div>
+        `;
+        showContent(html);
+    }).catch(error => {
+        console.error('Error viewing suggestion:', error);
+        showNotification('Error loading suggestion details.', 'error');
+    });
+}
+
+function editSuggestion(id) {
+    showSuggestionsManagement().then(() => {
+        showSuggestionForm(id);
+    });
+}
+
+async function deleteSuggestion(id) {
+    if (!confirm('Are you sure you want to delete this suggestion?')) return;
+    try {
+        await window.apiService.deleteSuggestion(id);
+        showNotification('Suggestion deleted successfully!', 'success');
+        await showSuggestionsManagement();
+    } catch (error) {
+        console.error('Error deleting suggestion:', error);
+        showNotification('Error deleting suggestion. Please try again.', 'error');
+    }
 }
 
 
