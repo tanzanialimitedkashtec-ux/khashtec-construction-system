@@ -30,10 +30,11 @@ router.get('/:id', async (req, res) => {
             WHERE ofr.id = ?
         `, [req.params.id]);
         const rows = Array.isArray(result) ? result : [];
-        if (!rows || rows.length === 0) {
+        const resource = Array.isArray(rows[0]) ? rows[0][0] : rows[0];
+        if (!resource) {
             return res.status(404).json({ error: 'Office resource not found' });
         }
-        res.json(rows[0]);
+        res.json(resource);
     } catch (error) {
         console.error('Error fetching office resource:', error);
         res.status(500).json({ error: 'Failed to fetch office resource' });
@@ -70,7 +71,7 @@ router.post('/', async (req, res) => {
             INSERT INTO office_resources (
                 resource_code, resource_name, resource_type, description,
                 serial_number, purchase_date, purchase_cost, current_value,
-                condition, location, department, created_by
+                \`condition\`, location, department, created_by
             ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         `, [
             resource_code,
@@ -131,7 +132,7 @@ router.put('/:id', async (req, res) => {
             UPDATE office_resources SET
                 resource_code = ?, resource_name = ?, resource_type = ?,
                 description = ?, serial_number = ?, purchase_date = ?,
-                purchase_cost = ?, current_value = ?, condition = ?,
+                purchase_cost = ?, current_value = ?, \`condition\` = ?,
                 location = ?, department = ?, status = ?,
                 assigned_to = ?, assigned_date = ?, expected_return_date = ?,
                 actual_return_date = ?, return_condition = ?,
@@ -252,7 +253,7 @@ router.put('/:id/complete-maintenance', async (req, res) => {
         await db.execute(`
             UPDATE office_resources SET
                 status = 'Available',
-                condition = ?,
+                \`condition\` = ?,
                 maintenance_notes = NULL,
                 notes = ?
             WHERE id = ?
