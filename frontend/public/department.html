@@ -51355,13 +51355,13 @@ function manageDrivers() {
 
     // Load driver records when the page loads
 
-    loadDrivers();
+    loadDriversForTable();
 
 }
 
 
 
-async function loadDrivers() {
+async function loadDriversForTable() {
 
     try {
 
@@ -52131,7 +52131,7 @@ async function deleteDriver(driverId) {
 
             customAlert(`Driver ${driverId} deleted successfully!`, 'Success', 'success');
 
-            loadDriverRecords();
+            loadDriversForTable();
 
         } catch (error) {
 
@@ -87099,7 +87099,7 @@ async function updateDriver(driverId) {
 
         document.querySelector('.modal-overlay').remove();
 
-        loadDriverRecords(); // Refresh the driver list
+        loadDriversForTable(); // Refresh the driver list
 
     } catch (error) {
 
