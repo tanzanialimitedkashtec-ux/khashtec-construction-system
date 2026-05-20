@@ -153,7 +153,30 @@ router.put('/:id', async (req, res) => {
 
         const currentRows = Array.isArray(currentResult) ? currentResult : [];
         if (currentRows.length === 0) {
-            return res.status(404).json({ error: 'NSSF registration not found' });
+            // Record may come from sample/placeholder data returned by GET.
+            // Insert a new real record instead of returning 404.
+            const regNumber = `NSSF-${Date.now().toString().slice(-6)}`;
+            const insertResult = await db.execute(`
+                INSERT INTO nssf_registration (
+                    registration_number, employee_id, nssf_number, registration_date,
+                    employer_contribution_rate, employee_contribution_rate, monthly_salary,
+                    monthly_contribution, status, notes, created_by
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            `, [
+                regNumber,
+                employee_id || null,
+                nssf_number || null,
+                registration_date || new Date().toISOString().slice(0, 10),
+                employer_contribution_rate || 10.00,
+                employee_contribution_rate || 10.00,
+                monthly_salary || null,
+                monthly_contribution || null,
+                status || 'Active',
+                notes || null,
+                req.body.created_by || null
+            ]);
+            const insertId = Array.isArray(insertResult) ? (insertResult[0]?.insertId || insertResult.insertId) : insertResult.insertId;
+            return res.status(201).json({ id: insertId, registration_number: regNumber, message: 'NSSF registration created successfully' });
         }
 
         const current = currentRows[0];
