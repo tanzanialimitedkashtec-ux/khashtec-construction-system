@@ -1300,18 +1300,246 @@ function showContent(html) {
     }
 }
 
-// Placeholder view/edit functions (to be implemented)
-function viewClaim(id) { console.log('View claim:', id); }
+// ===== VIEW / EDIT HELPER FUNCTIONS =====
+
+function viewClaim(id) {
+    if (!window.apiService) return;
+    window.apiService.get(`/claims-management/${id}`).then(claim => {
+        const html = `
+            <div class="card">
+                <h3>Claim Details</h3>
+                <table style="width: 100%; border-collapse: collapse;">
+                    <tr><td style="padding: 8px; border: 1px solid #ddd; font-weight: bold;">Claim Number</td><td style="padding: 8px; border: 1px solid #ddd;">${claim.claim_number || ''}</td></tr>
+                    <tr><td style="padding: 8px; border: 1px solid #ddd; font-weight: bold;">Employee</td><td style="padding: 8px; border: 1px solid #ddd;">${claim.full_name || ''}</td></tr>
+                    <tr><td style="padding: 8px; border: 1px solid #ddd; font-weight: bold;">Claim Type</td><td style="padding: 8px; border: 1px solid #ddd;">${claim.claim_type || ''}</td></tr>
+                    <tr><td style="padding: 8px; border: 1px solid #ddd; font-weight: bold;">Title</td><td style="padding: 8px; border: 1px solid #ddd;">${claim.title || ''}</td></tr>
+                    <tr><td style="padding: 8px; border: 1px solid #ddd; font-weight: bold;">Description</td><td style="padding: 8px; border: 1px solid #ddd;">${claim.description || ''}</td></tr>
+                    <tr><td style="padding: 8px; border: 1px solid #ddd; font-weight: bold;">Claim Date</td><td style="padding: 8px; border: 1px solid #ddd;">${claim.claim_date || ''}</td></tr>
+                    <tr><td style="padding: 8px; border: 1px solid #ddd; font-weight: bold;">Incident Date</td><td style="padding: 8px; border: 1px solid #ddd;">${claim.incident_date || ''}</td></tr>
+                    <tr><td style="padding: 8px; border: 1px solid #ddd; font-weight: bold;">Incident Location</td><td style="padding: 8px; border: 1px solid #ddd;">${claim.incident_location || ''}</td></tr>
+                    <tr><td style="padding: 8px; border: 1px solid #ddd; font-weight: bold;">Amount Claimed</td><td style="padding: 8px; border: 1px solid #ddd;">${claim.amount_claimed || ''}</td></tr>
+                    <tr><td style="padding: 8px; border: 1px solid #ddd; font-weight: bold;">Priority</td><td style="padding: 8px; border: 1px solid #ddd;">${claim.priority || ''}</td></tr>
+                    <tr><td style="padding: 8px; border: 1px solid #ddd; font-weight: bold;">Status</td><td style="padding: 8px; border: 1px solid #ddd;">${claim.status || ''}</td></tr>
+                    <tr><td style="padding: 8px; border: 1px solid #ddd; font-weight: bold;">Witness Names</td><td style="padding: 8px; border: 1px solid #ddd;">${claim.witness_names || ''}</td></tr>
+                </table>
+                <button onclick="editClaim(${id})" style="margin-top: 10px;">Edit</button>
+                <button onclick="loadClaimsManagement()" style="margin-top: 10px;">Back to List</button>
+            </div>
+        `;
+        showContent(html);
+    }).catch(err => {
+        console.error('Error viewing claim:', err);
+        customAlert('Error loading claim details', 'Error', 'error');
+    });
+}
+
 function editClaim(id) { showClaimForm(id); }
-function viewNssf(id) { console.log('View NSSF:', id); }
+
+function viewNssf(id) {
+    if (!window.apiService) return;
+    window.apiService.get(`/nssf-registration/${id}`).then(reg => {
+        const html = `
+            <div class="card">
+                <h3>NSSF Registration Details</h3>
+                <table style="width: 100%; border-collapse: collapse;">
+                    <tr><td style="padding: 8px; border: 1px solid #ddd; font-weight: bold;">Registration Number</td><td style="padding: 8px; border: 1px solid #ddd;">${reg.registration_number || ''}</td></tr>
+                    <tr><td style="padding: 8px; border: 1px solid #ddd; font-weight: bold;">Employee</td><td style="padding: 8px; border: 1px solid #ddd;">${reg.full_name || ''}</td></tr>
+                    <tr><td style="padding: 8px; border: 1px solid #ddd; font-weight: bold;">NSSF Number</td><td style="padding: 8px; border: 1px solid #ddd;">${reg.nssf_number || ''}</td></tr>
+                    <tr><td style="padding: 8px; border: 1px solid #ddd; font-weight: bold;">Registration Date</td><td style="padding: 8px; border: 1px solid #ddd;">${reg.registration_date || ''}</td></tr>
+                    <tr><td style="padding: 8px; border: 1px solid #ddd; font-weight: bold;">Employer Contribution Rate (%)</td><td style="padding: 8px; border: 1px solid #ddd;">${reg.employer_contribution_rate || ''}</td></tr>
+                    <tr><td style="padding: 8px; border: 1px solid #ddd; font-weight: bold;">Employee Contribution Rate (%)</td><td style="padding: 8px; border: 1px solid #ddd;">${reg.employee_contribution_rate || ''}</td></tr>
+                    <tr><td style="padding: 8px; border: 1px solid #ddd; font-weight: bold;">Monthly Salary</td><td style="padding: 8px; border: 1px solid #ddd;">${reg.monthly_salary || ''}</td></tr>
+                    <tr><td style="padding: 8px; border: 1px solid #ddd; font-weight: bold;">Monthly Contribution</td><td style="padding: 8px; border: 1px solid #ddd;">${reg.monthly_contribution || ''}</td></tr>
+                    <tr><td style="padding: 8px; border: 1px solid #ddd; font-weight: bold;">Status</td><td style="padding: 8px; border: 1px solid #ddd;">${reg.status || ''}</td></tr>
+                    <tr><td style="padding: 8px; border: 1px solid #ddd; font-weight: bold;">Total Contributions</td><td style="padding: 8px; border: 1px solid #ddd;">${reg.total_contributions || ''}</td></tr>
+                </table>
+                <button onclick="editNssf(${id})" style="margin-top: 10px;">Edit</button>
+                <button onclick="loadNssfRegistration()" style="margin-top: 10px;">Back to List</button>
+            </div>
+        `;
+        showContent(html);
+    }).catch(err => {
+        console.error('Error viewing NSSF registration:', err);
+        customAlert('Error loading NSSF registration details', 'Error', 'error');
+    });
+}
+
 function editNssf(id) { showNssfForm(id); }
-function viewDiscipline(id) { console.log('View discipline:', id); }
+
+function viewDiscipline(id) {
+    if (!window.apiService) return;
+    window.apiService.get(`/discipline-monitoring/${id}`).then(disc => {
+        const html = `
+            <div class="card">
+                <h3>Discipline Case Details</h3>
+                <table style="width: 100%; border-collapse: collapse;">
+                    <tr><td style="padding: 8px; border: 1px solid #ddd; font-weight: bold;">Case Number</td><td style="padding: 8px; border: 1px solid #ddd;">${disc.case_number || ''}</td></tr>
+                    <tr><td style="padding: 8px; border: 1px solid #ddd; font-weight: bold;">Employee</td><td style="padding: 8px; border: 1px solid #ddd;">${disc.full_name || ''}</td></tr>
+                    <tr><td style="padding: 8px; border: 1px solid #ddd; font-weight: bold;">Incident Type</td><td style="padding: 8px; border: 1px solid #ddd;">${disc.incident_type || ''}</td></tr>
+                    <tr><td style="padding: 8px; border: 1px solid #ddd; font-weight: bold;">Incident Date</td><td style="padding: 8px; border: 1px solid #ddd;">${disc.incident_date || ''}</td></tr>
+                    <tr><td style="padding: 8px; border: 1px solid #ddd; font-weight: bold;">Incident Location</td><td style="padding: 8px; border: 1px solid #ddd;">${disc.incident_location || ''}</td></tr>
+                    <tr><td style="padding: 8px; border: 1px solid #ddd; font-weight: bold;">Description</td><td style="padding: 8px; border: 1px solid #ddd;">${disc.description || ''}</td></tr>
+                    <tr><td style="padding: 8px; border: 1px solid #ddd; font-weight: bold;">Severity</td><td style="padding: 8px; border: 1px solid #ddd;">${disc.severity || ''}</td></tr>
+                    <tr><td style="padding: 8px; border: 1px solid #ddd; font-weight: bold;">Reported By</td><td style="padding: 8px; border: 1px solid #ddd;">${disc.reporter_name || ''}</td></tr>
+                    <tr><td style="padding: 8px; border: 1px solid #ddd; font-weight: bold;">Witnesses</td><td style="padding: 8px; border: 1px solid #ddd;">${disc.witnesses || ''}</td></tr>
+                    <tr><td style="padding: 8px; border: 1px solid #ddd; font-weight: bold;">Status</td><td style="padding: 8px; border: 1px solid #ddd;">${disc.status || ''}</td></tr>
+                    <tr><td style="padding: 8px; border: 1px solid #ddd; font-weight: bold;">Action Taken</td><td style="padding: 8px; border: 1px solid #ddd;">${disc.action_taken || ''}</td></tr>
+                    <tr><td style="padding: 8px; border: 1px solid #ddd; font-weight: bold;">Resolution Date</td><td style="padding: 8px; border: 1px solid #ddd;">${disc.resolution_date || ''}</td></tr>
+                    <tr><td style="padding: 8px; border: 1px solid #ddd; font-weight: bold;">Notes</td><td style="padding: 8px; border: 1px solid #ddd;">${disc.notes || ''}</td></tr>
+                </table>
+                <button onclick="editDiscipline(${id})" style="margin-top: 10px;">Edit</button>
+                <button onclick="loadDisciplineMonitoring()" style="margin-top: 10px;">Back to List</button>
+            </div>
+        `;
+        showContent(html);
+    }).catch(err => {
+        console.error('Error viewing discipline case:', err);
+        customAlert('Error loading discipline case details', 'Error', 'error');
+    });
+}
+
 function editDiscipline(id) { showDisciplineForm(id); }
-function viewResource(id) { console.log('View resource:', id); }
+
+function viewResource(id) {
+    if (!window.apiService) return;
+    window.apiService.get(`/office-resources/${id}`).then(resource => {
+        const html = `
+            <div class="card">
+                <h3>Office Resource Details</h3>
+                <table style="width: 100%; border-collapse: collapse;">
+                    <tr><td style="padding: 8px; border: 1px solid #ddd; font-weight: bold;">Resource Code</td><td style="padding: 8px; border: 1px solid #ddd;">${resource.resource_code || ''}</td></tr>
+                    <tr><td style="padding: 8px; border: 1px solid #ddd; font-weight: bold;">Resource Name</td><td style="padding: 8px; border: 1px solid #ddd;">${resource.resource_name || ''}</td></tr>
+                    <tr><td style="padding: 8px; border: 1px solid #ddd; font-weight: bold;">Resource Type</td><td style="padding: 8px; border: 1px solid #ddd;">${resource.resource_type || ''}</td></tr>
+                    <tr><td style="padding: 8px; border: 1px solid #ddd; font-weight: bold;">Description</td><td style="padding: 8px; border: 1px solid #ddd;">${resource.description || ''}</td></tr>
+                    <tr><td style="padding: 8px; border: 1px solid #ddd; font-weight: bold;">Serial Number</td><td style="padding: 8px; border: 1px solid #ddd;">${resource.serial_number || ''}</td></tr>
+                    <tr><td style="padding: 8px; border: 1px solid #ddd; font-weight: bold;">Purchase Date</td><td style="padding: 8px; border: 1px solid #ddd;">${resource.purchase_date || ''}</td></tr>
+                    <tr><td style="padding: 8px; border: 1px solid #ddd; font-weight: bold;">Purchase Cost</td><td style="padding: 8px; border: 1px solid #ddd;">${resource.purchase_cost || ''}</td></tr>
+                    <tr><td style="padding: 8px; border: 1px solid #ddd; font-weight: bold;">Current Value</td><td style="padding: 8px; border: 1px solid #ddd;">${resource.current_value || ''}</td></tr>
+                    <tr><td style="padding: 8px; border: 1px solid #ddd; font-weight: bold;">Condition</td><td style="padding: 8px; border: 1px solid #ddd;">${resource.condition || ''}</td></tr>
+                    <tr><td style="padding: 8px; border: 1px solid #ddd; font-weight: bold;">Location</td><td style="padding: 8px; border: 1px solid #ddd;">${resource.location || ''}</td></tr>
+                    <tr><td style="padding: 8px; border: 1px solid #ddd; font-weight: bold;">Department</td><td style="padding: 8px; border: 1px solid #ddd;">${resource.department || ''}</td></tr>
+                    <tr><td style="padding: 8px; border: 1px solid #ddd; font-weight: bold;">Status</td><td style="padding: 8px; border: 1px solid #ddd;">${resource.status || ''}</td></tr>
+                    <tr><td style="padding: 8px; border: 1px solid #ddd; font-weight: bold;">Assigned To</td><td style="padding: 8px; border: 1px solid #ddd;">${resource.full_name || 'Unassigned'}</td></tr>
+                </table>
+                <button onclick="editResource(${id})" style="margin-top: 10px;">Edit</button>
+                <button onclick="loadOfficeResources()" style="margin-top: 10px;">Back to List</button>
+            </div>
+        `;
+        showContent(html);
+    }).catch(err => {
+        console.error('Error viewing office resource:', err);
+        customAlert('Error loading office resource details', 'Error', 'error');
+    });
+}
+
 function editResource(id) { showResourceForm(id); }
-function viewTalent(id) { console.log('View talent:', id); }
+
+function viewTalent(id) {
+    if (!window.apiService) return;
+    window.apiService.get(`/talent-acquisition/${id}`).then(talent => {
+        const html = `
+            <div class="card">
+                <h3>Talent Acquisition Details</h3>
+                <table style="width: 100%; border-collapse: collapse;">
+                    <tr><td style="padding: 8px; border: 1px solid #ddd; font-weight: bold;">Requisition Number</td><td style="padding: 8px; border: 1px solid #ddd;">${talent.requisition_number || ''}</td></tr>
+                    <tr><td style="padding: 8px; border: 1px solid #ddd; font-weight: bold;">Position Title</td><td style="padding: 8px; border: 1px solid #ddd;">${talent.position_title || ''}</td></tr>
+                    <tr><td style="padding: 8px; border: 1px solid #ddd; font-weight: bold;">Department</td><td style="padding: 8px; border: 1px solid #ddd;">${talent.department || ''}</td></tr>
+                    <tr><td style="padding: 8px; border: 1px solid #ddd; font-weight: bold;">Position Type</td><td style="padding: 8px; border: 1px solid #ddd;">${talent.position_type || ''}</td></tr>
+                    <tr><td style="padding: 8px; border: 1px solid #ddd; font-weight: bold;">Experience Level</td><td style="padding: 8px; border: 1px solid #ddd;">${talent.experience_level || ''}</td></tr>
+                    <tr><td style="padding: 8px; border: 1px solid #ddd; font-weight: bold;">Number of Positions</td><td style="padding: 8px; border: 1px solid #ddd;">${talent.number_of_positions || ''}</td></tr>
+                    <tr><td style="padding: 8px; border: 1px solid #ddd; font-weight: bold;">Job Description</td><td style="padding: 8px; border: 1px solid #ddd;">${talent.job_description || ''}</td></tr>
+                    <tr><td style="padding: 8px; border: 1px solid #ddd; font-weight: bold;">Requirements</td><td style="padding: 8px; border: 1px solid #ddd;">${talent.requirements || ''}</td></tr>
+                    <tr><td style="padding: 8px; border: 1px solid #ddd; font-weight: bold;">Salary Range</td><td style="padding: 8px; border: 1px solid #ddd;">${talent.salary_range_min || ''} - ${talent.salary_range_max || ''}</td></tr>
+                    <tr><td style="padding: 8px; border: 1px solid #ddd; font-weight: bold;">Request Date</td><td style="padding: 8px; border: 1px solid #ddd;">${talent.request_date || ''}</td></tr>
+                    <tr><td style="padding: 8px; border: 1px solid #ddd; font-weight: bold;">Priority</td><td style="padding: 8px; border: 1px solid #ddd;">${talent.priority || ''}</td></tr>
+                    <tr><td style="padding: 8px; border: 1px solid #ddd; font-weight: bold;">Status</td><td style="padding: 8px; border: 1px solid #ddd;">${talent.status || ''}</td></tr>
+                    <tr><td style="padding: 8px; border: 1px solid #ddd; font-weight: bold;">Hiring Manager</td><td style="padding: 8px; border: 1px solid #ddd;">${talent.hiring_manager_name || ''}</td></tr>
+                    <tr><td style="padding: 8px; border: 1px solid #ddd; font-weight: bold;">Expected Start Date</td><td style="padding: 8px; border: 1px solid #ddd;">${talent.expected_start_date || ''}</td></tr>
+                    <tr><td style="padding: 8px; border: 1px solid #ddd; font-weight: bold;">Notes</td><td style="padding: 8px; border: 1px solid #ddd;">${talent.notes || ''}</td></tr>
+                </table>
+                <button onclick="editTalent(${id})" style="margin-top: 10px;">Edit</button>
+                <button onclick="loadTalentAcquisition()" style="margin-top: 10px;">Back to List</button>
+            </div>
+        `;
+        showContent(html);
+    }).catch(err => {
+        console.error('Error viewing talent acquisition:', err);
+        customAlert('Error loading talent acquisition details', 'Error', 'error');
+    });
+}
+
 function editTalent(id) { showTalentForm(id); }
-function viewPromotion(id) { console.log('View promotion:', id); }
+
+function viewPromotion(id) {
+    if (!window.apiService) return;
+    window.apiService.get(`/promotions/${id}`).then(promo => {
+        const html = `
+            <div class="card">
+                <h3>Promotion Details</h3>
+                <table style="width: 100%; border-collapse: collapse;">
+                    <tr><td style="padding: 8px; border: 1px solid #ddd; font-weight: bold;">Promotion Number</td><td style="padding: 8px; border: 1px solid #ddd;">${promo.promotion_number || ''}</td></tr>
+                    <tr><td style="padding: 8px; border: 1px solid #ddd; font-weight: bold;">Employee</td><td style="padding: 8px; border: 1px solid #ddd;">${promo.full_name || ''}</td></tr>
+                    <tr><td style="padding: 8px; border: 1px solid #ddd; font-weight: bold;">Current Position</td><td style="padding: 8px; border: 1px solid #ddd;">${promo.current_position || ''}</td></tr>
+                    <tr><td style="padding: 8px; border: 1px solid #ddd; font-weight: bold;">Current Department</td><td style="padding: 8px; border: 1px solid #ddd;">${promo.current_department || ''}</td></tr>
+                    <tr><td style="padding: 8px; border: 1px solid #ddd; font-weight: bold;">Current Salary</td><td style="padding: 8px; border: 1px solid #ddd;">${promo.current_salary || ''}</td></tr>
+                    <tr><td style="padding: 8px; border: 1px solid #ddd; font-weight: bold;">New Position</td><td style="padding: 8px; border: 1px solid #ddd;">${promo.new_position || ''}</td></tr>
+                    <tr><td style="padding: 8px; border: 1px solid #ddd; font-weight: bold;">New Department</td><td style="padding: 8px; border: 1px solid #ddd;">${promo.new_department || ''}</td></tr>
+                    <tr><td style="padding: 8px; border: 1px solid #ddd; font-weight: bold;">New Salary</td><td style="padding: 8px; border: 1px solid #ddd;">${promo.new_salary || ''}</td></tr>
+                    <tr><td style="padding: 8px; border: 1px solid #ddd; font-weight: bold;">Promotion Type</td><td style="padding: 8px; border: 1px solid #ddd;">${promo.promotion_type || ''}</td></tr>
+                    <tr><td style="padding: 8px; border: 1px solid #ddd; font-weight: bold;">Effective Date</td><td style="padding: 8px; border: 1px solid #ddd;">${promo.effective_date || ''}</td></tr>
+                    <tr><td style="padding: 8px; border: 1px solid #ddd; font-weight: bold;">Reason</td><td style="padding: 8px; border: 1px solid #ddd;">${promo.reason || ''}</td></tr>
+                    <tr><td style="padding: 8px; border: 1px solid #ddd; font-weight: bold;">Performance Rating</td><td style="padding: 8px; border: 1px solid #ddd;">${promo.performance_rating || ''}</td></tr>
+                    <tr><td style="padding: 8px; border: 1px solid #ddd; font-weight: bold;">Recommended By</td><td style="padding: 8px; border: 1px solid #ddd;">${promo.recommender_name || ''}</td></tr>
+                    <tr><td style="padding: 8px; border: 1px solid #ddd; font-weight: bold;">Status</td><td style="padding: 8px; border: 1px solid #ddd;">${promo.status || ''}</td></tr>
+                    <tr><td style="padding: 8px; border: 1px solid #ddd; font-weight: bold;">Notes</td><td style="padding: 8px; border: 1px solid #ddd;">${promo.notes || ''}</td></tr>
+                </table>
+                <button onclick="editPromotion(${id})" style="margin-top: 10px;">Edit</button>
+                <button onclick="loadPromotions()" style="margin-top: 10px;">Back to List</button>
+            </div>
+        `;
+        showContent(html);
+    }).catch(err => {
+        console.error('Error viewing promotion:', err);
+        customAlert('Error loading promotion details', 'Error', 'error');
+    });
+}
+
 function editPromotion(id) { showPromotionForm(id); }
-function viewRisk(id) { console.log('View risk:', id); }
+
+function viewRisk(id) {
+    if (!window.apiService) return;
+    window.apiService.get(`/risk-management/${id}`).then(risk => {
+        const html = `
+            <div class="card">
+                <h3>Risk Details</h3>
+                <table style="width: 100%; border-collapse: collapse;">
+                    <tr><td style="padding: 8px; border: 1px solid #ddd; font-weight: bold;">Risk Number</td><td style="padding: 8px; border: 1px solid #ddd;">${risk.risk_number || ''}</td></tr>
+                    <tr><td style="padding: 8px; border: 1px solid #ddd; font-weight: bold;">Risk Title</td><td style="padding: 8px; border: 1px solid #ddd;">${risk.risk_title || ''}</td></tr>
+                    <tr><td style="padding: 8px; border: 1px solid #ddd; font-weight: bold;">Category</td><td style="padding: 8px; border: 1px solid #ddd;">${risk.risk_category || ''}</td></tr>
+                    <tr><td style="padding: 8px; border: 1px solid #ddd; font-weight: bold;">Description</td><td style="padding: 8px; border: 1px solid #ddd;">${risk.risk_description || ''}</td></tr>
+                    <tr><td style="padding: 8px; border: 1px solid #ddd; font-weight: bold;">Probability</td><td style="padding: 8px; border: 1px solid #ddd;">${risk.probability || ''}</td></tr>
+                    <tr><td style="padding: 8px; border: 1px solid #ddd; font-weight: bold;">Impact</td><td style="padding: 8px; border: 1px solid #ddd;">${risk.impact || ''}</td></tr>
+                    <tr><td style="padding: 8px; border: 1px solid #ddd; font-weight: bold;">Project</td><td style="padding: 8px; border: 1px solid #ddd;">${risk.project_name || ''}</td></tr>
+                    <tr><td style="padding: 8px; border: 1px solid #ddd; font-weight: bold;">Department</td><td style="padding: 8px; border: 1px solid #ddd;">${risk.department || ''}</td></tr>
+                    <tr><td style="padding: 8px; border: 1px solid #ddd; font-weight: bold;">Identified By</td><td style="padding: 8px; border: 1px solid #ddd;">${risk.identified_by_name || ''}</td></tr>
+                    <tr><td style="padding: 8px; border: 1px solid #ddd; font-weight: bold;">Identified Date</td><td style="padding: 8px; border: 1px solid #ddd;">${risk.identified_date || ''}</td></tr>
+                    <tr><td style="padding: 8px; border: 1px solid #ddd; font-weight: bold;">Mitigation Strategy</td><td style="padding: 8px; border: 1px solid #ddd;">${risk.mitigation_strategy || ''}</td></tr>
+                    <tr><td style="padding: 8px; border: 1px solid #ddd; font-weight: bold;">Contingency Plan</td><td style="padding: 8px; border: 1px solid #ddd;">${risk.contingency_plan || ''}</td></tr>
+                    <tr><td style="padding: 8px; border: 1px solid #ddd; font-weight: bold;">Owner</td><td style="padding: 8px; border: 1px solid #ddd;">${risk.owner_name || ''}</td></tr>
+                    <tr><td style="padding: 8px; border: 1px solid #ddd; font-weight: bold;">Review Date</td><td style="padding: 8px; border: 1px solid #ddd;">${risk.review_date || ''}</td></tr>
+                    <tr><td style="padding: 8px; border: 1px solid #ddd; font-weight: bold;">Cost of Mitigation</td><td style="padding: 8px; border: 1px solid #ddd;">${risk.cost_of_mitigation || ''}</td></tr>
+                    <tr><td style="padding: 8px; border: 1px solid #ddd; font-weight: bold;">Potential Loss</td><td style="padding: 8px; border: 1px solid #ddd;">${risk.potential_loss || ''}</td></tr>
+                    <tr><td style="padding: 8px; border: 1px solid #ddd; font-weight: bold;">Status</td><td style="padding: 8px; border: 1px solid #ddd;">${risk.status || ''}</td></tr>
+                </table>
+                <button onclick="editRisk(${id})" style="margin-top: 10px;">Edit</button>
+                <button onclick="loadRiskManagement()" style="margin-top: 10px;">Back to List</button>
+            </div>
+        `;
+        showContent(html);
+    }).catch(err => {
+        console.error('Error viewing risk:', err);
+        customAlert('Error loading risk details', 'Error', 'error');
+    });
+}
+
 function editRisk(id) { showRiskForm(id); }
