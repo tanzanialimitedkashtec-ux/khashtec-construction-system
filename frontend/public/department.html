@@ -76880,15 +76880,7 @@ function contactClient(clientId) {
 
 
 
-function recordSale(){
-
-    // Load properties and clients
-
-    const properties = []; // TODO: Load from API
-
-    const clients = []; // TODO: Load from API
-
-    
+async async function recordSale(){
 
     showContent(`
 
@@ -76962,7 +76954,7 @@ function recordSale(){
 
                 
 
-                <form id="saleForm" onsubmit="return saveNewSale()">
+                <form id="saleForm" onsubmit="return saveNewSale(event)">
 
                     <div class="form-row">
 
@@ -76972,13 +76964,7 @@ function recordSale(){
 
                             <select id="saleProperty" onchange="updatePropertyDetails()" required>
 
-                                <option value="">Select Property</option>
-
-                                ${properties.filter(p => p.status === 'available' || p.status === 'reserved').map(property => 
-
-                                    `<option value="${property.id}">${property.plotNumber} - ${property.location} (TZS ${parseInt(property.price).toLocaleString()})</option>`
-
-                                ).join('')}
+                                <option value="">Loading properties from database...</option>
 
                             </select>
 
@@ -76990,13 +76976,7 @@ function recordSale(){
 
                             <select id="saleClient" required>
 
-                                <option value="">Select Client</option>
-
-                                ${clients.map(client => 
-
-                                    `<option value="${client.id}">${client.fullName} - ${client.clientType}</option>`
-
-                                ).join('')}
+                                <option value="">Loading clients from database...</option>
 
                             </select>
 
@@ -77126,65 +77106,63 @@ function recordSale(){
 
                         </select>
 
-                        </div>
+                    </div>
 
                         
 
-                        <div class="form-group">
+                    <div class="form-group">
 
-                            <label>Commission Agent</label>
+                        <label>Commission Agent</label>
 
-                            <input type="text" id="commissionAgent" placeholder="e.g., Agent Name or Self">
+                        <input type="text" id="commissionAgent" placeholder="e.g., Agent Name or Self">
 
-                        </div>
-
-                        
-
-                        <div class="form-group">
-
-                            <label>Sale Notes</label>
-
-                            <textarea id="saleNotes" rows="3" placeholder="Additional sale details, special conditions..."></textarea>
-
-                        </div>
+                    </div>
 
                         
 
-                        <div class="form-actions">
+                    <div class="form-group">
 
-                            <button type="submit" class="action" style="background: #28a745;">Record Sale</button>
+                        <label>Sale Notes</label>
 
-                            <button type="button" class="action" onclick="clearSaleForm()" style="background: #6c757d;">Clear Form</button>
+                        <textarea id="saleNotes" rows="3" placeholder="Additional sale details, special conditions..."></textarea>
 
-                            <button type="button" class="action" onclick="toggleSaleForm()" style="background: #dc3545;">Close Form</button>
+                    </div>
 
-                        </div>
+                        
 
-                    </form>
+                    <div class="form-actions">
 
-                </div>
+                        <button type="submit" class="action" style="background: #28a745;">Record Sale</button>
 
-                
+                        <button type="button" class="action" onclick="clearSaleForm()" style="background: #6c757d;">Clear Form</button>
 
-                <div class="recent-sales">
+                        <button type="button" class="action" onclick="toggleSaleForm()" style="background: #dc3545;">Close Form</button>
 
-                    <h4>Recent Sales</h4>
+                    </div>
 
-                    <div class="sale-list">
+                </form>
 
-                        <div class="sale-item">
+            </div>
 
-                            <div class="sale-details">
+            
 
-                                <strong>PLT-2026-001 → John Smith</strong>
+            <div class="recent-sales">
 
-                                <span>Price: TZS 50,000,000</span>
+                <h4>Recent Sales</h4>
 
-                                <span>Date: March 15, 2026</span>
+                <div class="sale-list">
 
-                                <span>Status: Payment Completed</span>
+                    <div class="sale-item">
 
-                            </div>
+                        <div class="sale-details">
+
+                            <strong>PLT-2026-001 → John Smith</strong>
+
+                            <span>Price: TZS 50,000,000</span>
+
+                            <span>Date: March 15, 2026</span>
+
+                            <span>Status: Payment Completed</span>
 
                         </div>
 
@@ -77197,6 +77175,70 @@ function recordSale(){
         </div>
 
     `);
+
+    // Fetch real properties and clients from database dynamically
+    try {
+        const [propsRes, clientsRes] = await Promise.all([
+            fetch('/api/properties/all'),
+            fetch('/api/clients')
+        ]);
+        
+        const propertySelect = document.getElementById('saleProperty');
+        const clientSelect = document.getElementById('saleClient');
+        
+        if (propsRes.ok) {
+            const data = await propsRes.json();
+            const properties = Array.isArray(data) ? data : (data.properties || data.data || []);
+            const availableProps = properties.filter(p => {
+                const status = (p.status || '').toLowerCase();
+                return status === 'available' || status === 'reserved' || status === 'under offer';
+            });
+            
+            if (propertySelect) {
+                propertySelect.innerHTML = '<option value="">Select Property</option>' + availableProps.map(property => {
+                    const id = property.id || property.property_id;
+                    const plotNumber = property.plotNumber || property.plot_number || property.title || `PLT-${id}`;
+                    const location = property.location || '';
+                    const price = property.price || 0;
+                    return `<option value="${id}">${plotNumber} - ${location} (TZS ${parseInt(price).toLocaleString()})</option>`;
+                }).join('');
+                
+                // Cache properties globally for updatePropertyDetails() to use
+                window.salePropertiesCache = availableProps;
+            }
+        } else {
+            if (propertySelect) propertySelect.innerHTML = '<option value="">Failed to load properties</option>';
+        }
+        
+        if (clientsRes.ok) {
+            const data = await clientsRes.json();
+            let clients = [];
+            if (Array.isArray(data)) {
+                clients = data;
+            } else if (data.clients) {
+                clients = Array.isArray(data.clients) ? data.clients : [data.clients];
+            } else if (data.data) {
+                clients = Array.isArray(data.data) ? data.data : [];
+            }
+            
+            if (clientSelect) {
+                clientSelect.innerHTML = '<option value="">Select Client</option>' + clients.map(client => {
+                    const id = client.id || client.client_id;
+                    const fullName = client.full_name || client.fullName || '';
+                    const clientType = client.client_type || client.clientType || 'individual';
+                    return `<option value="${id}">${fullName} - ${clientType}</option>`;
+                }).join('');
+            }
+        } else {
+            if (clientSelect) clientSelect.innerHTML = '<option value="">Failed to load clients</option>';
+        }
+    } catch (error) {
+        console.error('Error loading properties or clients:', error);
+        const propertySelect = document.getElementById('saleProperty');
+        const clientSelect = document.getElementById('saleClient');
+        if (propertySelect) propertySelect.innerHTML = '<option value="">Failed to load properties</option>';
+        if (clientSelect) clientSelect.innerHTML = '<option value="">Failed to load clients</option>';
+    }
 
 }
 
@@ -80476,9 +80518,15 @@ function updatePropertyDetails() {
 
     const propertyId = document.getElementById('saleProperty').value;
 
-    // Auto-fill sale price based on property
+    const salePriceInput = document.getElementById('salePrice');
 
-    customAlert(`Loading property details for sale...`, "Loading Details", "info");
+    if (window.salePropertiesCache && salePriceInput) {
+        const property = window.salePropertiesCache.find(item => String(item.id || item.property_id) === String(propertyId));
+        if (property) {
+            const price = property.price || property.value || property.amount;
+            salePriceInput.value = price || '';
+        }
+    }
 
 }
 
