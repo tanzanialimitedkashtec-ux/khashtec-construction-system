@@ -77322,21 +77322,52 @@ async function loadSales() {
 
         
 
-        const response = await KashTecAPI.get('/sales');
+        const response = await getSales();
 
         
 
-        if (response.success && response.data.length > 0) {
+        // Handle both plain array and {success, data} response formats
+        let sales = [];
+        if (Array.isArray(response)) {
+            sales = response;
+        } else if (response && response.data) {
+            sales = Array.isArray(response.data) ? response.data : [];
+        } else if (response && response.sales) {
+            sales = Array.isArray(response.sales) ? response.sales : [];
+        }
 
-            recordsList.innerHTML = response.data.map(sale => `
+        if (sales.length > 0) {
+
+            recordsList.innerHTML = sales.map(sale => {
+                // Map API response fields to display fields
+                const saleId = sale.saleId || sale.id || '';
+                const saleDate = sale.saleDate || sale.date || '';
+                const propertyId = sale.propertyId || sale.property || '';
+                const propertyLocation = sale.propertyLocation || sale.property || '';
+                const propertyPrice = sale.propertyPrice || sale.salePrice || sale.sale_price || 0;
+                const clientName = sale.clientName || sale.client || sale.client_name || '';
+                const clientPhone = sale.clientPhone || sale.clientContact || sale.client_contact || '';
+                const clientEmail = sale.clientEmail || sale.client_email || '';
+                const salePrice = sale.salePrice || sale.sale_price || 0;
+                const saleNotes = sale.saleNotes || sale.notes || '';
+                const paymentMethod = sale.paymentMethod || sale.payment_method || 'N/A';
+                const installmentPeriod = sale.installmentPeriod || sale.installment_period || null;
+                const downPayment = sale.downPayment || sale.down_payment || null;
+                const monthlyInstallment = sale.monthlyInstallment || sale.monthly_installment || null;
+                const interestRate = sale.interestRate || sale.interest_rate || null;
+                const salesAgreement = sale.salesAgreement || sale.sales_agreement || (sale.contractSigned || sale.contract_signed ? 'Contract Signed' : null);
+                const paymentStatus = sale.paymentStatus || sale.payment_status || sale.status || '';
+                const commissionAgent = sale.commissionAgent || sale.agent || sale.commission_agent || 'N/A';
+
+                return `
 
                 <tr>
 
                     <td>
 
-                        <div class="sale-id">${sale.saleId}</div>
+                        <div class="sale-id">${saleId}</div>
 
-                        <div class="sale-date">Date: ${new Date(sale.saleDate).toLocaleDateString()}</div>
+                        <div class="sale-date">Date: ${new Date(saleDate).toLocaleDateString()}</div>
 
                     </td>
 
@@ -77344,11 +77375,11 @@ async function loadSales() {
 
                         <div class="property-info">
 
-                            <div class="property-id">${sale.propertyId}</div>
+                            <div class="property-id">${propertyId}</div>
 
-                            <div class="property-location">${sale.propertyLocation}</div>
+                            <div class="property-location">${propertyLocation}</div>
 
-                            <div class="property-price">TZS ${parseInt(sale.propertyPrice).toLocaleString()}</div>
+                            <div class="property-price">TZS ${parseInt(propertyPrice).toLocaleString()}</div>
 
                         </div>
 
@@ -77358,11 +77389,11 @@ async function loadSales() {
 
                         <div class="client-info">
 
-                            <div class="client-name">${sale.clientName}</div>
+                            <div class="client-name">${clientName}</div>
 
-                            <div class="client-contact">📱 ${sale.clientPhone}</div>
+                            <div class="client-contact">📱 ${clientPhone}</div>
 
-                            <div class="client-email">📧 ${sale.clientEmail}</div>
+                            <div class="client-email">📧 ${clientEmail}</div>
 
                         </div>
 
@@ -77372,11 +77403,11 @@ async function loadSales() {
 
                         <div class="sale-details">
 
-                            <div class="sale-price">Price: TZS ${parseInt(sale.salePrice).toLocaleString()}</div>
+                            <div class="sale-price">Price: TZS ${parseInt(salePrice).toLocaleString()}</div>
 
-                            <div class="sale-date">Date: ${new Date(sale.saleDate).toLocaleDateString()}</div>
+                            <div class="sale-date">Date: ${new Date(saleDate).toLocaleDateString()}</div>
 
-                            <div class="sale-notes">${sale.saleNotes || 'No notes'}</div>
+                            <div class="sale-notes">${saleNotes || 'No notes'}</div>
 
                         </div>
 
@@ -77386,7 +77417,7 @@ async function loadSales() {
 
                         <div class="payment-method-info">
 
-                            <div class="method">${sale.paymentMethod}</div>
+                            <div class="method">${paymentMethod}</div>
 
                         </div>
 
@@ -77396,15 +77427,15 @@ async function loadSales() {
 
                         <div class="installment-info">
 
-                            ${sale.paymentMethod === 'installments' ? `
+                            ${paymentMethod === 'installments' ? `
 
-                                <div class="period">Period: ${sale.installmentPeriod} months</div>
+                                <div class="period">Period: ${installmentPeriod} months</div>
 
-                                <div class="down-payment">Down: TZS ${parseInt(sale.downPayment).toLocaleString()}</div>
+                                <div class="down-payment">Down: TZS ${parseInt(downPayment).toLocaleString()}</div>
 
-                                <div class="monthly">Monthly: TZS ${parseInt(sale.monthlyInstallment).toLocaleString()}</div>
+                                <div class="monthly">Monthly: TZS ${parseInt(monthlyInstallment).toLocaleString()}</div>
 
-                                <div class="interest">Rate: ${sale.interestRate}%</div>
+                                <div class="interest">Rate: ${interestRate}%</div>
 
                             ` : '<div class="no-installments">N/A</div>'}
 
@@ -77416,9 +77447,9 @@ async function loadSales() {
 
                         <div class="agreement-info">
 
-                            ${sale.salesAgreement ? 
+                            ${salesAgreement ? 
 
-                                `<div class="agreement-file">📄 ${sale.salesAgreement}</div>` : 
+                                `<div class="agreement-file">📄 ${salesAgreement}</div>` : 
 
                                 '<div class="no-agreement">No Agreement</div>'
 
@@ -77432,7 +77463,7 @@ async function loadSales() {
 
                         <div class="payment-status-info">
 
-                            <span class="status-badge status-${sale.paymentStatus}">${sale.paymentStatus}</span>
+                            <span class="status-badge status-${paymentStatus}">${paymentStatus}</span>
 
                         </div>
 
@@ -77442,7 +77473,7 @@ async function loadSales() {
 
                         <div class="commission-info">
 
-                            <div class="agent-name">${sale.commissionAgent || 'N/A'}</div>
+                            <div class="agent-name">${commissionAgent}</div>
 
                         </div>
 
@@ -77452,11 +77483,11 @@ async function loadSales() {
 
                         <div class="sales-actions">
 
-                            <button class="action-btn view" onclick="viewSaleDetails('${sale.saleId}')" title="View Details">👁️</button>
+                            <button class="action-btn view" onclick="viewSaleDetails('${saleId}')" title="View Details">👁️</button>
 
-                            <button class="action-btn edit" onclick="editSale('${sale.saleId}')" title="Edit Sale">✏️</button>
+                            <button class="action-btn edit" onclick="editSale('${saleId}')" title="Edit Sale">✏️</button>
 
-                            <button class="action-btn delete" onclick="deleteSale('${sale.saleId}')" title="Delete Sale">🗑️</button>
+                            <button class="action-btn delete" onclick="deleteSale('${saleId}')" title="Delete Sale">🗑️</button>
 
                         </div>
 
@@ -77464,7 +77495,7 @@ async function loadSales() {
 
                 </tr>
 
-            `).join('');
+            `}).join('');
 
         } else {
 
