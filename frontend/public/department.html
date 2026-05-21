@@ -80410,6 +80410,7 @@ async function saveNewSale(event) {
     const notes = document.getElementById('saleNotes').value;
 
     if (!propertyId || !clientId || !price || !date) {
+        console.warn('⚠️ Validation failed: Missing required fields for saving sale.');
         customAlert('Please fill in all required fields.', 'Validation Error', 'error');
         return false;
     }
@@ -80418,6 +80419,19 @@ async function saveNewSale(event) {
     const clientSelect = document.getElementById('saleClient');
     const propertyName = propertySelect.options[propertySelect.selectedIndex].text;
     const clientName = clientSelect.options[clientSelect.selectedIndex].text;
+
+    console.log('💾 Initiating sale recording with details:', {
+        propertyId,
+        propertyName,
+        clientId,
+        clientName,
+        price,
+        date,
+        paymentMethod,
+        paymentStatus,
+        commissionAgent,
+        notes
+    });
 
     try {
         const response = await fetch('/api/sales', {
@@ -80440,13 +80454,15 @@ async function saveNewSale(event) {
         const result = await response.json();
 
         if (response.ok) {
+            console.log('✅ Sale recorded successfully in the database!', result);
             customAlert(`Sale recorded successfully!\n\nProperty: ${propertyName}\nClient: ${clientName}\nPrice: TZS ${parseInt(price).toLocaleString()}\nPayment Method: ${paymentMethod}\nStatus: ${paymentStatus}`, "Sale Recorded", "success");
             document.getElementById('saleForm').reset();
         } else {
+            console.error('❌ Failed to record sale. Server response error:', result);
             customAlert(`Failed to record sale: ${result.error || result.details || 'Unknown error'}`, "Sale Error", "error");
         }
     } catch (error) {
-        console.error('Error saving sale:', error);
+        console.error('💥 Critical exception error while saving sale:', error);
         customAlert(`Failed to record sale: ${error.message}`, "Sale Error", "error");
     }
 
