@@ -62921,11 +62921,22 @@ async function staffOversight(){
 
             totalEmployees = employees.length;
 
-            activeContracts = employees.filter(emp => emp.contract_status === 'active' || emp.status === 'active').length;
+            activeContracts = employees.filter(emp => 
+                (emp.status && emp.status.toLowerCase() === 'active') || 
+                (emp.contract_status && emp.contract_status.toLowerCase() === 'active')
+            ).length;
 
-            managementStaff = employees.filter(emp => emp.department === 'management' || emp.role === 'management' || emp.position?.toLowerCase().includes('manager')).length;
+            managementStaff = employees.filter(emp => 
+                (emp.department && emp.department.toLowerCase() === 'management') || 
+                (emp.role && emp.role.toLowerCase() === 'management') || 
+                (emp.position && emp.position.toLowerCase().includes('manager'))
+            ).length;
 
-            hrStaff = employees.filter(emp => emp.department === 'hr' || emp.department === 'human resources' || emp.position?.toLowerCase().includes('hr')).length;
+            hrStaff = employees.filter(emp => 
+                (emp.department && (emp.department.toLowerCase() === 'hr' || emp.department.toLowerCase() === 'human resources')) || 
+                (emp.role && (emp.role.toLowerCase() === 'hr' || emp.role.toLowerCase() === 'human resources')) || 
+                (emp.position && emp.position.toLowerCase().includes('hr'))
+            ).length;
 
             
 
