@@ -56753,7 +56753,9 @@ function saveNewClient() {
 
 
 
-async function saveNewSale() {
+async function saveNewSale(event) {
+
+    if (event) event.preventDefault();
 
     const propertyId = document.getElementById('saleProperty').value;
     const clientId = document.getElementById('saleClient').value;
