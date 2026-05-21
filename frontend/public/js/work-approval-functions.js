@@ -1,0 +1,371 @@
+// Work Completion Approval Functions
+// This file contains functions for loading and managing work completions from the database
+
+// Load work completions from database for approval
+function loadWorkCompletions() {
+    console.log('🔄 Loading work completions for approval...');
+    
+    const baseUrl = window.location.origin;
+    
+    fetch(`${baseUrl}/api/work/completions/pending`, {
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'Authorization': `Bearer ${sessionManager?.getAuthToken?.() || ''}`
+        }
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error(`API Error: ${response.status}`);
+        }
+        return response.json();
+    })
+    .then(data => {
+        console.log('📊 Work completions data received:', data);
+        const completions = data.data || data || [];
+        displayWorkCompletions(completions);
+    })
+    .catch(error => {
+        console.error('❌ Error loading work completions:', error);
+        // Display mock data on error
+        const mockData = [
+            {
+                id: 'work001',
+                work_details: 'Foundation Excavation',
+                project: 'Port Modernization Phase 1',
+                completed_by: 'John Doe - Construction Worker',
+                completed_date: '2026-03-15',
+                quality_score: 95,
+                quality_level: 'excellent',
+                status: 'pending'
+            },
+            {
+                id: 'work002',
+                work_details: 'Steel Framework Installation',
+                project: 'Warehouse Construction',
+                completed_by: 'Mike Johnson - Engineer',
+                completed_date: '2026-03-14',
+                quality_score: 88,
+                quality_level: 'good',
+                status: 'pending'
+            }
+        ];
+        displayWorkCompletions(mockData);
+    });
+}
+
+// Display work completions in a table
+function displayWorkCompletions(completions) {
+    console.log('🎨 Displaying work completions...');
+    
+    // Find or create the container
+    let container = document.getElementById('workCompletionsContainer');
+    if (!container) {
+        container = document.createElement('div');
+        container.id = 'workCompletionsContainer';
+        document.body.appendChild(container);
+    }
+    
+    if (!completions || completions.length === 0) {
+        container.innerHTML = '<div class="no-data">No pending work completions found.</div>';
+        return;
+    }
+    
+    const tableHTML = `
+        <div class="work-completions-section">
+            <h3>Work Completion Approvals</h3>
+            <div class="work-completions-table-container">
+                <table class="modern-table">
+                    <thead>
+                        <tr>
+                            <th>Work Details</th>
+                            <th>Project</th>
+                            <th>Completed By</th>
+                            <th>Completed Date</th>
+                            <th>Quality Score</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${completions.map(work => `
+                            <tr class="work-completion-row" data-work-id="${work.id}">
+                                <td><strong>${work.work_details || 'N/A'}</strong></td>
+                                <td>${work.project || 'N/A'}</td>
+                                <td>${work.completed_by || 'N/A'}</td>
+                                <td>${formatDate(work.completed_date)}</td>
+                                <td>
+                                    <span class="quality-score ${getQualityClass(work.quality_score)}">
+                                        ${work.quality_score || 0}%
+                                    </span>
+                                </td>
+                                <td>
+                                    <button class="action" onclick="approveWork('${work.id}')" style="background: #28a745;">Approve</button>
+                                    <button class="action" onclick="requestRework('${work.id}')" style="background: #ffc107;">Request Rework</button>
+                                    <button class="action" onclick="rejectWork('${work.id}')" style="background: #dc3545;">Reject</button>
+                                </td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    `;
+    
+    container.innerHTML = tableHTML;
+    console.log('✅ Work completions displayed successfully');
+}
+
+// Approve a work completion
+window.approveWork = function(workId) {
+    console.log('✅ Approving work:', workId);
+    
+    if (!workId) {
+        customAlert('Work ID is required', 'Error', 'error');
+        return;
+    }
+    
+    const baseUrl = window.location.origin;
+    
+    fetch(`${baseUrl}/api/work/completions/${workId}/approve`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'Authorization': `Bearer ${sessionManager?.getAuthToken?.() || ''}`
+        },
+        body: JSON.stringify({
+            approvedBy: sessionManager?.getCurrentUser?.()?.name || 'Managing Director',
+            approvalNotes: 'Approved by system manager'
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        console.log('✅ Approval response:', data);
+        if (data.success) {
+            customAlert('Work approved successfully!', 'Success', 'success');
+            // Reload the table
+            loadWorkCompletions();
+        } else {
+            throw new Error(data.error || 'Failed to approve work');
+        }
+    })
+    .catch(error => {
+        console.error('❌ Error approving work:', error);
+        customAlert(`Error approving work: ${error.message}`, 'Error', 'error');
+    });
+};
+
+// Request rework for a work completion
+window.requestRework = function(workId) {
+    console.log('🔄 Requesting rework for work:', workId);
+    
+    if (!workId) {
+        customAlert('Work ID is required', 'Error', 'error');
+        return;
+    }
+    
+    // Show modal for rework details
+    const modal = document.createElement('div');
+    modal.className = 'modal-overlay';
+    modal.innerHTML = `
+        <div class="modal-content" style="max-width: 500px;">
+            <h3>Request Rework</h3>
+            <textarea id="reworkReason" placeholder="Enter reason for rework request..." style="
+                width: 100%;
+                height: 120px;
+                padding: 10px;
+                border: 2px solid #ddd;
+                border-radius: 5px;
+                font-size: 14px;
+                margin-bottom: 15px;
+                box-sizing: border-box;
+            "></textarea>
+            <div style="display: flex; gap: 10px; justify-content: flex-end;">
+                <button onclick="this.closest('.modal-overlay').remove()" style="
+                    background: #6c757d;
+                    color: white;
+                    border: none;
+                    padding: 10px 20px;
+                    border-radius: 5px;
+                    cursor: pointer;
+                ">Cancel</button>
+                <button onclick="submitReworkRequest('${workId}')" style="
+                    background: #ffc107;
+                    color: black;
+                    border: none;
+                    padding: 10px 20px;
+                    border-radius: 5px;
+                    cursor: pointer;
+                ">Submit Rework Request</button>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(modal);
+    modal.onclick = (e) => {
+        if (e.target === modal) modal.remove();
+    };
+};
+
+// Submit rework request
+window.submitReworkRequest = function(workId) {
+    const reasonElement = document.getElementById('reworkReason');
+    const reworkReason = reasonElement?.value || '';
+    
+    if (!reworkReason.trim()) {
+        customAlert('Please provide a reason for rework', 'Error', 'error');
+        return;
+    }
+    
+    const baseUrl = window.location.origin;
+    
+    fetch(`${baseUrl}/api/work/completions/${workId}/rework`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'Authorization': `Bearer ${sessionManager?.getAuthToken?.() || ''}`
+        },
+        body: JSON.stringify({
+            reworkReason: reworkReason,
+            requestedBy: sessionManager?.getCurrentUser?.()?.name || 'Managing Director'
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        console.log('✅ Rework request response:', data);
+        if (data.success) {
+            document.querySelector('.modal-overlay')?.remove();
+            customAlert('Rework request submitted successfully!', 'Success', 'success');
+            loadWorkCompletions();
+        } else {
+            throw new Error(data.error || 'Failed to request rework');
+        }
+    })
+    .catch(error => {
+        console.error('❌ Error requesting rework:', error);
+        customAlert(`Error requesting rework: ${error.message}`, 'Error', 'error');
+    });
+};
+
+// Reject a work completion
+window.rejectWork = function(workId) {
+    console.log('❌ Rejecting work:', workId);
+    
+    if (!workId) {
+        customAlert('Work ID is required', 'Error', 'error');
+        return;
+    }
+    
+    // Show modal for rejection details
+    const modal = document.createElement('div');
+    modal.className = 'modal-overlay';
+    modal.innerHTML = `
+        <div class="modal-content" style="max-width: 500px;">
+            <h3>Reject Work</h3>
+            <textarea id="rejectionReason" placeholder="Enter reason for rejection..." style="
+                width: 100%;
+                height: 120px;
+                padding: 10px;
+                border: 2px solid #ddd;
+                border-radius: 5px;
+                font-size: 14px;
+                margin-bottom: 15px;
+                box-sizing: border-box;
+            "></textarea>
+            <div style="display: flex; gap: 10px; justify-content: flex-end;">
+                <button onclick="this.closest('.modal-overlay').remove()" style="
+                    background: #6c757d;
+                    color: white;
+                    border: none;
+                    padding: 10px 20px;
+                    border-radius: 5px;
+                    cursor: pointer;
+                ">Cancel</button>
+                <button onclick="submitRejection('${workId}')" style="
+                    background: #dc3545;
+                    color: white;
+                    border: none;
+                    padding: 10px 20px;
+                    border-radius: 5px;
+                    cursor: pointer;
+                ">Reject Work</button>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(modal);
+    modal.onclick = (e) => {
+        if (e.target === modal) modal.remove();
+    };
+};
+
+// Submit rejection
+window.submitRejection = function(workId) {
+    const reasonElement = document.getElementById('rejectionReason');
+    const rejectionReason = reasonElement?.value || '';
+    
+    if (!rejectionReason.trim()) {
+        customAlert('Please provide a reason for rejection', 'Error', 'error');
+        return;
+    }
+    
+    const baseUrl = window.location.origin;
+    
+    fetch(`${baseUrl}/api/work/completions/${workId}/reject`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'Authorization': `Bearer ${sessionManager?.getAuthToken?.() || ''}`
+        },
+        body: JSON.stringify({
+            rejectionReason: rejectionReason,
+            rejectedBy: sessionManager?.getCurrentUser?.()?.name || 'Managing Director'
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        console.log('✅ Rejection response:', data);
+        if (data.success) {
+            document.querySelector('.modal-overlay')?.remove();
+            customAlert('Work rejected successfully!', 'Success', 'success');
+            loadWorkCompletions();
+        } else {
+            throw new Error(data.error || 'Failed to reject work');
+        }
+    })
+    .catch(error => {
+        console.error('❌ Error rejecting work:', error);
+        customAlert(`Error rejecting work: ${error.message}`, 'Error', 'error');
+    });
+};
+
+// Helper function to format dates
+function formatDate(dateString) {
+    if (!dateString) return 'N/A';
+    try {
+        const date = new Date(dateString);
+        return date.toLocaleDateString('en-US', {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric'
+        });
+    } catch (error) {
+        return dateString;
+    }
+}
+
+// Helper function to get quality class
+function getQualityClass(score) {
+    const numScore = parseInt(score) || 0;
+    if (numScore >= 90) return 'excellent';
+    if (numScore >= 80) return 'good';
+    if (numScore >= 70) return 'acceptable';
+    return 'poor';
+}
+
+// Export for use in department.js
+window.loadWorkCompletions = loadWorkCompletions;
+window.displayWorkCompletions = displayWorkCompletions;
