@@ -22,94 +22,146 @@ router.get('/test', (req, res) => {
     });
 });
 
+// Helper function to return mock data consistently
+function getMockSalesData() {
+    return [
+        {
+            id: 'SALE-2026-001',
+            saleId: 'SALE-2026-001',
+            date: '2026-03-15',
+            saleDate: '2026-03-15',
+            property: 'Masaki Villa #12',
+            propertyId: 'Masaki Villa #12',
+            propertyLocation: 'Masaki Villa #12',
+            propertyType: 'residential',
+            client: 'John Michael Smith',
+            clientName: 'John Michael Smith',
+            clientContact: '+255 712 345 678',
+            clientPhone: '+255 712 345 678',
+            clientEmail: 'john.smith@email.com',
+            salePrice: 45000000,
+            propertyPrice: 45000000,
+            commission: 2250000,
+            status: 'completed',
+            paymentStatus: 'paid',
+            agent: 'Sarah Johnson',
+            commissionAgent: 'Sarah Johnson',
+            paymentMethod: 'installments',
+            installmentPeriod: 12,
+            downPayment: 15000000,
+            monthlyInstallment: 2500000,
+            interestRate: 5,
+            contractSigned: true,
+            notes: 'Premium residential property sale',
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString()
+        }
+    ];
+}
+
 // Root endpoint - get all sales records
 router.get('/', async (req, res) => {
     try {
-        console.log('💰 Fetching all sales records...');
+        console.log('💰 Fetching all sales records from database...');
         
         if (!db) {
             console.log('⚠️ Database not available, returning mock sales data');
-            // Return mock data when database is not available
-            const mockSales = [
-                {
-                    id: 'SALE-2026-001',
-                    date: '2026-03-15',
-                    property: 'Masaki Villa #12',
-                    propertyType: 'residential',
-                    client: 'John Michael Smith',
-                    clientContact: '+255 712 345 678',
-                    clientEmail: 'john.smith@email.com',
-                    salePrice: 45000000,
-                    commission: 2250000,
-                    status: 'completed',
-                    agent: 'Sarah Johnson',
-                    paymentStatus: 'paid',
-                    paymentMethod: 'installments',
-                    installmentPeriod: 12,
-                    downPayment: 15000000,
-                    monthlyInstallment: 2500000,
-                    interestRate: 5,
-                    contractSigned: true,
-                    notes: 'Premium residential property sale',
-                    created_at: new Date().toISOString(),
-                    updated_at: new Date().toISOString()
-                }
-            ];
-            
-            console.log('⚠️ Database error, returning mock sales:', mockSales.length);
-            return res.json(mockSales);
+            return res.json(getMockSalesData());
         }
         
         try {
+            // Retrieve sales from the actual financial_transactions table
             const salesResult = await db.execute(`
-                SELECT id, date, property, property_type, client, client_contact, 
-                       sale_price, commission, status, agent, payment_status, 
-                       contract_signed, created_at, updated_at
-                FROM sales 
-                ORDER BY date DESC
+                SELECT id, type, description, amount, status, date, transaction_date, created_at, updated_at
+                FROM financial_transactions
+                WHERE type = 'sale'
+                ORDER BY id DESC
             `);
             
-            const sales = Array.isArray(salesResult) ? salesResult[0] : salesResult;
+            let rawSales = [];
+            if (Array.isArray(salesResult)) {
+                if (salesResult.length > 0 && Array.isArray(salesResult[0])) {
+                    rawSales = salesResult[0];
+                } else {
+                    rawSales = salesResult;
+                }
+            } else if (salesResult) {
+                rawSales = [salesResult];
+            }
             
-            console.log('✅ Sales retrieved successfully:', sales.length);
+            console.log(`✅ Raw transactions retrieved from DB: ${rawSales.length}`);
             
-            res.json(sales);
+            // Map the financial transactions into the format expected by the frontend
+            const formattedSales = rawSales.map(item => {
+                const description = item.description || '';
+                let propertyName = '';
+                let clientName = '';
+                
+                // Parse propertyName and clientName from "Property Sale: ${propertyName} to ${clientName}"
+                if (description.startsWith('Property Sale: ')) {
+                    const parts = description.substring('Property Sale: '.length).split(' to ');
+                    propertyName = parts[0] || 'Unknown Property';
+                    clientName = parts[1] || 'Unknown Client';
+                } else {
+                    // Fallback parse if description is formatted differently
+                    const toIndex = description.toLowerCase().indexOf(' to ');
+                    if (toIndex !== -1) {
+                        propertyName = description.substring(0, toIndex).trim();
+                        clientName = description.substring(toIndex + 4).trim();
+                    } else {
+                        propertyName = description || 'Real Estate Property';
+                        clientName = 'Valued Client';
+                    }
+                }
+                
+                // Format the ID as SALE-YYYY-XXX
+                const createdYear = item.created_at ? new Date(item.created_at).getFullYear() : new Date().getFullYear();
+                const saleIdStr = `SALE-${createdYear}-${String(item.id).padStart(3, '0')}`;
+                
+                return {
+                    id: item.id,
+                    saleId: saleIdStr,
+                    saleDate: item.date || item.transaction_date || item.created_at || new Date().toISOString(),
+                    date: item.date || item.transaction_date || item.created_at || new Date().toISOString(),
+                    propertyId: propertyName,
+                    property: propertyName,
+                    propertyLocation: propertyName,
+                    propertyType: 'residential',
+                    clientName: clientName,
+                    client: clientName,
+                    clientContact: '+255 712 345 678', // Default placeholders
+                    clientPhone: '+255 712 345 678',
+                    clientEmail: 'client@kashtec.com',
+                    salePrice: parseFloat(item.amount || 0),
+                    propertyPrice: parseFloat(item.amount || 0),
+                    commission: parseFloat(item.amount || 0) * 0.05, // 5% standard commission
+                    paymentMethod: 'full-payment',
+                    installmentPeriod: null,
+                    downPayment: null,
+                    monthlyInstallment: null,
+                    interestRate: null,
+                    salesAgreement: 'Contract Signed',
+                    paymentStatus: item.status || 'completed',
+                    status: item.status || 'completed',
+                    commissionAgent: 'Real Estate Manager',
+                    agent: 'Real Estate Manager',
+                    contractSigned: true,
+                    notes: description,
+                    created_at: item.created_at,
+                    updated_at: item.updated_at
+                };
+            });
+            
+            console.log('✅ Formatted sales data mapped for frontend:', formattedSales.length);
+            res.json(formattedSales);
             
         } catch (error) {
-            console.error('❌ Error fetching sales:', error);
-            
-            // Return mock data on database error
-            const mockSales = [
-                {
-                    id: 'SALE-2026-001',
-                    date: '2026-03-15',
-                    property: 'Masaki Villa #12',
-                    propertyType: 'residential',
-                    client: 'John Michael Smith',
-                    clientContact: '+255 712 345 678',
-                    clientEmail: 'john.smith@email.com',
-                    salePrice: 45000000,
-                    commission: 2250000,
-                    status: 'completed',
-                    agent: 'Sarah Johnson',
-                    paymentStatus: 'paid',
-                    paymentMethod: 'installments',
-                    installmentPeriod: 12,
-                    downPayment: 15000000,
-                    monthlyInstallment: 2500000,
-                    interestRate: 5,
-                    contractSigned: true,
-                    notes: 'Premium residential property sale',
-                    created_at: new Date().toISOString(),
-                    updated_at: new Date().toISOString()
-                }
-            ];
-            
-            console.log('⚠️ Database error, returning mock sales:', mockSales.length);
-            res.json(mockSales);
+            console.error('❌ Error fetching sales from database:', error);
+            console.log('⚠️ Database error, falling back to mock sales');
+            res.json(getMockSalesData());
         }
     } catch (error) {
-        console.error('❌ Critical error in sales endpoint:', error);
+        console.error('❌ Critical error in sales root GET endpoint:', error);
         res.status(500).json({
             success: false,
             error: 'Failed to fetch sales records',
