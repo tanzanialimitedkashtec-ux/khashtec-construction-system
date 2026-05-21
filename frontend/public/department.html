@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 
 <html lang="en">
 
@@ -76882,6 +76882,14 @@ function contactClient(clientId) {
 
 function recordSale(){
 
+    // Load properties and clients
+
+    const properties = []; // TODO: Load from API
+
+    const clients = []; // TODO: Load from API
+
+    
+
     showContent(`
 
         <div class="card">
@@ -76964,7 +76972,13 @@ function recordSale(){
 
                             <select id="saleProperty" onchange="updatePropertyDetails()" required>
 
-                                <option value="">Loading properties...</option>
+                                <option value="">Select Property</option>
+
+                                ${properties.filter(p => p.status === 'available' || p.status === 'reserved').map(property => 
+
+                                    `<option value="${property.id}">${property.plotNumber} - ${property.location} (TZS ${parseInt(property.price).toLocaleString()})</option>`
+
+                                ).join('')}
 
                             </select>
 
@@ -76976,7 +76990,13 @@ function recordSale(){
 
                             <select id="saleClient" required>
 
-                                <option value="">Loading clients...</option>
+                                <option value="">Select Client</option>
+
+                                ${clients.map(client => 
+
+                                    `<option value="${client.id}">${client.fullName} - ${client.clientType}</option>`
+
+                                ).join('')}
 
                             </select>
 
@@ -77177,8 +77197,6 @@ function recordSale(){
         </div>
 
     `);
-
-    loadSaleFormOptions();
 
 }
 
@@ -78368,9 +78386,63 @@ function updateMonthlyChart(monthlyData) {
 
     const chartContainer = document.getElementById('collectionChart');
 
-    if (chartContainer) {
-        chartContainer.innerHTML = '';
+    
+
+    if (!monthlyData || monthlyData.length === 0) {
+
+        chartContainer.innerHTML = '<p>No collection data available</p>';
+
+        return;
+
     }
+
+    
+
+    const monthlyHtml = monthlyData.map(month => {
+
+        const monthName = new Date(month.month + '-01').toLocaleDateString('en-US', { 
+
+            month: 'long', 
+
+            year: 'numeric' 
+
+        });
+
+        const target = 60000000; // TZS 60M target
+
+        const collected = Number(month.total_collected || month.amount || month.total_amount || 0);
+
+        const percentage = Math.min((collected / target) * 100, 100);
+
+        
+
+        return `
+
+            <div class="collection-item">
+
+                <span>${monthName}</span>
+
+                <div class="collection-bar">
+
+                    <div class="collection-fill ${getCollectionClass(percentage)}" 
+
+                         style="width: ${percentage}%">
+
+                        TZS ${(collected / 1000000).toFixed(1)}M of ${(target / 1000000).toFixed(1)}M Target
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        `;
+
+    }).join('');
+
+    
+
+    chartContainer.innerHTML = monthlyHtml;
 
 }
 
@@ -80364,127 +80436,6 @@ function generateReport() {
 
 // Helper functions for Real Estate
 
-let salePropertiesCache = [];
-
-
-
-function normalizeApiArray(data, keys) {
-
-    if (Array.isArray(data)) {
-        return data;
-    }
-
-    for (const key of keys) {
-        if (data && Array.isArray(data[key])) {
-            return data[key];
-        }
-    }
-
-    if (data && Array.isArray(data.data)) {
-        return data.data;
-    }
-
-    return [];
-
-}
-
-
-
-function isSaleableProperty(property) {
-
-    const status = String(property.status || '').toLowerCase();
-
-    return !status || status === 'available' || status === 'reserved' || status === 'under offer';
-
-}
-
-
-
-function getPropertyLabel(property) {
-
-    const title = property.plotNumber || property.plot_number || property.title || property.property_name || property.name || `Property ${property.id}`;
-
-    const location = property.location ? ` - ${property.location}` : '';
-
-    const price = Number(property.price || property.value || property.amount || 0);
-
-    const priceText = price > 0 ? ` (TZS ${price.toLocaleString()})` : '';
-
-    return `${title}${location}${priceText}`;
-
-}
-
-
-
-function getClientLabel(client) {
-
-    const name = client.fullName || client.full_name || client.clientName || client.client_name || client.companyName || client.company_name || client.client_id || client.id || 'Unnamed Client';
-
-    const type = client.clientType || client.client_type || client.type || '';
-
-    return type ? `${name} - ${type}` : name;
-
-}
-
-
-
-async function loadSaleFormOptions() {
-
-    const propertySelect = document.getElementById('saleProperty');
-    const clientSelect = document.getElementById('saleClient');
-
-    if (!propertySelect || !clientSelect) {
-        return;
-    }
-
-    try {
-        const [propertiesResponse, clientsResponse] = await Promise.all([
-            fetch('/api/properties/all'),
-            fetch('/api/clients')
-        ]);
-
-        if (!propertiesResponse.ok) {
-            throw new Error(`Properties request failed: HTTP ${propertiesResponse.status}`);
-        }
-
-        if (!clientsResponse.ok) {
-            throw new Error(`Clients request failed: HTTP ${clientsResponse.status}`);
-        }
-
-        const propertiesData = await propertiesResponse.json();
-        const clientsData = await clientsResponse.json();
-
-        salePropertiesCache = normalizeApiArray(propertiesData, ['properties']).filter(isSaleableProperty);
-        const clients = normalizeApiArray(clientsData, ['clients']);
-
-        propertySelect.innerHTML = '<option value="">Select Property</option>' + salePropertiesCache.map(property => {
-            return `<option value="${property.id}">${getPropertyLabel(property)}</option>`;
-        }).join('');
-
-        clientSelect.innerHTML = '<option value="">Select Client</option>' + clients.map(client => {
-            const clientId = client.id || client.client_id;
-            return `<option value="${clientId}">${getClientLabel(client)}</option>`;
-        }).join('');
-
-        if (salePropertiesCache.length === 0) {
-            propertySelect.innerHTML = '<option value="">No available properties found</option>';
-        }
-
-        if (clients.length === 0) {
-            clientSelect.innerHTML = '<option value="">No clients found</option>';
-        }
-
-    } catch (error) {
-        console.error('Error loading sale form options:', error);
-        propertySelect.innerHTML = '<option value="">Failed to load properties</option>';
-        clientSelect.innerHTML = '<option value="">Failed to load clients</option>';
-        customAlert(`Failed to load properties or clients: ${error.message}`, "Loading Error", "error");
-    }
-
-}
-
-
-
 function loadPropertyDetails() {
 
     const propertyId = document.getElementById('editPropertySelect').value;
@@ -80525,14 +80476,9 @@ function updatePropertyDetails() {
 
     const propertyId = document.getElementById('saleProperty').value;
 
-    const property = salePropertiesCache.find(item => String(item.id) === String(propertyId));
+    // Auto-fill sale price based on property
 
-    const salePriceInput = document.getElementById('salePrice');
-
-    if (property && salePriceInput) {
-        const price = property.price || property.value || property.amount;
-        salePriceInput.value = price || '';
-    }
+    customAlert(`Loading property details for sale...`, "Loading Details", "info");
 
 }
 
