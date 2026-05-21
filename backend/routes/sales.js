@@ -8,8 +8,39 @@ let db;
 try {
     db = require('../../database/config/database');
     console.log('✅ Sales database connection loaded successfully');
+    ensureDbSchema();
 } catch (error) {
     console.error('❌ Sales database connection failed:', error);
+}
+
+async function ensureDbSchema() {
+    if (!db) return;
+    try {
+        console.log('🔄 Ensuring financial_transactions table schema includes installment details...');
+        const alterQueries = [
+            `ALTER TABLE financial_transactions ADD COLUMN payment_method VARCHAR(50) DEFAULT 'full-payment'`,
+            `ALTER TABLE financial_transactions ADD COLUMN installment_period INT DEFAULT NULL`,
+            `ALTER TABLE financial_transactions ADD COLUMN down_payment DECIMAL(15,2) DEFAULT NULL`,
+            `ALTER TABLE financial_transactions ADD COLUMN monthly_installment DECIMAL(15,2) DEFAULT NULL`,
+            `ALTER TABLE financial_transactions ADD COLUMN interest_rate DECIMAL(5,2) DEFAULT NULL`,
+            `ALTER TABLE financial_transactions ADD COLUMN sales_agreement VARCHAR(255) DEFAULT NULL`
+        ];
+        for (const query of alterQueries) {
+            try {
+                await db.execute(query);
+                console.log(`✅ Alter query executed successfully: ${query.substring(0, 50)}...`);
+            } catch (err) {
+                if (err.errno === 1060 || err.code === 'ER_DUP_FIELDNAME') {
+                    // Column already exists
+                } else {
+                    console.warn(`⚠️ Schema alteration notice: ${err.message}`);
+                }
+            }
+        }
+        console.log('✅ Sales database schema verification complete.');
+    } catch (error) {
+        console.error('❌ Critical error ensuring database schema:', error);
+    }
 }
 
 // Test endpoint to verify route is working
@@ -107,12 +138,12 @@ function mapTransactionToSale(item) {
         salePrice: parseFloat(item.amount || 0),
         propertyPrice: parseFloat(item.amount || 0),
         commission: parseFloat(item.amount || 0) * 0.05, // 5% standard commission
-        paymentMethod: 'full-payment',
-        installmentPeriod: null,
-        downPayment: null,
-        monthlyInstallment: null,
-        interestRate: null,
-        salesAgreement: 'Contract Signed',
+        paymentMethod: item.payment_method || 'full-payment',
+        installmentPeriod: item.installment_period !== null && item.installment_period !== undefined ? parseInt(item.installment_period) : null,
+        downPayment: item.down_payment !== null && item.down_payment !== undefined ? parseFloat(item.down_payment) : null,
+        monthlyInstallment: item.monthly_installment !== null && item.monthly_installment !== undefined ? parseFloat(item.monthly_installment) : null,
+        interestRate: item.interest_rate !== null && item.interest_rate !== undefined ? parseFloat(item.interest_rate) : null,
+        salesAgreement: item.sales_agreement || 'Contract Signed',
         paymentStatus: frontendStatus,
         status: frontendStatus,
         commissionAgent: 'Real Estate Manager',
@@ -137,7 +168,7 @@ router.get('/', async (req, res) => {
         try {
             // Retrieve sales from the actual financial_transactions table
             const salesResult = await db.execute(`
-                SELECT id, type, category, description, amount, status, date, created_at, updated_at
+                SELECT *
                 FROM financial_transactions
                 WHERE type = 'Income' AND category = 'Real Estate Sale'
                 ORDER BY id DESC
@@ -186,7 +217,7 @@ router.get('/all', async (req, res) => {
         
         try {
             const salesResult = await db.execute(`
-                SELECT id, type, category, description, amount, status, date, created_at, updated_at
+                SELECT *
                 FROM financial_transactions
                 WHERE type = 'Income' AND category = 'Real Estate Sale'
                 ORDER BY id DESC
@@ -232,7 +263,12 @@ router.post('/', async (req, res) => {
             status,
             agent,
             paymentStatus,
-            contractSigned
+            contractSigned,
+            installmentPeriod,
+            downPayment,
+            monthlyInstallment,
+            interestRate,
+            salesAgreement
         } = req.body;
         
         // Validate required fields
@@ -250,8 +286,10 @@ router.post('/', async (req, res) => {
             const query = `
                 INSERT INTO financial_transactions (
                     type, category, description, amount, status, 
-                    date, created_at, updated_at
-                ) VALUES (?, ?, ?, ?, ?, ?, NOW(), NOW())
+                    date, payment_method, installment_period, down_payment,
+                    monthly_installment, interest_rate, sales_agreement,
+                    created_at, updated_at
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())
             `;
             
             // Map status correctly to valid ENUM values ('Pending', 'Approved', 'Rejected', 'Processed')
@@ -268,7 +306,13 @@ router.post('/', async (req, res) => {
                 `Property Sale: ${propertyName} to ${clientName}`, // description
                 parseFloat(salePrice), // amount
                 mappedStatus, // status (valid ENUM value)
-                dateVal.slice(0, 10) // date (YYYY-MM-DD)
+                dateVal.slice(0, 10), // date (YYYY-MM-DD)
+                paymentMethod || 'full-payment',
+                installmentPeriod ? parseInt(installmentPeriod) : null,
+                downPayment ? parseFloat(downPayment) : null,
+                monthlyInstallment ? parseFloat(monthlyInstallment) : null,
+                interestRate ? parseFloat(interestRate) : null,
+                salesAgreement || 'Contract Signed'
             ];
             
             console.log('🔍 Query:', query);
@@ -296,6 +340,11 @@ router.post('/', async (req, res) => {
                     salePrice: parseFloat(salePrice),
                     commission: parseFloat(commission) || (parseFloat(salePrice) * 0.05),
                     paymentMethod: paymentMethod || 'full-payment',
+                    installmentPeriod: installmentPeriod || null,
+                    downPayment: downPayment || null,
+                    monthlyInstallment: monthlyInstallment || null,
+                    interestRate: interestRate || null,
+                    salesAgreement: salesAgreement || 'Contract Signed',
                     status: mappedStatus === 'Processed' ? 'completed' : 'pending',
                     agent: agent || 'Real Estate Manager',
                     paymentStatus: mappedStatus === 'Processed' ? 'completed' : 'pending',
@@ -321,6 +370,11 @@ router.post('/', async (req, res) => {
                     salePrice: parseFloat(salePrice),
                     commission: parseFloat(commission) || 0,
                     paymentMethod: paymentMethod || 'full-payment',
+                    installmentPeriod: installmentPeriod || null,
+                    downPayment: downPayment || null,
+                    monthlyInstallment: monthlyInstallment || null,
+                    interestRate: interestRate || null,
+                    salesAgreement: salesAgreement || 'Contract Signed',
                     status: status || 'completed',
                     agent: agent || 'System',
                     paymentStatus: paymentStatus || 'paid',
@@ -350,7 +404,7 @@ router.get('/:id', async (req, res) => {
         }
         
         const saleResult = await db.execute(`
-            SELECT id, type, category, description, amount, status, date, created_at, updated_at 
+            SELECT * 
             FROM financial_transactions 
             WHERE id = ? AND type = 'Income' AND category = 'Real Estate Sale'
         `, [id]);

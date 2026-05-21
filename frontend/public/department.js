@@ -53368,7 +53368,7 @@ async function recordSale(){
 
                         <label>Payment Method *</label>
 
-                        <select id="paymentMethod" required>
+                        <select id="paymentMethod" onchange="toggleSaleInstallmentDetails()" required>
 
                             <option value="">Select Payment Method</option>
 
@@ -53841,13 +53841,13 @@ async function loadSales() {
 
                             ${paymentMethod === 'installments' ? `
 
-                                <div class="period">Period: ${installmentPeriod} months</div>
+                                <div class="period">Period: ${installmentPeriod || '0'} months</div>
 
-                                <div class="down-payment">Down: TZS ${parseInt(downPayment).toLocaleString()}</div>
+                                <div class="down-payment">Down: TZS ${downPayment ? parseInt(downPayment).toLocaleString() : '0'}</div>
 
-                                <div class="monthly">Monthly: TZS ${parseInt(monthlyInstallment).toLocaleString()}</div>
+                                <div class="monthly">Monthly: TZS ${monthlyInstallment ? parseInt(monthlyInstallment).toLocaleString() : '0'}</div>
 
-                                <div class="interest">Rate: ${interestRate}%</div>
+                                <div class="interest">Rate: ${interestRate || '0'}%</div>
 
                             ` : '<div class="no-installments">N/A</div>'}
 
@@ -54215,13 +54215,13 @@ function loadSampleSales() {
 
                     ${sale.paymentMethod === 'installments' ? `
 
-                        <div class="period">Period: ${sale.installmentPeriod} months</div>
+                        <div class="period">Period: ${sale.installmentPeriod || '0'} months</div>
 
-                        <div class="down-payment">Down: TZS ${sale.downPayment.toLocaleString()}</div>
+                        <div class="down-payment">Down: TZS ${sale.downPayment !== null && sale.downPayment !== undefined ? sale.downPayment.toLocaleString() : '0'}</div>
 
-                        <div class="monthly">Monthly: TZS ${sale.monthlyInstallment.toLocaleString()}</div>
+                        <div class="monthly">Monthly: TZS ${sale.monthlyInstallment !== null && sale.monthlyInstallment !== undefined ? sale.monthlyInstallment.toLocaleString() : '0'}</div>
 
-                        <div class="interest">Rate: ${sale.interestRate}%</div>
+                        <div class="interest">Rate: ${sale.interestRate || '0'}%</div>
 
                     ` : '<div class="no-installments">N/A</div>'}
 
@@ -56753,6 +56753,20 @@ function saveNewClient() {
 
 
 
+function toggleSaleInstallmentDetails() {
+    const method = document.getElementById('paymentMethod').value;
+    const details = document.getElementById('installmentDetails');
+    if (details) {
+        if (method === 'installments') {
+            details.classList.remove('hidden');
+        } else {
+            details.classList.add('hidden');
+        }
+    }
+}
+
+
+
 async function saveNewSale(event) {
 
     if (event) event.preventDefault();
@@ -56765,6 +56779,18 @@ async function saveNewSale(event) {
     const paymentStatus = document.getElementById('paymentStatus').value;
     const commissionAgent = document.getElementById('commissionAgent').value;
     const notes = document.getElementById('saleNotes').value;
+
+    let installmentPeriod = null;
+    let downPayment = null;
+    let monthlyInstallment = null;
+    let interestRate = null;
+
+    if (paymentMethod === 'installments') {
+        installmentPeriod = document.getElementById('installmentPeriod').value;
+        downPayment = document.getElementById('downPayment').value;
+        monthlyInstallment = document.getElementById('monthlyInstallment').value;
+        interestRate = document.getElementById('interestRate').value;
+    }
 
     if (!propertyId || !clientId || !price || !date) {
         console.warn('⚠️ Validation failed: Missing required fields for saving sale.');
@@ -56787,7 +56813,11 @@ async function saveNewSale(event) {
         paymentMethod,
         paymentStatus,
         commissionAgent,
-        notes
+        notes,
+        installmentPeriod,
+        downPayment,
+        monthlyInstallment,
+        interestRate
     });
 
     try {
@@ -56804,7 +56834,11 @@ async function saveNewSale(event) {
                 agent: commissionAgent || 'Real Estate Manager',
                 status: 'completed',
                 date: date,
-                notes: notes
+                notes: notes,
+                installmentPeriod: installmentPeriod,
+                downPayment: downPayment,
+                monthlyInstallment: monthlyInstallment,
+                interestRate: interestRate
             })
         });
 
