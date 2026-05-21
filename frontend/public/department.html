@@ -78200,6 +78200,10 @@ function updatePaymentTable(payments) {
 
     const tableBody = document.getElementById('paymentTableBody');
 
+    if (!Array.isArray(payments)) {
+        payments = payments && Array.isArray(payments.tracking) ? payments.tracking : [];
+    }
+
     
 
     if (!payments || payments.length === 0) {
@@ -78214,15 +78218,28 @@ function updatePaymentTable(payments) {
 
     tableBody.innerHTML = payments.map(payment => {
 
-        const progressPercentage = payment.total_amount > 0 ? 
+        const totalAmount = Number(payment.total_amount || payment.amount || 0);
+        const paidAmount = Number(payment.paid_amount || (payment.payment_status === 'completed' ? totalAmount : 0));
+        const outstandingBalance = Number(payment.outstanding_balance || Math.max(totalAmount - paidAmount, 0));
+        const installmentAmount = Number(payment.installment_amount || outstandingBalance || totalAmount);
+        const saleId = payment.sale_id || payment.id || `'${payment.tracking_reference || payment.transaction_id || ''}'`;
+        const saleReference = payment.sale_reference || payment.tracking_reference || payment.transaction_id || `PAY-${payment.id || 'N/A'}`;
+        const clientName = payment.client_name || payment.paid_by || payment.paid_to || 'Unknown';
+        const clientEmail = payment.client_email || payment.invoice_number || '';
+        const propertyTitle = payment.property_title || payment.description || payment.category || payment.transaction_type || 'N/A';
+        const propertyLocation = payment.property_location || payment.department || payment.project_id || '';
+        const nextPaymentDate = payment.next_payment_date || payment.due_date || payment.payment_date;
+        const paymentStatus = payment.payment_status || payment.status || 'pending';
 
-            Math.round((payment.paid_amount / payment.total_amount) * 100) : 0;
+        const progressPercentage = totalAmount > 0 ? 
 
-        const isOverdue = payment.next_payment_date && 
+            Math.round((paidAmount / totalAmount) * 100) : 0;
 
-            new Date(payment.next_payment_date) < new Date() && 
+        const isOverdue = nextPaymentDate && 
 
-            payment.payment_status !== 'completed';
+            new Date(nextPaymentDate) < new Date() && 
+
+            paymentStatus !== 'completed';
 
         
 
@@ -78230,15 +78247,14 @@ function updatePaymentTable(payments) {
 
             <tr class="payment-row">
 
-                <td class="sale-id">${payment.sale_reference || 'N/A'}</td>
+                <td class="sale-id">${saleReference}</td>
 
                 <td class="client-name">
 
                     <div class="client-info">
 
-                        <strong>${payment.client_name || 'Unknown'}</strong>
-
-                        <small>${payment.client_email || ''}</small>
+                        <strong>${clientName}</strong>
+                        <small>${clientEmail}</small>
 
                     </div>
 
@@ -78248,21 +78264,20 @@ function updatePaymentTable(payments) {
 
                     <div class="property-details">
 
-                        <strong>${payment.property_title || 'N/A'}</strong>
-
-                        <small>${payment.property_location || ''}</small>
+                        <strong>${propertyTitle}</strong>
+                        <small>${propertyLocation}</small>
 
                     </div>
 
                 </td>
 
-                <td class="total-amount">TZS ${(payment.total_amount || 0).toLocaleString()}</td>
+                <td class="total-amount">TZS ${totalAmount.toLocaleString()}</td>
 
-                <td class="paid-amount">TZS ${(payment.paid_amount || 0).toLocaleString()}</td>
+                <td class="paid-amount">TZS ${paidAmount.toLocaleString()}</td>
 
-                <td class="outstanding-balance ${payment.outstanding_balance > 0 ? 'has-balance' : 'cleared'}">
+                <td class="outstanding-balance ${outstandingBalance > 0 ? 'has-balance' : 'cleared'}">
 
-                    TZS ${(payment.outstanding_balance || 0).toLocaleString()}
+                    TZS ${outstandingBalance.toLocaleString()}
 
                 </td>
 
@@ -78284,11 +78299,11 @@ function updatePaymentTable(payments) {
 
                 </td>
 
-                <td class="installment">TZS ${(payment.installment_amount || 0).toLocaleString()}</td>
+                <td class="installment">TZS ${installmentAmount.toLocaleString()}</td>
 
                 <td class="next-payment ${isOverdue ? 'overdue' : ''}">
 
-                    ${formatDate(payment.next_payment_date) || 'N/A'}
+                    ${formatDate(nextPaymentDate) || 'N/A'}
 
                     ${isOverdue ? '<span class="overdue-badge">Overdue</span>' : ''}
 
@@ -78296,9 +78311,9 @@ function updatePaymentTable(payments) {
 
                 <td class="status">
 
-                    <span class="status-badge ${getStatusClass(payment.payment_status)}">
+                    <span class="status-badge ${getStatusClass(paymentStatus)}">
 
-                        ${formatStatus(payment.payment_status)}
+                        ${formatStatus(paymentStatus)}
 
                     </span>
 
@@ -78306,13 +78321,13 @@ function updatePaymentTable(payments) {
 
                 <td class="actions">
 
-                    <button class="action-btn" onclick="recordPayment(${payment.sale_id})" title="Record Payment">
+                    <button class="action-btn" onclick="recordPayment(${saleId})" title="Record Payment">
 
                         💰
 
                     </button>
 
-                    <button class="action-btn" onclick="viewPaymentHistory(${payment.sale_id})" title="View History">
+                    <button class="action-btn" onclick="viewPaymentHistory(${saleId})" title="View History">
 
                         📊
 
@@ -78320,7 +78335,7 @@ function updatePaymentTable(payments) {
 
                     ${isOverdue ? `
 
-                        <button class="action-btn" onclick="sendPaymentReminder(${payment.sale_id})" title="Send Reminder">
+                        <button class="action-btn" onclick="sendPaymentReminder(${saleId})" title="Send Reminder">
 
                             📧
 
@@ -78368,7 +78383,9 @@ function updateMonthlyChart(monthlyData) {
 
         const target = 60000000; // TZS 60M target
 
-        const percentage = Math.min((month.total_collected / target) * 100, 100);
+        const collected = Number(month.total_collected || month.amount || month.total_amount || 0);
+
+        const percentage = Math.min((collected / target) * 100, 100);
 
         
 
@@ -78384,7 +78401,7 @@ function updateMonthlyChart(monthlyData) {
 
                          style="width: ${percentage}%">
 
-                        TZS ${(month.total_collected / 1000000).toFixed(1)}M of ${(target / 1000000).toFixed(1)}M Target
+                        TZS ${(collected / 1000000).toFixed(1)}M of ${(target / 1000000).toFixed(1)}M Target
 
                     </div>
 

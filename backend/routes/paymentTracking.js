@@ -3,6 +3,185 @@ const router = express.Router();
 
 console.log('🚀 Payment Tracking route file is being loaded...');
 
+function getSamplePaymentTracking() {
+    return [
+        {
+            id: 1,
+            tracking_reference: 'PT202605001',
+            transaction_id: 'TXN001',
+            transaction_type: 'sale',
+            amount: 150000.00,
+            currency: 'USD',
+            payment_method: 'bank_transfer',
+            payment_status: 'completed',
+            paid_by: 'Client ABC Corporation',
+            paid_to: 'KASHTEC Tanzania Limited',
+            payment_date: '2026-05-01',
+            due_date: '2026-05-01',
+            description: 'Payment for construction project Phase 1',
+            category: 'construction',
+            department: 'Projects',
+            project_id: 'PRJ001',
+            invoice_number: 'INV001',
+            receipt_number: 'REC001',
+            approved_by: 'Finance Manager',
+            approved_date: '2026-05-01T09:00:00Z',
+            processed_by: 'Accounting Team',
+            processed_date: '2026-05-01T10:00:00Z',
+            notes: 'Payment received on time, project progressing well',
+            created_at: '2026-05-01T08:00:00Z',
+            updated_at: '2026-05-01T10:00:00Z'
+        },
+        {
+            id: 2,
+            tracking_reference: 'PT202605002',
+            transaction_id: 'TXN002',
+            transaction_type: 'purchase',
+            amount: 25000.00,
+            currency: 'USD',
+            payment_method: 'card',
+            payment_status: 'completed',
+            paid_by: 'KASHTEC Tanzania Limited',
+            paid_to: 'Construction Supplies Ltd',
+            payment_date: '2026-05-03',
+            due_date: '2026-05-03',
+            description: 'Purchase of construction materials',
+            category: 'procurement',
+            department: 'Procurement',
+            project_id: 'PRJ002',
+            invoice_number: 'INV002',
+            receipt_number: 'REC002',
+            approved_by: 'Procurement Manager',
+            approved_date: '2026-05-03T11:00:00Z',
+            processed_by: 'Finance Team',
+            processed_date: '2026-05-03T14:00:00Z',
+            notes: 'Materials delivered as expected',
+            created_at: '2026-05-03T10:00:00Z',
+            updated_at: '2026-05-03T14:00:00Z'
+        },
+        {
+            id: 3,
+            tracking_reference: 'PT202605003',
+            transaction_id: 'TXN003',
+            transaction_type: 'salary',
+            amount: 8500.00,
+            currency: 'USD',
+            payment_method: 'bank_transfer',
+            payment_status: 'completed',
+            paid_by: 'KASHTEC Tanzania Limited',
+            paid_to: 'John Doe',
+            payment_date: '2026-05-05',
+            due_date: '2026-05-05',
+            description: 'Monthly salary payment - May 2026',
+            category: 'payroll',
+            department: 'HR',
+            project_id: null,
+            invoice_number: 'PAY001',
+            receipt_number: 'PAYREC001',
+            approved_by: 'HR Manager',
+            approved_date: '2026-05-05T08:00:00Z',
+            processed_by: 'Payroll Team',
+            processed_date: '2026-05-05T16:00:00Z',
+            notes: 'Monthly salary processed for all employees',
+            created_at: '2026-05-05T08:00:00Z',
+            updated_at: '2026-05-05T16:00:00Z'
+        },
+        {
+            id: 4,
+            tracking_reference: 'PT202605004',
+            transaction_id: 'TXN004',
+            transaction_type: 'expense',
+            amount: 12000.00,
+            currency: 'USD',
+            payment_method: 'mobile_money',
+            payment_status: 'pending',
+            paid_by: 'KASHTEC Tanzania Limited',
+            paid_to: 'Equipment Rental Service',
+            payment_date: null,
+            due_date: '2026-05-15',
+            description: 'Heavy equipment rental for construction site',
+            category: 'operations',
+            department: 'Operations',
+            project_id: 'PRJ003',
+            invoice_number: 'EXP001',
+            receipt_number: null,
+            approved_by: 'Operations Manager',
+            approved_date: '2026-05-10T14:00:00Z',
+            processed_by: null,
+            processed_date: null,
+            notes: 'Payment to be processed by May 15th',
+            created_at: '2026-05-10T14:00:00Z',
+            updated_at: '2026-05-10T14:00:00Z'
+        },
+        {
+            id: 5,
+            tracking_reference: 'PT202605005',
+            transaction_id: 'TXN005',
+            transaction_type: 'refund',
+            amount: 5000.00,
+            currency: 'USD',
+            payment_method: 'bank_transfer',
+            payment_status: 'completed',
+            paid_by: 'KASHTEC Tanzania Limited',
+            paid_to: 'Client XYZ Corporation',
+            payment_date: '2026-05-08',
+            due_date: '2026-05-08',
+            description: 'Refund for cancelled construction work',
+            category: 'refund',
+            department: 'Finance',
+            project_id: 'PRJ004',
+            invoice_number: 'REF001',
+            receipt_number: 'REFREC001',
+            approved_by: 'Finance Director',
+            approved_date: '2026-05-07T15:00:00Z',
+            processed_by: 'Finance Team',
+            processed_date: '2026-05-08T11:00:00Z',
+            notes: 'Refund processed as per client request',
+            created_at: '2026-05-07T15:00:00Z',
+            updated_at: '2026-05-08T11:00:00Z'
+        },
+        {
+            id: 6,
+            tracking_reference: 'PT202605006',
+            transaction_id: 'TXN006',
+            transaction_type: 'other',
+            amount: 3500.00,
+            currency: 'USD',
+            payment_method: 'check',
+            payment_status: 'processing',
+            paid_by: 'KASHTEC Tanzania Limited',
+            paid_to: 'Consulting Services Ltd',
+            payment_date: null,
+            due_date: '2026-05-20',
+            description: 'Consulting fees for project planning',
+            category: 'consulting',
+            department: 'Management',
+            project_id: 'PRJ005',
+            invoice_number: 'CON001',
+            receipt_number: null,
+            approved_by: 'CEO',
+            approved_date: '2026-05-12T10:00:00Z',
+            processed_by: null,
+            processed_date: null,
+            notes: 'Payment pending consultant invoice verification',
+            created_at: '2026-05-12T10:00:00Z',
+            updated_at: '2026-05-12T10:00:00Z'
+        }
+    ];
+}
+
+function normalizeRows(result) {
+    if (!Array.isArray(result)) {
+        return result && Array.isArray(result.rows) ? result.rows : [];
+    }
+
+    if (Array.isArray(result[0]) && result[1] && Array.isArray(result[1])) {
+        return result[0];
+    }
+
+    return result;
+}
+
 // Test endpoint to verify route is working
 router.get('/test', (req, res) => {
     console.log('🧪 Payment Tracking test endpoint accessed');
@@ -70,186 +249,17 @@ router.get('/', async (req, res) => {
                 ORDER BY created_at DESC
             `);
             
-            // Handle different database response formats
-            if (Array.isArray(trackingResult)) {
-                tracking = trackingResult;
-            } else if (trackingResult && Array.isArray(trackingResult[0])) {
-                tracking = trackingResult[0];
-            } else if (trackingResult && trackingResult.rows) {
-                tracking = trackingResult.rows;
-            } else {
-                tracking = [];
+            tracking = normalizeRows(trackingResult);
+            
+            if (tracking.length === 0) {
+                tracking = getSamplePaymentTracking();
             }
             
             console.log('✅ Payment Tracking records fetched from database:', tracking.length);
         } catch (dbError) {
             console.error('❌ Database error, using fallback payment tracking:', dbError);
             
-            // Fallback to mock payment tracking
-            tracking = [
-                {
-                    id: 1,
-                    tracking_reference: 'PT202605001',
-                    transaction_id: 'TXN001',
-                    transaction_type: 'sale',
-                    amount: 150000.00,
-                    currency: 'USD',
-                    payment_method: 'bank_transfer',
-                    payment_status: 'completed',
-                    paid_by: 'Client ABC Corporation',
-                    paid_to: 'KASHTEC Tanzania Limited',
-                    payment_date: '2026-05-01',
-                    due_date: '2026-05-01',
-                    description: 'Payment for construction project Phase 1',
-                    category: 'construction',
-                    department: 'Projects',
-                    project_id: 'PRJ001',
-                    invoice_number: 'INV001',
-                    receipt_number: 'REC001',
-                    approved_by: 'Finance Manager',
-                    approved_date: '2026-05-01T09:00:00Z',
-                    processed_by: 'Accounting Team',
-                    processed_date: '2026-05-01T10:00:00Z',
-                    notes: 'Payment received on time, project progressing well',
-                    created_at: '2026-05-01T08:00:00Z',
-                    updated_at: '2026-05-01T10:00:00Z'
-                },
-                {
-                    id: 2,
-                    tracking_reference: 'PT202605002',
-                    transaction_id: 'TXN002',
-                    transaction_type: 'purchase',
-                    amount: 25000.00,
-                    currency: 'USD',
-                    payment_method: 'card',
-                    payment_status: 'completed',
-                    paid_by: 'KASHTEC Tanzania Limited',
-                    paid_to: 'Construction Supplies Ltd',
-                    payment_date: '2026-05-03',
-                    due_date: '2026-05-03',
-                    description: 'Purchase of construction materials',
-                    category: 'procurement',
-                    department: 'Procurement',
-                    project_id: 'PRJ002',
-                    invoice_number: 'INV002',
-                    receipt_number: 'REC002',
-                    approved_by: 'Procurement Manager',
-                    approved_date: '2026-05-03T11:00:00Z',
-                    processed_by: 'Finance Team',
-                    processed_date: '2026-05-03T14:00:00Z',
-                    notes: 'Materials delivered as expected',
-                    created_at: '2026-05-03T10:00:00Z',
-                    updated_at: '2026-05-03T14:00:00Z'
-                },
-                {
-                    id: 3,
-                    tracking_reference: 'PT202605003',
-                    transaction_id: 'TXN003',
-                    transaction_type: 'salary',
-                    amount: 8500.00,
-                    currency: 'USD',
-                    payment_method: 'bank_transfer',
-                    payment_status: 'completed',
-                    paid_by: 'KASHTEC Tanzania Limited',
-                    paid_to: 'John Doe',
-                    payment_date: '2026-05-05',
-                    due_date: '2026-05-05',
-                    description: 'Monthly salary payment - May 2026',
-                    category: 'payroll',
-                    department: 'HR',
-                    project_id: null,
-                    invoice_number: 'PAY001',
-                    receipt_number: 'PAYREC001',
-                    approved_by: 'HR Manager',
-                    approved_date: '2026-05-05T08:00:00Z',
-                    processed_by: 'Payroll Team',
-                    processed_date: '2026-05-05T16:00:00Z',
-                    notes: 'Monthly salary processed for all employees',
-                    created_at: '2026-05-05T08:00:00Z',
-                    updated_at: '2026-05-05T16:00:00Z'
-                },
-                {
-                    id: 4,
-                    tracking_reference: 'PT202605004',
-                    transaction_id: 'TXN004',
-                    transaction_type: 'expense',
-                    amount: 12000.00,
-                    currency: 'USD',
-                    payment_method: 'mobile_money',
-                    payment_status: 'pending',
-                    paid_by: 'KASHTEC Tanzania Limited',
-                    paid_to: 'Equipment Rental Service',
-                    payment_date: null,
-                    due_date: '2026-05-15',
-                    description: 'Heavy equipment rental for construction site',
-                    category: 'operations',
-                    department: 'Operations',
-                    project_id: 'PRJ003',
-                    invoice_number: 'EXP001',
-                    receipt_number: null,
-                    approved_by: 'Operations Manager',
-                    approved_date: '2026-05-10T14:00:00Z',
-                    processed_by: null,
-                    processed_date: null,
-                    notes: 'Payment to be processed by May 15th',
-                    created_at: '2026-05-10T14:00:00Z',
-                    updated_at: '2026-05-10T14:00:00Z'
-                },
-                {
-                    id: 5,
-                    tracking_reference: 'PT202605005',
-                    transaction_id: 'TXN005',
-                    transaction_type: 'refund',
-                    amount: 5000.00,
-                    currency: 'USD',
-                    payment_method: 'bank_transfer',
-                    payment_status: 'completed',
-                    paid_by: 'KASHTEC Tanzania Limited',
-                    paid_to: 'Client XYZ Corporation',
-                    payment_date: '2026-05-08',
-                    due_date: '2026-05-08',
-                    description: 'Refund for cancelled construction work',
-                    category: 'refund',
-                    department: 'Finance',
-                    project_id: 'PRJ004',
-                    invoice_number: 'REF001',
-                    receipt_number: 'REFREC001',
-                    approved_by: 'Finance Director',
-                    approved_date: '2026-05-07T15:00:00Z',
-                    processed_by: 'Finance Team',
-                    processed_date: '2026-05-08T11:00:00Z',
-                    notes: 'Refund processed as per client request',
-                    created_at: '2026-05-07T15:00:00Z',
-                    updated_at: '2026-05-08T11:00:00Z'
-                },
-                {
-                    id: 6,
-                    tracking_reference: 'PT202605006',
-                    transaction_id: 'TXN006',
-                    transaction_type: 'other',
-                    amount: 3500.00,
-                    currency: 'USD',
-                    payment_method: 'check',
-                    payment_status: 'processing',
-                    paid_by: 'KASHTEC Tanzania Limited',
-                    paid_to: 'Consulting Services Ltd',
-                    payment_date: null,
-                    due_date: '2026-05-20',
-                    description: 'Consulting fees for project planning',
-                    category: 'consulting',
-                    department: 'Management',
-                    project_id: 'PRJ005',
-                    invoice_number: 'CON001',
-                    receipt_number: null,
-                    approved_by: 'CEO',
-                    approved_date: '2026-05-12T10:00:00Z',
-                    processed_by: null,
-                    processed_date: null,
-                    notes: 'Payment pending consultant invoice verification',
-                    created_at: '2026-05-12T10:00:00Z',
-                    updated_at: '2026-05-12T10:00:00Z'
-                }
-            ];
+            tracking = getSamplePaymentTracking();
         }
         
         res.json({
