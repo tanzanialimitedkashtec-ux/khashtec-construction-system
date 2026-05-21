@@ -60,9 +60,9 @@ function submitAccountForm() {
 // ===== PROJECT PROGRESS FUNCTIONS =====
 
 // Load projects into the select dropdown
-async function loadProjects() {
+async function loadProjectsForProgressDropdown() {
     try {
-        console.log('🔍 Loading projects...');
+        console.log('🔍 Loading projects for progress update...');
         
         // Check if apiService is available
         if (!window.apiService) {
@@ -267,7 +267,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Load projects if the progress project select exists
     const projectSelect = document.getElementById('progressProject');
     if (projectSelect) {
-        loadProjects();
+        loadProjectsForProgressDropdown();
     }
     
     // Load worker assignments if the worker results exist
@@ -754,7 +754,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Previous initializations...
     const projectSelect = document.getElementById('progressProject');
     if (projectSelect) {
-        loadProjects();
+        loadProjectsForProgressDropdown();
     }
     
     const workerResults = document.getElementById('workerResults');
@@ -1501,7 +1501,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Previous initializations...
     const projectSelect = document.getElementById('progressProject');
     if (projectSelect) {
-        loadProjects();
+        loadProjectsForProgressDropdown();
     }
     
     const workerResults = document.getElementById('workerResults');

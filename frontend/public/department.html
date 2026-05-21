@@ -68779,9 +68779,13 @@ function displayProjects(projects) {
 
     
 
-    // Sort projects by start date (newest first)
+    // Sort projects by start date safely (newest first)
 
-    projects.sort((a, b) => new Date(b.startDate) - new Date(a.startDate));
+    projects.sort((a, b) => {
+        const dateB = new Date(b.startDate || b.start_date || 0);
+        const dateA = new Date(a.startDate || a.start_date || 0);
+        return dateB - dateA;
+    });
 
     
 
@@ -68791,89 +68795,89 @@ function displayProjects(projects) {
 
     projects.forEach(project => {
 
-        // Get project type display
+        // Standardize properties to support both database API (snake_case) and mock data formats
+        const projId = project.projectId || project.project_code || project.id || 'N/A';
+        const projName = project.name || 'Not specified';
+        const projCode = project.projectCode || project.project_code || 'N/A';
+        const clientName = project.client || project.client_id || 'Not specified';
 
-        const typeDisplay = project.type === 'construction' ? '🏗️ Construction' : 
+        // Get project type display safely
 
-                           project.type === 'renovation' ? '🔧 Renovation' : 
+        const rawType = (project.type || project.project_type || '').toLowerCase();
+        const typeDisplay = rawType === 'construction' ? '🏗️ Construction' : 
 
-                           project.type === 'infrastructure' ? '🌉 Infrastructure' : 
+                           rawType === 'renovation' ? '🔧 Renovation' : 
 
-                           project.type === 'maintenance' ? '🔨 Maintenance' : 
+                           rawType === 'infrastructure' ? '🌉 Infrastructure' : 
 
-                           project.type === 'consulting' ? '📋 Consulting' : project.type;
+                           rawType === 'maintenance' ? '🔨 Maintenance' : 
 
-        
-
-        // Get status display
-
-        const statusDisplay = project.status === 'active' ? '🟢 Active' : 
-
-                             project.status === 'completed' ? '✅ Completed' : 
-
-                             project.status === 'planning' ? '📋 Planning' : 
-
-                             project.status === 'on-hold' ? '⏸️ On Hold' : 
-
-                             project.status === 'cancelled' ? '❌ Cancelled' : project.status;
+                           rawType === 'consulting' ? '📋 Consulting' : (project.type || project.project_type || 'Not specified');
 
         
 
-        const statusClass = project.status === 'active' ? 'status-active' : 
+        // Get status display safely
 
-                           project.status === 'completed' ? 'status-completed' : 
+        const statusVal = (project.status || '').toLowerCase();
+        const statusDisplay = statusVal === 'active' ? '🟢 Active' : 
 
-                           project.status === 'planning' ? 'status-planning' : 
+                             statusVal === 'completed' ? '✅ Completed' : 
 
-                           project.status === 'on-hold' ? 'status-on-hold' : 
+                             statusVal === 'planning' ? '📋 Planning' : 
 
-                           project.status === 'cancelled' ? 'status-cancelled' : '';
+                             statusVal === 'on-hold' ? '⏸️ On Hold' : 
+
+                             statusVal === 'cancelled' ? '❌ Cancelled' : (project.status || 'Planning');
+
+        
+
+        const statusClass = statusVal === 'active' ? 'status-active' : 
+
+                            statusVal === 'completed' ? 'status-completed' : 
+
+                            statusVal === 'planning' ? 'status-planning' : 
+
+                            statusVal === 'on-hold' ? 'status-on-hold' : 
+
+                            statusVal === 'cancelled' ? 'status-cancelled' : '';
 
         
 
         // Format contract value
 
-        const contractValue = project.contractValue ? 
-
-            (project.contractValue / 1000000).toFixed(1) + 'M TZS' : 
-
-            'N/A';
+        const rawBudget = parseFloat(project.contractValue || project.budget || 0);
+        const contractValue = rawBudget ? (rawBudget / 1000000).toFixed(1) + 'M TZS' : 'N/A';
 
         
 
-        // Get priority display
+        // Get priority display safely
 
-        const priorityDisplay = project.priorityLevel === 'high' ? '🔴 High' : 
+        const priorityVal = (project.priorityLevel || project.priority || '').toLowerCase();
+        const priorityDisplay = priorityVal === 'high' ? '🔴 High' : 
 
-                               project.priorityLevel === 'medium' ? '🟡 Medium' : 
+                               priorityVal === 'medium' ? '🟡 Medium' : 
 
-                               project.priorityLevel === 'low' ? '🟢 Low' : project.priorityLevel;
-
-        
-
-        const priorityClass = project.priorityLevel === 'high' ? 'priority-high' : 
-
-                             project.priorityLevel === 'medium' ? 'priority-medium' : 
-
-                             project.priorityLevel === 'low' ? 'priority-low' : '';
+                               priorityVal === 'low' ? '🟢 Low' : (project.priorityLevel || project.priority || 'Medium');
 
         
 
-        // Truncate text fields for display
+        const priorityClass = priorityVal === 'high' ? 'priority-high' : 
 
-        const projectDescription = project.projectDescription && project.projectDescription.length > 50 ? 
+                              priorityVal === 'medium' ? 'priority-medium' : 
 
-            project.projectDescription.substring(0, 50) + '...' : 
-
-            (project.projectDescription || 'Not specified');
+                              priorityVal === 'low' ? 'priority-low' : '';
 
         
 
-        const keyDeliverables = project.keyDeliverables && project.keyDeliverables.length > 40 ? 
+        // Truncate text fields safely
 
-            project.keyDeliverables.substring(0, 40) + '...' : 
+        const desc = project.projectDescription || project.description || 'Not specified';
+        const projectDescription = desc.length > 50 ? desc.substring(0, 50) + '...' : desc;
 
-            (project.keyDeliverables || 'Not specified');
+        
+
+        const deliverables = project.keyDeliverables || 'Not specified';
+        const keyDeliverables = deliverables.length > 40 ? deliverables.substring(0, 40) + '...' : deliverables;
 
         
 
@@ -68894,6 +68898,18 @@ function displayProjects(projects) {
         `;
 
         
+        const siteLocation = project.siteLocation || project.location || 'Not specified';
+        const managerName = project.manager || project.manager_id || 'Not assigned';
+
+        // Parse dates safely to avoid Invalid Date / RangeError
+        const formatDate = (dateVal) => {
+            if (!dateVal) return 'N/A';
+            const d = new Date(dateVal);
+            return isNaN(d.getTime()) ? 'N/A' : d.toLocaleDateString();
+        };
+        const startDateDisplay = formatDate(project.startDate || project.start_date);
+        const endDateDisplay = formatDate(project.endDate || project.end_date);
+
 
         projectsHTML += `
 
@@ -68903,7 +68919,7 @@ function displayProjects(projects) {
 
                     <div class="project-id-info">
 
-                        <div class="project-id">${project.projectId}</div>
+                        <div class="project-id">${projId}</div>
 
                     </div>
 
@@ -68913,7 +68929,7 @@ function displayProjects(projects) {
 
                     <div class="project-name-info">
 
-                        <div class="project-name" title="${project.name || 'Not specified'}">${project.name || 'Not specified'}</div>
+                        <div class="project-name" title="${projName}">${projName}</div>
 
                     </div>
 
@@ -68923,7 +68939,7 @@ function displayProjects(projects) {
 
                     <div class="project-code-info">
 
-                        <div class="project-code">${project.projectCode || 'N/A'}</div>
+                        <div class="project-code">${projCode}</div>
 
                     </div>
 
@@ -68933,7 +68949,7 @@ function displayProjects(projects) {
 
                     <div class="client-info">
 
-                        <div class="client-name">${project.client || 'Not specified'}</div>
+                        <div class="client-name">${clientName}</div>
 
                     </div>
 
@@ -68949,7 +68965,7 @@ function displayProjects(projects) {
 
                     <div class="date-info">
 
-                        <div class="start-date">${new Date(project.startDate).toLocaleDateString()}</div>
+                        <div class="start-date">${startDateDisplay}</div>
 
                     </div>
 
@@ -68959,7 +68975,7 @@ function displayProjects(projects) {
 
                     <div class="date-info">
 
-                        <div class="end-date">${new Date(project.endDate).toLocaleDateString()}</div>
+                        <div class="end-date">${endDateDisplay}</div>
 
                     </div>
 
@@ -68975,7 +68991,7 @@ function displayProjects(projects) {
 
                     <div class="description-info">
 
-                        <div class="project-description" title="${project.projectDescription || 'Not specified'}">${projectDescription}</div>
+                        <div class="project-description" title="${desc}">${projectDescription}</div>
 
                     </div>
 
@@ -68985,7 +69001,7 @@ function displayProjects(projects) {
 
                     <div class="deliverables-info">
 
-                        <div class="key-deliverables" title="${project.keyDeliverables || 'Not specified'}">${keyDeliverables}</div>
+                        <div class="key-deliverables" title="${deliverables}">${keyDeliverables}</div>
 
                     </div>
 
@@ -68995,7 +69011,7 @@ function displayProjects(projects) {
 
                     <div class="location-info">
 
-                        <div class="site-location">${project.siteLocation || 'Not specified'}</div>
+                        <div class="site-location">${siteLocation}</div>
 
                     </div>
 
@@ -69011,7 +69027,7 @@ function displayProjects(projects) {
 
                     <div class="manager-info">
 
-                        <div class="manager-name">${project.manager || 'Not assigned'}</div>
+                        <div class="manager-name">${managerName}</div>
 
                     </div>
 
