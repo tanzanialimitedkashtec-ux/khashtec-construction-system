@@ -2611,25 +2611,8 @@ function displayFilteredPolicies(policies) {
 
     
 
-    // Filter for pending policies (handle both lowercase and capitalized status)
-    // If no status field exists, assume policy is pending
-    const pendingPolicies = policies.filter(policy => 
-        !policy.status || policy.status === 'pending' || policy.status === 'Pending'
-    );
 
-    
-
-    if (pendingPolicies.length === 0) {
-
-        container.innerHTML = '<div class="no-policies">No pending policies found matching your search.</div>';
-
-        return;
-
-    }
-
-    
-
-    const policiesHTML = pendingPolicies.map(policy => {
+    let policiesHTML = policies.map(policy => {
 
         // Map backend fields to frontend expected fields
 
