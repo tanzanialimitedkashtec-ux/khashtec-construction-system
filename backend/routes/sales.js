@@ -59,6 +59,71 @@ function getMockSalesData() {
     ];
 }
 
+// Helper to map DB row to frontend sale format
+function mapTransactionToSale(item) {
+    const description = item.description || '';
+    let propertyName = '';
+    let clientName = '';
+    
+    // Parse propertyName and clientName from "Property Sale: ${propertyName} to ${clientName}"
+    if (description.startsWith('Property Sale: ')) {
+        const parts = description.substring('Property Sale: '.length).split(' to ');
+        propertyName = parts[0] || 'Unknown Property';
+        clientName = parts[1] || 'Unknown Client';
+    } else {
+        const toIndex = description.toLowerCase().indexOf(' to ');
+        if (toIndex !== -1) {
+            propertyName = description.substring(0, toIndex).trim();
+            clientName = description.substring(toIndex + 4).trim();
+        } else {
+            propertyName = description || 'Real Estate Property';
+            clientName = 'Valued Client';
+        }
+    }
+    
+    // Map db status ENUM ('Pending', 'Approved', 'Rejected', 'Processed') to frontend paymentStatus
+    let frontendStatus = 'completed';
+    if (item.status === 'Pending') frontendStatus = 'pending';
+    if (item.status === 'Rejected') frontendStatus = 'rejected';
+    if (item.status === 'Approved' || item.status === 'Processed') frontendStatus = 'completed';
+    
+    const createdYear = item.created_at ? new Date(item.created_at).getFullYear() : new Date().getFullYear();
+    const saleIdStr = `SALE-${createdYear}-${String(item.id).padStart(3, '0')}`;
+    
+    return {
+        id: item.id,
+        saleId: saleIdStr,
+        saleDate: item.date || item.transaction_date || item.created_at || new Date().toISOString(),
+        date: item.date || item.transaction_date || item.created_at || new Date().toISOString(),
+        propertyId: propertyName,
+        property: propertyName,
+        propertyLocation: propertyName,
+        propertyType: 'residential',
+        clientName: clientName,
+        client: clientName,
+        clientContact: '+255 712 345 678',
+        clientPhone: '+255 712 345 678',
+        clientEmail: 'client@kashtec.com',
+        salePrice: parseFloat(item.amount || 0),
+        propertyPrice: parseFloat(item.amount || 0),
+        commission: parseFloat(item.amount || 0) * 0.05, // 5% standard commission
+        paymentMethod: 'full-payment',
+        installmentPeriod: null,
+        downPayment: null,
+        monthlyInstallment: null,
+        interestRate: null,
+        salesAgreement: 'Contract Signed',
+        paymentStatus: frontendStatus,
+        status: frontendStatus,
+        commissionAgent: 'Real Estate Manager',
+        agent: 'Real Estate Manager',
+        contractSigned: true,
+        notes: description,
+        created_at: item.created_at,
+        updated_at: item.updated_at
+    };
+}
+
 // Root endpoint - get all sales records
 router.get('/', async (req, res) => {
     try {
@@ -72,9 +137,9 @@ router.get('/', async (req, res) => {
         try {
             // Retrieve sales from the actual financial_transactions table
             const salesResult = await db.execute(`
-                SELECT id, type, description, amount, status, date, transaction_date, created_at, updated_at
+                SELECT id, type, category, description, amount, status, date, created_at, updated_at
                 FROM financial_transactions
-                WHERE type = 'sale'
+                WHERE type = 'Income' AND category = 'Real Estate Sale'
                 ORDER BY id DESC
             `);
             
@@ -91,67 +156,7 @@ router.get('/', async (req, res) => {
             
             console.log(`✅ Raw transactions retrieved from DB: ${rawSales.length}`);
             
-            // Map the financial transactions into the format expected by the frontend
-            const formattedSales = rawSales.map(item => {
-                const description = item.description || '';
-                let propertyName = '';
-                let clientName = '';
-                
-                // Parse propertyName and clientName from "Property Sale: ${propertyName} to ${clientName}"
-                if (description.startsWith('Property Sale: ')) {
-                    const parts = description.substring('Property Sale: '.length).split(' to ');
-                    propertyName = parts[0] || 'Unknown Property';
-                    clientName = parts[1] || 'Unknown Client';
-                } else {
-                    // Fallback parse if description is formatted differently
-                    const toIndex = description.toLowerCase().indexOf(' to ');
-                    if (toIndex !== -1) {
-                        propertyName = description.substring(0, toIndex).trim();
-                        clientName = description.substring(toIndex + 4).trim();
-                    } else {
-                        propertyName = description || 'Real Estate Property';
-                        clientName = 'Valued Client';
-                    }
-                }
-                
-                // Format the ID as SALE-YYYY-XXX
-                const createdYear = item.created_at ? new Date(item.created_at).getFullYear() : new Date().getFullYear();
-                const saleIdStr = `SALE-${createdYear}-${String(item.id).padStart(3, '0')}`;
-                
-                return {
-                    id: item.id,
-                    saleId: saleIdStr,
-                    saleDate: item.date || item.transaction_date || item.created_at || new Date().toISOString(),
-                    date: item.date || item.transaction_date || item.created_at || new Date().toISOString(),
-                    propertyId: propertyName,
-                    property: propertyName,
-                    propertyLocation: propertyName,
-                    propertyType: 'residential',
-                    clientName: clientName,
-                    client: clientName,
-                    clientContact: '+255 712 345 678', // Default placeholders
-                    clientPhone: '+255 712 345 678',
-                    clientEmail: 'client@kashtec.com',
-                    salePrice: parseFloat(item.amount || 0),
-                    propertyPrice: parseFloat(item.amount || 0),
-                    commission: parseFloat(item.amount || 0) * 0.05, // 5% standard commission
-                    paymentMethod: 'full-payment',
-                    installmentPeriod: null,
-                    downPayment: null,
-                    monthlyInstallment: null,
-                    interestRate: null,
-                    salesAgreement: 'Contract Signed',
-                    paymentStatus: item.status || 'completed',
-                    status: item.status || 'completed',
-                    commissionAgent: 'Real Estate Manager',
-                    agent: 'Real Estate Manager',
-                    contractSigned: true,
-                    notes: description,
-                    created_at: item.created_at,
-                    updated_at: item.updated_at
-                };
-            });
-            
+            const formattedSales = rawSales.map(mapTransactionToSale);
             console.log('✅ Formatted sales data mapped for frontend:', formattedSales.length);
             res.json(formattedSales);
             
@@ -170,105 +175,43 @@ router.get('/', async (req, res) => {
     }
 });
 
-// Get all sales records
+// Get all sales records (additional /all endpoint)
 router.get('/all', async (req, res) => {
     try {
-        console.log('💰 Fetching all sales records...');
+        console.log('💰 Fetching all sales records /all...');
         
         if (!db) {
-            console.log('⚠️ Database not available, returning mock sales data');
-            // Return mock data when database is not available
-            const mockSales = [
-                {
-                    id: 'SALE-2026-001',
-                    date: '2026-03-15',
-                    property: 'Masaki Villa #12',
-                    propertyType: 'residential',
-                    client: 'John Michael Smith',
-                    clientContact: '+255 712 345 678',
-                    salePrice: 45000000,
-                    commission: 2250000,
-                    status: 'completed',
-                    agent: 'Sarah Johnson',
-                    paymentStatus: 'paid',
-                    contractSigned: true,
-                    created_at: new Date().toISOString(),
-                    updated_at: new Date().toISOString()
-                },
-                {
-                    id: 'SALE-2026-002',
-                    date: '2026-03-12',
-                    property: 'Kigamboni Office Suite B-205',
-                    propertyType: 'commercial',
-                    client: 'ABC Tanzania Ltd',
-                    clientContact: '+255 755 123 456',
-                    salePrice: 85000000,
-                    commission: 4250000,
-                    status: 'completed',
-                    agent: 'David Brown',
-                    paymentStatus: 'paid',
-                    contractSigned: true,
-                    created_at: new Date().toISOString(),
-                    updated_at: new Date().toISOString()
-                },
-                {
-                    id: 'SALE-2026-003',
-                    date: '2026-03-10',
-                    property: 'Mikochi Industrial Plot #8',
-                    propertyType: 'industrial',
-                    client: 'Manufacturing Co. Ltd',
-                    clientContact: '+255 768 987 654',
-                    salePrice: 120000000,
-                    commission: 6000000,
-                    status: 'completed',
-                    agent: 'Emma Wilson',
-                    paymentStatus: 'paid',
-                    contractSigned: true,
-                    created_at: new Date().toISOString(),
-                    updated_at: new Date().toISOString()
-                }
-            ];
-            
-            console.log('✅ Mock sales returned:', mockSales.length);
-            return res.json(mockSales);
+            return res.json(getMockSalesData());
         }
         
-        // Try to get sales from financial_transactions table (type = 'sale')
-        const salesResult = await db.execute(
-            'SELECT * FROM financial_transactions WHERE type = ? ORDER BY transaction_date DESC', 
-            ['sale']
-        );
-        const sales = Array.isArray(salesResult) ? salesResult[0] : salesResult;
-        
-        console.log('✅ Sales retrieved successfully:', sales.length);
-        
-        res.json(sales);
-        
-    } catch (error) {
-        console.error('❌ Error fetching sales:', error);
-        
-        // Return mock data on database error
-        const mockSales = [
-            {
-                id: 'SALE-2026-001',
-                date: '2026-03-15',
-                property: 'Masaki Villa #12',
-                propertyType: 'residential',
-                client: 'John Michael Smith',
-                clientContact: '+255 712 345 678',
-                salePrice: 45000000,
-                commission: 2250000,
-                status: 'completed',
-                agent: 'Sarah Johnson',
-                paymentStatus: 'paid',
-                contractSigned: true,
-                created_at: new Date().toISOString(),
-                updated_at: new Date().toISOString()
+        try {
+            const salesResult = await db.execute(`
+                SELECT id, type, category, description, amount, status, date, created_at, updated_at
+                FROM financial_transactions
+                WHERE type = 'Income' AND category = 'Real Estate Sale'
+                ORDER BY id DESC
+            `);
+            
+            let rawSales = [];
+            if (Array.isArray(salesResult)) {
+                if (salesResult.length > 0 && Array.isArray(salesResult[0])) {
+                    rawSales = salesResult[0];
+                } else {
+                    rawSales = salesResult;
+                }
+            } else if (salesResult) {
+                rawSales = [salesResult];
             }
-        ];
-        
-        console.log('⚠️ Database error, returning mock sales:', mockSales.length);
-        res.json(mockSales);
+            
+            const formattedSales = rawSales.map(mapTransactionToSale);
+            res.json(formattedSales);
+        } catch (error) {
+            console.error('❌ Error fetching all sales:', error);
+            res.json(getMockSalesData());
+        }
+    } catch (error) {
+        console.error('❌ Critical error in /all:', error);
+        res.status(500).json({ error: 'Failed to retrieve sales' });
     }
 });
 
@@ -302,24 +245,30 @@ router.post('/', async (req, res) => {
         
         console.log('🔍 About to execute sales insert query...');
         
-        // Try database first, fallback to mock
         try {
-            const db = require('../../database/config/database');
-            
-            // Insert into financial_transactions table
+            // Insert into financial_transactions table using valid schema columns & ENUM values
             const query = `
                 INSERT INTO financial_transactions (
-                    type, description, amount, status, 
-                    transaction_date, created_at, updated_at
-                ) VALUES (?, ?, ?, ?, ?, NOW(), NOW())
+                    type, category, description, amount, status, 
+                    date, created_at, updated_at
+                ) VALUES (?, ?, ?, ?, ?, ?, NOW(), NOW())
             `;
             
+            // Map status correctly to valid ENUM values ('Pending', 'Approved', 'Rejected', 'Processed')
+            let mappedStatus = 'Processed';
+            if (status === 'pending' || paymentStatus === 'pending') mappedStatus = 'Pending';
+            if (status === 'rejected' || paymentStatus === 'rejected') mappedStatus = 'Rejected';
+            
+            // Format the date properly for standard MySQL DATE format (YYYY-MM-DD)
+            const dateVal = req.body.date || new Date().toISOString().slice(0, 10);
+            
             const values = [
-                'sale', // type
+                'Income', // type (valid ENUM value)
+                'Real Estate Sale', // category (for identification)
                 `Property Sale: ${propertyName} to ${clientName}`, // description
                 parseFloat(salePrice), // amount
-                status || 'completed', // status
-                new Date().toISOString() // transaction_date
+                mappedStatus, // status (valid ENUM value)
+                dateVal.slice(0, 10) // date (YYYY-MM-DD)
             ];
             
             console.log('🔍 Query:', query);
@@ -328,29 +277,34 @@ router.post('/', async (req, res) => {
             const resultResult = await db.execute(query, values);
             const result = Array.isArray(resultResult) ? resultResult[0] : resultResult;
             
-            console.log('✅ Sale inserted successfully:', result);
+            console.log('✅ Sale inserted successfully into DB:', result);
+            
+            const newSaleId = result.insertId || Date.now();
+            const createdYear = new Date().getFullYear();
+            const saleIdStr = `SALE-${createdYear}-${String(newSaleId).padStart(3, '0')}`;
             
             res.status(201).json({
                 message: 'Sale recorded successfully',
-                id: result.insertId,
+                id: newSaleId,
                 data: {
-                    id: result.insertId,
+                    id: newSaleId,
+                    saleId: saleIdStr,
                     propertyId: propertyId,
                     propertyName: propertyName,
                     clientName: clientName,
-                    clientContact: clientContact,
+                    clientContact: clientContact || '+255 712 345 678',
                     salePrice: parseFloat(salePrice),
-                    commission: parseFloat(commission) || 0,
+                    commission: parseFloat(commission) || (parseFloat(salePrice) * 0.05),
                     paymentMethod: paymentMethod || 'full-payment',
-                    status: status || 'completed',
-                    agent: agent || 'System',
-                    paymentStatus: paymentStatus || 'paid',
-                    contractSigned: contractSigned || false
+                    status: mappedStatus === 'Processed' ? 'completed' : 'pending',
+                    agent: agent || 'Real Estate Manager',
+                    paymentStatus: mappedStatus === 'Processed' ? 'completed' : 'pending',
+                    contractSigned: contractSigned || true
                 }
             });
             
         } catch (dbError) {
-            console.error('❌ Database error, using mock sale:', dbError);
+            console.error('❌ Database error during insert, using mock sale:', dbError);
             
             // Fallback to mock sale creation
             const saleId = `SALE${Date.now().toString().slice(-6)}`;
@@ -395,15 +349,21 @@ router.get('/:id', async (req, res) => {
             return res.status(404).json({ error: 'Sale not found - database unavailable' });
         }
         
-        const saleResult = await db.execute('SELECT * FROM financial_transactions WHERE id = ? AND type = ?', [id, 'sale']);
+        const saleResult = await db.execute(`
+            SELECT id, type, category, description, amount, status, date, created_at, updated_at 
+            FROM financial_transactions 
+            WHERE id = ? AND type = 'Income' AND category = 'Real Estate Sale'
+        `, [id]);
+        
         const sales = Array.isArray(saleResult) ? saleResult[0] : saleResult;
         
-        if (sales.length === 0) {
+        if (!sales || sales.length === 0) {
             return res.status(404).json({ error: 'Sale not found' });
         }
         
-        console.log('✅ Sale retrieved successfully:', sales[0]);
-        res.json(sales[0]);
+        const formattedSale = mapTransactionToSale(Array.isArray(sales) ? sales[0] : sales);
+        console.log('✅ Sale retrieved successfully:', formattedSale);
+        res.json(formattedSale);
         
     } catch (error) {
         console.error('❌ Error fetching sale:', error);
@@ -427,16 +387,30 @@ router.put('/:id', async (req, res) => {
             return res.status(500).json({ error: 'Database unavailable' });
         }
         
-        // Build dynamic update query
+        // Build dynamic update query mapped to schema columns
         const updateFields = [];
         const updateValues = [];
         
-        Object.keys(updateData).forEach(key => {
-            if (updateData[key] !== undefined && key !== 'id') {
-                updateFields.push(`${key} = ?`);
-                updateValues.push(updateData[key]);
-            }
-        });
+        if (updateData.salePrice !== undefined || updateData.amount !== undefined) {
+            updateFields.push('amount = ?');
+            updateValues.push(parseFloat(updateData.salePrice || updateData.amount));
+        }
+        
+        if (updateData.status !== undefined || updateData.paymentStatus !== undefined) {
+            const newStatus = updateData.status || updateData.paymentStatus;
+            let mappedStatus = 'Processed';
+            if (newStatus === 'pending') mappedStatus = 'Pending';
+            if (newStatus === 'rejected') mappedStatus = 'Rejected';
+            updateFields.push('status = ?');
+            updateValues.push(mappedStatus);
+        }
+        
+        if (updateData.propertyName !== undefined || updateData.clientName !== undefined) {
+            const pName = updateData.propertyName || 'Property';
+            const cName = updateData.clientName || 'Client';
+            updateFields.push('description = ?');
+            updateValues.push(`Property Sale: ${pName} to ${cName}`);
+        }
         
         if (updateFields.length === 0) {
             return res.status(400).json({ error: 'No valid fields to update' });
@@ -445,7 +419,11 @@ router.put('/:id', async (req, res) => {
         updateFields.push('updated_at = NOW()');
         updateValues.push(id);
         
-        const updateQuery = `UPDATE financial_transactions SET ${updateFields.join(', ')} WHERE id = ? AND type = 'sale'`;
+        const updateQuery = `
+            UPDATE financial_transactions 
+            SET ${updateFields.join(', ')} 
+            WHERE id = ? AND type = 'Income' AND category = 'Real Estate Sale'
+        `;
         
         console.log('🔍 Update query:', updateQuery);
         console.log('📊 Update values:', updateValues);
@@ -479,7 +457,11 @@ router.delete('/:id', async (req, res) => {
             return res.status(500).json({ error: 'Database unavailable' });
         }
         
-        const resultResult = await db.execute('DELETE FROM financial_transactions WHERE id = ? AND type = ?', [id, 'sale']);
+        const resultResult = await db.execute(`
+            DELETE FROM financial_transactions 
+            WHERE id = ? AND type = 'Income' AND category = 'Real Estate Sale'
+        `, [id]);
+        
         const result = Array.isArray(resultResult) ? resultResult[0] : resultResult;
         
         if (result.affectedRows === 0) {
