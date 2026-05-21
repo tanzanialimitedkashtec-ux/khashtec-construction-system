@@ -23,13 +23,43 @@ router.get('/test', (req, res) => {
     });
 });
 
-// Root endpoint test
-router.get('/', (req, res) => {
-    console.log('🏠 Clients root endpoint accessed');
-    res.json({ 
-        message: 'Clients API root endpoint',
-        available_endpoints: ['GET /test', 'POST /', 'GET /:id', 'PUT /:id', 'DELETE /:id']
-    });
+// Get all clients
+router.get('/', async (req, res) => {
+    try {
+        console.log('📋 Fetching all clients...');
+        
+        const db = require('../../database/config/database');
+        
+        const query = `
+            SELECT id, client_id, client_type, full_name, company_name, phone_number, 
+                   email_address, nida_number, tin_number, physical_address, 
+                   property_interest, budget_range, additional_notes, registered_by, status,
+                   created_at
+            FROM clients 
+            ORDER BY created_at DESC
+        `;
+        
+        console.log('🔍 Executing clients query');
+        
+        const results = await db.execute(query);
+        const rows = Array.isArray(results) ? results : [];
+        
+        console.log('✅ Clients fetched successfully:', rows.length);
+        
+        res.json({
+            success: true,
+            clients: rows,
+            total: rows.length
+        });
+        
+    } catch (error) {
+        console.error('❌ Error fetching clients:', error);
+        res.status(500).json({ 
+            success: false,
+            error: 'Failed to fetch clients',
+            details: error.message
+        });
+    }
 });
 
 // Create new client
@@ -119,46 +149,6 @@ router.post('/', async (req, res) => {
         console.error('❌ Error creating client:', error);
         res.status(500).json({ 
             error: 'Failed to create client',
-            details: error.message
-        });
-    }
-});
-
-// Get all clients
-router.get('/', async (req, res) => {
-    try {
-        console.log('📋 Fetching all clients...');
-        
-        const db = require('../../database/config/database');
-        
-        const query = `
-            SELECT client_id, client_type, full_name, company_name, phone_number, 
-                   email_address, nida_number, tin_number, physical_address, 
-                   property_interest, budget_range, additional_notes, registered_by, status,
-                   created_at
-            FROM clients 
-            ORDER BY created_at DESC
-        `;
-        
-        console.log('🔍 Executing clients query:', query);
-        
-        // db.execute already returns rows array, do NOT destructure again
-        const results = await db.execute(query);
-        const rows = Array.isArray(results) ? results : [];
-        
-        console.log('✅ Clients fetched successfully:', rows.length);
-        
-        res.json({
-            success: true,
-            clients: rows,
-            total: rows.length
-        });
-        
-    } catch (error) {
-        console.error('❌ Error fetching clients:', error);
-        res.status(500).json({ 
-            success: false,
-            error: 'Failed to fetch clients',
             details: error.message
         });
     }

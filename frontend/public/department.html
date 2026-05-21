@@ -80243,77 +80243,57 @@ function saveNewClient() {
 
 
 
-function saveNewSale() {
+async function saveNewSale() {
 
-    const sale = {
+    const propertyId = document.getElementById('saleProperty').value;
+    const clientId = document.getElementById('saleClient').value;
+    const price = document.getElementById('salePrice').value;
+    const date = document.getElementById('saleDate').value;
+    const paymentMethod = document.getElementById('paymentMethod').value;
+    const paymentStatus = document.getElementById('paymentStatus').value;
+    const commissionAgent = document.getElementById('commissionAgent').value;
+    const notes = document.getElementById('saleNotes').value;
 
-        id: 'SALE-' + Date.now(),
-
-        property: document.getElementById('saleProperty').value,
-
-        client: document.getElementById('saleClient').value,
-
-        price: document.getElementById('salePrice').value,
-
-        date: document.getElementById('saleDate').value,
-
-        paymentMethod: document.getElementById('paymentMethod').value,
-
-        installmentPeriod: document.getElementById('installmentPeriod').value,
-
-        downPayment: document.getElementById('downPayment').value,
-
-        monthlyInstallment: document.getElementById('monthlyInstallment').value,
-
-        interestRate: document.getElementById('interestRate').value,
-
-        salesAgreement: document.getElementById('salesAgreement').files.length,
-
-        paymentStatus: document.getElementById('paymentStatus').value,
-
-        commissionAgent: document.getElementById('commissionAgent').value,
-
-        notes: document.getElementById('saleNotes').value,
-
-        recordedBy: 'Real Estate Manager',
-
-        recordedDate: new Date().toLocaleString()
-
-    };
-
-    
-
-    // Save to secure API storage
-
-    const sales = [];
-
-    sales.push(sale);
-
-    // TODO: Save to API
-
-    
-
-    // Update property status to sold
-
-    const properties = []; // TODO: Load from API
-
-    const propertyIndex = properties.findIndex(p => p.id === sale.property);
-
-    if (propertyIndex !== -1) {
-
-        properties[propertyIndex].status = 'sold';
-
-        // TODO: Save to API
-
+    if (!propertyId || !clientId || !price || !date) {
+        customAlert('Please fill in all required fields.', 'Validation Error', 'error');
+        return false;
     }
 
-    
+    const propertySelect = document.getElementById('saleProperty');
+    const clientSelect = document.getElementById('saleClient');
+    const propertyName = propertySelect.options[propertySelect.selectedIndex].text;
+    const clientName = clientSelect.options[clientSelect.selectedIndex].text;
 
-    customAlert(`Sale recorded successfully!\n\nProperty: ${sale.property}\nClient: ${sale.client}\nPrice: TZS ${parseInt(sale.price).toLocaleString()}\nPayment Method: ${sale.paymentMethod}\nStatus: ${sale.paymentStatus}`, "Sale Recorded", "success");
+    try {
+        const response = await fetch('/api/sales', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                propertyId: propertyId,
+                propertyName: propertyName,
+                clientName: clientName,
+                salePrice: price,
+                paymentMethod: paymentMethod,
+                paymentStatus: paymentStatus,
+                agent: commissionAgent || 'Real Estate Manager',
+                status: 'completed',
+                date: date,
+                notes: notes
+            })
+        });
 
-    
+        const result = await response.json();
 
-    document.getElementById('saleForm').reset();
+        if (response.ok) {
+            customAlert(`Sale recorded successfully!\n\nProperty: ${propertyName}\nClient: ${clientName}\nPrice: TZS ${parseInt(price).toLocaleString()}\nPayment Method: ${paymentMethod}\nStatus: ${paymentStatus}`, "Sale Recorded", "success");
+            document.getElementById('saleForm').reset();
+        } else {
+            customAlert(`Failed to record sale: ${result.error || result.details || 'Unknown error'}`, "Sale Error", "error");
+        }
+    } catch (error) {
+        console.error('Error saving sale:', error);
+        customAlert(`Failed to record sale: ${error.message}`, "Sale Error", "error");
+    }
 
     return false;
 

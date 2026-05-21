@@ -53238,12 +53238,6 @@ function contactClient(clientId) {
 
 function recordSale(){
 
-    // Load properties and clients
-
-    const properties = []; // TODO: Load from API
-
-    const clients = []; // TODO: Load from API
-
     
 
     showContent(`
@@ -53328,13 +53322,7 @@ function recordSale(){
 
                             <select id="saleProperty" onchange="updatePropertyDetails()" required>
 
-                                <option value="">Select Property</option>
-
-                                ${properties.filter(p => p.status === 'available' || p.status === 'reserved').map(property => 
-
-                                    `<option value="${property.id}">${property.plotNumber} - ${property.location} (TZS ${parseInt(property.price).toLocaleString()})</option>`
-
-                                ).join('')}
+                                <option value="">Loading properties...</option>
 
                             </select>
 
@@ -53346,13 +53334,7 @@ function recordSale(){
 
                             <select id="saleClient" required>
 
-                                <option value="">Select Client</option>
-
-                                ${clients.map(client => 
-
-                                    `<option value="${client.id}">${client.fullName} - ${client.clientType}</option>`
-
-                                ).join('')}
+                                <option value="">Loading clients...</option>
 
                             </select>
 
@@ -53553,6 +53535,8 @@ function recordSale(){
         </div>
 
     `);
+
+    loadSaleFormOptions();
 
 }
 
@@ -56711,77 +56695,57 @@ function saveNewClient() {
 
 
 
-function saveNewSale() {
+async function saveNewSale() {
 
-    const sale = {
+    const propertyId = document.getElementById('saleProperty').value;
+    const clientId = document.getElementById('saleClient').value;
+    const price = document.getElementById('salePrice').value;
+    const date = document.getElementById('saleDate').value;
+    const paymentMethod = document.getElementById('paymentMethod').value;
+    const paymentStatus = document.getElementById('paymentStatus').value;
+    const commissionAgent = document.getElementById('commissionAgent').value;
+    const notes = document.getElementById('saleNotes').value;
 
-        id: 'SALE-' + Date.now(),
-
-        property: document.getElementById('saleProperty').value,
-
-        client: document.getElementById('saleClient').value,
-
-        price: document.getElementById('salePrice').value,
-
-        date: document.getElementById('saleDate').value,
-
-        paymentMethod: document.getElementById('paymentMethod').value,
-
-        installmentPeriod: document.getElementById('installmentPeriod').value,
-
-        downPayment: document.getElementById('downPayment').value,
-
-        monthlyInstallment: document.getElementById('monthlyInstallment').value,
-
-        interestRate: document.getElementById('interestRate').value,
-
-        salesAgreement: document.getElementById('salesAgreement').files.length,
-
-        paymentStatus: document.getElementById('paymentStatus').value,
-
-        commissionAgent: document.getElementById('commissionAgent').value,
-
-        notes: document.getElementById('saleNotes').value,
-
-        recordedBy: 'Real Estate Manager',
-
-        recordedDate: new Date().toLocaleString()
-
-    };
-
-    
-
-    // Save to secure API storage
-
-    const sales = [];
-
-    sales.push(sale);
-
-    // TODO: Save to API
-
-    
-
-    // Update property status to sold
-
-    const properties = []; // TODO: Load from API
-
-    const propertyIndex = properties.findIndex(p => p.id === sale.property);
-
-    if (propertyIndex !== -1) {
-
-        properties[propertyIndex].status = 'sold';
-
-        // TODO: Save to API
-
+    if (!propertyId || !clientId || !price || !date) {
+        customAlert('Please fill in all required fields.', 'Validation Error', 'error');
+        return false;
     }
 
-    
+    const propertySelect = document.getElementById('saleProperty');
+    const clientSelect = document.getElementById('saleClient');
+    const propertyName = propertySelect.options[propertySelect.selectedIndex].text;
+    const clientName = clientSelect.options[clientSelect.selectedIndex].text;
 
-    customAlert(`Sale recorded successfully!\n\nProperty: ${sale.property}\nClient: ${sale.client}\nPrice: TZS ${parseInt(sale.price).toLocaleString()}\nPayment Method: ${sale.paymentMethod}\nStatus: ${sale.paymentStatus}`, "Sale Recorded", "success");
+    try {
+        const response = await fetch('/api/sales', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                propertyId: propertyId,
+                propertyName: propertyName,
+                clientName: clientName,
+                salePrice: price,
+                paymentMethod: paymentMethod,
+                paymentStatus: paymentStatus,
+                agent: commissionAgent || 'Real Estate Manager',
+                status: 'completed',
+                date: date,
+                notes: notes
+            })
+        });
 
-    
+        const result = await response.json();
 
-    document.getElementById('saleForm').reset();
+        if (response.ok) {
+            customAlert(`Sale recorded successfully!\n\nProperty: ${propertyName}\nClient: ${clientName}\nPrice: TZS ${parseInt(price).toLocaleString()}\nPayment Method: ${paymentMethod}\nStatus: ${paymentStatus}`, "Sale Recorded", "success");
+            document.getElementById('saleForm').reset();
+        } else {
+            customAlert(`Failed to record sale: ${result.error || result.details || 'Unknown error'}`, "Sale Error", "error");
+        }
+    } catch (error) {
+        console.error('Error saving sale:', error);
+        customAlert(`Failed to record sale: ${error.message}`, "Sale Error", "error");
+    }
 
     return false;
 
@@ -56865,9 +56829,14 @@ function updatePropertyDetails() {
 
     const propertyId = document.getElementById('saleProperty').value;
 
-    // Auto-fill sale price based on property
+    const property = (typeof salePropertiesCache !== 'undefined' ? salePropertiesCache : []).find(item => String(item.id) === String(propertyId));
 
-    customAlert(`Loading property details for sale...`, "Loading Details", "info");
+    const salePriceInput = document.getElementById('salePrice');
+
+    if (property && salePriceInput) {
+        const price = property.price || property.value || property.amount;
+        salePriceInput.value = price || '';
+    }
 
 }
 
