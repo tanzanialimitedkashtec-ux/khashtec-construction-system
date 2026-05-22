@@ -3217,6 +3217,272 @@ router.post('/:department', async (req, res, next) => {
     }
 });
 
+// Get work completions for approval
+router.get('/completions/pending', async (req, res) => {
+    try {
+        console.log('📋 Fetching work completions for approval...');
+        
+        try {
+            // Query real data from work_completions table
+            const [dbRecords] = await db.execute(`
+                SELECT * FROM work_completions 
+                WHERE status = 'pending'
+                ORDER BY completed_date DESC 
+                LIMIT 50
+            `);
+            
+            const workCompletions = dbRecords || [];
+            console.log(`📊 Found ${workCompletions.length} work completions from database`);
+            
+            return res.json({
+                success: true,
+                count: workCompletions.length,
+                data: workCompletions
+            });
+        } catch (dbError) {
+            console.error('❌ Database query error:', dbError.message);
+            console.error('❌ Error code:', dbError.code);
+            console.error('❌ SQL State:', dbError.sqlState);
+            
+            // If table doesn't exist, create it and return empty
+            if (dbError.code === 'ER_NO_SUCH_TABLE') {
+                try {
+                    await db.execute(`
+                        CREATE TABLE IF NOT EXISTS work_completions (
+                            id INT AUTO_INCREMENT PRIMARY KEY,
+                            work_details VARCHAR(255) NOT NULL,
+                            project VARCHAR(255),
+                            completed_by VARCHAR(255),
+                            completed_date DATE,
+                            quality_score INT DEFAULT 0,
+                            quality_level VARCHAR(50),
+                            status ENUM('pending', 'approved', 'rejected', 'rework_requested') DEFAULT 'pending',
+                            approved_by VARCHAR(255),
+                            approval_notes TEXT,
+                            approval_date DATETIME,
+                            rework_reason TEXT,
+                            rework_requested_by VARCHAR(255),
+                            rework_request_date DATETIME,
+                            rejection_reason TEXT,
+                            rejected_by VARCHAR(255),
+                            rejection_date DATETIME,
+                            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+                            INDEX idx_status (status),
+                            INDEX idx_completed_date (completed_date)
+                        )
+                    `);
+                    console.log('✅ work_completions table created successfully');
+                    return res.json({ success: true, count: 0, data: [] });
+                } catch (createError) {
+                    console.error('❌ Failed to create work_completions table:', createError.message);
+                }
+            }
+            
+            return res.status(500).json({
+                success: false,
+                error: 'Failed to fetch work completions from database',
+                details: dbError.message,
+                code: dbError.code
+            });
+        }
+    } catch (error) {
+        console.error('❌ Unexpected error fetching work completions:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Unexpected error fetching work completions',
+            details: error.message
+        });
+    }
+});
+
+// Get recent approval history
+router.get('/approvals/recent', async (req, res) => {
+    try {
+        console.log('📋 Fetching recent approval history...');
+        
+        try {
+            // Query real data from work_approvals table
+            const [dbRecords] = await db.execute(`
+                SELECT * FROM work_approvals 
+                ORDER BY created_at DESC 
+                LIMIT 20
+            `);
+            
+            const approvals = dbRecords || [];
+            console.log(`📊 Found ${approvals.length} recent approvals from database`);
+            
+            return res.json({
+                success: true,
+                count: approvals.length,
+                data: approvals
+            });
+        } catch (dbError) {
+            console.error('❌ Database error fetching approvals:', dbError.message);
+            console.error('❌ Error code:', dbError.code);
+            console.error('❌ SQL State:', dbError.sqlState);
+            
+            // If table doesn't exist, create it and return empty
+            if (dbError.code === 'ER_NO_SUCH_TABLE') {
+                try {
+                    await db.execute(`
+                        CREATE TABLE IF NOT EXISTS work_approvals (
+                            id INT AUTO_INCREMENT PRIMARY KEY,
+                            work_id VARCHAR(50) NOT NULL,
+                            project_id INT,
+                            completed_by VARCHAR(255),
+                            completion_date DATE,
+                            quality_assessment ENUM('excellent', 'good', 'acceptable', 'poor') NOT NULL,
+                            compliance_check ENUM('fully-compliant', 'minor-issues', 'major-issues', 'non-compliant') NOT NULL,
+                            approval_comments TEXT NOT NULL,
+                            safety_compliance ENUM('compliant', 'minor-violations', 'major-violations') DEFAULT 'compliant',
+                            time_completion ENUM('on-time', 'early', 'delayed') DEFAULT 'on-time',
+                            quality_score DECIMAL(5,2),
+                            status ENUM('pending', 'approved', 'rejected', 'rework-requested') DEFAULT 'pending',
+                            approved_by VARCHAR(255),
+                            approval_date TIMESTAMP NULL,
+                            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+                            INDEX idx_work_id (work_id),
+                            INDEX idx_status (status),
+                            INDEX idx_created_at (created_at)
+                        )
+                    `);
+                    console.log('✅ work_approvals table created successfully');
+                    return res.json({ success: true, count: 0, data: [] });
+                } catch (createError) {
+                    console.error('❌ Failed to create work_approvals table:', createError.message);
+                }
+            }
+            
+            return res.status(500).json({
+                success: false,
+                error: 'Failed to fetch approvals from database',
+                details: dbError.message,
+                code: dbError.code
+            });
+        }
+    } catch (error) {
+        console.error('❌ Unexpected error fetching approvals:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Unexpected error fetching approvals',
+            details: error.message
+        });
+    }
+});
+
+// Update work completion status
+router.post('/completions/:workId/approve', async (req, res) => {
+    try {
+        const { workId } = req.params;
+        const { approvedBy, approvalNotes } = req.body;
+        
+        console.log(`✅ Approving work ${workId}...`);
+        
+        try {
+            await db.execute(`
+                UPDATE work_completions 
+                SET status = 'approved', 
+                    approved_by = ?, 
+                    approval_notes = ?,
+                    approval_date = NOW()
+                WHERE id = ?
+            `, [approvedBy || 'System', approvalNotes || '', workId]);
+        } catch (dbError) {
+            console.log('⚠️ Database not available, accepting mock approval');
+        }
+        
+        res.json({
+            success: true,
+            message: 'Work approved successfully',
+            workId: workId,
+            status: 'approved'
+        });
+    } catch (error) {
+        console.error('❌ Error approving work:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Failed to approve work',
+            details: error.message
+        });
+    }
+});
+
+// Request rework for completion
+router.post('/completions/:workId/rework', async (req, res) => {
+    try {
+        const { workId } = req.params;
+        const { reworkReason, requestedBy } = req.body;
+        
+        console.log(`🔄 Requesting rework for work ${workId}...`);
+        
+        try {
+            await db.execute(`
+                UPDATE work_completions 
+                SET status = 'rework_requested', 
+                    rework_reason = ?,
+                    rework_requested_by = ?,
+                    rework_request_date = NOW()
+                WHERE id = ?
+            `, [reworkReason || '', requestedBy || 'System', workId]);
+        } catch (dbError) {
+            console.log('⚠️ Database not available, accepting mock rework request');
+        }
+        
+        res.json({
+            success: true,
+            message: 'Rework requested successfully',
+            workId: workId,
+            status: 'rework_requested'
+        });
+    } catch (error) {
+        console.error('❌ Error requesting rework:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Failed to request rework',
+            details: error.message
+        });
+    }
+});
+
+// Reject work completion
+router.post('/completions/:workId/reject', async (req, res) => {
+    try {
+        const { workId } = req.params;
+        const { rejectionReason, rejectedBy } = req.body;
+        
+        console.log(`❌ Rejecting work ${workId}...`);
+        
+        try {
+            await db.execute(`
+                UPDATE work_completions 
+                SET status = 'rejected', 
+                    rejection_reason = ?,
+                    rejected_by = ?,
+                    rejection_date = NOW()
+                WHERE id = ?
+            `, [rejectionReason || '', rejectedBy || 'System', workId]);
+        } catch (dbError) {
+            console.log('⚠️ Database not available, accepting mock rejection');
+        }
+        
+        res.json({
+            success: true,
+            message: 'Work rejected successfully',
+            workId: workId,
+            status: 'rejected'
+        });
+    } catch (error) {
+        console.error('❌ Error rejecting work:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Failed to reject work',
+            details: error.message
+        });
+    }
+});
+
 // Update work item
 router.put('/:department/:id', async (req, res) => {
     try {
@@ -4535,204 +4801,5 @@ router.post('/finance/accountant', async (req, res) => {
     }
 });
 
-// Get work completions for approval
-router.get('/completions/pending', async (req, res) => {
-    try {
-        console.log('📋 Fetching work completions for approval...');
-        
-        try {
-            // Query real data from work_completions table
-            const [dbRecords] = await db.execute(`
-                SELECT * FROM work_completions 
-                WHERE status = 'pending'
-                ORDER BY completed_date DESC 
-                LIMIT 50
-            `);
-            
-            const workCompletions = dbRecords || [];
-            console.log(`📊 Found ${workCompletions.length} work completions from database`);
-            
-            return res.json({
-                success: true,
-                count: workCompletions.length,
-                data: workCompletions
-            });
-        } catch (dbError) {
-            console.error('❌ Database query error:', dbError.message);
-            console.error('❌ Error code:', dbError.code);
-            console.error('❌ SQL State:', dbError.sqlState);
-            
-            return res.status(500).json({
-                success: false,
-                error: 'Failed to fetch work completions from database',
-                details: dbError.message,
-                code: dbError.code
-            });
-        }
-    } catch (error) {
-        console.error('❌ Unexpected error fetching work completions:', error);
-        res.status(500).json({
-            success: false,
-            error: 'Unexpected error fetching work completions',
-            details: error.message
-        });
-    }
-});
-
-// Get recent approval history
-router.get('/approvals/recent', async (req, res) => {
-    try {
-        console.log('📋 Fetching recent approval history...');
-        
-        try {
-            // Query real data from work_approvals table
-            const [dbRecords] = await db.execute(`
-                SELECT * FROM work_approvals 
-                ORDER BY created_at DESC 
-                LIMIT 20
-            `);
-            
-            const approvals = dbRecords || [];
-            console.log(`📊 Found ${approvals.length} recent approvals from database`);
-            
-            return res.json({
-                success: true,
-                count: approvals.length,
-                data: approvals
-            });
-        } catch (dbError) {
-            console.error('❌ Database error fetching approvals:', dbError.message);
-            console.error('❌ Error code:', dbError.code);
-            console.error('❌ SQL State:', dbError.sqlState);
-            
-            return res.status(500).json({
-                success: false,
-                error: 'Failed to fetch approvals from database',
-                details: dbError.message,
-                code: dbError.code
-            });
-        }
-    } catch (error) {
-        console.error('❌ Unexpected error fetching approvals:', error);
-        res.status(500).json({
-            success: false,
-            error: 'Unexpected error fetching approvals',
-            details: error.message
-        });
-    }
-});
-
-// Update work completion status
-router.post('/completions/:workId/approve', async (req, res) => {
-    try {
-        const { workId } = req.params;
-        const { approvedBy, approvalNotes } = req.body;
-        
-        console.log(`✅ Approving work ${workId}...`);
-        
-        try {
-            await db.execute(`
-                UPDATE work_completions 
-                SET status = 'approved', 
-                    approved_by = ?, 
-                    approval_notes = ?,
-                    approval_date = NOW()
-                WHERE id = ?
-            `, [approvedBy || 'System', approvalNotes || '', workId]);
-        } catch (dbError) {
-            console.log('⚠️ Database not available, accepting mock approval');
-        }
-        
-        res.json({
-            success: true,
-            message: 'Work approved successfully',
-            workId: workId,
-            status: 'approved'
-        });
-    } catch (error) {
-        console.error('❌ Error approving work:', error);
-        res.status(500).json({
-            success: false,
-            error: 'Failed to approve work',
-            details: error.message
-        });
-    }
-});
-
-// Request rework for completion
-router.post('/completions/:workId/rework', async (req, res) => {
-    try {
-        const { workId } = req.params;
-        const { reworkReason, requestedBy } = req.body;
-        
-        console.log(`🔄 Requesting rework for work ${workId}...`);
-        
-        try {
-            await db.execute(`
-                UPDATE work_completions 
-                SET status = 'rework_requested', 
-                    rework_reason = ?,
-                    rework_requested_by = ?,
-                    rework_request_date = NOW()
-                WHERE id = ?
-            `, [reworkReason || '', requestedBy || 'System', workId]);
-        } catch (dbError) {
-            console.log('⚠️ Database not available, accepting mock rework request');
-        }
-        
-        res.json({
-            success: true,
-            message: 'Rework requested successfully',
-            workId: workId,
-            status: 'rework_requested'
-        });
-    } catch (error) {
-        console.error('❌ Error requesting rework:', error);
-        res.status(500).json({
-            success: false,
-            error: 'Failed to request rework',
-            details: error.message
-        });
-    }
-});
-
-// Reject work completion
-router.post('/completions/:workId/reject', async (req, res) => {
-    try {
-        const { workId } = req.params;
-        const { rejectionReason, rejectedBy } = req.body;
-        
-        console.log(`❌ Rejecting work ${workId}...`);
-        
-        try {
-            await db.execute(`
-                UPDATE work_completions 
-                SET status = 'rejected', 
-                    rejection_reason = ?,
-                    rejected_by = ?,
-                    rejection_date = NOW()
-                WHERE id = ?
-            `, [rejectionReason || '', rejectedBy || 'System', workId]);
-        } catch (dbError) {
-            console.log('⚠️ Database not available, accepting mock rejection');
-        }
-        
-        res.json({
-            success: true,
-            message: 'Work rejected successfully',
-            workId: workId,
-            status: 'rejected'
-        });
-    } catch (error) {
-        console.error('❌ Error rejecting work:', error);
-        res.status(500).json({
-            success: false,
-            error: 'Failed to reject work',
-            details: error.message
-        });
-    }
-});
-
-// Get recent approval history
 module.exports = router;
 
