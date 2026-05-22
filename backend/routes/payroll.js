@@ -287,7 +287,7 @@ router.post('/process', async (req, res) => {
         const netPayment = totalGross - totalDeductions;
 
         // Insert payroll record
-        const [result] = await db.execute(`
+        const result = await db.execute(`
             INSERT INTO payroll_records 
             (payroll_month, payment_date, payroll_type, total_employees, total_gross, total_deductions, net_payment, processed_by, status)
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'processed')
