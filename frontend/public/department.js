@@ -10959,6 +10959,351 @@ function handleGeneratePayslips(event){
     return false;
 }
 
+// Load all payroll data from the database
+function loadPayrollData() {
+    const baseUrl = window.location.origin;
+    console.log('📊 Loading payroll data from database...');
+
+    // Fetch overview data
+    fetch(`${baseUrl}/payroll/overview`, {
+        headers: { 'Authorization': `Bearer ${sessionManager.getAuthToken()}` }
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.success) {
+            console.log('✅ Payroll overview loaded:', data.data);
+            const d = data.data;
+            const totalEmp = d.totalEmployees || 0;
+            const monthlyPayroll = d.totalMonthlyPayroll || 0;
+            const avgSalary = d.avgSalary || 0;
+
+            const now = new Date();
+            const monthNames = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+            const currentMonthLabel = monthNames[now.getMonth()] + ' ' + now.getFullYear();
+
+            // Next pay date: last day of current month
+            const lastDay = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+            const nextPayDateStr = lastDay.getDate() + ' ' + monthNames[now.getMonth()];
+            const daysLeft = Math.max(0, Math.ceil((lastDay - now) / (1000 * 60 * 60 * 24)));
+
+            // Update stat cards
+            const el = (id, val) => { const e = document.getElementById(id); if (e) e.textContent = val; };
+            el('overviewTotalEmployees', totalEmp);
+            el('overviewMonthlyPayroll', 'TZS ' + monthlyPayroll.toLocaleString());
+            el('overviewMonthLabel', currentMonthLabel);
+            el('overviewAvgSalary', 'TZS ' + avgSalary.toLocaleString());
+            el('overviewNextPayDate', nextPayDateStr);
+            el('overviewDaysLeft', daysLeft + ' Days');
+
+            // Update overview summary table
+            el('ovTblTotalEmployees', totalEmp);
+            el('ovTblMonthlyPayroll', 'TZS ' + monthlyPayroll.toLocaleString());
+            el('ovTblAvgSalary', 'TZS ' + avgSalary.toLocaleString());
+            el('ovTblNextPayDate', nextPayDateStr);
+            el('ovTblDaysLeft', daysLeft + ' Days');
+
+            // Update process payroll preview
+            el('previewTotalEmployees', totalEmp);
+            el('previewTotalGross', 'TZS ' + monthlyPayroll.toLocaleString());
+            const totalDeductions = monthlyPayroll * 0.15;
+            el('previewTotalDeductions', 'TZS ' + totalDeductions.toLocaleString());
+            el('previewNetPayment', 'TZS ' + (monthlyPayroll - totalDeductions).toLocaleString());
+
+            // Populate employee dropdowns
+            const employees = d.employees || [];
+            populatePayrollEmployeeDropdowns(employees);
+
+            // Populate month selects
+            populatePayrollMonthSelects();
+        } else {
+            console.error('❌ Failed to load payroll overview:', data.error);
+        }
+    })
+    .catch(err => {
+        console.error('❌ Error loading payroll overview:', err);
+    });
+
+    // Fetch salary structures
+    fetch(`${baseUrl}/payroll/salary-structures`, {
+        headers: { 'Authorization': `Bearer ${sessionManager.getAuthToken()}` }
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.success) {
+            console.log('✅ Salary structures loaded:', data.data.length, 'records');
+            renderSalaryStructuresTable(data.data);
+        } else {
+            console.error('❌ Failed to load salary structures:', data.error);
+        }
+    })
+    .catch(err => {
+        console.error('❌ Error loading salary structures:', err);
+    });
+
+    // Fetch payroll history
+    fetch(`${baseUrl}/payroll/history`, {
+        headers: { 'Authorization': `Bearer ${sessionManager.getAuthToken()}` }
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.success) {
+            console.log('✅ Payroll history loaded:', data.data.length, 'records');
+            renderPayrollHistory(data.data);
+        } else {
+            console.error('❌ Failed to load payroll history:', data.error);
+        }
+    })
+    .catch(err => {
+        console.error('❌ Error loading payroll history:', err);
+    });
+}
+
+function populatePayrollEmployeeDropdowns(employees) {
+    const selectors = ['salaryEmployee', 'payslipEmployee', 'emailPayslipsEmployee'];
+    selectors.forEach(selId => {
+        const sel = document.getElementById(selId);
+        if (!sel) return;
+        const isPayslip = selId === 'payslipEmployee' || selId === 'emailPayslipsEmployee';
+        sel.innerHTML = isPayslip ? '<option value="all">All Employees</option>' : '<option value="">Select Employee</option>';
+        employees.forEach(emp => {
+            const name = emp.full_name || emp.employee_id || ('Employee ' + emp.id);
+            const position = emp.position || '';
+            const opt = document.createElement('option');
+            opt.value = emp.employee_id || emp.id;
+            opt.textContent = name + (position ? ' - ' + position : '');
+            sel.appendChild(opt);
+        });
+    });
+    console.log('✅ Employee dropdowns populated with', employees.length, 'employees');
+}
+
+function populatePayrollMonthSelects() {
+    const now = new Date();
+    const monthNames = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+    const options = [];
+    for (let i = 0; i < 12; i++) {
+        const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+        const val = monthNames[d.getMonth()] + ' ' + d.getFullYear();
+        options.push(`<option value="${val}">${val}</option>`);
+    }
+    const optionsHtml = '<option value="">Select Month</option>' + options.join('');
+
+    const selectors = ['payrollMonth', 'payslipMonth', 'emailPayslipsMonth'];
+    selectors.forEach(selId => {
+        const sel = document.getElementById(selId);
+        if (sel) sel.innerHTML = optionsHtml;
+    });
+}
+
+function renderSalaryStructuresTable(structures) {
+    const container = document.getElementById('salaryStructuresTable');
+    if (!container) return;
+    if (!structures || structures.length === 0) {
+        container.innerHTML = '<h5>Salary Structures</h5><p>No salary structures found.</p>';
+        return;
+    }
+    let html = `<h5>Salary Structures</h5>
+        <table style="width:100%;border-collapse:collapse;margin-top:10px;">
+            <thead>
+                <tr style="background:#f8f9fa;">
+                    <th style="padding:8px;border:1px solid #ddd;text-align:left;">Employee</th>
+                    <th style="padding:8px;border:1px solid #ddd;text-align:left;">Department</th>
+                    <th style="padding:8px;border:1px solid #ddd;text-align:left;">Position</th>
+                    <th style="padding:8px;border:1px solid #ddd;text-align:right;">Basic</th>
+                    <th style="padding:8px;border:1px solid #ddd;text-align:right;">Allowances</th>
+                    <th style="padding:8px;border:1px solid #ddd;text-align:right;">Gross</th>
+                    <th style="padding:8px;border:1px solid #ddd;text-align:left;">Approved By</th>
+                    <th style="padding:8px;border:1px solid #ddd;text-align:left;">Approved Date</th>
+                </tr>
+            </thead>
+            <tbody>`;
+    structures.forEach(s => {
+        const basic = parseFloat(s.basic_salary) || 0;
+        const allowances = (parseFloat(s.housing_allowance) || 0) + (parseFloat(s.transport_allowance) || 0) + (parseFloat(s.medical_allowance) || 0) + (parseFloat(s.other_allowances) || 0);
+        const gross = parseFloat(s.gross_salary) || 0;
+        const approvedDate = s.approved_date ? new Date(s.approved_date).toISOString().split('T')[0] : '-';
+        html += `<tr>
+            <td style="padding:8px;border:1px solid #ddd;">${s.full_name || s.employee_id}</td>
+            <td style="padding:8px;border:1px solid #ddd;">${s.department || '-'}</td>
+            <td style="padding:8px;border:1px solid #ddd;">${s.position || '-'}</td>
+            <td style="padding:8px;border:1px solid #ddd;text-align:right;">TZS ${basic.toLocaleString()}</td>
+            <td style="padding:8px;border:1px solid #ddd;text-align:right;">TZS ${allowances.toLocaleString()}</td>
+            <td style="padding:8px;border:1px solid #ddd;text-align:right;">TZS ${gross.toLocaleString()}</td>
+            <td style="padding:8px;border:1px solid #ddd;">${s.approved_by || '-'}</td>
+            <td style="padding:8px;border:1px solid #ddd;">${approvedDate}</td>
+        </tr>`;
+    });
+    html += '</tbody></table>';
+    container.innerHTML = html;
+}
+
+function renderPayrollHistory(records) {
+    const container = document.getElementById('payrollHistoryContainer');
+    if (!container) return;
+    if (!records || records.length === 0) {
+        container.innerHTML = '<p>No payroll history found.</p>';
+        return;
+    }
+    let html = `<table style="width:100%;border-collapse:collapse;margin-top:10px;">
+        <thead>
+            <tr style="background:#f8f9fa;">
+                <th style="padding:8px;border:1px solid #ddd;text-align:left;">Month</th>
+                <th style="padding:8px;border:1px solid #ddd;text-align:left;">Payment Date</th>
+                <th style="padding:8px;border:1px solid #ddd;text-align:left;">Type</th>
+                <th style="padding:8px;border:1px solid #ddd;text-align:right;">Employees</th>
+                <th style="padding:8px;border:1px solid #ddd;text-align:right;">Gross</th>
+                <th style="padding:8px;border:1px solid #ddd;text-align:right;">Deductions</th>
+                <th style="padding:8px;border:1px solid #ddd;text-align:right;">Net</th>
+                <th style="padding:8px;border:1px solid #ddd;text-align:left;">Status</th>
+            </tr>
+        </thead>
+        <tbody>`;
+    records.forEach(r => {
+        const payDate = r.payment_date ? new Date(r.payment_date).toISOString().split('T')[0] : '-';
+        html += `<tr>
+            <td style="padding:8px;border:1px solid #ddd;">${r.payroll_month}</td>
+            <td style="padding:8px;border:1px solid #ddd;">${payDate}</td>
+            <td style="padding:8px;border:1px solid #ddd;">${r.payroll_type || 'regular'}</td>
+            <td style="padding:8px;border:1px solid #ddd;text-align:right;">${r.total_employees}</td>
+            <td style="padding:8px;border:1px solid #ddd;text-align:right;">TZS ${parseFloat(r.total_gross || 0).toLocaleString()}</td>
+            <td style="padding:8px;border:1px solid #ddd;text-align:right;">TZS ${parseFloat(r.total_deductions || 0).toLocaleString()}</td>
+            <td style="padding:8px;border:1px solid #ddd;text-align:right;">TZS ${parseFloat(r.net_payment || 0).toLocaleString()}</td>
+            <td style="padding:8px;border:1px solid #ddd;"><span style="padding:2px 8px;border-radius:4px;background:${r.status === 'paid' ? '#d4edda' : r.status === 'processed' ? '#fff3cd' : '#f8d7da'};color:${r.status === 'paid' ? '#155724' : r.status === 'processed' ? '#856404' : '#721c24'}">${r.status || 'draft'}</span></td>
+        </tr>`;
+    });
+    html += '</tbody></table>';
+    container.innerHTML = html;
+}
+
+function updatePayrollPreview() {
+    const baseUrl = window.location.origin;
+    console.log('🔄 Updating payroll preview...');
+    fetch(`${baseUrl}/payroll/overview`, {
+        headers: { 'Authorization': `Bearer ${sessionManager.getAuthToken()}` }
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.success) {
+            const d = data.data;
+            const totalEmp = d.totalEmployees || 0;
+            const totalGross = d.totalMonthlyPayroll || 0;
+            const totalDeductions = totalGross * 0.15;
+            const netPayment = totalGross - totalDeductions;
+            const el = (id, val) => { const e = document.getElementById(id); if (e) e.textContent = val; };
+            el('previewTotalEmployees', totalEmp);
+            el('previewTotalGross', 'TZS ' + totalGross.toLocaleString());
+            el('previewTotalDeductions', 'TZS ' + totalDeductions.toLocaleString());
+            el('previewNetPayment', 'TZS ' + netPayment.toLocaleString());
+            console.log('✅ Payroll preview updated');
+        }
+    })
+    .catch(err => {
+        console.error('❌ Error updating payroll preview:', err);
+    });
+}
+
+function generatePayslipExcel(payslips, month) {
+    console.log('📊 Generating Excel payslip for', payslips.length, 'employees, month:', month);
+
+    // Build CSV data (universally opens in Excel)
+    const headers = ['Employee ID', 'Employee Name', 'Payroll Month', 'Basic Salary (TZS)', 'Allowances (TZS)', 'Gross Salary (TZS)', 'NSSF Deduction (TZS)', 'PAYE Tax (TZS)', 'Other Deductions (TZS)', 'Net Salary (TZS)'];
+    const rows = payslips.map(p => [
+        p.employee_id || '',
+        p.employee_name || '',
+        p.payroll_month || month,
+        parseFloat(p.basic_salary || 0),
+        parseFloat(p.allowances || 0),
+        parseFloat(p.gross_salary || 0),
+        parseFloat(p.nssf_deduction || 0),
+        parseFloat(p.paye_tax || 0),
+        parseFloat(p.other_deductions || 0),
+        parseFloat(p.net_salary || 0)
+    ]);
+
+    // Add totals row
+    const totals = ['', 'TOTALS', '', 0, 0, 0, 0, 0, 0, 0];
+    rows.forEach(r => {
+        for (let i = 3; i <= 9; i++) totals[i] += r[i];
+    });
+    rows.push(totals);
+
+    // Build XLSX using a minimal XML Spreadsheet (Excel-compatible)
+    let xmlRows = '';
+    // Header row
+    xmlRows += '<Row>';
+    headers.forEach(h => { xmlRows += `<Cell><Data ss:Type="String">${h}</Data></Cell>`; });
+    xmlRows += '</Row>';
+    // Data rows
+    rows.forEach(row => {
+        xmlRows += '<Row>';
+        row.forEach((cell, idx) => {
+            if (idx <= 2) {
+                xmlRows += `<Cell><Data ss:Type="String">${String(cell).replace(/&/g,'&amp;').replace(/</g,'&lt;')}</Data></Cell>`;
+            } else {
+                xmlRows += `<Cell><Data ss:Type="Number">${cell}</Data></Cell>`;
+            }
+        });
+        xmlRows += '</Row>';
+    });
+
+    const xml = `<?xml version="1.0"?>
+<?mso-application progid="Excel.Sheet"?>
+<Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet"
+ xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet">
+ <Styles>
+  <Style ss:ID="header"><Font ss:Bold="1"/><Interior ss:Color="#F8F9FA" ss:Pattern="Solid"/></Style>
+  <Style ss:ID="currency"><NumberFormat ss:Format="#,##0.00"/></Style>
+ </Styles>
+ <Worksheet ss:Name="Payslips ${month}">
+  <Table>
+   ${xmlRows}
+  </Table>
+ </Worksheet>
+</Workbook>`;
+
+    const blob = new Blob([xml], { type: 'application/vnd.ms-excel' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'Payslips_' + month.replace(/\s+/g, '_') + '.xls';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+
+    console.log('✅ Excel payslip file downloaded:', a.download);
+    customAlert(`Payslips generated successfully!\n\nMonth: ${month}\nEmployees: ${payslips.length}\nFile: ${a.download}\n\nThe Excel file has been downloaded.`, 'Payslips Generated', 'success');
+
+    // Show results in the UI
+    const resultsDiv = document.getElementById('payslipResults');
+    if (resultsDiv) {
+        let tblHtml = `<h5>Payslip Details - ${month}</h5>
+            <table style="width:100%;border-collapse:collapse;margin-top:10px;">
+            <thead><tr style="background:#f8f9fa;">
+                <th style="padding:8px;border:1px solid #ddd;">Employee</th>
+                <th style="padding:8px;border:1px solid #ddd;text-align:right;">Basic</th>
+                <th style="padding:8px;border:1px solid #ddd;text-align:right;">Allowances</th>
+                <th style="padding:8px;border:1px solid #ddd;text-align:right;">Gross</th>
+                <th style="padding:8px;border:1px solid #ddd;text-align:right;">NSSF</th>
+                <th style="padding:8px;border:1px solid #ddd;text-align:right;">PAYE</th>
+                <th style="padding:8px;border:1px solid #ddd;text-align:right;">Net</th>
+            </tr></thead><tbody>`;
+        payslips.forEach(p => {
+            tblHtml += `<tr>
+                <td style="padding:8px;border:1px solid #ddd;">${p.employee_name || p.employee_id}</td>
+                <td style="padding:8px;border:1px solid #ddd;text-align:right;">TZS ${parseFloat(p.basic_salary || 0).toLocaleString()}</td>
+                <td style="padding:8px;border:1px solid #ddd;text-align:right;">TZS ${parseFloat(p.allowances || 0).toLocaleString()}</td>
+                <td style="padding:8px;border:1px solid #ddd;text-align:right;">TZS ${parseFloat(p.gross_salary || 0).toLocaleString()}</td>
+                <td style="padding:8px;border:1px solid #ddd;text-align:right;">TZS ${parseFloat(p.nssf_deduction || 0).toLocaleString()}</td>
+                <td style="padding:8px;border:1px solid #ddd;text-align:right;">TZS ${parseFloat(p.paye_tax || 0).toLocaleString()}</td>
+                <td style="padding:8px;border:1px solid #ddd;text-align:right;">TZS ${parseFloat(p.net_salary || 0).toLocaleString()}</td>
+            </tr>`;
+        });
+        tblHtml += '</tbody></table>';
+        resultsDiv.innerHTML = tblHtml;
+    }
+}
+
 // Toggle Email Payslips form visibility and sync options
 function toggleEmailPayslipsForm(){
     const container = document.getElementById('emailPayslipsFormContainer');
@@ -43570,95 +43915,107 @@ function deleteBudget(recordId) {
 
 
 function saveSalaryStructure() {
+    const employeeId = document.getElementById('salaryEmployee').value;
+    const basicSalary = document.getElementById('basicSalary').value;
+    const housingAllowance = document.getElementById('housingAllowance').value || 0;
+    const transportAllowance = document.getElementById('transportAllowance').value || 0;
+    const medicalAllowance = document.getElementById('medicalAllowance').value || 0;
+    const otherAllowances = document.getElementById('otherAllowances').value || 0;
+    const grossSalaryRaw = document.getElementById('grossSalary').value;
+    const grossSalary = parseFloat(grossSalaryRaw.replace(/[^0-9.]/g, '')) || 0;
 
-    const salary = {
+    if (!employeeId || !basicSalary) {
+        customAlert('Please select an employee and enter a basic salary.', 'Validation Error', 'error');
+        console.error('❌ Salary structure validation failed: missing employee or basic salary');
+        return false;
+    }
 
-        employee: document.getElementById('salaryEmployee').value,
+    const baseUrl = window.location.origin;
+    console.log('💰 Saving salary structure for employee:', employeeId);
 
-        basicSalary: document.getElementById('basicSalary').value,
-
-        housingAllowance: document.getElementById('housingAllowance').value,
-
-        transportAllowance: document.getElementById('transportAllowance').value,
-
-        medicalAllowance: document.getElementById('medicalAllowance').value,
-
-        otherAllowances: document.getElementById('otherAllowances').value,
-
-        grossSalary: document.getElementById('grossSalary').value,
-
-        approvedDate: new Date().toLocaleString()
-
-    };
-
-    
-
-    // Save to secure API storage
-
-    const salaryStructures = [];
-
-    salaryStructures.push(salary);
-
-    // TODO: Save to API
-
-    
-
-    customAlert(`Salary structure approved!\n\nEmployee: ${salary.employee}\nGross Salary: TZS ${salary.grossSalary}`, "Salary Structure Approved", "success");
-
-    
-
-    document.getElementById('salaryForm').reset();
+    fetch(`${baseUrl}/payroll/salary-structure`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${sessionManager.getAuthToken()}`
+        },
+        body: JSON.stringify({
+            employeeId,
+            basicSalary: parseFloat(basicSalary),
+            housingAllowance: parseFloat(housingAllowance),
+            transportAllowance: parseFloat(transportAllowance),
+            medicalAllowance: parseFloat(medicalAllowance),
+            otherAllowances: parseFloat(otherAllowances),
+            grossSalary
+        })
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.success) {
+            console.log('✅ Salary structure saved successfully:', data);
+            customAlert(`Salary structure approved!\n\nEmployee ID: ${employeeId}\nGross Salary: TZS ${(data.grossSalary || grossSalary).toLocaleString()}`, 'Salary Structure Approved', 'success');
+            document.getElementById('salaryForm').reset();
+            document.getElementById('grossSalary').value = '';
+            loadPayrollData();
+        } else {
+            console.error('❌ Failed to save salary structure:', data.error);
+            customAlert(`Failed to save salary structure: ${data.error}`, 'Error', 'error');
+        }
+    })
+    .catch(err => {
+        console.error('❌ Error saving salary structure:', err);
+        customAlert('Network error saving salary structure. Please try again.', 'Error', 'error');
+    });
 
     return false;
-
 }
 
 
 
 function processPayroll() {
+    const payrollMonth = document.getElementById('payrollMonth').value;
+    const paymentDate = document.getElementById('paymentDate').value;
+    const payrollType = document.getElementById('payrollType').value;
 
-    const payroll = {
+    if (!payrollMonth || !paymentDate) {
+        customAlert('Please select a payroll month and payment date.', 'Validation Error', 'error');
+        console.error('❌ Payroll processing validation failed: missing month or payment date');
+        return false;
+    }
 
-        month: document.getElementById('payrollMonth').value,
+    const baseUrl = window.location.origin;
+    console.log('🔄 Processing payroll for month:', payrollMonth, 'date:', paymentDate);
 
-        paymentDate: document.getElementById('paymentDate').value,
-
-        payrollType: document.getElementById('payrollType').value,
-
-        totalEmployees: 45,
-
-        totalGross: '28,500,000',
-
-        totalDeductions: '4,275,000',
-
-        netPayment: '24,225,000',
-
-        processedBy: 'Finance Manager',
-
-        processedDate: new Date().toLocaleString()
-
-    };
-
-    
-
-    // Save to secure API storage
-
-    const payrolls = [];
-
-    payrolls.push(payroll);
-
-    // TODO: Save to API
-
-    
-
-    customAlert(`Payroll processed successfully!\n\nMonth: ${payroll.month}\nNet Payment: TZS ${payroll.netPayment}\nPayment Date: ${payroll.paymentDate}`, "Payroll Processed", "success");
-
-    
-
-    document.getElementById('payrollProcessForm').reset();
+    fetch(`${baseUrl}/payroll/process`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${sessionManager.getAuthToken()}`
+        },
+        body: JSON.stringify({ payrollMonth, paymentDate, payrollType })
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.success) {
+            console.log('✅ Payroll processed successfully:', data);
+            const d = data.data || {};
+            customAlert(
+                `Payroll processed successfully!\n\nMonth: ${payrollMonth}\nTotal Employees: ${d.totalEmployees || 0}\nTotal Gross: TZS ${(d.totalGross || 0).toLocaleString()}\nTotal Deductions: TZS ${(d.totalDeductions || 0).toLocaleString()}\nNet Payment: TZS ${(d.netPayment || 0).toLocaleString()}\nPayment Date: ${paymentDate}`,
+                'Payroll Processed', 'success'
+            );
+            document.getElementById('payrollProcessForm').reset();
+            loadPayrollData();
+        } else {
+            console.error('❌ Failed to process payroll:', data.error);
+            customAlert(`Failed to process payroll: ${data.error}`, 'Error', 'error');
+        }
+    })
+    .catch(err => {
+        console.error('❌ Error processing payroll:', err);
+        customAlert('Network error processing payroll. Please try again.', 'Error', 'error');
+    });
 
     return false;
-
 }
 
 
@@ -44175,9 +44532,7 @@ function taxPlanning() {
 
 
 function processMonthlyPayroll() {
-
-    customAlert('Processing monthly payroll...\n\nThis will calculate salaries, deductions, and process payments for all employees.', "Payroll Processing", "info");
-
+    showPayrollTab('process', document.querySelector('.payroll-tabs .tab-btn:nth-child(3)'));
 }
 
 
@@ -44199,9 +44554,53 @@ function manageAllowances() {
 
 
 function generateIndividualPayslip() {
+    const employeeId = document.getElementById('payslipEmployee').value;
+    const month = document.getElementById('payslipMonth').value;
 
-    customAlert('Generating individual payslip...\n\nEmployee payslip will be generated with all salary details and deductions.', "Generate Payslip", "info");
+    if (!month) {
+        customAlert('Please select a payroll month.', 'Validation Error', 'error');
+        console.error('❌ Payslip generation failed: no month selected');
+        return;
+    }
 
+    const baseUrl = window.location.origin;
+    const url = employeeId && employeeId !== 'all'
+        ? `${baseUrl}/payroll/payslips/employee/${employeeId}/${encodeURIComponent(month)}`
+        : `${baseUrl}/payroll/payslips/${encodeURIComponent(month)}`;
+
+    console.log('📄 Generating payslip(s) for month:', month, 'employee:', employeeId || 'all');
+
+    fetch(url, {
+        headers: { 'Authorization': `Bearer ${sessionManager.getAuthToken()}` }
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.success) {
+            let payslips = [];
+            if (Array.isArray(data.data)) {
+                payslips = data.data;
+            } else if (data.data) {
+                payslips = [data.data];
+            }
+
+            if (payslips.length === 0) {
+                console.warn('⚠️ No payslip data found for', month);
+                customAlert('No payslip data found for the selected month. Process payroll first.', 'No Data', 'error');
+                document.getElementById('payslipResults').innerHTML = '<p>No payslip data found. Please process payroll first.</p>';
+                return;
+            }
+
+            console.log('✅ Payslip data retrieved:', payslips.length, 'record(s)');
+            generatePayslipExcel(payslips, month);
+        } else {
+            console.error('❌ Failed to fetch payslips:', data.error);
+            customAlert(`Failed to fetch payslip data: ${data.error}`, 'Error', 'error');
+        }
+    })
+    .catch(err => {
+        console.error('❌ Error fetching payslips:', err);
+        customAlert('Network error fetching payslip data. Please try again.', 'Error', 'error');
+    });
 }
 
 
@@ -44215,9 +44614,40 @@ function generateBulkPayslips() {
 
 
 function emailPayslips() {
+    const employeeId = document.getElementById('payslipEmployee').value;
+    const month = document.getElementById('payslipMonth').value;
 
-    customAlert('Emailing payslips to employees...\n\nAll payslips will be securely emailed to respective employees.', "Email Payslips", "info");
+    if (!month) {
+        customAlert('Please select a payroll month.', 'Validation Error', 'error');
+        console.error('❌ Email payslips failed: no month selected');
+        return;
+    }
 
+    const baseUrl = window.location.origin;
+    console.log('📧 Emailing payslips for month:', month, 'employee:', employeeId || 'all');
+
+    fetch(`${baseUrl}/payroll/payslips/email`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${sessionManager.getAuthToken()}`
+        },
+        body: JSON.stringify({ month, employeeId: employeeId || 'all' })
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.success) {
+            console.log('✅ Payslips emailed successfully:', data);
+            customAlert(`Payslips emailed successfully!\n\nMonth: ${month}\nRecords updated: ${data.updated || 0}`, 'Payslips Emailed', 'success');
+        } else {
+            console.error('❌ Failed to email payslips:', data.error);
+            customAlert(`Failed to email payslips: ${data.error}`, 'Error', 'error');
+        }
+    })
+    .catch(err => {
+        console.error('❌ Error emailing payslips:', err);
+        customAlert('Network error emailing payslips. Please try again.', 'Error', 'error');
+    });
 }
 
 
