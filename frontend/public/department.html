@@ -95300,15 +95300,14 @@ function showReportTab(tabName) {
 
     // Update tab buttons
 
-    document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+    document.querySelectorAll('.report-tabs .tab-btn').forEach(btn => btn.classList.remove('active'));
 
-    document.querySelector(`[onclick="showReportTab('${tabName}')"]`).classList.add('active');
-
-    
+    var clickedBtn = document.querySelector('.report-tabs [onclick="showReportTab(\'' + tabName + '\')"]');
+    if (clickedBtn) clickedBtn.classList.add('active');
 
     // Show corresponding content
 
-    document.querySelectorAll('.tab-content').forEach(content => content.style.display = 'none');
+    document.querySelectorAll('.reports-dashboard > .tab-content').forEach(content => content.style.display = 'none');
 
     const targetContent = document.getElementById(tabName + 'Report');
 
@@ -95317,6 +95316,14 @@ function showReportTab(tabName) {
         targetContent.style.display = 'block';
 
     }
+
+    // Load data for the selected tab
+    console.log('📊 Switching to report tab:', tabName);
+    if (tabName === 'summary' && typeof loadWorkforceSummary === 'function') loadWorkforceSummary();
+    if (tabName === 'employees' && typeof loadEmployeeData === 'function') loadEmployeeData();
+    if (tabName === 'turnover' && typeof loadTurnoverData === 'function') loadTurnoverData();
+    if (tabName === 'performance' && typeof loadPerformanceData === 'function') loadPerformanceData();
+    if (tabName === 'compliance' && typeof loadComplianceData === 'function') loadComplianceData();
 
 }
 
