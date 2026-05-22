@@ -353,6 +353,42 @@ router.get('/invoices', async (req, res) => {
     }
 });
 
+// PUT - Approve invoice (MD only)
+router.put('/invoice/:id/approve', async (req, res) => {
+    const { id } = req.params;
+    console.log('📝 PUT /api/finance/invoice/' + id + '/approve accessed');
+    try {
+        await db.execute(
+            `UPDATE finance_work SET status = 'Completed', completion_date = NOW() WHERE id = ? AND work_type = 'Invoice Processing'`,
+            [id]
+        );
+        console.log('✅ Invoice ' + id + ' approved');
+        res.json({ message: 'Invoice approved successfully', id, status: 'Completed' });
+    } catch (error) {
+        console.error('❌ Error approving invoice:', error);
+        res.status(500).json({ error: 'Failed to approve invoice' });
+    }
+});
+
+// PUT - Reject invoice (MD only)
+router.put('/invoice/:id/reject', async (req, res) => {
+    const { id } = req.params;
+    const { reason } = req.body || {};
+    console.log('📝 PUT /api/finance/invoice/' + id + '/reject accessed');
+    try {
+        const description = reason ? ` | Rejection reason: ${reason}` : '';
+        await db.execute(
+            `UPDATE finance_work SET status = 'Rejected', work_description = CONCAT(COALESCE(work_description,''), ?) WHERE id = ? AND work_type = 'Invoice Processing'`,
+            [description, id]
+        );
+        console.log('✅ Invoice ' + id + ' rejected');
+        res.json({ message: 'Invoice rejected', id, status: 'Rejected' });
+    } catch (error) {
+        console.error('❌ Error rejecting invoice:', error);
+        res.status(500).json({ error: 'Failed to reject invoice' });
+    }
+});
+
 // ===== PAYROLL PROCESSING =====
 // Moved to /api/payroll routes. This endpoint intentionally omitted to avoid duplication.
 

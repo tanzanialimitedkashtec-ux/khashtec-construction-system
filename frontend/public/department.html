@@ -67337,6 +67337,7 @@ function loadInvoicesList() {
             console.log('✅ Invoices list loaded — 0 invoices found');
             return;
         }
+        var isMD = (typeof currentRole !== 'undefined' && currentRole === 'MD');
         var html = '<table style="width:100%;border-collapse:collapse;">' +
             '<thead><tr style="background:#2c3e50;color:white;">' +
                 '<th style="padding:10px;text-align:left;">Invoice #</th>' +
@@ -67346,18 +67347,30 @@ function loadInvoicesList() {
                 '<th style="padding:10px;text-align:center;">Status</th>' +
                 '<th style="padding:10px;text-align:center;">Priority</th>' +
                 '<th style="padding:10px;text-align:left;">Due Date</th>' +
+                (isMD ? '<th style="padding:10px;text-align:center;">Actions</th>' : '') +
             '</tr></thead><tbody>';
         for (var i = 0; i < invoices.length; i++) {
             var inv = invoices[i];
-            var statusColor = inv.status === 'Completed' ? '#27ae60' : inv.status === 'Rejected' ? '#e74c3c' : '#e67e22';
+            var statusColor = inv.status === 'Completed' ? '#27ae60' : inv.status === 'Rejected' ? '#e74c3c' : inv.status === 'In Progress' ? '#3498db' : '#e67e22';
+            var statusLabel = inv.status === 'Completed' ? 'Approved' : (inv.status || 'Pending');
+            var actions = '';
+            if (isMD && inv.status === 'Pending') {
+                actions = '<td style="padding:10px;text-align:center;">' +
+                    '<button onclick="approveInvoice(' + inv.id + ')" style="background:#27ae60;color:white;border:none;padding:5px 12px;border-radius:6px;cursor:pointer;margin-right:5px;font-size:12px;">✅ Approve</button>' +
+                    '<button onclick="rejectInvoice(' + inv.id + ')" style="background:#e74c3c;color:white;border:none;padding:5px 12px;border-radius:6px;cursor:pointer;font-size:12px;">❌ Reject</button>' +
+                '</td>';
+            } else if (isMD) {
+                actions = '<td style="padding:10px;text-align:center;color:#888;font-size:12px;">' + statusLabel + '</td>';
+            }
             html += '<tr style="border-bottom:1px solid #eee;">' +
                 '<td style="padding:10px;font-weight:600;">' + (inv.invoice_number || '-') + '</td>' +
                 '<td style="padding:10px;">' + (inv.vendor_name || '-') + '</td>' +
                 '<td style="padding:10px;max-width:250px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">' + (inv.work_title || '-') + '</td>' +
                 '<td style="padding:10px;text-align:right;font-weight:600;">TZS ' + formatTZS(inv.amount || 0) + '</td>' +
-                '<td style="padding:10px;text-align:center;"><span style="background:' + statusColor + ';color:white;padding:3px 10px;border-radius:12px;font-size:12px;">' + (inv.status || 'Pending') + '</span></td>' +
+                '<td style="padding:10px;text-align:center;"><span style="background:' + statusColor + ';color:white;padding:3px 10px;border-radius:12px;font-size:12px;">' + statusLabel + '</span></td>' +
                 '<td style="padding:10px;text-align:center;">' + (inv.priority || 'Medium') + '</td>' +
                 '<td style="padding:10px;">' + (inv.due_date ? new Date(inv.due_date).toLocaleDateString('en-GB') : '-') + '</td>' +
+                actions +
             '</tr>';
         }
         html += '</tbody></table>';
@@ -67373,6 +67386,60 @@ function loadInvoicesList() {
 
 
 
+
+function approveInvoice(invoiceId) {
+    if (!confirm('Are you sure you want to approve this invoice?')) return;
+    fetch('/api/finance/invoice/' + invoiceId + '/approve', {
+        method: 'PUT',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + (typeof sessionManager !== 'undefined' && sessionManager.getAuthToken ? sessionManager.getAuthToken() : '')
+        }
+    })
+    .then(function(res) { return res.json(); })
+    .then(function(data) {
+        if (data.error) {
+            console.error('❌ Invoice approval failed:', data.error);
+            customAlert('Failed to approve invoice: ' + data.error, 'Error', 'error');
+            return;
+        }
+        console.log('✅ Invoice ' + invoiceId + ' approved by Managing Director');
+        customAlert('Invoice approved successfully!', 'Invoice Approved', 'success');
+        loadInvoicesList();
+    })
+    .catch(function(err) {
+        console.error('❌ Error approving invoice:', err);
+        customAlert('Failed to approve invoice. Please try again.', 'Error', 'error');
+    });
+}
+
+function rejectInvoice(invoiceId) {
+    var reason = prompt('Please provide a reason for rejecting this invoice:');
+    if (reason === null) return;
+    fetch('/api/finance/invoice/' + invoiceId + '/reject', {
+        method: 'PUT',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + (typeof sessionManager !== 'undefined' && sessionManager.getAuthToken ? sessionManager.getAuthToken() : '')
+        },
+        body: JSON.stringify({ reason: reason })
+    })
+    .then(function(res) { return res.json(); })
+    .then(function(data) {
+        if (data.error) {
+            console.error('❌ Invoice rejection failed:', data.error);
+            customAlert('Failed to reject invoice: ' + data.error, 'Error', 'error');
+            return;
+        }
+        console.log('✅ Invoice ' + invoiceId + ' rejected by Managing Director');
+        customAlert('Invoice rejected.', 'Invoice Rejected', 'info');
+        loadInvoicesList();
+    })
+    .catch(function(err) {
+        console.error('❌ Error rejecting invoice:', err);
+        customAlert('Failed to reject invoice. Please try again.', 'Error', 'error');
+    });
+}
 
 function investmentManagement() {
 
