@@ -67591,9 +67591,279 @@ function investmentManagement() {
 
 
 function taxPlanning() {
+    showContent('<div class="card">' +
+        '<h3>Tax Planning</h3>' +
+        '<p><strong>Financial Authority:</strong> Plan and manage tax obligations, track payments, and ensure compliance.</p>' +
 
-    customAlert('Opening tax planning tools...\n\nThis will provide tax optimization strategies and compliance guidance.', "Tax Planning", "info");
+        '<div style="display:flex;gap:20px;flex-wrap:wrap;margin-bottom:25px;">' +
+            '<div style="flex:1;min-width:200px;background:#1a5276;color:white;padding:15px;border-radius:10px;text-align:center;">' +
+                '<h5 style="margin:0 0 5px;color:#aed6f1;">Total Tax Paid (YTD)</h5>' +
+                '<div id="taxTotalPaid" style="font-size:22px;font-weight:700;">Loading...</div>' +
+            '</div>' +
+            '<div style="flex:1;min-width:200px;background:#e67e22;color:white;padding:15px;border-radius:10px;text-align:center;">' +
+                '<h5 style="margin:0 0 5px;color:#fdebd0;">Pending Payments</h5>' +
+                '<div id="taxPendingCount" style="font-size:22px;font-weight:700;">Loading...</div>' +
+            '</div>' +
+            '<div style="flex:1;min-width:200px;background:#e74c3c;color:white;padding:15px;border-radius:10px;text-align:center;">' +
+                '<h5 style="margin:0 0 5px;color:#fadbd8;">Overdue Payments</h5>' +
+                '<div id="taxOverdueCount" style="font-size:22px;font-weight:700;">Loading...</div>' +
+            '</div>' +
+        '</div>' +
 
+        '<div style="display:flex;gap:20px;flex-wrap:wrap;">' +
+            '<div style="flex:1;min-width:320px;">' +
+                '<h4>Record Tax Payment</h4>' +
+                '<form id="taxPlanForm" onsubmit="submitTaxPayment(event)" style="display:flex;flex-direction:column;gap:12px;">' +
+                    '<div style="display:flex;gap:10px;flex-wrap:wrap;">' +
+                        '<div style="flex:1;min-width:150px;">' +
+                            '<label style="font-weight:600;display:block;margin-bottom:4px;">Tax Type *</label>' +
+                            '<select id="taxType" required style="width:100%;padding:8px;border:1px solid #ccc;border-radius:6px;">' +
+                                '<option value="">Select tax type</option>' +
+                                '<option value="PAYE">PAYE (Pay As You Earn)</option>' +
+                                '<option value="VAT">VAT (Value Added Tax)</option>' +
+                                '<option value="Corporate Tax">Corporate Tax</option>' +
+                                '<option value="Withholding Tax">Withholding Tax</option>' +
+                                '<option value="Skills Development Levy">Skills Development Levy (SDL)</option>' +
+                                '<option value="Service Levy">Service Levy</option>' +
+                                '<option value="Other">Other</option>' +
+                            '</select>' +
+                        '</div>' +
+                        '<div style="flex:1;min-width:150px;">' +
+                            '<label style="font-weight:600;display:block;margin-bottom:4px;">Tax Period *</label>' +
+                            '<input type="text" id="taxPeriod" required style="width:100%;padding:8px;border:1px solid #ccc;border-radius:6px;" placeholder="e.g. Q1 2026 or Jan 2026">' +
+                        '</div>' +
+                    '</div>' +
+                    '<div style="display:flex;gap:10px;flex-wrap:wrap;">' +
+                        '<div style="flex:1;min-width:150px;">' +
+                            '<label style="font-weight:600;display:block;margin-bottom:4px;">Amount (TZS) *</label>' +
+                            '<input type="number" id="taxAmount" required min="0" step="0.01" style="width:100%;padding:8px;border:1px solid #ccc;border-radius:6px;" placeholder="0.00">' +
+                        '</div>' +
+                        '<div style="flex:1;min-width:150px;">' +
+                            '<label style="font-weight:600;display:block;margin-bottom:4px;">Due Date *</label>' +
+                            '<input type="date" id="taxDueDate" required style="width:100%;padding:8px;border:1px solid #ccc;border-radius:6px;">' +
+                        '</div>' +
+                    '</div>' +
+                    '<div style="display:flex;gap:10px;flex-wrap:wrap;">' +
+                        '<div style="flex:1;min-width:150px;">' +
+                            '<label style="font-weight:600;display:block;margin-bottom:4px;">Payment Date</label>' +
+                            '<input type="date" id="taxPaymentDate" style="width:100%;padding:8px;border:1px solid #ccc;border-radius:6px;">' +
+                        '</div>' +
+                        '<div style="flex:1;min-width:150px;">' +
+                            '<label style="font-weight:600;display:block;margin-bottom:4px;">Payment Status</label>' +
+                            '<select id="taxPaymentStatus" style="width:100%;padding:8px;border:1px solid #ccc;border-radius:6px;">' +
+                                '<option value="Pending">Pending</option>' +
+                                '<option value="Paid">Paid</option>' +
+                                '<option value="Overdue">Overdue</option>' +
+                            '</select>' +
+                        '</div>' +
+                    '</div>' +
+                    '<div style="display:flex;gap:10px;flex-wrap:wrap;">' +
+                        '<div style="flex:1;min-width:150px;">' +
+                            '<label style="font-weight:600;display:block;margin-bottom:4px;">Payment Method</label>' +
+                            '<select id="taxPaymentMethod" style="width:100%;padding:8px;border:1px solid #ccc;border-radius:6px;">' +
+                                '<option value="Bank Transfer">Bank Transfer</option>' +
+                                '<option value="Mobile Money">Mobile Money</option>' +
+                                '<option value="Cash">Cash</option>' +
+                                '<option value="Cheque">Cheque</option>' +
+                                '<option value="Other">Other</option>' +
+                            '</select>' +
+                        '</div>' +
+                        '<div style="flex:1;min-width:150px;">' +
+                            '<label style="font-weight:600;display:block;margin-bottom:4px;">Payment Reference</label>' +
+                            '<input type="text" id="taxPaymentRef" style="width:100%;padding:8px;border:1px solid #ccc;border-radius:6px;" placeholder="e.g. TRA-12345">' +
+                        '</div>' +
+                    '</div>' +
+                    '<div style="display:flex;gap:10px;flex-wrap:wrap;">' +
+                        '<div style="flex:1;min-width:150px;">' +
+                            '<label style="font-weight:600;display:block;margin-bottom:4px;">Penalties (TZS)</label>' +
+                            '<input type="number" id="taxPenalties" min="0" step="0.01" value="0" style="width:100%;padding:8px;border:1px solid #ccc;border-radius:6px;">' +
+                        '</div>' +
+                        '<div style="flex:1;min-width:150px;">' +
+                            '<label style="font-weight:600;display:block;margin-bottom:4px;">Interest (TZS)</label>' +
+                            '<input type="number" id="taxInterest" min="0" step="0.01" value="0" style="width:100%;padding:8px;border:1px solid #ccc;border-radius:6px;">' +
+                        '</div>' +
+                    '</div>' +
+                    '<div>' +
+                        '<label style="font-weight:600;display:block;margin-bottom:4px;">Department *</label>' +
+                        '<input type="text" id="taxDepartment" required style="width:100%;padding:8px;border:1px solid #ccc;border-radius:6px;" placeholder="e.g. Finance" value="Finance">' +
+                    '</div>' +
+                    '<div>' +
+                        '<label style="font-weight:600;display:block;margin-bottom:4px;">Description / Notes</label>' +
+                        '<textarea id="taxDescription" rows="2" style="width:100%;padding:8px;border:1px solid #ccc;border-radius:6px;resize:vertical;" placeholder="Additional notes about this tax payment"></textarea>' +
+                    '</div>' +
+                    '<button type="submit" class="action" style="padding:10px 20px;font-size:15px;">Record Tax Payment</button>' +
+                '</form>' +
+            '</div>' +
+        '</div>' +
+
+        '<div style="margin-top:30px;">' +
+            '<h4>Tax Payment Records</h4>' +
+            '<div id="taxRecordsList"><p>Loading tax records...</p></div>' +
+        '</div>' +
+    '</div>');
+
+    loadTaxRecords();
+    loadTaxSummary();
+}
+
+function loadTaxSummary() {
+    fetch('/api/tax', {
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + (typeof sessionManager !== 'undefined' && sessionManager.getAuthToken ? sessionManager.getAuthToken() : '')
+        }
+    })
+    .then(function(res) { return res.json(); })
+    .then(function(result) {
+        var records = Array.isArray(result.data) ? result.data : (Array.isArray(result) ? result : []);
+        var totalPaid = 0;
+        var pendingCount = 0;
+        var overdueCount = 0;
+        for (var i = 0; i < records.length; i++) {
+            if (records[i].payment_status === 'Paid') totalPaid += parseFloat(records[i].total_amount || records[i].amount || 0);
+            if (records[i].payment_status === 'Pending') pendingCount++;
+            if (records[i].payment_status === 'Overdue') overdueCount++;
+        }
+        var el1 = document.getElementById('taxTotalPaid');
+        var el2 = document.getElementById('taxPendingCount');
+        var el3 = document.getElementById('taxOverdueCount');
+        if (el1) el1.textContent = 'TZS ' + formatTZS(totalPaid);
+        if (el2) el2.textContent = pendingCount + ' payment(s)';
+        if (el3) el3.textContent = overdueCount + ' payment(s)';
+        console.log('✅ Tax summary loaded — Total Paid: TZS ' + formatTZS(totalPaid) + ', Pending: ' + pendingCount + ', Overdue: ' + overdueCount);
+    })
+    .catch(function(err) {
+        console.error('❌ Error loading tax summary:', err);
+        var el1 = document.getElementById('taxTotalPaid');
+        var el2 = document.getElementById('taxPendingCount');
+        var el3 = document.getElementById('taxOverdueCount');
+        if (el1) el1.textContent = '--';
+        if (el2) el2.textContent = '--';
+        if (el3) el3.textContent = '--';
+    });
+}
+
+function loadTaxRecords() {
+    fetch('/api/tax', {
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + (typeof sessionManager !== 'undefined' && sessionManager.getAuthToken ? sessionManager.getAuthToken() : '')
+        }
+    })
+    .then(function(res) { return res.json(); })
+    .then(function(result) {
+        var container = document.getElementById('taxRecordsList');
+        if (!container) return;
+        var records = Array.isArray(result.data) ? result.data : (Array.isArray(result) ? result : []);
+        if (records.length === 0) {
+            container.innerHTML = '<p style="color:#888;">No tax records found. Record your first tax payment using the form above.</p>';
+            return;
+        }
+        var html = '<table style="width:100%;border-collapse:collapse;">' +
+            '<thead><tr style="background:#2c3e50;color:white;">' +
+                '<th style="padding:10px;text-align:left;">Tax Type</th>' +
+                '<th style="padding:10px;text-align:left;">Period</th>' +
+                '<th style="padding:10px;text-align:right;">Amount</th>' +
+                '<th style="padding:10px;text-align:right;">Penalties</th>' +
+                '<th style="padding:10px;text-align:right;">Total</th>' +
+                '<th style="padding:10px;text-align:center;">Status</th>' +
+                '<th style="padding:10px;text-align:left;">Due Date</th>' +
+                '<th style="padding:10px;text-align:left;">Method</th>' +
+            '</tr></thead><tbody>';
+        for (var i = 0; i < records.length; i++) {
+            var r = records[i];
+            var statusColor = r.payment_status === 'Paid' ? '#27ae60' : r.payment_status === 'Overdue' ? '#e74c3c' : '#e67e22';
+            html += '<tr style="border-bottom:1px solid #eee;">' +
+                '<td style="padding:10px;font-weight:600;">' + (r.tax_type || '-') + '</td>' +
+                '<td style="padding:10px;">' + (r.tax_period || '-') + '</td>' +
+                '<td style="padding:10px;text-align:right;">TZS ' + formatTZS(r.amount || 0) + '</td>' +
+                '<td style="padding:10px;text-align:right;">TZS ' + formatTZS((parseFloat(r.penalties || 0) + parseFloat(r.interest || 0))) + '</td>' +
+                '<td style="padding:10px;text-align:right;font-weight:600;">TZS ' + formatTZS(r.total_amount || r.amount || 0) + '</td>' +
+                '<td style="padding:10px;text-align:center;"><span style="background:' + statusColor + ';color:white;padding:3px 10px;border-radius:12px;font-size:12px;">' + (r.payment_status || 'Pending') + '</span></td>' +
+                '<td style="padding:10px;">' + (r.due_date ? new Date(r.due_date).toLocaleDateString('en-GB') : '-') + '</td>' +
+                '<td style="padding:10px;">' + (r.payment_method || '-') + '</td>' +
+            '</tr>';
+        }
+        html += '</tbody></table>';
+        container.innerHTML = html;
+        console.log('✅ Tax records loaded — ' + records.length + ' record(s)');
+    })
+    .catch(function(err) {
+        console.error('❌ Error loading tax records:', err);
+        var container = document.getElementById('taxRecordsList');
+        if (container) container.innerHTML = '<p style="color:red;">Failed to load tax records. Please try again.</p>';
+    });
+}
+
+function submitTaxPayment(e) {
+    e.preventDefault();
+    var taxType = document.getElementById('taxType').value;
+    var taxPeriod = document.getElementById('taxPeriod').value.trim();
+    var amount = parseFloat(document.getElementById('taxAmount').value) || 0;
+    var dueDate = document.getElementById('taxDueDate').value;
+    var paymentDate = document.getElementById('taxPaymentDate').value || new Date().toISOString().slice(0, 10);
+    var paymentStatus = document.getElementById('taxPaymentStatus').value;
+    var paymentMethod = document.getElementById('taxPaymentMethod').value;
+    var paymentRef = document.getElementById('taxPaymentRef').value.trim();
+    var penalties = parseFloat(document.getElementById('taxPenalties').value) || 0;
+    var interest = parseFloat(document.getElementById('taxInterest').value) || 0;
+    var department = document.getElementById('taxDepartment').value.trim();
+    var description = document.getElementById('taxDescription').value.trim();
+
+    if (!taxType || !taxPeriod || !amount || !dueDate || !department) {
+        customAlert('Please fill in all required fields.', 'Validation Error', 'error');
+        return;
+    }
+
+    var totalAmount = amount + penalties + interest;
+    var payload = {
+        taxType: taxType,
+        taxPeriod: taxPeriod,
+        paymentDate: paymentDate,
+        dueDate: dueDate,
+        amount: amount,
+        penalties: penalties,
+        interest: interest,
+        totalAmount: totalAmount,
+        paymentMethod: paymentMethod,
+        paymentReference: paymentRef,
+        paymentStatus: paymentStatus,
+        description: description,
+        department: department,
+        recordedBy: 1,
+        recordedByRole: 'Finance Manager'
+    };
+
+    console.log('📝 Submitting tax payment:', payload);
+
+    fetch('/api/tax', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + (typeof sessionManager !== 'undefined' && sessionManager.getAuthToken ? sessionManager.getAuthToken() : '')
+        },
+        body: JSON.stringify(payload)
+    })
+    .then(function(res) { return res.json(); })
+    .then(function(data) {
+        if (data.error) {
+            console.error('❌ Tax payment creation failed:', data.error);
+            customAlert('Failed to record tax payment: ' + data.error, 'Error', 'error');
+            return;
+        }
+        console.log('✅ Tax payment recorded successfully:', data);
+        customAlert('Tax payment for ' + taxType + ' (' + taxPeriod + ') recorded successfully! Total: TZS ' + formatTZS(totalAmount), 'Tax Payment Recorded', 'success');
+        document.getElementById('taxPlanForm').reset();
+        document.getElementById('taxDepartment').value = 'Finance';
+        loadTaxRecords();
+        loadTaxSummary();
+    })
+    .catch(function(err) {
+        console.error('❌ Error recording tax payment:', err);
+        customAlert('Failed to record tax payment. Please try again.', 'Error', 'error');
+    });
 }
 
 
