@@ -73335,55 +73335,9 @@ function approveCompletedWork(){
 
                     </thead>
 
-                    <tbody>
+                    <tbody id="pendingWorkTableBody">
 
-                        <tr>
-
-                            <td><strong>Foundation Excavation</strong></td>
-
-                            <td>Port Modernization Phase 1</td>
-
-                            <td>John Doe - Construction Worker</td>
-
-                            <td>March 15, 2026</td>
-
-                            <td><span class="quality-score excellent">95%</span></td>
-
-                            <td>
-
-                                <button class="action" onclick="approveWork('work001')" style="background: #28a745;">Approve</button>
-
-                                <button class="action" onclick="requestRework('work001')" style="background: #ffc107;">Request Rework</button>
-
-                                <button class="action" onclick="rejectWork('work001')" style="background: #dc3545;">Reject</button>
-
-                            </td>
-
-                        </tr>
-
-                        <tr>
-
-                            <td><strong>Steel Framework Installation</strong></td>
-
-                            <td>Warehouse Construction</td>
-
-                            <td>Mike Johnson - Engineer</td>
-
-                            <td>March 14, 2026</td>
-
-                            <td><span class="quality-score good">88%</span></td>
-
-                            <td>
-
-                                <button class="action" onclick="approveWork('work002')" style="background: #28a745;">Approve</button>
-
-                                <button class="action" onclick="requestRework('work002')" style="background: #ffc107;">Request Rework</button>
-
-                                <button class="action" onclick="rejectWork('work002')" style="background: #dc3545;">Reject</button>
-
-                            </td>
-
-                        </tr>
+                        <tr><td colspan="6" style="text-align:center;">Loading pending work...</td></tr>
 
                     </tbody>
 
@@ -73555,21 +73509,9 @@ function approveCompletedWork(){
 
                         </thead>
 
-                        <tbody>
+                        <tbody id="approvalHistoryTableBody">
 
-                            <tr>
-
-                                <td><strong>Concrete Foundation</strong></td>
-
-                                <td>March 14, 2026</td>
-
-                                <td><span class="quality-score excellent">Excellent</span></td>
-
-                                <td><span class="compliance-status fully-compliant">Fully Compliant</span></td>
-
-                                <td>Project Manager</td>
-
-                            </tr>
+                            <tr><td colspan="5" style="text-align:center;">Loading approval history...</td></tr>
 
                         </tbody>
 
@@ -73582,6 +73524,10 @@ function approveCompletedWork(){
         </div>
 
     `);
+
+    loadPendingWorkCompletions();
+
+    loadApprovalHistory();
 
 }
 

@@ -49390,55 +49390,9 @@ function approveCompletedWork(){
 
                     </thead>
 
-                    <tbody>
+                    <tbody id="pendingWorkTableBody">
 
-                        <tr>
-
-                            <td><strong>Foundation Excavation</strong></td>
-
-                            <td>Port Modernization Phase 1</td>
-
-                            <td>John Doe - Construction Worker</td>
-
-                            <td>March 15, 2026</td>
-
-                            <td><span class="quality-score excellent">95%</span></td>
-
-                            <td>
-
-                                <button class="action" onclick="approveWork('work001')" style="background: #28a745;">Approve</button>
-
-                                <button class="action" onclick="requestRework('work001')" style="background: #ffc107;">Request Rework</button>
-
-                                <button class="action" onclick="rejectWork('work001')" style="background: #dc3545;">Reject</button>
-
-                            </td>
-
-                        </tr>
-
-                        <tr>
-
-                            <td><strong>Steel Framework Installation</strong></td>
-
-                            <td>Warehouse Construction</td>
-
-                            <td>Mike Johnson - Engineer</td>
-
-                            <td>March 14, 2026</td>
-
-                            <td><span class="quality-score good">88%</span></td>
-
-                            <td>
-
-                                <button class="action" onclick="approveWork('work002')" style="background: #28a745;">Approve</button>
-
-                                <button class="action" onclick="requestRework('work002')" style="background: #ffc107;">Request Rework</button>
-
-                                <button class="action" onclick="rejectWork('work002')" style="background: #dc3545;">Reject</button>
-
-                            </td>
-
-                        </tr>
+                        <tr><td colspan="6" style="text-align:center;">Loading pending work...</td></tr>
 
                     </tbody>
 
@@ -49610,21 +49564,9 @@ function approveCompletedWork(){
 
                         </thead>
 
-                        <tbody>
+                        <tbody id="approvalHistoryTableBody">
 
-                            <tr>
-
-                                <td><strong>Concrete Foundation</strong></td>
-
-                                <td>March 14, 2026</td>
-
-                                <td><span class="quality-score excellent">Excellent</span></td>
-
-                                <td><span class="compliance-status fully-compliant">Fully Compliant</span></td>
-
-                                <td>Project Manager</td>
-
-                            </tr>
+                            <tr><td colspan="5" style="text-align:center;">Loading approval history...</td></tr>
 
                         </tbody>
 
@@ -49637,6 +49579,186 @@ function approveCompletedWork(){
         </div>
 
     `);
+
+    loadPendingWorkCompletions();
+
+    loadApprovalHistory();
+
+}
+
+function loadPendingWorkCompletions() {
+
+    const tbody = document.getElementById('pendingWorkTableBody');
+
+    if (!tbody) return;
+
+    const baseUrl = window.location.origin;
+
+    fetch(`${baseUrl}/api/work/completions/pending`, {
+
+        method: 'GET',
+
+        headers: {
+
+            'Content-Type': 'application/json',
+
+            'Accept': 'application/json',
+
+            'Authorization': 'Bearer ' + (typeof sessionManager !== 'undefined' && sessionManager.getAuthToken ? sessionManager.getAuthToken() : '')
+
+        }
+
+    })
+
+    .then(function(response) { return response.json(); })
+
+    .then(function(data) {
+
+        var items = data.data || data || [];
+
+        if (!items.length) {
+
+            tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;">No pending work completions found.</td></tr>';
+
+            return;
+
+        }
+
+        var html = '';
+
+        items.forEach(function(work) {
+
+            var qClass = 'poor';
+
+            var score = parseInt(work.quality_score) || 0;
+
+            if (score >= 90) qClass = 'excellent';
+
+            else if (score >= 80) qClass = 'good';
+
+            else if (score >= 70) qClass = 'acceptable';
+
+            var dateStr = work.completed_date ? new Date(work.completed_date).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) : 'N/A';
+
+            html += '<tr>' +
+
+                '<td><strong>' + (work.work_details || 'N/A') + '</strong></td>' +
+
+                '<td>' + (work.project || 'N/A') + '</td>' +
+
+                '<td>' + (work.completed_by || 'N/A') + '</td>' +
+
+                '<td>' + dateStr + '</td>' +
+
+                '<td><span class="quality-score ' + qClass + '">' + score + '%</span></td>' +
+
+                '<td>' +
+
+                    '<button class="action" onclick="approveWork(\'' + work.id + '\')" style="background: #28a745;">Approve</button>' +
+
+                    '<button class="action" onclick="requestRework(\'' + work.id + '\')" style="background: #ffc107;">Request Rework</button>' +
+
+                    '<button class="action" onclick="rejectWork(\'' + work.id + '\')" style="background: #dc3545;">Reject</button>' +
+
+                '</td>' +
+
+                '</tr>';
+
+        });
+
+        tbody.innerHTML = html;
+
+    })
+
+    .catch(function(error) {
+
+        console.error('Error loading pending work completions:', error);
+
+        tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; color: #dc3545;">Failed to load pending work. Please try again.</td></tr>';
+
+    });
+
+}
+
+function loadApprovalHistory() {
+
+    var tbody = document.getElementById('approvalHistoryTableBody');
+
+    if (!tbody) return;
+
+    var baseUrl = window.location.origin;
+
+    fetch(baseUrl + '/api/work/approvals/recent', {
+
+        method: 'GET',
+
+        headers: {
+
+            'Content-Type': 'application/json',
+
+            'Accept': 'application/json',
+
+            'Authorization': 'Bearer ' + (typeof sessionManager !== 'undefined' && sessionManager.getAuthToken ? sessionManager.getAuthToken() : '')
+
+        }
+
+    })
+
+    .then(function(response) { return response.json(); })
+
+    .then(function(data) {
+
+        var items = data.data || data || [];
+
+        if (!items.length) {
+
+            tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">No approval history found.</td></tr>';
+
+            return;
+
+        }
+
+        var html = '';
+
+        items.forEach(function(approval) {
+
+            var dateStr = approval.created_at ? new Date(approval.created_at).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) : 'N/A';
+
+            var qualityDisplay = (approval.quality_assessment || 'N/A').charAt(0).toUpperCase() + (approval.quality_assessment || 'N/A').slice(1);
+
+            var complianceDisplay = (approval.compliance_check || 'N/A').replace(/-/g, ' ');
+
+            complianceDisplay = complianceDisplay.charAt(0).toUpperCase() + complianceDisplay.slice(1);
+
+            var complianceClass = approval.compliance_check || 'fully-compliant';
+
+            html += '<tr>' +
+
+                '<td><strong>' + (approval.work_id || 'N/A') + '</strong></td>' +
+
+                '<td>' + dateStr + '</td>' +
+
+                '<td><span class="quality-score ' + (approval.quality_assessment || '') + '">' + qualityDisplay + '</span></td>' +
+
+                '<td><span class="compliance-status ' + complianceClass + '">' + complianceDisplay + '</span></td>' +
+
+                '<td>' + (approval.approved_by || 'N/A') + '</td>' +
+
+                '</tr>';
+
+        });
+
+        tbody.innerHTML = html;
+
+    })
+
+    .catch(function(error) {
+
+        console.error('Error loading approval history:', error);
+
+        tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; color: #dc3545;">Failed to load approval history.</td></tr>';
+
+    });
 
 }
 
