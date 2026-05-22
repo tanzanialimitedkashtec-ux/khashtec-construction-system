@@ -3170,9 +3170,9 @@ function showWorkforceBudgetForm(budgets) {
 
         
 
-        <div class="budget-table-container">
+        <div class="budget-table-container" style="overflow-x: auto;">
 
-            <table class="budget-table">
+            <table class="budget-table" style="width: 100%; min-width: 1200px;">
 
                 <thead>
 
@@ -3830,9 +3830,9 @@ function displayWorkforceBudgets(budgets) {
 
         
 
-        <div class="budget-table-container">
+        <div class="budget-table-container" style="overflow-x: auto;">
 
-            <table class="budget-table">
+            <table class="budget-table" style="width: 100%; min-width: 1200px;">
 
                 <thead>
 
