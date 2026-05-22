@@ -67320,7 +67320,15 @@ function formatTZS(amount) {
 
 function loadFinanceSummary() {
 
-    fetch(`/api/finance/summary`)
+    console.log('📊 Loading Financial Summary from database...');
+
+    fetch('/api/finance/summary', {
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + (typeof sessionManager !== 'undefined' && sessionManager.getAuthToken ? sessionManager.getAuthToken() : '')
+        }
+    })
 
     .then(res => res.json())
 
@@ -67341,6 +67349,8 @@ function loadFinanceSummary() {
         setText('fmNetProfit', s.net_profit);
 
         setText('fmCashBalance', s.cash_balance);
+
+        console.log('✅ Financial Summary loaded successfully from database — Total Revenue: TZS ' + formatTZS(s.total_revenue || 0) + ', Total Expenses: TZS ' + formatTZS(s.total_expenses || 0) + ', Net Profit: TZS ' + formatTZS(s.net_profit || 0) + ', Cash Balance: TZS ' + formatTZS(s.cash_balance || 0));
 
     })
 
