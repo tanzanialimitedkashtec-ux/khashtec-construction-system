@@ -70793,32 +70793,32 @@ function showTaxPayments() {
 
                 const formData = {
 
-                    taxType: document.getElementById('taxType').value,
+                    taxType: taxForm.querySelector('#taxType').value,
 
-                    amount: parseFloat(document.getElementById('taxAmount').value),
+                    amount: parseFloat(taxForm.querySelector('#taxAmount').value),
 
-                    taxPeriod: document.getElementById('taxPeriod').value,
+                    taxPeriod: taxForm.querySelector('#taxPeriod').value,
 
-                    paymentDate: document.getElementById('taxDueDate').value,
+                    paymentDate: taxForm.querySelector('#taxDueDate').value,
 
-                    dueDate: document.getElementById('taxDueDate').value,
+                    dueDate: taxForm.querySelector('#taxDueDate').value,
 
-                    paymentStatus: document.getElementById('taxStatus').value,
+                    paymentStatus: taxForm.querySelector('#taxStatus').value,
 
-                    paymentMethod: document.getElementById('paymentMethod').value,
+                    paymentMethod: taxForm.querySelector('#paymentMethod').value,
 
-                    paymentReference: document.getElementById('paymentReference').value,
+                    paymentReference: taxForm.querySelector('#paymentReference').value,
 
-                    penalties: parseFloat(document.getElementById('penalties').value) || 0,
+                    penalties: parseFloat(taxForm.querySelector('#penalties').value) || 0,
 
-                    interest: parseFloat(document.getElementById('interest').value) || 0,
+                    interest: parseFloat(taxForm.querySelector('#interest').value) || 0,
 
-                    description: document.getElementById('taxDescription').value,
+                    description: taxForm.querySelector('#taxDescription').value,
 
                     department: 'Finance', // Default department for tax payments
 
-                    attachments: document.getElementById('taxAttachments').files.length > 0 ? 
-                        Array.from(document.getElementById('taxAttachments').files).map(f => f.name) : null,
+                    attachments: taxForm.querySelector('#taxAttachments').files.length > 0 ? 
+                        Array.from(taxForm.querySelector('#taxAttachments').files).map(f => f.name) : null,
 
                     createdAt: new Date().toISOString()
 

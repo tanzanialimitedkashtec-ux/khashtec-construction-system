@@ -151,7 +151,7 @@ router.post('/', async (req, res) => {
             paymentMethod || 'Bank Transfer',
             paymentReference || null,
             paymentStatus || 'Paid',
-            description || null,
+            (description && description.trim()) || null,
             department,
             userId,
             recordedByRole || 'System',
