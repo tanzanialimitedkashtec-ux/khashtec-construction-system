@@ -273,6 +273,86 @@ router.get('/expenses', async (req, res) => {
     }
 });
 
+// ===== INVOICE PROCESSING =====
+
+// POST - Create new invoice
+router.post('/invoice', async (req, res) => {
+    console.log('📝 POST /api/finance/invoice accessed');
+    const {
+        vendor_name,
+        invoice_number,
+        amount,
+        description,
+        category,
+        due_date,
+        priority = 'Medium',
+        submittedBy = 'Finance Manager'
+    } = req.body;
+
+    if (!vendor_name || !invoice_number || !amount || !description || !due_date) {
+        return res.status(400).json({
+            error: 'Missing required fields',
+            required: ['vendor_name', 'invoice_number', 'amount', 'description', 'due_date']
+        });
+    }
+
+    try {
+        const workTitle = `Invoice ${invoice_number} - ${category || 'General'}`;
+        const result = await db.execute(
+            `INSERT INTO finance_work 
+             (department_code, work_type, work_title, work_description, amount, vendor_name, invoice_number, status, priority, submitted_by, submitted_date, assigned_to, due_date)
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+            [
+                'FINANCE',
+                'Invoice Processing',
+                workTitle,
+                description,
+                Number(amount) || 0,
+                vendor_name,
+                invoice_number,
+                'Pending',
+                priority,
+                submittedBy,
+                new Date().toISOString().slice(0, 10),
+                'Finance Manager',
+                due_date
+            ]
+        );
+
+        console.log('✅ Invoice created:', invoice_number);
+        res.status(201).json({
+            message: 'Invoice created successfully',
+            work_id: result.insertId,
+            invoice_number,
+            vendor_name,
+            amount: Number(amount) || 0,
+            status: 'Pending'
+        });
+    } catch (error) {
+        console.error('❌ Error creating invoice:', error);
+        res.status(500).json({ error: 'Failed to create invoice' });
+    }
+});
+
+// GET - Fetch all invoices
+router.get('/invoices', async (req, res) => {
+    console.log('📝 GET /api/finance/invoices accessed');
+    try {
+        const rows = await db.execute(`
+            SELECT id, work_title, work_description, amount, vendor_name, invoice_number,
+                   status, priority, submitted_by, submitted_date, due_date
+            FROM finance_work 
+            WHERE work_type = 'Invoice Processing'
+            ORDER BY submitted_date DESC, id DESC
+            LIMIT 200
+        `).catch(() => []);
+        res.json(Array.isArray(rows) ? rows : []);
+    } catch (error) {
+        console.error('❌ Error fetching invoices:', error);
+        res.status(500).json({ error: 'Failed to fetch invoices' });
+    }
+});
+
 // ===== PAYROLL PROCESSING =====
 // Moved to /api/payroll routes. This endpoint intentionally omitted to avoid duplication.
 
