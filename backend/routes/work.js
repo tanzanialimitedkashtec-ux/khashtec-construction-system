@@ -2350,7 +2350,8 @@ router.post('/approvals', async (req, res) => {
             compliance_check,
             approval_comments,
             safety_compliance,
-            time_completion
+            time_completion,
+            approved_by
         } = req.body;
         
         // Debug each field
@@ -2415,6 +2416,24 @@ router.post('/approvals', async (req, res) => {
             
             console.log('work_approvals table ready...');
             
+            // Fetch the details of the work completion if available
+            let projectId = 1;
+            let completedBy = 'Current User';
+            let completionDate = new Date().toISOString().split('T')[0];
+            
+            try {
+                const [completions] = await db.execute(
+                    'SELECT * FROM work_completions WHERE id = ? LIMIT 1',
+                    [work_id]
+                );
+                if (completions && completions.length > 0) {
+                    completedBy = completions[0].completed_by || 'Current User';
+                    completionDate = completions[0].completed_date ? new Date(completions[0].completed_date).toISOString().split('T')[0] : completionDate;
+                }
+            } catch (err) {
+                console.log('⚠️ Could not query work completion details, using defaults:', err.message);
+            }
+            
             // Insert work approval
             const result = await db.execute(`
                 INSERT INTO work_approvals (
@@ -2423,12 +2442,27 @@ router.post('/approvals', async (req, res) => {
                     quality_score, status, approved_by, approval_date
                 ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'approved', ?, CURDATE())
             `, [
-                work_id, 1, 'Current User', new Date().toISOString().split('T')[0], 
+                work_id, projectId, completedBy, completionDate, 
                 quality_assessment, compliance_check, approval_comments,
-                safety_compliance || null, time_completion || null, null, 'Current User'
+                safety_compliance || null, time_completion || null, null, approved_by || 'Managing Director'
             ]);
             
             console.log('Work approval saved to database with ID:', result.insertId);
+            
+            // Also update status in work_completions
+            try {
+                await db.execute(`
+                    UPDATE work_completions 
+                    SET status = 'approved', 
+                        approved_by = ?, 
+                        approval_notes = ?,
+                        approval_date = NOW()
+                    WHERE id = ?
+                `, [approved_by || 'Managing Director', approval_comments || '', work_id]);
+                console.log(`✅ Updated status to approved in work_completions for ID ${work_id}`);
+            } catch (updateError) {
+                console.error('⚠️ Failed to update work_completions status:', updateError.message);
+            }
             
             res.json({
                 success: true,
@@ -2449,11 +2483,6 @@ router.post('/approvals', async (req, res) => {
             
         } catch (dbError) {
             console.error('❌ Database error, using fallback for work approval:', dbError.message);
-            console.error('❌ Full database error:', dbError);
-            console.error('❌ Error code:', dbError.code);
-            console.error('❌ Error errno:', dbError.errno);
-            console.error('❌ SQL state:', dbError.sqlState);
-            console.error('❌ Error stack:', dbError.stack);
             
             // Fallback: Generate a mock approval ID and return success
             const approvalId = `WA${Date.now().toString().slice(-6)}`;

@@ -118,44 +118,58 @@ function displayWorkCompletions(completions) {
 
 // Approve a work completion
 window.approveWork = function(workId) {
-    console.log('✅ Approving work:', workId);
+    console.log('✅ Approving work (populating form):', workId);
     
     if (!workId) {
         customAlert('Work ID is required', 'Error', 'error');
         return;
     }
     
-    const baseUrl = window.location.origin;
+    // Set work ID in the approval form
+    const workIdInput = document.getElementById('workId');
+    if (workIdInput) {
+        workIdInput.value = workId;
+    } else {
+        console.error('workId input field not found');
+        customAlert('Error: Work ID input field not found on the page.', 'Error', 'error');
+        return;
+    }
     
-    fetch(`${baseUrl}/api/work/completions/${workId}/approve`, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-            'Authorization': `Bearer ${sessionManager?.getAuthToken?.() || ''}`
-        },
-        body: JSON.stringify({
-            approvedBy: sessionManager?.getCurrentUser?.()?.name || 'Managing Director',
-            approvalNotes: 'Approved by system manager'
-        })
-    })
-    .then(response => response.json())
-    .then(data => {
-        console.log('✅ Approval response:', data);
-        if (data.success) {
-            customAlert('Work approved successfully!', 'Success', 'success');
-            // Reload all tables
-            if (typeof loadPendingWorkCompletions === 'function') loadPendingWorkCompletions();
-            if (typeof loadApprovalHistory === 'function') loadApprovalHistory();
-            if (typeof loadWorkCompletions === 'function') loadWorkCompletions();
-        } else {
-            throw new Error(data.error || 'Failed to approve work');
+    // Set default values for approval in the form
+    const qualityAssessment = document.getElementById('qualityAssessment');
+    if (qualityAssessment) qualityAssessment.value = 'excellent';
+    
+    const complianceCheck = document.getElementById('complianceCheck');
+    if (complianceCheck) complianceCheck.value = 'fully-compliant';
+    
+    const approvalComments = document.getElementById('approvalComments');
+    if (approvalComments) approvalComments.value = 'Work approved successfully. Quality meets all requirements.';
+    
+    // Show the approval form if it's not visible
+    const formContainer = document.getElementById('approvalFormContainer');
+    if (formContainer) {
+        if (formContainer.style.display === 'none' || !formContainer.classList.contains('show')) {
+            if (typeof toggleApprovalForm === 'function') {
+                toggleApprovalForm();
+            } else {
+                formContainer.style.display = 'block';
+                formContainer.classList.add('show');
+                const toggleBtn = document.getElementById('toggleApprovalFormBtn');
+                if (toggleBtn) {
+                    toggleBtn.innerHTML = '❌ Close Approval Form';
+                    toggleBtn.style.background = '#dc3545';
+                }
+            }
         }
-    })
-    .catch(error => {
-        console.error('❌ Error approving work:', error);
-        customAlert(`Error approving work: ${error.message}`, 'Error', 'error');
-    });
+    }
+    
+    // Scroll to the approval form
+    const approvalForm = document.getElementById('approvalForm');
+    if (approvalForm) {
+        approvalForm.scrollIntoView({ behavior: 'smooth' });
+    }
+    
+    customAlert(`Work ID ${workId} loaded into the Approval Form below. Please review details and click "Submit Approval".`, 'Approval Form Ready', 'success');
 };
 
 // Request rework for a work completion

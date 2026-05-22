@@ -2717,19 +2717,52 @@ function approveWork(workId) {
     console.log('Approving work:', workId);
     
     // Populate the form with the work ID
-    document.getElementById('workId').value = workId;
+    const workIdInput = document.getElementById('workId');
+    if (workIdInput) {
+        workIdInput.value = workId;
+    }
     
     // Set default values for approval
-    document.getElementById('qualityAssessment').value = 'excellent';
-    document.getElementById('complianceCheck').value = 'fully-compliant';
-    document.getElementById('approvalComments').value = 'Work approved successfully. Quality meets all requirements.';
+    const qualityAssessment = document.getElementById('qualityAssessment');
+    if (qualityAssessment) qualityAssessment.value = 'excellent';
+    
+    const complianceCheck = document.getElementById('complianceCheck');
+    if (complianceCheck) complianceCheck.value = 'fully-compliant';
+    
+    const approvalComments = document.getElementById('approvalComments');
+    if (approvalComments) approvalComments.value = 'Work approved successfully. Quality meets all requirements.';
+    
+    // Show the approval form if it's not visible
+    const formContainer = document.getElementById('approvalFormContainer');
+    if (formContainer) {
+        if (formContainer.style.display === 'none' || !formContainer.classList.contains('show')) {
+            if (typeof toggleApprovalForm === 'function') {
+                toggleApprovalForm();
+            } else {
+                formContainer.style.display = 'block';
+                formContainer.classList.add('show');
+                const toggleBtn = document.getElementById('toggleApprovalFormBtn');
+                if (toggleBtn) {
+                    toggleBtn.innerHTML = '❌ Close Approval Form';
+                    toggleBtn.style.background = '#dc3545';
+                }
+            }
+        }
+    }
     
     // Scroll to the approval form
-    document.getElementById('approvalForm').scrollIntoView({ behavior: 'smooth' });
+    const approvalForm = document.getElementById('approvalForm');
+    if (approvalForm) {
+        approvalForm.scrollIntoView({ behavior: 'smooth' });
+    }
     
     // Show success message
     try {
-        alert(`Preparing approval for work item: ${workId}`);
+        if (typeof customAlert === 'function') {
+            customAlert(`Work ID ${workId} loaded into the Approval Form below. Please review details and click "Submit Approval".`, 'Approval Form Ready', 'success');
+        } else {
+            alert(`Preparing approval for work item: ${workId}`);
+        }
     } catch (e) {
         console.error('Alert error:', e);
     }
@@ -2739,19 +2772,47 @@ function requestRework(workId) {
     console.log('Requesting rework for:', workId);
     
     // Populate the form with the work ID
-    document.getElementById('workId').value = workId;
+    const workIdInput = document.getElementById('workId');
+    if (workIdInput) {
+        workIdInput.value = workId;
+    }
     
     // Set default values for rework
-    document.getElementById('qualityAssessment').value = 'acceptable';
-    document.getElementById('complianceCheck').value = 'minor-issues';
-    document.getElementById('approvalComments').value = 'Rework required. Please address the identified issues before resubmission.';
+    const qualityAssessment = document.getElementById('qualityAssessment');
+    if (qualityAssessment) qualityAssessment.value = 'acceptable';
+    
+    const complianceCheck = document.getElementById('complianceCheck');
+    if (complianceCheck) complianceCheck.value = 'minor-issues';
+    
+    const approvalComments = document.getElementById('approvalComments');
+    if (approvalComments) approvalComments.value = 'Rework required. Please address the identified issues before resubmission.';
+    
+    // Show the approval form if it's not visible
+    const formContainer = document.getElementById('approvalFormContainer');
+    if (formContainer) {
+        if (formContainer.style.display === 'none' || !formContainer.classList.contains('show')) {
+            if (typeof toggleApprovalForm === 'function') {
+                toggleApprovalForm();
+            } else {
+                formContainer.style.display = 'block';
+                formContainer.classList.add('show');
+            }
+        }
+    }
     
     // Scroll to the approval form
-    document.getElementById('approvalForm').scrollIntoView({ behavior: 'smooth' });
+    const approvalForm = document.getElementById('approvalForm');
+    if (approvalForm) {
+        approvalForm.scrollIntoView({ behavior: 'smooth' });
+    }
     
     // Show message
     try {
-        alert(`Preparing rework request for work item: ${workId}`);
+        if (typeof customAlert === 'function') {
+            customAlert(`Work ID ${workId} loaded into the Approval Form below (configured for rework). Please review details and click "Submit Approval".`, 'Approval Form Ready', 'warning');
+        } else {
+            alert(`Preparing rework request for work item: ${workId}`);
+        }
     } catch (e) {
         console.error('Alert error:', e);
     }
@@ -2761,19 +2822,47 @@ function rejectWork(workId) {
     console.log('Rejecting work:', workId);
     
     // Populate the form with the work ID
-    document.getElementById('workId').value = workId;
+    const workIdInput = document.getElementById('workId');
+    if (workIdInput) {
+        workIdInput.value = workId;
+    }
     
     // Set default values for rejection
-    document.getElementById('qualityAssessment').value = 'poor';
-    document.getElementById('complianceCheck').value = 'non-compliant';
-    document.getElementById('approvalComments').value = 'Work rejected. Significant issues need to be addressed.';
+    const qualityAssessment = document.getElementById('qualityAssessment');
+    if (qualityAssessment) qualityAssessment.value = 'poor';
+    
+    const complianceCheck = document.getElementById('complianceCheck');
+    if (complianceCheck) complianceCheck.value = 'non-compliant';
+    
+    const approvalComments = document.getElementById('approvalComments');
+    if (approvalComments) approvalComments.value = 'Work rejected. Significant issues need to be addressed.';
+    
+    // Show the approval form if it's not visible
+    const formContainer = document.getElementById('approvalFormContainer');
+    if (formContainer) {
+        if (formContainer.style.display === 'none' || !formContainer.classList.contains('show')) {
+            if (typeof toggleApprovalForm === 'function') {
+                toggleApprovalForm();
+            } else {
+                formContainer.style.display = 'block';
+                formContainer.classList.add('show');
+            }
+        }
+    }
     
     // Scroll to the approval form
-    document.getElementById('approvalForm').scrollIntoView({ behavior: 'smooth' });
+    const approvalForm = document.getElementById('approvalForm');
+    if (approvalForm) {
+        approvalForm.scrollIntoView({ behavior: 'smooth' });
+    }
     
     // Show message
     try {
-        alert(`Preparing rejection for work item: ${workId}`);
+        if (typeof customAlert === 'function') {
+            customAlert(`Work ID ${workId} loaded into the Approval Form below (configured for rejection). Please review details and click "Submit Approval".`, 'Approval Form Ready', 'error');
+        } else {
+            alert(`Preparing rejection for work item: ${workId}`);
+        }
     } catch (e) {
         console.error('Alert error:', e);
     }
@@ -2795,7 +2884,8 @@ async function saveWorkApproval(event) {
             compliance_check: document.getElementById('complianceCheck').value,
             approval_comments: document.getElementById('approvalComments').value,
             safety_compliance: document.getElementById('safetyCompliance').value,
-            time_completion: document.getElementById('timeCompletion').value
+            time_completion: document.getElementById('timeCompletion').value,
+            approved_by: (typeof sessionManager !== 'undefined' && sessionManager.getCurrentUser) ? (sessionManager.getCurrentUser()?.name || 'Managing Director') : 'Managing Director'
         };
         
         console.log('Work approval data:', approvalData);
