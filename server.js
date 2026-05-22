@@ -114,6 +114,7 @@ const departmentsRoutes = require('./backend/routes/departments');
 const investmentManagementRoutes = require('./backend/routes/investment-management');
 
 const payrollRoutes = require('./backend/routes/payroll');
+const workforceReportsRoutes = require('./backend/routes/workforceReports');
 const claimsManagementRoutes = require('./backend/routes/claimsManagement');
 const disciplineMonitoringRoutes = require('./backend/routes/disciplineMonitoring');
 const officeResourcesRoutes = require('./backend/routes/officeResources');
@@ -1084,6 +1085,12 @@ app.use('/payroll', asyncHandler(async (req, res, next) => {
 app.use('/api/payroll', asyncHandler(async (req, res, next) => {
 
     return payrollRoutes(req, res, next);
+
+}));
+
+app.use('/api/workforce-reports', asyncHandler(async (req, res, next) => {
+
+    return workforceReportsRoutes(req, res, next);
 
 }));
 
