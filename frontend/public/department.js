@@ -35842,6 +35842,14 @@ function saveInspectionReport() {
 
         document.getElementById('inspectionForm').reset();
 
+        
+
+        // Reload inspection records to show the newly created record
+
+        console.log('🔄 Reloading inspection records after successful upload...');
+
+        loadInspectionRecords();
+
     })
 
     .catch(error => {
