@@ -67771,6 +67771,7 @@ function loadTaxRecords() {
                 '<th style="padding:10px;text-align:center;">Status</th>' +
                 '<th style="padding:10px;text-align:left;">Due Date</th>' +
                 '<th style="padding:10px;text-align:left;">Method</th>' +
+                '<th style="padding:10px;text-align:left;">Description</th>' +
             '</tr></thead><tbody>';
         for (var i = 0; i < records.length; i++) {
             var r = records[i];
@@ -67784,6 +67785,7 @@ function loadTaxRecords() {
                 '<td style="padding:10px;text-align:center;"><span style="background:' + statusColor + ';color:white;padding:3px 10px;border-radius:12px;font-size:12px;">' + (r.payment_status || 'Pending') + '</span></td>' +
                 '<td style="padding:10px;">' + (r.due_date ? new Date(r.due_date).toLocaleDateString('en-GB') : '-') + '</td>' +
                 '<td style="padding:10px;">' + (r.payment_method || '-') + '</td>' +
+                '<td style="padding:10px;">' + (r.description || '-') + '</td>' +
             '</tr>';
         }
         html += '</tbody></table>';
@@ -96568,32 +96570,32 @@ function showTaxPayments() {
 
                 const formData = {
 
-                    taxType: document.getElementById('taxType').value,
+                    taxType: taxForm.querySelector('#taxType').value,
 
-                    amount: parseFloat(document.getElementById('taxAmount').value),
+                    amount: parseFloat(taxForm.querySelector('#taxAmount').value),
 
-                    taxPeriod: document.getElementById('taxPeriod').value,
+                    taxPeriod: taxForm.querySelector('#taxPeriod').value,
 
-                    paymentDate: document.getElementById('taxDueDate').value,
+                    paymentDate: taxForm.querySelector('#taxDueDate').value,
 
-                    dueDate: document.getElementById('taxDueDate').value,
+                    dueDate: taxForm.querySelector('#taxDueDate').value,
 
-                    paymentStatus: document.getElementById('taxStatus').value,
+                    paymentStatus: taxForm.querySelector('#taxStatus').value,
 
-                    paymentMethod: document.getElementById('paymentMethod').value,
+                    paymentMethod: taxForm.querySelector('#paymentMethod').value,
 
-                    paymentReference: document.getElementById('paymentReference').value,
+                    paymentReference: taxForm.querySelector('#paymentReference').value,
 
-                    penalties: parseFloat(document.getElementById('penalties').value) || 0,
+                    penalties: parseFloat(taxForm.querySelector('#penalties').value) || 0,
 
-                    interest: parseFloat(document.getElementById('interest').value) || 0,
+                    interest: parseFloat(taxForm.querySelector('#interest').value) || 0,
 
-                    description: document.getElementById('taxDescription').value,
+                    description: taxForm.querySelector('#taxDescription').value,
 
                     department: 'Finance', // Default department for tax payments
 
-                    attachments: document.getElementById('taxAttachments').files.length > 0 ? 
-                        Array.from(document.getElementById('taxAttachments').files).map(f => f.name) : null,
+                    attachments: taxForm.querySelector('#taxAttachments').files.length > 0 ? 
+                        Array.from(taxForm.querySelector('#taxAttachments').files).map(f => f.name) : null,
 
                     createdAt: new Date().toISOString()
 
