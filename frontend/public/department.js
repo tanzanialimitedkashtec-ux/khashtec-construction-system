@@ -1115,7 +1115,13 @@ window.KashTecAPI = {
 
     // Base URL for API calls
 
-    baseUrl: window.location.origin,
+    baseUrl: (function() {
+        const origin = window.location.origin;
+        if (origin && origin !== 'null' && window.location.protocol !== 'file:') {
+            return origin;
+        }
+        return 'http://localhost:8080';
+    })(),
 
     
 
