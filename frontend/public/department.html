@@ -66706,6 +66706,7 @@ function showExpenseTab(tabName, evt) {
 
 
 function loadFinancialReportingData() {
+    console.log('📊 Loading Financial Reporting data from database...');
     loadIncomeStatementData();
     loadBalanceSheetData();
     loadCashFlowData();
@@ -66762,10 +66763,11 @@ function loadIncomeStatementData() {
         var profitClass = (totals.netProfit || 0) >= 0 ? 'profit' : '';
         html += '<div class="statement-section ' + profitClass + '"><div class="statement-item total"><span>Net Profit</span><span>TZS ' + formatTZS(totals.netProfit || 0) + '</span></div></div>';
 
+        console.log('✅ Income Statement loaded successfully from database — Revenue items: ' + revenueItems.length + ', Expense items: ' + expenseItems.length + ', Total Revenue: TZS ' + formatTZS(totals.totalRevenue || 0) + ', Total Expenses: TZS ' + formatTZS(totals.totalExpenses || 0) + ', Net Profit: TZS ' + formatTZS(totals.netProfit || 0));
         container.innerHTML = html;
     })
     .catch(function(err) {
-        console.error('Error loading income statement:', err);
+        console.error('❌ Error loading income statement:', err);
         var container = document.getElementById('incomeStatementBody');
         if (container) container.innerHTML = '<p style="color:red;">Failed to load income statement data. Please try again later.</p>';
     });
@@ -66809,10 +66811,11 @@ function loadBalanceSheetData() {
         html += '<div class="balance-item total"><span>Total Equity</span><span>TZS ' + formatTZS(equity.total_equity || 0) + '</span></div>';
         html += '</div>';
 
+        console.log('✅ Balance Sheet loaded successfully from database — Total Assets: TZS ' + formatTZS(assets.total_assets || 0) + ', Total Liabilities: TZS ' + formatTZS(liabilities.total_liabilities || 0) + ', Total Equity: TZS ' + formatTZS(equity.total_equity || 0));
         container.innerHTML = html;
     })
     .catch(function(err) {
-        console.error('Error loading balance sheet:', err);
+        console.error('❌ Error loading balance sheet:', err);
         var container = document.getElementById('balanceSheetBody');
         if (container) container.innerHTML = '<p style="color:red;">Failed to load balance sheet data. Please try again later.</p>';
     });
@@ -66846,10 +66849,11 @@ function loadCashFlowData() {
         html += '<div class="flow-item total"><span>Net Operating Cash</span><span>TZS ' + formatTZS(operating.net_operating_cash || 0) + '</span></div>';
         html += '</div>';
 
+        console.log('✅ Cash Flow loaded successfully from database — Cash from Customers: TZS ' + formatTZS(operating.cash_from_customers || 0) + ', Cash to Suppliers: TZS ' + formatTZS(operating.cash_paid_to_suppliers || 0) + ', Salaries Paid: TZS ' + formatTZS(operating.salaries_paid || 0) + ', Net Operating Cash: TZS ' + formatTZS(operating.net_operating_cash || 0));
         container.innerHTML = html;
     })
     .catch(function(err) {
-        console.error('Error loading cash flow:', err);
+        console.error('❌ Error loading cash flow:', err);
         var container = document.getElementById('cashFlowBody');
         if (container) container.innerHTML = '<p style="color:red;">Failed to load cash flow data. Please try again later.</p>';
     });
@@ -66893,10 +66897,11 @@ function loadBudgetVsActualData() {
             }
         }
 
+        console.log('✅ Budget vs Actual loaded successfully from database — Budgets found: ' + budgets.length + ', Total Actual Spending: TZS ' + formatTZS(actual));
         container.innerHTML = html;
     })
     .catch(function(err) {
-        console.error('Error loading budget vs actual:', err);
+        console.error('❌ Error loading budget vs actual:', err);
         var container = document.getElementById('budgetActualBody');
         if (container) container.innerHTML = '<p style="color:red;">Failed to load budget vs actual data. Please try again later.</p>';
     });
