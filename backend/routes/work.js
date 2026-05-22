@@ -4630,43 +4630,9 @@ router.get('/completions/pending', async (req, res) => {
             workCompletions = dbRecords || [];
             console.log(`📊 Found ${workCompletions.length} work completions from database`);
         } catch (dbError) {
-            console.error('⚠️ Database query error:', dbError.message);
-            console.error('⚠️ Error code:', dbError.code);
-
-            // Fallback to mock data
-            console.log('📌 Using fallback mock data');
-            workCompletions = [
-                {
-                    id: 'work001',
-                    work_details: 'Foundation Excavation',
-                    project: 'Port Modernization Phase 1',
-                    completed_by: 'John Doe - Construction Worker',
-                    completed_date: '2026-03-15',
-                    quality_score: 95,
-                    quality_level: 'excellent',
-                    status: 'pending'
-                },
-                {
-                    id: 'work002',
-                    work_details: 'Steel Framework Installation',
-                    project: 'Warehouse Construction',
-                    completed_by: 'Mike Johnson - Engineer',
-                    completed_date: '2026-03-14',
-                    quality_score: 88,
-                    quality_level: 'good',
-                    status: 'pending'
-                },
-                {
-                    id: 'work003',
-                    work_details: 'Concrete Pouring',
-                    project: 'Road Infrastructure',
-                    completed_by: 'Sarah Williams - Supervisor',
-                    completed_date: '2026-03-13',
-                    quality_score: 92,
-                    quality_level: 'excellent',
-                    status: 'pending'
-                }
-            ];
+            console.error('❌ Database query error:', dbError.message);
+            console.error('❌ Error code:', dbError.code);
+            throw dbError;
         }
         
         res.json({
@@ -4725,8 +4691,8 @@ router.get('/approvals/recent', async (req, res) => {
             approvals = dbRecords || [];
             console.log(`📊 Found ${approvals.length} recent approvals from database`);
         } catch (dbError) {
-            console.error('⚠️ Database error fetching approvals:', dbError.message);
-            approvals = [];
+            console.error('❌ Database error fetching approvals:', dbError.message);
+            throw dbError;
         }
         
         res.json({
