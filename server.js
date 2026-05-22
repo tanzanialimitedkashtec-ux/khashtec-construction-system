@@ -1081,6 +1081,12 @@ app.use('/payroll', asyncHandler(async (req, res, next) => {
 
 }));
 
+app.use('/api/payroll', asyncHandler(async (req, res, next) => {
+
+    return payrollRoutes(req, res, next);
+
+}));
+
 app.use('/api/claims-management', asyncHandler(async (req, res, next) => {
 
     return claimsManagementRoutes(req, res, next);
