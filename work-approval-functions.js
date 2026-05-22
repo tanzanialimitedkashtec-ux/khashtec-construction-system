@@ -144,8 +144,10 @@ window.approveWork = function(workId) {
         console.log('✅ Approval response:', data);
         if (data.success) {
             customAlert('Work approved successfully!', 'Success', 'success');
-            // Reload the table
-            loadWorkCompletions();
+            // Reload all tables
+            if (typeof loadPendingWorkCompletions === 'function') loadPendingWorkCompletions();
+            if (typeof loadApprovalHistory === 'function') loadApprovalHistory();
+            if (typeof loadWorkCompletions === 'function') loadWorkCompletions();
         } else {
             throw new Error(data.error || 'Failed to approve work');
         }
@@ -238,7 +240,9 @@ window.submitReworkRequest = function(workId) {
         if (data.success) {
             document.querySelector('.modal-overlay')?.remove();
             customAlert('Rework request submitted successfully!', 'Success', 'success');
-            loadWorkCompletions();
+            if (typeof loadPendingWorkCompletions === 'function') loadPendingWorkCompletions();
+            if (typeof loadApprovalHistory === 'function') loadApprovalHistory();
+            if (typeof loadWorkCompletions === 'function') loadWorkCompletions();
         } else {
             throw new Error(data.error || 'Failed to request rework');
         }
@@ -331,7 +335,9 @@ window.submitRejection = function(workId) {
         if (data.success) {
             document.querySelector('.modal-overlay')?.remove();
             customAlert('Work rejected successfully!', 'Success', 'success');
-            loadWorkCompletions();
+            if (typeof loadPendingWorkCompletions === 'function') loadPendingWorkCompletions();
+            if (typeof loadApprovalHistory === 'function') loadApprovalHistory();
+            if (typeof loadWorkCompletions === 'function') loadWorkCompletions();
         } else {
             throw new Error(data.error || 'Failed to reject work');
         }

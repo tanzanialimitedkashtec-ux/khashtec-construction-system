@@ -1450,6 +1450,31 @@ CREATE TABLE IF NOT EXISTS work_approvals (
   FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE
 );
 
+-- Work Completions table
+CREATE TABLE IF NOT EXISTS work_completions (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  work_details VARCHAR(255) NOT NULL,
+  project VARCHAR(255),
+  completed_by VARCHAR(255),
+  completed_date DATE,
+  quality_score INT DEFAULT 0,
+  quality_level VARCHAR(50),
+  status ENUM('pending', 'approved', 'rejected', 'rework_requested') DEFAULT 'pending',
+  approved_by VARCHAR(255),
+  approval_notes TEXT,
+  approval_date DATETIME,
+  rework_reason TEXT,
+  rework_requested_by VARCHAR(255),
+  rework_request_date DATETIME,
+  rejection_reason TEXT,
+  rejected_by VARCHAR(255),
+  rejection_date DATETIME,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  INDEX idx_status (status),
+  INDEX idx_completed_date (completed_date)
+);
+
 -- Project Progress Updates table
 CREATE TABLE IF NOT EXISTS project_progress_updates (
   id INT AUTO_INCREMENT PRIMARY KEY,

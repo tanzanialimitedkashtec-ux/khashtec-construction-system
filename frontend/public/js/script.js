@@ -2822,9 +2822,12 @@ async function saveWorkApproval(event) {
         // Reset form
         document.getElementById('approvalForm').reset();
         
-        // Reload approvals (if function exists)
-        if (typeof loadPendingApprovals === 'function') {
-            loadPendingApprovals();
+        // Reload data tables after successful approval
+        if (typeof loadPendingWorkCompletions === 'function') {
+            loadPendingWorkCompletions();
+        }
+        if (typeof loadApprovalHistory === 'function') {
+            loadApprovalHistory();
         }
         
         return false; // Prevent form submission
