@@ -123,6 +123,8 @@ const riskManagementRoutes = require('./backend/routes/riskManagement');
 
 const assetsEquipmentRoutes = require('./backend/routes/assetsEquipment');
 
+const financeRoutes = require('./backend/routes/finance');
+
 
 
 const app = express();
@@ -806,7 +808,7 @@ app.use('/api/hr/work', authenticateToken, asyncHandler(async (req, res, next) =
 
 app.use('/api/finance', authenticateToken, asyncHandler(async (req, res, next) => {
 
-    return workRoutes(req, res, next); // Use workRoutes for Finance department
+    return financeRoutes(req, res, next);
 
 }));
 
