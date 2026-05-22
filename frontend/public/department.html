@@ -87190,125 +87190,7 @@ async function complianceManagement(){
 
             
 
-            <div class="compliance-dashboard">
-
-                <div class="compliance-alerts">
-
-                    <h4>Compliance Alerts</h4>
-
-                    ${complianceAlerts.length > 0 ? `
-
-                        <table class="oversight-table">
-
-                            <thead>
-
-                                <tr>
-
-                                    <th>Document Type</th>
-
-                                    <th>Document Name</th>
-
-                                    <th>Expiry Date</th>
-
-                                    <th>Days Until Expiry</th>
-
-                                    <th>Status</th>
-
-                                    <th>Actions</th>
-
-                                </tr>
-
-                            </thead>
-
-                            <tbody>
-
-                                ${complianceAlerts.map(alert => `
-
-                                    <tr class="${alert.urgency}">
-
-                                        <td><strong>${alert.type.toUpperCase()}</strong></td>
-
-                                        <td>${alert.name}</td>
-
-                                        <td>${new Date(alert.expiry_date).toLocaleDateString()}</td>
-
-                                        <td>${alert.days_until_expiry} days</td>
-
-                                        <td><span class="status-badge ${alert.urgency}">${alert.urgency.toUpperCase()}</span></td>
-
-                                        <td>
-
-                                            <button class="action-btn" onclick="updateComplianceDoc('${alert.id}')">Update</button>
-
-                                        </td>
-
-                                    </tr>
-
-                                `).join('')}
-
-                            </tbody>
-
-                        </table>
-
-                    ` : `
-
-                        <div class="no-alerts">
-
-                            <p>No compliance alerts at this time. All documents are up to date.</p>
-
-                        </div>
-
-                    `}
-
-                </div>
-
-                
-
-                <div class="compliance-summary">
-
-                    <h4>Compliance Summary</h4>
-
-                    <table class="oversight-table">
-
-                        <thead>
-
-                            <tr>
-
-                                <th>Total Documents</th>
-
-                                <th>Active Documents</th>
-
-                                <th>Expiring Soon (≤30 days)</th>
-
-                                <th>Expired Documents</th>
-
-                            </tr>
-
-                        </thead>
-
-                        <tbody>
-
-                            <tr>
-
-                                <td>${documents.length}</td>
-
-                                <td>${documents.filter(d => d.status === 'active').length}</td>
-
-                                <td>${complianceAlerts.filter(a => a.urgency === 'urgent').length}</td>
-
-                                <td>${complianceAlerts.filter(a => a.days_until_expiry < 0).length}</td>
-
-                            </tr>
-
-                        </tbody>
-
-                    </table>
-
-                </div>
-
-                
-
-                <div class="compliance-actions">
+            <div class="compliance-actions">
 
                     <h4>Quick Actions</h4>
 
@@ -87317,8 +87199,6 @@ async function complianceManagement(){
                     <button class="action-btn" onclick="documentManagement()">View All Documents</button>
 
                 </div>
-
-            </div>
 
         </div>`;
 
