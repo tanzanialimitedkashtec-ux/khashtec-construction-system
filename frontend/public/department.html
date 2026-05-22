@@ -61414,8 +61414,6 @@ function financialReporting(){
 
         <p><strong>Financial Authority:</strong> Generate comprehensive financial reports and analytics</p>
 
-        
-
         <div class="reporting-dashboard">
 
             <div class="report-tabs">
@@ -61430,307 +61428,43 @@ function financialReporting(){
 
             </div>
 
-            
-
             <div id="incomeStatement" class="tab-content">
-
-                <h4>Income Statement - Q1 2026</h4>
-
-                <div class="income-statement">
-
-                    <div class="statement-section">
-
-                        <h5>Revenue</h5>
-
-                        <div class="statement-item">
-
-                            <span>Construction Services</span>
-
-                            <span>TZS 420,000,000</span>
-
-                        </div>
-
-                        <div class="statement-item">
-
-                            <span>Consulting Services</span>
-
-                            <span>TZS 30,000,000</span>
-
-                        </div>
-
-                        <div class="statement-item total">
-
-                            <span>Total Revenue</span>
-
-                            <span>TZS 450,000,000</span>
-
-                        </div>
-
-                    </div>
-
-                    
-
-                    <div class="statement-section">
-
-                        <h5>Expenses</h5>
-
-                        <div class="statement-item">
-
-                            <span>Salaries & Wages</span>
-
-                            <span>TZS 85,500,000</span>
-
-                        </div>
-
-                        <div class="statement-item">
-
-                            <span>Materials & Supplies</span>
-
-                            <span>TZS 120,000,000</span>
-
-                        </div>
-
-                        <div class="statement-item">
-
-                            <span>Equipment Costs</span>
-
-                            <span>TZS 45,000,000</span>
-
-                        </div>
-
-                        <div class="statement-item">
-
-                            <span>Operating Expenses</span>
-
-                            <span>TZS 29,500,000</span>
-
-                        </div>
-
-                        <div class="statement-item total">
-
-                            <span>Total Expenses</span>
-
-                            <span>TZS 280,000,000</span>
-
-                        </div>
-
-                    </div>
-
-                    
-
-                    <div class="statement-section profit">
-
-                        <div class="statement-item total">
-
-                            <span>Net Profit</span>
-
-                            <span>TZS 170,000,000</span>
-
-                        </div>
-
-                    </div>
-
+                <h4 id="incomeStatementTitle">Income Statement</h4>
+                <div class="income-statement" id="incomeStatementBody">
+                    <p>Loading income statement data...</p>
                 </div>
-
-                
-
                 <div class="report-actions">
-
                     <button class="action" onclick="exportIncomeStatement()">Export PDF</button>
-
                     <button class="action" onclick="shareReport()">Share Report</button>
-
                 </div>
-
             </div>
-
-            
 
             <div id="balanceSheet" class="tab-content hidden">
-
-                <h4>Balance Sheet - March 2026</h4>
-
-                <div class="balance-sheet">
-
-                    <div class="balance-section">
-
-                        <h5>Assets</h5>
-
-                        <div class="balance-item">
-
-                            <span>Cash & Bank</span>
-
-                            <span>TZS 85,000,000</span>
-
-                        </div>
-
-                        <div class="balance-item">
-
-                            <span>Accounts Receivable</span>
-
-                            <span>TZS 45,000,000</span>
-
-                        </div>
-
-                        <div class="balance-item">
-
-                            <span>Equipment & Machinery</span>
-
-                            <span>TZS 280,000,000</span>
-
-                        </div>
-
-                        <div class="balance-item total">
-
-                            <span>Total Assets</span>
-
-                            <span>TZS 410,000,000</span>
-
-                        </div>
-
-                    </div>
-
-                    
-
-                    <div class="balance-section">
-
-                        <h5>Liabilities</h5>
-
-                        <div class="balance-item">
-
-                            <span>Accounts Payable</span>
-
-                            <span>TZS 35,000,000</span>
-
-                        </div>
-
-                        <div class="balance-item">
-
-                            <span>Tax Liabilities</span>
-
-                            <span>TZS 15,000,000</span>
-
-                        </div>
-
-                        <div class="balance-item total">
-
-                            <span>Total Liabilities</span>
-
-                            <span>TZS 50,000,000</span>
-
-                        </div>
-
-                    </div>
-
-                    
-
-                    <div class="balance-section">
-
-                        <h5>Equity</h5>
-
-                        <div class="balance-item total">
-
-                            <span>Total Equity</span>
-
-                            <span>TZS 360,000,000</span>
-
-                        </div>
-
-                    </div>
-
+                <h4 id="balanceSheetTitle">Balance Sheet</h4>
+                <div class="balance-sheet" id="balanceSheetBody">
+                    <p>Loading balance sheet data...</p>
                 </div>
-
             </div>
-
-            
 
             <div id="cashFlow" class="tab-content hidden">
-
-                <h4>Cash Flow Statement - Q1 2026</h4>
-
-                <div class="cash-flow">
-
-                    <div class="flow-section">
-
-                        <h5>Operating Activities</h5>
-
-                        <div class="flow-item">
-
-                            <span>Cash from Customers</span>
-
-                            <span>TZS 380,000,000</span>
-
-                        </div>
-
-                        <div class="flow-item">
-
-                            <span>Cash paid to Suppliers</span>
-
-                            <span>-TZS 180,000,000</span>
-
-                        </div>
-
-                        <div class="flow-item">
-
-                            <span>Salaries Paid</span>
-
-                            <span>-TZS 85,500,000</span>
-
-                        </div>
-
-                        <div class="flow-item total">
-
-                            <span>Net Operating Cash</span>
-
-                            <span>TZS 114,500,000</span>
-
-                        </div>
-
-                    </div>
-
+                <h4 id="cashFlowTitle">Cash Flow Statement</h4>
+                <div class="cash-flow" id="cashFlowBody">
+                    <p>Loading cash flow data...</p>
                 </div>
-
             </div>
 
-            
-
             <div id="budgetActual" class="tab-content hidden">
-
                 <h4>Budget vs Actual Analysis</h4>
-
-                <div class="budget-analysis">
-
-                    <div class="analysis-item">
-
-                        <span>Projects Department</span>
-
-                        <span>Budget: TZS 25M</span>
-
-                        <span>Actual: TZS 22.5M</span>
-
-                        <span class="variance positive">Variance: -10%</span>
-
-                    </div>
-
-                    <div class="analysis-item">
-
-                        <span>Administration</span>
-
-                        <span>Budget: TZS 8M</span>
-
-                        <span>Actual: TZS 8.7M</span>
-
-                        <span class="variance negative">Variance: +8.75%</span>
-
-                    </div>
-
+                <div class="budget-analysis" id="budgetActualBody">
+                    <p>Loading budget vs actual data...</p>
                 </div>
-
             </div>
 
         </div>
 
     </div>`);
+
+    loadFinancialReportingData();
 
 }
 
@@ -66970,6 +66704,203 @@ function showExpenseTab(tabName, evt) {
 }
 
 
+
+function loadFinancialReportingData() {
+    loadIncomeStatementData();
+    loadBalanceSheetData();
+    loadCashFlowData();
+    loadBudgetVsActualData();
+}
+
+function loadIncomeStatementData() {
+    fetch('/api/finance/report/income-statement', {
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + (typeof sessionManager !== 'undefined' && sessionManager.getAuthToken ? sessionManager.getAuthToken() : '')
+        }
+    })
+    .then(function(res) { return res.json(); })
+    .then(function(data) {
+        var container = document.getElementById('incomeStatementBody');
+        var titleEl = document.getElementById('incomeStatementTitle');
+        if (!container) return;
+
+        var period = data.period || {};
+        var fromDate = period.from || '';
+        var toDate = period.to || '';
+        if (titleEl && fromDate && toDate) {
+            titleEl.textContent = 'Income Statement (' + fromDate + ' to ' + toDate + ')';
+        }
+
+        var revenueItems = Array.isArray(data.revenue) ? data.revenue : [];
+        var expenseItems = Array.isArray(data.expenses) ? data.expenses : [];
+        var totals = data.totals || {};
+
+        var html = '<div class="statement-section"><h5>Revenue</h5>';
+        if (revenueItems.length === 0) {
+            html += '<div class="statement-item"><span>No revenue records found</span><span>TZS 0</span></div>';
+        } else {
+            for (var i = 0; i < revenueItems.length; i++) {
+                html += '<div class="statement-item"><span>' + (revenueItems[i].category || 'Other') + '</span><span>TZS ' + formatTZS(revenueItems[i].total) + '</span></div>';
+            }
+        }
+        html += '<div class="statement-item total"><span>Total Revenue</span><span>TZS ' + formatTZS(totals.totalRevenue || 0) + '</span></div>';
+        html += '</div>';
+
+        html += '<div class="statement-section"><h5>Expenses</h5>';
+        if (expenseItems.length === 0) {
+            html += '<div class="statement-item"><span>No expense records found</span><span>TZS 0</span></div>';
+        } else {
+            for (var j = 0; j < expenseItems.length; j++) {
+                html += '<div class="statement-item"><span>' + (expenseItems[j].category || 'Other') + '</span><span>TZS ' + formatTZS(expenseItems[j].total) + '</span></div>';
+            }
+        }
+        html += '<div class="statement-item total"><span>Total Expenses</span><span>TZS ' + formatTZS(totals.totalExpenses || 0) + '</span></div>';
+        html += '</div>';
+
+        var profitClass = (totals.netProfit || 0) >= 0 ? 'profit' : '';
+        html += '<div class="statement-section ' + profitClass + '"><div class="statement-item total"><span>Net Profit</span><span>TZS ' + formatTZS(totals.netProfit || 0) + '</span></div></div>';
+
+        container.innerHTML = html;
+    })
+    .catch(function(err) {
+        console.error('Error loading income statement:', err);
+        var container = document.getElementById('incomeStatementBody');
+        if (container) container.innerHTML = '<p style="color:red;">Failed to load income statement data. Please try again later.</p>';
+    });
+}
+
+function loadBalanceSheetData() {
+    fetch('/api/finance/report/balance-sheet', {
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + (typeof sessionManager !== 'undefined' && sessionManager.getAuthToken ? sessionManager.getAuthToken() : '')
+        }
+    })
+    .then(function(res) { return res.json(); })
+    .then(function(data) {
+        var container = document.getElementById('balanceSheetBody');
+        var titleEl = document.getElementById('balanceSheetTitle');
+        if (!container) return;
+
+        if (titleEl && data.asOf) {
+            titleEl.textContent = 'Balance Sheet - As of ' + data.asOf;
+        }
+
+        var assets = data.assets || {};
+        var liabilities = data.liabilities || {};
+        var equity = data.equity || {};
+
+        var html = '<div class="balance-section"><h5>Assets</h5>';
+        html += '<div class="balance-item"><span>Cash & Bank</span><span>TZS ' + formatTZS(assets.cash_bank || 0) + '</span></div>';
+        html += '<div class="balance-item"><span>Accounts Receivable</span><span>TZS ' + formatTZS(assets.accounts_receivable || 0) + '</span></div>';
+        html += '<div class="balance-item total"><span>Total Assets</span><span>TZS ' + formatTZS(assets.total_assets || 0) + '</span></div>';
+        html += '</div>';
+
+        html += '<div class="balance-section"><h5>Liabilities</h5>';
+        html += '<div class="balance-item"><span>Accounts Payable</span><span>TZS ' + formatTZS(liabilities.accounts_payable || 0) + '</span></div>';
+        html += '<div class="balance-item"><span>Tax Liabilities</span><span>TZS ' + formatTZS(liabilities.tax_liabilities || 0) + '</span></div>';
+        html += '<div class="balance-item total"><span>Total Liabilities</span><span>TZS ' + formatTZS(liabilities.total_liabilities || 0) + '</span></div>';
+        html += '</div>';
+
+        html += '<div class="balance-section"><h5>Equity</h5>';
+        html += '<div class="balance-item total"><span>Total Equity</span><span>TZS ' + formatTZS(equity.total_equity || 0) + '</span></div>';
+        html += '</div>';
+
+        container.innerHTML = html;
+    })
+    .catch(function(err) {
+        console.error('Error loading balance sheet:', err);
+        var container = document.getElementById('balanceSheetBody');
+        if (container) container.innerHTML = '<p style="color:red;">Failed to load balance sheet data. Please try again later.</p>';
+    });
+}
+
+function loadCashFlowData() {
+    fetch('/api/finance/report/cash-flow', {
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + (typeof sessionManager !== 'undefined' && sessionManager.getAuthToken ? sessionManager.getAuthToken() : '')
+        }
+    })
+    .then(function(res) { return res.json(); })
+    .then(function(data) {
+        var container = document.getElementById('cashFlowBody');
+        var titleEl = document.getElementById('cashFlowTitle');
+        if (!container) return;
+
+        var period = data.period || {};
+        if (titleEl && period.from && period.to) {
+            titleEl.textContent = 'Cash Flow Statement (' + period.from + ' to ' + period.to + ')';
+        }
+
+        var operating = data.operating || {};
+
+        var html = '<div class="flow-section"><h5>Operating Activities</h5>';
+        html += '<div class="flow-item"><span>Cash from Customers</span><span>TZS ' + formatTZS(operating.cash_from_customers || 0) + '</span></div>';
+        html += '<div class="flow-item"><span>Cash paid to Suppliers</span><span>-TZS ' + formatTZS(operating.cash_paid_to_suppliers || 0) + '</span></div>';
+        html += '<div class="flow-item"><span>Salaries Paid</span><span>-TZS ' + formatTZS(operating.salaries_paid || 0) + '</span></div>';
+        html += '<div class="flow-item total"><span>Net Operating Cash</span><span>TZS ' + formatTZS(operating.net_operating_cash || 0) + '</span></div>';
+        html += '</div>';
+
+        container.innerHTML = html;
+    })
+    .catch(function(err) {
+        console.error('Error loading cash flow:', err);
+        var container = document.getElementById('cashFlowBody');
+        if (container) container.innerHTML = '<p style="color:red;">Failed to load cash flow data. Please try again later.</p>';
+    });
+}
+
+function loadBudgetVsActualData() {
+    fetch('/api/finance/report/budget-vs-actual', {
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + (typeof sessionManager !== 'undefined' && sessionManager.getAuthToken ? sessionManager.getAuthToken() : '')
+        }
+    })
+    .then(function(res) { return res.json(); })
+    .then(function(data) {
+        var container = document.getElementById('budgetActualBody');
+        if (!container) return;
+
+        var budgets = Array.isArray(data.budgets) ? data.budgets : [];
+        var actual = data.actual || 0;
+        var period = data.period || '';
+
+        var html = '';
+        if (budgets.length === 0) {
+            html += '<div class="analysis-item"><span>No budget records found for period: ' + period + '</span></div>';
+            html += '<div class="analysis-item"><span>Total Actual Spending</span><span>TZS ' + formatTZS(actual) + '</span></div>';
+        } else {
+            for (var i = 0; i < budgets.length; i++) {
+                var budget = budgets[i];
+                var budgetAmount = parseFloat(budget.total_proposed) || 0;
+                var variance = budgetAmount > 0 ? ((actual - budgetAmount) / budgetAmount * 100).toFixed(2) : 0;
+                var varianceClass = variance <= 0 ? 'positive' : 'negative';
+                var varianceSign = variance > 0 ? '+' : '';
+
+                html += '<div class="analysis-item">';
+                html += '<span>' + (budget.budget_period || 'Period') + '</span>';
+                html += '<span>Budget: TZS ' + formatTZS(budgetAmount) + '</span>';
+                html += '<span>Actual: TZS ' + formatTZS(actual) + '</span>';
+                html += '<span class="variance ' + varianceClass + '">Variance: ' + varianceSign + variance + '%</span>';
+                html += '</div>';
+            }
+        }
+
+        container.innerHTML = html;
+    })
+    .catch(function(err) {
+        console.error('Error loading budget vs actual:', err);
+        var container = document.getElementById('budgetActualBody');
+        if (container) container.innerHTML = '<p style="color:red;">Failed to load budget vs actual data. Please try again later.</p>';
+    });
+}
 
 function showFinanceReportTab(tabName, evt) {
 
