@@ -28103,13 +28103,15 @@ async function loadDrivers() {
 
         recordsList.innerHTML = '<tr><td colspan="9" class="loading">Loading driver records...</td></tr>';
 
-        
+
+        console.log('📡 Fetching drivers from API...');
 
         const response = await KashTecAPI.get('/api/drivers');
+        console.log('📊 API Response:', response);
 
-        
 
-        if (response.success && response.drivers && response.drivers.length > 0) {
+
+        if (response && response.success && response.drivers && response.drivers.length > 0) {
 
             recordsList.innerHTML = response.drivers.map(driver => `
 
@@ -28229,15 +28231,19 @@ async function loadDrivers() {
 
             `).join('');
 
-        } else {
-
+        } else if (response && response.success && Array.isArray(response.drivers)) {
+            // Empty database - show message
             recordsList.innerHTML = '<tr><td colspan="9" class="no-records">No driver records found. Register your first driver!</td></tr>';
-
+        } else {
+            // Unexpected response format
+            console.warn('⚠️ Unexpected API response format:', response);
+            loadSampleDrivers();
         }
 
     } catch (error) {
 
         console.error('❌ Error loading driver records:', error);
+        console.error('❌ Error details:', error.message, error.stack);
 
         // Load sample data on error
 

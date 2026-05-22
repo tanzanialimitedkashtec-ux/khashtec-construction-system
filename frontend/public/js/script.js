@@ -959,10 +959,6 @@ function handleLogin() {
                         </div>
                     </div>
                     <p>Please select an option from the menu to get started.</p>
-                    <div style="margin-top: 20px; padding: 15px; background: #f8f9fa; border-radius: 5px;">
-                        <h4>Quick Start:</h4>
-                        <p>Choose a function from the left menu to manage your department operations.</p>
-                    </div>
                 </div>`);
                 
                 showNotification(`Welcome ${response.user.department_name || role}!`, 'success', 3000);
