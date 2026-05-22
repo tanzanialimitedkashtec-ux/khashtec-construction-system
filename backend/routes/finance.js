@@ -358,23 +358,25 @@ router.get('/report/income-statement', async (req, res) => {
              WHERE (type = 'Income' OR type = 'sale') AND date BETWEEN ? AND ?
              GROUP BY COALESCE(category,'Other')`,
             [start, end]
-        );
+        ).catch(e => { console.error('Revenue query error:', e.message); return []; });
         const expenses = await db.execute(
             `SELECT COALESCE(category,'Other') as category, SUM(amount) as total 
              FROM financial_transactions 
              WHERE type = 'Expense' AND date BETWEEN ? AND ?
              GROUP BY COALESCE(category,'Other')`,
             [start, end]
-        );
+        ).catch(e => { console.error('Expenses query error:', e.message); return []; });
 
-        const totalRevenue = revenue.reduce((s, r) => s + (parseFloat(r.total) || 0), 0);
-        const totalExpenses = expenses.reduce((s, r) => s + (parseFloat(r.total) || 0), 0);
+        const revenueArr = Array.isArray(revenue) ? revenue : [];
+        const expensesArr = Array.isArray(expenses) ? expenses : [];
+        const totalRevenue = revenueArr.reduce((s, r) => s + (parseFloat(r.total) || 0), 0);
+        const totalExpenses = expensesArr.reduce((s, r) => s + (parseFloat(r.total) || 0), 0);
         const netProfit = totalRevenue - totalExpenses;
 
         res.json({
             period: { from: start, to: end },
-            revenue,
-            expenses,
+            revenue: revenueArr,
+            expenses: expensesArr,
             totals: { totalRevenue, totalExpenses, netProfit }
         });
     } catch (error) {
@@ -386,8 +388,8 @@ router.get('/report/income-statement', async (req, res) => {
 router.get('/report/balance-sheet', async (req, res) => {
     try {
         const asOf = req.query.asOf || new Date().toISOString().slice(0, 10);
-        const revRows = await db.execute(`SELECT SUM(amount) as sum FROM financial_transactions WHERE (type='Income' OR type='sale') AND date <= ?`, [asOf]);
-        const expRows = await db.execute(`SELECT SUM(amount) as sum FROM financial_transactions WHERE type='Expense' AND date <= ?`, [asOf]);
+        const revRows = await db.execute(`SELECT SUM(amount) as sum FROM financial_transactions WHERE (type='Income' OR type='sale') AND date <= ?`, [asOf]).catch(() => []);
+        const expRows = await db.execute(`SELECT SUM(amount) as sum FROM financial_transactions WHERE type='Expense' AND date <= ?`, [asOf]).catch(() => []);
         const cash = sqlSumRow(revRows, ['sum']) - sqlSumRow(expRows, ['sum']);
 
         const receivableRows = await db.execute(
@@ -444,11 +446,11 @@ router.get('/report/cash-flow', async (req, res) => {
         const cashFromCustomersRows = await db.execute(
             `SELECT SUM(amount) as sum FROM financial_transactions WHERE (type='Income' OR type='sale') AND date BETWEEN ? AND ?`,
             [start, end]
-        );
+        ).catch(() => []);
         const cashPaidToSuppliersRows = await db.execute(
             `SELECT SUM(amount) as sum FROM financial_transactions WHERE type='Expense' AND date BETWEEN ? AND ?`,
             [start, end]
-        );
+        ).catch(() => []);
         const salariesRows = await db.execute(
             `SELECT SUM(net_payment) as sum FROM payroll_records WHERE payment_date BETWEEN ? AND ?`,
             [start, end]
@@ -483,12 +485,13 @@ router.get('/report/budget-vs-actual', async (req, res) => {
             budgets = await db.execute(
                 `SELECT budget_period, total_proposed FROM workforce_budgets WHERE budget_period = ?`,
                 [period]
-            );
+            ).catch(() => []);
         } else {
             budgets = await db.execute(
                 `SELECT budget_period, total_proposed FROM workforce_budgets ORDER BY submission_date DESC LIMIT 2`
-            );
+            ).catch(() => []);
         }
+        budgets = Array.isArray(budgets) ? budgets : [];
 
         const now = new Date();
         const start = new Date(now.getFullYear(), 0, 1).toISOString().slice(0, 10);
@@ -496,7 +499,7 @@ router.get('/report/budget-vs-actual', async (req, res) => {
         const actualRows = await db.execute(
             `SELECT SUM(amount) as sum FROM financial_transactions WHERE type='Expense' AND date BETWEEN ? AND ?`,
             [start, end]
-        );
+        ).catch(() => []);
         const actual = sqlSumRow(actualRows, ['sum']);
 
         res.json({
