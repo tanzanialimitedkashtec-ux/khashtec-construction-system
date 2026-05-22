@@ -4540,111 +4540,40 @@ router.get('/completions/pending', async (req, res) => {
     try {
         console.log('📋 Fetching work completions for approval...');
         
-        let workCompletions = [];
-        let tableExists = false;
-        
-        // First, check if the work_completions table exists
         try {
-            const [tables] = await db.execute(`
-                SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES 
-                WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'work_completions'
-            `);
-            tableExists = tables && tables.length > 0;
-            console.log(`🔍 work_completions table exists: ${tableExists}`);
-        } catch (checkError) {
-            console.error('⚠️ Could not check table existence:', checkError.message);
-        }
-        
-        // If table doesn't exist, create it
-        if (!tableExists) {
-            try {
-                console.log('📝 Creating work_completions table...');
-                await db.execute(`
-                    CREATE TABLE IF NOT EXISTS work_completions (
-                        id INT AUTO_INCREMENT PRIMARY KEY,
-                        work_details VARCHAR(255) NOT NULL,
-                        project VARCHAR(255),
-                        completed_by VARCHAR(255),
-                        completed_date DATE,
-                        quality_score INT DEFAULT 0,
-                        quality_level VARCHAR(50),
-                        status ENUM('pending', 'approved', 'rejected', 'rework_requested') DEFAULT 'pending',
-                        approved_by VARCHAR(255),
-                        approval_notes TEXT,
-                        approval_date DATETIME,
-                        rework_reason TEXT,
-                        rework_requested_by VARCHAR(255),
-                        rework_request_date DATETIME,
-                        rejection_reason TEXT,
-                        rejected_by VARCHAR(255),
-                        rejection_date DATETIME,
-                        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-                        INDEX idx_status (status),
-                        INDEX idx_completed_date (completed_date),
-                        INDEX idx_project (project)
-                    )
-                `);
-                console.log('✅ work_completions table created successfully');
-            } catch (createError) {
-                console.error('⚠️ Failed to create work_completions table:', createError.message);
-            }
-        }
-        
-        try {
-            // Ensure work_completions table exists
-            await db.execute(`
-                CREATE TABLE IF NOT EXISTS work_completions (
-                    id INT AUTO_INCREMENT PRIMARY KEY,
-                    work_details VARCHAR(255) NOT NULL,
-                    project VARCHAR(255),
-                    completed_by VARCHAR(255),
-                    completed_date DATE,
-                    quality_score INT DEFAULT 0,
-                    quality_level VARCHAR(50),
-                    status ENUM('pending', 'approved', 'rejected', 'rework_requested') DEFAULT 'pending',
-                    approved_by VARCHAR(255),
-                    approval_notes TEXT,
-                    approval_date DATETIME,
-                    rework_reason TEXT,
-                    rework_requested_by VARCHAR(255),
-                    rework_request_date DATETIME,
-                    rejection_reason TEXT,
-                    rejected_by VARCHAR(255),
-                    rejection_date DATETIME,
-                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-                    INDEX idx_status (status),
-                    INDEX idx_completed_date (completed_date),
-                    INDEX idx_project (project)
-                )
-            `);
-
-            // Try to fetch from work_completions table
+            // Query real data from work_completions table
             const [dbRecords] = await db.execute(`
                 SELECT * FROM work_completions 
                 WHERE status = 'pending'
                 ORDER BY completed_date DESC 
                 LIMIT 50
             `);
-            workCompletions = dbRecords || [];
+            
+            const workCompletions = dbRecords || [];
             console.log(`📊 Found ${workCompletions.length} work completions from database`);
+            
+            return res.json({
+                success: true,
+                count: workCompletions.length,
+                data: workCompletions
+            });
         } catch (dbError) {
             console.error('❌ Database query error:', dbError.message);
             console.error('❌ Error code:', dbError.code);
-            throw dbError;
+            console.error('❌ SQL State:', dbError.sqlState);
+            
+            return res.status(500).json({
+                success: false,
+                error: 'Failed to fetch work completions from database',
+                details: dbError.message,
+                code: dbError.code
+            });
         }
-        
-        res.json({
-            success: true,
-            count: workCompletions.length,
-            data: workCompletions
-        });
     } catch (error) {
-        console.error('❌ Error fetching work completions:', error);
+        console.error('❌ Unexpected error fetching work completions:', error);
         res.status(500).json({
             success: false,
-            error: 'Failed to fetch work completions',
+            error: 'Unexpected error fetching work completions',
             details: error.message
         });
     }
@@ -4655,56 +4584,39 @@ router.get('/approvals/recent', async (req, res) => {
     try {
         console.log('📋 Fetching recent approval history...');
         
-        let approvals = [];
-        
         try {
-            // Ensure work_approvals table exists
-            await db.execute(`
-                CREATE TABLE IF NOT EXISTS work_approvals (
-                    id INT AUTO_INCREMENT PRIMARY KEY,
-                    work_id VARCHAR(50) NOT NULL,
-                    project_id INT,
-                    completed_by VARCHAR(255),
-                    completion_date DATE,
-                    quality_assessment ENUM('excellent', 'good', 'acceptable', 'poor') NOT NULL,
-                    compliance_check ENUM('fully-compliant', 'minor-issues', 'major-issues', 'non-compliant') NOT NULL,
-                    approval_comments TEXT NOT NULL,
-                    safety_compliance ENUM('compliant', 'minor-violations', 'major-violations'),
-                    time_completion ENUM('on-time', 'early', 'delayed'),
-                    quality_score INT,
-                    status ENUM('pending', 'approved', 'rejected', 'rework-required') DEFAULT 'pending',
-                    approved_by VARCHAR(255),
-                    approval_date DATE,
-                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-                    INDEX idx_work_id (work_id),
-                    INDEX idx_status (status),
-                    INDEX idx_created_at (created_at)
-                )
-            `);
-
+            // Query real data from work_approvals table
             const [dbRecords] = await db.execute(`
                 SELECT * FROM work_approvals 
                 ORDER BY created_at DESC 
                 LIMIT 20
             `);
-            approvals = dbRecords || [];
+            
+            const approvals = dbRecords || [];
             console.log(`📊 Found ${approvals.length} recent approvals from database`);
+            
+            return res.json({
+                success: true,
+                count: approvals.length,
+                data: approvals
+            });
         } catch (dbError) {
             console.error('❌ Database error fetching approvals:', dbError.message);
-            throw dbError;
+            console.error('❌ Error code:', dbError.code);
+            console.error('❌ SQL State:', dbError.sqlState);
+            
+            return res.status(500).json({
+                success: false,
+                error: 'Failed to fetch approvals from database',
+                details: dbError.message,
+                code: dbError.code
+            });
         }
-        
-        res.json({
-            success: true,
-            count: approvals.length,
-            data: approvals
-        });
     } catch (error) {
-        console.error('❌ Error fetching recent approvals:', error);
+        console.error('❌ Unexpected error fetching approvals:', error);
         res.status(500).json({
             success: false,
-            error: 'Failed to fetch recent approvals',
+            error: 'Unexpected error fetching approvals',
             details: error.message
         });
     }
