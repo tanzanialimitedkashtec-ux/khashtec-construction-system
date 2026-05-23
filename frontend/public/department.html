@@ -765,6 +765,155 @@ header h2 {
 
 }
 
+/* Accordion Department Menu Styles */
+.accordion-menu {
+    display: flex;
+    flex-direction: column;
+}
+
+.dept-button {
+    background: linear-gradient(135deg, #0b3d91 0%, #0a2d6e 100%);
+    color: #ffffff;
+    border: none;
+    padding: 6px 4px;
+    margin: 2px 0;
+    border-radius: 2px;
+    cursor: pointer;
+    font-size: 7px;
+    font-weight: 700;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: all 0.3s ease;
+    width: 100%;
+    text-align: left;
+    white-space: normal;
+    word-wrap: break-word;
+}
+
+.dept-button:hover {
+    background: linear-gradient(135deg, #0a2d6e 0%, #071e4a 100%);
+    box-shadow: 0 2px 6px rgba(11, 61, 145, 0.4);
+    transform: none;
+}
+
+.dept-button.active {
+    background: linear-gradient(135deg, #071e4a 0%, #041233 100%);
+    box-shadow: 0 2px 8px rgba(11, 61, 145, 0.5);
+}
+
+.dept-arrow {
+    transition: transform 0.3s ease;
+    font-size: 5px;
+    flex-shrink: 0;
+    margin-left: 2px;
+}
+
+.dept-button.active .dept-arrow {
+    transform: rotate(90deg);
+}
+
+.dept-submenu {
+    background: rgba(255, 255, 255, 0.04);
+    border-left: 2px solid #0b3d91;
+    padding: 2px 0 2px 2px;
+    margin: 0 0 2px 2px;
+    border-radius: 0 2px 2px 0;
+    max-height: 60vh;
+    overflow-y: auto;
+    animation: deptSlideDown 0.3s ease;
+}
+
+@keyframes deptSlideDown {
+    from { opacity: 0; transform: translateY(-5px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.menu-subsection {
+    margin: 1px 0;
+    border: none;
+    background: transparent;
+}
+
+.menu-subsection summary {
+    cursor: pointer;
+    list-style: none;
+    padding: 3px 4px;
+    font-size: 6px;
+    font-weight: 600;
+    color: #b0c4de;
+    background: linear-gradient(135deg, #1a2a3a 0%, #243446 100%);
+    border-radius: 2px;
+    transition: all 0.2s ease;
+}
+
+.menu-subsection summary::-webkit-details-marker {
+    display: none;
+}
+
+.menu-subsection summary:hover {
+    background: linear-gradient(135deg, #243446 0%, #2e4458 100%);
+    color: #ffffff;
+}
+
+.menu-subsection[open] summary {
+    background: linear-gradient(135deg, #2a3e52 0%, #34506a 100%);
+    color: #ffffff;
+}
+
+.dept-submenu .menu-section-buttons {
+    padding: 1px 1px 1px 6px;
+}
+
+.dept-submenu .menu-section-buttons button {
+    display: block;
+    width: 100%;
+    text-align: left;
+    padding: 2px 3px;
+    margin: 1px 0;
+    background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+    border: 1px solid #4a5f7a;
+    border-radius: 1px;
+    cursor: pointer;
+    font-size: 6px;
+    color: white;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+    overflow: hidden;
+}
+
+.dept-submenu .menu-section-buttons button:hover {
+    background: linear-gradient(135deg, #0b3d91 0%, #1a4a7a 100%);
+    border-color: #0b3d91;
+    transform: translateX(1px);
+}
+
+.dept-general-btn {
+    display: block;
+    width: 100%;
+    text-align: left;
+    padding: 2px 3px;
+    margin: 1px 0;
+    background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+    border: 1px solid #4a5f7a;
+    border-radius: 1px;
+    cursor: pointer;
+    font-size: 6px;
+    color: white;
+}
+
+.dept-submenu::-webkit-scrollbar {
+    width: 3px;
+}
+
+.dept-submenu::-webkit-scrollbar-track {
+    background: #1a2332;
+}
+
+.dept-submenu::-webkit-scrollbar-thumb {
+    background: #4a5f7a;
+    border-radius: 2px;
+}
 
 
 .sidebar button{
@@ -24286,707 +24435,66 @@ function showNotifications(){
 
 
 
-function loadMenu(){
-
-    const menu = document.getElementById("menu");
-
-    menu.innerHTML = "";
-
-    resetMenuSearch();
-
-    
-
-    // Reset sidebar to collapsed state when loading menu
-
-    const sidebar = document.querySelector('.sidebar');
-
-    if (sidebar) {
-
-        sidebar.classList.add('collapsed');
-
-        console.log('Sidebar reset to collapsed state');
-
-    }
-
-    
-
-    console.log('Loading menu for role:', currentRole); // Debug line
-
-
-
-    if(currentRole === "MD"){
-
-        addMenu("Approve Recruitment Policies", approveRecruitmentPolicies);
-
-        addMenu("Approve Senior Staff Hiring", approveSeniorHiring);
-
-        addMenu("Create Senior Hiring Request", showSeniorRoles);
-
-        addMenu("Approve Workforce Budget", approveWorkforceBudget);
-
-        addMenu("Review Employee Count", reviewEmployeeCount);
-
-        addMenu("View All Workers", viewAllWorkers);
-
-        addMenu("View Assigned Workers", viewAssignedWorkers);
-
-        addMenu("View Employee List", viewEmployeeList);
-
-        addMenu("Schedule Meetings", scheduleMeeting);
-
-        addMenu("Suspend/Terminate Employment", suspendTerminateEmployment);
-
-        addMenu("View Workforce Reports", viewWorkforceReports);
-
-        addMenu("Upload Safety Policies", uploadSafetyPolicies);
-
-        addMenu("Project Manage", showCreateProjectForm);
-
-        addMenu("Accountant Management", showAccountantForm);
-
-        addMenu("Leadership Management", showLeadershipForm);
-
-        addMenu("Mission & Vision", showMissionVisionForm);
-
-        addMenu("Long-Term Growth Strategy", showLongTermGrowthForm);
-
-        addMenu("Payment Management", showPaymentManagement);
-
-        addMenu("Register Company Car", registerCompanyCar);
-
-        addMenu("Manage Company Cars", manageCompanyCars);
-
-        addMenu("Transport Costs", manageTransportCosts);
-
-        addMenu("Register Driver", registerDriver);
-
-        addMenu("Manage Drivers", manageDrivers);
-
-        addMenu("Register Employee", registerEmployee);
-
-        addMenu("Create Worker Account", createWorkerAccount);
-
-        addMenu("Assign Project Workers", assignWorker);
-
-        addMenu("Update Employee Records", updateEmployeeRecords);
-
-        addMenu("Team Management", showTeamManagementDashboard);
-
-        addMenu("Track Attendance", attendance);
-
-        addMenu("Manage Leave & Contracts", manageLeaveContracts);
-
-        addMenu("Manage Policies", loadPolicies);
-
-        addMenu("Administrative Operations", adminOperations);
-
-        addMenu("Compliance Management", () => complianceManagement());
-
-        addMenu("Staff Oversight", () => staffOversight());
-
-        addMenu("Policy Implementation", policyImplementation);
-
-        addMenu("Document Management", documentManagement);
-
-        addMenu("User Account Management", () => userAccountManagement());
-
-        addMenu("Budgeting", financeBudgeting);
-
-        addMenu("Financial Management", financialManagement);
-
-        addMenu("Approve Invoices", showMDInvoiceApproval);
-
-        addMenu("Investment Management", showInvestmentManagement);
-
-        addMenu("Payroll Processing", payrollProcessing);
-
-        addMenu("Expense Control", expenseControl);
-
-        addMenu("Financial Reporting", financialReporting);
-
-        addMenu("Audits", financeAudits);
-
-        addMenu("Compliance", financeCompliance);
-
-        addMenu("Language Campaigns", manageLanguageCampaigns);
-
-        addMenu("Language Purchases", manageLanguagePurchases);
-
-        addMenu("Payment Tracking", trackLanguagePayments);
-
-        addMenu("Add Property", addProperty);
-
-        addMenu("Edit Property Details", editPropertyDetails);
-
-        addMenu("Register Client", registerClient);
-
-        addMenu("Record Sale", recordSale);
-
-        addMenu("Manage Sales", manageSales);
-
-        addMenu("Track Payment Progress", trackPaymentProgress);
-
-        addMenu("Generate Sales Report", generateSalesReport);
-
-        addMenu("Upload Documents", uploadDocs);
-
-        addMenu("Edit Documents", editDocuments);
-
-        addMenu("Send Notifications", sendNotifications);
-
-        addMenu("Record Meeting Minutes", recordMeetingMinutes);
-
-        addMenu("Office Portal", officePortal);
-
-        addMenu("Create New Project", createNewProject);
-
-        addMenu("Update Project Progress", updateProjectProgress);
-
-        addMenu("Assign Tasks", () => assignTasks());
-
-        addMenu("Request Workforce", requestWorkforce);
-
-        addMenu("Record Site Reports", recordSiteReports);
-
-        addMenu("Approve Completed Work", approveCompletedWork);
-
-        addMenu("Record Incident Reports", recordIncidentReports);
-
-        addMenu("Record Toolbox Meetings", recordToolboxMeetings);
-
-        addMenu("Track PPE Issuance", trackPpeIssuance);
-
-        addMenu("Mark Safety Violations", markSafetyViolations);
-
-        addMenu("Upload Inspection Reports", uploadInspectionReports);
-
-        addMenu("View Project Safety Status", viewProjectSafetyStatus);
-
-        addMenu("Department Management", showDepartmentManagement);
-
-        addMenu("Tax", tax);
-
-        addMenu("Procurement Sale", procurementSale);
-
-        addMenu("NHIF Contribute", nhifContribute);
-
-        addMenu("Senior", senior);
-
-        addMenu("Suggestions", suggestions);
-
-        addMenu("Materials Inventory", showMaterialsInventory);
-
-        addMenu("Record Materials In", showMaterialsInForm);
-
-        addMenu("Record Materials Out", showMaterialsOutForm);
-
-        addMenu("Materials Dashboard", showMaterialsDashboard);
-
-        addMenu("Claims Management", loadClaimsManagement);
-
-        addMenu("NSSF Registration", loadNssfRegistration);
-
-        addMenu("Discipline Monitoring", loadDisciplineMonitoring);
-
-        addMenu("Office Resources", loadOfficeResources);
-
-        addMenu("Talent Acquisition", loadTalentAcquisition);
-
-        addMenu("Promotions", loadPromotions);
-
-        addMenu("Risk Management", loadRiskManagement);
-
-
-        
-    }
-
-
-
-    if(currentRole === "ADMIN"){
-
-        addMenu("Administrative Operations", adminOperations);
-
-        addMenu("Compliance Management", () => complianceManagement());
-
-        addMenu("Staff Oversight", () => staffOversight());
-
-        addMenu("Policy Implementation", policyImplementation);
-
-        addMenu("Document Management", documentManagement);
-
-        addMenu("User Account Management", () => userAccountManagement());
-
-    }
-
-
-
-    if(currentRole === "HR"){
-
-        addMenu("Register Employee", registerEmployee);
-
-        addMenu("Create Worker Account", createWorkerAccount);
-
-        addMenu("Assign Project Workers", assignWorker);
-
-        addMenu("Update Employee Records", updateEmployeeRecords);
-
-        addMenu("Track Attendance", attendance);
-
-        addMenu("Manage Leave & Contracts", manageLeaveContracts);
-
-        addMenu("Manage Policies", loadPolicies);
-
-        addMenu("Approve Workforce Budget", approveWorkforceBudget);
-
-        addMenu("Register Driver", registerDriver);
-
-        addMenu("Manage Drivers", manageDrivers);
-
-    }
-
-
-
-    if(currentRole === "HSE"){
-
-        addMenu("Record Incident Reports", recordIncidentReports);
-
-        addMenu("Record Toolbox Meetings", recordToolboxMeetings);
-
-        addMenu("Track PPE Issuance", trackPpeIssuance);
-
-        addMenu("Mark Safety Violations", markSafetyViolations);
-
-        addMenu("Upload Inspection Reports", uploadInspectionReports);
-
-        addMenu("View Project Safety Status", viewProjectSafetyStatus);
-
-    }
-
-
-
-    if(currentRole === "FINANCE"){
-
-        addMenu("Budgeting", financeBudgeting);
-
-        addMenu("Financial Management", financialManagement);
-
-        addMenu("Payroll Processing", payrollProcessing);
-
-        addMenu("Expense Control", expenseControl);
-
-        addMenu("Financial Reporting", financialReporting);
-
-        addMenu("Audits", financeAudits);
-
-        addMenu("Compliance", financeCompliance);
-
-        addMenu("Language Campaigns", manageLanguageCampaigns);
-
-        addMenu("Language Purchases", manageLanguagePurchases);
-
-        addMenu("Payment Tracking", trackLanguagePayments);
-
-    }
-
-
-
-    if(currentRole === "PROJECT"){
-
-        addMenu("Create New Project", createNewProject);
-
-        addMenu("Update Project Progress", updateProjectProgress);
-
-        addMenu("Assign Tasks", () => assignTasks());
-
-        addMenu("Request Workforce", requestWorkforce);
-
-        addMenu("View Assigned Workers", viewAssignedWorkers);
-
-        addMenu("Record Site Reports", recordSiteReports);
-
-        addMenu("Approve Completed Work", approveCompletedWork);
-
-        addMenu("Materials Inventory", showMaterialsInventory);
-
-        addMenu("Record Materials Out", showMaterialsOutForm);
-
-    }
-
-
-
-    if(currentRole === "REALESTATE"){
-
-        addMenu("Add Property", addProperty);
-
-        addMenu("Edit Property Details", editPropertyDetails);
-
-        addMenu("Register Client", registerClient);
-
-        addMenu("Record Sale", recordSale);
-
-        addMenu("Manage Sales", manageSales);
-
-        addMenu("Track Payment Progress", trackPaymentProgress);
-
-        addMenu("Generate Sales Report", generateSalesReport);
-
-    }
-
-
-
-    if(currentRole === "ASSISTANT"){
-
-        console.log('Adding Admin Assistant menu items'); // Debug line
-
-        
-
-        addMenu("Upload Documents", uploadDocs);
-
-        addMenu("Edit Documents", editDocuments);
-
-        addMenu("Send Notifications", sendNotifications);
-
-        addMenu("Record Meeting Minutes", recordMeetingMinutes);
-
-        addMenu("View Employee List", viewEmployeeList);
-
-        addMenu("Office Portal", officePortal);
-
-    }
-
-    
-
-    filterMenuItems();
-
-    console.log('Menu loaded. Total items:', menu.children.length); // Debug line
-
-}
-
-
-const menuSections = [
-
-    {
-
-        id: 'leadership',
-
-        title: 'Leadership & Strategy',
-
-        keywords: ['mission', 'vision', 'strategy', 'leadership', 'oversight', 'policy implementation']
-
-    },
-
-    {
-
-        id: 'people',
-
-        title: 'People & HR',
-
-        keywords: ['employee', 'staff', 'worker', 'workforce', 'hiring', 'recruit', 'attendance', 'leave', 'contract', 'team', 'senior', 'hr', 'suspend', 'terminate', 'user account', 'policy']
-
-    },
-
-    {
-
-        id: 'operations',
-
-        title: 'Operations & Projects',
-
-        keywords: ['project', 'task', 'site', 'progress', 'assign', 'work', 'office portal', 'request workforce', 'administrative']
-
-    },
-
-    {
-
-        id: 'safety',
-
-        title: 'Safety & Compliance',
-
-        keywords: ['safety', 'incident', 'ppe', 'inspection', 'toolbox', 'violation', 'compliance', 'hse']
-
-    },
-
-    {
-
-        id: 'finance',
-
-        title: 'Finance & Accounting',
-
-        keywords: ['budget', 'financial', 'payroll', 'payment', 'expense', 'audit', 'tax', 'procurement', 'investment', 'accountant', 'paye', 'vat', 'nhif', 'nssf']
-
-    },
-
-    {
-
-        id: 'assets',
-
-        title: 'Assets & Logistics',
-
-        keywords: ['car', 'driver', 'transport', 'property', 'materials', 'inventory', 'equipment']
-
-    },
-
-    {
-
-        id: 'sales',
-
-        title: 'Sales & Clients',
-
-        keywords: ['sale', 'sales', 'client', 'payment progress', 'sales report']
-
-    },
-
-    {
-
-        id: 'documents',
-
-        title: 'Documents & Communication',
-
-        keywords: ['document', 'notification', 'meeting', 'minutes', 'language', 'suggestion']
-
-    },
-
-    {
-
-        id: 'general',
-
-        title: 'General',
-
-        keywords: []
-
-    }
-
-];
-
-
-function getMenuSectionConfig(label) {
-
-    const normalizedLabel = label.toLowerCase();
-
-    for (const section of menuSections) {
-
-        if (!section.keywords || section.keywords.length === 0) {
-
-            continue;
-
-        }
-
-        const matchesSection = section.keywords.some((keyword) => normalizedLabel.includes(keyword));
-
-        if (matchesSection) {
-
-            return section;
-
-        }
-
-    }
-
-    return menuSections.find((section) => section.id === 'general') || { id: 'general', title: 'General', keywords: [] };
-
-}
-
-
-function ensureMenuSection(sectionConfig) {
-
-    const menuContainer = document.getElementById('menu');
-
-    if (!menuContainer) {
-
-        return null;
-
-    }
-
-    let section = menuContainer.querySelector(`.menu-section[data-section="${sectionConfig.id}"]`);
-
-    if (section) {
-
-        return section;
-
-    }
-
-    section = document.createElement('details');
-
-    section.className = 'menu-section';
-
-    section.dataset.section = sectionConfig.id;
-
-    section.open = true;
-
-    const summary = document.createElement('summary');
-
-    summary.textContent = sectionConfig.title;
-
-    const buttonsContainer = document.createElement('div');
-
-    buttonsContainer.className = 'menu-section-buttons';
-
-    section.appendChild(summary);
-
-    section.appendChild(buttonsContainer);
-
-    const insertIndex = menuSections.findIndex((entry) => entry.id === sectionConfig.id);
-
-    const existingSections = Array.from(menuContainer.querySelectorAll('.menu-section'));
-
-    const nextSection = existingSections.find((existing) => {
-
-        const existingIndex = menuSections.findIndex((entry) => entry.id === existing.dataset.section);
-
-        return existingIndex > insertIndex;
-
-    });
-
-    if (nextSection) {
-
-        menuContainer.insertBefore(section, nextSection);
-
-    } else {
-
-        menuContainer.appendChild(section);
-
-    }
-
-    return section;
-
-}
-
-
-function addMenuItem(label, onClick, options = {}) {
-
-    const sectionConfig = getMenuSectionConfig(label);
-
-    const section = ensureMenuSection(sectionConfig);
-
-    if (!section) {
-
-        return null;
-
-    }
-
-    const button = document.createElement('button');
-
-    button.textContent = label;
-
-    button.title = label;
-
-    button.onclick = onClick;
-
-    button.dataset.menuLabel = label.toLowerCase();
-
-    if (options.disabled) {
-
-        button.disabled = true;
-
-        button.style.opacity = '0.5';
-
-        button.style.cursor = 'not-allowed';
-
-    }
-
-    const buttonsContainer = section.querySelector('.menu-section-buttons');
-
-    buttonsContainer.appendChild(button);
-
-    return button;
-
-}
-
+// Grouped sidebar menu functions are defined in department.js
+// (departmentConfig, getMenuPlacementMap, toggleDepartment, ensureDeptAndCategory, loadMenu, addMenu)
+// The following are kept inline for early availability before department.js loads.
 
 function resetMenuSearch() {
-
-    const input = document.getElementById('menuSearch');
-
-    if (input) {
-
-        input.value = '';
-
-    }
-
+    var input = document.getElementById('menuSearch');
+    if (input) { input.value = ''; }
 }
-
 
 function filterMenuItems() {
+    var menuContainer = document.getElementById('menu');
+    var input = document.getElementById('menuSearch');
+    if (!menuContainer || !input) return;
+    var query = input.value.trim().toLowerCase();
 
-    const menuContainer = document.getElementById('menu');
-
-    const input = document.getElementById('menuSearch');
-
-    if (!menuContainer || !input) {
-
-        return;
-
-    }
-
-    const query = input.value.trim().toLowerCase();
-
-    const buttons = menuContainer.querySelectorAll('.menu-section button');
-
-    buttons.forEach((button) => {
-
-        const label = button.dataset.menuLabel || button.textContent.toLowerCase();
-
-        const match = !query || label.includes(query);
-
+    var buttons = menuContainer.querySelectorAll('.menu-section-buttons button, .dept-general-btn');
+    buttons.forEach(function(button) {
+        var label = button.getAttribute('data-menu-label') || button.textContent.toLowerCase();
+        var match = !query || label.includes(query);
         button.style.display = match ? '' : 'none';
-
     });
 
-    const sections = menuContainer.querySelectorAll('.menu-section');
+    var categories = menuContainer.querySelectorAll('.menu-subsection');
+    categories.forEach(function(cat) {
+        var visibleBtns = cat.querySelectorAll('.menu-section-buttons button:not([style*="display: none"])');
+        cat.style.display = visibleBtns.length > 0 ? '' : 'none';
+        if (query && visibleBtns.length > 0) cat.open = true;
+    });
 
-    sections.forEach((section) => {
-
-        const visibleButtons = section.querySelectorAll('button:not([style*="display: none"])');
-
-        const hasVisibleButtons = visibleButtons.length > 0;
-
-        section.style.display = hasVisibleButtons ? '' : 'none';
-
-        if (query && hasVisibleButtons) {
-
-            section.open = true;
-
+    var deptSubmenus = menuContainer.querySelectorAll('.dept-submenu');
+    deptSubmenus.forEach(function(submenu) {
+        var visibleCats = submenu.querySelectorAll('.menu-subsection:not([style*="display: none"])');
+        var visibleGeneral = submenu.querySelectorAll('.dept-general-btn:not([style*="display: none"])');
+        var hasVisible = visibleCats.length > 0 || visibleGeneral.length > 0;
+        var deptId = submenu.id;
+        var deptBtn = menuContainer.querySelector('.dept-button[data-dept="' + deptId + '"]');
+        if (deptBtn) deptBtn.style.display = hasVisible ? '' : 'none';
+        submenu.style.display = (hasVisible && query) ? 'block' : (hasVisible ? submenu.style.display : 'none');
+        if (query && hasVisible) {
+            submenu.style.display = 'block';
+            if (deptBtn) deptBtn.classList.add('active');
         }
-
     });
 
+    if (!query) {
+        deptSubmenus.forEach(function(s) { s.style.display = 'none'; });
+        var allBtns = menuContainer.querySelectorAll('.dept-button');
+        allBtns.forEach(function(b) { b.classList.remove('active'); b.style.display = ''; });
+        var firstBtn = menuContainer.querySelector('.dept-button');
+        if (firstBtn) {
+            var firstId = firstBtn.getAttribute('data-dept');
+            if (firstId && typeof toggleDepartment === 'function') toggleDepartment(firstId);
+        }
+    }
 }
-
 
 function clearMenuSearch() {
-
-    const input = document.getElementById('menuSearch');
-
-    if (input) {
-
-        input.value = '';
-
-    }
-
+    var input = document.getElementById('menuSearch');
+    if (input) { input.value = ''; }
     filterMenuItems();
-
-}
-
-
-
-function addMenu(name, func){
-
-    try {
-
-        const btn = addMenuItem(name, func);
-
-        if (!btn) {
-
-            return;
-
-        }
-
-        console.log('Added menu item:', name); // Debug line
-
-    } catch (error) {
-
-        console.error('Error adding menu item:', name, error);
-
-    }
-
 }
 
 
