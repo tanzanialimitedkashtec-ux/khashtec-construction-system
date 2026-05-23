@@ -1238,18 +1238,292 @@ function showContent(html) {
     }
 }
 
-// Placeholder view/edit functions (to be implemented)
-function viewClaim(id) { console.log('View claim:', id); }
+// View/edit functions
 function editClaim(id) { showClaimForm(id); }
-function viewNssf(id) { console.log('View NSSF:', id); }
 function editNssf(id) { showNssfForm(id); }
-function viewDiscipline(id) { console.log('View discipline:', id); }
 function editDiscipline(id) { showDisciplineForm(id); }
-function viewResource(id) { console.log('View resource:', id); }
 function editResource(id) { showResourceForm(id); }
-function viewTalent(id) { console.log('View talent:', id); }
 function editTalent(id) { showTalentForm(id); }
-function viewPromotion(id) { console.log('View promotion:', id); }
 function editPromotion(id) { showPromotionForm(id); }
-function viewRisk(id) { console.log('View risk:', id); }
 function editRisk(id) { showRiskForm(id); }
+
+function showViewModal(title, bodyHtml) {
+    var existing = document.getElementById('viewDetailModal');
+    if (existing) existing.remove();
+
+    var overlay = document.createElement('div');
+    overlay.id = 'viewDetailModal';
+    overlay.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:10000;display:flex;align-items:center;justify-content:center;';
+    overlay.onclick = function(e) { if (e.target === overlay) overlay.remove(); };
+
+    var modal = document.createElement('div');
+    modal.style.cssText = 'background:#fff;border-radius:8px;padding:30px;max-width:700px;width:90%;max-height:80vh;overflow-y:auto;box-shadow:0 4px 20px rgba(0,0,0,0.3);';
+
+    modal.innerHTML =
+        '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;border-bottom:2px solid #2196F3;padding-bottom:10px;">' +
+            '<h3 style="margin:0;color:#2196F3;">' + title + '</h3>' +
+            '<button onclick="document.getElementById(\'viewDetailModal\').remove()" style="background:none;border:none;font-size:24px;cursor:pointer;color:#666;">&times;</button>' +
+        '</div>' +
+        bodyHtml;
+
+    overlay.appendChild(modal);
+    document.body.appendChild(overlay);
+}
+
+function detailRow(label, value) {
+    var display = (value !== null && value !== undefined && value !== '') ? value : 'N/A';
+    return '<tr><td style="padding:8px 12px;font-weight:bold;color:#555;white-space:nowrap;vertical-align:top;">' + label + '</td>' +
+           '<td style="padding:8px 12px;">' + display + '</td></tr>';
+}
+
+function formatDate(val) {
+    if (!val) return 'N/A';
+    var d = new Date(val);
+    if (isNaN(d.getTime())) return val;
+    return d.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+}
+
+function formatCurrency(val) {
+    if (!val && val !== 0) return 'N/A';
+    return parseFloat(val).toLocaleString('en-US', { style: 'currency', currency: 'TZS' });
+}
+
+function statusBadge(status) {
+    if (!status) return 'N/A';
+    var colors = {
+        'Pending': '#ff9800', 'Under Review': '#2196F3', 'Approved': '#4CAF50', 'Rejected': '#f44336',
+        'Paid': '#4CAF50', 'Open': '#ff9800', 'Under Investigation': '#2196F3', 'Closed': '#9E9E9E',
+        'Appealed': '#ff5722', 'In Progress': '#2196F3', 'Mitigated': '#4CAF50', 'Accepted': '#8BC34A',
+        'Available': '#4CAF50', 'Assigned': '#2196F3', 'In Maintenance': '#ff9800', 'Retired': '#9E9E9E',
+        'Lost': '#f44336', 'Filled': '#4CAF50', 'On Hold': '#ff9800', 'Implemented': '#4CAF50'
+    };
+    var color = colors[status] || '#757575';
+    return '<span style="background:' + color + ';color:#fff;padding:3px 10px;border-radius:12px;font-size:12px;">' + status + '</span>';
+}
+
+async function viewClaim(id) {
+    try {
+        var claim = await window.apiService.get('/claims-management/' + id);
+        if (!claim) { customAlert('Claim not found', 'Error', 'error'); return; }
+        var html = '<table style="width:100%;border-collapse:collapse;">' +
+            detailRow('Claim #', claim.claim_number) +
+            detailRow('Employee', claim.full_name || 'N/A') +
+            detailRow('Type', claim.claim_type) +
+            detailRow('Title', claim.title) +
+            detailRow('Description', claim.description) +
+            detailRow('Claim Date', formatDate(claim.claim_date)) +
+            detailRow('Incident Date', formatDate(claim.incident_date)) +
+            detailRow('Incident Location', claim.incident_location) +
+            detailRow('Amount Claimed', formatCurrency(claim.amount_claimed)) +
+            detailRow('Amount Approved', formatCurrency(claim.amount_approved)) +
+            detailRow('Priority', claim.priority) +
+            detailRow('Status', statusBadge(claim.status)) +
+            detailRow('Witness Names', claim.witness_names) +
+            detailRow('Approved By', claim.approved_by) +
+            detailRow('Approved Date', formatDate(claim.approved_date)) +
+            detailRow('Payment Date', formatDate(claim.payment_date)) +
+            detailRow('Notes', claim.notes) +
+            detailRow('Created', formatDate(claim.created_at)) +
+            '</table>';
+        showViewModal('Claim Details - ' + claim.claim_number, html);
+    } catch (error) {
+        console.error('Error viewing claim:', error);
+        customAlert('Error loading claim details', 'Error', 'error');
+    }
+}
+
+async function viewNssf(id) {
+    try {
+        var reg = await window.apiService.get('/nssf-registration/' + id);
+        if (!reg) { customAlert('Registration not found', 'Error', 'error'); return; }
+        var html = '<table style="width:100%;border-collapse:collapse;">' +
+            detailRow('Reg #', reg.registration_number) +
+            detailRow('Employee', reg.full_name || 'N/A') +
+            detailRow('NSSF #', reg.nssf_number) +
+            detailRow('Registration Date', formatDate(reg.registration_date)) +
+            detailRow('Employer Contribution Rate', reg.employer_contribution_rate ? reg.employer_contribution_rate + '%' : 'N/A') +
+            detailRow('Employee Contribution Rate', reg.employee_contribution_rate ? reg.employee_contribution_rate + '%' : 'N/A') +
+            detailRow('Monthly Salary', formatCurrency(reg.monthly_salary)) +
+            detailRow('Monthly Contribution', formatCurrency(reg.monthly_contribution)) +
+            detailRow('Status', statusBadge(reg.status)) +
+            detailRow('Last Contribution Date', formatDate(reg.last_contribution_date)) +
+            detailRow('Total Contributions', formatCurrency(reg.total_contributions)) +
+            detailRow('Notes', reg.notes) +
+            detailRow('Created', formatDate(reg.created_at)) +
+            '</table>';
+        showViewModal('NSSF Registration - ' + reg.registration_number, html);
+    } catch (error) {
+        console.error('Error viewing NSSF registration:', error);
+        customAlert('Error loading NSSF details', 'Error', 'error');
+    }
+}
+
+async function viewDiscipline(id) {
+    try {
+        var dc = await window.apiService.get('/discipline-monitoring/' + id);
+        if (!dc) { customAlert('Discipline case not found', 'Error', 'error'); return; }
+        var html = '<table style="width:100%;border-collapse:collapse;">' +
+            detailRow('Case #', dc.case_number) +
+            detailRow('Employee', dc.full_name || 'N/A') +
+            detailRow('Incident Type', dc.incident_type) +
+            detailRow('Incident Date', formatDate(dc.incident_date)) +
+            detailRow('Incident Location', dc.incident_location) +
+            detailRow('Description', dc.description) +
+            detailRow('Severity', dc.severity) +
+            detailRow('Reported By', dc.reporter_name || 'N/A') +
+            detailRow('Witnesses', dc.witnesses) +
+            detailRow('Status', statusBadge(dc.status)) +
+            detailRow('Disciplinary Action', dc.disciplinary_action) +
+            detailRow('Action Date', formatDate(dc.action_date)) +
+            detailRow('Action Notes', dc.action_notes) +
+            detailRow('Appeal Status', dc.appeal_status) +
+            detailRow('Appeal Date', formatDate(dc.appeal_date)) +
+            detailRow('Appeal Notes', dc.appeal_notes) +
+            detailRow('Resolved By', dc.resolver_name || 'N/A') +
+            detailRow('Resolved Date', formatDate(dc.resolved_date)) +
+            detailRow('Notes', dc.notes) +
+            detailRow('Created', formatDate(dc.created_at)) +
+            '</table>';
+        showViewModal('Discipline Case - ' + dc.case_number, html);
+    } catch (error) {
+        console.error('Error viewing discipline case:', error);
+        customAlert('Error loading discipline details', 'Error', 'error');
+    }
+}
+
+async function viewResource(id) {
+    try {
+        var res = await window.apiService.get('/office-resources/' + id);
+        if (!res) { customAlert('Resource not found', 'Error', 'error'); return; }
+        var html = '<table style="width:100%;border-collapse:collapse;">' +
+            detailRow('Resource Code', res.resource_code) +
+            detailRow('Name', res.resource_name) +
+            detailRow('Type', res.resource_type) +
+            detailRow('Description', res.description) +
+            detailRow('Serial Number', res.serial_number) +
+            detailRow('Purchase Date', formatDate(res.purchase_date)) +
+            detailRow('Purchase Cost', formatCurrency(res.purchase_cost)) +
+            detailRow('Current Value', formatCurrency(res.current_value)) +
+            detailRow('Condition', res.condition) +
+            detailRow('Location', res.location) +
+            detailRow('Department', res.department) +
+            detailRow('Status', statusBadge(res.status)) +
+            detailRow('Assigned To', res.full_name || 'Unassigned') +
+            detailRow('Assigned Date', formatDate(res.assigned_date)) +
+            detailRow('Expected Return', formatDate(res.expected_return_date)) +
+            detailRow('Actual Return', formatDate(res.actual_return_date)) +
+            detailRow('Return Condition', res.return_condition) +
+            detailRow('Maintenance Notes', res.maintenance_notes) +
+            detailRow('Created', formatDate(res.created_at)) +
+            '</table>';
+        showViewModal('Office Resource - ' + res.resource_code, html);
+    } catch (error) {
+        console.error('Error viewing resource:', error);
+        customAlert('Error loading resource details', 'Error', 'error');
+    }
+}
+
+async function viewTalent(id) {
+    try {
+        var req = await window.apiService.get('/talent-acquisition/' + id);
+        if (!req) { customAlert('Requisition not found', 'Error', 'error'); return; }
+        var salaryRange = 'N/A';
+        if (req.salary_range_min || req.salary_range_max) {
+            salaryRange = formatCurrency(req.salary_range_min) + ' - ' + formatCurrency(req.salary_range_max);
+        }
+        var html = '<table style="width:100%;border-collapse:collapse;">' +
+            detailRow('Requisition #', req.requisition_number) +
+            detailRow('Position Title', req.position_title) +
+            detailRow('Department', req.department) +
+            detailRow('Position Type', req.position_type) +
+            detailRow('Experience Level', req.experience_level) +
+            detailRow('Number of Positions', req.number_of_positions) +
+            detailRow('Job Description', req.job_description) +
+            detailRow('Requirements', req.requirements) +
+            detailRow('Salary Range', salaryRange) +
+            detailRow('Request Date', formatDate(req.request_date)) +
+            detailRow('Requested By', req.requester_name || 'N/A') +
+            detailRow('Priority', req.priority) +
+            detailRow('Status', statusBadge(req.status)) +
+            detailRow('Approved By', req.approver_name || 'N/A') +
+            detailRow('Approval Date', formatDate(req.approval_date)) +
+            detailRow('Hiring Manager', req.hiring_manager_name || 'N/A') +
+            detailRow('Budget Code', req.budget_code) +
+            detailRow('Expected Start Date', formatDate(req.expected_start_date)) +
+            detailRow('Notes', req.notes) +
+            detailRow('Created', formatDate(req.created_at)) +
+            '</table>';
+        showViewModal('Talent Requisition - ' + req.requisition_number, html);
+    } catch (error) {
+        console.error('Error viewing talent requisition:', error);
+        customAlert('Error loading requisition details', 'Error', 'error');
+    }
+}
+
+async function viewPromotion(id) {
+    try {
+        var promo = await window.apiService.get('/promotions/' + id);
+        if (!promo) { customAlert('Promotion not found', 'Error', 'error'); return; }
+        var html = '<table style="width:100%;border-collapse:collapse;">' +
+            detailRow('Promotion #', promo.promotion_number) +
+            detailRow('Employee', promo.full_name || 'N/A') +
+            detailRow('Promotion Type', promo.promotion_type) +
+            detailRow('Current Position', promo.current_position) +
+            detailRow('Current Department', promo.current_department) +
+            detailRow('Current Salary', formatCurrency(promo.current_salary)) +
+            detailRow('New Position', promo.new_position) +
+            detailRow('New Department', promo.new_department) +
+            detailRow('New Salary', formatCurrency(promo.new_salary)) +
+            detailRow('Effective Date', formatDate(promo.effective_date)) +
+            detailRow('Reason', promo.reason) +
+            detailRow('Performance Rating', promo.performance_rating) +
+            detailRow('Recommended By', promo.recommender_name || 'N/A') +
+            detailRow('Recommendation Date', formatDate(promo.recommendation_date)) +
+            detailRow('Approved By', promo.approver_name || 'N/A') +
+            detailRow('Approval Date', formatDate(promo.approval_date)) +
+            detailRow('Status', statusBadge(promo.status)) +
+            detailRow('Benefits Change', promo.benefits_change) +
+            detailRow('Responsibilities Change', promo.responsibilities_change) +
+            detailRow('Notes', promo.notes) +
+            detailRow('Created', formatDate(promo.created_at)) +
+            '</table>';
+        showViewModal('Promotion Details - ' + promo.promotion_number, html);
+    } catch (error) {
+        console.error('Error viewing promotion:', error);
+        customAlert('Error loading promotion details', 'Error', 'error');
+    }
+}
+
+async function viewRisk(id) {
+    try {
+        var risk = await window.apiService.get('/risk-management/' + id);
+        if (!risk) { customAlert('Risk not found', 'Error', 'error'); return; }
+        var html = '<table style="width:100%;border-collapse:collapse;">' +
+            detailRow('Risk #', risk.risk_number) +
+            detailRow('Title', risk.risk_title) +
+            detailRow('Category', risk.risk_category) +
+            detailRow('Description', risk.risk_description) +
+            detailRow('Probability', risk.probability) +
+            detailRow('Impact', risk.impact) +
+            detailRow('Project', risk.project_name || 'N/A') +
+            detailRow('Department', risk.department) +
+            detailRow('Identified By', risk.identified_by_name || 'N/A') +
+            detailRow('Identified Date', formatDate(risk.identified_date)) +
+            detailRow('Status', statusBadge(risk.status)) +
+            detailRow('Mitigation Strategy', risk.mitigation_strategy) +
+            detailRow('Contingency Plan', risk.contingency_plan) +
+            detailRow('Owner', risk.owner_name || 'N/A') +
+            detailRow('Review Date', formatDate(risk.review_date)) +
+            detailRow('Likelihood After Mitigation', risk.likelihood_after_mitigation) +
+            detailRow('Impact After Mitigation', risk.impact_after_mitigation) +
+            detailRow('Cost of Mitigation', formatCurrency(risk.cost_of_mitigation)) +
+            detailRow('Potential Loss', formatCurrency(risk.potential_loss)) +
+            detailRow('Notes', risk.notes) +
+            detailRow('Created', formatDate(risk.created_at)) +
+            '</table>';
+        showViewModal('Risk Details - ' + risk.risk_number, html);
+    } catch (error) {
+        console.error('Error viewing risk:', error);
+        customAlert('Error loading risk details', 'Error', 'error');
+    }
+}
