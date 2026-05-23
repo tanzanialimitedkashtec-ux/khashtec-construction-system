@@ -65165,6 +65165,7 @@ function formatDate(dateString) {
 function toggleDocUpload(){
     const wrapper = document.getElementById('docUpload');
     const toggle = document.getElementById('docToggle');
+    const body = document.getElementById('docUploadBody');
     if(!wrapper) return;
     const wasCollapsed = wrapper.classList.contains('collapsed');
     wrapper.classList.toggle('collapsed');
@@ -65172,10 +65173,12 @@ function toggleDocUpload(){
         wrapper.classList.remove('expanded');
         if(toggle) toggle.setAttribute('aria-expanded','false');
         const arrow = toggle && toggle.querySelector('.toggle-arrow'); if(arrow) arrow.textContent='▸';
+        if(body) body.style.display = 'none';
     } else {
         wrapper.classList.add('expanded');
         if(toggle) toggle.setAttribute('aria-expanded','true');
         const arrow = toggle && toggle.querySelector('.toggle-arrow'); if(arrow) arrow.textContent='▾';
+        if(body) body.style.display = '';
     }
 }
 
