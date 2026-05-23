@@ -1,33 +1,33 @@
 const express = require('express');
 const router = express.Router();
 
-console.log('🚀 Language Payment Tracking route file is being loaded...');
+console.log('🚀 Luggage Payment Tracking route file is being loaded...');
 
 // Test endpoint to verify route is working
 router.get('/test', (req, res) => {
-    console.log('🧪 Language Payment Tracking test endpoint accessed');
+    console.log('🧪 Luggage Payment Tracking test endpoint accessed');
     res.json({ 
-        message: 'Language Payment Tracking API is working!',
+        message: 'Luggage Payment Tracking API is working!',
         timestamp: new Date().toISOString(),
         status: 'routes_loaded_successfully',
-        debug: 'Language Payment Tracking routes are loaded and responding'
+        debug: 'Luggage Payment Tracking routes are loaded and responding'
     });
 });
 
 // Root endpoint - get all payment tracking records
 router.get('/', async (req, res) => {
     try {
-        console.log('📝 Language Payment Tracking root endpoint accessed');
+        console.log('📝 Luggage Payment Tracking root endpoint accessed');
         
         let tracking = [];
         
         try {
             const db = require('../../database/config/database');
             
-            // Ensure language_payment_tracking table exists
+            // Ensure luggage_payment_tracking table exists
             try {
                 await db.execute(`
-                    CREATE TABLE IF NOT EXISTS language_payment_tracking (
+                    CREATE TABLE IF NOT EXISTS luggage_payment_tracking (
                         id INT AUTO_INCREMENT PRIMARY KEY,
                         tracking_reference VARCHAR(50) UNIQUE NOT NULL,
                         purchase_id INT NULL,
@@ -35,7 +35,7 @@ router.get('/', async (req, res) => {
                         employee_id VARCHAR(50) NOT NULL,
                         employee_name VARCHAR(255) NOT NULL,
                         department VARCHAR(100) NULL,
-                        language VARCHAR(100) NOT NULL,
+                        luggage VARCHAR(100) NOT NULL,
                         course_name VARCHAR(255) NOT NULL,
                         total_amount DECIMAL(10,2) NOT NULL,
                         currency VARCHAR(10) DEFAULT 'USD',
@@ -62,13 +62,13 @@ router.get('/', async (req, res) => {
                         INDEX idx_payment_date (next_payment_date)
                     )
                 `);
-                console.log('✅ Language Payment Tracking table verified/created successfully');
+                console.log('✅ Luggage Payment Tracking table verified/created successfully');
             } catch (tableError) {
-                console.log('⚠️ Could not create language_payment_tracking table:', tableError.message);
+                console.log('⚠️ Could not create luggage_payment_tracking table:', tableError.message);
             }
             
             const trackingResult = await db.execute(`
-                SELECT * FROM language_payment_tracking 
+                SELECT * FROM luggage_payment_tracking 
                 ORDER BY created_at DESC
             `);
             
@@ -83,11 +83,11 @@ router.get('/', async (req, res) => {
                 tracking = [];
             }
             
-            console.log('✅ Language Payment Tracking records fetched from database:', tracking.length);
+            console.log('✅ Luggage Payment Tracking records fetched from database:', tracking.length);
         } catch (dbError) {
-            console.error('❌ Database error, using fallback language payment tracking:', dbError);
+            console.error('❌ Database error, using fallback luggage payment tracking:', dbError);
             
-            // Fallback to mock language payment tracking
+            // Fallback to mock luggage payment tracking
             tracking = [
                 {
                     id: 1,
@@ -97,7 +97,7 @@ router.get('/', async (req, res) => {
                     employee_id: 'EMP001',
                     employee_name: 'John Doe',
                     department: 'IT',
-                    language: 'English',
+                    luggage: 'English',
                     course_name: 'English Proficiency Program - Intermediate',
                     total_amount: 1500.00,
                     currency: 'USD',
@@ -136,7 +136,7 @@ router.get('/', async (req, res) => {
                     employee_id: 'EMP002',
                     employee_name: 'Jane Smith',
                     department: 'Operations',
-                    language: 'Swahili',
+                    luggage: 'Swahili',
                     course_name: 'Swahili Communication Skills - Basic',
                     total_amount: 800.00,
                     currency: 'USD',
@@ -175,7 +175,7 @@ router.get('/', async (req, res) => {
                     employee_id: 'EMP003',
                     employee_name: 'Mike Johnson',
                     department: 'Projects',
-                    language: 'French',
+                    luggage: 'French',
                     course_name: 'French for Project Management - Business',
                     total_amount: 2500.00,
                     currency: 'USD',
@@ -214,7 +214,7 @@ router.get('/', async (req, res) => {
                     employee_id: 'EMP004',
                     employee_name: 'Sarah Wilson',
                     department: 'Management',
-                    language: 'Mandarin',
+                    luggage: 'Mandarin',
                     course_name: 'Mandarin Business Basics',
                     total_amount: 3000.00,
                     currency: 'USD',
@@ -244,7 +244,7 @@ router.get('/', async (req, res) => {
                     employee_id: 'EMP005',
                     employee_name: 'Robert Chen',
                     department: 'Finance',
-                    language: 'English',
+                    luggage: 'English',
                     course_name: 'English Proficiency Program - Advanced',
                     total_amount: 2000.00,
                     currency: 'USD',
@@ -283,7 +283,7 @@ router.get('/', async (req, res) => {
                     employee_id: 'EMP006',
                     employee_name: 'David Kim',
                     department: 'HR',
-                    language: 'Spanish',
+                    luggage: 'Spanish',
                     course_name: 'Spanish for HR Management',
                     total_amount: 1200.00,
                     currency: 'USD',
@@ -324,10 +324,10 @@ router.get('/', async (req, res) => {
         });
         
     } catch (error) {
-        console.error('❌ Error fetching language payment tracking:', error);
+        console.error('❌ Error fetching luggage payment tracking:', error);
         res.status(500).json({ 
             success: false,
-            error: 'Failed to fetch language payment tracking',
+            error: 'Failed to fetch luggage payment tracking',
             details: error.message 
         });
     }
@@ -337,18 +337,18 @@ router.get('/', async (req, res) => {
 router.get('/:id', async (req, res) => {
     try {
         const trackingId = req.params.id;
-        console.log('🔍 Fetching language payment tracking:', trackingId);
+        console.log('🔍 Fetching luggage payment tracking:', trackingId);
         
         let tracking = null;
         
         try {
             const db = require('../../database/config/database');
-            const trackingResult = await db.execute('SELECT * FROM language_payment_tracking WHERE id = ?', [trackingId]);
+            const trackingResult = await db.execute('SELECT * FROM luggage_payment_tracking WHERE id = ?', [trackingId]);
             const trackingData = Array.isArray(trackingResult) ? trackingResult[0] : trackingResult;
             
             if (trackingData.length > 0) {
                 tracking = trackingData[0];
-                console.log('✅ Language payment tracking found:', tracking);
+                console.log('✅ Luggage payment tracking found:', tracking);
             }
         } catch (dbError) {
             console.error('❌ Database error, using fallback tracking:', dbError);
@@ -363,7 +363,7 @@ router.get('/:id', async (req, res) => {
                     employee_id: 'EMP001',
                     employee_name: 'John Doe',
                     department: 'IT',
-                    language: 'English',
+                    luggage: 'English',
                     course_name: 'English Proficiency Program - Intermediate',
                     total_amount: 1500.00,
                     currency: 'USD',
@@ -402,7 +402,7 @@ router.get('/:id', async (req, res) => {
         if (!tracking) {
             return res.status(404).json({ 
                 success: false,
-                error: 'Language payment tracking not found' 
+                error: 'Luggage payment tracking not found' 
             });
         }
         
@@ -412,10 +412,10 @@ router.get('/:id', async (req, res) => {
         });
         
     } catch (error) {
-        console.error('❌ Error fetching language payment tracking:', error);
+        console.error('❌ Error fetching luggage payment tracking:', error);
         res.status(500).json({ 
             success: false,
-            error: 'Failed to fetch language payment tracking',
+            error: 'Failed to fetch luggage payment tracking',
             details: error.message 
         });
     }
@@ -424,7 +424,7 @@ router.get('/:id', async (req, res) => {
 // Create new payment tracking record
 router.post('/', async (req, res) => {
     try {
-        console.log('📝 Language Payment Tracking creation request received');
+        console.log('📝 Luggage Payment Tracking creation request received');
         console.log('📝 Request body:', req.body);
         
         const {
@@ -433,7 +433,7 @@ router.post('/', async (req, res) => {
             employee_id,
             employee_name,
             department,
-            language,
+            luggage,
             course_name,
             total_amount,
             currency,
@@ -446,11 +446,11 @@ router.post('/', async (req, res) => {
         } = req.body;
         
         // Validate required fields
-        if (!employee_id || !employee_name || !language || !course_name || !total_amount) {
+        if (!employee_id || !employee_name || !luggage || !course_name || !total_amount) {
             return res.status(400).json({
                 success: false,
                 error: 'Missing required fields',
-                details: 'employee_id, employee_name, language, course_name, and total_amount are required'
+                details: 'employee_id, employee_name, luggage, course_name, and total_amount are required'
             });
         }
         
@@ -482,9 +482,9 @@ router.post('/', async (req, res) => {
             const db = require('../../database/config/database');
             
             const query = `
-                INSERT INTO language_payment_tracking (
+                INSERT INTO luggage_payment_tracking (
                     tracking_reference, purchase_id, purchase_reference, employee_id, employee_name,
-                    department, language, course_name, total_amount, currency, payment_method,
+                    department, luggage, course_name, total_amount, currency, payment_method,
                     payment_status, amount_paid, balance_amount, payment_schedule, total_installments,
                     paid_installments, next_payment_date, next_payment_amount, payment_history,
                     approval_status, finance_notes, hr_notes, approved_by, approved_date, created_at
@@ -498,7 +498,7 @@ router.post('/', async (req, res) => {
                 employee_id,
                 employee_name,
                 department || null,
-                language,
+                luggage,
                 course_name,
                 total_amount,
                 currency || 'USD',
@@ -522,15 +522,15 @@ router.post('/', async (req, res) => {
             const resultResult = await db.execute(query, values);
             const result = Array.isArray(resultResult) ? resultResult[0] : resultResult;
             
-            console.log('✅ Language payment tracking created successfully:', result);
+            console.log('✅ Luggage payment tracking created successfully:', result);
             
             // Fetch the created tracking record
-            const createdTrackingResult = await db.execute('SELECT * FROM language_payment_tracking WHERE id = ?', [result.insertId]);
+            const createdTrackingResult = await db.execute('SELECT * FROM luggage_payment_tracking WHERE id = ?', [result.insertId]);
             const createdTracking = Array.isArray(createdTrackingResult) ? createdTrackingResult[0] : createdTrackingResult;
             
             res.status(201).json({
                 success: true,
-                message: 'Language payment tracking created successfully',
+                message: 'Luggage payment tracking created successfully',
                 trackingId: result.insertId,
                 tracking: createdTracking[0]
             });
@@ -543,7 +543,7 @@ router.post('/', async (req, res) => {
             
             res.status(201).json({
                 success: true,
-                message: 'Language payment tracking created successfully (mock)',
+                message: 'Luggage payment tracking created successfully (mock)',
                 trackingId: trackingId,
                 tracking: {
                     id: trackingId,
@@ -553,7 +553,7 @@ router.post('/', async (req, res) => {
                     employee_id,
                     employee_name,
                     department,
-                    language,
+                    luggage,
                     course_name,
                     total_amount,
                     currency,
@@ -578,10 +578,10 @@ router.post('/', async (req, res) => {
         }
         
     } catch (error) {
-        console.error('❌ Error creating language payment tracking:', error);
+        console.error('❌ Error creating luggage payment tracking:', error);
         res.status(500).json({ 
             success: false,
-            error: 'Failed to create language payment tracking',
+            error: 'Failed to create luggage payment tracking',
             details: error.message 
         });
     }
@@ -593,7 +593,7 @@ router.put('/:id', async (req, res) => {
         const trackingId = req.params.id;
         const updateData = req.body;
         
-        console.log('🔄 Updating language payment tracking:', trackingId);
+        console.log('🔄 Updating luggage payment tracking:', trackingId);
         console.log('📝 Update data:', updateData);
         
         // Try database first, fallback to mock
@@ -621,16 +621,16 @@ router.put('/:id', async (req, res) => {
             updateFields.push('updated_at = NOW()');
             updateValues.push(trackingId);
             
-            const updateQuery = `UPDATE language_payment_tracking SET ${updateFields.join(', ')} WHERE id = ?`;
+            const updateQuery = `UPDATE luggage_payment_tracking SET ${updateFields.join(', ')} WHERE id = ?`;
             
             const resultResult = await db.execute(updateQuery, updateValues);
             const result = Array.isArray(resultResult) ? resultResult[0] : resultResult;
             
-            console.log('✅ Language payment tracking updated successfully:', result);
+            console.log('✅ Luggage payment tracking updated successfully:', result);
             
             res.json({
                 success: true,
-                message: 'Language payment tracking updated successfully',
+                message: 'Luggage payment tracking updated successfully',
                 affected_rows: result.affectedRows
             });
             
@@ -640,17 +640,17 @@ router.put('/:id', async (req, res) => {
             // Fallback to mock update
             res.json({
                 success: true,
-                message: 'Language payment tracking updated successfully (mock)',
+                message: 'Luggage payment tracking updated successfully (mock)',
                 affected_rows: 1,
                 mock: true
             });
         }
         
     } catch (error) {
-        console.error('❌ Error updating language payment tracking:', error);
+        console.error('❌ Error updating luggage payment tracking:', error);
         res.status(500).json({ 
             success: false,
-            error: 'Failed to update language payment tracking',
+            error: 'Failed to update luggage payment tracking',
             details: error.message 
         });
     }
@@ -660,32 +660,32 @@ router.put('/:id', async (req, res) => {
 router.delete('/:id', async (req, res) => {
     try {
         const trackingId = req.params.id;
-        console.log('🗑️ Deleting language payment tracking:', trackingId);
+        console.log('🗑️ Deleting luggage payment tracking:', trackingId);
         
         // Try database first, fallback to mock
         try {
             const db = require('../../database/config/database');
             
             // Check if tracking exists
-            const trackingResult = await db.execute('SELECT tracking_reference FROM language_payment_tracking WHERE id = ?', [trackingId]);
+            const trackingResult = await db.execute('SELECT tracking_reference FROM luggage_payment_tracking WHERE id = ?', [trackingId]);
             const trackingData = Array.isArray(trackingResult) ? trackingResult[0] : trackingResult;
             
             if (trackingData.length === 0) {
                 return res.status(404).json({
                     success: false,
-                    error: 'Language payment tracking not found'
+                    error: 'Luggage payment tracking not found'
                 });
             }
             
             // Delete tracking
-            const resultResult = await db.execute('DELETE FROM language_payment_tracking WHERE id = ?', [trackingId]);
+            const resultResult = await db.execute('DELETE FROM luggage_payment_tracking WHERE id = ?', [trackingId]);
             const result = Array.isArray(resultResult) ? resultResult[0] : resultResult;
             
-            console.log('✅ Language payment tracking deleted successfully');
+            console.log('✅ Luggage payment tracking deleted successfully');
             
             res.json({
                 success: true,
-                message: 'Language payment tracking deleted successfully',
+                message: 'Luggage payment tracking deleted successfully',
                 deleted_tracking: {
                     id: trackingId,
                     tracking_reference: trackingData[0].tracking_reference
@@ -698,7 +698,7 @@ router.delete('/:id', async (req, res) => {
             // Fallback to mock delete
             res.json({
                 success: true,
-                message: 'Language payment tracking deleted successfully (mock)',
+                message: 'Luggage payment tracking deleted successfully (mock)',
                 deleted_tracking: {
                     id: trackingId,
                     tracking_reference: 'Mock Tracking'
@@ -708,10 +708,10 @@ router.delete('/:id', async (req, res) => {
         }
         
     } catch (error) {
-        console.error('❌ Error deleting language payment tracking:', error);
+        console.error('❌ Error deleting luggage payment tracking:', error);
         res.status(500).json({ 
             success: false,
-            error: 'Failed to delete language payment tracking',
+            error: 'Failed to delete luggage payment tracking',
             details: error.message 
         });
     }

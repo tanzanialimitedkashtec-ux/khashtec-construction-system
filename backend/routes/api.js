@@ -369,30 +369,30 @@ router.get('/dashboard/stats', async (req, res) => {
 
 // ===== LANGUAGE PURCHASE TRACKING API ENDPOINTS =====
 
-// Get all language campaigns
-router.get('/language-campaigns', async (req, res) => {
+// Get all luggage campaigns
+router.get('/luggage-campaigns', async (req, res) => {
     try {
         const [campaigns] = await db.execute(`
             SELECT lc.*, u.name as created_by_name
-            FROM language_campaigns lc
+            FROM luggage_campaigns lc
             LEFT JOIN users u ON lc.created_by = u.id
             ORDER BY lc.created_at DESC
         `);
         res.json({ success: true, data: campaigns });
     } catch (error) {
-        console.error('Error fetching language campaigns:', error);
+        console.error('Error fetching luggage campaigns:', error);
         res.status(500).json({ success: false, error: error.message });
     }
 });
 
-// Create new language campaign
-router.post('/language-campaigns', async (req, res) => {
+// Create new luggage campaign
+router.post('/luggage-campaigns', async (req, res) => {
     try {
         const {
             campaign_name,
             campaign_description,
-            language_name,
-            language_code,
+            luggage_name,
+            luggage_code,
             price_per_unit,
             total_units_available,
             campaign_start_date,
@@ -402,16 +402,16 @@ router.post('/language-campaigns', async (req, res) => {
         } = req.body;
 
         const [result] = await db.execute(`
-            INSERT INTO language_campaigns 
-            (campaign_name, campaign_description, language_name, language_code, 
+            INSERT INTO luggage_campaigns 
+            (campaign_name, campaign_description, luggage_name, luggage_code, 
              price_per_unit, total_units_available, campaign_start_date, 
              campaign_end_date, status, created_by)
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         `, [
             campaign_name,
             campaign_description,
-            language_name,
-            language_code,
+            luggage_name,
+            luggage_code,
             price_per_unit,
             total_units_available,
             campaign_start_date,
@@ -425,30 +425,30 @@ router.post('/language-campaigns', async (req, res) => {
             data: { id: result.insertId, message: 'Campaign created successfully' }
         });
     } catch (error) {
-        console.error('Error creating language campaign:', error);
+        console.error('Error creating luggage campaign:', error);
         res.status(500).json({ success: false, error: error.message });
     }
 });
 
-// Get all language purchases
-router.get('/language-purchases', async (req, res) => {
+// Get all luggage purchases
+router.get('/luggage-purchases', async (req, res) => {
     try {
         const [purchases] = await db.execute(`
-            SELECT lp.*, lc.campaign_name, lc.language_name, u.name as created_by_name
-            FROM language_purchases lp
-            LEFT JOIN language_campaigns lc ON lp.campaign_id = lc.id
+            SELECT lp.*, lc.campaign_name, lc.luggage_name, u.name as created_by_name
+            FROM luggage_purchases lp
+            LEFT JOIN luggage_campaigns lc ON lp.campaign_id = lc.id
             LEFT JOIN users u ON lp.created_by = u.id
             ORDER BY lp.purchase_date DESC
         `);
         res.json({ success: true, data: purchases });
     } catch (error) {
-        console.error('Error fetching language purchases:', error);
+        console.error('Error fetching luggage purchases:', error);
         res.status(500).json({ success: false, error: error.message });
     }
 });
 
-// Create new language purchase
-router.post('/language-purchases', async (req, res) => {
+// Create new luggage purchase
+router.post('/luggage-purchases', async (req, res) => {
     try {
         const {
             campaign_id,
@@ -468,7 +468,7 @@ router.post('/language-purchases', async (req, res) => {
 
         // Get campaign details to calculate total amount
         const [campaign] = await db.execute(
-            'SELECT price_per_unit FROM language_campaigns WHERE id = ?',
+            'SELECT price_per_unit FROM luggage_campaigns WHERE id = ?',
             [campaign_id]
         );
 
@@ -479,7 +479,7 @@ router.post('/language-purchases', async (req, res) => {
         const total_amount = units_purchased * campaign[0].price_per_unit;
 
         const [result] = await db.execute(`
-            INSERT INTO language_purchases 
+            INSERT INTO luggage_purchases 
             (purchase_id, campaign_id, buyer_name, buyer_email, buyer_phone, 
              buyer_address, units_purchased, total_amount, payment_method, 
              payment_status, tracking_number, notes, created_by)
@@ -502,7 +502,7 @@ router.post('/language-purchases', async (req, res) => {
 
         // Update campaign units sold
         await db.execute(
-            'UPDATE language_campaigns SET units_sold = units_sold + ? WHERE id = ?',
+            'UPDATE luggage_campaigns SET units_sold = units_sold + ? WHERE id = ?',
             [units_purchased, campaign_id]
         );
 
@@ -517,18 +517,18 @@ router.post('/language-purchases', async (req, res) => {
             }
         });
     } catch (error) {
-        console.error('Error creating language purchase:', error);
+        console.error('Error creating luggage purchase:', error);
         res.status(500).json({ success: false, error: error.message });
     }
 });
 
 // Get all payment tracking records
-router.get('/language-payment-tracking', async (req, res) => {
+router.get('/luggage-payment-tracking', async (req, res) => {
     try {
         const [tracking] = await db.execute(`
             SELECT lpt.*, lp.purchase_id, lp.buyer_name, u.name as created_by_name
-            FROM language_payment_tracking lpt
-            LEFT JOIN language_purchases lp ON lpt.purchase_id = lp.id
+            FROM luggage_payment_tracking lpt
+            LEFT JOIN luggage_purchases lp ON lpt.purchase_id = lp.id
             LEFT JOIN users u ON lpt.created_by = u.id
             ORDER BY lpt.payment_date DESC
         `);
@@ -540,7 +540,7 @@ router.get('/language-payment-tracking', async (req, res) => {
 });
 
 // Create new payment tracking record
-router.post('/language-payment-tracking', async (req, res) => {
+router.post('/luggage-payment-tracking', async (req, res) => {
     try {
         const {
             purchase_id,
@@ -557,7 +557,7 @@ router.post('/language-payment-tracking', async (req, res) => {
         const tracking_number = 'TRACK_' + Math.random().toString(36).substr(2, 9).toUpperCase();
 
         const [result] = await db.execute(`
-            INSERT INTO language_payment_tracking 
+            INSERT INTO luggage_payment_tracking 
             (purchase_id, tracking_number, payment_stage, payment_reference, 
              bank_reference, transaction_id, amount, notes, created_by)
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
@@ -576,7 +576,7 @@ router.post('/language-payment-tracking', async (req, res) => {
         // Update purchase payment status if completed
         if (payment_stage === 'Completed') {
             await db.execute(
-                'UPDATE language_purchases SET payment_status = ?, payment_date = NOW() WHERE id = ?',
+                'UPDATE luggage_purchases SET payment_status = ?, payment_date = NOW() WHERE id = ?',
                 ['Paid', purchase_id]
             );
         }
@@ -596,11 +596,11 @@ router.post('/language-payment-tracking', async (req, res) => {
 });
 
 // Get active campaigns for purchase form
-router.get('/language-campaigns/active', async (req, res) => {
+router.get('/luggage-campaigns/active', async (req, res) => {
     try {
         const [campaigns] = await db.execute(`
-            SELECT id, campaign_name, language_name, price_per_unit, total_units_available, units_sold
-            FROM language_campaigns 
+            SELECT id, campaign_name, luggage_name, price_per_unit, total_units_available, units_sold
+            FROM luggage_campaigns 
             WHERE status = 'Active' 
             ORDER BY campaign_name
         `);
@@ -612,12 +612,12 @@ router.get('/language-campaigns/active', async (req, res) => {
 });
 
 // Get purchases for tracking form
-router.get('/language-purchases/for-tracking', async (req, res) => {
+router.get('/luggage-purchases/for-tracking', async (req, res) => {
     try {
         const [purchases] = await db.execute(`
             SELECT id, purchase_id, buyer_name, total_amount, campaign_name
-            FROM language_purchases lp
-            LEFT JOIN language_campaigns lc ON lp.campaign_id = lc.id
+            FROM luggage_purchases lp
+            LEFT JOIN luggage_campaigns lc ON lp.campaign_id = lc.id
             ORDER BY lp.purchase_date DESC
         `);
         res.json({ success: true, data: purchases });
@@ -628,13 +628,13 @@ router.get('/language-purchases/for-tracking', async (req, res) => {
 });
 
 // Update campaign status
-router.put('/language-campaigns/:id/status', async (req, res) => {
+router.put('/luggage-campaigns/:id/status', async (req, res) => {
     try {
         const { id } = req.params;
         const { status } = req.body;
 
         await db.execute(
-            'UPDATE language_campaigns SET status = ?, updated_at = NOW() WHERE id = ?',
+            'UPDATE luggage_campaigns SET status = ?, updated_at = NOW() WHERE id = ?',
             [status, id]
         );
 
@@ -646,13 +646,13 @@ router.put('/language-campaigns/:id/status', async (req, res) => {
 });
 
 // Update purchase payment status
-router.put('/language-purchases/:id/payment-status', async (req, res) => {
+router.put('/luggage-purchases/:id/payment-status', async (req, res) => {
     try {
         const { id } = req.params;
         const { payment_status } = req.body;
 
         await db.execute(
-            'UPDATE language_purchases SET payment_status = ?, payment_date = NOW() WHERE id = ?',
+            'UPDATE luggage_purchases SET payment_status = ?, payment_date = NOW() WHERE id = ?',
             [payment_status, id]
         );
 
