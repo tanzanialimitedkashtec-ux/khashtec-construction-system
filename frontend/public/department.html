@@ -17245,29 +17245,6 @@ background: #f8f9fa;
 
 
 
-.approval-summary {
-
-    background: #e9ecef;
-
-    padding: 2px;
-
-    border-radius: 1px;
-
-    margin-top: 4px;
-
-}
-
-
-
-.approval-summary h4 {
-
-    color: #0b3d91;
-
-    font-size: 16px;
-
-}
-
-
 
 .authority-item {
 
@@ -20238,37 +20215,6 @@ background: #f8f9fa;
     box-shadow: none;
 
 }
-
-
-
-.approval-summary {
-
-    margin-top: 30px;
-
-    padding: 20px;
-
-    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-
-    border-radius: 8px;
-
-    border-left: 4px solid #0b3d91;
-
-}
-
-
-
-.approval-summary h4 {
-
-    color: #2c3e50;
-
-    margin: 0 0 15px 0;
-
-    font-size: 16px;
-
-    font-weight: 600;
-
-}
-
 
 
 .authority-item {
@@ -25651,32 +25597,6 @@ function approveRecruitmentPolicies(){
 
             </div>
 
-            
-
-            <div class="approval-summary">
-
-                <h4>Approval Authority</h4>
-
-                <div class="authority-item">
-
-                    <span>✅ Can approve all recruitment policies</span>
-
-                </div>
-
-                <div class="authority-item">
-
-                    <span>✅ Can request policy revisions</span>
-
-                </div>
-
-                <div class="authority-item">
-
-                    <span>✅ Final authority on recruitment procedures</span>
-
-                </div>
-
-            </div>
-
         </div>
 
     `);
@@ -26853,38 +26773,6 @@ function showSeniorHiringForm(requests) {
 
             </div>
 
-            
-
-            <div class="approval-summary">
-
-                <h4>Senior Hiring Authority</h4>
-
-                <div class="authority-item">
-
-                    <span>✅ Can approve all senior staff hires</span>
-
-                </div>
-
-                <div class="authority-item">
-
-                    <span>✅ Can approve manager-level positions and above</span>
-
-                </div>
-
-                <div class="authority-item">
-
-                    <span>✅ Final authority on senior recruitment</span>
-
-                </div>
-
-                <div class="authority-item restriction">
-
-                    <span>❌ Cannot directly register workers (HR function)</span>
-
-                </div>
-
-            </div>
-
         </div>
 
     `);
@@ -27342,32 +27230,6 @@ function showWorkforceBudgetForm(budgets) {
                 <div style="margin-top: 20px; text-align: center;">
 
                     <button type="button" onclick="toggleWorkforceBudgetForm()" class="action" style="background: #dc3545;">Close Budget Review</button>
-
-                </div>
-
-            </div>
-
-            
-
-            <div class="approval-summary">
-
-                <h4>Budget Approval Authority</h4>
-
-                <div class="authority-item">
-
-                    <span>✅ Can approve workforce budgets up to TZS 100M</span>
-
-                </div>
-
-                <div class="authority-item">
-
-                    <span>✅ Can modify budget allocations</span>
-
-                </div>
-
-                <div class="authority-item">
-
-                    <span>✅ Final authority on workforce spending</span>
 
                 </div>
 
@@ -28937,32 +28799,6 @@ function reviewEmployeeCount(){
 
             </div>
 
-            
-
-            <div class="approval-summary">
-
-                <h4>Employee Count Authority</h4>
-
-                <div class="authority-item">
-
-                    <span>✅ Can view all employee data</span>
-
-                </div>
-
-                <div class="authority-item">
-
-                    <span>✅ Can approve workforce expansions</span>
-
-                </div>
-
-                <div class="authority-item">
-
-                    <span>✅ Can review department headcount</span>
-
-                </div>
-
-            </div>
-
         </div>
 
     `);
@@ -29304,38 +29140,6 @@ function viewAllWorkers(){
             <div id="mdWorkerResults" class="worker-results">
 
                 <div class="loading">Loading workers...</div>
-
-            </div>
-
-        </div>
-
-        
-
-        <div class="approval-summary">
-
-            <h4>Worker Viewing Authority</h4>
-
-            <div class="authority-item">
-
-                <span>✅ Can view all registered workers</span>
-
-            </div>
-
-            <div class="authority-item">
-
-                <span>✅ Can access all worker accounts</span>
-
-            </div>
-
-            <div class="authority-item">
-
-                <span>✅ Can filter by department/status</span>
-
-            </div>
-
-            <div class="authority-item restriction">
-
-                <span>❌ Cannot modify worker records (HR function)</span>
 
             </div>
 
@@ -29880,46 +29684,6 @@ function suspendTerminateEmployment(){
 
             </div>
 
-            
-
-            <div class="approval-summary">
-
-                <h4>Employment Action Authority</h4>
-
-                <div class="authority-item">
-
-                    <span>✅ Can suspend any employee</span>
-
-                </div>
-
-                <div class="authority-item">
-
-                    <span>✅ Can terminate employment</span>
-
-                </div>
-
-                <div class="authority-item">
-
-                    <span>✅ Final authority on employment decisions</span>
-
-                </div>
-
-                <div class="authority-item">
-
-                    <span>✅ Can approve demotions</span>
-
-                </div>
-
-                <div class="authority-item critical">
-
-                    <span>⚠️ High-level decision requiring careful consideration</span>
-
-                </div>
-
-            </div>
-
-        </div>
-
     `);
 
     
@@ -30211,40 +29975,6 @@ function viewWorkforceReports(){
                 <button class="action" onclick="refreshWorkforceData()">Refresh Data</button>
 
             </div>
-
-            
-
-            <div class="approval-summary">
-
-                <h4>Workforce Reports Authority</h4>
-
-                <div class="authority-item">
-
-                    <span>✅ Can access all workforce analytics</span>
-
-                </div>
-
-                <div class="authority-item">
-
-                    <span>✅ Can generate executive reports</span>
-
-                </div>
-
-                <div class="authority-item">
-
-                    <span>✅ Can review compliance status</span>
-
-                </div>
-
-                <div class="authority-item">
-
-                    <span>✅ Can export confidential data</span>
-
-                </div>
-
-            </div>
-
-        </div>
 
     `);
 
