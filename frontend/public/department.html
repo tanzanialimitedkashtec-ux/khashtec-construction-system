@@ -20667,15 +20667,13 @@ background: #f8f9fa;
 
     border-collapse: collapse;
 
-    margin-top: 15px;
+    margin-top: 10px;
 
     background: white;
 
-    border-radius: 8px;
+    border: 2px solid #0b3d91;
 
-    overflow: hidden;
-
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    font-size: 11px;
 
 }
 
@@ -20683,19 +20681,19 @@ background: #f8f9fa;
 
 .oversight-table th {
 
-    background: linear-gradient(135deg, #0b3d91 0%, #1e5bb8 100%);
+    background: #0b3d91;
 
     color: white;
 
-    padding: 12px 15px;
+    padding: 6px 8px;
 
     text-align: left;
 
     font-weight: 600;
 
-    font-size: 14px;
+    font-size: 11px;
 
-    border: none;
+    border: 2px solid #0b3d91;
 
 }
 
@@ -20703,11 +20701,11 @@ background: #f8f9fa;
 
 .oversight-table td {
 
-    padding: 12px 15px;
+    padding: 5px 8px;
 
-    border-bottom: 1px solid #e9ecef;
+    border: 2px solid #dee2e6;
 
-    font-size: 13px;
+    font-size: 11px;
 
     vertical-align: middle;
 
@@ -20717,7 +20715,7 @@ background: #f8f9fa;
 
 .oversight-table tr:last-child td {
 
-    border-bottom: none;
+    border-bottom: 2px solid #dee2e6;
 
 }
 
@@ -20735,17 +20733,17 @@ background: #f8f9fa;
 
     display: inline-block;
 
-    padding: 4px 8px;
+    padding: 2px 6px;
 
-    border-radius: 12px;
+    border-radius: 8px;
 
-    font-size: 11px;
+    font-size: 9px;
 
     font-weight: 600;
 
     text-transform: uppercase;
 
-    letter-spacing: 0.5px;
+    letter-spacing: 0.3px;
 
 }
 
@@ -20883,6 +20881,30 @@ background: #f8f9fa;
 
 
 
+.oversight-table .action-btn {
+
+    padding: 2px 6px;
+
+    font-size: 10px;
+
+    border: 1px solid #0b3d91;
+
+    background: #0b3d91;
+
+    color: white;
+
+    border-radius: 3px;
+
+    cursor: pointer;
+
+}
+
+.oversight-table .action-btn:hover {
+
+    background: #1e5bb8;
+
+}
+
 .oversight-table tr.urgent {
 
     background-color: #fff5f5;
@@ -21013,7 +21035,7 @@ background: #f8f9fa;
 
     .oversight-table {
 
-        font-size: 12px;
+        font-size: 10px;
 
     }
 
@@ -21021,7 +21043,7 @@ background: #f8f9fa;
 
     .oversight-table th, .oversight-table td {
 
-        padding: 8px 10px;
+        padding: 4px 6px;
 
     }
 
@@ -87492,33 +87514,39 @@ async function staffOversight(){
 
     let employees = [];
 
+    let departments = [];
+
     let totalEmployees = 0;
 
     let activeContracts = 0;
 
-    let managementStaff = 0;
-
-    let hrStaff = 0;
+    let departmentRows = '';
 
     
 
     try {
 
-        // Load employees
+        // Load employees and departments in parallel
 
-        const employeesResponse = await fetch(`${baseUrl}/api/employees`, {
+        const [employeesResponse, departmentsResponse] = await Promise.all([
 
-            method: 'GET',
+            fetch(`${baseUrl}/api/employees`, {
 
-            headers: {
+                method: 'GET',
 
-                'Content-Type': 'application/json',
+                headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' }
 
-                'Accept': 'application/json'
+            }),
 
-            }
+            fetch(`${baseUrl}/api/departments`, {
 
-        });
+                method: 'GET',
+
+                headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' }
+
+            }).catch(() => null)
+
+        ]);
 
         
 
@@ -87528,30 +87556,12 @@ async function staffOversight(){
 
             employees = Array.isArray(employeesData) ? employeesData : [];
 
-            
-
-            // Calculate statistics
-
             totalEmployees = employees.length;
 
             activeContracts = employees.filter(emp => 
                 (emp.status && emp.status.toLowerCase() === 'active') || 
                 (emp.contract_status && emp.contract_status.toLowerCase() === 'active')
             ).length;
-
-            managementStaff = employees.filter(emp => 
-                (emp.department && emp.department.toLowerCase() === 'management') || 
-                (emp.role && emp.role.toLowerCase() === 'management') || 
-                (emp.position && emp.position.toLowerCase().includes('manager'))
-            ).length;
-
-            hrStaff = employees.filter(emp => 
-                (emp.department && (emp.department.toLowerCase() === 'hr' || emp.department.toLowerCase() === 'human resources')) || 
-                (emp.role && (emp.role.toLowerCase() === 'hr' || emp.role.toLowerCase() === 'human resources')) || 
-                (emp.position && emp.position.toLowerCase().includes('hr'))
-            ).length;
-
-            
 
             console.log('✅ Loaded staff data:', totalEmployees, 'total employees,', activeContracts, 'active contracts');
 
@@ -87561,9 +87571,111 @@ async function staffOversight(){
 
         }
 
+        
+
+        // Load departments
+
+        if (departmentsResponse && departmentsResponse.ok) {
+
+            const deptData = await departmentsResponse.json();
+
+            departments = Array.isArray(deptData) ? deptData : [];
+
+            console.log('✅ Loaded departments:', departments.length);
+
+        }
+
+        
+
+        // Build department rows from real data
+
+        if (departments.length > 0) {
+
+            departmentRows = departments.map((dept, index) => {
+
+                const deptName = dept.name || dept.department_name || 'Unknown';
+
+                const deptCode = dept.code || '';
+
+                const deptStatus = dept.status || 'Active';
+
+                const staffCount = employees.filter(emp => {
+
+                    const empDept = (emp.department || emp.department_name || '').toLowerCase();
+
+                    return empDept === deptName.toLowerCase() || empDept === deptCode.toLowerCase();
+
+                }).length;
+
+                const statusClass = deptStatus.toLowerCase() === 'active' ? 'approved' : 'warning';
+
+                const rowspanAttr = index === 0 ? ` rowspan="${departments.length}"` : '';
+
+                const categoryCell = index === 0 ? `<td${rowspanAttr}><strong>Departments</strong></td>` : '';
+
+                return `<tr>
+                            ${categoryCell}
+                            <td>${deptName}</td>
+                            <td>${staffCount} staff</td>
+                            <td><span class="status-badge ${statusClass}">${deptStatus}</span></td>
+                            <td><button class="action-btn" onclick="reviewDeptStructure('${deptCode.toLowerCase() || deptName.toLowerCase()}')">Review</button></td>
+                        </tr>`;
+
+            }).join('\n');
+
+        } else {
+
+            // Fallback: calculate from employee data
+
+            const deptCounts = {};
+
+            employees.forEach(emp => {
+
+                const dept = emp.department || emp.department_name || 'Unassigned';
+
+                deptCounts[dept] = (deptCounts[dept] || 0) + 1;
+
+            });
+
+            const deptEntries = Object.entries(deptCounts);
+
+            if (deptEntries.length > 0) {
+
+                departmentRows = deptEntries.map(([deptName, count], index) => {
+
+                    const rowspanAttr = index === 0 ? ` rowspan="${deptEntries.length}"` : '';
+
+                    const categoryCell = index === 0 ? `<td${rowspanAttr}><strong>Departments</strong></td>` : '';
+
+                    return `<tr>
+                            ${categoryCell}
+                            <td>${deptName}</td>
+                            <td>${count} staff</td>
+                            <td><span class="status-badge approved">Active</span></td>
+                            <td><button class="action-btn" onclick="reviewDeptStructure('${deptName.toLowerCase()}')">Review</button></td>
+                        </tr>`;
+
+                }).join('\n');
+
+            } else {
+
+                departmentRows = `<tr>
+                            <td><strong>Departments</strong></td>
+                            <td colspan="4">No department data available</td>
+                        </tr>`;
+
+            }
+
+        }
+
     } catch (error) {
 
         console.error('❌ Error loading staff data:', error);
+
+        departmentRows = `<tr>
+                            <td><strong>Departments</strong></td>
+                            <td colspan="4">Error loading data</td>
+                        </tr>`;
 
     }
 
@@ -87633,39 +87745,7 @@ async function staffOversight(){
 
                         </tr>
 
-                        <tr>
-
-                            <td rowspan="2"><strong>Departments</strong></td>
-
-                            <td>Management</td>
-
-                            <td>${managementStaff} staff</td>
-
-                            <td><span class="status-badge approved">Approved</span></td>
-
-                            <td>
-
-                                <button class="action-btn" onclick="reviewDeptStructure('management')">Review</button>
-
-                            </td>
-
-                        </tr>
-
-                        <tr>
-
-                            <td>Human Resources</td>
-
-                            <td>${hrStaff} staff</td>
-
-                            <td><span class="status-badge approved">Approved</span></td>
-
-                            <td>
-
-                                <button class="action-btn" onclick="reviewDeptStructure('hr')">Review</button>
-
-                            </td>
-
-                        </tr>
+                        ${departmentRows}
 
                     </tbody>
 
