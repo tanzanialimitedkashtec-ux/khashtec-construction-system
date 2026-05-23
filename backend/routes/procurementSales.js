@@ -18,7 +18,7 @@ router.get('/', async (req, res) => {
                 {
                     id: 1,
                     request_title: 'Office Computers Purchase',
-                    procurement_type: 'Goods',
+                    procurement_type: 'Purchase',
                     item_description: 'High-performance laptops for staff',
                     quantity: 10,
                     unit_price: 2500000.00,
@@ -96,7 +96,7 @@ router.post('/', async (req, res) => {
             const mockResponse = {
                 id: Math.floor(Math.random() * 1000) + 1,
                 request_title: req.body.requestTitle || 'Mock Request',
-                procurement_type: req.body.procurementType || 'Goods',
+                procurement_type: req.body.procurementType || 'Purchase',
                 item_description: req.body.itemDescription || 'Mock item',
                 quantity: req.body.quantity || 1,
                 unit_price: req.body.unitPrice || 0,

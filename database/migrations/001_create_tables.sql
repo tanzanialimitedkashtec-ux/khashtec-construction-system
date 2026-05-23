@@ -1776,7 +1776,7 @@ CREATE TABLE IF NOT EXISTS nhif_contributions (
 CREATE TABLE IF NOT EXISTS procurement_sales (
     id INT AUTO_INCREMENT PRIMARY KEY,
     request_title VARCHAR(255) NOT NULL,
-    procurement_type ENUM('Goods', 'Services', 'Works', 'Consultancy') NOT NULL,
+    procurement_type ENUM('Purchase', 'Sale') NOT NULL,
     item_description TEXT NOT NULL,
     quantity INT NOT NULL,
     unit_price DECIMAL(12,2) DEFAULT 0,
