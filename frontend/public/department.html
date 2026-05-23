@@ -375,6 +375,174 @@ header h2 {
 
 
 
+/* Floating Profile Widget */
+.profile-widget-container {
+    position: fixed;
+    top: 60px;
+    right: 60px;
+    z-index: 999;
+    font-size: 9px;
+}
+
+.profile-widget-toggle {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #1a73e8, #0d47a1);
+    color: #fff;
+    border: none;
+    cursor: pointer;
+    font-size: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 8px rgba(26,115,232,0.3);
+    transition: all 0.3s ease;
+}
+
+.profile-widget-toggle:hover {
+    transform: scale(1.1);
+    box-shadow: 0 4px 12px rgba(26,115,232,0.4);
+}
+
+.profile-widget-card {
+    position: absolute;
+    top: 50px;
+    right: 0;
+    background: #ffffff;
+    border-radius: 8px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+    width: 280px;
+    overflow: hidden;
+    display: none;
+    animation: slideIn 0.3s ease;
+}
+
+.profile-widget-card.show {
+    display: block;
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.profile-widget-header {
+    background: linear-gradient(135deg, #1a73e8, #0d47a1);
+    color: #fff;
+    padding: 12px 15px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.profile-widget-header h4 {
+    margin: 0;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.profile-widget-close {
+    background: transparent;
+    border: none;
+    color: #fff;
+    cursor: pointer;
+    font-size: 16px;
+    padding: 0;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.profile-widget-close:hover {
+    background: rgba(255,255,255,0.2);
+    border-radius: 50%;
+}
+
+.profile-widget-content {
+    padding: 12px 15px;
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.profile-avatar {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #1a73e8, #0d47a1);
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    font-weight: bold;
+    flex-shrink: 0;
+}
+
+.profile-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.profile-info h3 {
+    margin: 0 0 4px 0;
+    font-size: 12px;
+    font-weight: 600;
+    color: #333;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.profile-info p {
+    margin: 2px 0;
+    font-size: 11px;
+    color: #666;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.profile-info p strong {
+    color: #333;
+}
+
+.profile-widget-footer {
+    padding: 10px 15px;
+    text-align: center;
+}
+
+.profile-widget-footer button {
+    width: 100%;
+    padding: 8px 12px;
+    background: #f44336;
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 11px;
+    font-weight: 600;
+    transition: all 0.2s ease;
+}
+
+.profile-widget-footer button:hover {
+    background: #d32f2f;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 6px rgba(244,67,54,0.3);
+}
+
+
+
 .container .notification-btn,
 
 .container .menu-toggle {
@@ -23348,6 +23516,31 @@ background: #f8f9fa;
 
         <button type="button" class="notification-btn" onclick="showNotifications()">🔔</button>
 
+    </div>
+
+    <!-- Floating Profile Widget -->
+    <div id="profileWidget" class="profile-widget-container">
+        <button class="profile-widget-toggle" onclick="toggleProfileWidget()" title="Profile Info">👤</button>
+
+        <div class="profile-widget-card">
+            <div class="profile-widget-header">
+                <h4>Profile</h4>
+                <button class="profile-widget-close" onclick="closeProfileWidget()">✕</button>
+            </div>
+
+            <div class="profile-widget-content">
+                <div class="profile-avatar">M</div>
+                <div class="profile-info">
+                    <h3 id="widgetUserRole">MD Dashboard</h3>
+                    <p><strong>Role:</strong> <span id="widgetRole">MD</span></p>
+                    <p><strong>Email:</strong> <span id="widgetEmail">pm@manager0501</span></p>
+                </div>
+            </div>
+
+            <div class="profile-widget-footer">
+                <button onclick="handleLogout()">Logout</button>
+            </div>
+        </div>
     </div>
 
 
@@ -95355,6 +95548,34 @@ function handleLogout() {
 
     }
 
+}
+
+
+
+// Profile Widget Functions
+function toggleProfileWidget() {
+    const card = document.querySelector('.profile-widget-card');
+    card.classList.toggle('show');
+}
+
+function closeProfileWidget() {
+    const card = document.querySelector('.profile-widget-card');
+    card.classList.remove('show');
+}
+
+// Close widget when clicking outside
+document.addEventListener('click', (e) => {
+    const widget = document.querySelector('.profile-widget-container');
+    if (widget && !widget.contains(e.target)) {
+        closeProfileWidget();
+    }
+});
+
+// Update profile info when user logs in
+function updateProfileWidget(userRole, userEmail) {
+    document.getElementById('widgetRole').textContent = userRole || 'User';
+    document.getElementById('widgetEmail').textContent = userEmail || 'user@company.com';
+    document.getElementById('widgetUserRole').textContent = userRole + ' Dashboard' || 'Dashboard';
 }
 
 
