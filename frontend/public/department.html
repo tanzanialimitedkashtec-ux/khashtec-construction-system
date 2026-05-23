@@ -377,22 +377,21 @@ header h2 {
 
 /* Floating Profile Widget */
 .profile-widget-container {
-    position: fixed;
-    top: 60px;
-    right: 60px;
+    position: relative;
     z-index: 999;
     font-size: 9px;
+    margin-left: 8px;
 }
 
 .profile-widget-toggle {
-    width: 44px;
-    height: 44px;
+    width: 32px;
+    height: 32px;
     border-radius: 50%;
     background: linear-gradient(135deg, #1a73e8, #0d47a1);
     color: #fff;
     border: none;
     cursor: pointer;
-    font-size: 20px;
+    font-size: 16px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -23512,15 +23511,14 @@ background: #f8f9fa;
 
         <button type="button" class="menu-toggle" onclick="toggleSidebar()">☰</button>
 
-        <button type="button" class="notification-btn" onclick="showNotifications()">🔔</button>
+        <div style="display: flex; align-items: center; gap: 8px;">
+            <button type="button" class="notification-btn" onclick="showNotifications()">🔔</button>
 
-    </div>
+            <!-- Profile Widget -->
+            <div id="profileWidget" class="profile-widget-container">
+                <button class="profile-widget-toggle" onclick="toggleProfileWidget()" title="Profile Info">👤</button>
 
-    <!-- Floating Profile Widget -->
-    <div id="profileWidget" class="profile-widget-container">
-        <button class="profile-widget-toggle" onclick="toggleProfileWidget()" title="Profile Info">👤</button>
-
-        <div class="profile-widget-card">
+                <div class="profile-widget-card">
             <div class="profile-widget-header">
                 <h4>Profile</h4>
                 <button class="profile-widget-close" onclick="closeProfileWidget()">✕</button>
@@ -23538,7 +23536,10 @@ background: #f8f9fa;
             <div class="profile-widget-footer">
                 <button onclick="handleLogout()">Logout</button>
             </div>
+                </div>
+            </div>
         </div>
+
     </div>
 
 
