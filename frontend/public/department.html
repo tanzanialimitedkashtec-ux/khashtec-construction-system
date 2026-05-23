@@ -88464,19 +88464,43 @@ async function reviewDeptStructure(department) {
 
             
 
-            // Filter employees by department
+            // Filter employees by department using flexible matching
+
+            const deptLower = department.toLowerCase();
 
             departmentEmployees = employees.filter(emp => {
 
-                const dept = emp.department?.toLowerCase() || emp.role?.toLowerCase() || emp.position?.toLowerCase() || '';
+                const empDept = (emp.department || '').toLowerCase();
 
-                return dept.includes(department.toLowerCase());
+                const empRole = (emp.role || '').toLowerCase();
+
+                const empPosition = (emp.position || '').toLowerCase();
+
+                const empCategory = (emp.job_category || '').toLowerCase();
+
+                return empDept.includes(deptLower) || deptLower.includes(empDept) ||
+
+                       empRole.includes(deptLower) || empPosition.includes(deptLower) ||
+
+                       empCategory.includes(deptLower);
 
             });
 
             
 
-            console.log(`✅ Found ${departmentEmployees.length} employees in ${department} department`);
+            // If no matches found, show all employees so real data is displayed
+
+            if (departmentEmployees.length === 0 && employees.length > 0) {
+
+                console.log(`⚠️ No exact match for "${department}", showing all ${employees.length} employees`);
+
+                departmentEmployees = employees;
+
+            }
+
+            
+
+            console.log(`✅ Found ${departmentEmployees.length} employees for ${department} department`);
 
         } else {
 
@@ -94406,7 +94430,9 @@ function filterPpeRecords() {
 
     border-collapse: collapse;
 
-    font-size: 14px;
+    font-size: 11px;
+
+    border: 2px solid #28a745;
 
 }
 
@@ -94414,17 +94440,19 @@ function filterPpeRecords() {
 
 .dept-table th {
 
-    background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+    background: #28a745;
 
     color: white;
 
-    padding: 12px;
+    padding: 5px 8px;
 
     text-align: left;
 
     font-weight: 600;
 
-    border-bottom: 2px solid #ddd;
+    font-size: 11px;
+
+    border: 2px solid #28a745;
 
 }
 
@@ -94432,9 +94460,11 @@ function filterPpeRecords() {
 
 .dept-table td {
 
-    padding: 10px 12px;
+    padding: 4px 8px;
 
-    border-bottom: 1px solid #eee;
+    border: 2px solid #dee2e6;
+
+    font-size: 11px;
 
 }
 
