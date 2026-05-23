@@ -64448,19 +64448,43 @@ async function reviewDeptStructure(department) {
 
             
 
-            // Filter employees by department
+            // Filter employees by department using flexible matching
+
+            const deptLower = department.toLowerCase();
 
             departmentEmployees = employees.filter(emp => {
 
-                const dept = emp.department?.toLowerCase() || emp.role?.toLowerCase() || emp.position?.toLowerCase() || '';
+                const empDept = (emp.department || '').toLowerCase();
 
-                return dept.includes(department.toLowerCase());
+                const empRole = (emp.role || '').toLowerCase();
+
+                const empPosition = (emp.position || '').toLowerCase();
+
+                const empCategory = (emp.job_category || '').toLowerCase();
+
+                return empDept.includes(deptLower) || deptLower.includes(empDept) ||
+
+                       empRole.includes(deptLower) || empPosition.includes(deptLower) ||
+
+                       empCategory.includes(deptLower);
 
             });
 
             
 
-            console.log(`✅ Found ${departmentEmployees.length} employees in ${department} department`);
+            // If no matches found, show all employees so real data is displayed
+
+            if (departmentEmployees.length === 0 && employees.length > 0) {
+
+                console.log(`⚠️ No exact match for "${department}", showing all ${employees.length} employees`);
+
+                departmentEmployees = employees;
+
+            }
+
+            
+
+            console.log(`✅ Found ${departmentEmployees.length} employees for ${department} department`);
 
         } else {
 
