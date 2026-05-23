@@ -67750,49 +67750,15 @@ document.addEventListener('DOMContentLoaded', function() {
 
     
 
-    // Load initial content
-
+    // Update profile widget with user info on load
     const deptUser = (typeof sessionManager !== 'undefined' && sessionManager.getCurrentUser) ? sessionManager.getCurrentUser() : null;
-    const deptRole = deptUser ? (deptUser.role || deptUser.department_name || 'User') : 'User';
-    const deptEmail = deptUser ? (deptUser.email || '') : '';
-    const deptRoleInitial = deptRole.charAt(0).toUpperCase();
-    showContent(`<div class="card">
-
-        <div style="display: flex; align-items: center; gap: 18px; margin-bottom: 18px;">
-            <div style="width: 56px; height: 56px; border-radius: 50%; background: linear-gradient(135deg, #1a73e8, #0d47a1); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 26px; font-weight: bold; text-transform: uppercase; box-shadow: 0 2px 8px rgba(26,115,232,0.3);">${deptRoleInitial}</div>
-            <div>
-                <h3 style="margin: 0 0 4px 0;">Welcome to KASHTEC Department Portal</h3>
-                <p style="margin: 0 0 2px 0; color: #555; font-size: 14px;"><strong>Role:</strong> ${deptRole}</p>
-                <p style="margin: 0; color: #555; font-size: 14px;"><strong>Email:</strong> ${deptEmail}</p>
-            </div>
-        </div>
-
-        <p><strong>System Status:</strong> All systems operational</p>
-
-        <p><strong>Last Update:</strong> ${new Date().toLocaleString()}</p>
-
-        <div class="summary-stats">
-
-            <div class="stat-card">
-
-                <h5>System Ready</h5>
-
-                <div class="stat-value">✓</div>
-
-                <div class="stat-label">Online</div>
-
-            </div>
-
-        </div>
-
-        <div style="margin-top: 20px;">
-            <button class="action" onclick="documentManagement()">Open Document Management</button>
-            <button class="action" onclick="testUploadFunction()">Test Upload Function</button>
-        </div>
-
-    </div>`);
-
-    
+    if (deptUser) {
+        const deptRole = deptUser.role || deptUser.department_name || 'User';
+        const deptEmail = deptUser.email || '';
+        if (typeof updateProfileWidget === 'function') {
+            updateProfileWidget(deptRole, deptEmail);
+        }
+    }
 
     // Load assigned workers data
     loadAssignedWorkers();
