@@ -29,11 +29,11 @@ router.get('/:id', async (req, res) => {
             LEFT JOIN employee_details ed ON e.id = ed.employee_id 
             WHERE cm.id = ?
         `, [req.params.id]);
-        const claim = Array.isArray(result) ? result[0] : result;
-        if (claim.length === 0) {
+        const rows = Array.isArray(result) ? result : [];
+        if (!rows || rows.length === 0) {
             return res.status(404).json({ error: 'Claim not found' });
         }
-        res.json(claim[0]);
+        res.json(rows[0]);
     } catch (error) {
         console.error('Error fetching claim:', error);
         res.status(500).json({ error: 'Failed to fetch claim' });
