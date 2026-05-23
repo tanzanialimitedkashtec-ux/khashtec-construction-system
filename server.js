@@ -68,11 +68,11 @@ const driversRoutes = require('./backend/routes/drivers');
 
 const companyCarsRoutes = require('./backend/routes/companyCars');
 
-const languageCampaignsRoutes = require('./backend/routes/languageCampaigns');
+const luggageCampaignsRoutes = require('./backend/routes/luggageCampaigns');
 
-const languagePurchasesRoutes = require('./backend/routes/languagePurchases');
+const luggagePurchasesRoutes = require('./backend/routes/luggagePurchases');
 
-const languagePaymentTrackingRoutes = require('./backend/routes/languagePaymentTracking');
+const luggagePaymentTrackingRoutes = require('./backend/routes/luggagePaymentTracking');
 
 const workforceRequestsRoutes = require('./backend/routes/workforceRequests');
 
@@ -895,25 +895,25 @@ app.use('/api/company-cars', asyncHandler(async (req, res, next) => {
 
 
 
-app.use('/api/language-campaigns', asyncHandler(async (req, res, next) => {
+app.use('/api/luggage-campaigns', asyncHandler(async (req, res, next) => {
 
-    return languageCampaignsRoutes(req, res, next);
-
-}));
-
-
-
-app.use('/api/language-purchases', asyncHandler(async (req, res, next) => {
-
-    return languagePurchasesRoutes(req, res, next);
+    return luggageCampaignsRoutes(req, res, next);
 
 }));
 
 
 
-app.use('/api/language-payment-tracking', asyncHandler(async (req, res, next) => {
+app.use('/api/luggage-purchases', asyncHandler(async (req, res, next) => {
 
-    return languagePaymentTrackingRoutes(req, res, next);
+    return luggagePurchasesRoutes(req, res, next);
+
+}));
+
+
+
+app.use('/api/luggage-payment-tracking', asyncHandler(async (req, res, next) => {
+
+    return luggagePaymentTrackingRoutes(req, res, next);
 
 }));
 

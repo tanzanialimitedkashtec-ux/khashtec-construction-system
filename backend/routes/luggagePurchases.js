@@ -1,33 +1,33 @@
 const express = require('express');
 const router = express.Router();
 
-console.log('🚀 Language Purchases route file is being loaded...');
+console.log('🚀 Luggage Purchases route file is being loaded...');
 
 // Test endpoint to verify route is working
 router.get('/test', (req, res) => {
-    console.log('🧪 Language Purchases test endpoint accessed');
+    console.log('🧪 Luggage Purchases test endpoint accessed');
     res.json({ 
-        message: 'Language Purchases API is working!',
+        message: 'Luggage Purchases API is working!',
         timestamp: new Date().toISOString(),
         status: 'routes_loaded_successfully',
-        debug: 'Language Purchases routes are loaded and responding'
+        debug: 'Luggage Purchases routes are loaded and responding'
     });
 });
 
-// Root endpoint - get all language purchases
+// Root endpoint - get all luggage purchases
 router.get('/', async (req, res) => {
     try {
-        console.log('📝 Language Purchases root endpoint accessed');
+        console.log('📝 Luggage Purchases root endpoint accessed');
         
         let purchases = [];
         
         try {
             const db = require('../../database/config/database');
             
-            // Ensure language_purchases table exists
+            // Ensure luggage_purchases table exists
             try {
                 await db.execute(`
-                    CREATE TABLE IF NOT EXISTS language_purchases (
+                    CREATE TABLE IF NOT EXISTS luggage_purchases (
                         id INT AUTO_INCREMENT PRIMARY KEY,
                         purchase_reference VARCHAR(50) UNIQUE NOT NULL,
                         campaign_id INT NULL,
@@ -35,7 +35,7 @@ router.get('/', async (req, res) => {
                         employee_id VARCHAR(50) NOT NULL,
                         employee_name VARCHAR(255) NOT NULL,
                         department VARCHAR(100) NULL,
-                        language VARCHAR(100) NOT NULL,
+                        luggage VARCHAR(100) NOT NULL,
                         course_type ENUM('basic', 'intermediate', 'advanced', 'business') DEFAULT 'basic',
                         purchase_date DATE NOT NULL,
                         amount DECIMAL(10,2) NOT NULL,
@@ -58,18 +58,18 @@ router.get('/', async (req, res) => {
                         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
                         INDEX idx_employee (employee_id),
                         INDEX idx_campaign (campaign_id),
-                        INDEX idx_language (language),
+                        INDEX idx_luggage (luggage),
                         INDEX idx_status (payment_status, enrollment_status),
                         INDEX idx_purchase_date (purchase_date)
                     )
                 `);
-                console.log('✅ Language Purchases table verified/created successfully');
+                console.log('✅ Luggage Purchases table verified/created successfully');
             } catch (tableError) {
-                console.log('⚠️ Could not create language_purchases table:', tableError.message);
+                console.log('⚠️ Could not create luggage_purchases table:', tableError.message);
             }
             
             const purchasesResult = await db.execute(`
-                SELECT * FROM language_purchases 
+                SELECT * FROM luggage_purchases 
                 ORDER BY purchase_date DESC, created_at DESC
             `);
             
@@ -84,7 +84,7 @@ router.get('/', async (req, res) => {
                 purchases = [];
             }
             
-            console.log('✅ Language Purchases records fetched from database:', purchases.length);
+            console.log('✅ Luggage Purchases records fetched from database:', purchases.length);
             
             // If no purchases in database, use fallback data
             if (purchases.length === 0) {
@@ -98,7 +98,7 @@ router.get('/', async (req, res) => {
                     employee_id: 'EMP001',
                     employee_name: 'John Doe',
                     department: 'IT',
-                    language: 'English',
+                    luggage: 'English',
                     course_type: 'intermediate',
                     purchase_date: '2026-05-01',
                     amount: 1500.00,
@@ -128,7 +128,7 @@ router.get('/', async (req, res) => {
                     employee_id: 'EMP002',
                     employee_name: 'Jane Smith',
                     department: 'Operations',
-                    language: 'Swahili',
+                    luggage: 'Swahili',
                     course_type: 'basic',
                     purchase_date: '2026-04-15',
                     amount: 800.00,
@@ -158,7 +158,7 @@ router.get('/', async (req, res) => {
                     employee_id: 'EMP003',
                     employee_name: 'Mike Johnson',
                     department: 'Projects',
-                    language: 'French',
+                    luggage: 'French',
                     course_type: 'business',
                     purchase_date: '2026-06-01',
                     amount: 2500.00,
@@ -188,7 +188,7 @@ router.get('/', async (req, res) => {
                     employee_id: 'EMP004',
                     employee_name: 'Sarah Wilson',
                     department: 'Management',
-                    language: 'Mandarin',
+                    luggage: 'Mandarin',
                     course_type: 'business',
                     purchase_date: '2026-07-01',
                     amount: 3000.00,
@@ -218,7 +218,7 @@ router.get('/', async (req, res) => {
                     employee_id: 'EMP005',
                     employee_name: 'Robert Chen',
                     department: 'Finance',
-                    language: 'English',
+                    luggage: 'English',
                     course_type: 'advanced',
                     purchase_date: '2026-05-03',
                     amount: 2000.00,
@@ -229,7 +229,7 @@ router.get('/', async (req, res) => {
                     start_date: '2026-05-03',
                     end_date: '2026-07-03',
                     instructor: 'Emily Davis',
-                    location: 'Language Lab - Room C',
+                    location: 'Luggage Lab - Room C',
                     schedule: 'Mon-Tue-Wed-Thu 13:00-15:00',
                     progress_percentage: 15.0,
                     certificate_issued: false,
@@ -254,19 +254,19 @@ router.get('/', async (req, res) => {
         });
         
     } catch (error) {
-        console.error('❌ Error fetching language purchases:', error);
+        console.error('❌ Error fetching luggage purchases:', error);
         res.status(500).json({ 
             success: false,
-            error: 'Failed to fetch language purchases',
+            error: 'Failed to fetch luggage purchases',
             details: error.message 
         });
     }
 });
 
-// Get language purchases for payment tracking
+// Get luggage purchases for payment tracking
 router.get('/for-tracking', async (req, res) => {
     try {
-        console.log('📝 Language purchases for tracking endpoint accessed');
+        console.log('📝 Luggage purchases for tracking endpoint accessed');
         
         let purchases = [];
         
@@ -274,7 +274,7 @@ router.get('/for-tracking', async (req, res) => {
             const db = require('../../database/config/database');
             
             const purchasesResult = await db.execute(`
-                SELECT * FROM language_purchases 
+                SELECT * FROM luggage_purchases 
                 WHERE payment_status = 'paid' 
                 ORDER BY purchase_date DESC, created_at DESC
             `);
@@ -290,11 +290,11 @@ router.get('/for-tracking', async (req, res) => {
                 purchases = [];
             }
             
-            console.log('✅ Language purchases for tracking fetched from database:', purchases.length);
+            console.log('✅ Luggage purchases for tracking fetched from database:', purchases.length);
         } catch (dbError) {
-            console.error('❌ Database error, using fallback language purchases for tracking:', dbError);
+            console.error('❌ Database error, using fallback luggage purchases for tracking:', dbError);
             
-            // Fallback to mock language purchases for tracking
+            // Fallback to mock luggage purchases for tracking
             purchases = [
                 {
                     id: 1,
@@ -304,7 +304,7 @@ router.get('/for-tracking', async (req, res) => {
                     employee_id: 'EMP001',
                     employee_name: 'John Doe',
                     department: 'IT',
-                    language: 'English',
+                    luggage: 'English',
                     course_type: 'basic',
                     purchase_date: '2026-05-01',
                     amount: 1500.00,
@@ -331,7 +331,7 @@ router.get('/for-tracking', async (req, res) => {
                     employee_id: 'EMP002',
                     employee_name: 'Jane Smith',
                     department: 'HR',
-                    language: 'Swahili',
+                    luggage: 'Swahili',
                     course_type: 'intermediate',
                     purchase_date: '2026-04-15',
                     amount: 800.00,
@@ -358,7 +358,7 @@ router.get('/for-tracking', async (req, res) => {
                     employee_id: 'EMP005',
                     employee_name: 'Robert Chen',
                     department: 'Finance',
-                    language: 'English',
+                    luggage: 'English',
                     course_type: 'advanced',
                     purchase_date: '2026-05-03',
                     amount: 2000.00,
@@ -387,31 +387,31 @@ router.get('/for-tracking', async (req, res) => {
         });
         
     } catch (error) {
-        console.error('❌ Error fetching language purchases for tracking:', error);
+        console.error('❌ Error fetching luggage purchases for tracking:', error);
         res.status(500).json({ 
             success: false,
-            error: 'Failed to fetch language purchases for tracking',
+            error: 'Failed to fetch luggage purchases for tracking',
             details: error.message 
         });
     }
 });
 
-// Get language purchase by ID
+// Get luggage purchase by ID
 router.get('/:id', async (req, res) => {
     try {
         const purchaseId = req.params.id;
-        console.log('🔍 Fetching language purchase:', purchaseId);
+        console.log('🔍 Fetching luggage purchase:', purchaseId);
         
         let purchase = null;
         
         try {
             const db = require('../../database/config/database');
-            const purchaseResult = await db.execute('SELECT * FROM language_purchases WHERE id = ?', [purchaseId]);
+            const purchaseResult = await db.execute('SELECT * FROM luggage_purchases WHERE id = ?', [purchaseId]);
             const purchaseData = Array.isArray(purchaseResult) ? purchaseResult[0] : purchaseResult;
             
             if (purchaseData.length > 0) {
                 purchase = purchaseData[0];
-                console.log('✅ Language purchase found:', purchase);
+                console.log('✅ Luggage purchase found:', purchase);
             }
         } catch (dbError) {
             console.error('❌ Database error, using fallback purchase:', dbError);
@@ -426,7 +426,7 @@ router.get('/:id', async (req, res) => {
                     employee_id: 'EMP001',
                     employee_name: 'John Doe',
                     department: 'IT',
-                    language: 'English',
+                    luggage: 'English',
                     course_type: 'intermediate',
                     purchase_date: '2026-05-01',
                     amount: 1500.00,
@@ -456,7 +456,7 @@ router.get('/:id', async (req, res) => {
                     employee_id: 'EMP002',
                     employee_name: 'Jane Smith',
                     department: 'Operations',
-                    language: 'Swahili',
+                    luggage: 'Swahili',
                     course_type: 'basic',
                     purchase_date: '2026-04-15',
                     amount: 800.00,
@@ -486,7 +486,7 @@ router.get('/:id', async (req, res) => {
         if (!purchase) {
             return res.status(404).json({ 
                 success: false,
-                error: 'Language purchase not found' 
+                error: 'Luggage purchase not found' 
             });
         }
         
@@ -496,19 +496,19 @@ router.get('/:id', async (req, res) => {
         });
         
     } catch (error) {
-        console.error('❌ Error fetching language purchase:', error);
+        console.error('❌ Error fetching luggage purchase:', error);
         res.status(500).json({ 
             success: false,
-            error: 'Failed to fetch language purchase',
+            error: 'Failed to fetch luggage purchase',
             details: error.message 
         });
     }
 });
 
-// Create new language purchase
+// Create new luggage purchase
 router.post('/', async (req, res) => {
     try {
-        console.log('📝 Language Purchase creation request received');
+        console.log('📝 Luggage Purchase creation request received');
         console.log('📝 Request body:', req.body);
         
         const {
@@ -517,7 +517,7 @@ router.post('/', async (req, res) => {
             employee_id,
             employee_name,
             department,
-            language,
+            luggage,
             course_type,
             purchase_date,
             amount,
@@ -533,11 +533,11 @@ router.post('/', async (req, res) => {
         } = req.body;
         
         // Validate required fields
-        if (!employee_id || !employee_name || !language || !purchase_date || !amount) {
+        if (!employee_id || !employee_name || !luggage || !purchase_date || !amount) {
             return res.status(400).json({
                 success: false,
                 error: 'Missing required fields',
-                details: 'employee_id, employee_name, language, purchase_date, and amount are required'
+                details: 'employee_id, employee_name, luggage, purchase_date, and amount are required'
             });
         }
         
@@ -549,9 +549,9 @@ router.post('/', async (req, res) => {
             const db = require('../../database/config/database');
             
             const query = `
-                INSERT INTO language_purchases (
+                INSERT INTO luggage_purchases (
                     purchase_reference, campaign_id, campaign_name, employee_id, employee_name,
-                    department, language, course_type, purchase_date, amount, currency,
+                    department, luggage, course_type, purchase_date, amount, currency,
                     payment_method, start_date, end_date, instructor, location, schedule,
                     notes, approved_by, approved_date, created_at
                 ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())
@@ -564,7 +564,7 @@ router.post('/', async (req, res) => {
                 employee_id,
                 employee_name,
                 department || null,
-                language,
+                luggage,
                 course_type || 'basic',
                 purchase_date,
                 amount,
@@ -583,15 +583,15 @@ router.post('/', async (req, res) => {
             const resultResult = await db.execute(query, values);
             const result = Array.isArray(resultResult) ? resultResult[0] : resultResult;
             
-            console.log('✅ Language purchase created successfully:', result);
+            console.log('✅ Luggage purchase created successfully:', result);
             
             // Fetch the created purchase
-            const createdPurchaseResult = await db.execute('SELECT * FROM language_purchases WHERE id = ?', [result.insertId]);
+            const createdPurchaseResult = await db.execute('SELECT * FROM luggage_purchases WHERE id = ?', [result.insertId]);
             const createdPurchase = Array.isArray(createdPurchaseResult) ? createdPurchaseResult[0] : createdPurchaseResult;
             
             res.status(201).json({
                 success: true,
-                message: 'Language purchase created successfully',
+                message: 'Luggage purchase created successfully',
                 purchaseId: result.insertId,
                 purchase: createdPurchase[0]
             });
@@ -604,7 +604,7 @@ router.post('/', async (req, res) => {
             
             res.status(201).json({
                 success: true,
-                message: 'Language purchase created successfully (mock)',
+                message: 'Luggage purchase created successfully (mock)',
                 purchaseId: purchaseId,
                 purchase: {
                     id: purchaseId,
@@ -614,7 +614,7 @@ router.post('/', async (req, res) => {
                     employee_id,
                     employee_name,
                     department,
-                    language,
+                    luggage,
                     course_type,
                     purchase_date,
                     amount,
@@ -638,22 +638,22 @@ router.post('/', async (req, res) => {
         }
         
     } catch (error) {
-        console.error('❌ Error creating language purchase:', error);
+        console.error('❌ Error creating luggage purchase:', error);
         res.status(500).json({ 
             success: false,
-            error: 'Failed to create language purchase',
+            error: 'Failed to create luggage purchase',
             details: error.message 
         });
     }
 });
 
-// Update language purchase
+// Update luggage purchase
 router.put('/:id', async (req, res) => {
     try {
         const purchaseId = req.params.id;
         const updateData = req.body;
         
-        console.log('🔄 Updating language purchase:', purchaseId);
+        console.log('🔄 Updating luggage purchase:', purchaseId);
         console.log('📝 Update data:', updateData);
         
         // Try database first, fallback to mock
@@ -681,16 +681,16 @@ router.put('/:id', async (req, res) => {
             updateFields.push('updated_at = NOW()');
             updateValues.push(purchaseId);
             
-            const updateQuery = `UPDATE language_purchases SET ${updateFields.join(', ')} WHERE id = ?`;
+            const updateQuery = `UPDATE luggage_purchases SET ${updateFields.join(', ')} WHERE id = ?`;
             
             const resultResult = await db.execute(updateQuery, updateValues);
             const result = Array.isArray(resultResult) ? resultResult[0] : resultResult;
             
-            console.log('✅ Language purchase updated successfully:', result);
+            console.log('✅ Luggage purchase updated successfully:', result);
             
             res.json({
                 success: true,
-                message: 'Language purchase updated successfully',
+                message: 'Luggage purchase updated successfully',
                 affected_rows: result.affectedRows
             });
             
@@ -700,52 +700,52 @@ router.put('/:id', async (req, res) => {
             // Fallback to mock update
             res.json({
                 success: true,
-                message: 'Language purchase updated successfully (mock)',
+                message: 'Luggage purchase updated successfully (mock)',
                 affected_rows: 1,
                 mock: true
             });
         }
         
     } catch (error) {
-        console.error('❌ Error updating language purchase:', error);
+        console.error('❌ Error updating luggage purchase:', error);
         res.status(500).json({ 
             success: false,
-            error: 'Failed to update language purchase',
+            error: 'Failed to update luggage purchase',
             details: error.message 
         });
     }
 });
 
-// Delete language purchase
+// Delete luggage purchase
 router.delete('/:id', async (req, res) => {
     try {
         const purchaseId = req.params.id;
-        console.log('🗑️ Deleting language purchase:', purchaseId);
+        console.log('🗑️ Deleting luggage purchase:', purchaseId);
         
         // Try database first, fallback to mock
         try {
             const db = require('../../database/config/database');
             
             // Check if purchase exists
-            const purchaseResult = await db.execute('SELECT purchase_reference FROM language_purchases WHERE id = ?', [purchaseId]);
+            const purchaseResult = await db.execute('SELECT purchase_reference FROM luggage_purchases WHERE id = ?', [purchaseId]);
             const purchaseData = Array.isArray(purchaseResult) ? purchaseResult[0] : purchaseResult;
             
             if (purchaseData.length === 0) {
                 return res.status(404).json({
                     success: false,
-                    error: 'Language purchase not found'
+                    error: 'Luggage purchase not found'
                 });
             }
             
             // Delete purchase
-            const resultResult = await db.execute('DELETE FROM language_purchases WHERE id = ?', [purchaseId]);
+            const resultResult = await db.execute('DELETE FROM luggage_purchases WHERE id = ?', [purchaseId]);
             const result = Array.isArray(resultResult) ? resultResult[0] : resultResult;
             
-            console.log('✅ Language purchase deleted successfully');
+            console.log('✅ Luggage purchase deleted successfully');
             
             res.json({
                 success: true,
-                message: 'Language purchase deleted successfully',
+                message: 'Luggage purchase deleted successfully',
                 deleted_purchase: {
                     id: purchaseId,
                     purchase_reference: purchaseData[0].purchase_reference
@@ -758,7 +758,7 @@ router.delete('/:id', async (req, res) => {
             // Fallback to mock delete
             res.json({
                 success: true,
-                message: 'Language purchase deleted successfully (mock)',
+                message: 'Luggage purchase deleted successfully (mock)',
                 deleted_purchase: {
                     id: purchaseId,
                     purchase_reference: 'Mock Purchase'
@@ -768,10 +768,10 @@ router.delete('/:id', async (req, res) => {
         }
         
     } catch (error) {
-        console.error('❌ Error deleting language purchase:', error);
+        console.error('❌ Error deleting luggage purchase:', error);
         res.status(500).json({ 
             success: false,
-            error: 'Failed to delete language purchase',
+            error: 'Failed to delete luggage purchase',
             details: error.message 
         });
     }

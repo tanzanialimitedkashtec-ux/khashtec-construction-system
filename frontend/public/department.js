@@ -836,11 +836,11 @@ function loadMenu(){
 
         addMenu("Compliance", financeCompliance);
 
-        addMenu("Language Campaigns", manageLanguageCampaigns);
+        addMenu("Luggage Campaigns", manageLuggageCampaigns);
 
-        addMenu("Language Purchases", manageLanguagePurchases);
+        addMenu("Luggage Purchases", manageLuggagePurchases);
 
-        addMenu("Payment Tracking", trackLanguagePayments);
+        addMenu("Payment Tracking", trackLuggagePayments);
 
         addMenu("Add Property", addProperty);
 
@@ -991,11 +991,11 @@ function loadMenu(){
 
         addMenu("Compliance", financeCompliance);
 
-        addMenu("Language Campaigns", manageLanguageCampaigns);
+        addMenu("Luggage Campaigns", manageLuggageCampaigns);
 
-        addMenu("Language Purchases", manageLanguagePurchases);
+        addMenu("Luggage Purchases", manageLuggagePurchases);
 
-        addMenu("Payment Tracking", trackLanguagePayments);
+        addMenu("Payment Tracking", trackLuggagePayments);
 
     }
 
@@ -39993,21 +39993,21 @@ function scheduleAudit() {
 
 
 
-function manageLanguageCampaigns() {
+function manageLuggageCampaigns() {
 
     showContent(`
 
         <div class="card">
 
-            <h3>Language Purchase Campaigns</h3>
+            <h3>Luggage Purchase Campaigns</h3>
 
-            <p><strong>Campaign Management:</strong> Create and manage language purchase campaigns</p>
+            <p><strong>Campaign Management:</strong> Create and manage luggage purchase campaigns</p>
 
             
 
             <div class="campaign-actions">
 
-                <button class="btn-primary" onclick="createLanguageCampaign()">Create New Campaign</button>
+                <button class="btn-primary" onclick="createLuggageCampaign()">Create New Campaign</button>
 
                 <button class="btn-secondary" onclick="viewActiveCampaigns()">View Active Campaigns</button>
 
@@ -40027,9 +40027,9 @@ function manageLanguageCampaigns() {
 
                                 <th>Campaign Name</th>
 
-                                <th>Language Name</th>
+                                <th>Luggage Name</th>
 
-                                <th>Language Code</th>
+                                <th>Luggage Code</th>
 
                                 <th>Price per Unit</th>
 
@@ -40067,27 +40067,27 @@ function manageLanguageCampaigns() {
 
     `);
 
-    loadLanguageCampaigns();
+    loadLuggageCampaigns();
 
 }
 
 
 
-function manageLanguagePurchases() {
+function manageLuggagePurchases() {
 
     showContent(`
 
         <div class="card">
 
-            <h3>Language Purchases</h3>
+            <h3>Luggage Purchases</h3>
 
-            <p><strong>Purchase Management:</strong> Record and track language purchases</p>
+            <p><strong>Purchase Management:</strong> Record and track luggage purchases</p>
 
             
 
             <div class="purchase-actions">
 
-                <button class="btn-primary" onclick="recordLanguagePurchase()">Record New Purchase</button>
+                <button class="btn-primary" onclick="recordLuggagePurchase()">Record New Purchase</button>
 
                 <button class="btn-secondary" onclick="viewPurchaseHistory()">View Purchase History</button>
 
@@ -40099,7 +40099,7 @@ function manageLanguagePurchases() {
 
                 <h4>Purchase Records</h4>
 
-                <p>Complete overview of all language purchases including buyer details, campaign information, and payment methods.</p>
+                <p>Complete overview of all luggage purchases including buyer details, campaign information, and payment methods.</p>
 
             </div>
 
@@ -40159,13 +40159,13 @@ function manageLanguagePurchases() {
 
     // Load purchase records when the page loads
 
-    loadLanguagePurchases();
+    loadLuggagePurchases();
 
 }
 
 
 
-function trackLanguagePayments() {
+function trackLuggagePayments() {
 
     showContent(`
 
@@ -40255,13 +40255,13 @@ function trackLanguagePayments() {
 
 
 
-function createLanguageCampaign() {
+function createLuggageCampaign() {
 
     showContent(`
 
         <div class="card">
 
-            <h3>Create Language Campaign</h3>
+            <h3>Create Luggage Campaign</h3>
 
             <form id="campaignForm" class="compact-form">
 
@@ -40277,9 +40277,9 @@ function createLanguageCampaign() {
 
                     <div class="form-group">
 
-                        <label>Language Name</label>
+                        <label>Luggage Name</label>
 
-                        <input type="text" id="languageName" required>
+                        <input type="text" id="luggageName" required>
 
                     </div>
 
@@ -40291,9 +40291,9 @@ function createLanguageCampaign() {
 
                     <div class="form-group">
 
-                        <label>Language Code</label>
+                        <label>Luggage Code</label>
 
-                        <input type="text" id="languageCode" placeholder="e.g., EN, SW, FR" required>
+                        <input type="text" id="luggageCode" placeholder="e.g., EN, SW, FR" required>
 
                     </div>
 
@@ -40377,7 +40377,7 @@ function createLanguageCampaign() {
 
                     <button type="submit" class="btn-primary">Create Campaign</button>
 
-                    <button type="button" class="btn-secondary" onclick="manageLanguageCampaigns()">Cancel</button>
+                    <button type="button" class="btn-secondary" onclick="manageLuggageCampaigns()">Cancel</button>
 
                 </div>
 
@@ -40393,7 +40393,7 @@ function createLanguageCampaign() {
 
         e.preventDefault();
 
-        saveLanguageCampaign();
+        saveLuggageCampaign();
 
     });
 
@@ -40401,13 +40401,13 @@ function createLanguageCampaign() {
 
 
 
-function recordLanguagePurchase() {
+function recordLuggagePurchase() {
 
     showContent(`
 
         <div class="card">
 
-            <h3>Record Language Purchase</h3>
+            <h3>Record Luggage Purchase</h3>
 
             <form id="purchaseForm" class="compact-form">
 
@@ -40517,7 +40517,7 @@ function recordLanguagePurchase() {
 
                     <button type="submit" class="btn-primary">Record Purchase</button>
 
-                    <button type="button" class="btn-secondary" onclick="manageLanguagePurchases()">Cancel</button>
+                    <button type="button" class="btn-secondary" onclick="manageLuggagePurchases()">Cancel</button>
 
                 </div>
 
@@ -40535,7 +40535,7 @@ function recordLanguagePurchase() {
 
         e.preventDefault();
 
-        saveLanguagePurchase();
+        saveLuggagePurchase();
 
     });
 
@@ -40649,7 +40649,7 @@ function generateTrackingNumber() {
 
                     <button type="submit" class="btn-primary">Generate Tracking</button>
 
-                    <button type="button" class="btn-secondary" onclick="trackLanguagePayments()">Cancel</button>
+                    <button type="button" class="btn-secondary" onclick="trackLuggagePayments()">Cancel</button>
 
                 </div>
 
@@ -40677,7 +40677,7 @@ function generateTrackingNumber() {
 
 // Save Functions - API Integration
 
-async function saveLanguageCampaign() {
+async function saveLuggageCampaign() {
 
     try {
 
@@ -40687,9 +40687,9 @@ async function saveLanguageCampaign() {
 
             campaign_description: document.getElementById('campaignDescription').value,
 
-            language_name: document.getElementById('languageName').value,
+            luggage_name: document.getElementById('luggageName').value,
 
-            language_code: document.getElementById('languageCode').value,
+            luggage_code: document.getElementById('luggageCode').value,
 
             price_per_unit: parseFloat(document.getElementById('pricePerUnit').value),
 
@@ -40719,7 +40719,7 @@ async function saveLanguageCampaign() {
 
 
 
-        const response = await window.KashTecAPI.post('/language-campaigns', campaignData);
+        const response = await window.KashTecAPI.post('/luggage-campaigns', campaignData);
 
         
 
@@ -40727,7 +40727,7 @@ async function saveLanguageCampaign() {
 
             customAlert('Campaign created successfully!', 'Success', 'success');
 
-            manageLanguageCampaigns();
+            manageLuggageCampaigns();
 
         } else {
 
@@ -40747,7 +40747,7 @@ async function saveLanguageCampaign() {
 
 
 
-async function saveLanguagePurchase() {
+async function saveLuggagePurchase() {
 
     try {
 
@@ -40793,7 +40793,7 @@ async function saveLanguagePurchase() {
 
 
 
-        const response = await window.KashTecAPI.post('/language-purchases', purchaseData);
+        const response = await window.KashTecAPI.post('/luggage-purchases', purchaseData);
 
         
 
@@ -40801,7 +40801,7 @@ async function saveLanguagePurchase() {
 
             customAlert(`Purchase recorded successfully! Tracking Number: ${response.data.tracking_number}`, 'Success', 'success');
 
-            manageLanguagePurchases();
+            manageLuggagePurchases();
 
         } else {
 
@@ -40845,7 +40845,7 @@ async function savePaymentTracking() {
 
             employee_name: selectedPurchase.employee_name || '',
 
-            language: selectedPurchase.language || '',
+            luggage: selectedPurchase.luggage || '',
 
             course_name: selectedPurchase.campaign_name || selectedPurchase.course_name || '',
 
@@ -40881,7 +40881,7 @@ async function savePaymentTracking() {
 
 
 
-        const response = await window.KashTecAPI.post('/language-payment-tracking', trackingData);
+        const response = await window.KashTecAPI.post('/luggage-payment-tracking', trackingData);
 
         
 
@@ -40891,7 +40891,7 @@ async function savePaymentTracking() {
 
             customAlert(`Payment tracking created successfully! Tracking Number: ${trackingRef}`, 'Success', 'success');
 
-            trackLanguagePayments();
+            trackLuggagePayments();
 
         } else {
 
@@ -40913,7 +40913,7 @@ async function savePaymentTracking() {
 
 // Load Functions - API Integration
 
-async function loadLanguageCampaigns() {
+async function loadLuggageCampaigns() {
 
     try {
 
@@ -40935,7 +40935,7 @@ async function loadLanguageCampaigns() {
 
         
 
-        const response = await window.KashTecAPI.get('/language-campaigns');
+        const response = await window.KashTecAPI.get('/luggage-campaigns');
 
         
 
@@ -40957,9 +40957,9 @@ async function loadLanguageCampaigns() {
 
                     campaign_name: campaign.campaign_name || 'Unknown Campaign',
 
-                    language_name: campaign.target_language || campaign.language_name || 'Unknown',
+                    luggage_name: campaign.target_luggage || campaign.luggage_name || 'Unknown',
 
-                    language_code: campaign.target_language ? campaign.target_language.substring(0, 3).toUpperCase() : 'UNK',
+                    luggage_code: campaign.target_luggage ? campaign.target_luggage.substring(0, 3).toUpperCase() : 'UNK',
 
                     price_per_unit: campaign.budget || campaign.price_per_unit || 0,
 
@@ -40995,9 +40995,9 @@ async function loadLanguageCampaigns() {
 
                     <td>
 
-                        <div class="language-info">
+                        <div class="luggage-info">
 
-                            <div class="language-name">${mappedCampaign.language_name}</div>
+                            <div class="luggage-name">${mappedCampaign.luggage_name}</div>
 
                         </div>
 
@@ -41005,9 +41005,9 @@ async function loadLanguageCampaigns() {
 
                     <td>
 
-                        <div class="language-code">
+                        <div class="luggage-code">
 
-                            <span class="code-badge">${mappedCampaign.language_code}</span>
+                            <span class="code-badge">${mappedCampaign.luggage_code}</span>
 
                         </div>
 
@@ -41139,9 +41139,9 @@ function loadSampleCampaigns() {
 
             campaign_name: 'Swahili Basic Course 2024',
 
-            language_name: 'Swahili',
+            luggage_name: 'Swahili',
 
-            language_code: 'SW',
+            luggage_code: 'SW',
 
             price_per_unit: 15000,
 
@@ -41155,7 +41155,7 @@ function loadSampleCampaigns() {
 
             end_date: '2024-06-15',
 
-            campaign_description: 'Comprehensive Swahili language course for beginners covering basic grammar, vocabulary, and conversation skills.'
+            campaign_description: 'Comprehensive Swahili luggage course for beginners covering basic grammar, vocabulary, and conversation skills.'
 
         },
 
@@ -41165,9 +41165,9 @@ function loadSampleCampaigns() {
 
             campaign_name: 'English Business Communication',
 
-            language_name: 'English',
+            luggage_name: 'English',
 
-            language_code: 'EN',
+            luggage_code: 'EN',
 
             price_per_unit: 25000,
 
@@ -41191,9 +41191,9 @@ function loadSampleCampaigns() {
 
             campaign_name: 'French for Tourism',
 
-            language_name: 'French',
+            luggage_name: 'French',
 
-            language_code: 'FR',
+            luggage_code: 'FR',
 
             price_per_unit: 20000,
 
@@ -41207,7 +41207,7 @@ function loadSampleCampaigns() {
 
             end_date: '2024-08-01',
 
-            campaign_description: 'Specialized French language course designed for tourism industry professionals and hospitality workers.'
+            campaign_description: 'Specialized French luggage course designed for tourism industry professionals and hospitality workers.'
 
         },
 
@@ -41217,9 +41217,9 @@ function loadSampleCampaigns() {
 
             campaign_name: 'Arabic Cultural Studies',
 
-            language_name: 'Arabic',
+            luggage_name: 'Arabic',
 
-            language_code: 'AR',
+            luggage_code: 'AR',
 
             price_per_unit: 30000,
 
@@ -41233,7 +41233,7 @@ function loadSampleCampaigns() {
 
             end_date: '2023-12-01',
 
-            campaign_description: 'Advanced Arabic language course combined with cultural studies and Middle Eastern business practices.'
+            campaign_description: 'Advanced Arabic luggage course combined with cultural studies and Middle Eastern business practices.'
 
         },
 
@@ -41243,9 +41243,9 @@ function loadSampleCampaigns() {
 
             campaign_name: 'Chinese Mandarin Basics',
 
-            language_name: 'Chinese',
+            luggage_name: 'Chinese',
 
-            language_code: 'ZH',
+            luggage_code: 'ZH',
 
             price_per_unit: 35000,
 
@@ -41287,9 +41287,9 @@ function loadSampleCampaigns() {
 
             <td>
 
-                <div class="language-info">
+                <div class="luggage-info">
 
-                    <div class="language-name">${campaign.language_name}</div>
+                    <div class="luggage-name">${campaign.luggage_name}</div>
 
                 </div>
 
@@ -41297,9 +41297,9 @@ function loadSampleCampaigns() {
 
             <td>
 
-                <div class="language-code">
+                <div class="luggage-code">
 
-                    <span class="code-badge">${campaign.language_code}</span>
+                    <span class="code-badge">${campaign.luggage_code}</span>
 
                 </div>
 
@@ -41425,7 +41425,7 @@ function deleteCampaign(campaignId) {
 
         customAlert(`Campaign ${campaignId} deleted successfully!`, 'Success', 'success');
 
-        loadLanguageCampaigns();
+        loadLuggageCampaigns();
 
     }
 
@@ -41433,7 +41433,7 @@ function deleteCampaign(campaignId) {
 
 
 
-async function loadLanguagePurchases() {
+async function loadLuggagePurchases() {
 
     try {
 
@@ -41455,7 +41455,7 @@ async function loadLanguagePurchases() {
 
         
 
-        const response = await window.KashTecAPI.get('/language-purchases');
+        const response = await window.KashTecAPI.get('/luggage-purchases');
 
         
 
@@ -41481,7 +41481,7 @@ async function loadLanguagePurchases() {
 
                     campaign_name: purchase.campaign_name || 'Unknown Campaign',
 
-                    campaign_language: purchase.language || purchase.campaign_language || 'Unknown',
+                    campaign_luggage: purchase.luggage || purchase.campaign_luggage || 'Unknown',
 
                     employee_name: purchase.employee_name || 'Unknown Employee',
 
@@ -41531,7 +41531,7 @@ async function loadLanguagePurchases() {
 
                             <div class="campaign-name">${mappedPurchase.campaign_name}</div>
 
-                            <div class="campaign-details">${mappedPurchase.campaign_language || 'N/A'}</div>
+                            <div class="campaign-details">${mappedPurchase.campaign_luggage || 'N/A'}</div>
 
                         </div>
 
@@ -41671,7 +41671,7 @@ function loadSamplePurchases() {
 
             campaign_name: 'Swahili Bible Campaign',
 
-            campaign_language: 'Swahili',
+            campaign_luggage: 'Swahili',
 
             buyer_name: 'John Michael',
 
@@ -41705,7 +41705,7 @@ function loadSamplePurchases() {
 
             campaign_name: 'English Bible Campaign',
 
-            campaign_language: 'English',
+            campaign_luggage: 'English',
 
             buyer_name: 'Sarah Johnson',
 
@@ -41739,7 +41739,7 @@ function loadSamplePurchases() {
 
             campaign_name: 'French Bible Campaign',
 
-            campaign_language: 'French',
+            campaign_luggage: 'French',
 
             buyer_name: 'Robert Kimaro',
 
@@ -41773,7 +41773,7 @@ function loadSamplePurchases() {
 
             campaign_name: 'Arabic Bible Campaign',
 
-            campaign_language: 'Arabic',
+            campaign_luggage: 'Arabic',
 
             buyer_name: 'Grace Wilson',
 
@@ -41807,7 +41807,7 @@ function loadSamplePurchases() {
 
             campaign_name: 'Portuguese Bible Campaign',
 
-            campaign_language: 'Portuguese',
+            campaign_luggage: 'Portuguese',
 
             buyer_name: 'David Mwanga',
 
@@ -41863,7 +41863,7 @@ function loadSamplePurchases() {
 
                     <div class="campaign-name">${purchase.campaign_name}</div>
 
-                    <div class="campaign-details">${purchase.campaign_language}</div>
+                    <div class="campaign-details">${purchase.campaign_luggage}</div>
 
                 </div>
 
@@ -41987,7 +41987,7 @@ function deletePurchase(purchaseId) {
 
         customAlert(`Purchase ${purchaseId} deleted successfully!`, 'Success', 'success');
 
-        loadLanguagePurchases();
+        loadLuggagePurchases();
 
     }
 
@@ -42017,7 +42017,7 @@ async function loadPaymentTracking() {
 
         
 
-        const response = await window.KashTecAPI.get('/language-payment-tracking');
+        const response = await window.KashTecAPI.get('/luggage-payment-tracking');
 
         
 
@@ -42464,7 +42464,7 @@ async function loadCampaignsForPurchase() {
 
         
 
-        const response = await KashTecAPI.get('/language-campaigns/active');
+        const response = await KashTecAPI.get('/luggage-campaigns/active');
 
         
 
@@ -42476,7 +42476,7 @@ async function loadCampaignsForPurchase() {
 
                 option.value = campaign.id;
 
-                option.textContent = `${campaign.campaign_name} - ${campaign.language_name} (TZS ${campaign.price_per_unit})`;
+                option.textContent = `${campaign.campaign_name} - ${campaign.luggage_name} (TZS ${campaign.price_per_unit})`;
 
                 campaignSelect.appendChild(option);
 
@@ -42504,7 +42504,7 @@ async function loadPurchasesForTracking() {
 
         
 
-        const response = await KashTecAPI.get('/language-purchases/for-tracking');
+        const response = await KashTecAPI.get('/luggage-purchases/for-tracking');
 
         
 
@@ -42576,7 +42576,7 @@ async function viewCampaignDetails(campaignId) {
 
         
 
-        const response = await KashTecAPI.get('/language-campaigns');
+        const response = await KashTecAPI.get('/luggage-campaigns');
 
         
 
@@ -42598,7 +42598,7 @@ async function viewCampaignDetails(campaignId) {
 
                             <p><strong>Campaign Name:</strong> ${campaign.campaign_name}</p>
 
-                            <p><strong>Language:</strong> ${campaign.language_name} (${campaign.language_code})</p>
+                            <p><strong>Luggage:</strong> ${campaign.luggage_name} (${campaign.luggage_code})</p>
 
                             <p><strong>Price per Unit:</strong> TZS ${campaign.price_per_unit}</p>
 
@@ -42622,7 +42622,7 @@ async function viewCampaignDetails(campaignId) {
 
                         <div class="form-actions">
 
-                            <button class="btn-primary" onclick="manageLanguageCampaigns()">Back to Campaigns</button>
+                            <button class="btn-primary" onclick="manageLuggageCampaigns()">Back to Campaigns</button>
 
                         </div>
 
@@ -42642,7 +42642,7 @@ async function viewCampaignDetails(campaignId) {
 
                         <div class="form-actions">
 
-                            <button class="btn-primary" onclick="manageLanguageCampaigns()">Back to Campaigns</button>
+                            <button class="btn-primary" onclick="manageLuggageCampaigns()">Back to Campaigns</button>
 
                         </div>
 
@@ -42684,7 +42684,7 @@ async function viewPurchaseDetails(purchaseId) {
 
         
 
-        const response = await KashTecAPI.get('/language-purchases');
+        const response = await KashTecAPI.get('/luggage-purchases');
 
         
 
@@ -42736,7 +42736,7 @@ async function viewPurchaseDetails(purchaseId) {
 
                         <div class="form-actions">
 
-                            <button class="btn-primary" onclick="manageLanguagePurchases()">Back to Purchases</button>
+                            <button class="btn-primary" onclick="manageLuggagePurchases()">Back to Purchases</button>
 
                         </div>
 
@@ -42756,7 +42756,7 @@ async function viewPurchaseDetails(purchaseId) {
 
                         <div class="form-actions">
 
-                            <button class="btn-primary" onclick="manageLanguagePurchases()">Back to Purchases</button>
+                            <button class="btn-primary" onclick="manageLuggagePurchases()">Back to Purchases</button>
 
                         </div>
 
@@ -42798,7 +42798,7 @@ async function viewTrackingDetails(trackingId) {
 
         
 
-        const response = await KashTecAPI.get('/language-payment-tracking');
+        const response = await KashTecAPI.get('/luggage-payment-tracking');
 
         
 
@@ -42846,7 +42846,7 @@ async function viewTrackingDetails(trackingId) {
 
                         <div class="form-actions">
 
-                            <button class="btn-primary" onclick="trackLanguagePayments()">Back to Tracking</button>
+                            <button class="btn-primary" onclick="trackLuggagePayments()">Back to Tracking</button>
 
                         </div>
 
@@ -42866,7 +42866,7 @@ async function viewTrackingDetails(trackingId) {
 
                         <div class="form-actions">
 
-                            <button class="btn-primary" onclick="trackLanguagePayments()">Back to Tracking</button>
+                            <button class="btn-primary" onclick="trackLuggagePayments()">Back to Tracking</button>
 
                         </div>
 

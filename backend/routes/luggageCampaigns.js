@@ -1,36 +1,36 @@
 const express = require('express');
 const router = express.Router();
 
-console.log('🚀 Language Campaigns route file is being loaded...');
+console.log('🚀 Luggage Campaigns route file is being loaded...');
 
 // Test endpoint to verify route is working
 router.get('/test', (req, res) => {
-    console.log('🧪 Language Campaigns test endpoint accessed');
+    console.log('🧪 Luggage Campaigns test endpoint accessed');
     res.json({ 
-        message: 'Language Campaigns API is working!',
+        message: 'Luggage Campaigns API is working!',
         timestamp: new Date().toISOString(),
         status: 'routes_loaded_successfully',
-        debug: 'Language Campaigns routes are loaded and responding'
+        debug: 'Luggage Campaigns routes are loaded and responding'
     });
 });
 
-// Root endpoint - get all language campaigns
+// Root endpoint - get all luggage campaigns
 router.get('/', async (req, res) => {
     try {
-        console.log('📝 Language Campaigns root endpoint accessed');
+        console.log('📝 Luggage Campaigns root endpoint accessed');
         
         let campaigns = [];
         
         try {
             const db = require('../../database/config/database');
             
-            // Ensure language_campaigns table exists
+            // Ensure luggage_campaigns table exists
             try {
                 await db.execute(`
-                    CREATE TABLE IF NOT EXISTS language_campaigns (
+                    CREATE TABLE IF NOT EXISTS luggage_campaigns (
                         id INT AUTO_INCREMENT PRIMARY KEY,
                         campaign_name VARCHAR(255) NOT NULL,
-                        target_language VARCHAR(100) NOT NULL,
+                        target_luggage VARCHAR(100) NOT NULL,
                         description TEXT NULL,
                         start_date DATE NOT NULL,
                         end_date DATE NOT NULL,
@@ -47,13 +47,13 @@ router.get('/', async (req, res) => {
                         INDEX idx_dates (start_date, end_date)
                     )
                 `);
-                console.log('✅ Language Campaigns table verified/created successfully');
+                console.log('✅ Luggage Campaigns table verified/created successfully');
             } catch (tableError) {
-                console.log('⚠️ Could not create language_campaigns table:', tableError.message);
+                console.log('⚠️ Could not create luggage_campaigns table:', tableError.message);
             }
             
             const campaignsResult = await db.execute(`
-                SELECT * FROM language_campaigns 
+                SELECT * FROM luggage_campaigns 
                 ORDER BY created_at DESC
             `);
             
@@ -68,7 +68,7 @@ router.get('/', async (req, res) => {
                 campaigns = [];
             }
             
-            console.log('✅ Language Campaigns records fetched from database:', campaigns.length);
+            console.log('✅ Luggage Campaigns records fetched from database:', campaigns.length);
         } catch (dbError) {
             console.error('❌ Database error:', dbError);
         }
@@ -80,8 +80,8 @@ router.get('/', async (req, res) => {
                 {
                     id: 1,
                     campaign_name: 'English Proficiency Program',
-                    target_language: 'English',
-                    description: 'Comprehensive English language training for all staff members',
+                    target_luggage: 'English',
+                    description: 'Comprehensive English luggage training for all staff members',
                     start_date: '2026-05-01',
                     end_date: '2026-06-30',
                     status: 'active',
@@ -97,8 +97,8 @@ router.get('/', async (req, res) => {
                 {
                     id: 2,
                     campaign_name: 'Swahili Communication Skills',
-                    target_language: 'Swahili',
-                    description: 'Basic Swahili language skills for expatriate staff',
+                    target_luggage: 'Swahili',
+                    description: 'Basic Swahili luggage skills for expatriate staff',
                     start_date: '2026-04-15',
                     end_date: '2026-05-15',
                     status: 'completed',
@@ -114,8 +114,8 @@ router.get('/', async (req, res) => {
                 {
                     id: 3,
                     campaign_name: 'French for Project Management',
-                    target_language: 'French',
-                    description: 'French language training for project managers working with French-speaking clients',
+                    target_luggage: 'French',
+                    description: 'French luggage training for project managers working with French-speaking clients',
                     start_date: '2026-06-01',
                     end_date: '2026-08-31',
                     status: 'planning',
@@ -131,7 +131,7 @@ router.get('/', async (req, res) => {
                 {
                     id: 4,
                     campaign_name: 'Mandarin Business Basics',
-                    target_language: 'Mandarin',
+                    target_luggage: 'Mandarin',
                     description: 'Essential Mandarin phrases for business communication with Chinese partners',
                     start_date: '2026-07-01',
                     end_date: '2026-09-30',
@@ -155,19 +155,19 @@ router.get('/', async (req, res) => {
         });
         
     } catch (error) {
-        console.error('❌ Error fetching language campaigns:', error);
+        console.error('❌ Error fetching luggage campaigns:', error);
         res.status(500).json({ 
             success: false,
-            error: 'Failed to fetch language campaigns',
+            error: 'Failed to fetch luggage campaigns',
             details: error.message 
         });
     }
 });
 
-// Get active language campaigns
+// Get active luggage campaigns
 router.get('/active', async (req, res) => {
     try {
-        console.log('📝 Active language campaigns endpoint accessed');
+        console.log('📝 Active luggage campaigns endpoint accessed');
         
         let campaigns = [];
         
@@ -175,7 +175,7 @@ router.get('/active', async (req, res) => {
             const db = require('../../database/config/database');
             
             const campaignsResult = await db.execute(`
-                SELECT * FROM language_campaigns 
+                SELECT * FROM luggage_campaigns 
                 WHERE status = 'active' 
                 ORDER BY start_date ASC
             `);
@@ -200,8 +200,8 @@ router.get('/active', async (req, res) => {
                 {
                     id: 1,
                     campaign_name: 'English Proficiency Program',
-                    target_language: 'English',
-                    description: 'Comprehensive English language training for all staff members',
+                    target_luggage: 'English',
+                    description: 'Comprehensive English luggage training for all staff members',
                     start_date: '2026-05-01',
                     end_date: '2026-06-30',
                     status: 'active',
@@ -217,8 +217,8 @@ router.get('/active', async (req, res) => {
                 {
                     id: 2,
                     campaign_name: 'Swahili Communication Skills',
-                    target_language: 'Swahili',
-                    description: 'Basic Swahili language skills for expatriate staff',
+                    target_luggage: 'Swahili',
+                    description: 'Basic Swahili luggage skills for expatriate staff',
                     start_date: '2026-04-15',
                     end_date: '2026-07-15',
                     status: 'active',
@@ -241,31 +241,31 @@ router.get('/active', async (req, res) => {
         });
         
     } catch (error) {
-        console.error('❌ Error fetching active language campaigns:', error);
+        console.error('❌ Error fetching active luggage campaigns:', error);
         res.status(500).json({ 
             success: false,
-            error: 'Failed to fetch active language campaigns',
+            error: 'Failed to fetch active luggage campaigns',
             details: error.message 
         });
     }
 });
 
-// Get language campaign by ID
+// Get luggage campaign by ID
 router.get('/:id', async (req, res) => {
     try {
         const campaignId = req.params.id;
-        console.log('🔍 Fetching language campaign:', campaignId);
+        console.log('🔍 Fetching luggage campaign:', campaignId);
         
         let campaign = null;
         
         try {
             const db = require('../../database/config/database');
-            const campaignResult = await db.execute('SELECT * FROM language_campaigns WHERE id = ?', [campaignId]);
+            const campaignResult = await db.execute('SELECT * FROM luggage_campaigns WHERE id = ?', [campaignId]);
             const campaignData = Array.isArray(campaignResult) ? campaignResult[0] : campaignResult;
             
             if (campaignData.length > 0) {
                 campaign = campaignData[0];
-                console.log('✅ Language campaign found:', campaign);
+                console.log('✅ Luggage campaign found:', campaign);
             }
         } catch (dbError) {
             console.error('❌ Database error, using fallback campaign:', dbError);
@@ -275,8 +275,8 @@ router.get('/:id', async (req, res) => {
                 {
                     id: 1,
                     campaign_name: 'English Proficiency Program',
-                    target_language: 'English',
-                    description: 'Comprehensive English language training for all staff members',
+                    target_luggage: 'English',
+                    description: 'Comprehensive English luggage training for all staff members',
                     start_date: '2026-05-01',
                     end_date: '2026-06-30',
                     status: 'active',
@@ -292,8 +292,8 @@ router.get('/:id', async (req, res) => {
                 {
                     id: 2,
                     campaign_name: 'Swahili Communication Skills',
-                    target_language: 'Swahili',
-                    description: 'Basic Swahili language skills for expatriate staff',
+                    target_luggage: 'Swahili',
+                    description: 'Basic Swahili luggage skills for expatriate staff',
                     start_date: '2026-04-15',
                     end_date: '2026-05-15',
                     status: 'completed',
@@ -314,7 +314,7 @@ router.get('/:id', async (req, res) => {
         if (!campaign) {
             return res.status(404).json({ 
                 success: false,
-                error: 'Language campaign not found' 
+                error: 'Luggage campaign not found' 
             });
         }
         
@@ -324,25 +324,25 @@ router.get('/:id', async (req, res) => {
         });
         
     } catch (error) {
-        console.error('❌ Error fetching language campaign:', error);
+        console.error('❌ Error fetching luggage campaign:', error);
         res.status(500).json({ 
             success: false,
-            error: 'Failed to fetch language campaign',
+            error: 'Failed to fetch luggage campaign',
             details: error.message 
         });
     }
 });
 
-// Create new language campaign
+// Create new luggage campaign
 router.post('/', async (req, res) => {
     try {
-        console.log('📝 Language Campaign creation request received');
+        console.log('📝 Luggage Campaign creation request received');
         console.log('📝 Request body:', req.body);
         
         const {
             campaign_name,
             campaign_description,
-            target_language,
+            target_luggage,
             description,
             start_date,
             end_date,
@@ -356,11 +356,11 @@ router.post('/', async (req, res) => {
         const finalDescription = campaign_description || description;
         
         // Validate required fields
-        if (!campaign_name || !target_language || !start_date || !end_date) {
+        if (!campaign_name || !target_luggage || !start_date || !end_date) {
             return res.status(400).json({
                 success: false,
                 error: 'Missing required fields',
-                details: 'campaign_name, target_language, start_date, and end_date are required'
+                details: 'campaign_name, target_luggage, start_date, and end_date are required'
             });
         }
         
@@ -369,15 +369,15 @@ router.post('/', async (req, res) => {
             const db = require('../../database/config/database');
             
             const query = `
-                INSERT INTO language_campaigns (
-                    campaign_name, target_language, description, start_date, end_date,
+                INSERT INTO luggage_campaigns (
+                    campaign_name, target_luggage, description, start_date, end_date,
                     status, target_audience, budget, created_by, created_at
                 ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())
             `;
             
             const values = [
                 campaign_name,
-                target_language,
+                target_luggage,
                 finalDescription || null,
                 start_date,
                 end_date,
@@ -390,15 +390,15 @@ router.post('/', async (req, res) => {
             const resultResult = await db.execute(query, values);
             const result = Array.isArray(resultResult) ? resultResult[0] : resultResult;
             
-            console.log('✅ Language campaign created successfully:', result);
+            console.log('✅ Luggage campaign created successfully:', result);
             
             // Fetch the created campaign
-            const createdCampaignResult = await db.execute('SELECT * FROM language_campaigns WHERE id = ?', [result.insertId]);
+            const createdCampaignResult = await db.execute('SELECT * FROM luggage_campaigns WHERE id = ?', [result.insertId]);
             const createdCampaign = Array.isArray(createdCampaignResult) ? createdCampaignResult[0] : createdCampaignResult;
             
             res.status(201).json({
                 success: true,
-                message: 'Language campaign created successfully',
+                message: 'Luggage campaign created successfully',
                 campaignId: result.insertId,
                 campaign: createdCampaign[0]
             });
@@ -411,12 +411,12 @@ router.post('/', async (req, res) => {
             
             res.status(201).json({
                 success: true,
-                message: 'Language campaign created successfully (mock)',
+                message: 'Luggage campaign created successfully (mock)',
                 campaignId: campaignId,
                 campaign: {
                     id: campaignId,
                     campaign_name,
-                    target_language,
+                    target_luggage,
                     description,
                     start_date,
                     end_date,
@@ -431,22 +431,22 @@ router.post('/', async (req, res) => {
         }
         
     } catch (error) {
-        console.error('❌ Error creating language campaign:', error);
+        console.error('❌ Error creating luggage campaign:', error);
         res.status(500).json({ 
             success: false,
-            error: 'Failed to create language campaign',
+            error: 'Failed to create luggage campaign',
             details: error.message 
         });
     }
 });
 
-// Update language campaign
+// Update luggage campaign
 router.put('/:id', async (req, res) => {
     try {
         const campaignId = req.params.id;
         const updateData = req.body;
         
-        console.log('🔄 Updating language campaign:', campaignId);
+        console.log('🔄 Updating luggage campaign:', campaignId);
         console.log('📝 Update data:', updateData);
         
         // Try database first, fallback to mock
@@ -474,16 +474,16 @@ router.put('/:id', async (req, res) => {
             updateFields.push('updated_at = NOW()');
             updateValues.push(campaignId);
             
-            const updateQuery = `UPDATE language_campaigns SET ${updateFields.join(', ')} WHERE id = ?`;
+            const updateQuery = `UPDATE luggage_campaigns SET ${updateFields.join(', ')} WHERE id = ?`;
             
             const resultResult = await db.execute(updateQuery, updateValues);
             const result = Array.isArray(resultResult) ? resultResult[0] : resultResult;
             
-            console.log('✅ Language campaign updated successfully:', result);
+            console.log('✅ Luggage campaign updated successfully:', result);
             
             res.json({
                 success: true,
-                message: 'Language campaign updated successfully',
+                message: 'Luggage campaign updated successfully',
                 affected_rows: result.affectedRows
             });
             
@@ -493,52 +493,52 @@ router.put('/:id', async (req, res) => {
             // Fallback to mock update
             res.json({
                 success: true,
-                message: 'Language campaign updated successfully (mock)',
+                message: 'Luggage campaign updated successfully (mock)',
                 affected_rows: 1,
                 mock: true
             });
         }
         
     } catch (error) {
-        console.error('❌ Error updating language campaign:', error);
+        console.error('❌ Error updating luggage campaign:', error);
         res.status(500).json({ 
             success: false,
-            error: 'Failed to update language campaign',
+            error: 'Failed to update luggage campaign',
             details: error.message 
         });
     }
 });
 
-// Delete language campaign
+// Delete luggage campaign
 router.delete('/:id', async (req, res) => {
     try {
         const campaignId = req.params.id;
-        console.log('🗑️ Deleting language campaign:', campaignId);
+        console.log('🗑️ Deleting luggage campaign:', campaignId);
         
         // Try database first, fallback to mock
         try {
             const db = require('../../database/config/database');
             
             // Check if campaign exists
-            const campaignResult = await db.execute('SELECT campaign_name FROM language_campaigns WHERE id = ?', [campaignId]);
+            const campaignResult = await db.execute('SELECT campaign_name FROM luggage_campaigns WHERE id = ?', [campaignId]);
             const campaignData = Array.isArray(campaignResult) ? campaignResult[0] : campaignResult;
             
             if (campaignData.length === 0) {
                 return res.status(404).json({
                     success: false,
-                    error: 'Language campaign not found'
+                    error: 'Luggage campaign not found'
                 });
             }
             
             // Delete campaign
-            const resultResult = await db.execute('DELETE FROM language_campaigns WHERE id = ?', [campaignId]);
+            const resultResult = await db.execute('DELETE FROM luggage_campaigns WHERE id = ?', [campaignId]);
             const result = Array.isArray(resultResult) ? resultResult[0] : resultResult;
             
-            console.log('✅ Language campaign deleted successfully');
+            console.log('✅ Luggage campaign deleted successfully');
             
             res.json({
                 success: true,
-                message: 'Language campaign deleted successfully',
+                message: 'Luggage campaign deleted successfully',
                 deleted_campaign: {
                     id: campaignId,
                     campaign_name: campaignData[0].campaign_name
@@ -551,7 +551,7 @@ router.delete('/:id', async (req, res) => {
             // Fallback to mock delete
             res.json({
                 success: true,
-                message: 'Language campaign deleted successfully (mock)',
+                message: 'Luggage campaign deleted successfully (mock)',
                 deleted_campaign: {
                     id: campaignId,
                     campaign_name: 'Mock Campaign'
@@ -561,10 +561,10 @@ router.delete('/:id', async (req, res) => {
         }
         
     } catch (error) {
-        console.error('❌ Error deleting language campaign:', error);
+        console.error('❌ Error deleting luggage campaign:', error);
         res.status(500).json({ 
             success: false,
-            error: 'Failed to delete language campaign',
+            error: 'Failed to delete luggage campaign',
             details: error.message 
         });
     }

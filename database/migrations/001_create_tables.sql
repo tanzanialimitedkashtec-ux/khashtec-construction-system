@@ -1619,12 +1619,12 @@ INSERT IGNORE INTO vehicles (id, track_number, car_name, brand_name, registratio
 (1, 'TK001', 'Toyota Hilux', 'toyota', 'T123456', 'ABC123', 'Double cabin pickup truck', 'Reliable pickup for construction site transport', 'driver001', '2023-01-15', 'pickup', 'diesel', 'White', 2022, 15000, 'insured', 'active', 'Regular maintenance schedule'),
 (2, 'TK002', 'Nissan Patrol', 'nissan', 'T789012', 'XYZ789', '4x4 SUV', 'Heavy duty SUV for rough terrain', 'driver002', '2023-03-20', 'suv', 'diesel', 'Black', 2023, 8000, 'insured', 'active', 'Off-road capable');
 
--- Language Campaigns Table
-CREATE TABLE IF NOT EXISTS language_campaigns (
+-- Luggage Campaigns Table
+CREATE TABLE IF NOT EXISTS luggage_campaigns (
   id INT AUTO_INCREMENT PRIMARY KEY,
   campaign_name VARCHAR(255) NOT NULL,
-  language_name VARCHAR(100) NOT NULL,
-  language_code VARCHAR(10) NOT NULL,
+  luggage_name VARCHAR(100) NOT NULL,
+  luggage_code VARCHAR(10) NOT NULL,
   price_per_unit DECIMAL(10,2) NOT NULL,
   total_units_available INT NOT NULL,
   units_sold INT DEFAULT 0,
@@ -1641,8 +1641,8 @@ CREATE TABLE IF NOT EXISTS language_campaigns (
   
   -- Indexes for performance
   INDEX idx_campaign_name (campaign_name),
-  INDEX idx_language_name (language_name),
-  INDEX idx_language_code (language_code),
+  INDEX idx_luggage_name (luggage_name),
+  INDEX idx_luggage_code (luggage_code),
   INDEX idx_campaign_status (campaign_status),
   INDEX idx_start_date (start_date),
   INDEX idx_end_date (end_date),
@@ -1650,8 +1650,8 @@ CREATE TABLE IF NOT EXISTS language_campaigns (
   INDEX idx_created_at (created_at)
 );
 
--- Language Purchases Table
-CREATE TABLE IF NOT EXISTS language_purchases (
+-- Luggage Purchases Table
+CREATE TABLE IF NOT EXISTS luggage_purchases (
   id INT AUTO_INCREMENT PRIMARY KEY,
   campaign_id INT NOT NULL,
   buyer_name VARCHAR(255) NOT NULL,
@@ -1670,7 +1670,7 @@ CREATE TABLE IF NOT EXISTS language_purchases (
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   
   -- Foreign key relationships
-  FOREIGN KEY (campaign_id) REFERENCES language_campaigns(id) ON DELETE CASCADE,
+  FOREIGN KEY (campaign_id) REFERENCES luggage_campaigns(id) ON DELETE CASCADE,
   FOREIGN KEY (created_by) REFERENCES users(id) ON DELETE SET NULL,
   
   -- Indexes for performance
@@ -1702,7 +1702,7 @@ CREATE TABLE IF NOT EXISTS payment_tracking (
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   
   -- Foreign key relationships
-  FOREIGN KEY (purchase_id) REFERENCES language_purchases(id) ON DELETE CASCADE,
+  FOREIGN KEY (purchase_id) REFERENCES luggage_purchases(id) ON DELETE CASCADE,
   FOREIGN KEY (created_by) REFERENCES users(id) ON DELETE SET NULL,
   
   -- Indexes for performance
