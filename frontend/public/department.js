@@ -70001,13 +70001,6 @@ function generateAdminReport() {
 
 
 
-function reviewDeptStructure() {
-
-    customAlert('Review department structure...\n\nThis will open the department structure review interface where you can analyze and manage organizational structure.', "Review Department Structure", "info");
-
-}
-
-
 
 function reviewPolicy() {
 
