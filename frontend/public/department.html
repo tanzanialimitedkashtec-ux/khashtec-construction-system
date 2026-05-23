@@ -12913,11 +12913,11 @@ font-weight: bold;
 
     border: none;
 
-    border-radius: 4px;
+    border-radius: 2px;
 
     cursor: pointer;
 
-    font-size: 10px;
+    font-size: 9px;
 
     transition: all 0.2s ease;
 
@@ -29969,8 +29969,6 @@ function viewWorkforceReports(){
             <div class="report-actions">
 
                 <button class="action" onclick="exportWorkforceReport()">Export Full Report</button>
-
-                <button class="action" onclick="scheduleBoardReview()">Schedule Board Review</button>
 
                 <button class="action" onclick="refreshWorkforceData()">Refresh Data</button>
 
@@ -93476,11 +93474,13 @@ function filterPpeRecords() {
 
 .budget-details-modal {
 
-    max-width: 800px;
+    max-width: 600px;
 
     width: 95%;
 
     margin: 0 auto;
+
+    font-size: 9px;
 
 }
 
@@ -93492,9 +93492,9 @@ function filterPpeRecords() {
 
     text-align: center;
 
-    margin-bottom: 25px;
+    margin-bottom: 8px;
 
-    font-size: 22px;
+    font-size: 11px;
 
     font-weight: bold;
 
@@ -93514,13 +93514,13 @@ function filterPpeRecords() {
 
 .modification-details-section {
 
-    margin-bottom: 25px;
+    margin-bottom: 10px;
 
-    padding: 20px;
+    padding: 8px;
 
     background: #f8f9fa;
 
-    border-radius: 10px;
+    border-radius: 6px;
 
     border: 1px solid #e9ecef;
 
@@ -93532,15 +93532,15 @@ function filterPpeRecords() {
 
     color: #495057;
 
-    margin-bottom: 15px;
+    margin-bottom: 6px;
 
-    font-size: 16px;
+    font-size: 10px;
 
     font-weight: bold;
 
-    border-bottom: 2px solid #0b3d91;
+    border-bottom: 1px solid #0b3d91;
 
-    padding-bottom: 5px;
+    padding-bottom: 3px;
 
 }
 
@@ -93580,11 +93580,11 @@ function filterPpeRecords() {
 
     color: #6c757d;
 
-    font-size: 12px;
+    font-size: 8px;
 
     text-transform: uppercase;
 
-    letter-spacing: 0.5px;
+    letter-spacing: 0.3px;
 
 }
 
@@ -93594,7 +93594,7 @@ function filterPpeRecords() {
 
     color: #495057;
 
-    font-size: 14px;
+    font-size: 9px;
 
     font-weight: 500;
 
@@ -93608,7 +93608,7 @@ function filterPpeRecords() {
 
     flex-direction: column;
 
-    gap: 8px;
+    gap: 4px;
 
 }
 
@@ -93622,11 +93622,11 @@ function filterPpeRecords() {
 
     align-items: center;
 
-    padding: 8px 12px;
+    padding: 4px 6px;
 
     background: white;
 
-    border-radius: 6px;
+    border-radius: 3px;
 
     border: 1px solid #dee2e6;
 
@@ -93652,7 +93652,7 @@ function filterPpeRecords() {
 
     color: #495057;
 
-    font-size: 13px;
+    font-size: 8px;
 
 }
 
@@ -93672,7 +93672,7 @@ function filterPpeRecords() {
 
     color: #0b3d91;
 
-    font-size: 13px;
+    font-size: 8px;
 
 }
 
@@ -93710,13 +93710,13 @@ function filterPpeRecords() {
 
     color: #6c757d;
 
-    font-size: 12px;
+    font-size: 8px;
 
     text-transform: uppercase;
 
-    letter-spacing: 0.5px;
+    letter-spacing: 0.3px;
 
-    margin-bottom: 8px;
+    margin-bottom: 4px;
 
 }
 
@@ -93730,17 +93730,17 @@ function filterPpeRecords() {
 
     background: white;
 
-    padding: 12px;
+    padding: 6px;
 
-    border-radius: 6px;
+    border-radius: 3px;
 
     border: 1px solid #dee2e6;
 
     color: #495057;
 
-    font-size: 14px;
+    font-size: 9px;
 
-    line-height: 1.5;
+    line-height: 1.4;
 
     white-space: pre-wrap;
 
@@ -93754,9 +93754,9 @@ function filterPpeRecords() {
 
     justify-content: center;
 
-    margin-top: 25px;
+    margin-top: 10px;
 
-    padding-top: 20px;
+    padding-top: 8px;
 
     border-top: 1px solid #e9ecef;
 
@@ -93770,15 +93770,15 @@ function filterPpeRecords() {
 
     color: white;
 
-    padding: 10px 20px;
+    padding: 4px 10px;
 
     border: none;
 
-    border-radius: 6px;
+    border-radius: 3px;
 
     cursor: pointer;
 
-    font-size: 14px;
+    font-size: 9px;
 
     font-weight: 500;
 
@@ -93791,6 +93791,48 @@ function filterPpeRecords() {
 .action-btn.close:hover {
 
     background: #5a6268;
+
+}
+
+
+
+.budget-details-modal .status-badge {
+
+    padding: 2px 4px;
+
+    font-size: 8px;
+
+    border-radius: 2px;
+
+}
+
+
+
+.budget-details-modal .status-badge.status-pending {
+
+    background: #ffc107;
+
+    color: #212529;
+
+}
+
+
+
+.budget-details-modal .status-badge.status-approved {
+
+    background: #28a745;
+
+    color: white;
+
+}
+
+
+
+.budget-details-modal .status-badge.status-rejected {
+
+    background: #dc3545;
+
+    color: white;
 
 }
 
