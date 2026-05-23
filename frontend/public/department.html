@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 
 <html lang="en">
 
@@ -410,11 +410,12 @@ header h2 {
     right: 0;
     background: #ffffff;
     border-radius: 8px;
-    box-shadow: 0 4px 16px rgba(0,0,0,0.12);
-    width: 280px;
+    box-shadow: 0 3px 8px rgba(0,0,0,0.12);
+    width: 180px;
     overflow: hidden;
     display: none;
-    animation: slideIn 0.3s ease;
+    animation: slideIn 0.2s ease;
+    font-size: 9px;
 }
 
 .profile-widget-card.show {
@@ -424,7 +425,7 @@ header h2 {
 @keyframes slideIn {
     from {
         opacity: 0;
-        transform: translateY(-10px);
+        transform: translateY(-6px);
     }
     to {
         opacity: 1;
@@ -435,7 +436,7 @@ header h2 {
 .profile-widget-header {
     background: linear-gradient(135deg, #1a73e8, #0d47a1);
     color: #fff;
-    padding: 12px 15px;
+    padding: 6px 8px;
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -443,8 +444,8 @@ header h2 {
 
 .profile-widget-header h4 {
     margin: 0;
-    font-size: 13px;
-    font-weight: 600;
+    font-size: 10px;
+    font-weight: 700;
 }
 
 .profile-widget-close {
@@ -452,10 +453,10 @@ header h2 {
     border: none;
     color: #fff;
     cursor: pointer;
-    font-size: 16px;
+    font-size: 12px;
     padding: 0;
-    width: 24px;
-    height: 24px;
+    width: 20px;
+    height: 20px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -467,23 +468,23 @@ header h2 {
 }
 
 .profile-widget-content {
-    padding: 12px 15px;
+    padding: 8px;
     display: flex;
-    gap: 12px;
+    gap: 6px;
     align-items: center;
     border-bottom: 1px solid #e0e0e0;
 }
 
 .profile-avatar {
-    width: 44px;
-    height: 44px;
+    width: 28px;
+    height: 28px;
     border-radius: 50%;
     background: linear-gradient(135deg, #1a73e8, #0d47a1);
     color: #fff;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 18px;
+    font-size: 12px;
     font-weight: bold;
     flex-shrink: 0;
 }
@@ -494,9 +495,9 @@ header h2 {
 }
 
 .profile-info h3 {
-    margin: 0 0 4px 0;
-    font-size: 12px;
-    font-weight: 600;
+    margin: 0 0 2px 0;
+    font-size: 10px;
+    font-weight: 700;
     color: #333;
     white-space: nowrap;
     overflow: hidden;
@@ -504,9 +505,9 @@ header h2 {
 }
 
 .profile-info p {
-    margin: 2px 0;
-    font-size: 11px;
-    color: #666;
+    margin: 1px 0;
+    font-size: 8px;
+    color: #555;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -517,27 +518,27 @@ header h2 {
 }
 
 .profile-widget-footer {
-    padding: 10px 15px;
+    padding: 6px 8px;
     text-align: center;
 }
 
 .profile-widget-footer button {
     width: 100%;
-    padding: 8px 12px;
+    padding: 5px 8px;
     background: #f44336;
     color: #fff;
     border: none;
     border-radius: 4px;
     cursor: pointer;
-    font-size: 11px;
-    font-weight: 600;
+    font-size: 9px;
+    font-weight: 700;
     transition: all 0.2s ease;
 }
 
 .profile-widget-footer button:hover {
     background: #d32f2f;
     transform: translateY(-1px);
-    box-shadow: 0 2px 6px rgba(244,67,54,0.3);
+    box-shadow: 0 1px 4px rgba(244,67,54,0.3);
 }
 
 
