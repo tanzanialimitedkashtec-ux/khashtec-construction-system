@@ -24439,6 +24439,22 @@ function showNotifications(){
 // (departmentConfig, getMenuPlacementMap, toggleDepartment, ensureDeptAndCategory, loadMenu, addMenu)
 // The following are kept inline for early availability before department.js loads.
 
+function addMenuItem(text, onClick, options) {
+    var menuContainer = document.getElementById('menu');
+    if (!menuContainer) return;
+    var button = document.createElement('button');
+    button.className = 'dept-general-btn';
+    button.textContent = text;
+    button.setAttribute('data-menu-label', text.toLowerCase());
+    button.onclick = onClick;
+    if (options && options.disabled) {
+        button.disabled = true;
+        button.style.opacity = '0.5';
+        button.style.cursor = 'not-allowed';
+    }
+    menuContainer.appendChild(button);
+}
+
 function resetMenuSearch() {
     var input = document.getElementById('menuSearch');
     if (input) { input.value = ''; }
