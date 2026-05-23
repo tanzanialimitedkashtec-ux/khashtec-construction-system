@@ -37,11 +37,11 @@ router.get('/:id', async (req, res) => {
             LEFT JOIN projects p ON rm.project_id = p.id
             WHERE rm.id = ?
         `, [req.params.id]);
-        const risk = Array.isArray(result) ? result[0] : result;
-        if (risk.length === 0) {
+        const rows = Array.isArray(result) ? result : [];
+        if (!rows || rows.length === 0) {
             return res.status(404).json({ error: 'Risk not found' });
         }
-        res.json(risk[0]);
+        res.json(rows[0]);
     } catch (error) {
         console.error('Error fetching risk:', error);
         res.status(500).json({ error: 'Failed to fetch risk' });

@@ -37,11 +37,11 @@ router.get('/:id', async (req, res) => {
             LEFT JOIN users resolver ON dm.resolved_by = resolver.id
             WHERE dm.id = ?
         `, [req.params.id]);
-        const caseRecord = Array.isArray(result) ? result[0] : result;
-        if (caseRecord.length === 0) {
+        const rows = Array.isArray(result) ? result : [];
+        if (!rows || rows.length === 0) {
             return res.status(404).json({ error: 'Discipline case not found' });
         }
-        res.json(caseRecord[0]);
+        res.json(rows[0]);
     } catch (error) {
         console.error('Error fetching discipline case:', error);
         res.status(500).json({ error: 'Failed to fetch discipline case' });
