@@ -62022,13 +62022,21 @@ async function loadSystemChanges() {
 
         if (type) url += '&type=' + type;
 
+        console.log('[Audit] Loading system changes from', url);
+
         const response = await KashTecAPI.get(url);
+
+        console.log('[Audit] System changes response:', response);
 
         if (response) {
 
             const summary = response.summary || {};
 
             const changes = response.changes || [];
+
+            console.log('[Audit] System changes - Total:', summary.total, '| Changes loaded:', changes.length);
+
+            console.log('[Audit] System changes summary:', JSON.stringify(summary));
 
             // Render summary cards
 
@@ -62106,7 +62114,7 @@ async function loadSystemChanges() {
 
     } catch (error) {
 
-        console.error('System changes error:', error);
+        console.error('[Audit] System changes error:', error);
 
         const el = document.getElementById('changeLogList');
 
@@ -62118,6 +62126,7 @@ async function loadSystemChanges() {
 
 // ===== LOAD FINANCIAL AUDITS DATA =====
 async function loadFinancialAuditsData() {
+    console.log('[Audit] Loading all financial audit data (internal, external, compliance)...');
     loadInternalAudits();
     loadExternalAudits();
     loadComplianceChecks();
@@ -62129,10 +62138,14 @@ async function loadInternalAudits() {
     if (!el) return;
     el.innerHTML = '<p>Loading internal audit data...</p>';
     try {
+        console.log('[Audit] Loading internal audits from /audit/internal-audits...');
         const response = await KashTecAPI.get('/audit/internal-audits');
+        console.log('[Audit] Internal audits response:', response);
         if (response && response.audits) {
             const audits = response.audits;
+            console.log('[Audit] Internal audits loaded:', audits.length, 'sections -', audits.map(a => a.name + ' (' + (a.totalRecords || 0) + ' records)').join(', '));
             if (audits.length === 0) {
+                console.warn('[Audit] No internal audit data returned from API');
                 el.innerHTML = '<p>No internal audit data available.</p>';
                 return;
             }
@@ -62187,7 +62200,7 @@ async function loadInternalAudits() {
             el.innerHTML = html;
         }
     } catch (error) {
-        console.error('Internal audits error:', error);
+        console.error('[Audit] Internal audits error:', error);
         el.innerHTML = '<p class="error-text">Error loading internal audit data. Please try again.</p>';
     }
 }
@@ -62198,10 +62211,14 @@ async function loadExternalAudits() {
     if (!el) return;
     el.innerHTML = '<p>Loading external audit data...</p>';
     try {
+        console.log('[Audit] Loading external audits from /audit/external-audits...');
         const response = await KashTecAPI.get('/audit/external-audits');
+        console.log('[Audit] External audits response:', response);
         if (response && response.audits) {
             const audits = response.audits;
+            console.log('[Audit] External audits loaded:', audits.length, 'sections -', audits.map(a => a.name + ' (' + (a.totalRecords || 0) + ' records)').join(', '));
             if (audits.length === 0) {
+                console.warn('[Audit] No external audit data returned from API');
                 el.innerHTML = '<p>No external audit data available.</p>';
                 return;
             }
@@ -62257,7 +62274,7 @@ async function loadExternalAudits() {
             el.innerHTML = html;
         }
     } catch (error) {
-        console.error('External audits error:', error);
+        console.error('[Audit] External audits error:', error);
         el.innerHTML = '<p class="error-text">Error loading external audit data. Please try again.</p>';
     }
 }
@@ -62268,9 +62285,12 @@ async function loadComplianceChecks() {
     if (!el) return;
     el.innerHTML = '<p>Loading compliance data...</p>';
     try {
+        console.log('[Audit] Loading compliance checks from /audit/compliance-checks...');
         const response = await KashTecAPI.get('/audit/compliance-checks');
+        console.log('[Audit] Compliance checks response:', response);
         if (response && response.checks) {
             const checks = response.checks;
+            console.log('[Audit] Compliance checks loaded:', Object.keys(checks).length, 'checks -', Object.entries(checks).map(function(e) { return e[1].label + ': ' + e[1].status + ' (' + e[1].total + ')'; }).join(', '));
             let html = '<div class="compliance-grid">';
             for (const [key, check] of Object.entries(checks)) {
                 const statusClass = check.healthy ? 'status-good' : (check.status.includes('No Data') ? 'status-neutral' : 'status-warning');
@@ -62294,7 +62314,7 @@ async function loadComplianceChecks() {
             el.innerHTML = html;
         }
     } catch (error) {
-        console.error('Compliance checks error:', error);
+        console.error('[Audit] Compliance checks error:', error);
         el.innerHTML = '<p class="error-text">Error loading compliance data. Please try again.</p>';
     }
 }

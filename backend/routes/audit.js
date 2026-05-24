@@ -428,6 +428,7 @@ router.get('/system-changes', async (req, res) => {
         await ensureAuditLogsTable();
 
         const { days = 30, type } = req.query;
+        console.log(`  → Period: Last ${days} days, Filter: ${type || 'All'}`);
         const changes = [];
 
         // Track recently added employees
@@ -502,7 +503,7 @@ router.get('/system-changes', async (req, res) => {
         // Track recently added policies
         try {
             const [newPolicies] = await db.execute(`
-                SELECT id, title, department, status, created_at
+                SELECT id, title, submitted_by, status, created_at
                 FROM policies
                 WHERE created_at >= DATE_SUB(NOW(), INTERVAL ? DAY)
                 ORDER BY created_at DESC
@@ -513,7 +514,7 @@ router.get('/system-changes', async (req, res) => {
                     type: 'policy_added',
                     icon: '📋',
                     title: 'New Policy Added',
-                    description: `"${p.title}" policy added for ${p.department || 'All'} department`,
+                    description: `"${p.title}" policy submitted by ${p.submitted_by || 'Unknown'}`,
                     entity_id: p.id,
                     entity_name: p.title,
                     status: p.status,
@@ -978,6 +979,9 @@ router.get('/system-changes', async (req, res) => {
             transport: changes.filter(c => c.type === 'transport_cost').length
         };
 
+        console.log(`🔔 System changes loaded: ${filtered.length} changes (${changes.length} total before filter)`);
+        console.log('  Summary:', JSON.stringify(summary));
+
         res.json({
             success: true,
             changes: filtered,
@@ -1085,6 +1089,7 @@ router.get('/system-status', async (req, res) => {
 router.get('/internal-audits', async (req, res) => {
     try {
         console.log('📋 Fetching internal audit data from database...');
+        console.log('  → Querying: financial_transactions, payroll_records, payment_tracking, workforce_budgets, procurement_sales, claims_management, materials_in, materials_out, transport_costs, luggage_campaigns, luggage_purchases');
         const audits = [];
 
         // Financial transactions audit
@@ -1109,7 +1114,7 @@ router.get('/internal-audits', async (req, res) => {
                 totalRecords: txSummary.reduce((s, r) => s + r.count, 0),
                 totalAmount: txSummary.reduce((s, r) => s + Number(r.total_amount || 0), 0)
             });
-        } catch (e) { console.log('Financial audit:', e.message); }
+        } catch (e) { console.log('  ❌ Financial audit:', e.message); }
 
         // Payroll audit
         try {
@@ -1134,7 +1139,7 @@ router.get('/internal-audits', async (req, res) => {
                 totalRecords: payrollSummary.reduce((s, r) => s + r.count, 0),
                 totalNet: payrollSummary.reduce((s, r) => s + Number(r.total_net || 0), 0)
             });
-        } catch (e) { console.log('Payroll audit:', e.message); }
+        } catch (e) { console.log('  ❌ Payroll audit:', e.message); }
 
         // Payment tracking audit
         try {
@@ -1160,13 +1165,13 @@ router.get('/internal-audits', async (req, res) => {
                 totalRecords: ptSummary.reduce((s, r) => s + r.count, 0),
                 overdueCount: overdue.length
             });
-        } catch (e) { console.log('Payment tracking audit:', e.message); }
+        } catch (e) { console.log('  ❌ Payment tracking audit:', e.message); }
 
         // Budget audit
         try {
             const [budgetSummary] = await db.execute(`
                 SELECT status, COUNT(*) as count, SUM(total_proposed) as total_proposed
-                FROM budgets
+                FROM workforce_budgets
                 GROUP BY status
             `);
             audits.push({
@@ -1177,7 +1182,7 @@ router.get('/internal-audits', async (req, res) => {
                 totalRecords: budgetSummary.reduce((s, r) => s + r.count, 0),
                 totalProposed: budgetSummary.reduce((s, r) => s + Number(r.total_proposed || 0), 0)
             });
-        } catch (e) { console.log('Budget audit:', e.message); }
+        } catch (e) { console.log('  ❌ Budget audit:', e.message); }
 
         // Procurement & Sales audit
         try {
@@ -1196,7 +1201,7 @@ router.get('/internal-audits', async (req, res) => {
                 totalRecords: procSummary.reduce((s, r) => s + r.count, 0),
                 totalBudget: procSummary.reduce((s, r) => s + Number(r.total_budget || 0), 0)
             });
-        } catch (e) { console.log('Procurement audit:', e.message); }
+        } catch (e) { console.log('  ❌ Procurement audit:', e.message); }
 
         // Claims audit
         try {
@@ -1215,7 +1220,7 @@ router.get('/internal-audits', async (req, res) => {
                 totalRecords: claimsSummary.reduce((s, r) => s + r.count, 0),
                 totalClaimed: claimsSummary.reduce((s, r) => s + Number(r.total_claimed || 0), 0)
             });
-        } catch (e) { console.log('Claims audit:', e.message); }
+        } catch (e) { console.log('  ❌ Claims audit:', e.message); }
 
         // Materials audit
         try {
@@ -1239,7 +1244,7 @@ router.get('/internal-audits', async (req, res) => {
                 recentRecords: matRecent,
                 totalRecords: (matInSummary[0]?.count || 0) + (matOutSummary[0]?.count || 0)
             });
-        } catch (e) { console.log('Materials audit:', e.message); }
+        } catch (e) { console.log('  ❌ Materials audit:', e.message); }
 
         // Transport costs audit
         try {
@@ -1258,7 +1263,7 @@ router.get('/internal-audits', async (req, res) => {
                 totalRecords: transportSummary.reduce((s, r) => s + r.count, 0),
                 totalCost: transportSummary.reduce((s, r) => s + Number(r.total_amount || 0), 0)
             });
-        } catch (e) { console.log('Transport audit:', e.message); }
+        } catch (e) { console.log('  ❌ Transport audit:', e.message); }
 
         // Luggage campaigns & purchases audit
         try {
@@ -1277,8 +1282,9 @@ router.get('/internal-audits', async (req, res) => {
                 totalRecords: (campSummary.reduce((s, r) => s + r.count, 0)) + (purchSummary.reduce((s, r) => s + r.count, 0)),
                 totalRevenue: purchSummary.reduce((s, r) => s + Number(r.total_amount || 0), 0)
             });
-        } catch (e) { console.log('Luggage audit:', e.message); }
+        } catch (e) { console.log('  ❌ Luggage audit:', e.message); }
 
+        console.log('📋 Internal audits loaded:', audits.length, 'audit sections with data:', audits.map(a => a.name + ' (' + a.totalRecords + ' records)').join(', '));
         res.json({ success: true, audits });
     } catch (error) {
         console.error('❌ Error fetching internal audits:', error);
@@ -1290,6 +1296,7 @@ router.get('/internal-audits', async (req, res) => {
 router.get('/external-audits', async (req, res) => {
     try {
         console.log('📋 Fetching external audit data from database...');
+        console.log('  → Querying: tax_payments, nssf_registration, documents, risk_management, talent_acquisition, properties');
         const audits = [];
 
         // Tax payments audit
@@ -1321,7 +1328,7 @@ router.get('/external-audits', async (req, res) => {
                 overdueCount: overdueTax.length,
                 totalPenalties: taxSummary.reduce((s, r) => s + Number(r.total_penalties || 0), 0)
             });
-        } catch (e) { console.log('Tax audit:', e.message); }
+        } catch (e) { console.log('  ❌ Tax audit:', e.message); }
 
         // NSSF compliance audit
         try {
@@ -1349,7 +1356,7 @@ router.get('/external-audits', async (req, res) => {
                 totalRecords: nssfSummary.reduce((s, r) => s + r.count, 0),
                 totalContributions: nssfSummary.reduce((s, r) => s + Number(r.total_contributions || 0), 0)
             });
-        } catch (e) { console.log('NSSF audit:', e.message); }
+        } catch (e) { console.log('  ❌ NSSF audit:', e.message); }
 
         // Document compliance audit
         try {
@@ -1367,7 +1374,7 @@ router.get('/external-audits', async (req, res) => {
                 summary: docSummary,
                 totalRecords: docSummary.reduce((s, r) => s + r.count, 0)
             });
-        } catch (e) { console.log('Document audit:', e.message); }
+        } catch (e) { console.log('  ❌ Document audit:', e.message); }
 
         // Risk management audit
         try {
@@ -1387,7 +1394,7 @@ router.get('/external-audits', async (req, res) => {
                 totalRecords: riskSummary.reduce((s, r) => s + r.count, 0),
                 totalPotentialLoss: riskSummary.reduce((s, r) => s + Number(r.total_potential_loss || 0), 0)
             });
-        } catch (e) { console.log('Risk audit:', e.message); }
+        } catch (e) { console.log('  ❌ Risk audit:', e.message); }
 
         // Talent acquisition audit
         try {
@@ -1407,7 +1414,7 @@ router.get('/external-audits', async (req, res) => {
                 totalRecords: talentSummary.reduce((s, r) => s + r.count, 0),
                 totalPositions: talentSummary.reduce((s, r) => s + Number(r.total_positions || 0), 0)
             });
-        } catch (e) { console.log('Talent audit:', e.message); }
+        } catch (e) { console.log('  ❌ Talent audit:', e.message); }
 
         // Properties audit
         try {
@@ -1427,8 +1434,9 @@ router.get('/external-audits', async (req, res) => {
                 totalRecords: propSummary.reduce((s, r) => s + r.count, 0),
                 totalValue: propSummary.reduce((s, r) => s + Number(r.total_value || 0), 0)
             });
-        } catch (e) { console.log('Property audit:', e.message); }
+        } catch (e) { console.log('  ❌ Property audit:', e.message); }
 
+        console.log('📋 External audits loaded:', audits.length, 'audit sections with data:', audits.map(a => a.name + ' (' + a.totalRecords + ' records)').join(', '));
         res.json({ success: true, audits });
     } catch (error) {
         console.error('❌ Error fetching external audits:', error);
@@ -1440,6 +1448,7 @@ router.get('/external-audits', async (req, res) => {
 router.get('/compliance-checks', async (req, res) => {
     try {
         console.log('📋 Fetching compliance check data from database...');
+        console.log('  → Querying: tax_payments, nssf_registration, financial_transactions, payroll_records, policies, payment_tracking, claims_management, risk_management, discipline_monitoring, office_resources, transport_costs, hse_work, departments');
         const checks = {};
 
         // Tax compliance
@@ -1702,6 +1711,7 @@ router.get('/compliance-checks', async (req, res) => {
             };
         } catch (e) { checks.departments = { label: 'Department Management', status: 'No Data', healthy: true, active: 0, total: 0, rate: 0 }; }
 
+        console.log('📋 Compliance checks loaded:', Object.entries(checks).map(([k, v]) => v.label + ': ' + v.status + ' (' + v.total + ')').join(', '));
         res.json({ success: true, checks });
     } catch (error) {
         console.error('❌ Error fetching compliance checks:', error);
