@@ -23,15 +23,15 @@ router.get('/dashboard', async (req, res) => {
         // ===== SYSTEM OVERVIEW =====
         try {
             // Get basic system stats
-            const [employeeCount] = await db.execute(`
+            const employeeCount = await db.execute(`
                 SELECT COUNT(*) as count FROM employees WHERE status = 'Active'
             `);
             
-            const [projectCount] = await db.execute(`
+            const projectCount = await db.execute(`
                 SELECT COUNT(*) as count FROM projects WHERE status != 'Completed'
             `);
             
-            const [departmentCount] = await db.execute(`
+            const departmentCount = await db.execute(`
                 SELECT COUNT(DISTINCT department) as count FROM employees WHERE status = 'Active'
             `);
 
@@ -50,14 +50,14 @@ router.get('/dashboard', async (req, res) => {
         // ===== PROJECTS ANALYSIS =====
         try {
             // Project status breakdown
-            const [projectStatus] = await db.execute(`
+            const projectStatus = await db.execute(`
                 SELECT status, COUNT(*) as count 
                 FROM projects 
                 GROUP BY status
             `);
             
             // Projects by status with overdue count
-            const [projectsByDept] = await db.execute(`
+            const projectsByDept = await db.execute(`
                 SELECT status as department, COUNT(*) as count,
                        SUM(CASE WHEN end_date < CURDATE() AND status != 'Completed' THEN 1 ELSE 0 END) as overdue
                 FROM projects 
@@ -65,7 +65,7 @@ router.get('/dashboard', async (req, res) => {
             `);
             
             // Recent project activity
-            const [recentProjects] = await db.execute(`
+            const recentProjects = await db.execute(`
                 SELECT id, name as project_name, status, status as department, start_date, end_date as due_date,
                        DATEDIFF(end_date, CURDATE()) as days_remaining
                 FROM projects 
@@ -87,7 +87,7 @@ router.get('/dashboard', async (req, res) => {
         // ===== EMPLOYEE STATUS =====
         try {
             // Employee status by department
-            const [employeeStatus] = await db.execute(`
+            const employeeStatus = await db.execute(`
                 SELECT department, status, COUNT(*) as count
                 FROM employees 
                 GROUP BY department, status
@@ -95,7 +95,7 @@ router.get('/dashboard', async (req, res) => {
             `);
             
             // Attendance trends (last 7 days)
-            const [attendanceTrends] = await db.execute(`
+            const attendanceTrends = await db.execute(`
                 SELECT DATE(check_in) as date, 
                        COUNT(DISTINCT employee_id) as present,
                        COUNT(*) as total_checkins
@@ -106,7 +106,7 @@ router.get('/dashboard', async (req, res) => {
             `);
             
             // Leave requests status
-            const [leaveStatus] = await db.execute(`
+            const leaveStatus = await db.execute(`
                 SELECT status, COUNT(*) as count
                 FROM leave_requests 
                 WHERE created_at >= DATE_SUB(CURDATE(), INTERVAL 30 DAY)
@@ -128,7 +128,7 @@ router.get('/dashboard', async (req, res) => {
         // ===== SAFETY ANALYSIS =====
         try {
             // Safety incidents from HSE work
-            const [safetyIncidents] = await db.execute(`
+            const safetyIncidents = await db.execute(`
                 SELECT work_type, COUNT(*) as count,
                        SUM(CASE WHEN work_type LIKE '%Violation%' THEN 1 ELSE 0 END) as violations
                 FROM hse_work 
@@ -137,7 +137,7 @@ router.get('/dashboard', async (req, res) => {
             `);
             
             // Recent safety issues
-            const [recentSafety] = await db.execute(`
+            const recentSafety = await db.execute(`
                 SELECT id, work_title, work_type, department_code, created_at
                 FROM hse_work 
                 WHERE work_type LIKE '%Violation%' OR work_type LIKE '%Incident%'
@@ -146,7 +146,7 @@ router.get('/dashboard', async (req, res) => {
             `);
             
             // Inspection reports
-            const [inspections] = await db.execute(`
+            const inspections = await db.execute(`
                 SELECT COUNT(*) as total,
                        SUM(CASE WHEN work_type = 'Inspection Report' THEN 1 ELSE 0 END) as inspections
                 FROM hse_work 
@@ -168,7 +168,7 @@ router.get('/dashboard', async (req, res) => {
         // ===== FINANCIAL OVERVIEW =====
         try {
             // Financial transactions summary
-            const [financialSummary] = await db.execute(`
+            const financialSummary = await db.execute(`
                 SELECT type, COUNT(*) as count, SUM(amount) as total
                 FROM financial_transactions 
                 WHERE transaction_date >= DATE_SUB(CURDATE(), INTERVAL 30 DAY)
@@ -176,7 +176,7 @@ router.get('/dashboard', async (req, res) => {
             `);
             
             // Budget status
-            const [budgetStatus] = await db.execute(`
+            const budgetStatus = await db.execute(`
                 SELECT department, SUM(total_proposed) as proposed,
                        SUM(CASE WHEN status = 'Approved' THEN total_proposed ELSE 0 END) as approved
                 FROM budgets 
@@ -185,7 +185,7 @@ router.get('/dashboard', async (req, res) => {
             `);
             
             // Recent transactions
-            const [recentTransactions] = await db.execute(`
+            const recentTransactions = await db.execute(`
                 SELECT id, type, description, amount, transaction_date, status
                 FROM financial_transactions 
                 ORDER BY transaction_date DESC 
@@ -206,7 +206,7 @@ router.get('/dashboard', async (req, res) => {
         // ===== COMPLIANCE STATUS =====
         try {
             // Policy compliance by status
-            const [policyCompliance] = await db.execute(`
+            const policyCompliance = await db.execute(`
                 SELECT status as department, COUNT(*) as policies,
                        SUM(CASE WHEN status = 'Approved' THEN 1 ELSE 0 END) as active
                 FROM policies 
@@ -216,7 +216,7 @@ router.get('/dashboard', async (req, res) => {
             // Training completion (use leave_requests as proxy if training_records doesn't exist)
             let trainingStatus = [];
             try {
-                const [ts] = await db.execute(`
+                const ts = await db.execute(`
                     SELECT status, COUNT(*) as count
                     FROM training_records 
                     WHERE completion_date >= DATE_SUB(CURDATE(), INTERVAL 90 DAY)
@@ -228,7 +228,7 @@ router.get('/dashboard', async (req, res) => {
             }
             
             // Document compliance by category
-            const [documentStatus] = await db.execute(`
+            const documentStatus = await db.execute(`
                 SELECT category as document_type, status, COUNT(*) as count
                 FROM documents 
                 GROUP BY category, status
@@ -250,7 +250,7 @@ router.get('/dashboard', async (req, res) => {
         // ===== SYSTEM HEALTH =====
         try {
             // System activity logs (if available)
-            const [systemActivity] = await db.execute(`
+            const systemActivity = await db.execute(`
                 SELECT action, COUNT(*) as count
                 FROM audit_logs 
                 WHERE created_at >= DATE_SUB(CURDATE(), INTERVAL 24 HOUR)
@@ -304,7 +304,7 @@ router.get('/category/:category', async (req, res) => {
         
         switch(category) {
             case 'projects':
-                const [projects] = await db.execute(`
+                const projects = await db.execute(`
                     SELECT p.*,
                            DATEDIFF(p.end_date, CURDATE()) as days_remaining
                     FROM projects p
@@ -314,7 +314,7 @@ router.get('/category/:category', async (req, res) => {
                 break;
                 
             case 'employees':
-                const [employees] = await db.execute(`
+                const employees = await db.execute(`
                     SELECT e.*, d.name as department_name,
                            (SELECT COUNT(*) FROM attendance a WHERE a.employee_id = e.id 
                             AND a.check_in >= DATE_SUB(CURDATE(), INTERVAL 7 DAY)) as attendance_days
@@ -326,7 +326,7 @@ router.get('/category/:category', async (req, res) => {
                 break;
                 
             case 'safety':
-                const [safety] = await db.execute(`
+                const safety = await db.execute(`
                     SELECT *, DATE(created_at) as incident_date
                     FROM hse_work 
                     WHERE work_type LIKE '%Violation%' OR work_type LIKE '%Incident%'
@@ -337,7 +337,7 @@ router.get('/category/:category', async (req, res) => {
                 break;
                 
             case 'financial':
-                const [transactions] = await db.execute(`
+                const transactions = await db.execute(`
                     SELECT ft.*, e.full_name as created_by_name
                     FROM financial_transactions ft
                     LEFT JOIN employees e ON ft.created_by = e.id
@@ -433,7 +433,7 @@ router.get('/system-changes', async (req, res) => {
 
         // Track recently added employees
         try {
-            const [newEmployees] = await db.execute(`
+            const newEmployees = await db.execute(`
                 SELECT id, full_name, department, position, status, created_at
                 FROM employees
                 WHERE created_at >= DATE_SUB(NOW(), INTERVAL ? DAY)
@@ -456,7 +456,7 @@ router.get('/system-changes', async (req, res) => {
 
         // Track recently added worker accounts
         try {
-            const [newWorkers] = await db.execute(`
+            const newWorkers = await db.execute(`
                 SELECT id, full_name, account_type, department, status, created_at
                 FROM worker_accounts
                 WHERE created_at >= DATE_SUB(NOW(), INTERVAL ? DAY)
@@ -479,7 +479,7 @@ router.get('/system-changes', async (req, res) => {
 
         // Track recently added drivers
         try {
-            const [newDrivers] = await db.execute(`
+            const newDrivers = await db.execute(`
                 SELECT id, full_name, license_number, status, created_at
                 FROM drivers
                 WHERE created_at >= DATE_SUB(NOW(), INTERVAL ? DAY)
@@ -502,7 +502,7 @@ router.get('/system-changes', async (req, res) => {
 
         // Track recently added policies
         try {
-            const [newPolicies] = await db.execute(`
+            const newPolicies = await db.execute(`
                 SELECT id, title, submitted_by, status, created_at
                 FROM policies
                 WHERE created_at >= DATE_SUB(NOW(), INTERVAL ? DAY)
@@ -525,7 +525,7 @@ router.get('/system-changes', async (req, res) => {
 
         // Track recently added projects
         try {
-            const [newProjects] = await db.execute(`
+            const newProjects = await db.execute(`
                 SELECT id, name, status, start_date, created_at
                 FROM projects
                 WHERE created_at >= DATE_SUB(NOW(), INTERVAL ? DAY)
@@ -548,7 +548,7 @@ router.get('/system-changes', async (req, res) => {
 
         // Track recently added company cars
         try {
-            const [newCars] = await db.execute(`
+            const newCars = await db.execute(`
                 SELECT id, plate_number, car_name, brand_name, vehicle_status as status, created_at
                 FROM vehicles
                 WHERE created_at >= DATE_SUB(NOW(), INTERVAL ? DAY)
@@ -571,7 +571,7 @@ router.get('/system-changes', async (req, res) => {
 
         // Track recent financial transactions / payment incidents
         try {
-            const [newPayments] = await db.execute(`
+            const newPayments = await db.execute(`
                 SELECT id, type, category, description, amount, status, created_at
                 FROM financial_transactions
                 WHERE created_at >= DATE_SUB(NOW(), INTERVAL ? DAY)
@@ -594,7 +594,7 @@ router.get('/system-changes', async (req, res) => {
 
         // Track recent tax payments
         try {
-            const [newTax] = await db.execute(`
+            const newTax = await db.execute(`
                 SELECT id, tax_type, tax_period, amount, payment_status, payment_date, created_at
                 FROM tax_payments
                 WHERE created_at >= DATE_SUB(NOW(), INTERVAL ? DAY)
@@ -617,7 +617,7 @@ router.get('/system-changes', async (req, res) => {
 
         // Track payroll records
         try {
-            const [newPayroll] = await db.execute(`
+            const newPayroll = await db.execute(`
                 SELECT id, payroll_month, payroll_type, total_employees, net_payment, status, created_at
                 FROM payroll_records
                 WHERE created_at >= DATE_SUB(NOW(), INTERVAL ? DAY)
@@ -640,7 +640,7 @@ router.get('/system-changes', async (req, res) => {
 
         // Track safety incidents
         try {
-            const [incidents] = await db.execute(`
+            const incidents = await db.execute(`
                 SELECT id, work_title, work_type, department_code, created_at
                 FROM hse_work
                 WHERE created_at >= DATE_SUB(NOW(), INTERVAL ? DAY)
@@ -664,7 +664,7 @@ router.get('/system-changes', async (req, res) => {
 
         // Track HSE safety expenses / incidents
         try {
-            const [safetyWork] = await db.execute(`
+            const safetyWork = await db.execute(`
                 SELECT id, work_title, work_type, severity, status, department_code, created_at
                 FROM hse_work
                 WHERE created_at >= DATE_SUB(NOW(), INTERVAL ? DAY)
@@ -684,7 +684,7 @@ router.get('/system-changes', async (req, res) => {
 
         // Track procurement & sales
         try {
-            const [sales] = await db.execute(`
+            const sales = await db.execute(`
                 SELECT id, request_title, procurement_type, total_budget, status, department, created_at
                 FROM procurement_sales
                 WHERE created_at >= DATE_SUB(NOW(), INTERVAL ? DAY)
@@ -704,7 +704,7 @@ router.get('/system-changes', async (req, res) => {
 
         // Track properties
         try {
-            const [props] = await db.execute(`
+            const props = await db.execute(`
                 SELECT id, title, type, price, status, location, created_at
                 FROM properties
                 WHERE created_at >= DATE_SUB(NOW(), INTERVAL ? DAY)
@@ -724,7 +724,7 @@ router.get('/system-changes', async (req, res) => {
 
         // Track claims
         try {
-            const [claims] = await db.execute(`
+            const claims = await db.execute(`
                 SELECT id, claim_number, claim_type, title, amount_claimed, status, created_at
                 FROM claims_management
                 WHERE created_at >= DATE_SUB(NOW(), INTERVAL ? DAY)
@@ -744,7 +744,7 @@ router.get('/system-changes', async (req, res) => {
 
         // Track risk management
         try {
-            const [risks] = await db.execute(`
+            const risks = await db.execute(`
                 SELECT id, risk_number, risk_title, risk_category, probability, impact, status, created_at
                 FROM risk_management
                 WHERE created_at >= DATE_SUB(NOW(), INTERVAL ? DAY)
@@ -764,7 +764,7 @@ router.get('/system-changes', async (req, res) => {
 
         // Track talent acquisition
         try {
-            const [talent] = await db.execute(`
+            const talent = await db.execute(`
                 SELECT id, requisition_number, position_title, department, position_type, status, created_at
                 FROM talent_acquisition
                 WHERE created_at >= DATE_SUB(NOW(), INTERVAL ? DAY)
@@ -784,7 +784,7 @@ router.get('/system-changes', async (req, res) => {
 
         // Track office resources
         try {
-            const [resources] = await db.execute(`
+            const resources = await db.execute(`
                 SELECT id, resource_code, resource_name, resource_type, status, department, created_at
                 FROM office_resources
                 WHERE created_at >= DATE_SUB(NOW(), INTERVAL ? DAY)
@@ -804,7 +804,7 @@ router.get('/system-changes', async (req, res) => {
 
         // Track discipline monitoring
         try {
-            const [discipline] = await db.execute(`
+            const discipline = await db.execute(`
                 SELECT id, case_number, incident_type, severity, status, disciplinary_action, created_at
                 FROM discipline_monitoring
                 WHERE created_at >= DATE_SUB(NOW(), INTERVAL ? DAY)
@@ -824,7 +824,7 @@ router.get('/system-changes', async (req, res) => {
 
         // Track department changes
         try {
-            const [depts] = await db.execute(`
+            const depts = await db.execute(`
                 SELECT id, name, code, status, created_at
                 FROM departments
                 WHERE created_at >= DATE_SUB(NOW(), INTERVAL ? DAY)
@@ -844,7 +844,7 @@ router.get('/system-changes', async (req, res) => {
 
         // Track luggage campaigns
         try {
-            const [campaigns] = await db.execute(`
+            const campaigns = await db.execute(`
                 SELECT id, campaign_name, luggage_name, total_units_available, units_sold, campaign_status, created_at
                 FROM luggage_campaigns
                 WHERE created_at >= DATE_SUB(NOW(), INTERVAL ? DAY)
@@ -864,7 +864,7 @@ router.get('/system-changes', async (req, res) => {
 
         // Track luggage purchases
         try {
-            const [purchases] = await db.execute(`
+            const purchases = await db.execute(`
                 SELECT id, buyer_name, units_purchased, total_amount, purchase_status, payment_method, created_at
                 FROM luggage_purchases
                 WHERE created_at >= DATE_SUB(NOW(), INTERVAL ? DAY)
@@ -884,7 +884,7 @@ router.get('/system-changes', async (req, res) => {
 
         // Track materials (inventory + in + out)
         try {
-            const [materialsIn] = await db.execute(`
+            const materialsIn = await db.execute(`
                 SELECT id, track_number, supplier_name, quantity_received, total_cost, invoice_number, created_at
                 FROM materials_in
                 WHERE created_at >= DATE_SUB(NOW(), INTERVAL ? DAY)
@@ -903,7 +903,7 @@ router.get('/system-changes', async (req, res) => {
         } catch (e) { console.log('Materials in tracking:', e.message); }
 
         try {
-            const [materialsOut] = await db.execute(`
+            const materialsOut = await db.execute(`
                 SELECT id, track_number, issued_to, quantity_out, total_value, issue_type, created_at
                 FROM materials_out
                 WHERE created_at >= DATE_SUB(NOW(), INTERVAL ? DAY)
@@ -923,7 +923,7 @@ router.get('/system-changes', async (req, res) => {
 
         // Track transport costs
         try {
-            const [transport] = await db.execute(`
+            const transport = await db.execute(`
                 SELECT id, cost_type, category, description, amount, payment_status, invoice_number, created_at
                 FROM transport_costs
                 WHERE created_at >= DATE_SUB(NOW(), INTERVAL ? DAY)
@@ -1007,7 +1007,7 @@ router.get('/system-status', async (req, res) => {
 
         // Database connectivity
         try {
-            const [dbCheck] = await db.execute('SELECT 1 as ok');
+            const dbCheck = await db.execute('SELECT 1 as ok');
             status.components.database = { status: 'Connected', healthy: true };
         } catch (e) {
             status.components.database = { status: 'Error', healthy: false, error: e.message };
@@ -1031,7 +1031,7 @@ router.get('/system-status', async (req, res) => {
         status.counts = {};
         for (const table of tables) {
             try {
-                const [rows] = await db.execute(`SELECT COUNT(*) as count FROM ${table.name}`);
+                const rows = await db.execute(`SELECT COUNT(*) as count FROM ${table.name}`);
                 const count = rows[0]?.count || 0;
                 status.counts[table.name] = { label: table.label, count };
                 console.log(`  ✅ ${table.label} (${table.name}): ${count} records`);
@@ -1044,13 +1044,13 @@ router.get('/system-status', async (req, res) => {
 
         // Active vs Inactive counts for key entities
         try {
-            const [activeEmployees] = await db.execute(
+            const activeEmployeesRows = await db.execute(
                 "SELECT COUNT(*) as count FROM employees WHERE status = 'Active'"
             );
-            const [totalEmployees] = await db.execute('SELECT COUNT(*) as count FROM employees');
+            const totalEmployeesRows = await db.execute('SELECT COUNT(*) as count FROM employees');
             status.employeeStatus = {
-                active: activeEmployees[0]?.count || 0,
-                total: totalEmployees[0]?.count || 0
+                active: activeEmployeesRows[0]?.count || 0,
+                total: totalEmployeesRows[0]?.count || 0
             };
         } catch (e) {
             status.employeeStatus = { active: 0, total: 0 };
@@ -1058,15 +1058,15 @@ router.get('/system-status', async (req, res) => {
 
         // Recent activity (last 24 hours)
         try {
-            const [recentEmployees] = await db.execute(
+            const recentEmployeesRows = await db.execute(
                 'SELECT COUNT(*) as count FROM employees WHERE created_at >= DATE_SUB(NOW(), INTERVAL 24 HOUR)'
             );
-            const [recentWorkers] = await db.execute(
+            const recentWorkersRows = await db.execute(
                 'SELECT COUNT(*) as count FROM worker_accounts WHERE created_at >= DATE_SUB(NOW(), INTERVAL 24 HOUR)'
             );
             status.recentActivity = {
-                newEmployees24h: recentEmployees[0]?.count || 0,
-                newWorkers24h: recentWorkers[0]?.count || 0
+                newEmployees24h: recentEmployeesRows[0]?.count || 0,
+                newWorkers24h: recentWorkersRows[0]?.count || 0
             };
         } catch (e) {
             status.recentActivity = { newEmployees24h: 0, newWorkers24h: 0 };
@@ -1094,13 +1094,13 @@ router.get('/internal-audits', async (req, res) => {
 
         // Financial transactions audit
         try {
-            const [txSummary] = await db.execute(`
+            const txSummary = await db.execute(`
                 SELECT type, status, COUNT(*) as count, SUM(amount) as total_amount
                 FROM financial_transactions
                 GROUP BY type, status
                 ORDER BY type, status
             `);
-            const [txRecent] = await db.execute(`
+            const txRecent = await db.execute(`
                 SELECT id, type, category, description, amount, status, created_at
                 FROM financial_transactions
                 ORDER BY created_at DESC LIMIT 20
@@ -1122,13 +1122,13 @@ router.get('/internal-audits', async (req, res) => {
 
         // Payroll audit
         try {
-            const [payrollSummary] = await db.execute(`
+            const payrollSummary = await db.execute(`
                 SELECT status, COUNT(*) as count, SUM(net_payment) as total_net,
                        SUM(total_gross) as total_gross, SUM(total_deductions) as total_deductions
                 FROM payroll_records
                 GROUP BY status
             `);
-            const [payrollRecent] = await db.execute(`
+            const payrollRecent = await db.execute(`
                 SELECT id, payroll_month, payroll_type, total_employees, total_gross,
                        total_deductions, net_payment, status, created_at
                 FROM payroll_records
@@ -1151,19 +1151,19 @@ router.get('/internal-audits', async (req, res) => {
 
         // Payment tracking audit
         try {
-            const [ptSummary] = await db.execute(`
-                SELECT payment_status, transaction_type, COUNT(*) as count, SUM(amount) as total
+            const ptSummary = await db.execute(`
+                SELECT payment_stage, COUNT(*) as count, SUM(amount) as total
                 FROM payment_tracking
-                GROUP BY payment_status, transaction_type
-                ORDER BY payment_status
+                GROUP BY payment_stage
+                ORDER BY payment_stage
             `);
-            const [ptRecent] = await db.execute(`
-                SELECT id, tracking_reference, transaction_type, amount, payment_status,
-                       paid_by, paid_to, payment_date, description, created_at
+            const ptRecent = await db.execute(`
+                SELECT id, tracking_number, amount, payment_stage,
+                       payment_reference, payment_date, tracking_notes, created_at
                 FROM payment_tracking
                 ORDER BY created_at DESC LIMIT 20
             `);
-            const overdue = ptRecent.filter(p => p.payment_status === 'pending' && p.due_date && new Date(p.due_date) < new Date());
+            const overdue = ptRecent.filter(p => p.payment_stage === 'Failed');
             audits.push({
                 id: 'internal_payments',
                 name: 'Payment Tracking Audit',
@@ -1181,7 +1181,7 @@ router.get('/internal-audits', async (req, res) => {
 
         // Budget audit
         try {
-            const [budgetSummary] = await db.execute(`
+            const budgetSummary = await db.execute(`
                 SELECT status, COUNT(*) as count, SUM(total_proposed) as total_proposed
                 FROM workforce_budgets
                 GROUP BY status
@@ -1202,11 +1202,11 @@ router.get('/internal-audits', async (req, res) => {
 
         // Procurement & Sales audit
         try {
-            const [procSummary] = await db.execute(`
+            const procSummary = await db.execute(`
                 SELECT procurement_type, status, COUNT(*) as count, SUM(total_budget) as total_budget
                 FROM procurement_sales GROUP BY procurement_type, status ORDER BY procurement_type
             `);
-            const [procRecent] = await db.execute(`
+            const procRecent = await db.execute(`
                 SELECT id, request_title, procurement_type, total_budget, status, department, created_at
                 FROM procurement_sales ORDER BY created_at DESC LIMIT 20
             `);
@@ -1225,11 +1225,11 @@ router.get('/internal-audits', async (req, res) => {
 
         // Claims audit
         try {
-            const [claimsSummary] = await db.execute(`
+            const claimsSummary = await db.execute(`
                 SELECT claim_type, status, COUNT(*) as count, SUM(amount_claimed) as total_claimed, SUM(amount_approved) as total_approved
                 FROM claims_management GROUP BY claim_type, status ORDER BY claim_type
             `);
-            const [claimsRecent] = await db.execute(`
+            const claimsRecent = await db.execute(`
                 SELECT id, claim_number, claim_type, title, amount_claimed, amount_approved, status, created_at
                 FROM claims_management ORDER BY created_at DESC LIMIT 20
             `);
@@ -1248,27 +1248,29 @@ router.get('/internal-audits', async (req, res) => {
 
         // Materials audit
         try {
-            const [matInSummary] = await db.execute(`
+            const matInRows = await db.execute(`
                 SELECT COUNT(*) as count, SUM(total_cost) as total_cost FROM materials_in
             `);
-            const [matOutSummary] = await db.execute(`
+            const matOutRows = await db.execute(`
                 SELECT COUNT(*) as count, SUM(total_value) as total_value FROM materials_out
             `);
-            const [matRecent] = await db.execute(`
+            const matRecent = await db.execute(`
                 SELECT id, track_number, supplier_name, quantity_received, total_cost, invoice_number, created_at
                 FROM materials_in ORDER BY created_at DESC LIMIT 15
             `);
+            const matIn = matInRows[0] || { count: 0, total_cost: 0 };
+            const matOut = matOutRows[0] || { count: 0, total_value: 0 };
             audits.push({
                 id: 'internal_materials', name: 'Materials Audit',
                 scope: 'Material receipts, issues, and inventory',
                 summary: [
-                    { category: 'Materials Received', count: matInSummary[0]?.count || 0, total: matInSummary[0]?.total_cost || 0 },
-                    { category: 'Materials Issued', count: matOutSummary[0]?.count || 0, total: matOutSummary[0]?.total_value || 0 }
+                    { category: 'Materials Received', count: matIn.count || 0, total: matIn.total_cost || 0 },
+                    { category: 'Materials Issued', count: matOut.count || 0, total: matOut.total_value || 0 }
                 ],
                 recentRecords: matRecent,
-                totalRecords: (matInSummary[0]?.count || 0) + (matOutSummary[0]?.count || 0)
+                totalRecords: (matIn.count || 0) + (matOut.count || 0)
             });
-            console.log('  ✅ Materials audit: In=' + (matInSummary[0]?.count || 0) + ', Out=' + (matOutSummary[0]?.count || 0));
+            console.log('  ✅ Materials audit: In=' + (matIn.count || 0) + ', Out=' + (matOut.count || 0));
         } catch (e) {
             console.log('  ❌ Materials audit:', e.message);
             audits.push({ id: 'internal_materials', name: 'Materials Audit', scope: 'Material receipts, issues, and inventory', summary: [{ category: 'Materials Received', count: 0, total: 0 }, { category: 'Materials Issued', count: 0, total: 0 }], recentRecords: [], totalRecords: 0, error: e.message });
@@ -1276,11 +1278,11 @@ router.get('/internal-audits', async (req, res) => {
 
         // Transport costs audit
         try {
-            const [transportSummary] = await db.execute(`
+            const transportSummary = await db.execute(`
                 SELECT category, payment_status, COUNT(*) as count, SUM(amount) as total_amount
                 FROM transport_costs GROUP BY category, payment_status ORDER BY category
             `);
-            const [transportRecent] = await db.execute(`
+            const transportRecent = await db.execute(`
                 SELECT id, cost_type, category, description, amount, payment_status, invoice_number, created_at
                 FROM transport_costs ORDER BY created_at DESC LIMIT 20
             `);
@@ -1299,11 +1301,11 @@ router.get('/internal-audits', async (req, res) => {
 
         // Luggage campaigns & purchases audit
         try {
-            const [campSummary] = await db.execute(`
+            const campSummary = await db.execute(`
                 SELECT campaign_status, COUNT(*) as count, SUM(total_units_available) as total_units, SUM(units_sold) as total_sold
                 FROM luggage_campaigns GROUP BY campaign_status
             `);
-            const [purchSummary] = await db.execute(`
+            const purchSummary = await db.execute(`
                 SELECT purchase_status, COUNT(*) as count, SUM(total_amount) as total_amount
                 FROM luggage_purchases GROUP BY purchase_status
             `);
@@ -1337,7 +1339,7 @@ router.get('/external-audits', async (req, res) => {
 
         // Tax payments audit
         try {
-            const [taxSummary] = await db.execute(`
+            const taxSummary = await db.execute(`
                 SELECT tax_type, payment_status, COUNT(*) as count,
                        SUM(total_amount) as total_paid,
                        SUM(penalties) as total_penalties
@@ -1345,7 +1347,7 @@ router.get('/external-audits', async (req, res) => {
                 GROUP BY tax_type, payment_status
                 ORDER BY tax_type
             `);
-            const [taxRecent] = await db.execute(`
+            const taxRecent = await db.execute(`
                 SELECT id, tax_type, tax_period, amount, penalties, interest,
                        total_amount, payment_status, payment_date, due_date, created_at
                 FROM tax_payments
@@ -1372,14 +1374,14 @@ router.get('/external-audits', async (req, res) => {
 
         // NSSF compliance audit
         try {
-            const [nssfSummary] = await db.execute(`
+            const nssfSummary = await db.execute(`
                 SELECT status, COUNT(*) as count,
                        SUM(total_contributions) as total_contributions,
                        SUM(monthly_contribution) as monthly_total
                 FROM nssf_registration
                 GROUP BY status
             `);
-            const [nssfRecent] = await db.execute(`
+            const nssfRecent = await db.execute(`
                 SELECT id, registration_number, nssf_number, employee_id, status,
                        monthly_salary, monthly_contribution, total_contributions,
                        last_contribution_date, created_at
@@ -1404,7 +1406,7 @@ router.get('/external-audits', async (req, res) => {
 
         // Document compliance audit
         try {
-            const [docSummary] = await db.execute(`
+            const docSummary = await db.execute(`
                 SELECT category, status, COUNT(*) as count
                 FROM documents
                 GROUP BY category, status
@@ -1426,11 +1428,11 @@ router.get('/external-audits', async (req, res) => {
 
         // Risk management audit
         try {
-            const [riskSummary] = await db.execute(`
+            const riskSummary = await db.execute(`
                 SELECT risk_category, status, COUNT(*) as count, SUM(potential_loss) as total_potential_loss
                 FROM risk_management GROUP BY risk_category, status ORDER BY risk_category
             `);
-            const [riskRecent] = await db.execute(`
+            const riskRecent = await db.execute(`
                 SELECT id, risk_number, risk_title, risk_category, probability, impact, status, potential_loss, created_at
                 FROM risk_management ORDER BY created_at DESC LIMIT 20
             `);
@@ -1450,11 +1452,11 @@ router.get('/external-audits', async (req, res) => {
 
         // Talent acquisition audit
         try {
-            const [talentSummary] = await db.execute(`
+            const talentSummary = await db.execute(`
                 SELECT status, position_type, COUNT(*) as count, SUM(number_of_positions) as total_positions
                 FROM talent_acquisition GROUP BY status, position_type ORDER BY status
             `);
-            const [talentRecent] = await db.execute(`
+            const talentRecent = await db.execute(`
                 SELECT id, requisition_number, position_title, department, position_type, status, number_of_positions, created_at
                 FROM talent_acquisition ORDER BY created_at DESC LIMIT 20
             `);
@@ -1474,11 +1476,11 @@ router.get('/external-audits', async (req, res) => {
 
         // Properties audit
         try {
-            const [propSummary] = await db.execute(`
+            const propSummary = await db.execute(`
                 SELECT type, status, COUNT(*) as count, SUM(price) as total_value
                 FROM properties GROUP BY type, status ORDER BY type
             `);
-            const [propRecent] = await db.execute(`
+            const propRecent = await db.execute(`
                 SELECT id, title, type, price, status, location, created_at
                 FROM properties ORDER BY created_at DESC LIMIT 20
             `);
@@ -1513,27 +1515,28 @@ router.get('/compliance-checks', async (req, res) => {
 
         // Tax compliance
         try {
-            const [taxOverdue] = await db.execute(`
+            const taxOverdueRows = await db.execute(`
                 SELECT COUNT(*) as count FROM tax_payments
                 WHERE payment_status IN ('Overdue', 'Pending')
                   AND due_date < CURDATE()
             `);
-            const [taxTotal] = await db.execute(`SELECT COUNT(*) as count FROM tax_payments`);
-            const [taxPaid] = await db.execute(`
+            const taxTotalRows = await db.execute(`SELECT COUNT(*) as count FROM tax_payments`);
+            const taxPaidRows = await db.execute(`
                 SELECT COUNT(*) as count FROM tax_payments WHERE payment_status = 'Paid'
             `);
-            const total = taxTotal[0]?.count || 0;
-            const paid = taxPaid[0]?.count || 0;
+            const total = taxTotalRows[0]?.count || 0;
+            const paid = taxPaidRows[0]?.count || 0;
+            const overdueCount = taxOverdueRows[0]?.count || 0;
             checks.tax = {
                 label: 'Tax Compliance',
-                status: taxOverdue[0]?.count > 0 ? 'Issues Found' : (total > 0 ? 'Compliant' : 'Empty - 0 Records'),
-                healthy: taxOverdue[0]?.count === 0,
-                overdue: taxOverdue[0]?.count || 0,
+                status: overdueCount > 0 ? 'Issues Found' : (total > 0 ? 'Compliant' : 'Empty - 0 Records'),
+                healthy: overdueCount === 0,
+                overdue: overdueCount,
                 total,
                 paid,
                 rate: total > 0 ? Math.round((paid / total) * 100) : 0
             };
-            console.log('  ✅ Tax compliance: total=' + total + ', paid=' + paid + ', overdue=' + (taxOverdue[0]?.count || 0));
+            console.log('  ✅ Tax compliance: total=' + total + ', paid=' + paid + ', overdue=' + overdueCount);
         } catch (e) {
             console.log('  ❌ Tax compliance:', e.message);
             checks.tax = { label: 'Tax Compliance', status: 'Table Error', healthy: true, overdue: 0, total: 0, paid: 0, rate: 0, error: e.message };
@@ -1541,21 +1544,22 @@ router.get('/compliance-checks', async (req, res) => {
 
         // NSSF compliance
         try {
-            const [nssfActive] = await db.execute(`
+            const nssfActiveRows = await db.execute(`
                 SELECT COUNT(*) as count FROM nssf_registration WHERE status = 'Active'
             `);
-            const [nssfTotal] = await db.execute(`SELECT COUNT(*) as count FROM nssf_registration`);
-            const [nssfInactive] = await db.execute(`
+            const nssfTotalRows = await db.execute(`SELECT COUNT(*) as count FROM nssf_registration`);
+            const nssfInactiveRows = await db.execute(`
                 SELECT COUNT(*) as count FROM nssf_registration WHERE status != 'Active'
             `);
-            const total = nssfTotal[0]?.count || 0;
-            const active = nssfActive[0]?.count || 0;
+            const total = nssfTotalRows[0]?.count || 0;
+            const active = nssfActiveRows[0]?.count || 0;
+            const inactiveCount = nssfInactiveRows[0]?.count || 0;
             checks.nssf = {
                 label: 'NSSF Compliance',
-                status: nssfInactive[0]?.count > 0 ? 'Issues Found' : (total > 0 ? 'Compliant' : 'Empty - 0 Records'),
-                healthy: (nssfInactive[0]?.count || 0) === 0,
+                status: inactiveCount > 0 ? 'Issues Found' : (total > 0 ? 'Compliant' : 'Empty - 0 Records'),
+                healthy: inactiveCount === 0,
                 active,
-                inactive: nssfInactive[0]?.count || 0,
+                inactive: inactiveCount,
                 total,
                 rate: total > 0 ? Math.round((active / total) * 100) : 0
             };
@@ -1567,16 +1571,16 @@ router.get('/compliance-checks', async (req, res) => {
 
         // Financial reporting compliance
         try {
-            const [pendingTx] = await db.execute(`
+            const pendingTxRows = await db.execute(`
                 SELECT COUNT(*) as count FROM financial_transactions WHERE status = 'Pending'
             `);
-            const [totalTx] = await db.execute(`SELECT COUNT(*) as count FROM financial_transactions`);
-            const [approvedTx] = await db.execute(`
+            const totalTxRows = await db.execute(`SELECT COUNT(*) as count FROM financial_transactions`);
+            const approvedTxRows = await db.execute(`
                 SELECT COUNT(*) as count FROM financial_transactions WHERE status IN ('Approved', 'Processed')
             `);
-            const total = totalTx[0]?.count || 0;
-            const approved = approvedTx[0]?.count || 0;
-            const pending = pendingTx[0]?.count || 0;
+            const total = totalTxRows[0]?.count || 0;
+            const approved = approvedTxRows[0]?.count || 0;
+            const pending = pendingTxRows[0]?.count || 0;
             checks.financial = {
                 label: 'Financial Reporting',
                 status: pending > 5 ? 'Action Required' : (total > 0 ? 'Up to Date' : 'Empty - 0 Records'),
@@ -1594,20 +1598,21 @@ router.get('/compliance-checks', async (req, res) => {
 
         // Payroll compliance
         try {
-            const [payrollDraft] = await db.execute(`
+            const payrollDraftRows = await db.execute(`
                 SELECT COUNT(*) as count FROM payroll_records WHERE status = 'draft'
             `);
-            const [payrollTotal] = await db.execute(`SELECT COUNT(*) as count FROM payroll_records`);
-            const [payrollPaid] = await db.execute(`
+            const payrollTotalRows = await db.execute(`SELECT COUNT(*) as count FROM payroll_records`);
+            const payrollPaidRows = await db.execute(`
                 SELECT COUNT(*) as count FROM payroll_records WHERE status IN ('paid', 'approved')
             `);
-            const total = payrollTotal[0]?.count || 0;
-            const paid = payrollPaid[0]?.count || 0;
+            const total = payrollTotalRows[0]?.count || 0;
+            const paid = payrollPaidRows[0]?.count || 0;
+            const draftCount = payrollDraftRows[0]?.count || 0;
             checks.payroll = {
                 label: 'Payroll Compliance',
-                status: (payrollDraft[0]?.count || 0) > 0 ? 'Drafts Pending' : (total > 0 ? 'Compliant' : 'Empty - 0 Records'),
-                healthy: (payrollDraft[0]?.count || 0) === 0,
-                drafts: payrollDraft[0]?.count || 0,
+                status: draftCount > 0 ? 'Drafts Pending' : (total > 0 ? 'Compliant' : 'Empty - 0 Records'),
+                healthy: draftCount === 0,
+                drafts: draftCount,
                 paid,
                 total,
                 rate: total > 0 ? Math.round((paid / total) * 100) : 0
@@ -1620,21 +1625,22 @@ router.get('/compliance-checks', async (req, res) => {
 
         // Policy compliance
         try {
-            const [policyActive] = await db.execute(`
+            const policyActiveRows = await db.execute(`
                 SELECT COUNT(*) as count FROM policies WHERE status = 'Approved'
             `);
-            const [policyTotal] = await db.execute(`SELECT COUNT(*) as count FROM policies`);
-            const [policyPending] = await db.execute(`
+            const policyTotalRows = await db.execute(`SELECT COUNT(*) as count FROM policies`);
+            const policyPendingRows = await db.execute(`
                 SELECT COUNT(*) as count FROM policies WHERE status = 'Pending'
             `);
-            const total = policyTotal[0]?.count || 0;
-            const approved = policyActive[0]?.count || 0;
+            const total = policyTotalRows[0]?.count || 0;
+            const approved = policyActiveRows[0]?.count || 0;
+            const pendingCount = policyPendingRows[0]?.count || 0;
             checks.policies = {
                 label: 'Policy Compliance',
-                status: (policyPending[0]?.count || 0) > 0 ? 'Pending Review' : (total > 0 ? 'Compliant' : 'Empty - 0 Records'),
-                healthy: (policyPending[0]?.count || 0) === 0,
+                status: pendingCount > 0 ? 'Pending Review' : (total > 0 ? 'Compliant' : 'Empty - 0 Records'),
+                healthy: pendingCount === 0,
                 approved,
-                pending: policyPending[0]?.count || 0,
+                pending: pendingCount,
                 total,
                 rate: total > 0 ? Math.round((approved / total) * 100) : 0
             };
@@ -1646,22 +1652,22 @@ router.get('/compliance-checks', async (req, res) => {
 
         // Payment tracking compliance
         try {
-            const [ptOverdue] = await db.execute(`
+            const ptFailedRows = await db.execute(`
                 SELECT COUNT(*) as count FROM payment_tracking
-                WHERE payment_status IN ('pending', 'failed')
-                  AND due_date IS NOT NULL AND due_date < CURDATE()
+                WHERE payment_stage IN ('Failed')
             `);
-            const [ptTotal] = await db.execute(`SELECT COUNT(*) as count FROM payment_tracking`);
-            const [ptCompleted] = await db.execute(`
-                SELECT COUNT(*) as count FROM payment_tracking WHERE payment_status = 'completed'
+            const ptTotalRows = await db.execute(`SELECT COUNT(*) as count FROM payment_tracking`);
+            const ptCompletedRows = await db.execute(`
+                SELECT COUNT(*) as count FROM payment_tracking WHERE payment_stage = 'Completed'
             `);
-            const total = ptTotal[0]?.count || 0;
-            const completed = ptCompleted[0]?.count || 0;
+            const total = ptTotalRows[0]?.count || 0;
+            const completed = ptCompletedRows[0]?.count || 0;
+            const failedCount = ptFailedRows[0]?.count || 0;
             checks.payments = {
                 label: 'Payment Tracking',
-                status: (ptOverdue[0]?.count || 0) > 0 ? 'Overdue Payments' : (total > 0 ? 'On Track' : 'Empty - 0 Records'),
-                healthy: (ptOverdue[0]?.count || 0) === 0,
-                overdue: ptOverdue[0]?.count || 0,
+                status: failedCount > 0 ? 'Failed Payments' : (total > 0 ? 'On Track' : 'Empty - 0 Records'),
+                healthy: failedCount === 0,
+                overdue: failedCount,
                 completed,
                 total,
                 rate: total > 0 ? Math.round((completed / total) * 100) : 0
@@ -1674,16 +1680,17 @@ router.get('/compliance-checks', async (req, res) => {
 
         // Claims compliance
         try {
-            const [claimsPending] = await db.execute(`SELECT COUNT(*) as count FROM claims_management WHERE status IN ('Pending', 'Under Review')`);
-            const [claimsTotal] = await db.execute(`SELECT COUNT(*) as count FROM claims_management`);
-            const [claimsResolved] = await db.execute(`SELECT COUNT(*) as count FROM claims_management WHERE status IN ('Approved', 'Paid')`);
-            const total = claimsTotal[0]?.count || 0;
-            const resolved = claimsResolved[0]?.count || 0;
+            const claimsPendingRows = await db.execute(`SELECT COUNT(*) as count FROM claims_management WHERE status IN ('Pending', 'Under Review')`);
+            const claimsTotalRows = await db.execute(`SELECT COUNT(*) as count FROM claims_management`);
+            const claimsResolvedRows = await db.execute(`SELECT COUNT(*) as count FROM claims_management WHERE status IN ('Approved', 'Paid')`);
+            const total = claimsTotalRows[0]?.count || 0;
+            const resolved = claimsResolvedRows[0]?.count || 0;
+            const pendingCount = claimsPendingRows[0]?.count || 0;
             checks.claims = {
                 label: 'Claims Management',
-                status: (claimsPending[0]?.count || 0) > 3 ? 'Pending Claims' : (total > 0 ? 'On Track' : 'Empty - 0 Records'),
-                healthy: (claimsPending[0]?.count || 0) <= 3,
-                pending: claimsPending[0]?.count || 0, resolved, total,
+                status: pendingCount > 3 ? 'Pending Claims' : (total > 0 ? 'On Track' : 'Empty - 0 Records'),
+                healthy: pendingCount <= 3,
+                pending: pendingCount, resolved, total,
                 rate: total > 0 ? Math.round((resolved / total) * 100) : 0
             };
             console.log('  ✅ Claims compliance: total=' + total + ', resolved=' + resolved);
@@ -1694,16 +1701,17 @@ router.get('/compliance-checks', async (req, res) => {
 
         // Risk management compliance
         try {
-            const [risksOpen] = await db.execute(`SELECT COUNT(*) as count FROM risk_management WHERE status IN ('Open', 'In Progress')`);
-            const [risksTotal] = await db.execute(`SELECT COUNT(*) as count FROM risk_management`);
-            const [risksMitigated] = await db.execute(`SELECT COUNT(*) as count FROM risk_management WHERE status IN ('Mitigated', 'Closed')`);
-            const total = risksTotal[0]?.count || 0;
-            const mitigated = risksMitigated[0]?.count || 0;
+            const risksOpenRows = await db.execute(`SELECT COUNT(*) as count FROM risk_management WHERE status IN ('Open', 'In Progress')`);
+            const risksTotalRows = await db.execute(`SELECT COUNT(*) as count FROM risk_management`);
+            const risksMitigatedRows = await db.execute(`SELECT COUNT(*) as count FROM risk_management WHERE status IN ('Mitigated', 'Closed')`);
+            const total = risksTotalRows[0]?.count || 0;
+            const mitigated = risksMitigatedRows[0]?.count || 0;
+            const openCount = risksOpenRows[0]?.count || 0;
             checks.risks = {
                 label: 'Risk Management',
-                status: (risksOpen[0]?.count || 0) > 5 ? 'Open Risks' : (total > 0 ? 'Managed' : 'Empty - 0 Records'),
-                healthy: (risksOpen[0]?.count || 0) <= 5,
-                open: risksOpen[0]?.count || 0, mitigated, total,
+                status: openCount > 5 ? 'Open Risks' : (total > 0 ? 'Managed' : 'Empty - 0 Records'),
+                healthy: openCount <= 5,
+                open: openCount, mitigated, total,
                 rate: total > 0 ? Math.round((mitigated / total) * 100) : 0
             };
             console.log('  ✅ Risk compliance: total=' + total + ', mitigated=' + mitigated);
@@ -1714,16 +1722,17 @@ router.get('/compliance-checks', async (req, res) => {
 
         // Discipline monitoring compliance
         try {
-            const [discOpen] = await db.execute(`SELECT COUNT(*) as count FROM discipline_monitoring WHERE status IN ('Open', 'Under Investigation')`);
-            const [discTotal] = await db.execute(`SELECT COUNT(*) as count FROM discipline_monitoring`);
-            const [discClosed] = await db.execute(`SELECT COUNT(*) as count FROM discipline_monitoring WHERE status = 'Closed'`);
-            const total = discTotal[0]?.count || 0;
-            const closed = discClosed[0]?.count || 0;
+            const discOpenRows = await db.execute(`SELECT COUNT(*) as count FROM discipline_monitoring WHERE status IN ('Open', 'Under Investigation')`);
+            const discTotalRows = await db.execute(`SELECT COUNT(*) as count FROM discipline_monitoring`);
+            const discClosedRows = await db.execute(`SELECT COUNT(*) as count FROM discipline_monitoring WHERE status = 'Closed'`);
+            const total = discTotalRows[0]?.count || 0;
+            const closed = discClosedRows[0]?.count || 0;
+            const openCount = discOpenRows[0]?.count || 0;
             checks.discipline = {
                 label: 'Discipline Monitoring',
-                status: (discOpen[0]?.count || 0) > 3 ? 'Open Cases' : (total > 0 ? 'Compliant' : 'Empty - 0 Records'),
-                healthy: (discOpen[0]?.count || 0) <= 3,
-                open: discOpen[0]?.count || 0, closed, total,
+                status: openCount > 3 ? 'Open Cases' : (total > 0 ? 'Compliant' : 'Empty - 0 Records'),
+                healthy: openCount <= 3,
+                open: openCount, closed, total,
                 rate: total > 0 ? Math.round((closed / total) * 100) : 0
             };
             console.log('  ✅ Discipline compliance: total=' + total + ', closed=' + closed);
@@ -1734,16 +1743,17 @@ router.get('/compliance-checks', async (req, res) => {
 
         // Office resources compliance
         try {
-            const [resIssues] = await db.execute(`SELECT COUNT(*) as count FROM office_resources WHERE status IN ('In Maintenance', 'Lost', 'Retired')`);
-            const [resTotal] = await db.execute(`SELECT COUNT(*) as count FROM office_resources`);
-            const [resAvailable] = await db.execute(`SELECT COUNT(*) as count FROM office_resources WHERE status IN ('Available', 'Assigned')`);
-            const total = resTotal[0]?.count || 0;
-            const available = resAvailable[0]?.count || 0;
+            const resIssuesRows = await db.execute(`SELECT COUNT(*) as count FROM office_resources WHERE status IN ('In Maintenance', 'Lost', 'Retired')`);
+            const resTotalRows = await db.execute(`SELECT COUNT(*) as count FROM office_resources`);
+            const resAvailableRows = await db.execute(`SELECT COUNT(*) as count FROM office_resources WHERE status IN ('Available', 'Assigned')`);
+            const total = resTotalRows[0]?.count || 0;
+            const available = resAvailableRows[0]?.count || 0;
+            const issuesCount = resIssuesRows[0]?.count || 0;
             checks.officeResources = {
                 label: 'Office Resources',
-                status: (resIssues[0]?.count || 0) > 3 ? 'Maintenance Issues' : (total > 0 ? 'On Track' : 'Empty - 0 Records'),
-                healthy: (resIssues[0]?.count || 0) <= 3,
-                issues: resIssues[0]?.count || 0, available, total,
+                status: issuesCount > 3 ? 'Maintenance Issues' : (total > 0 ? 'On Track' : 'Empty - 0 Records'),
+                healthy: issuesCount <= 3,
+                issues: issuesCount, available, total,
                 rate: total > 0 ? Math.round((available / total) * 100) : 0
             };
             console.log('  ✅ Office resources: total=' + total + ', available=' + available);
@@ -1754,16 +1764,17 @@ router.get('/compliance-checks', async (req, res) => {
 
         // Transport compliance
         try {
-            const [transPending] = await db.execute(`SELECT COUNT(*) as count FROM transport_costs WHERE payment_status IN ('pending', 'rejected')`);
-            const [transTotal] = await db.execute(`SELECT COUNT(*) as count FROM transport_costs`);
-            const [transPaid] = await db.execute(`SELECT COUNT(*) as count FROM transport_costs WHERE payment_status = 'paid'`);
-            const total = transTotal[0]?.count || 0;
-            const paid = transPaid[0]?.count || 0;
+            const transPendingRows = await db.execute(`SELECT COUNT(*) as count FROM transport_costs WHERE payment_status IN ('pending', 'rejected')`);
+            const transTotalRows = await db.execute(`SELECT COUNT(*) as count FROM transport_costs`);
+            const transPaidRows = await db.execute(`SELECT COUNT(*) as count FROM transport_costs WHERE payment_status = 'paid'`);
+            const total = transTotalRows[0]?.count || 0;
+            const paid = transPaidRows[0]?.count || 0;
+            const pendingCount = transPendingRows[0]?.count || 0;
             checks.transport = {
                 label: 'Transport Costs',
-                status: (transPending[0]?.count || 0) > 3 ? 'Pending Approvals' : (total > 0 ? 'Compliant' : 'Empty - 0 Records'),
-                healthy: (transPending[0]?.count || 0) <= 3,
-                pending: transPending[0]?.count || 0, paid, total,
+                status: pendingCount > 3 ? 'Pending Approvals' : (total > 0 ? 'Compliant' : 'Empty - 0 Records'),
+                healthy: pendingCount <= 3,
+                pending: pendingCount, paid, total,
                 rate: total > 0 ? Math.round((paid / total) * 100) : 0
             };
             console.log('  ✅ Transport compliance: total=' + total + ', paid=' + paid);
@@ -1774,16 +1785,17 @@ router.get('/compliance-checks', async (req, res) => {
 
         // Safety compliance (HSE)
         try {
-            const [safetyOpen] = await db.execute(`SELECT COUNT(*) as count FROM hse_work WHERE status IN ('Pending', 'In Progress')`);
-            const [safetyTotal] = await db.execute(`SELECT COUNT(*) as count FROM hse_work`);
-            const [safetyCompleted] = await db.execute(`SELECT COUNT(*) as count FROM hse_work WHERE status = 'Completed'`);
-            const total = safetyTotal[0]?.count || 0;
-            const completed = safetyCompleted[0]?.count || 0;
+            const safetyOpenRows = await db.execute(`SELECT COUNT(*) as count FROM hse_work WHERE status IN ('Pending', 'In Progress')`);
+            const safetyTotalRows = await db.execute(`SELECT COUNT(*) as count FROM hse_work`);
+            const safetyCompletedRows = await db.execute(`SELECT COUNT(*) as count FROM hse_work WHERE status = 'Completed'`);
+            const total = safetyTotalRows[0]?.count || 0;
+            const completed = safetyCompletedRows[0]?.count || 0;
+            const openCount = safetyOpenRows[0]?.count || 0;
             checks.safety = {
                 label: 'Safety (HSE)',
-                status: (safetyOpen[0]?.count || 0) > 5 ? 'Open Items' : (total > 0 ? 'Compliant' : 'Empty - 0 Records'),
-                healthy: (safetyOpen[0]?.count || 0) <= 5,
-                open: safetyOpen[0]?.count || 0, completed, total,
+                status: openCount > 5 ? 'Open Items' : (total > 0 ? 'Compliant' : 'Empty - 0 Records'),
+                healthy: openCount <= 5,
+                open: openCount, completed, total,
                 rate: total > 0 ? Math.round((completed / total) * 100) : 0
             };
             console.log('  ✅ Safety compliance: total=' + total + ', completed=' + completed);
@@ -1794,10 +1806,10 @@ router.get('/compliance-checks', async (req, res) => {
 
         // Department management compliance
         try {
-            const [deptActive] = await db.execute(`SELECT COUNT(*) as count FROM departments WHERE status = 'Active'`);
-            const [deptTotal] = await db.execute(`SELECT COUNT(*) as count FROM departments`);
-            const total = deptTotal[0]?.count || 0;
-            const active = deptActive[0]?.count || 0;
+            const deptActiveRows = await db.execute(`SELECT COUNT(*) as count FROM departments WHERE status = 'Active'`);
+            const deptTotalRows = await db.execute(`SELECT COUNT(*) as count FROM departments`);
+            const total = deptTotalRows[0]?.count || 0;
+            const active = deptActiveRows[0]?.count || 0;
             checks.departments = {
                 label: 'Department Management',
                 status: total > 0 ? 'Active' : 'Empty - 0 Records',
