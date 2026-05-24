@@ -174,26 +174,57 @@ router.post('/', async (req, res) => {
             });
         }
 
-        // Get user ID from role name - use fallback if no user found
-        let userId = 1; // Default fallback user ID
-        if (requestedByRole && db) {
-            try {
-                const [userRows] = await db.execute(
-                    'SELECT id FROM users WHERE role = ? LIMIT 1',
-                    [requestedByRole]
-                );
+        // Get user ID from request input or role name - use fallback to any existing user when needed
+        let userId = req.body.userId ? parseInt(req.body.userId, 10) : null;
 
-                if (userRows.length > 0) {
-                    userId = userRows[0].id;
-                    console.log('Found user with role:', requestedByRole, 'ID:', userId);
-                } else {
-                    console.log('No user found with role:', requestedByRole, 'Using default user ID:', userId);
+        if (db) {
+            try {
+                if (!userId && requestedByRole) {
+                    const [roleRows] = await db.execute(
+                        'SELECT id FROM users WHERE role = ? LIMIT 1',
+                        [requestedByRole]
+                    );
+                    if (roleRows.length > 0) {
+                        userId = roleRows[0].id;
+                        console.log('Found user by role:', requestedByRole, 'ID:', userId);
+                    } else {
+                        console.log('No user found with role:', requestedByRole);
+                    }
+                }
+
+                if (!userId && requestedBy) {
+                    const [nameRows] = await db.execute(
+                        'SELECT id FROM users WHERE name = ? LIMIT 1',
+                        [requestedBy]
+                    );
+                    if (nameRows.length > 0) {
+                        userId = nameRows[0].id;
+                        console.log('Found user by name:', requestedBy, 'ID:', userId);
+                    } else {
+                        console.log('No user found with name:', requestedBy);
+                    }
+                }
+
+                if (!userId) {
+                    const [anyUserRows] = await db.execute(
+                        'SELECT id FROM users ORDER BY id LIMIT 1'
+                    );
+                    if (anyUserRows.length > 0) {
+                        userId = anyUserRows[0].id;
+                        console.log('Falling back to first available user ID:', userId);
+                    }
+                }
+
+                if (!userId) {
+                    throw new Error('No valid user found for submitted_by association');
                 }
             } catch (userError) {
-                console.log('Error looking up user role:', userError.message, 'Using default user ID:', userId);
+                console.error('Error determining submitted_by user ID:', userError);
+                return res.status(500).json({
+                    success: false,
+                    error: 'Failed to resolve user for procurement request submission'
+                });
             }
-        } else {
-            console.log('Using default user ID:', userId, '(no role provided or no database)');
         }
 
         try {
