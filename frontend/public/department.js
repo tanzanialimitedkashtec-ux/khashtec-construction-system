@@ -40687,6 +40687,10 @@ async function saveLuggageCampaign() {
 
             campaign_description: document.getElementById('campaignDescription').value,
 
+            target_luggage: document.getElementById('luggageName').value,
+
+            description: document.getElementById('campaignDescription').value,
+
             luggage_name: document.getElementById('luggageName').value,
 
             luggage_code: document.getElementById('luggageCode').value,
@@ -40694,6 +40698,14 @@ async function saveLuggageCampaign() {
             price_per_unit: parseFloat(document.getElementById('pricePerUnit').value),
 
             total_units_available: parseInt(document.getElementById('totalUnits').value),
+
+            target_audience: document.getElementById('totalUnits').value + ' units',
+
+            budget: parseFloat(document.getElementById('pricePerUnit').value) * parseInt(document.getElementById('totalUnits').value),
+
+            start_date: document.getElementById('startDate').value,
+
+            end_date: document.getElementById('endDate').value,
 
             campaign_start_date: document.getElementById('startDate').value,
 
