@@ -102157,6 +102157,10 @@ async function loadMissionVisionRecords() {
 
             tbody.appendChild(tr);
         }
+
+        if (document.getElementById('missionVisionSearchInput')?.value.trim()) {
+            filterMissionVisionRecords();
+        }
     } catch (error) {
         console.error('❌ Error loading mission & vision records:', error);
         tbody.innerHTML = `
@@ -102165,6 +102169,52 @@ async function loadMissionVisionRecords() {
             </tr>
         `;
     }
+}
+
+function filterMissionVisionRecords() {
+    const searchInput = document.getElementById('missionVisionSearchInput');
+    const tbody = document.getElementById('missionVisionRecordsTbody');
+    if (!searchInput || !tbody) {
+        return;
+    }
+
+    const searchTerm = searchInput.value.trim().toLowerCase();
+    const rows = Array.from(tbody.querySelectorAll('tr'));
+
+    if (!searchTerm) {
+        rows.forEach((row) => {
+            row.style.display = '';
+        });
+        return;
+    }
+
+    rows.forEach((row) => {
+        const rowText = row.textContent.toLowerCase();
+        row.style.display = rowText.includes(searchTerm) ? '' : 'none';
+    });
+}
+
+function filterLongTermGrowthRecords() {
+    const searchInput = document.getElementById('longTermGrowthSearchInput');
+    const tbody = document.getElementById('longTermGrowthRecordsTbody');
+    if (!searchInput || !tbody) {
+        return;
+    }
+
+    const searchTerm = searchInput.value.trim().toLowerCase();
+    const rows = Array.from(tbody.querySelectorAll('tr'));
+
+    if (!searchTerm) {
+        rows.forEach((row) => {
+            row.style.display = '';
+        });
+        return;
+    }
+
+    rows.forEach((row) => {
+        const rowText = row.textContent.toLowerCase();
+        row.style.display = rowText.includes(searchTerm) ? '' : 'none';
+    });
 }
 
 async function loadLongTermGrowthRecords() {
@@ -102313,6 +102363,10 @@ async function loadLongTermGrowthRecords() {
             tr.appendChild(statusTd);
 
             tbody.appendChild(tr);
+        }
+
+        if (document.getElementById('longTermGrowthSearchInput')?.value.trim()) {
+            filterLongTermGrowthRecords();
         }
     } catch (error) {
         console.error('❌ Error loading long-term growth records:', error);
@@ -103740,9 +103794,13 @@ function showMissionVisionForm() {
             </div>
 
             <div style="margin-top: 25px;">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; gap: 8px; flex-wrap: wrap;">
                     <h4 style="margin: 0;">📋 Recorded Mission & Vision</h4>
-                    <button type="button" class="action" style="background: #0b3d91;" onclick="loadMissionVisionRecords()">🔄 Refresh</button>
+                    <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+                        <input type="text" id="missionVisionSearchInput" placeholder="🔍 Search mission & vision records..." style="padding: 3px; border: 2px solid #ddd; border-radius: 3px; font-size: 9px; width: 290px;" onkeyup="filterMissionVisionRecords()">
+                        <button type="button" class="action" style="background: #0b3d91;" onclick="filterMissionVisionRecords()">🔎 Search</button>
+                        <button type="button" class="action" style="background: #0b3d91;" onclick="loadMissionVisionRecords()">🔄 Refresh</button>
+                    </div>
                 </div>
                 <div style="overflow: auto; border: 1px solid #dee2e6; border-radius: 5px;">
                     <table id="missionVisionRecordsTable" style="width: 100%; border-collapse: collapse;">
@@ -104096,9 +104154,13 @@ function showLongTermGrowthForm() {
             </div>
 
             <div style="margin-top: 25px;">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; gap: 8px; flex-wrap: wrap;">
                     <h4 style="margin: 0;">📋 Recorded Long-Term Growth</h4>
-                    <button type="button" class="action" style="background: #0b3d91;" onclick="loadLongTermGrowthRecords()">🔄 Refresh</button>
+                    <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+                        <input type="text" id="longTermGrowthSearchInput" placeholder="🔍 Search growth records..." style="padding: 3px; border: 2px solid #ddd; border-radius: 3px; font-size: 9px; width: 290px;" onkeyup="filterLongTermGrowthRecords()">
+                        <button type="button" class="action" style="background: #0b3d91;" onclick="filterLongTermGrowthRecords()">🔎 Search</button>
+                        <button type="button" class="action" style="background: #0b3d91;" onclick="loadLongTermGrowthRecords()">🔄 Refresh</button>
+                    </div>
                 </div>
                 <div style="overflow: auto; border: 1px solid #dee2e6; border-radius: 5px;">
                     <table id="longTermGrowthRecordsTable" style="width: 100%; border-collapse: collapse;">
