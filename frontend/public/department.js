@@ -71101,6 +71101,9 @@ function showProcurementForm() {
                 const currentUserName = (typeof getCurrentUser === 'function' ? getCurrentUser() : null) || 'Current User';
                 const currentUserRole = (typeof getCurrentUserRole === 'function' ? getCurrentUserRole() : null) || 'Employee';
 
+                const sessionUser = (window.sessionManager && typeof window.sessionManager.getCurrentUser === 'function') ? window.sessionManager.getCurrentUser() : null;
+                const currentUserId = (sessionUser && sessionUser.id) ? sessionUser.id : ((typeof getCurrentUserId === 'function') ? getCurrentUserId() : null);
+
                 const formData = {
 
                     requestTitle: requestTitle,
@@ -71135,7 +71138,9 @@ function showProcurementForm() {
 
                     justification: justification,
 
-                    approvalRequirements: approvalRequirements
+                    approvalRequirements: approvalRequirements,
+
+                    userId: currentUserId
 
                 };
 
