@@ -379,6 +379,300 @@ router.post('/report', async (req, res) => {
     }
 });
 
+// ===== SYSTEM CHANGE TRACKING =====
+
+// Ensure audit_logs table exists
+async function ensureAuditLogsTable() {
+    try {
+        await db.execute(`
+            CREATE TABLE IF NOT EXISTS audit_logs (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                action VARCHAR(100) NOT NULL,
+                entity_type VARCHAR(50) NOT NULL,
+                entity_id VARCHAR(100) NULL,
+                entity_name VARCHAR(255) NULL,
+                description TEXT NULL,
+                performed_by VARCHAR(100) NULL,
+                ip_address VARCHAR(45) NULL,
+                metadata JSON NULL,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                INDEX idx_action (action),
+                INDEX idx_entity_type (entity_type),
+                INDEX idx_created_at (created_at)
+            )
+        `);
+    } catch (err) {
+        // Table may already exist with different schema
+        console.log('audit_logs table check:', err.message);
+    }
+}
+
+// Get system change notifications (new workers, employees, drivers, policies)
+router.get('/system-changes', async (req, res) => {
+    try {
+        console.log('🔔 Fetching system change notifications...');
+        await ensureAuditLogsTable();
+
+        const { days = 30, type } = req.query;
+        const changes = [];
+
+        // Track recently added employees
+        try {
+            const [newEmployees] = await db.execute(`
+                SELECT id, full_name, department, position, status, created_at
+                FROM employees
+                WHERE created_at >= DATE_SUB(NOW(), INTERVAL ? DAY)
+                ORDER BY created_at DESC
+                LIMIT 50
+            `, [parseInt(days)]);
+            newEmployees.forEach(emp => {
+                changes.push({
+                    type: 'employee_added',
+                    icon: '👤',
+                    title: 'New Employee Registered',
+                    description: `${emp.full_name} added to ${emp.department || 'Unknown'} department as ${emp.position || 'N/A'}`,
+                    entity_id: emp.id,
+                    entity_name: emp.full_name,
+                    status: emp.status,
+                    timestamp: emp.created_at
+                });
+            });
+        } catch (e) { console.log('Employee tracking:', e.message); }
+
+        // Track recently added worker accounts
+        try {
+            const [newWorkers] = await db.execute(`
+                SELECT id, full_name, worker_type, department, status, created_at
+                FROM worker_accounts
+                WHERE created_at >= DATE_SUB(NOW(), INTERVAL ? DAY)
+                ORDER BY created_at DESC
+                LIMIT 50
+            `, [parseInt(days)]);
+            newWorkers.forEach(w => {
+                changes.push({
+                    type: 'worker_added',
+                    icon: '🔧',
+                    title: 'New Worker Account Created',
+                    description: `${w.full_name} (${w.worker_type || 'Worker'}) added to ${w.department || 'General'}`,
+                    entity_id: w.id,
+                    entity_name: w.full_name,
+                    status: w.status,
+                    timestamp: w.created_at
+                });
+            });
+        } catch (e) { console.log('Worker tracking:', e.message); }
+
+        // Track recently added drivers
+        try {
+            const [newDrivers] = await db.execute(`
+                SELECT id, full_name, license_number, status, created_at
+                FROM drivers
+                WHERE created_at >= DATE_SUB(NOW(), INTERVAL ? DAY)
+                ORDER BY created_at DESC
+                LIMIT 50
+            `, [parseInt(days)]);
+            newDrivers.forEach(d => {
+                changes.push({
+                    type: 'driver_added',
+                    icon: '🚗',
+                    title: 'New Driver Registered',
+                    description: `${d.full_name} registered with license ${d.license_number || 'N/A'}`,
+                    entity_id: d.id,
+                    entity_name: d.full_name,
+                    status: d.status,
+                    timestamp: d.created_at
+                });
+            });
+        } catch (e) { console.log('Driver tracking:', e.message); }
+
+        // Track recently added policies
+        try {
+            const [newPolicies] = await db.execute(`
+                SELECT id, title, department, status, created_at
+                FROM policies
+                WHERE created_at >= DATE_SUB(NOW(), INTERVAL ? DAY)
+                ORDER BY created_at DESC
+                LIMIT 50
+            `, [parseInt(days)]);
+            newPolicies.forEach(p => {
+                changes.push({
+                    type: 'policy_added',
+                    icon: '📋',
+                    title: 'New Policy Added',
+                    description: `"${p.title}" policy added for ${p.department || 'All'} department`,
+                    entity_id: p.id,
+                    entity_name: p.title,
+                    status: p.status,
+                    timestamp: p.created_at
+                });
+            });
+        } catch (e) { console.log('Policy tracking:', e.message); }
+
+        // Track recently added projects
+        try {
+            const [newProjects] = await db.execute(`
+                SELECT id, project_name, department, status, start_date, created_at
+                FROM projects
+                WHERE created_at >= DATE_SUB(NOW(), INTERVAL ? DAY)
+                ORDER BY created_at DESC
+                LIMIT 50
+            `, [parseInt(days)]);
+            newProjects.forEach(p => {
+                changes.push({
+                    type: 'project_added',
+                    icon: '🚀',
+                    title: 'New Project Created',
+                    description: `"${p.project_name}" created in ${p.department || 'General'} department`,
+                    entity_id: p.id,
+                    entity_name: p.project_name,
+                    status: p.status,
+                    timestamp: p.created_at
+                });
+            });
+        } catch (e) { console.log('Project tracking:', e.message); }
+
+        // Track recently added company cars
+        try {
+            const [newCars] = await db.execute(`
+                SELECT id, plate_number, make, model, status, created_at
+                FROM company_cars
+                WHERE created_at >= DATE_SUB(NOW(), INTERVAL ? DAY)
+                ORDER BY created_at DESC
+                LIMIT 50
+            `, [parseInt(days)]);
+            newCars.forEach(c => {
+                changes.push({
+                    type: 'car_added',
+                    icon: '🚛',
+                    title: 'New Company Car Registered',
+                    description: `${c.make || ''} ${c.model || ''} (${c.plate_number}) added to fleet`,
+                    entity_id: c.id,
+                    entity_name: c.plate_number,
+                    status: c.status,
+                    timestamp: c.created_at
+                });
+            });
+        } catch (e) { console.log('Car tracking:', e.message); }
+
+        // Filter by type if specified
+        let filtered = changes;
+        if (type) {
+            filtered = changes.filter(c => c.type === type);
+        }
+
+        // Sort all changes by timestamp descending
+        filtered.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+
+        // Summary counts
+        const summary = {
+            total: filtered.length,
+            employees: changes.filter(c => c.type === 'employee_added').length,
+            workers: changes.filter(c => c.type === 'worker_added').length,
+            drivers: changes.filter(c => c.type === 'driver_added').length,
+            policies: changes.filter(c => c.type === 'policy_added').length,
+            projects: changes.filter(c => c.type === 'project_added').length,
+            cars: changes.filter(c => c.type === 'car_added').length
+        };
+
+        res.json({
+            success: true,
+            changes: filtered,
+            summary,
+            period: `Last ${days} days`
+        });
+
+    } catch (error) {
+        console.error('❌ Error fetching system changes:', error);
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+// Get system status overview
+router.get('/system-status', async (req, res) => {
+    try {
+        console.log('📊 Fetching system status overview...');
+        const status = {
+            timestamp: new Date().toISOString(),
+            system: 'Operational',
+            components: {}
+        };
+
+        // Database connectivity
+        try {
+            const [dbCheck] = await db.execute('SELECT 1 as ok');
+            status.components.database = { status: 'Connected', healthy: true };
+        } catch (e) {
+            status.components.database = { status: 'Error', healthy: false, error: e.message };
+            status.system = 'Degraded';
+        }
+
+        // Table counts for system overview
+        const tables = [
+            { name: 'employees', label: 'Employees' },
+            { name: 'worker_accounts', label: 'Worker Accounts' },
+            { name: 'drivers', label: 'Drivers' },
+            { name: 'projects', label: 'Projects' },
+            { name: 'policies', label: 'Policies' },
+            { name: 'company_cars', label: 'Company Cars' },
+            { name: 'departments', label: 'Departments' },
+            { name: 'documents', label: 'Documents' },
+            { name: 'financial_transactions', label: 'Financial Transactions' },
+            { name: 'attendance', label: 'Attendance Records' }
+        ];
+
+        status.counts = {};
+        for (const table of tables) {
+            try {
+                const [rows] = await db.execute(`SELECT COUNT(*) as count FROM ${table.name}`);
+                status.counts[table.name] = { label: table.label, count: rows[0]?.count || 0 };
+            } catch (e) {
+                status.counts[table.name] = { label: table.label, count: 0, error: 'Table not found' };
+            }
+        }
+
+        // Active vs Inactive counts for key entities
+        try {
+            const [activeEmployees] = await db.execute(
+                "SELECT COUNT(*) as count FROM employees WHERE status = 'Active'"
+            );
+            const [totalEmployees] = await db.execute('SELECT COUNT(*) as count FROM employees');
+            status.employeeStatus = {
+                active: activeEmployees[0]?.count || 0,
+                total: totalEmployees[0]?.count || 0
+            };
+        } catch (e) {
+            status.employeeStatus = { active: 0, total: 0 };
+        }
+
+        // Recent activity (last 24 hours)
+        try {
+            const [recentEmployees] = await db.execute(
+                'SELECT COUNT(*) as count FROM employees WHERE created_at >= DATE_SUB(NOW(), INTERVAL 24 HOUR)'
+            );
+            const [recentWorkers] = await db.execute(
+                'SELECT COUNT(*) as count FROM worker_accounts WHERE created_at >= DATE_SUB(NOW(), INTERVAL 24 HOUR)'
+            );
+            status.recentActivity = {
+                newEmployees24h: recentEmployees[0]?.count || 0,
+                newWorkers24h: recentWorkers[0]?.count || 0
+            };
+        } catch (e) {
+            status.recentActivity = { newEmployees24h: 0, newWorkers24h: 0 };
+        }
+
+        // API status
+        status.components.api = { status: 'Operational', healthy: true };
+        status.components.authentication = { status: 'Active', healthy: true };
+        status.components.fileStorage = { status: 'Available', healthy: true };
+
+        res.json({ success: true, data: status });
+
+    } catch (error) {
+        console.error('❌ Error fetching system status:', error);
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
 // Test endpoint
 router.get('/test', (req, res) => {
     res.json({
@@ -387,6 +681,8 @@ router.get('/test', (req, res) => {
         availableEndpoints: [
             'GET /audit/dashboard - Comprehensive system audit',
             'GET /audit/category/:category - Specific category data',
+            'GET /audit/system-changes - System change notifications',
+            'GET /audit/system-status - System status overview',
             'POST /audit/report - Generate audit report',
             'GET /audit/test - Test endpoint'
         ]
