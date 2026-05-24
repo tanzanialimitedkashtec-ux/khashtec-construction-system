@@ -23023,6 +23023,122 @@ background: #f8f9fa;
     }
 }
 
+/* ===== SYSTEM AUDITS & OVERVIEW STYLES ===== */
+
+.audits-main-card { position: relative; }
+
+.audits-main-tabs {
+    display: flex; gap: 0; margin-bottom: 20px;
+    border-bottom: 2px solid #e0e0e0;
+}
+.audits-tab-btn {
+    padding: 12px 24px; border: none; background: transparent;
+    cursor: pointer; font-weight: 600; font-size: 0.95rem;
+    color: #666; border-bottom: 3px solid transparent;
+    transition: all 0.3s ease;
+}
+.audits-tab-btn:hover { color: #333; background: #f5f5f5; }
+.audits-tab-btn.active {
+    color: #4CAF50; border-bottom-color: #4CAF50;
+}
+
+.system-status-header, .change-log-header {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 16px; flex-wrap: wrap; gap: 10px;
+}
+.system-status-header h4, .change-log-header h4 { margin: 0; }
+
+.system-status-cards {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 14px; margin-bottom: 24px;
+}
+.sys-card {
+    display: flex; align-items: center; gap: 12px;
+    padding: 16px; border-radius: 10px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+.sys-card-ok { background: #e8f5e9; border-left: 4px solid #4CAF50; }
+.sys-card-err { background: #ffebee; border-left: 4px solid #f44336; }
+.sys-icon { font-size: 1.8rem; }
+.sys-info h5 { margin: 0 0 4px; font-size: 0.85rem; color: #666; }
+.sys-info span { font-weight: 700; font-size: 1rem; color: #333; }
+
+.system-counts-section, .system-activity-section { margin-bottom: 24px; }
+.system-counts-section h4, .system-activity-section h4 {
+    margin: 0 0 12px; color: #333; font-size: 1.1rem;
+    border-bottom: 2px solid #4CAF50; padding-bottom: 6px;
+}
+.system-counts-grid {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 12px;
+}
+.sys-count-item {
+    text-align: center; padding: 14px 8px;
+    background: #f8f9fa; border-radius: 8px;
+    border: 1px solid #e0e0e0;
+}
+.sys-count-num { display: block; font-size: 1.6rem; font-weight: 700; color: #4CAF50; }
+.sys-count-label { display: block; font-size: 0.8rem; color: #666; margin-top: 4px; text-transform: uppercase; }
+
+.recent-activity-items { display: flex; flex-direction: column; gap: 10px; }
+.recent-item {
+    display: flex; align-items: center; gap: 8px;
+    padding: 10px; background: #f8f9fa; border-radius: 6px;
+    font-size: 0.95rem;
+}
+.recent-icon { font-size: 1.2rem; }
+
+.change-log-controls {
+    display: flex; gap: 10px; align-items: center; flex-wrap: wrap;
+}
+.change-log-controls select {
+    padding: 8px 12px; border: 1px solid #ccc; border-radius: 6px;
+    font-size: 0.9rem; background: white;
+}
+
+.change-summary-cards {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: 10px; margin-bottom: 20px;
+}
+.chg-card {
+    text-align: center; padding: 14px 8px;
+    background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+    border-radius: 8px; border: 1px solid #dee2e6;
+}
+.chg-num { display: block; font-size: 1.5rem; font-weight: 700; color: #4CAF50; }
+.chg-lbl { display: block; font-size: 0.75rem; color: #666; margin-top: 4px; text-transform: uppercase; }
+
+.change-timeline { display: flex; flex-direction: column; gap: 0; }
+.change-entry {
+    display: flex; gap: 14px; padding: 14px 12px;
+    border-left: 3px solid #e0e0e0;
+    transition: background 0.2s;
+}
+.change-entry:hover { background: #f8f9fa; border-left-color: #4CAF50; }
+.change-icon { font-size: 1.4rem; flex-shrink: 0; padding-top: 2px; }
+.change-body { flex: 1; }
+.change-title { font-weight: 600; color: #333; margin-bottom: 2px; }
+.change-desc { font-size: 0.9rem; color: #555; margin-bottom: 4px; }
+.change-meta { font-size: 0.8rem; color: #888; display: flex; gap: 10px; align-items: center; }
+.change-time { font-style: italic; }
+.status-neutral { background: #e9ecef; padding: 2px 8px; border-radius: 10px; font-size: 0.75rem; }
+
+.no-changes { text-align: center; padding: 40px; color: #888; }
+
+@media (max-width: 768px) {
+    .audits-main-tabs { flex-direction: column; }
+    .audits-tab-btn { text-align: left; border-bottom: none; border-left: 3px solid transparent; }
+    .audits-tab-btn.active { border-left-color: #4CAF50; border-bottom-color: transparent; }
+    .system-status-cards { grid-template-columns: repeat(2, 1fr); }
+    .change-summary-cards { grid-template-columns: repeat(3, 1fr); }
+    .change-log-controls { flex-direction: column; align-items: stretch; }
+}
+@media (max-width: 480px) {
+    .system-status-cards { grid-template-columns: 1fr; }
+    .system-counts-grid { grid-template-columns: repeat(2, 1fr); }
+    .change-summary-cards { grid-template-columns: repeat(2, 1fr); }
+}
+
 /* ===== VISION & MISSION STYLES ===== */
 
 .vision-mission-container {
@@ -61468,79 +61584,213 @@ function financialReporting(){
 
 function financeAudits(){
 
-    showContent(`<div class="card">
+    showContent(`<div class="card audits-main-card">
 
-        <h3>Financial Audits</h3>
+        <h3>System Audits & Overview</h3>
 
-        <p><strong>Financial Authority:</strong> Conduct and manage financial audits and compliance checks</p>
+        <p><strong>System Authority:</strong> Monitor system status, track all changes, and manage financial audits</p>
 
         
 
-        <div class="audit-overview">
+        <!-- Main Audits Navigation Tabs -->
 
-            <h4>Audit Management</h4>
+        <div class="audits-main-tabs">
 
-            <div class="audit-tabs">
+            <button class="audits-tab-btn active" onclick="switchAuditsMainTab('systemStatus')">System Status</button>
 
-                <button class="tab-btn active" onclick="showAuditTab('internal')">Internal Audits</button>
+            <button class="audits-tab-btn" onclick="switchAuditsMainTab('changeLog')">System Changes</button>
 
-                <button class="tab-btn" onclick="showAuditTab('external')">External Audits</button>
+            <button class="audits-tab-btn" onclick="switchAuditsMainTab('financialAudits')">Financial Audits</button>
 
-                <button class="tab-btn" onclick="showAuditTab('compliance')">Compliance Checks</button>
+        </div>
+
+
+
+        <!-- ===== SYSTEM STATUS TAB ===== -->
+
+        <div id="auditsTab_systemStatus" class="audits-tab-content">
+
+            <div class="system-status-header">
+
+                <h4>System Status Overview</h4>
+
+                <button class="action" onclick="loadSystemStatus()">Refresh</button>
 
             </div>
 
-            
+            <div class="system-status-cards" id="systemStatusCards">
 
-            <div id="internalAudits" class="tab-content">
+                <div class="sys-card sys-card-ok"><div class="sys-icon">&#9881;</div><div class="sys-info"><h5>System</h5><span id="sysOverallStatus">Loading...</span></div></div>
 
-                <div class="audit-section">
+                <div class="sys-card sys-card-ok"><div class="sys-icon">&#128451;</div><div class="sys-info"><h5>Database</h5><span id="sysDbStatus">Loading...</span></div></div>
 
-                    <h5>Scheduled Internal Audits</h5>
+                <div class="sys-card sys-card-ok"><div class="sys-icon">&#128279;</div><div class="sys-info"><h5>API</h5><span id="sysApiStatus">Loading...</span></div></div>
 
-                    <div class="audit-item">
+                <div class="sys-card sys-card-ok"><div class="sys-icon">&#128274;</div><div class="sys-info"><h5>Auth</h5><span id="sysAuthStatus">Loading...</span></div></div>
 
-                        <div class="audit-details">
+            </div>
 
-                            <strong>Q1 Financial Records Audit</strong>
+            <div class="system-counts-section">
 
-                            <span>Scheduled: March 25, 2026</span>
+                <h4>System Data Overview</h4>
 
-                            <span>Scope: All financial transactions</span>
+                <div class="system-counts-grid" id="systemCountsGrid">
 
-                            <span>Status: Pending</span>
+                    <p>Loading system data counts...</p>
+
+                </div>
+
+            </div>
+
+            <div class="system-activity-section">
+
+                <h4>Recent Activity (24h)</h4>
+
+                <div id="sysRecentActivity">
+
+                    <p>Loading recent activity...</p>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+
+        <!-- ===== SYSTEM CHANGES TAB ===== -->
+
+        <div id="auditsTab_changeLog" class="audits-tab-content" style="display:none;">
+
+            <div class="change-log-header">
+
+                <h4>System Change Notifications</h4>
+
+                <div class="change-log-controls">
+
+                    <select id="changeLogDays" onchange="loadSystemChanges()">
+
+                        <option value="7">Last 7 days</option>
+
+                        <option value="14">Last 14 days</option>
+
+                        <option value="30" selected>Last 30 days</option>
+
+                        <option value="90">Last 90 days</option>
+
+                    </select>
+
+                    <select id="changeLogType" onchange="loadSystemChanges()">
+
+                        <option value="">All Changes</option>
+
+                        <option value="employee_added">Employees</option>
+
+                        <option value="worker_added">Workers</option>
+
+                        <option value="driver_added">Drivers</option>
+
+                        <option value="policy_added">Policies</option>
+
+                        <option value="project_added">Projects</option>
+
+                        <option value="car_added">Company Cars</option>
+
+                    </select>
+
+                    <button class="action" onclick="loadSystemChanges()">Refresh</button>
+
+                </div>
+
+            </div>
+
+            <div class="change-summary-cards" id="changeSummaryCards">
+
+                <p>Loading change summary...</p>
+
+            </div>
+
+            <div class="change-log-list" id="changeLogList">
+
+                <p>Loading system changes...</p>
+
+            </div>
+
+        </div>
+
+
+
+        <!-- ===== FINANCIAL AUDITS TAB ===== -->
+
+        <div id="auditsTab_financialAudits" class="audits-tab-content" style="display:none;">
+
+            <div class="audit-overview">
+
+                <h4>Audit Management</h4>
+
+                <div class="audit-tabs">
+
+                    <button class="tab-btn active" onclick="showAuditTab('internal')">Internal Audits</button>
+
+                    <button class="tab-btn" onclick="showAuditTab('external')">External Audits</button>
+
+                    <button class="tab-btn" onclick="showAuditTab('compliance')">Compliance Checks</button>
+
+                </div>
+
+                
+
+                <div id="internalAudits" class="tab-content">
+
+                    <div class="audit-section">
+
+                        <h5>Scheduled Internal Audits</h5>
+
+                        <div class="audit-item">
+
+                            <div class="audit-details">
+
+                                <strong>Q1 Financial Records Audit</strong>
+
+                                <span>Scheduled: March 25, 2026</span>
+
+                                <span>Scope: All financial transactions</span>
+
+                                <span>Status: Pending</span>
+
+                            </div>
+
+                            <div class="audit-actions">
+
+                                <button class="action" onclick="startAudit('audit001')">Start Audit</button>
+
+                                <button class="action" onclick="rescheduleAudit('audit001')">Reschedule</button>
+
+                            </div>
 
                         </div>
 
-                        <div class="audit-actions">
+                        
 
-                            <button class="action" onclick="startAudit('audit001')">Start Audit</button>
+                        <div class="audit-item">
 
-                            <button class="action" onclick="rescheduleAudit('audit001')">Reschedule</button>
+                            <div class="audit-details">
 
-                        </div>
+                                <strong>Payroll Compliance Audit</strong>
 
-                    </div>
+                                <span>Completed: February 28, 2026</span>
 
-                    
+                                <span>Scope: Salary payments &amp; deductions</span>
 
-                    <div class="audit-item">
+                                <span>Status: Completed - No Issues</span>
 
-                        <div class="audit-details">
+                            </div>
 
-                            <strong>Payroll Compliance Audit</strong>
+                            <div class="audit-actions">
 
-                            <span>Completed: February 28, 2026</span>
+                                <button class="action" onclick="viewAuditReport('audit002')">View Report</button>
 
-                            <span>Scope: Salary payments & deductions</span>
-
-                            <span>Status: Completed - No Issues</span>
-
-                        </div>
-
-                        <div class="audit-actions">
-
-                            <button class="action" onclick="viewAuditReport('audit002')">View Report</button>
+                            </div>
 
                         </div>
 
@@ -61548,27 +61798,27 @@ function financeAudits(){
 
                 </div>
 
-            </div>
+                
 
-            
+                <div id="externalAudits" class="tab-content hidden">
 
-            <div id="externalAudits" class="tab-content hidden">
+                    <div class="audit-section">
 
-                <div class="audit-section">
+                        <h5>External Audit Requirements</h5>
 
-                    <h5>External Audit Requirements</h5>
+                        <div class="audit-item">
 
-                    <div class="audit-item">
+                            <div class="audit-details">
 
-                        <div class="audit-details">
+                                <strong>Annual Financial Audit</strong>
 
-                            <strong>Annual Financial Audit</strong>
+                                <span>Due: December 31, 2026</span>
 
-                            <span>Due: December 31, 2026</span>
+                                <span>Auditor: PwC Tanzania</span>
 
-                            <span>Auditor: PwC Tanzania</span>
+                                <span>Status: Scheduled</span>
 
-                            <span>Status: Scheduled</span>
+                            </div>
 
                         </div>
 
@@ -61576,39 +61826,39 @@ function financeAudits(){
 
                 </div>
 
-            </div>
+                
 
-            
+                <div id="complianceChecks" class="tab-content hidden">
 
-            <div id="complianceChecks" class="tab-content hidden">
+                    <div class="audit-section">
 
-                <div class="audit-section">
+                        <h5>Compliance Status</h5>
 
-                    <h5>Compliance Status</h5>
+                        <div class="compliance-grid">
 
-                    <div class="compliance-grid">
+                            <div class="compliance-item">
 
-                        <div class="compliance-item">
+                                <span>Tax Compliance</span>
 
-                            <span>Tax Compliance</span>
+                                <span class="status-good">Compliant</span>
 
-                            <span class="status-good">Compliant</span>
+                            </div>
 
-                        </div>
+                            <div class="compliance-item">
 
-                        <div class="compliance-item">
+                                <span>NSSF Compliance</span>
 
-                            <span>NSSF Compliance</span>
+                                <span class="status-good">Compliant</span>
 
-                            <span class="status-good">Compliant</span>
+                            </div>
 
-                        </div>
+                            <div class="compliance-item">
 
-                        <div class="compliance-item">
+                                <span>Financial Reporting</span>
 
-                            <span>Financial Reporting</span>
+                                <span class="status-warning">Due Soon</span>
 
-                            <span class="status-warning">Due Soon</span>
+                            </div>
 
                         </div>
 
@@ -61621,6 +61871,236 @@ function financeAudits(){
         </div>
 
     </div>`);
+
+    // Load system status data on page load
+
+    setTimeout(() => { loadSystemStatus(); loadSystemChanges(); }, 100);
+
+}
+
+
+
+// ===== AUDITS TAB SWITCHING =====
+
+function switchAuditsMainTab(tabId) {
+
+    document.querySelectorAll('.audits-tab-content').forEach(el => el.style.display = 'none');
+
+    document.querySelectorAll('.audits-tab-btn').forEach(btn => btn.classList.remove('active'));
+
+    const target = document.getElementById('auditsTab_' + tabId);
+
+    if (target) target.style.display = 'block';
+
+    event.target.classList.add('active');
+
+    if (tabId === 'systemStatus') loadSystemStatus();
+
+    if (tabId === 'changeLog') loadSystemChanges();
+
+}
+
+
+
+// ===== SYSTEM STATUS LOADING =====
+
+async function loadSystemStatus() {
+
+    try {
+
+        const response = await KashTecAPI.get('/audit/system-status');
+
+        if (response && response.data) {
+
+            const d = response.data;
+
+            // Update status cards
+
+            const el = (id) => document.getElementById(id);
+
+            if (el('sysOverallStatus')) el('sysOverallStatus').textContent = d.system || 'Unknown';
+
+            if (el('sysDbStatus')) el('sysDbStatus').textContent = d.components?.database?.status || 'Unknown';
+
+            if (el('sysApiStatus')) el('sysApiStatus').textContent = d.components?.api?.status || 'Unknown';
+
+            if (el('sysAuthStatus')) el('sysAuthStatus').textContent = d.components?.authentication?.status || 'Unknown';
+
+            // Update status card colors
+
+            document.querySelectorAll('.sys-card').forEach(card => {
+
+                const span = card.querySelector('span');
+
+                if (span) {
+
+                    const val = span.textContent.toLowerCase();
+
+                    card.className = 'sys-card ' + (val.includes('error') || val.includes('degraded') ? 'sys-card-err' : 'sys-card-ok');
+
+                }
+
+            });
+
+            // System counts grid
+
+            if (d.counts && el('systemCountsGrid')) {
+
+                let html = '';
+
+                for (const [key, val] of Object.entries(d.counts)) {
+
+                    html += '<div class="sys-count-item"><span class="sys-count-num">' + (val.count || 0) + '</span><span class="sys-count-label">' + (val.label || key) + '</span></div>';
+
+                }
+
+                el('systemCountsGrid').innerHTML = html || '<p>No data available</p>';
+
+            }
+
+            // Recent activity
+
+            if (d.recentActivity && el('sysRecentActivity')) {
+
+                let html = '<div class="recent-activity-items">';
+
+                html += '<div class="recent-item"><span class="recent-icon">&#128100;</span> <strong>' + (d.recentActivity.newEmployees24h || 0) + '</strong> new employees in last 24h</div>';
+
+                html += '<div class="recent-item"><span class="recent-icon">&#128295;</span> <strong>' + (d.recentActivity.newWorkers24h || 0) + '</strong> new workers in last 24h</div>';
+
+                html += '</div>';
+
+                el('sysRecentActivity').innerHTML = html;
+
+            }
+
+        }
+
+    } catch (error) {
+
+        console.error('System status error:', error);
+
+        const el = document.getElementById('sysOverallStatus');
+
+        if (el) el.textContent = 'Error loading status';
+
+    }
+
+}
+
+
+
+// ===== SYSTEM CHANGES LOADING =====
+
+async function loadSystemChanges() {
+
+    try {
+
+        const daysEl = document.getElementById('changeLogDays');
+
+        const typeEl = document.getElementById('changeLogType');
+
+        const days = daysEl ? daysEl.value : 30;
+
+        const type = typeEl ? typeEl.value : '';
+
+        let url = '/audit/system-changes?days=' + days;
+
+        if (type) url += '&type=' + type;
+
+        const response = await KashTecAPI.get(url);
+
+        if (response) {
+
+            const summary = response.summary || {};
+
+            const changes = response.changes || [];
+
+            // Render summary cards
+
+            const summaryEl = document.getElementById('changeSummaryCards');
+
+            if (summaryEl) {
+
+                summaryEl.innerHTML =
+
+                    '<div class="chg-card"><span class="chg-num">' + (summary.total || 0) + '</span><span class="chg-lbl">Total Changes</span></div>' +
+
+                    '<div class="chg-card"><span class="chg-num">' + (summary.employees || 0) + '</span><span class="chg-lbl">Employees</span></div>' +
+
+                    '<div class="chg-card"><span class="chg-num">' + (summary.workers || 0) + '</span><span class="chg-lbl">Workers</span></div>' +
+
+                    '<div class="chg-card"><span class="chg-num">' + (summary.drivers || 0) + '</span><span class="chg-lbl">Drivers</span></div>' +
+
+                    '<div class="chg-card"><span class="chg-num">' + (summary.policies || 0) + '</span><span class="chg-lbl">Policies</span></div>' +
+
+                    '<div class="chg-card"><span class="chg-num">' + (summary.projects || 0) + '</span><span class="chg-lbl">Projects</span></div>' +
+
+                    '<div class="chg-card"><span class="chg-num">' + (summary.cars || 0) + '</span><span class="chg-lbl">Cars</span></div>';
+
+            }
+
+            // Render change log list
+
+            const listEl = document.getElementById('changeLogList');
+
+            if (listEl) {
+
+                if (changes.length === 0) {
+
+                    listEl.innerHTML = '<div class="no-changes"><p>No system changes found for the selected period.</p></div>';
+
+                } else {
+
+                    let html = '<div class="change-timeline">';
+
+                    changes.forEach(c => {
+
+                        const date = c.timestamp ? new Date(c.timestamp).toLocaleString() : 'Unknown';
+
+                        const statusClass = (c.status || '').toLowerCase() === 'active' ? 'status-good' : 'status-neutral';
+
+                        html += '<div class="change-entry">' +
+
+                            '<div class="change-icon">' + (c.icon || '&#9679;') + '</div>' +
+
+                            '<div class="change-body">' +
+
+                                '<div class="change-title">' + (c.title || 'Change') + '</div>' +
+
+                                '<div class="change-desc">' + (c.description || '') + '</div>' +
+
+                                '<div class="change-meta"><span class="change-time">' + date + '</span>' +
+
+                                (c.status ? ' <span class="' + statusClass + '">' + c.status + '</span>' : '') +
+
+                                '</div>' +
+
+                            '</div>' +
+
+                        '</div>';
+
+                    });
+
+                    html += '</div>';
+
+                    listEl.innerHTML = html;
+
+                }
+
+            }
+
+        }
+
+    } catch (error) {
+
+        console.error('System changes error:', error);
+
+        const el = document.getElementById('changeLogList');
+
+        if (el) el.innerHTML = '<div class="no-changes"><p>Error loading system changes. Please try again.</p></div>';
+
+    }
 
 }
 

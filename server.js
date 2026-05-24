@@ -126,6 +126,8 @@ const assetsEquipmentRoutes = require('./backend/routes/assetsEquipment');
 
 const financeRoutes = require('./backend/routes/finance');
 
+const auditRoutes = require('./backend/routes/audit');
+
 
 
 const app = express();
@@ -1137,6 +1139,12 @@ app.use('/api/risk-management', asyncHandler(async (req, res, next) => {
 }));
 
 
+
+app.use('/api/audit', asyncHandler(async (req, res, next) => {
+
+    return auditRoutes(req, res, next);
+
+}));
 
 app.use('/api', asyncHandler(async (req, res, next) => {
 
