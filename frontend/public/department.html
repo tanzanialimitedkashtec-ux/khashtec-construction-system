@@ -61898,11 +61898,17 @@ async function loadSystemStatus() {
 
     try {
 
+        console.log('[Audit] Loading system status from /audit/system-status...');
+
         const response = await KashTecAPI.get('/audit/system-status');
+
+        console.log('[Audit] System status response:', response);
 
         if (response && response.data) {
 
             const d = response.data;
+
+            console.log('[Audit] System status data:', JSON.stringify(d, null, 2));
 
             // Update status cards
 
@@ -61915,6 +61921,8 @@ async function loadSystemStatus() {
             if (el('sysApiStatus')) el('sysApiStatus').textContent = d.components?.api?.status || 'Unknown';
 
             if (el('sysAuthStatus')) el('sysAuthStatus').textContent = d.components?.authentication?.status || 'Unknown';
+
+            console.log('[Audit] System components:', d.components);
 
             // Update status card colors
 
@@ -61936,9 +61944,13 @@ async function loadSystemStatus() {
 
             if (d.counts && el('systemCountsGrid')) {
 
+                console.log('[Audit] System counts data:', d.counts);
+
                 let html = '';
 
                 for (const [key, val] of Object.entries(d.counts)) {
+
+                    console.log('[Audit] Count - ' + (val.label || key) + ': ' + (val.count || 0) + (val.error ? ' (ERROR: ' + val.error + ')' : ''));
 
                     html += '<div class="sys-count-item"><span class="sys-count-num">' + (val.count || 0) + '</span><span class="sys-count-label">' + (val.label || key) + '</span></div>';
 
@@ -61946,11 +61958,19 @@ async function loadSystemStatus() {
 
                 el('systemCountsGrid').innerHTML = html || '<p>No data available</p>';
 
+                console.log('[Audit] System counts grid updated with ' + Object.keys(d.counts).length + ' items');
+
+            } else {
+
+                console.warn('[Audit] No counts data received or systemCountsGrid element not found');
+
             }
 
             // Recent activity
 
             if (d.recentActivity && el('sysRecentActivity')) {
+
+                console.log('[Audit] Recent activity:', d.recentActivity);
 
                 let html = '<div class="recent-activity-items">';
 
@@ -61964,11 +61984,15 @@ async function loadSystemStatus() {
 
             }
 
+        } else {
+
+            console.warn('[Audit] No data in system status response:', response);
+
         }
 
     } catch (error) {
 
-        console.error('System status error:', error);
+        console.error('[Audit] System status error:', error);
 
         const el = document.getElementById('sysOverallStatus');
 
@@ -62692,17 +62716,23 @@ function systemAuditDashboard() {
 // Load audit data
 async function loadAuditDashboard() {
     try {
+        console.log('[Audit] Loading audit dashboard from /audit/dashboard...');
         const response = await KashTecAPI.get('/audit/dashboard');
+        console.log('[Audit] Dashboard response:', response);
         if (response && response.data) {
+            console.log('[Audit] Dashboard data loaded:', JSON.stringify(response.data, null, 2));
             updateAuditDashboard(response.data);
+        } else {
+            console.warn('[Audit] No data in dashboard response');
         }
     } catch (error) {
-        console.error('Audit dashboard error:', error);
+        console.error('[Audit] Dashboard error:', error);
     }
 }
 
 // Update dashboard with data
 function updateAuditDashboard(data) {
+    console.log('[Audit] Updating audit dashboard sections...');
     updateOverviewCards(data.overview);
     updateOverviewSection(data);
     updateProjectsSection(data.projects);
@@ -62711,6 +62741,7 @@ function updateAuditDashboard(data) {
     updateFinancialSection(data.financial);
     updateComplianceSection(data.compliance);
     updateSystemSection(data.system);
+    console.log('[Audit] All audit dashboard sections updated');
 }
 
 // Update overview section

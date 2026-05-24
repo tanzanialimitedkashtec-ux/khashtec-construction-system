@@ -39690,17 +39690,23 @@ function systemAuditDashboard() {
 // Load audit data
 async function loadAuditDashboard() {
     try {
+        console.log('[Audit] Loading audit dashboard from /audit/dashboard...');
         const response = await KashTecAPI.get('/audit/dashboard');
+        console.log('[Audit] Dashboard response:', response);
         if (response && response.data) {
+            console.log('[Audit] Dashboard data loaded:', JSON.stringify(response.data, null, 2));
             updateAuditDashboard(response.data);
+        } else {
+            console.warn('[Audit] No data in dashboard response');
         }
     } catch (error) {
-        console.error('Audit dashboard error:', error);
+        console.error('[Audit] Dashboard error:', error);
     }
 }
 
 // Update dashboard with data
 function updateAuditDashboard(data) {
+    console.log('[Audit] Updating audit dashboard sections...');
     updateOverviewCards(data.overview);
     updateOverviewSection(data);
     updateProjectsSection(data.projects);
@@ -39709,6 +39715,7 @@ function updateAuditDashboard(data) {
     updateFinancialSection(data.financial);
     updateComplianceSection(data.compliance);
     updateSystemSection(data.system);
+    console.log('[Audit] All audit dashboard sections updated');
 }
 
 // Update overview section
