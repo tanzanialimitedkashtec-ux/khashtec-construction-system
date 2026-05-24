@@ -1114,7 +1114,11 @@ router.get('/internal-audits', async (req, res) => {
                 totalRecords: txSummary.reduce((s, r) => s + r.count, 0),
                 totalAmount: txSummary.reduce((s, r) => s + Number(r.total_amount || 0), 0)
             });
-        } catch (e) { console.log('  ❌ Financial audit:', e.message); }
+            console.log('  ✅ Financial audit:', txSummary.length, 'groups,', txRecent.length, 'recent');
+        } catch (e) {
+            console.log('  ❌ Financial audit:', e.message);
+            audits.push({ id: 'internal_financial', name: 'Financial Records Audit', scope: 'All financial transactions', summary: [], recentRecords: [], totalRecords: 0, totalAmount: 0, error: e.message });
+        }
 
         // Payroll audit
         try {
@@ -1139,7 +1143,11 @@ router.get('/internal-audits', async (req, res) => {
                 totalRecords: payrollSummary.reduce((s, r) => s + r.count, 0),
                 totalNet: payrollSummary.reduce((s, r) => s + Number(r.total_net || 0), 0)
             });
-        } catch (e) { console.log('  ❌ Payroll audit:', e.message); }
+            console.log('  ✅ Payroll audit:', payrollSummary.length, 'groups,', payrollRecent.length, 'recent');
+        } catch (e) {
+            console.log('  ❌ Payroll audit:', e.message);
+            audits.push({ id: 'internal_payroll', name: 'Payroll Compliance Audit', scope: 'Salary payments & deductions', summary: [], recentRecords: [], totalRecords: 0, totalNet: 0, error: e.message });
+        }
 
         // Payment tracking audit
         try {
@@ -1165,7 +1173,11 @@ router.get('/internal-audits', async (req, res) => {
                 totalRecords: ptSummary.reduce((s, r) => s + r.count, 0),
                 overdueCount: overdue.length
             });
-        } catch (e) { console.log('  ❌ Payment tracking audit:', e.message); }
+            console.log('  ✅ Payment tracking audit:', ptSummary.length, 'groups,', ptRecent.length, 'recent');
+        } catch (e) {
+            console.log('  ❌ Payment tracking audit:', e.message);
+            audits.push({ id: 'internal_payments', name: 'Payment Tracking Audit', scope: 'All payment records & tracking', summary: [], recentRecords: [], totalRecords: 0, overdueCount: 0, error: e.message });
+        }
 
         // Budget audit
         try {
@@ -1182,7 +1194,11 @@ router.get('/internal-audits', async (req, res) => {
                 totalRecords: budgetSummary.reduce((s, r) => s + r.count, 0),
                 totalProposed: budgetSummary.reduce((s, r) => s + Number(r.total_proposed || 0), 0)
             });
-        } catch (e) { console.log('  ❌ Budget audit:', e.message); }
+            console.log('  ✅ Budget audit:', budgetSummary.length, 'groups');
+        } catch (e) {
+            console.log('  ❌ Budget audit:', e.message);
+            audits.push({ id: 'internal_budget', name: 'Budget Allocation Audit', scope: 'Workforce & department budgets', summary: [], totalRecords: 0, totalProposed: 0, error: e.message });
+        }
 
         // Procurement & Sales audit
         try {
@@ -1201,7 +1217,11 @@ router.get('/internal-audits', async (req, res) => {
                 totalRecords: procSummary.reduce((s, r) => s + r.count, 0),
                 totalBudget: procSummary.reduce((s, r) => s + Number(r.total_budget || 0), 0)
             });
-        } catch (e) { console.log('  ❌ Procurement audit:', e.message); }
+            console.log('  ✅ Procurement audit:', procSummary.length, 'groups,', procRecent.length, 'recent');
+        } catch (e) {
+            console.log('  ❌ Procurement audit:', e.message);
+            audits.push({ id: 'internal_procurement', name: 'Procurement & Sales Audit', scope: 'All procurement requests and sales', summary: [], recentRecords: [], totalRecords: 0, totalBudget: 0, error: e.message });
+        }
 
         // Claims audit
         try {
@@ -1220,7 +1240,11 @@ router.get('/internal-audits', async (req, res) => {
                 totalRecords: claimsSummary.reduce((s, r) => s + r.count, 0),
                 totalClaimed: claimsSummary.reduce((s, r) => s + Number(r.total_claimed || 0), 0)
             });
-        } catch (e) { console.log('  ❌ Claims audit:', e.message); }
+            console.log('  ✅ Claims audit:', claimsSummary.length, 'groups,', claimsRecent.length, 'recent');
+        } catch (e) {
+            console.log('  ❌ Claims audit:', e.message);
+            audits.push({ id: 'internal_claims', name: 'Claims Management Audit', scope: 'Medical, accident, insurance claims', summary: [], recentRecords: [], totalRecords: 0, totalClaimed: 0, error: e.message });
+        }
 
         // Materials audit
         try {
@@ -1244,7 +1268,11 @@ router.get('/internal-audits', async (req, res) => {
                 recentRecords: matRecent,
                 totalRecords: (matInSummary[0]?.count || 0) + (matOutSummary[0]?.count || 0)
             });
-        } catch (e) { console.log('  ❌ Materials audit:', e.message); }
+            console.log('  ✅ Materials audit: In=' + (matInSummary[0]?.count || 0) + ', Out=' + (matOutSummary[0]?.count || 0));
+        } catch (e) {
+            console.log('  ❌ Materials audit:', e.message);
+            audits.push({ id: 'internal_materials', name: 'Materials Audit', scope: 'Material receipts, issues, and inventory', summary: [{ category: 'Materials Received', count: 0, total: 0 }, { category: 'Materials Issued', count: 0, total: 0 }], recentRecords: [], totalRecords: 0, error: e.message });
+        }
 
         // Transport costs audit
         try {
@@ -1263,7 +1291,11 @@ router.get('/internal-audits', async (req, res) => {
                 totalRecords: transportSummary.reduce((s, r) => s + r.count, 0),
                 totalCost: transportSummary.reduce((s, r) => s + Number(r.total_amount || 0), 0)
             });
-        } catch (e) { console.log('  ❌ Transport audit:', e.message); }
+            console.log('  ✅ Transport audit:', transportSummary.length, 'groups,', transportRecent.length, 'recent');
+        } catch (e) {
+            console.log('  ❌ Transport audit:', e.message);
+            audits.push({ id: 'internal_transport', name: 'Transport Costs Audit', scope: 'Vehicle maintenance, fuel, repairs, tolls', summary: [], recentRecords: [], totalRecords: 0, totalCost: 0, error: e.message });
+        }
 
         // Luggage campaigns & purchases audit
         try {
@@ -1282,7 +1314,11 @@ router.get('/internal-audits', async (req, res) => {
                 totalRecords: (campSummary.reduce((s, r) => s + r.count, 0)) + (purchSummary.reduce((s, r) => s + r.count, 0)),
                 totalRevenue: purchSummary.reduce((s, r) => s + Number(r.total_amount || 0), 0)
             });
-        } catch (e) { console.log('  ❌ Luggage audit:', e.message); }
+            console.log('  ✅ Luggage audit: campaigns=' + campSummary.length + ', purchases=' + purchSummary.length);
+        } catch (e) {
+            console.log('  ❌ Luggage audit:', e.message);
+            audits.push({ id: 'internal_luggage', name: 'Luggage Campaign & Purchase Audit', scope: 'Campaigns, purchases, and revenue', summary: [], totalRecords: 0, totalRevenue: 0, error: e.message });
+        }
 
         console.log('📋 Internal audits loaded:', audits.length, 'audit sections with data:', audits.map(a => a.name + ' (' + a.totalRecords + ' records)').join(', '));
         res.json({ success: true, audits });
@@ -1328,7 +1364,11 @@ router.get('/external-audits', async (req, res) => {
                 overdueCount: overdueTax.length,
                 totalPenalties: taxSummary.reduce((s, r) => s + Number(r.total_penalties || 0), 0)
             });
-        } catch (e) { console.log('  ❌ Tax audit:', e.message); }
+            console.log('  ✅ Tax audit:', taxSummary.length, 'groups,', taxRecent.length, 'recent');
+        } catch (e) {
+            console.log('  ❌ Tax audit:', e.message);
+            audits.push({ id: 'external_tax', name: 'Tax Compliance Audit', auditor: 'Tanzania Revenue Authority (TRA)', scope: 'PAYE, VAT, Corporate Tax, SDL', summary: [], recentRecords: [], totalRecords: 0, totalPaid: 0, overdueCount: 0, totalPenalties: 0, error: e.message });
+        }
 
         // NSSF compliance audit
         try {
@@ -1356,7 +1396,11 @@ router.get('/external-audits', async (req, res) => {
                 totalRecords: nssfSummary.reduce((s, r) => s + r.count, 0),
                 totalContributions: nssfSummary.reduce((s, r) => s + Number(r.total_contributions || 0), 0)
             });
-        } catch (e) { console.log('  ❌ NSSF audit:', e.message); }
+            console.log('  ✅ NSSF audit:', nssfSummary.length, 'groups,', nssfRecent.length, 'recent');
+        } catch (e) {
+            console.log('  ❌ NSSF audit:', e.message);
+            audits.push({ id: 'external_nssf', name: 'NSSF Compliance Audit', auditor: 'National Social Security Fund (NSSF)', scope: 'Employee NSSF registrations & contributions', summary: [], recentRecords: [], totalRecords: 0, totalContributions: 0, error: e.message });
+        }
 
         // Document compliance audit
         try {
@@ -1374,7 +1418,11 @@ router.get('/external-audits', async (req, res) => {
                 summary: docSummary,
                 totalRecords: docSummary.reduce((s, r) => s + r.count, 0)
             });
-        } catch (e) { console.log('  ❌ Document audit:', e.message); }
+            console.log('  ✅ Document audit:', docSummary.length, 'groups');
+        } catch (e) {
+            console.log('  ❌ Document audit:', e.message);
+            audits.push({ id: 'external_documents', name: 'Document & Certificate Audit', auditor: 'Regulatory Bodies', scope: 'Contracts, Permits, Certificates, Reports', summary: [], totalRecords: 0, error: e.message });
+        }
 
         // Risk management audit
         try {
@@ -1394,7 +1442,11 @@ router.get('/external-audits', async (req, res) => {
                 totalRecords: riskSummary.reduce((s, r) => s + r.count, 0),
                 totalPotentialLoss: riskSummary.reduce((s, r) => s + Number(r.total_potential_loss || 0), 0)
             });
-        } catch (e) { console.log('  ❌ Risk audit:', e.message); }
+            console.log('  ✅ Risk audit:', riskSummary.length, 'groups,', riskRecent.length, 'recent');
+        } catch (e) {
+            console.log('  ❌ Risk audit:', e.message);
+            audits.push({ id: 'external_risk', name: 'Risk Management Audit', auditor: 'Risk Assessment Team', scope: 'Financial, operational, safety, legal risks', summary: [], recentRecords: [], totalRecords: 0, totalPotentialLoss: 0, error: e.message });
+        }
 
         // Talent acquisition audit
         try {
@@ -1414,7 +1466,11 @@ router.get('/external-audits', async (req, res) => {
                 totalRecords: talentSummary.reduce((s, r) => s + r.count, 0),
                 totalPositions: talentSummary.reduce((s, r) => s + Number(r.total_positions || 0), 0)
             });
-        } catch (e) { console.log('  ❌ Talent audit:', e.message); }
+            console.log('  ✅ Talent audit:', talentSummary.length, 'groups,', talentRecent.length, 'recent');
+        } catch (e) {
+            console.log('  ❌ Talent audit:', e.message);
+            audits.push({ id: 'external_talent', name: 'Talent Acquisition Audit', auditor: 'HR Department', scope: 'Hiring requisitions, positions, recruitment', summary: [], recentRecords: [], totalRecords: 0, totalPositions: 0, error: e.message });
+        }
 
         // Properties audit
         try {
@@ -1434,7 +1490,11 @@ router.get('/external-audits', async (req, res) => {
                 totalRecords: propSummary.reduce((s, r) => s + r.count, 0),
                 totalValue: propSummary.reduce((s, r) => s + Number(r.total_value || 0), 0)
             });
-        } catch (e) { console.log('  ❌ Property audit:', e.message); }
+            console.log('  ✅ Property audit:', propSummary.length, 'groups,', propRecent.length, 'recent');
+        } catch (e) {
+            console.log('  ❌ Property audit:', e.message);
+            audits.push({ id: 'external_properties', name: 'Property Portfolio Audit', auditor: 'Real Estate Management', scope: 'Properties - residential, commercial, land', summary: [], recentRecords: [], totalRecords: 0, totalValue: 0, error: e.message });
+        }
 
         console.log('📋 External audits loaded:', audits.length, 'audit sections with data:', audits.map(a => a.name + ' (' + a.totalRecords + ' records)').join(', '));
         res.json({ success: true, audits });
