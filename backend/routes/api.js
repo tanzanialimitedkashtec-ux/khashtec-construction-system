@@ -388,45 +388,84 @@ router.get('/luggage-campaigns', async (req, res) => {
 // Create new luggage campaign
 router.post('/luggage-campaigns', async (req, res) => {
     try {
+        // Ensure table exists with correct schema before inserting
+        await db.execute(`
+            CREATE TABLE IF NOT EXISTS luggage_campaigns (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                campaign_name VARCHAR(255) NOT NULL DEFAULT '',
+                luggage_name VARCHAR(255) NOT NULL DEFAULT '',
+                luggage_code VARCHAR(20) NOT NULL DEFAULT '',
+                price_per_unit DECIMAL(10,2) NOT NULL DEFAULT 0.00,
+                total_units INT NOT NULL DEFAULT 0,
+                units_sold INT NOT NULL DEFAULT 0,
+                description TEXT NULL,
+                start_date DATE NOT NULL,
+                end_date DATE NOT NULL,
+                status VARCHAR(50) DEFAULT 'planning',
+                created_by VARCHAR(100) NULL,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+            )
+        `);
+
         const {
             campaign_name,
             campaign_description,
+            description,
             luggage_name,
             luggage_code,
             price_per_unit,
+            total_units,
             total_units_available,
+            start_date,
             campaign_start_date,
+            end_date,
             campaign_end_date,
             status,
             created_by
         } = req.body;
 
-        const [result] = await db.execute(`
+        // Support both legacy and current field names from the frontend
+        const finalDescription = campaign_description || description || null;
+        const finalTotalUnits  = parseInt(total_units || total_units_available || 0);
+        const finalStartDate   = start_date || campaign_start_date;
+        const finalEndDate     = end_date   || campaign_end_date;
+
+        if (!campaign_name || !luggage_name || !finalStartDate || !finalEndDate) {
+            return res.status(400).json({
+                success: false,
+                error: 'Missing required fields: campaign_name, luggage_name, start_date, end_date'
+            });
+        }
+
+        const result = await db.execute(`
             INSERT INTO luggage_campaigns 
-            (campaign_name, campaign_description, luggage_name, luggage_code, 
-             price_per_unit, total_units_available, campaign_start_date, 
-             campaign_end_date, status, created_by)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            (campaign_name, luggage_name, luggage_code, price_per_unit, 
+             total_units, units_sold, description, start_date, end_date, status, created_by)
+            VALUES (?, ?, ?, ?, ?, 0, ?, ?, ?, ?, ?)
         `, [
             campaign_name,
-            campaign_description,
-            luggage_name,
-            luggage_code,
-            price_per_unit,
-            total_units_available,
-            campaign_start_date,
-            campaign_end_date,
-            status || 'Draft',
-            created_by
+            luggage_name || '',
+            luggage_code || (luggage_name ? luggage_name.substring(0, 3).toUpperCase() : 'UNK'),
+            parseFloat(price_per_unit || 0),
+            finalTotalUnits,
+            finalDescription,
+            finalStartDate,
+            finalEndDate,
+            status || 'planning',
+            created_by || null
         ]);
 
-        res.json({ 
-            success: true, 
-            data: { id: result.insertId, message: 'Campaign created successfully' }
+        const insertId = result.insertId;
+        res.status(201).json({ 
+            success: true,
+            message: 'Campaign created successfully',
+            campaignId: insertId,
+            data: { id: insertId, message: 'Campaign created successfully' }
         });
     } catch (error) {
         console.error('Error creating luggage campaign:', error);
-        res.status(500).json({ success: false, error: error.message });
+        res.status(500).json({ success: false, error: 'Failed to create campaign', details: error.message });
     }
 });
 
@@ -598,10 +637,10 @@ router.post('/luggage-payment-tracking', async (req, res) => {
 // Get active campaigns for purchase form
 router.get('/luggage-campaigns/active', async (req, res) => {
     try {
-        const [campaigns] = await db.execute(`
-            SELECT id, campaign_name, luggage_name, price_per_unit, total_units_available, units_sold
+        const campaigns = await db.execute(`
+            SELECT id, campaign_name, luggage_name, price_per_unit, total_units, units_sold
             FROM luggage_campaigns 
-            WHERE status = 'Active' 
+            WHERE status IN ('Active', 'active', 'planning') 
             ORDER BY campaign_name
         `);
         res.json({ success: true, data: campaigns });
