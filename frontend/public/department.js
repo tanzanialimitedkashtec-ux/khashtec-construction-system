@@ -40953,7 +40953,7 @@ async function loadLuggageCampaigns() {
 
         // Handle different response formats
 
-        const campaigns = response.data || response.campaigns || response;
+        const campaigns = response.campaigns || response.data || (Array.isArray(response) ? response : []);
 
         
 
@@ -40961,31 +40961,21 @@ async function loadLuggageCampaigns() {
 
             recordsList.innerHTML = campaigns.map(campaign => {
 
-                // Map backend fields to frontend expected fields
+                const campaignName = campaign.campaign_name || 'Unknown Campaign';
 
-                const mappedCampaign = {
+                const luggageName = campaign.luggage_name || campaign.target_luggage || 'Unknown';
 
-                    id: campaign.id,
+                const luggageCode = campaign.luggage_code || (luggageName ? luggageName.substring(0, 3).toUpperCase() : 'UNK');
 
-                    campaign_name: campaign.campaign_name || 'Unknown Campaign',
+                const pricePerUnit = parseFloat(campaign.price_per_unit || campaign.budget || 0);
 
-                    luggage_name: campaign.target_luggage || campaign.luggage_name || 'Unknown',
+                const totalUnits = parseInt(campaign.total_units || campaign.total_units_available || campaign.participants_count || 0);
 
-                    luggage_code: campaign.target_luggage ? campaign.target_luggage.substring(0, 3).toUpperCase() : 'UNK',
+                const unitsSold = parseInt(campaign.units_sold || 0);
 
-                    price_per_unit: campaign.budget || campaign.price_per_unit || 0,
+                const status = campaign.status || 'planning';
 
-                    total_units_available: campaign.participants_count || campaign.total_units_available || 0,
-
-                    units_sold: Math.floor((campaign.completion_rate || 0) / 100 * (campaign.participants_count || 0)),
-
-                    status: campaign.status || 'planning',
-
-                    start_date: campaign.start_date,
-
-                    end_date: campaign.end_date
-
-                };
+                const description = campaign.description || campaign.campaign_description || 'No description';
 
                 
 
@@ -40997,9 +40987,9 @@ async function loadLuggageCampaigns() {
 
                         <div class="campaign-info">
 
-                            <div class="campaign-name">${mappedCampaign.campaign_name}</div>
+                            <div class="campaign-name">${campaignName}</div>
 
-                            <div class="campaign-id">ID: ${mappedCampaign.id}</div>
+                            <div class="campaign-id">ID: ${campaign.id}</div>
 
                         </div>
 
@@ -41009,7 +40999,7 @@ async function loadLuggageCampaigns() {
 
                         <div class="luggage-info">
 
-                            <div class="luggage-name">${mappedCampaign.luggage_name}</div>
+                            <div class="luggage-name">${luggageName}</div>
 
                         </div>
 
@@ -41019,7 +41009,7 @@ async function loadLuggageCampaigns() {
 
                         <div class="luggage-code">
 
-                            <span class="code-badge">${mappedCampaign.luggage_code}</span>
+                            <span class="code-badge">${luggageCode}</span>
 
                         </div>
 
@@ -41029,7 +41019,7 @@ async function loadLuggageCampaigns() {
 
                         <div class="price-info">
 
-                            <div class="price-amount">TZS ${parseFloat(mappedCampaign.price_per_unit).toLocaleString()}</div>
+                            <div class="price-amount">TZS ${pricePerUnit.toLocaleString()}</div>
 
                         </div>
 
@@ -41039,7 +41029,7 @@ async function loadLuggageCampaigns() {
 
                         <div class="units-info">
 
-                            <div class="total-units">${mappedCampaign.total_units_available}</div>
+                            <div class="total-units">${totalUnits}</div>
 
                         </div>
 
@@ -41049,7 +41039,7 @@ async function loadLuggageCampaigns() {
 
                         <div class="units-info">
 
-                            <div class="units-sold">${mappedCampaign.units_sold || 0}</div>
+                            <div class="units-sold">${unitsSold}</div>
 
                         </div>
 
@@ -41059,7 +41049,7 @@ async function loadLuggageCampaigns() {
 
                         <div class="status-info">
 
-                            <span class="status-badge status-${mappedCampaign.status.toLowerCase()}">${mappedCampaign.status}</span>
+                            <span class="status-badge status-${status.toLowerCase()}">${status}</span>
 
                         </div>
 
@@ -41069,7 +41059,7 @@ async function loadLuggageCampaigns() {
 
                         <div class="date-info">
 
-                            <div class="campaign-date">${mappedCampaign.start_date ? new Date(mappedCampaign.start_date).toLocaleDateString() : 'N/A'}</div>
+                            <div class="campaign-date">${campaign.start_date ? new Date(campaign.start_date).toLocaleDateString() : 'N/A'}</div>
 
                         </div>
 
@@ -41079,7 +41069,7 @@ async function loadLuggageCampaigns() {
 
                         <div class="date-info">
 
-                            <div class="campaign-date">${mappedCampaign.end_date ? new Date(mappedCampaign.end_date).toLocaleDateString() : 'N/A'}</div>
+                            <div class="campaign-date">${campaign.end_date ? new Date(campaign.end_date).toLocaleDateString() : 'N/A'}</div>
 
                         </div>
 
@@ -41089,7 +41079,7 @@ async function loadLuggageCampaigns() {
 
                         <div class="description-info">
 
-                            <div class="campaign-description">${campaign.campaign_description || 'No description'}</div>
+                            <div class="campaign-description">${description}</div>
 
                         </div>
 
@@ -41125,9 +41115,13 @@ async function loadLuggageCampaigns() {
 
         console.error('❌ Error loading campaigns:', error);
 
-        // Load sample data on error
+        const recordsList = document.getElementById('campaignRecordsList');
 
-        loadSampleCampaigns();
+        if (recordsList) {
+
+            recordsList.innerHTML = '<tr><td colspan="11" class="no-records" style="color:#e74c3c;">⚠️ Failed to load campaigns. Please check your connection and try again.</td></tr>';
+
+        }
 
     }
 
@@ -41431,13 +41425,37 @@ function editCampaign(campaignId) {
 
 
 
-function deleteCampaign(campaignId) {
+async function deleteCampaign(campaignId) {
 
-    if (confirm(`Are you sure you want to delete campaign: ${campaignId}?`)) {
+    if (!confirm(`Are you sure you want to delete this campaign? This action cannot be undone.`)) return;
 
-        customAlert(`Campaign ${campaignId} deleted successfully!`, 'Success', 'success');
+    try {
 
-        loadLuggageCampaigns();
+        if (!window.KashTecAPI || typeof window.KashTecAPI.delete !== 'function') {
+
+            throw new Error('API service not loaded properly');
+
+        }
+
+        const response = await window.KashTecAPI.delete(`/luggage-campaigns/${campaignId}`);
+
+        if (response && response.success) {
+
+            customAlert('Campaign deleted successfully!', 'Success', 'success');
+
+            loadLuggageCampaigns();
+
+        } else {
+
+            customAlert('Error deleting campaign: ' + (response.error || 'Unknown error'), 'Error', 'error');
+
+        }
+
+    } catch (error) {
+
+        console.error('❌ Error deleting campaign:', error);
+
+        customAlert('Error deleting campaign: ' + error.message, 'Error', 'error');
 
     }
 
