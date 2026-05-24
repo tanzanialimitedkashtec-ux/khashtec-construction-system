@@ -102458,6 +102458,10 @@ async function loadLeadershipRecords() {
 
             tbody.appendChild(tr);
         }
+
+        if (document.getElementById('leadershipSearchInput')?.value.trim()) {
+            filterLeadershipRecords();
+        }
     } catch (error) {
         console.error('❌ Error loading leadership records:', error);
         tbody.innerHTML = `
@@ -102466,6 +102470,29 @@ async function loadLeadershipRecords() {
             </tr>
         `;
     }
+}
+
+function filterLeadershipRecords() {
+    const searchInput = document.getElementById('leadershipSearchInput');
+    const tbody = document.getElementById('leadershipRecordsTbody');
+    if (!searchInput || !tbody) {
+        return;
+    }
+
+    const searchTerm = searchInput.value.trim().toLowerCase();
+    const rows = Array.from(tbody.querySelectorAll('tr'));
+
+    if (!searchTerm) {
+        rows.forEach((row) => {
+            row.style.display = '';
+        });
+        return;
+    }
+
+    rows.forEach((row) => {
+        const rowText = row.textContent.toLowerCase();
+        row.style.display = rowText.includes(searchTerm) ? '' : 'none';
+    });
 }
 
 // Update project fields based on project type
@@ -103400,9 +103427,13 @@ function showLeadershipForm() {
             </div>
 
             <div style="margin-top: 25px;">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; gap: 8px; flex-wrap: wrap;">
                     <h4 style="margin: 0;">📋 Recorded Leadership</h4>
-                    <button type="button" class="action" style="background: #0b3d91;" onclick="loadLeadershipRecords()">🔄 Refresh</button>
+                    <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+                        <input type="text" id="leadershipSearchInput" placeholder="🔍 Search leadership records..." style="padding: 8px; border: 2px solid #ddd; border-radius: 6px; font-size: 12px; width: 240px;" onkeyup="filterLeadershipRecords()">
+                        <button type="button" class="action" style="background: #0b3d91;" onclick="filterLeadershipRecords()">🔎 Search</button>
+                        <button type="button" class="action" style="background: #0b3d91;" onclick="loadLeadershipRecords()">🔄 Refresh</button>
+                    </div>
                 </div>
                 <div style="overflow: auto; border: 1px solid #dee2e6; border-radius: 5px;">
                     <table id="leadershipRecordsTable" style="width: 100%; border-collapse: collapse;">
