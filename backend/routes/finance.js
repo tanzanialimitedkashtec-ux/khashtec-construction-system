@@ -199,77 +199,93 @@ router.post('/expense', async (req, res) => {
     }
 });
 
-// PUT - Approve expense
-router.put('/expense/:id/approve', async (req, res) => {
-    console.log('✅ PUT /api/finance/expense/:id/approve accessed with id:', req.params.id);
+// PUT - Confirm expense
+router.put('/expense/:id/confirm', async (req, res) => {
+    console.log('✅ PUT /api/finance/expense/:id/confirm accessed with id:', req.params.id);
     try {
         const id = req.params.id;
         const result = await db.execute(
-            `UPDATE financial_transactions SET status = 'Approved', updated_at = CURRENT_TIMESTAMP WHERE id = ?`,
+            `UPDATE financial_transactions SET status = 'Approved', updated_at = CURRENT_TIMESTAMP WHERE id = ? AND type = 'Expense'`,
             [id]
         );
         const workRes = await db.execute(
-            `UPDATE finance_work SET status = 'Approved', updated_at = CURRENT_TIMESTAMP WHERE id = ?`,
+            `UPDATE finance_work SET status = 'Completed', completion_date = CURRENT_TIMESTAMP, updated_at = CURRENT_TIMESTAMP WHERE work_type = 'Expense Control' AND amount = (SELECT amount FROM financial_transactions WHERE id = ?) AND status = 'Pending'`,
             [id]
         ).catch(() => ({ affectedRows: 0 }));
         if (!result.affectedRows && !workRes.affectedRows) {
-            return res.status(404).json({ error: 'Record not found' });
+            return res.status(404).json({ error: 'Expense not found or already confirmed' });
         }
-        res.json({ 
-            message: 'Expense approved successfully', 
+        console.log('  ✅ Expense confirmed: id=' + id + ', tx_updated=' + result.affectedRows + ', work_updated=' + (workRes.affectedRows || 0));
+        res.json({
+            message: 'Expense confirmed successfully',
             transaction_updated: Boolean(result.affectedRows),
             work_updated: Boolean(workRes.affectedRows),
             id
         });
     } catch (error) {
-        console.error('Error approving expense:', error);
-        res.status(500).json({ error: 'Failed to approve expense' });
+        console.error('❌ Error confirming expense:', error);
+        res.status(500).json({ error: 'Failed to confirm expense' });
     }
 });
 
-// PUT - Reject expense
-router.put('/expense/:id/reject', async (req, res) => {
-    console.log('❌ PUT /api/finance/expense/:id/reject accessed with id:', req.params.id);
-    try {
-        const id = req.params.id;
-        const result = await db.execute(
-            `UPDATE financial_transactions SET status = 'Rejected', updated_at = CURRENT_TIMESTAMP WHERE id = ?`,
-            [id]
-        );
-        const workRes = await db.execute(
-            `UPDATE finance_work SET status = 'Rejected', updated_at = CURRENT_TIMESTAMP WHERE id = ?`,
-            [id]
-        ).catch(() => ({ affectedRows: 0 }));
-        if (!result.affectedRows && !workRes.affectedRows) {
-            return res.status(404).json({ error: 'Record not found' });
-        }
-        res.json({ 
-            message: 'Expense rejected successfully', 
-            transaction_updated: Boolean(result.affectedRows),
-            work_updated: Boolean(workRes.affectedRows),
-            id
-        });
-    } catch (error) {
-        console.error('Error rejecting expense:', error);
-        res.status(500).json({ error: 'Failed to reject expense' });
-    }
-});
-
-// GET - Fetch expenses
+// GET - Fetch expenses (with optional status filter)
 router.get('/expenses', async (req, res) => {
     console.log('📝 GET /api/finance/expenses accessed');
     try {
-        const rows = await db.execute(`
-            SELECT id, date, category, description, amount, status
+        const { status } = req.query;
+        let query = `SELECT id, date, category, description, amount, status, created_at
             FROM financial_transactions
-            WHERE type = 'Expense'
-            ORDER BY date DESC
-            LIMIT 500
-        `);
+            WHERE type = 'Expense'`;
+        const params = [];
+        if (status) {
+            query += ` AND status = ?`;
+            params.push(status);
+        }
+        query += ` ORDER BY created_at DESC LIMIT 500`;
+        const rows = await db.execute(query, params);
+        console.log('  📋 Expenses loaded:', rows.length, 'records' + (status ? ' (status=' + status + ')' : ''));
         res.json(rows);
     } catch (error) {
-        console.error('Error fetching expenses:', error);
+        console.error('❌ Error fetching expenses:', error);
         res.status(500).json({ error: 'Failed to fetch expenses' });
+    }
+});
+
+// GET - Expense overview stats (real data)
+router.get('/expense-overview', async (req, res) => {
+    console.log('📊 GET /api/finance/expense-overview accessed');
+    try {
+        const totalExpRows = await db.execute(`SELECT SUM(amount) as total FROM financial_transactions WHERE type = 'Expense'`);
+        const approvedExpRows = await db.execute(`SELECT SUM(amount) as total FROM financial_transactions WHERE type = 'Expense' AND status = 'Approved'`);
+        const pendingRows = await db.execute(`SELECT COUNT(*) as count FROM financial_transactions WHERE type = 'Expense' AND status = 'Pending'`);
+        const pendingAmtRows = await db.execute(`SELECT SUM(amount) as total FROM financial_transactions WHERE type = 'Expense' AND status = 'Pending'`);
+        const budgetRows = await db.execute(`SELECT SUM(total_proposed) as total FROM workforce_budgets WHERE status = 'Approved'`);
+        const monthExpRows = await db.execute(`SELECT SUM(amount) as total FROM financial_transactions WHERE type = 'Expense' AND MONTH(date) = MONTH(CURDATE()) AND YEAR(date) = YEAR(CURDATE())`);
+
+        const totalExpenses = Number(totalExpRows[0]?.total) || 0;
+        const approvedExpenses = Number(approvedExpRows[0]?.total) || 0;
+        const pendingCount = Number(pendingRows[0]?.count) || 0;
+        const pendingAmount = Number(pendingAmtRows[0]?.total) || 0;
+        const monthlyBudget = Number(budgetRows[0]?.total) || 0;
+        const monthExpenses = Number(monthExpRows[0]?.total) || 0;
+        const remaining = monthlyBudget > 0 ? monthlyBudget - monthExpenses : 0;
+        const usedPercent = monthlyBudget > 0 ? Math.round((monthExpenses / monthlyBudget) * 100) : 0;
+
+        console.log('  📊 Expense overview: total=' + totalExpenses + ', monthly=' + monthExpenses + ', budget=' + monthlyBudget + ', pending=' + pendingCount);
+        res.json({
+            success: true,
+            monthlyBudget,
+            monthExpenses,
+            remaining,
+            usedPercent,
+            totalExpenses,
+            approvedExpenses,
+            pendingCount,
+            pendingAmount
+        });
+    } catch (error) {
+        console.error('❌ Error fetching expense overview:', error);
+        res.status(500).json({ error: 'Failed to fetch expense overview' });
     }
 });
 

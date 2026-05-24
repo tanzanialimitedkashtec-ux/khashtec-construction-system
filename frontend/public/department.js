@@ -37929,169 +37929,43 @@ function expenseControl(){
 
         <h3>Expense Control</h3>
 
-        <p><strong>Financial Authority:</strong> Monitor, approve, and control company expenses</p>
-
-        
+        <p><strong>Financial Authority:</strong> Monitor and confirm company expenses</p>
 
         <div class="expense-overview">
 
             <h4>Expense Overview</h4>
 
-            <div class="expense-stats">
-
-                <div class="stat-card">
-
-                    <h5>Monthly Budget</h5>
-
-                    <div class="stat-number">TZS 45,000,000</div>
-
-                    <div class="stat-change">March 2026</div>
-
-                </div>
-
-                
-
-                <div class="stat-card">
-
-                    <h5>Expenses to Date</h5>
-
-                    <div class="stat-number">TZS 28,750,000</div>
-
-                    <div class="stat-change negative">63.9% Used</div>
-
-                </div>
-
-                
-
-                <div class="stat-card">
-
-                    <h5>Remaining Budget</h5>
-
-                    <div class="stat-number">TZS 16,250,000</div>
-
-                    <div class="stat-change positive">36.1% Available</div>
-
-                </div>
-
-                
-
-                <div class="stat-card">
-
-                    <h5>Pending Approvals</h5>
-
-                    <div class="stat-number">12</div>
-
-                    <div class="stat-change">Awaiting Review</div>
-
-                </div>
-
+            <div class="expense-stats" id="expenseOverviewStats">
+                <div class="stat-card"><h5>Monthly Budget</h5><div class="stat-number" id="expStatBudget">Loading...</div><div class="stat-change" id="expStatMonth">--</div></div>
+                <div class="stat-card"><h5>Expenses This Month</h5><div class="stat-number" id="expStatUsed">Loading...</div><div class="stat-change" id="expStatPercent">--</div></div>
+                <div class="stat-card"><h5>Remaining Budget</h5><div class="stat-number" id="expStatRemaining">Loading...</div><div class="stat-change" id="expStatAvailable">--</div></div>
+                <div class="stat-card"><h5>Pending Confirmation</h5><div class="stat-number" id="expStatPending">Loading...</div><div class="stat-change">Awaiting Review</div></div>
             </div>
 
         </div>
-
-        
 
         <div class="expense-management">
 
             <h4>Expense Management</h4>
 
             <div class="expense-tabs">
-
                 <button class="tab-btn active" onclick="showExpenseTab('pending', event)">Pending Expenses</button>
-
-                <button class="tab-btn" onclick="showExpenseTab('approved', event)">Approved Expenses</button>
-
+                <button class="tab-btn" onclick="showExpenseTab('confirmed', event)">Confirmed Expenses</button>
+                <button class="tab-btn" onclick="showExpenseTab('all', event)">All Expenses</button>
                 <button class="tab-btn" onclick="showExpenseTab('new', event)">New Expense</button>
-
             </div>
-
-            
 
             <div id="pendingExpenses" class="tab-content">
-
-                <div class="expense-list">
-
-                    <div class="expense-item">
-
-                        <div class="expense-details">
-
-                            <strong>Office Supplies Purchase</strong>
-
-                            <span>Submitted by: Admin Dept</span>
-
-                            <span>Amount: TZS 850,000</span>
-
-                            <span>Date: 2026-03-15</span>
-
-                        </div>
-
-                        <div class="expense-actions">
-
-                            <button class="action" onclick="approveExpense('exp001')" style="background: #28a745;">Approve</button>
-
-                            <button class="action" onclick="rejectExpense('exp001')" style="background: #dc3545;">Reject</button>
-
-                        </div>
-
-                    </div>
-
-                    
-
-                    <div class="expense-item">
-
-                        <div class="expense-details">
-
-                            <strong>Site Equipment Rental</strong>
-
-                            <span>Submitted by: Projects Dept</span>
-
-                            <span>Amount: TZS 2,500,000</span>
-
-                            <span>Date: 2026-03-14</span>
-
-                        </div>
-
-                        <div class="expense-actions">
-
-                            <button class="action" onclick="approveExpense('exp002')" style="background: #28a745;">Approve</button>
-
-                            <button class="action" onclick="rejectExpense('exp002')" style="background: #dc3545;">Reject</button>
-
-                        </div>
-
-                    </div>
-
-                </div>
-
+                <div id="pendingExpensesList"><p>Loading pending expenses...</p></div>
             </div>
 
-            
-
-            <div id="approvedExpenses" class="tab-content hidden">
-
-                <div class="expense-list">
-
-                    <div class="expense-item approved">
-
-                        <div class="expense-details">
-
-                            <strong>Vehicle Maintenance</strong>
-
-                            <span>Approved by: Finance Manager</span>
-
-                            <span>Amount: TZS 1,200,000</span>
-
-                            <span>Date: 2026-03-10</span>
-
-                        </div>
-
-                    </div>
-
-                </div>
-
+            <div id="confirmedExpenses" class="tab-content hidden">
+                <div id="confirmedExpensesList"><p>Loading confirmed expenses...</p></div>
             </div>
 
-            
+            <div id="allExpenses" class="tab-content hidden">
+                <div id="allExpensesList"><p>Loading all expenses...</p></div>
+            </div>
 
             <div id="newExpense" class="tab-content hidden">
 
@@ -38107,17 +37981,21 @@ function expenseControl(){
 
                                 <option value="">Select Category</option>
 
-                                <option value="office">Office Supplies</option>
+                                <option value="Office Supplies">Office Supplies</option>
 
-                                <option value="equipment">Equipment</option>
+                                <option value="Equipment">Equipment</option>
 
-                                <option value="travel">Travel & Transport</option>
+                                <option value="Travel">Travel & Transport</option>
 
-                                <option value="maintenance">Maintenance</option>
+                                <option value="Maintenance">Maintenance</option>
 
-                                <option value="utilities">Utilities</option>
+                                <option value="Utilities">Utilities</option>
 
-                                <option value="training">Training</option>
+                                <option value="Training">Training</option>
+
+                                <option value="Materials">Materials</option>
+
+                                <option value="Safety">Safety / HSE</option>
 
                             </select>
 
@@ -38133,8 +38011,6 @@ function expenseControl(){
 
                     </div>
 
-                    
-
                     <div class="form-group">
 
                         <label>Description *</label>
@@ -38142,8 +38018,6 @@ function expenseControl(){
                         <textarea id="expenseDescription" rows="3" placeholder="Describe the expense..." required></textarea>
 
                     </div>
-
-                    
 
                     <div class="form-row">
 
@@ -38155,11 +38029,17 @@ function expenseControl(){
 
                                 <option value="">Select Department</option>
 
-                                <option value="projects">Projects</option>
+                                <option value="Projects">Projects</option>
 
-                                <option value="admin">Administration</option>
+                                <option value="Administration">Administration</option>
 
-                                <option value="finance">Finance</option>
+                                <option value="Finance">Finance</option>
+
+                                <option value="HR">Human Resources</option>
+
+                                <option value="HSE">Health & Safety</option>
+
+                                <option value="Operations">Operations</option>
 
                             </select>
 
@@ -38175,8 +38055,6 @@ function expenseControl(){
 
                     </div>
 
-                    
-
                     <button type="submit" class="action">Submit Expense</button>
 
                 </form>
@@ -38186,6 +38064,11 @@ function expenseControl(){
         </div>
 
     </div>`);
+
+    loadExpenseOverview();
+    loadPendingExpenses();
+    loadConfirmedExpenses();
+    loadAllExpenses();
 
 }
 
@@ -43761,84 +43644,184 @@ function processPayroll() {
 
 
 
+function formatTZS(amount) {
+    return 'TZS ' + Number(amount || 0).toLocaleString();
+}
+
+async function loadExpenseOverview() {
+    console.log('[Expense] Loading expense overview...');
+    try {
+        const response = await fetch('/api/finance/expense-overview');
+        const data = await response.json();
+        console.log('[Expense] Overview loaded:', data);
+        if (data.success) {
+            var monthNames = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+            var now = new Date();
+            document.getElementById('expStatBudget').textContent = formatTZS(data.monthlyBudget);
+            document.getElementById('expStatMonth').textContent = monthNames[now.getMonth()] + ' ' + now.getFullYear();
+            document.getElementById('expStatUsed').textContent = formatTZS(data.monthExpenses);
+            document.getElementById('expStatPercent').textContent = data.usedPercent + '% Used';
+            document.getElementById('expStatPercent').className = 'stat-change ' + (data.usedPercent > 80 ? 'negative' : '');
+            document.getElementById('expStatRemaining').textContent = formatTZS(data.remaining);
+            document.getElementById('expStatAvailable').textContent = (100 - data.usedPercent) + '% Available';
+            document.getElementById('expStatAvailable').className = 'stat-change positive';
+            document.getElementById('expStatPending').textContent = data.pendingCount;
+        }
+    } catch (error) {
+        console.error('[Expense] Error loading overview:', error);
+    }
+}
+
+function renderExpenseCards(expenses, containerId, showConfirm) {
+    var el = document.getElementById(containerId);
+    if (!el) return;
+    if (!expenses || expenses.length === 0) {
+        el.innerHTML = '<p style="color:#666;text-align:center;padding:20px;">No expenses found.</p>';
+        return;
+    }
+    var html = '<div class="expense-cards-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:16px;">';
+    expenses.forEach(function(exp) {
+        var statusColor = exp.status === 'Pending' ? '#f39c12' : (exp.status === 'Approved' ? '#28a745' : '#6c757d');
+        html += '<div class="expense-invoice-card" style="border:1px solid #e0e0e0;border-radius:8px;padding:16px;background:#fff;box-shadow:0 2px 4px rgba(0,0,0,0.05);">';
+        html += '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">';
+        html += '<span style="font-weight:600;font-size:0.85em;color:#555;">EXP-' + exp.id + '</span>';
+        html += '<span style="background:' + statusColor + ';color:#fff;padding:2px 10px;border-radius:12px;font-size:0.8em;">' + exp.status + '</span>';
+        html += '</div>';
+        html += '<div style="font-size:1.3em;font-weight:700;color:#2c3e50;margin-bottom:8px;">' + formatTZS(exp.amount) + '</div>';
+        html += '<div style="font-weight:600;margin-bottom:4px;">' + (exp.category || 'Uncategorized') + '</div>';
+        html += '<div style="color:#666;font-size:0.9em;margin-bottom:8px;">' + (exp.description || 'No description') + '</div>';
+        html += '<div style="color:#888;font-size:0.8em;border-top:1px solid #eee;padding-top:8px;">';
+        html += '<span>Date: ' + (exp.date || 'N/A') + '</span>';
+        html += '</div>';
+        if (showConfirm && exp.status === 'Pending') {
+            html += '<div style="margin-top:12px;text-align:right;">';
+            html += '<button class="action" onclick="confirmExpense(' + exp.id + ')" style="background:#28a745;color:#fff;padding:6px 20px;border-radius:6px;border:none;cursor:pointer;">&#10003; Confirm</button>';
+            html += '</div>';
+        }
+        html += '</div>';
+    });
+    html += '</div>';
+    el.innerHTML = html;
+}
+
+async function loadPendingExpenses() {
+    console.log('[Expense] Loading pending expenses...');
+    try {
+        var response = await fetch('/api/finance/expenses?status=Pending');
+        var data = await response.json();
+        console.log('[Expense] Pending expenses loaded:', data.length, 'records');
+        renderExpenseCards(data, 'pendingExpensesList', true);
+    } catch (error) {
+        console.error('[Expense] Error loading pending expenses:', error);
+        document.getElementById('pendingExpensesList').innerHTML = '<p class="error-text">Error loading pending expenses.</p>';
+    }
+}
+
+async function loadConfirmedExpenses() {
+    console.log('[Expense] Loading confirmed expenses...');
+    try {
+        var response = await fetch('/api/finance/expenses?status=Approved');
+        var data = await response.json();
+        console.log('[Expense] Confirmed expenses loaded:', data.length, 'records');
+        renderExpenseCards(data, 'confirmedExpensesList', false);
+    } catch (error) {
+        console.error('[Expense] Error loading confirmed expenses:', error);
+        document.getElementById('confirmedExpensesList').innerHTML = '<p class="error-text">Error loading confirmed expenses.</p>';
+    }
+}
+
+async function loadAllExpenses() {
+    console.log('[Expense] Loading all expenses...');
+    try {
+        var response = await fetch('/api/finance/expenses');
+        var data = await response.json();
+        console.log('[Expense] All expenses loaded:', data.length, 'records');
+        if (!data || data.length === 0) {
+            document.getElementById('allExpensesList').innerHTML = '<p style="color:#666;text-align:center;padding:20px;">No expenses found.</p>';
+            return;
+        }
+        var html = '<div style="overflow-x:auto;"><table class="audit-table" style="width:100%;border-collapse:collapse;">';
+        html += '<thead><tr><th>ID</th><th>Date</th><th>Category</th><th>Description</th><th>Amount</th><th>Status</th></tr></thead><tbody>';
+        data.forEach(function(exp) {
+            var statusColor = exp.status === 'Pending' ? '#f39c12' : (exp.status === 'Approved' ? '#28a745' : '#6c757d');
+            html += '<tr>';
+            html += '<td>EXP-' + exp.id + '</td>';
+            html += '<td>' + (exp.date || 'N/A') + '</td>';
+            html += '<td>' + (exp.category || '-') + '</td>';
+            html += '<td>' + (exp.description || '-') + '</td>';
+            html += '<td style="font-weight:600;">' + formatTZS(exp.amount) + '</td>';
+            html += '<td><span style="background:' + statusColor + ';color:#fff;padding:2px 8px;border-radius:10px;font-size:0.8em;">' + exp.status + '</span></td>';
+            html += '</tr>';
+        });
+        html += '</tbody></table></div>';
+        document.getElementById('allExpensesList').innerHTML = html;
+    } catch (error) {
+        console.error('[Expense] Error loading all expenses:', error);
+        document.getElementById('allExpensesList').innerHTML = '<p class="error-text">Error loading expenses.</p>';
+    }
+}
+
+async function confirmExpense(expenseId) {
+    console.log('[Expense] Confirming expense:', expenseId);
+    try {
+        var response = await fetch('/api/finance/expense/' + expenseId + '/confirm', {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' }
+        });
+        var data = await response.json();
+        if (response.ok) {
+            console.log('[Expense] Expense confirmed:', data);
+            customAlert('Expense EXP-' + expenseId + ' confirmed successfully!', 'Expense Confirmed', 'success');
+            loadPendingExpenses();
+            loadConfirmedExpenses();
+            loadAllExpenses();
+            loadExpenseOverview();
+        } else {
+            customAlert('Failed to confirm expense: ' + (data.error || 'Unknown error'), 'Error', 'error');
+        }
+    } catch (error) {
+        console.error('[Expense] Error confirming expense:', error);
+        customAlert('Error confirming expense. Please try again.', 'Error', 'error');
+    }
+}
+
 function submitNewExpense() {
+    var category = document.getElementById('expenseCategory').value;
+    var amount = document.getElementById('expenseAmount').value;
+    var description = document.getElementById('expenseDescription').value;
+    var department = document.getElementById('expenseDepartment').value;
 
-    const expense = {
+    if (!category || !amount || !description || !department) {
+        customAlert('Please fill in all required fields.', 'Missing Fields', 'error');
+        return false;
+    }
 
-        category: document.getElementById('expenseCategory').value,
+    console.log('[Expense] Submitting new expense:', { category: category, amount: amount, description: description, department: department });
 
-        amount: document.getElementById('expenseAmount').value,
-
-        description: document.getElementById('expenseDescription').value,
-
-        department: document.getElementById('expenseDepartment').value,
-
-        receipt: document.getElementById('expenseReceipt').files[0]?.name,
-
-        submittedDate: new Date().toLocaleString(),
-
-        status: 'pending'
-
-    };
-
-    
-
-    // Save to secure API storage
-
-    const expenses = [];
-
-    expenses.push(expense);
-
-    // TODO: Save to API
-
-    
-
-    customAlert(`Expense submitted successfully!\n\nCategory: ${expense.category}\nAmount: TZS ${expense.amount}\nStatus: Pending Approval`, "Expense Submitted", "success");
-
-    
-
-    document.getElementById('newExpenseForm').reset();
-
-    return false;
-
-}
-
-
-
-function approveExpense(expenseId) {
-
-    customAlert(`Expense ${expenseId} approved!\n\nPayment will be processed within 3 business days.`, "Expense Approved", "success");
-
-}
-
-
-
-function rejectExpense(expenseId) {
-
-    showRejectModal(expenseId, 'Expense Report', function(formData) {
-
-        console.log('Rejecting expense:', formData);
-
-        
-
-        customAlert(`Expense ${expenseId} rejected.\n\nReason: ${formData.rejectionReason}\nDetails: ${formData.rejectionDetails}\n\nSubmitter has been notified.`, "Expense Rejected", "error");
-
-        
-
-        // API call would go here
-
-        // fetch('/finance/reject-expense', {
-
-        //     method: 'POST',
-
-        //     headers: { 'Content-Type': 'application/json' },
-
-        //     body: JSON.stringify({ ...formData, expenseId })
-
-        // });
-
+    fetch('/api/finance/expense', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ category: category, amount: Number(amount), description: description, department: department })
+    })
+    .then(function(response) { return response.json(); })
+    .then(function(data) {
+        console.log('[Expense] Expense submitted:', data);
+        if (data.transaction_id || data.work_id) {
+            customAlert('Expense submitted successfully!\\n\\nCategory: ' + category + '\\nAmount: TZS ' + Number(amount).toLocaleString() + '\\nStatus: Pending Confirmation', 'Expense Submitted', 'success');
+            document.getElementById('newExpenseForm').reset();
+            loadPendingExpenses();
+            loadAllExpenses();
+            loadExpenseOverview();
+        } else {
+            customAlert('Failed to submit expense: ' + (data.error || 'Unknown error'), 'Error', 'error');
+        }
+    })
+    .catch(function(error) {
+        console.error('[Expense] Error submitting expense:', error);
+        customAlert('Error submitting expense. Please try again.', 'Error', 'error');
     });
 
+    return false;
 }
 
 
@@ -43920,63 +43903,29 @@ function showPayrollTab(tabName, btnElement) {
 
 
 function showExpenseTab(tabName, evt) {
-
-    // Hide all expense tabs
-
-    const tabMapping = {
-
+    console.log('[Expense] Switching to tab:', tabName);
+    var tabMapping = {
         pending: 'pendingExpenses',
-
-        approved: 'approvedExpenses',
-
+        confirmed: 'confirmedExpenses',
+        all: 'allExpenses',
         new: 'newExpense'
-
     };
-
-    ['pendingExpenses', 'approvedExpenses', 'newExpense'].forEach(tabId => {
-
-        const element = document.getElementById(tabId);
-
-        if (element) {
-
-            element.classList.add('hidden');
-
-        }
-
+    ['pendingExpenses', 'confirmedExpenses', 'allExpenses', 'newExpense'].forEach(function(tabId) {
+        var element = document.getElementById(tabId);
+        if (element) element.classList.add('hidden');
     });
-
-    
-
-    // Remove active class from all buttons
-
-    document.querySelectorAll('.expense-tabs .tab-btn').forEach(btn => btn.classList.remove('active'));
-
-    
-
-    // Show selected tab
-
-    const targetTabId = tabMapping[tabName] || tabName;
-
-    const targetElement = document.getElementById(targetTabId);
-
+    document.querySelectorAll('.expense-tabs .tab-btn').forEach(function(btn) { btn.classList.remove('active'); });
+    var targetTabId = tabMapping[tabName] || tabName;
+    var targetElement = document.getElementById(targetTabId);
     if (targetElement) {
-
         targetElement.classList.remove('hidden');
-
     } else {
-
-        console.error('âŒ Expense tab content not found:', targetTabId);
-
+        console.error('[Expense] Tab content not found:', targetTabId);
     }
-
-    const clickEvent = evt || (typeof event !== 'undefined' ? event : null);
-
+    var clickEvent = evt || (typeof event !== 'undefined' ? event : null);
     if (clickEvent && clickEvent.target) {
-
         clickEvent.target.classList.add('active');
-
     }
-
 }
 
 
