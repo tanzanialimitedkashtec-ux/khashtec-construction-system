@@ -757,13 +757,43 @@ header h2 {
 
     list-style: none;
 
-    padding: 2px;
+    display: flex;
 
-    font-size: 6px;
+    align-items: center;
+
+    justify-content: space-between;
+
+    padding: 10px 12px;
+
+    font-size: 0.95rem;
 
     font-weight: 600;
 
+    color: #f8f9fa;
+
     background: linear-gradient(135deg, #253545 0%, #2f4152 100%);
+
+}
+
+
+.menu-section summary::after {
+
+    content: '►';
+
+    display: inline-block;
+
+    transition: transform 0.2s ease;
+
+    color: #98a6b8;
+
+    font-size: 0.85rem;
+
+}
+
+
+.menu-section[open] summary::after {
+
+    transform: rotate(90deg);
 
 }
 
@@ -24960,11 +24990,21 @@ function ensureMenuSection(sectionConfig) {
 
     section.dataset.section = sectionConfig.id;
 
-    section.open = true;
+    section.open = false;
 
     const summary = document.createElement('summary');
 
     summary.textContent = sectionConfig.title;
+
+    summary.setAttribute('aria-expanded', 'false');
+
+    section.addEventListener('toggle', () => {
+
+        summary.setAttribute('aria-expanded', section.open ? 'true' : 'false');
+
+        section.classList.toggle('expanded', section.open);
+
+    });
 
     const buttonsContainer = document.createElement('div');
 
