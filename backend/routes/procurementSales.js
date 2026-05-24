@@ -41,9 +41,10 @@ router.get('/', async (req, res) => {
         }
 
         const [procurementSales] = await db.execute(`
-            SELECT ps.*, u.name as submitted_by_name
+            SELECT ps.*, u.name as submitted_by_name, ru.name as reviewed_by_name
             FROM procurement_sales ps
             LEFT JOIN users u ON ps.submitted_by = u.id
+            LEFT JOIN users ru ON ps.reviewed_by = ru.id
             ORDER BY ps.created_at DESC
         `);
         
@@ -66,9 +67,10 @@ router.get('/status/:status', async (req, res) => {
         const { status } = req.params;
         
         const [procurementSales] = await db.execute(`
-            SELECT ps.*, u.name as submitted_by_name
+            SELECT ps.*, u.name as submitted_by_name, ru.name as reviewed_by_name
             FROM procurement_sales ps
             LEFT JOIN users u ON ps.submitted_by = u.id
+            LEFT JOIN users ru ON ps.reviewed_by = ru.id
             WHERE ps.status = ?
             ORDER BY ps.created_at DESC
         `, [status]);
@@ -237,19 +239,21 @@ router.post('/', async (req, res) => {
             console.log('INSERT result:', result);
             // Get the created procurement sale request
             const [newRequest] = await db.execute(`
-                SELECT ps.*, u.name as submitted_by_name
+                SELECT ps.*, u.name as submitted_by_name, ru.name as reviewed_by_name
                 FROM procurement_sales ps
                 LEFT JOIN users u ON ps.submitted_by = u.id
+                LEFT JOIN users ru ON ps.reviewed_by = ru.id
                 WHERE ps.id = ?
             `, [result.insertId]);
 
         // Create notification for Finance and Procurement departments
         await db.execute(`
             INSERT INTO notifications (title, message, type, priority, recipient_id, created_at)
-            VALUES (?, ?, 'info', 'High', NULL, NOW())
+            VALUES (?, ?, 'info', 'Medium', ?, NOW())
         `, [
             'New Procurement Sale Request',
-            `${requestedByRole || 'User'} submitted procurement request: ${requestTitle} (Budget: ${totalBudget})`
+            `${requestedByRole || 'User'} submitted procurement request: ${requestTitle} (Budget: ${totalBudget})`,
+            requesterId
         ]);
 
         res.json({
@@ -396,9 +400,10 @@ router.get('/department/:department', async (req, res) => {
         const { department } = req.params;
         
         const [procurementSales] = await db.execute(`
-            SELECT ps.*, u.name as submitted_by_name
+            SELECT ps.*, u.name as submitted_by_name, ru.name as reviewed_by_name
             FROM procurement_sales ps
             LEFT JOIN users u ON ps.submitted_by = u.id
+            LEFT JOIN users ru ON ps.reviewed_by = ru.id
             WHERE ps.department = ?
             ORDER BY ps.created_at DESC
         `, [department]);

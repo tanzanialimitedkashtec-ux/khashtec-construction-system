@@ -70652,23 +70652,33 @@ function loadProcurementTable() {
                         <tr style="background: #2196F3; color: white;">
 
                             <th style="padding: 10px; text-align: left; border: 1px solid #ddd;">#</th>
-
                             <th style="padding: 10px; text-align: left; border: 1px solid #ddd;">Type</th>
-
-                            <th style="padding: 10px; text-align: left; border: 1px solid #ddd;">Name</th>
-
+                            <th style="padding: 10px; text-align: left; border: 1px solid #ddd;">Title</th>
+                            <th style="padding: 10px; text-align: left; border: 1px solid #ddd;">Description</th>
                             <th style="padding: 10px; text-align: left; border: 1px solid #ddd;">Quantity</th>
-
-                            <th style="padding: 10px; text-align: left; border: 1px solid #ddd;">Price</th>
-
-                            <th style="padding: 10px; text-align: left; border: 1px solid #ddd;">Total</th>
-
-                            <th style="padding: 10px; text-align: left; border: 1px solid #ddd;">Date</th>
-
-                            <th style="padding: 10px; text-align: left; border: 1px solid #ddd;">Status</th>
-
+                            <th style="padding: 10px; text-align: left; border: 1px solid #ddd;">Unit Price</th>
+                            <th style="padding: 10px; text-align: left; border: 1px solid #ddd;">Total Budget</th>
+                            <th style="padding: 10px; text-align: left; border: 1px solid #ddd;">Purpose</th>
+                            <th style="padding: 10px; text-align: left; border: 1px solid #ddd;">Urgency</th>
+                            <th style="padding: 10px; text-align: left; border: 1px solid #ddd;">Expected Delivery</th>
+                            <th style="padding: 10px; text-align: left; border: 1px solid #ddd;">Supplier Req.</th>
+                            <th style="padding: 10px; text-align: left; border: 1px solid #ddd;">Technical Specs</th>
+                            <th style="padding: 10px; text-align: left; border: 1px solid #ddd;">Budget Allocation</th>
                             <th style="padding: 10px; text-align: left; border: 1px solid #ddd;">Department</th>
-
+                            <th style="padding: 10px; text-align: left; border: 1px solid #ddd;">Requested By</th>
+                            <th style="padding: 10px; text-align: left; border: 1px solid #ddd;">Requested Role</th>
+                            <th style="padding: 10px; text-align: left; border: 1px solid #ddd;">Justification</th>
+                            <th style="padding: 10px; text-align: left; border: 1px solid #ddd;">Approval Req.</th>
+                            <th style="padding: 10px; text-align: left; border: 1px solid #ddd;">Status</th>
+                            <th style="padding: 10px; text-align: left; border: 1px solid #ddd;">Reviewed By</th>
+                            <th style="padding: 10px; text-align: left; border: 1px solid #ddd;">Reviewed Date</th>
+                            <th style="padding: 10px; text-align: left; border: 1px solid #ddd;">Review Comments</th>
+                            <th style="padding: 10px; text-align: left; border: 1px solid #ddd;">Approved Budget</th>
+                            <th style="padding: 10px; text-align: left; border: 1px solid #ddd;">Rejection Reason</th>
+                            <th style="padding: 10px; text-align: left; border: 1px solid #ddd;">Submitted By</th>
+                            <th style="padding: 10px; text-align: left; border: 1px solid #ddd;">Created At</th>
+                            <th style="padding: 10px; text-align: left; border: 1px solid #ddd;">Updated At</th>
+                            <th style="padding: 10px; text-align: left; border: 1px solid #ddd;">Actions</th>
                         </tr>
 
                     </thead>
@@ -70680,6 +70690,8 @@ function loadProcurementTable() {
         records.forEach(function(rec, idx) {
 
             const name = rec.request_title || rec.item_description || rec.name || '-';
+
+            const description = rec.item_description || rec.request_title || '-';
 
             const ptype = rec.procurement_type || rec.type || '-';
 
@@ -70697,9 +70709,38 @@ function loadProcurementTable() {
 
             const dept = rec.department || '-';
 
-            const statusColor = status === 'Completed' ? '#4CAF50' : status === 'Pending' ? '#FF9800' : status === 'Cancelled' ? '#f44336' : '#2196F3';
+            const requestedBy = rec.requested_by || '-';
+
+            const requestedByRole = rec.requested_by_role || '-';
+
+            const justification = rec.justification || '-';
+
+            const approvalRequirements = rec.approval_requirements || '-';
+
+            const reviewedBy = rec.reviewed_by_name || rec.reviewed_by || '-';
+
+            const reviewedDate = rec.reviewed_date ? new Date(rec.reviewed_date).toLocaleDateString() : '-';
+
+            const reviewComments = rec.review_comments || '-';
+
+            const approvedBudget = rec.approved_budget != null ? Number(rec.approved_budget).toLocaleString() : '-';
+
+            const rejectionReason = rec.rejection_reason || '-';
+
+            const submittedBy = rec.submitted_by_name || rec.submitted_by || '-';
+
+            const createdAt = rec.created_at ? new Date(rec.created_at).toLocaleDateString() : '-';
+
+            const updatedAt = rec.updated_at ? new Date(rec.updated_at).toLocaleDateString() : '-';
+
+            const statusColor = status === 'Completed' ? '#4CAF50' : status === 'Pending' ? '#FF9800' : status === 'Rejected' ? '#f44336' : status === 'Under Review' ? '#FFB300' : '#2196F3';
 
             const bgColor = idx % 2 === 0 ? '#fff' : '#f9f9f9';
+
+            const actions = (status === 'Pending' || status === 'Under Review') ?
+                '<button onclick="approveProcurement(' + rec.id + ')" style="margin-right:6px;padding:4px 8px;border:none;background:#28a745;color:white;border-radius:4px;cursor:pointer;">Approve</button>' +
+                '<button onclick="rejectProcurement(' + rec.id + ')" style="padding:4px 8px;border:none;background:#dc3545;color:white;border-radius:4px;cursor:pointer;">Reject</button>'
+                : '-';
 
 
 
@@ -70711,17 +70752,55 @@ function loadProcurementTable() {
 
             tableHTML += '<td style="padding: 8px; border: 1px solid #ddd;">' + name + '</td>';
 
+            tableHTML += '<td style="padding: 8px; border: 1px solid #ddd;">' + description + '</td>';
+
             tableHTML += '<td style="padding: 8px; border: 1px solid #ddd;">' + qty + '</td>';
 
             tableHTML += '<td style="padding: 8px; border: 1px solid #ddd;">' + Number(price).toLocaleString() + '</td>';
 
             tableHTML += '<td style="padding: 8px; border: 1px solid #ddd; font-weight: bold;">' + Number(total).toLocaleString() + '</td>';
 
+            tableHTML += '<td style="padding: 8px; border: 1px solid #ddd;">' + (rec.purpose || '-') + '</td>';
+
+            tableHTML += '<td style="padding: 8px; border: 1px solid #ddd;">' + (rec.urgency_level || '-') + '</td>';
+
             tableHTML += '<td style="padding: 8px; border: 1px solid #ddd;">' + displayDate + '</td>';
+
+            tableHTML += '<td style="padding: 8px; border: 1px solid #ddd;">' + (rec.supplier_requirements || '-') + '</td>';
+
+            tableHTML += '<td style="padding: 8px; border: 1px solid #ddd;">' + (rec.technical_specifications || '-') + '</td>';
+
+            tableHTML += '<td style="padding: 8px; border: 1px solid #ddd;">' + (rec.budget_allocation || '-') + '</td>';
+
+            tableHTML += '<td style="padding: 8px; border: 1px solid #ddd;">' + dept + '</td>';
+
+            tableHTML += '<td style="padding: 8px; border: 1px solid #ddd;">' + requestedBy + '</td>';
+
+            tableHTML += '<td style="padding: 8px; border: 1px solid #ddd;">' + requestedByRole + '</td>';
+
+            tableHTML += '<td style="padding: 8px; border: 1px solid #ddd;">' + justification + '</td>';
+
+            tableHTML += '<td style="padding: 8px; border: 1px solid #ddd;">' + approvalRequirements + '</td>';
 
             tableHTML += '<td style="padding: 8px; border: 1px solid #ddd;"><span style="background: ' + statusColor + '; color: white; padding: 3px 10px; border-radius: 12px; font-size: 12px;">' + status + '</span></td>';
 
-            tableHTML += '<td style="padding: 8px; border: 1px solid #ddd;">' + dept + '</td>';
+            tableHTML += '<td style="padding: 8px; border: 1px solid #ddd;">' + reviewedBy + '</td>';
+
+            tableHTML += '<td style="padding: 8px; border: 1px solid #ddd;">' + reviewedDate + '</td>';
+
+            tableHTML += '<td style="padding: 8px; border: 1px solid #ddd;">' + reviewComments + '</td>';
+
+            tableHTML += '<td style="padding: 8px; border: 1px solid #ddd;">' + approvedBudget + '</td>';
+
+            tableHTML += '<td style="padding: 8px; border: 1px solid #ddd;">' + rejectionReason + '</td>';
+
+            tableHTML += '<td style="padding: 8px; border: 1px solid #ddd;">' + submittedBy + '</td>';
+
+            tableHTML += '<td style="padding: 8px; border: 1px solid #ddd;">' + createdAt + '</td>';
+
+            tableHTML += '<td style="padding: 8px; border: 1px solid #ddd;">' + updatedAt + '</td>';
+
+            tableHTML += '<td style="padding: 8px; border: 1px solid #ddd;">' + actions + '</td>';
 
             tableHTML += '</tr>';
 
@@ -70743,6 +70822,48 @@ function loadProcurementTable() {
 
     });
 
+}
+
+
+
+function approveProcurement(id) {
+    if (!confirm('Approve procurement request ID ' + id + '?')) return;
+    const comments = prompt('Enter approval comments for procurement ID ' + id + ':', 'Approved and ready for processing.');
+    if (comments === null) return;
+    updateProcurementStatus(id, 'Approved', comments, null, '');
+}
+
+function rejectProcurement(id) {
+    if (!confirm('Reject procurement request ID ' + id + '?')) return;
+    const comments = prompt('Enter rejection comments for procurement ID ' + id + ':', 'Request rejected.');
+    if (comments === null) return;
+    updateProcurementStatus(id, 'Rejected', comments, null, comments);
+}
+
+function updateProcurementStatus(id, status, reviewComments, approvedBudget, rejectionReason) {
+    const payload = {
+        status: status,
+        reviewedByRole: 'Manager',
+        reviewComments: reviewComments,
+        approvedBudget: approvedBudget,
+        rejectionReason: rejectionReason
+    };
+
+    xhrRequest('PUT', '/api/procurement-sales/' + id + '/status', payload)
+        .then(function(response) {
+            return response.json();
+        }).then(function(result) {
+            if (result.success) {
+                showNotification('Procurement request updated: ' + status, 'success');
+                loadProcurementTable();
+            } else {
+                console.error('Failed to update procurement status:', result);
+                showNotification('Failed to update procurement status. ' + (result.error || ''), 'error');
+            }
+        }).catch(function(err) {
+            console.error('Error updating procurement status:', err);
+            showNotification('Error updating procurement status. Please try again.', 'error');
+        });
 }
 
 
