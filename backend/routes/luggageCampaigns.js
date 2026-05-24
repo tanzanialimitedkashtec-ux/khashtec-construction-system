@@ -123,7 +123,7 @@ router.get('/active', async (req, res) => {
     try {
         const db = await getDb();
         const rows = await db.execute("SELECT * FROM luggage_campaigns WHERE status = 'active' ORDER BY start_date ASC");
-        res.json({ success: true, campaigns: rows, total: rows.length });
+        res.json({ success: true, campaigns: rows, data: rows, total: rows.length });
     } catch (error) {
         console.error('❌ Error fetching active campaigns:', error);
         res.status(500).json({

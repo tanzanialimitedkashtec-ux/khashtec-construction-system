@@ -1,4 +1,4 @@
-// Disabled: Allow localhost development
+﻿// Disabled: Allow localhost development
 
         // const PRODUCTION_FRONTEND_URL = 'https://khashtec-construction-system-production-e297.up.railway.app/frontend/public/department.html';
 
@@ -334,7 +334,7 @@ function loadPolicies() {
 
             <div class="search-container" style="margin-bottom: 20px;">
 
-                <input type="text" id="policyManagementSearchInput" placeholder="🔍 Search policies by title, description, category, or status..." 
+                <input type="text" id="policyManagementSearchInput" placeholder="ðŸ” Search policies by title, description, category, or status..." 
 
                        style="width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 8px; font-size: 14px; box-sizing: border-box;"
 
@@ -376,7 +376,7 @@ function loadPoliciesFromBackend() {
 
         .then(data => {
 
-            console.log('📋 Policies loaded:', data);
+            console.log('ðŸ“‹ Policies loaded:', data);
 
             const container = document.getElementById('policyContainer');
 
@@ -440,7 +440,7 @@ function loadPoliciesFromBackend() {
 
         .catch(error => {
 
-            console.error('❌ Error loading policies:', error);
+            console.error('âŒ Error loading policies:', error);
 
             document.getElementById('policyContainer').innerHTML = '<div class="error">Error loading policies: ' + error.message + '</div>';
 
@@ -464,7 +464,7 @@ function loadSeniorHiringRequests() {
 
             <div class="search-container" style="margin-bottom: 15px;">
 
-                <input type="text" id="hiringSearchInput" placeholder="🔍 Search candidates..." style="width: 100%; padding: 8px; border: 2px solid #ddd; border-radius: 6px; font-size: 12px; box-sizing: border-box;" onkeyup="filterHiringRequests()">
+                <input type="text" id="hiringSearchInput" placeholder="ðŸ” Search candidates..." style="width: 100%; padding: 8px; border: 2px solid #ddd; border-radius: 6px; font-size: 12px; box-sizing: border-box;" onkeyup="filterHiringRequests()">
 
                 <div id="hiringSearchResults" style="margin-top:3px; font-size: 10px; color: #666;"></div>
 
@@ -566,7 +566,7 @@ function loadHiringRequestsFromBackend() {
 
     .then(data => {
 
-        console.log('📊 Senior hiring data:', data);
+        console.log('ðŸ“Š Senior hiring data:', data);
 
         const tableBody = document.getElementById('hiringTableBody');
 
@@ -648,11 +648,11 @@ function loadHiringRequestsFromBackend() {
 
                         <div class="hiring-table-actions">
 
-                            <button class="btn-approve" onclick="approveSeniorHire('${request.id}')">✓ Approve</button>
+                            <button class="btn-approve" onclick="approveSeniorHire('${request.id}')">âœ“ Approve</button>
 
                             <button class="btn-request-info" onclick="requestMoreInfo('${request.id}')">? Info</button>
 
-                            <button class="btn-reject" onclick="rejectSeniorHire('${request.id}')">✗ Reject</button>
+                            <button class="btn-reject" onclick="rejectSeniorHire('${request.id}')">âœ— Reject</button>
 
                         </div>
 
@@ -684,7 +684,7 @@ function loadHiringRequestsFromBackend() {
 
     .catch(error => {
 
-        console.error('❌ Error loading hiring requests:', error);
+        console.error('âŒ Error loading hiring requests:', error);
 
         const tableBody = document.getElementById('hiringTableBody');
 
@@ -1161,7 +1161,7 @@ window.KashTecAPI = {
 
         try {
 
-            console.log(`📡 API Request: ${endpoint}`, finalOptions);
+            console.log(`ðŸ“¡ API Request: ${endpoint}`, finalOptions);
 
             
 
@@ -1195,7 +1195,7 @@ window.KashTecAPI = {
 
             const data = await response.json();
 
-            console.log(`✅ API Response: ${endpoint}`, data);
+            console.log(`âœ… API Response: ${endpoint}`, data);
 
             
 
@@ -1203,7 +1203,7 @@ window.KashTecAPI = {
 
         } catch (error) {
 
-            console.error(`❌ API Error: ${endpoint}`, error);
+            console.error(`âŒ API Error: ${endpoint}`, error);
 
             throw error;
 
@@ -1315,7 +1315,7 @@ window.KashTecAPI = {
 
             // Transform HSE data to safety status format
 
-            console.log('🔍 Raw HSE response:', response);
+            console.log('ðŸ” Raw HSE response:', response);
 
             
 
@@ -1325,9 +1325,9 @@ window.KashTecAPI = {
 
             
 
-            console.log('🔍 Full HSE array before filtering in getProjectSafetyStatus:', hseData);
+            console.log('ðŸ” Full HSE array before filtering in getProjectSafetyStatus:', hseData);
 
-            console.log('🔍 HSE array length in getProjectSafetyStatus:', hseData.length);
+            console.log('ðŸ” HSE array length in getProjectSafetyStatus:', hseData.length);
 
             
 
@@ -1351,13 +1351,13 @@ window.KashTecAPI = {
 
                     );
 
-                    console.log(`🔍 Filtering item ${item.id}: ${item.work_type} -> ${isSafety}`);
+                    console.log(`ðŸ” Filtering item ${item.id}: ${item.work_type} -> ${isSafety}`);
 
                     return isSafety;
 
                 }).map((item, index) => {
 
-                    console.log(`📝 Mapping safety item ${item.id}:`, item);
+                    console.log(`ðŸ“ Mapping safety item ${item.id}:`, item);
 
                     return {
 
@@ -1401,7 +1401,7 @@ window.KashTecAPI = {
 
             
 
-            console.log('✅ Transformed safety data:', safetyData);
+            console.log('âœ… Transformed safety data:', safetyData);
 
             
 
@@ -1411,7 +1411,7 @@ window.KashTecAPI = {
 
         } catch (primaryError) {
 
-            console.warn('⚠️ Primary safety endpoint failed, trying fallback:', primaryError.message);
+            console.warn('âš ï¸ Primary safety endpoint failed, trying fallback:', primaryError.message);
 
             
 
@@ -1477,7 +1477,7 @@ window.KashTecAPI = {
 
             } catch (fallbackError) {
 
-                console.error('❌ All safety endpoints failed:', fallbackError.message);
+                console.error('âŒ All safety endpoints failed:', fallbackError.message);
 
                 throw fallbackError;
 
@@ -1631,7 +1631,7 @@ function approveRecruitmentPolicies(){
 
                 <button type="button" id="togglePolicySearchBtn" onclick="togglePolicySearch()" class="action" style="background: #007bff;">
 
-                    🔍 Search & Filter Policies
+                    ðŸ” Search & Filter Policies
 
                 </button>
 
@@ -1697,7 +1697,7 @@ function approveRecruitmentPolicies(){
 
                     <div class="search-container" style="margin-bottom: 20px;">
 
-                        <input type="text" id="policySearchInput" placeholder="🔍 Search policies by title, description, or submitter..." 
+                        <input type="text" id="policySearchInput" placeholder="ðŸ” Search policies by title, description, or submitter..." 
 
                                style="width: 100%; padding: 6px; border: 2px solid #ddd; border-radius: 2px; font-size: 9px; box-sizing: border-box;"
 
@@ -1743,19 +1743,19 @@ function approveRecruitmentPolicies(){
 
                 <div class="authority-item">
 
-                    <span>✅ Can approve all recruitment policies</span>
+                    <span>âœ… Can approve all recruitment policies</span>
 
                 </div>
 
                 <div class="authority-item">
 
-                    <span>✅ Can request policy revisions</span>
+                    <span>âœ… Can request policy revisions</span>
 
                 </div>
 
                 <div class="authority-item">
 
-                    <span>✅ Final authority on recruitment procedures</span>
+                    <span>âœ… Final authority on recruitment procedures</span>
 
                 </div>
 
@@ -1777,9 +1777,9 @@ function approveRecruitmentPolicies(){
 
 function fetchPoliciesForApproval() {
 
-    console.log('🔄 Fetching policies for approval...');
+    console.log('ðŸ”„ Fetching policies for approval...');
 
-    console.log('🔍 About to call /api/policies endpoint...');
+    console.log('ðŸ” About to call /api/policies endpoint...');
 
     
 
@@ -1787,9 +1787,9 @@ function fetchPoliciesForApproval() {
 
         .then(response => {
 
-            console.log('📡 Policies API Response status:', response.status);
+            console.log('ðŸ“¡ Policies API Response status:', response.status);
 
-            console.log('📡 Response OK:', response.ok);
+            console.log('ðŸ“¡ Response OK:', response.ok);
 
             if (!response.ok) {
 
@@ -1803,11 +1803,11 @@ function fetchPoliciesForApproval() {
 
         .then(policies => {
 
-            console.log('📊 Policies API Response data:', policies);
+            console.log('ðŸ“Š Policies API Response data:', policies);
 
-            console.log('📊 Policies type:', typeof policies);
+            console.log('ðŸ“Š Policies type:', typeof policies);
 
-            console.log('📊 Policies length:', policies ? policies.length : 'undefined');
+            console.log('ðŸ“Š Policies length:', policies ? policies.length : 'undefined');
 
             displayPoliciesForApproval(policies);
 
@@ -1815,9 +1815,9 @@ function fetchPoliciesForApproval() {
 
         .catch(error => {
 
-            console.error('❌ Error fetching policies:', error);
+            console.error('âŒ Error fetching policies:', error);
 
-            console.error('❌ Error details:', error.message);
+            console.error('âŒ Error details:', error.message);
 
             const container = document.getElementById('policies-container');
 
@@ -1827,7 +1827,7 @@ function fetchPoliciesForApproval() {
 
             } else {
 
-                console.error('❌ Policies container not found!');
+                console.error('âŒ Policies container not found!');
 
             }
 
@@ -2077,7 +2077,7 @@ function filterBudgets() {
 
 window.viewBudgetDetails = function(budgetId) {
 
-    console.log('🔍 viewBudgetDetails called with ID:', budgetId);
+    console.log('ðŸ” viewBudgetDetails called with ID:', budgetId);
 
     
 
@@ -2119,7 +2119,7 @@ window.viewBudgetDetails = function(budgetId) {
 
     .catch(error => {
 
-        console.error('❌ Error fetching budget details:', error);
+        console.error('âŒ Error fetching budget details:', error);
 
         customAlert('Failed to load budget details. Please try again.', 'Error', 'error');
 
@@ -2549,9 +2549,9 @@ function filterPolicies() {
 
 function displayPoliciesForApproval(policies) {
 
-    console.log('🎨 Displaying policies for approval...');
+    console.log('ðŸŽ¨ Displaying policies for approval...');
 
-    console.log('📊 Input policies:', policies);
+    console.log('ðŸ“Š Input policies:', policies);
 
     
 
@@ -2563,13 +2563,13 @@ function displayPoliciesForApproval(policies) {
 
     const container = document.getElementById('policies-container');
 
-    console.log('🔍 Container found:', !!container);
+    console.log('ðŸ” Container found:', !!container);
 
     
 
     if (!container) {
 
-        console.error('❌ Policies container not found!');
+        console.error('âŒ Policies container not found!');
 
         return;
 
@@ -2579,7 +2579,7 @@ function displayPoliciesForApproval(policies) {
 
     if (!policies || policies.length === 0) {
 
-        console.log('ℹ️ No policies found');
+        console.log('â„¹ï¸ No policies found');
 
         container.innerHTML = '<div class="no-policies">No policies pending approval.</div>';
 
@@ -2589,7 +2589,7 @@ function displayPoliciesForApproval(policies) {
 
     
 
-    console.log('📊 Total policies:', policies.length);
+    console.log('ðŸ“Š Total policies:', policies.length);
 
     
 
@@ -2684,7 +2684,7 @@ function approveSeniorHiring(){
 
 function loadSeniorHiringRequests() {
 
-    console.log('🔄 Loading senior hiring requests...');
+    console.log('ðŸ”„ Loading senior hiring requests...');
 
     
 
@@ -2720,7 +2720,7 @@ function loadSeniorHiringRequests() {
 
     .then(data => {
 
-        console.log('📊 Senior hiring requests data:', data);
+        console.log('ðŸ“Š Senior hiring requests data:', data);
 
         // Handle both single objects and arrays
 
@@ -2736,7 +2736,7 @@ function loadSeniorHiringRequests() {
 
     .catch(error => {
 
-        console.error('❌ Error loading senior hiring requests:', error);
+        console.error('âŒ Error loading senior hiring requests:', error);
 
         // Show form with error message
 
@@ -2766,7 +2766,7 @@ function showSeniorHiringForm(requests) {
 
             <div class="search-container" style="margin-bottom: 15px;">
 
-                <input type="text" id="hiringSearchInput" placeholder="🔍 Search candidates..." 
+                <input type="text" id="hiringSearchInput" placeholder="ðŸ” Search candidates..." 
 
                        style="width: 100%; padding: 8px; border: 2px solid #ddd; border-radius: 6px; font-size: 12px; box-sizing: border-box;"
 
@@ -2856,11 +2856,11 @@ function showSeniorHiringForm(requests) {
 
                     <div class="hiring-table-actions">
 
-                        <button class="btn-approve" onclick="approveSeniorHire('${request.id}')">✓ Approve</button>
+                        <button class="btn-approve" onclick="approveSeniorHire('${request.id}')">âœ“ Approve</button>
 
                         <button class="btn-request-info" onclick="requestMoreInfo('${request.id}')">? Info</button>
 
-                        <button class="btn-reject" onclick="rejectSeniorHire('${request.id}')">✗ Reject</button>
+                        <button class="btn-reject" onclick="rejectSeniorHire('${request.id}')">âœ— Reject</button>
 
                     </div>
 
@@ -2898,7 +2898,7 @@ function showSeniorHiringForm(requests) {
 
                 <button type="button" id="toggleSeniorHiringFormBtn" onclick="toggleSeniorHiringForm()" class="action" style="background: #007bff;">
 
-                    👔 Review Senior Hiring Requests
+                    ðŸ‘” Review Senior Hiring Requests
 
                 </button>
 
@@ -2928,25 +2928,25 @@ function showSeniorHiringForm(requests) {
 
                 <div class="authority-item">
 
-                    <span>✅ Can approve all senior staff hires</span>
+                    <span>âœ… Can approve all senior staff hires</span>
 
                 </div>
 
                 <div class="authority-item">
 
-                    <span>✅ Can approve manager-level positions and above</span>
+                    <span>âœ… Can approve manager-level positions and above</span>
 
                 </div>
 
                 <div class="authority-item">
 
-                    <span>✅ Final authority on senior recruitment</span>
+                    <span>âœ… Final authority on senior recruitment</span>
 
                 </div>
 
                 <div class="authority-item restriction">
 
-                    <span>❌ Cannot directly register workers (HR function)</span>
+                    <span>âŒ Cannot directly register workers (HR function)</span>
 
                 </div>
 
@@ -2972,7 +2972,7 @@ function approveWorkforceBudget(){
 
 function loadWorkforceBudgetsWithForm() {
 
-    console.log('🔄 Loading workforce budgets...');
+    console.log('ðŸ”„ Loading workforce budgets...');
 
     
 
@@ -3008,7 +3008,7 @@ function loadWorkforceBudgetsWithForm() {
 
     .then(data => {
 
-        console.log('📊 Workforce budgets data:', data);
+        console.log('ðŸ“Š Workforce budgets data:', data);
 
         // Handle both single objects and arrays
 
@@ -3024,7 +3024,7 @@ function loadWorkforceBudgetsWithForm() {
 
     .catch(error => {
 
-        console.error('❌ Error loading workforce budgets:', error);
+        console.error('âŒ Error loading workforce budgets:', error);
 
         // Show form with error message
 
@@ -3320,13 +3320,13 @@ function showWorkforceBudgetForm(budgets) {
 
                     <div class="budget-actions">
 
-                        <button class="action-btn approve" onclick="approveBudget('${budget.id}')" title="Approve Budget">✅</button>
+                        <button class="action-btn approve" onclick="approveBudget('${budget.id}')" title="Approve Budget">âœ…</button>
 
-                        <button class="action-btn modify" onclick="modifyBudget('${budget.id}')" title="Request Modification">📝</button>
+                        <button class="action-btn modify" onclick="modifyBudget('${budget.id}')" title="Request Modification">ðŸ“</button>
 
-                        <button class="action-btn reject" onclick="rejectBudget('${budget.id}')" title="Reject Budget">❌</button>
+                        <button class="action-btn reject" onclick="rejectBudget('${budget.id}')" title="Reject Budget">âŒ</button>
 
-                        <button class="action-btn view" onclick="viewBudgetDetails('${budget.id}')" title="View Details">👁️</button>
+                        <button class="action-btn view" onclick="viewBudgetDetails('${budget.id}')" title="View Details">ðŸ‘ï¸</button>
 
                     </div>
 
@@ -3360,7 +3360,7 @@ function showWorkforceBudgetForm(budgets) {
 
                 <button type="button" id="toggleWorkforceBudgetFormBtn" onclick="toggleWorkforceBudgetForm()" class="action" style="background: #dc3545;">
 
-                    ❌ Close Budget Review
+                    âŒ Close Budget Review
 
                 </button>
 
@@ -3384,7 +3384,7 @@ function showWorkforceBudgetForm(budgets) {
 
                     <div class="search-container" style="margin-bottom: 20px;">
 
-                        <input type="text" id="budgetSearchInput" placeholder="🔍 Search budget proposals by department, amount, or status..." 
+                        <input type="text" id="budgetSearchInput" placeholder="ðŸ” Search budget proposals by department, amount, or status..." 
 
                                style="width: 100%; padding: 6px; border: 2px solid #ddd; border-radius: 2px; font-size: 9px; box-sizing: border-box;"
 
@@ -3422,19 +3422,19 @@ function showWorkforceBudgetForm(budgets) {
 
                 <div class="authority-item">
 
-                    <span>✅ Can approve workforce budgets up to TZS 100M</span>
+                    <span>âœ… Can approve workforce budgets up to TZS 100M</span>
 
                 </div>
 
                 <div class="authority-item">
 
-                    <span>✅ Can modify budget allocations</span>
+                    <span>âœ… Can modify budget allocations</span>
 
                 </div>
 
                 <div class="authority-item">
 
-                    <span>✅ Final authority on workforce spending</span>
+                    <span>âœ… Final authority on workforce spending</span>
 
                 </div>
 
@@ -3452,7 +3452,7 @@ function showWorkforceBudgetForm(budgets) {
 
 function loadWorkforceBudgets() {
 
-    console.log('🔄 Loading workforce budgets...');
+    console.log('ðŸ”„ Loading workforce budgets...');
 
     
 
@@ -3488,7 +3488,7 @@ function loadWorkforceBudgets() {
 
     .then(data => {
 
-        console.log('📊 Workforce budgets data:', data);
+        console.log('ðŸ“Š Workforce budgets data:', data);
 
         // Handle both single objects and arrays
 
@@ -3500,7 +3500,7 @@ function loadWorkforceBudgets() {
 
     .catch(error => {
 
-        console.error('❌ Error loading workforce budgets:', error);
+        console.error('âŒ Error loading workforce budgets:', error);
 
         document.getElementById('budget-proposals-container').innerHTML = 
 
@@ -3512,7 +3512,7 @@ function loadWorkforceBudgets() {
 
 function displayWorkforceBudgets(budgets) {
 
-    console.log('🎨 displayWorkforceBudgets called with:', budgets.length, 'budgets');
+    console.log('ðŸŽ¨ displayWorkforceBudgets called with:', budgets.length, 'budgets');
 
     
 
@@ -3520,7 +3520,7 @@ function displayWorkforceBudgets(budgets) {
 
     if (!container) {
 
-        console.error('❌ Budget proposals container not found');
+        console.error('âŒ Budget proposals container not found');
 
         return;
 
@@ -3756,25 +3756,25 @@ function displayWorkforceBudgets(budgets) {
 
                         ${budget.status === 'Pending' ? `
 
-                            <button class="action-btn approve" onclick="approveBudget('${budget.id}')" title="Approve Budget">✅</button>
+                            <button class="action-btn approve" onclick="approveBudget('${budget.id}')" title="Approve Budget">âœ…</button>
 
-                            <button class="action-btn modify" onclick="modifyBudget('${budget.id}')" title="Request Modification">📝</button>
+                            <button class="action-btn modify" onclick="modifyBudget('${budget.id}')" title="Request Modification">ðŸ“</button>
 
-                            <button class="action-btn reject" onclick="rejectBudget('${budget.id}')" title="Reject Budget">❌</button>
+                            <button class="action-btn reject" onclick="rejectBudget('${budget.id}')" title="Reject Budget">âŒ</button>
 
                         ` : budget.status === 'Modification Requested' ? `
 
-                            <button class="action-btn approve" onclick="approveBudget('${budget.id}')" title="Approve Budget">✅</button>
+                            <button class="action-btn approve" onclick="approveBudget('${budget.id}')" title="Approve Budget">âœ…</button>
 
-                            <button class="action-btn reject" onclick="rejectBudget('${budget.id}')" title="Reject Budget">❌</button>
+                            <button class="action-btn reject" onclick="rejectBudget('${budget.id}')" title="Reject Budget">âŒ</button>
 
                         ` : `
 
-                            <button class="action-btn disabled" disabled title="Budget ${getStatusText(budget.status)}">🔒</button>
+                            <button class="action-btn disabled" disabled title="Budget ${getStatusText(budget.status)}">ðŸ”’</button>
 
                         `}
 
-                        <button class="action-btn view" onclick="viewBudgetDetails('${budget.id}')" title="View Details">👁️</button>
+                        <button class="action-btn view" onclick="viewBudgetDetails('${budget.id}')" title="View Details">ðŸ‘ï¸</button>
 
                     </div>
 
@@ -3878,7 +3878,7 @@ function displayWorkforceBudgets(budgets) {
 
     
 
-    console.log('✅ Workforce budgets displayed successfully in table format');
+    console.log('âœ… Workforce budgets displayed successfully in table format');
 
 }
 
@@ -3888,7 +3888,7 @@ function displayWorkforceBudgets(budgets) {
 
 window.approveBudget = function(budgetId) {
 
-    console.log('🔍 approveBudget function called with ID:', budgetId);
+    console.log('ðŸ” approveBudget function called with ID:', budgetId);
 
     
 
@@ -3900,7 +3900,7 @@ window.approveBudget = function(budgetId) {
 
     
 
-    console.log('✅ Approving workforce budget:', budgetId);
+    console.log('âœ… Approving workforce budget:', budgetId);
 
     
 
@@ -3932,7 +3932,7 @@ window.approveBudget = function(budgetId) {
 
     .then(result => {
 
-        console.log('✅ Budget approved successfully:', result);
+        console.log('âœ… Budget approved successfully:', result);
 
         customAlert('Workforce budget approved successfully!', 'Success', 'success');
 
@@ -3944,7 +3944,7 @@ window.approveBudget = function(budgetId) {
 
     .catch(error => {
 
-        console.error('❌ Error approving budget:', error);
+        console.error('âŒ Error approving budget:', error);
 
         customAlert('Failed to approve budget. Please try again.', 'Error', 'error');
 
@@ -3958,7 +3958,7 @@ window.approveBudget = function(budgetId) {
 
 window.modifyBudget = function(budgetId) {
 
-    console.log('🔍 modifyBudget function called with ID:', budgetId);
+    console.log('ðŸ” modifyBudget function called with ID:', budgetId);
 
     showModificationModal(budgetId);
 
@@ -4308,7 +4308,7 @@ function showModificationModal(budgetId) {
 
 function processBudgetModification(budgetId, modificationRequest, deadline) {
 
-    console.log('🔄 Requesting budget modification:', budgetId);
+    console.log('ðŸ”„ Requesting budget modification:', budgetId);
 
     
 
@@ -4342,7 +4342,7 @@ function processBudgetModification(budgetId, modificationRequest, deadline) {
 
     .then(result => {
 
-        console.log('✅ Budget modification requested:', result);
+        console.log('âœ… Budget modification requested:', result);
 
         customAlert('Budget modification requested successfully!', 'Success', 'success');
 
@@ -4354,7 +4354,7 @@ function processBudgetModification(budgetId, modificationRequest, deadline) {
 
     .catch(error => {
 
-        console.error('❌ Error requesting modification:', error);
+        console.error('âŒ Error requesting modification:', error);
 
         customAlert('Failed to request modification. Please try again.', 'Error', 'error');
 
@@ -4368,7 +4368,7 @@ function processBudgetModification(budgetId, modificationRequest, deadline) {
 
 window.rejectBudget = function(budgetId) {
 
-    console.log('🔍 rejectBudget function called with ID:', budgetId);
+    console.log('ðŸ” rejectBudget function called with ID:', budgetId);
 
     showRejectionModal(budgetId);
 
@@ -4380,7 +4380,7 @@ window.rejectBudget = function(budgetId) {
 
 window.testButtons = function() {
 
-    console.log('🧪 Testing button functions...');
+    console.log('ðŸ§ª Testing button functions...');
 
     console.log('approveBudget function exists:', typeof window.approveBudget);
 
@@ -4394,11 +4394,11 @@ window.testButtons = function() {
 
     if (typeof window.approveBudget === 'function') {
 
-        console.log('✅ Functions are properly defined and accessible');
+        console.log('âœ… Functions are properly defined and accessible');
 
     } else {
 
-        console.error('❌ Functions are not accessible');
+        console.error('âŒ Functions are not accessible');
 
     }
 
@@ -4710,7 +4710,7 @@ function showRejectionModal(budgetId) {
 
 function processBudgetRejection(budgetId, rejectionReason) {
 
-    console.log('❌ Rejecting workforce budget:', budgetId);
+    console.log('âŒ Rejecting workforce budget:', budgetId);
 
     
 
@@ -4742,7 +4742,7 @@ function processBudgetRejection(budgetId, rejectionReason) {
 
     .then(result => {
 
-        console.log('✅ Budget rejected successfully:', result);
+        console.log('âœ… Budget rejected successfully:', result);
 
         customAlert('Workforce budget rejected successfully!', 'Success', 'success');
 
@@ -4754,7 +4754,7 @@ function processBudgetRejection(budgetId, rejectionReason) {
 
     .catch(error => {
 
-        console.error('❌ Error rejecting budget:', error);
+        console.error('âŒ Error rejecting budget:', error);
 
         customAlert('Failed to reject budget. Please try again.', 'Error', 'error');
 
@@ -5012,19 +5012,19 @@ function reviewEmployeeCount(){
 
                 <div class="authority-item">
 
-                    <span>✅ Can view all employee data</span>
+                    <span>âœ… Can view all employee data</span>
 
                 </div>
 
                 <div class="authority-item">
 
-                    <span>✅ Can approve workforce expansions</span>
+                    <span>âœ… Can approve workforce expansions</span>
 
                 </div>
 
                 <div class="authority-item">
 
-                    <span>✅ Can review department headcount</span>
+                    <span>âœ… Can review department headcount</span>
 
                 </div>
 
@@ -5052,7 +5052,7 @@ function loadEmployeeCountData() {
 
     if (window.employeeDataLoading) {
 
-        console.log('📊 Employee data already loading, skipping...');
+        console.log('ðŸ“Š Employee data already loading, skipping...');
 
         return;
 
@@ -5062,7 +5062,7 @@ function loadEmployeeCountData() {
 
     window.employeeDataLoading = true;
 
-    console.log('📊 Starting employee data load...');
+    console.log('ðŸ“Š Starting employee data load...');
 
     
 
@@ -5098,7 +5098,7 @@ function loadEmployeeCountData() {
 
     .then(data => {
 
-        console.log('📊 Employee count data received:', data);
+        console.log('ðŸ“Š Employee count data received:', data);
 
         const employees = Array.isArray(data) ? data : [data]; // Handle single object response
 
@@ -5192,7 +5192,7 @@ function loadEmployeeCountData() {
 
             const percentage = ((count / totalEmployees) * 100).toFixed(1);
 
-            const trend = Math.random() > 0.5 ? '📈 Growing' : Math.random() > 0.5 ? '📊 Stable' : '📉 Declining';
+            const trend = Math.random() > 0.5 ? 'ðŸ“ˆ Growing' : Math.random() > 0.5 ? 'ðŸ“Š Stable' : 'ðŸ“‰ Declining';
 
             const trendClass = trend.includes('Growing') ? 'trend-up' : trend.includes('Stable') ? 'trend-stable' : 'trend-down';
 
@@ -5248,7 +5248,7 @@ function loadEmployeeCountData() {
 
         
 
-        console.log('✅ Employee data loaded successfully:', {
+        console.log('âœ… Employee data loaded successfully:', {
 
             total: totalEmployees,
 
@@ -5266,7 +5266,7 @@ function loadEmployeeCountData() {
 
     .catch(error => {
 
-        console.error('❌ Error loading employee count data:', error);
+        console.error('âŒ Error loading employee count data:', error);
 
         document.getElementById('totalEmployeesCount').textContent = 'Error';
 
@@ -5384,25 +5384,25 @@ function viewAllWorkers(){
 
             <div class="authority-item">
 
-                <span>✅ Can view all registered workers</span>
+                <span>âœ… Can view all registered workers</span>
 
             </div>
 
             <div class="authority-item">
 
-                <span>✅ Can access all worker accounts</span>
+                <span>âœ… Can access all worker accounts</span>
 
             </div>
 
             <div class="authority-item">
 
-                <span>✅ Can filter by department/status</span>
+                <span>âœ… Can filter by department/status</span>
 
             </div>
 
             <div class="authority-item restriction">
 
-                <span>❌ Cannot modify worker records (HR function)</span>
+                <span>âŒ Cannot modify worker records (HR function)</span>
 
             </div>
 
@@ -5526,13 +5526,13 @@ function loadAllWorkersData() {
 
     .then(([employeesData, workerAccountsData]) => {
 
-        console.log('📊 Employees data:', employeesData);
-        console.log('📊 Worker accounts data:', workerAccountsData);
-        console.log('📊 Worker accounts data type:', typeof workerAccountsData);
-        console.log('📊 Worker accounts is array:', Array.isArray(workerAccountsData));
+        console.log('ðŸ“Š Employees data:', employeesData);
+        console.log('ðŸ“Š Worker accounts data:', workerAccountsData);
+        console.log('ðŸ“Š Worker accounts data type:', typeof workerAccountsData);
+        console.log('ðŸ“Š Worker accounts is array:', Array.isArray(workerAccountsData));
         if (workerAccountsData && workerAccountsData.length > 0) {
-            console.log('📊 First worker account:', workerAccountsData[0]);
-            console.log('📊 First worker account fields:', Object.keys(workerAccountsData[0]));
+            console.log('ðŸ“Š First worker account:', workerAccountsData[0]);
+            console.log('ðŸ“Š First worker account fields:', Object.keys(workerAccountsData[0]));
         }
 
         
@@ -5549,9 +5549,9 @@ function loadAllWorkersData() {
 
         
 
-        console.log('📊 Processed employees:', employees);
+        console.log('ðŸ“Š Processed employees:', employees);
 
-        console.log('📊 Processed worker accounts:', workerAccounts);
+        console.log('ðŸ“Š Processed worker accounts:', workerAccounts);
 
         
 
@@ -5571,7 +5571,7 @@ function loadAllWorkersData() {
 
     .catch(error => {
 
-        console.error('❌ Error loading workers data:', error);
+        console.error('âŒ Error loading workers data:', error);
 
         document.getElementById('mdWorkerResults').innerHTML = 
 
@@ -5587,7 +5587,7 @@ function loadAllWorkersData() {
 
 function displayAllWorkers(employees, workerAccounts) {
 
-    console.log('🎨 displayAllWorkers called with:', {
+    console.log('ðŸŽ¨ displayAllWorkers called with:', {
 
         employeesCount: employees.length,
 
@@ -5599,13 +5599,13 @@ function displayAllWorkers(employees, workerAccounts) {
 
     const resultsContainer = document.getElementById('mdWorkerResults');
 
-    console.log('🎯 Results container found:', !!resultsContainer);
+    console.log('ðŸŽ¯ Results container found:', !!resultsContainer);
 
     
 
     if (!resultsContainer) {
 
-        console.error('❌ mdWorkerResults container not found!');
+        console.error('âŒ mdWorkerResults container not found!');
 
         return;
 
@@ -5623,7 +5623,7 @@ function displayAllWorkers(employees, workerAccounts) {
 
     
 
-    console.log('📊 Processing data:', {
+    console.log('ðŸ“Š Processing data:', {
 
         employeesCount: employees.length,
 
@@ -5675,9 +5675,9 @@ function displayAllWorkers(employees, workerAccounts) {
 
     
 
-    console.log('📊 Combined workers data:', allWorkers);
-    console.log('📊 First worker details:', allWorkers[0]);
-    console.log('📊 First worker fields:', Object.keys(allWorkers[0] || {}));
+    console.log('ðŸ“Š Combined workers data:', allWorkers);
+    console.log('ðŸ“Š First worker details:', allWorkers[0]);
+    console.log('ðŸ“Š First worker fields:', Object.keys(allWorkers[0] || {}));
 
     
 
@@ -5691,7 +5691,7 @@ function displayAllWorkers(employees, workerAccounts) {
 
     
 
-    console.log('🎨 Generating HTML for', allWorkers.length, 'workers');
+    console.log('ðŸŽ¨ Generating HTML for', allWorkers.length, 'workers');
 
     
 
@@ -5733,11 +5733,11 @@ function displayAllWorkers(employees, workerAccounts) {
 
     
 
-    console.log('🎯 Setting HTML content...');
+    console.log('ðŸŽ¯ Setting HTML content...');
 
     resultsContainer.innerHTML = htmlContent;
 
-    console.log('✅ HTML content set successfully');
+    console.log('âœ… HTML content set successfully');
 
 }
 
@@ -5793,7 +5793,7 @@ function suspendTerminateEmployment(){
 
                 <button type="button" id="toggleEmploymentActionFormBtn" onclick="toggleEmploymentActionForm()" class="action" style="background: #007bff;">
 
-                    ⚖️ Manage Employment Actions
+                    âš–ï¸ Manage Employment Actions
 
                 </button>
 
@@ -5955,31 +5955,31 @@ function suspendTerminateEmployment(){
 
                 <div class="authority-item">
 
-                    <span>✅ Can suspend any employee</span>
+                    <span>âœ… Can suspend any employee</span>
 
                 </div>
 
                 <div class="authority-item">
 
-                    <span>✅ Can terminate employment</span>
+                    <span>âœ… Can terminate employment</span>
 
                 </div>
 
                 <div class="authority-item">
 
-                    <span>✅ Final authority on employment decisions</span>
+                    <span>âœ… Final authority on employment decisions</span>
 
                 </div>
 
                 <div class="authority-item">
 
-                    <span>✅ Can approve demotions</span>
+                    <span>âœ… Can approve demotions</span>
 
                 </div>
 
                 <div class="authority-item critical">
 
-                    <span>⚠️ High-level decision requiring careful consideration</span>
+                    <span>âš ï¸ High-level decision requiring careful consideration</span>
 
                 </div>
 
@@ -6063,7 +6063,7 @@ function loadEmployeesForAction() {
 
     .then(data => {
 
-        console.log('📊 Employees for action:', data);
+        console.log('ðŸ“Š Employees for action:', data);
 
         const employeeSelect = document.getElementById('actionEmployee');
 
@@ -6159,7 +6159,7 @@ function loadEmployeesForAction() {
 
             
 
-        console.log('✅ Employee dropdown populated with mock data');
+        console.log('âœ… Employee dropdown populated with mock data');
 
     });
 
@@ -6287,25 +6287,25 @@ function viewWorkforceReports(){
 
                 <div class="authority-item">
 
-                    <span>✅ Can access all workforce analytics</span>
+                    <span>âœ… Can access all workforce analytics</span>
 
                 </div>
 
                 <div class="authority-item">
 
-                    <span>✅ Can generate executive reports</span>
+                    <span>âœ… Can generate executive reports</span>
 
                 </div>
 
                 <div class="authority-item">
 
-                    <span>✅ Can review compliance status</span>
+                    <span>âœ… Can review compliance status</span>
 
                 </div>
 
                 <div class="authority-item">
 
-                    <span>✅ Can export confidential data</span>
+                    <span>âœ… Can export confidential data</span>
 
                 </div>
 
@@ -6615,25 +6615,25 @@ function displayEmployeeData(employees) {
 
                     <tr>
 
-                        <th onclick="sortEmployeeTable(0)">Employee ID ↕</th>
+                        <th onclick="sortEmployeeTable(0)">Employee ID â†•</th>
 
-                        <th onclick="sortEmployeeTable(1)">Full Name ↕</th>
+                        <th onclick="sortEmployeeTable(1)">Full Name â†•</th>
 
-                        <th onclick="sortEmployeeTable(2)">Email ↕</th>
+                        <th onclick="sortEmployeeTable(2)">Email â†•</th>
 
-                        <th onclick="sortEmployeeTable(3)">Phone ↕</th>
+                        <th onclick="sortEmployeeTable(3)">Phone â†•</th>
 
-                        <th onclick="sortEmployeeTable(4)">Department ↕</th>
+                        <th onclick="sortEmployeeTable(4)">Department â†•</th>
 
-                        <th onclick="sortEmployeeTable(5)">Position ↕</th>
+                        <th onclick="sortEmployeeTable(5)">Position â†•</th>
 
-                        <th onclick="sortEmployeeTable(6)">Salary ↕</th>
+                        <th onclick="sortEmployeeTable(6)">Salary â†•</th>
 
-                        <th onclick="sortEmployeeTable(7)">Hire Date ↕</th>
+                        <th onclick="sortEmployeeTable(7)">Hire Date â†•</th>
 
-                        <th onclick="sortEmployeeTable(8)">Status ↕</th>
+                        <th onclick="sortEmployeeTable(8)">Status â†•</th>
 
-                        <th onclick="sortEmployeeTable(9)">Contract Type ↕</th>
+                        <th onclick="sortEmployeeTable(9)">Contract Type â†•</th>
 
                     </tr>
 
@@ -7373,7 +7373,7 @@ function approvePolicy(policyId) {
 
         .then(response => {
 
-            console.log('📡 Policy Approval API Response status:', response.status);
+            console.log('ðŸ“¡ Policy Approval API Response status:', response.status);
 
             return response.json();
 
@@ -7381,7 +7381,7 @@ function approvePolicy(policyId) {
 
         .then(data => {
 
-            console.log('📊 Policy Approval API Response data:', data);
+            console.log('ðŸ“Š Policy Approval API Response data:', data);
 
             
 
@@ -7415,7 +7415,7 @@ function approvePolicy(policyId) {
 
             showRealProblemNotification('SUCCESS', {
 
-                message: `✅ Policy approved successfully!\n\n📋 Details:\n• Policy ID: ${policyId}\n• Approved by: Managing Director\n• Status: Approved\n• Database ID: ${data.id || policyId}\n\n🎉 Policy saved to database without page refresh!`,
+                message: `âœ… Policy approved successfully!\n\nðŸ“‹ Details:\nâ€¢ Policy ID: ${policyId}\nâ€¢ Approved by: Managing Director\nâ€¢ Status: Approved\nâ€¢ Database ID: ${data.id || policyId}\n\nðŸŽ‰ Policy saved to database without page refresh!`,
 
                 policyId: policyId,
 
@@ -7453,7 +7453,7 @@ function approvePolicy(policyId) {
 
         .catch(error => {
 
-            console.error('❌ Error approving policy:', error);
+            console.error('âŒ Error approving policy:', error);
 
             
 
@@ -7469,31 +7469,31 @@ function approvePolicy(policyId) {
 
                 errorCause = 'Network connection failed';
 
-                troubleshooting = '• Check internet connection\n• Verify server is running\n• Try again in a moment';
+                troubleshooting = 'â€¢ Check internet connection\nâ€¢ Verify server is running\nâ€¢ Try again in a moment';
 
             } else if (error.message.includes('400')) {
 
                 errorCause = 'Invalid approval data';
 
-                troubleshooting = '• Policy ID is valid\n• Approver information is correct\n• Check request format';
+                troubleshooting = 'â€¢ Policy ID is valid\nâ€¢ Approver information is correct\nâ€¢ Check request format';
 
             } else if (error.message.includes('404')) {
 
                 errorCause = 'Policy not found';
 
-                troubleshooting = '• Policy ID may not exist\n• Check policy list\n• Verify policy is still pending';
+                troubleshooting = 'â€¢ Policy ID may not exist\nâ€¢ Check policy list\nâ€¢ Verify policy is still pending';
 
             } else if (error.message.includes('500')) {
 
                 errorCause = 'Server internal error';
 
-                troubleshooting = '• Database connection issue\n• Server configuration problem\n• Contact system administrator';
+                troubleshooting = 'â€¢ Database connection issue\nâ€¢ Server configuration problem\nâ€¢ Contact system administrator';
 
             } else if (error.message.includes('database') || error.message.includes('SQL')) {
 
                 errorCause = 'Database operation failed';
 
-                troubleshooting = '• Database connection issue\n• Policies table might not exist\n• Contact system administrator';
+                troubleshooting = 'â€¢ Database connection issue\nâ€¢ Policies table might not exist\nâ€¢ Contact system administrator';
 
             }
 
@@ -7509,7 +7509,7 @@ function approvePolicy(policyId) {
 
                 troubleshooting: troubleshooting,
 
-                message: `❌ Policy approval failed!\n\n🔍 Error Cause: ${errorCause}\n\n🛠️ Troubleshooting:\n${troubleshooting}\n\n📝 Technical Details:\n${error.message}\n\n💡 Please fix the issue and try again.`,
+                message: `âŒ Policy approval failed!\n\nðŸ” Error Cause: ${errorCause}\n\nðŸ› ï¸ Troubleshooting:\n${troubleshooting}\n\nðŸ“ Technical Details:\n${error.message}\n\nðŸ’¡ Please fix the issue and try again.`,
 
                 policyId: policyId,
 
@@ -7831,7 +7831,7 @@ function submitRevisionRequest(policyId) {
 
     .then(response => {
 
-        console.log('📡 Policy Revision API Response status:', response.status);
+        console.log('ðŸ“¡ Policy Revision API Response status:', response.status);
 
         return response.json();
 
@@ -7839,7 +7839,7 @@ function submitRevisionRequest(policyId) {
 
     .then(data => {
 
-        console.log('📊 Policy Revision API Response data:', data);
+        console.log('ðŸ“Š Policy Revision API Response data:', data);
 
         
 
@@ -7859,7 +7859,7 @@ function submitRevisionRequest(policyId) {
 
         statusBadge.className = 'policy-status revision';
 
-        statusBadge.innerHTML = `<span class="status-icon">🔄</span> Revision Requested - Review by ${expectedTimeline}`;
+        statusBadge.innerHTML = `<span class="status-icon">ðŸ”„</span> Revision Requested - Review by ${expectedTimeline}`;
 
         policyItem.appendChild(statusBadge);
 
@@ -7883,7 +7883,7 @@ function submitRevisionRequest(policyId) {
 
         showRealProblemNotification('SUCCESS', {
 
-            message: `✅ Revision request submitted successfully!\n\n📋 Details:\n• Policy ID: ${policyId}\n• Revision Type: ${revisionType}\n• Priority: ${revisionPriority}\n• Expected Review: ${expectedTimeline}\n• Requested by: HR Manager\n• Status: Revision Requested\n• Database ID: ${data.id || policyId}\n\n🎉 Revision request saved to database without page refresh!`,
+            message: `âœ… Revision request submitted successfully!\n\nðŸ“‹ Details:\nâ€¢ Policy ID: ${policyId}\nâ€¢ Revision Type: ${revisionType}\nâ€¢ Priority: ${revisionPriority}\nâ€¢ Expected Review: ${expectedTimeline}\nâ€¢ Requested by: HR Manager\nâ€¢ Status: Revision Requested\nâ€¢ Database ID: ${data.id || policyId}\n\nðŸŽ‰ Revision request saved to database without page refresh!`,
 
             policyId: policyId,
 
@@ -7905,7 +7905,7 @@ function submitRevisionRequest(policyId) {
 
     .catch(error => {
 
-        console.error('❌ Error requesting revision:', error);
+        console.error('âŒ Error requesting revision:', error);
 
         
 
@@ -7921,31 +7921,31 @@ function submitRevisionRequest(policyId) {
 
             errorCause = 'Network connection failed';
 
-            troubleshooting = '• Check internet connection\n• Verify server is running\n• Try again in a moment';
+            troubleshooting = 'â€¢ Check internet connection\nâ€¢ Verify server is running\nâ€¢ Try again in a moment';
 
         } else if (error.message.includes('400')) {
 
             errorCause = 'Invalid revision data';
 
-            troubleshooting = '• Fill all required fields correctly\n• Check revision type selection\n• Verify expected timeline\n• Ensure details are provided';
+            troubleshooting = 'â€¢ Fill all required fields correctly\nâ€¢ Check revision type selection\nâ€¢ Verify expected timeline\nâ€¢ Ensure details are provided';
 
         } else if (error.message.includes('404')) {
 
             errorCause = 'Policy not found';
 
-            troubleshooting = '• Policy ID may not exist\n• Check policy list\n• Verify policy is still active';
+            troubleshooting = 'â€¢ Policy ID may not exist\nâ€¢ Check policy list\nâ€¢ Verify policy is still active';
 
         } else if (error.message.includes('500')) {
 
             errorCause = 'Server internal error';
 
-            troubleshooting = '• Database connection issue\n• Server configuration problem\n• Contact system administrator';
+            troubleshooting = 'â€¢ Database connection issue\nâ€¢ Server configuration problem\nâ€¢ Contact system administrator';
 
         } else if (error.message.includes('database') || error.message.includes('SQL')) {
 
             errorCause = 'Database operation failed';
 
-            troubleshooting = '• Database connection issue\n• Policy revisions table might not exist\n• Contact system administrator';
+            troubleshooting = 'â€¢ Database connection issue\nâ€¢ Policy revisions table might not exist\nâ€¢ Contact system administrator';
 
         }
 
@@ -7961,7 +7961,7 @@ function submitRevisionRequest(policyId) {
 
             troubleshooting: troubleshooting,
 
-            message: `❌ Revision request failed!\n\n🔍 Error Cause: ${errorCause}\n\n🛠️ Troubleshooting:\n${troubleshooting}\n\n📝 Technical Details:\n${error.message}\n\n💡 Please fix the issue and try again.`,
+            message: `âŒ Revision request failed!\n\nðŸ” Error Cause: ${errorCause}\n\nðŸ› ï¸ Troubleshooting:\n${troubleshooting}\n\nðŸ“ Technical Details:\n${error.message}\n\nðŸ’¡ Please fix the issue and try again.`,
 
             policyId: policyId,
 
@@ -8067,7 +8067,7 @@ function submitRejection(policyId) {
 
     .then(response => {
 
-        console.log('📡 Policy Rejection API Response status:', response.status);
+        console.log('ðŸ“¡ Policy Rejection API Response status:', response.status);
 
         return response.json();
 
@@ -8075,7 +8075,7 @@ function submitRejection(policyId) {
 
     .then(data => {
 
-        console.log('📊 Policy Rejection API Response data:', data);
+        console.log('ðŸ“Š Policy Rejection API Response data:', data);
 
         
 
@@ -8095,7 +8095,7 @@ function submitRejection(policyId) {
 
         statusBadge.className = 'policy-status rejected';
 
-        statusBadge.innerHTML = `<span class="status-icon">❌</span> Rejected on ${new Date().toLocaleDateString()}`;
+        statusBadge.innerHTML = `<span class="status-icon">âŒ</span> Rejected on ${new Date().toLocaleDateString()}`;
 
         policyItem.appendChild(statusBadge);
 
@@ -8119,7 +8119,7 @@ function submitRejection(policyId) {
 
         showRealProblemNotification('SUCCESS', {
 
-            message: `✅ Policy rejected successfully!\n\n📋 Details:\n• Policy ID: ${policyId}\n• Rejection Reason: ${rejectionReason}\n• Rejected by: Managing Director\n• Status: Rejected\n• Database ID: ${data.id || policyId}\n\n🎉 Policy rejection saved to database without page refresh!`,
+            message: `âœ… Policy rejected successfully!\n\nðŸ“‹ Details:\nâ€¢ Policy ID: ${policyId}\nâ€¢ Rejection Reason: ${rejectionReason}\nâ€¢ Rejected by: Managing Director\nâ€¢ Status: Rejected\nâ€¢ Database ID: ${data.id || policyId}\n\nðŸŽ‰ Policy rejection saved to database without page refresh!`,
 
             policyId: policyId,
 
@@ -8141,7 +8141,7 @@ function submitRejection(policyId) {
 
     .catch(error => {
 
-        console.error('❌ Error rejecting policy:', error);
+        console.error('âŒ Error rejecting policy:', error);
 
         
 
@@ -8157,31 +8157,31 @@ function submitRejection(policyId) {
 
             errorCause = 'Network connection failed';
 
-            troubleshooting = '• Check internet connection\n• Verify server is running\n• Try again in a moment';
+            troubleshooting = 'â€¢ Check internet connection\nâ€¢ Verify server is running\nâ€¢ Try again in a moment';
 
         } else if (error.message.includes('400')) {
 
             errorCause = 'Invalid rejection data';
 
-            troubleshooting = '• Fill all required fields correctly\n• Check rejection reason selection\n• Verify rejection details\n• Ensure next steps are specified';
+            troubleshooting = 'â€¢ Fill all required fields correctly\nâ€¢ Check rejection reason selection\nâ€¢ Verify rejection details\nâ€¢ Ensure next steps are specified';
 
         } else if (error.message.includes('404')) {
 
             errorCause = 'Policy not found';
 
-            troubleshooting = '• Policy ID may not exist\n• Check policy list\n• Verify policy is still active';
+            troubleshooting = 'â€¢ Policy ID may not exist\nâ€¢ Check policy list\nâ€¢ Verify policy is still active';
 
         } else if (error.message.includes('500')) {
 
             errorCause = 'Server internal error';
 
-            troubleshooting = '• Database connection issue\n• Server configuration problem\n• Contact system administrator';
+            troubleshooting = 'â€¢ Database connection issue\nâ€¢ Server configuration problem\nâ€¢ Contact system administrator';
 
         } else if (error.message.includes('database') || error.message.includes('SQL')) {
 
             errorCause = 'Database operation failed';
 
-            troubleshooting = '• Database connection issue\n• Policy rejections table might not exist\n• Contact system administrator';
+            troubleshooting = 'â€¢ Database connection issue\nâ€¢ Policy rejections table might not exist\nâ€¢ Contact system administrator';
 
         }
 
@@ -8197,7 +8197,7 @@ function submitRejection(policyId) {
 
             troubleshooting: troubleshooting,
 
-            message: `❌ Policy rejection failed!\n\n🔍 Error Cause: ${errorCause}\n\n🛠️ Troubleshooting:\n${troubleshooting}\n\n📝 Technical Details:\n${error.message}\n\n💡 Please fix the issue and try again.`,
+            message: `âŒ Policy rejection failed!\n\nðŸ” Error Cause: ${errorCause}\n\nðŸ› ï¸ Troubleshooting:\n${troubleshooting}\n\nðŸ“ Technical Details:\n${error.message}\n\nðŸ’¡ Please fix the issue and try again.`,
 
             policyId: policyId,
 
@@ -8517,7 +8517,7 @@ function testPolicyButtons() {
 
     if (approveBtn) {
 
-        console.log('✅ Approve button found:', approveBtn);
+        console.log('âœ… Approve button found:', approveBtn);
 
         approveBtn.addEventListener('click', function() {
 
@@ -8527,7 +8527,7 @@ function testPolicyButtons() {
 
     } else {
 
-        console.log('❌ Approve button not found');
+        console.log('âŒ Approve button not found');
 
     }
 
@@ -8539,7 +8539,7 @@ function testPolicyButtons() {
 
     if (revisionBtn) {
 
-        console.log('✅ Revision button found:', revisionBtn);
+        console.log('âœ… Revision button found:', revisionBtn);
 
         revisionBtn.addEventListener('click', function() {
 
@@ -8549,7 +8549,7 @@ function testPolicyButtons() {
 
     } else {
 
-        console.log('❌ Revision button not found');
+        console.log('âŒ Revision button not found');
 
     }
 
@@ -8561,7 +8561,7 @@ function testPolicyButtons() {
 
     if (rejectBtn) {
 
-        console.log('✅ Reject button found:', rejectBtn);
+        console.log('âœ… Reject button found:', rejectBtn);
 
         rejectBtn.addEventListener('click', function() {
 
@@ -8571,7 +8571,7 @@ function testPolicyButtons() {
 
     } else {
 
-        console.log('❌ Reject button not found');
+        console.log('âŒ Reject button not found');
 
     }
 
@@ -8635,7 +8635,7 @@ function approveSeniorHire(hireId) {
 
         .then(response => {
 
-            console.log('📡 Senior Hiring Approval API Response status:', response.status);
+            console.log('ðŸ“¡ Senior Hiring Approval API Response status:', response.status);
 
             return response.json();
 
@@ -8643,7 +8643,7 @@ function approveSeniorHire(hireId) {
 
         .then(data => {
 
-            console.log('📊 Senior Hiring Approval API Response data:', data);
+            console.log('ðŸ“Š Senior Hiring Approval API Response data:', data);
 
             
 
@@ -8659,7 +8659,7 @@ function approveSeniorHire(hireId) {
 
             showRealProblemNotification('SUCCESS', {
 
-                message: `✅ Senior hiring request approved successfully!\n\n📋 Details:\n• Hire ID: ${hireId}\n• Approved by: Managing Director\n• Status: Approved\n• Database ID: ${data.id || hireId}\n\n🎉 Senior hiring request saved to database without page refresh!`,
+                message: `âœ… Senior hiring request approved successfully!\n\nðŸ“‹ Details:\nâ€¢ Hire ID: ${hireId}\nâ€¢ Approved by: Managing Director\nâ€¢ Status: Approved\nâ€¢ Database ID: ${data.id || hireId}\n\nðŸŽ‰ Senior hiring request saved to database without page refresh!`,
 
                 hireId: hireId,
 
@@ -8673,7 +8673,7 @@ function approveSeniorHire(hireId) {
 
         .catch(error => {
 
-            console.error('❌ Error approving senior hiring:', error);
+            console.error('âŒ Error approving senior hiring:', error);
 
             
 
@@ -8689,31 +8689,31 @@ function approveSeniorHire(hireId) {
 
                 errorCause = 'Network connection failed';
 
-                troubleshooting = '• Check internet connection\n• Verify server is running\n• Try again in a moment';
+                troubleshooting = 'â€¢ Check internet connection\nâ€¢ Verify server is running\nâ€¢ Try again in a moment';
 
             } else if (error.message.includes('400')) {
 
                 errorCause = 'Invalid approval data';
 
-                troubleshooting = '• Hire ID is valid\n• Approver information is correct\n• Check request format';
+                troubleshooting = 'â€¢ Hire ID is valid\nâ€¢ Approver information is correct\nâ€¢ Check request format';
 
             } else if (error.message.includes('404')) {
 
                 errorCause = 'Senior hiring request not found';
 
-                troubleshooting = '• Hire ID may not exist\n• Check hiring request list\n• Verify request is still pending';
+                troubleshooting = 'â€¢ Hire ID may not exist\nâ€¢ Check hiring request list\nâ€¢ Verify request is still pending';
 
             } else if (error.message.includes('500')) {
 
                 errorCause = 'Server internal error';
 
-                troubleshooting = '• Database connection issue\n• Server configuration problem\n• Contact system administrator';
+                troubleshooting = 'â€¢ Database connection issue\nâ€¢ Server configuration problem\nâ€¢ Contact system administrator';
 
             } else if (error.message.includes('database') || error.message.includes('SQL')) {
 
                 errorCause = 'Database operation failed';
 
-                troubleshooting = '• Database connection issue\n• Senior hiring tables might not exist\n• Contact system administrator';
+                troubleshooting = 'â€¢ Database connection issue\nâ€¢ Senior hiring tables might not exist\nâ€¢ Contact system administrator';
 
             }
 
@@ -8729,7 +8729,7 @@ function approveSeniorHire(hireId) {
 
                 troubleshooting: troubleshooting,
 
-                message: `❌ Senior hiring approval failed!\n\n🔍 Error Cause: ${errorCause}\n\n🛠️ Troubleshooting:\n${troubleshooting}\n\n📝 Technical Details:\n${error.message}\n\n💡 Please fix the issue and try again.`,
+                message: `âŒ Senior hiring approval failed!\n\nðŸ” Error Cause: ${errorCause}\n\nðŸ› ï¸ Troubleshooting:\n${troubleshooting}\n\nðŸ“ Technical Details:\n${error.message}\n\nðŸ’¡ Please fix the issue and try again.`,
 
                 hireId: hireId,
 
@@ -8793,7 +8793,7 @@ function requestMoreInfo(hireId) {
 
         .then(response => {
 
-            console.log('📡 Senior Hiring Info Request API Response status:', response.status);
+            console.log('ðŸ“¡ Senior Hiring Info Request API Response status:', response.status);
 
             return response.json();
 
@@ -8801,7 +8801,7 @@ function requestMoreInfo(hireId) {
 
         .then(data => {
 
-            console.log('📊 Senior Hiring Info Request API Response data:', data);
+            console.log('ðŸ“Š Senior Hiring Info Request API Response data:', data);
 
             
 
@@ -8817,7 +8817,7 @@ function requestMoreInfo(hireId) {
 
             showRealProblemNotification('SUCCESS', {
 
-                message: `✅ Information request submitted successfully!\n\n📋 Details:\n• Hire ID: ${hireId}\n• Requested by: Managing Director\n• Status: Information Requested\n• Database ID: ${data.id || hireId}\n\n🎉 Information request saved to database without page refresh!`,
+                message: `âœ… Information request submitted successfully!\n\nðŸ“‹ Details:\nâ€¢ Hire ID: ${hireId}\nâ€¢ Requested by: Managing Director\nâ€¢ Status: Information Requested\nâ€¢ Database ID: ${data.id || hireId}\n\nðŸŽ‰ Information request saved to database without page refresh!`,
 
                 hireId: hireId,
 
@@ -8831,7 +8831,7 @@ function requestMoreInfo(hireId) {
 
         .catch(error => {
 
-            console.error('❌ Error requesting more information:', error);
+            console.error('âŒ Error requesting more information:', error);
 
             
 
@@ -8847,31 +8847,31 @@ function requestMoreInfo(hireId) {
 
                 errorCause = 'Network connection failed';
 
-                troubleshooting = '• Check internet connection\n• Verify server is running\n• Try again in a moment';
+                troubleshooting = 'â€¢ Check internet connection\nâ€¢ Verify server is running\nâ€¢ Try again in a moment';
 
             } else if (error.message.includes('400')) {
 
                 errorCause = 'Invalid request data';
 
-                troubleshooting = '• Hire ID is valid\n• Requester information is correct\n• Check request format';
+                troubleshooting = 'â€¢ Hire ID is valid\nâ€¢ Requester information is correct\nâ€¢ Check request format';
 
             } else if (error.message.includes('404')) {
 
                 errorCause = 'Senior hiring request not found';
 
-                troubleshooting = '• Hire ID may not exist\n• Check hiring request list\n• Verify request is still pending';
+                troubleshooting = 'â€¢ Hire ID may not exist\nâ€¢ Check hiring request list\nâ€¢ Verify request is still pending';
 
             } else if (error.message.includes('500')) {
 
                 errorCause = 'Server internal error';
 
-                troubleshooting = '• Database connection issue\n• Server configuration problem\n• Contact system administrator';
+                troubleshooting = 'â€¢ Database connection issue\nâ€¢ Server configuration problem\nâ€¢ Contact system administrator';
 
             } else if (error.message.includes('database') || error.message.includes('SQL')) {
 
                 errorCause = 'Database operation failed';
 
-                troubleshooting = '• Database connection issue\n• Senior hiring tables might not exist\n• Contact system administrator';
+                troubleshooting = 'â€¢ Database connection issue\nâ€¢ Senior hiring tables might not exist\nâ€¢ Contact system administrator';
 
             }
 
@@ -8887,7 +8887,7 @@ function requestMoreInfo(hireId) {
 
                 troubleshooting: troubleshooting,
 
-                message: `❌ Information request failed!\n\n🔍 Error Cause: ${errorCause}\n\n🛠️ Troubleshooting:\n${troubleshooting}\n\n📝 Technical Details:\n${error.message}\n\n💡 Please fix the issue and try again.`,
+                message: `âŒ Information request failed!\n\nðŸ” Error Cause: ${errorCause}\n\nðŸ› ï¸ Troubleshooting:\n${troubleshooting}\n\nðŸ“ Technical Details:\n${error.message}\n\nðŸ’¡ Please fix the issue and try again.`,
 
                 hireId: hireId,
 
@@ -8953,7 +8953,7 @@ function rejectSeniorHire(hireId) {
 
         .then(response => {
 
-            console.log('📡 Senior Hiring Rejection API Response status:', response.status);
+            console.log('ðŸ“¡ Senior Hiring Rejection API Response status:', response.status);
 
             return response.json();
 
@@ -8961,7 +8961,7 @@ function rejectSeniorHire(hireId) {
 
         .then(data => {
 
-            console.log('📊 Senior Hiring Rejection API Response data:', data);
+            console.log('ðŸ“Š Senior Hiring Rejection API Response data:', data);
 
             
 
@@ -8977,7 +8977,7 @@ function rejectSeniorHire(hireId) {
 
             showRealProblemNotification('SUCCESS', {
 
-                message: `✅ Senior hiring request rejected successfully!\n\n📋 Details:\n• Hire ID: ${hireId}\n• Rejection Reason: ${formData.rejectionReason}\n• Rejected by: Managing Director\n• Status: Rejected\n• Database ID: ${data.id || hireId}\n\n🎉 Senior hiring request saved to database without page refresh!`,
+                message: `âœ… Senior hiring request rejected successfully!\n\nðŸ“‹ Details:\nâ€¢ Hire ID: ${hireId}\nâ€¢ Rejection Reason: ${formData.rejectionReason}\nâ€¢ Rejected by: Managing Director\nâ€¢ Status: Rejected\nâ€¢ Database ID: ${data.id || hireId}\n\nðŸŽ‰ Senior hiring request saved to database without page refresh!`,
 
                 hireId: hireId,
 
@@ -8997,7 +8997,7 @@ function rejectSeniorHire(hireId) {
 
         .catch(error => {
 
-            console.error('❌ Error rejecting senior hiring:', error);
+            console.error('âŒ Error rejecting senior hiring:', error);
 
             
 
@@ -9013,31 +9013,31 @@ function rejectSeniorHire(hireId) {
 
                 errorCause = 'Network connection failed';
 
-                troubleshooting = '• Check internet connection\n• Verify server is running\n• Try again in a moment';
+                troubleshooting = 'â€¢ Check internet connection\nâ€¢ Verify server is running\nâ€¢ Try again in a moment';
 
             } else if (error.message.includes('400')) {
 
                 errorCause = 'Invalid rejection data';
 
-                troubleshooting = '• Fill all required fields correctly\n• Check rejection reason selection\n• Verify rejection details\n• Ensure rejection details are provided';
+                troubleshooting = 'â€¢ Fill all required fields correctly\nâ€¢ Check rejection reason selection\nâ€¢ Verify rejection details\nâ€¢ Ensure rejection details are provided';
 
             } else if (error.message.includes('404')) {
 
                 errorCause = 'Senior hiring request not found';
 
-                troubleshooting = '• Hire ID may not exist\n• Check hiring request list\n• Verify request is still pending';
+                troubleshooting = 'â€¢ Hire ID may not exist\nâ€¢ Check hiring request list\nâ€¢ Verify request is still pending';
 
             } else if (error.message.includes('500')) {
 
                 errorCause = 'Server internal error';
 
-                troubleshooting = '• Database connection issue\n• Server configuration problem\n• Contact system administrator';
+                troubleshooting = 'â€¢ Database connection issue\nâ€¢ Server configuration problem\nâ€¢ Contact system administrator';
 
             } else if (error.message.includes('database') || error.message.includes('SQL')) {
 
                 errorCause = 'Database operation failed';
 
-                troubleshooting = '• Database connection issue\n• Senior hiring tables might not exist\n• Contact system administrator';
+                troubleshooting = 'â€¢ Database connection issue\nâ€¢ Senior hiring tables might not exist\nâ€¢ Contact system administrator';
 
             }
 
@@ -9053,7 +9053,7 @@ function rejectSeniorHire(hireId) {
 
                 troubleshooting: troubleshooting,
 
-                message: `❌ Senior hiring rejection failed!\n\n🔍 Error Cause: ${errorCause}\n\n🛠️ Troubleshooting:\n${troubleshooting}\n\n📝 Technical Details:\n${error.message}\n\n💡 Please fix the issue and try again.`,
+                message: `âŒ Senior hiring rejection failed!\n\nðŸ” Error Cause: ${errorCause}\n\nðŸ› ï¸ Troubleshooting:\n${troubleshooting}\n\nðŸ“ Technical Details:\n${error.message}\n\nðŸ’¡ Please fix the issue and try again.`,
 
                 hireId: hireId,
 
@@ -9125,7 +9125,7 @@ function approveBudget(budgetId) {
 
         .then(response => {
 
-            console.log('📡 Workforce Budget Approval API Response status:', response.status);
+            console.log('ðŸ“¡ Workforce Budget Approval API Response status:', response.status);
 
             return response.json();
 
@@ -9133,7 +9133,7 @@ function approveBudget(budgetId) {
 
         .then(data => {
 
-            console.log('📊 Workforce Budget Approval API Response data:', data);
+            console.log('ðŸ“Š Workforce Budget Approval API Response data:', data);
 
             
 
@@ -9149,7 +9149,7 @@ function approveBudget(budgetId) {
 
             showRealProblemNotification('SUCCESS', {
 
-                message: `✅ Workforce budget approved successfully!\n\n📋 Details:\n• Budget ID: ${budgetId}\n• Approved by: Managing Director\n• Status: Approved\n• Database ID: ${data.id || budgetId}\n\n🎉 Workforce budget request saved to database without page refresh!`,
+                message: `âœ… Workforce budget approved successfully!\n\nðŸ“‹ Details:\nâ€¢ Budget ID: ${budgetId}\nâ€¢ Approved by: Managing Director\nâ€¢ Status: Approved\nâ€¢ Database ID: ${data.id || budgetId}\n\nðŸŽ‰ Workforce budget request saved to database without page refresh!`,
 
                 budgetId: budgetId,
 
@@ -9163,7 +9163,7 @@ function approveBudget(budgetId) {
 
         .catch(error => {
 
-            console.error('❌ Error approving workforce budget:', error);
+            console.error('âŒ Error approving workforce budget:', error);
 
             
 
@@ -9179,31 +9179,31 @@ function approveBudget(budgetId) {
 
                 errorCause = 'Network connection failed';
 
-                troubleshooting = '• Check internet connection\n• Verify server is running\n• Try again in a moment';
+                troubleshooting = 'â€¢ Check internet connection\nâ€¢ Verify server is running\nâ€¢ Try again in a moment';
 
             } else if (error.message.includes('400')) {
 
                 errorCause = 'Invalid approval data';
 
-                troubleshooting = '• Budget ID is valid\n• Approver information is correct\n• Check request format';
+                troubleshooting = 'â€¢ Budget ID is valid\nâ€¢ Approver information is correct\nâ€¢ Check request format';
 
             } else if (error.message.includes('404')) {
 
                 errorCause = 'Workforce budget request not found';
 
-                troubleshooting = '• Budget ID may not exist\n• Check budget request list\n• Verify request is still pending';
+                troubleshooting = 'â€¢ Budget ID may not exist\nâ€¢ Check budget request list\nâ€¢ Verify request is still pending';
 
             } else if (error.message.includes('500')) {
 
                 errorCause = 'Server internal error';
 
-                troubleshooting = '• Database connection issue\n• Server configuration problem\n• Contact system administrator';
+                troubleshooting = 'â€¢ Database connection issue\nâ€¢ Server configuration problem\nâ€¢ Contact system administrator';
 
             } else if (error.message.includes('database') || error.message.includes('SQL')) {
 
                 errorCause = 'Database operation failed';
 
-                troubleshooting = '• Database connection issue\n• Workforce budget tables might not exist\n• Contact system administrator';
+                troubleshooting = 'â€¢ Database connection issue\nâ€¢ Workforce budget tables might not exist\nâ€¢ Contact system administrator';
 
             }
 
@@ -9219,7 +9219,7 @@ function approveBudget(budgetId) {
 
                 troubleshooting: troubleshooting,
 
-                message: `❌ Workforce budget approval failed!\n\n🔍 Error Cause: ${errorCause}\n\n🛠️ Troubleshooting:\n${troubleshooting}\n\n📝 Technical Details:\n${error.message}\n\n💡 Please fix the issue and try again.`,
+                message: `âŒ Workforce budget approval failed!\n\nðŸ” Error Cause: ${errorCause}\n\nðŸ› ï¸ Troubleshooting:\n${troubleshooting}\n\nðŸ“ Technical Details:\n${error.message}\n\nðŸ’¡ Please fix the issue and try again.`,
 
                 budgetId: budgetId,
 
@@ -9283,7 +9283,7 @@ function modifyBudget(budgetId) {
 
         .then(response => {
 
-            console.log('📡 Workforce Budget Modification API Response status:', response.status);
+            console.log('ðŸ“¡ Workforce Budget Modification API Response status:', response.status);
 
             return response.json();
 
@@ -9291,7 +9291,7 @@ function modifyBudget(budgetId) {
 
         .then(data => {
 
-            console.log('📊 Workforce Budget Modification API Response data:', data);
+            console.log('ðŸ“Š Workforce Budget Modification API Response data:', data);
 
             
 
@@ -9307,7 +9307,7 @@ function modifyBudget(budgetId) {
 
             showRealProblemNotification('SUCCESS', {
 
-                message: `✅ Budget modification requested successfully!\n\n📋 Details:\n• Budget ID: ${budgetId}\n• Requested by: Managing Director\n• Status: Modification Requested\n• Database ID: ${data.id || budgetId}\n\n🎉 Budget modification request saved to database without page refresh!`,
+                message: `âœ… Budget modification requested successfully!\n\nðŸ“‹ Details:\nâ€¢ Budget ID: ${budgetId}\nâ€¢ Requested by: Managing Director\nâ€¢ Status: Modification Requested\nâ€¢ Database ID: ${data.id || budgetId}\n\nðŸŽ‰ Budget modification request saved to database without page refresh!`,
 
                 budgetId: budgetId,
 
@@ -9321,7 +9321,7 @@ function modifyBudget(budgetId) {
 
         .catch(error => {
 
-            console.error('❌ Error requesting budget modification:', error);
+            console.error('âŒ Error requesting budget modification:', error);
 
             
 
@@ -9337,31 +9337,31 @@ function modifyBudget(budgetId) {
 
                 errorCause = 'Network connection failed';
 
-                troubleshooting = '• Check internet connection\n• Verify server is running\n• Try again in a moment';
+                troubleshooting = 'â€¢ Check internet connection\nâ€¢ Verify server is running\nâ€¢ Try again in a moment';
 
             } else if (error.message.includes('400')) {
 
                 errorCause = 'Invalid modification data';
 
-                troubleshooting = '• Budget ID is valid\n• Requester information is correct\n• Check request format';
+                troubleshooting = 'â€¢ Budget ID is valid\nâ€¢ Requester information is correct\nâ€¢ Check request format';
 
             } else if (error.message.includes('404')) {
 
                 errorCause = 'Workforce budget request not found';
 
-                troubleshooting = '• Budget ID may not exist\n• Check budget request list\n• Verify request is still active';
+                troubleshooting = 'â€¢ Budget ID may not exist\nâ€¢ Check budget request list\nâ€¢ Verify request is still active';
 
             } else if (error.message.includes('500')) {
 
                 errorCause = 'Server internal error';
 
-                troubleshooting = '• Database connection issue\n• Server configuration problem\n• Contact system administrator';
+                troubleshooting = 'â€¢ Database connection issue\nâ€¢ Server configuration problem\nâ€¢ Contact system administrator';
 
             } else if (error.message.includes('database') || error.message.includes('SQL')) {
 
                 errorCause = 'Database operation failed';
 
-                troubleshooting = '• Database connection issue\n• Workforce budget tables might not exist\n• Contact system administrator';
+                troubleshooting = 'â€¢ Database connection issue\nâ€¢ Workforce budget tables might not exist\nâ€¢ Contact system administrator';
 
             }
 
@@ -9377,7 +9377,7 @@ function modifyBudget(budgetId) {
 
                 troubleshooting: troubleshooting,
 
-                message: `❌ Budget modification request failed!\n\n🔍 Error Cause: ${errorCause}\n\n🛠️ Troubleshooting:\n${troubleshooting}\n\n📝 Technical Details:\n${error.message}\n\n💡 Please fix the issue and try again.`,
+                message: `âŒ Budget modification request failed!\n\nðŸ” Error Cause: ${errorCause}\n\nðŸ› ï¸ Troubleshooting:\n${troubleshooting}\n\nðŸ“ Technical Details:\n${error.message}\n\nðŸ’¡ Please fix the issue and try again.`,
 
                 budgetId: budgetId,
 
@@ -9443,7 +9443,7 @@ function rejectBudget(budgetId) {
 
         .then(response => {
 
-            console.log('📡 Workforce Budget Rejection API Response status:', response.status);
+            console.log('ðŸ“¡ Workforce Budget Rejection API Response status:', response.status);
 
             return response.json();
 
@@ -9451,7 +9451,7 @@ function rejectBudget(budgetId) {
 
         .then(data => {
 
-            console.log('📊 Workforce Budget Rejection API Response data:', data);
+            console.log('ðŸ“Š Workforce Budget Rejection API Response data:', data);
 
             
 
@@ -9467,7 +9467,7 @@ function rejectBudget(budgetId) {
 
             showRealProblemNotification('SUCCESS', {
 
-                message: `✅ Workforce budget rejected successfully!\n\n📋 Details:\n• Budget ID: ${budgetId}\n• Rejection Reason: ${formData.rejectionReason}\n• Rejected by: Managing Director\n• Status: Rejected\n• Database ID: ${data.id || budgetId}\n\n🎉 Workforce budget request saved to database without page refresh!`,
+                message: `âœ… Workforce budget rejected successfully!\n\nðŸ“‹ Details:\nâ€¢ Budget ID: ${budgetId}\nâ€¢ Rejection Reason: ${formData.rejectionReason}\nâ€¢ Rejected by: Managing Director\nâ€¢ Status: Rejected\nâ€¢ Database ID: ${data.id || budgetId}\n\nðŸŽ‰ Workforce budget request saved to database without page refresh!`,
 
                 budgetId: budgetId,
 
@@ -9487,7 +9487,7 @@ function rejectBudget(budgetId) {
 
         .catch(error => {
 
-            console.error('❌ Error rejecting workforce budget:', error);
+            console.error('âŒ Error rejecting workforce budget:', error);
 
             
 
@@ -9503,31 +9503,31 @@ function rejectBudget(budgetId) {
 
                 errorCause = 'Network connection failed';
 
-                troubleshooting = '• Check internet connection\n• Verify server is running\n• Try again in a moment';
+                troubleshooting = 'â€¢ Check internet connection\nâ€¢ Verify server is running\nâ€¢ Try again in a moment';
 
             } else if (error.message.includes('400')) {
 
                 errorCause = 'Invalid rejection data';
 
-                troubleshooting = '• Fill all required fields correctly\n• Check rejection reason selection\n• Verify rejection details\n• Ensure rejection details are provided';
+                troubleshooting = 'â€¢ Fill all required fields correctly\nâ€¢ Check rejection reason selection\nâ€¢ Verify rejection details\nâ€¢ Ensure rejection details are provided';
 
             } else if (error.message.includes('404')) {
 
                 errorCause = 'Workforce budget request not found';
 
-                troubleshooting = '• Budget ID may not exist\n• Check budget request list\n• Verify request is still active';
+                troubleshooting = 'â€¢ Budget ID may not exist\nâ€¢ Check budget request list\nâ€¢ Verify request is still active';
 
             } else if (error.message.includes('500')) {
 
                 errorCause = 'Server internal error';
 
-                troubleshooting = '• Database connection issue\n• Server configuration problem\n• Contact system administrator';
+                troubleshooting = 'â€¢ Database connection issue\nâ€¢ Server configuration problem\nâ€¢ Contact system administrator';
 
             } else if (error.message.includes('database') || error.message.includes('SQL')) {
 
                 errorCause = 'Database operation failed';
 
-                troubleshooting = '• Database connection issue\n• Workforce budget tables might not exist\n• Contact system administrator';
+                troubleshooting = 'â€¢ Database connection issue\nâ€¢ Workforce budget tables might not exist\nâ€¢ Contact system administrator';
 
             }
 
@@ -9543,7 +9543,7 @@ function rejectBudget(budgetId) {
 
                 troubleshooting: troubleshooting,
 
-                message: `❌ Workforce budget rejection failed!\n\n🔍 Error Cause: ${errorCause}\n\n🛠️ Troubleshooting:\n${troubleshooting}\n\n📝 Technical Details:\n${error.message}\n\n💡 Please fix the issue and try again.`,
+                message: `âŒ Workforce budget rejection failed!\n\nðŸ” Error Cause: ${errorCause}\n\nðŸ› ï¸ Troubleshooting:\n${troubleshooting}\n\nðŸ“ Technical Details:\n${error.message}\n\nðŸ’¡ Please fix the issue and try again.`,
 
                 budgetId: budgetId,
 
@@ -10297,7 +10297,7 @@ function generateCSVReport(employees) {
 
     
 
-    customAlert(`CSV report generated successfully!\n\n📊 Report Details:\n• Total Employees: ${employees.length}\n• Report Format: CSV\n• Filename: ${filename}\n\n📁 File downloaded to your default download folder.`, 'CSV Report Generated', 'success');
+    customAlert(`CSV report generated successfully!\n\nðŸ“Š Report Details:\nâ€¢ Total Employees: ${employees.length}\nâ€¢ Report Format: CSV\nâ€¢ Filename: ${filename}\n\nðŸ“ File downloaded to your default download folder.`, 'CSV Report Generated', 'success');
 
 }
 
@@ -10471,7 +10471,7 @@ async function saveEmploymentAction() {
 
         if (!rawAction.employeeId || !rawAction.actionType || !rawAction.actionDate || !rawAction.reasonCategory || !rawAction.actionDetails) {
 
-            customAlert('Please fill in all required fields:\n\n• Employee\n• Action Type\n• Effective Date\n• Reason Category\n• Detailed Reason', "Validation Error", "error");
+            customAlert('Please fill in all required fields:\n\nâ€¢ Employee\nâ€¢ Action Type\nâ€¢ Effective Date\nâ€¢ Reason Category\nâ€¢ Detailed Reason', "Validation Error", "error");
 
             return false;
 
@@ -10521,7 +10521,7 @@ async function saveEmploymentAction() {
 
         
 
-        console.log('📤 Sending action data:', action);
+        console.log('ðŸ“¤ Sending action data:', action);
 
         
 
@@ -10553,7 +10553,7 @@ async function saveEmploymentAction() {
 
         
 
-        console.log('📡 Employment Action API Response status:', response.status);
+        console.log('ðŸ“¡ Employment Action API Response status:', response.status);
 
         
 
@@ -10561,7 +10561,7 @@ async function saveEmploymentAction() {
 
             const errorText = await response.text();
 
-            console.error('❌ Error response body:', errorText);
+            console.error('âŒ Error response body:', errorText);
 
             throw new Error(`HTTP ${response.status}: ${response.statusText} - ${errorText}`);
 
@@ -10571,7 +10571,7 @@ async function saveEmploymentAction() {
 
         const data = await response.json();
 
-        console.log('📊 Employment Action API Response data:', data);
+        console.log('ðŸ“Š Employment Action API Response data:', data);
 
         
 
@@ -10583,7 +10583,7 @@ async function saveEmploymentAction() {
 
         
 
-        customAlert(`Employment action executed successfully!\n\nAction: ${action.actionType.toUpperCase()}\nEmployee ID: ${action.employeeId}\nEffective Date: ${action.actionDate}\nAction ID: ${data.actionId}\n\n🎉 Employment action saved to worker_action table!`, "Action Completed", "success");
+        customAlert(`Employment action executed successfully!\n\nAction: ${action.actionType.toUpperCase()}\nEmployee ID: ${action.employeeId}\nEffective Date: ${action.actionDate}\nAction ID: ${data.actionId}\n\nðŸŽ‰ Employment action saved to worker_action table!`, "Action Completed", "success");
 
         
 
@@ -10603,15 +10603,15 @@ async function saveEmploymentAction() {
 
     } catch (error) {
 
-        console.error('❌ Error processing employment action:', error);
+        console.error('âŒ Error processing employment action:', error);
 
-        console.error('❌ Error stack:', error.stack);
+        console.error('âŒ Error stack:', error.stack);
 
-        console.error('❌ Error name:', error.name);
+        console.error('âŒ Error name:', error.name);
 
-        console.error('❌ Error message:', error.message);
+        console.error('âŒ Error message:', error.message);
 
-        customAlert(`Failed to process employment action: ${error.message}\n\nPlease check:\n• All required fields are filled\n• Network connection is stable\n• Server is running properly\n\nCheck browser console for more details.`, "Processing Error", "error");
+        customAlert(`Failed to process employment action: ${error.message}\n\nPlease check:\nâ€¢ All required fields are filled\nâ€¢ Network connection is stable\nâ€¢ Server is running properly\n\nCheck browser console for more details.`, "Processing Error", "error");
 
         return false;
 
@@ -10723,7 +10723,7 @@ function registerEmployee(){
 
                 <button type="button" id="toggleFormBtn" onclick="toggleEmployeeForm()" class="action" style="background: #007bff;">
 
-                    📝 Open Registration Form
+                    ðŸ“ Open Registration Form
 
                 </button>
 
@@ -10968,7 +10968,7 @@ function handleGeneratePayslips(event){
 // Load all payroll data from the database
 function loadPayrollData() {
     const baseUrl = window.location.origin;
-    console.log('📊 Loading payroll data from database...');
+    console.log('ðŸ“Š Loading payroll data from database...');
 
     // Fetch overview data
     fetch(`${baseUrl}/payroll/overview`, {
@@ -10977,7 +10977,7 @@ function loadPayrollData() {
     .then(res => res.json())
     .then(data => {
         if (data.success) {
-            console.log('✅ Payroll overview loaded:', data.data);
+            console.log('âœ… Payroll overview loaded:', data.data);
             const d = data.data;
             const totalEmp = d.totalEmployees || 0;
             const monthlyPayroll = d.totalMonthlyPayroll || 0;
@@ -11022,11 +11022,11 @@ function loadPayrollData() {
             // Populate month selects
             populatePayrollMonthSelects();
         } else {
-            console.error('❌ Failed to load payroll overview:', data.error);
+            console.error('âŒ Failed to load payroll overview:', data.error);
         }
     })
     .catch(err => {
-        console.error('❌ Error loading payroll overview:', err);
+        console.error('âŒ Error loading payroll overview:', err);
     });
 
     // Fetch salary structures
@@ -11036,14 +11036,14 @@ function loadPayrollData() {
     .then(res => res.json())
     .then(data => {
         if (data.success) {
-            console.log('✅ Salary structures loaded:', data.data.length, 'records');
+            console.log('âœ… Salary structures loaded:', data.data.length, 'records');
             renderSalaryStructuresTable(data.data);
         } else {
-            console.error('❌ Failed to load salary structures:', data.error);
+            console.error('âŒ Failed to load salary structures:', data.error);
         }
     })
     .catch(err => {
-        console.error('❌ Error loading salary structures:', err);
+        console.error('âŒ Error loading salary structures:', err);
     });
 
     // Fetch payroll history
@@ -11053,14 +11053,14 @@ function loadPayrollData() {
     .then(res => res.json())
     .then(data => {
         if (data.success) {
-            console.log('✅ Payroll history loaded:', data.data.length, 'records');
+            console.log('âœ… Payroll history loaded:', data.data.length, 'records');
             renderPayrollHistory(data.data);
         } else {
-            console.error('❌ Failed to load payroll history:', data.error);
+            console.error('âŒ Failed to load payroll history:', data.error);
         }
     })
     .catch(err => {
-        console.error('❌ Error loading payroll history:', err);
+        console.error('âŒ Error loading payroll history:', err);
     });
 }
 
@@ -11080,7 +11080,7 @@ function populatePayrollEmployeeDropdowns(employees) {
             sel.appendChild(opt);
         });
     });
-    console.log('✅ Employee dropdowns populated with', employees.length, 'employees');
+    console.log('âœ… Employee dropdowns populated with', employees.length, 'employees');
 }
 
 function populatePayrollMonthSelects() {
@@ -11183,7 +11183,7 @@ function renderPayrollHistory(records) {
 
 function updatePayrollPreview() {
     const baseUrl = window.location.origin;
-    console.log('🔄 Updating payroll preview...');
+    console.log('ðŸ”„ Updating payroll preview...');
     fetch(`${baseUrl}/payroll/overview`, {
         headers: { 'Authorization': `Bearer ${sessionManager.getAuthToken()}` }
     })
@@ -11200,16 +11200,16 @@ function updatePayrollPreview() {
             el('previewTotalGross', 'TZS ' + totalGross.toLocaleString());
             el('previewTotalDeductions', 'TZS ' + totalDeductions.toLocaleString());
             el('previewNetPayment', 'TZS ' + netPayment.toLocaleString());
-            console.log('✅ Payroll preview updated');
+            console.log('âœ… Payroll preview updated');
         }
     })
     .catch(err => {
-        console.error('❌ Error updating payroll preview:', err);
+        console.error('âŒ Error updating payroll preview:', err);
     });
 }
 
 function generatePayslipExcel(payslips, month) {
-    console.log('📊 Generating Excel payslip for', payslips.length, 'employees, month:', month);
+    console.log('ðŸ“Š Generating Excel payslip for', payslips.length, 'employees, month:', month);
 
     // Build CSV data (universally opens in Excel)
     const headers = ['Employee ID', 'Employee Name', 'Payroll Month', 'Basic Salary (TZS)', 'Allowances (TZS)', 'Gross Salary (TZS)', 'NSSF Deduction (TZS)', 'PAYE Tax (TZS)', 'Other Deductions (TZS)', 'Net Salary (TZS)'];
@@ -11277,7 +11277,7 @@ function generatePayslipExcel(payslips, month) {
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
 
-    console.log('✅ Excel payslip file downloaded:', a.download);
+    console.log('âœ… Excel payslip file downloaded:', a.download);
     customAlert(`Payslips generated successfully!\n\nMonth: ${month}\nEmployees: ${payslips.length}\nFile: ${a.download}\n\nThe Excel file has been downloaded.`, 'Payslips Generated', 'success');
 
     // Show results in the UI
@@ -11374,7 +11374,7 @@ function toggleEmployeeForm() {
 
         formContainer.classList.add('show');
 
-        toggleBtn.innerHTML = '❌ Close Registration Form';
+        toggleBtn.innerHTML = 'âŒ Close Registration Form';
 
         toggleBtn.style.background = '#dc3545';
 
@@ -11394,7 +11394,7 @@ function toggleEmployeeForm() {
 
         formContainer.classList.remove('show');
 
-        toggleBtn.innerHTML = '📝 Open Registration Form';
+        toggleBtn.innerHTML = 'ðŸ“ Open Registration Form';
 
         toggleBtn.style.background = '#007bff';
 
@@ -11432,7 +11432,7 @@ function toggleWorkerAccountForm() {
 
         formContainer.classList.add('show');
 
-        toggleBtn.innerHTML = '❌ Close Worker Form';
+        toggleBtn.innerHTML = 'âŒ Close Worker Form';
 
         toggleBtn.style.background = '#dc3545';
 
@@ -11452,7 +11452,7 @@ function toggleWorkerAccountForm() {
 
         formContainer.classList.remove('show');
 
-        toggleBtn.innerHTML = '👤 Create Worker Account';
+        toggleBtn.innerHTML = 'ðŸ‘¤ Create Worker Account';
 
         toggleBtn.style.background = '#007bff';
 
@@ -11524,7 +11524,7 @@ function toggleAssignWorkerForm() {
 
         formContainer.classList.add('show');
 
-        toggleBtn.innerHTML = '❌ Close Assignment Form';
+        toggleBtn.innerHTML = 'âŒ Close Assignment Form';
 
         toggleBtn.style.background = '#dc3545';
 
@@ -11544,7 +11544,7 @@ function toggleAssignWorkerForm() {
 
         formContainer.classList.remove('show');
 
-        toggleBtn.innerHTML = '🏗️ Assign Worker to Project';
+        toggleBtn.innerHTML = 'ðŸ—ï¸ Assign Worker to Project';
 
         toggleBtn.style.background = '#007bff';
 
@@ -11604,7 +11604,7 @@ function toggleAttendanceForm() {
 
         formContainer.classList.add('show');
 
-        toggleBtn.innerHTML = '❌ Close Attendance Form';
+        toggleBtn.innerHTML = 'âŒ Close Attendance Form';
 
         toggleBtn.style.background = '#dc3545';
 
@@ -11624,7 +11624,7 @@ function toggleAttendanceForm() {
 
         formContainer.classList.remove('show');
 
-        toggleBtn.innerHTML = '📅 Mark Attendance';
+        toggleBtn.innerHTML = 'ðŸ“… Mark Attendance';
 
         toggleBtn.style.background = '#007bff';
 
@@ -11684,7 +11684,7 @@ function toggleLeaveContractsForm() {
 
         formContainer.classList.add('show');
 
-        toggleBtn.innerHTML = '❌ Close Management Forms';
+        toggleBtn.innerHTML = 'âŒ Close Management Forms';
 
         toggleBtn.style.background = '#dc3545';
 
@@ -11704,7 +11704,7 @@ function toggleLeaveContractsForm() {
 
         formContainer.classList.remove('show');
 
-        toggleBtn.innerHTML = '📋 Manage Leave & Contracts';
+        toggleBtn.innerHTML = 'ðŸ“‹ Manage Leave & Contracts';
 
         toggleBtn.style.background = '#007bff';
 
@@ -11798,7 +11798,7 @@ function toggleSeniorHiringForm() {
 
         formContainer.classList.add('show');
 
-        toggleBtn.innerHTML = '❌ Close Hiring Review';
+        toggleBtn.innerHTML = 'âŒ Close Hiring Review';
 
         toggleBtn.style.background = '#dc3545';
 
@@ -11818,7 +11818,7 @@ function toggleSeniorHiringForm() {
 
         formContainer.classList.remove('show');
 
-        toggleBtn.innerHTML = '👔 Review Senior Hiring Requests';
+        toggleBtn.innerHTML = 'ðŸ‘” Review Senior Hiring Requests';
 
         toggleBtn.style.background = '#007bff';
 
@@ -11856,7 +11856,7 @@ function toggleWorkforceBudgetForm() {
 
         formContainer.classList.add('show');
 
-        toggleBtn.innerHTML = '❌ Close Budget Review';
+        toggleBtn.innerHTML = 'âŒ Close Budget Review';
 
         toggleBtn.style.background = '#dc3545';
 
@@ -11876,7 +11876,7 @@ function toggleWorkforceBudgetForm() {
 
         formContainer.classList.remove('show');
 
-        toggleBtn.innerHTML = '💰 Review Budget Proposals';
+        toggleBtn.innerHTML = 'ðŸ’° Review Budget Proposals';
 
         toggleBtn.style.background = '#007bff';
 
@@ -11914,7 +11914,7 @@ function toggleEmploymentActionForm() {
 
         formContainer.classList.add('show');
 
-        toggleBtn.innerHTML = '❌ Close Employment Actions';
+        toggleBtn.innerHTML = 'âŒ Close Employment Actions';
 
         toggleBtn.style.background = '#dc3545';
 
@@ -11934,7 +11934,7 @@ function toggleEmploymentActionForm() {
 
         formContainer.classList.remove('show');
 
-        toggleBtn.innerHTML = '⚖️ Manage Employment Actions';
+        toggleBtn.innerHTML = 'âš–ï¸ Manage Employment Actions';
 
         toggleBtn.style.background = '#007bff';
 
@@ -12014,7 +12014,7 @@ function toggleIncidentForm() {
 
         formContainer.classList.add('show');
 
-        toggleBtn.innerHTML = '❌ Close Incident Form';
+        toggleBtn.innerHTML = 'âŒ Close Incident Form';
 
         toggleBtn.style.background = '#dc3545';
 
@@ -12046,7 +12046,7 @@ function toggleIncidentForm() {
 
         formContainer.classList.remove('show');
 
-        toggleBtn.innerHTML = '🚨 Record New Incident';
+        toggleBtn.innerHTML = 'ðŸš¨ Record New Incident';
 
         toggleBtn.style.background = '#007bff';
 
@@ -12084,7 +12084,7 @@ function togglePolicyForm() {
 
         formContainer.classList.add('show');
 
-        toggleBtn.innerHTML = '❌ Close Policy Form';
+        toggleBtn.innerHTML = 'âŒ Close Policy Form';
 
         toggleBtn.style.background = '#dc3545';
 
@@ -12104,7 +12104,7 @@ function togglePolicyForm() {
 
         formContainer.classList.remove('show');
 
-        toggleBtn.innerHTML = '📋 Upload New Policy';
+        toggleBtn.innerHTML = 'ðŸ“‹ Upload New Policy';
 
         toggleBtn.style.background = '#007bff';
 
@@ -12176,7 +12176,7 @@ function toggleToolboxForm() {
 
         formContainer.classList.add('show');
 
-        toggleBtn.innerHTML = '❌ Close Meeting Form';
+        toggleBtn.innerHTML = 'âŒ Close Meeting Form';
 
         toggleBtn.style.background = '#dc3545';
 
@@ -12208,7 +12208,7 @@ function toggleToolboxForm() {
 
         formContainer.classList.remove('show');
 
-        toggleBtn.innerHTML = '🛠️ Record New Meeting';
+        toggleBtn.innerHTML = 'ðŸ› ï¸ Record New Meeting';
 
         toggleBtn.style.background = '#007bff';
 
@@ -12300,7 +12300,7 @@ function togglePpeForm() {
 
         formContainer.classList.add('show');
 
-        toggleBtn.innerHTML = '❌ Close PPE Form';
+        toggleBtn.innerHTML = 'âŒ Close PPE Form';
 
         toggleBtn.style.background = '#dc3545';
 
@@ -12332,7 +12332,7 @@ function togglePpeForm() {
 
         formContainer.classList.remove('show');
 
-        toggleBtn.innerHTML = '🛡️ Issue New PPE';
+        toggleBtn.innerHTML = 'ðŸ›¡ï¸ Issue New PPE';
 
         toggleBtn.style.background = '#007bff';
 
@@ -12416,7 +12416,7 @@ function toggleViolationForm() {
 
         formContainer.classList.add('show');
 
-        toggleBtn.innerHTML = '❌ Close Violation Form';
+        toggleBtn.innerHTML = 'âŒ Close Violation Form';
 
         toggleBtn.style.background = '#dc3545';
 
@@ -12448,7 +12448,7 @@ function toggleViolationForm() {
 
         formContainer.classList.remove('show');
 
-        toggleBtn.innerHTML = '⚠️ Record New Violation';
+        toggleBtn.innerHTML = 'âš ï¸ Record New Violation';
 
         toggleBtn.style.background = '#007bff';
 
@@ -12532,7 +12532,7 @@ function toggleInspectionForm() {
 
         formContainer.classList.add('show');
 
-        toggleBtn.innerHTML = '❌ Close Inspection Form';
+        toggleBtn.innerHTML = 'âŒ Close Inspection Form';
 
         toggleBtn.style.background = '#dc3545';
 
@@ -12564,7 +12564,7 @@ function toggleInspectionForm() {
 
         formContainer.classList.remove('show');
 
-        toggleBtn.innerHTML = '📋 Upload New Report';
+        toggleBtn.innerHTML = 'ðŸ“‹ Upload New Report';
 
         toggleBtn.style.background = '#007bff';
 
@@ -12656,7 +12656,7 @@ function toggleBudgetForm() {
 
         formContainer.classList.add('show');
 
-        toggleBtn.innerHTML = '❌ Close Budget Form';
+        toggleBtn.innerHTML = 'âŒ Close Budget Form';
 
         toggleBtn.style.background = '#dc3545';
 
@@ -12676,7 +12676,7 @@ function toggleBudgetForm() {
 
         formContainer.classList.remove('show');
 
-        toggleBtn.innerHTML = '💰 Create New Budget';
+        toggleBtn.innerHTML = 'ðŸ’° Create New Budget';
 
         toggleBtn.style.background = '#007bff';
 
@@ -12748,7 +12748,7 @@ function toggleProjectForm() {
 
         formContainer.classList.add('show');
 
-        toggleBtn.innerHTML = '❌ Close Project Form';
+        toggleBtn.innerHTML = 'âŒ Close Project Form';
 
         toggleBtn.style.background = '#dc3545';
 
@@ -12768,7 +12768,7 @@ function toggleProjectForm() {
 
         formContainer.classList.remove('show');
 
-        toggleBtn.innerHTML = '🏗️ Create New Project';
+        toggleBtn.innerHTML = 'ðŸ—ï¸ Create New Project';
 
         toggleBtn.style.background = '#007bff';
 
@@ -12840,7 +12840,7 @@ function toggleWorkforceForm() {
 
         formContainer.classList.add('show');
 
-        toggleBtn.innerHTML = '❌ Close Workforce Form';
+        toggleBtn.innerHTML = 'âŒ Close Workforce Form';
 
         toggleBtn.style.background = '#dc3545';
 
@@ -12860,7 +12860,7 @@ function toggleWorkforceForm() {
 
         formContainer.classList.remove('show');
 
-        toggleBtn.innerHTML = '👥 Request Workforce';
+        toggleBtn.innerHTML = 'ðŸ‘¥ Request Workforce';
 
         toggleBtn.style.background = '#007bff';
 
@@ -12932,7 +12932,7 @@ function toggleSiteReportForm() {
 
         formContainer.classList.add('show');
 
-        toggleBtn.innerHTML = '❌ Close Site Report Form';
+        toggleBtn.innerHTML = 'âŒ Close Site Report Form';
 
         toggleBtn.style.background = '#dc3545';
 
@@ -12952,7 +12952,7 @@ function toggleSiteReportForm() {
 
         formContainer.classList.remove('show');
 
-        toggleBtn.innerHTML = '📝 Record Site Report';
+        toggleBtn.innerHTML = 'ðŸ“ Record Site Report';
 
         toggleBtn.style.background = '#007bff';
 
@@ -13036,7 +13036,7 @@ function toggleApprovalForm() {
 
         formContainer.classList.add('show');
 
-        toggleBtn.innerHTML = '❌ Close Approval Form';
+        toggleBtn.innerHTML = 'âŒ Close Approval Form';
 
         toggleBtn.style.background = '#dc3545';
 
@@ -13056,7 +13056,7 @@ function toggleApprovalForm() {
 
         formContainer.classList.remove('show');
 
-        toggleBtn.innerHTML = '✅ Work Approval Form';
+        toggleBtn.innerHTML = 'âœ… Work Approval Form';
 
         toggleBtn.style.background = '#007bff';
 
@@ -13128,7 +13128,7 @@ function togglePropertyForm() {
 
         formContainer.classList.add('show');
 
-        toggleBtn.innerHTML = '❌ Close Property Form';
+        toggleBtn.innerHTML = 'âŒ Close Property Form';
 
         toggleBtn.style.background = '#dc3545';
 
@@ -13148,7 +13148,7 @@ function togglePropertyForm() {
 
         formContainer.classList.remove('show');
 
-        toggleBtn.innerHTML = '🏠 Add New Property';
+        toggleBtn.innerHTML = 'ðŸ  Add New Property';
 
         toggleBtn.style.background = '#007bff';
 
@@ -13232,7 +13232,7 @@ function toggleClientForm() {
 
         formContainer.classList.add('show');
 
-        toggleBtn.innerHTML = '❌ Close Client Form';
+        toggleBtn.innerHTML = 'âŒ Close Client Form';
 
         toggleBtn.style.background = '#dc3545';
 
@@ -13264,7 +13264,7 @@ function toggleClientForm() {
 
         formContainer.classList.remove('show');
 
-        toggleBtn.innerHTML = '👤 Register New Client';
+        toggleBtn.innerHTML = 'ðŸ‘¤ Register New Client';
 
         toggleBtn.style.background = '#007bff';
 
@@ -13336,7 +13336,7 @@ function toggleSaleForm() {
 
         formContainer.classList.add('show');
 
-        toggleBtn.innerHTML = '❌ Close Sale Form';
+        toggleBtn.innerHTML = 'âŒ Close Sale Form';
 
         toggleBtn.style.background = '#dc3545';
 
@@ -13368,7 +13368,7 @@ function toggleSaleForm() {
 
         formContainer.classList.remove('show');
 
-        toggleBtn.innerHTML = '💰 Record New Sale';
+        toggleBtn.innerHTML = 'ðŸ’° Record New Sale';
 
         toggleBtn.style.background = '#007bff';
 
@@ -13464,7 +13464,7 @@ function toggleUploadForm() {
 
         formContainer.classList.add('show');
 
-        toggleBtn.innerHTML = '❌ Close Upload Form';
+        toggleBtn.innerHTML = 'âŒ Close Upload Form';
 
         toggleBtn.style.background = '#dc3545';
 
@@ -13484,7 +13484,7 @@ function toggleUploadForm() {
 
         formContainer.classList.remove('show');
 
-        toggleBtn.innerHTML = '📄 Upload New Document';
+        toggleBtn.innerHTML = 'ðŸ“„ Upload New Document';
 
         toggleBtn.style.background = '#007bff';
 
@@ -13562,7 +13562,7 @@ function toggleMeetingForm() {
 
         formContainer.classList.add('show');
 
-        toggleBtn.innerHTML = '❌ Close Meeting Form';
+        toggleBtn.innerHTML = 'âŒ Close Meeting Form';
 
         toggleBtn.style.background = '#dc3545';
 
@@ -13594,7 +13594,7 @@ function toggleMeetingForm() {
 
         formContainer.classList.remove('show');
 
-        toggleBtn.innerHTML = '📅 Schedule New Meeting';
+        toggleBtn.innerHTML = 'ðŸ“… Schedule New Meeting';
 
         toggleBtn.style.background = '#007bff';
 
@@ -13700,7 +13700,7 @@ function toggleNotificationForm() {
 
         formContainer.classList.add('show');
 
-        toggleBtn.innerHTML = '❌ Close Notification Form';
+        toggleBtn.innerHTML = 'âŒ Close Notification Form';
 
         toggleBtn.style.background = '#dc3545';
 
@@ -13720,7 +13720,7 @@ function toggleNotificationForm() {
 
         formContainer.classList.remove('show');
 
-        toggleBtn.innerHTML = '📧 Compose New Notification';
+        toggleBtn.innerHTML = 'ðŸ“§ Compose New Notification';
 
         toggleBtn.style.background = '#007bff';
 
@@ -13816,7 +13816,7 @@ function toggleWorkerView() {
 
         viewContainer.classList.add('show');
 
-        toggleBtn.innerHTML = '❌ Close Search';
+        toggleBtn.innerHTML = 'âŒ Close Search';
 
         toggleBtn.style.background = '#dc3545';
 
@@ -13836,7 +13836,7 @@ function toggleWorkerView() {
 
         viewContainer.classList.remove('show');
 
-        toggleBtn.innerHTML = '👥 Search & Filter Workers';
+        toggleBtn.innerHTML = 'ðŸ‘¥ Search & Filter Workers';
 
         toggleBtn.style.background = '#007bff';
 
@@ -13912,7 +13912,7 @@ function toggleMinutesForm() {
 
         formContainer.classList.add('show');
 
-        toggleBtn.innerHTML = '❌ Close Minutes Form';
+        toggleBtn.innerHTML = 'âŒ Close Minutes Form';
 
         toggleBtn.style.background = '#dc3545';
 
@@ -13944,7 +13944,7 @@ function toggleMinutesForm() {
 
         formContainer.classList.remove('show');
 
-        toggleBtn.innerHTML = '📝 Record New Minutes';
+        toggleBtn.innerHTML = 'ðŸ“ Record New Minutes';
 
         toggleBtn.style.background = '#007bff';
 
@@ -14028,7 +14028,7 @@ function togglePolicySearch() {
 
         searchContainer.classList.add('show');
 
-        toggleBtn.innerHTML = '❌ Close Search';
+        toggleBtn.innerHTML = 'âŒ Close Search';
 
         toggleBtn.style.background = '#dc3545';
 
@@ -14048,7 +14048,7 @@ function togglePolicySearch() {
 
         searchContainer.classList.remove('show');
 
-        toggleBtn.innerHTML = '🔍 Search & Filter Policies';
+        toggleBtn.innerHTML = 'ðŸ” Search & Filter Policies';
 
         toggleBtn.style.background = '#007bff';
 
@@ -14106,7 +14106,7 @@ function clearPolicySearch() {
 
 function fetchUpcomingMeetings() {
 
-    console.log('🔄 Fetching upcoming meetings from database...');
+    console.log('ðŸ”„ Fetching upcoming meetings from database...');
 
     
 
@@ -14120,21 +14120,21 @@ function fetchUpcomingMeetings() {
 
             authToken = sessionManager.getAuthToken();
 
-            console.log('🔐 SessionManager auth token found:', authToken ? 'Yes' : 'No');
+            console.log('ðŸ” SessionManager auth token found:', authToken ? 'Yes' : 'No');
 
         } else {
 
-            console.log('⚠️ SessionManager not available, checking localStorage...');
+            console.log('âš ï¸ SessionManager not available, checking localStorage...');
 
             authToken = localStorage.getItem('authToken') || sessionStorage.getItem('authToken');
 
-            console.log('🔐 Storage auth token found:', authToken ? 'Yes' : 'No');
+            console.log('ðŸ” Storage auth token found:', authToken ? 'Yes' : 'No');
 
         }
 
     } catch (error) {
 
-        console.log('❌ Error getting auth token:', error);
+        console.log('âŒ Error getting auth token:', error);
 
         authToken = localStorage.getItem('authToken') || sessionStorage.getItem('authToken');
 
@@ -14198,7 +14198,7 @@ function fetchWithFallback(endpoints, headers, index = 0) {
 
     if (index >= endpoints.length) {
 
-        console.error('❌ All API endpoints failed');
+        console.error('âŒ All API endpoints failed');
 
         displayMeetingsError('Unable to connect to meeting services. Please check your connection and try again.');
 
@@ -14210,7 +14210,7 @@ function fetchWithFallback(endpoints, headers, index = 0) {
 
     const endpoint = endpoints[index];
 
-    console.log(`🌐 Trying endpoint: ${endpoint}`);
+    console.log(`ðŸŒ Trying endpoint: ${endpoint}`);
 
     
 
@@ -14224,13 +14224,13 @@ function fetchWithFallback(endpoints, headers, index = 0) {
 
     .then(response => {
 
-        console.log(`📡 ${endpoint} Response status:`, response.status);
+        console.log(`ðŸ“¡ ${endpoint} Response status:`, response.status);
 
         
 
         if (response.status === 401) {
 
-            console.warn('⚠️ Authentication required - trying without auth headers...');
+            console.warn('âš ï¸ Authentication required - trying without auth headers...');
 
             // Try without auth headers
 
@@ -14268,7 +14268,7 @@ function fetchWithFallback(endpoints, headers, index = 0) {
 
     .then(meetings => {
 
-        console.log('📊 Meetings API Response data:', meetings);
+        console.log('ðŸ“Š Meetings API Response data:', meetings);
 
         
 
@@ -14280,7 +14280,7 @@ function fetchWithFallback(endpoints, headers, index = 0) {
 
             !meetings.meetings && !meetings.data && !Array.isArray(meetings)) {
 
-            console.warn('⚠️ Got status message instead of meeting data, trying next endpoint...');
+            console.warn('âš ï¸ Got status message instead of meeting data, trying next endpoint...');
 
             fetchWithFallback(endpoints, headers, index + 1);
 
@@ -14294,7 +14294,7 @@ function fetchWithFallback(endpoints, headers, index = 0) {
 
         if (meetings && Array.isArray(meetings)) {
 
-            console.log('✅ Got meetings array:', meetings.length, 'items');
+            console.log('âœ… Got meetings array:', meetings.length, 'items');
 
             displayUpcomingMeetings(meetings);
 
@@ -14310,7 +14310,7 @@ function fetchWithFallback(endpoints, headers, index = 0) {
 
 
 
-            console.log('🔍 Analyzing meetings object:', JSON.stringify(meetings, null, 2));
+            console.log('ðŸ” Analyzing meetings object:', JSON.stringify(meetings, null, 2));
 
 
 
@@ -14318,13 +14318,13 @@ function fetchWithFallback(endpoints, headers, index = 0) {
 
                 // Format: {success: true, count: X, meetings: [...]} or {success: true, meetings: {...}}
 
-                console.log('📊 Found success format with meetings property:', typeof meetings.meetings);
+                console.log('ðŸ“Š Found success format with meetings property:', typeof meetings.meetings);
 
                 if (Array.isArray(meetings.meetings)) {
 
                     meetingsArray = meetings.meetings;
 
-                    console.log('✅ Got meetings array from success format:', meetingsArray.length, 'items');
+                    console.log('âœ… Got meetings array from success format:', meetingsArray.length, 'items');
 
                 } else if (typeof meetings.meetings === 'object' && meetings.meetings.id) {
 
@@ -14332,11 +14332,11 @@ function fetchWithFallback(endpoints, headers, index = 0) {
 
                     meetingsArray = [meetings.meetings];
 
-                    console.log('✅ Got single meeting object, converted to array:', 1, 'item');
+                    console.log('âœ… Got single meeting object, converted to array:', 1, 'item');
 
                 } else {
 
-                    console.log('⚠️ meetings.meetings is not an array, checking if it contains data...');
+                    console.log('âš ï¸ meetings.meetings is not an array, checking if it contains data...');
 
                     // If meetings.meetings is an object, check if it has array values
 
@@ -14348,7 +14348,7 @@ function fetchWithFallback(endpoints, headers, index = 0) {
 
                             meetingsArray = values[0];
 
-                            console.log('✅ Got meetings array from object values:', meetingsArray.length, 'items');
+                            console.log('âœ… Got meetings array from object values:', meetingsArray.length, 'items');
 
                         } else if (values.length > 0 && typeof values[0] === 'object' && values[0].id) {
 
@@ -14356,11 +14356,11 @@ function fetchWithFallback(endpoints, headers, index = 0) {
 
                             meetingsArray = values;
 
-                            console.log('✅ Got meeting objects from object values:', meetingsArray.length, 'items');
+                            console.log('âœ… Got meeting objects from object values:', meetingsArray.length, 'items');
 
                         } else {
 
-                            console.log('⚠️ meetings.meetings object values are not arrays or meeting objects');
+                            console.log('âš ï¸ meetings.meetings object values are not arrays or meeting objects');
 
                         }
 
@@ -14376,11 +14376,11 @@ function fetchWithFallback(endpoints, headers, index = 0) {
 
                     meetingsArray = meetings.meetings;
 
-                    console.log('✅ Got meetings array from meetings property:', meetingsArray.length, 'items');
+                    console.log('âœ… Got meetings array from meetings property:', meetingsArray.length, 'items');
 
                 } else {
 
-                    console.log('⚠️ meetings.meetings is not an array');
+                    console.log('âš ï¸ meetings.meetings is not an array');
 
                 }
 
@@ -14392,11 +14392,11 @@ function fetchWithFallback(endpoints, headers, index = 0) {
 
                     meetingsArray = meetings.data;
 
-                    console.log('✅ Got meetings array from data property:', meetingsArray.length, 'items');
+                    console.log('âœ… Got meetings array from data property:', meetingsArray.length, 'items');
 
                 } else {
 
-                    console.log('⚠️ meetings.data is not an array');
+                    console.log('âš ï¸ meetings.data is not an array');
 
                 }
 
@@ -14408,11 +14408,11 @@ function fetchWithFallback(endpoints, headers, index = 0) {
 
                     meetingsArray = meetings.meeting_list;
 
-                    console.log('✅ Got meetings array from meeting_list property:', meetingsArray.length, 'items');
+                    console.log('âœ… Got meetings array from meeting_list property:', meetingsArray.length, 'items');
 
                 } else {
 
-                    console.log('⚠️ meetings.meeting_list is not an array');
+                    console.log('âš ï¸ meetings.meeting_list is not an array');
 
                 }
 
@@ -14428,7 +14428,7 @@ function fetchWithFallback(endpoints, headers, index = 0) {
 
             } else if (Array.isArray(meetingsArray)) {
 
-                console.log('✅ Got empty meetings array, showing no meetings message');
+                console.log('âœ… Got empty meetings array, showing no meetings message');
 
                 displayUpcomingMeetings(meetingsArray);
 
@@ -14436,7 +14436,7 @@ function fetchWithFallback(endpoints, headers, index = 0) {
 
             } else {
 
-                console.warn('⚠️ Object does not contain valid meetings array, trying next endpoint...');
+                console.warn('âš ï¸ Object does not contain valid meetings array, trying next endpoint...');
 
                 fetchWithFallback(endpoints, headers, index + 1);
 
@@ -14444,7 +14444,7 @@ function fetchWithFallback(endpoints, headers, index = 0) {
 
         } else {
 
-            console.warn('⚠️ Invalid meetings data format, trying next endpoint...');
+            console.warn('âš ï¸ Invalid meetings data format, trying next endpoint...');
 
             fetchWithFallback(endpoints, headers, index + 1);
 
@@ -14454,7 +14454,7 @@ function fetchWithFallback(endpoints, headers, index = 0) {
 
     .catch(error => {
 
-        console.error(`❌ Error with ${endpoint}:`, error);
+        console.error(`âŒ Error with ${endpoint}:`, error);
 
         
 
@@ -14488,13 +14488,13 @@ function displayMeetingsError(message) {
 
                     <button class="action" onclick="fetchUpcomingMeetings()" style="background: #007bff; margin-right: 10px;">
 
-                        🔄 Try Again
+                        ðŸ”„ Try Again
 
                     </button>
 
                     <button class="action" onclick="loadSampleMeetings()" style="background: #28a745;">
 
-                        📋 Load Sample Data
+                        ðŸ“‹ Load Sample Data
 
                     </button>
 
@@ -14522,7 +14522,7 @@ function displayMeetingsError(message) {
 
         if (meetingsList && meetingsList.querySelector('.error')) {
 
-            console.log('📋 Auto-loading sample data after API failure...');
+            console.log('ðŸ“‹ Auto-loading sample data after API failure...');
 
             loadSampleMeetings();
 
@@ -14538,7 +14538,7 @@ function displayMeetingsError(message) {
 
 function loadSampleMeetings() {
 
-    console.log('📋 Loading sample meeting data for demonstration...');
+    console.log('ðŸ“‹ Loading sample meeting data for demonstration...');
 
     
 
@@ -14680,7 +14680,7 @@ function displayUpcomingMeetings(meetings) {
 
     if (!meetingsList) {
 
-        console.error('❌ Meetings list container not found!');
+        console.error('âŒ Meetings list container not found!');
 
         return;
 
@@ -14822,11 +14822,11 @@ function displayUpcomingMeetings(meetings) {
 
         // Get status badge
 
-        const statusBadge = meeting.status === 'confirmed' ? '✅ Confirmed' : 
+        const statusBadge = meeting.status === 'confirmed' ? 'âœ… Confirmed' : 
 
-                           meeting.status === 'pending' ? '⏳ Pending' : 
+                           meeting.status === 'pending' ? 'â³ Pending' : 
 
-                           meeting.status === 'cancelled' ? '❌ Cancelled' : '✅ Confirmed';
+                           meeting.status === 'cancelled' ? 'âŒ Cancelled' : 'âœ… Confirmed';
 
         
 
@@ -14954,11 +14954,11 @@ function displayUpcomingMeetings(meetings) {
 
                     <div class="meeting-actions">
 
-                        <button class="action-btn view" onclick="viewMeetingDetails('${meeting.id}')" title="View Details">👁️</button>
+                        <button class="action-btn view" onclick="viewMeetingDetails('${meeting.id}')" title="View Details">ðŸ‘ï¸</button>
 
-                        <button class="action-btn edit" onclick="editMeeting('${meeting.id}')" title="Edit Meeting">✏️</button>
+                        <button class="action-btn edit" onclick="editMeeting('${meeting.id}')" title="Edit Meeting">âœï¸</button>
 
-                        <button class="action-btn delete" onclick="deleteMeeting('${meeting.id}')" title="Delete Meeting">🗑️</button>
+                        <button class="action-btn delete" onclick="deleteMeeting('${meeting.id}')" title="Delete Meeting">ðŸ—‘ï¸</button>
 
                     </div>
 
@@ -15148,7 +15148,7 @@ function assignWorker(){
 
                 <button type="button" id="toggleAssignFormBtn" onclick="toggleAssignWorkerForm()" class="action" style="background: #007bff;">
 
-                    🏗️ Assign Worker to Project
+                    ðŸ—ï¸ Assign Worker to Project
 
                 </button>
 
@@ -15274,7 +15274,7 @@ function assignWorker(){
 
 async function loadEmployeesForAssignment() {
 
-    console.log('🔄 Loading employees for assignment dropdown...');
+    console.log('ðŸ”„ Loading employees for assignment dropdown...');
 
     
 
@@ -15308,7 +15308,7 @@ async function loadEmployeesForAssignment() {
 
         const employees = await response.json();
 
-        console.log('📊 Employees for assignment:', employees);
+        console.log('ðŸ“Š Employees for assignment:', employees);
 
         
 
@@ -15344,13 +15344,13 @@ async function loadEmployeesForAssignment() {
 
         
 
-        console.log(`✅ Employee dropdown populated with ${employees.length} employees`);
+        console.log(`âœ… Employee dropdown populated with ${employees.length} employees`);
 
         
 
     } catch (error) {
 
-        console.error('❌ Error loading employees for assignment:', error);
+        console.error('âŒ Error loading employees for assignment:', error);
 
         const select = document.getElementById('assignEmployee');
 
@@ -15370,7 +15370,7 @@ async function loadEmployeesForAssignment() {
 
 async function loadProjectsForAssignment() {
 
-    console.log('🔄 Loading projects for assignment dropdown...');
+    console.log('ðŸ”„ Loading projects for assignment dropdown...');
 
     
 
@@ -15406,7 +15406,7 @@ async function loadProjectsForAssignment() {
 
         const projects = data.projects || [];
 
-        console.log('📊 Projects for assignment:', projects);
+        console.log('ðŸ“Š Projects for assignment:', projects);
 
         
 
@@ -15438,13 +15438,13 @@ async function loadProjectsForAssignment() {
 
         
 
-        console.log(`✅ Project dropdown populated with ${projects.length} projects`);
+        console.log(`âœ… Project dropdown populated with ${projects.length} projects`);
 
         
 
     } catch (error) {
 
-        console.error('❌ Error loading projects for assignment:', error);
+        console.error('âŒ Error loading projects for assignment:', error);
 
         const select = document.getElementById('assignProject');
 
@@ -15472,7 +15472,7 @@ function attendance(){
 
                 <button type="button" id="toggleAttendanceFormBtn" onclick="toggleAttendanceForm()" class="action" style="background: #007bff;">
 
-                    📅 Mark Attendance
+                    ðŸ“… Mark Attendance
 
                 </button>
 
@@ -15676,7 +15676,7 @@ function attendance(){
 
 async function loadEmployeesForAttendance() {
 
-    console.log('🔄 Loading employees for attendance dropdown...');
+    console.log('ðŸ”„ Loading employees for attendance dropdown...');
 
     
 
@@ -15710,7 +15710,7 @@ async function loadEmployeesForAttendance() {
 
         const employees = await response.json();
 
-        console.log('📊 Employees for attendance:', employees);
+        console.log('ðŸ“Š Employees for attendance:', employees);
 
         
 
@@ -15746,13 +15746,13 @@ async function loadEmployeesForAttendance() {
 
         
 
-        console.log(`✅ Employee dropdown populated with ${employees.length} employees`);
+        console.log(`âœ… Employee dropdown populated with ${employees.length} employees`);
 
         
 
     } catch (error) {
 
-        console.error('❌ Error loading employees for attendance:', error);
+        console.error('âŒ Error loading employees for attendance:', error);
 
         const select = document.getElementById('attEmployee');
 
@@ -15772,7 +15772,7 @@ async function loadEmployeesForAttendance() {
 
 async function loadTodayAttendanceSummary() {
 
-    console.log('🔄 Loading today\'s attendance summary...');
+    console.log('ðŸ”„ Loading today\'s attendance summary...');
 
     
 
@@ -15812,7 +15812,7 @@ async function loadTodayAttendanceSummary() {
 
         } catch (primaryError) {
 
-            console.warn('⚠️ Primary attendance endpoint failed, trying fallback:', primaryError.message);
+            console.warn('âš ï¸ Primary attendance endpoint failed, trying fallback:', primaryError.message);
 
             // Try fallback endpoint without date filter
 
@@ -15842,7 +15842,7 @@ async function loadTodayAttendanceSummary() {
 
             } catch (fallbackError) {
 
-                console.error('❌ Both attendance endpoints failed:', fallbackError.message);
+                console.error('âŒ Both attendance endpoints failed:', fallbackError.message);
 
                 throw new Error('All attendance endpoints unavailable');
 
@@ -15854,7 +15854,7 @@ async function loadTodayAttendanceSummary() {
 
         const attendanceData = await response.json();
 
-        console.log('📊 Today\'s attendance data:', attendanceData);
+        console.log('ðŸ“Š Today\'s attendance data:', attendanceData);
 
         
 
@@ -15868,7 +15868,7 @@ async function loadTodayAttendanceSummary() {
 
         if (!Array.isArray(attendanceArray)) {
 
-            console.error('❌ Expected array but got:', typeof attendanceArray, attendanceArray);
+            console.error('âŒ Expected array but got:', typeof attendanceArray, attendanceArray);
 
             return;
 
@@ -15902,9 +15902,9 @@ async function loadTodayAttendanceSummary() {
 
         if (!totalEmployeesElement || !presentCountElement || !absentCountElement || !leaveCountElement) {
 
-            console.log('ℹ️ Attendance summary elements not found - logging summary to console instead');
+            console.log('â„¹ï¸ Attendance summary elements not found - logging summary to console instead');
 
-            console.log('📊 Attendance Summary:', {
+            console.log('ðŸ“Š Attendance Summary:', {
 
                 total: attendanceArray.length,
 
@@ -15994,11 +15994,11 @@ async function loadTodayAttendanceSummary() {
 
             
 
-            console.log(`✅ Attendance summary updated - Total: ${totalEmployees}, Present: ${presentCount}, Absent: ${absentCount}, Leave: ${leaveCount}`);
+            console.log(`âœ… Attendance summary updated - Total: ${totalEmployees}, Present: ${presentCount}, Absent: ${absentCount}, Leave: ${leaveCount}`);
 
         } else {
 
-            console.log('ℹ️ Attendance summary elements not found - cannot update display');
+            console.log('â„¹ï¸ Attendance summary elements not found - cannot update display');
 
         }
 
@@ -16006,7 +16006,7 @@ async function loadTodayAttendanceSummary() {
 
     } catch (error) {
 
-        console.error('❌ Error loading attendance summary:', error);
+        console.error('âŒ Error loading attendance summary:', error);
 
         
 
@@ -16254,7 +16254,7 @@ function saveEmployee() {
 
         if (agreementFile || cvFile || profileFile) {
 
-            fileUploadMessage = `\n📄 Files ready for upload: ${[agreementFile, cvFile, profileFile].filter(f => f).length} file(s)`;
+            fileUploadMessage = `\nðŸ“„ Files ready for upload: ${[agreementFile, cvFile, profileFile].filter(f => f).length} file(s)`;
 
         }
 
@@ -16262,7 +16262,7 @@ function saveEmployee() {
 
         // Success message
 
-        customAlert(`Employee ${employee.fullName} registered successfully!${fileUploadMessage}\n\n📋 Details:\n• ID: ${data.id}\n• Department: ${employee.department}\n• Job Category: ${employee.jobCategory}\n• Contract: ${employee.contract}\n• Status: ${employee.status}\n\n✅ Employee has been added to the database.`, "Employee Registered", "success");
+        customAlert(`Employee ${employee.fullName} registered successfully!${fileUploadMessage}\n\nðŸ“‹ Details:\nâ€¢ ID: ${data.id}\nâ€¢ Department: ${employee.department}\nâ€¢ Job Category: ${employee.jobCategory}\nâ€¢ Contract: ${employee.contract}\nâ€¢ Status: ${employee.status}\n\nâœ… Employee has been added to the database.`, "Employee Registered", "success");
 
         
 
@@ -16290,7 +16290,7 @@ function saveEmployee() {
 
         console.error('Error registering employee:', error);
 
-        customAlert(`Failed to register employee: ${error.message}\n\nPlease check:\n• All fields are filled correctly\n• Email address is unique\n• Network connection is stable`, "Registration Error", "error");
+        customAlert(`Failed to register employee: ${error.message}\n\nPlease check:\nâ€¢ All fields are filled correctly\nâ€¢ Email address is unique\nâ€¢ Network connection is stable`, "Registration Error", "error");
 
         return false;
 
@@ -16330,7 +16330,7 @@ function saveAssignment() {
 
     if (window.assignmentSubmitting) {
 
-        console.log('⚠️ Assignment submission already in progress');
+        console.log('âš ï¸ Assignment submission already in progress');
 
         return false;
 
@@ -16404,7 +16404,7 @@ function saveAssignment() {
 
     if (!assignment.employee_id || !assignment.project_id || !assignment.role_in_project || !assignment.start_date) {
 
-        customAlert('Please fill in all required fields:\n\n• Employee\n• Project\n• Role\n• Start Date', "Validation Error", "error");
+        customAlert('Please fill in all required fields:\n\nâ€¢ Employee\nâ€¢ Project\nâ€¢ Role\nâ€¢ Start Date', "Validation Error", "error");
 
         window.assignmentSubmitting = false;
 
@@ -16444,7 +16444,7 @@ function saveAssignment() {
 
     .then(response => {
 
-        console.log('📡 Assignment API Response status:', response.status);
+        console.log('ðŸ“¡ Assignment API Response status:', response.status);
 
         return response.json();
 
@@ -16452,7 +16452,7 @@ function saveAssignment() {
 
     .then(data => {
 
-        console.log('📊 Assignment API Response data:', data);
+        console.log('ðŸ“Š Assignment API Response data:', data);
 
         
 
@@ -16464,7 +16464,7 @@ function saveAssignment() {
 
         
 
-        customAlert(`Worker assigned to project successfully!\n\nEmployee: ${assignment.employee_name}\nProject: ${assignment.project_name}\nRole: ${assignment.role_in_project}\nAssignment ID: ${data.id}\n\n🎉 Assignment saved to database!`, "Assignment Completed", "success");
+        customAlert(`Worker assigned to project successfully!\n\nEmployee: ${assignment.employee_name}\nProject: ${assignment.project_name}\nRole: ${assignment.role_in_project}\nAssignment ID: ${data.id}\n\nðŸŽ‰ Assignment saved to database!`, "Assignment Completed", "success");
 
         
 
@@ -16474,9 +16474,9 @@ function saveAssignment() {
 
     .catch(error => {
 
-        console.error('❌ Error assigning worker:', error);
+        console.error('âŒ Error assigning worker:', error);
 
-        customAlert(`Failed to assign worker: ${error.message}\n\nPlease check:\n• All required fields are filled\n• Network connection is stable\n• Server is running properly`, "Assignment Error", "error");
+        customAlert(`Failed to assign worker: ${error.message}\n\nPlease check:\nâ€¢ All required fields are filled\nâ€¢ Network connection is stable\nâ€¢ Server is running properly`, "Assignment Error", "error");
 
     })
 
@@ -16526,7 +16526,7 @@ function saveAttendance() {
 
     if (!attendance.attendance_date || !attendance.employee_id || !attendance.attendance_status) {
 
-        customAlert('Please fill in all required fields:\n\n· Date\n· Employee\n· Status', "Validation Error", "error");
+        customAlert('Please fill in all required fields:\n\nÂ· Date\nÂ· Employee\nÂ· Status', "Validation Error", "error");
 
         return false;
 
@@ -16564,7 +16564,7 @@ function saveAttendance() {
 
     .then(response => {
 
-        console.log('📡 Attendance API Response status:', response.status);
+        console.log('ðŸ“¡ Attendance API Response status:', response.status);
 
         return response.json();
 
@@ -16572,7 +16572,7 @@ function saveAttendance() {
 
     .then(data => {
 
-        console.log('📊 Attendance API Response data:', data);
+        console.log('ðŸ“Š Attendance API Response data:', data);
 
         
 
@@ -16602,7 +16602,7 @@ function saveAttendance() {
 
     .catch(error => {
 
-        console.error('❌ Error marking attendance:', error);
+        console.error('âŒ Error marking attendance:', error);
 
         customAlert(`Error marking attendance: ${error.message}`, "Error", "error");
 
@@ -16654,7 +16654,7 @@ function updateTodayAttendanceSummary() {
 
 async function loadAttendanceRecords() {
 
-    console.log('🔄 Loading attendance records...');
+    console.log('ðŸ”„ Loading attendance records...');
 
     
 
@@ -16694,7 +16694,7 @@ async function loadAttendanceRecords() {
 
         } catch (primaryError) {
 
-            console.warn('⚠️ Primary attendance records endpoint failed, trying fallback:', primaryError.message);
+            console.warn('âš ï¸ Primary attendance records endpoint failed, trying fallback:', primaryError.message);
 
             // Try fallback endpoint with date filter for recent records
 
@@ -16726,7 +16726,7 @@ async function loadAttendanceRecords() {
 
             } catch (fallbackError) {
 
-                console.error('❌ All attendance records endpoints failed:', fallbackError.message);
+                console.error('âŒ All attendance records endpoints failed:', fallbackError.message);
 
                 // Load sample data for demonstration
 
@@ -16742,7 +16742,7 @@ async function loadAttendanceRecords() {
 
         const attendanceRecords = await response.json();
 
-        console.log('📊 Attendance records data:', attendanceRecords);
+        console.log('ðŸ“Š Attendance records data:', attendanceRecords);
 
         
 
@@ -16756,7 +16756,7 @@ async function loadAttendanceRecords() {
 
         if (!Array.isArray(records)) {
 
-            console.error('❌ Expected array but got:', typeof records, records);
+            console.error('âŒ Expected array but got:', typeof records, records);
 
             displayAttendanceRecords([]);
 
@@ -16772,7 +16772,7 @@ async function loadAttendanceRecords() {
 
     } catch (error) {
 
-        console.error('❌ Error loading attendance records:', error);
+        console.error('âŒ Error loading attendance records:', error);
 
         // Load sample data on error
 
@@ -16788,7 +16788,7 @@ async function loadAttendanceRecords() {
 
 function loadSampleAttendanceRecords() {
 
-    console.log('📋 Loading sample attendance records...');
+    console.log('ðŸ“‹ Loading sample attendance records...');
 
     
 
@@ -16914,7 +16914,7 @@ function displayAttendanceRecords(records) {
 
     if (!recordsList) {
 
-        console.error('❌ Attendance records list container not found!');
+        console.error('âŒ Attendance records list container not found!');
 
         return;
 
@@ -17052,17 +17052,17 @@ function displayAttendanceRecords(records) {
 
         
 
-        const statusBadge = mappedRecord.attendance_status === 'present' ? '✅ Present' : 
+        const statusBadge = mappedRecord.attendance_status === 'present' ? 'âœ… Present' : 
 
-                           mappedRecord.attendance_status === 'absent' ? '❌ Absent' : 
+                           mappedRecord.attendance_status === 'absent' ? 'âŒ Absent' : 
 
-                           mappedRecord.attendance_status === 'late' ? '⏰ Late' : 
+                           mappedRecord.attendance_status === 'late' ? 'â° Late' : 
 
-                           mappedRecord.attendance_status === 'sick' ? '🤒 Sick Leave' : 
+                           mappedRecord.attendance_status === 'sick' ? 'ðŸ¤’ Sick Leave' : 
 
-                           mappedRecord.attendance_status === 'annual' ? '🏖️ Annual Leave' : 
+                           mappedRecord.attendance_status === 'annual' ? 'ðŸ–ï¸ Annual Leave' : 
 
-                           mappedRecord.attendance_status === 'permission' ? '📋 Permission' : '❓ Unknown';
+                           mappedRecord.attendance_status === 'permission' ? 'ðŸ“‹ Permission' : 'â“ Unknown';
 
         
 
@@ -17096,7 +17096,7 @@ function displayAttendanceRecords(records) {
 
                     <div class="time-info">
 
-                        <div class="check-time">${mappedRecord.check_in_time || '—'}</div>
+                        <div class="check-time">${mappedRecord.check_in_time || 'â€”'}</div>
 
                     </div>
 
@@ -17106,7 +17106,7 @@ function displayAttendanceRecords(records) {
 
                     <div class="time-info">
 
-                        <div class="check-time">${mappedRecord.check_out_time || '—'}</div>
+                        <div class="check-time">${mappedRecord.check_out_time || 'â€”'}</div>
 
                     </div>
 
@@ -17142,7 +17142,7 @@ function displayAttendanceRecords(records) {
 
                     <div class="notes-info">
 
-                        <div class="attendance-notes" title="${mappedRecord.notes || 'No notes'}">${mappedRecord.notes ? (mappedRecord.notes.length > 30 ? mappedRecord.notes.substring(0, 30) + '...' : mappedRecord.notes) : '—'}</div>
+                        <div class="attendance-notes" title="${mappedRecord.notes || 'No notes'}">${mappedRecord.notes ? (mappedRecord.notes.length > 30 ? mappedRecord.notes.substring(0, 30) + '...' : mappedRecord.notes) : 'â€”'}</div>
 
                     </div>
 
@@ -17152,11 +17152,11 @@ function displayAttendanceRecords(records) {
 
                     <div class="attendance-actions">
 
-                        <button class="action-btn view" onclick="viewAttendanceDetails('${mappedRecord.id}')" title="View Details">👁️</button>
+                        <button class="action-btn view" onclick="viewAttendanceDetails('${mappedRecord.id}')" title="View Details">ðŸ‘ï¸</button>
 
-                        <button class="action-btn edit" onclick="editAttendance('${mappedRecord.id}')" title="Edit Attendance">✏️</button>
+                        <button class="action-btn edit" onclick="editAttendance('${mappedRecord.id}')" title="Edit Attendance">âœï¸</button>
 
-                        <button class="action-btn delete" onclick="deleteAttendance('${mappedRecord.id}')" title="Delete Record">🗑️</button>
+                        <button class="action-btn delete" onclick="deleteAttendance('${mappedRecord.id}')" title="Delete Record">ðŸ—‘ï¸</button>
 
                     </div>
 
@@ -17232,7 +17232,7 @@ function createWorkerAccount(){
 
                 <button type="button" id="toggleWorkerFormBtn" onclick="toggleWorkerAccountForm()" class="action" style="background: #007bff;">
 
-                    👤 Create Worker Account
+                    ðŸ‘¤ Create Worker Account
 
                 </button>
 
@@ -17696,7 +17696,7 @@ function manageLeaveContracts(){
 
                 <button type="button" id="toggleLeaveContractsFormBtn" onclick="toggleLeaveContractsForm()" class="action" style="background: #007bff;">
 
-                    📋 Manage Leave & Contracts
+                    ðŸ“‹ Manage Leave & Contracts
 
                 </button>
 
@@ -18018,7 +18018,7 @@ function manageLeaveContracts(){
 
 async function loadEmployeesForLeaveContracts() {
 
-    console.log('🔄 Loading employees for leave & contracts...');
+    console.log('ðŸ”„ Loading employees for leave & contracts...');
 
     
 
@@ -18052,7 +18052,7 @@ async function loadEmployeesForLeaveContracts() {
 
         const employees = await response.json();
 
-        console.log('📊 Employees for leave & contracts:', employees);
+        console.log('ðŸ“Š Employees for leave & contracts:', employees);
 
         
 
@@ -18112,13 +18112,13 @@ async function loadEmployeesForLeaveContracts() {
 
         
 
-        console.log(`✅ Employee dropdowns populated with ${employees.length} employees`);
+        console.log(`âœ… Employee dropdowns populated with ${employees.length} employees`);
 
         
 
     } catch (error) {
 
-        console.error('❌ Error loading employees for leave & contracts:', error);
+        console.error('âŒ Error loading employees for leave & contracts:', error);
 
         
 
@@ -18156,7 +18156,7 @@ async function loadEmployeesForLeaveContracts() {
 
 async function testAPIConnection() {
 
-    console.log('🔍 Testing API Connection...');
+    console.log('ðŸ” Testing API Connection...');
 
     
 
@@ -18164,31 +18164,31 @@ async function testAPIConnection() {
 
         // Test 1: Basic API connectivity
 
-        console.log('📡 Testing basic API connectivity...');
+        console.log('ðŸ“¡ Testing basic API connectivity...');
 
         const healthResponse = await fetch(`${window.location.origin}/api/health`);
 
         const healthData = await healthResponse.json();
 
-        console.log('✅ API Health Check:', healthData);
+        console.log('âœ… API Health Check:', healthData);
 
         
 
         // Test 2: Test endpoint
 
-        console.log('📡 Testing test endpoint...');
+        console.log('ðŸ“¡ Testing test endpoint...');
 
         const testResponse = await fetch(`${window.location.origin}/api/test`);
 
         const testData = await testResponse.json();
 
-        console.log('✅ Test Endpoint:', testData);
+        console.log('âœ… Test Endpoint:', testData);
 
         
 
         // Test 3: Test POST endpoint
 
-        console.log('📡 Testing POST endpoint...');
+        console.log('ðŸ“¡ Testing POST endpoint...');
 
         const postResponse = await fetch(`${window.location.origin}/api/test`, {
 
@@ -18206,23 +18206,23 @@ async function testAPIConnection() {
 
         const postData = await postResponse.json();
 
-        console.log('✅ POST Test Endpoint:', postData);
+        console.log('âœ… POST Test Endpoint:', postData);
 
         
 
         // Test 4: Get all department data
 
-        console.log('📡 Testing department data endpoint...');
+        console.log('ðŸ“¡ Testing department data endpoint...');
 
         const allData = await KashTecAPI.getAllDepartmentData();
 
-        console.log('✅ All department data:', allData);
+        console.log('âœ… All department data:', allData);
 
         
 
         // Test 5: Create a test HR work record
 
-        console.log('📡 Testing HR work creation...');
+        console.log('ðŸ“¡ Testing HR work creation...');
 
         const testResult = await KashTecAPI.createHRWork({
 
@@ -18246,19 +18246,19 @@ async function testAPIConnection() {
 
         });
 
-        console.log('✅ Test HR work created:', testResult);
+        console.log('âœ… Test HR work created:', testResult);
 
         
 
-        customAlert('✅ API connection test successful! All endpoints are working and data is being sent to the backend.', 'Success', 'success');
+        customAlert('âœ… API connection test successful! All endpoints are working and data is being sent to the backend.', 'Success', 'success');
 
         
 
     } catch (error) {
 
-        console.error('❌ API connection test failed:', error);
+        console.error('âŒ API connection test failed:', error);
 
-        customAlert(`❌ API connection failed: ${error.message}\n\nCheck browser console for more details.`, 'Error', 'error');
+        customAlert(`âŒ API connection failed: ${error.message}\n\nCheck browser console for more details.`, 'Error', 'error');
 
     }
 
@@ -18278,7 +18278,7 @@ function saveWorkerAccount() {
 
     if (window.workerAccountSubmitting) {
 
-        console.log('⚠️ Worker account submission already in progress');
+        console.log('âš ï¸ Worker account submission already in progress');
 
         return false;
 
@@ -18290,7 +18290,7 @@ function saveWorkerAccount() {
 
     
 
-    console.log('💾 Saving worker account...');
+    console.log('ðŸ’¾ Saving worker account...');
 
     
 
@@ -18320,9 +18320,9 @@ function saveWorkerAccount() {
 
         
 
-        console.log('📝 Worker account data:', { empID, fullName, email, phone, department, jobTitle, accountType, accessLevel });
+        console.log('ðŸ“ Worker account data:', { empID, fullName, email, phone, department, jobTitle, accountType, accessLevel });
 
-        console.log('🔍 Worker form field elements:', {
+        console.log('ðŸ” Worker form field elements:', {
 
             workerEmpID: document.getElementById('workerEmpID'),
 
@@ -18344,7 +18344,7 @@ function saveWorkerAccount() {
 
         });
 
-        console.log('🔍 Worker form field values with types:', {
+        console.log('ðŸ” Worker form field values with types:', {
 
             empID: { value: empID, type: typeof empID, empty: !empID },
 
@@ -18394,7 +18394,7 @@ function saveWorkerAccount() {
 
         if (missingFields.length > 0) {
 
-            const missingFieldsText = missingFields.map(field => `• ${field}`).join('\n');
+            const missingFieldsText = missingFields.map(field => `â€¢ ${field}`).join('\n');
 
             customAlert(`Please fill in all required fields:\n\n${missingFieldsText}`, "Validation Error", "error");
 
@@ -18420,7 +18420,7 @@ function saveWorkerAccount() {
 
         // Send data to worker accounts API with file uploads
 
-        console.log('📤 Creating worker account via API with file uploads...');
+        console.log('ðŸ“¤ Creating worker account via API with file uploads...');
 
         const baseUrl = window.location.origin;
 
@@ -18458,13 +18458,13 @@ function saveWorkerAccount() {
 
         if (profilePicInput && profilePicInput.files[0]) {
 
-            console.log('📸 Adding worker profile picture to upload:', profilePicInput.files[0].name);
+            console.log('ðŸ“¸ Adding worker profile picture to upload:', profilePicInput.files[0].name);
 
             formData.append('workerProfile', profilePicInput.files[0]);
 
         } else {
 
-            console.log('📸 No worker profile picture selected');
+            console.log('ðŸ“¸ No worker profile picture selected');
 
         }
 
@@ -18476,13 +18476,13 @@ function saveWorkerAccount() {
 
         if (idDocInput && idDocInput.files[0]) {
 
-            console.log('📄 Adding worker ID document to upload:', idDocInput.files[0].name);
+            console.log('ðŸ“„ Adding worker ID document to upload:', idDocInput.files[0].name);
 
             formData.append('workerID', idDocInput.files[0]);
 
         } else {
 
-            console.log('📄 No worker ID document selected');
+            console.log('ðŸ“„ No worker ID document selected');
 
         }
 
@@ -18494,13 +18494,13 @@ function saveWorkerAccount() {
 
         if (contractDocInput && contractDocInput.files[0]) {
 
-            console.log('📄 Adding worker contract document to upload:', contractDocInput.files[0].name);
+            console.log('ðŸ“„ Adding worker contract document to upload:', contractDocInput.files[0].name);
 
             formData.append('workerContract', contractDocInput.files[0]);
 
         } else {
 
-            console.log('📄 No worker contract document selected');
+            console.log('ðŸ“„ No worker contract document selected');
 
         }
 
@@ -18526,7 +18526,7 @@ function saveWorkerAccount() {
 
         .then(response => {
 
-            console.log('📡 Worker account API response status:', response.status);
+            console.log('ðŸ“¡ Worker account API response status:', response.status);
 
             
 
@@ -18534,9 +18534,9 @@ function saveWorkerAccount() {
 
             if (response.status === 409) {
 
-                console.log('⚠️ Worker account already exists - showing user notification');
+                console.log('âš ï¸ Worker account already exists - showing user notification');
 
-                customAlert(`⚠️ Worker account already exists!\n\n📋 Details:\n• Email: ${email}\n• Employee ID: ${empID}\n\n💡 This worker account is already registered in the system.\n\nPlease use a different email address or check if the account already exists.`, "Account Already Exists", "warning");
+                customAlert(`âš ï¸ Worker account already exists!\n\nðŸ“‹ Details:\nâ€¢ Email: ${email}\nâ€¢ Employee ID: ${empID}\n\nðŸ’¡ This worker account is already registered in the system.\n\nPlease use a different email address or check if the account already exists.`, "Account Already Exists", "warning");
 
                 
 
@@ -18562,7 +18562,7 @@ function saveWorkerAccount() {
 
                     const missingFieldsText = missingFields.length > 0 
 
-                        ? '\n\n❌ Missing required fields:\n' + missingFields.map(field => `• ${field}`).join('\n')
+                        ? '\n\nâŒ Missing required fields:\n' + missingFields.map(field => `â€¢ ${field}`).join('\n')
 
                         : '';
 
@@ -18586,7 +18586,7 @@ function saveWorkerAccount() {
 
         .then(data => {
 
-            console.log('📊 Worker account API response:', data);
+            console.log('ðŸ“Š Worker account API response:', data);
 
             
 
@@ -18600,7 +18600,7 @@ function saveWorkerAccount() {
 
             // Success message
 
-            customAlert(`✅ Worker account created successfully!\n\n📋 Details:\n• Employee ID: ${empID}\n• Name: ${fullName}\n• Email: ${email}\n• Department: ${department}\n• Job Title: ${jobTitle}\n• Account Type: ${accountType}\n• Access Level: ${accessLevel}\n\n🎉 Worker account saved to database!`, "Worker Account Created", "success");
+            customAlert(`âœ… Worker account created successfully!\n\nðŸ“‹ Details:\nâ€¢ Employee ID: ${empID}\nâ€¢ Name: ${fullName}\nâ€¢ Email: ${email}\nâ€¢ Department: ${department}\nâ€¢ Job Title: ${jobTitle}\nâ€¢ Account Type: ${accountType}\nâ€¢ Access Level: ${accessLevel}\n\nðŸŽ‰ Worker account saved to database!`, "Worker Account Created", "success");
 
             
 
@@ -18624,7 +18624,7 @@ function saveWorkerAccount() {
 
         .catch(error => {
 
-            console.error('❌ Error creating worker account:', error);
+            console.error('âŒ Error creating worker account:', error);
 
             
 
@@ -18668,7 +18668,7 @@ function saveWorkerAccount() {
 
             
 
-            customAlert(`❌ Failed to create worker account!\n\n🔍 Error: ${errorMessage}\n\n💡 Please fix the issue and try again.`, "Account Creation Failed", "error");
+            customAlert(`âŒ Failed to create worker account!\n\nðŸ” Error: ${errorMessage}\n\nðŸ’¡ Please fix the issue and try again.`, "Account Creation Failed", "error");
 
         })
 
@@ -18684,7 +18684,7 @@ function saveWorkerAccount() {
 
     } catch (error) {
 
-        console.error('❌ Error saving worker account:', error);
+        console.error('âŒ Error saving worker account:', error);
 
         customAlert(`Unexpected error: ${error.message}\n\nPlease check browser console for details.`, "System Error", "error");
 
@@ -18704,7 +18704,7 @@ function saveWorkerAccount() {
 
 function loadEmployeeForUpdate() {
 
-    console.log('🔍 Loading employees for update...');
+    console.log('ðŸ” Loading employees for update...');
 
     
 
@@ -18736,7 +18736,7 @@ function loadEmployeeForUpdate() {
 
         .then(data => {
 
-            console.log('📊 Employees loaded:', data);
+            console.log('ðŸ“Š Employees loaded:', data);
 
             
 
@@ -18850,7 +18850,7 @@ function loadEmployeeForUpdate() {
 
             
 
-            console.log('🔍 Filtered employees:', filteredEmployees);
+            console.log('ðŸ” Filtered employees:', filteredEmployees);
 
             
 
@@ -18934,7 +18934,7 @@ function loadEmployeeForUpdate() {
 
         .catch(error => {
 
-            console.error('❌ Error loading employees:', error);
+            console.error('âŒ Error loading employees:', error);
 
             resultsDiv.innerHTML = '<p style="color: #dc3545;">Error loading employees. Please try again.</p>';
 
@@ -19246,7 +19246,7 @@ function filterEmployeesByDept() {
 
 function selectEmployeeForUpdate(email) {
 
-    console.log('🔄 Selecting employee for update:', email);
+    console.log('ðŸ”„ Selecting employee for update:', email);
 
     
 
@@ -19350,7 +19350,7 @@ function selectEmployeeForUpdate(email) {
 
             if (employee) {
 
-                console.log('🔍 Populating form with employee data:', employee);
+                console.log('ðŸ” Populating form with employee data:', employee);
 
                 
 
@@ -19376,7 +19376,7 @@ function selectEmployeeForUpdate(email) {
 
                 
 
-                console.log('🔍 Form values to set:', {
+                console.log('ðŸ” Form values to set:', {
 
                     empId,
 
@@ -19418,7 +19418,7 @@ function selectEmployeeForUpdate(email) {
 
                 // Verify values were set
 
-                console.log('🔍 Form values after setting:', {
+                console.log('ðŸ” Form values after setting:', {
 
                     empId: document.getElementById('updateEmpID').value,
 
@@ -19448,13 +19448,13 @@ function selectEmployeeForUpdate(email) {
 
                 
 
-                console.log('✅ Employee data loaded into form');
+                console.log('âœ… Employee data loaded into form');
 
-                console.log('🆔 Using database ID for update:', employee.id);
+                console.log('ðŸ†” Using database ID for update:', employee.id);
 
             } else {
 
-                console.error('❌ Employee not found:', email);
+                console.error('âŒ Employee not found:', email);
 
                 document.getElementById('employeeSearchResults').innerHTML = '<p style="color: #dc3545;">Employee not found</p>';
 
@@ -19464,7 +19464,7 @@ function selectEmployeeForUpdate(email) {
 
         .catch(error => {
 
-            console.error('❌ Error loading employee data:', error);
+            console.error('âŒ Error loading employee data:', error);
 
             document.getElementById('employeeSearchResults').innerHTML = '<p style="color: #dc3545;">Error loading employee data</p>';
 
@@ -19476,7 +19476,7 @@ function selectEmployeeForUpdate(email) {
 
 function saveEmployeeUpdate() {
 
-    console.log('💾 Updating employee record...');
+    console.log('ðŸ’¾ Updating employee record...');
 
     
 
@@ -19506,9 +19506,9 @@ function saveEmployeeUpdate() {
 
     
 
-    console.log('📊 Employee data to update:', updatedEmployee);
+    console.log('ðŸ“Š Employee data to update:', updatedEmployee);
 
-    console.log('🆔 Employee ID:', employeeId);
+    console.log('ðŸ†” Employee ID:', employeeId);
 
     
 
@@ -19554,7 +19554,7 @@ function saveEmployeeUpdate() {
 
     .then(response => {
 
-        console.log('📡 Update response status:', response.status);
+        console.log('ðŸ“¡ Update response status:', response.status);
 
         
 
@@ -19572,7 +19572,7 @@ function saveEmployeeUpdate() {
 
     .then(data => {
 
-        console.log('✅ Employee updated successfully:', data);
+        console.log('âœ… Employee updated successfully:', data);
 
         
 
@@ -19602,7 +19602,7 @@ function saveEmployeeUpdate() {
 
     .catch(error => {
 
-        console.error('❌ Error updating employee:', error);
+        console.error('âŒ Error updating employee:', error);
 
         customAlert(`Failed to update employee: ${error.message}\n\nPlease check the employee ID and try again.`, 'Update Failed', 'error');
 
@@ -19642,7 +19642,7 @@ function saveLeaveRequest() {
 
     if (window.leaveSubmitting) {
 
-        console.log('⚠️ Leave request submission already in progress');
+        console.log('âš ï¸ Leave request submission already in progress');
 
         return false;
 
@@ -19680,7 +19680,7 @@ function saveLeaveRequest() {
 
     if (!leave.employee || !leave.leaveType || !leave.startDate || !leave.endDate || !leave.days) {
 
-        customAlert('Please fill in all required fields:\n\n• Employee\n• Leave Type\n• Start Date\n• End Date\n• Days', "Validation Error", "error");
+        customAlert('Please fill in all required fields:\n\nâ€¢ Employee\nâ€¢ Leave Type\nâ€¢ Start Date\nâ€¢ End Date\nâ€¢ Days', "Validation Error", "error");
 
         window.leaveSubmitting = false;
 
@@ -19742,7 +19742,7 @@ function saveLeaveRequest() {
 
     .then(response => {
 
-        console.log('📡 Leave API Response status:', response.status);
+        console.log('ðŸ“¡ Leave API Response status:', response.status);
 
         return response.json();
 
@@ -19750,7 +19750,7 @@ function saveLeaveRequest() {
 
     .then(data => {
 
-        console.log('📊 Leave API Response data:', data);
+        console.log('ðŸ“Š Leave API Response data:', data);
 
         
 
@@ -19762,7 +19762,7 @@ function saveLeaveRequest() {
 
         
 
-        customAlert(`Leave request saved successfully!\n\nEmployee: ${leave.employee}\nLeave Type: ${leave.leaveType}\nDays: ${leave.days}\nRequest ID: ${data.id}\n\n🎉 Leave request saved to database!`, "Leave Request Saved", "success");
+        customAlert(`Leave request saved successfully!\n\nEmployee: ${leave.employee}\nLeave Type: ${leave.leaveType}\nDays: ${leave.days}\nRequest ID: ${data.id}\n\nðŸŽ‰ Leave request saved to database!`, "Leave Request Saved", "success");
 
         
 
@@ -19772,9 +19772,9 @@ function saveLeaveRequest() {
 
     .catch(error => {
 
-        console.error('❌ Error saving leave request:', error);
+        console.error('âŒ Error saving leave request:', error);
 
-        customAlert(`Failed to save leave request: ${error.message}\n\nPlease check:\n• All required fields are filled\n• Network connection is stable\n• Server is running properly`, "Save Error", "error");
+        customAlert(`Failed to save leave request: ${error.message}\n\nPlease check:\nâ€¢ All required fields are filled\nâ€¢ Network connection is stable\nâ€¢ Server is running properly`, "Save Error", "error");
 
     })
 
@@ -19800,7 +19800,7 @@ function saveContract() {
 
     if (window.contractSubmitting) {
 
-        console.log('⚠️ Contract submission already in progress');
+        console.log('âš ï¸ Contract submission already in progress');
 
         return false;
 
@@ -19840,7 +19840,7 @@ function saveContract() {
 
     if (!contract.employee || !contract.contractType || !contract.startDate || !contract.salary) {
 
-        customAlert('Please fill in all required fields:\n\n• Employee\n• Contract Type\n• Start Date\n• Salary', "Validation Error", "error");
+        customAlert('Please fill in all required fields:\n\nâ€¢ Employee\nâ€¢ Contract Type\nâ€¢ Start Date\nâ€¢ Salary', "Validation Error", "error");
 
         window.contractSubmitting = false;
 
@@ -19902,7 +19902,7 @@ function saveContract() {
 
     .then(response => {
 
-        console.log('📡 Contract API Response status:', response.status);
+        console.log('ðŸ“¡ Contract API Response status:', response.status);
 
         return response.json();
 
@@ -19910,7 +19910,7 @@ function saveContract() {
 
     .then(data => {
 
-        console.log('📊 Contract API Response data:', data);
+        console.log('ðŸ“Š Contract API Response data:', data);
 
         
 
@@ -19922,7 +19922,7 @@ function saveContract() {
 
         
 
-        customAlert(`Contract saved successfully!\n\nEmployee: ${contract.employee}\nContract Type: ${contract.contractType}\nSalary: TZS ${contract.salary}\nContract ID: ${data.id}\n\n🎉 Contract saved to database!`, "Contract Saved", "success");
+        customAlert(`Contract saved successfully!\n\nEmployee: ${contract.employee}\nContract Type: ${contract.contractType}\nSalary: TZS ${contract.salary}\nContract ID: ${data.id}\n\nðŸŽ‰ Contract saved to database!`, "Contract Saved", "success");
 
         
 
@@ -19932,9 +19932,9 @@ function saveContract() {
 
     .catch(error => {
 
-        console.error('❌ Error saving contract:', error);
+        console.error('âŒ Error saving contract:', error);
 
-        customAlert(`Failed to save contract: ${error.message}\n\nPlease check:\n• All required fields are filled\n• Network connection is stable\n• Server is running properly`, "Save Error", "error");
+        customAlert(`Failed to save contract: ${error.message}\n\nPlease check:\nâ€¢ All required fields are filled\nâ€¢ Network connection is stable\nâ€¢ Server is running properly`, "Save Error", "error");
 
     })
 
@@ -20022,7 +20022,7 @@ function recordIncidentReports(){
 
                 <button type="button" id="toggleIncidentFormBtn" onclick="toggleIncidentForm()" class="action" style="background: #007bff;">
 
-                    🚨 Record New Incident
+                    ðŸš¨ Record New Incident
 
                 </button>
 
@@ -20144,19 +20144,19 @@ function recordIncidentReports(){
 
                         <button type="button" onclick="submitIncidentToDatabase()" class="action" style="background: #28a745;">
 
-                            💾 SAVE TO DATABASE
+                            ðŸ’¾ SAVE TO DATABASE
 
                         </button>
 
                         <button type="button" onclick="clearIncidentForm()" class="action" style="background: #6c757d;">
 
-                            🔄 CLEAR FORM
+                            ðŸ”„ CLEAR FORM
 
                         </button>
 
                         <button type="button" onclick="toggleIncidentForm()" class="action" style="background: #dc3545;">
 
-                            ❌ CLOSE FORM
+                            âŒ CLOSE FORM
 
                         </button>
 
@@ -20246,7 +20246,7 @@ function recordIncidentReports(){
 
     setTimeout(() => {
 
-        console.log('🛡️ Deploying NUCLEAR page freeze...');
+        console.log('ðŸ›¡ï¸ Deploying NUCLEAR page freeze...');
 
         
 
@@ -20260,7 +20260,7 @@ function recordIncidentReports(){
 
         window.addEventListener('beforeunload', function(e) {
 
-            console.log('🚫 BEFORE UNLOAD BLOCKED');
+            console.log('ðŸš« BEFORE UNLOAD BLOCKED');
 
             e.preventDefault();
 
@@ -20278,7 +20278,7 @@ function recordIncidentReports(){
 
         window.addEventListener('unload', function(e) {
 
-            console.log('🚫 UNLOAD BLOCKED');
+            console.log('ðŸš« UNLOAD BLOCKED');
 
             e.preventDefault();
 
@@ -20308,7 +20308,7 @@ function recordIncidentReports(){
 
         window.location.assign = function(url) {
 
-            console.log('🚫 LOCATION.ASSIGN BLOCKED:', url);
+            console.log('ðŸš« LOCATION.ASSIGN BLOCKED:', url);
 
             throw new Error('Navigation blocked by page freeze');
 
@@ -20320,7 +20320,7 @@ function recordIncidentReports(){
 
         window.location.replace = function(url) {
 
-            console.log('🚫 LOCATION.REPLACE BLOCKED:', url);
+            console.log('ðŸš« LOCATION.REPLACE BLOCKED:', url);
 
             throw new Error('Navigation blocked by page freeze');
 
@@ -20332,7 +20332,7 @@ function recordIncidentReports(){
 
         window.location.reload = function() {
 
-            console.log('🚫 LOCATION.RELOAD BLOCKED');
+            console.log('ðŸš« LOCATION.RELOAD BLOCKED');
 
             throw new Error('Navigation blocked by page freeze');
 
@@ -20352,7 +20352,7 @@ function recordIncidentReports(){
 
                 set: function(value) {
 
-                    console.log('🚫 LOCATION.HREF BLOCKED:', value);
+                    console.log('ðŸš« LOCATION.HREF BLOCKED:', value);
 
                     throw new Error('Navigation blocked by page freeze');
 
@@ -20362,7 +20362,7 @@ function recordIncidentReports(){
 
         } catch (e) {
 
-            console.log('ℹ️ location.href already defined, skipping');
+            console.log('â„¹ï¸ location.href already defined, skipping');
 
         }
 
@@ -20374,7 +20374,7 @@ function recordIncidentReports(){
 
         HTMLFormElement.prototype.submit = function() {
 
-            console.log('🚫 FORM.SUBMIT() PREVENTED');
+            console.log('ðŸš« FORM.SUBMIT() PREVENTED');
 
             throw new Error('Form submission blocked by page freeze');
 
@@ -20388,7 +20388,7 @@ function recordIncidentReports(){
 
         window.open = function(url, name, specs) {
 
-            console.log('🚫 WINDOW.OPEN BLOCKED:', url);
+            console.log('ðŸš« WINDOW.OPEN BLOCKED:', url);
 
             throw new Error('Window opening blocked by page freeze');
 
@@ -20402,7 +20402,7 @@ function recordIncidentReports(){
 
         history.pushState = function(state, title, url) {
 
-            console.log('🚫 HISTORY.PUSHSTATE BLOCKED:', url);
+            console.log('ðŸš« HISTORY.PUSHSTATE BLOCKED:', url);
 
             throw new Error('History navigation blocked by page freeze');
 
@@ -20414,7 +20414,7 @@ function recordIncidentReports(){
 
         history.replaceState = function(state, title, url) {
 
-            console.log('🚫 HISTORY.REPLACESTATE BLOCKED:', url);
+            console.log('ðŸš« HISTORY.REPLACESTATE BLOCKED:', url);
 
             throw new Error('History navigation blocked by page freeze');
 
@@ -20426,7 +20426,7 @@ function recordIncidentReports(){
 
         const freezeIndicator = document.createElement('div');
 
-        freezeIndicator.innerHTML = '🛡️ PAGE FROZEN - No Navigation Allowed';
+        freezeIndicator.innerHTML = 'ðŸ›¡ï¸ PAGE FROZEN - No Navigation Allowed';
 
         freezeIndicator.style.cssText = 'position:fixed;top:0;left:0;right:0;background:red;color:white;padding:5px;text-align:center;z-index:99999;font-weight:bold;';
 
@@ -20434,7 +20434,7 @@ function recordIncidentReports(){
 
         
 
-        console.log('✅ NUCLEAR page freeze deployed - NO NAVIGATION POSSIBLE');
+        console.log('âœ… NUCLEAR page freeze deployed - NO NAVIGATION POSSIBLE');
 
         
 
@@ -20444,7 +20444,7 @@ function recordIncidentReports(){
 
             if (window.location.href !== currentHref) {
 
-                console.log('🚫 PAGE NAVIGATION DETECTED - FORCING BACK');
+                console.log('ðŸš« PAGE NAVIGATION DETECTED - FORCING BACK');
 
                 window.location.href = currentHref;
 
@@ -20464,7 +20464,7 @@ function recordIncidentReports(){
 
 async function loadIncidents() {
 
-    console.log('🔄 Loading incidents...');
+    console.log('ðŸ”„ Loading incidents...');
 
     
 
@@ -20504,7 +20504,7 @@ async function loadIncidents() {
 
         } catch (primaryError) {
 
-            console.warn('⚠️ Primary incidents endpoint failed, trying fallback:', primaryError.message);
+            console.warn('âš ï¸ Primary incidents endpoint failed, trying fallback:', primaryError.message);
 
             // Try fallback endpoint
 
@@ -20534,7 +20534,7 @@ async function loadIncidents() {
 
             } catch (fallbackError) {
 
-                console.error('❌ All incidents endpoints failed:', fallbackError.message);
+                console.error('âŒ All incidents endpoints failed:', fallbackError.message);
 
                 loadSampleIncidents();
 
@@ -20548,7 +20548,7 @@ async function loadIncidents() {
 
         const incidentsData = await response.json();
 
-        console.log('📊 Incidents data:', incidentsData);
+        console.log('ðŸ“Š Incidents data:', incidentsData);
 
         
 
@@ -20570,7 +20570,7 @@ async function loadIncidents() {
                 }
             }
         }
-        console.log(`✅ Parsed ${incidents.length} incident records from API`);
+        console.log(`âœ… Parsed ${incidents.length} incident records from API`);
 
         
 
@@ -20580,7 +20580,7 @@ async function loadIncidents() {
 
     } catch (error) {
 
-        console.error('❌ Error loading incidents:', error);
+        console.error('âŒ Error loading incidents:', error);
 
         // Load sample data on error
 
@@ -20596,7 +20596,7 @@ async function loadIncidents() {
 
 function loadSampleIncidents() {
 
-    console.log('📋 Loading sample incidents...');
+    console.log('ðŸ“‹ Loading sample incidents...');
 
     
 
@@ -21006,7 +21006,7 @@ function displayIncidents(incidents) {
 
     if (!incidentsList) {
 
-        console.error('❌ Incidents list container not found!');
+        console.error('âŒ Incidents list container not found!');
 
         return;
 
@@ -21065,15 +21065,15 @@ function displayIncidents(incidents) {
 
     let incidentsHTML = '';
     mapped.forEach(incident => {
-        const typeIcons = { accident: '🚨', injury: '🏥', 'near-miss': '⚠️', 'property-damage': '💥', environmental: '🌍', 'equipment-failure': '🔧', incident: '📋' };
-        const typeDisplay = `${typeIcons[incident.type] || '📋'} ${titleCase(incident.type)}`;
+        const typeIcons = { accident: 'ðŸš¨', injury: 'ðŸ¥', 'near-miss': 'âš ï¸', 'property-damage': 'ðŸ’¥', environmental: 'ðŸŒ', 'equipment-failure': 'ðŸ”§', incident: 'ðŸ“‹' };
+        const typeDisplay = `${typeIcons[incident.type] || 'ðŸ“‹'} ${titleCase(incident.type)}`;
 
-        const severityIcons = { critical: '🔴', major: '🟠', moderate: '🟡', minor: '🟢', fatal: '⚫' };
-        const severityDisplay = `${severityIcons[incident.severity] || '🟡'} ${titleCase(incident.severity)}`;
+        const severityIcons = { critical: 'ðŸ”´', major: 'ðŸŸ ', moderate: 'ðŸŸ¡', minor: 'ðŸŸ¢', fatal: 'âš«' };
+        const severityDisplay = `${severityIcons[incident.severity] || 'ðŸŸ¡'} ${titleCase(incident.severity)}`;
         const severityClass = `severity-${incident.severity}`;
 
-        const statusIcons = { 'under-investigation': '🔍', investigating: '🔍', resolved: '✅', closed: '🔒', reported: '📝', pending: '⏳', open: '📂' };
-        const statusDisplay = `${statusIcons[incident.status] || '📝'} ${titleCase(incident.status)}`;
+        const statusIcons = { 'under-investigation': 'ðŸ”', investigating: 'ðŸ”', resolved: 'âœ…', closed: 'ðŸ”’', reported: 'ðŸ“', pending: 'â³', open: 'ðŸ“‚' };
+        const statusDisplay = `${statusIcons[incident.status] || 'ðŸ“'} ${titleCase(incident.status)}`;
         const statusClass = `status-${incident.status}`;
 
         const dateStr = incident.dateObj && !isNaN(incident.dateObj) ? incident.dateObj.toLocaleDateString() : new Date().toLocaleDateString();
@@ -21092,9 +21092,9 @@ function displayIncidents(incidents) {
                 <td><span class="status-badge ${statusClass}">${statusDisplay}</span></td>
                 <td>
                     <div class="incident-actions">
-                        <button class="action-btn view" onclick="viewIncidentDetails('${incident.id}')" title="View Details">👁️</button>
-                        <button class="action-btn edit" onclick="updateIncidentStatus('${incident.id}')" title="Update Status">✏️</button>
-                        <button class="action-btn download" onclick="downloadIncidentReport('${incident.id}')" title="Download Report">📄</button>
+                        <button class="action-btn view" onclick="viewIncidentDetails('${incident.id}')" title="View Details">ðŸ‘ï¸</button>
+                        <button class="action-btn edit" onclick="updateIncidentStatus('${incident.id}')" title="Update Status">âœï¸</button>
+                        <button class="action-btn download" onclick="downloadIncidentReport('${incident.id}')" title="Download Report">ðŸ“„</button>
                     </div>
                 </td>
             </tr>
@@ -21139,7 +21139,7 @@ function downloadIncidentReport(incidentId) {
 
 async function loadPpeRecords() {
 
-    console.log('🔄 Loading PPE records...');
+    console.log('ðŸ”„ Loading PPE records...');
 
     
 
@@ -21179,7 +21179,7 @@ async function loadPpeRecords() {
 
         } catch (primaryError) {
 
-            console.warn('⚠️ Primary PPE endpoint failed, trying fallback:', primaryError.message);
+            console.warn('âš ï¸ Primary PPE endpoint failed, trying fallback:', primaryError.message);
 
             // Try fallback endpoint
 
@@ -21209,7 +21209,7 @@ async function loadPpeRecords() {
 
             } catch (fallbackError) {
 
-                console.error('❌ All PPE endpoints failed:', fallbackError.message);
+                console.error('âŒ All PPE endpoints failed:', fallbackError.message);
 
                 // Load sample data for demonstration
 
@@ -21225,7 +21225,7 @@ async function loadPpeRecords() {
 
         const ppeData = await response.json();
 
-        console.log('📊 PPE records data:', ppeData);
+        console.log('ðŸ“Š PPE records data:', ppeData);
 
         
 
@@ -21269,7 +21269,7 @@ async function loadPpeRecords() {
 
         if (ppeRecords.length === 0) {
 
-            console.log('⚠️ No PPE records found in API data, using sample data');
+            console.log('âš ï¸ No PPE records found in API data, using sample data');
 
             loadSamplePpeRecords();
 
@@ -21285,7 +21285,7 @@ async function loadPpeRecords() {
 
     } catch (error) {
 
-        console.error('❌ Error loading PPE records:', error);
+        console.error('âŒ Error loading PPE records:', error);
 
         // Load sample data on error
 
@@ -21301,7 +21301,7 @@ async function loadPpeRecords() {
 
 function loadSamplePpeRecords() {
 
-    console.log('📋 Loading sample PPE records...');
+    console.log('ðŸ“‹ Loading sample PPE records...');
 
     
 
@@ -21771,7 +21771,7 @@ function displayPpeRecords(ppeRecords) {
 
     if (!ppeList) {
 
-        console.error('❌ PPE list container not found!');
+        console.error('âŒ PPE list container not found!');
 
         return;
 
@@ -21839,7 +21839,7 @@ function displayPpeRecords(ppeRecords) {
 
         // Get condition display (default to 'new' for API data)
 
-        const conditionDisplay = '🆕 New';
+        const conditionDisplay = 'ðŸ†• New';
 
         const conditionClass = 'condition-new';
 
@@ -21847,13 +21847,13 @@ function displayPpeRecords(ppeRecords) {
 
         // Get status display
 
-        const statusDisplay = status === 'issued' ? '📦 Issued' : 
+        const statusDisplay = status === 'issued' ? 'ðŸ“¦ Issued' : 
 
-                             status === 'returned' ? '✅ Returned' : 
+                             status === 'returned' ? 'âœ… Returned' : 
 
-                             status === 'overdue' ? '⚠️ Overdue' : 
+                             status === 'overdue' ? 'âš ï¸ Overdue' : 
 
-                             status === 'lost' ? '❌ Lost' : '📦 Issued';
+                             status === 'lost' ? 'âŒ Lost' : 'ðŸ“¦ Issued';
 
         
 
@@ -21985,11 +21985,11 @@ function displayPpeRecords(ppeRecords) {
 
                     <div class="ppe-actions">
 
-                        <button class="action-btn view" onclick="viewPpeDetails('${ppe.id}')" title="View Details">👁️</button>
+                        <button class="action-btn view" onclick="viewPpeDetails('${ppe.id}')" title="View Details">ðŸ‘ï¸</button>
 
-                        <button class="action-btn edit" onclick="editPpeRecord('${ppe.id}')" title="Edit Record">✏️</button>
+                        <button class="action-btn edit" onclick="editPpeRecord('${ppe.id}')" title="Edit Record">âœï¸</button>
 
-                        <button class="action-btn return" onclick="recordPpeReturn('${ppe.id}')" title="Record Return">🔄</button>
+                        <button class="action-btn return" onclick="recordPpeReturn('${ppe.id}')" title="Record Return">ðŸ”„</button>
 
                     </div>
 
@@ -22087,7 +22087,7 @@ function filterPpeRecords() {
 
 async function loadToolboxMeetings() {
 
-    console.log('🔄 Loading toolbox meetings...');
+    console.log('ðŸ”„ Loading toolbox meetings...');
 
     
 
@@ -22127,7 +22127,7 @@ async function loadToolboxMeetings() {
 
         } catch (primaryError) {
 
-            console.warn('⚠️ Primary toolbox meetings endpoint failed, trying fallback:', primaryError.message);
+            console.warn('âš ï¸ Primary toolbox meetings endpoint failed, trying fallback:', primaryError.message);
 
             // Try fallback endpoint
 
@@ -22157,7 +22157,7 @@ async function loadToolboxMeetings() {
 
             } catch (fallbackError) {
 
-                console.error('❌ All toolbox meetings endpoints failed:', fallbackError.message);
+                console.error('âŒ All toolbox meetings endpoints failed:', fallbackError.message);
 
                 // Load sample data for demonstration
 
@@ -22173,7 +22173,7 @@ async function loadToolboxMeetings() {
 
         const toolboxData = await response.json();
 
-        console.log('📊 Toolbox meetings data:', toolboxData);
+        console.log('ðŸ“Š Toolbox meetings data:', toolboxData);
 
         
 
@@ -22217,7 +22217,7 @@ async function loadToolboxMeetings() {
 
     } catch (error) {
 
-        console.error('❌ Error loading toolbox meetings:', error);
+        console.error('âŒ Error loading toolbox meetings:', error);
 
         // Display error message instead of fallback data
 
@@ -22251,7 +22251,7 @@ async function loadToolboxMeetings() {
 
 function loadSampleToolboxMeetings() {
 
-    console.log('📋 Loading sample toolbox meetings...');
+    console.log('ðŸ“‹ Loading sample toolbox meetings...');
 
     
 
@@ -22709,7 +22709,7 @@ function displayToolboxMeetings(toolboxMeetings) {
 
     if (!toolboxList) {
 
-        console.error('❌ Toolbox meetings list container not found!');
+        console.error('âŒ Toolbox meetings list container not found!');
 
         return;
 
@@ -22821,7 +22821,7 @@ function displayToolboxMeetings(toolboxMeetings) {
 
         // Get status display (default to completed for API data)
 
-        const statusDisplay = '✅ Completed';
+        const statusDisplay = 'âœ… Completed';
 
         const statusClass = 'status-completed';
 
@@ -22831,7 +22831,7 @@ function displayToolboxMeetings(toolboxMeetings) {
 
         const hasIssues = issuesRaised && issuesRaised.trim() !== '' && issuesRaised !== 'none';
 
-        const issuesDisplay = hasIssues ? '🔴 Yes' : '🟢 No';
+        const issuesDisplay = hasIssues ? 'ðŸ”´ Yes' : 'ðŸŸ¢ No';
 
         
 
@@ -22839,7 +22839,7 @@ function displayToolboxMeetings(toolboxMeetings) {
 
         const hasActions = actionItems && actionItems.trim() !== '' && actionItems !== 'none';
 
-        const actionsDisplay = hasActions ? '📋 Yes' : '➖ No';
+        const actionsDisplay = hasActions ? 'ðŸ“‹ Yes' : 'âž– No';
 
         
 
@@ -22949,11 +22949,11 @@ function displayToolboxMeetings(toolboxMeetings) {
 
                     <div class="toolbox-actions">
 
-                        <button class="action-btn view" onclick="viewMeetingDetails('${meetingId}')" title="View Details">👁️</button>
+                        <button class="action-btn view" onclick="viewMeetingDetails('${meetingId}')" title="View Details">ðŸ‘ï¸</button>
 
-                        <button class="action-btn download" onclick="downloadAttendance('${meetingId}')" title="Download Attendance">📥</button>
+                        <button class="action-btn download" onclick="downloadAttendance('${meetingId}')" title="Download Attendance">ðŸ“¥</button>
 
-                        <button class="action-btn materials" onclick="viewMeetingMaterials('${meetingId}')" title="View Materials">📁</button>
+                        <button class="action-btn materials" onclick="viewMeetingMaterials('${meetingId}')" title="View Materials">ðŸ“</button>
 
                     </div>
 
@@ -23081,7 +23081,7 @@ function filterToolboxMeetings() {
 
 function testPageFreeze() {
 
-    console.log('🧪 Testing page freeze...');
+    console.log('ðŸ§ª Testing page freeze...');
 
     
 
@@ -23093,7 +23093,7 @@ function testPageFreeze() {
 
     } catch (error) {
 
-        console.log('✅ Navigation properly blocked:', error.message);
+        console.log('âœ… Navigation properly blocked:', error.message);
 
         showRealProblemNotification('FREEZE_SUCCESS', { 
 
@@ -23117,7 +23117,7 @@ function testPageFreeze() {
 
     } catch (error) {
 
-        console.log('✅ Form submission properly blocked:', error.message);
+        console.log('âœ… Form submission properly blocked:', error.message);
 
     }
 
@@ -23125,7 +23125,7 @@ function testPageFreeze() {
 
     showRealProblemNotification('FREEZE_TEST', { 
 
-        message: '🧪 Page freeze test completed!\n\n✅ All navigation methods are blocked\n✅ Form submissions are blocked\n✅ Page is completely frozen\n\n🛡️ Your data is safe from page refresh!',
+        message: 'ðŸ§ª Page freeze test completed!\n\nâœ… All navigation methods are blocked\nâœ… Form submissions are blocked\nâœ… Page is completely frozen\n\nðŸ›¡ï¸ Your data is safe from page refresh!',
 
         status: 'success'
 
@@ -23139,7 +23139,7 @@ function testPageFreeze() {
 
 function testSimpleSave() {
 
-    console.log('🧪 SIMPLE TEST - No database, just test if page refreshes');
+    console.log('ðŸ§ª SIMPLE TEST - No database, just test if page refreshes');
 
     
 
@@ -23157,7 +23157,7 @@ function testSimpleSave() {
 
         
 
-        console.log('📝 Test values:', { incidentType, severityLevel, incidentDescription, reportedBy });
+        console.log('ðŸ“ Test values:', { incidentType, severityLevel, incidentDescription, reportedBy });
 
         
 
@@ -23173,17 +23173,17 @@ function testSimpleSave() {
 
         // Show test message
 
-        customAlert(`🧪 SIMPLE TEST SUCCESS!\n\n✅ Form values captured\n✅ No page refresh occurred\n✅ Function completed successfully\n\n📝 Data captured:\n• Type: ${incidentType}\n• Severity: ${severityLevel}\n• Description: ${incidentDescription.substring(0, 50)}...\n• Reported by: ${reportedBy}\n\n🎉 This proves the page refresh issue is NOT from this function!`, "Test Success!", "success");
+        customAlert(`ðŸ§ª SIMPLE TEST SUCCESS!\n\nâœ… Form values captured\nâœ… No page refresh occurred\nâœ… Function completed successfully\n\nðŸ“ Data captured:\nâ€¢ Type: ${incidentType}\nâ€¢ Severity: ${severityLevel}\nâ€¢ Description: ${incidentDescription.substring(0, 50)}...\nâ€¢ Reported by: ${reportedBy}\n\nðŸŽ‰ This proves the page refresh issue is NOT from this function!`, "Test Success!", "success");
 
         
 
-        console.log('✅ SIMPLE TEST COMPLETED - No page refresh!');
+        console.log('âœ… SIMPLE TEST COMPLETED - No page refresh!');
 
         
 
     } catch (error) {
 
-        console.error('❌ Test error:', error);
+        console.error('âŒ Test error:', error);
 
         customAlert(`Test error: ${error.message}`, "Test Error", "error");
 
@@ -23197,7 +23197,7 @@ function testSimpleSave() {
 
 function submitIncidentToDatabase() {
 
-    console.log('🚀 submitIncidentToDatabase called - DIRECT DATABASE SAVE');
+    console.log('ðŸš€ submitIncidentToDatabase called - DIRECT DATABASE SAVE');
 
     
 
@@ -23215,13 +23215,13 @@ function submitIncidentToDatabase() {
 
         
 
-        console.log('📝 Form values:', { incidentType, severityLevel, incidentDescription, reportedBy });
+        console.log('ðŸ“ Form values:', { incidentType, severityLevel, incidentDescription, reportedBy });
 
         
 
         if (!incidentType || !severityLevel || !incidentDescription || !reportedBy) {
 
-            console.log('❌ Validation failed - missing required fields');
+            console.log('âŒ Validation failed - missing required fields');
 
             showRealProblemNotification('VALIDATION_ERROR', {
 
@@ -23271,7 +23271,7 @@ function submitIncidentToDatabase() {
 
         
 
-        console.log('📝 Sending work item to database:', workItem);
+        console.log('ðŸ“ Sending work item to database:', workItem);
 
         
 
@@ -23285,7 +23285,7 @@ function submitIncidentToDatabase() {
 
         const baseUrl = window.location.origin;
 
-        console.log('📍 Using server:', baseUrl);
+        console.log('ðŸ“ Using server:', baseUrl);
 
         
 
@@ -23307,7 +23307,7 @@ function submitIncidentToDatabase() {
 
         .then(response => {
 
-            console.log('📡 Database response status:', response.status);
+            console.log('ðŸ“¡ Database response status:', response.status);
 
             
 
@@ -23331,7 +23331,7 @@ function submitIncidentToDatabase() {
 
         .then(data => {
 
-            console.log('📊 Database save result:', data);
+            console.log('ðŸ“Š Database save result:', data);
 
             
 
@@ -23367,29 +23367,29 @@ function submitIncidentToDatabase() {
 
 function debugAPIConnection() {
 
-    console.log('🔍 Starting comprehensive API debug...');
+    console.log('ðŸ” Starting comprehensive API debug...');
 
     
 
     // Test 1: Check if we're on the right domain
 
-    console.log('🌐 Current URL:', window.location.href);
+    console.log('ðŸŒ Current URL:', window.location.href);
 
-    console.log('🌐 Origin:', window.location.origin);
+    console.log('ðŸŒ Origin:', window.location.origin);
 
     
 
     // Test 2: Try basic health check
 
-    console.log('🧪 Testing health endpoint...');
+    console.log('ðŸ§ª Testing health endpoint...');
 
     fetch('/health')
 
         .then(response => {
 
-            console.log('📡 Health response status:', response.status);
+            console.log('ðŸ“¡ Health response status:', response.status);
 
-            console.log('📡 Health response headers:', [...response.headers.entries()]);
+            console.log('ðŸ“¡ Health response headers:', [...response.headers.entries()]);
 
             return response.json();
 
@@ -23397,13 +23397,13 @@ function debugAPIConnection() {
 
         .then(data => {
 
-            console.log('✅ Health check successful:', data);
+            console.log('âœ… Health check successful:', data);
 
             
 
             // Test 3: Try simple GET test
 
-            console.log('🧪 Testing simple GET endpoint...');
+            console.log('ðŸ§ª Testing simple GET endpoint...');
 
             return fetch('/test');
 
@@ -23411,7 +23411,7 @@ function debugAPIConnection() {
 
         .then(response => {
 
-            console.log('📡 GET test response status:', response.status);
+            console.log('ðŸ“¡ GET test response status:', response.status);
 
             return response.json();
 
@@ -23419,13 +23419,13 @@ function debugAPIConnection() {
 
         .then(data => {
 
-            console.log('✅ GET test successful:', data);
+            console.log('âœ… GET test successful:', data);
 
             
 
             // Test 4: Try simple POST test
 
-            console.log('🧪 Testing simple POST endpoint...');
+            console.log('ðŸ§ª Testing simple POST endpoint...');
 
             return fetch('/test', {
 
@@ -23453,7 +23453,7 @@ function debugAPIConnection() {
 
         .then(response => {
 
-            console.log('📡 POST test response status:', response.status);
+            console.log('ðŸ“¡ POST test response status:', response.status);
 
             return response.json();
 
@@ -23461,13 +23461,13 @@ function debugAPIConnection() {
 
         .then(data => {
 
-            console.log('✅ POST test successful:', data);
+            console.log('âœ… POST test successful:', data);
 
             
 
             // Test 5: Try work API test
 
-            console.log('🧪 Testing work API...');
+            console.log('ðŸ§ª Testing work API...');
 
             return fetch('/work/test', {
 
@@ -23497,7 +23497,7 @@ function debugAPIConnection() {
 
         .then(response => {
 
-            console.log('📡 Work API response status:', response.status);
+            console.log('ðŸ“¡ Work API response status:', response.status);
 
             return response.json();
 
@@ -23505,13 +23505,13 @@ function debugAPIConnection() {
 
         .then(data => {
 
-            console.log('✅ Work API test successful:', data);
+            console.log('âœ… Work API test successful:', data);
 
             
 
             // Test 6: Try actual HSE submission
 
-            console.log('🧪 Testing actual HSE submission...');
+            console.log('ðŸ§ª Testing actual HSE submission...');
 
             return fetch('/hse/work', {
 
@@ -23551,7 +23551,7 @@ function debugAPIConnection() {
 
         .then(response => {
 
-            console.log('📡 HSE API response status:', response.status);
+            console.log('ðŸ“¡ HSE API response status:', response.status);
 
             return response.json();
 
@@ -23559,17 +23559,17 @@ function debugAPIConnection() {
 
         .then(data => {
 
-            console.log('✅ HSE API test successful:', data);
+            console.log('âœ… HSE API test successful:', data);
 
-            customAlert('✅ All API tests passed!\n\nThe API is working correctly.\nData should be saving to database.\nCheck console for detailed logs.', "API Debug Success", "success");
+            customAlert('âœ… All API tests passed!\n\nThe API is working correctly.\nData should be saving to database.\nCheck console for detailed logs.', "API Debug Success", "success");
 
         })
 
         .catch(error => {
 
-            console.error('❌ API test failed:', error);
+            console.error('âŒ API test failed:', error);
 
-            console.error('❌ Error details:', {
+            console.error('âŒ Error details:', {
 
                 message: error.message,
 
@@ -23577,7 +23577,7 @@ function debugAPIConnection() {
 
             });
 
-            customAlert(`❌ API test failed!\n\nError: ${error.message}\n\nCheck console for detailed debug information.`, "API Debug Failed", "error");
+            customAlert(`âŒ API test failed!\n\nError: ${error.message}\n\nCheck console for detailed debug information.`, "API Debug Failed", "error");
 
         });
 
@@ -23591,7 +23591,7 @@ function addDebugButton() {
 
     const debugBtn = document.createElement('button');
 
-    debugBtn.innerHTML = '🔧 DEBUG API';
+    debugBtn.innerHTML = 'ðŸ”§ DEBUG API';
 
     debugBtn.style.cssText = `
 
@@ -23639,7 +23639,7 @@ setTimeout(addDebugButton, 3000);
 
             setTimeout(() => {
 
-                console.log('🔍 Verifying data was saved...');
+                console.log('ðŸ” Verifying data was saved...');
 
                 fetch(`${baseUrl}/api/hse/work`)
 
@@ -23647,13 +23647,13 @@ setTimeout(addDebugButton, 3000);
 
                     .then(items => {
 
-                        console.log(`✅ Verification: Found ${items.length} items in database`);
+                        console.log(`âœ… Verification: Found ${items.length} items in database`);
 
                         const savedItem = items.find(item => item.id === data.workItem.id);
 
                         if (savedItem) {
 
-                            console.log('✅ Data verification successful - item found in database');
+                            console.log('âœ… Data verification successful - item found in database');
 
                             showRealProblemNotification('VERIFIED', { 
 
@@ -23669,7 +23669,7 @@ setTimeout(addDebugButton, 3000);
 
                     .catch(error => {
 
-                        console.log('⚠️ Could not verify data, but save appeared successful');
+                        console.log('âš ï¸ Could not verify data, but save appeared successful');
 
                         showRealProblemNotification('SAVE_SUCCESS_NO_VERIFY', { error: error.message });
 
@@ -23683,7 +23683,7 @@ setTimeout(addDebugButton, 3000);
 
         .catch(error => {
 
-            console.error('❌ Failed to save to database:', error);
+            console.error('âŒ Failed to save to database:', error);
 
             
 
@@ -23707,7 +23707,7 @@ setTimeout(addDebugButton, 3000);
 
     } catch (error) {
 
-        console.error('❌ Unexpected error:', error);
+        console.error('âŒ Unexpected error:', error);
 
         showRealProblemNotification('SYSTEM_ERROR', { 
 
@@ -23777,7 +23777,7 @@ function analyzeRealProblem(error) {
 
 function applyGlobalFormProtection() {
 
-    console.log('🛡️ Applying global form protection...');
+    console.log('ðŸ›¡ï¸ Applying global form protection...');
 
     
 
@@ -23787,7 +23787,7 @@ function applyGlobalFormProtection() {
 
     allForms.forEach((form, index) => {
 
-        console.log(`🔧 Protecting form ${index + 1}:`, form.id || 'unnamed');
+        console.log(`ðŸ”§ Protecting form ${index + 1}:`, form.id || 'unnamed');
 
         
 
@@ -23807,7 +23807,7 @@ function applyGlobalFormProtection() {
 
         form.addEventListener('submit', function(e) {
 
-            console.log('🚫 Form submission prevented:', form.id);
+            console.log('ðŸš« Form submission prevented:', form.id);
 
             e.preventDefault();
 
@@ -23829,7 +23829,7 @@ function applyGlobalFormProtection() {
 
     submitButtons.forEach((button, index) => {
 
-        console.log(`🔘 Converting submit button ${index + 1}:`, button.textContent);
+        console.log(`ðŸ”˜ Converting submit button ${index + 1}:`, button.textContent);
 
         
 
@@ -23845,7 +23845,7 @@ function applyGlobalFormProtection() {
 
             button.addEventListener('click', function(e) {
 
-                console.log('🚫 Submit button click prevented:', button.textContent);
+                console.log('ðŸš« Submit button click prevented:', button.textContent);
 
                 e.preventDefault();
 
@@ -23869,7 +23869,7 @@ function applyGlobalFormProtection() {
 
     
 
-    console.log('✅ Global form protection applied');
+    console.log('âœ… Global form protection applied');
 
 }
 
@@ -23879,7 +23879,7 @@ function applyGlobalFormProtection() {
 
 function saveEmployeeManual() {
 
-    console.log('💾 Manual employee save called');
+    console.log('ðŸ’¾ Manual employee save called');
 
     
 
@@ -23905,9 +23905,9 @@ function saveEmployeeManual() {
 
         
 
-        console.log('📝 Employee data:', { fullName, phone, gmail, nida, contract, jobCategory, department });
+        console.log('ðŸ“ Employee data:', { fullName, phone, gmail, nida, contract, jobCategory, department });
 
-        console.log('🔍 Form field elements:', {
+        console.log('ðŸ” Form field elements:', {
 
             empFullName: document.getElementById('empFullName'),
 
@@ -23925,7 +23925,7 @@ function saveEmployeeManual() {
 
         });
 
-        console.log('🔍 Form field values with types:', {
+        console.log('ðŸ” Form field values with types:', {
 
             fullName: { value: fullName, type: typeof fullName, empty: !fullName },
 
@@ -23993,7 +23993,7 @@ function saveEmployeeManual() {
 
         // First test if employees API is reachable
 
-        console.log('🧪 Testing employees API endpoint...');
+        console.log('ðŸ§ª Testing employees API endpoint...');
 
         fetch('/api/employees', {
 
@@ -24011,9 +24011,9 @@ function saveEmployeeManual() {
 
         .then(response => {
 
-            console.log('📡 Employees API test response status:', response.status);
+            console.log('ðŸ“¡ Employees API test response status:', response.status);
 
-            console.log('📡 Employees API test headers:', [...response.headers.entries()]);
+            console.log('ðŸ“¡ Employees API test headers:', [...response.headers.entries()]);
 
             
 
@@ -24035,7 +24035,7 @@ function saveEmployeeManual() {
 
             const contentType = response.headers.get('content-type');
 
-            console.log('📡 Response content type:', contentType);
+            console.log('ðŸ“¡ Response content type:', contentType);
 
             
 
@@ -24043,7 +24043,7 @@ function saveEmployeeManual() {
 
                 return response.text().then(text => {
 
-                    console.log('📡 Non-JSON response:', text);
+                    console.log('ðŸ“¡ Non-JSON response:', text);
 
                     throw new Error(`Expected JSON but got ${contentType || 'unknown'}: ${text.substring(0, 100)}`);
 
@@ -24059,13 +24059,13 @@ function saveEmployeeManual() {
 
         .then(data => {
 
-            console.log('✅ Employees API is reachable:', data);
+            console.log('âœ… Employees API is reachable:', data);
 
             
 
             // Now send employee data to backend employee API with file upload
 
-            console.log('📤 Sending employee data to employee API with file upload...');
+            console.log('ðŸ“¤ Sending employee data to employee API with file upload...');
 
             
 
@@ -24097,13 +24097,13 @@ function saveEmployeeManual() {
 
             if (profileImageInput && profileImageInput.files[0]) {
 
-                console.log('📸 Adding profile image to upload:', profileImageInput.files[0].name);
+                console.log('ðŸ“¸ Adding profile image to upload:', profileImageInput.files[0].name);
 
                 formData.append('profileImage', profileImageInput.files[0]);
 
             } else {
 
-                console.log('📸 No profile image selected');
+                console.log('ðŸ“¸ No profile image selected');
 
             }
 
@@ -24115,13 +24115,13 @@ function saveEmployeeManual() {
 
             if (cvInput && cvInput.files[0]) {
 
-                console.log('📄 Adding CV/Resume to upload:', cvInput.files[0].name);
+                console.log('ðŸ“„ Adding CV/Resume to upload:', cvInput.files[0].name);
 
                 formData.append('empCV', cvInput.files[0]);
 
             } else {
 
-                console.log('📄 No CV/Resume selected');
+                console.log('ðŸ“„ No CV/Resume selected');
 
             }
 
@@ -24133,13 +24133,13 @@ function saveEmployeeManual() {
 
             if (agreementInput && agreementInput.files[0]) {
 
-                console.log('📄 Adding Agreement Document to upload:', agreementInput.files[0].name);
+                console.log('ðŸ“„ Adding Agreement Document to upload:', agreementInput.files[0].name);
 
                 formData.append('empAgreement', agreementInput.files[0]);
 
             } else {
 
-                console.log('📄 No Agreement Document selected');
+                console.log('ðŸ“„ No Agreement Document selected');
 
             }
 
@@ -24165,9 +24165,9 @@ function saveEmployeeManual() {
 
         .then(response => {
 
-            console.log('📡 Employee API Response status:', response.status);
+            console.log('ðŸ“¡ Employee API Response status:', response.status);
 
-            console.log('📡 Employee API Response headers:', [...response.headers.entries()]);
+            console.log('ðŸ“¡ Employee API Response headers:', [...response.headers.entries()]);
 
             
 
@@ -24201,7 +24201,7 @@ function saveEmployeeManual() {
 
             const contentType = response.headers.get('content-type');
 
-            console.log('📡 POST Response content type:', contentType);
+            console.log('ðŸ“¡ POST Response content type:', contentType);
 
             
 
@@ -24209,7 +24209,7 @@ function saveEmployeeManual() {
 
                 return response.text().then(text => {
 
-                    console.log('📡 POST Non-JSON response:', text);
+                    console.log('ðŸ“¡ POST Non-JSON response:', text);
 
                     throw new Error(`Expected JSON but got ${contentType || 'unknown'}: ${text.substring(0, 100)}`);
 
@@ -24225,7 +24225,7 @@ function saveEmployeeManual() {
 
         .then(data => {
 
-            console.log('📊 Employee API Response data:', data);
+            console.log('ðŸ“Š Employee API Response data:', data);
 
             
 
@@ -24239,17 +24239,17 @@ function saveEmployeeManual() {
 
             // Success message
 
-            const profileImageStatus = data.employee?.profile_image ? '✅ Profile image uploaded' : '❌ No profile image';
+            const profileImageStatus = data.employee?.profile_image ? 'âœ… Profile image uploaded' : 'âŒ No profile image';
 
-            const cvStatus = data.employee?.cv_resume ? '✅ CV/Resume uploaded' : '❌ No CV/Resume';
+            const cvStatus = data.employee?.cv_resume ? 'âœ… CV/Resume uploaded' : 'âŒ No CV/Resume';
 
-            const agreementStatus = data.employee?.agreement_document ? '✅ Agreement uploaded' : '❌ No Agreement';
+            const agreementStatus = data.employee?.agreement_document ? 'âœ… Agreement uploaded' : 'âŒ No Agreement';
 
             
 
             showRealProblemNotification('SUCCESS', {
 
-                message: `✅ Employee registered successfully!\n\n📋 Details:\n• Name: ${fullName}\n• Email: ${gmail}\n• Department: ${department}\n• Job Category: ${jobCategory}\n• Contract: ${contract}\n• Employee ID: ${data.id}\n\n📁 Document Upload Status:\n• 📸 ${profileImageStatus}\n• 📄 ${cvStatus}\n• 📄 ${agreementStatus}\n\n🎉 Employee saved to database without page refresh!`,
+                message: `âœ… Employee registered successfully!\n\nðŸ“‹ Details:\nâ€¢ Name: ${fullName}\nâ€¢ Email: ${gmail}\nâ€¢ Department: ${department}\nâ€¢ Job Category: ${jobCategory}\nâ€¢ Contract: ${contract}\nâ€¢ Employee ID: ${data.id}\n\nðŸ“ Document Upload Status:\nâ€¢ ðŸ“¸ ${profileImageStatus}\nâ€¢ ðŸ“„ ${cvStatus}\nâ€¢ ðŸ“„ ${agreementStatus}\n\nðŸŽ‰ Employee saved to database without page refresh!`,
 
                 employeeId: data.id,
 
@@ -24271,9 +24271,9 @@ function saveEmployeeManual() {
 
         .catch(error => {
 
-            console.error('❌ Error registering employee:', error);
+            console.error('âŒ Error registering employee:', error);
 
-            console.error('❌ Full error details:', {
+            console.error('âŒ Full error details:', {
 
                 message: error.message,
 
@@ -24297,49 +24297,49 @@ function saveEmployeeManual() {
 
                 errorCause = 'Network connection failed';
 
-                troubleshooting = '• Check internet connection\n• Verify server is running\n• Try again in a moment';
+                troubleshooting = 'â€¢ Check internet connection\nâ€¢ Verify server is running\nâ€¢ Try again in a moment';
 
             } else if (error.message.includes('400')) {
 
                 errorCause = 'Invalid employee data';
 
-                troubleshooting = '• Fill all required fields correctly\n• Check email format\n• Verify phone number format\n• Ensure NIDA is valid';
+                troubleshooting = 'â€¢ Fill all required fields correctly\nâ€¢ Check email format\nâ€¢ Verify phone number format\nâ€¢ Ensure NIDA is valid';
 
             } else if (error.message.includes('409')) {
 
                 errorCause = 'Employee already exists';
 
-                troubleshooting = '• Email or NIDA already registered\n• Use different email or NIDA\n• Check if employee already exists';
+                troubleshooting = 'â€¢ Email or NIDA already registered\nâ€¢ Use different email or NIDA\nâ€¢ Check if employee already exists';
 
             } else if (error.message.includes('404')) {
 
                 errorCause = 'Employee API endpoint not found';
 
-                troubleshooting = '• Server routing issue\n• Contact system administrator';
+                troubleshooting = 'â€¢ Server routing issue\nâ€¢ Contact system administrator';
 
             } else if (error.message.includes('500')) {
 
                 errorCause = 'Server internal error';
 
-                troubleshooting = '• Database connection issue\n• Server configuration problem\n• Contact system administrator';
+                troubleshooting = 'â€¢ Database connection issue\nâ€¢ Server configuration problem\nâ€¢ Contact system administrator';
 
             } else if (error.message.includes('validation') || error.message.includes('required')) {
 
                 errorCause = 'Form validation failed';
 
-                troubleshooting = '• Fill all required fields\n• Check field formats\n• Ensure email is valid\n• Verify NIDA format';
+                troubleshooting = 'â€¢ Fill all required fields\nâ€¢ Check field formats\nâ€¢ Ensure email is valid\nâ€¢ Verify NIDA format';
 
             } else if (error.message.includes('database') || error.message.includes('SQL')) {
 
                 errorCause = 'Database operation failed';
 
-                troubleshooting = '• Database connection issue\n• Employees table might not exist\n• Contact system administrator';
+                troubleshooting = 'â€¢ Database connection issue\nâ€¢ Employees table might not exist\nâ€¢ Contact system administrator';
 
             } else if (error.message.includes('duplicate') || error.message.includes('unique')) {
 
                 errorCause = 'Duplicate employee record';
 
-                troubleshooting = '• Employee with this email already exists\n• Employee with this NIDA already exists\n• Use unique identifiers';
+                troubleshooting = 'â€¢ Employee with this email already exists\nâ€¢ Employee with this NIDA already exists\nâ€¢ Use unique identifiers';
 
             }
 
@@ -24355,7 +24355,7 @@ function saveEmployeeManual() {
 
                 troubleshooting: troubleshooting,
 
-                message: `❌ Employee registration failed!\n\n🔍 Error Cause: ${errorCause}\n\n🛠️ Troubleshooting:\n${troubleshooting}\n\n📝 Technical Details:\n${error.message}\n\n💡 Please fix the issue and try again.`,
+                message: `âŒ Employee registration failed!\n\nðŸ” Error Cause: ${errorCause}\n\nðŸ› ï¸ Troubleshooting:\n${troubleshooting}\n\nðŸ“ Technical Details:\n${error.message}\n\nðŸ’¡ Please fix the issue and try again.`,
 
                 employeeName: fullName || 'Unknown',
 
@@ -24371,7 +24371,7 @@ function saveEmployeeManual() {
 
     } catch (error) {
 
-        console.error('❌ Error saving employee:', error);
+        console.error('âŒ Error saving employee:', error);
 
         showRealProblemNotification('SYSTEM_ERROR', {
 
@@ -24391,7 +24391,7 @@ function saveEmployeeManual() {
 
 function clearEmployeeForm() {
 
-    console.log('🔄 Clearing employee form');
+    console.log('ðŸ”„ Clearing employee form');
 
     
 
@@ -24429,7 +24429,7 @@ function clearEmployeeForm() {
 
     
 
-    console.log('✅ Employee form cleared');
+    console.log('âœ… Employee form cleared');
 
 }
 
@@ -24439,7 +24439,7 @@ function clearEmployeeForm() {
 
 function runStartupDiagnostic() {
 
-    console.log('🔍 Running startup diagnostic...');
+    console.log('ðŸ” Running startup diagnostic...');
 
     
 
@@ -24467,7 +24467,7 @@ function runStartupDiagnostic() {
 
         .then(healthData => {
 
-            console.log('✅ Startup diagnostic passed:', healthData);
+            console.log('âœ… Startup diagnostic passed:', healthData);
 
             
 
@@ -24475,7 +24475,7 @@ function runStartupDiagnostic() {
 
             const diagnosticIndicator = document.createElement('div');
 
-            diagnosticIndicator.innerHTML = '🟢 System Online';
+            diagnosticIndicator.innerHTML = 'ðŸŸ¢ System Online';
 
             diagnosticIndicator.style.cssText = 'position:fixed;bottom:10px;right:10px;background:#28a745;color:white;padding:5px 10px;border-radius:5px;font-size:12px;z-index:9998;';
 
@@ -24501,7 +24501,7 @@ function runStartupDiagnostic() {
 
         .catch(error => {
 
-            console.error('❌ Startup diagnostic failed:', error);
+            console.error('âŒ Startup diagnostic failed:', error);
 
             
 
@@ -24509,7 +24509,7 @@ function runStartupDiagnostic() {
 
             const diagnosticIndicator = document.createElement('div');
 
-            diagnosticIndicator.innerHTML = '🔴 System Error';
+            diagnosticIndicator.innerHTML = 'ðŸ”´ System Error';
 
             diagnosticIndicator.style.cssText = 'position:fixed;bottom:10px;right:10px;background:#dc3545;color:white;padding:5px 10px;border-radius:5px;font-size:12px;z-index:9998;';
 
@@ -24535,13 +24535,13 @@ setTimeout(() => {
 
 function testServerConnection() {
 
-    console.log('🔗 Testing server connection...');
+    console.log('ðŸ”— Testing server connection...');
 
     
 
     const baseUrl = window.location.origin;
 
-    console.log('📍 Testing server:', baseUrl);
+    console.log('ðŸ“ Testing server:', baseUrl);
 
     
 
@@ -24549,7 +24549,7 @@ function testServerConnection() {
 
     showRealProblemNotification('TESTING_CONNECTION', {
 
-        message: '🔗 Testing server connection...\n\n📡 Testing endpoints:\n• API Health Check\n• Work API Test\n• Database Connection\n\n⏳ Please wait...'
+        message: 'ðŸ”— Testing server connection...\n\nðŸ“¡ Testing endpoints:\nâ€¢ API Health Check\nâ€¢ Work API Test\nâ€¢ Database Connection\n\nâ³ Please wait...'
 
     });
 
@@ -24561,7 +24561,7 @@ function testServerConnection() {
 
         .then(response => {
 
-            console.log('📡 Health check response:', response.status);
+            console.log('ðŸ“¡ Health check response:', response.status);
 
             if (!response.ok) {
 
@@ -24575,7 +24575,7 @@ function testServerConnection() {
 
         .then(healthData => {
 
-            console.log('✅ Health check success:', healthData);
+            console.log('âœ… Health check success:', healthData);
 
             
 
@@ -24587,7 +24587,7 @@ function testServerConnection() {
 
         .then(response => {
 
-            console.log('📡 Work API test response:', response.status);
+            console.log('ðŸ“¡ Work API test response:', response.status);
 
             if (!response.ok) {
 
@@ -24601,7 +24601,7 @@ function testServerConnection() {
 
         .then(workData => {
 
-            console.log('✅ Work API test success:', workData);
+            console.log('âœ… Work API test success:', workData);
 
             
 
@@ -24613,7 +24613,7 @@ function testServerConnection() {
 
         .then(response => {
 
-            console.log('📡 Database health response:', response.status);
+            console.log('ðŸ“¡ Database health response:', response.status);
 
             if (!response.ok) {
 
@@ -24627,7 +24627,7 @@ function testServerConnection() {
 
         .then(dbData => {
 
-            console.log('✅ Database health success:', dbData);
+            console.log('âœ… Database health success:', dbData);
 
             
 
@@ -24635,7 +24635,7 @@ function testServerConnection() {
 
             showRealProblemNotification('CONNECTION_SUCCESS', {
 
-                message: `🎉 All server connections successful!\n\n✅ API Health Check: Working\n✅ Work API Test: Working\n✅ Database Connection: Working\n\n📊 Server Details:\n• Environment: ${healthData.environment || 'Unknown'}\n• Database: ${dbData.database || 'Connected'}\n• Timestamp: ${new Date().toLocaleString()}\n\n🚀 Ready to save data to database!`,
+                message: `ðŸŽ‰ All server connections successful!\n\nâœ… API Health Check: Working\nâœ… Work API Test: Working\nâœ… Database Connection: Working\n\nðŸ“Š Server Details:\nâ€¢ Environment: ${healthData.environment || 'Unknown'}\nâ€¢ Database: ${dbData.database || 'Connected'}\nâ€¢ Timestamp: ${new Date().toLocaleString()}\n\nðŸš€ Ready to save data to database!`,
 
                 serverStatus: 'healthy',
 
@@ -24647,7 +24647,7 @@ function testServerConnection() {
 
         .catch(error => {
 
-            console.error('❌ Connection test failed:', error);
+            console.error('âŒ Connection test failed:', error);
 
             
 
@@ -24675,7 +24675,7 @@ function testServerConnection() {
 
 function showRealProblemNotification(problemType, details) {
 
-    console.log('🔍 showRealProblemNotification called with:', problemType, details);
+    console.log('ðŸ” showRealProblemNotification called with:', problemType, details);
 
     
 
@@ -24691,7 +24691,7 @@ function showRealProblemNotification(problemType, details) {
 
         case 'TESTING_CONNECTION':
 
-            title = '🔗 Testing Connection';
+            title = 'ðŸ”— Testing Connection';
 
             message = details.message;
 
@@ -24703,7 +24703,7 @@ function showRealProblemNotification(problemType, details) {
 
         case 'CONNECTION_SUCCESS':
 
-            title = '🎉 Connection Successful!';
+            title = 'ðŸŽ‰ Connection Successful!';
 
             message = details.message;
 
@@ -24715,9 +24715,9 @@ function showRealProblemNotification(problemType, details) {
 
         case 'NO_HANDLER':
 
-            title = '⚠️ Button Not Configured';
+            title = 'âš ï¸ Button Not Configured';
 
-            message = `❌ This button has no action handler!\n\n🔍 Real Problem:\n• Button: "${details.buttonText}"\n• No onclick function assigned\n• This is a system configuration issue\n\n🛠️ Solutions:\n• Contact developer to add handler\n• Use a different button\n• Check if this feature is implemented\n\n📝 Button text: ${details.buttonText}`;
+            message = `âŒ This button has no action handler!\n\nðŸ” Real Problem:\nâ€¢ Button: "${details.buttonText}"\nâ€¢ No onclick function assigned\nâ€¢ This is a system configuration issue\n\nðŸ› ï¸ Solutions:\nâ€¢ Contact developer to add handler\nâ€¢ Use a different button\nâ€¢ Check if this feature is implemented\n\nðŸ“ Button text: ${details.buttonText}`;
 
             type = 'warning';
 
@@ -24727,9 +24727,9 @@ function showRealProblemNotification(problemType, details) {
 
         case 'FREEZE_SUCCESS':
 
-            title = '🛡️ Page Freeze Working!';
+            title = 'ðŸ›¡ï¸ Page Freeze Working!';
 
-            message = `✅ Page freeze is active and working!\n\n🔍 Navigation Test Results:\n• Navigation methods are blocked: ✅\n• Error: ${details.error}\n• Page is completely frozen\n\n🛡️ Your data is protected from page refresh!`;
+            message = `âœ… Page freeze is active and working!\n\nðŸ” Navigation Test Results:\nâ€¢ Navigation methods are blocked: âœ…\nâ€¢ Error: ${details.error}\nâ€¢ Page is completely frozen\n\nðŸ›¡ï¸ Your data is protected from page refresh!`;
 
             type = 'success';
 
@@ -24739,9 +24739,9 @@ function showRealProblemNotification(problemType, details) {
 
         case 'FREEZE_TEST':
 
-            title = '🧪 Page Freeze Test Complete';
+            title = 'ðŸ§ª Page Freeze Test Complete';
 
-            message = `${details.message}\n\n🛡️ The page is now completely frozen.\nNo navigation or refresh can occur while this is active.`;
+            message = `${details.message}\n\nðŸ›¡ï¸ The page is now completely frozen.\nNo navigation or refresh can occur while this is active.`;
 
             type = 'success';
 
@@ -24751,13 +24751,13 @@ function showRealProblemNotification(problemType, details) {
 
         case 'SAVING':
 
-            title = '💾 Saving to Database...';
+            title = 'ðŸ’¾ Saving to Database...';
 
-            console.log('🔍 SAVING case - details:', details);
+            console.log('ðŸ” SAVING case - details:', details);
 
-            console.log('🔍 SAVING case - details.workItem:', details.workItem);
+            console.log('ðŸ” SAVING case - details.workItem:', details.workItem);
 
-            console.log('🔍 SAVING case - details.employeeData:', details.employeeData);
+            console.log('ðŸ” SAVING case - details.employeeData:', details.employeeData);
 
             
 
@@ -24765,19 +24765,19 @@ function showRealProblemNotification(problemType, details) {
 
                 // HSE incident saving
 
-                message = `📝 Sending incident report to database...\n\n• Type: ${details.workItem.incident_type}\n• Severity: ${details.workItem.severity}\n• Description: ${details.workItem.work_description.substring(0, 50)}...\n\n⏳ Please wait...`;
+                message = `ðŸ“ Sending incident report to database...\n\nâ€¢ Type: ${details.workItem.incident_type}\nâ€¢ Severity: ${details.workItem.severity}\nâ€¢ Description: ${details.workItem.work_description.substring(0, 50)}...\n\nâ³ Please wait...`;
 
             } else if (details && details.employeeData) {
 
                 // Employee registration
 
-                message = `📝 Registering employee to database...\n\n• Name: ${details.employeeData.fullName}\n• Department: ${details.employeeData.department}\n• Email: ${details.employeeData.gmail}\n\n⏳ Please wait...`;
+                message = `ðŸ“ Registering employee to database...\n\nâ€¢ Name: ${details.employeeData.fullName}\nâ€¢ Department: ${details.employeeData.department}\nâ€¢ Email: ${details.employeeData.gmail}\n\nâ³ Please wait...`;
 
             } else {
 
                 // Generic saving
 
-                message = `📝 Saving data to database...\n\n${details ? details.message || 'Processing your request...' : 'Processing your request...'}\n\n⏳ Please wait...`;
+                message = `ðŸ“ Saving data to database...\n\n${details ? details.message || 'Processing your request...' : 'Processing your request...'}\n\nâ³ Please wait...`;
 
             }
 
@@ -24789,25 +24789,25 @@ function showRealProblemNotification(problemType, details) {
 
         case 'SUCCESS':
 
-            title = '✅ Data Saved Successfully!';
+            title = 'âœ… Data Saved Successfully!';
 
             if (details.savedData && details.savedData.incident_type) {
 
                 // HSE incident success
 
-                message = `🎉 Incident report saved to database!\n\n📋 Details:\n• Database ID: ${details.databaseId}\n• Type: ${details.savedData.incident_type}\n• Severity: ${details.savedData.severity}\n• Priority: ${details.savedData.priority}\n• Assigned to: ${details.savedData.assigned_to}\n• Submitted by: ${details.savedData.submitted_by}\n• Date: ${new Date().toLocaleString()}\n\n💾 Stored in: hse_work table\n🚫 NO PAGE REFRESH - DATA SAVED SUCCESSFULLY!`;
+                message = `ðŸŽ‰ Incident report saved to database!\n\nðŸ“‹ Details:\nâ€¢ Database ID: ${details.databaseId}\nâ€¢ Type: ${details.savedData.incident_type}\nâ€¢ Severity: ${details.savedData.severity}\nâ€¢ Priority: ${details.savedData.priority}\nâ€¢ Assigned to: ${details.savedData.assigned_to}\nâ€¢ Submitted by: ${details.savedData.submitted_by}\nâ€¢ Date: ${new Date().toLocaleString()}\n\nðŸ’¾ Stored in: hse_work table\nðŸš« NO PAGE REFRESH - DATA SAVED SUCCESSFULLY!`;
 
             } else if (details.employeeData) {
 
                 // Employee registration success
 
-                message = `🎉 Employee registered successfully!\n\n📋 Details:\n• Name: ${details.employeeData.fullName}\n• Department: ${details.employeeData.department}\n• Email: ${details.employeeData.gmail}\n• Database ID: ${details.databaseId}\n• Date: ${new Date().toLocaleString()}\n\n💾 Stored in: employees table\n🚫 NO PAGE REFRESH - DATA SAVED SUCCESSFULLY!`;
+                message = `ðŸŽ‰ Employee registered successfully!\n\nðŸ“‹ Details:\nâ€¢ Name: ${details.employeeData.fullName}\nâ€¢ Department: ${details.employeeData.department}\nâ€¢ Email: ${details.employeeData.gmail}\nâ€¢ Database ID: ${details.databaseId}\nâ€¢ Date: ${new Date().toLocaleString()}\n\nðŸ’¾ Stored in: employees table\nðŸš« NO PAGE REFRESH - DATA SAVED SUCCESSFULLY!`;
 
             } else {
 
                 // Generic success
 
-                message = `🎉 Data saved successfully!\n\n📋 Details:\n• Database ID: ${details.databaseId}\n• Date: ${new Date().toLocaleString()}\n\n💾 Data saved to database\n🚫 NO PAGE REFRESH - DATA SAVED SUCCESSFULLY!`;
+                message = `ðŸŽ‰ Data saved successfully!\n\nðŸ“‹ Details:\nâ€¢ Database ID: ${details.databaseId}\nâ€¢ Date: ${new Date().toLocaleString()}\n\nðŸ’¾ Data saved to database\nðŸš« NO PAGE REFRESH - DATA SAVED SUCCESSFULLY!`;
 
             }
 
@@ -24819,9 +24819,9 @@ function showRealProblemNotification(problemType, details) {
 
         case 'VERIFIED':
 
-            title = '🔍 Data Verified!';
+            title = 'ðŸ” Data Verified!';
 
-            message = `✅ Database save verified!\n\n📊 Verification Results:\n• Total items in database: ${details.totalItems}\n• Your item confirmed in database: ✅\n• Item ID: ${details.savedItem.id}\n• Timestamp: ${details.savedItem.submitted_date}\n\n🎉 Complete success - Data is permanently stored!`;
+            message = `âœ… Database save verified!\n\nðŸ“Š Verification Results:\nâ€¢ Total items in database: ${details.totalItems}\nâ€¢ Your item confirmed in database: âœ…\nâ€¢ Item ID: ${details.savedItem.id}\nâ€¢ Timestamp: ${details.savedItem.submitted_date}\n\nðŸŽ‰ Complete success - Data is permanently stored!`;
 
             type = 'success';
 
@@ -24831,9 +24831,9 @@ function showRealProblemNotification(problemType, details) {
 
         case 'SAVE_SUCCESS_NO_VERIFY':
 
-            title = '⚠️ Save Successful';
+            title = 'âš ï¸ Save Successful';
 
-            message = `✅ Data saved to database!\n\n⚠️ Could not verify due to: ${details.error}\n\nBut the save operation completed successfully.\nYour data should be in the database.`;
+            message = `âœ… Data saved to database!\n\nâš ï¸ Could not verify due to: ${details.error}\n\nBut the save operation completed successfully.\nYour data should be in the database.`;
 
             type = 'warning';
 
@@ -24843,9 +24843,9 @@ function showRealProblemNotification(problemType, details) {
 
         case 'NETWORK_ERROR':
 
-            title = '🌐 Network Connection Problem';
+            title = 'ðŸŒ Network Connection Problem';
 
-            message = `❌ Network connectivity issue detected!\n\n🔍 Real Problem:\n• Cannot reach the server\n• Internet connection may be unstable\n• Server may be down\n\n🛠️ Solutions:\n• Check your internet connection\n• Try again in a few moments\n• Contact IT if problem persists\n\n📡 Error: ${details.error}`;
+            message = `âŒ Network connectivity issue detected!\n\nðŸ” Real Problem:\nâ€¢ Cannot reach the server\nâ€¢ Internet connection may be unstable\nâ€¢ Server may be down\n\nðŸ› ï¸ Solutions:\nâ€¢ Check your internet connection\nâ€¢ Try again in a few moments\nâ€¢ Contact IT if problem persists\n\nðŸ“¡ Error: ${details.error}`;
 
             type = 'error';
 
@@ -24855,9 +24855,9 @@ function showRealProblemNotification(problemType, details) {
 
         case 'API_ENDPOINT_NOT_FOUND':
 
-            title = '🔍 API Route Not Found';
+            title = 'ðŸ” API Route Not Found';
 
-            message = `❌ Server API endpoint missing!\n\n🔍 Real Problem:\n• The API route /api/hse/work doesn't exist\n• Server may not be properly configured\n• Routes may not be loaded\n\n🛠️ Solutions:\n• Check server configuration\n• Verify routes are properly mounted\n• Contact developer to fix API routes\n\n🌐 Missing endpoint: /api/hse/work`;
+            message = `âŒ Server API endpoint missing!\n\nðŸ” Real Problem:\nâ€¢ The API route /api/hse/work doesn't exist\nâ€¢ Server may not be properly configured\nâ€¢ Routes may not be loaded\n\nðŸ› ï¸ Solutions:\nâ€¢ Check server configuration\nâ€¢ Verify routes are properly mounted\nâ€¢ Contact developer to fix API routes\n\nðŸŒ Missing endpoint: /api/hse/work`;
 
             type = 'error';
 
@@ -24867,9 +24867,9 @@ function showRealProblemNotification(problemType, details) {
 
         case 'SERVER_ERROR':
 
-            title = '🖥️ Server Internal Error';
+            title = 'ðŸ–¥ï¸ Server Internal Error';
 
-            message = `❌ Server encountered an error!\n\n🔍 Real Problem:\n• Database connection may be down\n• Server code has an error\n• Database table may not exist\n\n🛠️ Solutions:\n• Check server logs for details\n• Verify database is running\n• Contact system administrator\n\n💥 Server error: ${details.error}`;
+            message = `âŒ Server encountered an error!\n\nðŸ” Real Problem:\nâ€¢ Database connection may be down\nâ€¢ Server code has an error\nâ€¢ Database table may not exist\n\nðŸ› ï¸ Solutions:\nâ€¢ Check server logs for details\nâ€¢ Verify database is running\nâ€¢ Contact system administrator\n\nðŸ’¥ Server error: ${details.error}`;
 
             type = 'error';
 
@@ -24879,9 +24879,9 @@ function showRealProblemNotification(problemType, details) {
 
         case 'DATABASE_CONNECTION_ERROR':
 
-            title = '💾 Database Connection Failed';
+            title = 'ðŸ’¾ Database Connection Failed';
 
-            message = `❌ Cannot connect to database!\n\n🔍 Real Problem:\n• Database server is down\n• Connection credentials are wrong\n• Network cannot reach database\n\n🛠️ Solutions:\n• Check database server status\n• Verify connection settings\n• Contact database administrator\n\n🔌 Database error: ${details.error}`;
+            message = `âŒ Cannot connect to database!\n\nðŸ” Real Problem:\nâ€¢ Database server is down\nâ€¢ Connection credentials are wrong\nâ€¢ Network cannot reach database\n\nðŸ› ï¸ Solutions:\nâ€¢ Check database server status\nâ€¢ Verify connection settings\nâ€¢ Contact database administrator\n\nðŸ”Œ Database error: ${details.error}`;
 
             type = 'error';
 
@@ -24891,9 +24891,9 @@ function showRealProblemNotification(problemType, details) {
 
         case 'TIMEOUT_ERROR':
 
-            title = '⏰ Request Timeout';
+            title = 'â° Request Timeout';
 
-            message = `❌ Server took too long to respond!\n\n🔍 Real Problem:\n• Server is overloaded\n• Network is very slow\n• Database query is too complex\n\n🛠️ Solutions:\n• Try again with simpler data\n• Check if server is responding\n• Contact support if continues\n\n⏱️ Timeout error: ${details.error}`;
+            message = `âŒ Server took too long to respond!\n\nðŸ” Real Problem:\nâ€¢ Server is overloaded\nâ€¢ Network is very slow\nâ€¢ Database query is too complex\n\nðŸ› ï¸ Solutions:\nâ€¢ Try again with simpler data\nâ€¢ Check if server is responding\nâ€¢ Contact support if continues\n\nâ±ï¸ Timeout error: ${details.error}`;
 
             type = 'error';
 
@@ -24903,9 +24903,9 @@ function showRealProblemNotification(problemType, details) {
 
         case 'CORS_ERROR':
 
-            title = '🚫 CORS Policy Blocked';
+            title = 'ðŸš« CORS Policy Blocked';
 
-            message = `❌ Browser blocked the request!\n\n🔍 Real Problem:\n• Server CORS policy is restrictive\n• Frontend and backend domains don't match\n• Server doesn't allow this origin\n\n🛠️ Solutions:\n• Configure server CORS settings\n• Check allowed origins in server\n• Contact developer to fix CORS\n\n🚫 CORS error: ${details.error}`;
+            message = `âŒ Browser blocked the request!\n\nðŸ” Real Problem:\nâ€¢ Server CORS policy is restrictive\nâ€¢ Frontend and backend domains don't match\nâ€¢ Server doesn't allow this origin\n\nðŸ› ï¸ Solutions:\nâ€¢ Configure server CORS settings\nâ€¢ Check allowed origins in server\nâ€¢ Contact developer to fix CORS\n\nðŸš« CORS error: ${details.error}`;
 
             type = 'error';
 
@@ -24915,9 +24915,9 @@ function showRealProblemNotification(problemType, details) {
 
         case 'VALIDATION_ERROR':
 
-            title = '📝 Form Validation Error';
+            title = 'ðŸ“ Form Validation Error';
 
-            message = `❌ Server rejected the data!\n\n🔍 Real Problem:\n• Required fields are missing\n• Data format is incorrect\n• Server validation rules not met\n\n🛠️ Solutions:\n• Fill all required fields\n• Check data format\n• Ensure all data is valid\n\n❌ Validation error: ${details.error}`;
+            message = `âŒ Server rejected the data!\n\nðŸ” Real Problem:\nâ€¢ Required fields are missing\nâ€¢ Data format is incorrect\nâ€¢ Server validation rules not met\n\nðŸ› ï¸ Solutions:\nâ€¢ Fill all required fields\nâ€¢ Check data format\nâ€¢ Ensure all data is valid\n\nâŒ Validation error: ${details.error}`;
 
             type = 'error';
 
@@ -24927,9 +24927,9 @@ function showRealProblemNotification(problemType, details) {
 
         case 'SYSTEM_ERROR':
 
-            title = '💻 System Error';
+            title = 'ðŸ’» System Error';
 
-            message = `❌ Unexpected system error occurred!\n\n🔍 Real Problem:\n• JavaScript code has a bug\n• Browser compatibility issue\n• Memory or resource problem\n\n🛠️ Solutions:\n• Refresh the page and try again\n• Try a different browser\n• Contact technical support\n\n💻 System error: ${details.error}`;
+            message = `âŒ Unexpected system error occurred!\n\nðŸ” Real Problem:\nâ€¢ JavaScript code has a bug\nâ€¢ Browser compatibility issue\nâ€¢ Memory or resource problem\n\nðŸ› ï¸ Solutions:\nâ€¢ Refresh the page and try again\nâ€¢ Try a different browser\nâ€¢ Contact technical support\n\nðŸ’» System error: ${details.error}`;
 
             type = 'error';
 
@@ -24939,9 +24939,9 @@ function showRealProblemNotification(problemType, details) {
 
         default:
 
-            title = '❌ Unknown Error';
+            title = 'âŒ Unknown Error';
 
-            message = `❌ An unknown error occurred!\n\n🔍 Real Problem:\n• Error type could not be identified\n• May be a combination of issues\n\n🛠️ Solutions:\n• Try again\n• Check all steps above\n• Contact support with details\n\n❓ Unknown error: ${details.error}`;
+            message = `âŒ An unknown error occurred!\n\nðŸ” Real Problem:\nâ€¢ Error type could not be identified\nâ€¢ May be a combination of issues\n\nðŸ› ï¸ Solutions:\nâ€¢ Try again\nâ€¢ Check all steps above\nâ€¢ Contact support with details\n\nâ“ Unknown error: ${details.error}`;
 
             type = 'error';
 
@@ -24959,7 +24959,7 @@ function showRealProblemNotification(problemType, details) {
 
 function clearIncidentForm() {
 
-    console.log('🔄 Clearing incident form');
+    console.log('ðŸ”„ Clearing incident form');
 
     
 
@@ -24987,7 +24987,7 @@ function clearIncidentForm() {
 
     
 
-    console.log('✅ Form cleared successfully');
+    console.log('âœ… Form cleared successfully');
 
 }
 
@@ -24997,7 +24997,7 @@ function clearIncidentForm() {
 
 function manualSubmitIncident() {
 
-    console.log('🚀 manualSubmitIncident called - SAVING TO DATABASE');
+    console.log('ðŸš€ manualSubmitIncident called - SAVING TO DATABASE');
 
     
 
@@ -25015,15 +25015,15 @@ function manualSubmitIncident() {
 
         
 
-        console.log('📝 Form values:', { incidentType, severityLevel, incidentDescription, reportedBy });
+        console.log('ðŸ“ Form values:', { incidentType, severityLevel, incidentDescription, reportedBy });
 
         
 
         if (!incidentType || !severityLevel || !incidentDescription || !reportedBy) {
 
-            console.log('❌ Validation failed - missing required fields');
+            console.log('âŒ Validation failed - missing required fields');
 
-            customAlert('Please fill in all required fields:\n\n• Incident Type\n• Severity Level\n• Incident Description\n• Reported By', "Validation Error", "error");
+            customAlert('Please fill in all required fields:\n\nâ€¢ Incident Type\nâ€¢ Severity Level\nâ€¢ Incident Description\nâ€¢ Reported By', "Validation Error", "error");
 
             return;
 
@@ -25057,7 +25057,7 @@ function manualSubmitIncident() {
 
         
 
-        console.log('📝 Sending work item to database:', workItem);
+        console.log('ðŸ“ Sending work item to database:', workItem);
 
         
 
@@ -25071,7 +25071,7 @@ function manualSubmitIncident() {
 
         const baseUrl = window.location.origin;
 
-        console.log('📍 Using server:', baseUrl);
+        console.log('ðŸ“ Using server:', baseUrl);
 
         
 
@@ -25093,7 +25093,7 @@ function manualSubmitIncident() {
 
         .then(response => {
 
-            console.log('📡 Database response status:', response.status);
+            console.log('ðŸ“¡ Database response status:', response.status);
 
             
 
@@ -25111,7 +25111,7 @@ function manualSubmitIncident() {
 
         .then(data => {
 
-            console.log('📊 Database save result:', data);
+            console.log('ðŸ“Š Database save result:', data);
 
             
 
@@ -25125,7 +25125,7 @@ function manualSubmitIncident() {
 
             // Success message with database confirmation
 
-            customAlert(`✅ Incident report saved to database!\n\n📋 Details:\n• ID: ${data.workItem.id}\n• Type: ${workItem.incident_type}\n• Severity: ${workItem.severity}\n• Priority: ${workItem.priority}\n• Assigned to: ${workItem.assigned_to}\n• Submitted by: ${workItem.submitted_by}\n• Date: ${new Date().toLocaleString()}\n\n🎉 Data successfully stored in MySQL database!\n💾 Table: hse_work`, "Database Save Success!", "success");
+            customAlert(`âœ… Incident report saved to database!\n\nðŸ“‹ Details:\nâ€¢ ID: ${data.workItem.id}\nâ€¢ Type: ${workItem.incident_type}\nâ€¢ Severity: ${workItem.severity}\nâ€¢ Priority: ${workItem.priority}\nâ€¢ Assigned to: ${workItem.assigned_to}\nâ€¢ Submitted by: ${workItem.submitted_by}\nâ€¢ Date: ${new Date().toLocaleString()}\n\nðŸŽ‰ Data successfully stored in MySQL database!\nðŸ’¾ Table: hse_work`, "Database Save Success!", "success");
 
             
 
@@ -25139,7 +25139,7 @@ function manualSubmitIncident() {
 
             setTimeout(() => {
 
-                console.log('🔍 Verifying data was saved...');
+                console.log('ðŸ” Verifying data was saved...');
 
                 fetch(`${baseUrl}/api/hse/work`)
 
@@ -25147,13 +25147,13 @@ function manualSubmitIncident() {
 
                     .then(items => {
 
-                        console.log(`✅ Verification: Found ${items.length} items in database`);
+                        console.log(`âœ… Verification: Found ${items.length} items in database`);
 
                         const savedItem = items.find(item => item.id === data.workItem.id);
 
                         if (savedItem) {
 
-                            console.log('✅ Data verification successful - item found in database');
+                            console.log('âœ… Data verification successful - item found in database');
 
                         }
 
@@ -25161,7 +25161,7 @@ function manualSubmitIncident() {
 
                     .catch(error => {
 
-                        console.log('⚠️ Could not verify data, but save appeared successful');
+                        console.log('âš ï¸ Could not verify data, but save appeared successful');
 
                     });
 
@@ -25173,9 +25173,9 @@ function manualSubmitIncident() {
 
         .catch(error => {
 
-            console.error('❌ Failed to save to database:', error);
+            console.error('âŒ Failed to save to database:', error);
 
-            customAlert(`❌ Failed to save to database: ${error.message}\n\nPlease check:\n• Server is running\n• Network connection is stable\n• Try again in a moment`, "Database Error", "error");
+            customAlert(`âŒ Failed to save to database: ${error.message}\n\nPlease check:\nâ€¢ Server is running\nâ€¢ Network connection is stable\nâ€¢ Try again in a moment`, "Database Error", "error");
 
         });
 
@@ -25183,7 +25183,7 @@ function manualSubmitIncident() {
 
     } catch (error) {
 
-        console.error('❌ Unexpected error:', error);
+        console.error('âŒ Unexpected error:', error);
 
         customAlert(`System error: ${error.message}\n\nPlease try again or contact support.`, "Error", "error");
 
@@ -25197,7 +25197,7 @@ function manualSubmitIncident() {
 
 function resetIncidentForm() {
 
-    console.log('🔄 Resetting incident form');
+    console.log('ðŸ”„ Resetting incident form');
 
     
 
@@ -25217,7 +25217,7 @@ function resetIncidentForm() {
 
         
 
-        console.log('✅ Form reset completed');
+        console.log('âœ… Form reset completed');
 
     }
 
@@ -25229,7 +25229,7 @@ function resetIncidentForm() {
 
 function testDataFlow() {
 
-    console.log('🧪 Testing complete data flow: Send → Database → Fetch');
+    console.log('ðŸ§ª Testing complete data flow: Send â†’ Database â†’ Fetch');
 
     
 
@@ -25257,7 +25257,7 @@ function testDataFlow() {
 
     
 
-    console.log('📤 Step 1: Sending test data to database...');
+    console.log('ðŸ“¤ Step 1: Sending test data to database...');
 
     
 
@@ -25269,13 +25269,13 @@ function testDataFlow() {
 
         .then(data => {
 
-            console.log('✅ Data sent successfully:', data);
+            console.log('âœ… Data sent successfully:', data);
 
             
 
             // 2. Now fetch the data back from database
 
-            console.log('📥 Step 2: Fetching data from database...');
+            console.log('ðŸ“¥ Step 2: Fetching data from database...');
 
             
 
@@ -25285,9 +25285,9 @@ function testDataFlow() {
 
         .then(workItems => {
 
-            console.log('✅ Data fetched successfully:', workItems);
+            console.log('âœ… Data fetched successfully:', workItems);
 
-            console.log(`📊 Found ${workItems.length} items in database`);
+            console.log(`ðŸ“Š Found ${workItems.length} items in database`);
 
             
 
@@ -25297,15 +25297,15 @@ function testDataFlow() {
 
             if (testItem) {
 
-                console.log('🎉 SUCCESS! Test data found in database:', testItem);
+                console.log('ðŸŽ‰ SUCCESS! Test data found in database:', testItem);
 
-                customAlert(`✅ Database test successful!\n\n• Test data sent to database ✅\n• Data retrieved from database ✅\n• Found ${workItems.length} total items\n• Test item ID: ${testItem.id}\n\n🎉 Frontend-Backend communication is working perfectly!`, "Database Test Success", "success");
+                customAlert(`âœ… Database test successful!\n\nâ€¢ Test data sent to database âœ…\nâ€¢ Data retrieved from database âœ…\nâ€¢ Found ${workItems.length} total items\nâ€¢ Test item ID: ${testItem.id}\n\nðŸŽ‰ Frontend-Backend communication is working perfectly!`, "Database Test Success", "success");
 
             } else {
 
-                console.log('⚠️ Test data not found, but other data exists');
+                console.log('âš ï¸ Test data not found, but other data exists');
 
-                customAlert(`⚠️ Partial success\n\n• Test data sent to database ✅\n• Data retrieved from database ✅\n• Found ${workItems.length} total items\n• Test item not immediately visible (may need refresh)\n\n🔄 Database operations are working!`, "Database Test Partial", "info");
+                customAlert(`âš ï¸ Partial success\n\nâ€¢ Test data sent to database âœ…\nâ€¢ Data retrieved from database âœ…\nâ€¢ Found ${workItems.length} total items\nâ€¢ Test item not immediately visible (may need refresh)\n\nðŸ”„ Database operations are working!`, "Database Test Partial", "info");
 
             }
 
@@ -25313,9 +25313,9 @@ function testDataFlow() {
 
         .catch(error => {
 
-            console.error('❌ Database test failed:', error);
+            console.error('âŒ Database test failed:', error);
 
-            customAlert(`❌ Database test failed: ${error.message}\n\nPlease check:\n• Server is running\n• Database connection is active\n• Network connectivity is stable\n• You are logged in properly`, "Database Test Error", "error");
+            customAlert(`âŒ Database test failed: ${error.message}\n\nPlease check:\nâ€¢ Server is running\nâ€¢ Database connection is active\nâ€¢ Network connectivity is stable\nâ€¢ You are logged in properly`, "Database Test Error", "error");
 
         });
 
@@ -25323,7 +25323,7 @@ function testDataFlow() {
 
         // Fallback to direct fetch if API service not available
 
-        console.log('⚠️ API service not available, using direct fetch');
+        console.log('âš ï¸ API service not available, using direct fetch');
 
         const baseUrl = window.location.origin;
 
@@ -25349,7 +25349,7 @@ function testDataFlow() {
 
         .then(response => {
 
-            console.log('📡 Send response status:', response.status);
+            console.log('ðŸ“¡ Send response status:', response.status);
 
             return response.json();
 
@@ -25357,13 +25357,13 @@ function testDataFlow() {
 
         .then(data => {
 
-            console.log('✅ Data sent successfully:', data);
+            console.log('âœ… Data sent successfully:', data);
 
             
 
             // 2. Now fetch the data back from database
 
-            console.log('📥 Step 2: Fetching data from database...');
+            console.log('ðŸ“¥ Step 2: Fetching data from database...');
 
             
 
@@ -25385,7 +25385,7 @@ function testDataFlow() {
 
         .then(response => {
 
-            console.log('📡 Fetch response status:', response.status);
+            console.log('ðŸ“¡ Fetch response status:', response.status);
 
             return response.json();
 
@@ -25393,9 +25393,9 @@ function testDataFlow() {
 
         .then(workItems => {
 
-            console.log('✅ Data fetched successfully:', workItems);
+            console.log('âœ… Data fetched successfully:', workItems);
 
-            console.log(`📊 Found ${workItems.length} items in database`);
+            console.log(`ðŸ“Š Found ${workItems.length} items in database`);
 
             
 
@@ -25405,15 +25405,15 @@ function testDataFlow() {
 
             if (testItem) {
 
-                console.log('🎉 SUCCESS! Test data found in database:', testItem);
+                console.log('ðŸŽ‰ SUCCESS! Test data found in database:', testItem);
 
-                customAlert(`✅ Database test successful!\n\n• Test data sent to database ✅\n• Data retrieved from database ✅\n• Found ${workItems.length} total items\n• Test item ID: ${testItem.id}\n\n🎉 Frontend-Backend communication is working perfectly!`, "Database Test Success", "success");
+                customAlert(`âœ… Database test successful!\n\nâ€¢ Test data sent to database âœ…\nâ€¢ Data retrieved from database âœ…\nâ€¢ Found ${workItems.length} total items\nâ€¢ Test item ID: ${testItem.id}\n\nðŸŽ‰ Frontend-Backend communication is working perfectly!`, "Database Test Success", "success");
 
             } else {
 
-                console.log('⚠️ Test data not found, but other data exists');
+                console.log('âš ï¸ Test data not found, but other data exists');
 
-                customAlert(`⚠️ Partial success\n\n• Test data sent to database ✅\n• Data retrieved from database ✅\n• Found ${workItems.length} total items\n• Test item not immediately visible (may need refresh)\n\n🔄 Database operations are working!`, "Database Test Partial", "info");
+                customAlert(`âš ï¸ Partial success\n\nâ€¢ Test data sent to database âœ…\nâ€¢ Data retrieved from database âœ…\nâ€¢ Found ${workItems.length} total items\nâ€¢ Test item not immediately visible (may need refresh)\n\nðŸ”„ Database operations are working!`, "Database Test Partial", "info");
 
             }
 
@@ -25421,9 +25421,9 @@ function testDataFlow() {
 
         .catch(error => {
 
-            console.error('❌ Database test failed:', error);
+            console.error('âŒ Database test failed:', error);
 
-            customAlert(`❌ Database test failed: ${error.message}\n\nPlease check:\n• Server is running\n• Database connection is active\n• Network connectivity is stable`, "Database Test Error", "error");
+            customAlert(`âŒ Database test failed: ${error.message}\n\nPlease check:\nâ€¢ Server is running\nâ€¢ Database connection is active\nâ€¢ Network connectivity is stable`, "Database Test Error", "error");
 
         });
 
@@ -25453,7 +25453,7 @@ function uploadSafetyPolicies(){
 
                 <button type="button" id="togglePolicyFormBtn" onclick="togglePolicyForm()" class="action" style="background: #007bff;">
 
-                    📋 Upload New Policy
+                    ðŸ“‹ Upload New Policy
 
                 </button>
 
@@ -25601,9 +25601,9 @@ function uploadSafetyPolicies(){
 
                     <div class="form-actions">
 
-                        <button type="submit" class="btn-primary">💾 Save Policy</button>
+                        <button type="submit" class="btn-primary">ðŸ’¾ Save Policy</button>
 
-                        <button type="button" onclick="togglePolicyForm()" class="btn-secondary">❌ Cancel</button>
+                        <button type="button" onclick="togglePolicyForm()" class="btn-secondary">âŒ Cancel</button>
 
                     </div>
 
@@ -25699,7 +25699,7 @@ function registerCompanyCar(){
 
                 <button type="button" id="toggleCarFormBtn" onclick="toggleCarForm()" class="action" style="background: #007bff;">
 
-                    🚗 Open Vehicle Registration Form
+                    ðŸš— Open Vehicle Registration Form
 
                 </button>
 
@@ -25991,11 +25991,11 @@ function registerCompanyCar(){
 
                 <div class="form-actions">
 
-                    <button type="submit" class="btn-primary">🚗 Register Vehicle</button>
+                    <button type="submit" class="btn-primary">ðŸš— Register Vehicle</button>
 
-                    <button type="button" onclick="resetCarForm()" class="btn-secondary">🔄 Reset Form</button>
+                    <button type="button" onclick="resetCarForm()" class="btn-secondary">ðŸ”„ Reset Form</button>
 
-                    <button type="button" onclick="toggleCarForm()" class="btn-secondary" style="background: #dc3545; margin-left: 10px;">❌ Close Form</button>
+                    <button type="button" onclick="toggleCarForm()" class="btn-secondary" style="background: #dc3545; margin-left: 10px;">âŒ Close Form</button>
 
                 </div>
 
@@ -26025,7 +26025,7 @@ async function loadDriversForCarRegistration() {
 
     try {
 
-        console.log('🚗 Loading drivers for car registration...');
+        console.log('ðŸš— Loading drivers for car registration...');
 
         const baseUrl = window.location.origin;
 
@@ -26051,7 +26051,7 @@ async function loadDriversForCarRegistration() {
 
         if (!driverSelect) {
 
-            console.log('⚠️ Driver select element not found');
+            console.log('âš ï¸ Driver select element not found');
 
             return;
 
@@ -26093,13 +26093,13 @@ async function loadDriversForCarRegistration() {
 
         
 
-        console.log(`✅ Loaded ${drivers.length} drivers for car registration`);
+        console.log(`âœ… Loaded ${drivers.length} drivers for car registration`);
 
         
 
     } catch (error) {
 
-        console.error('❌ Error loading drivers for car registration:', error);
+        console.error('âŒ Error loading drivers for car registration:', error);
 
         
 
@@ -26189,7 +26189,7 @@ async function saveCarRegistration(){
 
         if (missingFields.length > 0) {
 
-            showNotification('❌ Validation Error', `Please fill in all required fields: ${missingFields.join(', ')}`, 'error');
+            showNotification('âŒ Validation Error', `Please fill in all required fields: ${missingFields.join(', ')}`, 'error');
 
             return false;
 
@@ -26197,7 +26197,7 @@ async function saveCarRegistration(){
 
         
 
-        console.log('🚗 Registering company car:', formData);
+        console.log('ðŸš— Registering company car:', formData);
 
         
 
@@ -26227,7 +26227,7 @@ async function saveCarRegistration(){
 
             const errorText = await response.text();
 
-            console.error('❌ Server response error:', errorText);
+            console.error('âŒ Server response error:', errorText);
 
             throw new Error(`HTTP ${response.status}: ${response.statusText} - ${errorText}`);
 
@@ -26237,13 +26237,13 @@ async function saveCarRegistration(){
 
         const data = await response.json();
 
-        console.log('✅ Car registered successfully:', data);
+        console.log('âœ… Car registered successfully:', data);
 
         
 
         // Show success notification
 
-        showNotification('✅ Vehicle Registration Successful!', `Track Number: ${formData.trackNumber}\nVehicle: ${formData.carName} (${formData.regNo})\nDriver: ${formData.driver}\nRegistered: ${new Date().toLocaleString()}`, 'success');
+        showNotification('âœ… Vehicle Registration Successful!', `Track Number: ${formData.trackNumber}\nVehicle: ${formData.carName} (${formData.regNo})\nDriver: ${formData.driver}\nRegistered: ${new Date().toLocaleString()}`, 'success');
 
         
 
@@ -26263,11 +26263,11 @@ async function saveCarRegistration(){
 
     } catch (error) {
 
-        console.error('❌ Error registering car:', error);
+        console.error('âŒ Error registering car:', error);
 
-        console.error('❌ Error details:', error.message);
+        console.error('âŒ Error details:', error.message);
 
-        showNotification('❌ Registration Failed', `Please try again or contact system administrator\n\nError: ${error.message}`, 'error');
+        showNotification('âŒ Registration Failed', `Please try again or contact system administrator\n\nError: ${error.message}`, 'error');
 
         return false;
 
@@ -26445,7 +26445,7 @@ async function loadCompanyCars() {
 
         if (!window.KashTecAPI || typeof window.KashTecAPI.get !== 'function') {
 
-            console.error('❌ KashTecAPI.get is not available');
+            console.error('âŒ KashTecAPI.get is not available');
 
             throw new Error('API service not loaded properly');
 
@@ -26457,7 +26457,9 @@ async function loadCompanyCars() {
 
         
 
-        if (response.success && response.data.length > 0) {
+        const campaigns = response.campaigns || response.data || [];
+
+        if (response.success && campaigns.length > 0) {
 
             recordsList.innerHTML = response.data.map(car => {
 
@@ -26649,7 +26651,7 @@ async function loadCompanyCars() {
 
                         <div class="description-info">
 
-                            <div class="car-description" title="${mappedCar.description || 'No description provided'}">${mappedCar.description ? (mappedCar.description.length > 30 ? mappedCar.description.substring(0, 30) + '...' : mappedCar.description) : '—'}</div>
+                            <div class="car-description" title="${mappedCar.description || 'No description provided'}">${mappedCar.description ? (mappedCar.description.length > 30 ? mappedCar.description.substring(0, 30) + '...' : mappedCar.description) : 'â€”'}</div>
 
                         </div>
 
@@ -26659,7 +26661,7 @@ async function loadCompanyCars() {
 
                         <div class="notes-info">
 
-                            <div class="additional-notes" title="${mappedCar.additional_notes || 'No additional notes'}">${mappedCar.additional_notes ? (mappedCar.additional_notes.length > 25 ? mappedCar.additional_notes.substring(0, 25) + '...' : mappedCar.additional_notes) : '—'}</div>
+                            <div class="additional-notes" title="${mappedCar.additional_notes || 'No additional notes'}">${mappedCar.additional_notes ? (mappedCar.additional_notes.length > 25 ? mappedCar.additional_notes.substring(0, 25) + '...' : mappedCar.additional_notes) : 'â€”'}</div>
 
                         </div>
 
@@ -26669,11 +26671,11 @@ async function loadCompanyCars() {
 
                         <div class="car-actions">
 
-                            <button class="action-btn view" onclick="viewCarDetails('${mappedCar.track_number}')" title="View Details">👁️</button>
+                            <button class="action-btn view" onclick="viewCarDetails('${mappedCar.track_number}')" title="View Details">ðŸ‘ï¸</button>
 
-                            <button class="action-btn edit" onclick="editCar('${mappedCar.track_number}')" title="Edit Vehicle">✏️</button>
+                            <button class="action-btn edit" onclick="editCar('${mappedCar.track_number}')" title="Edit Vehicle">âœï¸</button>
 
-                            <button class="action-btn delete" onclick="deleteCar('${mappedCar.track_number}')" title="Delete Vehicle">🗑️</button>
+                            <button class="action-btn delete" onclick="deleteCar('${mappedCar.track_number}')" title="Delete Vehicle">ðŸ—‘ï¸</button>
 
                         </div>
 
@@ -26693,7 +26695,7 @@ async function loadCompanyCars() {
 
     } catch (error) {
 
-        console.error('❌ Error loading vehicle records:', error);
+        console.error('âŒ Error loading vehicle records:', error);
 
         // Load sample data on error
 
@@ -26709,7 +26711,7 @@ async function loadCompanyCars() {
 
 function loadSampleCars() {
 
-    console.log('📋 Loading sample car records...');
+    console.log('ðŸ“‹ Loading sample car records...');
 
     
 
@@ -27045,7 +27047,7 @@ function loadSampleCars() {
 
                 <div class="description-info">
 
-                    <div class="car-description" title="${car.car_description || 'No description provided'}">${car.car_description ? (car.car_description.length > 30 ? car.car_description.substring(0, 30) + '...' : car.car_description) : '—'}</div>
+                    <div class="car-description" title="${car.car_description || 'No description provided'}">${car.car_description ? (car.car_description.length > 30 ? car.car_description.substring(0, 30) + '...' : car.car_description) : 'â€”'}</div>
 
                 </div>
 
@@ -27055,7 +27057,7 @@ function loadSampleCars() {
 
                 <div class="notes-info">
 
-                    <div class="additional-notes" title="${car.additional_notes || 'No additional notes'}">${car.additional_notes ? (car.additional_notes.length > 25 ? car.additional_notes.substring(0, 25) + '...' : car.additional_notes) : '—'}</div>
+                    <div class="additional-notes" title="${car.additional_notes || 'No additional notes'}">${car.additional_notes ? (car.additional_notes.length > 25 ? car.additional_notes.substring(0, 25) + '...' : car.additional_notes) : 'â€”'}</div>
 
                 </div>
 
@@ -27065,11 +27067,11 @@ function loadSampleCars() {
 
                 <div class="car-actions">
 
-                    <button class="action-btn view" onclick="viewCarDetails('${car.track_number}')" title="View Details">👁️</button>
+                    <button class="action-btn view" onclick="viewCarDetails('${car.track_number}')" title="View Details">ðŸ‘ï¸</button>
 
-                    <button class="action-btn edit" onclick="editCar('${car.track_number}')" title="Edit Vehicle">✏️</button>
+                    <button class="action-btn edit" onclick="editCar('${car.track_number}')" title="Edit Vehicle">âœï¸</button>
 
-                    <button class="action-btn delete" onclick="deleteCar('${car.track_number}')" title="Delete Vehicle">🗑️</button>
+                    <button class="action-btn delete" onclick="deleteCar('${car.track_number}')" title="Delete Vehicle">ðŸ—‘ï¸</button>
 
                 </div>
 
@@ -27081,7 +27083,7 @@ function loadSampleCars() {
 
     
 
-    console.log('✅ Sample car records loaded successfully');
+    console.log('âœ… Sample car records loaded successfully');
 
 }
 
@@ -27145,11 +27147,11 @@ function manageTransportCosts(){
 
                 <div style="display: flex; gap: 10px;">
 
-                    <button onclick="loadTransportCosts()" class="action" style="background: #28a745;">🔄 Refresh</button>
+                    <button onclick="loadTransportCosts()" class="action" style="background: #28a745;">ðŸ”„ Refresh</button>
 
-                    <button onclick="showAddTransportCostForm()" class="action" style="background: #007bff;">➕ Add Cost</button>
+                    <button onclick="showAddTransportCostForm()" class="action" style="background: #007bff;">âž• Add Cost</button>
 
-                    <button onclick="loadTransportCostSummary()" class="action" style="background: #6c757d;">📊 Summary</button>
+                    <button onclick="loadTransportCostSummary()" class="action" style="background: #6c757d;">ðŸ“Š Summary</button>
 
                 </div>
 
@@ -27279,7 +27281,7 @@ function registerDriver(){
 
                 <button type="button" id="toggleDriverFormBtn" onclick="toggleDriverForm()" class="action" style="background: #007bff;">
 
-                    👤 Open Driver Registration Form
+                    ðŸ‘¤ Open Driver Registration Form
 
                 </button>
 
@@ -27817,11 +27819,11 @@ function registerDriver(){
 
                 <div class="form-actions">
 
-                    <button type="submit" class="btn-primary">👤 Register Driver</button>
+                    <button type="submit" class="btn-primary">ðŸ‘¤ Register Driver</button>
 
-                    <button type="button" onclick="resetDriverForm()" class="btn-secondary">🔄 Reset Form</button>
+                    <button type="button" onclick="resetDriverForm()" class="btn-secondary">ðŸ”„ Reset Form</button>
 
-                    <button type="button" onclick="toggleDriverForm()" class="btn-secondary" style="background: #dc3545; margin-left: 10px;">❌ Close Form</button>
+                    <button type="button" onclick="toggleDriverForm()" class="btn-secondary" style="background: #dc3545; margin-left: 10px;">âŒ Close Form</button>
 
                 </div>
 
@@ -27913,7 +27915,7 @@ async function saveDriverRegistration(){
 
     
 
-    console.log('👤 Registering driver:', formData);
+    console.log('ðŸ‘¤ Registering driver:', formData);
 
     
 
@@ -27936,41 +27938,41 @@ async function saveDriverRegistration(){
         body: JSON.stringify(formData)
     })
     .then(async response => {
-        console.log('📊 Driver registration response status:', response.status);
+        console.log('ðŸ“Š Driver registration response status:', response.status);
         
         if (!response.ok) {
             const errorData = await response.json().catch(() => ({}));
-            console.error('❌ Driver API Error Response:', errorData);
-            console.error('❌ Response Status:', response.status);
-            console.error('❌ Response Text:', response.statusText);
+            console.error('âŒ Driver API Error Response:', errorData);
+            console.error('âŒ Response Status:', response.status);
+            console.error('âŒ Response Text:', response.statusText);
             
             // Only redirect on actual authentication failures with valid tokens
             if (response.status === 401 && authToken && errorData.error && errorData.error.toLowerCase().includes('unauthorized')) {
-                showNotification('❌ Session Expired', 'Please login again.', 'error');
+                showNotification('âŒ Session Expired', 'Please login again.', 'error');
                 setTimeout(() => {
                     window.location.href = '/login.html';
                 }, 2000);
                 return;
             } else if (response.status === 400) {
-                showNotification(`❌ Validation Error: ${errorData.error || 'Invalid data provided'}`, 'Validation Error', 'error');
+                showNotification(`âŒ Validation Error: ${errorData.error || 'Invalid data provided'}`, 'Validation Error', 'error');
                 return;
             } else if (response.status === 404) {
-                showNotification('❌ API endpoint not found. The server may need to be restarted.', 'Endpoint Error', 'error');
+                showNotification('âŒ API endpoint not found. The server may need to be restarted.', 'Endpoint Error', 'error');
                 return;
             } else if (response.status === 500) {
-                showNotification(`❌ Server Error: ${errorData.error || 'Internal server error occurred'}`, 'Server Error', 'error');
+                showNotification(`âŒ Server Error: ${errorData.error || 'Internal server error occurred'}`, 'Server Error', 'error');
                 return;
             } else {
-                showNotification(`❌ Error: ${errorData.error || `HTTP ${response.status}: ${response.statusText}`}`, 'Request Error', 'error');
+                showNotification(`âŒ Error: ${errorData.error || `HTTP ${response.status}: ${response.statusText}`}`, 'Request Error', 'error');
                 return;
             }
         }
         
         const data = await response.json();
-        console.log('✅ Driver registered successfully:', data);
+        console.log('âœ… Driver registered successfully:', data);
         
         // Show success notification
-        showNotification('✅ Driver Registration Successful!', `Driver ID: ${formData.driverId}\nName: ${formData.driverName}\nLicense: ${formData.licenseType}\nPhone: ${formData.phoneNumber}\nEmail: ${formData.email}\nRegistered: ${new Date().toLocaleString()}`, 'success');
+        showNotification('âœ… Driver Registration Successful!', `Driver ID: ${formData.driverId}\nName: ${formData.driverName}\nLicense: ${formData.licenseType}\nPhone: ${formData.phoneNumber}\nEmail: ${formData.email}\nRegistered: ${new Date().toLocaleString()}`, 'success');
         
         // Reset form after successful registration
         setTimeout(() => {
@@ -27978,14 +27980,14 @@ async function saveDriverRegistration(){
         }, 2000);
     })
     .catch(error => {
-        console.error('❌ Error registering driver:', error);
-        console.error('❌ Error details:', error.message);
+        console.error('âŒ Error registering driver:', error);
+        console.error('âŒ Error details:', error.message);
         
         // Handle network errors
         if (error.name === 'TypeError' && error.message.includes('fetch')) {
-            showNotification('❌ Network Error', 'Please check your internet connection and try again.', 'error');
+            showNotification('âŒ Network Error', 'Please check your internet connection and try again.', 'error');
         } else {
-            showNotification('❌ Registration Failed', 'Please try again or contact system administrator', 'error');
+            showNotification('âŒ Registration Failed', 'Please try again or contact system administrator', 'error');
         }
     });
 
@@ -28110,10 +28112,10 @@ async function loadDrivers() {
         recordsList.innerHTML = '<tr><td colspan="9" class="loading">Loading driver records...</td></tr>';
 
 
-        console.log('📡 Fetching drivers from API...');
+        console.log('ðŸ“¡ Fetching drivers from API...');
 
         const response = await KashTecAPI.get('/api/drivers');
-        console.log('📊 API Response:', response);
+        console.log('ðŸ“Š API Response:', response);
 
 
 
@@ -28159,9 +28161,9 @@ async function loadDrivers() {
 
                         <div class="contact-info">
 
-                            <div class="phone">📱 ${driver.phone_number}</div>
+                            <div class="phone">ðŸ“± ${driver.phone_number}</div>
 
-                            <div class="email">📧 ${driver.email_address}</div>
+                            <div class="email">ðŸ“§ ${driver.email_address}</div>
 
                         </div>
 
@@ -28193,7 +28195,7 @@ async function loadDrivers() {
 
                             <div class="emergency-name">Emergency Contact</div>
 
-                            <div class="emergency-phone">📱 ${driver.phone_number}</div>
+                            <div class="emergency-phone">ðŸ“± ${driver.phone_number}</div>
 
                         </div>
 
@@ -28223,11 +28225,11 @@ async function loadDrivers() {
 
                         <div class="driver-actions">
 
-                            <button class="action-btn view" onclick="viewDriverDetails('${driver.driver_id}')" title="View Details">👁️</button>
+                            <button class="action-btn view" onclick="viewDriverDetails('${driver.driver_id}')" title="View Details">ðŸ‘ï¸</button>
 
-                            <button class="action-btn edit" onclick="editDriver('${driver.driver_id}')" title="Edit Driver">✏️</button>
+                            <button class="action-btn edit" onclick="editDriver('${driver.driver_id}')" title="Edit Driver">âœï¸</button>
 
-                            <button class="action-btn delete" onclick="deleteDriver('${driver.driver_id}')" title="Delete Driver">🗑️</button>
+                            <button class="action-btn delete" onclick="deleteDriver('${driver.driver_id}')" title="Delete Driver">ðŸ—‘ï¸</button>
 
                         </div>
 
@@ -28242,14 +28244,14 @@ async function loadDrivers() {
             recordsList.innerHTML = '<tr><td colspan="9" class="no-records">No driver records found. Register your first driver!</td></tr>';
         } else {
             // Unexpected response format
-            console.warn('⚠️ Unexpected API response format:', response);
+            console.warn('âš ï¸ Unexpected API response format:', response);
             loadSampleDrivers();
         }
 
     } catch (error) {
 
-        console.error('❌ Error loading driver records:', error);
-        console.error('❌ Error details:', error.message, error.stack);
+        console.error('âŒ Error loading driver records:', error);
+        console.error('âŒ Error details:', error.message, error.stack);
 
         // Load sample data on error
 
@@ -28265,7 +28267,7 @@ async function loadDrivers() {
 
 function loadSampleDrivers() {
 
-    console.log('👤 Loading sample driver records...');
+    console.log('ðŸ‘¤ Loading sample driver records...');
 
     
 
@@ -28619,9 +28621,9 @@ function loadSampleDrivers() {
 
                 <div class="contact-info">
 
-                    <div class="phone">📱 ${driver.phoneNumber}</div>
+                    <div class="phone">ðŸ“± ${driver.phoneNumber}</div>
 
-                    <div class="email">📧 ${driver.email}</div>
+                    <div class="email">ðŸ“§ ${driver.email}</div>
 
                     <div class="nida">NIDA: ${driver.nidaNumber}</div>
 
@@ -28673,7 +28675,7 @@ function loadSampleDrivers() {
 
                     <div class="emergency-name">${driver.emergencyContactName}</div>
 
-                    <div class="emergency-phone">📱 ${driver.emergencyContactNumber}</div>
+                    <div class="emergency-phone">ðŸ“± ${driver.emergencyContactNumber}</div>
 
                     <div class="emergency-relation">Relation: ${driver.emergencyRelationship}</div>
 
@@ -28705,11 +28707,11 @@ function loadSampleDrivers() {
 
                 <div class="driver-actions">
 
-                    <button class="action-btn view" onclick="viewDriverDetails('${driver.driverId}')" title="View Details">👁️</button>
+                    <button class="action-btn view" onclick="viewDriverDetails('${driver.driverId}')" title="View Details">ðŸ‘ï¸</button>
 
-                    <button class="action-btn edit" onclick="editDriver('${driver.driverId}')" title="Edit Driver">✏️</button>
+                    <button class="action-btn edit" onclick="editDriver('${driver.driverId}')" title="Edit Driver">âœï¸</button>
 
-                    <button class="action-btn delete" onclick="deleteDriver('${driver.driverId}')" title="Delete Driver">🗑️</button>
+                    <button class="action-btn delete" onclick="deleteDriver('${driver.driverId}')" title="Delete Driver">ðŸ—‘ï¸</button>
 
                 </div>
 
@@ -28721,7 +28723,7 @@ function loadSampleDrivers() {
 
     
 
-    console.log('✅ Sample driver records loaded successfully');
+    console.log('âœ… Sample driver records loaded successfully');
 
 }
 
@@ -28837,7 +28839,7 @@ async function viewDriverDetails(driverId) {
 
     } catch (error) {
 
-        console.error('❌ Error fetching driver details:', error);
+        console.error('âŒ Error fetching driver details:', error);
 
         customAlert('Failed to load driver details. Please try again.', 'Error', 'error');
 
@@ -28883,7 +28885,7 @@ async function editDriver(driverId) {
 
     } catch (error) {
 
-        console.error('❌ Error fetching driver details:', error);
+        console.error('âŒ Error fetching driver details:', error);
 
         customAlert('Failed to load driver details. Please try again.', 'Error', 'error');
 
@@ -28929,7 +28931,7 @@ async function deleteDriver(driverId) {
 
         } catch (error) {
 
-            console.error('❌ Error deleting driver:', error);
+            console.error('âŒ Error deleting driver:', error);
 
             customAlert('Failed to delete driver. Please try again.', 'Error', 'error');
 
@@ -28961,7 +28963,7 @@ function recordToolboxMeetings(){
 
                 <button type="button" id="toggleToolboxFormBtn" onclick="toggleToolboxForm()" class="action" style="background: #007bff;">
 
-                    🛠️ Record New Meeting
+                    ðŸ› ï¸ Record New Meeting
 
                 </button>
 
@@ -29287,7 +29289,7 @@ function trackPpeIssuance(){
 
                 <button type="button" id="togglePpeFormBtn" onclick="togglePpeForm()" class="action" style="background: #007bff;">
 
-                    🛡️ Issue New PPE
+                    ðŸ›¡ï¸ Issue New PPE
 
                 </button>
 
@@ -29659,7 +29661,7 @@ function markSafetyViolations(){
 
                 <button type="button" id="toggleViolationFormBtn" onclick="toggleViolationForm()" class="action" style="background: #007bff;">
 
-                    ⚠️ Record New Violation
+                    âš ï¸ Record New Violation
 
                 </button>
 
@@ -30035,7 +30037,7 @@ function markSafetyViolations(){
 
 async function loadViolations() {
 
-    console.log('🔄 Loading violations...');
+    console.log('ðŸ”„ Loading violations...');
 
     
 
@@ -30075,7 +30077,7 @@ async function loadViolations() {
 
         } catch (primaryError) {
 
-            console.warn('⚠️ Primary violations endpoint failed, trying fallback:', primaryError.message);
+            console.warn('âš ï¸ Primary violations endpoint failed, trying fallback:', primaryError.message);
 
             // Try fallback endpoint
 
@@ -30105,7 +30107,7 @@ async function loadViolations() {
 
             } catch (fallbackError) {
 
-                console.error('❌ All violations endpoints failed:', fallbackError.message);
+                console.error('âŒ All violations endpoints failed:', fallbackError.message);
 
                 // Load sample data for demonstration
 
@@ -30121,7 +30123,7 @@ async function loadViolations() {
 
         const violationsData = await response.json();
 
-        console.log('📊 Violations data:', violationsData);
+        console.log('ðŸ“Š Violations data:', violationsData);
 
         
 
@@ -30273,7 +30275,7 @@ async function loadViolations() {
 
         if (violations.length === 0) {
 
-            console.log('⚠️ No violations found in API data, using sample data');
+            console.log('âš ï¸ No violations found in API data, using sample data');
 
             loadSampleViolations();
 
@@ -30289,7 +30291,7 @@ async function loadViolations() {
 
     } catch (error) {
 
-        console.error('❌ Error loading violations:', error);
+        console.error('âŒ Error loading violations:', error);
 
         // Load sample data on error
 
@@ -30305,7 +30307,7 @@ async function loadViolations() {
 
 function loadSampleViolations() {
 
-    console.log('📋 Loading sample violations...');
+    console.log('ðŸ“‹ Loading sample violations...');
 
     
 
@@ -30787,7 +30789,7 @@ function displayViolations(violations) {
 
     if (!violationsList) {
 
-        console.error('❌ Violations list container not found!');
+        console.error('âŒ Violations list container not found!');
 
         return;
 
@@ -30831,31 +30833,31 @@ function displayViolations(violations) {
 
         // Get violation type display
 
-        const typeDisplay = violation.type === 'no-ppe' ? '👷 No PPE Worn' : 
+        const typeDisplay = violation.type === 'no-ppe' ? 'ðŸ‘· No PPE Worn' : 
 
-                           violation.type === 'improper-ppe' ? '⚠️ Improper PPE' : 
+                           violation.type === 'improper-ppe' ? 'âš ï¸ Improper PPE' : 
 
-                           violation.type === 'unsafe-act' ? '⚡ Unsafe Act' : 
+                           violation.type === 'unsafe-act' ? 'âš¡ Unsafe Act' : 
 
-                           violation.type === 'unsafe-condition' ? '🏚️ Unsafe Condition' : 
+                           violation.type === 'unsafe-condition' ? 'ðŸšï¸ Unsafe Condition' : 
 
-                           violation.type === 'procedure-violation' ? '📋 Procedure Violation' : 
+                           violation.type === 'procedure-violation' ? 'ðŸ“‹ Procedure Violation' : 
 
-                           violation.type === 'equipment-misuse' ? '🔧 Equipment Misuse' : 
+                           violation.type === 'equipment-misuse' ? 'ðŸ”§ Equipment Misuse' : 
 
-                           violation.type === 'unauthorized-work' ? '🚫 Unauthorized Work' : violation.type;
+                           violation.type === 'unauthorized-work' ? 'ðŸš« Unauthorized Work' : violation.type;
 
         
 
         // Get severity display
 
-        const severityDisplay = violation.severity === 'critical' ? '🔴 Critical' : 
+        const severityDisplay = violation.severity === 'critical' ? 'ðŸ”´ Critical' : 
 
-                               violation.severity === 'major' ? '🟠 Major' : 
+                               violation.severity === 'major' ? 'ðŸŸ  Major' : 
 
-                               violation.severity === 'moderate' ? '🟡 Moderate' : 
+                               violation.severity === 'moderate' ? 'ðŸŸ¡ Moderate' : 
 
-                               violation.severity === 'minor' ? '🟢 Minor' : violation.severity;
+                               violation.severity === 'minor' ? 'ðŸŸ¢ Minor' : violation.severity;
 
         
 
@@ -30871,13 +30873,13 @@ function displayViolations(violations) {
 
         // Get status display
 
-        const statusDisplay = violation.status === 'pending' ? '⏳ Pending' : 
+        const statusDisplay = violation.status === 'pending' ? 'â³ Pending' : 
 
-                             violation.status === 'resolved' ? '✅ Resolved' : 
+                             violation.status === 'resolved' ? 'âœ… Resolved' : 
 
-                             violation.status === 'investigating' ? '🔍 Investigating' : 
+                             violation.status === 'investigating' ? 'ðŸ” Investigating' : 
 
-                             violation.status === 'closed' ? '🔒 Closed' : violation.status;
+                             violation.status === 'closed' ? 'ðŸ”’ Closed' : violation.status;
 
         
 
@@ -30909,15 +30911,15 @@ function displayViolations(violations) {
 
         // Get corrective action display
 
-        const correctiveActionDisplay = violation.correctiveAction === 'warning' ? '⚠️ Verbal Warning' : 
+        const correctiveActionDisplay = violation.correctiveAction === 'warning' ? 'âš ï¸ Verbal Warning' : 
 
-                                      violation.correctiveAction === 'written-warning' ? '📝 Written Warning' : 
+                                      violation.correctiveAction === 'written-warning' ? 'ðŸ“ Written Warning' : 
 
-                                      violation.correctiveAction === 'retraining' ? '📚 Safety Retraining' : 
+                                      violation.correctiveAction === 'retraining' ? 'ðŸ“š Safety Retraining' : 
 
-                                      violation.correctiveAction === 'suspension' ? '🚫 Suspension' : 
+                                      violation.correctiveAction === 'suspension' ? 'ðŸš« Suspension' : 
 
-                                      violation.correctiveAction === 'termination' ? '❌ Termination' : violation.correctiveAction;
+                                      violation.correctiveAction === 'termination' ? 'âŒ Termination' : violation.correctiveAction;
 
         
 
@@ -31055,11 +31057,11 @@ function displayViolations(violations) {
 
                     <div class="violation-actions">
 
-                        <button class="action-btn view" onclick="viewViolationDetails('${violation.id}')" title="View Details">👁️</button>
+                        <button class="action-btn view" onclick="viewViolationDetails('${violation.id}')" title="View Details">ðŸ‘ï¸</button>
 
-                        <button class="action-btn edit" onclick="updateViolationStatus('${violation.id}')" title="Update Status">✏️</button>
+                        <button class="action-btn edit" onclick="updateViolationStatus('${violation.id}')" title="Update Status">âœï¸</button>
 
-                        <button class="action-btn download" onclick="downloadViolationReport('${violation.id}')" title="Download Report">📄</button>
+                        <button class="action-btn download" onclick="downloadViolationReport('${violation.id}')" title="Download Report">ðŸ“„</button>
 
                     </div>
 
@@ -31117,7 +31119,7 @@ function uploadInspectionReports(){
 
                 <button type="button" id="toggleInspectionFormBtn" onclick="toggleInspectionForm()" class="action" style="background: #007bff;">
 
-                    📋 Upload New Report
+                    ðŸ“‹ Upload New Report
 
                 </button>
 
@@ -31459,7 +31461,7 @@ function uploadInspectionReports(){
 
 async function loadInspectionRecords() {
 
-    console.log('🔄 Loading inspection records...');
+    console.log('ðŸ”„ Loading inspection records...');
 
     
 
@@ -31499,7 +31501,7 @@ async function loadInspectionRecords() {
 
         } catch (primaryError) {
 
-            console.warn('⚠️ Primary inspection records endpoint failed, trying fallback:', primaryError.message);
+            console.warn('âš ï¸ Primary inspection records endpoint failed, trying fallback:', primaryError.message);
 
             // Try fallback endpoint
 
@@ -31529,7 +31531,7 @@ async function loadInspectionRecords() {
 
             } catch (fallbackError) {
 
-                console.error('❌ All inspection records endpoints failed:', fallbackError.message);
+                console.error('âŒ All inspection records endpoints failed:', fallbackError.message);
 
                 // Load sample data for demonstration
 
@@ -31545,7 +31547,7 @@ async function loadInspectionRecords() {
 
         const inspectionRecordsData = await response.json();
 
-        console.log('📊 Inspection records data:', inspectionRecordsData);
+        console.log('ðŸ“Š Inspection records data:', inspectionRecordsData);
 
         
 
@@ -31581,7 +31583,7 @@ async function loadInspectionRecords() {
 
     } catch (error) {
 
-        console.error('❌ Error loading inspection records:', error);
+        console.error('âŒ Error loading inspection records:', error);
 
         // Load sample data on error
 
@@ -31597,7 +31599,7 @@ async function loadInspectionRecords() {
 
 function loadSampleInspectionRecords() {
 
-    console.log('📋 Loading sample inspection records...');
+    console.log('ðŸ“‹ Loading sample inspection records...');
 
     
 
@@ -31983,7 +31985,7 @@ function displayInspectionRecords(data) {
 
     if (!recordsList) {
 
-        console.error('❌ Inspection records list container not found!');
+        console.error('âŒ Inspection records list container not found!');
 
         return;
 
@@ -32115,17 +32117,17 @@ function displayInspectionRecords(data) {
 
         // Get inspection type badge
 
-        const typeDisplay = record.inspectionType === 'Routine Inspection' ? '🔍 Routine' : 
+        const typeDisplay = record.inspectionType === 'Routine Inspection' ? 'ðŸ” Routine' : 
 
-                           record.inspectionType === 'Compliance Audit' ? '📋 Audit' : 
+                           record.inspectionType === 'Compliance Audit' ? 'ðŸ“‹ Audit' : 
 
-                           record.inspectionType === 'Accident Investigation' ? '⚠️ Investigation' : 
+                           record.inspectionType === 'Accident Investigation' ? 'âš ï¸ Investigation' : 
 
-                           record.inspectionType === 'Equipment Inspection' ? '🔧 Equipment' : 
+                           record.inspectionType === 'Equipment Inspection' ? 'ðŸ”§ Equipment' : 
 
-                           record.inspectionType === 'Environmental Inspection' ? '🌱 Environmental' : 
+                           record.inspectionType === 'Environmental Inspection' ? 'ðŸŒ± Environmental' : 
 
-                           record.inspectionType === 'Fire Safety Inspection' ? '🔥 Fire Safety' : record.inspectionType;
+                           record.inspectionType === 'Fire Safety Inspection' ? 'ðŸ”¥ Fire Safety' : record.inspectionType;
 
         
 
@@ -32141,13 +32143,13 @@ function displayInspectionRecords(data) {
 
         
 
-        const complianceBadge = record.complianceStatus === 'fully-compliant' ? '✅ Fully Compliant' : 
+        const complianceBadge = record.complianceStatus === 'fully-compliant' ? 'âœ… Fully Compliant' : 
 
-                               record.complianceStatus === 'minor-issues' ? '⚠️ Minor Issues' : 
+                               record.complianceStatus === 'minor-issues' ? 'âš ï¸ Minor Issues' : 
 
-                               record.complianceStatus === 'major-issues' ? '🚨 Major Issues' : 
+                               record.complianceStatus === 'major-issues' ? 'ðŸš¨ Major Issues' : 
 
-                               record.complianceStatus === 'non-compliant' ? '❌ Non-Compliant' : '❓ Unknown';
+                               record.complianceStatus === 'non-compliant' ? 'âŒ Non-Compliant' : 'â“ Unknown';
 
         
 
@@ -32163,13 +32165,13 @@ function displayInspectionRecords(data) {
 
         
 
-        const riskBadge = record.riskLevel === 'low' ? '🟢 Low Risk' : 
+        const riskBadge = record.riskLevel === 'low' ? 'ðŸŸ¢ Low Risk' : 
 
-                         record.riskLevel === 'medium' ? '🟡 Medium Risk' : 
+                         record.riskLevel === 'medium' ? 'ðŸŸ¡ Medium Risk' : 
 
-                         record.riskLevel === 'high' ? '🔴 High Risk' : 
+                         record.riskLevel === 'high' ? 'ðŸ”´ High Risk' : 
 
-                         record.riskLevel === 'critical' ? '⚫ Critical Risk' : '❓ Unknown';
+                         record.riskLevel === 'critical' ? 'âš« Critical Risk' : 'â“ Unknown';
 
         
 
@@ -32249,11 +32251,11 @@ function displayInspectionRecords(data) {
 
                     <div class="inspection-actions">
 
-                        <button class="action-btn view" onclick="viewInspectionReport('${record.id}')" title="View Report">👁️</button>
+                        <button class="action-btn view" onclick="viewInspectionReport('${record.id}')" title="View Report">ðŸ‘ï¸</button>
 
-                        <button class="action-btn download" onclick="downloadInspectionReport('${record.id}')" title="Download Report">📥</button>
+                        <button class="action-btn download" onclick="downloadInspectionReport('${record.id}')" title="Download Report">ðŸ“¥</button>
 
-                        <button class="action-btn edit" onclick="editInspectionReport('${record.id}')" title="Edit Report">✏️</button>
+                        <button class="action-btn edit" onclick="editInspectionReport('${record.id}')" title="Edit Report">âœï¸</button>
 
                     </div>
 
@@ -32507,7 +32509,7 @@ async function loadSafetyFromAPI() {
 
                     
 
-                    console.log('🔍 Raw HSE response in loadSafetyFromAPI:', hseData);
+                    console.log('ðŸ” Raw HSE response in loadSafetyFromAPI:', hseData);
 
                     
 
@@ -32517,9 +32519,9 @@ async function loadSafetyFromAPI() {
 
                     
 
-                    console.log('🔍 Full HSE array before filtering:', hseArray);
+                    console.log('ðŸ” Full HSE array before filtering:', hseArray);
 
-                    console.log('🔍 HSE array length:', hseArray.length);
+                    console.log('ðŸ” HSE array length:', hseArray.length);
 
                     
 
@@ -32545,13 +32547,13 @@ async function loadSafetyFromAPI() {
 
                             );
 
-                            console.log(`🔍 Filtering item ${item.id}: ${item.work_type} -> ${isSafety}`);
+                            console.log(`ðŸ” Filtering item ${item.id}: ${item.work_type} -> ${isSafety}`);
 
                             return isSafety;
 
                         }).map((item, index) => {
 
-                            console.log(`📝 Mapping safety item ${item.id}:`, item);
+                            console.log(`ðŸ“ Mapping safety item ${item.id}:`, item);
 
                             return {
 
@@ -32595,7 +32597,7 @@ async function loadSafetyFromAPI() {
 
                     
 
-                    console.log('✅ Transformed safety data in loadSafetyFromAPI:', safetyData);
+                    console.log('âœ… Transformed safety data in loadSafetyFromAPI:', safetyData);
 
                     
 
@@ -32605,7 +32607,7 @@ async function loadSafetyFromAPI() {
 
                 } catch (primaryError) {
 
-                    console.warn('⚠️ Primary safety endpoint failed, trying fallback:', primaryError.message);
+                    console.warn('âš ï¸ Primary safety endpoint failed, trying fallback:', primaryError.message);
 
                     
 
@@ -32695,7 +32697,7 @@ async function loadSafetyFromAPI() {
 
                     } catch (fallbackError) {
 
-                        console.error('❌ All safety endpoints failed:', fallbackError.message);
+                        console.error('âŒ All safety endpoints failed:', fallbackError.message);
 
                         throw fallbackError;
 
@@ -32971,19 +32973,19 @@ function updateSafetyTable(projects) {
 
                 <button class="action-btn" onclick="viewProjectSafetyDetails(${project.id})" title="View Details">
 
-                    👁️
+                    ðŸ‘ï¸
 
                 </button>
 
                 <button class="action-btn" onclick="generateSafetyReport(${project.id})" title="Generate Report">
 
-                    📊
+                    ðŸ“Š
 
                 </button>
 
                 <button class="action-btn" onclick="scheduleInspection(${project.id})" title="Schedule Inspection">
 
-                    📅
+                    ðŸ“…
 
                 </button>
 
@@ -33313,7 +33315,7 @@ function updateSafetyDashboard(data) {
 
             <div class="trend-bar">
 
-                <div class="trend-fill ${trends.incidentRate?.trend || 'stable'}" style="width: ${trends.incidentRate?.value || 30}%">${trends.incidentRate?.change || '→ No data'}</div>
+                <div class="trend-fill ${trends.incidentRate?.trend || 'stable'}" style="width: ${trends.incidentRate?.value || 30}%">${trends.incidentRate?.change || 'â†’ No data'}</div>
 
             </div>
 
@@ -33325,7 +33327,7 @@ function updateSafetyDashboard(data) {
 
             <div class="trend-bar">
 
-                <div class="trend-fill ${trends.ppeCompliance?.trend || 'stable'}" style="width: ${trends.ppeCompliance?.value || 88}%">${trends.ppeCompliance?.change || '→ No data'}</div>
+                <div class="trend-fill ${trends.ppeCompliance?.trend || 'stable'}" style="width: ${trends.ppeCompliance?.value || 88}%">${trends.ppeCompliance?.change || 'â†’ No data'}</div>
 
             </div>
 
@@ -33337,7 +33339,7 @@ function updateSafetyDashboard(data) {
 
             <div class="trend-bar">
 
-                <div class="trend-fill ${trends.safetyTraining?.trend || 'stable'}" style="width: ${trends.safetyTraining?.value || 95}%">${trends.safetyTraining?.change || '→ No data'}</div>
+                <div class="trend-fill ${trends.safetyTraining?.trend || 'stable'}" style="width: ${trends.safetyTraining?.value || 95}%">${trends.safetyTraining?.change || 'â†’ No data'}</div>
 
             </div>
 
@@ -33463,7 +33465,7 @@ function filterSafetyProjects() {
 
     
 
-    console.log('🔍 Filtering projects by:', filterValue);
+    console.log('ðŸ” Filtering projects by:', filterValue);
 
     
 
@@ -33511,7 +33513,7 @@ function filterSafetyProjects() {
 
     
 
-    console.log(`✅ Showing ${visibleCount} projects for filter: ${filterLabel}`);
+    console.log(`âœ… Showing ${visibleCount} projects for filter: ${filterLabel}`);
 
 }
 
@@ -33521,7 +33523,7 @@ function filterSafetyProjects() {
 
 (function() {
 
-    console.log('🚀 Immediate form protection script executing');
+    console.log('ðŸš€ Immediate form protection script executing');
 
     
 
@@ -33531,7 +33533,7 @@ function filterSafetyProjects() {
 
     window.recordIncidentReports = function() {
 
-        console.log('🔧 recordIncidentReports called, adding form protection');
+        console.log('ðŸ”§ recordIncidentReports called, adding form protection');
 
         
 
@@ -33549,7 +33551,7 @@ function filterSafetyProjects() {
 
             if (incidentForm) {
 
-                console.log('🛡️ Adding immediate form protection');
+                console.log('ðŸ›¡ï¸ Adding immediate form protection');
 
                 
 
@@ -33569,7 +33571,7 @@ function filterSafetyProjects() {
 
                 incidentForm.submit = function() {
 
-                    console.log('🚫 Form.submit() called - PREVENTING!');
+                    console.log('ðŸš« Form.submit() called - PREVENTING!');
 
                     return false;
 
@@ -33581,7 +33583,7 @@ function filterSafetyProjects() {
 
                 incidentForm.addEventListener('submit', function(event) {
 
-                    console.log('🛑 Form submit event - PREVENTING!');
+                    console.log('ðŸ›‘ Form submit event - PREVENTING!');
 
                     event.preventDefault();
 
@@ -33607,11 +33609,11 @@ function filterSafetyProjects() {
 
                 allButtons.forEach((button, index) => {
 
-                    console.log(`🔘 Overriding button ${index + 1}`);
+                    console.log(`ðŸ”˜ Overriding button ${index + 1}`);
 
                     button.addEventListener('click', function(clickEvent) {
 
-                        console.log('🔘 Button clicked - PREVENTING default!');
+                        console.log('ðŸ”˜ Button clicked - PREVENTING default!');
 
                         clickEvent.preventDefault();
 
@@ -33639,7 +33641,7 @@ function filterSafetyProjects() {
 
                         button.onclick = function(e) {
 
-                            console.log('🔘 Button onclick overridden');
+                            console.log('ðŸ”˜ Button onclick overridden');
 
                             e.preventDefault();
 
@@ -33657,11 +33659,11 @@ function filterSafetyProjects() {
 
                 
 
-                console.log('✅ Immediate form protection applied');
+                console.log('âœ… Immediate form protection applied');
 
             } else {
 
-                console.log('❌ Form not found for immediate protection');
+                console.log('âŒ Form not found for immediate protection');
 
             }
 
@@ -33681,7 +33683,7 @@ function filterSafetyProjects() {
 
 document.addEventListener('DOMContentLoaded', function() {
 
-    console.log('🚀 DOM loaded, setting up comprehensive form protection');
+    console.log('ðŸš€ DOM loaded, setting up comprehensive form protection');
 
     
 
@@ -33691,7 +33693,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     if (incidentForm) {
 
-        console.log('✅ Incident form found, adding multiple protection layers');
+        console.log('âœ… Incident form found, adding multiple protection layers');
 
         
 
@@ -33703,7 +33705,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
         incidentForm.removeAttribute('method');
 
-        console.log('🔧 Removed form attributes');
+        console.log('ðŸ”§ Removed form attributes');
 
         
 
@@ -33711,7 +33713,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
         incidentForm.submit = function() {
 
-            console.log('🚫 Native form.submit() called - PREVENTING!');
+            console.log('ðŸš« Native form.submit() called - PREVENTING!');
 
             return false;
 
@@ -33723,7 +33725,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
         incidentForm.addEventListener('submit', function(event) {
 
-            console.log('📝 Form submit event triggered - PREVENTING!');
+            console.log('ðŸ“ Form submit event triggered - PREVENTING!');
 
             event.preventDefault();
 
@@ -33733,7 +33735,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
             
 
-            console.log('🔒 Default form submission prevented');
+            console.log('ðŸ”’ Default form submission prevented');
 
             
 
@@ -33741,7 +33743,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
             const result = saveIncidentReport();
 
-            console.log('📊 saveIncidentReport returned:', result);
+            console.log('ðŸ“Š saveIncidentReport returned:', result);
 
             
 
@@ -33757,11 +33759,11 @@ document.addEventListener('DOMContentLoaded', function() {
 
         submitButtons.forEach((button, index) => {
 
-            console.log(`🔘 Adding protection to button ${index + 1}`);
+            console.log(`ðŸ”˜ Adding protection to button ${index + 1}`);
 
             button.addEventListener('click', function(event) {
 
-                console.log('🔘 Submit button clicked - PREVENTING!');
+                console.log('ðŸ”˜ Submit button clicked - PREVENTING!');
 
                 event.preventDefault();
 
@@ -33783,11 +33785,11 @@ document.addEventListener('DOMContentLoaded', function() {
 
         
 
-        console.log('✅ Multiple form protection layers added successfully');
+        console.log('âœ… Multiple form protection layers added successfully');
 
     } else {
 
-        console.log('ℹ️ Incident form not found - may not be visible yet');
+        console.log('â„¹ï¸ Incident form not found - may not be visible yet');
 
     }
 
@@ -33801,7 +33803,7 @@ window.addEventListener('submit', function(event) {
 
     if (event.target && event.target.id === 'incidentForm') {
 
-        console.log('🌐 Global form submit catcher - PREVENTING!');
+        console.log('ðŸŒ Global form submit catcher - PREVENTING!');
 
         event.preventDefault();
 
@@ -33829,7 +33831,7 @@ window.addEventListener('click', function(event) {
 
     if (form && (target.tagName === 'BUTTON' || target.type === 'submit')) {
 
-        console.log('🌐 Global click catcher - PREVENTING form submission!');
+        console.log('ðŸŒ Global click catcher - PREVENTING form submission!');
 
         event.preventDefault();
 
@@ -33855,7 +33857,7 @@ window.addEventListener('click', function(event) {
 
 function saveIncidentReport() {
 
-    console.log('🚀 saveIncidentReport function called');
+    console.log('ðŸš€ saveIncidentReport function called');
 
     
 
@@ -33871,15 +33873,15 @@ function saveIncidentReport() {
 
         
 
-        console.log('📝 Form values:', { incidentType, severityLevel, incidentDescription });
+        console.log('ðŸ“ Form values:', { incidentType, severityLevel, incidentDescription });
 
         
 
         if (!incidentType || !severityLevel || !incidentDescription) {
 
-            console.log('❌ Validation failed - missing required fields');
+            console.log('âŒ Validation failed - missing required fields');
 
-            customAlert('Please fill in all required fields:\n\n• Incident Type\n• Severity Level\n• Incident Description', "Validation Error", "error");
+            customAlert('Please fill in all required fields:\n\nâ€¢ Incident Type\nâ€¢ Severity Level\nâ€¢ Incident Description', "Validation Error", "error");
 
             return false;
 
@@ -33923,7 +33925,7 @@ function saveIncidentReport() {
 
         
 
-        console.log('📝 Sending work item:', workItem);
+        console.log('ðŸ“ Sending work item:', workItem);
 
         
 
@@ -33961,7 +33963,7 @@ function saveIncidentReport() {
 
         .then(response => {
 
-            console.log('📡 API Response status:', response.status);
+            console.log('ðŸ“¡ API Response status:', response.status);
 
             return response.json();
 
@@ -33969,7 +33971,7 @@ function saveIncidentReport() {
 
         .then(data => {
 
-            console.log('📊 API Response data:', data);
+            console.log('ðŸ“Š API Response data:', data);
 
             
 
@@ -33985,7 +33987,7 @@ function saveIncidentReport() {
 
             showRealProblemNotification('SUCCESS', {
 
-                message: `✅ Incident report recorded successfully!\n\n📋 Details:\n• Incident ID: ${data.id}\n• Type: ${workItem.incident_type}\n• Severity: ${workItem.severity}\n• Priority: ${workItem.priority}\n• Assigned to: ${workItem.assigned_to}\n• Due Date: ${workItem.due_date}\n\n🎉 Incident saved to database without page refresh!`,
+                message: `âœ… Incident report recorded successfully!\n\nðŸ“‹ Details:\nâ€¢ Incident ID: ${data.id}\nâ€¢ Type: ${workItem.incident_type}\nâ€¢ Severity: ${workItem.severity}\nâ€¢ Priority: ${workItem.priority}\nâ€¢ Assigned to: ${workItem.assigned_to}\nâ€¢ Due Date: ${workItem.due_date}\n\nðŸŽ‰ Incident saved to database without page refresh!`,
 
                 incidentId: data.id,
 
@@ -34026,7 +34028,7 @@ function saveIncidentReport() {
 
         .catch(error => {
 
-            console.error('❌ Error recording incident:', error);
+            console.error('âŒ Error recording incident:', error);
 
             
 
@@ -34042,37 +34044,37 @@ function saveIncidentReport() {
 
                 errorCause = 'Network connection failed';
 
-                troubleshooting = '• Check internet connection\n• Verify server is running\n• Try again in a moment';
+                troubleshooting = 'â€¢ Check internet connection\nâ€¢ Verify server is running\nâ€¢ Try again in a moment';
 
             } else if (error.message.includes('400')) {
 
                 errorCause = 'Invalid incident data';
 
-                troubleshooting = '• Fill all required fields correctly\n• Check incident type selection\n• Verify severity level\n• Ensure description is provided';
+                troubleshooting = 'â€¢ Fill all required fields correctly\nâ€¢ Check incident type selection\nâ€¢ Verify severity level\nâ€¢ Ensure description is provided';
 
             } else if (error.message.includes('404')) {
 
                 errorCause = 'HSE API endpoint not found';
 
-                troubleshooting = '• Server routing issue\n• Contact system administrator';
+                troubleshooting = 'â€¢ Server routing issue\nâ€¢ Contact system administrator';
 
             } else if (error.message.includes('500')) {
 
                 errorCause = 'Server internal error';
 
-                troubleshooting = '• Database connection issue\n• Server configuration problem\n• Contact system administrator';
+                troubleshooting = 'â€¢ Database connection issue\nâ€¢ Server configuration problem\nâ€¢ Contact system administrator';
 
             } else if (error.message.includes('validation') || error.message.includes('required')) {
 
                 errorCause = 'Form validation failed';
 
-                troubleshooting = '• Fill all required fields\n• Check field formats\n• Ensure incident type is selected\n• Verify severity level';
+                troubleshooting = 'â€¢ Fill all required fields\nâ€¢ Check field formats\nâ€¢ Ensure incident type is selected\nâ€¢ Verify severity level';
 
             } else if (error.message.includes('database') || error.message.includes('SQL')) {
 
                 errorCause = 'Database operation failed';
 
-                troubleshooting = '• Database connection issue\n• HSE work table might not exist\n• Contact system administrator';
+                troubleshooting = 'â€¢ Database connection issue\nâ€¢ HSE work table might not exist\nâ€¢ Contact system administrator';
 
             }
 
@@ -34088,7 +34090,7 @@ function saveIncidentReport() {
 
                 troubleshooting: troubleshooting,
 
-                message: `❌ Incident report failed!\n\n🔍 Error Cause: ${errorCause}\n\n🛠️ Troubleshooting:\n${troubleshooting}\n\n📝 Technical Details:\n${error.message}\n\n💡 Please fix the issue and try again.`,
+                message: `âŒ Incident report failed!\n\nðŸ” Error Cause: ${errorCause}\n\nðŸ› ï¸ Troubleshooting:\n${troubleshooting}\n\nðŸ“ Technical Details:\n${error.message}\n\nðŸ’¡ Please fix the issue and try again.`,
 
                 incidentType: incidentType || 'Unknown',
 
@@ -34104,7 +34106,7 @@ function saveIncidentReport() {
 
         
 
-        console.log('✅ Function completed, returning false to prevent form submission');
+        console.log('âœ… Function completed, returning false to prevent form submission');
 
         return false;
 
@@ -34112,7 +34114,7 @@ function saveIncidentReport() {
 
     } catch (error) {
 
-        console.error('❌ Unexpected error in saveIncidentReport:', error);
+        console.error('âŒ Unexpected error in saveIncidentReport:', error);
 
         customAlert(`Unexpected error: ${error.message}\n\nPlease try again or contact support.`, "System Error", "error");
 
@@ -34128,7 +34130,7 @@ function saveIncidentReport() {
 
 function testAPIConnectivity() {
 
-    console.log('🧪 Testing API connectivity...');
+    console.log('ðŸ§ª Testing API connectivity...');
 
     
 
@@ -34140,7 +34142,7 @@ function testAPIConnectivity() {
 
         .then(data => {
 
-            console.log('✅ Basic API test successful:', data);
+            console.log('âœ… Basic API test successful:', data);
 
             
 
@@ -34154,15 +34156,15 @@ function testAPIConnectivity() {
 
         .then(data => {
 
-            console.log('✅ Database connection test successful:', data);
+            console.log('âœ… Database connection test successful:', data);
 
-            customAlert('API connectivity test passed!\n\n✅ Basic API working\n✅ Database connected\n\nThe system should be able to save data.', "API Test Successful", "success");
+            customAlert('API connectivity test passed!\n\nâœ… Basic API working\nâœ… Database connected\n\nThe system should be able to save data.', "API Test Successful", "success");
 
         })
 
         .catch(error => {
 
-            console.error('❌ API connectivity test failed:', error);
+            console.error('âŒ API connectivity test failed:', error);
 
             customAlert(`API connectivity test failed: ${error.message}\n\nThis explains why forms cannot save data to database.`, "API Test Failed", "error");
 
@@ -34176,7 +34178,7 @@ function testAPIConnectivity() {
 
 async function testKashTecAPI() {
 
-    console.log('🧪 Testing KashTecAPI...');
+    console.log('ðŸ§ª Testing KashTecAPI...');
 
     try {
 
@@ -34190,13 +34192,13 @@ async function testKashTecAPI() {
 
         
 
-        console.log('✅ KashTecAPI object found:', Object.keys(KashTecAPI));
+        console.log('âœ… KashTecAPI object found:', Object.keys(KashTecAPI));
 
         
 
         // Step 1: Test database connectivity and table existence
 
-        console.log('🔍 Step 1: Checking database tables...');
+        console.log('ðŸ” Step 1: Checking database tables...');
 
         const dbCheck = await fetch('/debug/db')
 
@@ -34204,7 +34206,7 @@ async function testKashTecAPI() {
 
             .then(data => {
 
-                console.log('📊 Database tables found:', data.tables);
+                console.log('ðŸ“Š Database tables found:', data.tables);
 
                 return data;
 
@@ -34212,7 +34214,7 @@ async function testKashTecAPI() {
 
             .catch(error => {
 
-                console.error('❌ Database check failed:', error);
+                console.error('âŒ Database check failed:', error);
 
                 return { success: false, error: error.message };
 
@@ -34244,13 +34246,13 @@ async function testKashTecAPI() {
 
         
 
-        console.log('✅ All required database tables exist');
+        console.log('âœ… All required database tables exist');
 
         
 
         // Step 2: Test API connectivity
 
-        console.log('🔍 Step 2: Testing API connectivity...');
+        console.log('ðŸ” Step 2: Testing API connectivity...');
 
         const testResult = await KashTecAPI.createHRWork({
 
@@ -34274,13 +34276,13 @@ async function testKashTecAPI() {
 
         
 
-        console.log('✅ API test successful:', testResult);
+        console.log('âœ… API test successful:', testResult);
 
         
 
         // Step 3: Verify all endpoints
 
-        console.log('🔍 Step 3: Verifying all API endpoints...');
+        console.log('ðŸ” Step 3: Verifying all API endpoints...');
 
         const endpointResults = await KashTecAPI.verifyAllEndpoints();
 
@@ -34292,9 +34294,9 @@ async function testKashTecAPI() {
 
         
 
-        console.log(`✅ ${successfulEndpoints.length} endpoints working`);
+        console.log(`âœ… ${successfulEndpoints.length} endpoints working`);
 
-        console.log(`❌ ${failedEndpoints.length} endpoints failed`);
+        console.log(`âŒ ${failedEndpoints.length} endpoints failed`);
 
         
 
@@ -34306,27 +34308,27 @@ async function testKashTecAPI() {
 
         
 
-        const message = `🎉 COMPLETE SYSTEM CHECK PASSED!
+        const message = `ðŸŽ‰ COMPLETE SYSTEM CHECK PASSED!
 
 
 
-✅ Database Connection: Working
+âœ… Database Connection: Working
 
-✅ Required Tables: All exist (${dbCheck.tableCount} total tables)
+âœ… Required Tables: All exist (${dbCheck.tableCount} total tables)
 
-✅ API Connectivity: Working
+âœ… API Connectivity: Working
 
-✅ Data Storage: Confirmed
+âœ… Data Storage: Confirmed
 
-✅ ${successfulEndpoints.length}/${endpointResults.length} endpoints working
-
-
-
-${failedEndpoints.length > 0 ? `⚠️ ${failedEndpoints.length} endpoints need attention:\n` + failedEndpoints.map(e => `- ${e.name}: ${e.error || e.status}`).join('\n') : '🚀 All systems operational - forms should work perfectly!'}
+âœ… ${successfulEndpoints.length}/${endpointResults.length} endpoints working
 
 
 
-📋 Database Tables Found: ${dbCheck.tables.join(', ')}`;
+${failedEndpoints.length > 0 ? `âš ï¸ ${failedEndpoints.length} endpoints need attention:\n` + failedEndpoints.map(e => `- ${e.name}: ${e.error || e.status}`).join('\n') : 'ðŸš€ All systems operational - forms should work perfectly!'}
+
+
+
+ðŸ“‹ Database Tables Found: ${dbCheck.tables.join(', ')}`;
 
         
 
@@ -34336,31 +34338,31 @@ ${failedEndpoints.length > 0 ? `⚠️ ${failedEndpoints.length} endpoints need 
 
     } catch (error) {
 
-        console.error('❌ System test failed:', error);
+        console.error('âŒ System test failed:', error);
 
-        const message = `❌ SYSTEM DIAGNOSTIC FAILED
-
-
-
-🔍 Problem: ${error.message}
+        const message = `âŒ SYSTEM DIAGNOSTIC FAILED
 
 
 
-🛠️ Common Solutions:
-
-• Check if server is running on correct port
-
-• Verify database connection is working
-
-• Run database migrations if tables missing
-
-• Check network connectivity
-
-• Verify API routes are properly configured
+ðŸ” Problem: ${error.message}
 
 
 
-📊 Next Steps:
+ðŸ› ï¸ Common Solutions:
+
+â€¢ Check if server is running on correct port
+
+â€¢ Verify database connection is working
+
+â€¢ Run database migrations if tables missing
+
+â€¢ Check network connectivity
+
+â€¢ Verify API routes are properly configured
+
+
+
+ðŸ“Š Next Steps:
 
 1. Open browser console (F12) for detailed error logs
 
@@ -34420,7 +34422,7 @@ function saveSafetyPolicy() {
 
     if (!policy.category || !policy.title || !policy.description || !policy.effectiveDate) {
 
-        customAlert('Please fill in all required fields:\n\n• Category\n• Title\n• Description\n• Effective Date', "Validation Error", "error");
+        customAlert('Please fill in all required fields:\n\nâ€¢ Category\nâ€¢ Title\nâ€¢ Description\nâ€¢ Effective Date', "Validation Error", "error");
 
         return false;
 
@@ -34484,9 +34486,9 @@ function saveSafetyPolicy() {
 
     .then(response => {
 
-        console.log('📡 Safety Policy API Response status:', response.status);
+        console.log('ðŸ“¡ Safety Policy API Response status:', response.status);
 
-        console.log('📡 Response headers:', response.headers);
+        console.log('ðŸ“¡ Response headers:', response.headers);
 
         
 
@@ -34496,7 +34498,7 @@ function saveSafetyPolicy() {
 
             return response.text().then(text => {
 
-                console.error('❌ HTTP Error Response:', text);
+                console.error('âŒ HTTP Error Response:', text);
 
                 throw new Error(`HTTP ${response.status}: ${text || response.statusText}`);
 
@@ -34512,7 +34514,7 @@ function saveSafetyPolicy() {
 
     .then(data => {
 
-        console.log('📊 Safety Policy API Response data:', data);
+        console.log('ðŸ“Š Safety Policy API Response data:', data);
 
         
 
@@ -34524,7 +34526,7 @@ function saveSafetyPolicy() {
 
         
 
-        customAlert(`Safety policy uploaded successfully!\n\nTitle: ${policy.title}\nCategory: ${policy.category}\nCompliance: ${policy.complianceLevel}\nEffective: ${policy.effectiveDate}\nPolicy ID: ${data.id}\n\n🎉 Safety policy saved to database!`, "Policy Uploaded", "success");
+        customAlert(`Safety policy uploaded successfully!\n\nTitle: ${policy.title}\nCategory: ${policy.category}\nCompliance: ${policy.complianceLevel}\nEffective: ${policy.effectiveDate}\nPolicy ID: ${data.id}\n\nðŸŽ‰ Safety policy saved to database!`, "Policy Uploaded", "success");
 
         
 
@@ -34534,9 +34536,9 @@ function saveSafetyPolicy() {
 
     .catch(error => {
 
-        console.error('❌ Error uploading safety policy:', error);
+        console.error('âŒ Error uploading safety policy:', error);
 
-        console.error('❌ Error details:', {
+        console.error('âŒ Error details:', {
 
             message: error.message,
 
@@ -34560,25 +34562,25 @@ function saveSafetyPolicy() {
 
             errorMessage = 'Network connection failed';
 
-            troubleshooting = '\n\n🔧 Troubleshooting:\n• Check internet connection\n• Verify server is running\n• Check if server URL is correct';
+            troubleshooting = '\n\nðŸ”§ Troubleshooting:\nâ€¢ Check internet connection\nâ€¢ Verify server is running\nâ€¢ Check if server URL is correct';
 
         } else if (error.message.includes('404')) {
 
             errorMessage = 'API endpoint not found';
 
-            troubleshooting = '\n\n🔧 Troubleshooting:\n• Server routes may not be configured\n• Check if /api/hse/work endpoint exists';
+            troubleshooting = '\n\nðŸ”§ Troubleshooting:\nâ€¢ Server routes may not be configured\nâ€¢ Check if /api/hse/work endpoint exists';
 
         } else if (error.message.includes('500')) {
 
             errorMessage = 'Server internal error';
 
-            troubleshooting = '\n\n🔧 Troubleshooting:\n• Database connection may be down\n• Server logs needed for details';
+            troubleshooting = '\n\nðŸ”§ Troubleshooting:\nâ€¢ Database connection may be down\nâ€¢ Server logs needed for details';
 
         } else if (error.message.includes('table') && error.message.includes('doesn\'t exist')) {
 
             errorMessage = 'Database table missing';
 
-            troubleshooting = '\n\n🔧 Troubleshooting:\n• Run database migrations\n• Check if hse_work table exists';
+            troubleshooting = '\n\nðŸ”§ Troubleshooting:\nâ€¢ Run database migrations\nâ€¢ Check if hse_work table exists';
 
         }
 
@@ -34600,7 +34602,7 @@ function saveSafetyPolicy() {
 
 async function loadPolicyRecords() {
 
-    console.log('🔄 Loading policy records...');
+    console.log('ðŸ”„ Loading policy records...');
 
     
 
@@ -34640,7 +34642,7 @@ async function loadPolicyRecords() {
 
         } catch (primaryError) {
 
-            console.warn('⚠️ Primary policy records endpoint failed, trying fallback:', primaryError.message);
+            console.warn('âš ï¸ Primary policy records endpoint failed, trying fallback:', primaryError.message);
 
             // Try fallback endpoint
 
@@ -34670,7 +34672,7 @@ async function loadPolicyRecords() {
 
             } catch (fallbackError) {
 
-                console.error('❌ All policy records endpoints failed:', fallbackError.message);
+                console.error('âŒ All policy records endpoints failed:', fallbackError.message);
 
                 // Load sample data for demonstration
 
@@ -34686,7 +34688,7 @@ async function loadPolicyRecords() {
 
         const policyRecords = await response.json();
 
-        console.log('📊 Policy records data:', policyRecords);
+        console.log('ðŸ“Š Policy records data:', policyRecords);
 
         
 
@@ -34696,7 +34698,7 @@ async function loadPolicyRecords() {
 
     } catch (error) {
 
-        console.error('❌ Error loading policy records:', error);
+        console.error('âŒ Error loading policy records:', error);
 
         // Load sample data on error
 
@@ -34712,7 +34714,7 @@ async function loadPolicyRecords() {
 
 function loadSamplePolicyRecords() {
 
-    console.log('📋 Loading sample policy records...');
+    console.log('ðŸ“‹ Loading sample policy records...');
 
     
 
@@ -34894,7 +34896,7 @@ function displayPolicyRecords(records) {
 
     if (!recordsList) {
 
-        console.error('❌ Policy records list container not found!');
+        console.error('âŒ Policy records list container not found!');
 
         return;
 
@@ -34912,7 +34914,7 @@ function displayPolicyRecords(records) {
 
             records = [records];
 
-            console.log('🔄 Converted single policy record to array:', records);
+            console.log('ðŸ”„ Converted single policy record to array:', records);
 
         } else if (records.data && Array.isArray(records.data)) {
 
@@ -34920,7 +34922,7 @@ function displayPolicyRecords(records) {
 
             records = records.data;
 
-            console.log('🔄 Extracted policy records from data property:', records);
+            console.log('ðŸ”„ Extracted policy records from data property:', records);
 
         }
 
@@ -34968,7 +34970,7 @@ function displayPolicyRecords(records) {
 
         });
 
-        console.log('🔄 Mapped policy records to display format:', records);
+        console.log('ðŸ”„ Mapped policy records to display format:', records);
 
     }
 
@@ -35054,19 +35056,19 @@ function displayPolicyRecords(records) {
 
         
 
-        const priorityBadge = priorityLower === 'mandatory' ? '🔴 Mandatory' : 
+        const priorityBadge = priorityLower === 'mandatory' ? 'ðŸ”´ Mandatory' : 
 
-                              priorityLower === 'recommended' ? '🟡 Recommended' : 
+                              priorityLower === 'recommended' ? 'ðŸŸ¡ Recommended' : 
 
-                              priorityLower === 'informational' ? '🔵 Informational' : 
+                              priorityLower === 'informational' ? 'ðŸ”µ Informational' : 
 
-                              priorityLower === 'critical' ? '🔴 Critical' :
+                              priorityLower === 'critical' ? 'ðŸ”´ Critical' :
 
-                              priorityLower === 'high' ? '🟠 High' :
+                              priorityLower === 'high' ? 'ðŸŸ  High' :
 
-                              priorityLower === 'moderate' ? '🟡 Moderate' :
+                              priorityLower === 'moderate' ? 'ðŸŸ¡ Moderate' :
 
-                              priorityLower === 'low' ? '🟢 Low' : '❓ Unknown';
+                              priorityLower === 'low' ? 'ðŸŸ¢ Low' : 'â“ Unknown';
 
         
 
@@ -35088,17 +35090,17 @@ function displayPolicyRecords(records) {
 
         
 
-        const statusBadge = statusLower === 'active' ? '✅ Active' : 
+        const statusBadge = statusLower === 'active' ? 'âœ… Active' : 
 
-                           statusLower === 'pending' ? '⏳ Pending' : 
+                           statusLower === 'pending' ? 'â³ Pending' : 
 
-                           statusLower === 'expired' ? '❌ Expired' :
+                           statusLower === 'expired' ? 'âŒ Expired' :
 
-                           statusLower === 'completed' ? '✅ Completed' :
+                           statusLower === 'completed' ? 'âœ… Completed' :
 
-                           statusLower === 'scheduled' ? '📅 Scheduled' :
+                           statusLower === 'scheduled' ? 'ðŸ“… Scheduled' :
 
-                           statusLower === 'under investigation' ? '🔍 Under Investigation' : '❓ Unknown';
+                           statusLower === 'under investigation' ? 'ðŸ” Under Investigation' : 'â“ Unknown';
 
         
 
@@ -35204,13 +35206,13 @@ function displayPolicyRecords(records) {
 
                     <div class="policy-actions">
 
-                        <button class="action-btn view" onclick="viewPolicy('${record.id}')" title="View Policy">👁️</button>
+                        <button class="action-btn view" onclick="viewPolicy('${record.id}')" title="View Policy">ðŸ‘ï¸</button>
 
-                        <button class="action-btn download" onclick="downloadPolicy('${record.id}')" title="Download Policy">📥</button>
+                        <button class="action-btn download" onclick="downloadPolicy('${record.id}')" title="Download Policy">ðŸ“¥</button>
 
-                        <button class="action-btn edit" onclick="editPolicy('${record.id}')" title="Edit Policy">✏️</button>
+                        <button class="action-btn edit" onclick="editPolicy('${record.id}')" title="Edit Policy">âœï¸</button>
 
-                        <button class="action-btn delete" onclick="deletePolicy('${record.id}')" title="Delete Policy">🗑️</button>
+                        <button class="action-btn delete" onclick="deletePolicy('${record.id}')" title="Delete Policy">ðŸ—‘ï¸</button>
 
                     </div>
 
@@ -35326,7 +35328,7 @@ function saveToolboxMeeting() {
 
     if (!meeting.date || !meeting.project || !meeting.topic || !meeting.conductedBy) {
 
-        customAlert('Please fill in all required fields:\n\n• Date\n• Project\n• Topic\n• Conducted By', "Validation Error", "error");
+        customAlert('Please fill in all required fields:\n\nâ€¢ Date\nâ€¢ Project\nâ€¢ Topic\nâ€¢ Conducted By', "Validation Error", "error");
 
         return false;
 
@@ -35386,7 +35388,7 @@ function saveToolboxMeeting() {
 
     .then(response => {
 
-        console.log('📡 Toolbox Meeting API Response status:', response.status);
+        console.log('ðŸ“¡ Toolbox Meeting API Response status:', response.status);
 
         return response.json();
 
@@ -35394,7 +35396,7 @@ function saveToolboxMeeting() {
 
     .then(data => {
 
-        console.log('📊 Toolbox Meeting API Response data:', data);
+        console.log('ðŸ“Š Toolbox Meeting API Response data:', data);
 
         
 
@@ -35406,7 +35408,7 @@ function saveToolboxMeeting() {
 
         
 
-        customAlert(`Toolbox meeting recorded successfully!\n\nID: ${meeting.id}\nTopic: ${meeting.topic}\nAttendees: ${meeting.totalAttendees}\nProject: ${meeting.project}\nMeeting ID: ${data.id}\n\n🎉 Toolbox meeting saved to database!`, "Meeting Recorded", "success");
+        customAlert(`Toolbox meeting recorded successfully!\n\nID: ${meeting.id}\nTopic: ${meeting.topic}\nAttendees: ${meeting.totalAttendees}\nProject: ${meeting.project}\nMeeting ID: ${data.id}\n\nðŸŽ‰ Toolbox meeting saved to database!`, "Meeting Recorded", "success");
 
         
 
@@ -35416,9 +35418,9 @@ function saveToolboxMeeting() {
 
     .catch(error => {
 
-        console.error('❌ Error recording toolbox meeting:', error);
+        console.error('âŒ Error recording toolbox meeting:', error);
 
-        customAlert(`Failed to record toolbox meeting: ${error.message}\n\nPlease check:\n• All required fields are filled\n• Network connection is stable\n• Server is running properly`, "Recording Error", "error");
+        customAlert(`Failed to record toolbox meeting: ${error.message}\n\nPlease check:\nâ€¢ All required fields are filled\nâ€¢ Network connection is stable\nâ€¢ Server is running properly`, "Recording Error", "error");
 
     });
 
@@ -35468,7 +35470,7 @@ function savePpeIssuance() {
 
     if (!issuance.date || !issuance.workerName || !issuance.project || issuance.items.length === 0) {
 
-        customAlert('Please fill in all required fields:\n\n• Date\n• Worker Name\n• Project\n• At least one PPE item', "Validation Error", "error");
+        customAlert('Please fill in all required fields:\n\nâ€¢ Date\nâ€¢ Worker Name\nâ€¢ Project\nâ€¢ At least one PPE item', "Validation Error", "error");
 
         return false;
 
@@ -35528,7 +35530,7 @@ function savePpeIssuance() {
 
     .then(response => {
 
-        console.log('📡 PPE Issuance API Response status:', response.status);
+        console.log('ðŸ“¡ PPE Issuance API Response status:', response.status);
 
         return response.json();
 
@@ -35536,7 +35538,7 @@ function savePpeIssuance() {
 
     .then(data => {
 
-        console.log('📊 PPE Issuance API Response data:', data);
+        console.log('ðŸ“Š PPE Issuance API Response data:', data);
 
         
 
@@ -35548,7 +35550,7 @@ function savePpeIssuance() {
 
         
 
-        customAlert(`PPE issuance recorded successfully!\n\nID: ${issuance.id}\nWorker: ${issuance.workerName}\nItems: ${issuance.items.length} items\nProject: ${issuance.project}\nPPE ID: ${data.id}\n\n🎉 PPE issuance saved to database!`, "PPE Issued", "success");
+        customAlert(`PPE issuance recorded successfully!\n\nID: ${issuance.id}\nWorker: ${issuance.workerName}\nItems: ${issuance.items.length} items\nProject: ${issuance.project}\nPPE ID: ${data.id}\n\nðŸŽ‰ PPE issuance saved to database!`, "PPE Issued", "success");
 
         
 
@@ -35558,9 +35560,9 @@ function savePpeIssuance() {
 
     .catch(error => {
 
-        console.error('❌ Error recording PPE issuance:', error);
+        console.error('âŒ Error recording PPE issuance:', error);
 
-        customAlert(`Failed to record PPE issuance: ${error.message}\n\nPlease check:\n• All required fields are filled\n• Network connection is stable\n• Server is running properly`, "Recording Error", "error");
+        customAlert(`Failed to record PPE issuance: ${error.message}\n\nPlease check:\nâ€¢ All required fields are filled\nâ€¢ Network connection is stable\nâ€¢ Server is running properly`, "Recording Error", "error");
 
     });
 
@@ -35618,7 +35620,7 @@ function saveSafetyViolation() {
 
     if (!violation.date || !violation.project || !violation.type || !violation.severity || !violation.description) {
 
-        customAlert('Please fill in all required fields:\n\n• Date\n• Project\n• Type\n• Severity\n• Description', "Validation Error", "error");
+        customAlert('Please fill in all required fields:\n\nâ€¢ Date\nâ€¢ Project\nâ€¢ Type\nâ€¢ Severity\nâ€¢ Description', "Validation Error", "error");
 
         return false;
 
@@ -35678,7 +35680,7 @@ function saveSafetyViolation() {
 
     .then(response => {
 
-        console.log('📡 Safety Violation API Response status:', response.status);
+        console.log('ðŸ“¡ Safety Violation API Response status:', response.status);
 
         return response.json();
 
@@ -35686,7 +35688,7 @@ function saveSafetyViolation() {
 
     .then(data => {
 
-        console.log('📊 Safety Violation API Response data:', data);
+        console.log('ðŸ“Š Safety Violation API Response data:', data);
 
         
 
@@ -35698,7 +35700,7 @@ function saveSafetyViolation() {
 
         
 
-        customAlert(`Safety violation recorded successfully!\n\nID: ${violation.id}\nType: ${violation.type}\nSeverity: ${violation.severity}\nProject: ${violation.project}\nCorrective action required by: ${violation.deadline}\nViolation ID: ${data.id}\n\n🎉 Safety violation saved to database!`, "Violation Recorded", "success");
+        customAlert(`Safety violation recorded successfully!\n\nID: ${violation.id}\nType: ${violation.type}\nSeverity: ${violation.severity}\nProject: ${violation.project}\nCorrective action required by: ${violation.deadline}\nViolation ID: ${data.id}\n\nðŸŽ‰ Safety violation saved to database!`, "Violation Recorded", "success");
 
         
 
@@ -35708,9 +35710,9 @@ function saveSafetyViolation() {
 
     .catch(error => {
 
-        console.error('❌ Error recording safety violation:', error);
+        console.error('âŒ Error recording safety violation:', error);
 
-        customAlert(`Failed to record safety violation: ${error.message}\n\nPlease check:\n• All required fields are filled\n• Network connection is stable\n• Server is running properly`, "Recording Error", "error");
+        customAlert(`Failed to record safety violation: ${error.message}\n\nPlease check:\nâ€¢ All required fields are filled\nâ€¢ Network connection is stable\nâ€¢ Server is running properly`, "Recording Error", "error");
 
     });
 
@@ -35768,7 +35770,7 @@ function saveInspectionReport() {
 
     if (!inspection.date || !inspection.project || !inspection.type || !inspection.inspector || !inspection.compliance) {
 
-        customAlert('Please fill in all required fields:\n\n• Date\n• Project\n• Type\n• Inspector\n• Compliance Status', "Validation Error", "error");
+        customAlert('Please fill in all required fields:\n\nâ€¢ Date\nâ€¢ Project\nâ€¢ Type\nâ€¢ Inspector\nâ€¢ Compliance Status', "Validation Error", "error");
 
         return false;
 
@@ -35828,7 +35830,7 @@ function saveInspectionReport() {
 
     .then(response => {
 
-        console.log('📡 Inspection Report API Response status:', response.status);
+        console.log('ðŸ“¡ Inspection Report API Response status:', response.status);
 
         return response.json();
 
@@ -35836,7 +35838,7 @@ function saveInspectionReport() {
 
     .then(data => {
 
-        console.log('📊 Inspection Report API Response data:', data);
+        console.log('ðŸ“Š Inspection Report API Response data:', data);
 
         
 
@@ -35848,7 +35850,7 @@ function saveInspectionReport() {
 
         
 
-        customAlert(`Inspection report uploaded successfully!\n\nID: ${inspection.id}\nType: ${inspection.type}\nCompliance: ${inspection.compliance}\nRisk Level: ${inspection.riskLevel}\nInspection ID: ${data.id}\n\n🎉 Inspection report saved to database!`, "Report Uploaded", "success");
+        customAlert(`Inspection report uploaded successfully!\n\nID: ${inspection.id}\nType: ${inspection.type}\nCompliance: ${inspection.compliance}\nRisk Level: ${inspection.riskLevel}\nInspection ID: ${data.id}\n\nðŸŽ‰ Inspection report saved to database!`, "Report Uploaded", "success");
 
         
 
@@ -35858,7 +35860,7 @@ function saveInspectionReport() {
 
         // Reload inspection records to show the newly created record
 
-        console.log('🔄 Reloading inspection records after successful upload...');
+        console.log('ðŸ”„ Reloading inspection records after successful upload...');
 
         loadInspectionRecords();
 
@@ -35866,9 +35868,9 @@ function saveInspectionReport() {
 
     .catch(error => {
 
-        console.error('❌ Error uploading inspection report:', error);
+        console.error('âŒ Error uploading inspection report:', error);
 
-        customAlert(`Failed to upload inspection report: ${error.message}\n\nPlease check:\n• All required fields are filled\n• Network connection is stable\n• Server is running properly`, "Upload Error", "error");
+        customAlert(`Failed to upload inspection report: ${error.message}\n\nPlease check:\nâ€¢ All required fields are filled\nâ€¢ Network connection is stable\nâ€¢ Server is running properly`, "Upload Error", "error");
 
     });
 
@@ -35980,7 +35982,7 @@ function getPpeItems() {
 
 function viewPolicy(policyId) {
 
-    console.log('🔍 Viewing policy:', policyId);
+    console.log('ðŸ” Viewing policy:', policyId);
 
     
 
@@ -35996,7 +35998,7 @@ function viewPolicy(policyId) {
 
         .then(response => {
 
-            console.log('📡 Policy fetch response:', response.status);
+            console.log('ðŸ“¡ Policy fetch response:', response.status);
 
             if (!response.ok) {
 
@@ -36010,7 +36012,7 @@ function viewPolicy(policyId) {
 
         .then(policy => {
 
-            console.log('📊 Policy data:', policy);
+            console.log('ðŸ“Š Policy data:', policy);
 
             
 
@@ -36030,7 +36032,7 @@ function viewPolicy(policyId) {
 
         .catch(error => {
 
-            console.error('❌ Error viewing policy:', error);
+            console.error('âŒ Error viewing policy:', error);
 
             customAlert(`Error loading policy: ${error.message}`, "Error", "error");
 
@@ -36386,7 +36388,7 @@ function financeBudgeting(){
 
                 <button type="button" id="toggleBudgetFormBtn" onclick="toggleBudgetForm()" class="action" style="background: #007bff;">
 
-                    💰 Create New Budget
+                    ðŸ’° Create New Budget
 
                 </button>
 
@@ -36868,7 +36870,7 @@ function financialManagement(){
 
 async function loadFinancialRecords() {
 
-    console.log('🔄 Loading financial records...');
+    console.log('ðŸ”„ Loading financial records...');
 
     
 
@@ -36908,7 +36910,7 @@ async function loadFinancialRecords() {
 
         } catch (primaryError) {
 
-            console.warn('⚠️ Primary financial records endpoint failed, trying fallback:', primaryError.message);
+            console.warn('âš ï¸ Primary financial records endpoint failed, trying fallback:', primaryError.message);
 
             // Try fallback endpoint
 
@@ -36938,7 +36940,7 @@ async function loadFinancialRecords() {
 
             } catch (fallbackError) {
 
-                console.error('❌ All financial records endpoints failed:', fallbackError.message);
+                console.error('âŒ All financial records endpoints failed:', fallbackError.message);
 
                 // Load sample data for demonstration
 
@@ -36954,7 +36956,7 @@ async function loadFinancialRecords() {
 
         const financialRecords = await response.json();
 
-        console.log('📊 Financial records data:', financialRecords);
+        console.log('ðŸ“Š Financial records data:', financialRecords);
 
         
 
@@ -36964,7 +36966,7 @@ async function loadFinancialRecords() {
 
     } catch (error) {
 
-        console.error('❌ Error loading financial records:', error);
+        console.error('âŒ Error loading financial records:', error);
 
         // Load sample data on error
 
@@ -36980,7 +36982,7 @@ async function loadFinancialRecords() {
 
 function loadSampleFinancialRecords() {
 
-    console.log('📋 Loading sample financial records...');
+    console.log('ðŸ“‹ Loading sample financial records...');
 
     
 
@@ -37270,7 +37272,7 @@ function displayFinancialRecords(records) {
 
     if (!recordsList) {
 
-        console.error('❌ Financial records list container not found!');
+        console.error('âŒ Financial records list container not found!');
 
         return;
 
@@ -37344,23 +37346,23 @@ function displayFinancialRecords(records) {
 
         // Get category badge
 
-        const categoryDisplay = record.category === 'Revenue' ? '💰 Revenue' : 
+        const categoryDisplay = record.category === 'Revenue' ? 'ðŸ’° Revenue' : 
 
-                               record.category === 'Payroll' ? '👥 Payroll' : 
+                               record.category === 'Payroll' ? 'ðŸ‘¥ Payroll' : 
 
-                               record.category === 'Capital Expenditure' ? '🏗️ CapEx' : 
+                               record.category === 'Capital Expenditure' ? 'ðŸ—ï¸ CapEx' : 
 
-                               record.category === 'Materials' ? '📦 Materials' : 
+                               record.category === 'Materials' ? 'ðŸ“¦ Materials' : 
 
-                               record.category === 'Professional Services' ? '👔 Services' : 
+                               record.category === 'Professional Services' ? 'ðŸ‘” Services' : 
 
-                               record.category === 'Operating Expenses' ? '🏢 OpEx' : 
+                               record.category === 'Operating Expenses' ? 'ðŸ¢ OpEx' : 
 
-                               record.category === 'Insurance' ? '🛡️ Insurance' : 
+                               record.category === 'Insurance' ? 'ðŸ›¡ï¸ Insurance' : 
 
-                               record.category === 'Taxes' ? '📊 Taxes' : 
+                               record.category === 'Taxes' ? 'ðŸ“Š Taxes' : 
 
-                               record.category === 'Technology' ? '💻 Technology' : record.category;
+                               record.category === 'Technology' ? 'ðŸ’» Technology' : record.category;
 
         
 
@@ -37368,7 +37370,7 @@ function displayFinancialRecords(records) {
 
         const typeClass = record.type === 'income' ? 'type-income' : 'type-expense';
 
-        const typeBadge = record.type === 'income' ? '📈 Income' : '📉 Expense';
+        const typeBadge = record.type === 'income' ? 'ðŸ“ˆ Income' : 'ðŸ“‰ Expense';
 
         
 
@@ -37382,11 +37384,11 @@ function displayFinancialRecords(records) {
 
         
 
-        const statusBadge = record.status === 'completed' ? '✅ Completed' : 
+        const statusBadge = record.status === 'completed' ? 'âœ… Completed' : 
 
-                           record.status === 'pending' ? '⏳ Pending' : 
+                           record.status === 'pending' ? 'â³ Pending' : 
 
-                           record.status === 'failed' ? '❌ Failed' : '❓ Unknown';
+                           record.status === 'failed' ? 'âŒ Failed' : 'â“ Unknown';
 
         
 
@@ -37460,11 +37462,11 @@ function displayFinancialRecords(records) {
 
                     <div class="financial-actions">
 
-                        <button class="action-btn view" onclick="viewTransaction('${record.id}')" title="View Transaction">👁️</button>
+                        <button class="action-btn view" onclick="viewTransaction('${record.id}')" title="View Transaction">ðŸ‘ï¸</button>
 
-                        <button class="action-btn edit" onclick="editTransaction('${record.id}')" title="Edit Transaction">✏️</button>
+                        <button class="action-btn edit" onclick="editTransaction('${record.id}')" title="Edit Transaction">âœï¸</button>
 
-                        <button class="action-btn download" onclick="downloadTransaction('${record.id}')" title="Download Receipt">📥</button>
+                        <button class="action-btn download" onclick="downloadTransaction('${record.id}')" title="Download Receipt">ðŸ“¥</button>
 
                     </div>
 
@@ -38191,7 +38193,7 @@ function expenseControl(){
 
 function financialReporting(){
 
-    console.log('📊 financialReporting() called');
+    console.log('ðŸ“Š financialReporting() called');
 
     showContent(`<div class="card">
 
@@ -38303,7 +38305,7 @@ function financialReporting(){
 
     // Load financial data from database
 
-    console.log('📊 Calling loadFinancialReportingData...');
+    console.log('ðŸ“Š Calling loadFinancialReportingData...');
 
     loadFinancialReportingData();
 
@@ -38313,15 +38315,15 @@ function financialReporting(){
 
 async function loadFinancialReportingData() {
 
-    console.log('📊 Starting loadFinancialReportingData...');
+    console.log('ðŸ“Š Starting loadFinancialReportingData...');
 
     try {
 
-        console.log('🔗 Fetching from /api/finance/records...');
+        console.log('ðŸ”— Fetching from /api/finance/records...');
 
         const response = await fetch('/api/finance/records');
 
-        console.log('📡 Response status:', response.status);
+        console.log('ðŸ“¡ Response status:', response.status);
 
         
 
@@ -38335,15 +38337,15 @@ async function loadFinancialReportingData() {
 
         const records = await response.json();
 
-        console.log('✅ Successfully fetched records:', records);
+        console.log('âœ… Successfully fetched records:', records);
 
-        console.log('📈 Total records received:', records.length);
+        console.log('ðŸ“ˆ Total records received:', records.length);
 
         
 
         if (!records || records.length === 0) {
 
-            console.warn('⚠️ No records received, showing empty state');
+            console.warn('âš ï¸ No records received, showing empty state');
 
         }
 
@@ -38351,7 +38353,7 @@ async function loadFinancialReportingData() {
 
         // Load income statement data
 
-        console.log('📋 Displaying income statement...');
+        console.log('ðŸ“‹ Displaying income statement...');
 
         displayIncomeStatement(records);
 
@@ -38359,7 +38361,7 @@ async function loadFinancialReportingData() {
 
         // Load balance sheet data
 
-        console.log('📊 Displaying balance sheet...');
+        console.log('ðŸ“Š Displaying balance sheet...');
 
         displayBalanceSheet(records);
 
@@ -38367,7 +38369,7 @@ async function loadFinancialReportingData() {
 
         // Load cash flow data
 
-        console.log('💰 Displaying cash flow...');
+        console.log('ðŸ’° Displaying cash flow...');
 
         displayCashFlow(records);
 
@@ -38375,19 +38377,19 @@ async function loadFinancialReportingData() {
 
         // Load budget vs actual data
 
-        console.log('📊 Displaying budget analysis...');
+        console.log('ðŸ“Š Displaying budget analysis...');
 
         displayBudgetVsActual(records);
 
         
 
-        console.log('✅ All financial reports loaded successfully!');
+        console.log('âœ… All financial reports loaded successfully!');
 
     } catch (error) {
 
-        console.error('❌ Error loading financial reporting data:', error);
+        console.error('âŒ Error loading financial reporting data:', error);
 
-        console.error('❌ Error details:', error.message, error.stack);
+        console.error('âŒ Error details:', error.message, error.stack);
 
         showNotification('Error loading financial data: ' + error.message, 'error');
 
@@ -38409,7 +38411,7 @@ function displayIncomeStatement(records) {
 
     try {
 
-        console.log('📋 displayIncomeStatement called with records:', records.length);
+        console.log('ðŸ“‹ displayIncomeStatement called with records:', records.length);
 
         // Calculate totals by type
 
@@ -38419,7 +38421,7 @@ function displayIncomeStatement(records) {
 
             .reduce((sum, r) => sum + (r.amount || 0), 0);
 
-        console.log('💰 Total revenue:', revenue);
+        console.log('ðŸ’° Total revenue:', revenue);
 
             
 
@@ -38429,13 +38431,13 @@ function displayIncomeStatement(records) {
 
             .reduce((sum, r) => sum + (r.amount || 0), 0);
 
-        console.log('💸 Total expenses:', expenses);
+        console.log('ðŸ’¸ Total expenses:', expenses);
 
         
 
         const netProfit = revenue - expenses;
 
-        console.log('📈 Net profit:', netProfit);
+        console.log('ðŸ“ˆ Net profit:', netProfit);
 
         
 
@@ -38455,7 +38457,7 @@ function displayIncomeStatement(records) {
 
             });
 
-        console.log('📊 Expenses by category:', expensesByCategory);
+        console.log('ðŸ“Š Expenses by category:', expensesByCategory);
 
         
 
@@ -38551,17 +38553,17 @@ function displayIncomeStatement(records) {
 
             container.innerHTML = html;
 
-            console.log('✅ Income statement displayed successfully');
+            console.log('âœ… Income statement displayed successfully');
 
         } else {
 
-            console.error('❌ Container incomeStatementContent not found');
+            console.error('âŒ Container incomeStatementContent not found');
 
         }
 
     } catch (error) {
 
-        console.error('❌ Error displaying income statement:', error);
+        console.error('âŒ Error displaying income statement:', error);
 
         const container = document.getElementById('incomeStatementContent');
 
@@ -38581,7 +38583,7 @@ function displayBalanceSheet(records) {
 
     try {
 
-        console.log('📊 displayBalanceSheet called with records:', records.length);
+        console.log('ðŸ“Š displayBalanceSheet called with records:', records.length);
 
         // Calculate assets
 
@@ -38591,7 +38593,7 @@ function displayBalanceSheet(records) {
 
             .reduce((sum, r) => sum + (r.amount || 0), 0);
 
-        console.log('🏦 Cash & Bank:', cash);
+        console.log('ðŸ¦ Cash & Bank:', cash);
 
             
 
@@ -38601,7 +38603,7 @@ function displayBalanceSheet(records) {
 
             .reduce((sum, r) => sum + (r.amount || 0), 0);
 
-        console.log('💳 Accounts Receivable:', receivables);
+        console.log('ðŸ’³ Accounts Receivable:', receivables);
 
         
 
@@ -38609,7 +38611,7 @@ function displayBalanceSheet(records) {
 
         const totalAssets = cash + receivables + equipment;
 
-        console.log('📈 Total Assets:', totalAssets);
+        console.log('ðŸ“ˆ Total Assets:', totalAssets);
 
         
 
@@ -38621,7 +38623,7 @@ function displayBalanceSheet(records) {
 
             .reduce((sum, r) => sum + (r.amount || 0), 0);
 
-        console.log('📋 Accounts Payable:', payables);
+        console.log('ðŸ“‹ Accounts Payable:', payables);
 
         
 
@@ -38631,7 +38633,7 @@ function displayBalanceSheet(records) {
 
         const totalEquity = totalAssets - totalLiabilities;
 
-        console.log('💰 Total Liabilities:', totalLiabilities, 'Total Equity:', totalEquity);
+        console.log('ðŸ’° Total Liabilities:', totalLiabilities, 'Total Equity:', totalEquity);
 
         
 
@@ -38733,17 +38735,17 @@ function displayBalanceSheet(records) {
 
             container.innerHTML = html;
 
-            console.log('✅ Balance sheet displayed successfully');
+            console.log('âœ… Balance sheet displayed successfully');
 
         } else {
 
-            console.error('❌ Container balanceSheetContent not found');
+            console.error('âŒ Container balanceSheetContent not found');
 
         }
 
     } catch (error) {
 
-        console.error('❌ Error displaying balance sheet:', error);
+        console.error('âŒ Error displaying balance sheet:', error);
 
         const container = document.getElementById('balanceSheetContent');
 
@@ -38763,7 +38765,7 @@ function displayCashFlow(records) {
 
     try {
 
-        console.log('💰 displayCashFlow called with records:', records.length);
+        console.log('ðŸ’° displayCashFlow called with records:', records.length);
 
         // Operating activities
 
@@ -38773,7 +38775,7 @@ function displayCashFlow(records) {
 
             .reduce((sum, r) => sum + (r.amount || 0), 0);
 
-        console.log('📥 Cash from Customers:', cashFromCustomers);
+        console.log('ðŸ“¥ Cash from Customers:', cashFromCustomers);
 
             
 
@@ -38783,7 +38785,7 @@ function displayCashFlow(records) {
 
             .reduce((sum, r) => sum + (r.amount || 0), 0);
 
-        console.log('📤 Cash paid:', cashToPaid);
+        console.log('ðŸ“¤ Cash paid:', cashToPaid);
 
         
 
@@ -38793,7 +38795,7 @@ function displayCashFlow(records) {
 
         const endingCash = beginningCash + netOperatingCash;
 
-        console.log('📊 Net Operating Cash:', netOperatingCash, 'Ending Cash:', endingCash);
+        console.log('ðŸ“Š Net Operating Cash:', netOperatingCash, 'Ending Cash:', endingCash);
 
         
 
@@ -38871,17 +38873,17 @@ function displayCashFlow(records) {
 
             container.innerHTML = html;
 
-            console.log('✅ Cash flow displayed successfully');
+            console.log('âœ… Cash flow displayed successfully');
 
         } else {
 
-            console.error('❌ Container cashFlowContent not found');
+            console.error('âŒ Container cashFlowContent not found');
 
         }
 
     } catch (error) {
 
-        console.error('❌ Error displaying cash flow:', error);
+        console.error('âŒ Error displaying cash flow:', error);
 
         const container = document.getElementById('cashFlowContent');
 
@@ -38901,7 +38903,7 @@ function displayBudgetVsActual(records) {
 
     try {
 
-        console.log('📊 displayBudgetVsActual called with records:', records.length);
+        console.log('ðŸ“Š displayBudgetVsActual called with records:', records.length);
 
         // Group by category to compare budget vs actual
 
@@ -38921,7 +38923,7 @@ function displayBudgetVsActual(records) {
 
         });
 
-        console.log('📈 Data by category:', byCategory);
+        console.log('ðŸ“ˆ Data by category:', byCategory);
 
         
 
@@ -38957,7 +38959,7 @@ function displayBudgetVsActual(records) {
 
             
 
-            console.log(`📊 ${category}: Budget ${budget}, Actual ${data.actual}, Variance ${variance} (${variancePercent}%)`);
+            console.log(`ðŸ“Š ${category}: Budget ${budget}, Actual ${data.actual}, Variance ${variance} (${variancePercent}%)`);
 
             
 
@@ -38987,17 +38989,17 @@ function displayBudgetVsActual(records) {
 
             container.innerHTML = html || '<div class="no-data">No budget data available</div>';
 
-            console.log('✅ Budget analysis displayed successfully');
+            console.log('âœ… Budget analysis displayed successfully');
 
         } else {
 
-            console.error('❌ Container budgetActualContent not found');
+            console.error('âŒ Container budgetActualContent not found');
 
         }
 
     } catch (error) {
 
-        console.error('❌ Error displaying budget analysis:', error);
+        console.error('âŒ Error displaying budget analysis:', error);
 
         const container = document.getElementById('budgetActualContent');
 
@@ -39015,7 +39017,7 @@ function displayBudgetVsActual(records) {
 
 function showFinanceReportTab(tabName, event) {
 
-    console.log('📑 Switching to tab:', tabName);
+    console.log('ðŸ“‘ Switching to tab:', tabName);
 
     if (event) event.preventDefault();
 
@@ -39059,11 +39061,11 @@ function showFinanceReportTab(tabName, event) {
 
         tabElement.classList.remove('hidden');
 
-        console.log('✅ Tab displayed:', tabId);
+        console.log('âœ… Tab displayed:', tabId);
 
     } else {
 
-        console.error('❌ Tab element not found:', tabId);
+        console.error('âŒ Tab element not found:', tabId);
 
     }
 
@@ -39399,35 +39401,35 @@ function financeCompliance(){
 function systemAuditDashboard() {
     showContent(`
         <div class="card">
-            <h3>🔍 System Audit Dashboard</h3>
+            <h3>ðŸ” System Audit Dashboard</h3>
             <p><strong>Comprehensive System Analysis:</strong> Real-time overview of all system components, projects, employees, safety, and financial status</p>
             
             <div class="audit-dashboard-container">
                 <!-- System Overview Cards -->
                 <div class="audit-overview-cards">
                     <div class="audit-card">
-                        <div class="audit-icon">👥</div>
+                        <div class="audit-icon">ðŸ‘¥</div>
                         <div class="audit-info">
                             <h4 id="totalEmployeesCount">Loading...</h4>
                             <p>Total Employees</p>
                         </div>
                     </div>
                     <div class="audit-card">
-                        <div class="audit-icon">🚀</div>
+                        <div class="audit-icon">ðŸš€</div>
                         <div class="audit-info">
                             <h4 id="activeProjectsCount">Loading...</h4>
                             <p>Active Projects</p>
                         </div>
                     </div>
                     <div class="audit-card">
-                        <div class="audit-icon">🏢</div>
+                        <div class="audit-icon">ðŸ¢</div>
                         <div class="audit-info">
                             <h4 id="departmentsCount">Loading...</h4>
                             <p>Departments</p>
                         </div>
                     </div>
                     <div class="audit-card">
-                        <div class="audit-icon">🛡️</div>
+                        <div class="audit-icon">ðŸ›¡ï¸</div>
                         <div class="audit-info">
                             <h4 id="safetyScore">Loading...</h4>
                             <p>Safety Score</p>
@@ -39437,13 +39439,13 @@ function systemAuditDashboard() {
 
                 <!-- Audit Navigation Tabs -->
                 <div class="audit-tabs">
-                    <button class="tab-btn active" onclick="showAuditSection('overview')">📊 Overview</button>
-                    <button class="tab-btn" onclick="showAuditSection('projects')">🚀 Projects</button>
-                    <button class="tab-btn" onclick="showAuditSection('employees')">👥 Employees</button>
-                    <button class="tab-btn" onclick="showAuditSection('safety')">🛡️ Safety</button>
-                    <button class="tab-btn" onclick="showAuditSection('financial')">💰 Financial</button>
-                    <button class="tab-btn" onclick="showAuditSection('compliance')">📋 Compliance</button>
-                    <button class="tab-btn" onclick="showAuditSection('system')">⚙️ System</button>
+                    <button class="tab-btn active" onclick="showAuditSection('overview')">ðŸ“Š Overview</button>
+                    <button class="tab-btn" onclick="showAuditSection('projects')">ðŸš€ Projects</button>
+                    <button class="tab-btn" onclick="showAuditSection('employees')">ðŸ‘¥ Employees</button>
+                    <button class="tab-btn" onclick="showAuditSection('safety')">ðŸ›¡ï¸ Safety</button>
+                    <button class="tab-btn" onclick="showAuditSection('financial')">ðŸ’° Financial</button>
+                    <button class="tab-btn" onclick="showAuditSection('compliance')">ðŸ“‹ Compliance</button>
+                    <button class="tab-btn" onclick="showAuditSection('system')">âš™ï¸ System</button>
                 </div>
 
                 <!-- Audit Content Sections -->
@@ -39452,19 +39454,19 @@ function systemAuditDashboard() {
                     <div id="overview-section" class="audit-section">
                         <div class="audit-grid">
                             <div class="audit-panel">
-                                <h4>🔥 Critical Alerts</h4>
+                                <h4>ðŸ”¥ Critical Alerts</h4>
                                 <div id="criticalAlerts">Loading critical alerts...</div>
                             </div>
                             <div class="audit-panel">
-                                <h4>📈 System Health</h4>
+                                <h4>ðŸ“ˆ System Health</h4>
                                 <div id="systemHealth">Loading system health...</div>
                             </div>
                             <div class="audit-panel">
-                                <h4>⏰ Recent Activity</h4>
+                                <h4>â° Recent Activity</h4>
                                 <div id="recentActivity">Loading recent activity...</div>
                             </div>
                             <div class="audit-panel">
-                                <h4>🎯 Key Metrics</h4>
+                                <h4>ðŸŽ¯ Key Metrics</h4>
                                 <div id="keyMetrics">Loading key metrics...</div>
                             </div>
                         </div>
@@ -39473,7 +39475,7 @@ function systemAuditDashboard() {
                     <!-- Projects Section -->
                     <div id="projects-section" class="audit-section hidden">
                         <div class="audit-content">
-                            <h4>🚀 Projects Analysis</h4>
+                            <h4>ðŸš€ Projects Analysis</h4>
                             <div class="audit-stats-grid">
                                 <div class="stat-item">
                                     <span class="stat-label">Overdue Projects:</span>
@@ -39506,7 +39508,7 @@ function systemAuditDashboard() {
                     <!-- Employees Section -->
                     <div id="employees-section" class="audit-section hidden">
                         <div class="audit-content">
-                            <h4>👥 Employee Status Analysis</h4>
+                            <h4>ðŸ‘¥ Employee Status Analysis</h4>
                             <div class="audit-stats-grid">
                                 <div class="stat-item">
                                     <span class="stat-label">Average Attendance:</span>
@@ -39538,7 +39540,7 @@ function systemAuditDashboard() {
                     <!-- Safety Section -->
                     <div id="safety-section" class="audit-section hidden">
                         <div class="audit-content">
-                            <h4>🛡️ Safety & Incident Analysis</h4>
+                            <h4>ðŸ›¡ï¸ Safety & Incident Analysis</h4>
                             <div class="audit-stats-grid">
                                 <div class="stat-item">
                                     <span class="stat-label">Total Violations:</span>
@@ -39571,7 +39573,7 @@ function systemAuditDashboard() {
                     <!-- Financial Section -->
                     <div id="financial-section" class="audit-section hidden">
                         <div class="audit-content">
-                            <h4>💰 Financial Overview</h4>
+                            <h4>ðŸ’° Financial Overview</h4>
                             <div class="audit-stats-grid">
                                 <div class="stat-item">
                                     <span class="stat-label">Total Expenses (30 days):</span>
@@ -39604,7 +39606,7 @@ function systemAuditDashboard() {
                     <!-- Compliance Section -->
                     <div id="compliance-section" class="audit-section hidden">
                         <div class="audit-content">
-                            <h4>📋 Compliance Status</h4>
+                            <h4>ðŸ“‹ Compliance Status</h4>
                             <div class="audit-stats-grid">
                                 <div class="stat-item">
                                     <span class="stat-label">Overall Compliance:</span>
@@ -39636,7 +39638,7 @@ function systemAuditDashboard() {
                     <!-- System Section -->
                     <div id="system-section" class="audit-section hidden">
                         <div class="audit-content">
-                            <h4>⚙️ System Health & Performance</h4>
+                            <h4>âš™ï¸ System Health & Performance</h4>
                             <div class="audit-stats-grid">
                                 <div class="stat-item">
                                     <span class="stat-label">Database Status:</span>
@@ -39669,10 +39671,10 @@ function systemAuditDashboard() {
                 <!-- Audit Actions -->
                 <div class="audit-actions">
                     <div class="action-buttons">
-                        <button class="action-btn primary" onclick="refreshAuditData()">🔄 Refresh Data</button>
-                        <button class="action-btn secondary" onclick="generateAuditReport()">📊 Generate Report</button>
-                        <button class="action-btn secondary" onclick="exportAuditData()">📥 Export Data</button>
-                        <button class="action-btn secondary" onclick="scheduleAudit()">📅 Schedule Audit</button>
+                        <button class="action-btn primary" onclick="refreshAuditData()">ðŸ”„ Refresh Data</button>
+                        <button class="action-btn secondary" onclick="generateAuditReport()">ðŸ“Š Generate Report</button>
+                        <button class="action-btn secondary" onclick="exportAuditData()">ðŸ“¥ Export Data</button>
+                        <button class="action-btn secondary" onclick="scheduleAudit()">ðŸ“… Schedule Audit</button>
                     </div>
                 </div>
             </div>
@@ -39714,14 +39716,14 @@ function updateOverviewSection(data) {
     const alertsHtml = `
         <div class="alert-list">
             ${data.projects && data.projects.totalOverdue > 0 ? 
-                `<div class="alert-item danger">🚨 ${data.projects.totalOverdue} overdue projects</div>` : 
-                '<div class="alert-item success">✅ No overdue projects</div>'
+                `<div class="alert-item danger">ðŸš¨ ${data.projects.totalOverdue} overdue projects</div>` : 
+                '<div class="alert-item success">âœ… No overdue projects</div>'
             }
             ${data.safety && data.safety.totalViolations > 0 ? 
-                `<div class="alert-item warning">⚠️ ${data.safety.totalViolations} safety violations</div>` : 
-                '<div class="alert-item success">✅ No safety violations</div>'
+                `<div class="alert-item warning">âš ï¸ ${data.safety.totalViolations} safety violations</div>` : 
+                '<div class="alert-item success">âœ… No safety violations</div>'
             }
-            <div class="alert-item info">ℹ️ System operational</div>
+            <div class="alert-item info">â„¹ï¸ System operational</div>
         </div>
     `;
     document.getElementById('criticalAlerts').innerHTML = alertsHtml;
@@ -40723,7 +40725,7 @@ async function saveLuggageCampaign() {
 
         if (!window.KashTecAPI || typeof window.KashTecAPI.post !== 'function') {
 
-            console.error('❌ KashTecAPI.post is not available');
+            console.error('âŒ KashTecAPI.post is not available');
 
             throw new Error('API service not loaded properly');
 
@@ -40797,7 +40799,7 @@ async function saveLuggagePurchase() {
 
         if (!window.KashTecAPI || typeof window.KashTecAPI.post !== 'function') {
 
-            console.error('❌ KashTecAPI.post is not available');
+            console.error('âŒ KashTecAPI.post is not available');
 
             throw new Error('API service not loaded properly');
 
@@ -40885,7 +40887,7 @@ async function savePaymentTracking() {
 
         if (!window.KashTecAPI || typeof window.KashTecAPI.post !== 'function') {
 
-            console.error('❌ KashTecAPI.post is not available');
+            console.error('âŒ KashTecAPI.post is not available');
 
             throw new Error('API service not loaded properly');
 
@@ -40939,7 +40941,7 @@ async function loadLuggageCampaigns() {
 
         if (!window.KashTecAPI || typeof window.KashTecAPI.get !== 'function') {
 
-            console.error('❌ KashTecAPI.get is not available');
+            console.error('âŒ KashTecAPI.get is not available');
 
             throw new Error('API service not loaded properly');
 
@@ -41089,11 +41091,11 @@ async function loadLuggageCampaigns() {
 
                         <div class="campaign-actions">
 
-                            <button class="action-btn view" onclick="viewCampaignDetails('${campaign.id}')" title="View Details">👁️</button>
+                            <button class="action-btn view" onclick="viewCampaignDetails('${campaign.id}')" title="View Details">ðŸ‘ï¸</button>
 
-                            <button class="action-btn edit" onclick="editCampaign('${campaign.id}')" title="Edit Campaign">✏️</button>
+                            <button class="action-btn edit" onclick="editCampaign('${campaign.id}')" title="Edit Campaign">âœï¸</button>
 
-                            <button class="action-btn delete" onclick="deleteCampaign('${campaign.id}')" title="Delete Campaign">🗑️</button>
+                            <button class="action-btn delete" onclick="deleteCampaign('${campaign.id}')" title="Delete Campaign">ðŸ—‘ï¸</button>
 
                         </div>
 
@@ -41113,13 +41115,13 @@ async function loadLuggageCampaigns() {
 
     } catch (error) {
 
-        console.error('❌ Error loading campaigns:', error);
+        console.error('âŒ Error loading campaigns:', error);
 
         const recordsList = document.getElementById('campaignRecordsList');
 
         if (recordsList) {
 
-            recordsList.innerHTML = '<tr><td colspan="11" class="no-records" style="color:#e74c3c;">⚠️ Failed to load campaigns. Please check your connection and try again.</td></tr>';
+            recordsList.innerHTML = '<tr><td colspan="11" class="no-records" style="color:#e74c3c;">âš ï¸ Failed to load campaigns. Please check your connection and try again.</td></tr>';
 
         }
 
@@ -41133,7 +41135,7 @@ async function loadLuggageCampaigns() {
 
 function loadSampleCampaigns() {
 
-    console.log('📋 Loading sample campaign records...');
+    console.log('ðŸ“‹ Loading sample campaign records...');
 
     
 
@@ -41385,11 +41387,11 @@ function loadSampleCampaigns() {
 
                 <div class="campaign-actions">
 
-                    <button class="action-btn view" onclick="viewCampaignDetails('${campaign.id}')" title="View Details">👁️</button>
+                    <button class="action-btn view" onclick="viewCampaignDetails('${campaign.id}')" title="View Details">ðŸ‘ï¸</button>
 
-                    <button class="action-btn edit" onclick="editCampaign('${campaign.id}')" title="Edit Campaign">✏️</button>
+                    <button class="action-btn edit" onclick="editCampaign('${campaign.id}')" title="Edit Campaign">âœï¸</button>
 
-                    <button class="action-btn delete" onclick="deleteCampaign('${campaign.id}')" title="Delete Campaign">🗑️</button>
+                    <button class="action-btn delete" onclick="deleteCampaign('${campaign.id}')" title="Delete Campaign">ðŸ—‘ï¸</button>
 
                 </div>
 
@@ -41401,7 +41403,7 @@ function loadSampleCampaigns() {
 
     
 
-    console.log('✅ Sample campaigns loaded successfully');
+    console.log('âœ… Sample campaigns loaded successfully');
 
 }
 
@@ -41453,7 +41455,7 @@ async function deleteCampaign(campaignId) {
 
     } catch (error) {
 
-        console.error('❌ Error deleting campaign:', error);
+        console.error('âŒ Error deleting campaign:', error);
 
         customAlert('Error deleting campaign: ' + error.message, 'Error', 'error');
 
@@ -41477,7 +41479,7 @@ async function loadLuggagePurchases() {
 
         if (!window.KashTecAPI || typeof window.KashTecAPI.get !== 'function') {
 
-            console.error('❌ KashTecAPI.get is not available');
+            console.error('âŒ KashTecAPI.get is not available');
 
             throw new Error('API service not loaded properly');
 
@@ -41647,11 +41649,11 @@ async function loadLuggagePurchases() {
 
                         <div class="purchase-actions">
 
-                            <button class="action-btn view" onclick="viewPurchaseDetails('${purchase.id}')" title="View Details">👁️</button>
+                            <button class="action-btn view" onclick="viewPurchaseDetails('${purchase.id}')" title="View Details">ðŸ‘ï¸</button>
 
-                            <button class="action-btn edit" onclick="editPurchase('${purchase.id}')" title="Edit Purchase">✏️</button>
+                            <button class="action-btn edit" onclick="editPurchase('${purchase.id}')" title="Edit Purchase">âœï¸</button>
 
-                            <button class="action-btn delete" onclick="deletePurchase('${purchase.id}')" title="Delete Purchase">🗑️</button>
+                            <button class="action-btn delete" onclick="deletePurchase('${purchase.id}')" title="Delete Purchase">ðŸ—‘ï¸</button>
 
                         </div>
 
@@ -41671,7 +41673,7 @@ async function loadLuggagePurchases() {
 
     } catch (error) {
 
-        console.error('❌ Error loading purchase records:', error);
+        console.error('âŒ Error loading purchase records:', error);
 
         // Load sample data on error
 
@@ -41687,7 +41689,7 @@ async function loadLuggagePurchases() {
 
 function loadSamplePurchases() {
 
-    console.log('📋 Loading sample purchase records...');
+    console.log('ðŸ“‹ Loading sample purchase records...');
 
     
 
@@ -41979,11 +41981,11 @@ function loadSamplePurchases() {
 
                 <div class="purchase-actions">
 
-                    <button class="action-btn view" onclick="viewPurchaseDetails('${purchase.purchase_id}')" title="View Details">👁️</button>
+                    <button class="action-btn view" onclick="viewPurchaseDetails('${purchase.purchase_id}')" title="View Details">ðŸ‘ï¸</button>
 
-                    <button class="action-btn edit" onclick="editPurchase('${purchase.purchase_id}')" title="Edit Purchase">✏️</button>
+                    <button class="action-btn edit" onclick="editPurchase('${purchase.purchase_id}')" title="Edit Purchase">âœï¸</button>
 
-                    <button class="action-btn delete" onclick="deletePurchase('${purchase.purchase_id}')" title="Delete Purchase">🗑️</button>
+                    <button class="action-btn delete" onclick="deletePurchase('${purchase.purchase_id}')" title="Delete Purchase">ðŸ—‘ï¸</button>
 
                 </div>
 
@@ -41995,7 +41997,7 @@ function loadSamplePurchases() {
 
     
 
-    console.log('✅ Sample purchase records loaded successfully');
+    console.log('âœ… Sample purchase records loaded successfully');
 
 }
 
@@ -42039,7 +42041,7 @@ async function loadPaymentTracking() {
 
         if (!window.KashTecAPI || typeof window.KashTecAPI.get !== 'function') {
 
-            console.error('❌ KashTecAPI.get is not available');
+            console.error('âŒ KashTecAPI.get is not available');
 
             throw new Error('API service not loaded properly');
 
@@ -42163,11 +42165,11 @@ async function loadPaymentTracking() {
 
                         <div class="tracking-actions">
 
-                            <button class="action-btn view" onclick="viewTrackingDetails('${tracking.id}')" title="View Details">👁️</button>
+                            <button class="action-btn view" onclick="viewTrackingDetails('${tracking.id}')" title="View Details">ðŸ‘ï¸</button>
 
-                            <button class="action-btn edit" onclick="editTracking('${tracking.id}')" title="Edit Tracking">✏️</button>
+                            <button class="action-btn edit" onclick="editTracking('${tracking.id}')" title="Edit Tracking">âœï¸</button>
 
-                            <button class="action-btn delete" onclick="deleteTracking('${tracking.id}')" title="Delete Tracking">🗑️</button>
+                            <button class="action-btn delete" onclick="deleteTracking('${tracking.id}')" title="Delete Tracking">ðŸ—‘ï¸</button>
 
                         </div>
 
@@ -42186,7 +42188,7 @@ async function loadPaymentTracking() {
 
     } catch (error) {
 
-        console.error('❌ Error loading tracking records:', error);
+        console.error('âŒ Error loading tracking records:', error);
 
         // Load sample data on error
 
@@ -42202,7 +42204,7 @@ async function loadPaymentTracking() {
 
 function loadSampleTracking() {
 
-    console.log('📋 Loading sample tracking records...');
+    console.log('ðŸ“‹ Loading sample tracking records...');
 
     
 
@@ -42438,11 +42440,11 @@ function loadSampleTracking() {
 
                 <div class="tracking-actions">
 
-                    <button class="action-btn view" onclick="viewTrackingDetails('${tracking.id}')" title="View Details">👁️</button>
+                    <button class="action-btn view" onclick="viewTrackingDetails('${tracking.id}')" title="View Details">ðŸ‘ï¸</button>
 
-                    <button class="action-btn edit" onclick="editTracking('${tracking.id}')" title="Edit Tracking">✏️</button>
+                    <button class="action-btn edit" onclick="editTracking('${tracking.id}')" title="Edit Tracking">âœï¸</button>
 
-                    <button class="action-btn delete" onclick="deleteTracking('${tracking.id}')" title="Delete Tracking">🗑️</button>
+                    <button class="action-btn delete" onclick="deleteTracking('${tracking.id}')" title="Delete Tracking">ðŸ—‘ï¸</button>
 
                 </div>
 
@@ -42454,7 +42456,7 @@ function loadSampleTracking() {
 
     
 
-    console.log('✅ Sample tracking records loaded successfully');
+    console.log('âœ… Sample tracking records loaded successfully');
 
 }
 
@@ -42498,9 +42500,11 @@ async function loadCampaignsForPurchase() {
 
         
 
-        if (response.success && response.data.length > 0) {
+        const campaigns = response.campaigns || response.data || [];
 
-            response.data.forEach(campaign => {
+        if (response.success && campaigns.length > 0) {
+
+            campaigns.forEach(campaign => {
 
                 const option = document.createElement('option');
 
@@ -42976,7 +42980,7 @@ function saveDepartmentBudget() {
 
     if (!budget.department || !budget.period || !budget.startDate || !budget.endDate || !budget.total) {
 
-        customAlert('Please fill in all required fields:\n\n• Department\n• Budget Period\n• Start Date\n• End Date\n• Total Budget Amount', "Validation Error", "error");
+        customAlert('Please fill in all required fields:\n\nâ€¢ Department\nâ€¢ Budget Period\nâ€¢ Start Date\nâ€¢ End Date\nâ€¢ Total Budget Amount', "Validation Error", "error");
 
         return false;
 
@@ -43082,7 +43086,7 @@ function saveDepartmentBudget() {
 
     .then(response => {
 
-        console.log('📡 Budget API Response status:', response.status);
+        console.log('ðŸ“¡ Budget API Response status:', response.status);
 
         if (!response.ok) {
 
@@ -43096,7 +43100,7 @@ function saveDepartmentBudget() {
 
     .then(data => {
 
-        console.log('📊 Budget API Response data:', data);
+        console.log('ðŸ“Š Budget API Response data:', data);
 
         
 
@@ -43108,7 +43112,7 @@ function saveDepartmentBudget() {
 
         
 
-        customAlert(`Budget created successfully!\n\nDepartment: ${budget.department}\nTotal Amount: TZS ${budget.total}\nPeriod: ${budget.period}\nBudget ID: ${data.id}\n\n🎉 Budget saved to database!`, "Budget Created", "success");
+        customAlert(`Budget created successfully!\n\nDepartment: ${budget.department}\nTotal Amount: TZS ${budget.total}\nPeriod: ${budget.period}\nBudget ID: ${data.id}\n\nðŸŽ‰ Budget saved to database!`, "Budget Created", "success");
 
         
 
@@ -43122,7 +43126,7 @@ function saveDepartmentBudget() {
 
         clearTimeout(timeoutId);
 
-        console.error('❌ Error creating budget:', error);
+        console.error('âŒ Error creating budget:', error);
 
         
 
@@ -43172,7 +43176,7 @@ function saveDepartmentBudget() {
 
 async function loadBudgetRecords() {
 
-    console.log('🔄 Loading budget records...');
+    console.log('ðŸ”„ Loading budget records...');
 
     
 
@@ -43212,7 +43216,7 @@ async function loadBudgetRecords() {
 
         } catch (primaryError) {
 
-            console.warn('⚠️ Primary budget records endpoint failed, trying fallback:', primaryError.message);
+            console.warn('âš ï¸ Primary budget records endpoint failed, trying fallback:', primaryError.message);
 
             // Try fallback endpoint
 
@@ -43242,7 +43246,7 @@ async function loadBudgetRecords() {
 
             } catch (fallbackError) {
 
-                console.error('❌ All budget records endpoints failed:', fallbackError.message);
+                console.error('âŒ All budget records endpoints failed:', fallbackError.message);
 
                 // Load sample data for demonstration
 
@@ -43258,7 +43262,7 @@ async function loadBudgetRecords() {
 
         const budgetRecords = await response.json();
 
-        console.log('📊 Budget records data:', budgetRecords);
+        console.log('ðŸ“Š Budget records data:', budgetRecords);
 
         
 
@@ -43268,7 +43272,7 @@ async function loadBudgetRecords() {
 
     } catch (error) {
 
-        console.error('❌ Error loading budget records:', error);
+        console.error('âŒ Error loading budget records:', error);
 
         // Load sample data on error
 
@@ -43284,7 +43288,7 @@ async function loadBudgetRecords() {
 
 function loadSampleBudgetRecords() {
 
-    console.log('📋 Loading sample budget records...');
+    console.log('ðŸ“‹ Loading sample budget records...');
 
     
 
@@ -43514,7 +43518,7 @@ function displayBudgetRecords(records) {
 
     if (!recordsList) {
 
-        console.error('❌ Budget records list container not found!');
+        console.error('âŒ Budget records list container not found!');
 
         return;
 
@@ -43532,7 +43536,7 @@ function displayBudgetRecords(records) {
 
             records = [records];
 
-            console.log('🔄 Converted single budget record to array:', records);
+            console.log('ðŸ”„ Converted single budget record to array:', records);
 
         } else if (records.data && Array.isArray(records.data)) {
 
@@ -43540,7 +43544,7 @@ function displayBudgetRecords(records) {
 
             records = records.data;
 
-            console.log('🔄 Extracted budget records from data property:', records);
+            console.log('ðŸ”„ Extracted budget records from data property:', records);
 
         }
 
@@ -43596,7 +43600,7 @@ function displayBudgetRecords(records) {
 
         });
 
-        console.log('🔄 Mapped budget records to display format:', records);
+        console.log('ðŸ”„ Mapped budget records to display format:', records);
 
     }
 
@@ -43690,13 +43694,13 @@ function displayBudgetRecords(records) {
 
         
 
-        const statusBadge = record.status === 'active' ? '✅ Active' : 
+        const statusBadge = record.status === 'active' ? 'âœ… Active' : 
 
-                           record.status === 'pending' ? '⏳ Pending' : 
+                           record.status === 'pending' ? 'â³ Pending' : 
 
-                           record.status === 'completed' ? '✅ Completed' : 
+                           record.status === 'completed' ? 'âœ… Completed' : 
 
-                           record.status === 'expired' ? '❌ Expired' : '❓ Unknown';
+                           record.status === 'expired' ? 'âŒ Expired' : 'â“ Unknown';
 
         
 
@@ -43704,7 +43708,7 @@ function displayBudgetRecords(records) {
 
         let utilizationClass = 'utilization-low';
 
-        let utilizationBadge = '🔴 Low';
+        let utilizationBadge = 'ðŸ”´ Low';
 
         
 
@@ -43712,13 +43716,13 @@ function displayBudgetRecords(records) {
 
             utilizationClass = 'utilization-high';
 
-            utilizationBadge = '🟢 High';
+            utilizationBadge = 'ðŸŸ¢ High';
 
         } else if (record.utilization >= 50) {
 
             utilizationClass = 'utilization-medium';
 
-            utilizationBadge = '🟡 Medium';
+            utilizationBadge = 'ðŸŸ¡ Medium';
 
         }
 
@@ -43886,7 +43890,7 @@ function displayBudgetRecords(records) {
 
                     <div class="justification-info">
 
-                        <div class="budget-justification" title="${record.justification || 'No justification provided'}">${record.justification && record.justification !== 'No justification provided' ? (record.justification.length > 50 ? record.justification.substring(0, 50) + '...' : record.justification) : record.justification || '—'}</div>
+                        <div class="budget-justification" title="${record.justification || 'No justification provided'}">${record.justification && record.justification !== 'No justification provided' ? (record.justification.length > 50 ? record.justification.substring(0, 50) + '...' : record.justification) : record.justification || 'â€”'}</div>
 
                     </div>
 
@@ -43896,11 +43900,11 @@ function displayBudgetRecords(records) {
 
                     <div class="budget-actions">
 
-                        <button class="action-btn view" onclick="viewBudgetDetails('${record.id}')" title="View Details">👁️</button>
+                        <button class="action-btn view" onclick="viewBudgetDetails('${record.id}')" title="View Details">ðŸ‘ï¸</button>
 
-                        <button class="action-btn edit" onclick="editBudget('${record.id}')" title="Edit Budget">✏️</button>
+                        <button class="action-btn edit" onclick="editBudget('${record.id}')" title="Edit Budget">âœï¸</button>
 
-                        <button class="action-btn delete" onclick="deleteBudget('${record.id}')" title="Delete Budget">🗑️</button>
+                        <button class="action-btn delete" onclick="deleteBudget('${record.id}')" title="Delete Budget">ðŸ—‘ï¸</button>
 
                     </div>
 
@@ -43976,12 +43980,12 @@ function saveSalaryStructure() {
 
     if (!employeeId || !basicSalary) {
         customAlert('Please select an employee and enter a basic salary.', 'Validation Error', 'error');
-        console.error('❌ Salary structure validation failed: missing employee or basic salary');
+        console.error('âŒ Salary structure validation failed: missing employee or basic salary');
         return false;
     }
 
     const baseUrl = window.location.origin;
-    console.log('💰 Saving salary structure for employee:', employeeId);
+    console.log('ðŸ’° Saving salary structure for employee:', employeeId);
 
     fetch(`${baseUrl}/payroll/salary-structure`, {
         method: 'POST',
@@ -44002,18 +44006,18 @@ function saveSalaryStructure() {
     .then(res => res.json())
     .then(data => {
         if (data.success) {
-            console.log('✅ Salary structure saved successfully:', data);
+            console.log('âœ… Salary structure saved successfully:', data);
             customAlert(`Salary structure approved!\n\nEmployee ID: ${employeeId}\nGross Salary: TZS ${(data.grossSalary || grossSalary).toLocaleString()}`, 'Salary Structure Approved', 'success');
             document.getElementById('salaryForm').reset();
             document.getElementById('grossSalary').value = '';
             loadPayrollData();
         } else {
-            console.error('❌ Failed to save salary structure:', data.error);
+            console.error('âŒ Failed to save salary structure:', data.error);
             customAlert(`Failed to save salary structure: ${data.error}`, 'Error', 'error');
         }
     })
     .catch(err => {
-        console.error('❌ Error saving salary structure:', err);
+        console.error('âŒ Error saving salary structure:', err);
         customAlert('Network error saving salary structure. Please try again.', 'Error', 'error');
     });
 
@@ -44029,12 +44033,12 @@ function processPayroll() {
 
     if (!payrollMonth || !paymentDate) {
         customAlert('Please select a payroll month and payment date.', 'Validation Error', 'error');
-        console.error('❌ Payroll processing validation failed: missing month or payment date');
+        console.error('âŒ Payroll processing validation failed: missing month or payment date');
         return false;
     }
 
     const baseUrl = window.location.origin;
-    console.log('🔄 Processing payroll for month:', payrollMonth, 'date:', paymentDate);
+    console.log('ðŸ”„ Processing payroll for month:', payrollMonth, 'date:', paymentDate);
 
     fetch(`${baseUrl}/payroll/process`, {
         method: 'POST',
@@ -44047,7 +44051,7 @@ function processPayroll() {
     .then(res => res.json())
     .then(data => {
         if (data.success) {
-            console.log('✅ Payroll processed successfully:', data);
+            console.log('âœ… Payroll processed successfully:', data);
             const d = data.data || {};
             customAlert(
                 `Payroll processed successfully!\n\nMonth: ${payrollMonth}\nTotal Employees: ${d.totalEmployees || 0}\nTotal Gross: TZS ${(d.totalGross || 0).toLocaleString()}\nTotal Deductions: TZS ${(d.totalDeductions || 0).toLocaleString()}\nNet Payment: TZS ${(d.netPayment || 0).toLocaleString()}\nPayment Date: ${paymentDate}`,
@@ -44056,12 +44060,12 @@ function processPayroll() {
             document.getElementById('payrollProcessForm').reset();
             loadPayrollData();
         } else {
-            console.error('❌ Failed to process payroll:', data.error);
+            console.error('âŒ Failed to process payroll:', data.error);
             customAlert(`Failed to process payroll: ${data.error}`, 'Error', 'error');
         }
     })
     .catch(err => {
-        console.error('❌ Error processing payroll:', err);
+        console.error('âŒ Error processing payroll:', err);
         customAlert('Network error processing payroll. Please try again.', 'Error', 'error');
     });
 
@@ -44174,7 +44178,7 @@ function showPayrollTab(tabName, btnElement) {
 
     if (!targetId) {
 
-        console.error('❌ Unknown payroll tab:', tabName);
+        console.error('âŒ Unknown payroll tab:', tabName);
 
         return;
 
@@ -44274,7 +44278,7 @@ function showExpenseTab(tabName, evt) {
 
     } else {
 
-        console.error('❌ Expense tab content not found:', targetTabId);
+        console.error('âŒ Expense tab content not found:', targetTabId);
 
     }
 
@@ -44338,7 +44342,7 @@ function showFinanceReportTab(tabName, evt) {
 
     } else {
 
-        console.error('❌ Finance report tab content not found:', targetTabId);
+        console.error('âŒ Finance report tab content not found:', targetTabId);
 
     }
 
@@ -44609,7 +44613,7 @@ function generateIndividualPayslip() {
 
     if (!month) {
         customAlert('Please select a payroll month.', 'Validation Error', 'error');
-        console.error('❌ Payslip generation failed: no month selected');
+        console.error('âŒ Payslip generation failed: no month selected');
         return;
     }
 
@@ -44618,7 +44622,7 @@ function generateIndividualPayslip() {
         ? `${baseUrl}/payroll/payslips/employee/${employeeId}/${encodeURIComponent(month)}`
         : `${baseUrl}/payroll/payslips/${encodeURIComponent(month)}`;
 
-    console.log('📄 Generating payslip(s) for month:', month, 'employee:', employeeId || 'all');
+    console.log('ðŸ“„ Generating payslip(s) for month:', month, 'employee:', employeeId || 'all');
 
     fetch(url, {
         headers: { 'Authorization': `Bearer ${sessionManager.getAuthToken()}` }
@@ -44634,21 +44638,21 @@ function generateIndividualPayslip() {
             }
 
             if (payslips.length === 0) {
-                console.warn('⚠️ No payslip data found for', month);
+                console.warn('âš ï¸ No payslip data found for', month);
                 customAlert('No payslip data found for the selected month. Process payroll first.', 'No Data', 'error');
                 document.getElementById('payslipResults').innerHTML = '<p>No payslip data found. Please process payroll first.</p>';
                 return;
             }
 
-            console.log('✅ Payslip data retrieved:', payslips.length, 'record(s)');
+            console.log('âœ… Payslip data retrieved:', payslips.length, 'record(s)');
             generatePayslipExcel(payslips, month);
         } else {
-            console.error('❌ Failed to fetch payslips:', data.error);
+            console.error('âŒ Failed to fetch payslips:', data.error);
             customAlert(`Failed to fetch payslip data: ${data.error}`, 'Error', 'error');
         }
     })
     .catch(err => {
-        console.error('❌ Error fetching payslips:', err);
+        console.error('âŒ Error fetching payslips:', err);
         customAlert('Network error fetching payslip data. Please try again.', 'Error', 'error');
     });
 }
@@ -44669,12 +44673,12 @@ function emailPayslips() {
 
     if (!month) {
         customAlert('Please select a payroll month.', 'Validation Error', 'error');
-        console.error('❌ Email payslips failed: no month selected');
+        console.error('âŒ Email payslips failed: no month selected');
         return;
     }
 
     const baseUrl = window.location.origin;
-    console.log('📧 Emailing payslips for month:', month, 'employee:', employeeId || 'all');
+    console.log('ðŸ“§ Emailing payslips for month:', month, 'employee:', employeeId || 'all');
 
     fetch(`${baseUrl}/payroll/payslips/email`, {
         method: 'POST',
@@ -44687,15 +44691,15 @@ function emailPayslips() {
     .then(res => res.json())
     .then(data => {
         if (data.success) {
-            console.log('✅ Payslips emailed successfully:', data);
+            console.log('âœ… Payslips emailed successfully:', data);
             customAlert(`Payslips emailed successfully!\n\nMonth: ${month}\nRecords updated: ${data.updated || 0}`, 'Payslips Emailed', 'success');
         } else {
-            console.error('❌ Failed to email payslips:', data.error);
+            console.error('âŒ Failed to email payslips:', data.error);
             customAlert(`Failed to email payslips: ${data.error}`, 'Error', 'error');
         }
     })
     .catch(err => {
-        console.error('❌ Error emailing payslips:', err);
+        console.error('âŒ Error emailing payslips:', err);
         customAlert('Network error emailing payslips. Please try again.', 'Error', 'error');
     });
 }
@@ -44790,7 +44794,7 @@ function createNewProject(){
 
                 <button type="button" id="toggleProjectFormBtn" onclick="toggleProjectForm()" class="action" style="background: #007bff;">
 
-                    🏗️ Create New Project
+                    ðŸ—ï¸ Create New Project
 
                 </button>
 
@@ -45102,7 +45106,7 @@ function createNewProject(){
 
 async function loadProjects() {
 
-    console.log('🔄 Loading projects...');
+    console.log('ðŸ”„ Loading projects...');
 
     
 
@@ -45142,7 +45146,7 @@ async function loadProjects() {
 
         } catch (primaryError) {
 
-            console.warn('⚠️ Primary projects endpoint failed, trying fallback:', primaryError.message);
+            console.warn('âš ï¸ Primary projects endpoint failed, trying fallback:', primaryError.message);
 
             // Try fallback endpoint
 
@@ -45172,7 +45176,7 @@ async function loadProjects() {
 
             } catch (fallbackError) {
 
-                console.error('❌ All projects endpoints failed:', fallbackError.message);
+                console.error('âŒ All projects endpoints failed:', fallbackError.message);
 
                 // Load sample data for demonstration
 
@@ -45188,7 +45192,7 @@ async function loadProjects() {
 
         const projectsData = await response.json();
 
-        console.log('📊 Projects data:', projectsData);
+        console.log('ðŸ“Š Projects data:', projectsData);
 
         
 
@@ -45204,7 +45208,7 @@ async function loadProjects() {
 
     } catch (error) {
 
-        console.error('❌ Error loading projects:', error);
+        console.error('âŒ Error loading projects:', error);
 
         // Load sample data on error
 
@@ -45220,7 +45224,7 @@ async function loadProjects() {
 
 function loadSampleProjects() {
 
-    console.log('📋 Loading sample projects...');
+    console.log('ðŸ“‹ Loading sample projects...');
 
     
 
@@ -45630,7 +45634,7 @@ function displayProjects(projects) {
 
     if (!projectsList) {
 
-        console.error('❌ Projects list container not found!');
+        console.error('âŒ Projects list container not found!');
 
         return;
 
@@ -45685,30 +45689,30 @@ function displayProjects(projects) {
         // Get project type display safely
 
         const rawType = (project.type || project.project_type || '').toLowerCase();
-        const typeDisplay = rawType === 'construction' ? '🏗️ Construction' : 
+        const typeDisplay = rawType === 'construction' ? 'ðŸ—ï¸ Construction' : 
 
-                           rawType === 'renovation' ? '🔧 Renovation' : 
+                           rawType === 'renovation' ? 'ðŸ”§ Renovation' : 
 
-                           rawType === 'infrastructure' ? '🌉 Infrastructure' : 
+                           rawType === 'infrastructure' ? 'ðŸŒ‰ Infrastructure' : 
 
-                           rawType === 'maintenance' ? '🔨 Maintenance' : 
+                           rawType === 'maintenance' ? 'ðŸ”¨ Maintenance' : 
 
-                           rawType === 'consulting' ? '📋 Consulting' : (project.type || project.project_type || 'Not specified');
+                           rawType === 'consulting' ? 'ðŸ“‹ Consulting' : (project.type || project.project_type || 'Not specified');
 
         
 
         // Get status display safely
 
         const statusVal = (project.status || '').toLowerCase();
-        const statusDisplay = statusVal === 'active' ? '🟢 Active' : 
+        const statusDisplay = statusVal === 'active' ? 'ðŸŸ¢ Active' : 
 
-                             statusVal === 'completed' ? '✅ Completed' : 
+                             statusVal === 'completed' ? 'âœ… Completed' : 
 
-                             statusVal === 'planning' ? '📋 Planning' : 
+                             statusVal === 'planning' ? 'ðŸ“‹ Planning' : 
 
-                             statusVal === 'on-hold' ? '⏸️ On Hold' : 
+                             statusVal === 'on-hold' ? 'â¸ï¸ On Hold' : 
 
-                             statusVal === 'cancelled' ? '❌ Cancelled' : (project.status || 'Planning');
+                             statusVal === 'cancelled' ? 'âŒ Cancelled' : (project.status || 'Planning');
 
         
 
@@ -45734,11 +45738,11 @@ function displayProjects(projects) {
         // Get priority display safely
 
         const priorityVal = (project.priorityLevel || project.priority || '').toLowerCase();
-        const priorityDisplay = priorityVal === 'high' ? '🔴 High' : 
+        const priorityDisplay = priorityVal === 'high' ? 'ðŸ”´ High' : 
 
-                               priorityVal === 'medium' ? '🟡 Medium' : 
+                               priorityVal === 'medium' ? 'ðŸŸ¡ Medium' : 
 
-                               priorityVal === 'low' ? '🟢 Low' : (project.priorityLevel || project.priority || 'Medium');
+                               priorityVal === 'low' ? 'ðŸŸ¢ Low' : (project.priorityLevel || project.priority || 'Medium');
 
         
 
@@ -45930,11 +45934,11 @@ function displayProjects(projects) {
 
                     <div class="project-actions">
 
-                        <button class="action-btn view" onclick="viewProject('${project.id}')" title="View Details">👁️</button>
+                        <button class="action-btn view" onclick="viewProject('${project.id}')" title="View Details">ðŸ‘ï¸</button>
 
-                        <button class="action-btn edit" onclick="editProject('${project.id}')" title="Edit Project">✏️</button>
+                        <button class="action-btn edit" onclick="editProject('${project.id}')" title="Edit Project">âœï¸</button>
 
-                        <button class="action-btn progress" onclick="updateProgress('${project.id}')" title="Update Progress">📊</button>
+                        <button class="action-btn progress" onclick="updateProgress('${project.id}')" title="Update Progress">ðŸ“Š</button>
 
                     </div>
 
@@ -45986,7 +45990,7 @@ async function loadProjectsForProgressUpdate() {
 
     try {
 
-        console.log('🔍 Loading projects for progress update...');
+        console.log('ðŸ” Loading projects for progress update...');
 
         
 
@@ -46016,7 +46020,7 @@ async function loadProjectsForProgressUpdate() {
 
         const data = await response.json();
 
-        console.log('📊 Projects loaded:', data.projects);
+        console.log('ðŸ“Š Projects loaded:', data.projects);
 
         
 
@@ -46042,7 +46046,7 @@ async function loadProjectsForProgressUpdate() {
 
     } catch (error) {
 
-        console.error('❌ Error loading projects:', error);
+        console.error('âŒ Error loading projects:', error);
 
         
 
@@ -46244,7 +46248,7 @@ async function loadProjectDetails() {
 
     try {
 
-        console.log('🔍 Loading project details for ID:', projectId);
+        console.log('ðŸ” Loading project details for ID:', projectId);
 
         
 
@@ -46274,7 +46278,7 @@ async function loadProjectDetails() {
 
         const project = await response.json();
 
-        console.log('📊 Project details loaded:', project);
+        console.log('ðŸ“Š Project details loaded:', project);
 
         
 
@@ -46294,7 +46298,7 @@ async function loadProjectDetails() {
 
     } catch (error) {
 
-        console.error('❌ Error loading project details:', error);
+        console.error('âŒ Error loading project details:', error);
 
         showNotification('Error loading project details', 'error', 3000);
 
@@ -46506,7 +46510,7 @@ function updateProjectProgress(){
 
 async function assignTasks(){
 
-    console.log('🔄 Loading tasks assignment form...');
+    console.log('ðŸ”„ Loading tasks assignment form...');
 
     
 
@@ -46546,11 +46550,11 @@ async function assignTasks(){
 
             projects = Array.isArray(projectsData) ? projectsData : [];
 
-            console.log('✅ Loaded projects:', projects.length, 'projects');
+            console.log('âœ… Loaded projects:', projects.length, 'projects');
 
         } else {
 
-            console.warn('⚠️ Failed to load projects, using empty array');
+            console.warn('âš ï¸ Failed to load projects, using empty array');
 
             projects = [];
 
@@ -46558,7 +46562,7 @@ async function assignTasks(){
 
     } catch (error) {
 
-        console.error('❌ Error loading projects:', error);
+        console.error('âŒ Error loading projects:', error);
 
         projects = [];
 
@@ -46602,11 +46606,11 @@ async function assignTasks(){
 
             }));
 
-            console.log('✅ Loaded employees:', employees.length, 'employees');
+            console.log('âœ… Loaded employees:', employees.length, 'employees');
 
         } else {
 
-            console.warn('⚠️ Failed to load employees, using empty array');
+            console.warn('âš ï¸ Failed to load employees, using empty array');
 
             employees = [];
 
@@ -46614,7 +46618,7 @@ async function assignTasks(){
 
     } catch (error) {
 
-        console.error('❌ Error loading employees:', error);
+        console.error('âŒ Error loading employees:', error);
 
         employees = [];
 
@@ -46870,7 +46874,7 @@ function requestWorkforce(){
 
                 <button type="button" id="toggleWorkforceFormBtn" onclick="toggleWorkforceForm()" class="action" style="background: #007bff;">
 
-                    👥 Request Workforce
+                    ðŸ‘¥ Request Workforce
 
                 </button>
 
@@ -47154,7 +47158,7 @@ function requestWorkforce(){
 
 async function loadWorkforceRequests() {
 
-    console.log('🔄 Loading workforce requests...');
+    console.log('ðŸ”„ Loading workforce requests...');
 
     
 
@@ -47194,7 +47198,7 @@ async function loadWorkforceRequests() {
 
         } catch (primaryError) {
 
-            console.warn('⚠️ Primary workforce requests endpoint failed, trying fallback:', primaryError.message);
+            console.warn('âš ï¸ Primary workforce requests endpoint failed, trying fallback:', primaryError.message);
 
             // Try fallback endpoint
 
@@ -47224,7 +47228,7 @@ async function loadWorkforceRequests() {
 
             } catch (fallbackError) {
 
-                console.error('❌ All workforce requests endpoints failed:', fallbackError.message);
+                console.error('âŒ All workforce requests endpoints failed:', fallbackError.message);
 
                 // Load sample data for demonstration
 
@@ -47240,7 +47244,7 @@ async function loadWorkforceRequests() {
 
         const workforceRequests = await response.json();
 
-        console.log('📊 Workforce requests data:', workforceRequests);
+        console.log('ðŸ“Š Workforce requests data:', workforceRequests);
 
         
 
@@ -47264,13 +47268,13 @@ async function loadWorkforceRequests() {
 
             // API returned success but with no recognizable array payload
 
-            console.log('⚠️ API returned success but workforce requests list was not found in response');
+            console.log('âš ï¸ API returned success but workforce requests list was not found in response');
 
             requestsArray = [];
 
         } else {
 
-            console.log('⚠️ Unexpected workforce requests response format');
+            console.log('âš ï¸ Unexpected workforce requests response format');
 
             loadSampleWorkforceRequests();
 
@@ -47286,7 +47290,7 @@ async function loadWorkforceRequests() {
 
     } catch (error) {
 
-        console.error('❌ Error loading workforce requests:', error);
+        console.error('âŒ Error loading workforce requests:', error);
 
         // Load sample data on error
 
@@ -47302,7 +47306,7 @@ async function loadWorkforceRequests() {
 
 function loadSampleWorkforceRequests() {
 
-    console.log('📋 Loading sample workforce requests...');
+    console.log('ðŸ“‹ Loading sample workforce requests...');
 
     
 
@@ -47388,7 +47392,7 @@ function displayWorkforceRequests(requests) {
 
     if (!requestsList) {
 
-        console.error('❌ Workforce requests list container not found!');
+        console.error('âŒ Workforce requests list container not found!');
 
         return;
 
@@ -47400,7 +47404,7 @@ function displayWorkforceRequests(requests) {
 
     if (!Array.isArray(requests)) {
 
-        console.error('❌ Requests is not an array:', requests);
+        console.error('âŒ Requests is not an array:', requests);
 
         requests = [];
 
@@ -47444,13 +47448,13 @@ function displayWorkforceRequests(requests) {
 
         // Get request type badge
 
-        const typeDisplay = request.requestType === 'additional' ? '➕ Additional' : 
+        const typeDisplay = request.requestType === 'additional' ? 'âž• Additional' : 
 
-                           request.requestType === 'replacement' ? '🔄 Replacement' : 
+                           request.requestType === 'replacement' ? 'ðŸ”„ Replacement' : 
 
-                           request.requestType === 'specialized' ? '⭐ Specialized' : 
+                           request.requestType === 'specialized' ? 'â­ Specialized' : 
 
-                           request.requestType === 'temporary' ? '⏰ Temporary' : request.requestType;
+                           request.requestType === 'temporary' ? 'â° Temporary' : request.requestType;
 
         
 
@@ -47486,17 +47490,17 @@ function displayWorkforceRequests(requests) {
 
             const catMap = {
 
-                'construction': '👷 Construction',
+                'construction': 'ðŸ‘· Construction',
 
-                'engineering': '🔧 Engineering',
+                'engineering': 'ðŸ”§ Engineering',
 
-                'labor': '💪 Labor',
+                'labor': 'ðŸ’ª Labor',
 
-                'driver': '🚗 Driver',
+                'driver': 'ðŸš— Driver',
 
-                'supervisor': '👨‍💼 Supervisor',
+                'supervisor': 'ðŸ‘¨â€ðŸ’¼ Supervisor',
 
-                'safety': '🛡️ Safety'
+                'safety': 'ðŸ›¡ï¸ Safety'
 
             };
 
@@ -47508,13 +47512,13 @@ function displayWorkforceRequests(requests) {
 
         // Get status badge
 
-        const statusDisplay = request.status === 'pending' ? '⏳ Pending' : 
+        const statusDisplay = request.status === 'pending' ? 'â³ Pending' : 
 
-                             request.status === 'approved' ? '✅ Approved' : 
+                             request.status === 'approved' ? 'âœ… Approved' : 
 
-                             request.status === 'rejected' ? '❌ Rejected' : 
+                             request.status === 'rejected' ? 'âŒ Rejected' : 
 
-                             request.status === 'completed' ? '🎉 Completed' : request.status;
+                             request.status === 'completed' ? 'ðŸŽ‰ Completed' : request.status;
 
         
 
@@ -47674,11 +47678,11 @@ function displayWorkforceRequests(requests) {
 
                     <div class="request-actions">
 
-                        <button class="action-btn view" onclick="viewWorkforceRequest('${request.id}')" title="View Details">👁️</button>
+                        <button class="action-btn view" onclick="viewWorkforceRequest('${request.id}')" title="View Details">ðŸ‘ï¸</button>
 
-                        <button class="action-btn edit" onclick="editWorkforceRequest('${request.id}')" title="Edit Request">✏️</button>
+                        <button class="action-btn edit" onclick="editWorkforceRequest('${request.id}')" title="Edit Request">âœï¸</button>
 
-                        <button class="action-btn approve" onclick="approveWorkforceRequest('${request.id}')" title="Approve">✅</button>
+                        <button class="action-btn approve" onclick="approveWorkforceRequest('${request.id}')" title="Approve">âœ…</button>
 
                     </div>
 
@@ -47736,7 +47740,7 @@ function viewAssignedWorkers(){
 
                 <button type="button" id="toggleWorkerViewBtn" onclick="toggleWorkerView()" class="action" style="background: #007bff;">
 
-                    👥 Search & Filter Workers
+                    ðŸ‘¥ Search & Filter Workers
 
                 </button>
 
@@ -48242,7 +48246,7 @@ function recordSiteReports(){
 
                 <button type="button" id="toggleSiteReportFormBtn" onclick="toggleSiteReportForm()" class="action" style="background: #007bff;">
 
-                    📝 Record Site Report
+                    ðŸ“ Record Site Report
 
                 </button>
 
@@ -48542,7 +48546,7 @@ function recordSiteReports(){
 
 async function loadSiteReports() {
 
-    console.log('🔄 Loading site reports...');
+    console.log('ðŸ”„ Loading site reports...');
 
     
 
@@ -48582,7 +48586,7 @@ async function loadSiteReports() {
 
         } catch (primaryError) {
 
-            console.warn('⚠️ Primary site reports endpoint failed, trying fallback:', primaryError.message);
+            console.warn('âš ï¸ Primary site reports endpoint failed, trying fallback:', primaryError.message);
 
             // Try fallback endpoint
 
@@ -48612,7 +48616,7 @@ async function loadSiteReports() {
 
             } catch (fallbackError) {
 
-                console.error('❌ All site reports endpoints failed:', fallbackError.message);
+                console.error('âŒ All site reports endpoints failed:', fallbackError.message);
 
                 // Load sample data for demonstration
 
@@ -48628,7 +48632,7 @@ async function loadSiteReports() {
 
         const siteReportsData = await response.json();
 
-        console.log('📊 Site reports data:', siteReportsData);
+        console.log('ðŸ“Š Site reports data:', siteReportsData);
 
         
 
@@ -48664,7 +48668,7 @@ async function loadSiteReports() {
 
     } catch (error) {
 
-        console.error('❌ Error loading site reports:', error);
+        console.error('âŒ Error loading site reports:', error);
 
         // Load sample data on error
 
@@ -48680,7 +48684,7 @@ async function loadSiteReports() {
 
 function loadSampleSiteReports() {
 
-    console.log('📋 Loading sample site reports...');
+    console.log('ðŸ“‹ Loading sample site reports...');
 
     
 
@@ -49072,7 +49076,7 @@ function displaySiteReports(reports, _retry) {
         if (!_retry) {
             return requestAnimationFrame(() => displaySiteReports(reports, true));
         }
-        console.warn('⚠️ Site reports container not present (view changed); skipping render.');
+        console.warn('âš ï¸ Site reports container not present (view changed); skipping render.');
 
         return;
 
@@ -49152,19 +49156,19 @@ function displaySiteReports(reports, _retry) {
 
         // Get weather display
 
-        const weatherDisplay = report.weatherConditions === 'sunny' ? '☀️ Sunny' : 
+        const weatherDisplay = report.weatherConditions === 'sunny' ? 'â˜€ï¸ Sunny' : 
 
-                              report.weatherConditions === 'cloudy' ? '☁️ Cloudy' : 
+                              report.weatherConditions === 'cloudy' ? 'â˜ï¸ Cloudy' : 
 
-                              report.weatherConditions === 'rainy' ? '🌧️ Rainy' : 
+                              report.weatherConditions === 'rainy' ? 'ðŸŒ§ï¸ Rainy' : 
 
-                              report.weatherConditions === 'windy' ? '💨 Windy' : report.weatherConditions;
+                              report.weatherConditions === 'windy' ? 'ðŸ’¨ Windy' : report.weatherConditions;
 
         
 
         // Get safety status
 
-        const safetyStatus = report.safetyIncidents === 'None' || !report.safetyIncidents ? '✅ Clear' : '⚠️ Issues';
+        const safetyStatus = report.safetyIncidents === 'None' || !report.safetyIncidents ? 'âœ… Clear' : 'âš ï¸ Issues';
 
         const safetyClass = report.safetyIncidents === 'None' || !report.safetyIncidents ? 'status-clear' : 'status-issues';
 
@@ -49346,11 +49350,11 @@ function displaySiteReports(reports, _retry) {
 
                     <div class="report-actions">
 
-                        <button class="action-btn view" onclick="viewSiteReport('${report.id}')" title="View Details">👁️</button>
+                        <button class="action-btn view" onclick="viewSiteReport('${report.id}')" title="View Details">ðŸ‘ï¸</button>
 
-                        <button class="action-btn edit" onclick="editSiteReport('${report.id}')" title="Edit Report">✏️</button>
+                        <button class="action-btn edit" onclick="editSiteReport('${report.id}')" title="Edit Report">âœï¸</button>
 
-                        <button class="action-btn download" onclick="downloadSiteReport('${report.id}')" title="Download PDF">📥</button>
+                        <button class="action-btn download" onclick="downloadSiteReport('${report.id}')" title="Download PDF">ðŸ“¥</button>
 
                     </div>
 
@@ -49408,7 +49412,7 @@ function approveCompletedWork(){
 
                 <button type="button" id="toggleApprovalFormBtn" onclick="toggleApprovalForm()" class="action" style="background: #007bff;">
 
-                    ✅ Work Approval Form
+                    âœ… Work Approval Form
 
                 </button>
 
@@ -49860,7 +49864,7 @@ function saveNewProject() {
 
     if (!project.projectName || !project.projectCode || !project.clientName || !project.projectStartDate || !project.projectManager) {
 
-        customAlert('Please fill in all required fields:\n\n• Project Name\n• Project Code\n• Client Name\n• Start Date\n• Project Manager', "Validation Error", "error");
+        customAlert('Please fill in all required fields:\n\nâ€¢ Project Name\nâ€¢ Project Code\nâ€¢ Client Name\nâ€¢ Start Date\nâ€¢ Project Manager', "Validation Error", "error");
 
         return false;
 
@@ -49952,7 +49956,7 @@ function saveNewProject() {
 
     .then(response => {
 
-        console.log('📡 Project Creation API Response status:', response.status);
+        console.log('ðŸ“¡ Project Creation API Response status:', response.status);
 
         return response.json();
 
@@ -49960,7 +49964,7 @@ function saveNewProject() {
 
     .then(data => {
 
-        console.log('📊 Project Creation API Response data:', data);
+        console.log('ðŸ“Š Project Creation API Response data:', data);
 
         
 
@@ -49972,7 +49976,7 @@ function saveNewProject() {
 
         
 
-        customAlert(`Project created successfully!\n\nProject: ${project.projectName}\nCode: ${project.projectCode}\nContract Value: TZS ${parseInt(project.contractValue).toLocaleString()}\nStatus: ${project.status}\nProject ID: ${data.id}\n\n🎉 Project saved to database!`, "Project Created", "success");
+        customAlert(`Project created successfully!\n\nProject: ${project.projectName}\nCode: ${project.projectCode}\nContract Value: TZS ${parseInt(project.contractValue).toLocaleString()}\nStatus: ${project.status}\nProject ID: ${data.id}\n\nðŸŽ‰ Project saved to database!`, "Project Created", "success");
 
         
 
@@ -49992,9 +49996,9 @@ function saveNewProject() {
 
     .catch(error => {
 
-        console.error('❌ Error creating project:', error);
+        console.error('âŒ Error creating project:', error);
 
-        customAlert(`Failed to create project: ${error.message}\n\nPlease check:\n• All required fields are filled\n• Network connection is stable\n• Server is running properly`, "Creation Error", "error");
+        customAlert(`Failed to create project: ${error.message}\n\nPlease check:\nâ€¢ All required fields are filled\nâ€¢ Network connection is stable\nâ€¢ Server is running properly`, "Creation Error", "error");
 
     });
 
@@ -50094,7 +50098,7 @@ function saveProjectProgress() {
 
     .then(response => {
 
-        console.log('📡 Progress update response status:', response.status);
+        console.log('ðŸ“¡ Progress update response status:', response.status);
 
         if (!response.ok) {
 
@@ -50108,7 +50112,7 @@ function saveProjectProgress() {
 
     .then(data => {
 
-        console.log('📊 Progress update response:', data);
+        console.log('ðŸ“Š Progress update response:', data);
 
         
 
@@ -50148,7 +50152,7 @@ function saveProjectProgress() {
 
     .catch(error => {
 
-        console.error('❌ Error updating project progress:', error);
+        console.error('âŒ Error updating project progress:', error);
 
         customAlert(`Error updating project progress: ${error.message}`, "Error", "error");
 
@@ -50496,7 +50500,7 @@ function displayTasks(tasks) {
 
                 <td colspan="14" style="text-align: center; padding: 40px; color: #666;">
 
-                    <div style="margin-bottom: 10px;">📋</div>
+                    <div style="margin-bottom: 10px;">ðŸ“‹</div>
 
                     <div>No task assignments found. Start by assigning your first task.</div>
 
@@ -50618,13 +50622,13 @@ function displayTasks(tasks) {
 
                     <div style="display: flex; gap: 5px; flex-wrap: wrap;">
 
-                        <button class="action" onclick="viewTask('${task.id}')" style="padding: 4px 8px; font-size: 11px;">👁️ View</button>
+                        <button class="action" onclick="viewTask('${task.id}')" style="padding: 4px 8px; font-size: 11px;">ðŸ‘ï¸ View</button>
 
-                        <button class="action" onclick="editTask('${task.id}')" style="padding: 4px 8px; font-size: 11px;">✏️ Edit</button>
+                        <button class="action" onclick="editTask('${task.id}')" style="padding: 4px 8px; font-size: 11px;">âœï¸ Edit</button>
 
-                        <button class="action" onclick="updateTaskStatus('${task.id}')" style="padding: 4px 8px; font-size: 11px;">🔄 Status</button>
+                        <button class="action" onclick="updateTaskStatus('${task.id}')" style="padding: 4px 8px; font-size: 11px;">ðŸ”„ Status</button>
 
-                        <button class="action" onclick="deleteTask('${task.id}')" style="background: #dc3545; padding: 4px 8px; font-size: 11px;">🗑️ Delete</button>
+                        <button class="action" onclick="deleteTask('${task.id}')" style="background: #dc3545; padding: 4px 8px; font-size: 11px;">ðŸ—‘ï¸ Delete</button>
 
                     </div>
 
@@ -50666,13 +50670,13 @@ function getPriorityBadge(priority) {
 
     const badges = {
 
-        'urgent': '<span style="background: #dc3545; color: white; padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: 500;">🔥 Urgent</span>',
+        'urgent': '<span style="background: #dc3545; color: white; padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: 500;">ðŸ”¥ Urgent</span>',
 
-        'high': '<span style="background: #fd7e14; color: white; padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: 500;">⚡ High</span>',
+        'high': '<span style="background: #fd7e14; color: white; padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: 500;">âš¡ High</span>',
 
-        'medium': '<span style="background: #ffc107; color: black; padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: 500;">📋 Medium</span>',
+        'medium': '<span style="background: #ffc107; color: black; padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: 500;">ðŸ“‹ Medium</span>',
 
-        'low': '<span style="background: #28a745; color: white; padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: 500;">🟢 Low</span>'
+        'low': '<span style="background: #28a745; color: white; padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: 500;">ðŸŸ¢ Low</span>'
 
     };
 
@@ -50868,15 +50872,15 @@ async function submitWorkforceRequest(event) {
 
         // Debug logging
 
-        console.log('📤 Submitting workforce request:', request);
+        console.log('ðŸ“¤ Submitting workforce request:', request);
 
-        console.log('📤 Job categories:', request.jobCategories, 'Length:', request.jobCategories.length);
+        console.log('ðŸ“¤ Job categories:', request.jobCategories, 'Length:', request.jobCategories.length);
 
         
 
         // Check authentication token
         const authToken = sessionManager.getAuthToken();
-        console.log('🔑 Auth token check:', {
+        console.log('ðŸ”‘ Auth token check:', {
             exists: !!authToken,
             length: authToken ? authToken.length : 0,
             startsWithBearer: authToken ? authToken.startsWith('eyJ') : false,
@@ -50884,7 +50888,7 @@ async function submitWorkforceRequest(event) {
         });
 
         if (!authToken) {
-            console.error('❌ No auth token found');
+            console.error('âŒ No auth token found');
             customAlert('Please log in to submit workforce requests.', 'Authentication Required', 'error');
             return false;
         }
@@ -50949,7 +50953,7 @@ async function submitWorkforceRequest(event) {
             let serverDetail = '';
             try {
                 const errBody = await response.clone().json();
-                console.error('❌ Server error body:', errBody);
+                console.error('âŒ Server error body:', errBody);
                 serverDetail = errBody.error || '';
                 if (errBody.missing && errBody.missing.length) {
                     serverDetail += ` (missing: ${errBody.missing.join(', ')})`;
@@ -50966,7 +50970,7 @@ async function submitWorkforceRequest(event) {
 
         const result = await response.json();
 
-        console.log('✅ Workforce request submitted:', result);
+        console.log('âœ… Workforce request submitted:', result);
 
         
 
@@ -50990,8 +50994,8 @@ async function submitWorkforceRequest(event) {
 
     } catch (error) {
 
-        console.error('❌ Error submitting workforce request:', error);
-        console.error('❌ Error details:', {
+        console.error('âŒ Error submitting workforce request:', error);
+        console.error('âŒ Error details:', {
             message: error.message,
             stack: error.stack,
             name: error.name
@@ -51198,15 +51202,15 @@ async function loadAssignedWorkers() {
 
     try {
 
-        console.log('🔍 Loading assigned workers...');
+        console.log('ðŸ” Loading assigned workers...');
 
         
 
         const token = sessionManager.getAuthToken();
 
-        console.log('🔑 Auth token:', token ? 'Present' : 'Missing');
+        console.log('ðŸ”‘ Auth token:', token ? 'Present' : 'Missing');
 
-        console.log('🔑 Token length:', token ? token.length : 0);
+        console.log('ðŸ”‘ Token length:', token ? token.length : 0);
 
         
 
@@ -51214,7 +51218,7 @@ async function loadAssignedWorkers() {
 
         if (!navigator.onLine) {
 
-            console.log('🌐 Offline mode - using mock data');
+            console.log('ðŸŒ Offline mode - using mock data');
 
             showNotification('Offline mode - using demo data', 'warning', 3000);
 
@@ -51246,9 +51250,9 @@ async function loadAssignedWorkers() {
 
         
 
-        console.log('📡 Making request to:', `${baseUrl}/api/work/assignments`);
+        console.log('ðŸ“¡ Making request to:', `${baseUrl}/api/work/assignments`);
 
-        console.log('📡 Request headers:', headers);
+        console.log('ðŸ“¡ Request headers:', headers);
 
         
 
@@ -51272,9 +51276,9 @@ async function loadAssignedWorkers() {
 
         clearTimeout(timeoutId);
 
-        console.log('📡 Response status:', response.status);
+        console.log('ðŸ“¡ Response status:', response.status);
 
-        console.log('📡 Response OK:', response.ok);
+        console.log('ðŸ“¡ Response OK:', response.ok);
 
         
 
@@ -51282,7 +51286,7 @@ async function loadAssignedWorkers() {
 
             const errorText = await response.text();
 
-            console.error('❌ Failed to load assigned workers:', response.status, errorText);
+            console.error('âŒ Failed to load assigned workers:', response.status, errorText);
 
             
 
@@ -51290,13 +51294,13 @@ async function loadAssignedWorkers() {
 
             if (response.status === 403 || response.status === 401) {
 
-                console.log('🔓 Authentication error - using mock data');
+                console.log('ðŸ”“ Authentication error - using mock data');
 
                 showNotification('Authentication failed - using demo data', 'warning', 3000);
 
             } else if (response.status >= 500) {
 
-                console.log('🔧 Server error - using mock data');
+                console.log('ðŸ”§ Server error - using mock data');
 
                 showNotification('Server error - using demo data', 'warning', 3000);
 
@@ -51318,7 +51322,7 @@ async function loadAssignedWorkers() {
 
         const workers = await response.json();
 
-        console.log('👥 Assigned workers loaded:', workers.length);
+        console.log('ðŸ‘¥ Assigned workers loaded:', workers.length);
 
         displayAssignedWorkers(workers);
 
@@ -51328,7 +51332,7 @@ async function loadAssignedWorkers() {
 
     } catch (error) {
 
-        console.error('❌ Error loading assigned workers:', error);
+        console.error('âŒ Error loading assigned workers:', error);
 
         
 
@@ -51336,7 +51340,7 @@ async function loadAssignedWorkers() {
 
         if (error.message.includes('Failed to fetch') || error.message.includes('net::ERR_NAME_NOT_RESOLVED') || error.name === 'AbortError') {
 
-            console.log('🌐 Network error - using mock data');
+            console.log('ðŸŒ Network error - using mock data');
 
             showNotification('Network connectivity issues - using demo data', 'warning', 3000);
 
@@ -51360,7 +51364,7 @@ async function loadAssignedWorkers() {
 
 function useMockAssignedWorkers() {
 
-    console.log('🔄 Using mock assigned workers data');
+    console.log('ðŸ”„ Using mock assigned workers data');
 
     const mockWorkers = [
 
@@ -51446,7 +51450,7 @@ function displayAssignedWorkers(workers) {
 
     if (!workerResults) {
 
-        console.warn('⚠️ Worker results container not found - tried workerResults, mdWorkerResults, .worker-results');
+        console.warn('âš ï¸ Worker results container not found - tried workerResults, mdWorkerResults, .worker-results');
 
         return;
 
@@ -51682,7 +51686,7 @@ function addProperty(){
 
                 <button type="button" id="togglePropertyFormBtn" onclick="togglePropertyForm()" class="action" style="background: #007bff;">
 
-                    🏠 Add New Property
+                    ðŸ  Add New Property
 
                 </button>
 
@@ -51992,7 +51996,7 @@ function addProperty(){
 
 async function loadPropertiesRecords() {
 
-    console.log('🔄 Loading properties records...');
+    console.log('ðŸ”„ Loading properties records...');
 
     
 
@@ -52032,7 +52036,7 @@ async function loadPropertiesRecords() {
 
                 const data = await response.json();
 
-                console.log('📊 Properties records data from /all:', data);
+                console.log('ðŸ“Š Properties records data from /all:', data);
 
                 records = Array.isArray(data) ? data : (data.data || []);
 
@@ -52044,7 +52048,7 @@ async function loadPropertiesRecords() {
 
         } catch (primaryError) {
 
-            console.warn('⚠️ Primary properties records endpoint failed, trying fallback:', primaryError.message);
+            console.warn('âš ï¸ Primary properties records endpoint failed, trying fallback:', primaryError.message);
 
             // Try fallback endpoint
 
@@ -52070,7 +52074,7 @@ async function loadPropertiesRecords() {
 
                     const data = await response.json();
 
-                    console.log('📊 Properties records data from fallback:', data);
+                    console.log('ðŸ“Š Properties records data from fallback:', data);
 
                     // Handle different response formats
 
@@ -52100,7 +52104,7 @@ async function loadPropertiesRecords() {
 
             } catch (fallbackError) {
 
-                console.error('❌ All properties records endpoints failed:', fallbackError.message);
+                console.error('âŒ All properties records endpoints failed:', fallbackError.message);
 
                 // Load sample data for demonstration
 
@@ -52114,7 +52118,7 @@ async function loadPropertiesRecords() {
 
         
 
-        console.log('📊 Final properties records:', records);
+        console.log('ðŸ“Š Final properties records:', records);
 
         displayPropertiesRecords(records);
 
@@ -52122,7 +52126,7 @@ async function loadPropertiesRecords() {
 
     } catch (error) {
 
-        console.error('❌ Error loading properties records:', error);
+        console.error('âŒ Error loading properties records:', error);
 
         // Load sample data on error
 
@@ -52138,7 +52142,7 @@ async function loadPropertiesRecords() {
 
 function loadSamplePropertiesRecords() {
 
-    console.log('📋 Loading sample properties records...');
+    console.log('ðŸ“‹ Loading sample properties records...');
 
     
 
@@ -52500,7 +52504,7 @@ function displayPropertiesRecords(records) {
 
     if (!recordsList) {
 
-        console.error('❌ Properties records list container not found!');
+        console.error('âŒ Properties records list container not found!');
 
         return;
 
@@ -52592,13 +52596,13 @@ function displayPropertiesRecords(records) {
 
         // Get property type badge
 
-        const typeDisplay = record.propertyType === 'residential' ? '🏠 Residential' : 
+        const typeDisplay = record.propertyType === 'residential' ? 'ðŸ  Residential' : 
 
-                           record.propertyType === 'commercial' ? '🏢 Commercial' : 
+                           record.propertyType === 'commercial' ? 'ðŸ¢ Commercial' : 
 
-                           record.propertyType === 'industrial' ? '🏭 Industrial' : 
+                           record.propertyType === 'industrial' ? 'ðŸ­ Industrial' : 
 
-                           record.propertyType === 'agricultural' ? '🌾 Agricultural' : record.propertyType;
+                           record.propertyType === 'agricultural' ? 'ðŸŒ¾ Agricultural' : record.propertyType;
 
         
 
@@ -52614,13 +52618,13 @@ function displayPropertiesRecords(records) {
 
         
 
-        const statusBadge = record.status === 'Available' ? '✅ Available' : 
+        const statusBadge = record.status === 'Available' ? 'âœ… Available' : 
 
-                           record.status === 'Reserved' ? '⏳ Reserved' : 
+                           record.status === 'Reserved' ? 'â³ Reserved' : 
 
-                           record.status === 'Sold' ? '🔒 Sold' : 
+                           record.status === 'Sold' ? 'ðŸ”’ Sold' : 
 
-                           record.status === 'Under Offer' ? '🤝 Under Offer' : '❓ Unknown';
+                           record.status === 'Under Offer' ? 'ðŸ¤ Under Offer' : 'â“ Unknown';
 
         
 
@@ -52642,19 +52646,19 @@ function displayPropertiesRecords(records) {
 
                 const utilityNames = {
 
-                    'water': '💧',
+                    'water': 'ðŸ’§',
 
-                    'electricity': '⚡',
+                    'electricity': 'âš¡',
 
-                    'road': '🛣️',
+                    'road': 'ðŸ›£ï¸',
 
-                    'sewage': '🚰'
+                    'sewage': 'ðŸš°'
 
                 };
 
                 return utilityNames[utility] || utility;
 
-            }).join(' ') : '❌ None';
+            }).join(' ') : 'âŒ None';
 
         
 
@@ -52772,11 +52776,11 @@ function displayPropertiesRecords(records) {
 
                     <div class="property-actions">
 
-                        <button class="action-btn view" onclick="viewPropertyDetails('${record.id}')" title="View Details">👁️</button>
+                        <button class="action-btn view" onclick="viewPropertyDetails('${record.id}')" title="View Details">ðŸ‘ï¸</button>
 
-                        <button class="action-btn edit" onclick="editProperty('${record.id}')" title="Edit Property">✏️</button>
+                        <button class="action-btn edit" onclick="editProperty('${record.id}')" title="Edit Property">âœï¸</button>
 
-                        <button class="action-btn download" onclick="downloadPropertyDocs('${record.id}')" title="Download Documents">📄</button>
+                        <button class="action-btn download" onclick="downloadPropertyDocs('${record.id}')" title="Download Documents">ðŸ“„</button>
 
                     </div>
 
@@ -52829,7 +52833,7 @@ async function editPropertyDetails(){
         <h3>Edit Property Details</h3>
         <p><strong>Real Estate Authority:</strong> Loading properties from database...</p>
         <div id="editPropertyContainer" style="margin-top:20px;">
-            <div style="padding:20px;text-align:center;color:#666;">⏳ Loading properties...</div>
+            <div style="padding:20px;text-align:center;color:#666;">â³ Loading properties...</div>
         </div>
     </div>`);
 
@@ -52855,7 +52859,7 @@ async function editPropertyDetails(){
         else if (raw && typeof raw === 'object' && raw.id) properties = [raw];
         else properties = [];
     } catch (err) {
-        console.error('❌ Failed to load properties for edit screen:', err);
+        console.error('âŒ Failed to load properties for edit screen:', err);
     }
 
     // Map DB rows to a normalized shape used by the form & table
@@ -52890,7 +52894,7 @@ async function editPropertyDetails(){
             <td><span class="status-badge status-${p.status}">${p.status}</span></td>
             <td>${p.tpNumber || '-'}</td>
             <td>${p.createdAt ? new Date(p.createdAt).toLocaleDateString() : '-'}</td>
-            <td><button type="button" class="action" onclick="document.getElementById('editPropertySelect').value='${p.id}';loadPropertyDetails();window.scrollTo({top:document.getElementById('propertyEditForm').offsetTop-20,behavior:'smooth'});">✏️ Edit</button></td>
+            <td><button type="button" class="action" onclick="document.getElementById('editPropertySelect').value='${p.id}';loadPropertyDetails();window.scrollTo({top:document.getElementById('propertyEditForm').offsetTop-20,behavior:'smooth'});">âœï¸ Edit</button></td>
         </tr>
     `).join('') : `<tr><td colspan="10" style="text-align:center;color:#666;padding:15px;">No properties found in database</td></tr>`;
 
@@ -53085,7 +53089,7 @@ function registerClient(){
 
                 <button type="button" id="toggleClientFormBtn" onclick="toggleClientForm()" class="action" style="background: #007bff;">
 
-                    👤 Register New Client
+                    ðŸ‘¤ Register New Client
 
                 </button>
 
@@ -53407,7 +53411,7 @@ function registerClient(){
 
 async function loadClientsRecords() {
 
-    console.log('🔄 Loading clients records...');
+    console.log('ðŸ”„ Loading clients records...');
 
     
 
@@ -53445,7 +53449,7 @@ async function loadClientsRecords() {
 
         const clientsRecords = await response.json();
 
-        console.log('📊 Clients records data:', clientsRecords);
+        console.log('ðŸ“Š Clients records data:', clientsRecords);
 
         
 
@@ -53455,7 +53459,7 @@ async function loadClientsRecords() {
 
     } catch (error) {
 
-        console.error('❌ Error loading clients records:', error);
+        console.error('âŒ Error loading clients records:', error);
 
         // Show empty state on error instead of mock data
 
@@ -53497,7 +53501,7 @@ function displayClientsRecords(data) {
 
     if (!recordsList) {
 
-        console.error('❌ Clients records list container not found!');
+        console.error('âŒ Clients records list container not found!');
 
         return;
 
@@ -53631,23 +53635,23 @@ function displayClientsRecords(data) {
 
         // Get client type badge
 
-        const typeDisplay = record.clientType === 'individual' ? '👤 Individual' : 
+        const typeDisplay = record.clientType === 'individual' ? 'ðŸ‘¤ Individual' : 
 
-                           record.clientType === 'company' ? '🏢 Company' : 
+                           record.clientType === 'company' ? 'ðŸ¢ Company' : 
 
-                           record.clientType === 'investor' ? '💼 Investor' : record.clientType;
+                           record.clientType === 'investor' ? 'ðŸ’¼ Investor' : record.clientType;
 
         
 
         // Get property interest badge
 
-        const interestDisplay = record.propertyInterest === 'residential' ? '🏠 Residential' : 
+        const interestDisplay = record.propertyInterest === 'residential' ? 'ðŸ  Residential' : 
 
-                              record.propertyInterest === 'commercial' ? '🏢 Commercial' : 
+                              record.propertyInterest === 'commercial' ? 'ðŸ¢ Commercial' : 
 
-                              record.propertyInterest === 'investment' ? '💰 Investment' : 
+                              record.propertyInterest === 'investment' ? 'ðŸ’° Investment' : 
 
-                              record.propertyInterest === 'agricultural' ? '🌾 Agricultural' : record.propertyInterest;
+                              record.propertyInterest === 'agricultural' ? 'ðŸŒ¾ Agricultural' : record.propertyInterest;
 
         
 
@@ -53719,9 +53723,9 @@ function displayClientsRecords(data) {
 
                     <div class="contact-info">
 
-                        <div class="phone">📱 ${esc(record.phone)}</div>
+                        <div class="phone">ðŸ“± ${esc(record.phone)}</div>
 
-                        <div class="email">📧 ${esc(record.email)}</div>
+                        <div class="email">ðŸ“§ ${esc(record.email)}</div>
 
                     </div>
 
@@ -53735,7 +53739,7 @@ function displayClientsRecords(data) {
 
                 <td>
 
-                    <div class="tin-info">${esc(record.tinNumber) || '<span style="color:#999">—</span>'}</div>
+                    <div class="tin-info">${esc(record.tinNumber) || '<span style="color:#999">â€”</span>'}</div>
 
                 </td>
 
@@ -53757,7 +53761,7 @@ function displayClientsRecords(data) {
 
                 <td>
 
-                    <div class="notes-info" title="${esc(record.additionalNotes)}" style="max-width:200px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${esc(record.additionalNotes) || '<span style="color:#999">—</span>'}</div>
+                    <div class="notes-info" title="${esc(record.additionalNotes)}" style="max-width:200px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${esc(record.additionalNotes) || '<span style="color:#999">â€”</span>'}</div>
 
                 </td>
 
@@ -53787,11 +53791,11 @@ function displayClientsRecords(data) {
 
                     <div class="client-actions">
 
-                        <button class="action-btn view" onclick="viewClientDetails('${record.id}')" title="View Details">👁️</button>
+                        <button class="action-btn view" onclick="viewClientDetails('${record.id}')" title="View Details">ðŸ‘ï¸</button>
 
-                        <button class="action-btn edit" onclick="editClient('${record.id}')" title="Edit Client">✏️</button>
+                        <button class="action-btn edit" onclick="editClient('${record.id}')" title="Edit Client">âœï¸</button>
 
-                        <button class="action-btn contact" onclick="contactClient('${record.id}')" title="Contact">📞</button>
+                        <button class="action-btn contact" onclick="contactClient('${record.id}')" title="Contact">ðŸ“ž</button>
 
                     </div>
 
@@ -53849,7 +53853,7 @@ async function recordSale(){
 
                 <button type="button" id="toggleSaleFormBtn" onclick="toggleSaleForm()" class="action" style="background: #007bff;">
 
-                    💰 Record New Sale
+                    ðŸ’° Record New Sale
 
                 </button>
 
@@ -54113,7 +54117,7 @@ async function recordSale(){
 
                         <div class="sale-details">
 
-                            <strong>PLT-2026-001 → John Smith</strong>
+                            <strong>PLT-2026-001 â†’ John Smith</strong>
 
                             <span>Price: TZS 50,000,000</span>
 
@@ -54213,9 +54217,9 @@ function manageSales() {
 
                 <div>
 
-                    <button type="button" onclick="recordSale()" class="action" style="background: #28a745;">💰 Record New Sale</button>
+                    <button type="button" onclick="recordSale()" class="action" style="background: #28a745;">ðŸ’° Record New Sale</button>
 
-                    <button type="button" onclick="exportSales()" class="action" style="background: #007bff;">📊 Export Sales</button>
+                    <button type="button" onclick="exportSales()" class="action" style="background: #007bff;">ðŸ“Š Export Sales</button>
 
                 </div>
 
@@ -54404,9 +54408,9 @@ async function loadSales() {
 
                             <div class="client-name">${clientName}</div>
 
-                            <div class="client-contact">📱 ${clientPhone}</div>
+                            <div class="client-contact">ðŸ“± ${clientPhone}</div>
 
-                            <div class="client-email">📧 ${clientEmail}</div>
+                            <div class="client-email">ðŸ“§ ${clientEmail}</div>
 
                         </div>
 
@@ -54462,7 +54466,7 @@ async function loadSales() {
 
                             ${salesAgreement ? 
 
-                                `<div class="agreement-file">📄 ${salesAgreement}</div>` : 
+                                `<div class="agreement-file">ðŸ“„ ${salesAgreement}</div>` : 
 
                                 '<div class="no-agreement">No Agreement</div>'
 
@@ -54496,11 +54500,11 @@ async function loadSales() {
 
                         <div class="sales-actions">
 
-                            <button class="action-btn view" onclick="viewSaleDetails('${saleId}')" title="View Details">👁️</button>
+                            <button class="action-btn view" onclick="viewSaleDetails('${saleId}')" title="View Details">ðŸ‘ï¸</button>
 
-                            <button class="action-btn edit" onclick="editSale('${saleId}')" title="Edit Sale">✏️</button>
+                            <button class="action-btn edit" onclick="editSale('${saleId}')" title="Edit Sale">âœï¸</button>
 
-                            <button class="action-btn delete" onclick="deleteSale('${saleId}')" title="Delete Sale">🗑️</button>
+                            <button class="action-btn delete" onclick="deleteSale('${saleId}')" title="Delete Sale">ðŸ—‘ï¸</button>
 
                         </div>
 
@@ -54518,7 +54522,7 @@ async function loadSales() {
 
     } catch (error) {
 
-        console.error('❌ Error loading sales records:', error);
+        console.error('âŒ Error loading sales records:', error);
 
         // Load sample data on error
 
@@ -54534,7 +54538,7 @@ async function loadSales() {
 
 function loadSampleSales() {
 
-    console.log('💰 Loading sample sales records...');
+    console.log('ðŸ’° Loading sample sales records...');
 
     
 
@@ -54778,9 +54782,9 @@ function loadSampleSales() {
 
                     <div class="client-name">${sale.clientName}</div>
 
-                    <div class="client-contact">📱 ${sale.clientPhone}</div>
+                    <div class="client-contact">ðŸ“± ${sale.clientPhone}</div>
 
-                    <div class="client-email">📧 ${sale.clientEmail}</div>
+                    <div class="client-email">ðŸ“§ ${sale.clientEmail}</div>
 
                 </div>
 
@@ -54836,7 +54840,7 @@ function loadSampleSales() {
 
                     ${sale.salesAgreement ? 
 
-                        `<div class="agreement-file">📄 ${sale.salesAgreement}</div>` : 
+                        `<div class="agreement-file">ðŸ“„ ${sale.salesAgreement}</div>` : 
 
                         '<div class="no-agreement">No Agreement</div>'
 
@@ -54870,11 +54874,11 @@ function loadSampleSales() {
 
                 <div class="sales-actions">
 
-                    <button class="action-btn view" onclick="viewSaleDetails('${sale.saleId}')" title="View Details">👁️</button>
+                    <button class="action-btn view" onclick="viewSaleDetails('${sale.saleId}')" title="View Details">ðŸ‘ï¸</button>
 
-                    <button class="action-btn edit" onclick="editSale('${sale.saleId}')" title="Edit Sale">✏️</button>
+                    <button class="action-btn edit" onclick="editSale('${sale.saleId}')" title="Edit Sale">âœï¸</button>
 
-                    <button class="action-btn delete" onclick="deleteSale('${sale.saleId}')" title="Delete Sale">🗑️</button>
+                    <button class="action-btn delete" onclick="deleteSale('${sale.saleId}')" title="Delete Sale">ðŸ—‘ï¸</button>
 
                 </div>
 
@@ -54886,7 +54890,7 @@ function loadSampleSales() {
 
     
 
-    console.log('✅ Sample sales records loaded successfully');
+    console.log('âœ… Sample sales records loaded successfully');
 
 }
 
@@ -55364,13 +55368,13 @@ function updatePaymentTable(payments) {
 
                     <button class="action-btn" onclick="recordPayment(${payment.sale_id})" title="Record Payment">
 
-                        💰
+                        ðŸ’°
 
                     </button>
 
                     <button class="action-btn" onclick="viewPaymentHistory(${payment.sale_id})" title="View History">
 
-                        📊
+                        ðŸ“Š
 
                     </button>
 
@@ -55378,7 +55382,7 @@ function updatePaymentTable(payments) {
 
                         <button class="action-btn" onclick="sendPaymentReminder(${payment.sale_id})" title="Send Reminder">
 
-                            📧
+                            ðŸ“§
 
                         </button>
 
@@ -56208,7 +56212,7 @@ function generateSalesReport(){
 
 async function loadSalesRecords() {
 
-    console.log('🔄 Loading sales records...');
+    console.log('ðŸ”„ Loading sales records...');
 
     
 
@@ -56248,7 +56252,7 @@ async function loadSalesRecords() {
 
                 const data = await response.json();
 
-                console.log('📊 Sales records data from /all:', data);
+                console.log('ðŸ“Š Sales records data from /all:', data);
 
                 records = Array.isArray(data) ? data : (data.data || []);
 
@@ -56260,7 +56264,7 @@ async function loadSalesRecords() {
 
         } catch (primaryError) {
 
-            console.warn('⚠️ Primary sales records endpoint failed, trying fallback:', primaryError.message);
+            console.warn('âš ï¸ Primary sales records endpoint failed, trying fallback:', primaryError.message);
 
             // Try fallback endpoint
 
@@ -56286,7 +56290,7 @@ async function loadSalesRecords() {
 
                     const data = await response.json();
 
-                    console.log('📊 Sales records data from fallback:', data);
+                    console.log('ðŸ“Š Sales records data from fallback:', data);
 
                     // Handle different response formats
 
@@ -56316,7 +56320,7 @@ async function loadSalesRecords() {
 
             } catch (fallbackError) {
 
-                console.error('❌ All sales records endpoints failed:', fallbackError.message);
+                console.error('âŒ All sales records endpoints failed:', fallbackError.message);
 
                 // Load sample data for demonstration
 
@@ -56330,7 +56334,7 @@ async function loadSalesRecords() {
 
         
 
-        console.log('📊 Final sales records:', records);
+        console.log('ðŸ“Š Final sales records:', records);
 
         displaySalesRecords(records);
 
@@ -56338,7 +56342,7 @@ async function loadSalesRecords() {
 
     } catch (error) {
 
-        console.error('❌ Error loading sales records:', error);
+        console.error('âŒ Error loading sales records:', error);
 
         // Load sample data on error
 
@@ -56354,7 +56358,7 @@ async function loadSalesRecords() {
 
 function loadSampleSalesRecords() {
 
-    console.log('📋 Loading sample sales records...');
+    console.log('ðŸ“‹ Loading sample sales records...');
 
     
 
@@ -56716,7 +56720,7 @@ function displaySalesRecords(records) {
 
     if (!recordsList) {
 
-        console.error('❌ Sales records list container not found!');
+        console.error('âŒ Sales records list container not found!');
 
         return;
 
@@ -56822,11 +56826,11 @@ function displaySalesRecords(records) {
 
         // Get property type badge
 
-        const typeDisplay = record.propertyType === 'residential' ? '🏠 Residential' : 
+        const typeDisplay = record.propertyType === 'residential' ? 'ðŸ  Residential' : 
 
-                           record.propertyType === 'commercial' ? '🏢 Commercial' : 
+                           record.propertyType === 'commercial' ? 'ðŸ¢ Commercial' : 
 
-                           record.propertyType === 'industrial' ? '🏭 Industrial' : record.propertyType;
+                           record.propertyType === 'industrial' ? 'ðŸ­ Industrial' : record.propertyType;
 
         
 
@@ -56840,11 +56844,11 @@ function displaySalesRecords(records) {
 
         
 
-        const statusBadge = record.status === 'completed' ? '✅ Completed' : 
+        const statusBadge = record.status === 'completed' ? 'âœ… Completed' : 
 
-                           record.status === 'pending' ? '⏳ Pending' : 
+                           record.status === 'pending' ? 'â³ Pending' : 
 
-                           record.status === 'cancelled' ? '❌ Cancelled' : '❓ Unknown';
+                           record.status === 'cancelled' ? 'âŒ Cancelled' : 'â“ Unknown';
 
         
 
@@ -56930,11 +56934,11 @@ function displaySalesRecords(records) {
 
                     <div class="sales-actions">
 
-                        <button class="action-btn view" onclick="viewSalesTransaction('${record.id}')" title="View Details">👁️</button>
+                        <button class="action-btn view" onclick="viewSalesTransaction('${record.id}')" title="View Details">ðŸ‘ï¸</button>
 
-                        <button class="action-btn download" onclick="downloadSalesContract('${record.id}')" title="Download Contract">📄</button>
+                        <button class="action-btn download" onclick="downloadSalesContract('${record.id}')" title="Download Contract">ðŸ“„</button>
 
-                        <button class="action-btn edit" onclick="editSalesTransaction('${record.id}')" title="Edit Transaction">✏️</button>
+                        <button class="action-btn edit" onclick="editSalesTransaction('${record.id}')" title="Edit Transaction">âœï¸</button>
 
                     </div>
 
@@ -57024,7 +57028,7 @@ function saveNewProperty() {
 
         !property.status || property.status.trim() === '') {
 
-        customAlert('Please fill in all required fields:\n\n• Plot Number\n• Property Type\n• Location\n• Area\n• Price\n• Status', "Validation Error", "error");
+        customAlert('Please fill in all required fields:\n\nâ€¢ Plot Number\nâ€¢ Property Type\nâ€¢ Location\nâ€¢ Area\nâ€¢ Price\nâ€¢ Status', "Validation Error", "error");
 
         return false;
 
@@ -57114,7 +57118,7 @@ function saveNewProperty() {
 
     .then(response => {
 
-        console.log('📡 Property API Response status:', response.status);
+        console.log('ðŸ“¡ Property API Response status:', response.status);
 
         if (!response.ok) {
 
@@ -57138,7 +57142,7 @@ function saveNewProperty() {
 
     .then(data => {
 
-        console.log('📊 Property API Response data:', data);
+        console.log('ðŸ“Š Property API Response data:', data);
 
         
 
@@ -57150,7 +57154,7 @@ function saveNewProperty() {
 
         
 
-        customAlert(`Property added successfully!\n\nPlot: ${property.propertyName}\nLocation: ${property.location}\nPrice: TZS ${parseInt(property.value).toLocaleString()}\nStatus: ${property.status}\nProperty ID: ${data.id}\n\n🎉 Property saved to database!`, "Property Added", "success");
+        customAlert(`Property added successfully!\n\nPlot: ${property.propertyName}\nLocation: ${property.location}\nPrice: TZS ${parseInt(property.value).toLocaleString()}\nStatus: ${property.status}\nProperty ID: ${data.id}\n\nðŸŽ‰ Property saved to database!`, "Property Added", "success");
 
         
 
@@ -57162,7 +57166,7 @@ function saveNewProperty() {
 
     .catch(error => {
 
-        console.error('❌ Error adding property:', error);
+        console.error('âŒ Error adding property:', error);
 
         customAlert(`Error adding property: ${error.message}`, "Error", "error");
 
@@ -57304,7 +57308,7 @@ function saveNewClient() {
 
     .then(response => {
 
-        console.log('📡 Client API Response status:', response.status);
+        console.log('ðŸ“¡ Client API Response status:', response.status);
 
         if (!response.ok) {
 
@@ -57318,7 +57322,7 @@ function saveNewClient() {
 
     .then(data => {
 
-        console.log('📊 Client API Response data:', data);
+        console.log('ðŸ“Š Client API Response data:', data);
 
         
 
@@ -57330,7 +57334,7 @@ function saveNewClient() {
 
         
 
-        customAlert(`Client registered successfully!\n\nName: ${client.fullName}\nID: ${client.id}\nPhone: ${client.phone}\nEmail: ${client.email}\nNIDA: ${client.nida}\nRegistration ID: ${data.clientId || data.id}\n\n🎉 Client saved to database!`, "Client Registered", "success");
+        customAlert(`Client registered successfully!\n\nName: ${client.fullName}\nID: ${client.id}\nPhone: ${client.phone}\nEmail: ${client.email}\nNIDA: ${client.nida}\nRegistration ID: ${data.clientId || data.id}\n\nðŸŽ‰ Client saved to database!`, "Client Registered", "success");
 
         
 
@@ -57340,7 +57344,7 @@ function saveNewClient() {
 
     .catch(error => {
 
-        console.error('❌ Error registering client:', error);
+        console.error('âŒ Error registering client:', error);
 
         customAlert(`Error registering client: ${error.message}`, "Error", "error");
 
@@ -57394,7 +57398,7 @@ async function saveNewSale(event) {
     }
 
     if (!propertyId || !clientId || !price || !date) {
-        console.warn('⚠️ Validation failed: Missing required fields for saving sale.');
+        console.warn('âš ï¸ Validation failed: Missing required fields for saving sale.');
         customAlert('Please fill in all required fields.', 'Validation Error', 'error');
         return false;
     }
@@ -57404,7 +57408,7 @@ async function saveNewSale(event) {
     const propertyName = propertySelect.options[propertySelect.selectedIndex].text;
     const clientName = clientSelect.options[clientSelect.selectedIndex].text;
 
-    console.log('💾 Initiating sale recording with details:', {
+    console.log('ðŸ’¾ Initiating sale recording with details:', {
         propertyId,
         propertyName,
         clientId,
@@ -57446,15 +57450,15 @@ async function saveNewSale(event) {
         const result = await response.json();
 
         if (response.ok) {
-            console.log('✅ Sale recorded successfully in the database!', result);
+            console.log('âœ… Sale recorded successfully in the database!', result);
             customAlert(`Sale recorded successfully!\n\nProperty: ${propertyName}\nClient: ${clientName}\nPrice: TZS ${parseInt(price).toLocaleString()}\nPayment Method: ${paymentMethod}\nStatus: ${paymentStatus}`, "Sale Recorded", "success");
             document.getElementById('saleForm').reset();
         } else {
-            console.error('❌ Failed to record sale. Server response error:', result);
+            console.error('âŒ Failed to record sale. Server response error:', result);
             customAlert(`Failed to record sale: ${result.error || result.details || 'Unknown error'}`, "Sale Error", "error");
         }
     } catch (error) {
-        console.error('💥 Critical exception error while saving sale:', error);
+        console.error('ðŸ’¥ Critical exception error while saving sale:', error);
         customAlert(`Failed to record sale: ${error.message}`, "Sale Error", "error");
     }
 
@@ -57488,7 +57492,7 @@ function generateReport() {
 
     
 
-    customAlert(`Generating ${report.type} report for ${report.period} period...\n\nReport will include:\n• Sales summary and trends\n• Payment tracking\n• Property performance\n• Client analysis\n• Commission calculations\n\nReport will be ready for download shortly.`, "Generate Report", "info");
+    customAlert(`Generating ${report.type} report for ${report.period} period...\n\nReport will include:\nâ€¢ Sales summary and trends\nâ€¢ Payment tracking\nâ€¢ Property performance\nâ€¢ Client analysis\nâ€¢ Commission calculations\n\nReport will be ready for download shortly.`, "Generate Report", "info");
 
     
 
@@ -57644,7 +57648,7 @@ function uploadDocs(){
 
                 <button type="button" id="toggleUploadFormBtn" onclick="toggleUploadForm()" class="action" style="background: #007bff;">
 
-                    📄 Upload New Document
+                    ðŸ“„ Upload New Document
 
                 </button>
 
@@ -57944,7 +57948,7 @@ function uploadDocs(){
 
 async function loadDocuments() {
 
-    console.log('🔄 Loading documents...');
+    console.log('ðŸ”„ Loading documents...');
 
     
 
@@ -57984,7 +57988,7 @@ async function loadDocuments() {
 
         } catch (primaryError) {
 
-            console.warn('⚠️ Primary documents endpoint failed, trying fallback:', primaryError.message);
+            console.warn('âš ï¸ Primary documents endpoint failed, trying fallback:', primaryError.message);
 
             // Try fallback endpoint
 
@@ -58014,7 +58018,7 @@ async function loadDocuments() {
 
             } catch (fallbackError) {
 
-                console.error('❌ All documents endpoints failed:', fallbackError.message);
+                console.error('âŒ All documents endpoints failed:', fallbackError.message);
 
                 // Load sample data for demonstration
 
@@ -58030,7 +58034,7 @@ async function loadDocuments() {
 
         const data = await response.json();
 
-        console.log('📊 Documents data:', data);
+        console.log('ðŸ“Š Documents data:', data);
 
         
 
@@ -58046,7 +58050,7 @@ async function loadDocuments() {
 
     } catch (error) {
 
-        console.error('❌ Error loading documents:', error);
+        console.error('âŒ Error loading documents:', error);
 
         // Load sample data on error
 
@@ -58062,7 +58066,7 @@ async function loadDocuments() {
 
 function loadSampleDocuments() {
 
-    console.log('📋 Loading sample documents...');
+    console.log('ðŸ“‹ Loading sample documents...');
 
     
 
@@ -58448,7 +58452,7 @@ function displayDocuments(documents) {
 
     if (!documentsList) {
 
-        console.error('❌ Documents list container not found!');
+        console.error('âŒ Documents list container not found!');
 
         return;
 
@@ -58510,13 +58514,13 @@ function displayDocuments(documents) {
 
         // Get status display
 
-        const statusDisplay = doc.status === 'active' ? '✅ Active' : 
+        const statusDisplay = doc.status === 'active' ? 'âœ… Active' : 
 
-                             doc.status === 'pending' ? '⏳ Pending' : 
+                             doc.status === 'pending' ? 'â³ Pending' : 
 
-                             doc.status === 'draft' ? '📝 Draft' : 
+                             doc.status === 'draft' ? 'ðŸ“ Draft' : 
 
-                             doc.status === 'archived' ? '📦 Archived' : doc.status;
+                             doc.status === 'archived' ? 'ðŸ“¦ Archived' : doc.status;
 
         
 
@@ -58656,11 +58660,11 @@ function displayDocuments(documents) {
 
                     <div class="document-actions">
 
-                        <button class="action-btn view" onclick="viewDocument('${doc.id}')" title="View Document">👁️</button>
+                        <button class="action-btn view" onclick="viewDocument('${doc.id}')" title="View Document">ðŸ‘ï¸</button>
 
-                        <button class="action-btn download" onclick="downloadDocument('${doc.id}')" title="Download Document">📥</button>
+                        <button class="action-btn download" onclick="downloadDocument('${doc.id}')" title="Download Document">ðŸ“¥</button>
 
-                        <button class="action-btn edit" onclick="editDocument('${doc.id}')" title="Edit Document">✏️</button>
+                        <button class="action-btn edit" onclick="editDocument('${doc.id}')" title="Edit Document">âœï¸</button>
 
                     </div>
 
@@ -58862,7 +58866,7 @@ function uploadDocument() {
 
     if (document.readyState === 'loading') {
 
-        console.error('❌ DOM not ready yet, please wait');
+        console.error('âŒ DOM not ready yet, please wait');
 
         return;
 
@@ -58888,7 +58892,7 @@ function uploadDocument() {
 
     if (!docTypeElement || !docTitleElement || !docDepartmentElement || !docFileElement) {
 
-        console.error('❌ Required DOM elements not found');
+        console.error('âŒ Required DOM elements not found');
 
         customAlert('Document upload form not ready. Please try again.', "Form Error", "error");
 
@@ -58914,7 +58918,7 @@ function uploadDocument() {
 
     if (!docType || !docTitle || !docDepartment || !docFile) {
 
-        customAlert('Please fill all required fields and select a file:\n\n• Document Type\n• Document Title\n• Department\n• File', "Validation Error", "error");
+        customAlert('Please fill all required fields and select a file:\n\nâ€¢ Document Type\nâ€¢ Document Title\nâ€¢ Department\nâ€¢ File', "Validation Error", "error");
 
         return;
 
@@ -59012,7 +59016,7 @@ function uploadDocument() {
 
     .then(response => {
 
-        console.log('📡 Document Upload API Response status:', response.status);
+        console.log('ðŸ“¡ Document Upload API Response status:', response.status);
 
         return response.json();
 
@@ -59020,7 +59024,7 @@ function uploadDocument() {
 
     .then(data => {
 
-        console.log('📊 Document Upload API Response data:', data);
+        console.log('ðŸ“Š Document Upload API Response data:', data);
 
         
 
@@ -59036,7 +59040,7 @@ function uploadDocument() {
 
         showRealProblemNotification('SUCCESS', {
 
-            message: `✅ Document uploaded successfully!\n\n📋 Details:\n• Title: ${docTitle}\n• Type: ${docType}\n• Department: ${docDepartment}\n• File: ${docFile.name}\n• Priority: ${docPriority}\n• Document ID: ${data.id}\n• Status: ${data.status || 'pending'}\n\n🎉 Document saved to database without page refresh!`,
+            message: `âœ… Document uploaded successfully!\n\nðŸ“‹ Details:\nâ€¢ Title: ${docTitle}\nâ€¢ Type: ${docType}\nâ€¢ Department: ${docDepartment}\nâ€¢ File: ${docFile.name}\nâ€¢ Priority: ${docPriority}\nâ€¢ Document ID: ${data.id}\nâ€¢ Status: ${data.status || 'pending'}\n\nðŸŽ‰ Document saved to database without page refresh!`,
 
             documentId: data.id,
 
@@ -59072,7 +59076,7 @@ function uploadDocument() {
 
     .catch(error => {
 
-        console.error('❌ Error uploading document:', error);
+        console.error('âŒ Error uploading document:', error);
 
         
 
@@ -59088,37 +59092,37 @@ function uploadDocument() {
 
             errorCause = 'Network connection failed';
 
-            troubleshooting = '• Check internet connection\n• Verify server is running\n• Try again in a moment';
+            troubleshooting = 'â€¢ Check internet connection\nâ€¢ Verify server is running\nâ€¢ Try again in a moment';
 
         } else if (error.message.includes('400')) {
 
             errorCause = 'Invalid request data';
 
-            troubleshooting = '• Fill all required fields\n• Select a valid file\n• Check file size limits';
+            troubleshooting = 'â€¢ Fill all required fields\nâ€¢ Select a valid file\nâ€¢ Check file size limits';
 
         } else if (error.message.includes('404')) {
 
             errorCause = 'API endpoint not found';
 
-            troubleshooting = '• Server routing issue\n• Contact system administrator';
+            troubleshooting = 'â€¢ Server routing issue\nâ€¢ Contact system administrator';
 
         } else if (error.message.includes('500')) {
 
             errorCause = 'Server internal error';
 
-            troubleshooting = '• Database connection issue\n• Server configuration problem\n• Contact system administrator';
+            troubleshooting = 'â€¢ Database connection issue\nâ€¢ Server configuration problem\nâ€¢ Contact system administrator';
 
         } else if (error.message.includes('validation') || error.message.includes('required')) {
 
             errorCause = 'Form validation failed';
 
-            troubleshooting = '• Fill all required fields\n• Check field formats\n• Ensure file is selected';
+            troubleshooting = 'â€¢ Fill all required fields\nâ€¢ Check field formats\nâ€¢ Ensure file is selected';
 
         } else if (error.message.includes('database') || error.message.includes('SQL')) {
 
             errorCause = 'Database operation failed';
 
-            troubleshooting = '• Database connection issue\n• Table might not exist\n• Contact system administrator';
+            troubleshooting = 'â€¢ Database connection issue\nâ€¢ Table might not exist\nâ€¢ Contact system administrator';
 
         }
 
@@ -59134,7 +59138,7 @@ function uploadDocument() {
 
             troubleshooting: troubleshooting,
 
-            message: `❌ Document upload failed!\n\n🔍 Error Cause: ${errorCause}\n\n🛠️ Troubleshooting:\n${troubleshooting}\n\n📝 Technical Details:\n${error.message}\n\n💡 Please fix the issue and try again.`,
+            message: `âŒ Document upload failed!\n\nðŸ” Error Cause: ${errorCause}\n\nðŸ› ï¸ Troubleshooting:\n${troubleshooting}\n\nðŸ“ Technical Details:\n${error.message}\n\nðŸ’¡ Please fix the issue and try again.`,
 
             fileName: docFile?.name || 'No file selected',
 
@@ -59210,7 +59214,7 @@ function editDocuments(){
 
 async function loadDocuments() {
 
-    console.log('🔄 Loading documents for editing...');
+    console.log('ðŸ”„ Loading documents for editing...');
 
     
 
@@ -59246,7 +59250,7 @@ async function loadDocuments() {
 
         const documents = data.documents || [];
 
-        console.log('📊 Documents for editing:', documents);
+        console.log('ðŸ“Š Documents for editing:', documents);
 
         
 
@@ -59366,7 +59370,7 @@ async function loadDocuments() {
 
                     <button class="action download-btn" onclick="downloadDoc('${doc.id}')">Download</button>
 
-                    <button class="action delete-btn" onclick="deleteDoc('${doc.id}', '${doc.title}')">🗑️ Delete</button>
+                    <button class="action delete-btn" onclick="deleteDoc('${doc.id}', '${doc.title}')">ðŸ—‘ï¸ Delete</button>
 
                 </div>
 
@@ -59376,13 +59380,13 @@ async function loadDocuments() {
 
         
 
-        console.log(`✅ Documents displayed for editing: ${documents.length} documents`);
+        console.log(`âœ… Documents displayed for editing: ${documents.length} documents`);
 
         
 
     } catch (error) {
 
-        console.error('❌ Error loading documents for editing:', error);
+        console.error('âŒ Error loading documents for editing:', error);
 
         const docsGrid = document.getElementById('docsGrid');
 
@@ -59522,7 +59526,7 @@ function sendNotifications(){
 
                 <button type="button" id="toggleNotificationFormBtn" onclick="toggleNotificationForm()" class="action" style="background: #007bff;">
 
-                    📧 Compose New Notification
+                    ðŸ“§ Compose New Notification
 
                 </button>
 
@@ -60024,7 +60028,7 @@ function sendNotification() {
 
     .then(response => {
 
-        console.log('📡 Notification API Response status:', response.status);
+        console.log('ðŸ“¡ Notification API Response status:', response.status);
 
         return response.json();
 
@@ -60032,7 +60036,7 @@ function sendNotification() {
 
     .then(data => {
 
-        console.log('📊 Notification API Response data:', data);
+        console.log('ðŸ“Š Notification API Response data:', data);
 
         
 
@@ -60076,7 +60080,7 @@ function sendNotification() {
 
     .catch(error => {
 
-        console.error('❌ Error sending notification:', error);
+        console.error('âŒ Error sending notification:', error);
 
         alert('Failed to send notification: ' + error.message);
 
@@ -60096,7 +60100,7 @@ function sendNotification() {
 
 async function loadNotifications() {
 
-    console.log('🔄 Loading notifications...');
+    console.log('ðŸ”„ Loading notifications...');
 
     
 
@@ -60136,7 +60140,7 @@ async function loadNotifications() {
 
         } catch (error) {
 
-            console.error('❌ Notifications endpoint failed:', error.message);
+            console.error('âŒ Notifications endpoint failed:', error.message);
 
             // Load sample data for demonstration
 
@@ -60150,9 +60154,9 @@ async function loadNotifications() {
 
         const data = await response.json();
 
-        console.log('📊 Notifications data:', data);
+        console.log('ðŸ“Š Notifications data:', data);
 
-        console.log('📊 Raw notifications array:', data.notifications || data.data || data);
+        console.log('ðŸ“Š Raw notifications array:', data.notifications || data.data || data);
 
         
 
@@ -60166,9 +60170,9 @@ async function loadNotifications() {
 
         if (notifications && notifications.length > 0) {
 
-            console.log('📊 First notification fields:', Object.keys(notifications[0]));
+            console.log('ðŸ“Š First notification fields:', Object.keys(notifications[0]));
 
-            console.log('📊 First notification data:', notifications[0]);
+            console.log('ðŸ“Š First notification data:', notifications[0]);
 
         }
 
@@ -60180,7 +60184,7 @@ async function loadNotifications() {
 
     } catch (error) {
 
-        console.error('❌ Error loading notifications:', error);
+        console.error('âŒ Error loading notifications:', error);
 
         // Load sample data on error
 
@@ -60196,7 +60200,7 @@ async function loadNotifications() {
 
 function loadSampleNotifications() {
 
-    console.log('📋 Loading sample notifications...');
+    console.log('ðŸ“‹ Loading sample notifications...');
 
     
 
@@ -60582,7 +60586,7 @@ function displayNotifications(notifications) {
 
     if (!notificationsList) {
 
-        console.error('❌ Notifications list container not found!');
+        console.error('âŒ Notifications list container not found!');
 
         return;
 
@@ -60664,13 +60668,13 @@ function displayNotifications(notifications) {
 
         // Get status display
 
-        const statusDisplay = mappedNotif.status === 'sent' ? '✅ Sent' : 
+        const statusDisplay = mappedNotif.status === 'sent' ? 'âœ… Sent' : 
 
-                             mappedNotif.status === 'scheduled' ? '⏰ Scheduled' : 
+                             mappedNotif.status === 'scheduled' ? 'â° Scheduled' : 
 
-                             mappedNotif.status === 'draft' ? '📝 Draft' : 
+                             mappedNotif.status === 'draft' ? 'ðŸ“ Draft' : 
 
-                             mappedNotif.status === 'failed' ? '❌ Failed' : mappedNotif.status;
+                             mappedNotif.status === 'failed' ? 'âŒ Failed' : mappedNotif.status;
 
         
 
@@ -60810,11 +60814,11 @@ function displayNotifications(notifications) {
 
                     <div class="notification-actions">
 
-                        <button class="action-btn view" onclick="viewNotification('${mappedNotif.id}')" title="View Notification">👁️</button>
+                        <button class="action-btn view" onclick="viewNotification('${mappedNotif.id}')" title="View Notification">ðŸ‘ï¸</button>
 
-                        <button class="action-btn resend" onclick="resendNotification('${mappedNotif.id}')" title="Resend Notification">📤</button>
+                        <button class="action-btn resend" onclick="resendNotification('${mappedNotif.id}')" title="Resend Notification">ðŸ“¤</button>
 
-                        <button class="action-btn delete" onclick="deleteNotification('${mappedNotif.id}')" title="Delete Notification">🗑️</button>
+                        <button class="action-btn delete" onclick="deleteNotification('${mappedNotif.id}')" title="Delete Notification">ðŸ—‘ï¸</button>
 
                     </div>
 
@@ -60984,7 +60988,7 @@ function recordMeetingMinutes(){
 
                 <button type="button" id="toggleMinutesFormBtn" onclick="toggleMinutesForm()" class="action" style="background: #007bff;">
 
-                    📝 Record New Minutes
+                    ðŸ“ Record New Minutes
 
                 </button>
 
@@ -61210,7 +61214,7 @@ function saveMeetingMinutes() {
 
     if (!title || !type || !date || !time || !minutes) {
 
-        alert('Please fill all required fields:\n\n• Meeting Title\n• Meeting Type\n• Date\n• Time\n• Meeting Minutes');
+        alert('Please fill all required fields:\n\nâ€¢ Meeting Title\nâ€¢ Meeting Type\nâ€¢ Date\nâ€¢ Time\nâ€¢ Meeting Minutes');
 
         return;
 
@@ -61268,7 +61272,7 @@ function saveMeetingMinutes() {
 
     .then(response => {
 
-        console.log('📡 Meeting Minutes API Response status:', response.status);
+        console.log('ðŸ“¡ Meeting Minutes API Response status:', response.status);
 
         return response.json();
 
@@ -61276,7 +61280,7 @@ function saveMeetingMinutes() {
 
     .then(data => {
 
-        console.log('📊 Meeting Minutes API Response data:', data);
+        console.log('ðŸ“Š Meeting Minutes API Response data:', data);
 
         
 
@@ -61318,7 +61322,7 @@ function saveMeetingMinutes() {
 
     .catch(error => {
 
-        console.error('❌ Error saving meeting minutes:', error);
+        console.error('âŒ Error saving meeting minutes:', error);
 
         // If API doesn't exist yet, show success message and save locally
 
@@ -61524,7 +61528,7 @@ function viewEmployeeList() {
 
 function loadEmployeeList() {
 
-    console.log('🔄 Loading employee list for admin assistant...');
+    console.log('ðŸ”„ Loading employee list for admin assistant...');
 
     
 
@@ -61548,7 +61552,7 @@ function loadEmployeeList() {
 
     .then(response => {
 
-        console.log('📡 Employee Details API Response status:', response.status);
+        console.log('ðŸ“¡ Employee Details API Response status:', response.status);
 
         if (!response.ok) {
 
@@ -61562,7 +61566,7 @@ function loadEmployeeList() {
 
     .then(data => {
 
-        console.log('📊 Employee Details API Response data:', data);
+        console.log('ðŸ“Š Employee Details API Response data:', data);
 
         
 
@@ -61594,11 +61598,11 @@ function loadEmployeeList() {
 
     .catch(error => {
 
-        console.error('❌ Error loading employee list:', error);
+        console.error('âŒ Error loading employee list:', error);
 
         // Fallback to employees table if employees fails
 
-        console.log('🔄 Falling back to employees table...');
+        console.log('ðŸ”„ Falling back to employees table...');
 
         fetch(`${baseUrl}/api/employees`, {
 
@@ -61620,7 +61624,7 @@ function loadEmployeeList() {
 
         .then(data => {
 
-            console.log('📊 Employees API Fallback data:', data);
+            console.log('ðŸ“Š Employees API Fallback data:', data);
 
             let employees = Array.isArray(data) ? data : (data && typeof data === 'object' ? [data] : []);
 
@@ -61632,7 +61636,7 @@ function loadEmployeeList() {
 
         .catch(fallbackError => {
 
-            console.error('❌ Fallback also failed:', fallbackError);
+            console.error('âŒ Fallback also failed:', fallbackError);
 
             document.getElementById('employeeTableBody').innerHTML = '<tr><td colspan="7" style="text-align: center; padding: 20px;" class="error-message">Error loading employees. Please try again.</td></tr>';
 
@@ -61740,7 +61744,7 @@ function displayEmployeeList(employees) {
 
                         <button class="btn-view-employee" onclick="viewEmployeeDetails('${employee.id || employee.employee_id}')" title="View Details">
 
-                            👁️ View
+                            ðŸ‘ï¸ View
 
                         </button>
 
@@ -61834,7 +61838,7 @@ function loadDepartmentFilter() {
 
     .catch(error => {
 
-        console.error('❌ Error loading departments:', error);
+        console.error('âŒ Error loading departments:', error);
 
         // Fallback to default departments
 
@@ -61896,7 +61900,7 @@ function populateDepartmentFilter(departments) {
 
     
 
-    console.log('📋 Departments loaded:', departments);
+    console.log('ðŸ“‹ Departments loaded:', departments);
 
 }
 
@@ -62010,7 +62014,7 @@ function filterEmployeeList() {
 
     .catch(error => {
 
-        console.error('❌ Error filtering employees:', error);
+        console.error('âŒ Error filtering employees:', error);
 
         // Fallback to employees table
 
@@ -62108,7 +62112,7 @@ function filterEmployeeList() {
 
         .catch(fallbackError => {
 
-            console.error('❌ Fallback filter also failed:', fallbackError);
+            console.error('âŒ Fallback filter also failed:', fallbackError);
 
         });
 
@@ -62318,7 +62322,7 @@ function showEmployeeDetailsModal(employee) {
 
                     <div class="detail-section">
 
-                        <h4>📋 Personal Information</h4>
+                        <h4>ðŸ“‹ Personal Information</h4>
 
                         <div class="detail-grid">
 
@@ -62378,7 +62382,7 @@ function showEmployeeDetailsModal(employee) {
 
                     <div class="detail-section">
 
-                        <h4>💼 Work Information</h4>
+                        <h4>ðŸ’¼ Work Information</h4>
 
                         <div class="detail-grid">
 
@@ -62434,7 +62438,7 @@ function showEmployeeDetailsModal(employee) {
 
             <div class="employee-details-actions">
 
-                <button class="btn-secondary" onclick="goBack()">← Back</button>
+                <button class="btn-secondary" onclick="goBack()">â† Back</button>
 
             </div>
 
@@ -62480,7 +62484,7 @@ function goBack() {
 
     backButtonTimeout = setTimeout(() => {
 
-        console.log('🔙 Going back...');
+        console.log('ðŸ”™ Going back...');
 
         
 
@@ -62494,23 +62498,23 @@ function goBack() {
 
             // If no history, go back to main menu
 
-            console.log('🏠 No history available, returning to main menu');
+            console.log('ðŸ  No history available, returning to main menu');
 
             showContent(`
 
                 <div class="card">
 
-                    <h3>🏠 Main Menu</h3>
+                    <h3>ðŸ  Main Menu</h3>
 
                     <p>Welcome back to the main menu. Select an option from the navigation menu.</p>
 
                     <div class="form-actions">
 
-                        <button class="action" onclick="officePortal()">🏢 Office Portal</button>
+                        <button class="action" onclick="officePortal()">ðŸ¢ Office Portal</button>
 
-                        <button class="action" onclick="showContent('')">📋 Dashboard</button>
+                        <button class="action" onclick="showContent('')">ðŸ“‹ Dashboard</button>
 
-                        <button class="action" onclick="showCreateProjectForm()">🚀 Project Manage</button>
+                        <button class="action" onclick="showCreateProjectForm()">ðŸš€ Project Manage</button>
 
                     </div>
 
@@ -62544,7 +62548,7 @@ function scheduleMeeting(){
 
                 <button type="button" id="toggleMeetingFormBtn" onclick="toggleMeetingForm()" class="action" style="background: #007bff;">
 
-                    📅 Schedule New Meeting
+                    ðŸ“… Schedule New Meeting
 
                 </button>
 
@@ -62988,7 +62992,7 @@ function scheduleMeetingSubmit() {
 
     .then(response => {
 
-        console.log('📡 Meeting API Response status:', response.status);
+        console.log('ðŸ“¡ Meeting API Response status:', response.status);
 
         return response.json();
 
@@ -62996,7 +63000,7 @@ function scheduleMeetingSubmit() {
 
     .then(data => {
 
-        console.log('📊 Meeting API Response data:', data);
+        console.log('ðŸ“Š Meeting API Response data:', data);
 
         
 
@@ -63044,7 +63048,7 @@ function scheduleMeetingSubmit() {
 
     .catch(error => {
 
-        console.error('❌ Error scheduling meeting:', error);
+        console.error('âŒ Error scheduling meeting:', error);
 
         alert('Failed to schedule meeting: ' + error.message);
 
@@ -63186,7 +63190,7 @@ function adminOperations(){
 
 async function complianceManagement(){
 
-    console.log('🔄 Loading compliance data...');
+    console.log('ðŸ”„ Loading compliance data...');
 
     
 
@@ -63218,7 +63222,7 @@ async function complianceManagement(){
 
     try {
 
-        console.log('📄 Fetching compliance documents...');
+        console.log('ðŸ“„ Fetching compliance documents...');
 
         const response = await fetch(`${baseUrl}/api/documents`);
 
@@ -63228,7 +63232,7 @@ async function complianceManagement(){
 
             documents = result.data || [];
 
-            console.log('✅ Loaded documents:', documents.length);
+            console.log('âœ… Loaded documents:', documents.length);
 
             
 
@@ -63280,7 +63284,7 @@ async function complianceManagement(){
 
         } else {
 
-            console.warn('⚠️ Failed to load documents, using default alerts');
+            console.warn('âš ï¸ Failed to load documents, using default alerts');
 
             complianceAlerts = [];
 
@@ -63288,7 +63292,7 @@ async function complianceManagement(){
 
     } catch (error) {
 
-        console.error('❌ Error loading compliance data:', error);
+        console.error('âŒ Error loading compliance data:', error);
 
         complianceAlerts = [];
 
@@ -63396,7 +63400,7 @@ async function complianceManagement(){
 
                                 <th>Active Documents</th>
 
-                                <th>Expiring Soon (≤30 days)</th>
+                                <th>Expiring Soon (â‰¤30 days)</th>
 
                                 <th>Expired Documents</th>
 
@@ -63442,11 +63446,11 @@ async function complianceManagement(){
 
     
 
-    console.log('🔄 Updating content with compliance data...');
+    console.log('ðŸ”„ Updating content with compliance data...');
 
     showContent(formHtml);
 
-    console.log('✅ Compliance management content updated successfully');
+    console.log('âœ… Compliance management content updated successfully');
 
 }
 
@@ -63454,7 +63458,7 @@ async function complianceManagement(){
 
 async function staffOversight(){
 
-    console.log('🔄 Loading staff oversight data...');
+    console.log('ðŸ”„ Loading staff oversight data...');
 
     
 
@@ -63529,11 +63533,11 @@ async function staffOversight(){
                 (emp.contract_status && emp.contract_status.toLowerCase() === 'active')
             ).length;
 
-            console.log('✅ Loaded staff data:', totalEmployees, 'total employees,', activeContracts, 'active contracts');
+            console.log('âœ… Loaded staff data:', totalEmployees, 'total employees,', activeContracts, 'active contracts');
 
         } else {
 
-            console.warn('⚠️ Failed to load staff data, using default values');
+            console.warn('âš ï¸ Failed to load staff data, using default values');
 
         }
 
@@ -63547,7 +63551,7 @@ async function staffOversight(){
 
             departments = Array.isArray(deptData) ? deptData : [];
 
-            console.log('✅ Loaded departments:', departments.length);
+            console.log('âœ… Loaded departments:', departments.length);
 
         }
 
@@ -63636,7 +63640,7 @@ async function staffOversight(){
 
     } catch (error) {
 
-        console.error('❌ Error loading staff data:', error);
+        console.error('âŒ Error loading staff data:', error);
 
         departmentRows = `<tr>
                             <td><strong>Departments</strong></td>
@@ -63723,11 +63727,11 @@ async function staffOversight(){
 
     
 
-    console.log('🔄 Updating content with staff oversight data...');
+    console.log('ðŸ”„ Updating content with staff oversight data...');
 
     showContent(formHtml);
 
-    console.log('✅ Staff oversight content updated successfully');
+    console.log('âœ… Staff oversight content updated successfully');
 
 }
 
@@ -63743,7 +63747,7 @@ async function suspendUser(userId) {
 
         if (confirm(`Are you sure you want to suspend user ID: ${userId}?`)) {
 
-            console.log('🔄 Suspending user:', userId);
+            console.log('ðŸ”„ Suspending user:', userId);
 
             
 
@@ -63801,7 +63805,7 @@ async function suspendUser(userId) {
 
             } catch (error) {
 
-                console.error('❌ Error suspending user:', error);
+                console.error('âŒ Error suspending user:', error);
 
                 showNotification('Error suspending user. Please try again.', 'error');
 
@@ -63829,7 +63833,7 @@ async function reactivateUser(userId) {
 
         if (confirm(`Are you sure you want to reactivate user ID: ${userId}?`)) {
 
-            console.log('🔄 Reactivating user:', userId);
+            console.log('ðŸ”„ Reactivating user:', userId);
 
             
 
@@ -63861,7 +63865,7 @@ async function reactivateUser(userId) {
 
             } catch (error) {
 
-                console.error('❌ Error reactivating user:', error);
+                console.error('âŒ Error reactivating user:', error);
 
                 showNotification('Error reactivating user. Please try again.', 'error');
 
@@ -63917,7 +63921,7 @@ async function viewDriverDetails(driverId) {
 
     } catch (error) {
 
-        console.error('❌ Error fetching driver details:', error);
+        console.error('âŒ Error fetching driver details:', error);
 
         alert('Failed to load driver details. Please try again.');
 
@@ -63963,7 +63967,7 @@ async function editDriver(driverId) {
 
     } catch (error) {
 
-        console.error('❌ Error fetching driver details:', error);
+        console.error('âŒ Error fetching driver details:', error);
 
         alert('Failed to load driver details. Please try again.');
 
@@ -63991,7 +63995,7 @@ function showDriverDetailsModal(driver) {
 
                 <h2>Driver Details</h2>
 
-                <button class="modal-close" onclick="this.closest('.modal-overlay').remove()">×</button>
+                <button class="modal-close" onclick="this.closest('.modal-overlay').remove()">Ã—</button>
 
             </div>
 
@@ -64099,7 +64103,7 @@ function showEditDriverModal(driver) {
 
                 <h2>Edit Driver</h2>
 
-                <button class="modal-close" onclick="this.closest('.modal-overlay').remove()">×</button>
+                <button class="modal-close" onclick="this.closest('.modal-overlay').remove()">Ã—</button>
 
             </div>
 
@@ -64259,7 +64263,7 @@ async function updateDriver(driverId) {
 
     } catch (error) {
 
-        console.error('❌ Error updating driver:', error);
+        console.error('âŒ Error updating driver:', error);
 
         customAlert('Failed to update driver. Please try again.', 'Error', 'error');
 
@@ -64287,7 +64291,7 @@ function showUserDetailsModal(user) {
 
                 <h2>User Details</h2>
 
-                <button class="modal-close" onclick="this.closest('.modal-overlay').remove()">×</button>
+                <button class="modal-close" onclick="this.closest('.modal-overlay').remove()">Ã—</button>
 
             </div>
 
@@ -64420,7 +64424,7 @@ async function showReactivateUserDialog() {
 
 async function reviewDeptStructure(department) {
 
-    console.log(`🔍 Reviewing department structure for: ${department}`);
+    console.log(`ðŸ” Reviewing department structure for: ${department}`);
 
     
 
@@ -64506,7 +64510,7 @@ async function reviewDeptStructure(department) {
 
             if (departmentEmployees.length === 0 && employees.length > 0) {
 
-                console.log(`⚠️ No exact match for "${department}", showing all ${employees.length} employees`);
+                console.log(`âš ï¸ No exact match for "${department}", showing all ${employees.length} employees`);
 
                 departmentEmployees = employees;
 
@@ -64514,17 +64518,17 @@ async function reviewDeptStructure(department) {
 
             
 
-            console.log(`✅ Found ${departmentEmployees.length} employees for ${department} department`);
+            console.log(`âœ… Found ${departmentEmployees.length} employees for ${department} department`);
 
         } else {
 
-            console.warn('⚠️ Failed to load employees, using empty list');
+            console.warn('âš ï¸ Failed to load employees, using empty list');
 
         }
 
     } catch (error) {
 
-        console.error('❌ Error loading department data:', error);
+        console.error('âŒ Error loading department data:', error);
 
     }
 
@@ -64670,11 +64674,11 @@ async function reviewDeptStructure(department) {
 
     
 
-    console.log('🔄 Updating content with department structure...');
+    console.log('ðŸ”„ Updating content with department structure...');
 
     showContent(deptStructureHtml);
 
-    console.log('✅ Department structure review loaded successfully');
+    console.log('âœ… Department structure review loaded successfully');
 
 }
 
@@ -64684,7 +64688,7 @@ async function reviewDeptStructure(department) {
 
 function exportDeptReport(department) {
 
-    console.log('📄 Exporting department report for:', department);
+    console.log('ðŸ“„ Exporting department report for:', department);
 
     showNotification(`Generating report for ${department} department...`, 'info');
 
@@ -64696,7 +64700,7 @@ function exportDeptReport(department) {
 
 function requestBudgetReview(department) {
 
-    console.log('💰 Requesting budget review for:', department);
+    console.log('ðŸ’° Requesting budget review for:', department);
 
     if (confirm(`Request budget review for ${department} department?`)) {
 
@@ -64710,7 +64714,7 @@ function requestBudgetReview(department) {
 
 function backToStaffOversight() {
 
-    console.log('🔙 Returning to Staff Oversight');
+    console.log('ðŸ”™ Returning to Staff Oversight');
 
     staffOversight();
 
@@ -64732,7 +64736,7 @@ function showNotification(message, type = 'info') {
 
             <h4>${type.charAt(0).toUpperCase() + type.slice(1)}</h4>
 
-            <button class="notification-close" onclick="this.parentElement.parentElement.remove()">×</button>
+            <button class="notification-close" onclick="this.parentElement.parentElement.remove()">Ã—</button>
 
         </div>
 
@@ -64818,7 +64822,7 @@ function policyImplementation(){
 
 async function documentManagement(){
 
-    console.log('📄 Loading Document Management System...');
+    console.log('ðŸ“„ Loading Document Management System...');
 
     
 
@@ -64870,17 +64874,17 @@ async function documentManagement(){
 
             documents = result.documents || [];
 
-            console.log(`✅ Loaded ${documents.length} documents from database`);
+            console.log(`âœ… Loaded ${documents.length} documents from database`);
 
         } else {
 
-            console.warn('⚠️ Failed to load documents, using empty list');
+            console.warn('âš ï¸ Failed to load documents, using empty list');
 
         }
 
     } catch (error) {
 
-        console.error('❌ Error loading documents:', error);
+        console.error('âŒ Error loading documents:', error);
 
     }
 
@@ -64908,7 +64912,7 @@ async function documentManagement(){
 
                         <button class="toggle-btn" id="docToggle" aria-expanded="false" onclick="toggleDocUpload()" style="background:#007bff;color:#fff;border:none;padding:4px 6px;font-size:11px;border-radius:4px;cursor:pointer;line-height:1">
 
-                            <span class="toggle-arrow">▸</span>
+                            <span class="toggle-arrow">â–¸</span>
 
                         </button>
 
@@ -65074,11 +65078,11 @@ async function documentManagement(){
 
     
 
-    console.log('🔄 Updating content with document management data...');
+    console.log('ðŸ”„ Updating content with document management data...');
 
     showContent(formHtml);
 
-    console.log('✅ Document management content updated successfully');
+    console.log('âœ… Document management content updated successfully');
 
 }
 
@@ -65202,25 +65206,25 @@ function toggleDocUpload(){
     if(!wasCollapsed){
         wrapper.classList.remove('expanded');
         if(toggle) toggle.setAttribute('aria-expanded','false');
-        const arrow = toggle && toggle.querySelector('.toggle-arrow'); if(arrow) arrow.textContent='▸';
+        const arrow = toggle && toggle.querySelector('.toggle-arrow'); if(arrow) arrow.textContent='â–¸';
         if(body) body.style.display = 'none';
     } else {
         wrapper.classList.add('expanded');
         if(toggle) toggle.setAttribute('aria-expanded','true');
-        const arrow = toggle && toggle.querySelector('.toggle-arrow'); if(arrow) arrow.textContent='▾';
+        const arrow = toggle && toggle.querySelector('.toggle-arrow'); if(arrow) arrow.textContent='â–¾';
         if(body) body.style.display = '';
     }
 }
 
 async function uploadCertificate() {
-    console.log('🚀 uploadCertificate function called');
+    console.log('ðŸš€ uploadCertificate function called');
     
     const certType = document.getElementById('certType').value;
     const certFile = document.getElementById('certFile').files[0];
     const certExpiry = document.getElementById('certExpiry').value;
     const certDescription = document.getElementById('certDescription').value;
 
-    console.log('📋 Form values:', {
+    console.log('ðŸ“‹ Form values:', {
         certType,
         certFile: certFile ? certFile.name : 'No file selected',
         certExpiry,
@@ -65228,7 +65232,7 @@ async function uploadCertificate() {
     });
 
     if (!certType) {
-        console.log('❌ Validation failed: No certificate type selected');
+        console.log('âŒ Validation failed: No certificate type selected');
         showNotification('Please select certificate type', 'error');
         return;
     }
@@ -65245,8 +65249,8 @@ async function uploadCertificate() {
 
     
 
-    console.log('📤 Uploading certificate:', certType, fileName);
-    console.log('🌐 Making request to:', `${window.location.origin}/api/documents/upload`);
+    console.log('ðŸ“¤ Uploading certificate:', certType, fileName);
+    console.log('ðŸŒ Making request to:', `${window.location.origin}/api/documents/upload`);
 
     try {
         const baseUrl = window.location.origin;
@@ -65261,7 +65265,7 @@ async function uploadCertificate() {
             uploaded_by: 1 // Default user for now
         };
         
-        console.log('📤 Request body:', requestBody);
+        console.log('ðŸ“¤ Request body:', requestBody);
         
         const response = await fetch(`${baseUrl}/api/documents/upload`, {
 
@@ -65283,9 +65287,9 @@ async function uploadCertificate() {
 
             const result = await response.json();
 
-            console.log('✅ Upload response:', result);
-            console.log('📊 Response status:', response.status);
-            console.log('📊 Response headers:', response.headers);
+            console.log('âœ… Upload response:', result);
+            console.log('ðŸ“Š Response status:', response.status);
+            console.log('ðŸ“Š Response headers:', response.headers);
 
             showNotification('Certificate uploaded successfully', 'success');
 
@@ -65304,18 +65308,18 @@ async function uploadCertificate() {
             documentManagement();
 
         } else {
-            console.log('❌ Upload failed with status:', response.status);
-            console.log('❌ Response headers:', response.headers);
+            console.log('âŒ Upload failed with status:', response.status);
+            console.log('âŒ Response headers:', response.headers);
             
             const errorData = await response.json().catch(() => ({}));
-            console.error('❌ Upload error:', errorData);
+            console.error('âŒ Upload error:', errorData);
             
             showNotification(errorData.error || 'Failed to upload certificate', 'error');
         }
 
     } catch (error) {
-        console.error('❌ Network error uploading certificate:', error);
-        console.error('❌ Error details:', {
+        console.error('âŒ Network error uploading certificate:', error);
+        console.error('âŒ Error details:', {
             message: error.message,
             stack: error.stack,
             name: error.name
@@ -65328,11 +65332,11 @@ async function uploadCertificate() {
 
 
 async function viewDocument(docId) {
-    console.log('👁️ Viewing document:', docId);
+    console.log('ðŸ‘ï¸ Viewing document:', docId);
     const baseUrl = window.location.origin;
     const token = sessionStorage.getItem('kashtec_token') || sessionManager.getAuthToken();
-    console.log('🌐 API URL:', `${baseUrl}/api/documents/${docId}`);
-    console.log('🔑 Auth token:', token ? 'Present' : 'Missing');
+    console.log('ðŸŒ API URL:', `${baseUrl}/api/documents/${docId}`);
+    console.log('ðŸ”‘ Auth token:', token ? 'Present' : 'Missing');
 
     try {
         const response = await fetch(`${baseUrl}/api/documents/${docId}`, {
@@ -65345,7 +65349,7 @@ async function viewDocument(docId) {
 
         if (response.ok) {
             const document = await response.json();
-            console.log('✅ Document details retrieved:', document);
+            console.log('âœ… Document details retrieved:', document);
             
             // Create a modal to display document information
             const modal = document.createElement('div');
@@ -65402,12 +65406,12 @@ async function viewDocument(docId) {
             
         } else {
             const errorData = await response.json().catch(() => ({}));
-            console.error('❌ Failed to load document:', errorData);
+            console.error('âŒ Failed to load document:', errorData);
             showNotification(errorData.error || 'Failed to load document details', 'error');
         }
         
     } catch (error) {
-        console.error('❌ Error viewing document:', error);
+        console.error('âŒ Error viewing document:', error);
         showNotification('Error loading document. Please try again.', 'error');
     }
 }
@@ -65432,11 +65436,11 @@ function formatDate(dateString) {
 }
 
 async function downloadDocument(docId) {
-    console.log('💾 Downloading document:', docId);
+    console.log('ðŸ’¾ Downloading document:', docId);
     const baseUrl = window.location.origin;
     const token = sessionStorage.getItem('kashtec_token') || sessionManager.getAuthToken();
-    console.log('🌐 API URL:', `${baseUrl}/api/documents/${docId}/download`);
-    console.log('🔑 Auth token:', token ? 'Present' : 'Missing');
+    console.log('ðŸŒ API URL:', `${baseUrl}/api/documents/${docId}/download`);
+    console.log('ðŸ”‘ Auth token:', token ? 'Present' : 'Missing');
 
     try {
         const response = await fetch(`${baseUrl}/api/documents/${docId}/download`, {
@@ -65448,7 +65452,7 @@ async function downloadDocument(docId) {
 
         if (response.ok) {
             const blob = await response.blob();
-            console.log('✅ Blob created, size:', blob.size, 'type:', blob.type);
+            console.log('âœ… Blob created, size:', blob.size, 'type:', blob.type);
             
             // Get filename from response headers or create a default one
             const contentDisposition = response.headers.get('Content-Disposition');
@@ -65474,12 +65478,12 @@ async function downloadDocument(docId) {
             
         } else {
             const errorData = await response.json().catch(() => ({}));
-            console.error('❌ Failed to download document:', errorData);
+            console.error('âŒ Failed to download document:', errorData);
             showNotification(errorData.error || 'Failed to download document', 'error');
         }
 
     } catch (error) {
-        console.error('❌ Error downloading document:', error);
+        console.error('âŒ Error downloading document:', error);
         showNotification('Error downloading document. Please try again.', 'error');
     }
 }
@@ -65488,7 +65492,7 @@ async function downloadDocument(docId) {
 
 async function userAccountManagement(){
 
-    console.log('🔄 Loading user account management data...');
+    console.log('ðŸ”„ Loading user account management data...');
 
     
 
@@ -65556,17 +65560,17 @@ async function userAccountManagement(){
 
             
 
-            console.log('✅ Loaded users:', totalActiveUsers, 'total users,', suspendedAccounts, 'suspended');
+            console.log('âœ… Loaded users:', totalActiveUsers, 'total users,', suspendedAccounts, 'suspended');
 
         } else {
 
-            console.warn('⚠️ Failed to load users, using default values');
+            console.warn('âš ï¸ Failed to load users, using default values');
 
         }
 
     } catch (error) {
 
-        console.error('❌ Error loading users:', error);
+        console.error('âŒ Error loading users:', error);
 
     }
 
@@ -65720,11 +65724,11 @@ async function userAccountManagement(){
 
     
 
-    console.log('🔄 Updating content with user data...');
+    console.log('ðŸ”„ Updating content with user data...');
 
     showContent(formHtml);
 
-    console.log('✅ Content updated successfully');
+    console.log('âœ… Content updated successfully');
 
 }
 
@@ -65744,7 +65748,7 @@ function officePortal(){
 
 async function loadOfficePortalData() {
 
-    console.log('🔄 Loading office portal data...');
+    console.log('ðŸ”„ Loading office portal data...');
 
     
 
@@ -65804,13 +65808,13 @@ async function loadOfficePortalData() {
 
                 }));
 
-                console.log(`✅ Loaded ${officePortalUsers.length} employees`);
+                console.log(`âœ… Loaded ${officePortalUsers.length} employees`);
 
             }
 
         } catch (error) {
 
-            console.error('❌ Error loading employees:', error);
+            console.error('âŒ Error loading employees:', error);
 
         }
 
@@ -65844,13 +65848,13 @@ async function loadOfficePortalData() {
 
                 documents = documentsData.documents || [];
 
-                console.log(`✅ Loaded ${documents.length} documents`);
+                console.log(`âœ… Loaded ${documents.length} documents`);
 
             }
 
         } catch (error) {
 
-            console.error('❌ Error loading documents:', error);
+            console.error('âŒ Error loading documents:', error);
 
         }
 
@@ -65882,11 +65886,11 @@ async function loadOfficePortalData() {
 
                 const policiesData = await policiesResponse.json();
 
-                console.log('🔍 Policies API response:', policiesData);
+                console.log('ðŸ” Policies API response:', policiesData);
 
-                console.log('🔍 Policies response type:', typeof policiesData);
+                console.log('ðŸ” Policies response type:', typeof policiesData);
 
-                console.log('🔍 Policies is array:', Array.isArray(policiesData));
+                console.log('ðŸ” Policies is array:', Array.isArray(policiesData));
 
                 
 
@@ -65910,13 +65914,13 @@ async function loadOfficePortalData() {
 
                 }
 
-                console.log(`✅ Loaded ${policies.length} policies`);
+                console.log(`âœ… Loaded ${policies.length} policies`);
 
             }
 
         } catch (error) {
 
-            console.error('❌ Error loading policies:', error);
+            console.error('âŒ Error loading policies:', error);
 
         }
 
@@ -65928,7 +65932,7 @@ async function loadOfficePortalData() {
 
         try {
 
-            console.log('🔄 Attempting to load contracts...');
+            console.log('ðŸ”„ Attempting to load contracts...');
 
             const contractsResponse = await fetch(`${baseUrl}/api/contracts`, {
 
@@ -65946,7 +65950,7 @@ async function loadOfficePortalData() {
 
             
 
-            console.log('📡 Contracts API Response status:', contractsResponse.status);
+            console.log('ðŸ“¡ Contracts API Response status:', contractsResponse.status);
 
             
 
@@ -65956,13 +65960,13 @@ async function loadOfficePortalData() {
 
                 contracts = contractsData.contracts || contractsData || [];
 
-                console.log(`✅ Loaded ${contracts.length} contracts`);
+                console.log(`âœ… Loaded ${contracts.length} contracts`);
 
-                console.log('🔍 Contracts data:', contracts);
+                console.log('ðŸ” Contracts data:', contracts);
 
             } else {
 
-                console.log(`⚠️ Contracts API returned ${contractsResponse.status}`);
+                console.log(`âš ï¸ Contracts API returned ${contractsResponse.status}`);
 
                 // Try the test endpoint to see if API is working
 
@@ -65972,13 +65976,13 @@ async function loadOfficePortalData() {
 
                     if (testResponse.ok) {
 
-                        console.log('✅ Contracts API test endpoint works, main endpoint may have table issues');
+                        console.log('âœ… Contracts API test endpoint works, main endpoint may have table issues');
 
                     }
 
                 } catch (testError) {
 
-                    console.log('❌ Contracts API test endpoint also failed:', testError.message);
+                    console.log('âŒ Contracts API test endpoint also failed:', testError.message);
 
                 }
 
@@ -65986,9 +65990,9 @@ async function loadOfficePortalData() {
 
         } catch (error) {
 
-            console.log('❌ Error loading contracts:', error.message);
+            console.log('âŒ Error loading contracts:', error.message);
 
-            console.log('🔄 Using mock contracts data as fallback');
+            console.log('ðŸ”„ Using mock contracts data as fallback');
 
             
 
@@ -66070,7 +66074,7 @@ async function loadOfficePortalData() {
 
             ];
 
-            console.log(`✅ Loaded ${contracts.length} mock contracts as fallback`);
+            console.log(`âœ… Loaded ${contracts.length} mock contracts as fallback`);
 
         }
 
@@ -66100,7 +66104,7 @@ async function loadOfficePortalData() {
 
     } catch (error) {
 
-        console.error('❌ Error loading office portal data:', error);
+        console.error('âŒ Error loading office portal data:', error);
 
         // Show error message
 
@@ -66108,13 +66112,13 @@ async function loadOfficePortalData() {
 
             <div class="card">
 
-                <h3>🏢 KASHTEC Office Portal</h3>
+                <h3>ðŸ¢ KASHTEC Office Portal</h3>
 
                 <div class="error-message">
 
-                    <p>❌ Failed to load office portal data. Please try refreshing the page.</p>
+                    <p>âŒ Failed to load office portal data. Please try refreshing the page.</p>
 
-                    <button class="action-btn" onclick="officePortal()">🔄 Retry</button>
+                    <button class="action-btn" onclick="officePortal()">ðŸ”„ Retry</button>
 
                 </div>
 
@@ -66148,29 +66152,29 @@ function renderOfficePortal(officePortalUsers, documents, policies, contracts) {
 
         const icons = {
 
-            'Policy': '📋',
+            'Policy': 'ðŸ“‹',
 
-            'Contract': '📝',
+            'Contract': 'ðŸ“',
 
-            'ID Document': '🆔',
+            'ID Document': 'ðŸ†”',
 
-            'Certificate': '🏆',
+            'Certificate': 'ðŸ†',
 
-            'Training': '📚',
+            'Training': 'ðŸ“š',
 
-            'Report': '📊',
+            'Report': 'ðŸ“Š',
 
-            'Invoice': '🧾',
+            'Invoice': 'ðŸ§¾',
 
-            'Resume': '👤',
+            'Resume': 'ðŸ‘¤',
 
-            'Application': '📋',
+            'Application': 'ðŸ“‹',
 
-            'Agreement': '🤝'
+            'Agreement': 'ðŸ¤'
 
         };
 
-        return icons[type] || '📄';
+        return icons[type] || 'ðŸ“„';
 
     }
 
@@ -66180,25 +66184,25 @@ function renderOfficePortal(officePortalUsers, documents, policies, contracts) {
 
         const icons = {
 
-            'Low': '📋',
+            'Low': 'ðŸ“‹',
 
-            'Medium': '⚠️',
+            'Medium': 'âš ï¸',
 
-            'High': '🔥',
+            'High': 'ðŸ”¥',
 
-            'Critical': '🚨',
+            'Critical': 'ðŸš¨',
 
-            'Pending': '⏳',
+            'Pending': 'â³',
 
-            'Approved': '✅',
+            'Approved': 'âœ…',
 
-            'Rejected': '❌',
+            'Rejected': 'âŒ',
 
-            'General': '📄'
+            'General': 'ðŸ“„'
 
         };
 
-        return icons[impact] || '📋';
+        return icons[impact] || 'ðŸ“‹';
 
     }
 
@@ -66268,9 +66272,9 @@ function renderOfficePortal(officePortalUsers, documents, policies, contracts) {
 
                                 <div class="contact-info-compact">
 
-                                    <div class="contact-item-compact">📧 ${user.email}</div>
+                                    <div class="contact-item-compact">ðŸ“§ ${user.email}</div>
 
-                                    <div class="contact-item-compact">📱 ${user.phone}</div>
+                                    <div class="contact-item-compact">ðŸ“± ${user.phone}</div>
 
                                 </div>
 
@@ -66308,7 +66312,7 @@ function renderOfficePortal(officePortalUsers, documents, policies, contracts) {
 
                     <h4>${doc.title}</h4>
 
-                    <p class="document-meta">${doc.type} • ${doc.department || 'General'} • ${new Date(doc.uploadedDate || doc.created_at).toLocaleDateString()}</p>
+                    <p class="document-meta">${doc.type} â€¢ ${doc.department || 'General'} â€¢ ${new Date(doc.uploadedDate || doc.created_at).toLocaleDateString()}</p>
 
                 </div>
 
@@ -66316,9 +66320,9 @@ function renderOfficePortal(officePortalUsers, documents, policies, contracts) {
 
             <div class="document-actions">
 
-                <button class="action-btn primary" onclick="viewDocument('${doc.id}', '${doc.title}')">📖 View Document</button>
+                <button class="action-btn primary" onclick="viewDocument('${doc.id}', '${doc.title}')">ðŸ“– View Document</button>
 
-                <button class="action-btn secondary" onclick="downloadDocument('${doc.id}', '${doc.title}')">💾 Download</button>
+                <button class="action-btn secondary" onclick="downloadDocument('${doc.id}', '${doc.title}')">ðŸ’¾ Download</button>
 
             </div>
 
@@ -66346,7 +66350,7 @@ function renderOfficePortal(officePortalUsers, documents, policies, contracts) {
 
                     <h4>${policy.title}</h4>
 
-                    <p class="policy-meta">${policy.impact || 'General'} • ${policy.status || 'Pending'} • ${new Date(policy.created_at || policy.uploadDate).toLocaleDateString()}</p>
+                    <p class="policy-meta">${policy.impact || 'General'} â€¢ ${policy.status || 'Pending'} â€¢ ${new Date(policy.created_at || policy.uploadDate).toLocaleDateString()}</p>
 
                 </div>
 
@@ -66354,13 +66358,13 @@ function renderOfficePortal(officePortalUsers, documents, policies, contracts) {
 
             <div class="policy-actions">
 
-                <button class="action-btn primary" onclick="viewPolicy('${policy.id}', '${policy.title}')">📖 View Policy</button>
+                <button class="action-btn primary" onclick="viewPolicy('${policy.id}', '${policy.title}')">ðŸ“– View Policy</button>
 
-                <button class="action-btn secondary" onclick="downloadPolicy('${policy.id}', '${policy.title}')">💾 Download PDF</button>
+                <button class="action-btn secondary" onclick="downloadPolicy('${policy.id}', '${policy.title}')">ðŸ’¾ Download PDF</button>
 
-                ${policy.status === 'Draft' ? `<button class="action-btn success" onclick="approvePolicy('${policy.id}', '${policy.title}')">✅ Approve</button>` : ''}
+                ${policy.status === 'Draft' ? `<button class="action-btn success" onclick="approvePolicy('${policy.id}', '${policy.title}')">âœ… Approve</button>` : ''}
 
-                ${policy.status === 'Active' ? `<button class="action-btn warning" onclick="revisePolicy('${policy.id}', '${policy.title}')">🔄 Revise</button>` : ''}
+                ${policy.status === 'Active' ? `<button class="action-btn warning" onclick="revisePolicy('${policy.id}', '${policy.title}')">ðŸ”„ Revise</button>` : ''}
 
             </div>
 
@@ -66390,7 +66394,7 @@ function renderOfficePortal(officePortalUsers, documents, policies, contracts) {
 
                     <h4>${contract.title}</h4>
 
-                    <p class="contract-meta">${contract.party || 'Unknown'} • ${contract.type || 'General'} • ${new Date(contract.startDate || contract.created_at).toLocaleDateString()}</p>
+                    <p class="contract-meta">${contract.party || 'Unknown'} â€¢ ${contract.type || 'General'} â€¢ ${new Date(contract.startDate || contract.created_at).toLocaleDateString()}</p>
 
                 </div>
 
@@ -66398,13 +66402,13 @@ function renderOfficePortal(officePortalUsers, documents, policies, contracts) {
 
             <div class="contract-actions">
 
-                <button class="action-btn primary" onclick="viewContract('${contract.id}', '${contract.title}')">📖 View Contract</button>
+                <button class="action-btn primary" onclick="viewContract('${contract.id}', '${contract.title}')">ðŸ“– View Contract</button>
 
-                <button class="action-btn secondary" onclick="downloadContract('${contract.id}', '${contract.title}')">💾 Download</button>
+                <button class="action-btn secondary" onclick="downloadContract('${contract.id}', '${contract.title}')">ðŸ’¾ Download</button>
 
-                ${contract.status === 'Pending' ? `<button class="action-btn success" onclick="signContract('${contract.id}', '${contract.title}')">✍️ Sign Contract</button>` : ''}
+                ${contract.status === 'Pending' ? `<button class="action-btn success" onclick="signContract('${contract.id}', '${contract.title}')">âœï¸ Sign Contract</button>` : ''}
 
-                ${contract.status === 'Active' ? `<button class="action-btn warning" onclick="terminateContract('${contract.id}', '${contract.title}')">⚠️ Terminate</button>` : ''}
+                ${contract.status === 'Active' ? `<button class="action-btn warning" onclick="terminateContract('${contract.id}', '${contract.title}')">âš ï¸ Terminate</button>` : ''}
 
             </div>
 
@@ -66424,7 +66428,7 @@ function renderOfficePortal(officePortalUsers, documents, policies, contracts) {
 
                 <div class="portal-title">
 
-                    <div class="portal-logo">🏢</div>
+                    <div class="portal-logo">ðŸ¢</div>
 
                     <div class="portal-name">
 
@@ -66442,15 +66446,15 @@ function renderOfficePortal(officePortalUsers, documents, policies, contracts) {
 
             <div class="portal-tabs compact">
 
-                <button class="tab-btn-compact active" onclick="showPortalSection('personnel')">👥</button>
+                <button class="tab-btn-compact active" onclick="showPortalSection('personnel')">ðŸ‘¥</button>
 
-                <button class="tab-btn-compact" onclick="showPortalSection('documents')">📄</button>
+                <button class="tab-btn-compact" onclick="showPortalSection('documents')">ðŸ“„</button>
 
-                <button class="tab-btn-compact" onclick="showPortalSection('policies')">📋</button>
+                <button class="tab-btn-compact" onclick="showPortalSection('policies')">ðŸ“‹</button>
 
-                <button class="tab-btn-compact" onclick="showPortalSection('contracts')">📝</button>
+                <button class="tab-btn-compact" onclick="showPortalSection('contracts')">ðŸ“</button>
 
-                <button class="tab-btn-compact" onclick="showPortalSection('analytics')">📊</button>
+                <button class="tab-btn-compact" onclick="showPortalSection('analytics')">ðŸ“Š</button>
 
             </div>
 
@@ -66494,7 +66498,7 @@ function renderOfficePortal(officePortalUsers, documents, policies, contracts) {
 
                     <div class="section-title">
 
-                        <span class="section-icon">👥</span>
+                        <span class="section-icon">ðŸ‘¥</span>
 
                         <h4>Personnel Directory</h4>
 
@@ -66530,7 +66534,7 @@ function renderOfficePortal(officePortalUsers, documents, policies, contracts) {
 
                     <div class="section-title">
 
-                        <span class="section-icon">📄</span>
+                        <span class="section-icon">ðŸ“„</span>
 
                         <h4>Documents Repository</h4>
 
@@ -66566,7 +66570,7 @@ function renderOfficePortal(officePortalUsers, documents, policies, contracts) {
 
                     <div class="section-title">
 
-                        <span class="section-icon">📋</span>
+                        <span class="section-icon">ðŸ“‹</span>
 
                         <h4>Company Policies</h4>
 
@@ -66602,7 +66606,7 @@ function renderOfficePortal(officePortalUsers, documents, policies, contracts) {
 
                     <div class="section-title">
 
-                        <span class="section-icon">📝</span>
+                        <span class="section-icon">ðŸ“</span>
 
                         <h4>Contracts Management</h4>
 
@@ -66638,7 +66642,7 @@ function renderOfficePortal(officePortalUsers, documents, policies, contracts) {
 
                     <div class="section-title">
 
-                        <span class="section-icon">📊</span>
+                        <span class="section-icon">ðŸ“Š</span>
 
                         <h4>Office Analytics</h4>
 
@@ -66652,7 +66656,7 @@ function renderOfficePortal(officePortalUsers, documents, policies, contracts) {
 
                         <div class="analytics-title">
 
-                            <span class="analytics-icon">👥</span>
+                            <span class="analytics-icon">ðŸ‘¥</span>
 
                             <h5>Personnel</h5>
 
@@ -66694,7 +66698,7 @@ function renderOfficePortal(officePortalUsers, documents, policies, contracts) {
 
                         <div class="analytics-title">
 
-                            <span class="analytics-icon">📄</span>
+                            <span class="analytics-icon">ðŸ“„</span>
 
                             <h5>Documents</h5>
 
@@ -66736,7 +66740,7 @@ function renderOfficePortal(officePortalUsers, documents, policies, contracts) {
 
                         <div class="analytics-title">
 
-                            <span class="analytics-icon">📊</span>
+                            <span class="analytics-icon">ðŸ“Š</span>
 
                             <h5>Status</h5>
 
@@ -66782,11 +66786,11 @@ function renderOfficePortal(officePortalUsers, documents, policies, contracts) {
 
                 <div class="footer-actions">
 
-                    <button class="action-btn primary" onclick="exportPortalData()">💾 Export All Data</button>
+                    <button class="action-btn primary" onclick="exportPortalData()">ðŸ’¾ Export All Data</button>
 
-                    <button class="action-btn secondary" onclick="refreshPortalData()">🔄 Refresh</button>
+                    <button class="action-btn secondary" onclick="refreshPortalData()">ðŸ”„ Refresh</button>
 
-                    <button class="action-btn info" onclick="printPortalReport()">🖨️ Print Report</button>
+                    <button class="action-btn info" onclick="printPortalReport()">ðŸ–¨ï¸ Print Report</button>
 
                 </div>
 
@@ -66854,7 +66858,7 @@ function searchPortal(searchTerm) {
 
     const term = searchTerm.toLowerCase();
 
-    console.log('🔍 Searching portal for:', term);
+    console.log('ðŸ” Searching portal for:', term);
 
     
 
@@ -66914,7 +66918,7 @@ function searchPortal(searchTerm) {
 
         card.style.display = matches ? 'block' : 'none';
 
-        console.log('📄 Document card:', { title, type, department, matches });
+        console.log('ðŸ“„ Document card:', { title, type, department, matches });
 
     });
 
@@ -66948,7 +66952,7 @@ function searchPortal(searchTerm) {
 
         card.style.display = matches ? 'block' : 'none';
 
-        console.log('📋 Policy card:', { title, category, status, matches });
+        console.log('ðŸ“‹ Policy card:', { title, category, status, matches });
 
     });
 
@@ -66978,7 +66982,7 @@ function searchPortal(searchTerm) {
 
         card.style.display = matches ? 'block' : 'none';
 
-        console.log('📝 Contract card:', { title, status, matches });
+        console.log('ðŸ“ Contract card:', { title, status, matches });
 
     });
 
@@ -66996,7 +67000,7 @@ function searchPortal(searchTerm) {
 
 function filterPortal(category) {
 
-    console.log('🔍 Filtering portal by category:', category);
+    console.log('ðŸ” Filtering portal by category:', category);
 
     
 
@@ -67100,27 +67104,27 @@ function viewPersonnelDetails(personId, name, position) {
 
         customAlert(`Personnel Profile - ${name}`, `
 
-👤 ${name}
+ðŸ‘¤ ${name}
 
-📧 ${user.email}
+ðŸ“§ ${user.email}
 
-📱 ${user.phone}
+ðŸ“± ${user.phone}
 
-🏢 ${user.department}
+ðŸ¢ ${user.department}
 
-👥 ${position}
-
-
-
-📋 Responsibilities:
-
-${user.responsibilities.map(r => `• ${r}`).join('\n')}
+ðŸ‘¥ ${position}
 
 
 
-📅 Status: ${user.status}
+ðŸ“‹ Responsibilities:
 
-📅 Registration: ${new Date(user.registrationDate).toLocaleDateString()}
+${user.responsibilities.map(r => `â€¢ ${r}`).join('\n')}
+
+
+
+ðŸ“… Status: ${user.status}
+
+ðŸ“… Registration: ${new Date(user.registrationDate).toLocaleDateString()}
 
         `, 'info', 6000);
 
@@ -67142,7 +67146,7 @@ function viewPersonnelDocuments(personId, name) {
 
         let documentsHTML = `
 
-            <h3>📄 Documents for ${name}</h3>
+            <h3>ðŸ“„ Documents for ${name}</h3>
 
             <div class="document-grid">
 
@@ -67158,7 +67162,7 @@ function viewPersonnelDocuments(personId, name) {
 
                                 <h4>${doc.title}</h4>
 
-                                <p class="document-meta">${doc.type} • Uploaded: ${new Date(doc.uploadDate).toLocaleDateString()}</p>
+                                <p class="document-meta">${doc.type} â€¢ Uploaded: ${new Date(doc.uploadDate).toLocaleDateString()}</p>
 
                             </div>
 
@@ -67166,9 +67170,9 @@ function viewPersonnelDocuments(personId, name) {
 
                         <div class="document-actions">
 
-                            <button class="action-btn primary" onclick="viewDocument('${doc.id}', '${doc.title}')">📖 Open</button>
+                            <button class="action-btn primary" onclick="viewDocument('${doc.id}', '${doc.title}')">ðŸ“– Open</button>
 
-                            <button class="action-btn secondary" onclick="downloadDocument('${doc.id}', '${doc.title}')">💾 Download</button>
+                            <button class="action-btn secondary" onclick="downloadDocument('${doc.id}', '${doc.title}')">ðŸ’¾ Download</button>
 
                         </div>
 
@@ -67206,7 +67210,7 @@ function viewPersonnelPolicies(personId, name) {
 
         let policiesHTML = `
 
-            <h3>📋 Policies for ${name}</h3>
+            <h3>ðŸ“‹ Policies for ${name}</h3>
 
             <div class="policy-grid">
 
@@ -67222,7 +67226,7 @@ function viewPersonnelPolicies(personId, name) {
 
                                 <h4>${policy.title}</h4>
 
-                                <p class="policy-meta">${policy.category} • ${policy.status} • Updated: ${new Date(policy.lastUpdated).toLocaleDateString()}</p>
+                                <p class="policy-meta">${policy.category} â€¢ ${policy.status} â€¢ Updated: ${new Date(policy.lastUpdated).toLocaleDateString()}</p>
 
                             </div>
 
@@ -67230,9 +67234,9 @@ function viewPersonnelPolicies(personId, name) {
 
                         <div class="policy-actions">
 
-                            <button class="action-btn primary" onclick="viewPolicy('${policy.id}', '${policy.title}')">📖 View Policy</button>
+                            <button class="action-btn primary" onclick="viewPolicy('${policy.id}', '${policy.title}')">ðŸ“– View Policy</button>
 
-                            <button class="action-btn secondary" onclick="downloadPolicy('${policy.id}', '${policy.title}')">💾 Download PDF</button>
+                            <button class="action-btn secondary" onclick="downloadPolicy('${policy.id}', '${policy.title}')">ðŸ’¾ Download PDF</button>
 
                         </div>
 
@@ -67270,7 +67274,7 @@ function viewPersonnelContracts(personId, name) {
 
         let contractsHTML = `
 
-            <h3>📝 Contracts for ${name}</h3>
+            <h3>ðŸ“ Contracts for ${name}</h3>
 
             <div class="contract-grid">
 
@@ -67292,7 +67296,7 @@ function viewPersonnelContracts(personId, name) {
 
                                 <h4>${contract.title}</h4>
 
-                                <p class="contract-meta">${contract.party} • ${contract.type} • ${new Date(contract.startDate).toLocaleDateString()}</p>
+                                <p class="contract-meta">${contract.party} â€¢ ${contract.type} â€¢ ${new Date(contract.startDate).toLocaleDateString()}</p>
 
                             </div>
 
@@ -67300,13 +67304,13 @@ function viewPersonnelContracts(personId, name) {
 
                         <div class="contract-actions">
 
-                            <button class="action-btn primary" onclick="viewContract('${contract.id}', '${contract.title}')">📖 View Contract</button>
+                            <button class="action-btn primary" onclick="viewContract('${contract.id}', '${contract.title}')">ðŸ“– View Contract</button>
 
-                            <button class="action-btn secondary" onclick="downloadContract('${contract.id}', '${contract.title}')">💾 Download</button>
+                            <button class="action-btn secondary" onclick="downloadContract('${contract.id}', '${contract.title}')">ðŸ’¾ Download</button>
 
-                            ${contract.status === 'Pending' ? `<button class="action-btn success" onclick="signContract('${contract.id}', '${contract.title}')">✍️ Sign Contract</button>` : ''}
+                            ${contract.status === 'Pending' ? `<button class="action-btn success" onclick="signContract('${contract.id}', '${contract.title}')">âœï¸ Sign Contract</button>` : ''}
 
-                            ${contract.status === 'Active' ? `<button class="action-btn warning" onclick="terminateContract('${contract.id}', '${contract.title}')">⚠️ Terminate</button>` : ''}
+                            ${contract.status === 'Active' ? `<button class="action-btn warning" onclick="terminateContract('${contract.id}', '${contract.title}')">âš ï¸ Terminate</button>` : ''}
 
                         </div>
 
@@ -67466,7 +67470,7 @@ function printPortalReport() {
 
     showNotification('Report Generated', 'Office portal report is being generated', 'info');
 
-    customAlert('Print Report', 'Office Portal Report', 'A comprehensive report of all personnel, documents, policies, and contracts is being prepared for printing.\n\nThis includes:\n\n• Personnel statistics\n• Document inventory\n• Policy compliance status\n• Contract status summary\n• Department breakdown\n\nThe report will be sent to the printer.', 'info', 4000);
+    customAlert('Print Report', 'Office Portal Report', 'A comprehensive report of all personnel, documents, policies, and contracts is being prepared for printing.\n\nThis includes:\n\nâ€¢ Personnel statistics\nâ€¢ Document inventory\nâ€¢ Policy compliance status\nâ€¢ Contract status summary\nâ€¢ Department breakdown\n\nThe report will be sent to the printer.', 'info', 4000);
 
 }
 
@@ -67482,7 +67486,7 @@ function viewPersonnelFiles(personId, name) {
 
         let filesHTML = `
 
-            <h3>📁 Files for ${name}</h3>
+            <h3>ðŸ“ Files for ${name}</h3>
 
             <div class="files-grid">
 
@@ -67510,9 +67514,9 @@ function viewPersonnelFiles(personId, name) {
 
                         <div class="file-actions">
 
-                            <button class="action-btn primary" onclick="viewFile('${personId}', '${file.type}', '${file.name}')">👁️ View</button>
+                            <button class="action-btn primary" onclick="viewFile('${personId}', '${file.type}', '${file.name}')">ðŸ‘ï¸ View</button>
 
-                            <button class="action-btn secondary" onclick="downloadFile('${personId}', '${file.type}', '${file.name}')">💾 Download</button>
+                            <button class="action-btn secondary" onclick="downloadFile('${personId}', '${file.type}', '${file.name}')">ðŸ’¾ Download</button>
 
                         </div>
 
@@ -67542,19 +67546,19 @@ function getFileIcon(fileType) {
 
     const icons = {
 
-        'profile': '👤',
+        'profile': 'ðŸ‘¤',
 
-        'cv': '📄',
+        'cv': 'ðŸ“„',
 
-        'agreement': '📋',
+        'agreement': 'ðŸ“‹',
 
-        'id': '🆔',
+        'id': 'ðŸ†”',
 
-        'contract': '📝'
+        'contract': 'ðŸ“'
 
     };
 
-    return icons[fileType] || '📎';
+    return icons[fileType] || 'ðŸ“Ž';
 
 }
 
@@ -67582,7 +67586,7 @@ function viewFile(personId, fileType, fileName) {
 
                     <div class="modal-header">
 
-                        <h3>📄 ${fileName}</h3>
+                        <h3>ðŸ“„ ${fileName}</h3>
 
                         <button class="modal-close" onclick="closeModal()">&times;</button>
 
@@ -67604,7 +67608,7 @@ function viewFile(personId, fileType, fileName) {
 
                                 <p>File name: ${fileName}</p>
 
-                                <button class="action-btn primary" onclick="downloadFile('${personId}', '${fileType}', '${fileName}')">💾 Download File</button>
+                                <button class="action-btn primary" onclick="downloadFile('${personId}', '${fileType}', '${fileName}')">ðŸ’¾ Download File</button>
 
                             </div>`
 
@@ -67616,7 +67620,7 @@ function viewFile(personId, fileType, fileName) {
 
                         <button class="action-btn secondary" onclick="closeModal()">Close</button>
 
-                        <button class="action-btn primary" onclick="downloadFile('${personId}', '${fileType}', '${fileName}')">💾 Download</button>
+                        <button class="action-btn primary" onclick="downloadFile('${personId}', '${fileType}', '${fileName}')">ðŸ’¾ Download</button>
 
                     </div>
 
@@ -67696,7 +67700,7 @@ function updatePersonnelCardsWithFiles() {
 
                     filesBtn.className = 'action-btn info';
 
-                    filesBtn.innerHTML = '📁 Files';
+                    filesBtn.innerHTML = 'ðŸ“ Files';
 
                     filesBtn.style.fontSize = '12px';
 
@@ -67913,17 +67917,17 @@ document.addEventListener('DOMContentLoaded', function() {
 
 // Test function to verify uploadCertificate is working
 function testUploadFunction() {
-    console.log('🧪 Testing uploadCertificate function...');
+    console.log('ðŸ§ª Testing uploadCertificate function...');
     try {
         if (typeof uploadCertificate === 'function') {
-            console.log('✅ uploadCertificate function exists and is callable');
+            console.log('âœ… uploadCertificate function exists and is callable');
             alert('uploadCertificate function is available! Click "Open Document Management" to access the upload form.');
         } else {
-            console.error('❌ uploadCertificate function not found');
+            console.error('âŒ uploadCertificate function not found');
             alert('uploadCertificate function not found!');
         }
     } catch (error) {
-        console.error('❌ Error testing uploadCertificate:', error);
+        console.error('âŒ Error testing uploadCertificate:', error);
         alert('Error testing uploadCertificate: ' + error.message);
     }
 }
@@ -68704,7 +68708,7 @@ async function deleteDoc(docId, docTitle) {
 
         if (typeof KashTecAPI !== 'undefined' && KashTecAPI.deleteDocument) {
 
-            console.log('🗑️ Deleting document via API:', docId);
+            console.log('ðŸ—‘ï¸ Deleting document via API:', docId);
 
             await KashTecAPI.deleteDocument(docId);
 
@@ -68714,7 +68718,7 @@ async function deleteDoc(docId, docTitle) {
 
             // Fallback deletion
 
-            console.log('🗑️ Using fallback delete for document:', docId);
+            console.log('ðŸ—‘ï¸ Using fallback delete for document:', docId);
 
             deleteDocFallback(docId, docTitle);
 
@@ -68730,7 +68734,7 @@ async function deleteDoc(docId, docTitle) {
 
             docElement.remove();
 
-            console.log('✅ Document removed from UI:', docId);
+            console.log('âœ… Document removed from UI:', docId);
 
         }
 
@@ -68748,7 +68752,7 @@ async function deleteDoc(docId, docTitle) {
 
     } catch (error) {
 
-        console.error('❌ Error deleting document:', error);
+        console.error('âŒ Error deleting document:', error);
 
         customAlert('Error deleting document: ' + error.message, 'Error', 'error');
 
@@ -68774,7 +68778,7 @@ function deleteDocFallback(docId, docTitle) {
 
             localStorage.setItem('savedDocuments', JSON.stringify(savedDocs));
 
-            console.log('🗑️ Document removed from localStorage:', docId);
+            console.log('ðŸ—‘ï¸ Document removed from localStorage:', docId);
 
         }
 
@@ -68870,7 +68874,7 @@ function downloadAttendance(meetingId) {
 
 function downloadPolicy(policyId) {
 
-    console.log('🔍 Downloading policy:', policyId);
+    console.log('ðŸ” Downloading policy:', policyId);
 
     
 
@@ -68886,7 +68890,7 @@ function downloadPolicy(policyId) {
 
         .then(response => {
 
-            console.log('📡 Policy fetch response:', response.status);
+            console.log('ðŸ“¡ Policy fetch response:', response.status);
 
             if (!response.ok) {
 
@@ -68900,7 +68904,7 @@ function downloadPolicy(policyId) {
 
         .then(policy => {
 
-            console.log('📊 Policy data for download:', policy);
+            console.log('ðŸ“Š Policy data for download:', policy);
 
             
 
@@ -68920,7 +68924,7 @@ function downloadPolicy(policyId) {
 
         .catch(error => {
 
-            console.error('❌ Error downloading policy:', error);
+            console.error('âŒ Error downloading policy:', error);
 
             customAlert(`Error preparing download: ${error.message}`, "Error", "error");
 
@@ -71462,7 +71466,7 @@ function showTaxPayments() {
 
             taxForm.addEventListener('submit', async function(e) {
 
-                console.log('💰 Tax form submitted');
+                console.log('ðŸ’° Tax form submitted');
 
                 e.preventDefault();
 
@@ -73520,7 +73524,7 @@ function showSeniorRoles() {
 
                 e.preventDefault();
 
-                console.log('👔 Senior hiring form submitted');
+                console.log('ðŸ‘” Senior hiring form submitted');
 
                 
 
@@ -73572,7 +73576,7 @@ function showSeniorRoles() {
 
                 
 
-                console.log('📝 Senior hiring form data:', formData);
+                console.log('ðŸ“ Senior hiring form data:', formData);
 
                 
 
@@ -73799,7 +73803,7 @@ function showSuggestionsManagement() {
 
             suggestionsForm.addEventListener('submit', async function(e) {
 
-                console.log('🎯 Suggestions form submitted');
+                console.log('ðŸŽ¯ Suggestions form submitted');
 
                 e.preventDefault();
 
@@ -73971,7 +73975,7 @@ function saveVisionMission() {
 
     
 
-    console.log('💾 Saving Vision & Mission:', { vision, mission });
+    console.log('ðŸ’¾ Saving Vision & Mission:', { vision, mission });
 
     showNotification('Vision & Mission saved successfully!', 'success');
 
@@ -74053,7 +74057,7 @@ async function loadTransportCosts() {
 
     try {
 
-        console.log('🚚 Loading transport costs...');
+        console.log('ðŸšš Loading transport costs...');
 
         
 
@@ -74071,8 +74075,8 @@ async function loadTransportCosts() {
 
         const data = await response.json();
 
-        console.log('📊 Transport costs response:', data);
-        console.log('📊 First cost item structure:', data.data && data.data[0] ? data.data[0] : 'No data');
+        console.log('ðŸ“Š Transport costs response:', data);
+        console.log('ðŸ“Š First cost item structure:', data.data && data.data[0] ? data.data[0] : 'No data');
 
         
 
@@ -74091,7 +74095,7 @@ async function loadTransportCosts() {
 
         } else {
 
-            console.warn('⚠️ No transport costs data found, using sample data');
+            console.warn('âš ï¸ No transport costs data found, using sample data');
 
             displayTransportCosts(getSampleTransportCosts());
 
@@ -74101,7 +74105,7 @@ async function loadTransportCosts() {
 
     } catch (error) {
 
-        console.error('❌ Error loading transport costs:', error);
+        console.error('âŒ Error loading transport costs:', error);
 
         displayTransportCosts(getSampleTransportCosts());
 
@@ -74243,7 +74247,7 @@ function displayTransportCosts(costs) {
 
                     <div style="color: #666;">
 
-                        <p style="font-size: 16px; margin-bottom: 10px;">🚚 No transport costs found</p>
+                        <p style="font-size: 16px; margin-bottom: 10px;">ðŸšš No transport costs found</p>
 
                         <p style="font-size: 14px;">Start by adding your first transport cost record.</p>
 
@@ -74279,7 +74283,7 @@ function displayTransportCosts(costs) {
 
                 <span class="cost-type-badge cost-type-${cost.cost_type}">
 
-                    ${cost.cost_type === 'maintenance' ? '🔧 Maintenance' : '💰 Extra Cost'}
+                    ${cost.cost_type === 'maintenance' ? 'ðŸ”§ Maintenance' : 'ðŸ’° Extra Cost'}
 
                 </span>
 
@@ -74299,7 +74303,7 @@ function displayTransportCosts(costs) {
 
                 <div class="description-cell" title="${cost.description || 'No description'}">
 
-                    ${cost.description ? (cost.description.length > 40 ? cost.description.substring(0, 40) + '...' : cost.description) : '—'}
+                    ${cost.description ? (cost.description.length > 40 ? cost.description.substring(0, 40) + '...' : cost.description) : 'â€”'}
 
                 </div>
 
@@ -74341,7 +74345,7 @@ function displayTransportCosts(costs) {
 
                 <div class="provider-cell" title="${cost.provider || 'No provider'}">
 
-                    ${cost.provider ? (cost.provider.length > 20 ? cost.provider.substring(0, 20) + '...' : cost.provider) : '—'}
+                    ${cost.provider ? (cost.provider.length > 20 ? cost.provider.substring(0, 20) + '...' : cost.provider) : 'â€”'}
 
                 </div>
 
@@ -74361,11 +74365,11 @@ function displayTransportCosts(costs) {
 
                 <div class="action-buttons">
 
-                    <button onclick="viewTransportCostDetails(${cost.id})" class="action-btn view" title="View Details">👁️</button>
+                    <button onclick="viewTransportCostDetails(${cost.id})" class="action-btn view" title="View Details">ðŸ‘ï¸</button>
 
-                    <button onclick="editTransportCost(${cost.id})" class="action-btn edit" title="Edit Cost">✏️</button>
+                    <button onclick="editTransportCost(${cost.id})" class="action-btn edit" title="Edit Cost">âœï¸</button>
 
-                    <button onclick="deleteTransportCost(${cost.id})" class="action-btn delete" title="Delete Cost">🗑️</button>
+                    <button onclick="deleteTransportCost(${cost.id})" class="action-btn delete" title="Delete Cost">ðŸ—‘ï¸</button>
 
                 </div>
 
@@ -74377,7 +74381,7 @@ function displayTransportCosts(costs) {
 
     
 
-    console.log(`✅ Displayed ${costs.length} transport cost records`);
+    console.log(`âœ… Displayed ${costs.length} transport cost records`);
 
 }
 
@@ -74387,19 +74391,19 @@ function formatCategory(category) {
 
     const categories = {
 
-        'service_maintenance': '🛠️ Service',
+        'service_maintenance': 'ðŸ› ï¸ Service',
 
-        'repair': '⚡ Repair',
+        'repair': 'âš¡ Repair',
 
-        'fuel': '⛽ Fuel',
+        'fuel': 'â›½ Fuel',
 
-        'toll_fees': '🚧 Toll Fees',
+        'toll_fees': 'ðŸš§ Toll Fees',
 
-        'tyre_replacement': '🛞 Tyres',
+        'tyre_replacement': 'ðŸ›ž Tyres',
 
-        'insurance': '🛡️ Insurance',
+        'insurance': 'ðŸ›¡ï¸ Insurance',
 
-        'other': '📦 Other'
+        'other': 'ðŸ“¦ Other'
 
     };
 
@@ -74413,13 +74417,13 @@ function formatPaymentStatus(status) {
 
     const statuses = {
 
-        'pending': '⏳ Pending',
+        'pending': 'â³ Pending',
 
-        'approved': '✅ Approved',
+        'approved': 'âœ… Approved',
 
-        'paid': '💰 Paid',
+        'paid': 'ðŸ’° Paid',
 
-        'rejected': '❌ Rejected'
+        'rejected': 'âŒ Rejected'
 
     };
 
@@ -74447,7 +74451,7 @@ function formatCurrency(amount, currency = 'TZS') {
 
 function formatDate(dateString) {
 
-    if (!dateString) return '—';
+    if (!dateString) return 'â€”';
 
     return new Date(dateString).toLocaleDateString('en-TZ');
 
@@ -74459,7 +74463,7 @@ async function loadTransportCostSummary() {
 
     try {
 
-        console.log('📊 Loading transport cost summary...');
+        console.log('ðŸ“Š Loading transport cost summary...');
 
         
 
@@ -74477,7 +74481,7 @@ async function loadTransportCostSummary() {
 
         const data = await response.json();
 
-        console.log('📈 Transport cost summary:', data);
+        console.log('ðŸ“ˆ Transport cost summary:', data);
 
         
 
@@ -74495,7 +74499,7 @@ async function loadTransportCostSummary() {
 
     } catch (error) {
 
-        console.error('❌ Error loading transport cost summary:', error);
+        console.error('âŒ Error loading transport cost summary:', error);
 
         displayTransportCostSummary(getSampleSummary());
 
@@ -74799,9 +74803,9 @@ function showAddTransportCostForm() {
 
                     <div class="form-actions">
 
-                        <button type="submit" class="btn btn-primary">💾 Save Cost</button>
+                        <button type="submit" class="btn btn-primary">ðŸ’¾ Save Cost</button>
 
-                        <button type="button" onclick="closeForm()" class="btn btn-secondary">❌ Cancel</button>
+                        <button type="button" onclick="closeForm()" class="btn btn-secondary">âŒ Cancel</button>
 
                     </div>
 
@@ -74831,13 +74835,13 @@ function showAddTransportCostForm() {
     // Load vehicles for dropdown
     async function loadVehiclesForDropdown() {
         try {
-            console.log('🚗 Loading vehicles for dropdown...');
+            console.log('ðŸš— Loading vehicles for dropdown...');
             const response = await fetch('/api/vehicles');
             
             if (!response.ok) {
                 // If API endpoint doesn't exist (404), use fallback immediately
                 if (response.status === 404) {
-                    console.log('🚗 Vehicles API not found, using fallback vehicles');
+                    console.log('ðŸš— Vehicles API not found, using fallback vehicles');
                     const vehicleSelect = document.getElementById('vehicleId');
                     if (vehicleSelect) {
                         vehicleSelect.innerHTML = '<option value="">Select Vehicle</option>';
@@ -74854,7 +74858,7 @@ function showAddTransportCostForm() {
                             vehicleSelect.appendChild(option);
                         });
                         
-                        console.log('🚗 Fallback vehicles loaded:', fallbackVehicles.length, 'vehicles');
+                        console.log('ðŸš— Fallback vehicles loaded:', fallbackVehicles.length, 'vehicles');
                     }
                     return; // Exit early, don't throw error
                 }
@@ -74862,7 +74866,7 @@ function showAddTransportCostForm() {
             }
             
             const data = await response.json();
-            console.log('🚗 Vehicles response:', data);
+            console.log('ðŸš— Vehicles response:', data);
             
             const vehicleSelect = document.getElementById('vehicleId');
             if (vehicleSelect) {
@@ -74875,9 +74879,9 @@ function showAddTransportCostForm() {
                         option.textContent = `${vehicle.car_name} (${vehicle.track_number})`;
                         vehicleSelect.appendChild(option);
                     });
-                    console.log(`✅ Loaded ${data.data.length} vehicles`);
+                    console.log(`âœ… Loaded ${data.data.length} vehicles`);
                 } else {
-                    console.warn('⚠️ No vehicles found, using placeholder options');
+                    console.warn('âš ï¸ No vehicles found, using placeholder options');
                     // Add placeholder options if no vehicles exist
                     const placeholderVehicles = [
                         { id: 1, car_name: 'Toyota Hilux', track_number: 'TK001' },
@@ -74892,7 +74896,7 @@ function showAddTransportCostForm() {
                 }
             }
         } catch (error) {
-            console.error('❌ Error loading vehicles:', error);
+            console.error('âŒ Error loading vehicles:', error);
             // Fallback to placeholder options - this ensures we always have vehicles available
             const vehicleSelect = document.getElementById('vehicleId');
             if (vehicleSelect) {
@@ -74911,7 +74915,7 @@ function showAddTransportCostForm() {
                     vehicleSelect.appendChild(option);
                 });
                 
-                console.log('🚗 Using fallback vehicles:', fallbackVehicles.length, 'vehicles loaded');
+                console.log('ðŸš— Using fallback vehicles:', fallbackVehicles.length, 'vehicles loaded');
             }
         }
     }
@@ -74999,7 +75003,7 @@ function showAddTransportCostForm() {
 
                     if (result.success) {
 
-                        showNotification('✅ Transport cost saved successfully!', 'success');
+                        showNotification('âœ… Transport cost saved successfully!', 'success');
 
                         closeForm();
 
@@ -75019,7 +75023,7 @@ function showAddTransportCostForm() {
 
                     console.error('Error saving transport cost:', error);
 
-                    showNotification('❌ Error saving transport cost. Please try again.', 'error');
+                    showNotification('âŒ Error saving transport cost. Please try again.', 'error');
 
                 } finally {
 
@@ -75183,7 +75187,7 @@ function editTransportCost(costId) {
 
     // For now, just show an alert - in a real implementation, this would open an edit form
 
-    showNotification(`✏️ Edit functionality for cost #${costId} would be implemented here`, 'info');
+    showNotification(`âœï¸ Edit functionality for cost #${costId} would be implemented here`, 'info');
 
 }
 
@@ -75201,7 +75205,7 @@ function deleteTransportCost(costId) {
 
         // For now, just show success - in a real implementation, this would call the API
 
-        showNotification(`🗑️ Transport cost #${costId} deleted successfully`, 'success');
+        showNotification(`ðŸ—‘ï¸ Transport cost #${costId} deleted successfully`, 'success');
 
         loadTransportCosts();
 
@@ -75611,8 +75615,8 @@ function showCreateProjectForm() {
     showContent(`
         <div class="card">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                <h3>🚀 Create New Project</h3>
-                <button type="button" onclick="showContent('')" class="action" style="background: #dc3545;">❌ Close</button>
+                <h3>ðŸš€ Create New Project</h3>
+                <button type="button" onclick="showContent('')" class="action" style="background: #dc3545;">âŒ Close</button>
             </div>
             
             <div class="form-header">
@@ -75630,9 +75634,9 @@ function showCreateProjectForm() {
                         <label>Project Type *</label>
                         <select id="projectType" required onchange="updateProjectFields()">
                             <option value="">Select Project Type</option>
-                            <option value="civil-engineering">🏗️ Civil Engineering</option>
-                            <option value="real-estate">🏘️ Real Estate Development</option>
-                            <option value="head-management">🎯 Head Projects Management</option>
+                            <option value="civil-engineering">ðŸ—ï¸ Civil Engineering</option>
+                            <option value="real-estate">ðŸ˜ï¸ Real Estate Development</option>
+                            <option value="head-management">ðŸŽ¯ Head Projects Management</option>
                         </select>
                     </div>
                 </div>
@@ -75668,9 +75672,9 @@ function showCreateProjectForm() {
                         <label>Priority *</label>
                         <select id="projectPriority" required>
                             <option value="">Select Priority</option>
-                            <option value="high">🔴 High Priority</option>
-                            <option value="medium">🟡 Medium Priority</option>
-                            <option value="low">🟢 Low Priority</option>
+                            <option value="high">ðŸ”´ High Priority</option>
+                            <option value="medium">ðŸŸ¡ Medium Priority</option>
+                            <option value="low">ðŸŸ¢ Low Priority</option>
                         </select>
                     </div>
                 </div>
@@ -75682,7 +75686,7 @@ function showCreateProjectForm() {
                 
                 <!-- Civil Engineering Specific Fields -->
                 <div id="civilEngineeringFields" style="display: none;" class="project-specific-fields">
-                    <h5>🏗️ Civil Engineering Specifications</h5>
+                    <h5>ðŸ—ï¸ Civil Engineering Specifications</h5>
                     <div class="form-row">
                         <div class="form-group">
                             <label>Engineering Discipline</label>
@@ -75710,7 +75714,7 @@ function showCreateProjectForm() {
                 
                 <!-- Real Estate Development Fields -->
                 <div id="realEstateFields" style="display: none;" class="project-specific-fields">
-                    <h5>🏘️ Real Estate Development Specifications</h5>
+                    <h5>ðŸ˜ï¸ Real Estate Development Specifications</h5>
                     <div class="form-row">
                         <div class="form-group">
                             <label>Property Type</label>
@@ -75742,7 +75746,7 @@ function showCreateProjectForm() {
                 
                 <!-- Head Projects Management Fields -->
                 <div id="headManagementFields" style="display: none;" class="project-specific-fields">
-                    <h5>🎯 Head Projects Management Specifications</h5>
+                    <h5>ðŸŽ¯ Head Projects Management Specifications</h5>
                     <div class="form-row">
                         <div class="form-group">
                             <label>Management Scope</label>
@@ -75787,7 +75791,7 @@ function showCreateProjectForm() {
                 </div>
                 
                 <div class="form-actions">
-                    <button type="submit" class="action" style="background: #28a745;">🚀 Create Project</button>
+                    <button type="submit" class="action" style="background: #28a745;">ðŸš€ Create Project</button>
                     <button type="button" class="action" onclick="clearProjectForm()" style="background: #6c757d;">Clear Form</button>
                     <button type="button" class="action" onclick="showContent('')" style="background: #dc3545;">Cancel</button>
                 </div>
@@ -75968,7 +75972,7 @@ async function loadMissionVisionRecords() {
             tbody.appendChild(tr);
         }
     } catch (error) {
-        console.error('❌ Error loading mission & vision records:', error);
+        console.error('âŒ Error loading mission & vision records:', error);
         tbody.innerHTML = `
             <tr>
                 <td colspan="18" style="text-align: center; padding: 10px; color: #dc3545;">Failed to load records: ${error.message}</td>
@@ -76125,7 +76129,7 @@ async function loadLongTermGrowthRecords() {
             tbody.appendChild(tr);
         }
     } catch (error) {
-        console.error('❌ Error loading long-term growth records:', error);
+        console.error('âŒ Error loading long-term growth records:', error);
         tbody.innerHTML = `
             <tr>
                 <td colspan="16" style="text-align: center; padding: 10px; color: #dc3545;">Failed to load records: ${error.message}</td>
@@ -76269,7 +76273,7 @@ async function loadLeadershipRecords() {
             tbody.appendChild(tr);
         }
     } catch (error) {
-        console.error('❌ Error loading leadership records:', error);
+        console.error('âŒ Error loading leadership records:', error);
         tbody.innerHTML = `
             <tr>
                 <td colspan="19" style="text-align: center; padding: 10px; color: #dc3545;">Failed to load records: ${error.message}</td>
@@ -76340,7 +76344,7 @@ async function submitNewProject() {
             projectData.stakeholders = document.getElementById('stakeholders').value;
         }
         
-        console.log('📤 Submitting new project:', projectData);
+        console.log('ðŸ“¤ Submitting new project:', projectData);
         
         const baseUrl = window.location.origin;
         const response = await fetch(`${baseUrl}/api/projects/create`, {
@@ -76357,7 +76361,7 @@ async function submitNewProject() {
         }
         
         const result = await response.json();
-        console.log('✅ Project created successfully:', result);
+        console.log('âœ… Project created successfully:', result);
         
         customAlert(`Project created successfully!\n\nProject Name: ${projectData.name}\nProject Type: ${projectData.type}\nBudget: ${projectData.budget.toLocaleString()}\nStatus: Planning Phase`, "Project Created", "success");
         
@@ -76369,7 +76373,7 @@ async function submitNewProject() {
         return false;
         
     } catch (error) {
-        console.error('❌ Error creating project:', error);
+        console.error('âŒ Error creating project:', error);
         customAlert(`Failed to create project: ${error.message}`, 'Creation Error', 'error');
         return false;
     }
@@ -76380,8 +76384,8 @@ function showAccountantForm() {
     showContent(`
         <div class="card">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                <h3>💰 Accountant Management</h3>
-                <button type="button" onclick="showContent('')" class="action" style="background: #dc3545;">❌ Close</button>
+                <h3>ðŸ’° Accountant Management</h3>
+                <button type="button" onclick="showContent('')" class="action" style="background: #dc3545;">âŒ Close</button>
             </div>
             
             <div class="form-header">
@@ -76452,7 +76456,7 @@ function showAccountantForm() {
                 
                 <!-- Financial Reporting Responsibilities -->
                 <div class="form-section">
-                    <h5>📊 Financial Reporting Responsibilities</h5>
+                    <h5>ðŸ“Š Financial Reporting Responsibilities</h5>
                     <div class="checkbox-group">
                         <label><input type="checkbox" name="financialReporting" value="monthly-reports"> Monthly Financial Reports</label>
                         <label><input type="checkbox" name="financialReporting" value="quarterly-reports"> Quarterly Financial Statements</label>
@@ -76467,7 +76471,7 @@ function showAccountantForm() {
                 
                 <!-- Day-to-Day Bookkeeping -->
                 <div class="form-section">
-                    <h5>📝 Day-to-Day Bookkeeping</h5>
+                    <h5>ðŸ“ Day-to-Day Bookkeeping</h5>
                     <div class="checkbox-group">
                         <label><input type="checkbox" name="bookkeeping" value="accounts-payable"> Accounts Payable Management</label>
                         <label><input type="checkbox" name="bookkeeping" value="accounts-receivable"> Accounts Receivable Management</label>
@@ -76482,7 +76486,7 @@ function showAccountantForm() {
                 
                 <!-- Regulatory Adherence -->
                 <div class="form-section">
-                    <h5>⚖️ Regulatory Adherence</h5>
+                    <h5>âš–ï¸ Regulatory Adherence</h5>
                     <div class="checkbox-group">
                         <label><input type="checkbox" name="regulatory" value="tax-compliance"> Tax Compliance (VAT, PAYE, etc.)</label>
                         <label><input type="checkbox" name="regulatory" value="financial-regulations"> Financial Regulations Compliance</label>
@@ -76497,7 +76501,7 @@ function showAccountantForm() {
                 
                 <!-- Qualifications & Certifications -->
                 <div class="form-section">
-                    <h5>🎓 Qualifications & Certifications</h5>
+                    <h5>ðŸŽ“ Qualifications & Certifications</h5>
                     <div class="form-row">
                         <div class="form-group">
                             <label>Professional Qualification</label>
@@ -76524,7 +76528,7 @@ function showAccountantForm() {
                 
                 <!-- System Access -->
                 <div class="form-section">
-                    <h5>🔐 System Access & Permissions</h5>
+                    <h5>ðŸ” System Access & Permissions</h5>
                     <div class="checkbox-group">
                         <label><input type="checkbox" name="systemAccess" value="accounting-software"> Accounting Software Access</label>
                         <label><input type="checkbox" name="systemAccess" value="banking-portal"> Online Banking Portal</label>
@@ -76542,15 +76546,15 @@ function showAccountantForm() {
                 </div>
                 
                 <div class="form-row">
-                    <button type="submit" class="action" style="background: #28a745;">💾 Save Accountant Details</button>
-                    <button type="button" onclick="clearAccountantForm()" class="action" style="background: #ffc107;">🔄 Clear Form</button>
+                    <button type="submit" class="action" style="background: #28a745;">ðŸ’¾ Save Accountant Details</button>
+                    <button type="button" onclick="clearAccountantForm()" class="action" style="background: #ffc107;">ðŸ”„ Clear Form</button>
                 </div>
             </form>
 
             <div style="margin-top: 25px;">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-                    <h4 style="margin: 0;">📋 Recorded Accountants</h4>
-                    <button type="button" class="action" style="background: #0b3d91;" onclick="loadAccountantRecords()">🔄 Refresh</button>
+                    <h4 style="margin: 0;">ðŸ“‹ Recorded Accountants</h4>
+                    <button type="button" class="action" style="background: #0b3d91;" onclick="loadAccountantRecords()">ðŸ”„ Refresh</button>
                 </div>
                 <div style="overflow: auto; border: 1px solid #dee2e6; border-radius: 5px;">
                     <table id="accountantRecordsTable" style="width: 100%; border-collapse: collapse;">
@@ -76832,7 +76836,7 @@ async function loadAccountantRecords() {
             tbody.appendChild(tr);
         }
     } catch (error) {
-        console.error('❌ Error loading accountant records:', error);
+        console.error('âŒ Error loading accountant records:', error);
         tbody.innerHTML = `
             <tr>
                 <td colspan="17" style="text-align: center; padding: 10px; color: #dc3545;">Failed to load records: ${error.message}</td>
@@ -76854,16 +76858,16 @@ function clearAccountantForm() {
 
 // Submit Accountant Form
 async function submitAccountantForm(event) {
-    console.log('📊 Submitting Accountant Form...');
-    console.log('📊 Event object:', event);
+    console.log('ðŸ“Š Submitting Accountant Form...');
+    console.log('ðŸ“Š Event object:', event);
     
     // Prevent default form submission immediately
     if (event) {
         event.preventDefault();
         event.stopPropagation();
-        console.log('📊 Default form submission prevented');
+        console.log('ðŸ“Š Default form submission prevented');
     } else {
-        console.warn('📊 No event object provided to submitAccountantForm');
+        console.warn('ðŸ“Š No event object provided to submitAccountantForm');
     }
     
     try {
@@ -76894,7 +76898,7 @@ async function submitAccountantForm(event) {
             status: 'active'
         };
         
-        console.log('📤 Submitting accountant data:', accountantData);
+        console.log('ðŸ“¤ Submitting accountant data:', accountantData);
         
         const baseUrl = window.location.origin;
         const authToken = sessionManager.getAuthToken();
@@ -76913,14 +76917,14 @@ async function submitAccountantForm(event) {
             body: JSON.stringify(accountantData)
         });
         
-        console.log('📊 Response status:', response.status);
-        console.log('📊 Response headers:', response.headers);
+        console.log('ðŸ“Š Response status:', response.status);
+        console.log('ðŸ“Š Response headers:', response.headers);
         
         if (!response.ok) {
             const errorData = await response.json().catch(() => ({}));
-            console.error('❌ API Error Response:', errorData);
-            console.error('❌ Response Status:', response.status);
-            console.error('❌ Response Text:', response.statusText);
+            console.error('âŒ API Error Response:', errorData);
+            console.error('âŒ Response Status:', response.status);
+            console.error('âŒ Response Text:', response.statusText);
             
             // Only redirect on actual authentication failures with valid tokens
             if (response.status === 401 && authToken && errorData.error && errorData.error.toLowerCase().includes('unauthorized')) {
@@ -76946,7 +76950,7 @@ async function submitAccountantForm(event) {
         }
         
         const result = await response.json();
-        console.log('✅ Accountant details saved successfully:', result);
+        console.log('âœ… Accountant details saved successfully:', result);
         
         if (result.success) {
             customAlert(`Accountant details saved successfully!\n\nName: ${accountantData.name}\nEmployee ID: ${accountantData.employeeId}\nDepartment: ${accountantData.department}\nReporting To: ${accountantData.reportingTo}\nFinancial Reporting Tasks: ${accountantData.financialReporting.length}\nBookkeeping Tasks: ${accountantData.bookkeeping.length}\nRegulatory Tasks: ${accountantData.regulatory.length}`, "Accountant Created", "success");
@@ -76961,8 +76965,8 @@ async function submitAccountantForm(event) {
         return false;
         
     } catch (error) {
-        console.error('❌ Error saving accountant details:', error);
-        console.error('❌ Error stack:', error.stack);
+        console.error('âŒ Error saving accountant details:', error);
+        console.error('âŒ Error stack:', error.stack);
         
         // Handle network errors
         if (error.name === 'TypeError' && error.message.includes('fetch')) {
@@ -76984,8 +76988,8 @@ function showLeadershipForm() {
     showContent(`
         <div class="card">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                <h3>👥 Leadership Management</h3>
-                <button type="button" onclick="showContent('')" class="action" style="background: #dc3545;">❌ Close</button>
+                <h3>ðŸ‘¥ Leadership Management</h3>
+                <button type="button" onclick="showContent('')" class="action" style="background: #dc3545;">âŒ Close</button>
             </div>
             
             <div class="form-header">
@@ -77045,7 +77049,7 @@ function showLeadershipForm() {
                 
                 <!-- Leadership Responsibilities -->
                 <div class="form-section">
-                    <h5>🎯 Leadership Responsibilities</h5>
+                    <h5>ðŸŽ¯ Leadership Responsibilities</h5>
                     <div class="checkbox-group">
                         <label><input type="checkbox" name="leadershipResponsibilities" value="strategic-planning"> Strategic Planning & Vision Setting</label>
                         <label><input type="checkbox" name="leadershipResponsibilities" value="team-management"> Team Management & Development</label>
@@ -77062,7 +77066,7 @@ function showLeadershipForm() {
                 
                 <!-- Leadership Competencies -->
                 <div class="form-section">
-                    <h5>📈 Leadership Competencies</h5>
+                    <h5>ðŸ“ˆ Leadership Competencies</h5>
                     <div class="form-row">
                         <div class="form-group">
                             <label>Strategic Thinking</label>
@@ -77111,7 +77115,7 @@ function showLeadershipForm() {
                 
                 <!-- Succession Planning -->
                 <div class="form-section">
-                    <h5>🔄 Succession Planning</h5>
+                    <h5>ðŸ”„ Succession Planning</h5>
                     <div class="form-group">
                         <label>Succession Status</label>
                         <select id="successionStatus">
@@ -77135,7 +77139,7 @@ function showLeadershipForm() {
                 
                 <!-- Performance Metrics -->
                 <div class="form-section">
-                    <h5>📊 Performance Metrics</h5>
+                    <h5>ðŸ“Š Performance Metrics</h5>
                     <div class="form-group">
                         <label>Key Performance Indicators</label>
                         <textarea id="kpis" rows="4" placeholder="List 3-5 key performance indicators for this leadership role..."></textarea>
@@ -77165,15 +77169,15 @@ function showLeadershipForm() {
                 </div>
                 
                 <div class="form-row">
-                    <button type="submit" class="action" style="background: #28a745;">💾 Save Leadership Details</button>
-                    <button type="button" onclick="clearLeadershipForm()" class="action" style="background: #ffc107;">🔄 Clear Form</button>
+                    <button type="submit" class="action" style="background: #28a745;">ðŸ’¾ Save Leadership Details</button>
+                    <button type="button" onclick="clearLeadershipForm()" class="action" style="background: #ffc107;">ðŸ”„ Clear Form</button>
                 </div>
             </form>
 
             <div style="margin-top: 25px;">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-                    <h4 style="margin: 0;">📋 Recorded Leadership</h4>
-                    <button type="button" class="action" style="background: #0b3d91;" onclick="loadLeadershipRecords()">🔄 Refresh</button>
+                    <h4 style="margin: 0;">ðŸ“‹ Recorded Leadership</h4>
+                    <button type="button" class="action" style="background: #0b3d91;" onclick="loadLeadershipRecords()">ðŸ”„ Refresh</button>
                 </div>
                 <div style="overflow: auto; border: 1px solid #dee2e6; border-radius: 5px;">
                     <table id="leadershipRecordsTable" style="width: 100%; border-collapse: collapse;">
@@ -77283,8 +77287,8 @@ function showMissionVisionForm() {
     showContent(`
         <div class="card">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                <h3>🎯 Mission & Vision Management</h3>
-                <button type="button" onclick="showContent('')" class="action" style="background: #dc3545;">❌ Close</button>
+                <h3>ðŸŽ¯ Mission & Vision Management</h3>
+                <button type="button" onclick="showContent('')" class="action" style="background: #dc3545;">âŒ Close</button>
             </div>
             
             <div class="form-header">
@@ -77295,7 +77299,7 @@ function showMissionVisionForm() {
             <form id="missionVisionForm" onsubmit="return submitMissionVisionForm(event)">
                 <!-- Mission Statement -->
                 <div class="form-section">
-                    <h5>🎯 Mission Statement</h5>
+                    <h5>ðŸŽ¯ Mission Statement</h5>
                     <div class="form-group">
                         <label>Mission Statement *</label>
                         <textarea id="missionStatement" rows="4" placeholder="What is our purpose? What do we do? Who do we serve? How do we do it?" required></textarea>
@@ -77322,7 +77326,7 @@ function showMissionVisionForm() {
                 
                 <!-- Vision Statement -->
                 <div class="form-section">
-                    <h5>🔮 Vision Statement</h5>
+                    <h5>ðŸ”® Vision Statement</h5>
                     <div class="form-group">
                         <label>Vision Statement *</label>
                         <textarea id="visionStatement" rows="4" placeholder="What is our future aspiration? What do we want to become? Where are we heading?" required></textarea>
@@ -77348,7 +77352,7 @@ function showMissionVisionForm() {
                 
                 <!-- Core Values -->
                 <div class="form-section">
-                    <h5>💎 Core Values</h5>
+                    <h5>ðŸ’Ž Core Values</h5>
                     <div class="checkbox-group">
                         <label><input type="checkbox" name="coreValues" value="integrity"> Integrity</label>
                         <label><input type="checkbox" name="coreValues" value="excellence"> Excellence</label>
@@ -77369,7 +77373,7 @@ function showMissionVisionForm() {
                 
                 <!-- Strategic Objectives -->
                 <div class="form-section">
-                    <h5>🎯 Strategic Objectives</h5>
+                    <h5>ðŸŽ¯ Strategic Objectives</h5>
                     <div class="form-group">
                         <label>Short-term Objectives (1-2 years)</label>
                         <textarea id="shortTermObjectives" rows="3" placeholder="Key objectives to achieve in the next 1-2 years..."></textarea>
@@ -77382,7 +77386,7 @@ function showMissionVisionForm() {
                 
                 <!-- Stakeholder Focus -->
                 <div class="form-section">
-                    <h5>👥 Stakeholder Focus</h5>
+                    <h5>ðŸ‘¥ Stakeholder Focus</h5>
                     <div class="checkbox-group">
                         <label><input type="checkbox" name="stakeholderFocus" value="customers"> Customers</label>
                         <label><input type="checkbox" name="stakeholderFocus" value="employees"> Employees</label>
@@ -77397,7 +77401,7 @@ function showMissionVisionForm() {
                 
                 <!-- Implementation Strategy -->
                 <div class="form-section">
-                    <h5>🚀 Implementation Strategy</h5>
+                    <h5>ðŸš€ Implementation Strategy</h5>
                     <div class="form-group">
                         <label>Communication Strategy</label>
                         <textarea id="communicationStrategy" rows="3" placeholder="How will we communicate mission, vision, and values to all stakeholders?"></textarea>
@@ -77426,7 +77430,7 @@ function showMissionVisionForm() {
                 
                 <!-- Success Metrics -->
                 <div class="form-section">
-                    <h5>📊 Success Metrics</h5>
+                    <h5>ðŸ“Š Success Metrics</h5>
                     <div class="form-group">
                         <label>Key Performance Indicators</label>
                         <textarea id="successMetrics" rows="4" placeholder="How will we measure success in achieving our mission and vision?"></textarea>
@@ -77440,15 +77444,15 @@ function showMissionVisionForm() {
                 </div>
                 
                 <div class="form-row">
-                    <button type="submit" class="action" style="background: #28a745;">💾 Save Mission & Vision</button>
-                    <button type="button" onclick="clearMissionVisionForm()" class="action" style="background: #ffc107;">🔄 Clear Form</button>
+                    <button type="submit" class="action" style="background: #28a745;">ðŸ’¾ Save Mission & Vision</button>
+                    <button type="button" onclick="clearMissionVisionForm()" class="action" style="background: #ffc107;">ðŸ”„ Clear Form</button>
                 </div>
             </form>
 
             <div style="margin-top: 25px;">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-                    <h4 style="margin: 0;">📋 Recorded Mission & Vision</h4>
-                    <button type="button" class="action" style="background: #0b3d91;" onclick="loadMissionVisionRecords()">🔄 Refresh</button>
+                    <h4 style="margin: 0;">ðŸ“‹ Recorded Mission & Vision</h4>
+                    <button type="button" class="action" style="background: #0b3d91;" onclick="loadMissionVisionRecords()">ðŸ”„ Refresh</button>
                 </div>
                 <div style="overflow: auto; border: 1px solid #dee2e6; border-radius: 5px;">
                     <table id="missionVisionRecordsTable" style="width: 100%; border-collapse: collapse;">
@@ -77557,8 +77561,8 @@ function showLongTermGrowthForm() {
     showContent(`
         <div class="card">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                <h3>📈 Long-Term Growth Strategy</h3>
-                <button type="button" onclick="showContent('')" class="action" style="background: #dc3545;">❌ Close</button>
+                <h3>ðŸ“ˆ Long-Term Growth Strategy</h3>
+                <button type="button" onclick="showContent('')" class="action" style="background: #dc3545;">âŒ Close</button>
             </div>
             
             <div class="form-header">
@@ -77601,7 +77605,7 @@ function showLongTermGrowthForm() {
                 
                 <!-- Growth Objectives -->
                 <div class="form-section">
-                    <h5>🎯 Growth Objectives</h5>
+                    <h5>ðŸŽ¯ Growth Objectives</h5>
                     <div class="form-group">
                         <label>Primary Growth Objective *</label>
                         <textarea id="primaryObjective" rows="3" placeholder="What is the main goal of this growth strategy?" required></textarea>
@@ -77624,7 +77628,7 @@ function showLongTermGrowthForm() {
                 
                 <!-- Market Analysis -->
                 <div class="form-section">
-                    <h5>🌍 Market Analysis & Opportunities</h5>
+                    <h5>ðŸŒ Market Analysis & Opportunities</h5>
                     <div class="form-group">
                         <label>Target Markets</label>
                         <textarea id="targetMarkets" rows="3" placeholder="Which markets are we targeting for growth?"></textarea>
@@ -77641,7 +77645,7 @@ function showLongTermGrowthForm() {
                 
                 <!-- Strategic Initiatives -->
                 <div class="form-section">
-                    <h5>🚀 Strategic Initiatives</h5>
+                    <h5>ðŸš€ Strategic Initiatives</h5>
                     <div class="checkbox-group">
                         <label><input type="checkbox" name="strategicInitiatives" value="technology-investment"> Technology Investment</label>
                         <label><input type="checkbox" name="strategicInitiatives" value="talent-acquisition"> Talent Acquisition & Development</label>
@@ -77658,7 +77662,7 @@ function showLongTermGrowthForm() {
                 
                 <!-- Resource Requirements -->
                 <div class="form-section">
-                    <h5>💰 Resource Requirements</h5>
+                    <h5>ðŸ’° Resource Requirements</h5>
                     <div class="form-row">
                         <div class="form-group">
                             <label>Estimated Budget (TZS)</label>
@@ -77677,7 +77681,7 @@ function showLongTermGrowthForm() {
                 
                 <!-- Risk Assessment -->
                 <div class="form-section">
-                    <h5>⚠️ Risk Assessment & Mitigation</h5>
+                    <h5>âš ï¸ Risk Assessment & Mitigation</h5>
                     <div class="form-group">
                         <label>Primary Risks</label>
                         <textarea id="primaryRisks" rows="3" placeholder="What are the main risks associated with this growth strategy?"></textarea>
@@ -77711,7 +77715,7 @@ function showLongTermGrowthForm() {
                 
                 <!-- Implementation Timeline -->
                 <div class="form-section">
-                    <h5>📅 Implementation Timeline</h5>
+                    <h5>ðŸ“… Implementation Timeline</h5>
                     <div class="form-group">
                         <label>Phase 1 (0-6 months)</label>
                         <textarea id="phase1" rows="2" placeholder="Key activities and milestones for the first 6 months..."></textarea>
@@ -77728,7 +77732,7 @@ function showLongTermGrowthForm() {
                 
                 <!-- Success Metrics -->
                 <div class="form-section">
-                    <h5>📊 Success Metrics & KPIs</h5>
+                    <h5>ðŸ“Š Success Metrics & KPIs</h5>
                     <div class="form-group">
                         <label>Key Performance Indicators</label>
                         <textarea id="kpis" rows="4" placeholder="How will we measure the success of this growth strategy?"></textarea>
@@ -77762,15 +77766,15 @@ function showLongTermGrowthForm() {
                 </div>
                 
                 <div class="form-row">
-                    <button type="submit" class="action" style="background: #28a745;">💾 Save Growth Strategy</button>
-                    <button type="button" onclick="clearLongTermGrowthForm()" class="action" style="background: #ffc107;">🔄 Clear Form</button>
+                    <button type="submit" class="action" style="background: #28a745;">ðŸ’¾ Save Growth Strategy</button>
+                    <button type="button" onclick="clearLongTermGrowthForm()" class="action" style="background: #ffc107;">ðŸ”„ Clear Form</button>
                 </div>
             </form>
 
             <div style="margin-top: 25px;">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-                    <h4 style="margin: 0;">📋 Recorded Long-Term Growth</h4>
-                    <button type="button" class="action" style="background: #0b3d91;" onclick="loadLongTermGrowthRecords()">🔄 Refresh</button>
+                    <h4 style="margin: 0;">ðŸ“‹ Recorded Long-Term Growth</h4>
+                    <button type="button" class="action" style="background: #0b3d91;" onclick="loadLongTermGrowthRecords()">ðŸ”„ Refresh</button>
                 </div>
                 <div style="overflow: auto; border: 1px solid #dee2e6; border-radius: 5px;">
                     <table id="longTermGrowthRecordsTable" style="width: 100%; border-collapse: collapse;">
@@ -77887,16 +77891,16 @@ function clearLongTermGrowthForm() {
 
 // Submit form functions
 async function submitLeadershipForm(event) {
-    console.log('👥 Submitting Leadership Form...');
-    console.log('👥 Event object:', event);
+    console.log('ðŸ‘¥ Submitting Leadership Form...');
+    console.log('ðŸ‘¥ Event object:', event);
     
     // Prevent default form submission immediately
     if (event) {
         event.preventDefault();
         event.stopPropagation();
-        console.log('👥 Default form submission prevented');
+        console.log('ðŸ‘¥ Default form submission prevented');
     } else {
-        console.warn('👥 No event object provided to submitLeadershipForm');
+        console.warn('ðŸ‘¥ No event object provided to submitLeadershipForm');
     }
     
     try {
@@ -77929,7 +77933,7 @@ async function submitLeadershipForm(event) {
             submittedDate: new Date().toISOString().split('T')[0]
         };
         
-        console.log('📤 Submitting leadership data:', leadershipData);
+        console.log('ðŸ“¤ Submitting leadership data:', leadershipData);
         
         const baseUrl = window.location.origin;
         const authToken = sessionManager.getAuthToken();
@@ -77948,14 +77952,14 @@ async function submitLeadershipForm(event) {
             body: JSON.stringify(leadershipData)
         });
         
-        console.log('👥 Response status:', response.status);
-        console.log('👥 Response headers:', response.headers);
+        console.log('ðŸ‘¥ Response status:', response.status);
+        console.log('ðŸ‘¥ Response headers:', response.headers);
         
         if (!response.ok) {
             const errorData = await response.json().catch(() => ({}));
-            console.error('❌ API Error Response:', errorData);
-            console.error('❌ Response Status:', response.status);
-            console.error('❌ Response Text:', response.statusText);
+            console.error('âŒ API Error Response:', errorData);
+            console.error('âŒ Response Status:', response.status);
+            console.error('âŒ Response Text:', response.statusText);
             
             // Only redirect on actual authentication failures with valid tokens
             if (response.status === 401 && authToken && errorData.error && errorData.error.toLowerCase().includes('unauthorized')) {
@@ -77981,7 +77985,7 @@ async function submitLeadershipForm(event) {
         }
         
         const result = await response.json();
-        console.log('✅ Leadership data saved successfully:', result);
+        console.log('âœ… Leadership data saved successfully:', result);
         
         if (result.success) {
             customAlert(`Leadership details saved successfully!\n\nPosition: ${leadershipData.position}\nCurrent Holder: ${leadershipData.currentHolder}\nDepartment: ${leadershipData.department}\nLeadership Level: ${leadershipData.leadershipLevel}`, "Leadership Created", "success");
@@ -77996,8 +78000,8 @@ async function submitLeadershipForm(event) {
         return false;
         
     } catch (error) {
-        console.error('❌ Error saving leadership details:', error);
-        console.error('❌ Error stack:', error.stack);
+        console.error('âŒ Error saving leadership details:', error);
+        console.error('âŒ Error stack:', error.stack);
         
         // Handle network errors
         if (error.name === 'TypeError' && error.message.includes('fetch')) {
@@ -78015,16 +78019,16 @@ async function submitLeadershipForm(event) {
 }
 
 async function submitMissionVisionForm(event) {
-    console.log('🎯 Submitting Mission & Vision Form...');
-    console.log('🎯 Event object:', event);
+    console.log('ðŸŽ¯ Submitting Mission & Vision Form...');
+    console.log('ðŸŽ¯ Event object:', event);
     
     // Prevent default form submission immediately
     if (event) {
         event.preventDefault();
         event.stopPropagation();
-        console.log('🎯 Default form submission prevented');
+        console.log('ðŸŽ¯ Default form submission prevented');
     } else {
-        console.warn('🎯 No event object provided to submitMissionVisionForm');
+        console.warn('ðŸŽ¯ No event object provided to submitMissionVisionForm');
     }
     
     try {
@@ -78054,12 +78058,12 @@ async function submitMissionVisionForm(event) {
             submittedDate: new Date().toISOString().split('T')[0]
         };
         
-        console.log('📤 Submitting mission & vision data:', missionVisionData);
+        console.log('ðŸ“¤ Submitting mission & vision data:', missionVisionData);
         
         // Check authentication
         const token = sessionManager.getAuthToken();
         if (!token) {
-            console.error('❌ No authentication token found');
+            console.error('âŒ No authentication token found');
             customAlert('Your session has expired. Please log in again.', 'Authentication Error', 'error');
             // Only redirect on actual authentication failure
             window.location.href = '/';
@@ -78078,14 +78082,14 @@ async function submitMissionVisionForm(event) {
             body: JSON.stringify(missionVisionData)
         });
         
-        console.log('🎯 Response status:', response.status);
-        console.log('🎯 Response headers:', response.headers);
+        console.log('ðŸŽ¯ Response status:', response.status);
+        console.log('ðŸŽ¯ Response headers:', response.headers);
         
         if (!response.ok) {
             const errorData = await response.json().catch(() => ({}));
-            console.error('❌ API Error Response:', errorData);
-            console.error('❌ Response Status:', response.status);
-            console.error('❌ Response Text:', response.statusText);
+            console.error('âŒ API Error Response:', errorData);
+            console.error('âŒ Response Status:', response.status);
+            console.error('âŒ Response Text:', response.statusText);
             
             // Only redirect on actual authentication failures with valid tokens
             if (response.status === 401 && token && errorData.error && errorData.error.toLowerCase().includes('unauthorized')) {
@@ -78111,7 +78115,7 @@ async function submitMissionVisionForm(event) {
         }
         
         const result = await response.json();
-        console.log('✅ Mission & Vision data saved successfully:', result);
+        console.log('âœ… Mission & Vision data saved successfully:', result);
         
         if (result.success) {
             customAlert(`Mission & Vision saved successfully!\n\nMission Category: ${missionVisionData.missionCategory}\nVision Timeframe: ${missionVisionData.visionTimeframe}`, "Mission & Vision Created", "success");
@@ -78126,8 +78130,8 @@ async function submitMissionVisionForm(event) {
         return false;
         
     } catch (error) {
-        console.error('❌ Error saving mission & vision details:', error);
-        console.error('❌ Error stack:', error.stack);
+        console.error('âŒ Error saving mission & vision details:', error);
+        console.error('âŒ Error stack:', error.stack);
         
         // Handle network errors
         if (error.name === 'TypeError' && error.message.includes('fetch')) {
@@ -78152,7 +78156,7 @@ async function submitLongTermGrowthForm(event) {
     }
     
     try {
-        console.log('🚀 Starting Long-Term Growth Strategy form submission...');
+        console.log('ðŸš€ Starting Long-Term Growth Strategy form submission...');
         
         // Validate required fields
         const strategyName = document.getElementById('strategyName').value.trim();
@@ -78216,12 +78220,12 @@ async function submitLongTermGrowthForm(event) {
             submittedDate: new Date().toISOString().split('T')[0]
         };
         
-        console.log('📤 Submitting growth strategy data:', growthData);
+        console.log('ðŸ“¤ Submitting growth strategy data:', growthData);
         
         // Check authentication
         const token = sessionManager.getAuthToken();
         if (!token) {
-            console.error('❌ No authentication token found');
+            console.error('âŒ No authentication token found');
             customAlert('Your session has expired. Please log in again.', 'Authentication Error', 'error');
             // Only redirect on actual authentication failure
             window.location.href = '/';
@@ -78294,9 +78298,9 @@ async function submitLongTermGrowthForm(event) {
         
         if (!response.ok) {
             const errorData = await response.json().catch(() => ({}));
-            console.error('❌ API Error Response:', errorData);
-            console.error('❌ Response Status:', response.status);
-            console.error('❌ Response Text:', response.statusText);
+            console.error('âŒ API Error Response:', errorData);
+            console.error('âŒ Response Status:', response.status);
+            console.error('âŒ Response Text:', response.statusText);
 
             if (response.status === 401 && token && errorData.error && errorData.error.toLowerCase().includes('unauthorized')) {
                 customAlert('Session expired. Please login again.', 'Authentication Error', 'error');
@@ -78320,7 +78324,7 @@ async function submitLongTermGrowthForm(event) {
         }
         
         const result = await response.json();
-        console.log('✅ Growth strategy saved successfully:', result);
+        console.log('âœ… Growth strategy saved successfully:', result);
         
         customAlert(`Growth strategy saved successfully!\n\nStrategy: ${growthData.strategyName}\nType: ${growthData.strategyType}\nDuration: ${growthData.startDate} to ${growthData.targetCompletionDate}\nRevenue Target: ${growthData.objectives.revenueGrowthTarget}%`, "Growth Strategy Created", "success");
         
@@ -78332,7 +78336,7 @@ async function submitLongTermGrowthForm(event) {
         return false;
         
     } catch (error) {
-        console.error('❌ Error saving growth strategy:', error);
+        console.error('âŒ Error saving growth strategy:', error);
         customAlert(`Failed to save growth strategy: ${error.message}`, 'Save Error', 'error');
         return false;
     }
@@ -78344,20 +78348,20 @@ function showPaymentManagement() {
     showContent(`
         <div class="card">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                <h3>💳 Payment Management</h3>
+                <h3>ðŸ’³ Payment Management</h3>
                 <div>
                     <button type="button" onclick="loadPaymentRequests()" class="action" style="background: #007bff;">
-                        🔄 Refresh
+                        ðŸ”„ Refresh
                     </button>
                     <button type="button" onclick="showPaymentStatistics()" class="action" style="background: #28a745;">
-                        📊 Statistics
+                        ðŸ“Š Statistics
                     </button>
                 </div>
             </div>
 
             <!-- Payment Request Form -->
             <div class="form-section">
-                <h4>📝 Create New Payment Request</h4>
+                <h4>ðŸ“ Create New Payment Request</h4>
                 <form id="paymentRequestForm" onsubmit="submitPaymentRequest(event)">
                     <div class="form-row">
                         <div class="form-group">
@@ -78467,10 +78471,10 @@ function showPaymentManagement() {
 
                     <div class="form-actions">
                         <button type="submit" class="action" style="background: #28a745;">
-                            💳 Submit Payment Request
+                            ðŸ’³ Submit Payment Request
                         </button>
                         <button type="button" onclick="resetPaymentForm()" class="action" style="background: #6c757d;">
-                            🔄 Reset Form
+                            ðŸ”„ Reset Form
                         </button>
                     </div>
                 </form>
@@ -78478,7 +78482,7 @@ function showPaymentManagement() {
 
             <!-- Payment Requests List -->
             <div class="form-section">
-                <h4>📋 Payment Requests</h4>
+                <h4>ðŸ“‹ Payment Requests</h4>
                 <div class="filter-controls">
                     <select id="statusFilter" onchange="filterPaymentRequests()">
                         <option value="">All Status</option>
@@ -78523,7 +78527,7 @@ async function loadEmployeesForPayment() {
             });
         }
     } catch (error) {
-        console.error('❌ Error loading employees:', error);
+        console.error('âŒ Error loading employees:', error);
     }
 }
 
@@ -78636,7 +78640,7 @@ async function submitPaymentRequest(event) {
             throw new Error(result.details ? `${result.error || 'Failed to create payment request'}: ${result.details}` : (result.error || 'Failed to create payment request'));
         }
     } catch (error) {
-        console.error('❌ Error submitting payment request:', error);
+        console.error('âŒ Error submitting payment request:', error);
         customAlert(`Failed to submit payment request: ${error.message}`, 'Error', 'error');
     }
 }
@@ -78653,7 +78657,7 @@ async function loadPaymentRequests() {
             throw new Error(result.error || 'Failed to load payment requests');
         }
     } catch (error) {
-        console.error('❌ Error loading payment requests:', error);
+        console.error('âŒ Error loading payment requests:', error);
         document.getElementById('paymentRequestsList').innerHTML = '<p class="error">Failed to load payment requests</p>';
     }
 }
@@ -78697,8 +78701,8 @@ function displayPaymentRequests(payments) {
                 <td>${statusBadge} ${urgencyBadge}</td>
                 <td>${new Date(payment.submitted_date).toLocaleDateString()}</td>
                 <td>
-                    <button onclick="viewPaymentDetails(${payment.id})" class="action-btn" title="View Details">👁️</button>
-                    ${payment.status === 'pending_finance_approval' ? `<button onclick="cancelPayment(${payment.id})" class="action-btn" title="Cancel">❌</button>` : ''}
+                    <button onclick="viewPaymentDetails(${payment.id})" class="action-btn" title="View Details">ðŸ‘ï¸</button>
+                    ${payment.status === 'pending_finance_approval' ? `<button onclick="cancelPayment(${payment.id})" class="action-btn" title="Cancel">âŒ</button>` : ''}
                 </td>
             </tr>
         `;
@@ -78750,7 +78754,7 @@ async function viewPaymentDetails(paymentId) {
             let historyHtml = '';
             if (history.length > 0) {
                 historyHtml = `
-                    <h5>📜 Payment History</h5>
+                    <h5>ðŸ“œ Payment History</h5>
                     <div class="timeline">
                 `;
                 history.forEach(item => {
@@ -78768,7 +78772,7 @@ async function viewPaymentDetails(paymentId) {
             
             showContent(`
                 <div class="card">
-                    <h3>💳 Payment Details</h3>
+                    <h3>ðŸ’³ Payment Details</h3>
                     <div class="payment-details">
                         <div class="detail-row">
                             <strong>Tracking Number:</strong> ${payment.tracking_number}
@@ -78814,7 +78818,7 @@ async function viewPaymentDetails(paymentId) {
                     ${historyHtml}
                     
                     <div class="form-actions">
-                        <button onclick="showPaymentManagement()" class="action" style="background: #6c757d;">← Back to Payments</button>
+                        <button onclick="showPaymentManagement()" class="action" style="background: #6c757d;">â† Back to Payments</button>
                     </div>
                 </div>
             `);
@@ -78822,7 +78826,7 @@ async function viewPaymentDetails(paymentId) {
             throw new Error(result.error || 'Failed to load payment details');
         }
     } catch (error) {
-        console.error('❌ Error viewing payment details:', error);
+        console.error('âŒ Error viewing payment details:', error);
         customAlert(`Failed to load payment details: ${error.message}`, 'Error', 'error');
     }
 }
@@ -78851,7 +78855,7 @@ async function cancelPayment(paymentId) {
             throw new Error(result.error || 'Failed to cancel payment');
         }
     } catch (error) {
-        console.error('❌ Error cancelling payment:', error);
+        console.error('âŒ Error cancelling payment:', error);
         customAlert(`Failed to cancel payment: ${error.message}`, 'Error', 'error');
     }
 }
@@ -78886,7 +78890,7 @@ async function showPaymentStatistics() {
             
             let trendHtml = '';
             if (monthlyTrend.length > 0) {
-                trendHtml = '<h5>📈 Monthly Trend</h5><div class="chart-container">';
+                trendHtml = '<h5>ðŸ“ˆ Monthly Trend</h5><div class="chart-container">';
                 monthlyTrend.forEach(month => {
                     trendHtml += `<div class="chart-item">
                         <strong>${month.month}:</strong> ${month.requests} requests, TZS ${parseFloat(month.total_amount).toLocaleString()}
@@ -78897,7 +78901,7 @@ async function showPaymentStatistics() {
             
             let deptHtml = '';
             if (departmentBreakdown.length > 0) {
-                deptHtml = '<h5>🏢 Department Breakdown</h5><div class="dept-grid">';
+                deptHtml = '<h5>ðŸ¢ Department Breakdown</h5><div class="dept-grid">';
                 departmentBreakdown.forEach(dept => {
                     deptHtml += `<div class="dept-item">
                         <strong>${dept.department}:</strong><br>
@@ -78910,7 +78914,7 @@ async function showPaymentStatistics() {
             
             showContent(`
                 <div class="card">
-                    <h3>📊 Payment Statistics</h3>
+                    <h3>ðŸ“Š Payment Statistics</h3>
                     
                     <div class="stats-grid">
                         <div class="stat-card">
@@ -78943,7 +78947,7 @@ async function showPaymentStatistics() {
                     ${deptHtml}
                     
                     <div class="form-actions">
-                        <button onclick="showPaymentManagement()" class="action" style="background: #6c757d;">← Back to Payments</button>
+                        <button onclick="showPaymentManagement()" class="action" style="background: #6c757d;">â† Back to Payments</button>
                     </div>
                 </div>
             `);
@@ -78951,7 +78955,7 @@ async function showPaymentStatistics() {
             throw new Error(result.error || 'Failed to load statistics');
         }
     } catch (error) {
-        console.error('❌ Error loading statistics:', error);
+        console.error('âŒ Error loading statistics:', error);
         customAlert(`Failed to load statistics: ${error.message}`, 'Error', 'error');
     }
 }
@@ -79520,3 +79524,6 @@ async function showMaterialsOutRecords() {
         </div>
     `);
 }
+
+
+
