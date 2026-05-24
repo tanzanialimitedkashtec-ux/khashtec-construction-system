@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 
 <html lang="en">
 
@@ -216,6 +216,21 @@ body.logged-in {
 }
 
 
+
+.login-title {
+    text-align: center;
+    font-size: 16px;
+}
+
+.login-form {
+    margin-top: 12px;
+}
+
+.top-controls-right {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
 
 body.logged-in #loginBackground {
 
@@ -23432,9 +23447,9 @@ background: #f8f9fa;
 
 <div id="loginPage" class="login-box">
 
-    <h3 style="text-align:center;font-size:16px">Login</h3>
+    <h3 class="login-title">Login</h3>
 
-    <form id="loginForm" style="margin-top:12px" onsubmit="return handleLogin(); setTimeout(() => updateNavigationForRole(document.getElementById('loginRole').value), 100);">
+    <form id="loginForm" class="login-form" onsubmit="return handleLogin(); setTimeout(() => updateNavigationForRole(document.getElementById('loginRole').value), 100);">
 
         <input type="email" id="loginEmail" placeholder="Enter your email (e.g. md@kashtec.com)" required>
 
@@ -23480,7 +23495,7 @@ background: #f8f9fa;
 
         <button type="button" class="menu-toggle" onclick="toggleSidebar()">☰</button>
 
-        <div style="display: flex; align-items: center; gap: 8px;">
+        <div class="top-controls-right">
             <button type="button" class="notification-btn" onclick="showNotifications()">🔔</button>
 
             <!-- Profile Widget -->
