@@ -16,8 +16,10 @@ async function getDb() {
             luggage_code VARCHAR(20) NOT NULL DEFAULT '',
             price_per_unit DECIMAL(10,2) NOT NULL DEFAULT 0.00,
             total_units INT NOT NULL DEFAULT 0,
+            total_units_available INT NOT NULL DEFAULT 0,
             units_sold INT NOT NULL DEFAULT 0,
             description TEXT NULL,
+            campaign_description TEXT NULL,
             start_date DATE NOT NULL,
             end_date DATE NOT NULL,
             status ENUM('planning', 'active', 'completed', 'cancelled') DEFAULT 'planning',
@@ -32,14 +34,16 @@ async function getDb() {
     // Add missing columns to existing tables — works on MySQL 5.7 AND 8.0.
     // "ADD COLUMN IF NOT EXISTS" is MySQL 8.0+ only, so we check INFORMATION_SCHEMA first.
     const columnsToAdd = [
-        { name: 'luggage_name',   sql: "ALTER TABLE luggage_campaigns ADD COLUMN luggage_name VARCHAR(255) NOT NULL DEFAULT '' AFTER campaign_name" },
-        { name: 'luggage_code',   sql: "ALTER TABLE luggage_campaigns ADD COLUMN luggage_code VARCHAR(20) NOT NULL DEFAULT '' AFTER luggage_name" },
-        { name: 'price_per_unit', sql: "ALTER TABLE luggage_campaigns ADD COLUMN price_per_unit DECIMAL(10,2) NOT NULL DEFAULT 0.00" },
-        { name: 'total_units',    sql: "ALTER TABLE luggage_campaigns ADD COLUMN total_units INT NOT NULL DEFAULT 0" },
-        { name: 'units_sold',     sql: "ALTER TABLE luggage_campaigns ADD COLUMN units_sold INT NOT NULL DEFAULT 0" },
-        { name: 'description',    sql: "ALTER TABLE luggage_campaigns ADD COLUMN description TEXT NULL" },
-        { name: 'status',         sql: "ALTER TABLE luggage_campaigns ADD COLUMN status ENUM('planning', 'active', 'completed', 'cancelled') DEFAULT 'planning'" },
-        { name: 'created_by',     sql: "ALTER TABLE luggage_campaigns ADD COLUMN created_by VARCHAR(100) NULL" }
+        { name: 'luggage_name',           sql: "ALTER TABLE luggage_campaigns ADD COLUMN luggage_name VARCHAR(255) NOT NULL DEFAULT '' AFTER campaign_name" },
+        { name: 'luggage_code',           sql: "ALTER TABLE luggage_campaigns ADD COLUMN luggage_code VARCHAR(20) NOT NULL DEFAULT '' AFTER luggage_name" },
+        { name: 'price_per_unit',         sql: "ALTER TABLE luggage_campaigns ADD COLUMN price_per_unit DECIMAL(10,2) NOT NULL DEFAULT 0.00" },
+        { name: 'total_units',            sql: "ALTER TABLE luggage_campaigns ADD COLUMN total_units INT NOT NULL DEFAULT 0" },
+        { name: 'total_units_available',  sql: "ALTER TABLE luggage_campaigns ADD COLUMN total_units_available INT NOT NULL DEFAULT 0" },
+        { name: 'units_sold',             sql: "ALTER TABLE luggage_campaigns ADD COLUMN units_sold INT NOT NULL DEFAULT 0" },
+        { name: 'description',            sql: "ALTER TABLE luggage_campaigns ADD COLUMN description TEXT NULL" },
+        { name: 'campaign_description',   sql: "ALTER TABLE luggage_campaigns ADD COLUMN campaign_description TEXT NULL" },
+        { name: 'status',                 sql: "ALTER TABLE luggage_campaigns ADD COLUMN status ENUM('planning', 'active', 'completed', 'cancelled') DEFAULT 'planning'" },
+        { name: 'created_by',             sql: "ALTER TABLE luggage_campaigns ADD COLUMN created_by VARCHAR(100) NULL" }
     ];
     for (const col of columnsToAdd) {
         try {
@@ -186,12 +190,63 @@ router.post('/', async (req, res) => {
 
         const db = await getDb();
 
-        // db.execute() returns rows directly — for INSERT it returns a ResultSetHeader object
+        const existingColumns = await db.execute(
+            `SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS
+             WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'luggage_campaigns'`,
+            []
+        );
+        const columnNames = new Set(existingColumns.map(col => col.COLUMN_NAME));
+
+        const insertColumns = [
+            'campaign_name',
+            'luggage_name',
+            'luggage_code',
+            'price_per_unit'
+        ];
+        const insertValues = [
+            finalCampaignName,
+            finalLuggageName,
+            finalLuggageCode,
+            finalPrice
+        ];
+
+        if (columnNames.has('total_units')) {
+            insertColumns.push('total_units');
+            insertValues.push(finalUnits);
+        }
+        if (columnNames.has('total_units_available')) {
+            insertColumns.push('total_units_available');
+            insertValues.push(finalUnits);
+        }
+
+        insertColumns.push('units_sold');
+        insertValues.push(0);
+
+        if (columnNames.has('description')) {
+            insertColumns.push('description');
+            insertValues.push(finalDesc);
+        }
+        if (columnNames.has('campaign_description')) {
+            insertColumns.push('campaign_description');
+            insertValues.push(finalDesc);
+        }
+
+        insertColumns.push('start_date', 'end_date');
+        insertValues.push(start_date, end_date);
+
+        if (columnNames.has('status')) {
+            insertColumns.push('status');
+            insertValues.push(status || 'planning');
+        }
+        if (columnNames.has('created_by')) {
+            insertColumns.push('created_by');
+            insertValues.push(created_by || null);
+        }
+
         const result = await db.execute(
-            `INSERT INTO luggage_campaigns
-                (campaign_name, luggage_name, luggage_code, price_per_unit, total_units, units_sold, description, start_date, end_date, status, created_by)
-             VALUES (?, ?, ?, ?, ?, 0, ?, ?, ?, ?, ?)`,
-            [finalCampaignName, finalLuggageName, finalLuggageCode, finalPrice, finalUnits, finalDesc, start_date, end_date, status || 'planning', created_by || null]
+            `INSERT INTO luggage_campaigns (${insertColumns.join(', ')})
+             VALUES (${insertColumns.map(() => '?').join(', ')})`,
+            insertValues
         );
 
         const insertId = result.insertId;
@@ -223,7 +278,8 @@ router.put('/:id', async (req, res) => {
 
         const allowedFields = [
             'campaign_name', 'luggage_name', 'luggage_code', 'price_per_unit',
-            'total_units', 'units_sold', 'description', 'start_date', 'end_date', 'status', 'created_by'
+            'total_units', 'total_units_available', 'units_sold', 'description', 'campaign_description',
+            'start_date', 'end_date', 'status', 'created_by'
         ];
         const updateFields = [];
         const updateValues = [];
