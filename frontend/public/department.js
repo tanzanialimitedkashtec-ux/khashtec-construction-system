@@ -70876,6 +70876,8 @@ function showProcurementForm() {
                 const procStatus = document.getElementById('procurementStatus').value;
 
                 const currentUserDept = (typeof getCurrentUserDepartment === 'function' ? getCurrentUserDepartment() : null) || (window.currentUser && (window.currentUser.department_name || window.currentUser.department)) || 'General';
+                const currentUserName = (typeof getCurrentUser === 'function' ? getCurrentUser() : null) || 'Current User';
+                const currentUserRole = (typeof getCurrentUserRole === 'function' ? getCurrentUserRole() : null) || 'Employee';
 
                 const formData = {
 
@@ -70898,6 +70900,10 @@ function showProcurementForm() {
                     urgencyLevel: 'Normal',
 
                     expectedDeliveryDate: procDate,
+
+                    requestedBy: currentUserName,
+
+                    requestedByRole: currentUserRole,
 
                     type: procType,
 
