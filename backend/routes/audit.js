@@ -647,6 +647,285 @@ router.get('/system-changes', async (req, res) => {
             });
         } catch (e) { console.log('Safety incident tracking:', e.message); }
 
+        // Track HSE safety expenses / incidents
+        try {
+            const [safetyWork] = await db.execute(`
+                SELECT id, work_title, work_type, severity, status, department_code, created_at
+                FROM hse_work
+                WHERE created_at >= DATE_SUB(NOW(), INTERVAL ? DAY)
+                ORDER BY created_at DESC
+                LIMIT 50
+            `, [parseInt(days)]);
+            safetyWork.forEach(s => {
+                changes.push({
+                    type: 'safety_expense',
+                    icon: '🛡️',
+                    title: `Safety: ${s.work_type || 'HSE Work'}`,
+                    description: `${s.work_title} - Severity: ${s.severity || 'N/A'} (${s.department_code || 'HSE'})`,
+                    entity_id: s.id, entity_name: s.work_title, status: s.status, timestamp: s.created_at
+                });
+            });
+        } catch (e) { console.log('Safety expense tracking:', e.message); }
+
+        // Track procurement & sales
+        try {
+            const [sales] = await db.execute(`
+                SELECT id, request_title, procurement_type, total_budget, status, department, created_at
+                FROM procurement_sales
+                WHERE created_at >= DATE_SUB(NOW(), INTERVAL ? DAY)
+                ORDER BY created_at DESC
+                LIMIT 50
+            `, [parseInt(days)]);
+            sales.forEach(s => {
+                changes.push({
+                    type: 'sale_procurement',
+                    icon: '🛒',
+                    title: `${s.procurement_type || 'Procurement'}: ${s.request_title}`,
+                    description: `${s.request_title} - Budget: ${Number(s.total_budget || 0).toLocaleString()} (${s.department || 'N/A'})`,
+                    entity_id: s.id, entity_name: s.request_title, status: s.status, timestamp: s.created_at
+                });
+            });
+        } catch (e) { console.log('Sales tracking:', e.message); }
+
+        // Track properties
+        try {
+            const [props] = await db.execute(`
+                SELECT id, title, type, price, status, location, created_at
+                FROM properties
+                WHERE created_at >= DATE_SUB(NOW(), INTERVAL ? DAY)
+                ORDER BY created_at DESC
+                LIMIT 50
+            `, [parseInt(days)]);
+            props.forEach(p => {
+                changes.push({
+                    type: 'property_added',
+                    icon: '🏠',
+                    title: `Property: ${p.title}`,
+                    description: `${p.type || 'Property'} at ${p.location || 'N/A'} - Price: ${Number(p.price || 0).toLocaleString()} (${p.status})`,
+                    entity_id: p.id, entity_name: p.title, status: p.status, timestamp: p.created_at
+                });
+            });
+        } catch (e) { console.log('Property tracking:', e.message); }
+
+        // Track claims
+        try {
+            const [claims] = await db.execute(`
+                SELECT id, claim_number, claim_type, title, amount_claimed, status, created_at
+                FROM claims_management
+                WHERE created_at >= DATE_SUB(NOW(), INTERVAL ? DAY)
+                ORDER BY created_at DESC
+                LIMIT 50
+            `, [parseInt(days)]);
+            claims.forEach(c => {
+                changes.push({
+                    type: 'claim_filed',
+                    icon: '📄',
+                    title: `Claim: ${c.claim_type || 'Claim'}`,
+                    description: `${c.title} (#${c.claim_number}) - Amount: ${Number(c.amount_claimed || 0).toLocaleString()} (${c.status})`,
+                    entity_id: c.id, entity_name: c.title, status: c.status, timestamp: c.created_at
+                });
+            });
+        } catch (e) { console.log('Claims tracking:', e.message); }
+
+        // Track risk management
+        try {
+            const [risks] = await db.execute(`
+                SELECT id, risk_number, risk_title, risk_category, probability, impact, status, created_at
+                FROM risk_management
+                WHERE created_at >= DATE_SUB(NOW(), INTERVAL ? DAY)
+                ORDER BY created_at DESC
+                LIMIT 50
+            `, [parseInt(days)]);
+            risks.forEach(r => {
+                changes.push({
+                    type: 'risk_identified',
+                    icon: '⚠️',
+                    title: `Risk: ${r.risk_category || 'Risk'}`,
+                    description: `${r.risk_title} (#${r.risk_number}) - Probability: ${r.probability}, Impact: ${r.impact}`,
+                    entity_id: r.id, entity_name: r.risk_title, status: r.status, timestamp: r.created_at
+                });
+            });
+        } catch (e) { console.log('Risk tracking:', e.message); }
+
+        // Track talent acquisition
+        try {
+            const [talent] = await db.execute(`
+                SELECT id, requisition_number, position_title, department, position_type, status, created_at
+                FROM talent_acquisition
+                WHERE created_at >= DATE_SUB(NOW(), INTERVAL ? DAY)
+                ORDER BY created_at DESC
+                LIMIT 50
+            `, [parseInt(days)]);
+            talent.forEach(t => {
+                changes.push({
+                    type: 'talent_requisition',
+                    icon: '👥',
+                    title: `Talent: ${t.position_title}`,
+                    description: `${t.position_type || 'Position'} in ${t.department || 'N/A'} (#${t.requisition_number})`,
+                    entity_id: t.id, entity_name: t.position_title, status: t.status, timestamp: t.created_at
+                });
+            });
+        } catch (e) { console.log('Talent tracking:', e.message); }
+
+        // Track office resources
+        try {
+            const [resources] = await db.execute(`
+                SELECT id, resource_code, resource_name, resource_type, status, department, created_at
+                FROM office_resources
+                WHERE created_at >= DATE_SUB(NOW(), INTERVAL ? DAY)
+                ORDER BY created_at DESC
+                LIMIT 50
+            `, [parseInt(days)]);
+            resources.forEach(r => {
+                changes.push({
+                    type: 'office_resource',
+                    icon: '🖥️',
+                    title: `Resource: ${r.resource_name}`,
+                    description: `${r.resource_type || 'Resource'} (${r.resource_code}) - ${r.department || 'N/A'}`,
+                    entity_id: r.id, entity_name: r.resource_name, status: r.status, timestamp: r.created_at
+                });
+            });
+        } catch (e) { console.log('Office resource tracking:', e.message); }
+
+        // Track discipline monitoring
+        try {
+            const [discipline] = await db.execute(`
+                SELECT id, case_number, incident_type, severity, status, disciplinary_action, created_at
+                FROM discipline_monitoring
+                WHERE created_at >= DATE_SUB(NOW(), INTERVAL ? DAY)
+                ORDER BY created_at DESC
+                LIMIT 50
+            `, [parseInt(days)]);
+            discipline.forEach(d => {
+                changes.push({
+                    type: 'discipline_case',
+                    icon: '⚖️',
+                    title: `Discipline: ${d.incident_type || 'Case'}`,
+                    description: `Case #${d.case_number} - Severity: ${d.severity}, Action: ${d.disciplinary_action || 'Pending'}`,
+                    entity_id: d.id, entity_name: d.case_number, status: d.status, timestamp: d.created_at
+                });
+            });
+        } catch (e) { console.log('Discipline tracking:', e.message); }
+
+        // Track department changes
+        try {
+            const [depts] = await db.execute(`
+                SELECT id, name, code, status, created_at
+                FROM departments
+                WHERE created_at >= DATE_SUB(NOW(), INTERVAL ? DAY)
+                ORDER BY created_at DESC
+                LIMIT 50
+            `, [parseInt(days)]);
+            depts.forEach(d => {
+                changes.push({
+                    type: 'department_added',
+                    icon: '🏢',
+                    title: `Department: ${d.name}`,
+                    description: `Department "${d.name}" (${d.code}) - Status: ${d.status || 'Active'}`,
+                    entity_id: d.id, entity_name: d.name, status: d.status, timestamp: d.created_at
+                });
+            });
+        } catch (e) { console.log('Department tracking:', e.message); }
+
+        // Track luggage campaigns
+        try {
+            const [campaigns] = await db.execute(`
+                SELECT id, campaign_name, luggage_name, total_units_available, units_sold, campaign_status, created_at
+                FROM luggage_campaigns
+                WHERE created_at >= DATE_SUB(NOW(), INTERVAL ? DAY)
+                ORDER BY created_at DESC
+                LIMIT 50
+            `, [parseInt(days)]);
+            campaigns.forEach(c => {
+                changes.push({
+                    type: 'luggage_campaign',
+                    icon: '🧳',
+                    title: `Campaign: ${c.campaign_name}`,
+                    description: `${c.luggage_name} - ${c.units_sold || 0}/${c.total_units_available || 0} units sold`,
+                    entity_id: c.id, entity_name: c.campaign_name, status: c.campaign_status, timestamp: c.created_at
+                });
+            });
+        } catch (e) { console.log('Luggage campaign tracking:', e.message); }
+
+        // Track luggage purchases
+        try {
+            const [purchases] = await db.execute(`
+                SELECT id, buyer_name, units_purchased, total_amount, purchase_status, payment_method, created_at
+                FROM luggage_purchases
+                WHERE created_at >= DATE_SUB(NOW(), INTERVAL ? DAY)
+                ORDER BY created_at DESC
+                LIMIT 50
+            `, [parseInt(days)]);
+            purchases.forEach(p => {
+                changes.push({
+                    type: 'luggage_purchase',
+                    icon: '💼',
+                    title: `Purchase: ${p.buyer_name}`,
+                    description: `${p.units_purchased} units - Total: ${Number(p.total_amount || 0).toLocaleString()} via ${p.payment_method || 'N/A'}`,
+                    entity_id: p.id, entity_name: p.buyer_name, status: p.purchase_status, timestamp: p.created_at
+                });
+            });
+        } catch (e) { console.log('Luggage purchase tracking:', e.message); }
+
+        // Track materials (inventory + in + out)
+        try {
+            const [materialsIn] = await db.execute(`
+                SELECT id, track_number, supplier_name, quantity_received, total_cost, invoice_number, created_at
+                FROM materials_in
+                WHERE created_at >= DATE_SUB(NOW(), INTERVAL ? DAY)
+                ORDER BY created_at DESC
+                LIMIT 50
+            `, [parseInt(days)]);
+            materialsIn.forEach(m => {
+                changes.push({
+                    type: 'material_received',
+                    icon: '📦',
+                    title: `Material In: ${m.track_number}`,
+                    description: `From ${m.supplier_name} - Qty: ${m.quantity_received}, Cost: ${Number(m.total_cost || 0).toLocaleString()}${m.invoice_number ? ' (Inv: ' + m.invoice_number + ')' : ''}`,
+                    entity_id: m.id, entity_name: m.track_number, status: 'Received', timestamp: m.created_at
+                });
+            });
+        } catch (e) { console.log('Materials in tracking:', e.message); }
+
+        try {
+            const [materialsOut] = await db.execute(`
+                SELECT id, track_number, issued_to, quantity_out, total_value, issue_type, created_at
+                FROM materials_out
+                WHERE created_at >= DATE_SUB(NOW(), INTERVAL ? DAY)
+                ORDER BY created_at DESC
+                LIMIT 50
+            `, [parseInt(days)]);
+            materialsOut.forEach(m => {
+                changes.push({
+                    type: 'material_issued',
+                    icon: '📤',
+                    title: `Material Out: ${m.track_number}`,
+                    description: `To ${m.issued_to} - Qty: ${m.quantity_out}, Value: ${Number(m.total_value || 0).toLocaleString()} (${m.issue_type || 'Use'})`,
+                    entity_id: m.id, entity_name: m.track_number, status: m.issue_type, timestamp: m.created_at
+                });
+            });
+        } catch (e) { console.log('Materials out tracking:', e.message); }
+
+        // Track transport costs
+        try {
+            const [transport] = await db.execute(`
+                SELECT id, cost_type, category, description, amount, payment_status, invoice_number, created_at
+                FROM transport_costs
+                WHERE created_at >= DATE_SUB(NOW(), INTERVAL ? DAY)
+                ORDER BY created_at DESC
+                LIMIT 50
+            `, [parseInt(days)]);
+            transport.forEach(t => {
+                changes.push({
+                    type: 'transport_cost',
+                    icon: '🚚',
+                    title: `Transport: ${t.category || t.cost_type}`,
+                    description: `${t.description || t.category} - Amount: ${Number(t.amount || 0).toLocaleString()}${t.invoice_number ? ' (Inv: ' + t.invoice_number + ')' : ''}`,
+                    entity_id: t.id, entity_name: t.category, status: t.payment_status, timestamp: t.created_at
+                });
+            });
+        } catch (e) { console.log('Transport cost tracking:', e.message); }
+
         // Filter by type if specified
         let filtered = changes;
         if (type) {
@@ -668,7 +947,21 @@ router.get('/system-changes', async (req, res) => {
             payments: changes.filter(c => c.type === 'payment_recorded').length,
             tax: changes.filter(c => c.type === 'tax_payment').length,
             payroll: changes.filter(c => c.type === 'payroll_processed').length,
-            incidents: changes.filter(c => c.type === 'safety_incident').length
+            incidents: changes.filter(c => c.type === 'safety_incident').length,
+            safety: changes.filter(c => c.type === 'safety_expense').length,
+            sales: changes.filter(c => c.type === 'sale_procurement').length,
+            properties: changes.filter(c => c.type === 'property_added').length,
+            claims: changes.filter(c => c.type === 'claim_filed').length,
+            risks: changes.filter(c => c.type === 'risk_identified').length,
+            talent: changes.filter(c => c.type === 'talent_requisition').length,
+            resources: changes.filter(c => c.type === 'office_resource').length,
+            discipline: changes.filter(c => c.type === 'discipline_case').length,
+            departments: changes.filter(c => c.type === 'department_added').length,
+            campaigns: changes.filter(c => c.type === 'luggage_campaign').length,
+            luggagePurchases: changes.filter(c => c.type === 'luggage_purchase').length,
+            materialsIn: changes.filter(c => c.type === 'material_received').length,
+            materialsOut: changes.filter(c => c.type === 'material_issued').length,
+            transport: changes.filter(c => c.type === 'transport_cost').length
         };
 
         res.json({
@@ -868,6 +1161,106 @@ router.get('/internal-audits', async (req, res) => {
             });
         } catch (e) { console.log('Budget audit:', e.message); }
 
+        // Procurement & Sales audit
+        try {
+            const [procSummary] = await db.execute(`
+                SELECT procurement_type, status, COUNT(*) as count, SUM(total_budget) as total_budget
+                FROM procurement_sales GROUP BY procurement_type, status ORDER BY procurement_type
+            `);
+            const [procRecent] = await db.execute(`
+                SELECT id, request_title, procurement_type, total_budget, status, department, created_at
+                FROM procurement_sales ORDER BY created_at DESC LIMIT 20
+            `);
+            audits.push({
+                id: 'internal_procurement', name: 'Procurement & Sales Audit',
+                scope: 'All procurement requests and sales',
+                summary: procSummary, recentRecords: procRecent,
+                totalRecords: procSummary.reduce((s, r) => s + r.count, 0),
+                totalBudget: procSummary.reduce((s, r) => s + Number(r.total_budget || 0), 0)
+            });
+        } catch (e) { console.log('Procurement audit:', e.message); }
+
+        // Claims audit
+        try {
+            const [claimsSummary] = await db.execute(`
+                SELECT claim_type, status, COUNT(*) as count, SUM(amount_claimed) as total_claimed, SUM(amount_approved) as total_approved
+                FROM claims_management GROUP BY claim_type, status ORDER BY claim_type
+            `);
+            const [claimsRecent] = await db.execute(`
+                SELECT id, claim_number, claim_type, title, amount_claimed, amount_approved, status, created_at
+                FROM claims_management ORDER BY created_at DESC LIMIT 20
+            `);
+            audits.push({
+                id: 'internal_claims', name: 'Claims Management Audit',
+                scope: 'Medical, accident, insurance claims',
+                summary: claimsSummary, recentRecords: claimsRecent,
+                totalRecords: claimsSummary.reduce((s, r) => s + r.count, 0),
+                totalClaimed: claimsSummary.reduce((s, r) => s + Number(r.total_claimed || 0), 0)
+            });
+        } catch (e) { console.log('Claims audit:', e.message); }
+
+        // Materials audit
+        try {
+            const [matInSummary] = await db.execute(`
+                SELECT COUNT(*) as count, SUM(total_cost) as total_cost FROM materials_in
+            `);
+            const [matOutSummary] = await db.execute(`
+                SELECT COUNT(*) as count, SUM(total_value) as total_value FROM materials_out
+            `);
+            const [matRecent] = await db.execute(`
+                SELECT id, track_number, supplier_name, quantity_received, total_cost, invoice_number, created_at
+                FROM materials_in ORDER BY created_at DESC LIMIT 15
+            `);
+            audits.push({
+                id: 'internal_materials', name: 'Materials Audit',
+                scope: 'Material receipts, issues, and inventory',
+                summary: [
+                    { category: 'Materials Received', count: matInSummary[0]?.count || 0, total: matInSummary[0]?.total_cost || 0 },
+                    { category: 'Materials Issued', count: matOutSummary[0]?.count || 0, total: matOutSummary[0]?.total_value || 0 }
+                ],
+                recentRecords: matRecent,
+                totalRecords: (matInSummary[0]?.count || 0) + (matOutSummary[0]?.count || 0)
+            });
+        } catch (e) { console.log('Materials audit:', e.message); }
+
+        // Transport costs audit
+        try {
+            const [transportSummary] = await db.execute(`
+                SELECT category, payment_status, COUNT(*) as count, SUM(amount) as total_amount
+                FROM transport_costs GROUP BY category, payment_status ORDER BY category
+            `);
+            const [transportRecent] = await db.execute(`
+                SELECT id, cost_type, category, description, amount, payment_status, invoice_number, created_at
+                FROM transport_costs ORDER BY created_at DESC LIMIT 20
+            `);
+            audits.push({
+                id: 'internal_transport', name: 'Transport Costs Audit',
+                scope: 'Vehicle maintenance, fuel, repairs, tolls',
+                summary: transportSummary, recentRecords: transportRecent,
+                totalRecords: transportSummary.reduce((s, r) => s + r.count, 0),
+                totalCost: transportSummary.reduce((s, r) => s + Number(r.total_amount || 0), 0)
+            });
+        } catch (e) { console.log('Transport audit:', e.message); }
+
+        // Luggage campaigns & purchases audit
+        try {
+            const [campSummary] = await db.execute(`
+                SELECT campaign_status, COUNT(*) as count, SUM(total_units_available) as total_units, SUM(units_sold) as total_sold
+                FROM luggage_campaigns GROUP BY campaign_status
+            `);
+            const [purchSummary] = await db.execute(`
+                SELECT purchase_status, COUNT(*) as count, SUM(total_amount) as total_amount
+                FROM luggage_purchases GROUP BY purchase_status
+            `);
+            audits.push({
+                id: 'internal_luggage', name: 'Luggage Campaign & Purchase Audit',
+                scope: 'Campaigns, purchases, and revenue',
+                summary: [...(campSummary || []).map(r => ({ ...r, category: 'Campaign' })), ...(purchSummary || []).map(r => ({ ...r, category: 'Purchase' }))],
+                totalRecords: (campSummary.reduce((s, r) => s + r.count, 0)) + (purchSummary.reduce((s, r) => s + r.count, 0)),
+                totalRevenue: purchSummary.reduce((s, r) => s + Number(r.total_amount || 0), 0)
+            });
+        } catch (e) { console.log('Luggage audit:', e.message); }
+
         res.json({ success: true, audits });
     } catch (error) {
         console.error('❌ Error fetching internal audits:', error);
@@ -957,6 +1350,66 @@ router.get('/external-audits', async (req, res) => {
                 totalRecords: docSummary.reduce((s, r) => s + r.count, 0)
             });
         } catch (e) { console.log('Document audit:', e.message); }
+
+        // Risk management audit
+        try {
+            const [riskSummary] = await db.execute(`
+                SELECT risk_category, status, COUNT(*) as count, SUM(potential_loss) as total_potential_loss
+                FROM risk_management GROUP BY risk_category, status ORDER BY risk_category
+            `);
+            const [riskRecent] = await db.execute(`
+                SELECT id, risk_number, risk_title, risk_category, probability, impact, status, potential_loss, created_at
+                FROM risk_management ORDER BY created_at DESC LIMIT 20
+            `);
+            audits.push({
+                id: 'external_risk', name: 'Risk Management Audit',
+                auditor: 'Risk Assessment Team',
+                scope: 'Financial, operational, safety, legal risks',
+                summary: riskSummary, recentRecords: riskRecent,
+                totalRecords: riskSummary.reduce((s, r) => s + r.count, 0),
+                totalPotentialLoss: riskSummary.reduce((s, r) => s + Number(r.total_potential_loss || 0), 0)
+            });
+        } catch (e) { console.log('Risk audit:', e.message); }
+
+        // Talent acquisition audit
+        try {
+            const [talentSummary] = await db.execute(`
+                SELECT status, position_type, COUNT(*) as count, SUM(number_of_positions) as total_positions
+                FROM talent_acquisition GROUP BY status, position_type ORDER BY status
+            `);
+            const [talentRecent] = await db.execute(`
+                SELECT id, requisition_number, position_title, department, position_type, status, number_of_positions, created_at
+                FROM talent_acquisition ORDER BY created_at DESC LIMIT 20
+            `);
+            audits.push({
+                id: 'external_talent', name: 'Talent Acquisition Audit',
+                auditor: 'HR Department',
+                scope: 'Hiring requisitions, positions, recruitment',
+                summary: talentSummary, recentRecords: talentRecent,
+                totalRecords: talentSummary.reduce((s, r) => s + r.count, 0),
+                totalPositions: talentSummary.reduce((s, r) => s + Number(r.total_positions || 0), 0)
+            });
+        } catch (e) { console.log('Talent audit:', e.message); }
+
+        // Properties audit
+        try {
+            const [propSummary] = await db.execute(`
+                SELECT type, status, COUNT(*) as count, SUM(price) as total_value
+                FROM properties GROUP BY type, status ORDER BY type
+            `);
+            const [propRecent] = await db.execute(`
+                SELECT id, title, type, price, status, location, created_at
+                FROM properties ORDER BY created_at DESC LIMIT 20
+            `);
+            audits.push({
+                id: 'external_properties', name: 'Property Portfolio Audit',
+                auditor: 'Real Estate Management',
+                scope: 'Properties - residential, commercial, land',
+                summary: propSummary, recentRecords: propRecent,
+                totalRecords: propSummary.reduce((s, r) => s + r.count, 0),
+                totalValue: propSummary.reduce((s, r) => s + Number(r.total_value || 0), 0)
+            });
+        } catch (e) { console.log('Property audit:', e.message); }
 
         res.json({ success: true, audits });
     } catch (error) {
@@ -1119,6 +1572,117 @@ router.get('/compliance-checks', async (req, res) => {
         } catch (e) {
             checks.payments = { label: 'Payment Tracking', status: 'No Data', healthy: true, overdue: 0, completed: 0, total: 0, rate: 0 };
         }
+
+        // Claims compliance
+        try {
+            const [claimsPending] = await db.execute(`SELECT COUNT(*) as count FROM claims_management WHERE status IN ('Pending', 'Under Review')`);
+            const [claimsTotal] = await db.execute(`SELECT COUNT(*) as count FROM claims_management`);
+            const [claimsResolved] = await db.execute(`SELECT COUNT(*) as count FROM claims_management WHERE status IN ('Approved', 'Paid')`);
+            const total = claimsTotal[0]?.count || 0;
+            const resolved = claimsResolved[0]?.count || 0;
+            checks.claims = {
+                label: 'Claims Management',
+                status: (claimsPending[0]?.count || 0) > 3 ? 'Pending Claims' : (total > 0 ? 'On Track' : 'No Data'),
+                healthy: (claimsPending[0]?.count || 0) <= 3,
+                pending: claimsPending[0]?.count || 0, resolved, total,
+                rate: total > 0 ? Math.round((resolved / total) * 100) : 0
+            };
+        } catch (e) { checks.claims = { label: 'Claims Management', status: 'No Data', healthy: true, pending: 0, resolved: 0, total: 0, rate: 0 }; }
+
+        // Risk management compliance
+        try {
+            const [risksOpen] = await db.execute(`SELECT COUNT(*) as count FROM risk_management WHERE status IN ('Open', 'In Progress')`);
+            const [risksTotal] = await db.execute(`SELECT COUNT(*) as count FROM risk_management`);
+            const [risksMitigated] = await db.execute(`SELECT COUNT(*) as count FROM risk_management WHERE status IN ('Mitigated', 'Closed')`);
+            const total = risksTotal[0]?.count || 0;
+            const mitigated = risksMitigated[0]?.count || 0;
+            checks.risks = {
+                label: 'Risk Management',
+                status: (risksOpen[0]?.count || 0) > 5 ? 'Open Risks' : (total > 0 ? 'Managed' : 'No Data'),
+                healthy: (risksOpen[0]?.count || 0) <= 5,
+                open: risksOpen[0]?.count || 0, mitigated, total,
+                rate: total > 0 ? Math.round((mitigated / total) * 100) : 0
+            };
+        } catch (e) { checks.risks = { label: 'Risk Management', status: 'No Data', healthy: true, open: 0, mitigated: 0, total: 0, rate: 0 }; }
+
+        // Discipline monitoring compliance
+        try {
+            const [discOpen] = await db.execute(`SELECT COUNT(*) as count FROM discipline_monitoring WHERE status IN ('Open', 'Under Investigation')`);
+            const [discTotal] = await db.execute(`SELECT COUNT(*) as count FROM discipline_monitoring`);
+            const [discClosed] = await db.execute(`SELECT COUNT(*) as count FROM discipline_monitoring WHERE status = 'Closed'`);
+            const total = discTotal[0]?.count || 0;
+            const closed = discClosed[0]?.count || 0;
+            checks.discipline = {
+                label: 'Discipline Monitoring',
+                status: (discOpen[0]?.count || 0) > 3 ? 'Open Cases' : (total > 0 ? 'Compliant' : 'No Data'),
+                healthy: (discOpen[0]?.count || 0) <= 3,
+                open: discOpen[0]?.count || 0, closed, total,
+                rate: total > 0 ? Math.round((closed / total) * 100) : 0
+            };
+        } catch (e) { checks.discipline = { label: 'Discipline Monitoring', status: 'No Data', healthy: true, open: 0, closed: 0, total: 0, rate: 0 }; }
+
+        // Office resources compliance
+        try {
+            const [resIssues] = await db.execute(`SELECT COUNT(*) as count FROM office_resources WHERE status IN ('In Maintenance', 'Lost', 'Retired')`);
+            const [resTotal] = await db.execute(`SELECT COUNT(*) as count FROM office_resources`);
+            const [resAvailable] = await db.execute(`SELECT COUNT(*) as count FROM office_resources WHERE status IN ('Available', 'Assigned')`);
+            const total = resTotal[0]?.count || 0;
+            const available = resAvailable[0]?.count || 0;
+            checks.officeResources = {
+                label: 'Office Resources',
+                status: (resIssues[0]?.count || 0) > 3 ? 'Maintenance Issues' : (total > 0 ? 'On Track' : 'No Data'),
+                healthy: (resIssues[0]?.count || 0) <= 3,
+                issues: resIssues[0]?.count || 0, available, total,
+                rate: total > 0 ? Math.round((available / total) * 100) : 0
+            };
+        } catch (e) { checks.officeResources = { label: 'Office Resources', status: 'No Data', healthy: true, issues: 0, available: 0, total: 0, rate: 0 }; }
+
+        // Transport compliance
+        try {
+            const [transPending] = await db.execute(`SELECT COUNT(*) as count FROM transport_costs WHERE payment_status IN ('pending', 'rejected')`);
+            const [transTotal] = await db.execute(`SELECT COUNT(*) as count FROM transport_costs`);
+            const [transPaid] = await db.execute(`SELECT COUNT(*) as count FROM transport_costs WHERE payment_status = 'paid'`);
+            const total = transTotal[0]?.count || 0;
+            const paid = transPaid[0]?.count || 0;
+            checks.transport = {
+                label: 'Transport Costs',
+                status: (transPending[0]?.count || 0) > 3 ? 'Pending Approvals' : (total > 0 ? 'Compliant' : 'No Data'),
+                healthy: (transPending[0]?.count || 0) <= 3,
+                pending: transPending[0]?.count || 0, paid, total,
+                rate: total > 0 ? Math.round((paid / total) * 100) : 0
+            };
+        } catch (e) { checks.transport = { label: 'Transport Costs', status: 'No Data', healthy: true, pending: 0, paid: 0, total: 0, rate: 0 }; }
+
+        // Safety compliance (HSE)
+        try {
+            const [safetyOpen] = await db.execute(`SELECT COUNT(*) as count FROM hse_work WHERE status IN ('Pending', 'In Progress')`);
+            const [safetyTotal] = await db.execute(`SELECT COUNT(*) as count FROM hse_work`);
+            const [safetyCompleted] = await db.execute(`SELECT COUNT(*) as count FROM hse_work WHERE status = 'Completed'`);
+            const total = safetyTotal[0]?.count || 0;
+            const completed = safetyCompleted[0]?.count || 0;
+            checks.safety = {
+                label: 'Safety (HSE)',
+                status: (safetyOpen[0]?.count || 0) > 5 ? 'Open Items' : (total > 0 ? 'Compliant' : 'No Data'),
+                healthy: (safetyOpen[0]?.count || 0) <= 5,
+                open: safetyOpen[0]?.count || 0, completed, total,
+                rate: total > 0 ? Math.round((completed / total) * 100) : 0
+            };
+        } catch (e) { checks.safety = { label: 'Safety (HSE)', status: 'No Data', healthy: true, open: 0, completed: 0, total: 0, rate: 0 }; }
+
+        // Department management compliance
+        try {
+            const [deptActive] = await db.execute(`SELECT COUNT(*) as count FROM departments WHERE status = 'Active'`);
+            const [deptTotal] = await db.execute(`SELECT COUNT(*) as count FROM departments`);
+            const total = deptTotal[0]?.count || 0;
+            const active = deptActive[0]?.count || 0;
+            checks.departments = {
+                label: 'Department Management',
+                status: total > 0 ? 'Active' : 'No Data',
+                healthy: true,
+                active, total,
+                rate: total > 0 ? Math.round((active / total) * 100) : 0
+            };
+        } catch (e) { checks.departments = { label: 'Department Management', status: 'No Data', healthy: true, active: 0, total: 0, rate: 0 }; }
 
         res.json({ success: true, checks });
     } catch (error) {

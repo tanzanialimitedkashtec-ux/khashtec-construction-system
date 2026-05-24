@@ -61742,6 +61742,34 @@ function financeAudits(){
 
                         <option value="safety_incident">Safety Incidents</option>
 
+                        <option value="safety_expense">Safety/HSE</option>
+
+                        <option value="sale_procurement">Sales/Procurement</option>
+
+                        <option value="property_added">Properties</option>
+
+                        <option value="claim_filed">Claims</option>
+
+                        <option value="risk_identified">Risk Management</option>
+
+                        <option value="talent_requisition">Talent Acquisition</option>
+
+                        <option value="office_resource">Office Resources</option>
+
+                        <option value="discipline_case">Discipline</option>
+
+                        <option value="department_added">Departments</option>
+
+                        <option value="luggage_campaign">Luggage Campaigns</option>
+
+                        <option value="luggage_purchase">Luggage Purchases</option>
+
+                        <option value="material_received">Materials In</option>
+
+                        <option value="material_issued">Materials Out</option>
+
+                        <option value="transport_cost">Transport Costs</option>
+
                     </select>
 
                     <button class="action" onclick="loadSystemChanges()">Refresh</button>
@@ -61984,27 +62012,19 @@ async function loadSystemChanges() {
 
             if (summaryEl) {
 
-                summaryEl.innerHTML =
-
-                    '<div class="chg-card"><span class="chg-num">' + (summary.total || 0) + '</span><span class="chg-lbl">Total</span></div>' +
-
-                    '<div class="chg-card"><span class="chg-num">' + (summary.employees || 0) + '</span><span class="chg-lbl">Employees</span></div>' +
-
-                    '<div class="chg-card"><span class="chg-num">' + (summary.workers || 0) + '</span><span class="chg-lbl">Workers</span></div>' +
-
-                    '<div class="chg-card"><span class="chg-num">' + (summary.drivers || 0) + '</span><span class="chg-lbl">Drivers</span></div>' +
-
-                    '<div class="chg-card"><span class="chg-num">' + (summary.policies || 0) + '</span><span class="chg-lbl">Policies</span></div>' +
-
-                    '<div class="chg-card"><span class="chg-num">' + (summary.projects || 0) + '</span><span class="chg-lbl">Projects</span></div>' +
-
-                    '<div class="chg-card"><span class="chg-num">' + (summary.payments || 0) + '</span><span class="chg-lbl">Payments</span></div>' +
-
-                    '<div class="chg-card"><span class="chg-num">' + (summary.tax || 0) + '</span><span class="chg-lbl">Tax</span></div>' +
-
-                    '<div class="chg-card"><span class="chg-num">' + (summary.payroll || 0) + '</span><span class="chg-lbl">Payroll</span></div>' +
-
-                    '<div class="chg-card"><span class="chg-num">' + (summary.incidents || 0) + '</span><span class="chg-lbl">Incidents</span></div>';
+                var cards = [
+                    ['Total', summary.total], ['Employees', summary.employees], ['Workers', summary.workers],
+                    ['Drivers', summary.drivers], ['Policies', summary.policies], ['Projects', summary.projects],
+                    ['Payments', summary.payments], ['Tax', summary.tax], ['Payroll', summary.payroll],
+                    ['Incidents', summary.incidents], ['Safety', summary.safety], ['Sales', summary.sales],
+                    ['Properties', summary.properties], ['Claims', summary.claims], ['Risks', summary.risks],
+                    ['Talent', summary.talent], ['Resources', summary.resources], ['Discipline', summary.discipline],
+                    ['Depts', summary.departments], ['Campaigns', summary.campaigns], ['Purchases', summary.luggagePurchases],
+                    ['Mat. In', summary.materialsIn], ['Mat. Out', summary.materialsOut], ['Transport', summary.transport]
+                ];
+                summaryEl.innerHTML = cards.map(function(c) {
+                    return '<div class="chg-card"><span class="chg-num">' + (c[1] || 0) + '</span><span class="chg-lbl">' + c[0] + '</span></div>';
+                }).join('');
 
             }
 
