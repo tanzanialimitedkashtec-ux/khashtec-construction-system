@@ -37,7 +37,9 @@ async function getDb() {
         { name: 'price_per_unit', sql: "ALTER TABLE luggage_campaigns ADD COLUMN price_per_unit DECIMAL(10,2) NOT NULL DEFAULT 0.00" },
         { name: 'total_units',    sql: "ALTER TABLE luggage_campaigns ADD COLUMN total_units INT NOT NULL DEFAULT 0" },
         { name: 'units_sold',     sql: "ALTER TABLE luggage_campaigns ADD COLUMN units_sold INT NOT NULL DEFAULT 0" },
-        { name: 'description',    sql: "ALTER TABLE luggage_campaigns ADD COLUMN description TEXT NULL" }
+        { name: 'description',    sql: "ALTER TABLE luggage_campaigns ADD COLUMN description TEXT NULL" },
+        { name: 'status',         sql: "ALTER TABLE luggage_campaigns ADD COLUMN status ENUM('planning', 'active', 'completed', 'cancelled') DEFAULT 'planning'" },
+        { name: 'created_by',     sql: "ALTER TABLE luggage_campaigns ADD COLUMN created_by VARCHAR(100) NULL" }
     ];
     for (const col of columnsToAdd) {
         try {
