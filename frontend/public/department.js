@@ -41501,39 +41501,39 @@ async function loadLuggagePurchases() {
 
             recordsList.innerHTML = purchases.map(purchase => {
 
-                // Map backend fields to frontend expected fields
-
                 const mappedPurchase = {
 
                     purchase_id: purchase.purchase_reference || purchase.purchase_id || 'Unknown',
 
-                    tracking_number: purchase.purchase_reference || purchase.tracking_number || 'Unknown',
+                    tracking_number: purchase.tracking_number || purchase.purchase_reference || 'Unknown',
 
                     payment_status: purchase.payment_status || 'pending',
 
                     campaign_name: purchase.campaign_name || 'Unknown Campaign',
 
-                    campaign_luggage: purchase.luggage || purchase.campaign_luggage || 'Unknown',
+                    campaign_details: purchase.luggage_name || purchase.luggage || purchase.campaign_luggage || 'N/A',
 
-                    employee_name: purchase.employee_name || 'Unknown Employee',
+                    buyer_name: purchase.buyer_name || 'Unknown Buyer',
 
-                    department: purchase.department || 'Unknown',
+                    buyer_id: purchase.buyer_id || 'N/A',
 
-                    course_type: purchase.course_type || 'basic',
+                    buyer_email: purchase.buyer_email || 'N/A',
 
-                    amount: purchase.amount || 0,
+                    buyer_phone: purchase.buyer_phone || 'N/A',
 
-                    currency: purchase.currency || 'USD',
+                    units_purchased: purchase.units_purchased != null ? purchase.units_purchased : 'N/A',
 
-                    purchase_date: purchase.purchase_date,
+                    unit_price: purchase.total_amount != null ? purchase.total_amount : 0,
 
-                    enrollment_status: purchase.enrollment_status || 'enrolled',
+                    payment_method: purchase.payment_method || 'N/A',
 
-                    progress_percentage: purchase.progress_percentage || 0,
+                    buyer_address: purchase.buyer_address || 'N/A',
 
-                    instructor: purchase.instructor || 'Not Assigned',
+                    purchase_notes: purchase.notes || purchase.note || '',
 
-                    location: purchase.location || 'TBD'
+                    purchase_date: purchase.purchase_date || purchase.created_at || '',
+
+                    record_id: purchase.id || purchase.purchase_id || purchase.purchase_reference || 'unknown',
 
                 };
 
@@ -41563,7 +41563,7 @@ async function loadLuggagePurchases() {
 
                             <div class="campaign-name">${mappedPurchase.campaign_name}</div>
 
-                            <div class="campaign-details">${mappedPurchase.campaign_luggage || 'N/A'}</div>
+                            <div class="campaign-details">${mappedPurchase.campaign_details}</div>
 
                         </div>
 
@@ -41573,9 +41573,9 @@ async function loadLuggagePurchases() {
 
                         <div class="buyer-info">
 
-                            <div class="buyer-name">${mappedPurchase.employee_name}</div>
+                            <div class="buyer-name">${mappedPurchase.buyer_name}</div>
 
-                            <div class="buyer-id">ID: ${purchase.employee_id || 'N/A'}</div>
+                            <div class="buyer-id">ID: ${mappedPurchase.buyer_id}</div>
 
                         </div>
 
@@ -41585,9 +41585,9 @@ async function loadLuggagePurchases() {
 
                         <div class="contact-info">
 
-                            <div class="buyer-email">${purchase.employee_id ? purchase.employee_id + '@khashtec.com' : 'N/A'}</div>
+                            <div class="buyer-email">${mappedPurchase.buyer_email}</div>
 
-                            <div class="buyer-phone">${purchase.employee_phone || 'N/A'}</div>
+                            <div class="buyer-phone">${mappedPurchase.buyer_phone}</div>
 
                         </div>
 
@@ -41597,9 +41597,9 @@ async function loadLuggagePurchases() {
 
                         <div class="units-info">
 
-                            <div class="units-purchased">${mappedPurchase.course_type}</div>
+                            <div class="units-purchased">${mappedPurchase.units_purchased}</div>
 
-                            <div class="unit-price">${mappedPurchase.currency} ${mappedPurchase.amount.toLocaleString()}</div>
+                            <div class="unit-price">TZS ${Number(mappedPurchase.unit_price).toLocaleString()}</div>
 
                         </div>
 
@@ -41629,7 +41629,7 @@ async function loadLuggagePurchases() {
 
                         <div class="notes-info">
 
-                            <div class="purchase-notes">${mappedPurchase.instructor ? 'Instructor: ' + mappedPurchase.instructor : 'No notes'}</div>
+                            <div class="purchase-notes">${mappedPurchase.purchase_notes || 'No notes'}</div>
 
                         </div>
 
@@ -41649,11 +41649,11 @@ async function loadLuggagePurchases() {
 
                         <div class="purchase-actions">
 
-                            <button class="action-btn view" onclick="viewPurchaseDetails('${purchase.id}')" title="View Details">ðŸ‘ï¸</button>
+                            <button class="action-btn view" onclick="viewPurchaseDetails('${mappedPurchase.record_id}')" title="View Details">👁️</button>
 
-                            <button class="action-btn edit" onclick="editPurchase('${purchase.id}')" title="Edit Purchase">âœï¸</button>
+                            <button class="action-btn edit" onclick="editPurchase('${mappedPurchase.record_id}')" title="Edit Purchase">✏️</button>
 
-                            <button class="action-btn delete" onclick="deletePurchase('${purchase.id}')" title="Delete Purchase">ðŸ—‘ï¸</button>
+                            <button class="action-btn delete" onclick="deletePurchase('${mappedPurchase.record_id}')" title="Delete Purchase">🗑️</button>
 
                         </div>
 
@@ -41673,331 +41673,11 @@ async function loadLuggagePurchases() {
 
     } catch (error) {
 
-        console.error('âŒ Error loading purchase records:', error);
+        console.error('✖ Error loading purchase records:', error);
 
-        // Load sample data on error
-
-        loadSamplePurchases();
+        recordsList.innerHTML = '<tr><td colspan="10" class="error">Unable to load purchase records. Please refresh the page.</td></tr>';
 
     }
-
-}
-
-
-
-// Load sample purchase records for demonstration
-
-function loadSamplePurchases() {
-
-    console.log('ðŸ“‹ Loading sample purchase records...');
-
-    
-
-    const samplePurchases = [
-
-        {
-
-            purchase_id: 'PUR-2024-001',
-
-            tracking_number: 'KTC-PUR-143331',
-
-            campaign_name: 'Swahili Bible Campaign',
-
-            campaign_luggage: 'Swahili',
-
-            buyer_name: 'John Michael',
-
-            buyer_id: 'B001',
-
-            buyer_email: 'john.michael@email.com',
-
-            buyer_phone: '+255 712 345 678',
-
-            units_purchased: 5,
-
-            unit_price: 50000,
-
-            payment_method: 'Bank Transfer',
-
-            buyer_address: '123 Main Street, Dar es Salaam, Tanzania',
-
-            purchase_notes: 'Customer requested delivery confirmation',
-
-            payment_status: 'Completed',
-
-            purchase_date: '2024-01-15'
-
-        },
-
-        {
-
-            purchase_id: 'PUR-2024-002',
-
-            tracking_number: 'KTC-PUR-143332',
-
-            campaign_name: 'English Bible Campaign',
-
-            campaign_luggage: 'English',
-
-            buyer_name: 'Sarah Johnson',
-
-            buyer_id: 'B002',
-
-            buyer_email: 'sarah.j@email.com',
-
-            buyer_phone: '+255 713 456 789',
-
-            units_purchased: 10,
-
-            unit_price: 45000,
-
-            payment_method: 'Mobile Money',
-
-            buyer_address: '456 Oak Avenue, Arusha, Tanzania',
-
-            purchase_notes: 'Urgent delivery requested',
-
-            payment_status: 'Pending',
-
-            purchase_date: '2024-01-20'
-
-        },
-
-        {
-
-            purchase_id: 'PUR-2024-003',
-
-            tracking_number: 'KTC-PUR-143333',
-
-            campaign_name: 'French Bible Campaign',
-
-            campaign_luggage: 'French',
-
-            buyer_name: 'Robert Kimaro',
-
-            buyer_id: 'B003',
-
-            buyer_email: 'robert.k@email.com',
-
-            buyer_phone: '+255 714 567 890',
-
-            units_purchased: 3,
-
-            unit_price: 55000,
-
-            payment_method: 'Cash',
-
-            buyer_address: '789 Pine Road, Mwanza, Tanzania',
-
-            purchase_notes: 'Regular customer - discount applied',
-
-            payment_status: 'Completed',
-
-            purchase_date: '2024-02-01'
-
-        },
-
-        {
-
-            purchase_id: 'PUR-2024-004',
-
-            tracking_number: 'KTC-PUR-143334',
-
-            campaign_name: 'Arabic Bible Campaign',
-
-            campaign_luggage: 'Arabic',
-
-            buyer_name: 'Grace Wilson',
-
-            buyer_id: 'B004',
-
-            buyer_email: 'grace.w@email.com',
-
-            buyer_phone: '+255 715 678 901',
-
-            units_purchased: 8,
-
-            unit_price: 60000,
-
-            payment_method: 'Credit Card',
-
-            buyer_address: '321 Elm Street, Dodoma, Tanzania',
-
-            purchase_notes: 'International customer',
-
-            payment_status: 'Completed',
-
-            purchase_date: '2024-02-10'
-
-        },
-
-        {
-
-            purchase_id: 'PUR-2024-005',
-
-            tracking_number: 'KTC-PUR-143335',
-
-            campaign_name: 'Portuguese Bible Campaign',
-
-            campaign_luggage: 'Portuguese',
-
-            buyer_name: 'David Mwanga',
-
-            buyer_id: 'B005',
-
-            buyer_email: 'david.m@email.com',
-
-            buyer_phone: '+255 716 789 012',
-
-            units_purchased: 2,
-
-            unit_price: 48000,
-
-            payment_method: 'Other',
-
-            buyer_address: '654 Maple Drive, Tanga, Tanzania',
-
-            purchase_notes: 'Payment via Western Union',
-
-            payment_status: 'Pending',
-
-            purchase_date: '2024-02-15'
-
-        }
-
-    ];
-
-    
-
-    const recordsList = document.getElementById('purchaseRecordsList');
-
-    recordsList.innerHTML = samplePurchases.map(purchase => `
-
-        <tr>
-
-            <td>
-
-                <div class="purchase-info">
-
-                    <div class="purchase-id">${purchase.purchase_id}</div>
-
-                    <div class="tracking-number">Tracking: ${purchase.tracking_number}</div>
-
-                    <div class="purchase-status">Status: ${purchase.payment_status}</div>
-
-                </div>
-
-            </td>
-
-            <td>
-
-                <div class="campaign-info">
-
-                    <div class="campaign-name">${purchase.campaign_name}</div>
-
-                    <div class="campaign-details">${purchase.campaign_luggage}</div>
-
-                </div>
-
-            </td>
-
-            <td>
-
-                <div class="buyer-info">
-
-                    <div class="buyer-name">${purchase.buyer_name}</div>
-
-                    <div class="buyer-id">ID: ${purchase.buyer_id}</div>
-
-                </div>
-
-            </td>
-
-            <td>
-
-                <div class="contact-info">
-
-                    <div class="buyer-email">${purchase.buyer_email}</div>
-
-                    <div class="buyer-phone">${purchase.buyer_phone}</div>
-
-                </div>
-
-            </td>
-
-            <td>
-
-                <div class="units-info">
-
-                    <div class="units-purchased">${purchase.units_purchased}</div>
-
-                    <div class="unit-price">TZS ${purchase.unit_price.toLocaleString()}</div>
-
-                </div>
-
-            </td>
-
-            <td>
-
-                <div class="payment-info">
-
-                    <span class="payment-badge payment-${purchase.payment_method.toLowerCase().replace(' ', '-')}">${purchase.payment_method}</span>
-
-                </div>
-
-            </td>
-
-            <td>
-
-                <div class="address-info">
-
-                    <div class="buyer-address">${purchase.buyer_address}</div>
-
-                </div>
-
-            </td>
-
-            <td>
-
-                <div class="notes-info">
-
-                    <div class="purchase-notes">${purchase.purchase_notes}</div>
-
-                </div>
-
-            </td>
-
-            <td>
-
-                <div class="date-info">
-
-                    <div class="purchase-date">${new Date(purchase.purchase_date).toLocaleDateString()}</div>
-
-                </div>
-
-            </td>
-
-            <td>
-
-                <div class="purchase-actions">
-
-                    <button class="action-btn view" onclick="viewPurchaseDetails('${purchase.purchase_id}')" title="View Details">ðŸ‘ï¸</button>
-
-                    <button class="action-btn edit" onclick="editPurchase('${purchase.purchase_id}')" title="Edit Purchase">âœï¸</button>
-
-                    <button class="action-btn delete" onclick="deletePurchase('${purchase.purchase_id}')" title="Delete Purchase">ðŸ—‘ï¸</button>
-
-                </div>
-
-            </td>
-
-        </tr>
-
-    `).join('');
-
-    
-
-    console.log('âœ… Sample purchase records loaded successfully');
 
 }
 
@@ -79524,6 +79204,7 @@ async function showMaterialsOutRecords() {
         </div>
     `);
 }
+
 
 
 
