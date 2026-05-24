@@ -70936,9 +70936,9 @@ function showProcurementForm() {
 
                     <div class="form-group">
 
-                        <label for="totalBudget">Total Budget:</label>
+                        <label for="procurementTotalBudget">Total Budget:</label>
 
-                        <input type="number" id="totalBudget" name="totalBudget" step="0.01" readonly>
+                        <input type="number" id="procurementTotalBudget" name="totalBudget" step="0.01" readonly>
 
                     </div>
 
@@ -71078,7 +71078,7 @@ function showProcurementForm() {
 
                 const procPrice = parseFloat(document.getElementById('unitPrice').value) || 0;
 
-                const totalBudget = parseFloat(document.getElementById('totalBudget').value) || (procQty * procPrice);
+                const totalBudget = parseFloat(document.getElementById('procurementTotalBudget').value) || (procQty * procPrice);
 
                 const purpose = document.getElementById('purpose').value;
 
@@ -71141,7 +71141,7 @@ function showProcurementForm() {
 
                 const quantityInput = document.getElementById('procurementQuantity');
                 const unitPriceInput = document.getElementById('unitPrice');
-                const totalBudgetInput = document.getElementById('totalBudget');
+                const totalBudgetInput = document.getElementById('procurementTotalBudget');
 
                 function updateTotalBudget() {
                     const qty = parseInt(quantityInput.value, 10) || 0;
