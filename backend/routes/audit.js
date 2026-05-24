@@ -1526,15 +1526,17 @@ router.get('/compliance-checks', async (req, res) => {
             const paid = taxPaid[0]?.count || 0;
             checks.tax = {
                 label: 'Tax Compliance',
-                status: taxOverdue[0]?.count > 0 ? 'Issues Found' : (total > 0 ? 'Compliant' : 'No Data'),
+                status: taxOverdue[0]?.count > 0 ? 'Issues Found' : (total > 0 ? 'Compliant' : 'Empty - 0 Records'),
                 healthy: taxOverdue[0]?.count === 0,
                 overdue: taxOverdue[0]?.count || 0,
                 total,
                 paid,
                 rate: total > 0 ? Math.round((paid / total) * 100) : 0
             };
+            console.log('  ✅ Tax compliance: total=' + total + ', paid=' + paid + ', overdue=' + (taxOverdue[0]?.count || 0));
         } catch (e) {
-            checks.tax = { label: 'Tax Compliance', status: 'No Data', healthy: true, overdue: 0, total: 0, paid: 0, rate: 0 };
+            console.log('  ❌ Tax compliance:', e.message);
+            checks.tax = { label: 'Tax Compliance', status: 'Table Error', healthy: true, overdue: 0, total: 0, paid: 0, rate: 0, error: e.message };
         }
 
         // NSSF compliance
@@ -1550,15 +1552,17 @@ router.get('/compliance-checks', async (req, res) => {
             const active = nssfActive[0]?.count || 0;
             checks.nssf = {
                 label: 'NSSF Compliance',
-                status: nssfInactive[0]?.count > 0 ? 'Issues Found' : (total > 0 ? 'Compliant' : 'No Data'),
+                status: nssfInactive[0]?.count > 0 ? 'Issues Found' : (total > 0 ? 'Compliant' : 'Empty - 0 Records'),
                 healthy: (nssfInactive[0]?.count || 0) === 0,
                 active,
                 inactive: nssfInactive[0]?.count || 0,
                 total,
                 rate: total > 0 ? Math.round((active / total) * 100) : 0
             };
+            console.log('  ✅ NSSF compliance: total=' + total + ', active=' + active);
         } catch (e) {
-            checks.nssf = { label: 'NSSF Compliance', status: 'No Data', healthy: true, active: 0, inactive: 0, total: 0, rate: 0 };
+            console.log('  ❌ NSSF compliance:', e.message);
+            checks.nssf = { label: 'NSSF Compliance', status: 'Table Error', healthy: true, active: 0, inactive: 0, total: 0, rate: 0, error: e.message };
         }
 
         // Financial reporting compliance
@@ -1575,15 +1579,17 @@ router.get('/compliance-checks', async (req, res) => {
             const pending = pendingTx[0]?.count || 0;
             checks.financial = {
                 label: 'Financial Reporting',
-                status: pending > 5 ? 'Action Required' : (total > 0 ? 'Up to Date' : 'No Data'),
+                status: pending > 5 ? 'Action Required' : (total > 0 ? 'Up to Date' : 'Empty - 0 Records'),
                 healthy: pending <= 5,
                 pending,
                 approved,
                 total,
                 rate: total > 0 ? Math.round((approved / total) * 100) : 0
             };
+            console.log('  ✅ Financial reporting: total=' + total + ', approved=' + approved + ', pending=' + pending);
         } catch (e) {
-            checks.financial = { label: 'Financial Reporting', status: 'No Data', healthy: true, pending: 0, approved: 0, total: 0, rate: 0 };
+            console.log('  ❌ Financial reporting:', e.message);
+            checks.financial = { label: 'Financial Reporting', status: 'Table Error', healthy: true, pending: 0, approved: 0, total: 0, rate: 0, error: e.message };
         }
 
         // Payroll compliance
@@ -1599,15 +1605,17 @@ router.get('/compliance-checks', async (req, res) => {
             const paid = payrollPaid[0]?.count || 0;
             checks.payroll = {
                 label: 'Payroll Compliance',
-                status: (payrollDraft[0]?.count || 0) > 0 ? 'Drafts Pending' : (total > 0 ? 'Compliant' : 'No Data'),
+                status: (payrollDraft[0]?.count || 0) > 0 ? 'Drafts Pending' : (total > 0 ? 'Compliant' : 'Empty - 0 Records'),
                 healthy: (payrollDraft[0]?.count || 0) === 0,
                 drafts: payrollDraft[0]?.count || 0,
                 paid,
                 total,
                 rate: total > 0 ? Math.round((paid / total) * 100) : 0
             };
+            console.log('  ✅ Payroll compliance: total=' + total + ', paid=' + paid);
         } catch (e) {
-            checks.payroll = { label: 'Payroll Compliance', status: 'No Data', healthy: true, drafts: 0, paid: 0, total: 0, rate: 0 };
+            console.log('  ❌ Payroll compliance:', e.message);
+            checks.payroll = { label: 'Payroll Compliance', status: 'Table Error', healthy: true, drafts: 0, paid: 0, total: 0, rate: 0, error: e.message };
         }
 
         // Policy compliance
@@ -1623,15 +1631,17 @@ router.get('/compliance-checks', async (req, res) => {
             const approved = policyActive[0]?.count || 0;
             checks.policies = {
                 label: 'Policy Compliance',
-                status: (policyPending[0]?.count || 0) > 0 ? 'Pending Review' : (total > 0 ? 'Compliant' : 'No Data'),
+                status: (policyPending[0]?.count || 0) > 0 ? 'Pending Review' : (total > 0 ? 'Compliant' : 'Empty - 0 Records'),
                 healthy: (policyPending[0]?.count || 0) === 0,
                 approved,
                 pending: policyPending[0]?.count || 0,
                 total,
                 rate: total > 0 ? Math.round((approved / total) * 100) : 0
             };
+            console.log('  ✅ Policy compliance: total=' + total + ', approved=' + approved);
         } catch (e) {
-            checks.policies = { label: 'Policy Compliance', status: 'No Data', healthy: true, approved: 0, pending: 0, total: 0, rate: 0 };
+            console.log('  ❌ Policy compliance:', e.message);
+            checks.policies = { label: 'Policy Compliance', status: 'Table Error', healthy: true, approved: 0, pending: 0, total: 0, rate: 0, error: e.message };
         }
 
         // Payment tracking compliance
@@ -1649,15 +1659,17 @@ router.get('/compliance-checks', async (req, res) => {
             const completed = ptCompleted[0]?.count || 0;
             checks.payments = {
                 label: 'Payment Tracking',
-                status: (ptOverdue[0]?.count || 0) > 0 ? 'Overdue Payments' : (total > 0 ? 'On Track' : 'No Data'),
+                status: (ptOverdue[0]?.count || 0) > 0 ? 'Overdue Payments' : (total > 0 ? 'On Track' : 'Empty - 0 Records'),
                 healthy: (ptOverdue[0]?.count || 0) === 0,
                 overdue: ptOverdue[0]?.count || 0,
                 completed,
                 total,
                 rate: total > 0 ? Math.round((completed / total) * 100) : 0
             };
+            console.log('  ✅ Payment tracking: total=' + total + ', completed=' + completed);
         } catch (e) {
-            checks.payments = { label: 'Payment Tracking', status: 'No Data', healthy: true, overdue: 0, completed: 0, total: 0, rate: 0 };
+            console.log('  ❌ Payment tracking:', e.message);
+            checks.payments = { label: 'Payment Tracking', status: 'Table Error', healthy: true, overdue: 0, completed: 0, total: 0, rate: 0, error: e.message };
         }
 
         // Claims compliance
@@ -1669,12 +1681,16 @@ router.get('/compliance-checks', async (req, res) => {
             const resolved = claimsResolved[0]?.count || 0;
             checks.claims = {
                 label: 'Claims Management',
-                status: (claimsPending[0]?.count || 0) > 3 ? 'Pending Claims' : (total > 0 ? 'On Track' : 'No Data'),
+                status: (claimsPending[0]?.count || 0) > 3 ? 'Pending Claims' : (total > 0 ? 'On Track' : 'Empty - 0 Records'),
                 healthy: (claimsPending[0]?.count || 0) <= 3,
                 pending: claimsPending[0]?.count || 0, resolved, total,
                 rate: total > 0 ? Math.round((resolved / total) * 100) : 0
             };
-        } catch (e) { checks.claims = { label: 'Claims Management', status: 'No Data', healthy: true, pending: 0, resolved: 0, total: 0, rate: 0 }; }
+            console.log('  ✅ Claims compliance: total=' + total + ', resolved=' + resolved);
+        } catch (e) {
+            console.log('  ❌ Claims compliance:', e.message);
+            checks.claims = { label: 'Claims Management', status: 'Table Error', healthy: true, pending: 0, resolved: 0, total: 0, rate: 0, error: e.message };
+        }
 
         // Risk management compliance
         try {
@@ -1685,12 +1701,16 @@ router.get('/compliance-checks', async (req, res) => {
             const mitigated = risksMitigated[0]?.count || 0;
             checks.risks = {
                 label: 'Risk Management',
-                status: (risksOpen[0]?.count || 0) > 5 ? 'Open Risks' : (total > 0 ? 'Managed' : 'No Data'),
+                status: (risksOpen[0]?.count || 0) > 5 ? 'Open Risks' : (total > 0 ? 'Managed' : 'Empty - 0 Records'),
                 healthy: (risksOpen[0]?.count || 0) <= 5,
                 open: risksOpen[0]?.count || 0, mitigated, total,
                 rate: total > 0 ? Math.round((mitigated / total) * 100) : 0
             };
-        } catch (e) { checks.risks = { label: 'Risk Management', status: 'No Data', healthy: true, open: 0, mitigated: 0, total: 0, rate: 0 }; }
+            console.log('  ✅ Risk compliance: total=' + total + ', mitigated=' + mitigated);
+        } catch (e) {
+            console.log('  ❌ Risk compliance:', e.message);
+            checks.risks = { label: 'Risk Management', status: 'Table Error', healthy: true, open: 0, mitigated: 0, total: 0, rate: 0, error: e.message };
+        }
 
         // Discipline monitoring compliance
         try {
@@ -1701,12 +1721,16 @@ router.get('/compliance-checks', async (req, res) => {
             const closed = discClosed[0]?.count || 0;
             checks.discipline = {
                 label: 'Discipline Monitoring',
-                status: (discOpen[0]?.count || 0) > 3 ? 'Open Cases' : (total > 0 ? 'Compliant' : 'No Data'),
+                status: (discOpen[0]?.count || 0) > 3 ? 'Open Cases' : (total > 0 ? 'Compliant' : 'Empty - 0 Records'),
                 healthy: (discOpen[0]?.count || 0) <= 3,
                 open: discOpen[0]?.count || 0, closed, total,
                 rate: total > 0 ? Math.round((closed / total) * 100) : 0
             };
-        } catch (e) { checks.discipline = { label: 'Discipline Monitoring', status: 'No Data', healthy: true, open: 0, closed: 0, total: 0, rate: 0 }; }
+            console.log('  ✅ Discipline compliance: total=' + total + ', closed=' + closed);
+        } catch (e) {
+            console.log('  ❌ Discipline compliance:', e.message);
+            checks.discipline = { label: 'Discipline Monitoring', status: 'Table Error', healthy: true, open: 0, closed: 0, total: 0, rate: 0, error: e.message };
+        }
 
         // Office resources compliance
         try {
@@ -1717,12 +1741,16 @@ router.get('/compliance-checks', async (req, res) => {
             const available = resAvailable[0]?.count || 0;
             checks.officeResources = {
                 label: 'Office Resources',
-                status: (resIssues[0]?.count || 0) > 3 ? 'Maintenance Issues' : (total > 0 ? 'On Track' : 'No Data'),
+                status: (resIssues[0]?.count || 0) > 3 ? 'Maintenance Issues' : (total > 0 ? 'On Track' : 'Empty - 0 Records'),
                 healthy: (resIssues[0]?.count || 0) <= 3,
                 issues: resIssues[0]?.count || 0, available, total,
                 rate: total > 0 ? Math.round((available / total) * 100) : 0
             };
-        } catch (e) { checks.officeResources = { label: 'Office Resources', status: 'No Data', healthy: true, issues: 0, available: 0, total: 0, rate: 0 }; }
+            console.log('  ✅ Office resources: total=' + total + ', available=' + available);
+        } catch (e) {
+            console.log('  ❌ Office resources:', e.message);
+            checks.officeResources = { label: 'Office Resources', status: 'Table Error', healthy: true, issues: 0, available: 0, total: 0, rate: 0, error: e.message };
+        }
 
         // Transport compliance
         try {
@@ -1733,12 +1761,16 @@ router.get('/compliance-checks', async (req, res) => {
             const paid = transPaid[0]?.count || 0;
             checks.transport = {
                 label: 'Transport Costs',
-                status: (transPending[0]?.count || 0) > 3 ? 'Pending Approvals' : (total > 0 ? 'Compliant' : 'No Data'),
+                status: (transPending[0]?.count || 0) > 3 ? 'Pending Approvals' : (total > 0 ? 'Compliant' : 'Empty - 0 Records'),
                 healthy: (transPending[0]?.count || 0) <= 3,
                 pending: transPending[0]?.count || 0, paid, total,
                 rate: total > 0 ? Math.round((paid / total) * 100) : 0
             };
-        } catch (e) { checks.transport = { label: 'Transport Costs', status: 'No Data', healthy: true, pending: 0, paid: 0, total: 0, rate: 0 }; }
+            console.log('  ✅ Transport compliance: total=' + total + ', paid=' + paid);
+        } catch (e) {
+            console.log('  ❌ Transport compliance:', e.message);
+            checks.transport = { label: 'Transport Costs', status: 'Table Error', healthy: true, pending: 0, paid: 0, total: 0, rate: 0, error: e.message };
+        }
 
         // Safety compliance (HSE)
         try {
@@ -1749,12 +1781,16 @@ router.get('/compliance-checks', async (req, res) => {
             const completed = safetyCompleted[0]?.count || 0;
             checks.safety = {
                 label: 'Safety (HSE)',
-                status: (safetyOpen[0]?.count || 0) > 5 ? 'Open Items' : (total > 0 ? 'Compliant' : 'No Data'),
+                status: (safetyOpen[0]?.count || 0) > 5 ? 'Open Items' : (total > 0 ? 'Compliant' : 'Empty - 0 Records'),
                 healthy: (safetyOpen[0]?.count || 0) <= 5,
                 open: safetyOpen[0]?.count || 0, completed, total,
                 rate: total > 0 ? Math.round((completed / total) * 100) : 0
             };
-        } catch (e) { checks.safety = { label: 'Safety (HSE)', status: 'No Data', healthy: true, open: 0, completed: 0, total: 0, rate: 0 }; }
+            console.log('  ✅ Safety compliance: total=' + total + ', completed=' + completed);
+        } catch (e) {
+            console.log('  ❌ Safety compliance:', e.message);
+            checks.safety = { label: 'Safety (HSE)', status: 'Table Error', healthy: true, open: 0, completed: 0, total: 0, rate: 0, error: e.message };
+        }
 
         // Department management compliance
         try {
@@ -1764,12 +1800,16 @@ router.get('/compliance-checks', async (req, res) => {
             const active = deptActive[0]?.count || 0;
             checks.departments = {
                 label: 'Department Management',
-                status: total > 0 ? 'Active' : 'No Data',
+                status: total > 0 ? 'Active' : 'Empty - 0 Records',
                 healthy: true,
                 active, total,
                 rate: total > 0 ? Math.round((active / total) * 100) : 0
             };
-        } catch (e) { checks.departments = { label: 'Department Management', status: 'No Data', healthy: true, active: 0, total: 0, rate: 0 }; }
+            console.log('  ✅ Department compliance: total=' + total + ', active=' + active);
+        } catch (e) {
+            console.log('  ❌ Department compliance:', e.message);
+            checks.departments = { label: 'Department Management', status: 'Table Error', healthy: true, active: 0, total: 0, rate: 0, error: e.message };
+        }
 
         console.log('📋 Compliance checks loaded:', Object.entries(checks).map(([k, v]) => v.label + ': ' + v.status + ' (' + v.total + ')').join(', '));
         res.json({ success: true, checks });

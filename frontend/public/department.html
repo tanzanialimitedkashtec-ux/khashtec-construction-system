@@ -62295,10 +62295,11 @@ async function loadComplianceChecks() {
             console.log('[Audit] Compliance checks loaded:', Object.keys(checks).length, 'checks -', Object.entries(checks).map(function(e) { return e[1].label + ': ' + e[1].status + ' (' + e[1].total + ')'; }).join(', '));
             let html = '<div class="compliance-grid">';
             for (const [key, check] of Object.entries(checks)) {
-                const statusClass = check.healthy ? 'status-good' : (check.status.includes('No Data') ? 'status-neutral' : 'status-warning');
+                const statusClass = check.error ? 'status-neutral' : (check.healthy ? 'status-good' : (check.status.includes('Empty') || check.status.includes('No Data') ? 'status-neutral' : 'status-warning'));
                 html += '<div class="compliance-item compliance-card">';
                 html += '<div class="compliance-header"><span class="compliance-label">' + check.label + '</span>';
                 html += '<span class="' + statusClass + '">' + check.status + '</span></div>';
+                if (check.error) html += '<div style="color:#e67e22;font-size:0.8em;padding:2px 8px;">⚠ ' + check.error + '</div>';
                 html += '<div class="compliance-details">';
                 if (check.rate !== undefined) html += '<div class="compliance-rate"><div class="rate-bar"><div class="rate-fill" style="width:' + check.rate + '%"></div></div><span>' + check.rate + '%</span></div>';
                 if (check.total !== undefined) html += '<span class="compliance-stat">Total: ' + check.total + '</span>';
