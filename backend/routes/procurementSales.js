@@ -253,7 +253,7 @@ router.post('/', async (req, res) => {
         `, [
             'New Procurement Sale Request',
             `${requestedByRole || 'User'} submitted procurement request: ${requestTitle} (Budget: ${totalBudget})`,
-            requesterId
+            userId
         ]);
 
         res.json({

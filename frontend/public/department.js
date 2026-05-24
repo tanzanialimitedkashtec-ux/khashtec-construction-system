@@ -70904,9 +70904,17 @@ function showProcurementForm() {
 
                     <div class="form-group">
 
-                        <label for="procurementName">Name:</label>
+                        <label for="requestTitle">Request Title:</label>
 
-                        <input type="text" id="procurementName" name="procurementName" required>
+                        <input type="text" id="requestTitle" name="requestTitle" required>
+
+                    </div>
+
+                    <div class="form-group">
+
+                        <label for="itemDescription">Item Description:</label>
+
+                        <textarea id="itemDescription" name="itemDescription" rows="2" required></textarea>
 
                     </div>
 
@@ -70914,39 +70922,115 @@ function showProcurementForm() {
 
                         <label for="procurementQuantity">Quantity:</label>
 
-                        <input type="number" id="procurementQuantity" name="procurementQuantity" required>
+                        <input type="number" id="procurementQuantity" name="quantity" required>
 
                     </div>
 
                     <div class="form-group">
 
-                        <label for="procurementPrice">Price:</label>
+                        <label for="unitPrice">Unit Price:</label>
 
-                        <input type="number" id="procurementPrice" name="procurementPrice" step="0.01" required>
-
-                    </div>
-
-                    <div class="form-group">
-
-                        <label for="procurementDate">Date:</label>
-
-                        <input type="date" id="procurementDate" name="procurementDate" required>
+                        <input type="number" id="unitPrice" name="unitPrice" step="0.01" required>
 
                     </div>
 
                     <div class="form-group">
 
-                        <label for="procurementStatus">Status:</label>
+                        <label for="totalBudget">Total Budget:</label>
 
-                        <select id="procurementStatus" name="procurementStatus" required>
+                        <input type="number" id="totalBudget" name="totalBudget" step="0.01" readonly>
 
-                            <option value="">Select Status</option>
+                    </div>
 
-                            <option value="Pending">Pending</option>
+                    <div class="form-group">
 
-                            <option value="Completed">Completed</option>
+                        <label for="purpose">Purpose:</label>
 
-                            <option value="Cancelled">Cancelled</option>
+                        <input type="text" id="purpose" name="purpose" required>
+
+                    </div>
+
+                    <div class="form-group">
+
+                        <label for="urgencyLevel">Urgency Level:</label>
+
+                        <select id="urgencyLevel" name="urgencyLevel" required>
+
+                            <option value="">Select urgency</option>
+
+                            <option value="Low">Low</option>
+
+                            <option value="Normal">Normal</option>
+
+                            <option value="High">High</option>
+
+                            <option value="Urgent">Urgent</option>
+
+                        </select>
+
+                    </div>
+
+                    <div class="form-group">
+
+                        <label for="expectedDeliveryDate">Expected Delivery:</label>
+
+                        <input type="date" id="expectedDeliveryDate" name="expectedDeliveryDate" required>
+
+                    </div>
+
+                    <div class="form-group">
+
+                        <label for="supplierRequirements">Supplier Requirements:</label>
+
+                        <textarea id="supplierRequirements" name="supplierRequirements" rows="2"></textarea>
+
+                    </div>
+
+                    <div class="form-group">
+
+                        <label for="technicalSpecifications">Technical Specifications:</label>
+
+                        <textarea id="technicalSpecifications" name="technicalSpecifications" rows="2"></textarea>
+
+                    </div>
+
+                    <div class="form-group">
+
+                        <label for="budgetAllocation">Budget Allocation:</label>
+
+                        <input type="text" id="budgetAllocation" name="budgetAllocation">
+
+                    </div>
+
+                    <div class="form-group">
+
+                        <label for="department">Department:</label>
+
+                        <input type="text" id="department" name="department" required>
+
+                    </div>
+
+                    <div class="form-group">
+
+                        <label for="justification">Justification:</label>
+
+                        <textarea id="justification" name="justification" rows="2"></textarea>
+
+                    </div>
+
+                    <div class="form-group">
+
+                        <label for="approvalRequirements">Approval Requirements:</label>
+
+                        <select id="approvalRequirements" name="approvalRequirements" required>
+
+                            <option value="">Select approval level</option>
+
+                            <option value="Standard">Standard</option>
+
+                            <option value="Enhanced">Enhanced</option>
+
+                            <option value="Board">Board</option>
 
                         </select>
 
@@ -70986,59 +71070,92 @@ function showProcurementForm() {
 
                 const procType = document.getElementById('procurementType').value;
 
-                const procName = document.getElementById('procurementName').value;
+                const requestTitle = document.getElementById('requestTitle').value;
 
-                const procQty = parseInt(document.getElementById('procurementQuantity').value) || 0;
+                const itemDescription = document.getElementById('itemDescription').value;
 
-                const procPrice = parseFloat(document.getElementById('procurementPrice').value) || 0;
+                const procQty = parseInt(document.getElementById('procurementQuantity').value, 10) || 0;
 
-                const procDate = document.getElementById('procurementDate').value;
+                const procPrice = parseFloat(document.getElementById('unitPrice').value) || 0;
 
-                const procStatus = document.getElementById('procurementStatus').value;
+                const totalBudget = parseFloat(document.getElementById('totalBudget').value) || (procQty * procPrice);
 
-                const currentUserDept = (typeof getCurrentUserDepartment === 'function' ? getCurrentUserDepartment() : null) || (window.currentUser && (window.currentUser.department_name || window.currentUser.department)) || 'General';
+                const purpose = document.getElementById('purpose').value;
+
+                const urgencyLevel = document.getElementById('urgencyLevel').value;
+
+                const expectedDeliveryDate = document.getElementById('expectedDeliveryDate').value;
+
+                const supplierRequirements = document.getElementById('supplierRequirements').value;
+
+                const technicalSpecifications = document.getElementById('technicalSpecifications').value;
+
+                const budgetAllocation = document.getElementById('budgetAllocation').value;
+
+                const department = document.getElementById('department').value || (typeof getCurrentUserDepartment === 'function' ? getCurrentUserDepartment() : null) || (window.currentUser && (window.currentUser.department_name || window.currentUser.department)) || 'General';
+
+                const justification = document.getElementById('justification').value;
+
+                const approvalRequirements = document.getElementById('approvalRequirements').value || 'Standard';
+
                 const currentUserName = (typeof getCurrentUser === 'function' ? getCurrentUser() : null) || 'Current User';
                 const currentUserRole = (typeof getCurrentUserRole === 'function' ? getCurrentUserRole() : null) || 'Employee';
 
                 const formData = {
 
-                    requestTitle: procName,
+                    requestTitle: requestTitle,
 
                     procurementType: procType,
 
-                    itemDescription: procName,
+                    itemDescription: itemDescription,
 
                     quantity: procQty,
 
                     unitPrice: procPrice,
 
-                    totalBudget: procQty * procPrice,
+                    totalBudget: totalBudget,
 
-                    purpose: 'Procurement of ' + procName,
+                    purpose: purpose,
 
-                    department: currentUserDept,
+                    urgencyLevel: urgencyLevel,
 
-                    urgencyLevel: 'Normal',
+                    expectedDeliveryDate: expectedDeliveryDate,
 
-                    expectedDeliveryDate: procDate,
+                    supplierRequirements: supplierRequirements,
+
+                    technicalSpecifications: technicalSpecifications,
+
+                    budgetAllocation: budgetAllocation,
+
+                    department: department,
 
                     requestedBy: currentUserName,
 
                     requestedByRole: currentUserRole,
 
-                    type: procType,
+                    justification: justification,
 
-                    name: procName,
-
-                    price: procPrice,
-
-                    purchaseDate: procDate,
-
-                    status: procStatus,
-
-                    createdAt: new Date().toISOString()
+                    approvalRequirements: approvalRequirements
 
                 };
+
+                const quantityInput = document.getElementById('procurementQuantity');
+                const unitPriceInput = document.getElementById('unitPrice');
+                const totalBudgetInput = document.getElementById('totalBudget');
+
+                function updateTotalBudget() {
+                    const qty = parseInt(quantityInput.value, 10) || 0;
+                    const price = parseFloat(unitPriceInput.value) || 0;
+                    if (totalBudgetInput) {
+                        totalBudgetInput.value = (qty * price).toFixed(2);
+                    }
+                }
+
+                if (quantityInput && unitPriceInput) {
+                    quantityInput.addEventListener('input', updateTotalBudget);
+                    unitPriceInput.addEventListener('input', updateTotalBudget);
+                    updateTotalBudget();
+                }
 
 
 
