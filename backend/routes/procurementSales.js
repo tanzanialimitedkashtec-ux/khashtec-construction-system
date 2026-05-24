@@ -9,6 +9,27 @@ try {
     db = null;
 }
 
+// Map short frontend role codes to full role names used in the users table
+const ROLE_MAP = {
+    'MD': 'Managing Director',
+    'ADMIN': 'Managing Director',
+    'HR': 'HR Manager',
+    'FINANCE': 'Finance Manager',
+    'PM': 'Project Manager',
+    'RE': 'Real Estate Manager',
+    'HSE': 'HSE Manager',
+    'OPERATIONS': 'Office Assistant',
+    'Managing Director': 'Managing Director',
+    'HR Manager': 'HR Manager',
+    'Finance Manager': 'Finance Manager',
+    'Project Manager': 'Project Manager',
+    'Real Estate Manager': 'Real Estate Manager',
+    'HSE Manager': 'HSE Manager',
+    'Office Assistant': 'Office Assistant',
+    'Worker': 'Worker',
+    'Customer': 'Customer'
+};
+
 // Get all procurement sales records
 router.get('/', async (req, res) => {
     try {
@@ -179,16 +200,19 @@ router.post('/', async (req, res) => {
 
         if (db) {
             try {
-                if (!userId && requestedByRole) {
+                // Map short role codes to full role names used in the users table
+                const mappedRole = requestedByRole ? (ROLE_MAP[requestedByRole] || requestedByRole) : null;
+
+                if (!userId && mappedRole) {
                     const [roleRows] = await db.execute(
                         'SELECT id FROM users WHERE role = ? LIMIT 1',
-                        [requestedByRole]
+                        [mappedRole]
                     );
                     if (roleRows.length > 0) {
                         userId = roleRows[0].id;
-                        console.log('Found user by role:', requestedByRole, 'ID:', userId);
+                        console.log('Found user by role:', mappedRole, 'ID:', userId);
                     } else {
-                        console.log('No user found with role:', requestedByRole);
+                        console.log('No user found with role:', mappedRole);
                     }
                 }
 
@@ -214,16 +238,15 @@ router.post('/', async (req, res) => {
                         console.log('Falling back to first available user ID:', userId);
                     }
                 }
-
-                if (!userId) {
-                    throw new Error('No valid user found for submitted_by association');
-                }
             } catch (userError) {
-                console.error('Error determining submitted_by user ID:', userError);
-                return res.status(500).json({
-                    success: false,
-                    error: 'Failed to resolve user for procurement request submission'
-                });
+                console.error('Error during user lookup for submitted_by:', userError);
+                // Do not abort; fall through to the default userId below
+            }
+
+            // Final fallback: use userId 1 (admin) when all lookups fail
+            if (!userId) {
+                userId = 1;
+                console.log('Using default user ID 1 as final fallback');
             }
         }
 
@@ -376,8 +399,9 @@ router.put('/:id/status', async (req, res) => {
             VALUES (?, ?, 'info', 'Medium', ?, NOW())
         `, [
             `Procurement Request ${status}`,
-            `Your procurement request "${updatedRequest[0].request_title}" has been ${status.toLowerCase()}`
-        ], [requesterId]);
+            `Your procurement request "${updatedRequest[0].request_title}" has been ${status.toLowerCase()}`,
+            requesterId
+        ]);
 
         res.json({
             success: true,
