@@ -43651,7 +43651,13 @@ function formatTZS(amount) {
 async function loadExpenseOverview() {
     console.log('[Expense] Loading expense overview...');
     try {
-        const response = await fetch('/api/finance/expense-overview');
+        const authToken = (typeof sessionManager !== 'undefined' && sessionManager.getAuthToken) ? sessionManager.getAuthToken() : '';
+        const response = await fetch('/api/finance/expense-overview', {
+            headers: {
+                'Accept': 'application/json',
+                ...(authToken ? { 'Authorization': `Bearer ${authToken}` } : {})
+            }
+        });
         const data = await response.json();
         console.log('[Expense] Overview loaded:', data);
         if (data.success) {
@@ -43707,7 +43713,13 @@ function renderExpenseCards(expenses, containerId, showConfirm) {
 async function loadPendingExpenses() {
     console.log('[Expense] Loading pending expenses...');
     try {
-        var response = await fetch('/api/finance/expenses?status=Pending');
+        const authToken = (typeof sessionManager !== 'undefined' && sessionManager.getAuthToken) ? sessionManager.getAuthToken() : '';
+        var response = await fetch('/api/finance/expenses?status=Pending', {
+            headers: {
+                'Accept': 'application/json',
+                ...(authToken ? { 'Authorization': `Bearer ${authToken}` } : {})
+            }
+        });
         var data = await response.json();
         console.log('[Expense] Pending expenses loaded:', data.length, 'records');
         renderExpenseCards(data, 'pendingExpensesList', true);
@@ -43720,7 +43732,13 @@ async function loadPendingExpenses() {
 async function loadConfirmedExpenses() {
     console.log('[Expense] Loading confirmed expenses...');
     try {
-        var response = await fetch('/api/finance/expenses?status=Approved');
+        const authToken = (typeof sessionManager !== 'undefined' && sessionManager.getAuthToken) ? sessionManager.getAuthToken() : '';
+        var response = await fetch('/api/finance/expenses?status=Approved', {
+            headers: {
+                'Accept': 'application/json',
+                ...(authToken ? { 'Authorization': `Bearer ${authToken}` } : {})
+            }
+        });
         var data = await response.json();
         console.log('[Expense] Confirmed expenses loaded:', data.length, 'records');
         renderExpenseCards(data, 'confirmedExpensesList', false);
@@ -43733,7 +43751,13 @@ async function loadConfirmedExpenses() {
 async function loadAllExpenses() {
     console.log('[Expense] Loading all expenses...');
     try {
-        var response = await fetch('/api/finance/expenses');
+        const authToken = (typeof sessionManager !== 'undefined' && sessionManager.getAuthToken) ? sessionManager.getAuthToken() : '';
+        var response = await fetch('/api/finance/expenses', {
+            headers: {
+                'Accept': 'application/json',
+                ...(authToken ? { 'Authorization': `Bearer ${authToken}` } : {})
+            }
+        });
         var data = await response.json();
         console.log('[Expense] All expenses loaded:', data.length, 'records');
         if (!data || data.length === 0) {
@@ -43764,9 +43788,10 @@ async function loadAllExpenses() {
 async function confirmExpense(expenseId) {
     console.log('[Expense] Confirming expense:', expenseId);
     try {
+        const authToken = (typeof sessionManager !== 'undefined' && sessionManager.getAuthToken) ? sessionManager.getAuthToken() : '';
         var response = await fetch('/api/finance/expense/' + expenseId + '/confirm', {
             method: 'PUT',
-            headers: { 'Content-Type': 'application/json' }
+            headers: Object.assign({ 'Content-Type': 'application/json' }, (authToken ? { 'Authorization': `Bearer ${authToken}` } : {}))
         });
         var data = await response.json();
         if (response.ok) {
@@ -43800,7 +43825,7 @@ function submitNewExpense() {
 
     fetch('/api/finance/expense', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: Object.assign({ 'Content-Type': 'application/json' }, ((typeof sessionManager !== 'undefined' && sessionManager.getAuthToken) ? { 'Authorization': `Bearer ${sessionManager.getAuthToken()}` } : {})),
         body: JSON.stringify({ category: category, amount: Number(amount), description: description, department: department })
     })
     .then(function(response) { return response.json(); })
