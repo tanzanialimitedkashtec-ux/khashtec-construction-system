@@ -57,6 +57,30 @@ async function getDb() {
         }
     }
 
+    // Fix legacy columns that may exist with NOT NULL + no default (blocks INSERTs).
+    // These were created by older versions of the code with wrong column names.
+    const columnsToModify = [
+        { name: 'total_units_available', sql: "ALTER TABLE luggage_campaigns MODIFY COLUMN total_units_available INT NOT NULL DEFAULT 0" },
+        { name: 'campaign_description',  sql: "ALTER TABLE luggage_campaigns MODIFY COLUMN campaign_description TEXT NULL DEFAULT NULL" },
+        { name: 'campaign_start_date',   sql: "ALTER TABLE luggage_campaigns MODIFY COLUMN campaign_start_date DATE NULL DEFAULT NULL" },
+        { name: 'campaign_end_date',     sql: "ALTER TABLE luggage_campaigns MODIFY COLUMN campaign_end_date DATE NULL DEFAULT NULL" }
+    ];
+    for (const col of columnsToModify) {
+        try {
+            const existing = await db.execute(
+                `SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS
+                 WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'luggage_campaigns' AND COLUMN_NAME = ?`,
+                [col.name]
+            );
+            if (existing && existing.length > 0) {
+                await db.execute(col.sql);
+                console.log(`✅ Migration: gave safe default to legacy column '${col.name}'`);
+            }
+        } catch (e) {
+            console.warn(`⚠️ Migration warning modifying column '${col.name}':`, e.message);
+        }
+    }
+
     return db;
 }
 
