@@ -1,7 +1,15 @@
 const express = require('express');
 const router = express.Router();
 
-const db = require('../../database/config/database');
+console.log('📦 Procurement Sales route file loading...');
+
+let db;
+try {
+    db = require('../../database/config/database');
+    console.log('✅ Procurement Sales database module loaded');
+} catch (error) {
+    console.error('❌ Procurement Sales database module failed to load:', error.message);
+}
 
 // Map short frontend role codes to full role names used in the users table
 const ROLE_MAP = {
@@ -24,25 +32,91 @@ const ROLE_MAP = {
     'Customer': 'Customer'
 };
 
+// Ensure the procurement_sales table exists on startup
+async function ensureTables() {
+    if (!db) return;
+    try {
+        console.log('🔄 Ensuring procurement_sales table exists...');
+        await db.execute(`
+            CREATE TABLE IF NOT EXISTS procurement_sales (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                request_title VARCHAR(255) NOT NULL,
+                procurement_type VARCHAR(50) NOT NULL,
+                item_description TEXT NOT NULL,
+                quantity INT NOT NULL,
+                unit_price DECIMAL(12,2) DEFAULT 0,
+                total_budget DECIMAL(12,2) NOT NULL,
+                purpose TEXT NOT NULL,
+                urgency_level VARCHAR(50) DEFAULT 'Normal',
+                expected_delivery_date DATE NULL,
+                supplier_requirements TEXT NULL,
+                technical_specifications TEXT NULL,
+                budget_allocation VARCHAR(100) NULL,
+                department VARCHAR(100) NOT NULL,
+                requested_by VARCHAR(255) NOT NULL,
+                requested_by_role VARCHAR(100) NOT NULL,
+                justification TEXT NULL,
+                approval_requirements VARCHAR(50) DEFAULT 'Standard',
+                status VARCHAR(50) DEFAULT 'Pending',
+                reviewed_by INT NULL,
+                reviewed_date TIMESTAMP NULL,
+                review_comments TEXT NULL,
+                approved_budget DECIMAL(12,2) NULL,
+                rejection_reason TEXT NULL,
+                submitted_by INT NULL,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                updated_at TIMESTAMP NULL,
+                updated_by INT NULL
+            )
+        `);
+        console.log('✅ procurement_sales table ensured');
+    } catch (err) {
+        console.error('⚠️ Error ensuring procurement_sales table:', err.message);
+    }
+}
+
+// Call ensureTables on load (non-blocking)
+ensureTables().catch(e => console.error('ensureTables error:', e.message));
+
+// Helper: extract rows from db.execute result (handles both array and direct result)
+function getRows(result) {
+    if (Array.isArray(result) && result.length > 0 && Array.isArray(result[0])) {
+        return result[0]; // [rows, fields] format
+    }
+    return result; // already rows
+}
+
+// Helper: extract result header from db.execute (for INSERT/UPDATE/DELETE)
+function getResultHeader(result) {
+    if (Array.isArray(result) && result.length > 0 && !Array.isArray(result[0])) {
+        return result[0]; // [ResultSetHeader, fields] format
+    }
+    return result; // already ResultSetHeader
+}
+
 // Get all procurement sales records
 router.get('/', async (req, res) => {
     try {
-        console.log('📋 GET /api/procurement-sales — fetching records from database');
-        const procurementSales = await db.execute(`
+        if (!db) {
+            return res.json({ success: true, data: [] });
+        }
+        console.log('📋 GET /api/procurement-sales — fetching from database');
+        const rawResult = await db.execute(`
             SELECT ps.*, u.name as submitted_by_name, ru.name as reviewed_by_name
             FROM procurement_sales ps
             LEFT JOIN users u ON ps.submitted_by = u.id
             LEFT JOIN users ru ON ps.reviewed_by = ru.id
             ORDER BY ps.created_at DESC
         `);
-        console.log('📋 GET /api/procurement-sales — returned', procurementSales.length, 'records');
+        const procurementSales = getRows(rawResult);
+        console.log('📋 GET /api/procurement-sales — returned', Array.isArray(procurementSales) ? procurementSales.length : 0, 'records');
         
         res.json({
             success: true,
-            data: procurementSales
+            data: Array.isArray(procurementSales) ? procurementSales : []
         });
     } catch (error) {
-        console.error('Error fetching procurement sales:', error);
+        console.error('❌ Error fetching procurement sales:', error.message);
         res.status(500).json({
             success: false,
             error: 'Failed to fetch procurement sales: ' + error.message
@@ -54,8 +128,7 @@ router.get('/', async (req, res) => {
 router.get('/status/:status', async (req, res) => {
     try {
         const { status } = req.params;
-        
-        const procurementSales = await db.execute(`
+        const rawResult = await db.execute(`
             SELECT ps.*, u.name as submitted_by_name, ru.name as reviewed_by_name
             FROM procurement_sales ps
             LEFT JOIN users u ON ps.submitted_by = u.id
@@ -63,16 +136,17 @@ router.get('/status/:status', async (req, res) => {
             WHERE ps.status = ?
             ORDER BY ps.created_at DESC
         `, [status]);
+        const procurementSales = getRows(rawResult);
         
         res.json({
             success: true,
-            data: procurementSales
+            data: Array.isArray(procurementSales) ? procurementSales : []
         });
     } catch (error) {
         console.error('Error fetching procurement sales by status:', error);
         res.status(500).json({
             success: false,
-            error: 'Failed to fetch procurement sales by status'
+            error: 'Failed to fetch procurement sales by status: ' + error.message
         });
     }
 });
@@ -82,6 +156,12 @@ router.post('/', async (req, res) => {
     console.log('🚀 POST /api/procurement-sales called');
     console.log('📥 Request body:', JSON.stringify(req.body));
     try {
+        if (!db) {
+            return res.status(503).json({
+                success: false,
+                error: 'Database not available. Please try again later.'
+            });
+        }
 
         const {
             requestTitle,
@@ -103,18 +183,7 @@ router.post('/', async (req, res) => {
             approvalRequirements
         } = req.body;
 
-        // Debug logging to see what fields are received
-        console.log('📥 Received procurement sale request body:', req.body);
-        console.log('🔍 Field values:', {
-            requestTitle: typeof requestTitle,
-            procurementType: typeof procurementType,
-            itemDescription: typeof itemDescription,
-            quantity: typeof quantity,
-            totalBudget: typeof totalBudget,
-            purpose: typeof purpose,
-            department: typeof department
-        });
-        console.log('🔍 Field existence check:', {
+        console.log('🔍 Field check:', {
             requestTitle: !!requestTitle,
             procurementType: !!procurementType,
             itemDescription: !!itemDescription,
@@ -132,64 +201,60 @@ router.post('/', async (req, res) => {
             });
         }
 
-        // Get user ID from request input or role name - use fallback to any existing user when needed
+        // Resolve user ID
         let userId = req.body.userId ? parseInt(req.body.userId, 10) : null;
-        console.log('🔍 Initial userId from request body:', userId);
+        console.log('🔍 Initial userId from body:', userId);
 
         try {
-            // Map short role codes to full role names used in the users table
             const mappedRole = requestedByRole ? (ROLE_MAP[requestedByRole] || requestedByRole) : null;
             console.log('🔍 Role mapping:', requestedByRole, '->', mappedRole);
 
             if (!userId && mappedRole) {
-                const roleRows = await db.execute(
+                const roleRows = getRows(await db.execute(
                     'SELECT id FROM users WHERE role = ? LIMIT 1',
                     [mappedRole]
-                );
-                if (roleRows.length > 0) {
+                ));
+                if (Array.isArray(roleRows) && roleRows.length > 0) {
                     userId = roleRows[0].id;
-                    console.log('✅ Found user by role:', mappedRole, 'ID:', userId);
-                } else {
-                    console.log('⚠️ No user found with role:', mappedRole);
+                    console.log('✅ Found user by role:', mappedRole, '→ ID:', userId);
                 }
             }
 
             if (!userId && requestedBy) {
-                const nameRows = await db.execute(
+                const nameRows = getRows(await db.execute(
                     'SELECT id FROM users WHERE name = ? LIMIT 1',
                     [requestedBy]
-                );
-                if (nameRows.length > 0) {
+                ));
+                if (Array.isArray(nameRows) && nameRows.length > 0) {
                     userId = nameRows[0].id;
-                    console.log('✅ Found user by name:', requestedBy, 'ID:', userId);
-                } else {
-                    console.log('⚠️ No user found with name:', requestedBy);
+                    console.log('✅ Found user by name:', requestedBy, '→ ID:', userId);
                 }
             }
 
             if (!userId) {
-                const anyUserRows = await db.execute(
+                const anyRows = getRows(await db.execute(
                     'SELECT id FROM users ORDER BY id LIMIT 1'
-                );
-                if (anyUserRows.length > 0) {
-                    userId = anyUserRows[0].id;
-                    console.log('✅ Falling back to first available user ID:', userId);
+                ));
+                if (Array.isArray(anyRows) && anyRows.length > 0) {
+                    userId = anyRows[0].id;
+                    console.log('✅ Using first available user → ID:', userId);
                 }
             }
         } catch (userError) {
-            console.error('⚠️ Error during user lookup for submitted_by:', userError.message);
+            console.error('⚠️ User lookup error (non-fatal):', userError.message);
         }
 
-        // Final fallback: use userId 1 (admin) when all lookups fail
         if (!userId) {
             userId = 1;
-            console.log('⚠️ Using default user ID 1 as final fallback');
+            console.log('⚠️ Final fallback → userId = 1');
         }
-        console.log('🔍 Final resolved userId:', userId);
+        console.log('🔍 Final userId for INSERT:', userId);
 
-        console.log('💾 About to execute INSERT with userId:', userId);
-            
-        const result = await db.execute(`
+        // Ensure table exists before inserting
+        await ensureTables();
+
+        console.log('💾 Executing INSERT...');
+        const insertResult = await db.execute(`
             INSERT INTO procurement_sales (
                 request_title, procurement_type, item_description, quantity, 
                 unit_price, total_budget, purpose, urgency_level, 
@@ -201,9 +266,9 @@ router.post('/', async (req, res) => {
             requestTitle,
             procurementType,
             itemDescription,
-            quantity,
-            unitPrice || 0,
-            totalBudget,
+            parseInt(quantity, 10) || 0,
+            parseFloat(unitPrice) || 0,
+            parseFloat(totalBudget) || 0,
             purpose,
             urgencyLevel || 'Normal',
             expectedDeliveryDate || null,
@@ -217,20 +282,27 @@ router.post('/', async (req, res) => {
             approvalRequirements || 'Standard',
             userId
         ]);
-        console.log('✅ INSERT result:', JSON.stringify(result));
+        const resultHeader = getResultHeader(insertResult);
+        console.log('✅ INSERT result:', JSON.stringify(resultHeader));
 
-        // Get the created procurement sale request
-        const insertId = result.insertId;
-        const newRequest = await db.execute(`
-            SELECT ps.*, u.name as submitted_by_name, ru.name as reviewed_by_name
-            FROM procurement_sales ps
-            LEFT JOIN users u ON ps.submitted_by = u.id
-            LEFT JOIN users ru ON ps.reviewed_by = ru.id
-            WHERE ps.id = ?
-        `, [insertId]);
-        console.log('✅ Fetched new record, rows:', newRequest.length);
+        // Get the created record
+        let newRecord = null;
+        try {
+            const insertId = resultHeader.insertId;
+            if (insertId) {
+                const newRows = getRows(await db.execute(`
+                    SELECT ps.*, u.name as submitted_by_name
+                    FROM procurement_sales ps
+                    LEFT JOIN users u ON ps.submitted_by = u.id
+                    WHERE ps.id = ?
+                `, [insertId]));
+                newRecord = Array.isArray(newRows) && newRows.length > 0 ? newRows[0] : null;
+            }
+        } catch (fetchError) {
+            console.error('⚠️ Fetch new record error (non-fatal):', fetchError.message);
+        }
 
-        // Create notification for Finance and Procurement departments
+        // Create notification (non-fatal)
         try {
             await db.execute(`
                 INSERT INTO notifications (title, message, type, priority, recipient_id, created_at)
@@ -244,17 +316,17 @@ router.post('/', async (req, res) => {
             console.error('⚠️ Notification insert failed (non-fatal):', notifError.message);
         }
 
+        console.log('✅ POST /api/procurement-sales — SUCCESS');
         res.json({
             success: true,
-            data: newRequest[0] || result
+            data: newRecord || { id: resultHeader.insertId, request_title: requestTitle, status: 'Pending' }
         });
     } catch (error) {
-        console.error('Error creating procurement sale request:', error);
-        console.error('Error stack:', error.stack);
-        console.error('Request body:', req.body);
+        console.error('❌ POST /api/procurement-sales ERROR:', error.message);
+        console.error('❌ Stack:', error.stack);
         res.status(500).json({
             success: false,
-            error: 'Failed to create procurement sale request: ' + error.message
+            error: 'Failed to create procurement sale: ' + error.message
         });
     }
 });
@@ -272,25 +344,28 @@ router.put('/:id/status', async (req, res) => {
             });
         }
 
-        // Get reviewer user ID — map short codes to full role names
+        // Resolve reviewer user ID
         const mappedReviewerRole = reviewedByRole ? (ROLE_MAP[reviewedByRole] || reviewedByRole) : null;
         let reviewerId = null;
-        if (mappedReviewerRole) {
-            const reviewerRows = await db.execute(
-                'SELECT id FROM users WHERE role = ? LIMIT 1',
-                [mappedReviewerRole]
-            );
-            if (reviewerRows.length > 0) {
-                reviewerId = reviewerRows[0].id;
+        try {
+            if (mappedReviewerRole) {
+                const reviewerRows = getRows(await db.execute(
+                    'SELECT id FROM users WHERE role = ? LIMIT 1',
+                    [mappedReviewerRole]
+                ));
+                if (Array.isArray(reviewerRows) && reviewerRows.length > 0) {
+                    reviewerId = reviewerRows[0].id;
+                }
             }
-        }
-        if (!reviewerId) {
-            const anyRows = await db.execute('SELECT id FROM users ORDER BY id LIMIT 1');
-            reviewerId = anyRows.length > 0 ? anyRows[0].id : 1;
+            if (!reviewerId) {
+                const anyRows = getRows(await db.execute('SELECT id FROM users ORDER BY id LIMIT 1'));
+                reviewerId = (Array.isArray(anyRows) && anyRows.length > 0) ? anyRows[0].id : 1;
+            }
+        } catch (e) {
+            reviewerId = 1;
         }
 
-        // Update procurement sale request
-        const result = await db.execute(`
+        const updateResult = await db.execute(`
             UPDATE procurement_sales 
             SET status = ?, reviewed_by = ?, reviewed_date = NOW(), 
                 review_comments = ?, approved_budget = ?, rejection_reason = ?, 
@@ -305,6 +380,7 @@ router.put('/:id/status', async (req, res) => {
             reviewerId, 
             id
         ]);
+        const result = getResultHeader(updateResult);
 
         if (result.affectedRows === 0) {
             return res.status(404).json({
@@ -314,22 +390,23 @@ router.put('/:id/status', async (req, res) => {
         }
 
         // Get updated request
-        const updatedRequest = await db.execute(`
+        const updatedRows = getRows(await db.execute(`
             SELECT ps.*, u.name as submitted_by_name
             FROM procurement_sales ps
             LEFT JOIN users u ON ps.submitted_by = u.id
             WHERE ps.id = ?
-        `, [id]);
+        `, [id]));
+        const updatedRequest = Array.isArray(updatedRows) && updatedRows.length > 0 ? updatedRows[0] : null;
 
-        // Create notification for the requester
+        // Create notification (non-fatal)
         try {
-            const requesterId = updatedRequest[0] ? updatedRequest[0].submitted_by : reviewerId;
+            const requesterId = updatedRequest ? updatedRequest.submitted_by : reviewerId;
             await db.execute(`
                 INSERT INTO notifications (title, message, type, priority, recipient_id, created_at)
                 VALUES (?, ?, 'info', 'Medium', ?, NOW())
             `, [
                 `Procurement Request ${status}`,
-                `Your procurement request "${updatedRequest[0] ? updatedRequest[0].request_title : id}" has been ${status.toLowerCase()}`,
+                `Your procurement request "${updatedRequest ? updatedRequest.request_title : id}" has been ${status.toLowerCase()}`,
                 requesterId
             ]);
         } catch (notifError) {
@@ -338,13 +415,13 @@ router.put('/:id/status', async (req, res) => {
 
         res.json({
             success: true,
-            data: updatedRequest[0] || { id, status }
+            data: updatedRequest || { id, status }
         });
     } catch (error) {
         console.error('Error updating procurement sale status:', error);
         res.status(500).json({
             success: false,
-            error: 'Failed to update procurement sale status'
+            error: 'Failed to update procurement sale status: ' + error.message
         });
     }
 });
@@ -352,7 +429,7 @@ router.put('/:id/status', async (req, res) => {
 // Get procurement sales summary
 router.get('/summary', async (req, res) => {
     try {
-        const summary = await db.execute(`
+        const rawResult = await db.execute(`
             SELECT 
                 COUNT(*) as total_requests,
                 SUM(total_budget) as total_budget_value,
@@ -368,16 +445,17 @@ router.get('/summary', async (req, res) => {
                 COUNT(CASE WHEN urgency_level = 'Low' THEN 1 END) as low_urgency_count
             FROM procurement_sales
         `);
+        const summary = getRows(rawResult);
 
         res.json({
             success: true,
-            data: summary[0]
+            data: Array.isArray(summary) && summary.length > 0 ? summary[0] : {}
         });
     } catch (error) {
         console.error('Error fetching procurement sales summary:', error);
         res.status(500).json({
             success: false,
-            error: 'Failed to fetch procurement sales summary'
+            error: 'Failed to fetch procurement sales summary: ' + error.message
         });
     }
 });
@@ -387,7 +465,7 @@ router.get('/department/:department', async (req, res) => {
     try {
         const { department } = req.params;
         
-        const procurementSales = await db.execute(`
+        const rawResult = await db.execute(`
             SELECT ps.*, u.name as submitted_by_name, ru.name as reviewed_by_name
             FROM procurement_sales ps
             LEFT JOIN users u ON ps.submitted_by = u.id
@@ -395,16 +473,17 @@ router.get('/department/:department', async (req, res) => {
             WHERE ps.department = ?
             ORDER BY ps.created_at DESC
         `, [department]);
+        const procurementSales = getRows(rawResult);
         
         res.json({
             success: true,
-            data: procurementSales
+            data: Array.isArray(procurementSales) ? procurementSales : []
         });
     } catch (error) {
         console.error('Error fetching procurement sales by department:', error);
         res.status(500).json({
             success: false,
-            error: 'Failed to fetch procurement sales by department'
+            error: 'Failed to fetch procurement sales by department: ' + error.message
         });
     }
 });
@@ -414,7 +493,8 @@ router.delete('/:id', async (req, res) => {
     try {
         const { id } = req.params;
 
-        const result = await db.execute('DELETE FROM procurement_sales WHERE id = ?', [id]);
+        const deleteResult = await db.execute('DELETE FROM procurement_sales WHERE id = ?', [id]);
+        const result = getResultHeader(deleteResult);
 
         if (result.affectedRows === 0) {
             return res.status(404).json({
@@ -431,7 +511,7 @@ router.delete('/:id', async (req, res) => {
         console.error('Error deleting procurement sale request:', error);
         res.status(500).json({
             success: false,
-            error: 'Failed to delete procurement sale request'
+            error: 'Failed to delete procurement sale request: ' + error.message
         });
     }
 });
