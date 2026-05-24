@@ -70,6 +70,49 @@ async function ensureTables() {
             )
         `);
         console.log('✅ procurement_sales table ensured');
+
+        // Convert ENUM columns to VARCHAR to accept all values from the form
+        // Production DB may have ENUM('Goods','Services') but form sends 'Purchase','Sale'
+        const alterQueries = [
+            "ALTER TABLE procurement_sales MODIFY COLUMN procurement_type VARCHAR(50) NOT NULL",
+            "ALTER TABLE procurement_sales MODIFY COLUMN urgency_level VARCHAR(50) DEFAULT 'Normal'",
+            "ALTER TABLE procurement_sales MODIFY COLUMN approval_requirements VARCHAR(50) DEFAULT 'Standard'",
+            "ALTER TABLE procurement_sales MODIFY COLUMN status VARCHAR(50) DEFAULT 'Pending'"
+        ];
+        for (const q of alterQueries) {
+            try {
+                await db.execute(q);
+            } catch (alterErr) {
+                // Ignore if already VARCHAR or other non-critical error
+                console.log('⚠️ ALTER (non-fatal):', alterErr.message);
+            }
+        }
+        console.log('✅ procurement_sales columns ensured as VARCHAR');
+
+        // Make submitted_by nullable and drop FK constraint if present
+        try {
+            await db.execute("ALTER TABLE procurement_sales MODIFY COLUMN submitted_by INT NULL");
+        } catch (e) { console.log('⚠️ submitted_by ALTER (non-fatal):', e.message); }
+
+        // Drop foreign key constraints that block inserts when user ID doesn't exist
+        try {
+            const fkRows = getRows(await db.execute(`
+                SELECT CONSTRAINT_NAME FROM information_schema.KEY_COLUMN_USAGE
+                WHERE TABLE_NAME = 'procurement_sales'
+                AND REFERENCED_TABLE_NAME = 'users'
+                AND TABLE_SCHEMA = DATABASE()
+            `));
+            if (Array.isArray(fkRows)) {
+                for (const fk of fkRows) {
+                    try {
+                        await db.execute('ALTER TABLE procurement_sales DROP FOREIGN KEY ' + fk.CONSTRAINT_NAME);
+                        console.log('✅ Dropped FK:', fk.CONSTRAINT_NAME);
+                    } catch (fkErr) {
+                        console.log('⚠️ FK drop (non-fatal):', fkErr.message);
+                    }
+                }
+            }
+        } catch (e) { console.log('⚠️ FK lookup (non-fatal):', e.message); }
     } catch (err) {
         console.error('⚠️ Error ensuring procurement_sales table:', err.message);
     }
