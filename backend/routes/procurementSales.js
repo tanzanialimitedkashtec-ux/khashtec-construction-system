@@ -1,13 +1,7 @@
 const express = require('express');
 const router = express.Router();
 
-let db;
-try {
-    db = require('../src/config/database');
-} catch (error) {
-    console.error('Database connection error:', error);
-    db = null;
-}
+const db = require('../../database/config/database');
 
 // Map short frontend role codes to full role names used in the users table
 const ROLE_MAP = {
@@ -33,41 +27,15 @@ const ROLE_MAP = {
 // Get all procurement sales records
 router.get('/', async (req, res) => {
     try {
-        if (!db) {
-            // Return mock data when database is not available
-            const mockData = [
-                {
-                    id: 1,
-                    request_title: 'Office Computers Purchase',
-                    procurement_type: 'Goods',
-                    item_description: 'High-performance laptops for staff',
-                    quantity: 10,
-                    unit_price: 2500000.00,
-                    total_budget: 25000000.00,
-                    purpose: 'Replace outdated office equipment',
-                    urgency_level: 'Normal',
-                    expected_delivery_date: '2024-02-15',
-                    department: 'IT',
-                    requested_by: 'John Doe',
-                    requested_by_role: 'IT Manager',
-                    status: 'Pending',
-                    submitted_by_name: 'John Doe',
-                    created_at: new Date().toISOString()
-                }
-            ];
-            return res.json({
-                success: true,
-                data: mockData
-            });
-        }
-
-        const [procurementSales] = await db.execute(`
+        console.log('📋 GET /api/procurement-sales — fetching records from database');
+        const procurementSales = await db.execute(`
             SELECT ps.*, u.name as submitted_by_name, ru.name as reviewed_by_name
             FROM procurement_sales ps
             LEFT JOIN users u ON ps.submitted_by = u.id
             LEFT JOIN users ru ON ps.reviewed_by = ru.id
             ORDER BY ps.created_at DESC
         `);
+        console.log('📋 GET /api/procurement-sales — returned', procurementSales.length, 'records');
         
         res.json({
             success: true,
@@ -77,7 +45,7 @@ router.get('/', async (req, res) => {
         console.error('Error fetching procurement sales:', error);
         res.status(500).json({
             success: false,
-            error: 'Failed to fetch procurement sales'
+            error: 'Failed to fetch procurement sales: ' + error.message
         });
     }
 });
@@ -87,7 +55,7 @@ router.get('/status/:status', async (req, res) => {
     try {
         const { status } = req.params;
         
-        const [procurementSales] = await db.execute(`
+        const procurementSales = await db.execute(`
             SELECT ps.*, u.name as submitted_by_name, ru.name as reviewed_by_name
             FROM procurement_sales ps
             LEFT JOIN users u ON ps.submitted_by = u.id
@@ -112,39 +80,8 @@ router.get('/status/:status', async (req, res) => {
 // Create new procurement sale request
 router.post('/', async (req, res) => {
     console.log('🚀 POST /api/procurement-sales called');
-    console.log('📥 Request body:', req.body);
+    console.log('📥 Request body:', JSON.stringify(req.body));
     try {
-        if (!db) {
-            // Return mock response when database is not available
-            const mockResponse = {
-                id: Math.floor(Math.random() * 1000) + 1,
-                request_title: req.body.requestTitle || 'Mock Request',
-                procurement_type: req.body.procurementType || 'Goods',
-                item_description: req.body.itemDescription || 'Mock item',
-                quantity: req.body.quantity || 1,
-                unit_price: req.body.unitPrice || 0,
-                total_budget: req.body.totalBudget || 0,
-                purpose: req.body.purpose || 'Mock purpose',
-                urgency_level: req.body.urgencyLevel || 'Normal',
-                expected_delivery_date: req.body.expectedDeliveryDate || null,
-                supplier_requirements: req.body.supplierRequirements || null,
-                technical_specifications: req.body.technicalSpecifications || null,
-                budget_allocation: req.body.budgetAllocation || null,
-                department: req.body.department || 'IT',
-                requested_by: req.body.requestedBy || 'Mock User',
-                requested_by_role: req.body.requestedByRole || 'Manager',
-                justification: req.body.justification || null,
-                approval_requirements: req.body.approvalRequirements || 'Standard',
-                status: 'Pending',
-                submitted_by_name: req.body.requestedBy || 'Mock User',
-                created_at: new Date().toISOString()
-            };
-            
-            return res.json({
-                success: true,
-                data: mockResponse
-            });
-        }
 
         const {
             requestTitle,
@@ -197,130 +134,120 @@ router.post('/', async (req, res) => {
 
         // Get user ID from request input or role name - use fallback to any existing user when needed
         let userId = req.body.userId ? parseInt(req.body.userId, 10) : null;
-
-        if (db) {
-            try {
-                // Map short role codes to full role names used in the users table
-                const mappedRole = requestedByRole ? (ROLE_MAP[requestedByRole] || requestedByRole) : null;
-
-                if (!userId && mappedRole) {
-                    const [roleRows] = await db.execute(
-                        'SELECT id FROM users WHERE role = ? LIMIT 1',
-                        [mappedRole]
-                    );
-                    if (roleRows.length > 0) {
-                        userId = roleRows[0].id;
-                        console.log('Found user by role:', mappedRole, 'ID:', userId);
-                    } else {
-                        console.log('No user found with role:', mappedRole);
-                    }
-                }
-
-                if (!userId && requestedBy) {
-                    const [nameRows] = await db.execute(
-                        'SELECT id FROM users WHERE name = ? LIMIT 1',
-                        [requestedBy]
-                    );
-                    if (nameRows.length > 0) {
-                        userId = nameRows[0].id;
-                        console.log('Found user by name:', requestedBy, 'ID:', userId);
-                    } else {
-                        console.log('No user found with name:', requestedBy);
-                    }
-                }
-
-                if (!userId) {
-                    const [anyUserRows] = await db.execute(
-                        'SELECT id FROM users ORDER BY id LIMIT 1'
-                    );
-                    if (anyUserRows.length > 0) {
-                        userId = anyUserRows[0].id;
-                        console.log('Falling back to first available user ID:', userId);
-                    }
-                }
-            } catch (userError) {
-                console.error('Error during user lookup for submitted_by:', userError);
-                // Do not abort; fall through to the default userId below
-            }
-
-            // Final fallback: use userId 1 (admin) when all lookups fail
-            if (!userId) {
-                userId = 1;
-                console.log('Using default user ID 1 as final fallback');
-            }
-        }
+        console.log('🔍 Initial userId from request body:', userId);
 
         try {
-            console.log('About to execute INSERT...');
-            console.log('Database available:', !!db);
-            console.log('Parameters:', {
-                requestTitle, procurementType, itemDescription, quantity, 
-                unitPrice: unitPrice || 0, totalBudget, purpose, 
-                urgencyLevel: urgencyLevel || 'Normal', expectedDeliveryDate, 
-                supplierRequirements, technicalSpecifications, budgetAllocation, 
-                department, requestedBy, requestedByRole, justification, 
-                approvalRequirements: approvalRequirements || 'Standard', userId
-            });
-            
-            const [result] = await db.execute(`
-                INSERT INTO procurement_sales (
-                    request_title, procurement_type, item_description, quantity, 
-                    unit_price, total_budget, purpose, urgency_level, 
-                    expected_delivery_date, supplier_requirements, technical_specifications,
-                    budget_allocation, department, requested_by, requested_by_role,
-                    justification, approval_requirements, status, submitted_by, created_at
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'Pending', ?, NOW())
-            `, [
-                requestTitle,
-                procurementType,
-                itemDescription,
-                quantity,
-                unitPrice || 0,
-                totalBudget,
-                purpose,
-                urgencyLevel || 'Normal',
-                expectedDeliveryDate || null,
-                supplierRequirements || null,
-                technicalSpecifications || null,
-                budgetAllocation || null,
-                department,
-                requestedBy || 'Unknown',
-                requestedByRole || 'Employee',
-                justification || null,
-                approvalRequirements || 'Standard',
-                userId
-            ]);
-            console.log('INSERT result:', result);
-            // Get the created procurement sale request
-            const [newRequest] = await db.execute(`
-                SELECT ps.*, u.name as submitted_by_name, ru.name as reviewed_by_name
-                FROM procurement_sales ps
-                LEFT JOIN users u ON ps.submitted_by = u.id
-                LEFT JOIN users ru ON ps.reviewed_by = ru.id
-                WHERE ps.id = ?
-            `, [result.insertId]);
+            // Map short role codes to full role names used in the users table
+            const mappedRole = requestedByRole ? (ROLE_MAP[requestedByRole] || requestedByRole) : null;
+            console.log('🔍 Role mapping:', requestedByRole, '->', mappedRole);
 
-        // Create notification for Finance and Procurement departments
-        await db.execute(`
-            INSERT INTO notifications (title, message, type, priority, recipient_id, created_at)
-            VALUES (?, ?, 'info', 'Medium', ?, NOW())
+            if (!userId && mappedRole) {
+                const roleRows = await db.execute(
+                    'SELECT id FROM users WHERE role = ? LIMIT 1',
+                    [mappedRole]
+                );
+                if (roleRows.length > 0) {
+                    userId = roleRows[0].id;
+                    console.log('✅ Found user by role:', mappedRole, 'ID:', userId);
+                } else {
+                    console.log('⚠️ No user found with role:', mappedRole);
+                }
+            }
+
+            if (!userId && requestedBy) {
+                const nameRows = await db.execute(
+                    'SELECT id FROM users WHERE name = ? LIMIT 1',
+                    [requestedBy]
+                );
+                if (nameRows.length > 0) {
+                    userId = nameRows[0].id;
+                    console.log('✅ Found user by name:', requestedBy, 'ID:', userId);
+                } else {
+                    console.log('⚠️ No user found with name:', requestedBy);
+                }
+            }
+
+            if (!userId) {
+                const anyUserRows = await db.execute(
+                    'SELECT id FROM users ORDER BY id LIMIT 1'
+                );
+                if (anyUserRows.length > 0) {
+                    userId = anyUserRows[0].id;
+                    console.log('✅ Falling back to first available user ID:', userId);
+                }
+            }
+        } catch (userError) {
+            console.error('⚠️ Error during user lookup for submitted_by:', userError.message);
+        }
+
+        // Final fallback: use userId 1 (admin) when all lookups fail
+        if (!userId) {
+            userId = 1;
+            console.log('⚠️ Using default user ID 1 as final fallback');
+        }
+        console.log('🔍 Final resolved userId:', userId);
+
+        console.log('💾 About to execute INSERT with userId:', userId);
+            
+        const result = await db.execute(`
+            INSERT INTO procurement_sales (
+                request_title, procurement_type, item_description, quantity, 
+                unit_price, total_budget, purpose, urgency_level, 
+                expected_delivery_date, supplier_requirements, technical_specifications,
+                budget_allocation, department, requested_by, requested_by_role,
+                justification, approval_requirements, status, submitted_by, created_at
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'Pending', ?, NOW())
         `, [
-            'New Procurement Sale Request',
-            `${requestedByRole || 'User'} submitted procurement request: ${requestTitle} (Budget: ${totalBudget})`,
+            requestTitle,
+            procurementType,
+            itemDescription,
+            quantity,
+            unitPrice || 0,
+            totalBudget,
+            purpose,
+            urgencyLevel || 'Normal',
+            expectedDeliveryDate || null,
+            supplierRequirements || null,
+            technicalSpecifications || null,
+            budgetAllocation || null,
+            department,
+            requestedBy || 'Unknown',
+            requestedByRole || 'Employee',
+            justification || null,
+            approvalRequirements || 'Standard',
             userId
         ]);
+        console.log('✅ INSERT result:', JSON.stringify(result));
+
+        // Get the created procurement sale request
+        const insertId = result.insertId;
+        const newRequest = await db.execute(`
+            SELECT ps.*, u.name as submitted_by_name, ru.name as reviewed_by_name
+            FROM procurement_sales ps
+            LEFT JOIN users u ON ps.submitted_by = u.id
+            LEFT JOIN users ru ON ps.reviewed_by = ru.id
+            WHERE ps.id = ?
+        `, [insertId]);
+        console.log('✅ Fetched new record, rows:', newRequest.length);
+
+        // Create notification for Finance and Procurement departments
+        try {
+            await db.execute(`
+                INSERT INTO notifications (title, message, type, priority, recipient_id, created_at)
+                VALUES (?, ?, 'info', 'Medium', ?, NOW())
+            `, [
+                'New Procurement Sale Request',
+                `${requestedByRole || 'User'} submitted procurement request: ${requestTitle} (Budget: ${totalBudget})`,
+                userId
+            ]);
+        } catch (notifError) {
+            console.error('⚠️ Notification insert failed (non-fatal):', notifError.message);
+        }
 
         res.json({
             success: true,
-            data: newRequest[0]
+            data: newRequest[0] || result
         });
-        } catch (dbError) {
-            console.error('Database error during INSERT:', dbError);
-            return res.status(500).json({
-                success: false,
-                error: 'Database error: ' + dbError.message
-            });
-        }
     } catch (error) {
         console.error('Error creating procurement sale request:', error);
         console.error('Error stack:', error.stack);
@@ -345,23 +272,25 @@ router.put('/:id/status', async (req, res) => {
             });
         }
 
-        // Get reviewer user ID
-        const [reviewerRows] = await db.execute(
-            'SELECT id FROM users WHERE role = ? LIMIT 1',
-            [reviewedByRole]
-        );
-
-        if (reviewerRows.length === 0) {
-            return res.status(400).json({
-                success: false,
-                error: 'Invalid reviewer role'
-            });
+        // Get reviewer user ID — map short codes to full role names
+        const mappedReviewerRole = reviewedByRole ? (ROLE_MAP[reviewedByRole] || reviewedByRole) : null;
+        let reviewerId = null;
+        if (mappedReviewerRole) {
+            const reviewerRows = await db.execute(
+                'SELECT id FROM users WHERE role = ? LIMIT 1',
+                [mappedReviewerRole]
+            );
+            if (reviewerRows.length > 0) {
+                reviewerId = reviewerRows[0].id;
+            }
+        }
+        if (!reviewerId) {
+            const anyRows = await db.execute('SELECT id FROM users ORDER BY id LIMIT 1');
+            reviewerId = anyRows.length > 0 ? anyRows[0].id : 1;
         }
 
-        const reviewerId = reviewerRows[0].id;
-
         // Update procurement sale request
-        const [result] = await db.execute(`
+        const result = await db.execute(`
             UPDATE procurement_sales 
             SET status = ?, reviewed_by = ?, reviewed_date = NOW(), 
                 review_comments = ?, approved_budget = ?, rejection_reason = ?, 
@@ -385,7 +314,7 @@ router.put('/:id/status', async (req, res) => {
         }
 
         // Get updated request
-        const [updatedRequest] = await db.execute(`
+        const updatedRequest = await db.execute(`
             SELECT ps.*, u.name as submitted_by_name
             FROM procurement_sales ps
             LEFT JOIN users u ON ps.submitted_by = u.id
@@ -393,19 +322,23 @@ router.put('/:id/status', async (req, res) => {
         `, [id]);
 
         // Create notification for the requester
-        const requesterId = updatedRequest[0].submitted_by;
-        await db.execute(`
-            INSERT INTO notifications (title, message, type, priority, recipient_id, created_at)
-            VALUES (?, ?, 'info', 'Medium', ?, NOW())
-        `, [
-            `Procurement Request ${status}`,
-            `Your procurement request "${updatedRequest[0].request_title}" has been ${status.toLowerCase()}`,
-            requesterId
-        ]);
+        try {
+            const requesterId = updatedRequest[0] ? updatedRequest[0].submitted_by : reviewerId;
+            await db.execute(`
+                INSERT INTO notifications (title, message, type, priority, recipient_id, created_at)
+                VALUES (?, ?, 'info', 'Medium', ?, NOW())
+            `, [
+                `Procurement Request ${status}`,
+                `Your procurement request "${updatedRequest[0] ? updatedRequest[0].request_title : id}" has been ${status.toLowerCase()}`,
+                requesterId
+            ]);
+        } catch (notifError) {
+            console.error('⚠️ Notification insert failed (non-fatal):', notifError.message);
+        }
 
         res.json({
             success: true,
-            data: updatedRequest[0]
+            data: updatedRequest[0] || { id, status }
         });
     } catch (error) {
         console.error('Error updating procurement sale status:', error);
@@ -419,7 +352,7 @@ router.put('/:id/status', async (req, res) => {
 // Get procurement sales summary
 router.get('/summary', async (req, res) => {
     try {
-        const [summary] = await db.execute(`
+        const summary = await db.execute(`
             SELECT 
                 COUNT(*) as total_requests,
                 SUM(total_budget) as total_budget_value,
@@ -454,7 +387,7 @@ router.get('/department/:department', async (req, res) => {
     try {
         const { department } = req.params;
         
-        const [procurementSales] = await db.execute(`
+        const procurementSales = await db.execute(`
             SELECT ps.*, u.name as submitted_by_name, ru.name as reviewed_by_name
             FROM procurement_sales ps
             LEFT JOIN users u ON ps.submitted_by = u.id
@@ -481,7 +414,7 @@ router.delete('/:id', async (req, res) => {
     try {
         const { id } = req.params;
 
-        const [result] = await db.execute('DELETE FROM procurement_sales WHERE id = ?', [id]);
+        const result = await db.execute('DELETE FROM procurement_sales WHERE id = ?', [id]);
 
         if (result.affectedRows === 0) {
             return res.status(404).json({
