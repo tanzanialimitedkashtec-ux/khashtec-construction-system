@@ -448,7 +448,7 @@ router.post('/luggage-campaigns', async (req, res) => {
             });
         }
 
-        const [existingColumns] = await db.execute(`
+        const existingColumns = await db.execute(`
             SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS
             WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'luggage_campaigns'
         `);
