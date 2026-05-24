@@ -29,16 +29,29 @@ async function getDb() {
         )
     `);
 
-    // Add missing columns to existing tables (for backward compatibility with old schema)
-    const migrations = [
-        "ALTER TABLE luggage_campaigns ADD COLUMN IF NOT EXISTS luggage_name VARCHAR(255) NOT NULL DEFAULT '' AFTER campaign_name",
-        "ALTER TABLE luggage_campaigns ADD COLUMN IF NOT EXISTS luggage_code VARCHAR(20) NOT NULL DEFAULT '' AFTER luggage_name",
-        "ALTER TABLE luggage_campaigns ADD COLUMN IF NOT EXISTS price_per_unit DECIMAL(10,2) NOT NULL DEFAULT 0.00",
-        "ALTER TABLE luggage_campaigns ADD COLUMN IF NOT EXISTS total_units INT NOT NULL DEFAULT 0",
-        "ALTER TABLE luggage_campaigns ADD COLUMN IF NOT EXISTS units_sold INT NOT NULL DEFAULT 0"
+    // Add missing columns to existing tables — works on MySQL 5.7 AND 8.0.
+    // "ADD COLUMN IF NOT EXISTS" is MySQL 8.0+ only, so we check INFORMATION_SCHEMA first.
+    const columnsToAdd = [
+        { name: 'luggage_name',   sql: "ALTER TABLE luggage_campaigns ADD COLUMN luggage_name VARCHAR(255) NOT NULL DEFAULT '' AFTER campaign_name" },
+        { name: 'luggage_code',   sql: "ALTER TABLE luggage_campaigns ADD COLUMN luggage_code VARCHAR(20) NOT NULL DEFAULT '' AFTER luggage_name" },
+        { name: 'price_per_unit', sql: "ALTER TABLE luggage_campaigns ADD COLUMN price_per_unit DECIMAL(10,2) NOT NULL DEFAULT 0.00" },
+        { name: 'total_units',    sql: "ALTER TABLE luggage_campaigns ADD COLUMN total_units INT NOT NULL DEFAULT 0" },
+        { name: 'units_sold',     sql: "ALTER TABLE luggage_campaigns ADD COLUMN units_sold INT NOT NULL DEFAULT 0" }
     ];
-    for (const sql of migrations) {
-        try { await db.execute(sql); } catch (e) { /* column already exists — ignore */ }
+    for (const col of columnsToAdd) {
+        try {
+            const existing = await db.execute(
+                `SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS
+                 WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'luggage_campaigns' AND COLUMN_NAME = ?`,
+                [col.name]
+            );
+            if (!existing || existing.length === 0) {
+                await db.execute(col.sql);
+                console.log(`✅ Migration: added column '${col.name}' to luggage_campaigns`);
+            }
+        } catch (e) {
+            console.warn(`⚠️ Migration warning for column '${col.name}':`, e.message);
+        }
     }
 
     return db;
