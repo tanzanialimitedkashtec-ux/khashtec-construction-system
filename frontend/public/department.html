@@ -142,6 +142,19 @@ function submitEmailPayslipsForm(event) {
 }
 
     </script>
+    <script>
+    // Ensure toggleSidebar is defined globally early to avoid runtime ReferenceError
+    window.toggleSidebar = window.toggleSidebar || function() {
+        try {
+            const sidebar = document.querySelector('.sidebar');
+            if (!sidebar) return console.warn('toggleSidebar: sidebar not found');
+            sidebar.classList.toggle('collapsed');
+            console.log('toggleSidebar invoked');
+        } catch (e) {
+            console.warn('toggleSidebar error', e);
+        }
+    };
+    </script>
 
     
 
@@ -67250,7 +67263,6 @@ function submitNewExpense() {
     });
 
     return false;
-}
 
 }
 
