@@ -554,6 +554,99 @@ router.get('/system-changes', async (req, res) => {
             });
         } catch (e) { console.log('Car tracking:', e.message); }
 
+        // Track recent financial transactions / payment incidents
+        try {
+            const [newPayments] = await db.execute(`
+                SELECT id, type, category, description, amount, status, created_at
+                FROM financial_transactions
+                WHERE created_at >= DATE_SUB(NOW(), INTERVAL ? DAY)
+                ORDER BY created_at DESC
+                LIMIT 50
+            `, [parseInt(days)]);
+            newPayments.forEach(p => {
+                changes.push({
+                    type: 'payment_recorded',
+                    icon: '💰',
+                    title: `Financial Transaction: ${p.type || 'Payment'}`,
+                    description: `${p.description || p.category || 'Transaction'} - Amount: ${Number(p.amount || 0).toLocaleString()} (${p.status || 'N/A'})`,
+                    entity_id: p.id,
+                    entity_name: p.category || p.type,
+                    status: p.status,
+                    timestamp: p.created_at
+                });
+            });
+        } catch (e) { console.log('Payment tracking:', e.message); }
+
+        // Track recent tax payments
+        try {
+            const [newTax] = await db.execute(`
+                SELECT id, tax_type, tax_period, amount, payment_status, payment_date, created_at
+                FROM tax_payments
+                WHERE created_at >= DATE_SUB(NOW(), INTERVAL ? DAY)
+                ORDER BY created_at DESC
+                LIMIT 50
+            `, [parseInt(days)]);
+            newTax.forEach(t => {
+                changes.push({
+                    type: 'tax_payment',
+                    icon: '🏛️',
+                    title: `Tax Payment: ${t.tax_type || 'Tax'}`,
+                    description: `${t.tax_type} for ${t.tax_period} - Amount: ${Number(t.amount || 0).toLocaleString()} (${t.payment_status})`,
+                    entity_id: t.id,
+                    entity_name: t.tax_type,
+                    status: t.payment_status,
+                    timestamp: t.created_at
+                });
+            });
+        } catch (e) { console.log('Tax tracking:', e.message); }
+
+        // Track payroll records
+        try {
+            const [newPayroll] = await db.execute(`
+                SELECT id, payroll_month, payroll_type, total_employees, net_payment, status, created_at
+                FROM payroll_records
+                WHERE created_at >= DATE_SUB(NOW(), INTERVAL ? DAY)
+                ORDER BY created_at DESC
+                LIMIT 50
+            `, [parseInt(days)]);
+            newPayroll.forEach(pr => {
+                changes.push({
+                    type: 'payroll_processed',
+                    icon: '📊',
+                    title: `Payroll: ${pr.payroll_month || 'Record'}`,
+                    description: `${pr.payroll_type || 'Regular'} payroll for ${pr.total_employees || 0} employees - Net: ${Number(pr.net_payment || 0).toLocaleString()} (${pr.status})`,
+                    entity_id: pr.id,
+                    entity_name: pr.payroll_month,
+                    status: pr.status,
+                    timestamp: pr.created_at
+                });
+            });
+        } catch (e) { console.log('Payroll tracking:', e.message); }
+
+        // Track safety incidents
+        try {
+            const [incidents] = await db.execute(`
+                SELECT id, work_title, work_type, department_code, created_at
+                FROM hse_work
+                WHERE created_at >= DATE_SUB(NOW(), INTERVAL ? DAY)
+                  AND (work_type LIKE '%Violation%' OR work_type LIKE '%Incident%')
+                ORDER BY created_at DESC
+                LIMIT 50
+            `, [parseInt(days)]);
+            incidents.forEach(inc => {
+                changes.push({
+                    type: 'safety_incident',
+                    icon: '⚠️',
+                    title: `Safety: ${inc.work_type || 'Incident'}`,
+                    description: `${inc.work_title || 'Incident'} in ${inc.department_code || 'Unknown'} department`,
+                    entity_id: inc.id,
+                    entity_name: inc.work_title,
+                    status: inc.work_type,
+                    timestamp: inc.created_at
+                });
+            });
+        } catch (e) { console.log('Safety incident tracking:', e.message); }
+
         // Filter by type if specified
         let filtered = changes;
         if (type) {
@@ -571,7 +664,11 @@ router.get('/system-changes', async (req, res) => {
             drivers: changes.filter(c => c.type === 'driver_added').length,
             policies: changes.filter(c => c.type === 'policy_added').length,
             projects: changes.filter(c => c.type === 'project_added').length,
-            cars: changes.filter(c => c.type === 'car_added').length
+            cars: changes.filter(c => c.type === 'car_added').length,
+            payments: changes.filter(c => c.type === 'payment_recorded').length,
+            tax: changes.filter(c => c.type === 'tax_payment').length,
+            payroll: changes.filter(c => c.type === 'payroll_processed').length,
+            incidents: changes.filter(c => c.type === 'safety_incident').length
         };
 
         res.json({
@@ -673,6 +770,363 @@ router.get('/system-status', async (req, res) => {
     }
 });
 
+// ===== INTERNAL AUDITS (real DB data) =====
+router.get('/internal-audits', async (req, res) => {
+    try {
+        console.log('📋 Fetching internal audit data from database...');
+        const audits = [];
+
+        // Financial transactions audit
+        try {
+            const [txSummary] = await db.execute(`
+                SELECT type, status, COUNT(*) as count, SUM(amount) as total_amount
+                FROM financial_transactions
+                GROUP BY type, status
+                ORDER BY type, status
+            `);
+            const [txRecent] = await db.execute(`
+                SELECT id, type, category, description, amount, status, created_at
+                FROM financial_transactions
+                ORDER BY created_at DESC LIMIT 20
+            `);
+            audits.push({
+                id: 'internal_financial',
+                name: 'Financial Records Audit',
+                scope: 'All financial transactions',
+                summary: txSummary,
+                recentRecords: txRecent,
+                totalRecords: txSummary.reduce((s, r) => s + r.count, 0),
+                totalAmount: txSummary.reduce((s, r) => s + Number(r.total_amount || 0), 0)
+            });
+        } catch (e) { console.log('Financial audit:', e.message); }
+
+        // Payroll audit
+        try {
+            const [payrollSummary] = await db.execute(`
+                SELECT status, COUNT(*) as count, SUM(net_payment) as total_net,
+                       SUM(total_gross) as total_gross, SUM(total_deductions) as total_deductions
+                FROM payroll_records
+                GROUP BY status
+            `);
+            const [payrollRecent] = await db.execute(`
+                SELECT id, payroll_month, payroll_type, total_employees, total_gross,
+                       total_deductions, net_payment, status, created_at
+                FROM payroll_records
+                ORDER BY created_at DESC LIMIT 20
+            `);
+            audits.push({
+                id: 'internal_payroll',
+                name: 'Payroll Compliance Audit',
+                scope: 'Salary payments & deductions',
+                summary: payrollSummary,
+                recentRecords: payrollRecent,
+                totalRecords: payrollSummary.reduce((s, r) => s + r.count, 0),
+                totalNet: payrollSummary.reduce((s, r) => s + Number(r.total_net || 0), 0)
+            });
+        } catch (e) { console.log('Payroll audit:', e.message); }
+
+        // Payment tracking audit
+        try {
+            const [ptSummary] = await db.execute(`
+                SELECT payment_status, transaction_type, COUNT(*) as count, SUM(amount) as total
+                FROM payment_tracking
+                GROUP BY payment_status, transaction_type
+                ORDER BY payment_status
+            `);
+            const [ptRecent] = await db.execute(`
+                SELECT id, tracking_reference, transaction_type, amount, payment_status,
+                       paid_by, paid_to, payment_date, description, created_at
+                FROM payment_tracking
+                ORDER BY created_at DESC LIMIT 20
+            `);
+            const overdue = ptRecent.filter(p => p.payment_status === 'pending' && p.due_date && new Date(p.due_date) < new Date());
+            audits.push({
+                id: 'internal_payments',
+                name: 'Payment Tracking Audit',
+                scope: 'All payment records & tracking',
+                summary: ptSummary,
+                recentRecords: ptRecent,
+                totalRecords: ptSummary.reduce((s, r) => s + r.count, 0),
+                overdueCount: overdue.length
+            });
+        } catch (e) { console.log('Payment tracking audit:', e.message); }
+
+        // Budget audit
+        try {
+            const [budgetSummary] = await db.execute(`
+                SELECT status, COUNT(*) as count, SUM(total_proposed) as total_proposed
+                FROM budgets
+                GROUP BY status
+            `);
+            audits.push({
+                id: 'internal_budget',
+                name: 'Budget Allocation Audit',
+                scope: 'Workforce & department budgets',
+                summary: budgetSummary,
+                totalRecords: budgetSummary.reduce((s, r) => s + r.count, 0),
+                totalProposed: budgetSummary.reduce((s, r) => s + Number(r.total_proposed || 0), 0)
+            });
+        } catch (e) { console.log('Budget audit:', e.message); }
+
+        res.json({ success: true, audits });
+    } catch (error) {
+        console.error('❌ Error fetching internal audits:', error);
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+// ===== EXTERNAL AUDITS (real DB data) =====
+router.get('/external-audits', async (req, res) => {
+    try {
+        console.log('📋 Fetching external audit data from database...');
+        const audits = [];
+
+        // Tax payments audit
+        try {
+            const [taxSummary] = await db.execute(`
+                SELECT tax_type, payment_status, COUNT(*) as count,
+                       SUM(total_amount) as total_paid,
+                       SUM(penalties) as total_penalties
+                FROM tax_payments
+                GROUP BY tax_type, payment_status
+                ORDER BY tax_type
+            `);
+            const [taxRecent] = await db.execute(`
+                SELECT id, tax_type, tax_period, amount, penalties, interest,
+                       total_amount, payment_status, payment_date, due_date, created_at
+                FROM tax_payments
+                ORDER BY created_at DESC LIMIT 20
+            `);
+            const overdueTax = taxRecent.filter(t => t.payment_status === 'Overdue' || (t.payment_status === 'Pending' && t.due_date && new Date(t.due_date) < new Date()));
+            audits.push({
+                id: 'external_tax',
+                name: 'Tax Compliance Audit',
+                auditor: 'Tanzania Revenue Authority (TRA)',
+                scope: 'PAYE, VAT, Corporate Tax, SDL',
+                summary: taxSummary,
+                recentRecords: taxRecent,
+                totalRecords: taxSummary.reduce((s, r) => s + r.count, 0),
+                totalPaid: taxSummary.reduce((s, r) => s + Number(r.total_paid || 0), 0),
+                overdueCount: overdueTax.length,
+                totalPenalties: taxSummary.reduce((s, r) => s + Number(r.total_penalties || 0), 0)
+            });
+        } catch (e) { console.log('Tax audit:', e.message); }
+
+        // NSSF compliance audit
+        try {
+            const [nssfSummary] = await db.execute(`
+                SELECT status, COUNT(*) as count,
+                       SUM(total_contributions) as total_contributions,
+                       SUM(monthly_contribution) as monthly_total
+                FROM nssf_registration
+                GROUP BY status
+            `);
+            const [nssfRecent] = await db.execute(`
+                SELECT id, registration_number, nssf_number, employee_id, status,
+                       monthly_salary, monthly_contribution, total_contributions,
+                       last_contribution_date, created_at
+                FROM nssf_registration
+                ORDER BY created_at DESC LIMIT 20
+            `);
+            audits.push({
+                id: 'external_nssf',
+                name: 'NSSF Compliance Audit',
+                auditor: 'National Social Security Fund (NSSF)',
+                scope: 'Employee NSSF registrations & contributions',
+                summary: nssfSummary,
+                recentRecords: nssfRecent,
+                totalRecords: nssfSummary.reduce((s, r) => s + r.count, 0),
+                totalContributions: nssfSummary.reduce((s, r) => s + Number(r.total_contributions || 0), 0)
+            });
+        } catch (e) { console.log('NSSF audit:', e.message); }
+
+        // Document compliance audit
+        try {
+            const [docSummary] = await db.execute(`
+                SELECT category, status, COUNT(*) as count
+                FROM documents
+                GROUP BY category, status
+                ORDER BY category
+            `);
+            audits.push({
+                id: 'external_documents',
+                name: 'Document & Certificate Audit',
+                auditor: 'Regulatory Bodies',
+                scope: 'Contracts, Permits, Certificates, Reports',
+                summary: docSummary,
+                totalRecords: docSummary.reduce((s, r) => s + r.count, 0)
+            });
+        } catch (e) { console.log('Document audit:', e.message); }
+
+        res.json({ success: true, audits });
+    } catch (error) {
+        console.error('❌ Error fetching external audits:', error);
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+// ===== COMPLIANCE CHECKS (real DB data) =====
+router.get('/compliance-checks', async (req, res) => {
+    try {
+        console.log('📋 Fetching compliance check data from database...');
+        const checks = {};
+
+        // Tax compliance
+        try {
+            const [taxOverdue] = await db.execute(`
+                SELECT COUNT(*) as count FROM tax_payments
+                WHERE payment_status IN ('Overdue', 'Pending')
+                  AND due_date < CURDATE()
+            `);
+            const [taxTotal] = await db.execute(`SELECT COUNT(*) as count FROM tax_payments`);
+            const [taxPaid] = await db.execute(`
+                SELECT COUNT(*) as count FROM tax_payments WHERE payment_status = 'Paid'
+            `);
+            const total = taxTotal[0]?.count || 0;
+            const paid = taxPaid[0]?.count || 0;
+            checks.tax = {
+                label: 'Tax Compliance',
+                status: taxOverdue[0]?.count > 0 ? 'Issues Found' : (total > 0 ? 'Compliant' : 'No Data'),
+                healthy: taxOverdue[0]?.count === 0,
+                overdue: taxOverdue[0]?.count || 0,
+                total,
+                paid,
+                rate: total > 0 ? Math.round((paid / total) * 100) : 0
+            };
+        } catch (e) {
+            checks.tax = { label: 'Tax Compliance', status: 'No Data', healthy: true, overdue: 0, total: 0, paid: 0, rate: 0 };
+        }
+
+        // NSSF compliance
+        try {
+            const [nssfActive] = await db.execute(`
+                SELECT COUNT(*) as count FROM nssf_registration WHERE status = 'Active'
+            `);
+            const [nssfTotal] = await db.execute(`SELECT COUNT(*) as count FROM nssf_registration`);
+            const [nssfInactive] = await db.execute(`
+                SELECT COUNT(*) as count FROM nssf_registration WHERE status != 'Active'
+            `);
+            const total = nssfTotal[0]?.count || 0;
+            const active = nssfActive[0]?.count || 0;
+            checks.nssf = {
+                label: 'NSSF Compliance',
+                status: nssfInactive[0]?.count > 0 ? 'Issues Found' : (total > 0 ? 'Compliant' : 'No Data'),
+                healthy: (nssfInactive[0]?.count || 0) === 0,
+                active,
+                inactive: nssfInactive[0]?.count || 0,
+                total,
+                rate: total > 0 ? Math.round((active / total) * 100) : 0
+            };
+        } catch (e) {
+            checks.nssf = { label: 'NSSF Compliance', status: 'No Data', healthy: true, active: 0, inactive: 0, total: 0, rate: 0 };
+        }
+
+        // Financial reporting compliance
+        try {
+            const [pendingTx] = await db.execute(`
+                SELECT COUNT(*) as count FROM financial_transactions WHERE status = 'Pending'
+            `);
+            const [totalTx] = await db.execute(`SELECT COUNT(*) as count FROM financial_transactions`);
+            const [approvedTx] = await db.execute(`
+                SELECT COUNT(*) as count FROM financial_transactions WHERE status IN ('Approved', 'Processed')
+            `);
+            const total = totalTx[0]?.count || 0;
+            const approved = approvedTx[0]?.count || 0;
+            const pending = pendingTx[0]?.count || 0;
+            checks.financial = {
+                label: 'Financial Reporting',
+                status: pending > 5 ? 'Action Required' : (total > 0 ? 'Up to Date' : 'No Data'),
+                healthy: pending <= 5,
+                pending,
+                approved,
+                total,
+                rate: total > 0 ? Math.round((approved / total) * 100) : 0
+            };
+        } catch (e) {
+            checks.financial = { label: 'Financial Reporting', status: 'No Data', healthy: true, pending: 0, approved: 0, total: 0, rate: 0 };
+        }
+
+        // Payroll compliance
+        try {
+            const [payrollDraft] = await db.execute(`
+                SELECT COUNT(*) as count FROM payroll_records WHERE status = 'draft'
+            `);
+            const [payrollTotal] = await db.execute(`SELECT COUNT(*) as count FROM payroll_records`);
+            const [payrollPaid] = await db.execute(`
+                SELECT COUNT(*) as count FROM payroll_records WHERE status IN ('paid', 'approved')
+            `);
+            const total = payrollTotal[0]?.count || 0;
+            const paid = payrollPaid[0]?.count || 0;
+            checks.payroll = {
+                label: 'Payroll Compliance',
+                status: (payrollDraft[0]?.count || 0) > 0 ? 'Drafts Pending' : (total > 0 ? 'Compliant' : 'No Data'),
+                healthy: (payrollDraft[0]?.count || 0) === 0,
+                drafts: payrollDraft[0]?.count || 0,
+                paid,
+                total,
+                rate: total > 0 ? Math.round((paid / total) * 100) : 0
+            };
+        } catch (e) {
+            checks.payroll = { label: 'Payroll Compliance', status: 'No Data', healthy: true, drafts: 0, paid: 0, total: 0, rate: 0 };
+        }
+
+        // Policy compliance
+        try {
+            const [policyActive] = await db.execute(`
+                SELECT COUNT(*) as count FROM policies WHERE status = 'Approved'
+            `);
+            const [policyTotal] = await db.execute(`SELECT COUNT(*) as count FROM policies`);
+            const [policyPending] = await db.execute(`
+                SELECT COUNT(*) as count FROM policies WHERE status = 'Pending'
+            `);
+            const total = policyTotal[0]?.count || 0;
+            const approved = policyActive[0]?.count || 0;
+            checks.policies = {
+                label: 'Policy Compliance',
+                status: (policyPending[0]?.count || 0) > 0 ? 'Pending Review' : (total > 0 ? 'Compliant' : 'No Data'),
+                healthy: (policyPending[0]?.count || 0) === 0,
+                approved,
+                pending: policyPending[0]?.count || 0,
+                total,
+                rate: total > 0 ? Math.round((approved / total) * 100) : 0
+            };
+        } catch (e) {
+            checks.policies = { label: 'Policy Compliance', status: 'No Data', healthy: true, approved: 0, pending: 0, total: 0, rate: 0 };
+        }
+
+        // Payment tracking compliance
+        try {
+            const [ptOverdue] = await db.execute(`
+                SELECT COUNT(*) as count FROM payment_tracking
+                WHERE payment_status IN ('pending', 'failed')
+                  AND due_date IS NOT NULL AND due_date < CURDATE()
+            `);
+            const [ptTotal] = await db.execute(`SELECT COUNT(*) as count FROM payment_tracking`);
+            const [ptCompleted] = await db.execute(`
+                SELECT COUNT(*) as count FROM payment_tracking WHERE payment_status = 'completed'
+            `);
+            const total = ptTotal[0]?.count || 0;
+            const completed = ptCompleted[0]?.count || 0;
+            checks.payments = {
+                label: 'Payment Tracking',
+                status: (ptOverdue[0]?.count || 0) > 0 ? 'Overdue Payments' : (total > 0 ? 'On Track' : 'No Data'),
+                healthy: (ptOverdue[0]?.count || 0) === 0,
+                overdue: ptOverdue[0]?.count || 0,
+                completed,
+                total,
+                rate: total > 0 ? Math.round((completed / total) * 100) : 0
+            };
+        } catch (e) {
+            checks.payments = { label: 'Payment Tracking', status: 'No Data', healthy: true, overdue: 0, completed: 0, total: 0, rate: 0 };
+        }
+
+        res.json({ success: true, checks });
+    } catch (error) {
+        console.error('❌ Error fetching compliance checks:', error);
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
 // Test endpoint
 router.get('/test', (req, res) => {
     res.json({
@@ -683,6 +1137,9 @@ router.get('/test', (req, res) => {
             'GET /audit/category/:category - Specific category data',
             'GET /audit/system-changes - System change notifications',
             'GET /audit/system-status - System status overview',
+            'GET /audit/internal-audits - Internal audit data from DB',
+            'GET /audit/external-audits - External audit data from DB',
+            'GET /audit/compliance-checks - Compliance check data from DB',
             'POST /audit/report - Generate audit report',
             'GET /audit/test - Test endpoint'
         ]

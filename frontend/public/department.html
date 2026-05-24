@@ -23125,6 +23125,44 @@ background: #f8f9fa;
 
 .no-changes { text-align: center; padding: 40px; color: #888; }
 
+.error-text { color: #f44336; font-style: italic; }
+
+.audit-summary-table { margin-top: 10px; overflow-x: auto; }
+.audit-summary-table .audit-table { font-size: 0.85rem; }
+
+.audit-recent-details { margin-top: 10px; }
+.audit-recent-details summary {
+    cursor: pointer; color: #4CAF50; font-weight: 600;
+    padding: 8px 0; font-size: 0.9rem;
+}
+.audit-recent-details summary:hover { text-decoration: underline; }
+.audit-recent-details .audit-table { margin-top: 8px; font-size: 0.82rem; }
+
+.compliance-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; }
+.compliance-card {
+    flex-direction: column; align-items: stretch;
+    background: #fff; border-radius: 10px; padding: 16px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06); border: 1px solid #e0e0e0;
+}
+.compliance-header {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 10px; padding-bottom: 8px; border-bottom: 1px solid #eee;
+}
+.compliance-label { font-weight: 600; color: #333; font-size: 0.95rem; }
+.compliance-details { display: flex; flex-direction: column; gap: 6px; }
+.compliance-rate { display: flex; align-items: center; gap: 10px; margin-bottom: 4px; }
+.rate-bar {
+    flex: 1; height: 8px; background: #e0e0e0; border-radius: 4px; overflow: hidden;
+}
+.rate-fill {
+    height: 100%; background: #4CAF50; border-radius: 4px;
+    transition: width 0.6s ease;
+}
+.compliance-stat {
+    font-size: 0.85rem; color: #555; padding: 2px 0;
+}
+.stat-warn { color: #f57c00; font-weight: 600; }
+
 @media (max-width: 768px) {
     .audits-main-tabs { flex-direction: column; }
     .audits-tab-btn { text-align: left; border-bottom: none; border-left: 3px solid transparent; }
@@ -61696,6 +61734,14 @@ function financeAudits(){
 
                         <option value="car_added">Company Cars</option>
 
+                        <option value="payment_recorded">Payments</option>
+
+                        <option value="tax_payment">Tax Payments</option>
+
+                        <option value="payroll_processed">Payroll</option>
+
+                        <option value="safety_incident">Safety Incidents</option>
+
                     </select>
 
                     <button class="action" onclick="loadSystemChanges()">Refresh</button>
@@ -61744,55 +61790,9 @@ function financeAudits(){
 
                     <div class="audit-section">
 
-                        <h5>Scheduled Internal Audits</h5>
+                        <h5>Internal Audits (Live Data)</h5>
 
-                        <div class="audit-item">
-
-                            <div class="audit-details">
-
-                                <strong>Q1 Financial Records Audit</strong>
-
-                                <span>Scheduled: March 25, 2026</span>
-
-                                <span>Scope: All financial transactions</span>
-
-                                <span>Status: Pending</span>
-
-                            </div>
-
-                            <div class="audit-actions">
-
-                                <button class="action" onclick="startAudit('audit001')">Start Audit</button>
-
-                                <button class="action" onclick="rescheduleAudit('audit001')">Reschedule</button>
-
-                            </div>
-
-                        </div>
-
-                        
-
-                        <div class="audit-item">
-
-                            <div class="audit-details">
-
-                                <strong>Payroll Compliance Audit</strong>
-
-                                <span>Completed: February 28, 2026</span>
-
-                                <span>Scope: Salary payments &amp; deductions</span>
-
-                                <span>Status: Completed - No Issues</span>
-
-                            </div>
-
-                            <div class="audit-actions">
-
-                                <button class="action" onclick="viewAuditReport('audit002')">View Report</button>
-
-                            </div>
-
-                        </div>
+                        <div id="internalAuditsContent"><p>Loading internal audit data...</p></div>
 
                     </div>
 
@@ -61804,23 +61804,9 @@ function financeAudits(){
 
                     <div class="audit-section">
 
-                        <h5>External Audit Requirements</h5>
+                        <h5>External Audit Requirements (Live Data)</h5>
 
-                        <div class="audit-item">
-
-                            <div class="audit-details">
-
-                                <strong>Annual Financial Audit</strong>
-
-                                <span>Due: December 31, 2026</span>
-
-                                <span>Auditor: PwC Tanzania</span>
-
-                                <span>Status: Scheduled</span>
-
-                            </div>
-
-                        </div>
+                        <div id="externalAuditsContent"><p>Loading external audit data...</p></div>
 
                     </div>
 
@@ -61832,35 +61818,9 @@ function financeAudits(){
 
                     <div class="audit-section">
 
-                        <h5>Compliance Status</h5>
+                        <h5>Compliance Status (Live Data)</h5>
 
-                        <div class="compliance-grid">
-
-                            <div class="compliance-item">
-
-                                <span>Tax Compliance</span>
-
-                                <span class="status-good">Compliant</span>
-
-                            </div>
-
-                            <div class="compliance-item">
-
-                                <span>NSSF Compliance</span>
-
-                                <span class="status-good">Compliant</span>
-
-                            </div>
-
-                            <div class="compliance-item">
-
-                                <span>Financial Reporting</span>
-
-                                <span class="status-warning">Due Soon</span>
-
-                            </div>
-
-                        </div>
+                        <div id="complianceChecksContent"><p>Loading compliance data...</p></div>
 
                     </div>
 
@@ -61897,6 +61857,8 @@ function switchAuditsMainTab(tabId) {
     if (tabId === 'systemStatus') loadSystemStatus();
 
     if (tabId === 'changeLog') loadSystemChanges();
+
+    if (tabId === 'financialAudits') loadFinancialAuditsData();
 
 }
 
@@ -62024,7 +61986,7 @@ async function loadSystemChanges() {
 
                 summaryEl.innerHTML =
 
-                    '<div class="chg-card"><span class="chg-num">' + (summary.total || 0) + '</span><span class="chg-lbl">Total Changes</span></div>' +
+                    '<div class="chg-card"><span class="chg-num">' + (summary.total || 0) + '</span><span class="chg-lbl">Total</span></div>' +
 
                     '<div class="chg-card"><span class="chg-num">' + (summary.employees || 0) + '</span><span class="chg-lbl">Employees</span></div>' +
 
@@ -62036,7 +61998,13 @@ async function loadSystemChanges() {
 
                     '<div class="chg-card"><span class="chg-num">' + (summary.projects || 0) + '</span><span class="chg-lbl">Projects</span></div>' +
 
-                    '<div class="chg-card"><span class="chg-num">' + (summary.cars || 0) + '</span><span class="chg-lbl">Cars</span></div>';
+                    '<div class="chg-card"><span class="chg-num">' + (summary.payments || 0) + '</span><span class="chg-lbl">Payments</span></div>' +
+
+                    '<div class="chg-card"><span class="chg-num">' + (summary.tax || 0) + '</span><span class="chg-lbl">Tax</span></div>' +
+
+                    '<div class="chg-card"><span class="chg-num">' + (summary.payroll || 0) + '</span><span class="chg-lbl">Payroll</span></div>' +
+
+                    '<div class="chg-card"><span class="chg-num">' + (summary.incidents || 0) + '</span><span class="chg-lbl">Incidents</span></div>';
 
             }
 
@@ -62102,6 +62070,189 @@ async function loadSystemChanges() {
 
     }
 
+}
+
+// ===== LOAD FINANCIAL AUDITS DATA =====
+async function loadFinancialAuditsData() {
+    loadInternalAudits();
+    loadExternalAudits();
+    loadComplianceChecks();
+}
+
+// ===== INTERNAL AUDITS LOADING =====
+async function loadInternalAudits() {
+    const el = document.getElementById('internalAuditsContent');
+    if (!el) return;
+    el.innerHTML = '<p>Loading internal audit data...</p>';
+    try {
+        const response = await KashTecAPI.get('/audit/internal-audits');
+        if (response && response.audits) {
+            const audits = response.audits;
+            if (audits.length === 0) {
+                el.innerHTML = '<p>No internal audit data available.</p>';
+                return;
+            }
+            let html = '';
+            audits.forEach(audit => {
+                html += '<div class="audit-item"><div class="audit-details">';
+                html += '<strong>' + audit.name + '</strong>';
+                html += '<span>Scope: ' + audit.scope + '</span>';
+                html += '<span>Total Records: ' + (audit.totalRecords || 0) + '</span>';
+                if (audit.totalAmount !== undefined) html += '<span>Total Amount: ' + Number(audit.totalAmount).toLocaleString() + '</span>';
+                if (audit.totalNet !== undefined) html += '<span>Total Net Payment: ' + Number(audit.totalNet).toLocaleString() + '</span>';
+                if (audit.totalProposed !== undefined) html += '<span>Total Proposed: ' + Number(audit.totalProposed).toLocaleString() + '</span>';
+                if (audit.overdueCount > 0) html += '<span class="status-warning">Overdue: ' + audit.overdueCount + '</span>';
+                // Summary breakdown
+                if (audit.summary && audit.summary.length > 0) {
+                    html += '<div class="audit-summary-table"><table class="audit-table"><thead><tr>';
+                    const keys = Object.keys(audit.summary[0]);
+                    keys.forEach(k => { html += '<th>' + k.replace(/_/g, ' ') + '</th>'; });
+                    html += '</tr></thead><tbody>';
+                    audit.summary.forEach(row => {
+                        html += '<tr>';
+                        keys.forEach(k => {
+                            let val = row[k];
+                            if (typeof val === 'number' && val > 999) val = Number(val).toLocaleString();
+                            html += '<td>' + (val !== null && val !== undefined ? val : '-') + '</td>';
+                        });
+                        html += '</tr>';
+                    });
+                    html += '</tbody></table></div>';
+                }
+                // Recent records
+                if (audit.recentRecords && audit.recentRecords.length > 0) {
+                    html += '<details class="audit-recent-details"><summary>Recent Records (' + audit.recentRecords.length + ')</summary>';
+                    html += '<table class="audit-table"><thead><tr>';
+                    const rKeys = Object.keys(audit.recentRecords[0]).filter(k => k !== 'id');
+                    rKeys.forEach(k => { html += '<th>' + k.replace(/_/g, ' ') + '</th>'; });
+                    html += '</tr></thead><tbody>';
+                    audit.recentRecords.slice(0, 10).forEach(rec => {
+                        html += '<tr>';
+                        rKeys.forEach(k => {
+                            let val = rec[k];
+                            if (k === 'created_at' || k === 'payment_date') val = val ? new Date(val).toLocaleDateString() : '-';
+                            else if (typeof val === 'number' && val > 999) val = Number(val).toLocaleString();
+                            html += '<td>' + (val !== null && val !== undefined ? val : '-') + '</td>';
+                        });
+                        html += '</tr>';
+                    });
+                    html += '</tbody></table></details>';
+                }
+                html += '</div></div>';
+            });
+            el.innerHTML = html;
+        }
+    } catch (error) {
+        console.error('Internal audits error:', error);
+        el.innerHTML = '<p class="error-text">Error loading internal audit data. Please try again.</p>';
+    }
+}
+
+// ===== EXTERNAL AUDITS LOADING =====
+async function loadExternalAudits() {
+    const el = document.getElementById('externalAuditsContent');
+    if (!el) return;
+    el.innerHTML = '<p>Loading external audit data...</p>';
+    try {
+        const response = await KashTecAPI.get('/audit/external-audits');
+        if (response && response.audits) {
+            const audits = response.audits;
+            if (audits.length === 0) {
+                el.innerHTML = '<p>No external audit data available.</p>';
+                return;
+            }
+            let html = '';
+            audits.forEach(audit => {
+                html += '<div class="audit-item"><div class="audit-details">';
+                html += '<strong>' + audit.name + '</strong>';
+                html += '<span>Auditor: ' + (audit.auditor || 'N/A') + '</span>';
+                html += '<span>Scope: ' + audit.scope + '</span>';
+                html += '<span>Total Records: ' + (audit.totalRecords || 0) + '</span>';
+                if (audit.totalPaid !== undefined) html += '<span>Total Paid: ' + Number(audit.totalPaid).toLocaleString() + '</span>';
+                if (audit.totalContributions !== undefined) html += '<span>Total Contributions: ' + Number(audit.totalContributions).toLocaleString() + '</span>';
+                if (audit.overdueCount > 0) html += '<span class="status-warning">Overdue: ' + audit.overdueCount + '</span>';
+                if (audit.totalPenalties > 0) html += '<span class="status-warning">Penalties: ' + Number(audit.totalPenalties).toLocaleString() + '</span>';
+                // Summary breakdown
+                if (audit.summary && audit.summary.length > 0) {
+                    html += '<div class="audit-summary-table"><table class="audit-table"><thead><tr>';
+                    const keys = Object.keys(audit.summary[0]);
+                    keys.forEach(k => { html += '<th>' + k.replace(/_/g, ' ') + '</th>'; });
+                    html += '</tr></thead><tbody>';
+                    audit.summary.forEach(row => {
+                        html += '<tr>';
+                        keys.forEach(k => {
+                            let val = row[k];
+                            if (typeof val === 'number' && val > 999) val = Number(val).toLocaleString();
+                            html += '<td>' + (val !== null && val !== undefined ? val : '-') + '</td>';
+                        });
+                        html += '</tr>';
+                    });
+                    html += '</tbody></table></div>';
+                }
+                // Recent records
+                if (audit.recentRecords && audit.recentRecords.length > 0) {
+                    html += '<details class="audit-recent-details"><summary>Recent Records (' + audit.recentRecords.length + ')</summary>';
+                    html += '<table class="audit-table"><thead><tr>';
+                    const rKeys = Object.keys(audit.recentRecords[0]).filter(k => k !== 'id');
+                    rKeys.forEach(k => { html += '<th>' + k.replace(/_/g, ' ') + '</th>'; });
+                    html += '</tr></thead><tbody>';
+                    audit.recentRecords.slice(0, 10).forEach(rec => {
+                        html += '<tr>';
+                        rKeys.forEach(k => {
+                            let val = rec[k];
+                            if (k.includes('date') || k === 'created_at') val = val ? new Date(val).toLocaleDateString() : '-';
+                            else if (typeof val === 'number' && val > 999) val = Number(val).toLocaleString();
+                            html += '<td>' + (val !== null && val !== undefined ? val : '-') + '</td>';
+                        });
+                        html += '</tr>';
+                    });
+                    html += '</tbody></table></details>';
+                }
+                html += '</div></div>';
+            });
+            el.innerHTML = html;
+        }
+    } catch (error) {
+        console.error('External audits error:', error);
+        el.innerHTML = '<p class="error-text">Error loading external audit data. Please try again.</p>';
+    }
+}
+
+// ===== COMPLIANCE CHECKS LOADING =====
+async function loadComplianceChecks() {
+    const el = document.getElementById('complianceChecksContent');
+    if (!el) return;
+    el.innerHTML = '<p>Loading compliance data...</p>';
+    try {
+        const response = await KashTecAPI.get('/audit/compliance-checks');
+        if (response && response.checks) {
+            const checks = response.checks;
+            let html = '<div class="compliance-grid">';
+            for (const [key, check] of Object.entries(checks)) {
+                const statusClass = check.healthy ? 'status-good' : (check.status.includes('No Data') ? 'status-neutral' : 'status-warning');
+                html += '<div class="compliance-item compliance-card">';
+                html += '<div class="compliance-header"><span class="compliance-label">' + check.label + '</span>';
+                html += '<span class="' + statusClass + '">' + check.status + '</span></div>';
+                html += '<div class="compliance-details">';
+                if (check.rate !== undefined) html += '<div class="compliance-rate"><div class="rate-bar"><div class="rate-fill" style="width:' + check.rate + '%"></div></div><span>' + check.rate + '%</span></div>';
+                if (check.total !== undefined) html += '<span class="compliance-stat">Total: ' + check.total + '</span>';
+                if (check.overdue !== undefined && check.overdue > 0) html += '<span class="compliance-stat stat-warn">Overdue: ' + check.overdue + '</span>';
+                if (check.pending !== undefined && check.pending > 0) html += '<span class="compliance-stat stat-warn">Pending: ' + check.pending + '</span>';
+                if (check.drafts !== undefined && check.drafts > 0) html += '<span class="compliance-stat stat-warn">Drafts: ' + check.drafts + '</span>';
+                if (check.inactive !== undefined && check.inactive > 0) html += '<span class="compliance-stat stat-warn">Inactive: ' + check.inactive + '</span>';
+                if (check.paid !== undefined) html += '<span class="compliance-stat">Paid: ' + check.paid + '</span>';
+                if (check.approved !== undefined) html += '<span class="compliance-stat">Approved: ' + check.approved + '</span>';
+                if (check.completed !== undefined) html += '<span class="compliance-stat">Completed: ' + check.completed + '</span>';
+                if (check.active !== undefined) html += '<span class="compliance-stat">Active: ' + check.active + '</span>';
+                html += '</div></div>';
+            }
+            html += '</div>';
+            el.innerHTML = html;
+        }
+    } catch (error) {
+        console.error('Compliance checks error:', error);
+        el.innerHTML = '<p class="error-text">Error loading compliance data. Please try again.</p>';
+    }
 }
 
 
