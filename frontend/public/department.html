@@ -62153,6 +62153,7 @@ async function loadInternalAudits() {
             audits.forEach(audit => {
                 html += '<div class="audit-item"><div class="audit-details">';
                 html += '<strong>' + audit.name + '</strong>';
+                if (audit.error) html += '<span class="status-warning" style="color:#e67e22;font-size:0.85em;">⚠ Table not available: ' + audit.error + '</span>';
                 html += '<span>Scope: ' + audit.scope + '</span>';
                 html += '<span>Total Records: ' + (audit.totalRecords || 0) + '</span>';
                 if (audit.totalAmount !== undefined) html += '<span>Total Amount: ' + Number(audit.totalAmount).toLocaleString() + '</span>';
@@ -62226,6 +62227,7 @@ async function loadExternalAudits() {
             audits.forEach(audit => {
                 html += '<div class="audit-item"><div class="audit-details">';
                 html += '<strong>' + audit.name + '</strong>';
+                if (audit.error) html += '<span class="status-warning" style="color:#e67e22;font-size:0.85em;">⚠ Table not available: ' + audit.error + '</span>';
                 html += '<span>Auditor: ' + (audit.auditor || 'N/A') + '</span>';
                 html += '<span>Scope: ' + audit.scope + '</span>';
                 html += '<span>Total Records: ' + (audit.totalRecords || 0) + '</span>';
