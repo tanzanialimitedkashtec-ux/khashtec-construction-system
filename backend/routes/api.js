@@ -397,11 +397,14 @@ router.post('/luggage-campaigns', async (req, res) => {
                 luggage_code VARCHAR(20) NOT NULL DEFAULT '',
                 price_per_unit DECIMAL(10,2) NOT NULL DEFAULT 0.00,
                 total_units INT NOT NULL DEFAULT 0,
+                total_units_available INT NOT NULL DEFAULT 0,
                 units_sold INT NOT NULL DEFAULT 0,
                 description TEXT NULL,
+                campaign_description TEXT NULL,
                 start_date DATE NOT NULL,
                 end_date DATE NOT NULL,
                 status VARCHAR(50) DEFAULT 'planning',
+                campaign_status ENUM('Draft', 'Active', 'Completed', 'Cancelled') DEFAULT 'Draft',
                 created_by VARCHAR(100) NULL,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
@@ -422,6 +425,7 @@ router.post('/luggage-campaigns', async (req, res) => {
             end_date,
             campaign_end_date,
             status,
+            campaign_status,
             created_by
         } = req.body;
 
@@ -430,6 +434,12 @@ router.post('/luggage-campaigns', async (req, res) => {
         const finalTotalUnits  = parseInt(total_units || total_units_available || 0);
         const finalStartDate   = start_date || campaign_start_date;
         const finalEndDate     = end_date   || campaign_end_date;
+        const finalStatus      = status || campaign_status || 'planning';
+        const finalCampaignStatus = campaign_status ||
+            (status === 'planning' ? 'Draft' :
+             status === 'active' ? 'Active' :
+             status === 'completed' ? 'Completed' :
+             status === 'cancelled' ? 'Cancelled' : 'Draft');
 
         if (!campaign_name || !luggage_name || !finalStartDate || !finalEndDate) {
             return res.status(400).json({
@@ -438,23 +448,66 @@ router.post('/luggage-campaigns', async (req, res) => {
             });
         }
 
-        const result = await db.execute(`
-            INSERT INTO luggage_campaigns 
-            (campaign_name, luggage_name, luggage_code, price_per_unit, 
-             total_units, units_sold, description, start_date, end_date, status, created_by)
-            VALUES (?, ?, ?, ?, ?, 0, ?, ?, ?, ?, ?)
-        `, [
+        const [existingColumns] = await db.execute(`
+            SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS
+            WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'luggage_campaigns'
+        `);
+        const columnNames = new Set(existingColumns.map(col => col.COLUMN_NAME));
+
+        const insertColumns = [
+            'campaign_name',
+            'luggage_name',
+            'luggage_code',
+            'price_per_unit'
+        ];
+        const insertValues = [
             campaign_name,
             luggage_name || '',
             luggage_code || (luggage_name ? luggage_name.substring(0, 3).toUpperCase() : 'UNK'),
-            parseFloat(price_per_unit || 0),
-            finalTotalUnits,
-            finalDescription,
-            finalStartDate,
-            finalEndDate,
-            status || 'planning',
-            created_by || null
-        ]);
+            parseFloat(price_per_unit || 0)
+        ];
+
+        if (columnNames.has('total_units')) {
+            insertColumns.push('total_units');
+            insertValues.push(finalTotalUnits);
+        }
+        if (columnNames.has('total_units_available')) {
+            insertColumns.push('total_units_available');
+            insertValues.push(finalTotalUnits);
+        }
+
+        insertColumns.push('units_sold');
+        insertValues.push(0);
+
+        if (columnNames.has('description')) {
+            insertColumns.push('description');
+            insertValues.push(finalDescription);
+        }
+        if (columnNames.has('campaign_description')) {
+            insertColumns.push('campaign_description');
+            insertValues.push(finalDescription);
+        }
+
+        insertColumns.push('start_date', 'end_date');
+        insertValues.push(finalStartDate, finalEndDate);
+
+        if (columnNames.has('status')) {
+            insertColumns.push('status');
+            insertValues.push(finalStatus);
+        }
+        if (columnNames.has('campaign_status')) {
+            insertColumns.push('campaign_status');
+            insertValues.push(finalCampaignStatus);
+        }
+        if (columnNames.has('created_by')) {
+            insertColumns.push('created_by');
+            insertValues.push(created_by || null);
+        }
+
+        const result = await db.execute(`
+            INSERT INTO luggage_campaigns (${insertColumns.join(', ')})
+            VALUES (${insertColumns.map(() => '?').join(', ')})
+        `, insertValues);
 
         const insertId = result.insertId;
         res.status(201).json({ 
