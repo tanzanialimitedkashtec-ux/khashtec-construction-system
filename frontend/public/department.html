@@ -61619,6 +61619,8 @@ function financeAudits(){
 
             <button class="audits-tab-btn" onclick="switchAuditsMainTab('financialAudits')">Financial Audits</button>
 
+            <button class="audits-tab-btn" onclick="switchAuditsMainTab('loginAudit')">🔐 Login Audit</button>
+
         </div>
 
 
@@ -61837,6 +61839,168 @@ function financeAudits(){
 
         </div>
 
+        <!-- ===== LOGIN AUDIT TAB ===== -->
+
+        <div id="auditsTab_loginAudit" class="audits-tab-content" style="display:none;">
+
+            <h4>🔐 Login Audit Trail & User Activity</h4>
+
+            <p>Track who logs in, when, from where, and how long they use the system. Click on a user to see their full activity details.</p>
+
+            <div class="system-status-cards" id="loginAuditStatsCards">
+
+                <div class="sys-card sys-card-ok"><div class="sys-icon">✅</div><div class="sys-info"><h5>Successful Logins</h5><span id="mainSuccessfulLogins">Loading...</span></div></div>
+
+                <div class="sys-card sys-card-err"><div class="sys-icon">❌</div><div class="sys-info"><h5>Failed Logins</h5><span id="mainFailedLogins">Loading...</span></div></div>
+
+                <div class="sys-card sys-card-ok"><div class="sys-icon">🔒</div><div class="sys-info"><h5>Logouts</h5><span id="mainLogouts">Loading...</span></div></div>
+
+                <div class="sys-card sys-card-ok"><div class="sys-icon">👥</div><div class="sys-info"><h5>Unique Users</h5><span id="mainUniqueUsers">Loading...</span></div></div>
+
+            </div>
+
+            <div class="system-counts-section">
+
+                <h4>🟢 Currently Active Sessions</h4>
+
+                <div id="mainActiveSessionsList" class="system-counts-grid">
+
+                    <p>Loading active sessions...</p>
+
+                </div>
+
+            </div>
+
+            <div style="margin: 12px 0; display: flex; gap: 10px; flex-wrap: wrap; align-items: center;">
+
+                <label><strong>Period:</strong>
+
+                    <select id="mainLoginAuditDays" onchange="loadMainLoginAuditLogs()" style="padding:4px 8px; border-radius:4px; border:1px solid #ccc;">
+
+                        <option value="7">Last 7 days</option>
+
+                        <option value="30" selected>Last 30 days</option>
+
+                        <option value="90">Last 90 days</option>
+
+                    </select>
+
+                </label>
+
+                <label><strong>Status:</strong>
+
+                    <select id="mainLoginAuditStatus" onchange="loadMainLoginAuditLogs()" style="padding:4px 8px; border-radius:4px; border:1px solid #ccc;">
+
+                        <option value="">All</option>
+
+                        <option value="success">Success</option>
+
+                        <option value="failed">Failed</option>
+
+                    </select>
+
+                </label>
+
+                <button class="action" onclick="loadMainLoginAuditLogs()">🔄 Refresh</button>
+
+            </div>
+
+            <div class="audit-summary-table">
+
+                <table class="audit-table">
+
+                    <thead>
+
+                        <tr>
+
+                            <th>#</th>
+
+                            <th>User</th>
+
+                            <th>Email</th>
+
+                            <th>Role</th>
+
+                            <th>Department</th>
+
+                            <th>Action</th>
+
+                            <th>Status</th>
+
+                            <th>IP Address</th>
+
+                            <th>Date & Time</th>
+
+                            <th>Details</th>
+
+                        </tr>
+
+                    </thead>
+
+                    <tbody id="mainLoginAuditTableBody">
+
+                        <tr><td colspan="10" style="text-align:center;color:#999;">Loading login audit data...</td></tr>
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+            <!-- User Activity Detail Panel -->
+
+            <div id="mainUserActivityPanel" style="display:none; margin-top: 20px; padding: 18px; background: #f5f5f5; border-radius: 10px; border: 1px solid #ddd;">
+
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
+
+                    <h4 style="margin:0;" id="mainUserActivityTitle">👤 User Activity Details</h4>
+
+                    <button onclick="document.getElementById('mainUserActivityPanel').style.display='none'" style="padding:4px 12px; border-radius:4px; border:1px solid #ccc; cursor:pointer; background:#fff;">✕ Close</button>
+
+                </div>
+
+                <div id="mainUserActivitySummary" class="system-status-cards"></div>
+
+                <h5 style="margin: 10px 0;">📋 Login History</h5>
+
+                <div class="audit-summary-table">
+
+                    <table class="audit-table">
+
+                        <thead>
+
+                            <tr>
+
+                                <th>#</th>
+
+                                <th>Action</th>
+
+                                <th>Status</th>
+
+                                <th>IP Address</th>
+
+                                <th>Browser / Device</th>
+
+                                <th>Date & Time</th>
+
+                                <th>Session Duration</th>
+
+                            </tr>
+
+                        </thead>
+
+                        <tbody id="mainUserActivityTableBody">
+
+                        </tbody>
+
+                    </table>
+
+                </div>
+
+            </div>
+
+        </div>
+
     </div>`);
 
     // Load system status data on page load
@@ -61866,6 +62030,8 @@ function switchAuditsMainTab(tabId) {
     if (tabId === 'changeLog') loadSystemChanges();
 
     if (tabId === 'financialAudits') loadFinancialAuditsData();
+
+    if (tabId === 'loginAudit') { loadMainLoginAuditLogs(); loadMainActiveSessions(); }
 
 }
 
@@ -62298,6 +62464,194 @@ async function loadComplianceChecks() {
     } catch (error) {
         console.error('[Audit] Compliance checks error:', error);
         el.innerHTML = '<p class="error-text">Error loading compliance data. Please try again.</p>';
+    }
+}
+
+// ===== LOGIN AUDIT LOADING (Main Audits Page) =====
+
+async function loadMainLoginAuditLogs() {
+    try {
+        const daysEl = document.getElementById('mainLoginAuditDays');
+        const statusEl = document.getElementById('mainLoginAuditStatus');
+        const days = daysEl ? daysEl.value : 30;
+        const status = statusEl ? statusEl.value : '';
+
+        let url = '/audit/login-logs?days=' + days;
+        if (status) url += '&status=' + status;
+
+        console.log('[LoginAudit-Main] Loading login audit logs:', url);
+        const response = await KashTecAPI.get(url);
+        console.log('[LoginAudit-Main] Response:', response);
+
+        if (response && response.data) {
+            updateMainLoginAuditStats(response.data.stats);
+            updateMainLoginAuditTable(response.data.logs);
+        } else {
+            updateMainLoginAuditTable([]);
+        }
+    } catch (error) {
+        console.error('[LoginAudit-Main] Error:', error);
+        const tbody = document.getElementById('mainLoginAuditTableBody');
+        if (tbody) tbody.innerHTML = '<tr><td colspan="10" style="text-align:center;color:#999;">Unable to load login audit data.</td></tr>';
+    }
+}
+
+function updateMainLoginAuditStats(stats) {
+    if (!stats) return;
+    const setVal = function(id, val) { const el = document.getElementById(id); if (el) el.textContent = val; };
+    setVal('mainSuccessfulLogins', stats.successful_logins || 0);
+    setVal('mainFailedLogins', stats.failed_logins || 0);
+    setVal('mainLogouts', stats.logouts || 0);
+    setVal('mainUniqueUsers', stats.unique_users || 0);
+}
+
+function updateMainLoginAuditTable(logs) {
+    const tbody = document.getElementById('mainLoginAuditTableBody');
+    if (!tbody) return;
+
+    if (!logs || logs.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="10" style="text-align:center;color:#999;">No login audit records found for the selected period.</td></tr>';
+        return;
+    }
+
+    tbody.innerHTML = logs.map(function(log, idx) {
+        const actionIcon = log.action === 'login' ? '🔓' : '🔒';
+        const statusClass = log.status === 'success' ? 'color:#2e7d32;font-weight:600;' : 'color:#c62828;font-weight:600;';
+        const statusIcon = log.status === 'success' ? '✅' : '❌';
+        const dateStr = log.created_at ? new Date(log.created_at).toLocaleString() : 'N/A';
+        const escapedEmail = (log.email || '').replace(/'/g, "\\'");
+        const escapedName = (log.user_name || log.email || 'Unknown').replace(/'/g, "\\'");
+        return '<tr>' +
+            '<td>' + (idx + 1) + '</td>' +
+            '<td style="cursor:pointer;color:#1565c0;text-decoration:underline;" onclick="viewMainUserActivity(\'' + escapedEmail + '\', \'' + escapedName + '\')">' + (log.user_name || log.email || 'Unknown') + '</td>' +
+            '<td>' + (log.email || 'N/A') + '</td>' +
+            '<td>' + (log.role || 'N/A') + '</td>' +
+            '<td>' + (log.department_name || 'N/A') + '</td>' +
+            '<td>' + actionIcon + ' ' + (log.action || 'N/A') + '</td>' +
+            '<td style="' + statusClass + '">' + statusIcon + ' ' + (log.status || 'N/A') + '</td>' +
+            '<td>' + (log.ip_address || 'N/A') + '</td>' +
+            '<td>' + dateStr + '</td>' +
+            '<td><button onclick="viewMainUserActivity(\'' + escapedEmail + '\', \'' + escapedName + '\')" style="padding:3px 10px;border-radius:4px;border:1px solid #1565c0;background:#e3f2fd;color:#1565c0;cursor:pointer;font-size:12px;">View</button></td>' +
+            '</tr>';
+    }).join('');
+}
+
+async function loadMainActiveSessions() {
+    try {
+        const response = await KashTecAPI.get('/audit/active-sessions');
+        const container = document.getElementById('mainActiveSessionsList');
+        if (!container) return;
+
+        if (response && response.data && response.data.sessions && response.data.sessions.length > 0) {
+            container.innerHTML = response.data.sessions.map(function(s) {
+                const loginTime = s.login_time ? new Date(s.login_time).toLocaleString() : 'N/A';
+                const now = new Date();
+                const diffMs = s.login_time ? now - new Date(s.login_time) : 0;
+                const diffMins = Math.floor(diffMs / 60000);
+                const diffHours = Math.floor(diffMins / 60);
+                const diffDays = Math.floor(diffHours / 24);
+                let timeSince = diffMins + 'm ago';
+                if (diffDays > 0) timeSince = diffDays + 'd ' + (diffHours % 24) + 'h ago';
+                else if (diffHours > 0) timeSince = diffHours + 'h ' + (diffMins % 60) + 'm ago';
+                return '<div class="sys-count-item" style="text-align:left;padding:12px;">' +
+                    '<span class="sys-count-num" style="font-size:1rem;color:#2e7d32;">🟢 ' + (s.user_name || s.email) + '</span>' +
+                    '<span class="sys-count-label" style="text-transform:none;">' + (s.role || 'N/A') + ' - ' + (s.department_name || 'N/A') + '</span>' +
+                    '<span class="sys-count-label" style="text-transform:none;font-size:0.7rem;">Login: ' + loginTime + '</span>' +
+                    '<span class="sys-count-label" style="text-transform:none;font-size:0.7rem;color:#4caf50;">Active ' + timeSince + '</span>' +
+                    '</div>';
+            }).join('');
+        } else {
+            container.innerHTML = '<p style="color:#999;font-style:italic;">No active sessions found</p>';
+        }
+    } catch (error) {
+        console.error('[ActiveSessions-Main] Error:', error);
+        const container = document.getElementById('mainActiveSessionsList');
+        if (container) container.innerHTML = '<p style="color:#999;">Unable to load active sessions</p>';
+    }
+}
+
+function mainFormatDuration(minutes) {
+    if (!minutes || minutes <= 0) return 'N/A';
+    var hrs = Math.floor(minutes / 60);
+    var mins = Math.round(minutes % 60);
+    if (hrs > 0) return hrs + 'h ' + mins + 'm';
+    return mins + 'm';
+}
+
+function mainParseBrowserInfo(userAgent) {
+    if (!userAgent || userAgent === 'unknown') return 'Unknown';
+    var browser = 'Unknown';
+    if (userAgent.indexOf('Chrome') !== -1 && userAgent.indexOf('Edg') === -1) browser = 'Chrome';
+    else if (userAgent.indexOf('Firefox') !== -1) browser = 'Firefox';
+    else if (userAgent.indexOf('Safari') !== -1 && userAgent.indexOf('Chrome') === -1) browser = 'Safari';
+    else if (userAgent.indexOf('Edg') !== -1) browser = 'Edge';
+    else if (userAgent.indexOf('Opera') !== -1 || userAgent.indexOf('OPR') !== -1) browser = 'Opera';
+    var os = 'Unknown';
+    if (userAgent.indexOf('Windows') !== -1) os = 'Windows';
+    else if (userAgent.indexOf('Mac') !== -1) os = 'macOS';
+    else if (userAgent.indexOf('Linux') !== -1) os = 'Linux';
+    else if (userAgent.indexOf('Android') !== -1) os = 'Android';
+    else if (userAgent.indexOf('iPhone') !== -1 || userAgent.indexOf('iPad') !== -1) os = 'iOS';
+    return browser + ' / ' + os;
+}
+
+async function viewMainUserActivity(email, userName) {
+    try {
+        const panel = document.getElementById('mainUserActivityPanel');
+        const titleEl = document.getElementById('mainUserActivityTitle');
+        const summaryEl = document.getElementById('mainUserActivitySummary');
+        const tbody = document.getElementById('mainUserActivityTableBody');
+
+        if (!panel || !titleEl || !summaryEl || !tbody) return;
+
+        panel.style.display = 'block';
+        titleEl.textContent = '👤 Activity Details: ' + (userName || email);
+        summaryEl.innerHTML = '<div class="sys-card sys-card-ok"><div class="sys-info"><span>Loading...</span></div></div>';
+        tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:#999;">Loading...</td></tr>';
+
+        panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+        const response = await KashTecAPI.get('/audit/user-activity?email=' + encodeURIComponent(email));
+
+        if (response && response.data) {
+            const data = response.data;
+
+            summaryEl.innerHTML =
+                '<div class="sys-card sys-card-ok"><div class="sys-icon">🔓</div><div class="sys-info"><h5>Total Logins</h5><span>' + (data.summary.total_logins || 0) + '</span></div></div>' +
+                '<div class="sys-card sys-card-ok"><div class="sys-icon">✅</div><div class="sys-info"><h5>Successful</h5><span>' + (data.summary.successful_logins || 0) + '</span></div></div>' +
+                '<div class="sys-card sys-card-err"><div class="sys-icon">❌</div><div class="sys-info"><h5>Failed</h5><span>' + (data.summary.failed_logins || 0) + '</span></div></div>' +
+                '<div class="sys-card sys-card-ok"><div class="sys-icon">⏱</div><div class="sys-info"><h5>Avg Session</h5><span>' + mainFormatDuration(data.summary.avg_session_minutes) + '</span></div></div>' +
+                '<div class="sys-card sys-card-ok"><div class="sys-icon">⏳</div><div class="sys-info"><h5>Total Time</h5><span>' + mainFormatDuration(data.summary.total_time_minutes) + '</span></div></div>' +
+                '<div class="sys-card sys-card-ok"><div class="sys-icon">📅</div><div class="sys-info"><h5>Last Login</h5><span style="font-size:0.8rem;">' + (data.summary.last_login ? new Date(data.summary.last_login).toLocaleString() : 'N/A') + '</span></div></div>' +
+                '<div class="sys-card sys-card-ok"><div class="sys-icon">📅</div><div class="sys-info"><h5>First Login</h5><span style="font-size:0.8rem;">' + (data.summary.first_login ? new Date(data.summary.first_login).toLocaleString() : 'N/A') + '</span></div></div>' +
+                '<div class="sys-card sys-card-ok"><div class="sys-icon">🌐</div><div class="sys-info"><h5>Unique IPs</h5><span>' + (data.summary.unique_ips || 0) + '</span></div></div>';
+
+            if (data.logs && data.logs.length > 0) {
+                tbody.innerHTML = data.logs.map(function(log, idx) {
+                    var actionIcon = log.action === 'login' ? '🔓' : '🔒';
+                    var statusClass = log.status === 'success' ? 'color:#2e7d32;font-weight:600;' : 'color:#c62828;font-weight:600;';
+                    var statusIcon = log.status === 'success' ? '✅' : '❌';
+                    var dateStr = log.created_at ? new Date(log.created_at).toLocaleString() : 'N/A';
+                    var duration = log.session_duration_minutes ? mainFormatDuration(log.session_duration_minutes) : '-';
+                    var browserInfo = log.user_agent ? mainParseBrowserInfo(log.user_agent) : 'N/A';
+                    return '<tr>' +
+                        '<td>' + (idx + 1) + '</td>' +
+                        '<td>' + actionIcon + ' ' + (log.action || 'N/A') + '</td>' +
+                        '<td style="' + statusClass + '">' + statusIcon + ' ' + (log.status || 'N/A') + '</td>' +
+                        '<td>' + (log.ip_address || 'N/A') + '</td>' +
+                        '<td style="font-size:12px;">' + browserInfo + '</td>' +
+                        '<td>' + dateStr + '</td>' +
+                        '<td>' + duration + '</td>' +
+                        '</tr>';
+                }).join('');
+            } else {
+                tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:#999;">No activity records found.</td></tr>';
+            }
+        }
+    } catch (error) {
+        console.error('[UserActivity-Main] Error:', error);
+        var tbody = document.getElementById('mainUserActivityTableBody');
+        if (tbody) tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:#c62828;">Error loading user activity data.</td></tr>';
     }
 }
 
