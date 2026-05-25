@@ -1831,6 +1831,134 @@ router.get('/compliance-checks', async (req, res) => {
     }
 });
 
+// ===== LOGIN AUDIT LOG =====
+
+// Ensure login_audit_logs table exists
+async function ensureLoginAuditLogsTable() {
+    try {
+        await db.execute(`
+            CREATE TABLE IF NOT EXISTS login_audit_logs (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                user_id INT NULL,
+                email VARCHAR(255) NOT NULL,
+                user_name VARCHAR(255) NULL,
+                role VARCHAR(100) NULL,
+                department_name VARCHAR(255) NULL,
+                action VARCHAR(50) NOT NULL DEFAULT 'login',
+                ip_address VARCHAR(45) NULL,
+                user_agent TEXT NULL,
+                status VARCHAR(50) NOT NULL DEFAULT 'success',
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                INDEX idx_email (email),
+                INDEX idx_created_at (created_at),
+                INDEX idx_action (action)
+            )
+        `);
+    } catch (err) {
+        console.log('login_audit_logs table check:', err.message);
+    }
+}
+
+// Get login audit logs
+router.get('/login-logs', async (req, res) => {
+    try {
+        console.log('🔍 Fetching login audit logs...');
+        await ensureLoginAuditLogsTable();
+
+        const { days = 30, email, role, status, limit: rowLimit = 100 } = req.query;
+
+        let query = `
+            SELECT id, user_id, email, user_name, role, department_name,
+                   action, ip_address, user_agent, status, created_at
+            FROM login_audit_logs
+            WHERE created_at >= DATE_SUB(NOW(), INTERVAL ? DAY)
+        `;
+        const params = [parseInt(days)];
+
+        if (email) {
+            query += ' AND email LIKE ?';
+            params.push(`%${email}%`);
+        }
+        if (role) {
+            query += ' AND role = ?';
+            params.push(role);
+        }
+        if (status) {
+            query += ' AND status = ?';
+            params.push(status);
+        }
+
+        query += ' ORDER BY created_at DESC LIMIT ?';
+        params.push(parseInt(rowLimit));
+
+        const logs = await db.execute(query, params);
+
+        // Get summary stats
+        const stats = await db.execute(`
+            SELECT
+                COUNT(*) as total_events,
+                SUM(CASE WHEN action = 'login' AND status = 'success' THEN 1 ELSE 0 END) as successful_logins,
+                SUM(CASE WHEN action = 'login' AND status = 'failed' THEN 1 ELSE 0 END) as failed_logins,
+                SUM(CASE WHEN action = 'logout' THEN 1 ELSE 0 END) as logouts,
+                COUNT(DISTINCT email) as unique_users
+            FROM login_audit_logs
+            WHERE created_at >= DATE_SUB(NOW(), INTERVAL ? DAY)
+        `, [parseInt(days)]);
+
+        res.json({
+            success: true,
+            data: {
+                logs: logs,
+                stats: stats[0] || { total_events: 0, successful_logins: 0, failed_logins: 0, logouts: 0, unique_users: 0 },
+                period_days: parseInt(days)
+            }
+        });
+    } catch (error) {
+        console.error('❌ Error fetching login audit logs:', error);
+        res.status(500).json({
+            success: false,
+            error: error.message,
+            message: 'Failed to load login audit logs'
+        });
+    }
+});
+
+// Get currently active sessions (users who logged in but haven't logged out)
+router.get('/active-sessions', async (req, res) => {
+    try {
+        console.log('🔍 Fetching active sessions...');
+        await ensureLoginAuditLogsTable();
+
+        const sessions = await db.execute(`
+            SELECT l.email, l.user_name, l.role, l.department_name, l.ip_address,
+                   l.created_at as login_time
+            FROM login_audit_logs l
+            INNER JOIN (
+                SELECT email, MAX(created_at) as last_activity
+                FROM login_audit_logs
+                WHERE created_at >= DATE_SUB(NOW(), INTERVAL 7 DAY)
+                GROUP BY email
+            ) latest ON l.email = latest.email AND l.created_at = latest.last_activity
+            WHERE l.action = 'login' AND l.status = 'success'
+            ORDER BY l.created_at DESC
+        `);
+
+        res.json({
+            success: true,
+            data: {
+                sessions: sessions,
+                active_count: sessions.length
+            }
+        });
+    } catch (error) {
+        console.error('❌ Error fetching active sessions:', error);
+        res.status(500).json({
+            success: false,
+            error: error.message
+        });
+    }
+});
+
 // Test endpoint
 router.get('/test', (req, res) => {
     res.json({
@@ -1844,6 +1972,8 @@ router.get('/test', (req, res) => {
             'GET /audit/internal-audits - Internal audit data from DB',
             'GET /audit/external-audits - External audit data from DB',
             'GET /audit/compliance-checks - Compliance check data from DB',
+            'GET /audit/login-logs - Login/logout audit trail',
+            'GET /audit/active-sessions - Currently active user sessions',
             'POST /audit/report - Generate audit report',
             'GET /audit/test - Test endpoint'
         ]
