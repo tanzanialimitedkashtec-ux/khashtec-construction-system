@@ -28,11 +28,54 @@ function extractRows(result) {
     return [];
 }
 
+// Migrate attendance table from old schema to new schema if needed
+let migrationDone = false;
+async function migrateAttendanceTable(db) {
+    if (migrationDone) return;
+    try {
+        const [columns] = await db.execute(`SHOW COLUMNS FROM attendance`);
+        const columnNames = columns.map(c => c.Field);
+        
+        if (columnNames.includes('date') && !columnNames.includes('attendance_date')) {
+            await db.execute(`ALTER TABLE attendance CHANGE COLUMN \`date\` attendance_date DATE NOT NULL`);
+        }
+        if (columnNames.includes('check_in') && !columnNames.includes('check_in_time')) {
+            await db.execute(`ALTER TABLE attendance CHANGE COLUMN check_in check_in_time TIME NULL`);
+        }
+        if (columnNames.includes('check_out') && !columnNames.includes('check_out_time')) {
+            await db.execute(`ALTER TABLE attendance CHANGE COLUMN check_out check_out_time TIME NULL`);
+        }
+        if (columnNames.includes('status') && !columnNames.includes('attendance_status')) {
+            await db.execute(`ALTER TABLE attendance CHANGE COLUMN status attendance_status VARCHAR(50) NOT NULL DEFAULT 'present'`);
+        }
+        if (!columnNames.includes('employee_name')) {
+            await db.execute(`ALTER TABLE attendance ADD COLUMN employee_name VARCHAR(255) NOT NULL DEFAULT '' AFTER employee_id`);
+        }
+        if (!columnNames.includes('department')) {
+            await db.execute(`ALTER TABLE attendance ADD COLUMN department VARCHAR(100) NULL AFTER attendance_status`);
+        }
+        if (!columnNames.includes('marked_by')) {
+            await db.execute(`ALTER TABLE attendance ADD COLUMN marked_by VARCHAR(255) NULL AFTER notes`);
+        }
+        if (!columnNames.includes('marked_by_role')) {
+            await db.execute(`ALTER TABLE attendance ADD COLUMN marked_by_role VARCHAR(100) NULL AFTER marked_by`);
+        }
+        migrationDone = true;
+    } catch (error) {
+        if (error.code === 'ER_NO_SUCH_TABLE') {
+            migrationDone = true;
+        } else {
+            console.error('⚠️ Attendance migration error:', error.message);
+        }
+    }
+}
+
 // Root endpoint - handle query parameters
 router.get('/', async (req, res) => {
     try {
         const { employeeId, date, status, startDate, endDate } = req.query;
         const db = require('../../database/config/database');
+        await migrateAttendanceTable(db);
 
         // Ensure attendance table exists with correct schema
         await db.execute(`
@@ -105,6 +148,7 @@ router.get('/all', async (req, res) => {
     try {
         const { employeeId, date, status, startDate, endDate } = req.query;
         const db = require('../../database/config/database');
+        await migrateAttendanceTable(db);
 
         let query = 'SELECT * FROM attendance';
         const conditions = [];
@@ -178,6 +222,7 @@ router.post('/', async (req, res) => {
         }
 
         const db = require('../../database/config/database');
+        await migrateAttendanceTable(db);
 
         const query = `
             INSERT INTO attendance (
