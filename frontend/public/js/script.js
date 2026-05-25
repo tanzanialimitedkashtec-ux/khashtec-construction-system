@@ -326,39 +326,32 @@ function updateWorkerStats(stats) {
     }
 }
 
-// Load projects and departments for filter dropdowns
+// Load projects and statuses for filter dropdowns
 async function loadFiltersForWorkerAssignments() {
     try {
-        // Load projects
-        const projects = await window.apiService.get('/projects');
         const projectFilter = document.getElementById('projectFilter');
-        
-        if (projects && projects.length > 0) {
-            // Clear existing options except "All Projects"
+        if (projectFilter) {
+            const projectNames = [...new Set(allAssignments.map(a => a.project_name).filter(Boolean))];
             projectFilter.innerHTML = '<option value="">All Projects</option>';
-            
-            projects.forEach(project => {
+            projectNames.forEach(name => {
                 const option = document.createElement('option');
-                option.value = project.id;
-                option.textContent = project.name;
+                option.value = name;
+                option.textContent = name;
                 projectFilter.appendChild(option);
             });
         }
         
-        // Load departments from assignments
         const departmentFilter = document.getElementById('departmentFilter');
-        const departments = [...new Set(allAssignments.map(a => a.department).filter(Boolean))];
-        
-        // Clear existing options except "All Departments"
-        departmentFilter.innerHTML = '<option value="">All Departments</option>';
-        
-        departments.forEach(department => {
-            const option = document.createElement('option');
-            option.value = department;
-            option.textContent = department;
-            departmentFilter.appendChild(option);
-        });
-        
+        if (departmentFilter) {
+            const statuses = [...new Set(allAssignments.map(a => a.status).filter(Boolean))];
+            departmentFilter.innerHTML = '<option value="">All Statuses</option>';
+            statuses.forEach(status => {
+                const option = document.createElement('option');
+                option.value = status;
+                option.textContent = status;
+                departmentFilter.appendChild(option);
+            });
+        }
     } catch (error) {
         console.error('Failed to load filters:', error);
     }
@@ -366,53 +359,80 @@ async function loadFiltersForWorkerAssignments() {
 
 // Display worker assignments
 async function displayWorkerAssignments(assignments) {
-    // Try multiple possible container IDs
     const workerResults = document.getElementById('workerResults') || 
                           document.getElementById('mdWorkerResults') ||
                           document.querySelector('.worker-results');
     
     if (!workerResults) {
-        console.warn('⚠️ Worker results container not found - tried workerResults, mdWorkerResults, .worker-results');
+        console.warn('Worker results container not found');
         return;
     }
     
     workerResults.innerHTML = '';
     
+    if (!assignments || assignments.length === 0) {
+        workerResults.innerHTML = `
+            <div class="no-assignments-message">
+                <i>📋</i>
+                <p>No worker assignments found in the database.</p>
+                <p style="font-size: 13px; margin-top: 8px;">Assign workers to projects to see them here.</p>
+            </div>
+        `;
+        return;
+    }
+    
     assignments.forEach(assignment => {
+        const statusClass = (assignment.status || 'Active').toLowerCase().replace(/\s+/g, '-');
+        const startDate = assignment.start_date ? new Date(assignment.start_date).toLocaleDateString() : (assignment.assigned_date || 'N/A');
+        const endDate = assignment.end_date ? new Date(assignment.end_date).toLocaleDateString() : null;
+        const workerName = assignment.employee_name || assignment.worker_name || 'Unknown Worker';
+        const employeeId = assignment.employee_id || assignment.worker_employee_id || 'N/A';
+        const projectName = assignment.project_name || 'Unassigned';
+        const role = assignment.role_in_project || assignment.task_description || 'N/A';
+        const notes = assignment.assignment_notes || assignment.notes || '';
+        const assignedBy = assignment.assigned_by || '';
+        const status = assignment.status || 'Active';
+
         const assignmentCard = document.createElement('div');
-        assignmentCard.className = 'worker-assignment-card';
+        assignmentCard.className = `worker-assignment-card status-${statusClass}`;
         assignmentCard.innerHTML = `
             <div class="assignment-header">
-                <h5>${assignment.worker_name || 'Unknown Worker'}</h5>
-                <span class="status-badge ${assignment.status ? assignment.status.toLowerCase() : 'active'}">${assignment.status || 'Active'}</span>
+                <h5>${workerName}</h5>
+                <span class="status-badge ${statusClass}">${status}</span>
             </div>
             <div class="assignment-details">
                 <div class="detail-row">
-                    <span class="label">Project:</span>
-                    <span class="value">${assignment.project_name || 'Unassigned'}</span>
+                    <span class="label">Employee ID</span>
+                    <span class="value">${employeeId}</span>
                 </div>
                 <div class="detail-row">
-                    <span class="label">Task:</span>
-                    <span class="value">${assignment.task_description || 'No task description'}</span>
+                    <span class="label">Project</span>
+                    <span class="value">${projectName}</span>
                 </div>
                 <div class="detail-row">
-                    <span class="label">Employee ID:</span>
-                    <span class="value">${assignment.worker_employee_id || 'N/A'}</span>
+                    <span class="label">Role</span>
+                    <span class="value">${role}</span>
                 </div>
                 <div class="detail-row">
-                    <span class="label">Assigned Date:</span>
-                    <span class="value">${assignment.assigned_date || 'Recent'}</span>
+                    <span class="label">Start Date</span>
+                    <span class="value">${startDate}</span>
                 </div>
-                ${assignment.notes ? `
+                ${endDate ? `
                 <div class="detail-row">
-                    <span class="label">Notes:</span>
-                    <span class="value">${assignment.notes}</span>
+                    <span class="label">End Date</span>
+                    <span class="value">${endDate}</span>
                 </div>
                 ` : ''}
-                ${assignment.project_location ? `
+                ${assignedBy ? `
                 <div class="detail-row">
-                    <span class="label">Location:</span>
-                    <span class="value">${assignment.project_location}</span>
+                    <span class="label">Assigned By</span>
+                    <span class="value">${assignedBy}</span>
+                </div>
+                ` : ''}
+                ${notes ? `
+                <div class="detail-row">
+                    <span class="label">Notes</span>
+                    <span class="value">${notes}</span>
                 </div>
                 ` : ''}
             </div>
@@ -473,36 +493,36 @@ function filterAssignedWorkers() {
     // Start with all assignments
     let filteredAssignments = [...allAssignments];
     
-    // Filter by search term (worker name, project, task, employee ID, location)
+    // Filter by search term (worker name, project, role, employee ID, notes)
     if (searchTerm) {
         filteredAssignments = filteredAssignments.filter(assignment => {
-            const workerName = (assignment.worker_name || '').toLowerCase();
+            const workerName = (assignment.employee_name || assignment.worker_name || '').toLowerCase();
             const projectName = (assignment.project_name || '').toLowerCase();
-            const taskDescription = (assignment.task_description || '').toLowerCase();
-            const employeeId = (assignment.worker_employee_id || '').toLowerCase();
-            const location = (assignment.project_location || '').toLowerCase();
-            const notes = (assignment.notes || '').toLowerCase();
+            const role = (assignment.role_in_project || assignment.task_description || '').toLowerCase();
+            const employeeId = (assignment.employee_id || assignment.worker_employee_id || '').toLowerCase();
+            const notes = (assignment.assignment_notes || assignment.notes || '').toLowerCase();
+            const assignedBy = (assignment.assigned_by || '').toLowerCase();
             
             return workerName.includes(searchTerm) ||
                    projectName.includes(searchTerm) ||
-                   taskDescription.includes(searchTerm) ||
+                   role.includes(searchTerm) ||
                    employeeId.includes(searchTerm) ||
-                   location.includes(searchTerm) ||
-                   notes.includes(searchTerm);
+                   notes.includes(searchTerm) ||
+                   assignedBy.includes(searchTerm);
         });
     }
     
-    // Filter by project
+    // Filter by project name
     if (projectFilter) {
         filteredAssignments = filteredAssignments.filter(assignment => 
-            assignment.project_id == projectFilter
+            assignment.project_name === projectFilter || assignment.project_id == projectFilter
         );
     }
     
-    // Filter by department
+    // Filter by status
     if (departmentFilter) {
         filteredAssignments = filteredAssignments.filter(assignment => 
-            assignment.department == departmentFilter
+            assignment.status === departmentFilter
         );
     }
     

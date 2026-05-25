@@ -47638,7 +47638,7 @@ function viewAssignedWorkers(){
 
                 <button type="button" id="toggleWorkerViewBtn" onclick="toggleWorkerView()" class="action" style="background: #007bff;">
 
-                    ðŸ‘¥ Search & Filter Workers
+                    Search & Filter Workers
 
                 </button>
 
@@ -47654,7 +47654,7 @@ function viewAssignedWorkers(){
 
                         <span class="stat-label">Total Assigned Workers:</span>
 
-                        <span class="stat-value">5</span>
+                        <span class="stat-value">...</span>
 
                     </div>
 
@@ -47662,7 +47662,7 @@ function viewAssignedWorkers(){
 
                         <span class="stat-label">Active Projects:</span>
 
-                        <span class="stat-value">3</span>
+                        <span class="stat-value">...</span>
 
                     </div>
 
@@ -47670,7 +47670,7 @@ function viewAssignedWorkers(){
 
                         <span class="stat-label">Active Tasks:</span>
 
-                        <span class="stat-value">4</span>
+                        <span class="stat-value">...</span>
 
                     </div>
 
@@ -47686,7 +47686,7 @@ function viewAssignedWorkers(){
 
                     <h4>Workforce Management Interface</h4>
 
-                    <p>Monitor comprehensive workforce allocation and assignments with detailed information including worker names, projects, tasks, employee IDs, assigned dates, notes, and locations. Ensure proper workforce tracking and resource allocation for efficient project management and organizational coordination.</p>
+                    <p>Monitor comprehensive workforce allocation and assignments.</p>
 
                 </div>
 
@@ -47694,29 +47694,17 @@ function viewAssignedWorkers(){
 
                 <div class="search-section">
 
-                    <input type="text" id="workerSearch" placeholder="Search workers by name, project, or task..." onkeyup="filterAssignedWorkers()">
+                    <input type="text" id="workerSearch" placeholder="Search workers by name, project, or role..." onkeyup="filterAssignedWorkers()">
 
                     <select id="projectFilter" onchange="filterAssignedWorkers()">
 
                         <option value="">All Projects</option>
 
-                        <option value="port-modernization">Port Modernization Phase 1</option>
-
-                        <option value="warehouse-construction">Warehouse Construction</option>
-
-                        <option value="road-infrastructure">Road Infrastructure</option>
-
                     </select>
 
                     <select id="departmentFilter" onchange="filterAssignedWorkers()">
 
-                        <option value="">All Departments</option>
-
-                        <option value="projects">Projects</option>
-
-                        <option value="hr">HR</option>
-
-                        <option value="hse">HSE</option>
+                        <option value="">All Statuses</option>
 
                     </select>
 
@@ -47741,375 +47729,23 @@ function viewAssignedWorkers(){
                 <h4>Current Worker Assignments</h4>
 
                 <div id="workerResults" class="worker-results">
-
-                    <div class="worker-assignment-card">
-
-                        <div class="assignment-header">
-
-                            <h5>John Smith</h5>
-
-                            <span class="status-badge active">active</span>
-
-                        </div>
-
-                        <div class="assignment-details">
-
-                            <div class="detail-row">
-
-                                <span class="label">Project:</span>
-
-                                <span class="value">Port Modernization Phase 1</span>
-
-                            </div>
-
-                            <div class="detail-row">
-
-                                <span class="label">Task:</span>
-
-                                <span class="value">Site supervision and quality control</span>
-
-                            </div>
-
-                            <div class="detail-row">
-
-                                <span class="label">Employee ID:</span>
-
-                                <span class="value">EMP001</span>
-
-                            </div>
-
-                            <div class="detail-row">
-
-                                <span class="label">Assigned Date:</span>
-
-                                <span class="value">2024-01-15</span>
-
-                            </div>
-
-                            <div class="detail-row">
-
-                                <span class="label">Notes:</span>
-
-                                <span class="value">Experienced supervisor with 5+ years</span>
-
-                            </div>
-
-                            <div class="detail-row">
-
-                                <span class="label">Location:</span>
-
-                                <span class="value">Dar es Salaam Port</span>
-
-                            </div>
-
-                        </div>
-
+                    <div class="worker-loading">
+                        <div class="loading-spinner"></div>
+                        <p>Loading worker assignments from database...</p>
                     </div>
-
-                    <div class="worker-assignment-card">
-
-                        <div class="assignment-header">
-
-                            <h5>Jane Doe</h5>
-
-                            <span class="status-badge active">active</span>
-
-                        </div>
-
-                        <div class="assignment-details">
-
-                            <div class="detail-row">
-
-                                <span class="label">Project:</span>
-
-                                <span class="value">Port Modernization Phase 1</span>
-
-                            </div>
-
-                            <div class="detail-row">
-
-                                <span class="label">Task:</span>
-
-                                <span class="value">Project coordination and reporting</span>
-
-                            </div>
-
-                            <div class="detail-row">
-
-                                <span class="label">Employee ID:</span>
-
-                                <span class="value">EMP002</span>
-
-                            </div>
-
-                            <div class="detail-row">
-
-                                <span class="label">Assigned Date:</span>
-
-                                <span class="value">2024-02-01</span>
-
-                            </div>
-
-                            <div class="detail-row">
-
-                                <span class="label">Notes:</span>
-
-                                <span class="value">Excellent organizational skills</span>
-
-                            </div>
-
-                            <div class="detail-row">
-
-                                <span class="label">Location:</span>
-
-                                <span class="value">Dar es Salaam Port</span>
-
-                            </div>
-
-                        </div>
-
-                    </div>
-
-                    <div class="worker-assignment-card">
-
-                        <div class="assignment-header">
-
-                            <h5>Mike Johnson</h5>
-
-                            <span class="status-badge active">active</span>
-
-                        </div>
-
-                        <div class="assignment-details">
-
-                            <div class="detail-row">
-
-                                <span class="label">Project:</span>
-
-                                <span class="value">Warehouse Construction</span>
-
-                            </div>
-
-                            <div class="detail-row">
-
-                                <span class="label">Task:</span>
-
-                                <span class="value">Safety inspection and compliance</span>
-
-                            </div>
-
-                            <div class="detail-row">
-
-                                <span class="label">Employee ID:</span>
-
-                                <span class="value">EMP003</span>
-
-                            </div>
-
-                            <div class="detail-row">
-
-                                <span class="label">Assigned Date:</span>
-
-                                <span class="value">2024-03-10</span>
-
-                            </div>
-
-                            <div class="detail-row">
-
-                                <span class="label">Notes:</span>
-
-                                <span class="value">Certified safety officer</span>
-
-                            </div>
-
-                            <div class="detail-row">
-
-                                <span class="label">Location:</span>
-
-                                <span class="value">Industrial Area</span>
-
-                            </div>
-
-                        </div>
-
-                    </div>
-
-                    <div class="worker-assignment-card">
-
-                        <div class="assignment-header">
-
-                            <h5>Sarah Williams</h5>
-
-                            <span class="status-badge on_leave">on_leave</span>
-
-                        </div>
-
-                        <div class="assignment-details">
-
-                            <div class="detail-row">
-
-                                <span class="label">Project:</span>
-
-                                <span class="value">Warehouse Construction</span>
-
-                            </div>
-
-                            <div class="detail-row">
-
-                                <span class="label">Task:</span>
-
-                                <span class="value">Structural engineering support</span>
-
-                            </div>
-
-                            <div class="detail-row">
-
-                                <span class="label">Employee ID:</span>
-
-                                <span class="value">EMP004</span>
-
-                            </div>
-
-                            <div class="detail-row">
-
-                                <span class="label">Assigned Date:</span>
-
-                                <span class="value">2024-01-20</span>
-
-                            </div>
-
-                            <div class="detail-row">
-
-                                <span class="label">Notes:</span>
-
-                                <span class="value">On medical leave</span>
-
-                            </div>
-
-                            <div class="detail-row">
-
-                                <span class="label">Location:</span>
-
-                                <span class="value">Industrial Area</span>
-
-                            </div>
-
-                        </div>
-
-                    </div>
-
-                    <div class="worker-assignment-card">
-
-                        <div class="assignment-header">
-
-                            <h5>David Brown</h5>
-
-                            <span class="status-badge active">active</span>
-
-                        </div>
-
-                        <div class="assignment-details">
-
-                            <div class="detail-row">
-
-                                <span class="label">Project:</span>
-
-                                <span class="value">Road Infrastructure</span>
-
-                            </div>
-
-                            <div class="detail-row">
-
-                                <span class="label">Task:</span>
-
-                                <span class="value">Heavy equipment operation</span>
-
-                            </div>
-
-                            <div class="detail-row">
-
-                                <span class="label">Employee ID:</span>
-
-                                <span class="value">EMP005</span>
-
-                            </div>
-
-                            <div class="detail-row">
-
-                                <span class="label">Assigned Date:</span>
-
-                                <span class="value">2024-02-15</span>
-
-                            </div>
-
-                            <div class="detail-row">
-
-                                <span class="label">Notes:</span>
-
-                                <span class="value">Certified equipment operator</span>
-
-                            </div>
-
-                            <div class="detail-row">
-
-                                <span class="label">Location:</span>
-
-                                <span class="value">Northern Corridor</span>
-
-                            </div>
-
-                        </div>
-
-                    </div>
-
                 </div>
 
             </div>
 
             
-
             <div class="workforce-allocation">
 
                 <h4>Project Workforce Allocation</h4>
 
                 <div class="allocation-chart">
-
-                    <div class="allocation-item">
-
-                        <span>Port Modernization Phase 1</span>
-
-                        <div class="allocation-bar">
-
-                            <div class="allocation-fill" style="width: 100%">2 workers</div>
-
-                        </div>
-
+                    <div class="worker-loading">
+                        <p>Loading allocation data...</p>
                     </div>
-
-                    <div class="allocation-item">
-
-                        <span>Warehouse Construction</span>
-
-                        <div class="allocation-bar">
-
-                            <div class="allocation-fill" style="width: 100%">2 workers</div>
-
-                        </div>
-
-                    </div>
-
-                    <div class="allocation-item">
-
-                        <span>Road Infrastructure</span>
-
-                        <div class="allocation-bar">
-
-                            <div class="allocation-fill" style="width: 50%">1 workers</div>
-
-                        </div>
-
-                    </div>
-
                 </div>
 
             </div>
@@ -48129,7 +47765,6 @@ function viewAssignedWorkers(){
     }, 100);
 
 }
-
 
 
 function recordSiteReports(){
@@ -51278,27 +50913,19 @@ async function loadAssignedWorkers() {
 
     try {
 
-        console.log('ðŸ” Loading assigned workers...');
+        console.log('Loading assigned workers from database...');
 
         
 
-        const token = sessionManager.getAuthToken();
-
-        console.log('ðŸ”‘ Auth token:', token ? 'Present' : 'Missing');
-
-        console.log('ðŸ”‘ Token length:', token ? token.length : 0);
+        const token = typeof sessionManager !== 'undefined' && sessionManager.getAuthToken ? sessionManager.getAuthToken() : null;
 
         
-
-        // Check if we're having connectivity issues and use fallback immediately
 
         if (!navigator.onLine) {
 
-            console.log('ðŸŒ Offline mode - using mock data');
+            showNotification('You are offline. Cannot load worker data.', 'warning', 3000);
 
-            showNotification('Offline mode - using demo data', 'warning', 3000);
-
-            useMockAssignedWorkers();
+            displayAssignedWorkersEmpty('No internet connection. Please go online to load worker assignments.');
 
             return;
 
@@ -51308,15 +50935,7 @@ async function loadAssignedWorkers() {
 
         const baseUrl = window.location.origin;
 
-        const headers = {
-
-            'Content-Type': 'application/json'
-
-        };
-
-        
-
-        // Add auth header only if token exists
+        const headers = { 'Content-Type': 'application/json' };
 
         if (token) {
 
@@ -51326,21 +50945,13 @@ async function loadAssignedWorkers() {
 
         
 
-        console.log('ðŸ“¡ Making request to:', `${baseUrl}/api/work/assignments`);
-
-        console.log('ðŸ“¡ Request headers:', headers);
-
-        
-
-        // Add timeout to detect connection issues quickly
-
         const controller = new AbortController();
 
-        const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 second timeout
+        const timeoutId = setTimeout(() => controller.abort(), 8000);
 
         
 
-        const response = await fetch(`${baseUrl}/api/work/assignments`, {
+        const response = await fetch(`${baseUrl}/api/worker-accounts/assignments`, {
 
             headers: headers,
 
@@ -51352,43 +50963,15 @@ async function loadAssignedWorkers() {
 
         clearTimeout(timeoutId);
 
-        console.log('ðŸ“¡ Response status:', response.status);
-
-        console.log('ðŸ“¡ Response OK:', response.ok);
-
         
 
         if (!response.ok) {
 
             const errorText = await response.text();
 
-            console.error('âŒ Failed to load assigned workers:', response.status, errorText);
+            console.error('Failed to load assigned workers:', response.status, errorText);
 
-            
-
-            // Handle authentication errors specifically
-
-            if (response.status === 403 || response.status === 401) {
-
-                console.log('ðŸ”“ Authentication error - using mock data');
-
-                showNotification('Authentication failed - using demo data', 'warning', 3000);
-
-            } else if (response.status >= 500) {
-
-                console.log('ðŸ”§ Server error - using mock data');
-
-                showNotification('Server error - using demo data', 'warning', 3000);
-
-            } else {
-
-                showNotification(`Failed to load assigned workers: ${response.status} ${errorText}`, 'error', 5000);
-
-            }
-
-            
-
-            useMockAssignedWorkers();
+            displayAssignedWorkersEmpty('Failed to load worker assignments. Server returned error ' + response.status);
 
             return;
 
@@ -51398,37 +50981,21 @@ async function loadAssignedWorkers() {
 
         const workers = await response.json();
 
-        console.log('ðŸ‘¥ Assigned workers loaded:', workers.length);
+        const workersArray = Array.isArray(workers) ? workers : (workers.assignments || []);
 
-        displayAssignedWorkers(workers);
+        console.log('Assigned workers loaded from DB:', workersArray.length);
 
-        updateWorkerStats(workers);
+        displayAssignedWorkersCards(workersArray);
+
+        updateWorkerStatsFromData(workersArray);
 
         
 
     } catch (error) {
 
-        console.error('âŒ Error loading assigned workers:', error);
+        console.error('Error loading assigned workers:', error);
 
-        
-
-        // Handle network errors specifically
-
-        if (error.message.includes('Failed to fetch') || error.message.includes('net::ERR_NAME_NOT_RESOLVED') || error.name === 'AbortError') {
-
-            console.log('ðŸŒ Network error - using mock data');
-
-            showNotification('Network connectivity issues - using demo data', 'warning', 3000);
-
-        } else {
-
-            showNotification('Error loading assigned workers: ' + error.message, 'error', 5000);
-
-        }
-
-        
-
-        useMockAssignedWorkers();
+        displayAssignedWorkersEmpty('Error loading worker assignments: ' + error.message);
 
     }
 
@@ -51436,85 +51003,23 @@ async function loadAssignedWorkers() {
 
 
 
-// Mock assigned workers data function
+function displayAssignedWorkersEmpty(message) {
 
-function useMockAssignedWorkers() {
+    const workerResults = document.getElementById('workerResults');
 
-    console.log('ðŸ”„ Using mock assigned workers data');
+    if (workerResults) {
 
-    const mockWorkers = [
+        workerResults.innerHTML = '<div class="no-assignments-message"><p>' + message + '</p></div>';
 
-        {
-
-            id: 'W001',
-
-            fullName: 'John Smith',
-
-            jobCategory: 'Engineer',
-
-            department: 'Projects',
-
-            projectNames: ['Kigali Tower', 'Road Construction'],
-
-            activeTasks: 3,
-
-            status: 'active'
-
-        },
-
-        {
-
-            id: 'W002',
-
-            fullName: 'Sarah Johnson',
-
-            jobCategory: 'Supervisor',
-
-            department: 'Projects',
-
-            projectNames: ['Office Building'],
-
-            activeTasks: 2,
-
-            status: 'active'
-
-        },
-
-        {
-
-            id: 'W003',
-
-            fullName: 'Michael Chen',
-
-            jobCategory: 'Architect',
-
-            department: 'Projects',
-
-            projectNames: ['Shopping Mall Complex'],
-
-            activeTasks: 4,
-
-            status: 'active'
-
-        }
-
-    ];
-
-    
-
-    displayAssignedWorkers(mockWorkers);
-
-    updateWorkerStats(mockWorkers);
+    }
 
 }
 
 
 
-// Display assigned workers in the UI
+// Display assigned workers in restyled cards
 
-function displayAssignedWorkers(workers) {
-
-    // Try multiple possible container IDs
+function displayAssignedWorkersCards(workers) {
 
     const workerResults = document.getElementById('workerResults') || 
 
@@ -51526,7 +51031,7 @@ function displayAssignedWorkers(workers) {
 
     if (!workerResults) {
 
-        console.warn('âš ï¸ Worker results container not found - tried workerResults, mdWorkerResults, .worker-results');
+        console.warn('Worker results container not found');
 
         return;
 
@@ -51534,17 +51039,9 @@ function displayAssignedWorkers(workers) {
 
     
 
-    if (workers.length === 0) {
+    if (!workers || workers.length === 0) {
 
-        workerResults.innerHTML = `
-
-            <div class="no-workers">
-
-                <p>No workers currently assigned.</p>
-
-            </div>
-
-        `;
+        workerResults.innerHTML = '<div class="no-assignments-message"><p>No worker assignments found in the database.</p><p style="font-size: 13px; margin-top: 8px;">Assign workers to projects to see them here.</p></div>';
 
         return;
 
@@ -51552,80 +51049,93 @@ function displayAssignedWorkers(workers) {
 
     
 
-    workerResults.innerHTML = workers.map(worker => `
+    workerResults.innerHTML = workers.map(function(worker) {
 
-        <div class="worker-item">
+        var statusClass = (worker.status || 'Active').toLowerCase().replace(/\s+/g, '-');
 
-            <div class="worker-info">
+        var startDate = worker.start_date ? new Date(worker.start_date).toLocaleDateString() : 'N/A';
 
-                <h5>${worker.employee_name}</h5>
+        var endDate = worker.end_date ? new Date(worker.end_date).toLocaleDateString() : null;
 
-                <p><strong>Project:</strong> ${worker.project_name}</p>
+        var workerName = worker.employee_name || 'Unknown Worker';
 
-                <p><strong>Role:</strong> ${worker.role_in_project}</p>
+        var employeeId = worker.employee_id || 'N/A';
 
-                <p><strong>Status:</strong> <span class="status ${worker.status.toLowerCase()}">${worker.status}</span></p>
+        var projectName = worker.project_name || 'Unassigned';
 
-                <p><strong>Start Date:</strong> ${worker.start_date ? new Date(worker.start_date).toLocaleDateString() : 'No start date'}</p>
+        var role = worker.role_in_project || 'N/A';
 
-                ${worker.end_date ? `<p><strong>End Date:</strong> ${new Date(worker.end_date).toLocaleDateString()}</p>` : ''}
+        var notes = worker.assignment_notes || '';
 
-                ${worker.assignment_notes ? `<p><strong>Notes:</strong> ${worker.assignment_notes}</p>` : ''}
+        var assignedBy = worker.assigned_by || '';
 
-                <p><strong>Assigned By:</strong> ${worker.assigned_by}</p>
+        var status = worker.status || 'Active';
 
-            </div>
+        
 
-            <div class="worker-actions">
+        var html = '<div class="worker-assignment-card status-' + statusClass + '">';
 
-                <button class="action" onclick="viewWorkerDetails('${worker.id}')">View Details</button>
+        html += '<div class="assignment-header"><h5>' + workerName + '</h5>';
 
-                <button class="action" onclick="editAssignment('${worker.id}')">Edit Assignment</button>
+        html += '<span class="status-badge ' + statusClass + '">' + status + '</span></div>';
 
-            </div>
+        html += '<div class="assignment-details">';
 
-        </div>
+        html += '<div class="detail-row"><span class="label">Employee ID</span><span class="value">' + employeeId + '</span></div>';
 
-    `).join('');
+        html += '<div class="detail-row"><span class="label">Project</span><span class="value">' + projectName + '</span></div>';
 
-}
+        html += '<div class="detail-row"><span class="label">Role</span><span class="value">' + role + '</span></div>';
 
+        html += '<div class="detail-row"><span class="label">Start Date</span><span class="value">' + startDate + '</span></div>';
 
+        if (endDate) html += '<div class="detail-row"><span class="label">End Date</span><span class="value">' + endDate + '</span></div>';
 
-// Update worker statistics
+        if (assignedBy) html += '<div class="detail-row"><span class="label">Assigned By</span><span class="value">' + assignedBy + '</span></div>';
 
-function updateWorkerStats(workers) {
+        if (notes) html += '<div class="detail-row"><span class="label">Notes</span><span class="value">' + notes + '</span></div>';
 
-    const totalWorkers = document.querySelector('.stat-value');
+        html += '</div></div>';
 
-    const activeProjects = new Set(workers.map(w => w.project_id)).size;
+        return html;
 
-    const activeTasks = workers.filter(w => w.status === 'Active').length;
-
-    
-
-    if (totalWorkers) {
-
-        totalWorkers.textContent = workers.length;
-
-    }
-
-    
-
-    // Update other stats if elements exist
-
-    const projectStats = document.querySelectorAll('.stat-value')[1];
-
-    const taskStats = document.querySelectorAll('.stat-value')[2];
-
-    
-
-    if (projectStats) projectStats.textContent = activeProjects;
-
-    if (taskStats) taskStats.textContent = activeTasks;
+    }).join('');
 
 }
 
+
+
+// Update worker statistics from real data
+
+function updateWorkerStatsFromData(workers) {
+
+    var statValues = document.querySelectorAll('.stat-value');
+
+    var totalWorkers = workers.length;
+
+    var projectNames = [];
+
+    workers.forEach(function(w) { if (w.project_name) projectNames.push(w.project_name); });
+
+    var activeProjects = new Set(projectNames).size;
+
+    var activeWorkers = workers.filter(function(w) {
+
+        var status = (w.status || '').toLowerCase();
+
+        return status === 'active' || status === 'in progress';
+
+    }).length;
+
+    
+
+    if (statValues.length >= 1) statValues[0].textContent = totalWorkers;
+
+    if (statValues.length >= 2) statValues[1].textContent = activeProjects;
+
+    if (statValues.length >= 3) statValues[2].textContent = activeWorkers;
+
+}
 
 
 function filterAssignedWorkers() {
