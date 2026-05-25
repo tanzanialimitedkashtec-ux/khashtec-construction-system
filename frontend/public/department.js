@@ -48773,31 +48773,31 @@ function displaySiteReports(reports, _retry) {
 
         id: report.id,
 
-        reportId: `SR-${report.id}`,
+        reportId: report.reportId || `SR-${report.id}`,
 
-        reportDate: report.report_date || report.submitted_date || report.created_at || new Date().toISOString(),
+        reportDate: report.report_date || report.reportDate || report.submitted_date || report.created_at || new Date().toISOString(),
 
-        project: report.project || report.work_title?.replace('Daily Site Report - ', '') || 'Unknown Project',
+        project: report.project_name || report.project || report.work_title?.replace('Daily Site Report - ', '') || 'Project #' + (report.project_id || report.id),
 
-        projectCode: report.project_code || `prj${String(report.id).padStart(3, '0')}`,
+        projectCode: report.project_code || `prj${String(report.project_id || report.id).padStart(3, '0')}`,
 
-        supervisor: report.supervisor || report.submitted_by || 'Unknown Supervisor',
+        supervisor: report.site_supervisor || report.supervisor || report.submitted_by || 'Unknown Supervisor',
 
-        workersCount: report.workers_count || report.workers || 0,
+        workersCount: report.workers_present || report.workersPresent || report.workers_count || report.workers || 0,
 
-        weatherConditions: report.weather_conditions || 'sunny',
+        weatherConditions: report.weather_conditions || report.weatherConditions || 'sunny',
 
-        workCompleted: report.work_completed || report.work_description || 'Not specified',
+        workCompleted: report.work_completed || report.workCompleted || report.work_description || 'Not specified',
 
-        siteIssues: report.site_issues || report.issues || 'No issues',
+        siteIssues: report.site_issues || report.siteIssues || report.issues || report.issues_challenges || 'No issues',
 
-        safetyIncidents: report.safety_incidents || 'None',
+        safetyIncidents: report.safety_incidents || report.safetyIncidents || 'None',
 
-        materialsUsed: report.materials_used || 'Not specified',
+        materialsUsed: report.materials_used || report.materialsUsed || 'Not specified',
 
-        equipmentUsed: report.equipment_used || 'Not specified',
+        equipmentUsed: report.equipment_used || report.equipmentUsed || 'Not specified',
 
-        nextDayPlan: report.next_day_plan || 'Not specified'
+        nextDayPlan: report.next_day_plan || report.nextDayPlan || 'Not specified'
 
     }));
 
@@ -48817,13 +48817,15 @@ function displaySiteReports(reports, _retry) {
 
         // Get weather display
 
-        const weatherDisplay = report.weatherConditions === 'sunny' ? 'â˜€ï¸ Sunny' : 
+        const weatherLower = (report.weatherConditions || '').toLowerCase();
 
-                              report.weatherConditions === 'cloudy' ? 'â˜ï¸ Cloudy' : 
+        const weatherDisplay = weatherLower === 'sunny' ? 'â˜€ï¸ Sunny' : 
 
-                              report.weatherConditions === 'rainy' ? 'ðŸŒ§ï¸ Rainy' : 
+                              weatherLower === 'cloudy' ? 'â˜ï¸ Cloudy' : 
 
-                              report.weatherConditions === 'windy' ? 'ðŸ’¨ Windy' : report.weatherConditions;
+                              weatherLower === 'rainy' ? 'ðŸŒ§ï¸ Rainy' : 
+
+                              weatherLower === 'windy' ? 'ðŸ’¨ Windy' : report.weatherConditions;
 
         
 
@@ -48935,7 +48937,7 @@ function displaySiteReports(reports, _retry) {
 
                     <div class="workers-info">
 
-                        <div class="workers-count">${report.workersPresent} Workers</div>
+                        <div class="workers-count">${report.workersCount} Workers</div>
 
                     </div>
 

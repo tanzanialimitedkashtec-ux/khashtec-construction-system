@@ -1333,8 +1333,6 @@ app.get('/api/site-reports', async (req, res) => {
 
             LEFT JOIN projects p ON sr.project_id = p.id
 
-            ORDER BY sr.report_date DESC
-
         `;
 
         let params = [];
@@ -1348,6 +1346,8 @@ app.get('/api/site-reports', async (req, res) => {
             params = [projectId];
 
         }
+
+        query += ` ORDER BY sr.report_date DESC`;
 
 
 

@@ -1128,84 +1128,44 @@ router.get('/site-reports', async (req, res) => {
         let siteReports = [];
         
         try {
-            const [dbRecords] = await db.execute(
-                `SELECT * FROM hse_work WHERE work_type = 'Site Report' ORDER BY submitted_date DESC`
-            );
+            // Auto-create site_reports table if it doesn't exist
+            await db.execute(`
+                CREATE TABLE IF NOT EXISTS site_reports (
+                    id INT AUTO_INCREMENT PRIMARY KEY,
+                    project_id INT NOT NULL,
+                    report_date DATE NOT NULL,
+                    weather_conditions VARCHAR(50) NOT NULL,
+                    site_supervisor VARCHAR(255) NOT NULL,
+                    workers_present INT NOT NULL,
+                    work_completed TEXT NOT NULL,
+                    site_issues TEXT,
+                    safety_incidents TEXT,
+                    materials_used VARCHAR(500),
+                    equipment_used VARCHAR(500),
+                    next_day_plan TEXT NOT NULL,
+                    photos_files TEXT,
+                    status VARCHAR(50) DEFAULT 'Draft',
+                    created_by VARCHAR(255),
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+                )
+            `);
+
+            const [dbRecords] = await db.execute(`
+                SELECT sr.id, sr.project_id, sr.report_date, sr.weather_conditions,
+                       sr.site_supervisor, sr.workers_present, sr.work_completed,
+                       sr.site_issues, sr.safety_incidents, sr.materials_used,
+                       sr.equipment_used, sr.next_day_plan, sr.status, sr.created_by,
+                       sr.created_at, p.name as project_name
+                FROM site_reports sr
+                LEFT JOIN projects p ON sr.project_id = p.id
+                ORDER BY sr.report_date DESC
+            `);
             siteReports = dbRecords;
             console.log(`📊 Found ${siteReports.length} Site Report records from database`);
         } catch (dbError) {
-            console.error('❌ Database error, using fallback Site Report records:', dbError);
-            
-            // Fallback to mock Site Report records
-            siteReports = [
-                {
-                    id: 1,
-                    department_code: 'PROJECT',
-                    work_type: 'Site Report',
-                    work_title: 'Daily Site Report - Port Modernization',
-                    work_description: 'Daily progress report for port modernization project',
-                    project: 'prj001',
-                    report_date: '2026-04-22',
-                    weather_conditions: 'Sunny',
-                    site_supervisor: 'John Mwangi',
-                    workers_present: 20,
-                    work_completed: 'Column construction completed, beam installation started',
-                    issues_challenges: 'No issues',
-                    safety_incidents: 'None',
-                    materials_used: 'Steel beams: 10 units, Bolts: 500 units',
-                    equipment_used: 'Crane, Torque wrench',
-                    next_day_plan: 'Continue beam installation, begin deck construction',
-                    status: 'Completed',
-                    submitted_by: 'John Mwangi',
-                    submitted_date: '2026-04-22',
-                    mock: true
-                },
-                {
-                    id: 2,
-                    department_code: 'PROJECT',
-                    work_type: 'Site Report',
-                    work_title: 'Daily Site Report - Warehouse Construction',
-                    work_description: 'Daily progress report for warehouse construction project',
-                    project: 'prj002',
-                    report_date: '2026-04-21',
-                    weather_conditions: 'Rainy',
-                    site_supervisor: 'Mary Johnson',
-                    workers_present: 15,
-                    work_completed: 'HVAC rough-in completed, insulation installation started',
-                    issues_challenges: 'No issues',
-                    safety_incidents: 'Slip hazard due to rain',
-                    materials_used: 'HVAC ducts: 300m, Insulation: 300 rolls',
-                    equipment_used: 'HVAC installer, Insulation tools',
-                    next_day_plan: 'Complete insulation, begin drywall installation',
-                    status: 'Completed',
-                    submitted_by: 'Mary Johnson',
-                    submitted_date: '2026-04-21',
-                    mock: true
-                },
-                {
-                    id: 3,
-                    department_code: 'PROJECT',
-                    work_type: 'Site Report',
-                    work_title: 'Daily Site Report - Road Infrastructure',
-                    work_description: 'Daily progress report for road infrastructure project',
-                    project: 'prj003',
-                    report_date: '2026-04-20',
-                    weather_conditions: 'Windy',
-                    site_supervisor: 'Robert Davis',
-                    workers_present: 18,
-                    work_completed: 'Quality inspection passed, sidewalk installation started',
-                    issues_challenges: 'No issues',
-                    safety_incidents: 'None',
-                    materials_used: 'Concrete pavers: 1000 units, Edge restraints: 200m',
-                    equipment_used: 'Paver laying machine, Compactor',
-                    next_day_plan: 'Complete sidewalk installation, begin landscaping',
-                    status: 'Completed',
-                    submitted_by: 'Robert Davis',
-                    submitted_date: '2026-04-20',
-                    mock: true
-                }
-            ];
-            console.log(`📊 Using fallback mock Site Report records:`, siteReports.length);
+            console.error('❌ Database error fetching Site Report records:', dbError.message);
+            siteReports = [];
         }
         
         console.log(`📋 Returning ${siteReports.length} Site Report records`);
@@ -2269,74 +2229,7 @@ router.post('/site-reports', async (req, res) => {
     }
 });
 
-// Get Site Reports
-router.get('/site-reports', async (req, res) => {
-    try {
-        console.log('Fetching site reports...');
-        
-        // Try to get from database
-        try {
-            const db = require('../../database/config/database');
-            
-            const [reports] = await db.execute(`
-                SELECT id, project_id, report_date, weather_conditions, site_supervisor, 
-                       workers_present, work_completed, site_issues, safety_incidents,
-                       materials_used, equipment_used, next_day_plan, status, created_by, created_at
-                FROM site_reports 
-                ORDER BY created_at DESC 
-                LIMIT 10
-            `);
-            
-            console.log('Site reports from database:', reports.length);
-            res.json(reports);
-            
-        } catch (dbError) {
-            console.log('Database error, using fallback site reports:', dbError.message);
-            
-            // Fallback mock data
-            const mockReports = [
-                {
-                    id: 'SR001',
-                    project_id: 'prj001',
-                    report_date: '2024-03-15',
-                    weather_conditions: 'sunny',
-                    site_supervisor: 'John Smith',
-                    workers_present: 15,
-                    work_completed: 'Foundation excavation completed',
-                    site_issues: 'Minor delay due to equipment shortage',
-                    safety_incidents: 'None',
-                    materials_used: 'Cement: 50 bags, Steel: 2 tons',
-                    equipment_used: 'Excavator, Concrete Mixer',
-                    next_day_plan: 'Begin foundation pouring',
-                    created_at: '2024-03-15T16:00:00Z',
-                    fallback: true
-                },
-                {
-                    id: 'SR002',
-                    project_id: 'prj002',
-                    report_date: '2024-03-14',
-                    weather_conditions: 'cloudy',
-                    site_supervisor: 'Jane Doe',
-                    workers_present: 12,
-                    work_completed: 'Steel frame installation 60% complete',
-                    site_issues: 'Weather delay in afternoon',
-                    safety_incidents: '1 near miss - tool drop',
-                    materials_used: 'Steel beams: 15, Bolts: 200',
-                    equipment_used: 'Crane, Welding machine',
-                    next_day_plan: 'Complete steel frame installation',
-                    created_at: '2024-03-14T17:30:00Z',
-                    fallback: true
-                }
-            ];
-            
-            res.json(mockReports);
-        }
-        
-    } catch (error) {
-        console.error('Error fetching site reports:', error);
-        res.status(500).json({ error: 'Failed to fetch site reports' });
-    }
-});
+// Note: Duplicate GET /site-reports route removed - handled by the route above at line ~1124
 
 // Save Work Approval
 router.post('/approvals', async (req, res) => {
