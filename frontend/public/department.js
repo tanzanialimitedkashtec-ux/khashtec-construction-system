@@ -59963,7 +59963,15 @@ async function loadNotifications() {
 
         // Handle different response formats
 
-        const notifications = data.notifications || data.data || data;
+        let notifications = data.notifications || data.data || data;
+
+        // Ensure notifications is always an array
+
+        if (!Array.isArray(notifications)) {
+
+            notifications = notifications ? [notifications] : [];
+
+        }
 
         
 
