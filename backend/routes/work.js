@@ -4466,6 +4466,26 @@ router.post('/notifications', async (req, res) => {
             });
         }
         
+        // Ensure notifications table has all required columns
+        const missingColumns = [
+            { name: 'sent_date', definition: 'DATE' },
+            { name: 'scheduled_date', definition: 'DATETIME' },
+            { name: 'sent_by', definition: "VARCHAR(255) DEFAULT 'System'" },
+            { name: 'read_rate', definition: 'DECIMAL(5,2) DEFAULT 0' },
+            { name: 'recipient_type', definition: "VARCHAR(50) DEFAULT 'all'" },
+            { name: 'recipients', definition: "VARCHAR(255) DEFAULT 'All Staff'" },
+            { name: 'priority', definition: "VARCHAR(50) DEFAULT 'normal'" },
+            { name: 'status', definition: "VARCHAR(50) DEFAULT 'draft'" }
+        ];
+        for (const col of missingColumns) {
+            try {
+                await db.execute(`ALTER TABLE notifications ADD COLUMN ${col.name} ${col.definition}`);
+                console.log(`✅ Added missing column: ${col.name}`);
+            } catch (alterErr) {
+                // Column already exists - ignore
+            }
+        }
+        
         // Determine status and dates
         let status = 'draft';
         let sentDate = null;
