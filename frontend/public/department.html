@@ -90083,11 +90083,38 @@ function formatDate(dateString) {
 async function downloadDocument(docId) {
     console.log('💾 Downloading document:', docId);
     const baseUrl = window.location.origin;
-    const token = sessionStorage.getItem('kashtec_token') || sessionManager.getAuthToken();
-    console.log('🌐 API URL:', `${baseUrl}/api/documents/${docId}/download`);
-    console.log('🔑 Auth token:', token ? 'Present' : 'Missing');
+
+    // Safely get auth token
+    let token = sessionStorage.getItem('kashtec_token') || '';
+    if (!token && typeof sessionManager !== 'undefined' && sessionManager.getAuthToken) {
+        token = sessionManager.getAuthToken();
+    }
+    if (!token) {
+        token = localStorage.getItem('authToken') || '';
+    }
 
     try {
+        // Try KashTecAPI first if available
+        if (typeof KashTecAPI !== 'undefined' && KashTecAPI.downloadDocument) {
+            console.log('📥 Using KashTecAPI to download document:', docId);
+            const blob = await KashTecAPI.downloadDocument(docId);
+            const pdfBlob = new Blob([blob], { type: 'application/pdf' });
+            const url = window.URL.createObjectURL(pdfBlob);
+            const a = window.document.createElement('a');
+            a.href = url;
+            a.download = `document_${docId}.pdf`;
+            window.document.body.appendChild(a);
+            a.click();
+            window.URL.revokeObjectURL(url);
+            window.document.body.removeChild(a);
+            if (typeof showNotification === 'function') {
+                showNotification('Document downloaded successfully as PDF', 'success');
+            }
+            return;
+        }
+
+        // Fallback to direct fetch
+        console.log('📥 Fetching document from API:', `${baseUrl}/api/documents/${docId}/download`);
         const response = await fetch(`${baseUrl}/api/documents/${docId}/download`, {
             method: 'GET',
             headers: {
@@ -90101,35 +90128,50 @@ async function downloadDocument(docId) {
             
             // Get filename from response headers or create a default one
             const contentDisposition = response.headers.get('Content-Disposition');
-            let fileName = `document-${docId}.pdf`;
+            let fileName = `document_${docId}.pdf`;
             
             if (contentDisposition) {
                 const fileNameMatch = contentDisposition.match(/filename="(.+)"/);
                 if (fileNameMatch) {
                     fileName = fileNameMatch[1];
+                    if (!fileName.endsWith('.pdf')) {
+                        fileName += '.pdf';
+                    }
                 }
             }
-            
-            const url = window.URL.createObjectURL(blob);
-            const a = document.createElement('a');
+
+            // Ensure blob is typed as PDF
+            const pdfBlob = new Blob([blob], { type: 'application/pdf' });
+            const url = window.URL.createObjectURL(pdfBlob);
+            const a = window.document.createElement('a');
             a.href = url;
             a.download = fileName;
-            document.body.appendChild(a);
+            window.document.body.appendChild(a);
             a.click();
             window.URL.revokeObjectURL(url);
-            document.body.removeChild(a);
+            window.document.body.removeChild(a);
 
-            showNotification(`Document "${fileName}" downloaded successfully`, 'success');
+            if (typeof showNotification === 'function') {
+                showNotification(`Document "${fileName}" downloaded successfully`, 'success');
+            }
             
         } else {
             const errorData = await response.json().catch(() => ({}));
             console.error('❌ Failed to download document:', errorData);
-            showNotification(errorData.error || 'Failed to download document', 'error');
+            if (typeof showNotification === 'function') {
+                showNotification(errorData.error || 'Failed to download document', 'error');
+            } else {
+                alert('Failed to download document: ' + (errorData.error || response.statusText));
+            }
         }
 
     } catch (error) {
         console.error('❌ Error downloading document:', error);
-        showNotification('Error downloading document. Please try again.', 'error');
+        if (typeof showNotification === 'function') {
+            showNotification('Error downloading document. Please try again.', 'error');
+        } else {
+            alert('Error downloading document: ' + error.message);
+        }
     }
 }
 
