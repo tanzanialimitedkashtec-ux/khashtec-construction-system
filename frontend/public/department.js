@@ -16590,6 +16590,12 @@ function saveAttendance() {
 
         
 
+        // Reload the attendance records table with fresh data
+
+        loadAttendanceRecords();
+
+        
+
     })
 
     .catch(error => {
@@ -16780,117 +16786,9 @@ async function loadAttendanceRecords() {
 
 function loadSampleAttendanceRecords() {
 
-    console.log('ðŸ“‹ Loading sample attendance records...');
+    console.log('No attendance data available from API');
 
-    
-
-    const sampleRecords = [
-
-        {
-
-            id: 1,
-
-            employee_name: 'MORIS',
-
-            department: 'Construction',
-
-            attendance_date: '2026-05-02',
-
-            check_in_time: '08:00',
-
-            check_out_time: '17:00',
-
-            attendance_status: 'present',
-
-            notes: ''
-
-        },
-
-        {
-
-            id: 2,
-
-            employee_name: 'BRAYAN',
-
-            department: 'HSE',
-
-            attendance_date: '2026-05-02',
-
-            check_in_time: '08:15',
-
-            check_out_time: '17:30',
-
-            attendance_status: 'present',
-
-            notes: ''
-
-        },
-
-        {
-
-            id: 3,
-
-            employee_name: 'AYYAN 099',
-
-            department: 'HSE',
-
-            attendance_date: '2026-05-02',
-
-            check_in_time: '08:30',
-
-            check_out_time: '',
-
-            attendance_status: 'late',
-
-            notes: 'Traffic delay'
-
-        },
-
-        {
-
-            id: 4,
-
-            employee_name: 'Chrispin Golden',
-
-            department: 'Engineering',
-
-            attendance_date: '2026-05-02',
-
-            check_in_time: '',
-
-            check_out_time: '',
-
-            attendance_status: 'sick',
-
-            notes: 'Medical appointment'
-
-        },
-
-        {
-
-            id: 5,
-
-            employee_name: 'Billzone Mwipopo',
-
-            department: 'Labor',
-
-            attendance_date: '2026-05-01',
-
-            check_in_time: '07:45',
-
-            check_out_time: '16:45',
-
-            attendance_status: 'present',
-
-            notes: ''
-
-        }
-
-    ];
-
-    
-
-    displayAttendanceRecords(sampleRecords);
+    displayAttendanceRecords([]);
 
 }
 
@@ -16940,9 +16838,9 @@ function displayAttendanceRecords(records) {
 
     records.sort((a, b) => {
 
-        const dateA = new Date(a.date || a.attendance_date);
+        const dateA = new Date(a.attendance_date);
 
-        const dateB = new Date(b.date || b.attendance_date);
+        const dateB = new Date(b.attendance_date);
 
         return dateB - dateA;
 
@@ -16966,17 +16864,15 @@ function displayAttendanceRecords(records) {
 
             department: record.department,
 
-            attendance_date: record.date || record.attendance_date,
+            attendance_date: record.attendance_date,
 
-            check_in_time: record.check_in || record.check_in_time,
+            check_in_time: record.check_in_time,
 
-            check_out_time: record.check_out || record.check_out_time,
+            check_out_time: record.check_out_time,
 
-            attendance_status: record.status || record.attendance_status,
+            attendance_status: record.attendance_status,
 
-            notes: record.notes,
-
-            hours_worked: record.hours_worked
+            notes: record.notes
 
         };
 
@@ -17013,16 +16909,6 @@ function displayAttendanceRecords(records) {
             const diffMins = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
 
             workHours = `${diffHours}h ${diffMins}m`;
-
-        } else if (mappedRecord.hours_worked) {
-
-            // Use pre-calculated hours if available
-
-            const hours = Math.floor(mappedRecord.hours_worked);
-
-            const mins = Math.round((mappedRecord.hours_worked - hours) * 60);
-
-            workHours = mins > 0 ? `${hours}h ${mins}m` : `${hours}h`;
 
         }
 
@@ -17190,21 +17076,47 @@ function deleteAttendance(recordId) {
 
     if (confirm('Are you sure you want to delete this attendance record? This action cannot be undone.')) {
 
-        // TODO: Implement actual API call to delete attendance record
+        const baseUrl = window.location.origin;
 
-        console.log('Deleting attendance record with ID:', recordId);
+        fetch(`${baseUrl}/api/attendance/${recordId}`, {
 
-        customAlert(`Attendance record ${recordId} has been deleted.\n\nThe record has been removed from the system.`, "Record Deleted", "success");
+            method: 'DELETE',
 
-        
+            headers: {
 
-        // Refresh the attendance records
+                'Content-Type': 'application/json',
 
-        setTimeout(() => {
+                'Authorization': `Bearer ${sessionManager.getAuthToken()}`
 
-            loadAttendanceRecords();
+            }
 
-        }, 1000);
+        })
+
+        .then(response => response.json())
+
+        .then(data => {
+
+            if (data.success) {
+
+                customAlert('Attendance record deleted successfully.', "Record Deleted", "success");
+
+                loadAttendanceRecords();
+
+            } else {
+
+                throw new Error(data.error || 'Failed to delete record');
+
+            }
+
+        })
+
+        .catch(error => {
+
+            console.error('Error deleting attendance:', error);
+
+            customAlert(`Error deleting attendance: ${error.message}`, "Error", "error");
+
+        });
 
     }
 
