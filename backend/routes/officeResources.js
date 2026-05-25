@@ -66,6 +66,44 @@ router.post('/', async (req, res) => {
         // Avoid FK violations; prefer authenticated user when available
         const createdBy = (req.user && req.user.id) ? req.user.id : null;
 
+        // Ensure the office_resources table exists before inserting
+        try {
+            await db.execute(`
+                CREATE TABLE IF NOT EXISTS office_resources (
+                    id INT AUTO_INCREMENT PRIMARY KEY,
+                    resource_code VARCHAR(50) UNIQUE NOT NULL,
+                    resource_name VARCHAR(255) NOT NULL,
+                    resource_type ENUM('Computer', 'Printer', 'Desk', 'Chair', 'Phone', 'Vehicle', 'Equipment', 'Software License', 'Office Supplies', 'Other') NOT NULL,
+                    description TEXT,
+                    serial_number VARCHAR(100),
+                    purchase_date DATE,
+                    purchase_cost DECIMAL(12,2),
+                    current_value DECIMAL(12,2),
+                    condition ENUM('New', 'Good', 'Fair', 'Poor', 'Damaged') DEFAULT 'Good',
+                    location VARCHAR(255),
+                    department VARCHAR(100),
+                    status ENUM('Available', 'Assigned', 'In Maintenance', 'Retired', 'Lost') DEFAULT 'Available',
+                    assigned_to INT,
+                    assigned_date DATE,
+                    expected_return_date DATE,
+                    actual_return_date DATE,
+                    return_condition ENUM('New', 'Good', 'Fair', 'Poor', 'Damaged'),
+                    maintenance_notes TEXT,
+                    created_by INT,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+                    FOREIGN KEY (assigned_to) REFERENCES employees(id) ON DELETE SET NULL,
+                    FOREIGN KEY (created_by) REFERENCES users(id) ON DELETE SET NULL,
+                    INDEX idx_resource_code (resource_code),
+                    INDEX idx_resource_type (resource_type),
+                    INDEX idx_status (status),
+                    INDEX idx_assigned_to (assigned_to)
+                )
+            `);
+        } catch (tableError) {
+            console.warn('Warning: office_resources table verification failed:', tableError && tableError.message ? tableError.message : tableError);
+        }
+
         const result = await db.execute(`
             INSERT INTO office_resources (
                 resource_code, resource_name, resource_type, description,
