@@ -2282,7 +2282,7 @@ router.post('/approvals', async (req, res) => {
             
             console.log('Creating work_approvals table if needed...');
             
-            // Create work_approvals table if it doesn't exist
+            // Create work_approvals table if it doesn't exist (VARCHAR columns)
             await db.execute(`
                 CREATE TABLE IF NOT EXISTS work_approvals (
                     id INT AUTO_INCREMENT PRIMARY KEY,
@@ -2290,15 +2290,17 @@ router.post('/approvals', async (req, res) => {
                     project_id INT,
                     completed_by VARCHAR(255),
                     completion_date DATE,
-                    quality_assessment ENUM('excellent', 'good', 'acceptable', 'poor') NOT NULL,
-                    compliance_check ENUM('fully-compliant', 'minor-issues', 'major-issues', 'non-compliant') NOT NULL,
+                    quality_assessment VARCHAR(50) NOT NULL,
+                    compliance_check VARCHAR(50) NOT NULL,
                     approval_comments TEXT NOT NULL,
-                    safety_compliance ENUM('compliant', 'minor-violations', 'major-violations'),
-                    time_completion ENUM('on-time', 'early', 'delayed'),
-                    quality_score INT,
-                    status ENUM('pending', 'approved', 'rejected', 'rework-required') DEFAULT 'pending',
+                    safety_compliance VARCHAR(50) DEFAULT 'compliant',
+                    time_completion VARCHAR(50) DEFAULT 'on-time',
+                    quality_score DECIMAL(5,2),
+                    status VARCHAR(30) DEFAULT 'pending',
                     approved_by VARCHAR(255),
                     approval_date DATE,
+                    source_table VARCHAR(50),
+                    source_id INT,
                     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
                     INDEX idx_work_id (work_id),
@@ -2308,41 +2310,112 @@ router.post('/approvals', async (req, res) => {
             `);
             
             console.log('work_approvals table ready...');
+
+            // Determine source table and source id from work_id prefix
+            let sourceTable = null;
+            let sourceId = null;
+            let numericWorkId = work_id;
+            if (typeof work_id === 'string' && work_id.startsWith('SR-')) {
+                sourceTable = 'site_reports';
+                sourceId = parseInt(work_id.replace('SR-', ''), 10);
+                numericWorkId = work_id;
+            } else if (typeof work_id === 'string' && work_id.startsWith('HW-')) {
+                sourceTable = 'hr_work';
+                sourceId = parseInt(work_id.replace('HW-', ''), 10);
+                numericWorkId = work_id;
+            }
             
             // Fetch the details of the work completion if available
-            let projectId = 1;
+            let projectId = null;
             let completedBy = 'Current User';
             let completionDate = new Date().toISOString().split('T')[0];
             
-            try {
-                const [completions] = await db.execute(
-                    'SELECT * FROM work_completions WHERE id = ? LIMIT 1',
-                    [work_id]
-                );
-                if (completions && completions.length > 0) {
-                    completedBy = completions[0].completed_by || 'Current User';
-                    completionDate = completions[0].completed_date ? new Date(completions[0].completed_date).toISOString().split('T')[0] : completionDate;
+            if (sourceTable === 'site_reports' && sourceId) {
+                try {
+                    const [srRows] = await db.execute(
+                        'SELECT sr.*, COALESCE(p.project_name, CONCAT(\'Project #\', sr.project_id)) AS project_name FROM site_reports sr LEFT JOIN projects p ON sr.project_id = p.id WHERE sr.id = ? LIMIT 1',
+                        [sourceId]
+                    );
+                    if (srRows && srRows.length > 0) {
+                        projectId = srRows[0].project_id;
+                        completedBy = srRows[0].site_supervisor || 'Site Supervisor';
+                        completionDate = srRows[0].report_date ? new Date(srRows[0].report_date).toISOString().split('T')[0] : completionDate;
+                    }
+                } catch (err) {
+                    console.log('⚠️ Could not query site_reports details:', err.message);
                 }
-            } catch (err) {
-                console.log('⚠️ Could not query work completion details, using defaults:', err.message);
+            } else if (sourceTable === 'hr_work' && sourceId) {
+                try {
+                    const [hwRows] = await db.execute(
+                        'SELECT * FROM hr_work WHERE id = ? LIMIT 1',
+                        [sourceId]
+                    );
+                    if (hwRows && hwRows.length > 0) {
+                        completedBy = hwRows[0].submitted_by || 'N/A';
+                        completionDate = hwRows[0].submitted_date ? new Date(hwRows[0].submitted_date).toISOString().split('T')[0] : completionDate;
+                    }
+                } catch (err) {
+                    console.log('⚠️ Could not query hr_work details:', err.message);
+                }
+            } else {
+                try {
+                    const [completions] = await db.execute(
+                        'SELECT * FROM work_completions WHERE id = ? LIMIT 1',
+                        [work_id]
+                    );
+                    if (completions && completions.length > 0) {
+                        completedBy = completions[0].completed_by || 'Current User';
+                        completionDate = completions[0].completed_date ? new Date(completions[0].completed_date).toISOString().split('T')[0] : completionDate;
+                    }
+                } catch (err) {
+                    console.log('⚠️ Could not query work completion details, using defaults:', err.message);
+                }
             }
             
+            // Calculate quality score from assessment
+            const qualityScoreMap = { 'excellent': 95, 'good': 85, 'acceptable': 75, 'poor': 50 };
+            const calcScore = qualityScoreMap[quality_assessment] || 80;
+
             // Insert work approval
-            const result = await db.execute(`
+            const [result] = await db.execute(`
                 INSERT INTO work_approvals (
                     work_id, project_id, completed_by, completion_date, quality_assessment, 
                     compliance_check, approval_comments, safety_compliance, time_completion, 
-                    quality_score, status, approved_by, approval_date
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'approved', ?, CURDATE())
+                    quality_score, status, approved_by, approval_date, source_table, source_id
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'approved', ?, CURDATE(), ?, ?)
             `, [
                 work_id, projectId, completedBy, completionDate, 
                 quality_assessment, compliance_check, approval_comments,
-                safety_compliance || null, time_completion || null, null, approved_by || 'Managing Director'
+                safety_compliance || 'compliant', time_completion || 'on-time', calcScore,
+                approved_by || 'Managing Director', sourceTable, sourceId
             ]);
             
             console.log('Work approval saved to database with ID:', result.insertId);
             
-            // Also update status in work_completions
+            // Update status in the source table
+            if (sourceTable === 'site_reports' && sourceId) {
+                try {
+                    await db.execute(
+                        `UPDATE site_reports SET status = 'approved' WHERE id = ?`,
+                        [sourceId]
+                    );
+                    console.log(`✅ Updated site_reports status to approved for ID ${sourceId}`);
+                } catch (updateError) {
+                    console.log('⚠️ Failed to update site_reports status:', updateError.message);
+                }
+            } else if (sourceTable === 'hr_work' && sourceId) {
+                try {
+                    await db.execute(
+                        `UPDATE hr_work SET status = 'Resolved' WHERE id = ?`,
+                        [sourceId]
+                    );
+                    console.log(`✅ Updated hr_work status to Resolved for ID ${sourceId}`);
+                } catch (updateError) {
+                    console.log('⚠️ Failed to update hr_work status:', updateError.message);
+                }
+            }
+
+            // Also update status in work_completions if it exists there
             try {
                 await db.execute(`
                     UPDATE work_completions 
@@ -2350,11 +2423,11 @@ router.post('/approvals', async (req, res) => {
                         approved_by = ?, 
                         approval_notes = ?,
                         approval_date = NOW()
-                    WHERE id = ?
-                `, [approved_by || 'Managing Director', approval_comments || '', work_id]);
+                    WHERE id = ? OR (source_table = ? AND source_id = ?)
+                `, [approved_by || 'Managing Director', approval_comments || '', work_id, sourceTable, sourceId]);
                 console.log(`✅ Updated status to approved in work_completions for ID ${work_id}`);
             } catch (updateError) {
-                console.error('⚠️ Failed to update work_completions status:', updateError.message);
+                console.log('⚠️ Failed to update work_completions status:', updateError.message);
             }
             
             res.json({
@@ -3144,70 +3217,149 @@ router.get('/completions/pending', async (req, res) => {
     try {
         console.log('📋 Fetching work completions for approval...');
         
+        let allCompletions = [];
+
+        // Ensure work_completions table exists
         try {
-            // Query real data from work_completions table
-            const [dbRecords] = await db.execute(`
-                SELECT * FROM work_completions 
-                WHERE status = 'pending'
-                ORDER BY completed_date DESC 
+            await db.execute(`
+                CREATE TABLE IF NOT EXISTS work_completions (
+                    id INT AUTO_INCREMENT PRIMARY KEY,
+                    work_details VARCHAR(255) NOT NULL,
+                    project VARCHAR(255),
+                    completed_by VARCHAR(255),
+                    completed_date DATE,
+                    quality_score INT DEFAULT 0,
+                    quality_level VARCHAR(50),
+                    status VARCHAR(30) DEFAULT 'pending',
+                    approved_by VARCHAR(255),
+                    approval_notes TEXT,
+                    approval_date DATETIME,
+                    rework_reason TEXT,
+                    rework_requested_by VARCHAR(255),
+                    rework_request_date DATETIME,
+                    rejection_reason TEXT,
+                    rejected_by VARCHAR(255),
+                    rejection_date DATETIME,
+                    source_table VARCHAR(50) DEFAULT 'work_completions',
+                    source_id INT,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+                    INDEX idx_status (status),
+                    INDEX idx_completed_date (completed_date)
+                )
+            `);
+        } catch (createErr) {
+            console.log('⚠️ work_completions table check:', createErr.message);
+        }
+
+        // 1) Query pending items from work_completions
+        try {
+            const [wcRows] = await db.execute(
+                `SELECT * FROM work_completions WHERE status = 'pending' ORDER BY completed_date DESC LIMIT 50`
+            );
+            if (wcRows && wcRows.length > 0) {
+                allCompletions = allCompletions.concat(wcRows);
+                console.log(`📊 Found ${wcRows.length} pending work completions`);
+            }
+        } catch (wcErr) {
+            console.log('⚠️ work_completions query:', wcErr.message);
+        }
+
+        // 2) Also pull submitted site reports that have not been approved yet
+        try {
+            const [srRows] = await db.execute(`
+                SELECT sr.id, sr.work_completed AS work_details,
+                       COALESCE(p.project_name, CONCAT('Project #', sr.project_id)) AS project,
+                       sr.site_supervisor AS completed_by,
+                       sr.report_date AS completed_date,
+                       CASE
+                           WHEN sr.safety_incidents IS NULL OR sr.safety_incidents = '' THEN 85
+                           ELSE 60
+                       END AS quality_score,
+                       sr.status,
+                       'site_reports' AS source_table,
+                       sr.id AS source_id,
+                       sr.created_at
+                FROM site_reports sr
+                LEFT JOIN projects p ON sr.project_id = p.id
+                WHERE (sr.status = 'submitted' OR sr.status IS NULL)
+                  AND sr.id NOT IN (
+                      SELECT COALESCE(source_id, 0) FROM work_completions WHERE source_table = 'site_reports'
+                  )
+                ORDER BY sr.report_date DESC
                 LIMIT 50
             `);
-            
-            const workCompletions = dbRecords || [];
-            console.log(`📊 Found ${workCompletions.length} work completions from database`);
-            
-            return res.json({
-                success: true,
-                count: workCompletions.length,
-                data: workCompletions
-            });
-        } catch (dbError) {
-            console.error('❌ Database query error:', dbError.message);
-            console.error('❌ Error code:', dbError.code);
-            console.error('❌ SQL State:', dbError.sqlState);
-            
-            // If table doesn't exist, create it and return empty
-            if (dbError.code === 'ER_NO_SUCH_TABLE') {
-                try {
-                    await db.execute(`
-                        CREATE TABLE IF NOT EXISTS work_completions (
-                            id INT AUTO_INCREMENT PRIMARY KEY,
-                            work_details VARCHAR(255) NOT NULL,
-                            project VARCHAR(255),
-                            completed_by VARCHAR(255),
-                            completed_date DATE,
-                            quality_score INT DEFAULT 0,
-                            quality_level VARCHAR(50),
-                            status ENUM('pending', 'approved', 'rejected', 'rework_requested') DEFAULT 'pending',
-                            approved_by VARCHAR(255),
-                            approval_notes TEXT,
-                            approval_date DATETIME,
-                            rework_reason TEXT,
-                            rework_requested_by VARCHAR(255),
-                            rework_request_date DATETIME,
-                            rejection_reason TEXT,
-                            rejected_by VARCHAR(255),
-                            rejection_date DATETIME,
-                            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-                            INDEX idx_status (status),
-                            INDEX idx_completed_date (completed_date)
-                        )
-                    `);
-                    console.log('✅ work_completions table created successfully');
-                    return res.json({ success: true, count: 0, data: [] });
-                } catch (createError) {
-                    console.error('❌ Failed to create work_completions table:', createError.message);
-                }
+            if (srRows && srRows.length > 0) {
+                const mapped = srRows.map(sr => ({
+                    id: 'SR-' + sr.id,
+                    work_details: sr.work_details || 'Site Report Work',
+                    project: sr.project || 'N/A',
+                    completed_by: sr.completed_by || 'Site Supervisor',
+                    completed_date: sr.completed_date,
+                    quality_score: sr.quality_score || 85,
+                    quality_level: sr.quality_score >= 90 ? 'excellent' : sr.quality_score >= 80 ? 'good' : 'acceptable',
+                    status: 'pending',
+                    source_table: 'site_reports',
+                    source_id: sr.source_id
+                }));
+                allCompletions = allCompletions.concat(mapped);
+                console.log(`📊 Found ${srRows.length} site reports pending approval`);
             }
-            
-            return res.status(500).json({
-                success: false,
-                error: 'Failed to fetch work completions from database',
-                details: dbError.message,
-                code: dbError.code
-            });
+        } catch (srErr) {
+            console.log('⚠️ site_reports query:', srErr.message);
         }
+
+        // 3) Also pull from hr_work items with status submitted/pending
+        try {
+            const [hrRows] = await db.execute(`
+                SELECT hw.id, hw.work_title AS work_details,
+                       hw.department_code AS project,
+                       hw.submitted_by AS completed_by,
+                       hw.submitted_date AS completed_date,
+                       CASE hw.severity
+                           WHEN 'Low' THEN 90
+                           WHEN 'Medium' THEN 80
+                           WHEN 'High' THEN 70
+                           ELSE 85
+                       END AS quality_score,
+                       hw.status,
+                       'hr_work' AS source_table,
+                       hw.id AS source_id
+                FROM hr_work hw
+                WHERE (hw.status = 'Open' OR hw.status = 'submitted' OR hw.status = 'pending')
+                  AND hw.id NOT IN (
+                      SELECT COALESCE(source_id, 0) FROM work_completions WHERE source_table = 'hr_work'
+                  )
+                ORDER BY hw.submitted_date DESC
+                LIMIT 50
+            `);
+            if (hrRows && hrRows.length > 0) {
+                const mapped = hrRows.map(hw => ({
+                    id: 'HW-' + hw.id,
+                    work_details: hw.work_details || 'HR Work Item',
+                    project: hw.project || 'N/A',
+                    completed_by: hw.completed_by || 'N/A',
+                    completed_date: hw.completed_date,
+                    quality_score: hw.quality_score || 85,
+                    quality_level: hw.quality_score >= 90 ? 'excellent' : hw.quality_score >= 80 ? 'good' : 'acceptable',
+                    status: 'pending',
+                    source_table: 'hr_work',
+                    source_id: hw.source_id
+                }));
+                allCompletions = allCompletions.concat(mapped);
+                console.log(`📊 Found ${hrRows.length} HR work items pending approval`);
+            }
+        } catch (hrErr) {
+            console.log('⚠️ hr_work query:', hrErr.message);
+        }
+
+        console.log(`📊 Total pending completions: ${allCompletions.length}`);
+        return res.json({
+            success: true,
+            count: allCompletions.length,
+            data: allCompletions
+        });
+
     } catch (error) {
         console.error('❌ Unexpected error fetching work completions:', error);
         res.status(500).json({
@@ -3222,9 +3374,39 @@ router.get('/completions/pending', async (req, res) => {
 router.get('/approvals/recent', async (req, res) => {
     try {
         console.log('📋 Fetching recent approval history...');
-        
+
+        // Ensure work_approvals table exists with VARCHAR columns
         try {
-            // Query real data from work_approvals table
+            await db.execute(`
+                CREATE TABLE IF NOT EXISTS work_approvals (
+                    id INT AUTO_INCREMENT PRIMARY KEY,
+                    work_id VARCHAR(50) NOT NULL,
+                    project_id INT,
+                    completed_by VARCHAR(255),
+                    completion_date DATE,
+                    quality_assessment VARCHAR(50) NOT NULL,
+                    compliance_check VARCHAR(50) NOT NULL,
+                    approval_comments TEXT NOT NULL,
+                    safety_compliance VARCHAR(50) DEFAULT 'compliant',
+                    time_completion VARCHAR(50) DEFAULT 'on-time',
+                    quality_score DECIMAL(5,2),
+                    status VARCHAR(30) DEFAULT 'pending',
+                    approved_by VARCHAR(255),
+                    approval_date TIMESTAMP NULL,
+                    source_table VARCHAR(50),
+                    source_id INT,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+                    INDEX idx_work_id (work_id),
+                    INDEX idx_status (status),
+                    INDEX idx_created_at (created_at)
+                )
+            `);
+        } catch (tblErr) {
+            console.log('⚠️ work_approvals table check:', tblErr.message);
+        }
+
+        try {
             const [dbRecords] = await db.execute(`
                 SELECT * FROM work_approvals 
                 ORDER BY created_at DESC 
@@ -3241,42 +3423,6 @@ router.get('/approvals/recent', async (req, res) => {
             });
         } catch (dbError) {
             console.error('❌ Database error fetching approvals:', dbError.message);
-            console.error('❌ Error code:', dbError.code);
-            console.error('❌ SQL State:', dbError.sqlState);
-            
-            // If table doesn't exist, create it and return empty
-            if (dbError.code === 'ER_NO_SUCH_TABLE') {
-                try {
-                    await db.execute(`
-                        CREATE TABLE IF NOT EXISTS work_approvals (
-                            id INT AUTO_INCREMENT PRIMARY KEY,
-                            work_id VARCHAR(50) NOT NULL,
-                            project_id INT,
-                            completed_by VARCHAR(255),
-                            completion_date DATE,
-                            quality_assessment ENUM('excellent', 'good', 'acceptable', 'poor') NOT NULL,
-                            compliance_check ENUM('fully-compliant', 'minor-issues', 'major-issues', 'non-compliant') NOT NULL,
-                            approval_comments TEXT NOT NULL,
-                            safety_compliance ENUM('compliant', 'minor-violations', 'major-violations') DEFAULT 'compliant',
-                            time_completion ENUM('on-time', 'early', 'delayed') DEFAULT 'on-time',
-                            quality_score DECIMAL(5,2),
-                            status ENUM('pending', 'approved', 'rejected', 'rework-requested') DEFAULT 'pending',
-                            approved_by VARCHAR(255),
-                            approval_date TIMESTAMP NULL,
-                            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-                            INDEX idx_work_id (work_id),
-                            INDEX idx_status (status),
-                            INDEX idx_created_at (created_at)
-                        )
-                    `);
-                    console.log('✅ work_approvals table created successfully');
-                    return res.json({ success: true, count: 0, data: [] });
-                } catch (createError) {
-                    console.error('❌ Failed to create work_approvals table:', createError.message);
-                }
-            }
-            
             return res.status(500).json({
                 success: false,
                 error: 'Failed to fetch approvals from database',
