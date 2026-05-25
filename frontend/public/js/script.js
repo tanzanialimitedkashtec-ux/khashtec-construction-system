@@ -652,37 +652,86 @@ async function viewDoc(docId) {
         console.log('Viewing document:', docId);
         
         // Get document details
-        const doc = await KashTecAPI.getDocument(docId);
+        const response = await KashTecAPI.getDocument(docId);
+        const doc = (response && response.data) ? response.data : response;
+        
+        const docTitle = doc.title || doc.work_title || 'Untitled Document';
+        const docType = doc.type || doc.work_type || 'PDF';
+        const docDept = doc.department || doc.department_code || doc.affected_department || 'Unknown';
+        const docStatus = doc.status || 'Active';
+        const docDate = doc.uploadedDate || doc.updatedAt || doc.uploadDate || doc.submitted_date;
+        const docDescription = doc.description || doc.work_description || '';
+        const docSize = doc.fileSize || doc.size || null;
+        const docUploader = doc.uploadedByName || doc.uploaded_by || '';
+
+        const statusColor = docStatus.toLowerCase() === 'active' ? '#28a745' : 
+                           docStatus.toLowerCase() === 'pending' ? '#ffc107' : '#6c757d';
         
         // Create view modal
         const modal = document.createElement('div');
         modal.className = 'modal';
+        modal.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.6);display:flex;justify-content:center;align-items:center;z-index:10000;animation:fadeIn 0.3s ease';
         modal.innerHTML = `
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h3>View Document</h3>
-                    <button class="close-btn" onclick="closeModal()">&times;</button>
+            <div style="background:#fff;border-radius:12px;box-shadow:0 20px 60px rgba(0,0,0,0.3);width:520px;max-width:92%;max-height:85vh;overflow:hidden;animation:slideIn 0.3s ease">
+                <div style="background:linear-gradient(135deg,#0b3d91 0%,#1e5bb8 100%);color:#fff;padding:20px 24px;display:flex;justify-content:space-between;align-items:center">
+                    <div style="display:flex;align-items:center;gap:12px">
+                        <div style="width:40px;height:40px;background:rgba(255,255,255,0.2);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px">📄</div>
+                        <div>
+                            <h3 style="margin:0;font-size:18px;font-weight:600">Document Details</h3>
+                            <span style="font-size:12px;opacity:0.8">ID: ${docId}</span>
+                        </div>
+                    </div>
+                    <button onclick="closeModal()" style="background:rgba(255,255,255,0.2);border:none;color:#fff;width:32px;height:32px;border-radius:8px;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center">&times;</button>
                 </div>
-                <div class="modal-body">
-                    <div class="doc-details">
-                        <h4>${doc.title}</h4>
-                        <p><strong>Type:</strong> ${doc.type || 'PDF'}</p>
-                        <p><strong>Department:</strong> ${doc.department || 'Admin'}</p>
-                        <p><strong>Status:</strong> ${doc.status || 'active'}</p>
-                        <p><strong>Last Updated:</strong> ${formatDate(doc.uploadedDate)}</p>
-                        ${doc.description ? `<p><strong>Description:</strong> ${doc.description}</p>` : ''}
-                        ${doc.work_type ? `<p><strong>Work Type:</strong> ${doc.work_type}</p>` : ''}
+                <div style="padding:24px;overflow-y:auto;max-height:calc(85vh - 160px)">
+                    <h4 style="margin:0 0 16px;font-size:20px;color:#1a1a2e;font-weight:700">${docTitle}</h4>
+                    
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px">
+                        <div style="background:#f8f9fa;border-radius:8px;padding:12px">
+                            <span style="font-size:11px;color:#6c757d;text-transform:uppercase;letter-spacing:0.5px;display:block;margin-bottom:4px">Type</span>
+                            <span style="font-size:14px;color:#1a1a2e;font-weight:500">${docType}</span>
+                        </div>
+                        <div style="background:#f8f9fa;border-radius:8px;padding:12px">
+                            <span style="font-size:11px;color:#6c757d;text-transform:uppercase;letter-spacing:0.5px;display:block;margin-bottom:4px">Department</span>
+                            <span style="font-size:14px;color:#1a1a2e;font-weight:500">${docDept}</span>
+                        </div>
+                        <div style="background:#f8f9fa;border-radius:8px;padding:12px">
+                            <span style="font-size:11px;color:#6c757d;text-transform:uppercase;letter-spacing:0.5px;display:block;margin-bottom:4px">Status</span>
+                            <span style="display:inline-block;padding:2px 10px;border-radius:12px;font-size:12px;font-weight:600;background:${statusColor}22;color:${statusColor}">${docStatus}</span>
+                        </div>
+                        <div style="background:#f8f9fa;border-radius:8px;padding:12px">
+                            <span style="font-size:11px;color:#6c757d;text-transform:uppercase;letter-spacing:0.5px;display:block;margin-bottom:4px">Last Updated</span>
+                            <span style="font-size:14px;color:#1a1a2e;font-weight:500">${docDate ? new Date(docDate).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }) : 'N/A'}</span>
+                        </div>
                     </div>
-                    <div class="form-actions">
-                        <button class="action" onclick="downloadDoc('${docId}')">Download</button>
-                        <button class="action secondary" onclick="closeModal()">Close</button>
-                    </div>
+
+                    ${docUploader ? `<div style="background:#f8f9fa;border-radius:8px;padding:12px;margin-bottom:12px">
+                        <span style="font-size:11px;color:#6c757d;text-transform:uppercase;letter-spacing:0.5px;display:block;margin-bottom:4px">Uploaded By</span>
+                        <span style="font-size:14px;color:#1a1a2e;font-weight:500">${docUploader}</span>
+                    </div>` : ''}
+
+                    ${docSize ? `<div style="background:#f8f9fa;border-radius:8px;padding:12px;margin-bottom:12px">
+                        <span style="font-size:11px;color:#6c757d;text-transform:uppercase;letter-spacing:0.5px;display:block;margin-bottom:4px">File Size</span>
+                        <span style="font-size:14px;color:#1a1a2e;font-weight:500">${typeof formatFileSize === 'function' ? formatFileSize(docSize) : docSize + ' bytes'}</span>
+                    </div>` : ''}
+
+                    ${docDescription ? `<div style="background:#f0f4ff;border-left:4px solid #0b3d91;border-radius:0 8px 8px 0;padding:14px 16px;margin-bottom:16px">
+                        <span style="font-size:11px;color:#6c757d;text-transform:uppercase;letter-spacing:0.5px;display:block;margin-bottom:6px">Description</span>
+                        <p style="margin:0;font-size:14px;color:#333;line-height:1.5">${docDescription}</p>
+                    </div>` : ''}
+                </div>
+                <div style="padding:16px 24px;background:#f8f9fa;border-top:1px solid #e9ecef;display:flex;gap:10px;justify-content:flex-end">
+                    <button onclick="downloadDoc('${docId}')" style="background:linear-gradient(135deg,#28a745,#20c997);color:#fff;border:none;padding:10px 20px;border-radius:8px;font-size:14px;font-weight:500;cursor:pointer;display:flex;align-items:center;gap:6px">📥 Download PDF</button>
+                    <button onclick="closeModal()" style="background:#6c757d;color:#fff;border:none;padding:10px 20px;border-radius:8px;font-size:14px;font-weight:500;cursor:pointer">Close</button>
                 </div>
             </div>
         `;
         
+        modal.addEventListener('click', function(e) {
+            if (e.target === modal) closeModal();
+        });
+        
         document.body.appendChild(modal);
-        modal.style.display = 'block';
         
     } catch (error) {
         console.error('Error viewing document:', error);
@@ -690,7 +739,7 @@ async function viewDoc(docId) {
     }
 }
 
-// Download document
+// Download document as PDF
 async function downloadDoc(docId) {
     try {
         // Check if KashTecAPI is available
@@ -700,11 +749,63 @@ async function downloadDoc(docId) {
             return;
         }
         
-        console.log('Downloading document:', docId);
-        await KashTecAPI.downloadDocument(docId);
+        console.log('Downloading document as PDF:', docId);
+        const blob = await KashTecAPI.downloadDocument(docId);
+        
+        const pdfBlob = new Blob([blob], { type: 'application/pdf' });
+        const url = window.URL.createObjectURL(pdfBlob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `document_${docId}.pdf`;
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+        document.body.removeChild(a);
+        
+        if (typeof customAlert === 'function') {
+            customAlert('Document downloaded successfully as PDF!', 'Success', 'success');
+        }
     } catch (error) {
         console.error('Error downloading document:', error);
         alert('Failed to download document: ' + error.message);
+    }
+}
+
+// Delete document
+async function deleteDoc(docId, docTitle) {
+    const confirmed = confirm(`Are you sure you want to delete "${docTitle || 'this document'}"?\n\nThis action cannot be undone.`);
+    if (!confirmed) return;
+
+    try {
+        if (typeof KashTecAPI !== 'undefined' && KashTecAPI.deleteDocument) {
+            console.log('🗑️ Deleting document via API:', docId);
+            await KashTecAPI.deleteDocument(docId);
+            
+            if (typeof customAlert === 'function') {
+                customAlert('Document deleted successfully!', 'Success', 'success');
+            } else {
+                alert('Document deleted successfully!');
+            }
+        } else {
+            console.warn('KashTecAPI not available for deletion');
+            alert('API service not loaded. Please refresh page.');
+            return;
+        }
+
+        const docElement = document.querySelector(`[data-id="${docId}"]`);
+        if (docElement) {
+            docElement.style.transition = 'opacity 0.3s, transform 0.3s';
+            docElement.style.opacity = '0';
+            docElement.style.transform = 'scale(0.95)';
+            setTimeout(() => docElement.remove(), 300);
+        }
+
+        if (typeof loadDocuments === 'function') {
+            setTimeout(() => loadDocuments(), 1000);
+        }
+    } catch (error) {
+        console.error('❌ Error deleting document:', error);
+        alert('Error deleting document: ' + error.message);
     }
 }
 
