@@ -4379,11 +4379,18 @@ router.get('/notifications', async (req, res) => {
         let notifications = [];
         
         try {
-            const [dbNotifications] = await db.execute(`
+            const dbResult = await db.execute(`
                 SELECT * FROM notifications 
                 ORDER BY created_at DESC
             `);
-            notifications = dbNotifications;
+            // Handle different mysql2 return formats
+            if (Array.isArray(dbResult) && Array.isArray(dbResult[0])) {
+                notifications = dbResult[0];
+            } else if (Array.isArray(dbResult)) {
+                notifications = dbResult;
+            } else {
+                notifications = [];
+            }
             console.log(`📊 Found ${notifications.length} notifications from database`);
         } catch (dbError) {
             console.error('❌ Database error, notifications table may not exist:', dbError);
