@@ -2957,75 +2957,24 @@ app.post('/api/attendance', async (req, res) => {
 
 
 
-        // Insert attendance record with error handling for missing columns
-        let result;
-        try {
-            result = await db.execute(`
-
-                INSERT INTO attendance (
-
-                    employee_id, employee_name, attendance_date, check_in_time, check_out_time,
-
-                    attendance_status, notes, marked_by, marked_by_role, created_at
-
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())
-
-            `, [
-
-                employee_id, req.body.employee_name || '', attendance_date, check_in_time, check_out_time,
-
-                attendance_status, notes, marked_by, marked_by_role
-
-            ]);
-        } catch (columnError) {
-            if (columnError.message.includes('Unknown column')) {
-                console.log('?? Missing column detected, recreating attendance table...');
-                
-                // Drop and recreate table with correct schema
-                await db.execute("DROP TABLE IF EXISTS attendance");
-                await db.execute(`
-                    CREATE TABLE attendance (
-                        id INT AUTO_INCREMENT PRIMARY KEY,
-                        employee_id VARCHAR(50) NOT NULL,
-                        employee_name VARCHAR(255) NOT NULL,
-                        date DATE NOT NULL,
-                        check_in TIME NOT NULL,
-                        check_out TIME NULL,
-                        status VARCHAR(50) DEFAULT 'present',
-                        department VARCHAR(100) NULL,
-                        notes TEXT NULL,
-                        hours_worked DECIMAL(5,2) NULL,
-                        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-                        INDEX idx_employee_id (employee_id),
-                        INDEX idx_date (date),
-                        INDEX idx_status (status)
-                    )
-                `);
-                
-                console.log('?? Attendance table recreated, retrying insertion with correct column names...');
-                
-                // Retry insertion with corrected column names
-                result = await db.execute(`
-                    INSERT INTO attendance (
-                        employee_id, employee_name, date, check_in, check_out, status,
-                        department, notes, hours_worked, created_at
-                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())
-                `, [
-                    employee_id, 
-                    req.body.employee_name || '', 
-                    attendance_date, 
-                    check_in_time, 
-                    check_out_time,
-                    attendance_status,
-                    req.body.department || null,
-                    notes,
-                    check_out_time ? calculateHours(check_in_time, check_out_time) : null
-                ]);
-            } else {
-                throw columnError;
-            }
-        }
+        // Insert attendance record using correct schema column names
+        const result = await db.execute(`
+            INSERT INTO attendance (
+                employee_id, employee_name, attendance_date, check_in_time, check_out_time,
+                attendance_status, department, notes, marked_by, marked_by_role
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            ON DUPLICATE KEY UPDATE
+                check_in_time = VALUES(check_in_time),
+                check_out_time = VALUES(check_out_time),
+                attendance_status = VALUES(attendance_status),
+                department = VALUES(department),
+                notes = VALUES(notes),
+                marked_by = VALUES(marked_by),
+                marked_by_role = VALUES(marked_by_role)
+        `, [
+            employee_id, req.body.employee_name || '', attendance_date, check_in_time, check_out_time,
+            attendance_status, req.body.department || null, notes, marked_by, marked_by_role
+        ]);
 
 
 
@@ -3072,26 +3021,26 @@ app.get('/api/attendance', async (req, res) => {
 
         const { employeeId, dateFrom, dateTo } = req.query;
         
-        // Ensure attendance table exists
+        // Ensure attendance table exists with correct schema
         try {
             await db.execute(`
                 CREATE TABLE IF NOT EXISTS attendance (
                     id INT AUTO_INCREMENT PRIMARY KEY,
                     employee_id VARCHAR(50) NOT NULL,
+                    employee_name VARCHAR(255) NOT NULL,
                     attendance_date DATE NOT NULL,
-                    check_in TIME NULL,
-                    check_out TIME NULL,
-                    work_hours DECIMAL(5,2) NULL,
-                    overtime_hours DECIMAL(5,2) NULL,
-                    status ENUM('Present', 'Absent', 'Late', 'Half Day', 'Leave', 'Holiday') DEFAULT 'Present',
-                    notes TEXT NULL,
+                    check_in_time TIME NULL,
+                    check_out_time TIME NULL,
+                    attendance_status ENUM('present', 'absent', 'late', 'sick', 'annual', 'permission') NOT NULL,
+                    department VARCHAR(100) NULL,
+                    notes TEXT,
+                    marked_by VARCHAR(255),
+                    marked_by_role VARCHAR(100),
                     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
                     INDEX idx_employee_id (employee_id),
                     INDEX idx_attendance_date (attendance_date),
-                    INDEX idx_status (status),
-                    INDEX idx_created_at (created_at),
-                    UNIQUE KEY unique_employee_date (employee_id, attendance_date)
+                    INDEX idx_attendance_status (attendance_status)
                 )
             `);
             console.log('✅ Attendance table verified/created successfully');
@@ -3099,182 +3048,55 @@ app.get('/api/attendance', async (req, res) => {
             console.log('⚠️ Could not create attendance table:', tableError.message);
         }
 
-
-
-        let query = `
-
-            SELECT a.*, e.full_name as employee_name, e.department 
-
-            FROM attendance a 
-
-            LEFT JOIN employees e ON a.employee_id = e.id
-
-            WHERE 1=1
-
-        `;
-
+        let query = `SELECT * FROM attendance WHERE 1=1`;
         let params = [];
 
-
-
         if (employeeId) {
-
-            query += ` AND a.employee_id = ?`;
-
+            query += ` AND employee_id = ?`;
             params.push(employeeId);
-
         }
-
-
 
         if (dateFrom) {
-
-            query += ` AND a.attendance_date >= ?`;
-
+            query += ` AND attendance_date >= ?`;
             params.push(dateFrom);
-
         }
-
-
 
         if (dateTo) {
-
-            query += ` AND a.attendance_date <= ?`;
-
+            query += ` AND attendance_date <= ?`;
             params.push(dateTo);
-
         }
 
-
-
-        query += ` ORDER BY a.attendance_date DESC`;
-
-
+        query += ` ORDER BY attendance_date DESC`;
 
         const attendanceResult = await db.execute(query, params);
         
         // Handle different MySQL2 return formats
         let attendance = [];
-        if (Array.isArray(attendanceResult)) {
-            attendance = attendanceResult;
-        } else if (attendanceResult && Array.isArray(attendanceResult[0])) {
+        if (Array.isArray(attendanceResult) && Array.isArray(attendanceResult[0])) {
             attendance = attendanceResult[0];
+        } else if (Array.isArray(attendanceResult)) {
+            attendance = attendanceResult;
         } else if (attendanceResult && attendanceResult.rows) {
             attendance = attendanceResult.rows;
         } else {
             attendance = [];
         }
 
-
-
         console.log(`✅ Found ${attendance.length} attendance records`);
-        console.log('📊 Attendance data structure:', {
-            isArray: Array.isArray(attendance),
-            length: attendance.length,
-            firstItem: attendance[0] || 'No items',
-            sampleKeys: attendance[0] ? Object.keys(attendance[0]) : 'No keys'
-        });
         
         res.status(200).json({
-
             success: true,
-
             attendance: attendance,
-
             total: attendance.length
-
         });
-
-
 
     } catch (error) {
 
         console.error('Error fetching attendance:', error);
-
-        // Return fallback attendance data when database fails
-        const fallbackAttendance = [
-            {
-                id: 1,
-                employee_id: 'EMP001',
-                employee_name: 'John Doe',
-                department: 'IT',
-                attendance_date: '2026-05-04',
-                check_in: '08:00:00',
-                check_out: '17:00:00',
-                work_hours: 9.0,
-                overtime_hours: 0.0,
-                status: 'Present',
-                notes: 'Regular work day',
-                created_at: '2026-05-04T08:00:00Z',
-                updated_at: '2026-05-04T17:00:00Z'
-            },
-            {
-                id: 2,
-                employee_id: 'EMP002',
-                employee_name: 'Jane Smith',
-                department: 'HR',
-                attendance_date: '2026-05-04',
-                check_in: '08:30:00',
-                check_out: '17:30:00',
-                work_hours: 9.0,
-                overtime_hours: 0.0,
-                status: 'Present',
-                notes: 'Regular work day',
-                created_at: '2026-05-04T08:30:00Z',
-                updated_at: '2026-05-04T17:30:00Z'
-            },
-            {
-                id: 3,
-                employee_id: 'EMP003',
-                employee_name: 'Mike Johnson',
-                department: 'Operations',
-                attendance_date: '2026-05-04',
-                check_in: '09:00:00',
-                check_out: null,
-                work_hours: null,
-                overtime_hours: null,
-                status: 'Late',
-                notes: 'Late arrival - 1 hour delay',
-                created_at: '2026-05-04T09:00:00Z',
-                updated_at: '2026-05-04T09:00:00Z'
-            },
-            {
-                id: 4,
-                employee_id: 'EMP004',
-                employee_name: 'Sarah Wilson',
-                department: 'Finance',
-                attendance_date: '2026-05-04',
-                check_in: '08:00:00',
-                check_out: '12:00:00',
-                work_hours: 4.0,
-                overtime_hours: 0.0,
-                status: 'Half Day',
-                notes: 'Half day - medical appointment',
-                created_at: '2026-05-04T08:00:00Z',
-                updated_at: '2026-05-04T12:00:00Z'
-            },
-            {
-                id: 5,
-                employee_id: 'EMP005',
-                employee_name: 'David Brown',
-                department: 'Projects',
-                attendance_date: '2026-05-04',
-                check_in: null,
-                check_out: null,
-                work_hours: 0.0,
-                overtime_hours: 0.0,
-                status: 'Leave',
-                notes: 'Annual leave',
-                created_at: '2026-05-04T00:00:00Z',
-                updated_at: '2026-05-04T00:00:00Z'
-            }
-        ];
-
-        res.status(200).json({
-            success: true,
-            attendance: fallbackAttendance,
-            total: fallbackAttendance.length,
-            note: 'Using fallback data - database unavailable'
+        res.status(500).json({
+            success: false,
+            error: 'Failed to fetch attendance records',
+            details: error.message
         });
 
     }
