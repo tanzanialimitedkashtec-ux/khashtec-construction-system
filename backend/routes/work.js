@@ -4521,7 +4521,7 @@ router.post('/notifications', async (req, res) => {
         }
         
         // Insert notification (auto-increment ID)
-        const [result] = await db.execute(`
+        const insertResult = await db.execute(`
             INSERT INTO notifications (
                 title, message, type, priority, recipient_type, recipients,
                 status, sent_date, scheduled_date, sent_by, read_rate
@@ -4537,6 +4537,7 @@ router.post('/notifications', async (req, res) => {
             scheduledDate,
             sentBy
         ]);
+        const result = Array.isArray(insertResult) ? insertResult[0] : insertResult;
         
         console.log('✅ Notification created successfully, ID:', result.insertId);
         
@@ -4589,7 +4590,8 @@ router.put('/notifications/:id/status', async (req, res) => {
         
         updateQuery += ' WHERE id = ?';
         
-        const [result] = await db.execute(updateQuery, params);
+        const updateResult = await db.execute(updateQuery, params);
+        const result = Array.isArray(updateResult) ? updateResult[0] : updateResult;
         
         if (result.affectedRows === 0) {
             return res.status(404).json({
@@ -4620,9 +4622,10 @@ router.delete('/notifications/:id', async (req, res) => {
     try {
         const { id } = req.params;
         
-        const [result] = await db.execute(`
+        const deleteResult = await db.execute(`
             DELETE FROM notifications WHERE id = ?
         `, [id]);
+        const result = Array.isArray(deleteResult) ? deleteResult[0] : deleteResult;
         
         if (result.affectedRows === 0) {
             return res.status(404).json({
