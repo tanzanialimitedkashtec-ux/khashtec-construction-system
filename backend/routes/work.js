@@ -4474,7 +4474,6 @@ router.post('/notifications', async (req, res) => {
             { name: 'read_rate', definition: 'DECIMAL(5,2) DEFAULT 0' },
             { name: 'recipient_type', definition: "VARCHAR(50) DEFAULT 'all'" },
             { name: 'recipients', definition: "VARCHAR(255) DEFAULT 'All Staff'" },
-            { name: 'priority', definition: "VARCHAR(50) DEFAULT 'normal'" },
             { name: 'status', definition: "VARCHAR(50) DEFAULT 'draft'" }
         ];
         for (const col of missingColumns) {
@@ -4485,6 +4484,28 @@ router.post('/notifications', async (req, res) => {
                 // Column already exists - ignore
             }
         }
+        
+        // Convert ENUM columns to VARCHAR to accept all values
+        const columnsToModify = [
+            { name: 'priority', definition: "VARCHAR(50) DEFAULT 'Medium'" },
+            { name: 'type', definition: "VARCHAR(50) DEFAULT 'Info'" }
+        ];
+        for (const col of columnsToModify) {
+            try {
+                await db.execute(`ALTER TABLE notifications MODIFY COLUMN ${col.name} ${col.definition}`);
+            } catch (modifyErr) {
+                // Ignore if already modified or column doesn't exist
+            }
+        }
+        
+        // Map frontend priority values to DB-compatible values
+        const priorityMap = {
+            'normal': 'Medium',
+            'important': 'High',
+            'urgent': 'Urgent',
+            'low': 'Low'
+        };
+        const mappedPriority = priorityMap[priority] || priority;
         
         // Determine status and dates
         let status = 'draft';
@@ -4504,11 +4525,11 @@ router.post('/notifications', async (req, res) => {
             INSERT INTO notifications (
                 title, message, type, priority, recipient_type, recipients,
                 status, sent_date, scheduled_date, sent_by, read_rate
-            ) VALUES (?, ?, 'info', ?, ?, ?, ?, ?, ?, ?, 0)
+            ) VALUES (?, ?, 'Info', ?, ?, ?, ?, ?, ?, ?, 0)
         `, [
             title,
             message,
-            priority,
+            mappedPriority,
             recipientType,
             recipients,
             status,
