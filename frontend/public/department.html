@@ -75727,45 +75727,89 @@ function saveSiteReport() {
 
 
 
-function saveWorkApproval() {
+function saveWorkApproval(event) {
 
-    const approval = {
+    if (event) event.preventDefault();
 
-        workId: document.getElementById('workId').value,
+    var approvalData = {
 
-        quality: document.getElementById('qualityAssessment').value,
+        work_id: document.getElementById('workId').value,
 
-        compliance: document.getElementById('complianceCheck').value,
+        quality_assessment: document.getElementById('qualityAssessment').value,
 
-        comments: document.getElementById('approvalComments').value,
+        compliance_check: document.getElementById('complianceCheck').value,
 
-        safetyCompliance: document.getElementById('safetyCompliance').value,
+        approval_comments: document.getElementById('approvalComments').value,
 
-        timeCompletion: document.getElementById('timeCompletion').value,
+        safety_compliance: document.getElementById('safetyCompliance').value,
 
-        approvedBy: 'Project Manager',
+        time_completion: document.getElementById('timeCompletion').value,
 
-        approvalDate: new Date().toLocaleString()
+        approved_by: (typeof sessionManager !== 'undefined' && sessionManager.getCurrentUser) ? (sessionManager.getCurrentUser().name || 'Managing Director') : 'Managing Director'
 
     };
 
     
 
-    // Save to secure API storage
+    if (!approvalData.work_id || !approvalData.quality_assessment || !approvalData.compliance_check || !approvalData.approval_comments) {
 
-    const approvals = [];
+        customAlert('Please fill in all required fields marked with *', 'Validation Error', 'error');
 
-    approvals.push(approval);
+        return false;
 
-    // TODO: Save to API
-
-    
-
-    customAlert(`Work approval submitted!\n\nWork ID: ${approval.workId}\nQuality: ${approval.quality}\nCompliance: ${approval.compliance}\nStatus: Approved`, "Work Approved", "success");
+    }
 
     
 
-    document.getElementById('approvalForm').reset();
+    var baseUrl = window.location.origin;
+
+    fetch(baseUrl + '/api/work/approvals', {
+
+        method: 'POST',
+
+        headers: {
+
+            'Content-Type': 'application/json',
+
+            'Accept': 'application/json',
+
+            'Authorization': 'Bearer ' + (typeof sessionManager !== 'undefined' && sessionManager.getAuthToken ? sessionManager.getAuthToken() : '')
+
+        },
+
+        body: JSON.stringify(approvalData)
+
+    })
+
+    .then(function(response) { return response.json(); })
+
+    .then(function(data) {
+
+        if (data.success) {
+
+            customAlert('Work approval submitted successfully!\n\nWork ID: ' + approvalData.work_id + '\nQuality: ' + approvalData.quality_assessment + '\nCompliance: ' + approvalData.compliance_check + '\nStatus: Approved', 'Work Approved', 'success');
+
+            document.getElementById('approvalForm').reset();
+
+            if (typeof loadPendingWorkCompletions === 'function') loadPendingWorkCompletions();
+
+            if (typeof loadApprovalHistory === 'function') loadApprovalHistory();
+
+        } else {
+
+            customAlert('Failed to save approval: ' + (data.message || data.error || 'Unknown error'), 'Error', 'error');
+
+        }
+
+    })
+
+    .catch(function(error) {
+
+        console.error('Error saving work approval:', error);
+
+        customAlert('Failed to save work approval. Please try again.', 'Error', 'error');
+
+    });
 
     return false;
 

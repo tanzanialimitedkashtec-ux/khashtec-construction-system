@@ -6057,6 +6057,58 @@ console.log('🚀 Starting KASHTEC server startup sequence...');
 
 
 
+async function migrateWorkApprovalColumns() {
+    try {
+        const db = require('./database/config/database');
+
+        // Migrate work_approvals ENUM columns to VARCHAR
+        const enumToVarchar = [
+            { table: 'work_approvals', column: 'quality_assessment', type: 'VARCHAR(50) NOT NULL' },
+            { table: 'work_approvals', column: 'compliance_check', type: 'VARCHAR(50) NOT NULL' },
+            { table: 'work_approvals', column: 'safety_compliance', type: "VARCHAR(50) DEFAULT 'compliant'" },
+            { table: 'work_approvals', column: 'time_completion', type: "VARCHAR(50) DEFAULT 'on-time'" },
+            { table: 'work_approvals', column: 'status', type: "VARCHAR(30) DEFAULT 'pending'" },
+            { table: 'work_completions', column: 'status', type: "VARCHAR(30) DEFAULT 'pending'" }
+        ];
+
+        for (const col of enumToVarchar) {
+            try {
+                const [cols] = await db.execute(`SHOW COLUMNS FROM ${col.table} WHERE Field = ?`, [col.column]);
+                if (cols && cols.length > 0 && cols[0].Type && cols[0].Type.startsWith('enum')) {
+                    await db.execute(`ALTER TABLE ${col.table} MODIFY COLUMN ${col.column} ${col.type}`);
+                    console.log(`  Migrated ${col.table}.${col.column} from ENUM to VARCHAR`);
+                }
+            } catch (e) {
+                // Table may not exist yet
+            }
+        }
+
+        // Add source_table and source_id columns if missing
+        const addColumns = [
+            { table: 'work_approvals', column: 'source_table', type: 'VARCHAR(50)' },
+            { table: 'work_approvals', column: 'source_id', type: 'INT' },
+            { table: 'work_completions', column: 'source_table', type: "VARCHAR(50) DEFAULT 'work_completions'" },
+            { table: 'work_completions', column: 'source_id', type: 'INT' }
+        ];
+
+        for (const col of addColumns) {
+            try {
+                const [cols] = await db.execute(`SHOW COLUMNS FROM ${col.table} WHERE Field = ?`, [col.column]);
+                if (!cols || cols.length === 0) {
+                    await db.execute(`ALTER TABLE ${col.table} ADD COLUMN ${col.column} ${col.type}`);
+                    console.log(`  Added ${col.table}.${col.column}`);
+                }
+            } catch (e) {
+                // Table may not exist yet
+            }
+        }
+
+        console.log('  Work approval column migration complete');
+    } catch (error) {
+        console.log('  Work approval column migration skipped:', error.message);
+    }
+}
+
 async function startServer() {
 
     try {
@@ -6136,6 +6188,10 @@ async function startServer() {
         } else {
             console.log('⚠️ Database connection failed, server will start with limited functionality');
         }
+
+        console.log('🔄 Step 9b: Migrating work_approvals and work_completions columns...');
+        await migrateWorkApprovalColumns();
+        console.log('✅ Step 9b completed: Work approval columns migrated');
 
         console.log('🔄 Step 10: Starting HTTP server...');
 
