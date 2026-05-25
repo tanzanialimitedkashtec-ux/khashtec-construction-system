@@ -2897,6 +2897,60 @@ app.get('/api/admin-work', async (req, res) => {
 
 // Attendance API endpoints
 
+// Migrate attendance table from old schema to new schema if needed
+let attendanceMigrationDone = false;
+async function migrateAttendanceTable(db) {
+    if (attendanceMigrationDone) return;
+    try {
+        // Check if old column names exist and rename them
+        const [columns] = await db.execute(`SHOW COLUMNS FROM attendance`);
+        const columnNames = columns.map(c => c.Field);
+        
+        if (columnNames.includes('date') && !columnNames.includes('attendance_date')) {
+            await db.execute(`ALTER TABLE attendance CHANGE COLUMN \`date\` attendance_date DATE NOT NULL`);
+            console.log('✅ Migrated column: date -> attendance_date');
+        }
+        if (columnNames.includes('check_in') && !columnNames.includes('check_in_time')) {
+            await db.execute(`ALTER TABLE attendance CHANGE COLUMN check_in check_in_time TIME NULL`);
+            console.log('✅ Migrated column: check_in -> check_in_time');
+        }
+        if (columnNames.includes('check_out') && !columnNames.includes('check_out_time')) {
+            await db.execute(`ALTER TABLE attendance CHANGE COLUMN check_out check_out_time TIME NULL`);
+            console.log('✅ Migrated column: check_out -> check_out_time');
+        }
+        if (columnNames.includes('status') && !columnNames.includes('attendance_status')) {
+            await db.execute(`ALTER TABLE attendance CHANGE COLUMN status attendance_status VARCHAR(50) NOT NULL DEFAULT 'present'`);
+            console.log('✅ Migrated column: status -> attendance_status');
+        }
+        // Add missing columns if they don't exist
+        if (!columnNames.includes('employee_name')) {
+            await db.execute(`ALTER TABLE attendance ADD COLUMN employee_name VARCHAR(255) NOT NULL DEFAULT '' AFTER employee_id`);
+            console.log('✅ Added missing column: employee_name');
+        }
+        if (!columnNames.includes('department')) {
+            await db.execute(`ALTER TABLE attendance ADD COLUMN department VARCHAR(100) NULL AFTER attendance_status`);
+            console.log('✅ Added missing column: department');
+        }
+        if (!columnNames.includes('marked_by')) {
+            await db.execute(`ALTER TABLE attendance ADD COLUMN marked_by VARCHAR(255) NULL AFTER notes`);
+            console.log('✅ Added missing column: marked_by');
+        }
+        if (!columnNames.includes('marked_by_role')) {
+            await db.execute(`ALTER TABLE attendance ADD COLUMN marked_by_role VARCHAR(100) NULL AFTER marked_by`);
+            console.log('✅ Added missing column: marked_by_role');
+        }
+        attendanceMigrationDone = true;
+        console.log('✅ Attendance table migration check complete');
+    } catch (error) {
+        if (error.code === 'ER_NO_SUCH_TABLE') {
+            // Table doesn't exist yet, CREATE TABLE IF NOT EXISTS will handle it
+            attendanceMigrationDone = true;
+        } else {
+            console.error('⚠️ Attendance migration error:', error.message);
+        }
+    }
+}
+
 // Helper function to calculate hours worked
 function calculateHours(checkIn, checkOut) {
     try {
@@ -2918,6 +2972,7 @@ app.post('/api/attendance', async (req, res) => {
     try {
 
         const db = require('./database/config/database');
+        await migrateAttendanceTable(db);
 
         const {
 
@@ -3018,6 +3073,7 @@ app.get('/api/attendance', async (req, res) => {
 
         console.log('📊 Attendance endpoint called');
         const db = require('./database/config/database');
+        await migrateAttendanceTable(db);
 
         const { employeeId, dateFrom, dateTo } = req.query;
         
