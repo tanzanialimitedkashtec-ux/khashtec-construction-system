@@ -428,7 +428,8 @@ router.get('/system-changes', async (req, res) => {
         await ensureAuditLogsTable();
 
         const { days = 30, type } = req.query;
-        console.log(`  → Period: Last ${days} days, Filter: ${type || 'All'}`);
+        const safeDaysVal = Math.max(1, Math.min(365, parseInt(days) || 30));
+        console.log(`  → Period: Last ${safeDaysVal} days, Filter: ${type || 'All'}`);
         const changes = [];
 
         // Track recently added employees
@@ -436,10 +437,10 @@ router.get('/system-changes', async (req, res) => {
             const newEmployees = await db.execute(`
                 SELECT id, full_name, department, position, status, created_at
                 FROM employees
-                WHERE created_at >= DATE_SUB(NOW(), INTERVAL ? DAY)
+                WHERE created_at >= DATE_SUB(NOW(), INTERVAL ${safeDaysVal} DAY)
                 ORDER BY created_at DESC
                 LIMIT 50
-            `, [parseInt(days)]);
+            `);
             newEmployees.forEach(emp => {
                 changes.push({
                     type: 'employee_added',
@@ -459,10 +460,10 @@ router.get('/system-changes', async (req, res) => {
             const newWorkers = await db.execute(`
                 SELECT id, full_name, account_type, department, status, created_at
                 FROM worker_accounts
-                WHERE created_at >= DATE_SUB(NOW(), INTERVAL ? DAY)
+                WHERE created_at >= DATE_SUB(NOW(), INTERVAL ${safeDaysVal} DAY)
                 ORDER BY created_at DESC
                 LIMIT 50
-            `, [parseInt(days)]);
+            `);
             newWorkers.forEach(w => {
                 changes.push({
                     type: 'worker_added',
@@ -482,10 +483,10 @@ router.get('/system-changes', async (req, res) => {
             const newDrivers = await db.execute(`
                 SELECT id, full_name, license_number, status, created_at
                 FROM drivers
-                WHERE created_at >= DATE_SUB(NOW(), INTERVAL ? DAY)
+                WHERE created_at >= DATE_SUB(NOW(), INTERVAL ${safeDaysVal} DAY)
                 ORDER BY created_at DESC
                 LIMIT 50
-            `, [parseInt(days)]);
+            `);
             newDrivers.forEach(d => {
                 changes.push({
                     type: 'driver_added',
@@ -505,10 +506,10 @@ router.get('/system-changes', async (req, res) => {
             const newPolicies = await db.execute(`
                 SELECT id, title, submitted_by, status, created_at
                 FROM policies
-                WHERE created_at >= DATE_SUB(NOW(), INTERVAL ? DAY)
+                WHERE created_at >= DATE_SUB(NOW(), INTERVAL ${safeDaysVal} DAY)
                 ORDER BY created_at DESC
                 LIMIT 50
-            `, [parseInt(days)]);
+            `);
             newPolicies.forEach(p => {
                 changes.push({
                     type: 'policy_added',
@@ -528,10 +529,10 @@ router.get('/system-changes', async (req, res) => {
             const newProjects = await db.execute(`
                 SELECT id, name, status, start_date, created_at
                 FROM projects
-                WHERE created_at >= DATE_SUB(NOW(), INTERVAL ? DAY)
+                WHERE created_at >= DATE_SUB(NOW(), INTERVAL ${safeDaysVal} DAY)
                 ORDER BY created_at DESC
                 LIMIT 50
-            `, [parseInt(days)]);
+            `);
             newProjects.forEach(p => {
                 changes.push({
                     type: 'project_added',
@@ -551,10 +552,10 @@ router.get('/system-changes', async (req, res) => {
             const newCars = await db.execute(`
                 SELECT id, plate_number, car_name, brand_name, vehicle_status as status, created_at
                 FROM vehicles
-                WHERE created_at >= DATE_SUB(NOW(), INTERVAL ? DAY)
+                WHERE created_at >= DATE_SUB(NOW(), INTERVAL ${safeDaysVal} DAY)
                 ORDER BY created_at DESC
                 LIMIT 50
-            `, [parseInt(days)]);
+            `);
             newCars.forEach(c => {
                 changes.push({
                     type: 'car_added',
@@ -574,10 +575,10 @@ router.get('/system-changes', async (req, res) => {
             const newPayments = await db.execute(`
                 SELECT id, type, category, description, amount, status, created_at
                 FROM financial_transactions
-                WHERE created_at >= DATE_SUB(NOW(), INTERVAL ? DAY)
+                WHERE created_at >= DATE_SUB(NOW(), INTERVAL ${safeDaysVal} DAY)
                 ORDER BY created_at DESC
                 LIMIT 50
-            `, [parseInt(days)]);
+            `);
             newPayments.forEach(p => {
                 changes.push({
                     type: 'payment_recorded',
@@ -597,10 +598,10 @@ router.get('/system-changes', async (req, res) => {
             const newTax = await db.execute(`
                 SELECT id, tax_type, tax_period, amount, payment_status, payment_date, created_at
                 FROM tax_payments
-                WHERE created_at >= DATE_SUB(NOW(), INTERVAL ? DAY)
+                WHERE created_at >= DATE_SUB(NOW(), INTERVAL ${safeDaysVal} DAY)
                 ORDER BY created_at DESC
                 LIMIT 50
-            `, [parseInt(days)]);
+            `);
             newTax.forEach(t => {
                 changes.push({
                     type: 'tax_payment',
@@ -620,10 +621,10 @@ router.get('/system-changes', async (req, res) => {
             const newPayroll = await db.execute(`
                 SELECT id, payroll_month, payroll_type, total_employees, net_payment, status, created_at
                 FROM payroll_records
-                WHERE created_at >= DATE_SUB(NOW(), INTERVAL ? DAY)
+                WHERE created_at >= DATE_SUB(NOW(), INTERVAL ${safeDaysVal} DAY)
                 ORDER BY created_at DESC
                 LIMIT 50
-            `, [parseInt(days)]);
+            `);
             newPayroll.forEach(pr => {
                 changes.push({
                     type: 'payroll_processed',
@@ -643,11 +644,11 @@ router.get('/system-changes', async (req, res) => {
             const incidents = await db.execute(`
                 SELECT id, work_title, work_type, department_code, created_at
                 FROM hse_work
-                WHERE created_at >= DATE_SUB(NOW(), INTERVAL ? DAY)
+                WHERE created_at >= DATE_SUB(NOW(), INTERVAL ${safeDaysVal} DAY)
                   AND (work_type LIKE '%Violation%' OR work_type LIKE '%Incident%')
                 ORDER BY created_at DESC
                 LIMIT 50
-            `, [parseInt(days)]);
+            `);
             incidents.forEach(inc => {
                 changes.push({
                     type: 'safety_incident',
@@ -667,10 +668,10 @@ router.get('/system-changes', async (req, res) => {
             const safetyWork = await db.execute(`
                 SELECT id, work_title, work_type, severity, status, department_code, created_at
                 FROM hse_work
-                WHERE created_at >= DATE_SUB(NOW(), INTERVAL ? DAY)
+                WHERE created_at >= DATE_SUB(NOW(), INTERVAL ${safeDaysVal} DAY)
                 ORDER BY created_at DESC
                 LIMIT 50
-            `, [parseInt(days)]);
+            `);
             safetyWork.forEach(s => {
                 changes.push({
                     type: 'safety_expense',
@@ -687,10 +688,10 @@ router.get('/system-changes', async (req, res) => {
             const sales = await db.execute(`
                 SELECT id, request_title, procurement_type, total_budget, status, department, created_at
                 FROM procurement_sales
-                WHERE created_at >= DATE_SUB(NOW(), INTERVAL ? DAY)
+                WHERE created_at >= DATE_SUB(NOW(), INTERVAL ${safeDaysVal} DAY)
                 ORDER BY created_at DESC
                 LIMIT 50
-            `, [parseInt(days)]);
+            `);
             sales.forEach(s => {
                 changes.push({
                     type: 'sale_procurement',
@@ -707,10 +708,10 @@ router.get('/system-changes', async (req, res) => {
             const props = await db.execute(`
                 SELECT id, title, type, price, status, location, created_at
                 FROM properties
-                WHERE created_at >= DATE_SUB(NOW(), INTERVAL ? DAY)
+                WHERE created_at >= DATE_SUB(NOW(), INTERVAL ${safeDaysVal} DAY)
                 ORDER BY created_at DESC
                 LIMIT 50
-            `, [parseInt(days)]);
+            `);
             props.forEach(p => {
                 changes.push({
                     type: 'property_added',
@@ -727,10 +728,10 @@ router.get('/system-changes', async (req, res) => {
             const claims = await db.execute(`
                 SELECT id, claim_number, claim_type, title, amount_claimed, status, created_at
                 FROM claims_management
-                WHERE created_at >= DATE_SUB(NOW(), INTERVAL ? DAY)
+                WHERE created_at >= DATE_SUB(NOW(), INTERVAL ${safeDaysVal} DAY)
                 ORDER BY created_at DESC
                 LIMIT 50
-            `, [parseInt(days)]);
+            `);
             claims.forEach(c => {
                 changes.push({
                     type: 'claim_filed',
@@ -747,10 +748,10 @@ router.get('/system-changes', async (req, res) => {
             const risks = await db.execute(`
                 SELECT id, risk_number, risk_title, risk_category, probability, impact, status, created_at
                 FROM risk_management
-                WHERE created_at >= DATE_SUB(NOW(), INTERVAL ? DAY)
+                WHERE created_at >= DATE_SUB(NOW(), INTERVAL ${safeDaysVal} DAY)
                 ORDER BY created_at DESC
                 LIMIT 50
-            `, [parseInt(days)]);
+            `);
             risks.forEach(r => {
                 changes.push({
                     type: 'risk_identified',
@@ -767,10 +768,10 @@ router.get('/system-changes', async (req, res) => {
             const talent = await db.execute(`
                 SELECT id, requisition_number, position_title, department, position_type, status, created_at
                 FROM talent_acquisition
-                WHERE created_at >= DATE_SUB(NOW(), INTERVAL ? DAY)
+                WHERE created_at >= DATE_SUB(NOW(), INTERVAL ${safeDaysVal} DAY)
                 ORDER BY created_at DESC
                 LIMIT 50
-            `, [parseInt(days)]);
+            `);
             talent.forEach(t => {
                 changes.push({
                     type: 'talent_requisition',
@@ -787,10 +788,10 @@ router.get('/system-changes', async (req, res) => {
             const resources = await db.execute(`
                 SELECT id, resource_code, resource_name, resource_type, status, department, created_at
                 FROM office_resources
-                WHERE created_at >= DATE_SUB(NOW(), INTERVAL ? DAY)
+                WHERE created_at >= DATE_SUB(NOW(), INTERVAL ${safeDaysVal} DAY)
                 ORDER BY created_at DESC
                 LIMIT 50
-            `, [parseInt(days)]);
+            `);
             resources.forEach(r => {
                 changes.push({
                     type: 'office_resource',
@@ -807,10 +808,10 @@ router.get('/system-changes', async (req, res) => {
             const discipline = await db.execute(`
                 SELECT id, case_number, incident_type, severity, status, disciplinary_action, created_at
                 FROM discipline_monitoring
-                WHERE created_at >= DATE_SUB(NOW(), INTERVAL ? DAY)
+                WHERE created_at >= DATE_SUB(NOW(), INTERVAL ${safeDaysVal} DAY)
                 ORDER BY created_at DESC
                 LIMIT 50
-            `, [parseInt(days)]);
+            `);
             discipline.forEach(d => {
                 changes.push({
                     type: 'discipline_case',
@@ -827,10 +828,10 @@ router.get('/system-changes', async (req, res) => {
             const depts = await db.execute(`
                 SELECT id, name, code, status, created_at
                 FROM departments
-                WHERE created_at >= DATE_SUB(NOW(), INTERVAL ? DAY)
+                WHERE created_at >= DATE_SUB(NOW(), INTERVAL ${safeDaysVal} DAY)
                 ORDER BY created_at DESC
                 LIMIT 50
-            `, [parseInt(days)]);
+            `);
             depts.forEach(d => {
                 changes.push({
                     type: 'department_added',
@@ -847,10 +848,10 @@ router.get('/system-changes', async (req, res) => {
             const campaigns = await db.execute(`
                 SELECT id, campaign_name, luggage_name, total_units_available, units_sold, campaign_status, created_at
                 FROM luggage_campaigns
-                WHERE created_at >= DATE_SUB(NOW(), INTERVAL ? DAY)
+                WHERE created_at >= DATE_SUB(NOW(), INTERVAL ${safeDaysVal} DAY)
                 ORDER BY created_at DESC
                 LIMIT 50
-            `, [parseInt(days)]);
+            `);
             campaigns.forEach(c => {
                 changes.push({
                     type: 'luggage_campaign',
@@ -867,10 +868,10 @@ router.get('/system-changes', async (req, res) => {
             const purchases = await db.execute(`
                 SELECT id, buyer_name, units_purchased, total_amount, purchase_status, payment_method, created_at
                 FROM luggage_purchases
-                WHERE created_at >= DATE_SUB(NOW(), INTERVAL ? DAY)
+                WHERE created_at >= DATE_SUB(NOW(), INTERVAL ${safeDaysVal} DAY)
                 ORDER BY created_at DESC
                 LIMIT 50
-            `, [parseInt(days)]);
+            `);
             purchases.forEach(p => {
                 changes.push({
                     type: 'luggage_purchase',
@@ -887,10 +888,10 @@ router.get('/system-changes', async (req, res) => {
             const materialsIn = await db.execute(`
                 SELECT id, track_number, supplier_name, quantity_received, total_cost, invoice_number, created_at
                 FROM materials_in
-                WHERE created_at >= DATE_SUB(NOW(), INTERVAL ? DAY)
+                WHERE created_at >= DATE_SUB(NOW(), INTERVAL ${safeDaysVal} DAY)
                 ORDER BY created_at DESC
                 LIMIT 50
-            `, [parseInt(days)]);
+            `);
             materialsIn.forEach(m => {
                 changes.push({
                     type: 'material_received',
@@ -906,10 +907,10 @@ router.get('/system-changes', async (req, res) => {
             const materialsOut = await db.execute(`
                 SELECT id, track_number, issued_to, quantity_out, total_value, issue_type, created_at
                 FROM materials_out
-                WHERE created_at >= DATE_SUB(NOW(), INTERVAL ? DAY)
+                WHERE created_at >= DATE_SUB(NOW(), INTERVAL ${safeDaysVal} DAY)
                 ORDER BY created_at DESC
                 LIMIT 50
-            `, [parseInt(days)]);
+            `);
             materialsOut.forEach(m => {
                 changes.push({
                     type: 'material_issued',
@@ -926,10 +927,10 @@ router.get('/system-changes', async (req, res) => {
             const transport = await db.execute(`
                 SELECT id, cost_type, category, description, amount, payment_status, invoice_number, created_at
                 FROM transport_costs
-                WHERE created_at >= DATE_SUB(NOW(), INTERVAL ? DAY)
+                WHERE created_at >= DATE_SUB(NOW(), INTERVAL ${safeDaysVal} DAY)
                 ORDER BY created_at DESC
                 LIMIT 50
-            `, [parseInt(days)]);
+            `);
             transport.forEach(t => {
                 changes.push({
                     type: 'transport_cost',
@@ -1867,13 +1868,16 @@ router.get('/login-logs', async (req, res) => {
 
         const { days = 30, email, role, status, limit: rowLimit = 100 } = req.query;
 
+        const safeDays = Math.max(1, Math.min(365, parseInt(days) || 30));
+        const safeLimit = Math.max(1, Math.min(500, parseInt(rowLimit) || 100));
+
         let query = `
             SELECT id, user_id, email, user_name, role, department_name,
                    action, ip_address, user_agent, status, created_at
             FROM login_audit_logs
-            WHERE created_at >= DATE_SUB(NOW(), INTERVAL ? DAY)
+            WHERE created_at >= DATE_SUB(NOW(), INTERVAL ${safeDays} DAY)
         `;
-        const params = [parseInt(days)];
+        const params = [];
 
         if (email) {
             query += ' AND email LIKE ?';
@@ -1888,8 +1892,7 @@ router.get('/login-logs', async (req, res) => {
             params.push(status);
         }
 
-        query += ' ORDER BY created_at DESC LIMIT ?';
-        params.push(parseInt(rowLimit));
+        query += ` ORDER BY created_at DESC LIMIT ${safeLimit}`;
 
         const logs = await db.execute(query, params);
 
@@ -1902,8 +1905,8 @@ router.get('/login-logs', async (req, res) => {
                 SUM(CASE WHEN action = 'logout' THEN 1 ELSE 0 END) as logouts,
                 COUNT(DISTINCT email) as unique_users
             FROM login_audit_logs
-            WHERE created_at >= DATE_SUB(NOW(), INTERVAL ? DAY)
-        `, [parseInt(days)]);
+            WHERE created_at >= DATE_SUB(NOW(), INTERVAL ${safeDays} DAY)
+        `);
 
         res.json({
             success: true,
