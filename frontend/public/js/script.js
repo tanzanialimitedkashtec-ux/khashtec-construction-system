@@ -2857,16 +2857,15 @@ function rejectWork(workId) {
 
 async function saveWorkApproval(event) {
     try {
-        // Prevent default form submission
         if (event) {
             event.preventDefault();
         }
         
         console.log('Saving work approval...');
         
-        // Get form data
-        const approvalData = {
-            work_id: document.getElementById('workId').value,
+        var workIdEl = document.getElementById('workId');
+        var approvalData = {
+            work_id: workIdEl ? workIdEl.value : '',
             quality_assessment: document.getElementById('qualityAssessment').value,
             compliance_check: document.getElementById('complianceCheck').value,
             approval_comments: document.getElementById('approvalComments').value,
@@ -2877,44 +2876,57 @@ async function saveWorkApproval(event) {
         
         console.log('Work approval data:', approvalData);
         
-        // Validate required fields
         if (!approvalData.work_id || !approvalData.quality_assessment || 
             !approvalData.compliance_check || !approvalData.approval_comments) {
-            alert('Please fill in all required fields marked with *');
+            if (typeof customAlert === 'function') {
+                customAlert('Please select a work item and fill in all required fields marked with *', 'Validation Error', 'error');
+            } else {
+                alert('Please select a work item and fill in all required fields marked with *');
+            }
             return false;
         }
         
-        // Send data to backend
-        const response = await window.apiService.post('/work/approvals', approvalData);
+        var baseUrl = window.location.origin;
+        var response = await fetch(baseUrl + '/api/work/approvals', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+                'Authorization': 'Bearer ' + (typeof sessionManager !== 'undefined' && sessionManager.getAuthToken ? sessionManager.getAuthToken() : '')
+            },
+            body: JSON.stringify(approvalData)
+        });
         
-        console.log('Work approval saved successfully:', response);
+        var data = await response.json();
+        console.log('Work approval response:', data);
         
-        // Show success message
-        try {
-            alert('Work approval submitted successfully!');
-        } catch (e) {
-            console.error('Alert error:', e);
+        if (data.success) {
+            if (typeof customAlert === 'function') {
+                customAlert('Work approval submitted successfully!\n\nWork ID: ' + approvalData.work_id + '\nQuality: ' + approvalData.quality_assessment + '\nCompliance: ' + approvalData.compliance_check + '\nStatus: Approved', 'Work Approved', 'success');
+            } else {
+                alert('Work approval submitted successfully!');
+            }
+            document.getElementById('approvalForm').reset();
+            var detailsDiv = document.getElementById('workItemDetails');
+            if (detailsDiv) detailsDiv.style.display = 'none';
+            if (typeof loadPendingWorkCompletions === 'function') loadPendingWorkCompletions();
+            if (typeof loadApprovalHistory === 'function') loadApprovalHistory();
+        } else {
+            if (typeof customAlert === 'function') {
+                customAlert('Failed to save approval: ' + (data.message || data.error || 'Unknown error'), 'Error', 'error');
+            } else {
+                alert('Failed to save approval: ' + (data.message || data.error || 'Unknown error'));
+            }
         }
         
-        // Reset form
-        document.getElementById('approvalForm').reset();
-        
-        // Reload data tables after successful approval
-        if (typeof loadPendingWorkCompletions === 'function') {
-            loadPendingWorkCompletions();
-        }
-        if (typeof loadApprovalHistory === 'function') {
-            loadApprovalHistory();
-        }
-        
-        return false; // Prevent form submission
+        return false;
         
     } catch (error) {
         console.error('Error saving work approval:', error);
-        try {
+        if (typeof customAlert === 'function') {
+            customAlert('Failed to save work approval. Please try again.', 'Error', 'error');
+        } else {
             alert('Failed to save work approval. Please try again.');
-        } catch (e) {
-            console.error('Alert error:', e);
         }
         return false;
     }
