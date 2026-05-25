@@ -1959,6 +1959,105 @@ router.get('/active-sessions', async (req, res) => {
     }
 });
 
+// Get detailed activity for a specific user
+router.get('/user-activity', async (req, res) => {
+    try {
+        const { email } = req.query;
+        if (!email) {
+            return res.status(400).json({ success: false, error: 'Email parameter is required' });
+        }
+
+        console.log('🔍 Fetching user activity for:', email);
+        await ensureLoginAuditLogsTable();
+
+        // Get all login/logout logs for this user
+        const logs = await db.execute(`
+            SELECT id, user_id, email, user_name, role, department_name,
+                   action, ip_address, user_agent, status, created_at
+            FROM login_audit_logs
+            WHERE email = ?
+            ORDER BY created_at DESC
+            LIMIT 200
+        `, [email]);
+
+        // Get summary stats for this user
+        const summaryRows = await db.execute(`
+            SELECT
+                COUNT(*) as total_logins,
+                SUM(CASE WHEN action = 'login' AND status = 'success' THEN 1 ELSE 0 END) as successful_logins,
+                SUM(CASE WHEN action = 'login' AND status = 'failed' THEN 1 ELSE 0 END) as failed_logins,
+                SUM(CASE WHEN action = 'logout' THEN 1 ELSE 0 END) as logouts,
+                MIN(created_at) as first_login,
+                MAX(created_at) as last_login,
+                COUNT(DISTINCT ip_address) as unique_ips,
+                COUNT(DISTINCT DATE(created_at)) as active_days
+            FROM login_audit_logs
+            WHERE email = ?
+        `, [email]);
+
+        const summary = summaryRows[0] || {};
+
+        // Calculate session durations by pairing logins with logouts or next login
+        let totalSessionMinutes = 0;
+        let sessionCount = 0;
+        const logsAsc = [...logs].reverse();
+        for (let i = 0; i < logsAsc.length; i++) {
+            if (logsAsc[i].action === 'login' && logsAsc[i].status === 'success') {
+                let endTime = null;
+                for (let j = i + 1; j < logsAsc.length; j++) {
+                    if (logsAsc[j].email === logsAsc[i].email &&
+                        (logsAsc[j].action === 'logout' || logsAsc[j].action === 'login')) {
+                        endTime = new Date(logsAsc[j].created_at);
+                        break;
+                    }
+                }
+                if (endTime) {
+                    const loginTime = new Date(logsAsc[i].created_at);
+                    const durationMinutes = (endTime - loginTime) / 60000;
+                    if (durationMinutes > 0 && durationMinutes < 1440) {
+                        totalSessionMinutes += durationMinutes;
+                        sessionCount++;
+                    }
+                }
+            }
+        }
+
+        // Add session duration to each log entry
+        const logsWithDuration = logs.map((log, idx) => {
+            let sessionDuration = null;
+            if (log.action === 'login' && log.status === 'success') {
+                for (let j = idx - 1; j >= 0; j--) {
+                    if (logs[j].email === log.email &&
+                        (logs[j].action === 'logout' || logs[j].action === 'login')) {
+                        const loginTime = new Date(log.created_at);
+                        const endTime = new Date(logs[j].created_at);
+                        const duration = (endTime - loginTime) / 60000;
+                        if (duration > 0 && duration < 1440) {
+                            sessionDuration = Math.round(duration);
+                        }
+                        break;
+                    }
+                }
+            }
+            return { ...log, session_duration_minutes: sessionDuration };
+        });
+
+        summary.total_time_minutes = Math.round(totalSessionMinutes);
+        summary.avg_session_minutes = sessionCount > 0 ? Math.round(totalSessionMinutes / sessionCount) : 0;
+
+        res.json({
+            success: true,
+            data: {
+                logs: logsWithDuration,
+                summary
+            }
+        });
+    } catch (error) {
+        console.error('❌ Error fetching user activity:', error);
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
 // Test endpoint
 router.get('/test', (req, res) => {
     res.json({
@@ -1974,6 +2073,7 @@ router.get('/test', (req, res) => {
             'GET /audit/compliance-checks - Compliance check data from DB',
             'GET /audit/login-logs - Login/logout audit trail',
             'GET /audit/active-sessions - Currently active user sessions',
+            'GET /audit/user-activity?email=X - Detailed activity for a specific user',
             'POST /audit/report - Generate audit report',
             'GET /audit/test - Test endpoint'
         ]

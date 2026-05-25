@@ -39542,14 +39542,12 @@ function systemAuditDashboard() {
                             </div>
                         </div>
                     </div>
-                </div>
 
-                
                     <!-- Login Audit Section -->
                     <div id="loginaudit-section" class="audit-section hidden">
                         <div class="audit-content">
-                            <h4>🔐 Login Audit Trail</h4>
-                            <p>Track who logs in, when, and from where. Includes successful and failed login attempts.</p>
+                            <h4>🔐 Login Audit Trail & User Activity</h4>
+                            <p>Track who logs in, when, from where, and how long they use the system. Click on a user to see their full activity details.</p>
                             
                             <div class="audit-stats-grid">
                                 <div class="stat-item">
@@ -39567,6 +39565,14 @@ function systemAuditDashboard() {
                                 <div class="stat-item">
                                     <span class="stat-label">Unique Users:</span>
                                     <span id="uniqueUsersCount" class="stat-value">Loading...</span>
+                                </div>
+                            </div>
+
+                            <!-- Active Sessions Panel -->
+                            <div style="margin: 16px 0; padding: 14px; background: #e8f5e9; border-radius: 8px; border-left: 4px solid #4caf50;">
+                                <h5 style="margin: 0 0 10px 0; color: #2e7d32;">🟢 Currently Active Sessions</h5>
+                                <div id="activeSessionsList" style="display: flex; flex-wrap: wrap; gap: 10px;">
+                                    <span style="color: #666;">Loading active sessions...</span>
                                 </div>
                             </div>
 
@@ -39601,15 +39607,44 @@ function systemAuditDashboard() {
                                             <th>Status</th>
                                             <th>IP Address</th>
                                             <th>Date & Time</th>
+                                            <th>Details</th>
                                         </tr>
                                     </thead>
                                     <tbody id="loginAuditTableBody">
-                                        <tr><td colspan="9" class="loading-row">Loading login audit data...</td></tr>
+                                        <tr><td colspan="10" class="loading-row">Loading login audit data...</td></tr>
                                     </tbody>
                                 </table>
                             </div>
+
+                            <!-- User Activity Detail Panel (hidden by default, shown when clicking a user) -->
+                            <div id="userActivityDetailPanel" style="display:none; margin-top: 20px; padding: 18px; background: #f5f5f5; border-radius: 10px; border: 1px solid #ddd;">
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
+                                    <h4 style="margin:0;" id="userActivityTitle">👤 User Activity Details</h4>
+                                    <button onclick="document.getElementById('userActivityDetailPanel').style.display='none'" style="padding:4px 12px; border-radius:4px; border:1px solid #ccc; cursor:pointer; background:#fff;">✕ Close</button>
+                                </div>
+                                <div id="userActivitySummary" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; margin-bottom: 16px;"></div>
+                                <h5 style="margin: 10px 0;">📋 Login History</h5>
+                                <div class="audit-table-container">
+                                    <table class="audit-table">
+                                        <thead>
+                                            <tr>
+                                                <th>#</th>
+                                                <th>Action</th>
+                                                <th>Status</th>
+                                                <th>IP Address</th>
+                                                <th>Browser / Device</th>
+                                                <th>Date & Time</th>
+                                                <th>Session Duration</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="userActivityTableBody">
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
                         </div>
                     </div>
+                </div>
 
                 <!-- Audit Actions -->
                 <div class="audit-actions">
@@ -39920,6 +39955,7 @@ function showAuditSection(sectionName) {
     event.target.classList.add('active');
     if (sectionName === 'loginaudit') {
         loadLoginAuditLogs();
+        loadActiveSessions();
     }
 }
 
@@ -39969,7 +40005,7 @@ async function loadLoginAuditLogs() {
         console.error('[LoginAudit] Error loading login audit logs:', error);
         const tbody = document.getElementById('loginAuditTableBody');
         if (tbody) {
-            tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;color:#999;">Unable to load login audit data.</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="10" style="text-align:center;color:#999;">Unable to load login audit data.</td></tr>';
         }
     }
 }
@@ -39988,7 +40024,7 @@ function updateLoginAuditTable(logs) {
     if (!tbody) return;
 
     if (!logs || logs.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;color:#999;">No login audit records found for the selected period.</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="10" style="text-align:center;color:#999;">No login audit records found for the selected period.</td></tr>';
         return;
     }
 
@@ -39997,9 +40033,11 @@ function updateLoginAuditTable(logs) {
         const statusClass = log.status === 'success' ? 'color:#2e7d32;font-weight:600;' : 'color:#c62828;font-weight:600;';
         const statusIcon = log.status === 'success' ? '✅' : '❌';
         const dateStr = log.created_at ? new Date(log.created_at).toLocaleString() : 'N/A';
+        const escapedEmail = (log.email || '').replace(/'/g, "\\'");
+        const escapedName = (log.user_name || log.email || 'Unknown').replace(/'/g, "\\'");
         return '<tr>' +
             '<td>' + (idx + 1) + '</td>' +
-            '<td>' + (log.user_name || log.email || 'Unknown') + '</td>' +
+            '<td style="cursor:pointer;color:#1565c0;text-decoration:underline;" onclick="viewUserActivity(\'' + escapedEmail + '\', \'' + escapedName + '\')">' + (log.user_name || log.email || 'Unknown') + '</td>' +
             '<td>' + (log.email || 'N/A') + '</td>' +
             '<td>' + (log.role || 'N/A') + '</td>' +
             '<td>' + (log.department_name || 'N/A') + '</td>' +
@@ -40007,8 +40045,165 @@ function updateLoginAuditTable(logs) {
             '<td style="' + statusClass + '">' + statusIcon + ' ' + (log.status || 'N/A') + '</td>' +
             '<td>' + (log.ip_address || 'N/A') + '</td>' +
             '<td>' + dateStr + '</td>' +
+            '<td><button onclick="viewUserActivity(\'' + escapedEmail + '\', \'' + escapedName + '\')" style="padding:3px 10px;border-radius:4px;border:1px solid #1565c0;background:#e3f2fd;color:#1565c0;cursor:pointer;font-size:12px;">View</button></td>' +
             '</tr>';
     }).join('');
+}
+
+// ===== ACTIVE SESSIONS =====
+async function loadActiveSessions() {
+    try {
+        const response = await KashTecAPI.get('/audit/active-sessions');
+        const container = document.getElementById('activeSessionsList');
+        if (!container) return;
+
+        if (response && response.data && response.data.sessions && response.data.sessions.length > 0) {
+            container.innerHTML = response.data.sessions.map(s => {
+                const loginTime = s.login_time ? new Date(s.login_time).toLocaleString() : 'N/A';
+                const timeSince = s.login_time ? formatTimeSince(new Date(s.login_time)) : '';
+                return '<div style="padding:8px 14px;background:#fff;border-radius:6px;border:1px solid #c8e6c9;display:flex;flex-direction:column;gap:2px;min-width:200px;">' +
+                    '<div style="font-weight:600;color:#2e7d32;">' + (s.user_name || s.email) + '</div>' +
+                    '<div style="font-size:12px;color:#666;">' + (s.role || 'N/A') + ' - ' + (s.department_name || 'N/A') + '</div>' +
+                    '<div style="font-size:11px;color:#999;">Login: ' + loginTime + '</div>' +
+                    '<div style="font-size:11px;color:#4caf50;">Active ' + timeSince + '</div>' +
+                    '</div>';
+            }).join('');
+        } else {
+            container.innerHTML = '<span style="color:#999;font-style:italic;">No active sessions found</span>';
+        }
+    } catch (error) {
+        console.error('[ActiveSessions] Error:', error);
+        const container = document.getElementById('activeSessionsList');
+        if (container) container.innerHTML = '<span style="color:#999;">Unable to load active sessions</span>';
+    }
+}
+
+function formatTimeSince(date) {
+    const now = new Date();
+    const diffMs = now - date;
+    const diffMins = Math.floor(diffMs / 60000);
+    const diffHours = Math.floor(diffMins / 60);
+    const diffDays = Math.floor(diffHours / 24);
+    if (diffDays > 0) return diffDays + 'd ' + (diffHours % 24) + 'h ago';
+    if (diffHours > 0) return diffHours + 'h ' + (diffMins % 60) + 'm ago';
+    return diffMins + 'm ago';
+}
+
+function formatDuration(minutes) {
+    if (!minutes || minutes <= 0) return 'N/A';
+    const hrs = Math.floor(minutes / 60);
+    const mins = Math.round(minutes % 60);
+    if (hrs > 0) return hrs + 'h ' + mins + 'm';
+    return mins + 'm';
+}
+
+// ===== USER ACTIVITY DETAILS =====
+async function viewUserActivity(email, userName) {
+    try {
+        const panel = document.getElementById('userActivityDetailPanel');
+        const titleEl = document.getElementById('userActivityTitle');
+        const summaryEl = document.getElementById('userActivitySummary');
+        const tbody = document.getElementById('userActivityTableBody');
+
+        if (!panel || !titleEl || !summaryEl || !tbody) return;
+
+        panel.style.display = 'block';
+        titleEl.textContent = '👤 Activity Details: ' + (userName || email);
+        summaryEl.innerHTML = '<span style="color:#666;">Loading user activity...</span>';
+        tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:#999;">Loading...</td></tr>';
+
+        panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+        const response = await KashTecAPI.get('/audit/user-activity?email=' + encodeURIComponent(email));
+
+        if (response && response.data) {
+            const data = response.data;
+
+            summaryEl.innerHTML =
+                '<div style="padding:10px 14px;background:#fff;border-radius:6px;border:1px solid #e0e0e0;text-align:center;">' +
+                    '<div style="font-size:22px;font-weight:700;color:#1565c0;">' + (data.summary.total_logins || 0) + '</div>' +
+                    '<div style="font-size:12px;color:#666;">Total Logins</div>' +
+                '</div>' +
+                '<div style="padding:10px 14px;background:#fff;border-radius:6px;border:1px solid #e0e0e0;text-align:center;">' +
+                    '<div style="font-size:22px;font-weight:700;color:#2e7d32;">' + (data.summary.successful_logins || 0) + '</div>' +
+                    '<div style="font-size:12px;color:#666;">Successful</div>' +
+                '</div>' +
+                '<div style="padding:10px 14px;background:#fff;border-radius:6px;border:1px solid #e0e0e0;text-align:center;">' +
+                    '<div style="font-size:22px;font-weight:700;color:#c62828;">' + (data.summary.failed_logins || 0) + '</div>' +
+                    '<div style="font-size:12px;color:#666;">Failed</div>' +
+                '</div>' +
+                '<div style="padding:10px 14px;background:#fff;border-radius:6px;border:1px solid #e0e0e0;text-align:center;">' +
+                    '<div style="font-size:22px;font-weight:700;color:#f57c00;">' + formatDuration(data.summary.avg_session_minutes) + '</div>' +
+                    '<div style="font-size:12px;color:#666;">Avg Session</div>' +
+                '</div>' +
+                '<div style="padding:10px 14px;background:#fff;border-radius:6px;border:1px solid #e0e0e0;text-align:center;">' +
+                    '<div style="font-size:22px;font-weight:700;color:#6a1b9a;">' + formatDuration(data.summary.total_time_minutes) + '</div>' +
+                    '<div style="font-size:12px;color:#666;">Total Time Used</div>' +
+                '</div>' +
+                '<div style="padding:10px 14px;background:#fff;border-radius:6px;border:1px solid #e0e0e0;text-align:center;">' +
+                    '<div style="font-size:14px;font-weight:600;color:#333;">' + (data.summary.last_login ? new Date(data.summary.last_login).toLocaleString() : 'N/A') + '</div>' +
+                    '<div style="font-size:12px;color:#666;">Last Login</div>' +
+                '</div>' +
+                '<div style="padding:10px 14px;background:#fff;border-radius:6px;border:1px solid #e0e0e0;text-align:center;">' +
+                    '<div style="font-size:14px;font-weight:600;color:#333;">' + (data.summary.first_login ? new Date(data.summary.first_login).toLocaleString() : 'N/A') + '</div>' +
+                    '<div style="font-size:12px;color:#666;">First Login</div>' +
+                '</div>' +
+                '<div style="padding:10px 14px;background:#fff;border-radius:6px;border:1px solid #e0e0e0;text-align:center;">' +
+                    '<div style="font-size:22px;font-weight:700;color:#0097a7;">' + (data.summary.unique_ips || 0) + '</div>' +
+                    '<div style="font-size:12px;color:#666;">Unique IPs</div>' +
+                '</div>';
+
+            if (data.logs && data.logs.length > 0) {
+                tbody.innerHTML = data.logs.map((log, idx) => {
+                    const actionIcon = log.action === 'login' ? '🔓' : '🔒';
+                    const statusClass = log.status === 'success' ? 'color:#2e7d32;font-weight:600;' : 'color:#c62828;font-weight:600;';
+                    const statusIcon = log.status === 'success' ? '✅' : '❌';
+                    const dateStr = log.created_at ? new Date(log.created_at).toLocaleString() : 'N/A';
+                    const duration = log.session_duration_minutes ? formatDuration(log.session_duration_minutes) : '-';
+                    const browserInfo = log.user_agent ? parseBrowserInfo(log.user_agent) : 'N/A';
+                    return '<tr>' +
+                        '<td>' + (idx + 1) + '</td>' +
+                        '<td>' + actionIcon + ' ' + (log.action || 'N/A') + '</td>' +
+                        '<td style="' + statusClass + '">' + statusIcon + ' ' + (log.status || 'N/A') + '</td>' +
+                        '<td>' + (log.ip_address || 'N/A') + '</td>' +
+                        '<td style="font-size:12px;">' + browserInfo + '</td>' +
+                        '<td>' + dateStr + '</td>' +
+                        '<td>' + duration + '</td>' +
+                        '</tr>';
+                }).join('');
+            } else {
+                tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:#999;">No activity records found for this user.</td></tr>';
+            }
+        }
+    } catch (error) {
+        console.error('[UserActivity] Error:', error);
+        const tbody = document.getElementById('userActivityTableBody');
+        if (tbody) tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:#c62828;">Error loading user activity data.</td></tr>';
+    }
+}
+
+function parseBrowserInfo(userAgent) {
+    if (!userAgent || userAgent === 'unknown') return 'Unknown';
+    let browser = 'Unknown';
+    if (userAgent.includes('Chrome') && !userAgent.includes('Edg')) browser = 'Chrome';
+    else if (userAgent.includes('Firefox')) browser = 'Firefox';
+    else if (userAgent.includes('Safari') && !userAgent.includes('Chrome')) browser = 'Safari';
+    else if (userAgent.includes('Edg')) browser = 'Edge';
+    else if (userAgent.includes('Opera') || userAgent.includes('OPR')) browser = 'Opera';
+
+    let os = 'Unknown';
+    if (userAgent.includes('Windows')) os = 'Windows';
+    else if (userAgent.includes('Mac')) os = 'macOS';
+    else if (userAgent.includes('Linux')) os = 'Linux';
+    else if (userAgent.includes('Android')) os = 'Android';
+    else if (userAgent.includes('iPhone') || userAgent.includes('iPad')) os = 'iOS';
+
+    return browser + ' / ' + os;
+}
+
+// Define showAuditDashboard to call systemAuditDashboard
+function showAuditDashboard() {
+    systemAuditDashboard();
 }
 
 /* ===== LANGUAGE PURCHASE FUNCTIONS ===== */
