@@ -2095,49 +2095,6 @@ app.get('/api/office-portal/statistics', async (req, res) => {
 
 // ===== FALLBACK ENDPOINTS FOR PRODUCTION ISSUES =====
 
-// Fallback attendance endpoint with relaxed authentication
-app.post('/api/attendance', async (req, res) => {
-    try {
-        console.log('Fallback attendance endpoint accessed');
-        console.log('Request body:', req.body);
-        
-        // Relaxed authentication - just check if token exists
-        const authHeader = req.headers['authorization'];
-        if (!authHeader) {
-            console.log('No auth header, but proceeding with fallback');
-        }
-        
-        // Mock successful attendance marking
-        const attendanceData = {
-            id: `ATT-${Date.now()}`,
-            employee_id: req.body.employeeId || 'EMP001',
-            date: req.body.date || new Date().toISOString().split('T')[0],
-            status: req.body.status || 'present',
-            check_in: req.body.checkIn || '09:00',
-            check_out: req.body.checkOut || '17:00',
-            notes: req.body.notes || 'Marked via fallback endpoint',
-            created_at: new Date().toISOString()
-        };
-        
-        console.log('Fallback attendance created:', attendanceData);
-        
-        res.status(201).json({
-            success: true,
-            message: 'Attendance marked successfully (fallback mode)',
-            attendance: attendanceData,
-            fallback: true
-        });
-        
-    } catch (error) {
-        console.error('Fallback attendance error:', error);
-        res.status(500).json({
-            success: false,
-            error: 'Failed to mark attendance',
-            fallback: true
-        });
-    }
-});
-
 // Fallback work assignments endpoint with relaxed authentication  
 app.post('/api/work/assignments', async (req, res) => {
     try {
