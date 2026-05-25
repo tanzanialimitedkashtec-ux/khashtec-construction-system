@@ -12596,11 +12596,11 @@ font-weight: bold;
 
     border-radius: 2px;
 
-    overflow: hidden;
+    overflow-x: auto;
 
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    box-shadow: 0 1px 2px rgba(0,0,0,0.08);
 
-    margin-top: 15px;
+    margin-top: 8px;
 
 }
 
@@ -12612,9 +12612,11 @@ font-weight: bold;
 
     border-collapse: collapse;
 
-    font-size: 9px;
+    font-size: 8px;
 
     background: white;
+
+    line-height: 1.2;
 
 }
 
@@ -12626,13 +12628,15 @@ font-weight: bold;
 
     color: white;
 
-    padding: 3px 4px;
+    padding: 2px 3px;
 
     text-align: left;
 
     font-weight: 600;
 
-    border-bottom: 2px solid #093278;
+    font-size: 8px;
+
+    border-bottom: 1px solid #093278;
 
     white-space: nowrap;
 
@@ -12642,13 +12646,13 @@ font-weight: bold;
 
 .site-reports-table td {
 
-    padding: 3px 4px;
+    padding: 1px 3px;
 
-    border-bottom: 1px solid #e9ecef;
+    border-bottom: 1px solid #f0f0f0;
 
     vertical-align: middle;
 
-    font-size: 9px;
+    font-size: 8px;
 
 }
 
@@ -12668,6 +12672,35 @@ font-weight: bold;
 
 }
 
+.site-reports-table .report-id { font-size: 9px; }
+.site-reports-table .report-date { font-size: 7px; color: #888; font-style: normal; }
+.site-reports-table .report-id-info { gap: 0; min-width: 50px; }
+.site-reports-table .project-info { min-width: 50px; }
+.site-reports-table .project-name { font-size: 8px; line-height: 1.1; }
+.site-reports-table .date-info { min-width: 55px; }
+.site-reports-table .supervisor-info { min-width: 55px; }
+.site-reports-table .supervisor-name { font-size: 8px; }
+.site-reports-table .workers-info { min-width: 40px; }
+.site-reports-table .workers-count { font-size: 8px; }
+.site-reports-table .weather-badge { padding: 1px 4px; border-radius: 8px; font-size: 7px; }
+.site-reports-table .work-info { min-width: 70px; max-width: 100px; }
+.site-reports-table .work-completed { font-size: 8px; line-height: 1.1; }
+.site-reports-table .issues-info { min-width: 60px; max-width: 100px; }
+.site-reports-table .site-issues { font-size: 8px; line-height: 1.1; }
+.site-reports-table .safety-info { min-width: 60px; max-width: 100px; }
+.site-reports-table .safety-incidents { font-size: 8px; line-height: 1.1; }
+.site-reports-table .materials-info { min-width: 60px; max-width: 100px; }
+.site-reports-table .materials-used { font-size: 8px; line-height: 1.1; }
+.site-reports-table .equipment-info { min-width: 60px; max-width: 100px; }
+.site-reports-table .equipment-used { font-size: 8px; line-height: 1.1; }
+.site-reports-table .nextday-info { min-width: 70px; max-width: 110px; }
+.site-reports-table .next-day-plan { font-size: 8px; line-height: 1.1; }
+.site-reports-table .safety-badge { padding: 1px 4px; border-radius: 8px; font-size: 7px; }
+.site-reports-table .report-actions { gap: 2px; }
+.site-reports-table .action-btn { padding: 2px 4px; min-width: 20px; height: 20px; font-size: 9px;
+
+}
+
 
 
 .report-id-info {
@@ -12676,9 +12709,9 @@ font-weight: bold;
 
     flex-direction: column;
 
-    gap: 2px;
+    gap: 0px;
 
-    min-width: 70px;
+    min-width: 50px;
 
 }
 
@@ -73765,31 +73798,31 @@ function displaySiteReports(reports, _retry) {
 
         id: report.id,
 
-        reportId: `SR-${report.id}`,
+        reportId: report.reportId || `SR-${report.id}`,
 
-        reportDate: report.report_date || report.submitted_date || report.created_at || new Date().toISOString(),
+        reportDate: report.report_date || report.reportDate || report.submitted_date || report.created_at || new Date().toISOString(),
 
-        project: report.project || report.work_title?.replace('Daily Site Report - ', '') || 'Unknown Project',
+        project: report.project_name || report.project || report.work_title?.replace('Daily Site Report - ', '') || 'Project #' + (report.project_id || report.id),
 
-        projectCode: report.project_code || `prj${String(report.id).padStart(3, '0')}`,
+        projectCode: report.project_code || `prj${String(report.project_id || report.id).padStart(3, '0')}`,
 
-        supervisor: report.supervisor || report.submitted_by || 'Unknown Supervisor',
+        supervisor: report.site_supervisor || report.supervisor || report.submitted_by || 'Unknown Supervisor',
 
-        workersCount: report.workers_count || report.workers || 0,
+        workersCount: report.workers_present || report.workersPresent || report.workers_count || report.workers || 0,
 
-        weatherConditions: report.weather_conditions || 'sunny',
+        weatherConditions: report.weather_conditions || report.weatherConditions || 'sunny',
 
-        workCompleted: report.work_completed || report.work_description || 'Not specified',
+        workCompleted: report.work_completed || report.workCompleted || report.work_description || 'Not specified',
 
-        siteIssues: report.site_issues || report.issues || 'No issues',
+        siteIssues: report.site_issues || report.siteIssues || report.issues || report.issues_challenges || 'No issues',
 
-        safetyIncidents: report.safety_incidents || 'None',
+        safetyIncidents: report.safety_incidents || report.safetyIncidents || 'None',
 
-        materialsUsed: report.materials_used || 'Not specified',
+        materialsUsed: report.materials_used || report.materialsUsed || 'Not specified',
 
-        equipmentUsed: report.equipment_used || 'Not specified',
+        equipmentUsed: report.equipment_used || report.equipmentUsed || 'Not specified',
 
-        nextDayPlan: report.next_day_plan || 'Not specified'
+        nextDayPlan: report.next_day_plan || report.nextDayPlan || 'Not specified'
 
     }));
 
@@ -73809,7 +73842,9 @@ function displaySiteReports(reports, _retry) {
 
         // Get weather display
 
-        const weatherDisplay = report.weatherConditions === 'sunny' ? '☀️ Sunny' : 
+        const weatherLower = (report.weatherConditions || '').toLowerCase();
+
+        const weatherDisplay = weatherLower === 'sunny' ? '☀️ Sunny' : 
 
                               report.weatherConditions === 'cloudy' ? '☁️ Cloudy' : 
 
@@ -73927,7 +73962,7 @@ function displaySiteReports(reports, _retry) {
 
                     <div class="workers-info">
 
-                        <div class="workers-count">${report.workersPresent} Workers</div>
+                        <div class="workers-count">${report.workersCount} Workers</div>
 
                     </div>
 
