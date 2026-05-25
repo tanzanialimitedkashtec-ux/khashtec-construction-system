@@ -7,27 +7,29 @@ router.get('/', async (req, res) => {
     try {
         console.log('🔔 Fetching notifications...');
         
-        // Ensure notifications table exists
+        // Ensure notifications table exists with all needed columns
         try {
             await db.execute(`
                 CREATE TABLE IF NOT EXISTS notifications (
                     id INT AUTO_INCREMENT PRIMARY KEY,
                     title VARCHAR(255) NOT NULL,
                     message TEXT NOT NULL,
-                    type ENUM('info', 'success', 'warning', 'error') DEFAULT 'info',
-                    user_id VARCHAR(50) NOT NULL,
-                    category ENUM('system', 'project', 'hr', 'finance', 'operations', 'safety') DEFAULT 'system',
+                    type VARCHAR(50) DEFAULT 'info',
+                    priority VARCHAR(50) DEFAULT 'normal',
+                    recipient_type VARCHAR(50) DEFAULT 'all',
+                    recipients VARCHAR(255) DEFAULT 'All Staff',
+                    sent_by VARCHAR(255) DEFAULT 'System',
+                    status VARCHAR(50) DEFAULT 'draft',
+                    sent_date DATE,
+                    scheduled_date DATETIME,
+                    read_rate DECIMAL(5,2) DEFAULT 0,
                     is_read BOOLEAN DEFAULT FALSE,
-                    priority ENUM('low', 'medium', 'high', 'urgent') DEFAULT 'medium',
+                    user_id VARCHAR(50),
+                    category VARCHAR(50) DEFAULT 'system',
                     action_url VARCHAR(500) NULL,
                     expires_at TIMESTAMP NULL,
                     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-                    INDEX idx_user_id (user_id),
-                    INDEX idx_type (type),
-                    INDEX idx_category (category),
-                    INDEX idx_is_read (is_read),
-                    INDEX idx_created_at (created_at)
+                    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
                 )
             `);
             console.log('✅ Notifications table verified/created successfully');
@@ -90,86 +92,11 @@ router.get('/', async (req, res) => {
     } catch (error) {
         console.error('❌ Error fetching notifications:', error);
         
-        // Return fallback notifications when database fails
-        const fallbackNotifications = [
-            {
-                id: 1,
-                title: 'Welcome to KASHTEC System',
-                message: 'Your account has been successfully created. Explore the dashboard to get started.',
-                type: 'success',
-                user_id: 'current_user',
-                category: 'system',
-                is_read: false,
-                priority: 'medium',
-                action_url: null,
-                expires_at: null,
-                created_at: '2026-05-04T08:00:00Z',
-                updated_at: '2026-05-04T08:00:00Z'
-            },
-            {
-                id: 2,
-                title: 'New Project Assignment',
-                message: 'You have been assigned to the "Office Building Construction" project. Please check your tasks.',
-                type: 'info',
-                user_id: 'current_user',
-                category: 'project',
-                is_read: false,
-                priority: 'high',
-                action_url: '/projects/123',
-                expires_at: '2026-05-11T00:00:00Z',
-                created_at: '2026-05-04T09:30:00Z',
-                updated_at: '2026-05-04T09:30:00Z'
-            },
-            {
-                id: 3,
-                title: 'Safety Training Reminder',
-                message: 'Monthly safety training is scheduled for tomorrow at 2:00 PM. Attendance is mandatory.',
-                type: 'warning',
-                user_id: 'current_user',
-                category: 'safety',
-                is_read: false,
-                priority: 'high',
-                action_url: '/training/safety',
-                expires_at: '2026-05-05T18:00:00Z',
-                created_at: '2026-05-04T10:15:00Z',
-                updated_at: '2026-05-04T10:15:00Z'
-            },
-            {
-                id: 4,
-                title: 'Document Approval Required',
-                message: 'Project proposal document requires your approval. Please review and submit your decision.',
-                type: 'info',
-                user_id: 'current_user',
-                category: 'project',
-                is_read: true,
-                priority: 'medium',
-                action_url: '/documents/approve/456',
-                expires_at: '2026-05-06T00:00:00Z',
-                created_at: '2026-05-03T14:20:00Z',
-                updated_at: '2026-05-03T16:45:00Z'
-            },
-            {
-                id: 5,
-                title: 'System Maintenance Scheduled',
-                message: 'The system will undergo maintenance on Sunday from 2:00 AM to 4:00 AM. Please save your work.',
-                type: 'warning',
-                user_id: 'current_user',
-                category: 'system',
-                is_read: true,
-                priority: 'low',
-                action_url: null,
-                expires_at: '2026-05-08T00:00:00Z',
-                created_at: '2026-05-02T11:00:00Z',
-                updated_at: '2026-05-02T11:00:00Z'
-            }
-        ];
-        
         res.json({
             success: true,
-            notifications: fallbackNotifications,
-            total: fallbackNotifications.length,
-            unread: fallbackNotifications.filter(n => !n.is_read).length,
-            note: 'Using fallback data - database unavailable'
+            notifications: [],
+            total: 0,
+            unread: 0
         });
     }
 });
@@ -556,15 +483,10 @@ router.post('/broadcast', async (req, res) => {
         console.error('❌ Error sending broadcast notification:', error);
         console.error('❌ Error stack:', error.stack);
         
-        // Final fallback to mock response
-        const notificationId = `NOTIF-${Date.now()}`;
-        console.log('✅ Mock broadcast notification created as fallback:', notificationId);
-        
-        res.status(201).json({
-            message: 'Broadcast notification created successfully (mock fallback)',
-            notificationId,
-            count: 1,
-            mock: true
+        res.status(500).json({
+            success: false,
+            error: 'Failed to create broadcast notification',
+            details: error.message
         });
     }
 });
