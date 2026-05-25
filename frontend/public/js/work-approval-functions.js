@@ -125,25 +125,21 @@ window.approveWork = function(workId) {
         return;
     }
     
-    // Set work ID in the approval form
-    const workIdInput = document.getElementById('workId');
-    if (workIdInput) {
-        workIdInput.value = workId;
+    // Set work ID in the approval form (supports both select and input)
+    const workIdEl = document.getElementById('workId');
+    if (workIdEl) {
+        workIdEl.value = workId;
+        // Trigger onWorkItemSelected to show details panel
+        if (typeof onWorkItemSelected === 'function') onWorkItemSelected(workId);
     } else {
-        console.error('workId input field not found');
-        customAlert('Error: Work ID input field not found on the page.', 'Error', 'error');
+        console.error('workId field not found');
+        customAlert('Error: Work ID field not found on the page.', 'Error', 'error');
         return;
     }
     
     // Set default values for approval in the form
-    const qualityAssessment = document.getElementById('qualityAssessment');
-    if (qualityAssessment) qualityAssessment.value = 'excellent';
-    
     const complianceCheck = document.getElementById('complianceCheck');
     if (complianceCheck) complianceCheck.value = 'fully-compliant';
-    
-    const approvalComments = document.getElementById('approvalComments');
-    if (approvalComments) approvalComments.value = 'Work approved successfully. Quality meets all requirements.';
     
     // Show the approval form if it's not visible
     const formContainer = document.getElementById('approvalFormContainer');

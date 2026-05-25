@@ -13084,23 +13084,15 @@ function clearApprovalForm() {
 
     if (form) {
 
-        // Reset all form fields
-
         form.reset();
-
-        
-
-        // Clear work ID field
 
         const workIdField = document.getElementById('workId');
 
-        if (workIdField) {
+        if (workIdField) workIdField.value = '';
 
-            workIdField.value = '';
+        var detailsDiv = document.getElementById('workItemDetails');
 
-        }
-
-        
+        if (detailsDiv) detailsDiv.style.display = 'none';
 
         showNotification('Form Cleared', 'Work approval form has been cleared', 'info');
 
@@ -49137,9 +49129,31 @@ function approveCompletedWork(){
 
                         <div class="form-group">
 
-                            <label>Work ID</label>
+                            <label>Select Work Item *</label>
 
-                            <input type="text" id="workId" readonly>
+                            <select id="workId" required onchange="onWorkItemSelected(this.value)">
+
+                                <option value="">-- Loading pending work items... --</option>
+
+                            </select>
+
+                        </div>
+
+                        <div id="workItemDetails" style="display:none; background:#f8f9fa; padding:12px; border-radius:6px; margin-bottom:15px; border-left:4px solid #007bff;">
+
+                            <div style="display:flex; gap:20px; flex-wrap:wrap;">
+
+                                <div><strong>Project:</strong> <span id="selectedWorkProject">-</span></div>
+
+                                <div><strong>Completed By:</strong> <span id="selectedWorkCompletedBy">-</span></div>
+
+                                <div><strong>Date:</strong> <span id="selectedWorkDate">-</span></div>
+
+                                <div><strong>Score:</strong> <span id="selectedWorkScore">-</span></div>
+
+                            </div>
+
+                            <div style="margin-top:8px;"><strong>Details:</strong> <span id="selectedWorkDetails">-</span></div>
 
                         </div>
 
@@ -49333,6 +49347,10 @@ function loadPendingWorkCompletions() {
 
         var items = data.data || data || [];
 
+        _pendingWorkItems = items;
+
+        populateWorkIdDropdown(items);
+
         if (!items.length) {
 
             tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;">No pending work completions found.</td></tr>';
@@ -49392,6 +49410,8 @@ function loadPendingWorkCompletions() {
         console.error('Error loading pending work completions:', error);
 
         tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; color: #dc3545;">Failed to load pending work. Please try again.</td></tr>';
+
+        populateWorkIdDropdown([]);
 
     });
 
@@ -49479,7 +49499,107 @@ function loadApprovalHistory() {
 
 }
 
+// Store loaded work items for dropdown selection
+var _pendingWorkItems = [];
 
+function populateWorkIdDropdown(items) {
+
+    var select = document.getElementById('workId');
+
+    if (!select) return;
+
+    var currentVal = select.value;
+
+    select.innerHTML = '<option value="">-- Select a work item to approve --</option>';
+
+    if (items && items.length > 0) {
+
+        items.forEach(function(work) {
+
+            var label = (work.id || '') + ' - ' + (work.work_details || 'Work Item') + ' (' + (work.project || 'N/A') + ')';
+
+            var opt = document.createElement('option');
+
+            opt.value = work.id;
+
+            opt.textContent = label;
+
+            select.appendChild(opt);
+
+        });
+
+    }
+
+    if (currentVal) select.value = currentVal;
+
+}
+
+function onWorkItemSelected(workId) {
+
+    var detailsDiv = document.getElementById('workItemDetails');
+
+    if (!workId) {
+
+        if (detailsDiv) detailsDiv.style.display = 'none';
+
+        return;
+
+    }
+
+    var work = _pendingWorkItems.find(function(w) { return String(w.id) === String(workId); });
+
+    if (!work) {
+
+        if (detailsDiv) detailsDiv.style.display = 'none';
+
+        return;
+
+    }
+
+    if (detailsDiv) {
+
+        detailsDiv.style.display = 'block';
+
+        var projEl = document.getElementById('selectedWorkProject');
+
+        var byEl = document.getElementById('selectedWorkCompletedBy');
+
+        var dateEl = document.getElementById('selectedWorkDate');
+
+        var scoreEl = document.getElementById('selectedWorkScore');
+
+        var detEl = document.getElementById('selectedWorkDetails');
+
+        if (projEl) projEl.textContent = work.project || 'N/A';
+
+        if (byEl) byEl.textContent = work.completed_by || 'N/A';
+
+        if (dateEl) dateEl.textContent = work.completed_date ? new Date(work.completed_date).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) : 'N/A';
+
+        if (scoreEl) scoreEl.textContent = (work.quality_score || 0) + '%';
+
+        if (detEl) detEl.textContent = work.work_details || 'N/A';
+
+    }
+
+    // Auto-set quality assessment based on score
+    var score = parseInt(work.quality_score) || 0;
+
+    var qa = document.getElementById('qualityAssessment');
+
+    if (qa) {
+
+        if (score >= 90) qa.value = 'excellent';
+
+        else if (score >= 80) qa.value = 'good';
+
+        else if (score >= 70) qa.value = 'acceptable';
+
+        else qa.value = 'poor';
+
+    }
+
+}
 
 // Project Manager Helper Functions
 
@@ -50767,7 +50887,7 @@ function saveWorkApproval(event) {
 
     if (!approvalData.work_id || !approvalData.quality_assessment || !approvalData.compliance_check || !approvalData.approval_comments) {
 
-        customAlert('Please fill in all required fields marked with *', 'Validation Error', 'error');
+        customAlert('Please select a work item and fill in all required fields marked with *', 'Validation Error', 'error');
 
         return false;
 
@@ -50804,6 +50924,10 @@ function saveWorkApproval(event) {
             customAlert(`Work approval submitted successfully!\n\nWork ID: ${approvalData.work_id}\nQuality: ${approvalData.quality_assessment}\nCompliance: ${approvalData.compliance_check}\nStatus: Approved`, 'Work Approved', 'success');
 
             document.getElementById('approvalForm').reset();
+
+            var detailsDiv = document.getElementById('workItemDetails');
+
+            if (detailsDiv) detailsDiv.style.display = 'none';
 
             if (typeof loadPendingWorkCompletions === 'function') loadPendingWorkCompletions();
 
@@ -51293,9 +51417,39 @@ function updateTaskStatus(taskId) {
 
 function approveWork(workId) {
 
-    document.getElementById('workId').value = workId;
+    var select = document.getElementById('workId');
 
-    document.getElementById('approvalForm').scrollIntoView();
+    if (select) {
+
+        select.value = workId;
+
+        if (typeof onWorkItemSelected === 'function') onWorkItemSelected(workId);
+
+    }
+
+    // Show the approval form if hidden
+
+    var formContainer = document.getElementById('approvalFormContainer');
+
+    if (formContainer && (formContainer.style.display === 'none' || !formContainer.classList.contains('show'))) {
+
+        if (typeof toggleApprovalForm === 'function') {
+
+            toggleApprovalForm();
+
+        } else {
+
+            formContainer.style.display = 'block';
+
+            formContainer.classList.add('show');
+
+        }
+
+    }
+
+    var form = document.getElementById('approvalForm');
+
+    if (form) form.scrollIntoView({ behavior: 'smooth' });
 
 }
 
