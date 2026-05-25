@@ -16490,117 +16490,84 @@ function saveAssignment() {
 
 function saveAttendance() {
 
+    const employeeSelect = document.getElementById('attEmployee');
+    const employeeText = employeeSelect.options[employeeSelect.selectedIndex].text;
+    const employeeName = employeeText.split(' - ')[0].trim();
+    const department = employeeText.split(' - ')[1] ? employeeText.split(' - ')[1].trim() : '';
+
+    // Map to backend expected field names
     const attendance = {
-
-        employee_id: document.getElementById('attEmployee').value,
-
-        employee_name: document.getElementById('attEmployee').options[document.getElementById('attEmployee').selectedIndex].text,
-
-        attendance_date: document.getElementById('attDate').value,
-
-        check_in_time: document.getElementById('attCheckIn').value,
-
-        check_out_time: document.getElementById('attCheckOut').value,
-
-        attendance_status: document.getElementById('attStatus').value,
-
-        notes: document.getElementById('attNotes').value,
-
-        marked_by: 'HR Manager',
-
-        marked_by_role: 'HR Manager'
-
+        employeeId: employeeSelect.value,
+        employeeName: employeeName,
+        date: document.getElementById('attDate').value,
+        checkIn: document.getElementById('attCheckIn').value,
+        checkOut: document.getElementById('attCheckOut').value || null,
+        status: document.getElementById('attStatus').value,
+        department: department,
+        notes: document.getElementById('attNotes').value || null
     };
 
-    
-
     // Validate required fields
-
-    if (!attendance.attendance_date || !attendance.employee_id || !attendance.attendance_status) {
-
-        customAlert('Please fill in all required fields:\n\nÂ· Date\nÂ· Employee\nÂ· Status', "Validation Error", "error");
-
+    if (!attendance.date || !attendance.employeeId || !attendance.status) {
+        customAlert('Please fill in all required fields:\n\n- Date\n- Employee\n- Status', "Validation Error", "error");
         return false;
-
     }
 
-    
+    if (!attendance.checkIn && attendance.status === 'present') {
+        customAlert('Please provide Check In time for present status', "Validation Error", "error");
+        return false;
+    }
 
     // Show loading message
-
     customAlert('Marking attendance...', "Processing", "info");
 
-    
+    // Safely get auth token
+    let token = sessionStorage.getItem('kashtec_token') || '';
+    if (!token && typeof sessionManager !== 'undefined' && sessionManager.getAuthToken) {
+        token = sessionManager.getAuthToken();
+    }
+    if (!token) {
+        token = localStorage.getItem('authToken') || '';
+    }
 
     // Send data to attendance API
-
     const baseUrl = window.location.origin;
 
     fetch(`${baseUrl}/api/attendance`, {
-
         method: 'POST',
-
         headers: {
-
             'Content-Type': 'application/json',
-
             'Accept': 'application/json',
-
-            'Authorization': `Bearer ${sessionManager.getAuthToken()}`
-
+            ...(token && { 'Authorization': `Bearer ${token}` })
         },
-
         body: JSON.stringify(attendance)
-
     })
-
     .then(response => {
-
-        console.log('ðŸ“¡ Attendance API Response status:', response.status);
-
+        console.log('Attendance API Response status:', response.status);
         return response.json();
-
     })
-
     .then(data => {
-
-        console.log('ðŸ“Š Attendance API Response data:', data);
-
-        
+        console.log('Attendance API Response data:', data);
 
         if (data.error) {
-
             throw new Error(data.error);
-
         }
 
-        
-
         // Success - reset form and show success message
-
         document.getElementById('attendanceForm').reset();
-
         customAlert('Attendance marked successfully!', "Success", "success");
 
-        
+        // Reload the attendance table to show the new record
+        loadAttendanceRecords();
 
         // Update today's summary
-
         updateTodayAttendanceSummary();
 
-        
-
     })
-
     .catch(error => {
-
-        console.error('âŒ Error marking attendance:', error);
-
+        console.error('Error marking attendance:', error);
         customAlert(`Error marking attendance: ${error.message}`, "Error", "error");
-
     });
-
-    
 
     return false;
 
@@ -16646,253 +16613,59 @@ function updateTodayAttendanceSummary() {
 
 async function loadAttendanceRecords() {
 
-    console.log('ðŸ”„ Loading attendance records...');
+    console.log('Loading attendance records from database...');
 
-    
+    // Safely get auth token
+    let token = sessionStorage.getItem('kashtec_token') || '';
+    if (!token && typeof sessionManager !== 'undefined' && sessionManager.getAuthToken) {
+        token = sessionManager.getAuthToken();
+    }
+    if (!token) {
+        token = localStorage.getItem('authToken') || '';
+    }
 
     try {
 
         const baseUrl = window.location.origin;
 
-        let response;
-
-        
-
-        // Try to get attendance records from API
-
-        try {
-
-            response = await fetch(`${baseUrl}/api/attendance`, {
-
-                method: 'GET',
-
-                headers: {
-
-                    'Content-Type': 'application/json',
-
-                    'Authorization': `Bearer ${sessionManager.getAuthToken()}`
-
-                }
-
-            });
-
-            
-
-            if (!response.ok) {
-
-                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-
+        const response = await fetch(`${baseUrl}/api/attendance`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                ...(token && { 'Authorization': `Bearer ${token}` })
             }
+        });
 
-        } catch (primaryError) {
-
-            console.warn('âš ï¸ Primary attendance records endpoint failed, trying fallback:', primaryError.message);
-
-            // Try fallback endpoint with date filter for recent records
-
-            const today = new Date().toISOString().split('T')[0];
-
-            try {
-
-                response = await fetch(`${baseUrl}/api/attendance?dateFrom=${today}`, {
-
-                    method: 'GET',
-
-                    headers: {
-
-                        'Content-Type': 'application/json',
-
-                        'Authorization': `Bearer ${sessionManager.getAuthToken()}`
-
-                    }
-
-                });
-
-                
-
-                if (!response.ok) {
-
-                    throw new Error(`Fallback also failed: HTTP ${response.status}: ${response.statusText}`);
-
-                }
-
-            } catch (fallbackError) {
-
-                console.error('âŒ All attendance records endpoints failed:', fallbackError.message);
-
-                // Load sample data for demonstration
-
-                loadSampleAttendanceRecords();
-
-                return;
-
-            }
-
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
         }
-
-        
 
         const attendanceRecords = await response.json();
-
-        console.log('ðŸ“Š Attendance records data:', attendanceRecords);
-
-        
+        console.log('Attendance records from database:', attendanceRecords);
 
         // Extract the actual attendance array from the response
-
         const records = attendanceRecords.attendance || attendanceRecords.data || attendanceRecords;
 
-        
-
         // Ensure records is an array
-
         if (!Array.isArray(records)) {
-
-            console.error('âŒ Expected array but got:', typeof records, records);
-
+            console.error('Expected array but got:', typeof records, records);
             displayAttendanceRecords([]);
-
             return;
-
         }
-
-        
 
         displayAttendanceRecords(records);
 
-        
-
     } catch (error) {
-
-        console.error('âŒ Error loading attendance records:', error);
-
-        // Load sample data on error
-
-        loadSampleAttendanceRecords();
-
+        console.error('Error loading attendance records:', error);
+        // Show empty state instead of mock data
+        displayAttendanceRecords([]);
     }
 
 }
 
 
 
-// Load sample attendance records for demonstration
-
-function loadSampleAttendanceRecords() {
-
-    console.log('ðŸ“‹ Loading sample attendance records...');
-
-    
-
-    const sampleRecords = [
-
-        {
-
-            id: 1,
-
-            employee_name: 'MORIS',
-
-            department: 'Construction',
-
-            attendance_date: '2026-05-02',
-
-            check_in_time: '08:00',
-
-            check_out_time: '17:00',
-
-            attendance_status: 'present',
-
-            notes: ''
-
-        },
-
-        {
-
-            id: 2,
-
-            employee_name: 'BRAYAN',
-
-            department: 'HSE',
-
-            attendance_date: '2026-05-02',
-
-            check_in_time: '08:15',
-
-            check_out_time: '17:30',
-
-            attendance_status: 'present',
-
-            notes: ''
-
-        },
-
-        {
-
-            id: 3,
-
-            employee_name: 'AYYAN 099',
-
-            department: 'HSE',
-
-            attendance_date: '2026-05-02',
-
-            check_in_time: '08:30',
-
-            check_out_time: '',
-
-            attendance_status: 'late',
-
-            notes: 'Traffic delay'
-
-        },
-
-        {
-
-            id: 4,
-
-            employee_name: 'Chrispin Golden',
-
-            department: 'Engineering',
-
-            attendance_date: '2026-05-02',
-
-            check_in_time: '',
-
-            check_out_time: '',
-
-            attendance_status: 'sick',
-
-            notes: 'Medical appointment'
-
-        },
-
-        {
-
-            id: 5,
-
-            employee_name: 'Billzone Mwipopo',
-
-            department: 'Labor',
-
-            attendance_date: '2026-05-01',
-
-            check_in_time: '07:45',
-
-            check_out_time: '16:45',
-
-            attendance_status: 'present',
-
-            notes: ''
-
-        }
-
-    ];
-
-    
-
-    displayAttendanceRecords(sampleRecords);
-
-}
+// loadSampleAttendanceRecords removed - all attendance data now loaded from database
 
 
 
@@ -17170,42 +16943,280 @@ function displayAttendanceRecords(records) {
 
 // Attendance action functions
 
-function viewAttendanceDetails(recordId) {
+async function viewAttendanceDetails(recordId) {
+    let token = sessionStorage.getItem('kashtec_token') || '';
+    if (!token && typeof sessionManager !== 'undefined' && sessionManager.getAuthToken) {
+        token = sessionManager.getAuthToken();
+    }
+    if (!token) token = localStorage.getItem('authToken') || '';
 
-    customAlert(`Viewing attendance record details for ID: ${recordId}\n\nFull attendance details including check-in/out times, work hours, and notes will be displayed.`, "Attendance Details", "info");
+    try {
+        const baseUrl = window.location.origin;
+        const response = await fetch(`${baseUrl}/api/attendance/${recordId}`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                ...(token && { 'Authorization': `Bearer ${token}` })
+            }
+        });
 
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        const data = await response.json();
+        const record = data.attendance || data.data || data;
+
+        const empName = record.employee_name || 'Unknown';
+        const dept = record.department || 'Not specified';
+        const attDate = record.date || record.attendance_date;
+        const checkIn = record.check_in || record.check_in_time || '\u2014';
+        const checkOut = record.check_out || record.check_out_time || '\u2014';
+        const status = record.status || record.attendance_status || 'Unknown';
+        const notes = record.notes || 'No notes';
+        const hoursWorked = record.hours_worked ? `${Math.floor(record.hours_worked)}h ${Math.round((record.hours_worked % 1) * 60)}m` : 'N/A';
+        const formattedDate = attDate ? new Date(attDate).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) : 'N/A';
+
+        const statusColor = status === 'present' ? '#28a745' : status === 'absent' ? '#dc3545' :
+                           status === 'late' ? '#ffc107' : status === 'sick' ? '#fd7e14' :
+                           status === 'annual' ? '#17a2b8' : '#6c757d';
+
+        const modal = window.document.createElement('div');
+        modal.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.6);display:flex;justify-content:center;align-items:center;z-index:10000';
+        modal.innerHTML = `
+            <div style="background:#fff;border-radius:12px;box-shadow:0 20px 60px rgba(0,0,0,0.3);width:520px;max-width:92%;overflow:hidden">
+                <div style="background:linear-gradient(135deg,#0b3d91 0%,#1e5bb8 100%);color:#fff;padding:20px 24px;display:flex;justify-content:space-between;align-items:center">
+                    <div style="display:flex;align-items:center;gap:12px">
+                        <div style="width:40px;height:40px;background:rgba(255,255,255,0.2);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px">\ud83d\udccb</div>
+                        <div>
+                            <h3 style="margin:0;font-size:18px;font-weight:600">Attendance Details</h3>
+                            <span style="font-size:12px;opacity:0.8">Record #${recordId}</span>
+                        </div>
+                    </div>
+                    <button onclick="this.closest('div[style*=position]').remove()" style="background:rgba(255,255,255,0.2);border:none;color:#fff;width:32px;height:32px;border-radius:8px;font-size:18px;cursor:pointer">&times;</button>
+                </div>
+                <div style="padding:24px">
+                    <h4 style="margin:0 0 16px;font-size:20px;color:#1a1a2e;font-weight:700">${empName}</h4>
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px">
+                        <div style="background:#f8f9fa;border-radius:8px;padding:12px">
+                            <span style="font-size:11px;color:#6c757d;text-transform:uppercase;display:block;margin-bottom:4px">Date</span>
+                            <span style="font-size:14px;color:#1a1a2e;font-weight:500">${formattedDate}</span>
+                        </div>
+                        <div style="background:#f8f9fa;border-radius:8px;padding:12px">
+                            <span style="font-size:11px;color:#6c757d;text-transform:uppercase;display:block;margin-bottom:4px">Department</span>
+                            <span style="font-size:14px;color:#1a1a2e;font-weight:500">${dept}</span>
+                        </div>
+                        <div style="background:#f8f9fa;border-radius:8px;padding:12px">
+                            <span style="font-size:11px;color:#6c757d;text-transform:uppercase;display:block;margin-bottom:4px">Check In</span>
+                            <span style="font-size:14px;color:#1a1a2e;font-weight:500">${checkIn}</span>
+                        </div>
+                        <div style="background:#f8f9fa;border-radius:8px;padding:12px">
+                            <span style="font-size:11px;color:#6c757d;text-transform:uppercase;display:block;margin-bottom:4px">Check Out</span>
+                            <span style="font-size:14px;color:#1a1a2e;font-weight:500">${checkOut}</span>
+                        </div>
+                        <div style="background:#f8f9fa;border-radius:8px;padding:12px">
+                            <span style="font-size:11px;color:#6c757d;text-transform:uppercase;display:block;margin-bottom:4px">Status</span>
+                            <span style="display:inline-block;padding:2px 10px;border-radius:12px;font-size:12px;font-weight:600;background:${statusColor}22;color:${statusColor}">${status}</span>
+                        </div>
+                        <div style="background:#f8f9fa;border-radius:8px;padding:12px">
+                            <span style="font-size:11px;color:#6c757d;text-transform:uppercase;display:block;margin-bottom:4px">Work Hours</span>
+                            <span style="font-size:14px;color:#1a1a2e;font-weight:500">${hoursWorked}</span>
+                        </div>
+                    </div>
+                    ${notes && notes !== 'No notes' ? `<div style="background:#f0f4ff;border-left:4px solid #0b3d91;border-radius:0 8px 8px 0;padding:14px 16px">
+                        <span style="font-size:11px;color:#6c757d;text-transform:uppercase;display:block;margin-bottom:6px">Notes</span>
+                        <p style="margin:0;font-size:14px;color:#333">${notes}</p>
+                    </div>` : ''}
+                </div>
+                <div style="padding:16px 24px;background:#f8f9fa;border-top:1px solid #e9ecef;display:flex;gap:10px;justify-content:flex-end">
+                    <button onclick="this.closest('div[style*=position]').remove(); editAttendance('${recordId}')" style="background:#ffc107;color:#333;border:none;padding:10px 20px;border-radius:8px;font-size:14px;font-weight:500;cursor:pointer">Edit</button>
+                    <button onclick="this.closest('div[style*=position]').remove()" style="background:#6c757d;color:#fff;border:none;padding:10px 20px;border-radius:8px;font-size:14px;font-weight:500;cursor:pointer">Close</button>
+                </div>
+            </div>
+        `;
+        modal.addEventListener('click', function(e) { if (e.target === modal) modal.remove(); });
+        window.document.body.appendChild(modal);
+
+    } catch (error) {
+        console.error('Error viewing attendance details:', error);
+        customAlert(`Error loading attendance details: ${error.message}`, "Error", "error");
+    }
 }
 
 
 
-function editAttendance(recordId) {
+async function editAttendance(recordId) {
+    let token = sessionStorage.getItem('kashtec_token') || '';
+    if (!token && typeof sessionManager !== 'undefined' && sessionManager.getAuthToken) {
+        token = sessionManager.getAuthToken();
+    }
+    if (!token) token = localStorage.getItem('authToken') || '';
 
-    customAlert(`Editing attendance record ${recordId}...\n\nAttendance editor will open for modifications and updates.`, "Edit Attendance", "info");
+    try {
+        const baseUrl = window.location.origin;
+        const response = await fetch(`${baseUrl}/api/attendance/${recordId}`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                ...(token && { 'Authorization': `Bearer ${token}` })
+            }
+        });
 
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        const data = await response.json();
+        const record = data.attendance || data.data || data;
+
+        const empName = record.employee_name || '';
+        const checkIn = record.check_in || record.check_in_time || '';
+        const checkOut = record.check_out || record.check_out_time || '';
+        const status = record.status || record.attendance_status || 'present';
+        const notes = record.notes || '';
+        const attDate = record.date || record.attendance_date || '';
+        const formattedInputDate = attDate ? new Date(attDate).toISOString().split('T')[0] : '';
+
+        const modal = window.document.createElement('div');
+        modal.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.6);display:flex;justify-content:center;align-items:center;z-index:10000';
+        modal.innerHTML = `
+            <div style="background:#fff;border-radius:12px;box-shadow:0 20px 60px rgba(0,0,0,0.3);width:520px;max-width:92%;overflow:hidden">
+                <div style="background:linear-gradient(135deg,#0b3d91 0%,#1e5bb8 100%);color:#fff;padding:20px 24px;display:flex;justify-content:space-between;align-items:center">
+                    <h3 style="margin:0;font-size:18px;font-weight:600">Edit Attendance - ${empName}</h3>
+                    <button onclick="this.closest('div[style*=position]').remove()" style="background:rgba(255,255,255,0.2);border:none;color:#fff;width:32px;height:32px;border-radius:8px;font-size:18px;cursor:pointer">&times;</button>
+                </div>
+                <div style="padding:24px">
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px">
+                        <div>
+                            <label style="font-size:12px;color:#6c757d;display:block;margin-bottom:4px">Date</label>
+                            <input type="date" id="editAttDate" value="${formattedInputDate}" style="width:100%;padding:8px 12px;border:1px solid #ddd;border-radius:8px;font-size:14px" />
+                        </div>
+                        <div>
+                            <label style="font-size:12px;color:#6c757d;display:block;margin-bottom:4px">Status</label>
+                            <select id="editAttStatus" style="width:100%;padding:8px 12px;border:1px solid #ddd;border-radius:8px;font-size:14px">
+                                <option value="present" ${status === 'present' ? 'selected' : ''}>Present</option>
+                                <option value="absent" ${status === 'absent' ? 'selected' : ''}>Absent</option>
+                                <option value="late" ${status === 'late' ? 'selected' : ''}>Late</option>
+                                <option value="sick" ${status === 'sick' ? 'selected' : ''}>Sick Leave</option>
+                                <option value="annual" ${status === 'annual' ? 'selected' : ''}>Annual Leave</option>
+                                <option value="permission" ${status === 'permission' ? 'selected' : ''}>Permission</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label style="font-size:12px;color:#6c757d;display:block;margin-bottom:4px">Check In</label>
+                            <input type="time" id="editAttCheckIn" value="${checkIn}" style="width:100%;padding:8px 12px;border:1px solid #ddd;border-radius:8px;font-size:14px" />
+                        </div>
+                        <div>
+                            <label style="font-size:12px;color:#6c757d;display:block;margin-bottom:4px">Check Out</label>
+                            <input type="time" id="editAttCheckOut" value="${checkOut}" style="width:100%;padding:8px 12px;border:1px solid #ddd;border-radius:8px;font-size:14px" />
+                        </div>
+                    </div>
+                    <div>
+                        <label style="font-size:12px;color:#6c757d;display:block;margin-bottom:4px">Notes</label>
+                        <textarea id="editAttNotes" rows="2" style="width:100%;padding:8px 12px;border:1px solid #ddd;border-radius:8px;font-size:14px;resize:vertical">${notes}</textarea>
+                    </div>
+                </div>
+                <div style="padding:16px 24px;background:#f8f9fa;border-top:1px solid #e9ecef;display:flex;gap:10px;justify-content:flex-end">
+                    <button onclick="submitEditAttendance('${recordId}', this)" style="background:linear-gradient(135deg,#28a745,#20c997);color:#fff;border:none;padding:10px 20px;border-radius:8px;font-size:14px;font-weight:500;cursor:pointer">Save Changes</button>
+                    <button onclick="this.closest('div[style*=position]').remove()" style="background:#6c757d;color:#fff;border:none;padding:10px 20px;border-radius:8px;font-size:14px;font-weight:500;cursor:pointer">Cancel</button>
+                </div>
+            </div>
+        `;
+        modal.addEventListener('click', function(e) { if (e.target === modal) modal.remove(); });
+        window.document.body.appendChild(modal);
+
+    } catch (error) {
+        console.error('Error loading attendance for edit:', error);
+        customAlert(`Error loading attendance record: ${error.message}`, "Error", "error");
+    }
+}
+
+async function submitEditAttendance(recordId, btnElement) {
+    const updateData = {
+        date: document.getElementById('editAttDate').value,
+        status: document.getElementById('editAttStatus').value,
+        check_in: document.getElementById('editAttCheckIn').value || null,
+        check_out: document.getElementById('editAttCheckOut').value || null,
+        checkIn: document.getElementById('editAttCheckIn').value || null,
+        checkOut: document.getElementById('editAttCheckOut').value || null,
+        notes: document.getElementById('editAttNotes').value || null
+    };
+
+    let token = sessionStorage.getItem('kashtec_token') || '';
+    if (!token && typeof sessionManager !== 'undefined' && sessionManager.getAuthToken) {
+        token = sessionManager.getAuthToken();
+    }
+    if (!token) token = localStorage.getItem('authToken') || '';
+
+    try {
+        const baseUrl = window.location.origin;
+        const response = await fetch(`${baseUrl}/api/attendance/${recordId}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                ...(token && { 'Authorization': `Bearer ${token}` })
+            },
+            body: JSON.stringify(updateData)
+        });
+
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        const data = await response.json();
+
+        if (data.error) throw new Error(data.error);
+
+        const modal = btnElement.closest('div[style*="position"]');
+        if (modal) modal.remove();
+
+        customAlert('Attendance record updated successfully!', "Success", "success");
+        loadAttendanceRecords();
+
+    } catch (error) {
+        console.error('Error updating attendance:', error);
+        customAlert(`Error updating attendance: ${error.message}`, "Error", "error");
+    }
 }
 
 
 
-function deleteAttendance(recordId) {
+async function deleteAttendance(recordId) {
 
-    if (confirm('Are you sure you want to delete this attendance record? This action cannot be undone.')) {
+    if (!confirm('Are you sure you want to delete this attendance record? This action cannot be undone.')) return;
 
-        // TODO: Implement actual API call to delete attendance record
+    let token = sessionStorage.getItem('kashtec_token') || '';
+    if (!token && typeof sessionManager !== 'undefined' && sessionManager.getAuthToken) {
+        token = sessionManager.getAuthToken();
+    }
+    if (!token) token = localStorage.getItem('authToken') || '';
 
-        console.log('Deleting attendance record with ID:', recordId);
+    try {
+        const baseUrl = window.location.origin;
+        const response = await fetch(`${baseUrl}/api/attendance/${recordId}`, {
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json',
+                ...(token && { 'Authorization': `Bearer ${token}` })
+            }
+        });
 
-        customAlert(`Attendance record ${recordId} has been deleted.\n\nThe record has been removed from the system.`, "Record Deleted", "success");
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        const data = await response.json();
 
-        
+        if (data.error) throw new Error(data.error);
 
-        // Refresh the attendance records
+        customAlert('Attendance record deleted successfully!', "Record Deleted", "success");
 
-        setTimeout(() => {
+        // Remove from DOM with animation
+        const row = window.document.querySelector(`tr.attendance-row button[onclick*="'${recordId}'"]`);
+        if (row) {
+            const tr = row.closest('tr');
+            if (tr) {
+                tr.style.transition = 'opacity 0.3s, transform 0.3s';
+                tr.style.opacity = '0';
+                tr.style.transform = 'scale(0.95)';
+                setTimeout(() => tr.remove(), 300);
+            }
+        }
 
-            loadAttendanceRecords();
+        // Reload attendance records from database
+        setTimeout(() => loadAttendanceRecords(), 500);
 
-        }, 1000);
-
+    } catch (error) {
+        console.error('Error deleting attendance:', error);
+        customAlert(`Error deleting attendance record: ${error.message}`, "Error", "error");
     }
 
 }
