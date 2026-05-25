@@ -39190,6 +39190,26 @@ function attendance(){
 
     loadAttendanceRecords();
 
+    
+
+    // Pre-fill today's date in the attendance form
+
+    setTimeout(() => {
+
+        const dateInput = document.getElementById('attDate');
+
+        if (dateInput) {
+
+            const today = new Date().toISOString().split('T')[0];
+
+            dateInput.value = today;
+
+            console.log('📅 Pre-filled attendance form with today\'s date:', today);
+
+        }
+
+    }, 100);
+
 }
 
 
@@ -40020,25 +40040,35 @@ function saveAssignment() {
 
 function saveAttendance() {
 
+    const employeeSelect = document.getElementById('attEmployee');
+
+    const employeeOption = employeeSelect.options[employeeSelect.selectedIndex];
+
+    const employeeFullText = employeeOption.text;
+
+    
+
+    // Extract employee name (remove position/department if included)
+
+    const employeeName = employeeFullText.split(' - ')[0].trim();
+
+    
+
     const attendance = {
 
-        employee_id: document.getElementById('attEmployee').value,
+        employeeId: employeeSelect.value,
 
-        employee_name: document.getElementById('attEmployee').options[document.getElementById('attEmployee').selectedIndex].text,
+        employeeName: employeeName,
 
-        attendance_date: document.getElementById('attDate').value,
+        date: document.getElementById('attDate').value,
 
-        check_in_time: document.getElementById('attCheckIn').value,
+        checkIn: document.getElementById('attCheckIn').value,
 
-        check_out_time: document.getElementById('attCheckOut').value,
+        checkOut: document.getElementById('attCheckOut').value || null,
 
-        attendance_status: document.getElementById('attStatus').value,
+        status: document.getElementById('attStatus').value,
 
-        notes: document.getElementById('attNotes').value,
-
-        marked_by: 'HR Manager',
-
-        marked_by_role: 'HR Manager'
+        notes: document.getElementById('attNotes').value
 
     };
 
@@ -40046,9 +40076,21 @@ function saveAttendance() {
 
     // Validate required fields
 
-    if (!attendance.attendance_date || !attendance.employee_id || !attendance.attendance_status) {
+    if (!attendance.date || !attendance.employeeId || !attendance.status) {
 
         customAlert('Please fill in all required fields:\n\n· Date\n· Employee\n· Status', "Validation Error", "error");
+
+        return false;
+
+    }
+
+    
+
+    // Validate check-in time if status is present or late
+
+    if ((attendance.status === 'present' || attendance.status === 'late') && !attendance.checkIn) {
+
+        customAlert('Check-in time is required for Present or Late status', "Validation Error", "error");
 
         return false;
 
@@ -40098,7 +40140,7 @@ function saveAttendance() {
 
         
 
-        if (data.error) {
+        if (!data.success && data.error) {
 
             throw new Error(data.error);
 
@@ -40114,9 +40156,15 @@ function saveAttendance() {
 
         
 
-        // Update today's summary
+        // Reload attendance records and summary
 
-        updateTodayAttendanceSummary();
+        setTimeout(() => {
+
+            loadAttendanceRecords();
+
+            loadTodayAttendanceSummary();
+
+        }, 500);
 
         
 
@@ -40184,93 +40232,39 @@ async function loadAttendanceRecords() {
 
         const baseUrl = window.location.origin;
 
-        let response;
+        const response = await fetch(`${baseUrl}/api/attendance`, {
+
+            method: 'GET',
+
+            headers: {
+
+                'Content-Type': 'application/json',
+
+                'Authorization': `Bearer ${sessionManager.getAuthToken()}`
+
+            }
+
+        });
 
         
 
-        // Try to get attendance records from API
+        if (!response.ok) {
 
-        try {
-
-            response = await fetch(`${baseUrl}/api/attendance`, {
-
-                method: 'GET',
-
-                headers: {
-
-                    'Content-Type': 'application/json',
-
-                    'Authorization': `Bearer ${sessionManager.getAuthToken()}`
-
-                }
-
-            });
-
-            
-
-            if (!response.ok) {
-
-                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-
-            }
-
-        } catch (primaryError) {
-
-            console.warn('⚠️ Primary attendance records endpoint failed, trying fallback:', primaryError.message);
-
-            // Try fallback endpoint with date filter for recent records
-
-            const today = new Date().toISOString().split('T')[0];
-
-            try {
-
-                response = await fetch(`${baseUrl}/api/attendance?dateFrom=${today}`, {
-
-                    method: 'GET',
-
-                    headers: {
-
-                        'Content-Type': 'application/json',
-
-                        'Authorization': `Bearer ${sessionManager.getAuthToken()}`
-
-                    }
-
-                });
-
-                
-
-                if (!response.ok) {
-
-                    throw new Error(`Fallback also failed: HTTP ${response.status}: ${response.statusText}`);
-
-                }
-
-            } catch (fallbackError) {
-
-                console.error('❌ All attendance records endpoints failed:', fallbackError.message);
-
-                // Load sample data for demonstration
-
-                loadSampleAttendanceRecords();
-
-                return;
-
-            }
+            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
 
         }
 
         
 
-        const attendanceRecords = await response.json();
+        const attendanceData = await response.json();
 
-        console.log('📊 Attendance records data:', attendanceRecords);
+        console.log('📊 Attendance records data:', attendanceData);
 
         
 
         // Extract the actual attendance array from the response
 
-        const records = attendanceRecords.attendance || attendanceRecords.data || attendanceRecords;
+        const records = attendanceData.attendance || attendanceData.data || attendanceData;
 
         
 
@@ -40296,9 +40290,11 @@ async function loadAttendanceRecords() {
 
         console.error('❌ Error loading attendance records:', error);
 
-        // Load sample data on error
+        console.warn('⚠️ No attendance records available or error fetching data');
 
-        loadSampleAttendanceRecords();
+        // Display empty state instead of sample data
+
+        displayAttendanceRecords([]);
 
     }
 
