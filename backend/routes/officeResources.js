@@ -79,7 +79,7 @@ router.post('/', async (req, res) => {
                     purchase_date DATE,
                     purchase_cost DECIMAL(12,2),
                     current_value DECIMAL(12,2),
-                    condition ENUM('New', 'Good', 'Fair', 'Poor', 'Damaged') DEFAULT 'Good',
+                    \`condition\` ENUM('New', 'Good', 'Fair', 'Poor', 'Damaged') DEFAULT 'Good',
                     location VARCHAR(255),
                     department VARCHAR(100),
                     status ENUM('Available', 'Assigned', 'In Maintenance', 'Retired', 'Lost') DEFAULT 'Available',
@@ -108,7 +108,7 @@ router.post('/', async (req, res) => {
             INSERT INTO office_resources (
                 resource_code, resource_name, resource_type, description,
                 serial_number, purchase_date, purchase_cost, current_value,
-                condition, location, department, created_by
+                \`condition\`, location, department, created_by
             ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         `, [
             resource_code,
@@ -169,7 +169,7 @@ router.put('/:id', async (req, res) => {
             UPDATE office_resources SET
                 resource_code = ?, resource_name = ?, resource_type = ?,
                 description = ?, serial_number = ?, purchase_date = ?,
-                purchase_cost = ?, current_value = ?, condition = ?,
+                purchase_cost = ?, current_value = ?, \`condition\` = ?,
                 location = ?, department = ?, status = ?,
                 assigned_to = ?, assigned_date = ?, expected_return_date = ?,
                 actual_return_date = ?, return_condition = ?,
@@ -290,7 +290,7 @@ router.put('/:id/complete-maintenance', async (req, res) => {
         await db.execute(`
             UPDATE office_resources SET
                 status = 'Available',
-                condition = ?,
+                \`condition\` = ?,
                 maintenance_notes = NULL,
                 notes = ?
             WHERE id = ?

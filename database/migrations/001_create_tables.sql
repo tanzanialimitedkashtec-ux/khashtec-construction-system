@@ -2419,7 +2419,7 @@ CREATE TABLE IF NOT EXISTS office_resources (
   purchase_date DATE,
   purchase_cost DECIMAL(12,2),
   current_value DECIMAL(12,2),
-  condition ENUM('New', 'Good', 'Fair', 'Poor', 'Damaged') DEFAULT 'Good',
+  `condition` ENUM('New', 'Good', 'Fair', 'Poor', 'Damaged') DEFAULT 'Good',
   location VARCHAR(255),
   department VARCHAR(100),
   status ENUM('Available', 'Assigned', 'In Maintenance', 'Retired', 'Lost') DEFAULT 'Available',
