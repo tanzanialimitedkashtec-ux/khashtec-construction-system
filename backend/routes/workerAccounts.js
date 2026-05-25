@@ -249,6 +249,49 @@ router.get('/assignments', async (req, res) => {
     }
 });
 
+// Create worker assignment
+router.post('/assignments', async (req, res) => {
+    try {
+        const {
+            employee_id, employee_name, project_id, project_name,
+            role_in_project, start_date, end_date,
+            assignment_notes, assigned_by, assigned_by_role
+        } = req.body;
+
+        if (!employee_id || !project_id || !role_in_project || !start_date) {
+            return res.status(400).json({
+                success: false,
+                message: 'Missing required fields: employee_id, project_id, role_in_project, start_date'
+            });
+        }
+
+        const [result] = await db.execute(`
+            INSERT INTO worker_assignments (
+                employee_id, employee_name, project_id, project_name,
+                role_in_project, start_date, end_date,
+                assignment_notes, assigned_by, assigned_by_role, created_at
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())
+        `, [
+            employee_id, employee_name, project_id, project_name,
+            role_in_project, start_date, end_date || null,
+            assignment_notes || null, assigned_by || 'System', assigned_by_role || 'Manager'
+        ]);
+
+        res.status(201).json({
+            success: true,
+            message: 'Worker assignment created successfully',
+            assignmentId: result.insertId
+        });
+    } catch (error) {
+        console.error('Error creating worker assignment:', error.message);
+        res.status(500).json({
+            success: false,
+            message: 'Failed to create worker assignment',
+            error: error.message
+        });
+    }
+});
+
 // Get worker account by ID
 router.get('/:id', async (req, res) => {
     try {
