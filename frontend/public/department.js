@@ -68019,56 +68019,56 @@ async function viewDoc(docId) {
 
             
 
+            const statusColor = (doc.status || 'Active').toLowerCase() === 'active' ? '#28a745' :
+                               (doc.status || '').toLowerCase() === 'pending' ? '#ffc107' : '#6c757d';
+
             showContent(`
 
-                <div class="card">
+                <div class="card" style="border-radius:12px;overflow:hidden;box-shadow:0 4px 20px rgba(0,0,0,0.1)">
 
-                    <div class="document-viewer-header">
-
-                        <h3>${doc.title}</h3>
-
-                        <div class="document-meta">
-
-                            <span class="meta-item">Type: ${doc.type}</span>
-
-                            <span class="meta-item">Department: ${doc.department}</span>
-
-                            <span class="meta-item">Status: ${doc.status || 'Active'}</span>
-
-                            <span class="meta-item">Last Updated: ${new Date(doc.updatedAt || doc.uploadDate).toLocaleDateString()}</span>
-
+                    <div style="background:linear-gradient(135deg,#0b3d91 0%,#1e5bb8 100%);color:#fff;padding:24px;display:flex;align-items:center;gap:16px">
+                        <div style="width:48px;height:48px;background:rgba(255,255,255,0.2);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:24px">ðŸ"„</div>
+                        <div>
+                            <h3 style="margin:0;font-size:22px;font-weight:700">${doc.title}</h3>
+                            <span style="font-size:13px;opacity:0.8">Document ID: ${docId}</span>
                         </div>
-
                     </div>
 
-                    
-
-                    <div class="document-viewer-content">
-
-                        ${doc.description ? `<div class="document-description"><h4>Description</h4><p>${doc.description}</p></div>` : ''}
-
-                        
-
-                        <div class="document-content">
-
-                            <h4>Content</h4>
-
-                            <div class="content-area">${doc.content ? doc.content.replace(/\n/g, '<br>') : 'No content available'}</div>
-
+                    <div style="padding:24px">
+                        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px;margin-bottom:24px">
+                            <div style="background:#f8f9fa;border-radius:10px;padding:14px">
+                                <span style="font-size:11px;color:#6c757d;text-transform:uppercase;letter-spacing:0.5px;display:block;margin-bottom:4px">Type</span>
+                                <span style="font-size:15px;color:#1a1a2e;font-weight:600">${doc.type || 'PDF'}</span>
+                            </div>
+                            <div style="background:#f8f9fa;border-radius:10px;padding:14px">
+                                <span style="font-size:11px;color:#6c757d;text-transform:uppercase;letter-spacing:0.5px;display:block;margin-bottom:4px">Department</span>
+                                <span style="font-size:15px;color:#1a1a2e;font-weight:600">${doc.department || 'Unknown'}</span>
+                            </div>
+                            <div style="background:#f8f9fa;border-radius:10px;padding:14px">
+                                <span style="font-size:11px;color:#6c757d;text-transform:uppercase;letter-spacing:0.5px;display:block;margin-bottom:4px">Status</span>
+                                <span style="display:inline-block;padding:3px 12px;border-radius:12px;font-size:13px;font-weight:600;background:${statusColor}22;color:${statusColor}">${doc.status || 'Active'}</span>
+                            </div>
+                            <div style="background:#f8f9fa;border-radius:10px;padding:14px">
+                                <span style="font-size:11px;color:#6c757d;text-transform:uppercase;letter-spacing:0.5px;display:block;margin-bottom:4px">Last Updated</span>
+                                <span style="font-size:15px;color:#1a1a2e;font-weight:600">${new Date(doc.updatedAt || doc.uploadDate).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })}</span>
+                            </div>
                         </div>
 
+                        ${doc.description ? `<div style="background:#f0f4ff;border-left:4px solid #0b3d91;border-radius:0 10px 10px 0;padding:16px 20px;margin-bottom:20px">
+                            <h4 style="margin:0 0 8px;font-size:13px;color:#6c757d;text-transform:uppercase;letter-spacing:0.5px">Description</h4>
+                            <p style="margin:0;font-size:15px;color:#333;line-height:1.6">${doc.description}</p>
+                        </div>` : ''}
+
+                        <div style="background:#fafbfc;border-radius:10px;padding:16px 20px;margin-bottom:20px;border:1px solid #e9ecef">
+                            <h4 style="margin:0 0 10px;font-size:13px;color:#6c757d;text-transform:uppercase;letter-spacing:0.5px">Content</h4>
+                            <div style="font-size:14px;color:#333;line-height:1.7">${doc.content ? doc.content.replace(/\\n/g, '<br>') : '<span style="color:#999;font-style:italic">No content available</span>'}</div>
+                        </div>
                     </div>
 
-                    
-
-                    <div class="document-viewer-actions">
-
-                        <button class="btn-primary" onclick="editDoc('${docId}')">Edit Document</button>
-
-                        <button class="btn-secondary" onclick="downloadDoc('${docId}')">Download</button>
-
-                        <button class="btn-secondary" onclick="editDocuments()">Back to List</button>
-
+                    <div style="padding:16px 24px;background:#f8f9fa;border-top:1px solid #e9ecef;display:flex;gap:10px;flex-wrap:wrap">
+                        <button class="btn-primary" onclick="editDoc('${docId}')" style="border-radius:8px;padding:10px 20px;font-weight:500">âœï¸ Edit Document</button>
+                        <button class="btn-secondary" onclick="downloadDoc('${docId}')" style="border-radius:8px;padding:10px 20px;font-weight:500;background:linear-gradient(135deg,#28a745,#20c997);color:#fff;border:none;cursor:pointer">ðŸ"¥ Download PDF</button>
+                        <button class="btn-secondary" onclick="editDocuments()" style="border-radius:8px;padding:10px 20px;font-weight:500">â† Back to List</button>
                     </div>
 
                 </div>
@@ -68123,56 +68123,56 @@ function viewDocFallback(docId) {
 
     
 
+    const statusColor = (doc.status || 'Active').toLowerCase() === 'active' ? '#28a745' :
+                       (doc.status || '').toLowerCase() === 'pending' ? '#ffc107' : '#6c757d';
+
     showContent(`
 
-        <div class="card">
+        <div class="card" style="border-radius:12px;overflow:hidden;box-shadow:0 4px 20px rgba(0,0,0,0.1)">
 
-            <div class="document-viewer-header">
-
-                <h3>${doc.title}</h3>
-
-                <div class="document-meta">
-
-                    <span class="meta-item">Type: ${doc.type}</span>
-
-                    <span class="meta-item">Department: ${doc.department}</span>
-
-                    <span class="meta-item">Status: ${doc.status || 'Active'}</span>
-
-                    <span class="meta-item">Last Updated: ${new Date(doc.updatedAt || doc.uploadDate).toLocaleDateString()}</span>
-
+            <div style="background:linear-gradient(135deg,#0b3d91 0%,#1e5bb8 100%);color:#fff;padding:24px;display:flex;align-items:center;gap:16px">
+                <div style="width:48px;height:48px;background:rgba(255,255,255,0.2);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:24px">ðŸ"„</div>
+                <div>
+                    <h3 style="margin:0;font-size:22px;font-weight:700">${doc.title}</h3>
+                    <span style="font-size:13px;opacity:0.8">Document ID: ${docId}</span>
                 </div>
-
             </div>
 
-            
-
-            <div class="document-viewer-content">
-
-                ${doc.description ? `<div class="document-description"><h4>Description</h4><p>${doc.description}</p></div>` : ''}
-
-                
-
-                <div class="document-content">
-
-                    <h4>Content</h4>
-
-                    <div class="content-area">${doc.content ? doc.content.replace(/\n/g, '<br>') : 'No content available'}</div>
-
+            <div style="padding:24px">
+                <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px;margin-bottom:24px">
+                    <div style="background:#f8f9fa;border-radius:10px;padding:14px">
+                        <span style="font-size:11px;color:#6c757d;text-transform:uppercase;letter-spacing:0.5px;display:block;margin-bottom:4px">Type</span>
+                        <span style="font-size:15px;color:#1a1a2e;font-weight:600">${doc.type}</span>
+                    </div>
+                    <div style="background:#f8f9fa;border-radius:10px;padding:14px">
+                        <span style="font-size:11px;color:#6c757d;text-transform:uppercase;letter-spacing:0.5px;display:block;margin-bottom:4px">Department</span>
+                        <span style="font-size:15px;color:#1a1a2e;font-weight:600">${doc.department}</span>
+                    </div>
+                    <div style="background:#f8f9fa;border-radius:10px;padding:14px">
+                        <span style="font-size:11px;color:#6c757d;text-transform:uppercase;letter-spacing:0.5px;display:block;margin-bottom:4px">Status</span>
+                        <span style="display:inline-block;padding:3px 12px;border-radius:12px;font-size:13px;font-weight:600;background:${statusColor}22;color:${statusColor}">${doc.status || 'Active'}</span>
+                    </div>
+                    <div style="background:#f8f9fa;border-radius:10px;padding:14px">
+                        <span style="font-size:11px;color:#6c757d;text-transform:uppercase;letter-spacing:0.5px;display:block;margin-bottom:4px">Last Updated</span>
+                        <span style="font-size:15px;color:#1a1a2e;font-weight:600">${new Date(doc.updatedAt || doc.uploadDate).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })}</span>
+                    </div>
                 </div>
 
+                ${doc.description ? `<div style="background:#f0f4ff;border-left:4px solid #0b3d91;border-radius:0 10px 10px 0;padding:16px 20px;margin-bottom:20px">
+                    <h4 style="margin:0 0 8px;font-size:13px;color:#6c757d;text-transform:uppercase;letter-spacing:0.5px">Description</h4>
+                    <p style="margin:0;font-size:15px;color:#333;line-height:1.6">${doc.description}</p>
+                </div>` : ''}
+
+                <div style="background:#fafbfc;border-radius:10px;padding:16px 20px;margin-bottom:20px;border:1px solid #e9ecef">
+                    <h4 style="margin:0 0 10px;font-size:13px;color:#6c757d;text-transform:uppercase;letter-spacing:0.5px">Content</h4>
+                    <div style="font-size:14px;color:#333;line-height:1.7">${doc.content ? doc.content.replace(/\n/g, '<br>') : '<span style="color:#999;font-style:italic">No content available</span>'}</div>
+                </div>
             </div>
 
-            
-
-            <div class="document-viewer-actions">
-
-                <button class="btn-primary" onclick="editDoc('${docId}')">Edit Document</button>
-
-                <button class="btn-secondary" onclick="downloadDoc('${docId}')">Download</button>
-
-                <button class="btn-secondary" onclick="editDocuments()">Back to List</button>
-
+            <div style="padding:16px 24px;background:#f8f9fa;border-top:1px solid #e9ecef;display:flex;gap:10px;flex-wrap:wrap">
+                <button class="btn-primary" onclick="editDoc('${docId}')" style="border-radius:8px;padding:10px 20px;font-weight:500">âœï¸ Edit Document</button>
+                <button class="btn-secondary" onclick="downloadDoc('${docId}')" style="border-radius:8px;padding:10px 20px;font-weight:500;background:linear-gradient(135deg,#28a745,#20c997);color:#fff;border:none;cursor:pointer">ðŸ"¥ Download PDF</button>
+                <button class="btn-secondary" onclick="editDocuments()" style="border-radius:8px;padding:10px 20px;font-weight:500">â† Back to List</button>
             </div>
 
         </div>
@@ -68205,13 +68205,15 @@ async function downloadDoc(docId) {
 
         const blob = await KashTecAPI.downloadDocument(docId);
 
-        const url = window.URL.createObjectURL(blob);
+        const pdfBlob = new Blob([blob], { type: 'application/pdf' });
+
+        const url = window.URL.createObjectURL(pdfBlob);
 
         const a = document.createElement('a');
 
         a.href = url;
 
-        a.download = `document_${docId}`;
+        a.download = `document_${docId}.pdf`;
 
         document.body.appendChild(a);
 
@@ -68223,7 +68225,7 @@ async function downloadDoc(docId) {
 
         
 
-        customAlert('Document downloaded successfully!', 'Success', 'success');
+        customAlert('Document downloaded successfully as PDF!', 'Success', 'success');
 
     } catch (error) {
 
