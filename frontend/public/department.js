@@ -39321,6 +39321,7 @@ function systemAuditDashboard() {
                     <button class="tab-btn" onclick="showAuditSection('financial')">ðŸ’° Financial</button>
                     <button class="tab-btn" onclick="showAuditSection('compliance')">ðŸ“‹ Compliance</button>
                     <button class="tab-btn" onclick="showAuditSection('system')">âš™ï¸ System</button>
+                    <button class="tab-btn" onclick="showAuditSection('loginaudit')">🔐 Login Audit</button>
                 </div>
 
                 <!-- Audit Content Sections -->
@@ -39542,6 +39543,73 @@ function systemAuditDashboard() {
                         </div>
                     </div>
                 </div>
+
+                
+                    <!-- Login Audit Section -->
+                    <div id="loginaudit-section" class="audit-section hidden">
+                        <div class="audit-content">
+                            <h4>🔐 Login Audit Trail</h4>
+                            <p>Track who logs in, when, and from where. Includes successful and failed login attempts.</p>
+                            
+                            <div class="audit-stats-grid">
+                                <div class="stat-item">
+                                    <span class="stat-label">Successful Logins:</span>
+                                    <span id="successfulLoginsCount" class="stat-value success">Loading...</span>
+                                </div>
+                                <div class="stat-item">
+                                    <span class="stat-label">Failed Logins:</span>
+                                    <span id="failedLoginsCount" class="stat-value danger">Loading...</span>
+                                </div>
+                                <div class="stat-item">
+                                    <span class="stat-label">Logouts:</span>
+                                    <span id="logoutsCount" class="stat-value">Loading...</span>
+                                </div>
+                                <div class="stat-item">
+                                    <span class="stat-label">Unique Users:</span>
+                                    <span id="uniqueUsersCount" class="stat-value">Loading...</span>
+                                </div>
+                            </div>
+
+                            <div style="margin: 12px 0; display: flex; gap: 10px; flex-wrap: wrap; align-items: center;">
+                                <label><strong>Period:</strong>
+                                    <select id="loginAuditDays" onchange="loadLoginAuditLogs()" style="padding:4px 8px; border-radius:4px; border:1px solid #ccc;">
+                                        <option value="7">Last 7 days</option>
+                                        <option value="30" selected>Last 30 days</option>
+                                        <option value="90">Last 90 days</option>
+                                    </select>
+                                </label>
+                                <label><strong>Status:</strong>
+                                    <select id="loginAuditStatus" onchange="loadLoginAuditLogs()" style="padding:4px 8px; border-radius:4px; border:1px solid #ccc;">
+                                        <option value="">All</option>
+                                        <option value="success">Success</option>
+                                        <option value="failed">Failed</option>
+                                    </select>
+                                </label>
+                                <button class="action-btn primary" onclick="loadLoginAuditLogs()" style="padding:6px 14px; border-radius:4px; cursor:pointer;">🔄 Refresh</button>
+                            </div>
+
+                            <div class="audit-table-container">
+                                <table class="audit-table">
+                                    <thead>
+                                        <tr>
+                                            <th>#</th>
+                                            <th>User</th>
+                                            <th>Email</th>
+                                            <th>Role</th>
+                                            <th>Department</th>
+                                            <th>Action</th>
+                                            <th>Status</th>
+                                            <th>IP Address</th>
+                                            <th>Date & Time</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="loginAuditTableBody">
+                                        <tr><td colspan="9" class="loading-row">Loading login audit data...</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
 
                 <!-- Audit Actions -->
                 <div class="audit-actions">
@@ -39850,6 +39918,9 @@ function showAuditSection(sectionName) {
     document.querySelectorAll('.audit-tabs .tab-btn').forEach(t => t.classList.remove('active'));
     document.getElementById(sectionName + '-section')?.classList.remove('hidden');
     event.target.classList.add('active');
+    if (sectionName === 'loginaudit') {
+        loadLoginAuditLogs();
+    }
 }
 
 // Refresh audit data
@@ -39871,6 +39942,73 @@ function exportAuditData() {
 // Schedule audit
 function scheduleAudit() {
     customAlert('Configure automated audit schedule...', 'Schedule', 'info');
+}
+
+// ===== LOGIN AUDIT LOG FUNCTIONS =====
+async function loadLoginAuditLogs() {
+    try {
+        const daysEl = document.getElementById('loginAuditDays');
+        const statusEl = document.getElementById('loginAuditStatus');
+        const days = daysEl ? daysEl.value : 30;
+        const status = statusEl ? statusEl.value : '';
+
+        let url = '/audit/login-logs?days=' + days;
+        if (status) url += '&status=' + status;
+
+        console.log('[LoginAudit] Loading login audit logs:', url);
+        const response = await KashTecAPI.get(url);
+        console.log('[LoginAudit] Response:', response);
+
+        if (response && response.data) {
+            updateLoginAuditStats(response.data.stats);
+            updateLoginAuditTable(response.data.logs);
+        } else {
+            updateLoginAuditTable([]);
+        }
+    } catch (error) {
+        console.error('[LoginAudit] Error loading login audit logs:', error);
+        const tbody = document.getElementById('loginAuditTableBody');
+        if (tbody) {
+            tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;color:#999;">Unable to load login audit data.</td></tr>';
+        }
+    }
+}
+
+function updateLoginAuditStats(stats) {
+    if (!stats) return;
+    const setVal = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
+    setVal('successfulLoginsCount', stats.successful_logins || 0);
+    setVal('failedLoginsCount', stats.failed_logins || 0);
+    setVal('logoutsCount', stats.logouts || 0);
+    setVal('uniqueUsersCount', stats.unique_users || 0);
+}
+
+function updateLoginAuditTable(logs) {
+    const tbody = document.getElementById('loginAuditTableBody');
+    if (!tbody) return;
+
+    if (!logs || logs.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;color:#999;">No login audit records found for the selected period.</td></tr>';
+        return;
+    }
+
+    tbody.innerHTML = logs.map((log, idx) => {
+        const actionIcon = log.action === 'login' ? '🔓' : '🔒';
+        const statusClass = log.status === 'success' ? 'color:#2e7d32;font-weight:600;' : 'color:#c62828;font-weight:600;';
+        const statusIcon = log.status === 'success' ? '✅' : '❌';
+        const dateStr = log.created_at ? new Date(log.created_at).toLocaleString() : 'N/A';
+        return '<tr>' +
+            '<td>' + (idx + 1) + '</td>' +
+            '<td>' + (log.user_name || log.email || 'Unknown') + '</td>' +
+            '<td>' + (log.email || 'N/A') + '</td>' +
+            '<td>' + (log.role || 'N/A') + '</td>' +
+            '<td>' + (log.department_name || 'N/A') + '</td>' +
+            '<td>' + actionIcon + ' ' + (log.action || 'N/A') + '</td>' +
+            '<td style="' + statusClass + '">' + statusIcon + ' ' + (log.status || 'N/A') + '</td>' +
+            '<td>' + (log.ip_address || 'N/A') + '</td>' +
+            '<td>' + dateStr + '</td>' +
+            '</tr>';
+    }).join('');
 }
 
 /* ===== LANGUAGE PURCHASE FUNCTIONS ===== */

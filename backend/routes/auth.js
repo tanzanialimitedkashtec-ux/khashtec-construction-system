@@ -220,6 +220,21 @@ router.post('/login', async (req, res) => {
         
             if (authRows.length === 0) {
                 console.log('❌ No authentication record found for:', email);
+                // Record failed login attempt
+                try {
+                    await db.execute(`CREATE TABLE IF NOT EXISTS login_audit_logs (
+                        id INT AUTO_INCREMENT PRIMARY KEY, user_id INT NULL, email VARCHAR(255) NOT NULL,
+                        user_name VARCHAR(255) NULL, role VARCHAR(100) NULL, department_name VARCHAR(255) NULL,
+                        action VARCHAR(50) NOT NULL DEFAULT 'login', ip_address VARCHAR(45) NULL,
+                        user_agent TEXT NULL, status VARCHAR(50) NOT NULL DEFAULT 'success',
+                        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                        INDEX idx_email (email), INDEX idx_created_at (created_at), INDEX idx_action (action)
+                    )`);
+                    await db.execute(
+                        `INSERT INTO login_audit_logs (email, role, action, ip_address, user_agent, status) VALUES (?, ?, 'login', ?, ?, 'failed')`,
+                        [email, role || null, req.ip || req.connection?.remoteAddress || 'unknown', req.headers['user-agent'] || 'unknown']
+                    );
+                } catch (auditErr) { console.error('Login audit log error:', auditErr.message); }
                 return res.status(401).json({
                     error: 'Invalid credentials',
                     message: 'No account found with this email'
@@ -235,6 +250,15 @@ router.post('/login', async (req, res) => {
             
             if (!isValidPassword) {
                 console.log('❌ Password mismatch for:', email);
+                // Record failed login attempt
+                try {
+                    await db.execute(
+                        `INSERT INTO login_audit_logs (user_id, email, user_name, role, department_name, action, ip_address, user_agent, status)
+                         VALUES (?, ?, ?, ?, ?, 'login', ?, ?, 'failed')`,
+                        [authUser.id, authUser.email, authUser.manager_name || authUser.email, authUser.role, authUser.department_name || null,
+                         req.ip || req.connection?.remoteAddress || 'unknown', req.headers['user-agent'] || 'unknown']
+                    );
+                } catch (auditErr) { console.error('Login audit log error:', auditErr.message); }
                 return res.status(401).json({
                     error: 'Invalid credentials',
                     message: 'Incorrect password'
@@ -259,6 +283,43 @@ router.post('/login', async (req, res) => {
                 'UPDATE authentication SET last_login = NOW() WHERE email = ?',
                 [email]
             );
+            
+            // Record login in audit log
+            try {
+                await db.execute(`
+                    CREATE TABLE IF NOT EXISTS login_audit_logs (
+                        id INT AUTO_INCREMENT PRIMARY KEY,
+                        user_id INT NULL,
+                        email VARCHAR(255) NOT NULL,
+                        user_name VARCHAR(255) NULL,
+                        role VARCHAR(100) NULL,
+                        department_name VARCHAR(255) NULL,
+                        action VARCHAR(50) NOT NULL DEFAULT 'login',
+                        ip_address VARCHAR(45) NULL,
+                        user_agent TEXT NULL,
+                        status VARCHAR(50) NOT NULL DEFAULT 'success',
+                        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                        INDEX idx_email (email),
+                        INDEX idx_created_at (created_at),
+                        INDEX idx_action (action)
+                    )
+                `);
+                await db.execute(
+                    `INSERT INTO login_audit_logs (user_id, email, user_name, role, department_name, action, ip_address, user_agent, status)
+                     VALUES (?, ?, ?, ?, ?, 'login', ?, ?, 'success')`,
+                    [
+                        authUser.id,
+                        authUser.email,
+                        authUser.manager_name || authUser.email,
+                        authUser.role,
+                        authUser.department_name || null,
+                        req.ip || req.connection?.remoteAddress || 'unknown',
+                        req.headers['user-agent'] || 'unknown'
+                    ]
+                );
+            } catch (auditErr) {
+                console.error('Login audit log error (non-blocking):', auditErr.message);
+            }
             
             console.log('🎫 JWT token generated for:', email);
             
@@ -422,7 +483,24 @@ router.get('/verify', (req, res) => {
 });
 
 // Logout endpoint (client-side token removal)
-router.post('/logout', (req, res) => {
+router.post('/logout', async (req, res) => {
+    // Record logout in audit log
+    try {
+        const token = req.headers.authorization?.split(' ')[1];
+        if (token) {
+            const decoded = jwt.verify(token, process.env.JWT_SECRET || 'kashtec-secret-key-2024');
+            const db = require('../../database/config/database');
+            await db.execute(
+                `INSERT INTO login_audit_logs (user_id, email, user_name, role, department_name, action, ip_address, user_agent, status)
+                 VALUES (?, ?, ?, ?, ?, 'logout', ?, ?, 'success')`,
+                [decoded.id || null, decoded.email || 'unknown', decoded.manager_name || decoded.email || 'unknown',
+                 decoded.role || null, decoded.department_name || null,
+                 req.ip || req.connection?.remoteAddress || 'unknown', req.headers['user-agent'] || 'unknown']
+            );
+        }
+    } catch (auditErr) {
+        console.error('Logout audit log error (non-blocking):', auditErr.message);
+    }
     res.json({
         message: 'Logout successful'
     });
