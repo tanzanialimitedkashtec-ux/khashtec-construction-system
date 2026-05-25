@@ -4385,90 +4385,6 @@ router.get('/notifications', async (req, res) => {
             `);
             notifications = dbNotifications;
             console.log(`📊 Found ${notifications.length} notifications from database`);
-            
-            // If fewer than 5 records, add sample data for demonstration
-            if (notifications.length < 5) {
-                console.log(`⚠️ Only ${notifications.length} notifications found, adding sample data`);
-                const sampleNotifications = [
-                    {
-                        id: 'NOTIF-001',
-                        title: 'Monthly Safety Meeting Reminder',
-                        recipient_type: 'all',
-                        recipients: 'All Staff',
-                        message: 'Monthly safety meeting scheduled for tomorrow at 10 AM in the main conference room.',
-                        priority: 'important',
-                        status: 'sent',
-                        sent_date: '2026-01-20',
-                        sent_by: 'Admin Assistant',
-                        read_rate: 95,
-                        created_at: new Date().toISOString(),
-                        mock: true
-                    },
-                    {
-                        id: 'NOTIF-002',
-                        title: 'Project Deadline Update - Kigali Tower',
-                        recipient_type: 'department',
-                        recipients: 'Projects Department',
-                        message: 'Project deadline extended by 2 weeks due to weather conditions. New completion date: February 15, 2026.',
-                        priority: 'urgent',
-                        status: 'sent',
-                        sent_date: '2026-01-19',
-                        sent_by: 'Project Manager',
-                        read_rate: 100,
-                        created_at: new Date().toISOString(),
-                        mock: true
-                    },
-                    {
-                        id: 'NOTIF-003',
-                        title: 'HR Policy Changes - Remote Work',
-                        recipient_type: 'department',
-                        recipients: 'Human Resources',
-                        message: 'New remote work policy guidelines have been updated. Please review the attached document.',
-                        priority: 'important',
-                        status: 'sent',
-                        sent_date: '2026-01-18',
-                        sent_by: 'HR Manager',
-                        read_rate: 88,
-                        created_at: new Date().toISOString(),
-                        mock: true
-                    },
-                    {
-                        id: 'NOTIF-004',
-                        title: 'Financial Report Submission Reminder',
-                        recipient_type: 'role',
-                        recipients: 'Finance Managers',
-                        message: 'Quarterly financial reports are due by end of this week. Please ensure all submissions are complete.',
-                        priority: 'normal',
-                        status: 'sent',
-                        sent_date: '2026-01-17',
-                        sent_by: 'Finance Director',
-                        read_rate: 75,
-                        created_at: new Date().toISOString(),
-                        mock: true
-                    },
-                    {
-                        id: 'NOTIF-005',
-                        title: 'Office Maintenance Schedule',
-                        recipient_type: 'all',
-                        recipients: 'All Staff',
-                        message: 'Office maintenance scheduled for this weekend. Please remove personal items from workspaces.',
-                        priority: 'normal',
-                        status: 'sent',
-                        sent_date: '2026-01-16',
-                        sent_by: 'Admin Assistant',
-                        read_rate: 82,
-                        created_at: new Date().toISOString(),
-                        mock: true
-                    }
-                ];
-                
-                // Add sample data that doesn't conflict with real IDs
-                const additionalSampleData = sampleNotifications.filter(sample => 
-                    !notifications.some(real => real.id === sample.id)
-                );
-                notifications = [...notifications, ...additionalSampleData];
-                console.log(`📊 Total notifications after adding sample data: ${notifications.length}`);
-            }
         } catch (dbError) {
             console.error('❌ Database error, notifications table may not exist:', dbError);
             
@@ -4476,24 +4392,26 @@ router.get('/notifications', async (req, res) => {
             try {
                 await db.execute(`
                     CREATE TABLE IF NOT EXISTS notifications (
-                        id VARCHAR(50) PRIMARY KEY,
+                        id INT AUTO_INCREMENT PRIMARY KEY,
                         title VARCHAR(255) NOT NULL,
-                        recipient_type ENUM('department', 'role', 'all', 'individual') NOT NULL,
-                        recipients VARCHAR(255) NOT NULL,
                         message TEXT NOT NULL,
-                        priority ENUM('normal', 'important', 'urgent') DEFAULT 'normal',
-                        status ENUM('draft', 'scheduled', 'sent', 'failed') DEFAULT 'draft',
+                        type VARCHAR(50) DEFAULT 'info',
+                        priority VARCHAR(50) DEFAULT 'normal',
+                        recipient_type VARCHAR(50) DEFAULT 'all',
+                        recipients VARCHAR(255) DEFAULT 'All Staff',
+                        sent_by VARCHAR(255) DEFAULT 'System',
+                        status VARCHAR(50) DEFAULT 'draft',
                         sent_date DATE,
                         scheduled_date DATETIME,
-                        sent_by VARCHAR(255),
-                        read_rate INT DEFAULT 0,
+                        read_rate DECIMAL(5,2) DEFAULT 0,
+                        is_read BOOLEAN DEFAULT FALSE,
+                        user_id VARCHAR(50),
+                        category VARCHAR(50) DEFAULT 'system',
                         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
                     )
                 `);
                 console.log('✅ notifications table created successfully');
-                
-                // Return empty array since table is new
                 notifications = [];
             } catch (createError) {
                 console.error('❌ Failed to create notifications table:', createError);
@@ -4541,32 +4459,6 @@ router.post('/notifications', async (req, res) => {
             });
         }
         
-        // Generate unique notification ID
-        const notificationId = `NOTIF-${Date.now().toString().slice(-6)}`;
-        
-        // Ensure table exists
-        try {
-            await db.execute(`
-                CREATE TABLE IF NOT EXISTS notifications (
-                    id VARCHAR(50) PRIMARY KEY,
-                    title VARCHAR(255) NOT NULL,
-                    recipient_type ENUM('department', 'role', 'all', 'individual') NOT NULL,
-                    recipients VARCHAR(255) NOT NULL,
-                    message TEXT NOT NULL,
-                    priority ENUM('normal', 'important', 'urgent') DEFAULT 'normal',
-                    status ENUM('draft', 'scheduled', 'sent', 'failed') DEFAULT 'draft',
-                    sent_date DATE,
-                    scheduled_date DATETIME,
-                    sent_by VARCHAR(255),
-                    read_rate INT DEFAULT 0,
-                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-                )
-            `);
-        } catch (tableError) {
-            console.error('⚠️ Table creation error:', tableError.message);
-        }
-        
         // Determine status and dates
         let status = 'draft';
         let sentDate = null;
@@ -4580,32 +4472,32 @@ router.post('/notifications', async (req, res) => {
             scheduledDate = scheduleDateTime;
         }
         
-        // Insert notification
+        // Insert notification (auto-increment ID)
         const [result] = await db.execute(`
             INSERT INTO notifications (
-                id, title, recipient_type, recipients, message, priority, status,
-                sent_date, scheduled_date, sent_by, read_rate
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                title, message, type, priority, recipient_type, recipients,
+                status, sent_date, scheduled_date, sent_by, read_rate
+            ) VALUES (?, ?, 'info', ?, ?, ?, ?, ?, ?, ?, 0)
         `, [
-            notificationId,
             title,
-            recipientType,
-            recipients,
             message,
             priority,
+            recipientType,
+            recipients,
             status,
             sentDate,
             scheduledDate,
-            sentBy,
-            status === 'sent' ? 0 : 0 // Read rate starts at 0
+            sentBy
         ]);
         
-        console.log('✅ Notification created successfully:', notificationId);
+        console.log('✅ Notification created successfully, ID:', result.insertId);
         
         res.status(201).json({
+            success: true,
             message: 'Notification created successfully',
-            notificationId: notificationId,
+            notificationId: result.insertId,
             data: {
+                id: result.insertId,
                 title,
                 recipientType,
                 recipients,

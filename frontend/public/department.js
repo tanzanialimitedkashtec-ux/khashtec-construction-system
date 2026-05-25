@@ -59403,7 +59403,7 @@ function sendNotifications(){
 
                         <span class="stat-label">Today Sent:</span>
 
-                        <span class="stat-value">12</span>
+                        <span class="stat-value" id="notifStatTodaySent">0</span>
 
                     </div>
 
@@ -59411,7 +59411,7 @@ function sendNotifications(){
 
                         <span class="stat-label">This Week:</span>
 
-                        <span class="stat-value">68</span>
+                        <span class="stat-value" id="notifStatWeek">0</span>
 
                     </div>
 
@@ -59419,7 +59419,7 @@ function sendNotifications(){
 
                         <span class="stat-label">Pending:</span>
 
-                        <span class="stat-value">5</span>
+                        <span class="stat-value" id="notifStatPending">0</span>
 
                     </div>
 
@@ -59427,7 +59427,7 @@ function sendNotifications(){
 
                         <span class="stat-label">Read Rate:</span>
 
-                        <span class="stat-value">87%</span>
+                        <span class="stat-value" id="notifStatReadRate">0%</span>
 
                     </div>
 
@@ -59753,7 +59753,7 @@ function updateRecipients() {
 
 
 
-function sendNotification() {
+async function sendNotification() {
 
     const recipientType = document.getElementById('recipientType').value;
 
@@ -59766,6 +59766,8 @@ function sendNotification() {
     const priority = document.getElementById('notifPriority').value;
 
     const scheduleType = document.getElementById('scheduleType').value;
+
+    const scheduleDateTime = document.getElementById('scheduleDateTime') ? document.getElementById('scheduleDateTime').value : null;
 
     
 
@@ -59789,115 +59791,55 @@ function sendNotification() {
 
     
 
-    const notification = {
-
-        id: 'NOTIF-' + Date.now(),
-
-        recipientType: recipientType,
-
-        recipient: recipient,
+    const apiData = {
 
         title: title,
 
         message: message,
 
+        recipientType: recipientType,
+
+        recipients: recipientType === 'all' ? 'All Staff' : recipient,
+
         priority: priority,
 
         scheduleType: scheduleType,
 
-        sentBy: 'Admin Assistant',
+        scheduleDateTime: scheduleDateTime,
 
-        sentDate: new Date().toISOString(),
-
-        status: scheduleType === 'immediate' ? 'sent' : 'scheduled'
+        sentBy: 'Admin Assistant'
 
     };
 
     
 
-    // Save to API
+    try {
 
-    console.log('Notification data to be saved to API:', notification);
+        const baseUrl = window.location.origin;
 
-    
+        const response = await fetch(`${baseUrl}/api/work/notifications`, {
 
-    // Prepare data for API
+            method: 'POST',
 
-    const apiData = {
+            headers: {
 
-        title: notification.title,
+                'Content-Type': 'application/json',
 
-        message: notification.message,
+                'Accept': 'application/json',
 
-        type: notification.priority === 'urgent' ? 'error' : notification.priority === 'important' ? 'warning' : 'info',
+                'Authorization': `Bearer ${sessionManager.getAuthToken()}`
 
-        category: 'internal',
+            },
 
-        priority: notification.priority,
+            body: JSON.stringify(apiData)
 
-        recipientType: notification.recipientType,
+        });
 
-        recipients: notification.recipientType === 'all' ? 'All Staff' : notification.recipient,
+        
 
-        sentBy: notification.sentBy
+        const data = await response.json();
 
-    };
-
-    
-
-    // Choose API endpoint based on recipient type
-
-    let apiUrl = `${window.location.origin}/api/notifications`;
-
-    
-
-    if (notification.recipientType !== 'individual') {
-
-        // Use broadcast for department, role, and all staff notifications
-
-        apiUrl = `${window.location.origin}/api/notifications/broadcast`;
-
-    } else {
-
-        // For individual notifications, add userId (using recipient as userId for now)
-
-        apiData.userId = notification.recipient;
-
-    }
-
-    
-
-    // Send to API
-
-    fetch(apiUrl, {
-
-        method: 'POST',
-
-        headers: {
-
-            'Content-Type': 'application/json',
-
-            'Accept': 'application/json',
-
-            'Authorization': `Bearer ${sessionManager.getAuthToken()}`
-
-        },
-
-        body: JSON.stringify(apiData)
-
-    })
-
-    .then(response => {
-
-        console.log('ðŸ“¡ Notification API Response status:', response.status);
-
-        return response.json();
-
-    })
-
-    .then(data => {
-
-        console.log('ðŸ“Š Notification API Response data:', data);
+        console.log('Notification API Response:', data);
 
         
 
@@ -59909,13 +59851,13 @@ function sendNotification() {
 
         
 
-        const recipientText = notification.recipientType === 'all' ? 'All Staff' : notification.recipient;
+        const recipientText = recipientType === 'all' ? 'All Staff' : recipient;
 
-        const statusText = notification.scheduleType === 'immediate' ? 'sent immediately' : 'scheduled for later';
+        const statusText = scheduleType === 'immediate' ? 'sent immediately' : 'scheduled for later';
 
         
 
-        alert('Notification ' + statusText + '!\n\nTitle: ' + notification.title + '\nTo: ' + recipientText + '\nPriority: ' + notification.priority);
+        alert('Notification ' + statusText + '!\n\nTitle: ' + title + '\nTo: ' + recipientText + '\nPriority: ' + priority);
 
         
 
@@ -59937,21 +59879,19 @@ function sendNotification() {
 
         document.getElementById('scheduleGroup').style.display = 'none';
 
-    })
+        
 
-    .catch(error => {
+        // Refresh notifications list after successful save
 
-        console.error('âŒ Error sending notification:', error);
+        await loadNotifications();
+
+    } catch (error) {
+
+        console.error('Error sending notification:', error);
 
         alert('Failed to send notification: ' + error.message);
 
-    });
-
-    
-
-    // Refresh notifications list
-
-    loadNotifications();
+    }
 
 }
 
@@ -59977,7 +59917,7 @@ async function loadNotifications() {
 
         try {
 
-            response = await fetch(`${baseUrl}/api/notifications`, {
+            response = await fetch(`${baseUrl}/api/work/notifications`, {
 
                 method: 'GET',
 
@@ -60005,7 +59945,7 @@ async function loadNotifications() {
 
             // Load sample data for demonstration
 
-            loadSampleNotifications();
+            displayNotifications([]);
 
             return;
 
@@ -60049,7 +59989,7 @@ async function loadNotifications() {
 
         // Load sample data on error
 
-        loadSampleNotifications();
+        displayNotifications([]);
 
     }
 
@@ -60061,377 +60001,7 @@ async function loadNotifications() {
 
 function loadSampleNotifications() {
 
-    console.log('ðŸ“‹ Loading sample notifications...');
-
-    
-
-    const sampleNotifications = [
-
-        {
-
-            id: 'NOTIF-001',
-
-            title: 'Monthly Safety Meeting Reminder',
-
-            recipientType: 'all',
-
-            recipients: 'All Staff',
-
-            sentDate: '2026-01-20T09:00:00',
-
-            priority: 'important',
-
-            status: 'sent',
-
-            sentBy: 'Admin Assistant',
-
-            readRate: 95,
-
-            message: 'Reminder about the monthly safety meeting scheduled for tomorrow at 10 AM in the main conference room.'
-
-        },
-
-        {
-
-            id: 'NOTIF-002',
-
-            title: 'Project Deadline Update - Kigali Tower',
-
-            recipientType: 'department',
-
-            recipients: 'Projects Department',
-
-            sentDate: '2026-01-19T14:30:00',
-
-            priority: 'urgent',
-
-            status: 'sent',
-
-            sentBy: 'Project Manager',
-
-            readRate: 100,
-
-            message: 'Important update regarding the Kigali Tower project deadline extension to March 15th.'
-
-        },
-
-        {
-
-            id: 'NOTIF-003',
-
-            title: 'HR Policy Changes - Remote Work',
-
-            recipientType: 'department',
-
-            recipients: 'Human Resources',
-
-            sentDate: '2026-01-18T11:15:00',
-
-            priority: 'important',
-
-            status: 'sent',
-
-            sentBy: 'HR Manager',
-
-            readRate: 88,
-
-            message: 'New remote work policy guidelines effective from February 1st. Please review and acknowledge.'
-
-        },
-
-        {
-
-            id: 'NOTIF-004',
-
-            title: 'Financial Report Submission Reminder',
-
-            recipientType: 'role',
-
-            recipients: 'Finance Managers',
-
-            sentDate: '2026-01-17T16:45:00',
-
-            priority: 'normal',
-
-            status: 'sent',
-
-            sentBy: 'Finance Director',
-
-            readRate: 75,
-
-            message: 'Quarterly financial reports are due by end of this week. Please ensure timely submission.'
-
-        },
-
-        {
-
-            id: 'NOTIF-005',
-
-            title: 'Office Maintenance Schedule',
-
-            recipientType: 'all',
-
-            recipients: 'All Staff',
-
-            sentDate: '2026-01-16T08:30:00',
-
-            priority: 'normal',
-
-            status: 'sent',
-
-            sentBy: 'Admin Assistant',
-
-            readRate: 82,
-
-            message: 'Office maintenance scheduled for this weekend. Please clear your work areas by Friday evening.'
-
-        },
-
-        {
-
-            id: 'NOTIF-006',
-
-            title: 'Emergency Contact Information Update',
-
-            recipientType: 'all',
-
-            recipients: 'All Staff',
-
-            sentDate: '2026-01-15T13:20:00',
-
-            priority: 'urgent',
-
-            status: 'sent',
-
-            sentBy: 'HR Manager',
-
-            readRate: 100,
-
-            message: 'Please update your emergency contact information in the HR system by end of day tomorrow.'
-
-        },
-
-        {
-
-            id: 'NOTIF-007',
-
-            title: 'New Client Onboarding Process',
-
-            recipientType: 'department',
-
-            recipients: 'Management',
-
-            sentDate: '2026-01-14T10:00:00',
-
-            priority: 'important',
-
-            status: 'sent',
-
-            sentBy: 'Managing Director',
-
-            readRate: 90,
-
-            message: 'New streamlined client onboarding process implemented. Please review the updated procedures.'
-
-        },
-
-        {
-
-            id: 'NOTIF-008',
-
-            title: 'IT System Maintenance Notice',
-
-            recipientType: 'all',
-
-            recipients: 'All Staff',
-
-            sentDate: '2026-01-13T12:00:00',
-
-            priority: 'normal',
-
-            status: 'sent',
-
-            sentBy: 'IT Manager',
-
-            readRate: 78,
-
-            message: 'IT systems will undergo maintenance on Sunday from 2 AM to 6 AM. Please save your work.'
-
-        },
-
-        {
-
-            id: 'NOTIF-009',
-
-            title: 'Construction Safety Protocol Update',
-
-            recipientType: 'department',
-
-            recipients: 'Operations',
-
-            sentDate: '2026-01-12T15:30:00',
-
-            priority: 'urgent',
-
-            status: 'sent',
-
-            sentBy: 'HSE Manager',
-
-            readRate: 95,
-
-            message: 'Updated safety protocols for construction sites. Mandatory briefing tomorrow at 8 AM.'
-
-        },
-
-        {
-
-            id: 'NOTIF-010',
-
-            title: 'Budget Review Meeting',
-
-            recipientType: 'role',
-
-            recipients: 'Department Heads',
-
-            sentDate: '2026-01-11T09:45:00',
-
-            priority: 'important',
-
-            status: 'sent',
-
-            sentBy: 'Finance Manager',
-
-            readRate: 85,
-
-            message: 'Budget review meeting scheduled for next Monday. Please prepare your department reports.'
-
-        },
-
-        {
-
-            id: 'NOTIF-011',
-
-            title: 'Employee Training Schedule',
-
-            recipientType: 'department',
-
-            recipients: 'Human Resources',
-
-            sentDate: '2026-01-10T14:15:00',
-
-            priority: 'normal',
-
-            status: 'sent',
-
-            sentBy: 'HR Manager',
-
-            readRate: 92,
-
-            message: 'Q1 employee training schedule has been finalized. Please share with your teams.'
-
-        },
-
-        {
-
-            id: 'NOTIF-012',
-
-            title: 'Project Milestone Celebration',
-
-            recipientType: 'department',
-
-            recipients: 'Projects',
-
-            sentDate: '2026-01-09T11:30:00',
-
-            priority: 'normal',
-
-            status: 'sent',
-
-            sentBy: 'Project Manager',
-
-            readRate: 88,
-
-            message: 'Congratulations on completing the Port Modernization Phase 1 milestone! Celebration Friday.'
-
-        },
-
-        {
-
-            id: 'NOTIF-013',
-
-            title: 'Office Relocation Notice',
-
-            recipientType: 'all',
-
-            recipients: 'All Staff',
-
-            sentDate: '2026-01-08T16:20:00',
-
-            priority: 'important',
-
-            status: 'scheduled',
-
-            sentBy: 'Admin Assistant',
-
-            readRate: 0,
-
-            message: 'Office relocation to new building scheduled for next month. More details to follow.'
-
-        },
-
-        {
-
-            id: 'NOTIF-014',
-
-            title: 'Contract Review Reminder',
-
-            recipientType: 'department',
-
-            recipients: 'Real Estate',
-
-            sentDate: '2026-01-07T10:45:00',
-
-            priority: 'urgent',
-
-            status: 'sent',
-
-            sentBy: 'Legal Advisor',
-
-            readRate: 100,
-
-            message: 'Contract review meeting tomorrow at 2 PM. Please bring all relevant documentation.'
-
-        },
-
-        {
-
-            id: 'NOTIF-015',
-
-            title: 'Performance Review Process Update',
-
-            recipientType: 'all',
-
-            recipients: 'All Staff',
-
-            sentDate: '2026-01-06T13:00:00',
-
-            priority: 'important',
-
-            status: 'sent',
-
-            sentBy: 'HR Manager',
-
-            readRate: 93,
-
-            message: 'Updated performance review process and timeline for Q1 2026. Please review new guidelines.'
-
-        }
-
-    ];
-
-    
-
-    displayNotifications(sampleNotifications);
+    displayNotifications([]);
 
 }
 
@@ -60440,6 +60010,42 @@ function loadSampleNotifications() {
 // Display notifications in the table
 
 function displayNotifications(notifications) {
+
+    // Update notification stats from real data
+    const now = new Date();
+    const today = now.toISOString().split('T')[0];
+    const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+    
+    if (notifications && notifications.length > 0) {
+        const todaySent = notifications.filter(n => {
+            const d = n.sent_date || n.sentDate || n.created_at;
+            return d && new Date(d).toISOString().split('T')[0] === today;
+        }).length;
+        const weekSent = notifications.filter(n => {
+            const d = n.sent_date || n.sentDate || n.created_at;
+            return d && new Date(d) >= weekAgo;
+        }).length;
+        const pending = notifications.filter(n => (n.status || '').toLowerCase() === 'scheduled' || (n.status || '').toLowerCase() === 'draft').length;
+        const avgReadRate = notifications.reduce((sum, n) => sum + (parseFloat(n.read_rate || n.readRate || 0)), 0) / notifications.length;
+        
+        const el1 = document.getElementById('notifStatTodaySent');
+        const el2 = document.getElementById('notifStatWeek');
+        const el3 = document.getElementById('notifStatPending');
+        const el4 = document.getElementById('notifStatReadRate');
+        if (el1) el1.textContent = todaySent;
+        if (el2) el2.textContent = weekSent;
+        if (el3) el3.textContent = pending;
+        if (el4) el4.textContent = avgReadRate.toFixed(0) + '%';
+    } else {
+        const el1 = document.getElementById('notifStatTodaySent');
+        const el2 = document.getElementById('notifStatWeek');
+        const el3 = document.getElementById('notifStatPending');
+        const el4 = document.getElementById('notifStatReadRate');
+        if (el1) el1.textContent = '0';
+        if (el2) el2.textContent = '0';
+        if (el3) el3.textContent = '0';
+        if (el4) el4.textContent = '0%';
+    }
 
     const notificationsList = document.getElementById('notificationsList');
 
