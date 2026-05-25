@@ -2903,8 +2903,10 @@ async function migrateAttendanceTable(db) {
     if (attendanceMigrationDone) return;
     try {
         // Check if old column names exist and rename them
-        const [columns] = await db.execute(`SHOW COLUMNS FROM attendance`);
-        const columnNames = columns.map(c => c.Field);
+        // db.execute() already unwraps [rows] from mysql2, so no destructuring needed
+        const columns = await db.execute(`SHOW COLUMNS FROM attendance`);
+        const columnNames = (Array.isArray(columns) ? columns : []).map(c => c.Field);
+        console.log('📋 Current attendance table columns:', columnNames);
         
         if (columnNames.includes('date') && !columnNames.includes('attendance_date')) {
             await db.execute(`ALTER TABLE attendance CHANGE COLUMN \`date\` attendance_date DATE NOT NULL`);
@@ -2942,11 +2944,12 @@ async function migrateAttendanceTable(db) {
         attendanceMigrationDone = true;
         console.log('✅ Attendance table migration check complete');
     } catch (error) {
-        if (error.code === 'ER_NO_SUCH_TABLE') {
+        if (error.code === 'ER_NO_SUCH_TABLE' || (error.message && error.message.includes("doesn't exist"))) {
             // Table doesn't exist yet, CREATE TABLE IF NOT EXISTS will handle it
+            console.log('📋 Attendance table does not exist yet, will be created');
             attendanceMigrationDone = true;
         } else {
-            console.error('⚠️ Attendance migration error:', error.message);
+            console.error('⚠️ Attendance migration error:', error.message, error.code, error.stack);
         }
     }
 }
