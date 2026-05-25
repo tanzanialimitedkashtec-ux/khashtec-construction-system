@@ -38762,18 +38762,6 @@ function assignWorker(){
 
                 </form>
 
-                <div class="tax-table-section">
-
-                    <h4>Tax Payment Records</h4>
-
-                    <div class="table-container" id="taxPaymentsTable">
-
-                        <p style="text-align: center; color: #666;">Loading tax payments...</p>
-
-                    </div>
-
-                </div>
-
             </div>
 
         </div>
@@ -38796,121 +38784,23 @@ function assignWorker(){
 
 async function loadEmployeesForAssignment() {
 
-    console.log('🔄 Loading employees for assignment dropdown...');
-
-    
-
     try {
 
         const baseUrl = window.location.origin;
+
+        const token = typeof sessionManager !== 'undefined' && sessionManager.getAuthToken ? sessionManager.getAuthToken() : null;
+
+        const headers = { 'Content-Type': 'application/json' };
+
+        if (token) headers['Authorization'] = `Bearer ${token}`;
+
+        
 
         const response = await fetch(`${baseUrl}/api/employees`, {
 
             method: 'GET',
 
-            headers: {
-
-                'Content-Type': 'application/json',
-
-                'Authorization': `Bearer ${sessionManager.getAuthToken()}`
-
-            }
-
-        });
-
-        
-
-        if (!response.ok) {
-
-            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-
-        }
-
-        
-
-        const employees = await response.json();
-
-        console.log('📊 Employees for assignment:', employees);
-
-        
-
-        const select = document.getElementById('assignEmployee');
-
-        if (!select) return;
-
-        
-
-        // Clear existing options except the first one
-
-        select.innerHTML = '<option value="">Select Employee</option>';
-
-        
-
-        // Add employee options
-
-        employees.forEach(employee => {
-
-            const option = document.createElement('option');
-
-            option.value = employee.id;
-
-            const displayName = employee.full_name || `Employee ${employee.id}`;
-
-            const position = employee.position || 'Unknown Position';
-
-            option.textContent = `${displayName} - ${position}`;
-
-            select.appendChild(option);
-
-        });
-
-        
-
-        console.log(`✅ Employee dropdown populated with ${employees.length} employees`);
-
-        
-
-    } catch (error) {
-
-        console.error('❌ Error loading employees for assignment:', error);
-
-        const select = document.getElementById('assignEmployee');
-
-        if (select) {
-
-            select.innerHTML = '<option value="">Error loading employees</option>';
-
-        }
-
-    }
-
-}
-
-
-
-// Load projects for assignment dropdown
-
-async function loadProjectsForAssignment() {
-
-    console.log('🔄 Loading projects for assignment dropdown...');
-
-    
-
-    try {
-
-        const baseUrl = window.location.origin;
-
-        const response = await fetch(`${baseUrl}/api/projects`, {
-
-            method: 'GET',
-
-            headers: {
-
-                'Content-Type': 'application/json',
-
-                'Authorization': `Bearer ${sessionManager.getAuthToken()}`
-
-            }
+            headers: headers
 
         });
 
@@ -38926,9 +38816,99 @@ async function loadProjectsForAssignment() {
 
         const data = await response.json();
 
-        const projects = data.projects || [];
+        const employees = Array.isArray(data) ? data : (data.employees || []);
 
-        console.log('📊 Projects for assignment:', projects);
+        
+
+        const select = document.getElementById('assignEmployee');
+
+        if (!select) return;
+
+        
+
+        select.innerHTML = '<option value="">Select Employee</option>';
+
+        
+
+        employees.forEach(employee => {
+
+            const option = document.createElement('option');
+
+            option.value = employee.id;
+
+            const displayName = employee.full_name || employee.employee_name || `Employee ${employee.id}`;
+
+            const position = employee.position || employee.department || '';
+
+            option.textContent = position ? `${displayName} - ${position}` : displayName;
+
+            option.setAttribute('data-name', displayName);
+
+            select.appendChild(option);
+
+        });
+
+        
+
+        console.log(`Employee dropdown populated with ${employees.length} employees`);
+
+        
+
+    } catch (error) {
+
+        console.error('Error loading employees for assignment:', error);
+
+        const select = document.getElementById('assignEmployee');
+
+        if (select) {
+
+            select.innerHTML = '<option value="">Error loading employees - check connection</option>';
+
+        }
+
+    }
+
+}
+
+
+
+// Load projects for assignment dropdown
+
+async function loadProjectsForAssignment() {
+
+    try {
+
+        const baseUrl = window.location.origin;
+
+        const token = typeof sessionManager !== 'undefined' && sessionManager.getAuthToken ? sessionManager.getAuthToken() : null;
+
+        const headers = { 'Content-Type': 'application/json' };
+
+        if (token) headers['Authorization'] = `Bearer ${token}`;
+
+        
+
+        const response = await fetch(`${baseUrl}/api/projects`, {
+
+            method: 'GET',
+
+            headers: headers
+
+        });
+
+        
+
+        if (!response.ok) {
+
+            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+
+        }
+
+        
+
+        const data = await response.json();
+
+        const projects = Array.isArray(data) ? data : (data.projects || []);
 
         
 
@@ -38938,13 +38918,9 @@ async function loadProjectsForAssignment() {
 
         
 
-        // Clear existing options except the first one
-
         select.innerHTML = '<option value="">Select Project</option>';
 
         
-
-        // Add project options
 
         projects.forEach(project => {
 
@@ -38952,7 +38928,13 @@ async function loadProjectsForAssignment() {
 
             option.value = project.id;
 
-            option.textContent = project.name || `Project ${project.id}`;
+            const projectName = project.name || `Project ${project.id}`;
+
+            const status = project.status ? ` (${project.status})` : '';
+
+            option.textContent = projectName + status;
+
+            option.setAttribute('data-name', projectName);
 
             select.appendChild(option);
 
@@ -38960,19 +38942,19 @@ async function loadProjectsForAssignment() {
 
         
 
-        console.log(`✅ Project dropdown populated with ${projects.length} projects`);
+        console.log(`Project dropdown populated with ${projects.length} projects`);
 
         
 
     } catch (error) {
 
-        console.error('❌ Error loading projects for assignment:', error);
+        console.error('Error loading projects for assignment:', error);
 
         const select = document.getElementById('assignProject');
 
         if (select) {
 
-            select.innerHTML = '<option value="">Error loading projects</option>';
+            select.innerHTML = '<option value="">Error loading projects - check connection</option>';
 
         }
 
@@ -39872,8 +39854,6 @@ function saveAssignment() {
 
     if (window.assignmentSubmitting) {
 
-        console.log('⚠️ Assignment submission already in progress');
-
         return false;
 
     }
@@ -39900,19 +39880,27 @@ function saveAssignment() {
 
     
 
-    // Extract employee name from option text
+    // Extract employee name from the data attribute or option text
 
     const employeeOption = employeeSelect.options[employeeSelect.selectedIndex];
 
-    const employeeName = employeeOption ? employeeOption.text.split(' - ')[0] : '';
+    const employeeName = employeeOption ? (employeeOption.getAttribute('data-name') || employeeOption.text.split(' - ')[0]) : '';
 
     
 
-    // Extract project name from option text
+    // Extract project name from the data attribute or option text
 
     const projectOption = projectSelect.options[projectSelect.selectedIndex];
 
-    const projectName = projectOption ? projectOption.text : '';
+    const projectName = projectOption ? (projectOption.getAttribute('data-name') || projectOption.text.replace(/\s*\(.*\)\s*$/, '')) : '';
+
+    
+
+    // Get logged-in user info for assigned_by
+
+    const currentUser = (typeof sessionManager !== 'undefined' && sessionManager.getUserName) ? sessionManager.getUserName() : 'System';
+
+    const currentRole = (typeof sessionManager !== 'undefined' && sessionManager.getUserRole) ? sessionManager.getUserRole() : 'Manager';
 
     
 
@@ -39934,9 +39922,9 @@ function saveAssignment() {
 
         assignment_notes: notesInput.value,
 
-        assigned_by: 'HR Manager',
+        assigned_by: currentUser,
 
-        assigned_by_role: 'HR Manager'
+        assigned_by_role: currentRole
 
     };
 
@@ -39946,7 +39934,7 @@ function saveAssignment() {
 
     if (!assignment.employee_id || !assignment.project_id || !assignment.role_in_project || !assignment.start_date) {
 
-        customAlert('Please fill in all required fields:\n\n• Employee\n• Project\n• Role\n• Start Date', "Validation Error", "error");
+        customAlert('Please fill in all required fields:\n\n- Employee\n- Project\n- Role\n- Start Date', "Validation Error", "error");
 
         window.assignmentSubmitting = false;
 
@@ -39956,29 +39944,31 @@ function saveAssignment() {
 
     
 
-    // Show loading message
-
     customAlert('Assigning worker to project...', "Processing", "info");
 
     
 
-    // Send data to worker assignments API
-
     const baseUrl = window.location.origin;
 
-    fetch(`${baseUrl}/api/work/assignments`, {
+    const token = typeof sessionManager !== 'undefined' && sessionManager.getAuthToken ? sessionManager.getAuthToken() : null;
+
+    const headers = {
+
+        'Content-Type': 'application/json',
+
+        'Accept': 'application/json'
+
+    };
+
+    if (token) headers['Authorization'] = `Bearer ${token}`;
+
+    
+
+    fetch(`${baseUrl}/api/worker-accounts/assignments`, {
 
         method: 'POST',
 
-        headers: {
-
-            'Content-Type': 'application/json',
-
-            'Accept': 'application/json',
-
-            'Authorization': `Bearer ${sessionManager.getAuthToken()}`
-
-        },
+        headers: headers,
 
         body: JSON.stringify(assignment)
 
@@ -39986,7 +39976,15 @@ function saveAssignment() {
 
     .then(response => {
 
-        console.log('📡 Assignment API Response status:', response.status);
+        if (!response.ok) {
+
+            return response.json().then(errData => {
+
+                throw new Error(errData.message || errData.error || `Server error ${response.status}`);
+
+            });
+
+        }
 
         return response.json();
 
@@ -39994,37 +39992,67 @@ function saveAssignment() {
 
     .then(data => {
 
-        console.log('📊 Assignment API Response data:', data);
+        if (data.success === false) {
 
-        
-
-        if (data.error) {
-
-            throw new Error(data.error);
+            throw new Error(data.message || 'Assignment failed');
 
         }
 
         
 
-        customAlert(`Worker assigned to project successfully!\n\nEmployee: ${assignment.employee_name}\nProject: ${assignment.project_name}\nRole: ${assignment.role_in_project}\nAssignment ID: ${data.id}\n\n🎉 Assignment saved to database!`, "Assignment Completed", "success");
+        const assignmentId = data.assignmentId || data.id || 'N/A';
 
         
 
+        customAlert(
+
+            `Worker assigned to project successfully!\n\nEmployee: ${assignment.employee_name}\nProject: ${assignment.project_name}\nRole: ${assignment.role_in_project}\nAssignment ID: ${assignmentId}`,
+
+            "Assignment Completed",
+
+            "success"
+
+        );
+
+        
+
+        // Reset the form
+
         document.getElementById('assignForm').reset();
+
+        
+
+        // Auto-navigate to View Assigned Workers after a short delay
+
+        setTimeout(() => {
+
+            if (typeof viewAssignedWorkers === 'function') {
+
+                viewAssignedWorkers();
+
+            }
+
+        }, 1500);
 
     })
 
     .catch(error => {
 
-        console.error('❌ Error assigning worker:', error);
+        console.error('Error assigning worker:', error);
 
-        customAlert(`Failed to assign worker: ${error.message}\n\nPlease check:\n• All required fields are filled\n• Network connection is stable\n• Server is running properly`, "Assignment Error", "error");
+        customAlert(
+
+            `Failed to assign worker: ${error.message}\n\nPlease check that all fields are filled and the server is running.`,
+
+            "Assignment Error",
+
+            "error"
+
+        );
 
     })
 
     .finally(() => {
-
-        // Reset submission flag
 
         window.assignmentSubmitting = false;
 
