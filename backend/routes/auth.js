@@ -187,6 +187,31 @@ router.post('/login', async (req, res) => {
             }
             
             console.log('✅ Authentication table exists');
+            
+            // Ensure default MD user exists with correct credentials
+            try {
+                const mdCheck = await db.execute(
+                    'SELECT id FROM authentication WHERE email = ?',
+                    ['md@kashtec.com']
+                );
+                const bcryptHash = await bcrypt.hash('admin123', 12);
+                if (!mdCheck || mdCheck.length === 0) {
+                    await db.execute(
+                        `INSERT INTO authentication (email, password_hash, role, department_name, manager_name, status)
+                         VALUES (?, ?, ?, ?, ?, ?)`,
+                        ['md@kashtec.com', bcryptHash, 'Managing Director', 'Managing Director', 'Managing Director', 'Active']
+                    );
+                    console.log('✅ Default MD user seeded into authentication table');
+                } else {
+                    await db.execute(
+                        'UPDATE authentication SET password_hash = ?, role = ?, department_name = ?, status = ? WHERE email = ?',
+                        [bcryptHash, 'Managing Director', 'Managing Director', 'Active', 'md@kashtec.com']
+                    );
+                    console.log('✅ MD user password updated');
+                }
+            } catch (seedErr) {
+                console.log('ℹ️ MD seed check:', seedErr.message);
+            }
         } catch (tableError) {
             console.error('❌ Table check failed:', tableError);
             // Continue anyway - the main query will fail if table doesn't exist
