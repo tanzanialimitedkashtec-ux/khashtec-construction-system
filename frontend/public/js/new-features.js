@@ -1425,14 +1425,15 @@ function _escHtml(str) {
 }
 
 function _isMDRole() {
+    if (typeof currentRole !== 'undefined' && currentRole === 'MD') return true;
     if (typeof getCurrentUserRole === 'function') {
         var role = getCurrentUserRole();
         if (role === 'MD') return true;
     }
     var el = document.getElementById('userRole');
     if (el) {
-        var text = el.textContent || '';
-        if (text.indexOf('Managing Director') !== -1) return true;
+        var text = (el.textContent || '').trim();
+        if (text.indexOf('Managing Director') !== -1 || text === 'MD Dashboard') return true;
     }
     if (typeof sessionManager !== 'undefined' && sessionManager.getCurrentUser) {
         var user = sessionManager.getCurrentUser();
