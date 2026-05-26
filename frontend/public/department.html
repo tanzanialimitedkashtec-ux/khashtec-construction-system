@@ -24707,6 +24707,8 @@ function loadMenu(){
 
         addMenu("Suggestions", suggestions);
 
+        addMenu("View Suggestions", loadViewSuggestions);
+
         addMenu("Materials Inventory", showMaterialsInventory);
 
         addMenu("Record Materials In", showMaterialsInForm);
@@ -24749,6 +24751,8 @@ function loadMenu(){
 
         addMenu("User Account Management", () => userAccountManagement());
 
+        addMenu("View Suggestions", loadViewSuggestions);
+
     }
 
 
@@ -24775,6 +24779,8 @@ function loadMenu(){
 
         addMenu("Manage Drivers", manageDrivers);
 
+        addMenu("View Suggestions", loadViewSuggestions);
+
     }
 
 
@@ -24792,6 +24798,8 @@ function loadMenu(){
         addMenu("Upload Inspection Reports", uploadInspectionReports);
 
         addMenu("View Project Safety Status", viewProjectSafetyStatus);
+
+        addMenu("View Suggestions", loadViewSuggestions);
 
     }
 
@@ -24819,6 +24827,8 @@ function loadMenu(){
 
         addMenu("Payment Tracking", trackLuggagePayments);
 
+        addMenu("View Suggestions", loadViewSuggestions);
+
     }
 
 
@@ -24843,6 +24853,8 @@ function loadMenu(){
 
         addMenu("Record Materials Out", showMaterialsOutForm);
 
+        addMenu("View Suggestions", loadViewSuggestions);
+
     }
 
 
@@ -24862,6 +24874,8 @@ function loadMenu(){
         addMenu("Track Payment Progress", trackPaymentProgress);
 
         addMenu("Generate Sales Report", generateSalesReport);
+
+        addMenu("View Suggestions", loadViewSuggestions);
 
     }
 
@@ -24884,6 +24898,8 @@ function loadMenu(){
         addMenu("View Employee List", viewEmployeeList);
 
         addMenu("Office Portal", officePortal);
+
+        addMenu("View Suggestions", loadViewSuggestions);
 
     }
 
@@ -96415,6 +96431,12 @@ function handleMenuClick(menuItem) {
             case 'Suggestions Management':
 
                 showSuggestionsManagement();
+
+                break;
+
+            case 'View Suggestions':
+
+                loadViewSuggestions();
 
                 break;
 

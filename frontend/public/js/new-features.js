@@ -1238,6 +1238,243 @@ function showContent(html) {
     }
 }
 
+// ========== VIEW SUGGESTIONS TABLE ==========
+
+async function loadViewSuggestions() {
+    try {
+        if (!window.apiService) {
+            showContent('<div class="card"><h3>View Suggestions</h3><p>API service not available</p></div>');
+            return;
+        }
+
+        const suggestions = (await window.apiService.get('/suggestions-view')) || [];
+        const isMD = _isMDRole();
+
+        const statusLabel = {
+            'pending': 'Submitted',
+            'under-review': 'Under Review',
+            'approved': 'Approved',
+            'rejected': 'Rejected',
+            'implemented': 'Implemented'
+        };
+
+        const statusColor = {
+            'pending': '#ffc107',
+            'under-review': '#17a2b8',
+            'approved': '#28a745',
+            'rejected': '#dc3545',
+            'implemented': '#6f42c1'
+        };
+
+        const categoryLabel = {
+            'safety': 'Safety',
+            'productivity': 'Productivity',
+            'cost-saving': 'Cost Saving',
+            'quality': 'Quality',
+            'environment': 'Environment',
+            'training': 'Training',
+            'equipment': 'Technology',
+            'process': 'Process Improvement',
+            'other': 'Other'
+        };
+
+        const priorityLabel = {
+            'low': 'Low',
+            'medium': 'Medium',
+            'high': 'High',
+            'urgent': 'Critical'
+        };
+
+        const priorityColor = {
+            'low': '#28a745',
+            'medium': '#ffc107',
+            'high': '#fd7e14',
+            'urgent': '#dc3545'
+        };
+
+        let html = '<div class="card">';
+        html += '<h3>View Suggestions</h3>';
+        if (isMD) {
+            html += '<p style="color:#555;margin-bottom:15px;">As Managing Director, you can approve or reject suggestions from all departments.</p>';
+        } else {
+            html += '<p style="color:#555;margin-bottom:15px;">Suggestions submitted by all departments.</p>';
+        }
+
+        html += '<table style="width:100%;margin-top:10px;border-collapse:collapse;">';
+        html += '<thead><tr style="background:#f4f4f4;">';
+        html += '<th style="padding:10px;border:1px solid #ddd;">#</th>';
+        html += '<th style="padding:10px;border:1px solid #ddd;">Title</th>';
+        html += '<th style="padding:10px;border:1px solid #ddd;">Category</th>';
+        html += '<th style="padding:10px;border:1px solid #ddd;">Department</th>';
+        html += '<th style="padding:10px;border:1px solid #ddd;">Submitted By</th>';
+        html += '<th style="padding:10px;border:1px solid #ddd;">Priority</th>';
+        html += '<th style="padding:10px;border:1px solid #ddd;">Status</th>';
+        html += '<th style="padding:10px;border:1px solid #ddd;">Date</th>';
+        if (isMD) {
+            html += '<th style="padding:10px;border:1px solid #ddd;">Actions</th>';
+        }
+        html += '</tr></thead><tbody>';
+
+        if (suggestions.length === 0) {
+            const colspan = isMD ? 9 : 8;
+            html += '<tr><td colspan="' + colspan + '" style="padding:20px;text-align:center;border:1px solid #ddd;">No suggestions found.</td></tr>';
+        }
+
+        suggestions.forEach(function(s, idx) {
+            var sLabel = statusLabel[s.status] || s.status || 'Unknown';
+            var sColor = statusColor[s.status] || '#6c757d';
+            var cLabel = categoryLabel[s.category] || s.category || 'N/A';
+            var pLabel = priorityLabel[s.priority] || s.priority || 'N/A';
+            var pColor = priorityColor[s.priority] || '#6c757d';
+            var submitter = s.submitted_by_name || s.employee_name || 'Unknown';
+            var dept = s.department || 'N/A';
+            var dateStr = s.created_at ? new Date(s.created_at).toLocaleDateString() : 'N/A';
+
+            html += '<tr>';
+            html += '<td style="padding:10px;border:1px solid #ddd;">' + (idx + 1) + '</td>';
+            html += '<td style="padding:10px;border:1px solid #ddd;cursor:pointer;color:#007bff;" onclick="viewSuggestionDetail(' + s.id + ')">' + _escHtml(s.title) + '</td>';
+            html += '<td style="padding:10px;border:1px solid #ddd;">' + _escHtml(cLabel) + '</td>';
+            html += '<td style="padding:10px;border:1px solid #ddd;">' + _escHtml(dept) + '</td>';
+            html += '<td style="padding:10px;border:1px solid #ddd;">' + _escHtml(submitter) + '</td>';
+            html += '<td style="padding:10px;border:1px solid #ddd;"><span style="color:' + pColor + ';font-weight:bold;">' + _escHtml(pLabel) + '</span></td>';
+            html += '<td style="padding:10px;border:1px solid #ddd;"><span style="background:' + sColor + ';color:#fff;padding:3px 8px;border-radius:4px;font-size:12px;">' + _escHtml(sLabel) + '</span></td>';
+            html += '<td style="padding:10px;border:1px solid #ddd;">' + dateStr + '</td>';
+
+            if (isMD) {
+                html += '<td style="padding:10px;border:1px solid #ddd;white-space:nowrap;">';
+                if (s.status === 'pending' || s.status === 'under-review') {
+                    html += '<button onclick="approveSuggestion(' + s.id + ')" style="background:#28a745;color:#fff;border:none;padding:5px 10px;border-radius:4px;cursor:pointer;margin-right:4px;">Approve</button>';
+                    html += '<button onclick="rejectSuggestion(' + s.id + ')" style="background:#dc3545;color:#fff;border:none;padding:5px 10px;border-radius:4px;cursor:pointer;">Reject</button>';
+                } else {
+                    html += '<span style="color:#999;font-size:12px;">' + _escHtml(sLabel) + '</span>';
+                }
+                html += '</td>';
+            }
+
+            html += '</tr>';
+        });
+
+        html += '</tbody></table></div>';
+
+        showContent(html);
+    } catch (error) {
+        console.error('Error loading view suggestions:', error);
+        showContent('<div class="card"><h3>View Suggestions</h3><p>Error loading suggestions. Please try again.</p></div>');
+    }
+}
+
+function viewSuggestionDetail(id) {
+    if (!window.apiService) return;
+    window.apiService.get('/suggestions-view').then(function(suggestions) {
+        var s = (suggestions || []).find(function(item) { return item.id === id; });
+        if (!s) { alert('Suggestion not found'); return; }
+
+        var statusLabel = {
+            'pending': 'Submitted', 'under-review': 'Under Review',
+            'approved': 'Approved', 'rejected': 'Rejected', 'implemented': 'Implemented'
+        };
+        var categoryLabel = {
+            'safety': 'Safety', 'productivity': 'Productivity', 'cost-saving': 'Cost Saving',
+            'quality': 'Quality', 'environment': 'Environment', 'training': 'Training',
+            'equipment': 'Technology', 'process': 'Process Improvement', 'other': 'Other'
+        };
+
+        var html = '<table style="width:100%;border-collapse:collapse;">';
+        html += _detailRow('Title', s.title);
+        html += _detailRow('Category', categoryLabel[s.category] || s.category);
+        html += _detailRow('Department', s.department || 'N/A');
+        html += _detailRow('Submitted By', s.submitted_by_name || s.employee_name || 'Unknown');
+        html += _detailRow('Priority', s.priority);
+        html += _detailRow('Status', statusLabel[s.status] || s.status);
+        html += _detailRow('Description', s.description);
+        if (s.reviewer_name) html += _detailRow('Reviewed By', s.reviewer_name);
+        if (s.reviewed_date) html += _detailRow('Reviewed Date', new Date(s.reviewed_date).toLocaleDateString());
+        if (s.rejection_reason) html += _detailRow('Rejection Reason', s.rejection_reason);
+        html += _detailRow('Date Submitted', s.created_at ? new Date(s.created_at).toLocaleDateString() : 'N/A');
+        html += '</table>';
+
+        if (typeof showViewModal === 'function') {
+            showViewModal('Suggestion Details', html);
+        } else {
+            _showSuggestionModal('Suggestion Details', html);
+        }
+    }).catch(function(err) {
+        console.error('Error viewing suggestion detail:', err);
+    });
+}
+
+function _showSuggestionModal(title, bodyHtml) {
+    var overlay = document.createElement('div');
+    overlay.className = 'form-overlay';
+    overlay.innerHTML = '<div class="form-container" style="max-width:600px;">' +
+        '<div class="form-header"><h3>' + _escHtml(title) + '</h3>' +
+        '<button onclick="this.closest(\'.form-overlay\').remove()" class="close-btn">&times;</button></div>' +
+        '<div style="padding:15px;">' + bodyHtml + '</div></div>';
+    document.body.appendChild(overlay);
+}
+
+function _detailRow(label, value) {
+    return '<tr><td style="padding:8px;border:1px solid #eee;font-weight:bold;width:35%;vertical-align:top;">' +
+        _escHtml(label) + '</td><td style="padding:8px;border:1px solid #eee;">' +
+        _escHtml(value || '') + '</td></tr>';
+}
+
+function _escHtml(str) {
+    if (!str) return '';
+    return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+
+function _isMDRole() {
+    if (typeof getCurrentUserRole === 'function') {
+        return getCurrentUserRole() === 'MD';
+    }
+    var el = document.getElementById('userRole');
+    if (el) {
+        var text = el.textContent || '';
+        return text.indexOf('Managing Director') !== -1 || text === 'MD';
+    }
+    return false;
+}
+
+async function approveSuggestion(id) {
+    if (!confirm('Are you sure you want to approve this suggestion?')) return;
+    try {
+        await window.apiService.request('/suggestions-view/' + id + '/approve', {
+            method: 'PUT',
+            body: JSON.stringify({ reviewed_by: 'MD' })
+        });
+        if (typeof showNotification === 'function') {
+            showNotification('Suggestion approved successfully!', 'success');
+        } else {
+            alert('Suggestion approved successfully!');
+        }
+        loadViewSuggestions();
+    } catch (error) {
+        console.error('Error approving suggestion:', error);
+        alert('Error approving suggestion. Please try again.');
+    }
+}
+
+async function rejectSuggestion(id) {
+    var reason = prompt('Please provide a reason for rejection:');
+    if (reason === null) return;
+    try {
+        await window.apiService.request('/suggestions-view/' + id + '/reject', {
+            method: 'PUT',
+            body: JSON.stringify({ reviewed_by: 'MD', rejection_reason: reason })
+        });
+        if (typeof showNotification === 'function') {
+            showNotification('Suggestion rejected.', 'info');
+        } else {
+            alert('Suggestion rejected.');
+        }
+        loadViewSuggestions();
+    } catch (error) {
+        console.error('Error rejecting suggestion:', error);
+        alert('Error rejecting suggestion. Please try again.');
+    }
+}
+
 // View/edit functions
 function editClaim(id) { showClaimForm(id); }
 function editNssf(id) { showNssfForm(id); }
