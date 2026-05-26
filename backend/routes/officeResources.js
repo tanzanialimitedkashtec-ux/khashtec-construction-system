@@ -2,6 +2,12 @@ const express = require('express');
 const router = express.Router();
 const db = require('../../database/config/database');
 
+function asArray(rows) {
+  if (!rows) return [];
+  if (Array.isArray(rows)) return rows;
+  return [rows];
+}
+
 // Get all office resources
 router.get('/', async (req, res) => {
     try {
@@ -12,10 +18,10 @@ router.get('/', async (req, res) => {
             LEFT JOIN employee_details ed ON e.id = ed.employee_id 
             ORDER BY ofr.created_at DESC
         `);
-        res.json(Array.isArray(result) ? result : []);
+        res.json(asArray(result));
     } catch (error) {
         console.error('Error fetching office resources:', error);
-        res.status(500).json({ error: 'Failed to fetch office resources' });
+        res.status(500).json({ error: 'Failed to fetch office resources', details: error.message });
     }
 });
 
@@ -36,7 +42,7 @@ router.get('/:id', async (req, res) => {
         res.json(rows[0]);
     } catch (error) {
         console.error('Error fetching office resource:', error);
-        res.status(500).json({ error: 'Failed to fetch office resource' });
+        res.status(500).json({ error: 'Failed to fetch office resource', details: error.message });
     }
 });
 
@@ -54,55 +60,14 @@ router.post('/', async (req, res) => {
             current_value,
             condition,
             location,
-            department,
-            created_by
-        } = req.body;
+            department
+        } = req.body || {};
 
-        // Basic validation for required fields
         if (!resource_code || !resource_name || !resource_type) {
             return res.status(400).json({ error: 'resource_code, resource_name and resource_type are required' });
         }
 
-        // Avoid FK violations; prefer authenticated user when available
         const createdBy = (req.user && req.user.id) ? req.user.id : null;
-
-        // Ensure the office_resources table exists before inserting
-        try {
-            await db.execute(`
-                CREATE TABLE IF NOT EXISTS office_resources (
-                    id INT AUTO_INCREMENT PRIMARY KEY,
-                    resource_code VARCHAR(50) UNIQUE NOT NULL,
-                    resource_name VARCHAR(255) NOT NULL,
-                    resource_type ENUM('Computer', 'Printer', 'Desk', 'Chair', 'Phone', 'Vehicle', 'Equipment', 'Software License', 'Office Supplies', 'Other') NOT NULL,
-                    description TEXT,
-                    serial_number VARCHAR(100),
-                    purchase_date DATE,
-                    purchase_cost DECIMAL(12,2),
-                    current_value DECIMAL(12,2),
-                    \`condition\` ENUM('New', 'Good', 'Fair', 'Poor', 'Damaged') DEFAULT 'Good',
-                    location VARCHAR(255),
-                    department VARCHAR(100),
-                    status ENUM('Available', 'Assigned', 'In Maintenance', 'Retired', 'Lost') DEFAULT 'Available',
-                    assigned_to INT,
-                    assigned_date DATE,
-                    expected_return_date DATE,
-                    actual_return_date DATE,
-                    return_condition ENUM('New', 'Good', 'Fair', 'Poor', 'Damaged'),
-                    maintenance_notes TEXT,
-                    created_by INT,
-                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-                    FOREIGN KEY (assigned_to) REFERENCES employees(id) ON DELETE SET NULL,
-                    FOREIGN KEY (created_by) REFERENCES users(id) ON DELETE SET NULL,
-                    INDEX idx_resource_code (resource_code),
-                    INDEX idx_resource_type (resource_type),
-                    INDEX idx_status (status),
-                    INDEX idx_assigned_to (assigned_to)
-                )
-            `);
-        } catch (tableError) {
-            console.warn('Warning: office_resources table verification failed:', tableError && tableError.message ? tableError.message : tableError);
-        }
 
         const result = await db.execute(`
             INSERT INTO office_resources (
@@ -125,10 +90,9 @@ router.post('/', async (req, res) => {
             createdBy
         ]);
 
-        const insertId = Array.isArray(result) ? result[0].insertId : result.insertId;
+        const insertId = result.insertId;
         res.status(201).json({ id: insertId, message: 'Office resource created successfully' });
     } catch (error) {
-        // Provide clearer server-side logs; keep client message generic
         console.error('Error creating office resource:', error && (error.sqlMessage || error.message) || error);
         if (error && error.code === 'ER_DUP_ENTRY') {
             return res.status(409).json({ error: 'Resource code already exists' });
@@ -136,7 +100,7 @@ router.post('/', async (req, res) => {
         if (error && error.code === 'ER_NO_REFERENCED_ROW_2') {
             return res.status(400).json({ error: 'Invalid reference provided' });
         }
-        res.status(500).json({ error: 'Failed to create office resource' });
+        res.status(500).json({ error: 'Failed to create office resource', details: error.message });
     }
 });
 
@@ -161,9 +125,8 @@ router.put('/:id', async (req, res) => {
             expected_return_date,
             actual_return_date,
             return_condition,
-            maintenance_notes,
-            notes
-        } = req.body;
+            maintenance_notes
+        } = req.body || {};
 
         await db.execute(`
             UPDATE office_resources SET
@@ -173,7 +136,7 @@ router.put('/:id', async (req, res) => {
                 location = ?, department = ?, status = ?,
                 assigned_to = ?, assigned_date = ?, expected_return_date = ?,
                 actual_return_date = ?, return_condition = ?,
-                maintenance_notes = ?, notes = ?
+                maintenance_notes = ?
             WHERE id = ?
         `, [
             resource_code,
@@ -194,14 +157,13 @@ router.put('/:id', async (req, res) => {
             actual_return_date || null,
             return_condition || null,
             maintenance_notes || null,
-            notes || null,
             req.params.id
         ]);
 
         res.json({ message: 'Office resource updated successfully' });
     } catch (error) {
         console.error('Error updating office resource:', error);
-        res.status(500).json({ error: 'Failed to update office resource' });
+        res.status(500).json({ error: 'Failed to update office resource', details: error.message });
     }
 });
 
@@ -212,14 +174,14 @@ router.delete('/:id', async (req, res) => {
         res.json({ message: 'Office resource deleted successfully' });
     } catch (error) {
         console.error('Error deleting office resource:', error);
-        res.status(500).json({ error: 'Failed to delete office resource' });
+        res.status(500).json({ error: 'Failed to delete office resource', details: error.message });
     }
 });
 
 // Assign resource to employee
 router.put('/:id/assign', async (req, res) => {
     try {
-        const { assigned_to, assigned_date, expected_return_date, notes } = req.body;
+        const { assigned_to, assigned_date, expected_return_date } = req.body || {};
         const assignDate = assigned_date || new Date().toISOString().split('T')[0];
 
         await db.execute(`
@@ -227,22 +189,21 @@ router.put('/:id/assign', async (req, res) => {
                 status = 'Assigned',
                 assigned_to = ?,
                 assigned_date = ?,
-                expected_return_date = ?,
-                notes = ?
+                expected_return_date = ?
             WHERE id = ?
-        `, [assigned_to, assignDate, expected_return_date || null, notes || null, req.params.id]);
+        `, [assigned_to, assignDate, expected_return_date || null, req.params.id]);
 
         res.json({ message: 'Resource assigned successfully' });
     } catch (error) {
         console.error('Error assigning resource:', error);
-        res.status(500).json({ error: 'Failed to assign resource' });
+        res.status(500).json({ error: 'Failed to assign resource', details: error.message });
     }
 });
 
 // Return resource
 router.put('/:id/return', async (req, res) => {
     try {
-        const { return_condition, notes } = req.body;
+        const { return_condition } = req.body || {};
         const actual_return_date = new Date().toISOString().split('T')[0];
 
         await db.execute(`
@@ -250,56 +211,53 @@ router.put('/:id/return', async (req, res) => {
                 status = 'Available',
                 assigned_to = NULL,
                 actual_return_date = ?,
-                return_condition = ?,
-                notes = ?
+                return_condition = ?
             WHERE id = ?
-        `, [actual_return_date, return_condition, notes || null, req.params.id]);
+        `, [actual_return_date, return_condition, req.params.id]);
 
         res.json({ message: 'Resource returned successfully' });
     } catch (error) {
         console.error('Error returning resource:', error);
-        res.status(500).json({ error: 'Failed to return resource' });
+        res.status(500).json({ error: 'Failed to return resource', details: error.message });
     }
 });
 
 // Send resource for maintenance
 router.put('/:id/maintenance', async (req, res) => {
     try {
-        const { maintenance_notes, notes } = req.body;
+        const { maintenance_notes } = req.body || {};
 
         await db.execute(`
             UPDATE office_resources SET
                 status = 'In Maintenance',
-                maintenance_notes = ?,
-                notes = ?
+                maintenance_notes = ?
             WHERE id = ?
-        `, [maintenance_notes, notes || null, req.params.id]);
+        `, [maintenance_notes, req.params.id]);
 
         res.json({ message: 'Resource sent for maintenance successfully' });
     } catch (error) {
         console.error('Error sending resource for maintenance:', error);
-        res.status(500).json({ error: 'Failed to send resource for maintenance' });
+        res.status(500).json({ error: 'Failed to send resource for maintenance', details: error.message });
     }
 });
 
 // Complete maintenance
 router.put('/:id/complete-maintenance', async (req, res) => {
     try {
-        const { condition, notes } = req.body;
+        const { condition } = req.body || {};
 
         await db.execute(`
             UPDATE office_resources SET
                 status = 'Available',
                 \`condition\` = ?,
-                maintenance_notes = NULL,
-                notes = ?
+                maintenance_notes = NULL
             WHERE id = ?
-        `, [condition, notes || null, req.params.id]);
+        `, [condition, req.params.id]);
 
         res.json({ message: 'Maintenance completed successfully' });
     } catch (error) {
         console.error('Error completing maintenance:', error);
-        res.status(500).json({ error: 'Failed to complete maintenance' });
+        res.status(500).json({ error: 'Failed to complete maintenance', details: error.message });
     }
 });
 
