@@ -87,6 +87,7 @@ const tasksRoutes = require('./backend/routes/tasks');
 const inspectionsRoutes = require('./backend/routes/inspections');
 
 const suggestionsRoutes = require('./backend/routes/suggestions');
+const suggestionsViewRoutes = require('./backend/routes/suggestionsView');
 
 const taxRoutes = require('./backend/routes/tax');
 
@@ -983,7 +984,7 @@ app.use('/api/suggestions', asyncHandler(async (req, res, next) => {
 
 }));
 
-
+app.use('/api/suggestions-view', suggestionsViewRoutes);
 
 app.use('/api/tax', asyncHandler(async (req, res, next) => {
 
