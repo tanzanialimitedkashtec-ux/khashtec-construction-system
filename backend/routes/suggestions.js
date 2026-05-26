@@ -136,10 +136,11 @@ router.post('/', async (req, res) => {
             INSERT INTO suggestions (
                 employee_id, title, category, priority, description, 
                 current_situation, proposed_solution, expected_benefits, 
-                resources_required, timeline, status
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                resources_required, timeline, status, department, submitted_by_name
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         `, [userId, title, mappedCategory, mappedPriority, description, 
-            impact || null, implementation || null, null, null, null, suggestionStatus]);
+            impact || null, implementation || null, null, null, null, suggestionStatus,
+            department || null, submittedBy || null]);
 
         // Get the created suggestion
         const [newSuggestion] = await db.execute(`
