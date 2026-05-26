@@ -99677,27 +99677,7 @@ function showSuggestionsManagement() {
 
                     </div>
 
-                    <div class="form-group">
-
-                        <label for="suggestionStatus">Status:</label>
-
-                        <select id="suggestionStatus" name="suggestionStatus" required>
-
-                            <option value="">Select Status</option>
-
-                            <option value="Submitted">Submitted</option>
-
-                            <option value="Under Review">Under Review</option>
-
-                            <option value="Approved">Approved</option>
-
-                            <option value="Rejected">Rejected</option>
-
-                            <option value="Implemented">Implemented</option>
-
-                        </select>
-
-                    </div>
+                    
 
                     <div class="form-actions">
 
@@ -99748,8 +99728,6 @@ function showSuggestionsManagement() {
                     department: document.getElementById('suggestionDepartment').value,
 
                     priority: document.getElementById('suggestionPriority').value,
-
-                    status: document.getElementById('suggestionStatus').value,
 
                     createdAt: new Date().toISOString()
 
