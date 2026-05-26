@@ -102,13 +102,17 @@ router.post('/', async (req, res) => {
             'Environment': 'environment',
             'Training': 'training',
             'Equipment': 'equipment',
+            'Technology': 'equipment',
             'Process': 'process',
+            'Process Improvement': 'process',
+            'HR Policy': 'other',
             'Other': 'other'
         };
         
         // Map frontend status values to database ENUM values
         const statusMapping = {
             'Pending': 'pending',
+            'Submitted': 'pending',
             'Under Review': 'under-review',
             'Approved': 'approved',
             'Rejected': 'rejected',
@@ -120,6 +124,7 @@ router.post('/', async (req, res) => {
             'Low': 'low',
             'Medium': 'medium',
             'High': 'high',
+            'Critical': 'urgent',
             'Urgent': 'urgent'
         };
         
@@ -158,10 +163,11 @@ router.post('/', async (req, res) => {
             data: newSuggestion[0]
         });
     } catch (error) {
-        console.error('Error creating suggestion:', error);
+        console.error('Error creating suggestion:', error.sqlMessage || error.message || error);
         res.status(500).json({
             success: false,
-            error: 'Failed to create suggestion'
+            error: 'Failed to create suggestion',
+            details: error.sqlMessage || error.message
         });
     }
 });
