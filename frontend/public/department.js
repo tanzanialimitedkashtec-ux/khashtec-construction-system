@@ -62322,73 +62322,205 @@ function editMeeting(meetingId) {
 
 // Director of Administration Functions
 
-function adminOperations(){
+async function adminOperations(){
 
     showContent(`<div class="card">
-
         <h3>Administrative Operations</h3>
+        <p><strong>Loading data from database...</strong></p>
+    </div>`);
 
+    const baseUrl = window.location.origin;
+    let operationsData = null;
+
+    try {
+        const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+        const response = await fetch(\`\${baseUrl}/api/admin/operations\`, {
+            headers: token ? { 'Authorization': \`Bearer \${token}\` } : {}
+        });
+        if (response.ok) {
+            const result = await response.json();
+            operationsData = result.data || null;
+        }
+    } catch (err) {
+        console.error('Error fetching admin operations:', err);
+    }
+
+    const summary = operationsData ? operationsData.summary : {};
+    const adminWork = operationsData ? operationsData.adminWork : [];
+    const documents = operationsData ? operationsData.documents : [];
+    const officeResources = operationsData ? operationsData.officeResources : [];
+
+    // Build admin work table rows
+    let adminWorkRows = '';
+    if (adminWork.length > 0) {
+        adminWork.forEach(item => {
+            const statusClass = item.status === 'Completed' ? 'active' : (item.status === 'In Progress' ? 'warning' : 'pending');
+            const date = item.submitted_date ? new Date(item.submitted_date).toLocaleDateString() : 'N/A';
+            adminWorkRows += \`<tr>
+                <td>\${item.id}</td>
+                <td>\${item.work_type || 'N/A'}</td>
+                <td>\${item.work_title || 'N/A'}</td>
+                <td><span class="status-badge \${statusClass}">\${item.status || 'N/A'}</span></td>
+                <td>\${item.priority || 'N/A'}</td>
+                <td>\${item.submitted_by || 'N/A'}</td>
+                <td>\${date}</td>
+            </tr>\`;
+        });
+    } else {
+        adminWorkRows = '<tr><td colspan="7" style="text-align:center;">No admin work records found</td></tr>';
+    }
+
+    // Build documents table rows
+    let docRows = '';
+    if (documents.length > 0) {
+        documents.forEach(doc => {
+            const statusClass = doc.status === 'Approved' ? 'active' : (doc.status === 'Draft' ? 'warning' : 'pending');
+            const date = doc.updated_at ? new Date(doc.updated_at).toLocaleDateString() : 'N/A';
+            docRows += \`<tr>
+                <td>\${doc.id}</td>
+                <td>\${doc.title || 'N/A'}</td>
+                <td>\${doc.category || 'N/A'}</td>
+                <td><span class="status-badge \${statusClass}">\${doc.status || 'N/A'}</span></td>
+                <td>\${doc.file_name || 'N/A'}</td>
+                <td>\${date}</td>
+            </tr>\`;
+        });
+    } else {
+        docRows = '<tr><td colspan="6" style="text-align:center;">No document records found</td></tr>';
+    }
+
+    // Build office resources table rows
+    let resourceRows = '';
+    if (officeResources.length > 0) {
+        officeResources.forEach(r => {
+            const statusClass = r.status === 'Available' ? 'active' : (r.status === 'In Use' ? 'warning' : 'pending');
+            const date = r.created_at ? new Date(r.created_at).toLocaleDateString() : 'N/A';
+            resourceRows += \`<tr>
+                <td>\${r.resource_code || 'N/A'}</td>
+                <td>\${r.resource_name || 'N/A'}</td>
+                <td>\${r.resource_type || 'N/A'}</td>
+                <td>\${r.condition || 'N/A'}</td>
+                <td><span class="status-badge \${statusClass}">\${r.status || 'N/A'}</span></td>
+                <td>\${date}</td>
+            </tr>\`;
+        });
+    } else {
+        resourceRows = '<tr><td colspan="6" style="text-align:center;">No office resource records found</td></tr>';
+    }
+
+    showContent(\`<div class="card">
+        <h3>Administrative Operations</h3>
         <p><strong>Office Management:</strong> Oversee all administrative operations and internal communication</p>
 
-        
-
         <div class="operations-overview">
-
             <div class="operation-section">
-
-                <h4>Office Operations</h4>
-
+                <h4>Office Operations Summary</h4>
                 <div class="operation-items">
-
                     <div class="operation-item">
-
                         <span>Internal Communication Status</span>
-
-                        <span class="status-badge active">Active</span>
-
+                        <span class="status-badge active">\${summary.internalCommStatus || 'N/A'}</span>
                     </div>
-
                     <div class="operation-item">
-
                         <span>Documentation Control</span>
-
-                        <span class="status-badge active">Organized</span>
-
+                        <span class="status-badge active">\${summary.documentationControl || 'N/A'}</span>
                     </div>
-
                     <div class="operation-item">
-
                         <span>Filing System Status</span>
-
-                        <span class="status-badge active">Updated</span>
-
+                        <span class="status-badge active">\${summary.filingSystemStatus || 'N/A'}</span>
                     </div>
-
+                    <div class="operation-item">
+                        <span>Total Work Items</span>
+                        <span class="status-badge">\${summary.totalWork || 0}</span>
+                    </div>
+                    <div class="operation-item">
+                        <span>Pending</span>
+                        <span class="status-badge pending">\${summary.pendingWork || 0}</span>
+                    </div>
+                    <div class="operation-item">
+                        <span>In Progress</span>
+                        <span class="status-badge warning">\${summary.inProgressWork || 0}</span>
+                    </div>
+                    <div class="operation-item">
+                        <span>Completed</span>
+                        <span class="status-badge active">\${summary.completedWork || 0}</span>
+                    </div>
                 </div>
-
             </div>
-
-            
 
             <div class="operation-section">
-
                 <h4>Quick Actions</h4>
-
                 <div class="action-buttons">
-
                     <button class="action" onclick="reviewInternalComm()">Review Internal Communication</button>
-
                     <button class="action" onclick="updateFilingSystem()">Update Filing System</button>
-
                     <button class="action" onclick="generateAdminReport()">Generate Admin Report</button>
-
                 </div>
-
             </div>
-
         </div>
+    </div>
 
-    </div>`);
+    <div class="card">
+        <h3>Admin Work Items</h3>
+        <div style="overflow-x:auto;">
+            <table class="data-table" style="width:100%; border-collapse:collapse;">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Type</th>
+                        <th>Title</th>
+                        <th>Status</th>
+                        <th>Priority</th>
+                        <th>Submitted By</th>
+                        <th>Date</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    \${adminWorkRows}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="card">
+        <h3>Documentation Control</h3>
+        <div style="overflow-x:auto;">
+            <table class="data-table" style="width:100%; border-collapse:collapse;">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Title</th>
+                        <th>Category</th>
+                        <th>Status</th>
+                        <th>File Name</th>
+                        <th>Last Updated</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    \${docRows}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="card">
+        <h3>Office Resources</h3>
+        <div style="overflow-x:auto;">
+            <table class="data-table" style="width:100%; border-collapse:collapse;">
+                <thead>
+                    <tr>
+                        <th>Code</th>
+                        <th>Name</th>
+                        <th>Type</th>
+                        <th>Condition</th>
+                        <th>Status</th>
+                        <th>Added Date</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    \${resourceRows}
+                </tbody>
+            </table>
+        </div>
+    </div>\`);
 
 }
 
@@ -69321,25 +69453,429 @@ function notifyMD() {
 
 
 
-function reviewInternalComm() {
+async function reviewInternalComm() {
 
-    customAlert('Internal communications review...\n\nThis will open the internal communications review interface where you can review and manage company communications.', "Review Internal Communications", "info");
+    showContent(`<div class="card">
+        <h3>Internal Communication Review</h3>
+        <p><strong>Loading internal communications from database...</strong></p>
+    </div>`);
+
+    const baseUrl = window.location.origin;
+    let comms = [];
+
+    try {
+        const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+        const response = await fetch(\`\${baseUrl}/api/admin/operations\`, {
+            headers: token ? { 'Authorization': \`Bearer \${token}\` } : {}
+        });
+        if (response.ok) {
+            const result = await response.json();
+            comms = (result.data && result.data.internalComms) || [];
+        }
+    } catch (err) {
+        console.error('Error fetching internal comms:', err);
+    }
+
+    let commRows = '';
+    if (comms.length > 0) {
+        comms.forEach(c => {
+            const statusClass = c.status === 'Completed' ? 'active' : (c.status === 'In Progress' ? 'warning' : 'pending');
+            const date = c.submitted_date ? new Date(c.submitted_date).toLocaleDateString() : 'N/A';
+            commRows += \`<tr>
+                <td>\${c.id}</td>
+                <td>\${c.work_type || 'N/A'}</td>
+                <td>\${c.work_title || 'N/A'}</td>
+                <td>\${c.work_description ? c.work_description.substring(0, 80) : 'N/A'}</td>
+                <td><span class="status-badge \${statusClass}">\${c.status || 'N/A'}</span></td>
+                <td>\${c.priority || 'N/A'}</td>
+                <td>\${date}</td>
+            </tr>\`;
+        });
+    } else {
+        commRows = '<tr><td colspan="7" style="text-align:center;">No internal communication records found</td></tr>';
+    }
+
+    showContent(\`<div class="card">
+        <h3>Internal Communication Review</h3>
+        <p><strong>Review and manage company internal communications</strong></p>
+
+        <div class="action-buttons" style="margin-bottom:15px;">
+            <button class="action" onclick="showNewCommForm()">New Communication</button>
+            <button class="action" onclick="adminOperations()">Back to Admin Operations</button>
+        </div>
+
+        <div style="overflow-x:auto;">
+            <table class="data-table" style="width:100%; border-collapse:collapse;">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Type</th>
+                        <th>Subject</th>
+                        <th>Message</th>
+                        <th>Status</th>
+                        <th>Priority</th>
+                        <th>Date</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    \${commRows}
+                </tbody>
+            </table>
+        </div>
+    </div>\`);
 
 }
 
+function showNewCommForm() {
+    showContent(\`<div class="card">
+        <h3>New Internal Communication</h3>
+        <form onsubmit="submitInternalComm(event)">
+            <div style="margin-bottom:10px;">
+                <label><strong>Subject:</strong></label><br>
+                <input type="text" id="commSubject" placeholder="Communication subject" style="width:100%; padding:8px; margin-top:5px;" required>
+            </div>
+            <div style="margin-bottom:10px;">
+                <label><strong>Message:</strong></label><br>
+                <textarea id="commMessage" rows="4" placeholder="Communication message" style="width:100%; padding:8px; margin-top:5px;" required></textarea>
+            </div>
+            <div style="margin-bottom:10px;">
+                <label><strong>Priority:</strong></label><br>
+                <select id="commPriority" style="width:100%; padding:8px; margin-top:5px;">
+                    <option value="Low">Low</option>
+                    <option value="Medium" selected>Medium</option>
+                    <option value="High">High</option>
+                    <option value="Critical">Critical</option>
+                </select>
+            </div>
+            <div style="margin-bottom:10px;">
+                <label><strong>Recipients/Department:</strong></label><br>
+                <input type="text" id="commRecipients" placeholder="e.g. All Departments, HR, Finance" style="width:100%; padding:8px; margin-top:5px;">
+            </div>
+            <div class="action-buttons">
+                <button type="submit" class="action">Send Communication</button>
+                <button type="button" class="action" onclick="reviewInternalComm()">Cancel</button>
+            </div>
+        </form>
+    </div>\`);
+}
 
+async function submitInternalComm(e) {
+    e.preventDefault();
+    const baseUrl = window.location.origin;
+    const token = localStorage.getItem('token') || sessionStorage.getItem('token');
 
-function updateFilingSystem() {
+    try {
+        const response = await fetch(\`\${baseUrl}/api/admin/operations/internal-comm\`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                ...(token ? { 'Authorization': \`Bearer \${token}\` } : {})
+            },
+            body: JSON.stringify({
+                subject: document.getElementById('commSubject').value,
+                message: document.getElementById('commMessage').value,
+                priority: document.getElementById('commPriority').value,
+                recipients: document.getElementById('commRecipients').value
+            })
+        });
+        const result = await response.json();
+        if (result.success) {
+            customAlert('Internal communication sent successfully!', 'Success', 'success');
+            reviewInternalComm();
+        } else {
+            customAlert('Failed to send communication: ' + (result.error || 'Unknown error'), 'Error', 'error');
+        }
+    } catch (err) {
+        console.error('Error sending communication:', err);
+        customAlert('Error sending communication: ' + err.message, 'Error', 'error');
+    }
+}
 
-    customAlert('Update filing system...\n\nThis will open the filing system management interface where you can organize and update document filing structures.', "Update Filing System", "info");
+async function updateFilingSystem() {
+
+    showContent(`<div class="card">
+        <h3>Filing System Management</h3>
+        <p><strong>Loading filing system data from database...</strong></p>
+    </div>`);
+
+    const baseUrl = window.location.origin;
+    let documents = [];
+
+    try {
+        const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+        const response = await fetch(\`\${baseUrl}/api/admin/operations\`, {
+            headers: token ? { 'Authorization': \`Bearer \${token}\` } : {}
+        });
+        if (response.ok) {
+            const result = await response.json();
+            documents = (result.data && result.data.documents) || [];
+        }
+    } catch (err) {
+        console.error('Error fetching documents:', err);
+    }
+
+    // Group documents by category
+    const categories = {};
+    documents.forEach(doc => {
+        const cat = doc.category || 'Other';
+        if (!categories[cat]) categories[cat] = [];
+        categories[cat].push(doc);
+    });
+
+    let categoryCards = '';
+    Object.keys(categories).forEach(cat => {
+        const docs = categories[cat];
+        const approved = docs.filter(d => d.status === 'Approved').length;
+        const pending = docs.filter(d => d.status === 'Pending' || d.status === 'Draft').length;
+        categoryCards += \`<div class="operation-item">
+            <span>\${cat} (\${docs.length} files)</span>
+            <span class="status-badge active">\${approved} approved, \${pending} pending</span>
+        </div>\`;
+    });
+
+    if (!categoryCards) {
+        categoryCards = '<div class="operation-item"><span>No documents in filing system</span></div>';
+    }
+
+    let docRows = '';
+    if (documents.length > 0) {
+        documents.forEach(doc => {
+            const statusClass = doc.status === 'Approved' ? 'active' : (doc.status === 'Draft' ? 'warning' : 'pending');
+            const date = doc.updated_at ? new Date(doc.updated_at).toLocaleDateString() : 'N/A';
+            docRows += \`<tr>
+                <td>\${doc.id}</td>
+                <td>\${doc.title || 'N/A'}</td>
+                <td>\${doc.category || 'N/A'}</td>
+                <td><span class="status-badge \${statusClass}">\${doc.status || 'N/A'}</span></td>
+                <td>\${doc.file_name || 'N/A'}</td>
+                <td>\${date}</td>
+            </tr>\`;
+        });
+    } else {
+        docRows = '<tr><td colspan="6" style="text-align:center;">No documents found</td></tr>';
+    }
+
+    showContent(\`<div class="card">
+        <h3>Filing System Management</h3>
+        <p><strong>Organize and update document filing structures</strong></p>
+
+        <div class="action-buttons" style="margin-bottom:15px;">
+            <button class="action" onclick="performFilingUpdate()">Perform Filing Update</button>
+            <button class="action" onclick="adminOperations()">Back to Admin Operations</button>
+        </div>
+
+        <div class="operations-overview">
+            <div class="operation-section">
+                <h4>Filing Categories Overview</h4>
+                <div class="operation-items">
+                    \${categoryCards}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <h3>All Filed Documents</h3>
+        <div style="overflow-x:auto;">
+            <table class="data-table" style="width:100%; border-collapse:collapse;">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Title</th>
+                        <th>Category</th>
+                        <th>Status</th>
+                        <th>File Name</th>
+                        <th>Last Updated</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    \${docRows}
+                </tbody>
+            </table>
+        </div>
+    </div>\`);
 
 }
 
+async function performFilingUpdate() {
+    const baseUrl = window.location.origin;
+    const token = localStorage.getItem('token') || sessionStorage.getItem('token');
 
+    try {
+        const response = await fetch(\`\${baseUrl}/api/admin/operations/filing-system\`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                ...(token ? { 'Authorization': \`Bearer \${token}\` } : {})
+            },
+            body: JSON.stringify({
+                action: 'Filing System Audit',
+                category: 'General',
+                description: 'Filing system audit and reorganization performed on ' + new Date().toLocaleDateString()
+            })
+        });
+        const result = await response.json();
+        if (result.success) {
+            customAlert('Filing system updated successfully! The update has been recorded.', 'Success', 'success');
+            updateFilingSystem();
+        } else {
+            customAlert('Failed to update filing system: ' + (result.error || 'Unknown error'), 'Error', 'error');
+        }
+    } catch (err) {
+        console.error('Error updating filing system:', err);
+        customAlert('Error updating filing system: ' + err.message, 'Error', 'error');
+    }
+}
 
-function generateAdminReport() {
+async function generateAdminReport() {
 
-    customAlert('Generate administrative report...\n\nThis will open the report generation interface where you can create comprehensive administrative reports.', "Generate Admin Report", "info");
+    showContent(`<div class="card">
+        <h3>Administrative Report</h3>
+        <p><strong>Generating report from database...</strong></p>
+    </div>`);
+
+    const baseUrl = window.location.origin;
+    let report = null;
+
+    try {
+        const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+        const response = await fetch(\`\${baseUrl}/api/admin/operations/admin-report\`, {
+            headers: token ? { 'Authorization': \`Bearer \${token}\` } : {}
+        });
+        if (response.ok) {
+            const result = await response.json();
+            report = result.report || null;
+        }
+    } catch (err) {
+        console.error('Error generating admin report:', err);
+    }
+
+    if (!report) {
+        showContent(\`<div class="card">
+            <h3>Administrative Report</h3>
+            <p>Failed to generate report. Please try again.</p>
+            <div class="action-buttons">
+                <button class="action" onclick="adminOperations()">Back to Admin Operations</button>
+            </div>
+        </div>\`);
+        return;
+    }
+
+    // Work summary table
+    let workSummaryRows = '';
+    if (report.workSummary && report.workSummary.length > 0) {
+        report.workSummary.forEach(w => {
+            workSummaryRows += \`<tr><td>\${w.status || 'N/A'}</td><td>\${w.count}</td></tr>\`;
+        });
+    } else {
+        workSummaryRows = '<tr><td colspan="2" style="text-align:center;">No work data</td></tr>';
+    }
+
+    // Document summary table
+    let docSummaryRows = '';
+    if (report.docSummary && report.docSummary.length > 0) {
+        report.docSummary.forEach(d => {
+            docSummaryRows += \`<tr><td>\${d.category || 'N/A'}</td><td>\${d.status || 'N/A'}</td><td>\${d.count}</td></tr>\`;
+        });
+    } else {
+        docSummaryRows = '<tr><td colspan="3" style="text-align:center;">No document data</td></tr>';
+    }
+
+    // Resource summary table
+    let resourceSummaryRows = '';
+    if (report.resourceSummary && report.resourceSummary.length > 0) {
+        report.resourceSummary.forEach(r => {
+            resourceSummaryRows += \`<tr><td>\${r.resource_type || 'N/A'}</td><td>\${r.status || 'N/A'}</td><td>\${r.count}</td></tr>\`;
+        });
+    } else {
+        resourceSummaryRows = '<tr><td colspan="3" style="text-align:center;">No resource data</td></tr>';
+    }
+
+    // Recent activity table
+    let activityRows = '';
+    if (report.recentActivity && report.recentActivity.length > 0) {
+        report.recentActivity.forEach(a => {
+            const date = a.submitted_date ? new Date(a.submitted_date).toLocaleDateString() : 'N/A';
+            const statusClass = a.status === 'Completed' ? 'active' : (a.status === 'In Progress' ? 'warning' : 'pending');
+            activityRows += \`<tr>
+                <td>\${a.id}</td>
+                <td>\${a.work_type || 'N/A'}</td>
+                <td>\${a.work_title || 'N/A'}</td>
+                <td><span class="status-badge \${statusClass}">\${a.status || 'N/A'}</span></td>
+                <td>\${date}</td>
+            </tr>\`;
+        });
+    } else {
+        activityRows = '<tr><td colspan="5" style="text-align:center;">No recent activity</td></tr>';
+    }
+
+    const generatedAt = report.generatedAt ? new Date(report.generatedAt).toLocaleString() : new Date().toLocaleString();
+
+    showContent(\`<div class="card">
+        <h3>Administrative Report</h3>
+        <p><strong>Generated:</strong> \${generatedAt}</p>
+
+        <div class="action-buttons" style="margin-bottom:15px;">
+            <button class="action" onclick="window.print()">Print Report</button>
+            <button class="action" onclick="adminOperations()">Back to Admin Operations</button>
+        </div>
+    </div>
+
+    <div class="card">
+        <h4>Work Items Summary</h4>
+        <div style="overflow-x:auto;">
+            <table class="data-table" style="width:100%; border-collapse:collapse;">
+                <thead>
+                    <tr><th>Status</th><th>Count</th></tr>
+                </thead>
+                <tbody>
+                    \${workSummaryRows}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="card">
+        <h4>Document Summary</h4>
+        <div style="overflow-x:auto;">
+            <table class="data-table" style="width:100%; border-collapse:collapse;">
+                <thead>
+                    <tr><th>Category</th><th>Status</th><th>Count</th></tr>
+                </thead>
+                <tbody>
+                    \${docSummaryRows}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="card">
+        <h4>Office Resources Summary</h4>
+        <div style="overflow-x:auto;">
+            <table class="data-table" style="width:100%; border-collapse:collapse;">
+                <thead>
+                    <tr><th>Resource Type</th><th>Status</th><th>Count</th></tr>
+                </thead>
+                <tbody>
+                    \${resourceSummaryRows}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="card">
+        <h4>Recent Activity</h4>
+        <div style="overflow-x:auto;">
+            <table class="data-table" style="width:100%; border-collapse:collapse;">
+                <thead>
+                    <tr><th>ID</th><th>Type</th><th>Title</th><th>Status</th><th>Date</th></tr>
+                </thead>
+                <tbody>
+                    \${activityRows}
+                </tbody>
+            </table>
+        </div>
+    </div>\`);
 
 }
 
