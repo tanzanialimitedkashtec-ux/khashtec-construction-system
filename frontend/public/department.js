@@ -32321,25 +32321,215 @@ async function loadSafetyData() {
 
     const tableBody = document.getElementById('safetyTableBody');
 
-    const loadingCell = tableBody.querySelector('.loading-cell');
+    tableBody.innerHTML = '<tr><td colspan="9" class="loading-cell">Loading safety data from database...</td></tr>';
 
     
 
     try {
 
-        // Try to load from API first
+        // Load real data from /api/safety endpoint (reads from project_safety table)
 
-        await loadSafetyFromAPI();
+        const baseUrl = (typeof KashTecAPI !== 'undefined' && KashTecAPI.baseUrl) ? KashTecAPI.baseUrl : '';
+
+        const token = (typeof KashTecAPI !== 'undefined' && typeof KashTecAPI.getAuthToken === 'function') ? KashTecAPI.getAuthToken() : localStorage.getItem('token');
+
+        
+
+        const response = await fetch(`${baseUrl}/api/safety`, {
+
+            headers: {
+
+                'Content-Type': 'application/json',
+
+                'Accept': 'application/json',
+
+                'Authorization': token ? `Bearer ${token}` : ''
+
+            }
+
+        });
+
+        
+
+        if (!response.ok) {
+
+            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+
+        }
+
+        
+
+        const result = await response.json();
+
+        console.log('✅ Safety data loaded from database:', result);
+
+        
+
+        if (result.success && result.data && result.data.length > 0) {
+
+            // Transform DB records to table format
+
+            const safetyProjects = result.data.map(record => ({
+
+                id: record.id || record.project_id,
+
+                name: record.project_name || 'Unknown Project',
+
+                safety_score: record.safety_score || 0,
+
+                days_without_incident: record.days_without_incident || 0,
+
+                open_violations: record.open_violations || 0,
+
+                ppe_compliance: record.ppe_compliance || 0,
+
+                last_inspection: record.last_inspection_date || new Date().toISOString().split('T')[0],
+
+                risk_level: record.risk_level || 'Medium',
+
+                status: record.status || 'Active',
+
+                location: record.location || 'Various Sites'
+
+            }));
+
+            
+
+            updateSafetyTable(safetyProjects);
+
+            updateSafetySummary(result.metrics || calculateSafetyMetrics(safetyProjects));
+
+        } else {
+
+            // Try initializing the table then retry
+
+            console.log('ℹ️ No safety data found, attempting to initialize...');
+
+            await initializeSafetyTable(baseUrl, token);
+
+        }
 
     } catch (error) {
 
-        console.error('API loading failed, using database fallback:', error);
+        console.error('❌ Failed to load safety data from API:', error);
 
-        // Fallback to database simulation
+        // Fallback: try the old HSE endpoint
 
-        await loadSafetyFromDatabase();
+        try {
+
+            await loadSafetyFromAPI();
+
+        } catch (fallbackError) {
+
+            console.error('❌ All safety data sources failed:', fallbackError);
+
+            tableBody.innerHTML = '<tr><td colspan="9" class="no-data">Failed to load safety data. Please try again later.</td></tr>';
+
+        }
 
     }
+
+}
+
+
+
+async function initializeSafetyTable(baseUrl, token) {
+
+    try {
+
+        const response = await fetch(`${baseUrl}/api/safety/initialize`, {
+
+            method: 'POST',
+
+            headers: {
+
+                'Content-Type': 'application/json',
+
+                'Authorization': token ? `Bearer ${token}` : ''
+
+            }
+
+        });
+
+        
+
+        if (response.ok) {
+
+            console.log('✅ Safety table initialized, reloading data...');
+
+            // Reload safety data after initialization
+
+            const reloadResponse = await fetch(`${baseUrl}/api/safety`, {
+
+                headers: {
+
+                    'Content-Type': 'application/json',
+
+                    'Accept': 'application/json',
+
+                    'Authorization': token ? `Bearer ${token}` : ''
+
+                }
+
+            });
+
+            
+
+            if (reloadResponse.ok) {
+
+                const result = await reloadResponse.json();
+
+                if (result.success && result.data && result.data.length > 0) {
+
+                    const safetyProjects = result.data.map(record => ({
+
+                        id: record.id || record.project_id,
+
+                        name: record.project_name || 'Unknown Project',
+
+                        safety_score: record.safety_score || 0,
+
+                        days_without_incident: record.days_without_incident || 0,
+
+                        open_violations: record.open_violations || 0,
+
+                        ppe_compliance: record.ppe_compliance || 0,
+
+                        last_inspection: record.last_inspection_date || new Date().toISOString().split('T')[0],
+
+                        risk_level: record.risk_level || 'Medium',
+
+                        status: record.status || 'Active',
+
+                        location: record.location || 'Various Sites'
+
+                    }));
+
+                    updateSafetyTable(safetyProjects);
+
+                    updateSafetySummary(result.metrics || calculateSafetyMetrics(safetyProjects));
+
+                    return;
+
+                }
+
+            }
+
+        }
+
+    } catch (e) {
+
+        console.warn('⚠️ Could not initialize safety table:', e.message);
+
+    }
+
+    
+
+    // Final fallback
+
+    const tableBody = document.getElementById('safetyTableBody');
+
+    tableBody.innerHTML = '<tr><td colspan="9" class="no-data">No safety data available. Please add project safety records.</td></tr>';
 
 }
 
@@ -32619,143 +32809,79 @@ async function loadSafetyFromAPI() {
 
 async function loadSafetyFromDatabase() {
 
-    // Simulate database query with realistic safety data
+    // Load safety data from the database via /api/safety endpoint
 
-    const safetyData = [
+    const baseUrl = (typeof KashTecAPI !== 'undefined' && KashTecAPI.baseUrl) ? KashTecAPI.baseUrl : '';
 
-        {
+    const token = (typeof KashTecAPI !== 'undefined' && typeof KashTecAPI.getAuthToken === 'function') ? KashTecAPI.getAuthToken() : localStorage.getItem('token');
 
-            id: 1,
+    
 
-            name: "Kigali Tower Construction",
+    const response = await fetch(`${baseUrl}/api/safety`, {
 
-            safety_score: 92,
+        headers: {
 
-            days_without_incident: 45,
+            'Content-Type': 'application/json',
 
-            open_violations: 2,
+            'Accept': 'application/json',
 
-            ppe_compliance: 95,
-
-            last_inspection: "2026-04-20",
-
-            risk_level: "Low",
-
-            status: "Active",
-
-            location: "Kigali, Rwanda"
-
-        },
-
-        {
-
-            id: 2,
-
-            name: "Dar es Salaam Housing Project",
-
-            safety_score: 78,
-
-            days_without_incident: 12,
-
-            open_violations: 5,
-
-            ppe_compliance: 82,
-
-            last_inspection: "2026-04-18",
-
-            risk_level: "Medium",
-
-            status: "Active",
-
-            location: "Dar es Salaam, Tanzania"
-
-        },
-
-        {
-
-            id: 3,
-
-            name: "Nairobi Office Complex",
-
-            safety_score: 88,
-
-            days_without_incident: 28,
-
-            open_violations: 3,
-
-            ppe_compliance: 90,
-
-            last_inspection: "2026-04-22",
-
-            risk_level: "Low",
-
-            status: "Active",
-
-            location: "Nairobi, Kenya"
-
-        },
-
-        {
-
-            id: 4,
-
-            name: "Mombasa Port Expansion",
-
-            safety_score: 65,
-
-            days_without_incident: 5,
-
-            open_violations: 8,
-
-            ppe_compliance: 70,
-
-            last_inspection: "2026-04-15",
-
-            risk_level: "High",
-
-            status: "Active",
-
-            location: "Mombasa, Kenya"
-
-        },
-
-        {
-
-            id: 5,
-
-            name: "Kampala Road Construction",
-
-            safety_score: 95,
-
-            days_without_incident: 67,
-
-            open_violations: 1,
-
-            ppe_compliance: 98,
-
-            last_inspection: "2026-04-23",
-
-            risk_level: "Low",
-
-            status: "Active",
-
-            location: "Kampala, Uganda"
+            'Authorization': token ? `Bearer ${token}` : ''
 
         }
 
-    ];
+    });
 
     
 
-    // Simulate database delay
+    if (!response.ok) {
 
-    await new Promise(resolve => setTimeout(resolve, 800));
+        throw new Error(`Safety API returned ${response.status}`);
+
+    }
 
     
 
-    updateSafetyTable(safetyData);
+    const result = await response.json();
 
-    updateSafetySummary(calculateSafetyMetrics(safetyData));
+    
+
+    if (result.success && result.data && result.data.length > 0) {
+
+        const safetyData = result.data.map(record => ({
+
+            id: record.id || record.project_id,
+
+            name: record.project_name || 'Unknown Project',
+
+            safety_score: record.safety_score || 0,
+
+            days_without_incident: record.days_without_incident || 0,
+
+            open_violations: record.open_violations || 0,
+
+            ppe_compliance: record.ppe_compliance || 0,
+
+            last_inspection: record.last_inspection_date || new Date().toISOString().split('T')[0],
+
+            risk_level: record.risk_level || 'Medium',
+
+            status: record.status || 'Active',
+
+            location: record.location || 'Various Sites'
+
+        }));
+
+        updateSafetyTable(safetyData);
+
+        updateSafetySummary(result.metrics || calculateSafetyMetrics(safetyData));
+
+    } else {
+
+        updateSafetyTable([]);
+
+        updateSafetySummary({ total_projects: 0, avg_safety_score: 0, total_incidents: 0, compliance_rate: 0 });
+
+    }
 
 }
 
