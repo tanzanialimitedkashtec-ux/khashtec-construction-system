@@ -54738,17 +54738,16 @@ async function loadPaymentData() {
 
 async function loadPaymentTrackingData() {
 
-    // Get transaction data from statistics endpoint which has recent_transactions
-    const response = await KashTecAPI.get('/payment-tracking/statistics');
+    // Get payment tracking data from the database endpoint
+    const response = await KashTecAPI.get('/payment-tracking');
 
     
 
     if (response && response.success) {
-        const stats = response.statistics || (response.data && response.data.statistics) || {};
-        const recentTransactions = stats.recent_transactions || [];
+        const trackingRecords = response.tracking || response.data || [];
         
-        // Transform transaction data to match table expectations
-        const transformedPayments = recentTransactions.map((transaction, index) => {
+        // Transform database records to match table expectations
+        const transformedPayments = trackingRecords.map((transaction, index) => {
             const isPaid = transaction.payment_status === 'completed';
             const amount = parseFloat(transaction.amount) || 0;
             
@@ -54757,10 +54756,10 @@ async function loadPaymentTrackingData() {
                 sale_reference: transaction.tracking_reference || `SAL${String(index + 1).padStart(5, '0')}`,
                 client_name: transaction.transaction_type === 'sale' ? 
                     (transaction.paid_by || 'Client') : 
-                    (transaction.transaction_type === 'purchase' ? 'Vendor' : 'Other'),
-                client_email: '',
+                    (transaction.paid_to || transaction.paid_by || 'Unknown'),
+                client_email: transaction.invoice_number || '',
                 property_title: transaction.description || `Transaction - ${transaction.transaction_type}`,
-                property_location: transaction.category || 'N/A',
+                property_location: transaction.department || transaction.category || 'N/A',
                 total_amount: amount,
                 paid_amount: isPaid ? amount : 0,
                 outstanding_balance: isPaid ? 0 : amount,
