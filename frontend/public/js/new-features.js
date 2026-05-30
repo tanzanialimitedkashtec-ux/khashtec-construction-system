@@ -1059,17 +1059,17 @@ async function loadRiskManagement() {
         let html = `
             <div class="card">
                 <h3>Risk Management</h3>
-                <button onclick="showRiskForm()">+ New Risk</button>
+                <button onclick="showRiskForm()" class="btn btn-primary">+ New Risk</button>
                 <table style="width: 100%; margin-top: 20px; border-collapse: collapse;">
                     <thead>
                         <tr style="background: #f4f4f4;">
-                            <th style="padding: 10px; border: 1px solid #ddd;">Risk #</th>
-                            <th style="padding: 10px; border: 1px solid #ddd;">Title</th>
-                            <th style="padding: 10px; border: 1px solid #ddd;">Category</th>
-                            <th style="padding: 10px; border: 1px solid #ddd;">Probability</th>
-                            <th style="padding: 10px; border: 1px solid #ddd;">Impact</th>
-                            <th style="padding: 10px; border: 1px solid #ddd;">Status</th>
-                            <th style="padding: 10px; border: 1px solid #ddd;">Actions</th>
+                            <th style="padding: 10px; border: 1px solid #031865de;">Risk #</th>
+                            <th style="padding: 10px; border: 1px solid #031865de;">Title</th>
+                            <th style="padding: 10px; border: 1px solid #031865de">Category</th>
+                            <th style="padding: 10px; border: 1px solid #031865de;">Probability</th>
+                            <th style="padding: 10px; border: 1px solid #031865de;">Impact</th>
+                            <th style="padding: 10px; border: 1px solid #031865de;">Status</th>
+                            <th style="padding: 10px; border: 1px solid #031865de;">Actions</th>
                         </tr>
                     </thead>
                     <tbody>
