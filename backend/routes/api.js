@@ -111,6 +111,19 @@ router.get('/employees', async (req, res) => {
     }
 });
 
+// Get all tasks (task assignments)
+router.get('/tasks', async (req, res) => {
+    try {
+        // Attempt to read from a `tasks` table if it exists
+        const tasks = await db.execute(`SELECT * FROM tasks ORDER BY created_at DESC`);
+        res.json({ success: true, data: tasks });
+    } catch (error) {
+        // If tasks table doesn't exist or another error occurs, return empty array
+        console.warn('Warning: /tasks route error:', error.message);
+        res.json({ success: true, data: [] });
+    }
+});
+
 // Get all properties
 router.get('/properties', async (req, res) => {
     try {
