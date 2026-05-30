@@ -1780,6 +1780,17 @@ try {
     console.error('❌ Error loading work routes:', error);
 }
 
+// ===== SAFETY ROUTES =====
+console.log('🔍 Mounting safety routes from routes/safety.js...');
+try {
+    const safetyRoutes = require('./routes/safety');
+    console.log('✅ Safety routes loaded successfully');
+    app.use('/api/safety', safetyRoutes);
+    console.log('✅ Safety routes mounted at /api/safety');
+} catch (error) {
+    console.error('❌ Error loading safety routes:', error);
+}
+
 // ===== MATERIALS ROUTES =====
 console.log('🔍 Mounting materials routes from routes/materials.js...');
 try {
