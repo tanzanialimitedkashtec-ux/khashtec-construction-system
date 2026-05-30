@@ -33003,12 +33003,6 @@ function updateSafetyTable(projects) {
 
                 </button>
 
-                <button class="action-btn" onclick="scheduleInspection(${project.id})" title="Schedule Inspection">
-
-                    ðŸ“…
-
-                </button>
-
             </td>
 
         </tr>
@@ -33165,25 +33159,439 @@ function exportSafetyReport() {
 
 
 
-function viewProjectSafetyDetails(projectId) {
+async function viewProjectSafetyDetails(projectId) {
 
-    customAlert(`Viewing safety details for Project ID: ${projectId}`, 'Project Details', 'info');
+    try {
+
+        const baseUrl = (typeof KashTecAPI !== 'undefined' && KashTecAPI.baseUrl) ? KashTecAPI.baseUrl : '';
+
+        const token = (typeof KashTecAPI !== 'undefined' && typeof KashTecAPI.getAuthToken === 'function') ? KashTecAPI.getAuthToken() : localStorage.getItem('token');
+
+        
+
+        const response = await fetch(`${baseUrl}/api/safety/${projectId}`, {
+
+            headers: {
+
+                'Content-Type': 'application/json',
+
+                'Authorization': token ? `Bearer ${token}` : ''
+
+            }
+
+        });
+
+        
+
+        let project = null;
+
+        if (response.ok) {
+
+            const result = await response.json();
+
+            project = result.data || result;
+
+        }
+
+        
+
+        if (!project) {
+
+            // Fallback: find project from table data
+
+            const rows = document.querySelectorAll('#safetyTableBody .safety-row');
+
+            rows.forEach(row => {
+
+                const nameEl = row.querySelector('.project-name strong');
+
+                const scoreEl = row.querySelector('.score-badge');
+
+                if (nameEl && row.querySelector(`[onclick*="${projectId}"]`)) {
+
+                    project = {
+
+                        project_name: nameEl.textContent,
+
+                        location: row.querySelector('.project-name small')?.textContent || 'N/A',
+
+                        safety_score: parseInt(scoreEl?.textContent) || 0,
+
+                        days_without_incident: parseInt(row.querySelector('.incident-days')?.textContent) || 0,
+
+                        open_violations: parseInt(row.querySelector('.violation-count')?.textContent) || 0,
+
+                        ppe_compliance: parseInt(row.querySelector('.compliance-text')?.textContent) || 0,
+
+                        last_inspection_date: row.querySelector('.inspection-date')?.textContent || 'N/A',
+
+                        risk_level: row.querySelector('.risk-badge')?.textContent?.trim() || 'N/A',
+
+                        status: row.querySelector('.status-badge')?.textContent?.trim() || 'N/A'
+
+                    };
+
+                }
+
+            });
+
+        }
+
+        
+
+        if (!project) {
+
+            customAlert('Could not load safety details for this project.', 'Error', 'error');
+
+            return;
+
+        }
+
+        
+
+        const scoreClass = (project.safety_score || 0) >= 90 ? 'excellent' : (project.safety_score || 0) >= 75 ? 'good' : (project.safety_score || 0) >= 60 ? 'moderate' : 'poor';
+
+        const riskColor = (project.risk_level || '').toLowerCase() === 'high' ? '#dc3545' : (project.risk_level || '').toLowerCase() === 'medium' ? '#ffc107' : '#28a745';
+
+        
+
+        const modal = document.createElement('div');
+
+        modal.className = 'modal-overlay';
+
+        modal.id = 'safetyDetailsModal';
+
+        modal.innerHTML = `
+
+            <div class="modal-content" style="max-width: 600px; width: 90%;">
+
+                <div class="modal-header" style="background: #0b3d91; color: white; padding: 15px 20px; border-radius: 8px 8px 0 0;">
+
+                    <h3 style="margin: 0;">Safety Details - ${project.project_name || 'Project'}</h3>
+
+                    <button class="modal-close" onclick="document.getElementById('safetyDetailsModal').remove()" style="background: none; border: none; color: white; font-size: 24px; cursor: pointer;">&times;</button>
+
+                </div>
+
+                <div class="modal-body" style="padding: 20px;">
+
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+
+                        <div style="padding: 12px; background: #f8f9fa; border-radius: 8px; text-align: center;">
+
+                            <div style="font-size: 12px; color: #666; margin-bottom: 5px;">Safety Score</div>
+
+                            <div style="font-size: 28px; font-weight: bold; color: ${scoreClass === 'excellent' ? '#28a745' : scoreClass === 'good' ? '#17a2b8' : scoreClass === 'moderate' ? '#ffc107' : '#dc3545'};">${project.safety_score || 0}%</div>
+
+                        </div>
+
+                        <div style="padding: 12px; background: #f8f9fa; border-radius: 8px; text-align: center;">
+
+                            <div style="font-size: 12px; color: #666; margin-bottom: 5px;">Risk Level</div>
+
+                            <div style="font-size: 20px; font-weight: bold; color: ${riskColor};">${project.risk_level || 'N/A'}</div>
+
+                        </div>
+
+                        <div style="padding: 12px; background: #f8f9fa; border-radius: 8px; text-align: center;">
+
+                            <div style="font-size: 12px; color: #666; margin-bottom: 5px;">Days Without Incident</div>
+
+                            <div style="font-size: 28px; font-weight: bold; color: #0b3d91;">${project.days_without_incident || 0}</div>
+
+                        </div>
+
+                        <div style="padding: 12px; background: #f8f9fa; border-radius: 8px; text-align: center;">
+
+                            <div style="font-size: 12px; color: #666; margin-bottom: 5px;">Open Violations</div>
+
+                            <div style="font-size: 28px; font-weight: bold; color: ${(project.open_violations || 0) > 3 ? '#dc3545' : '#ffc107'};">${project.open_violations || 0}</div>
+
+                        </div>
+
+                        <div style="padding: 12px; background: #f8f9fa; border-radius: 8px; text-align: center;">
+
+                            <div style="font-size: 12px; color: #666; margin-bottom: 5px;">PPE Compliance</div>
+
+                            <div style="font-size: 28px; font-weight: bold; color: ${(project.ppe_compliance || 0) >= 90 ? '#28a745' : '#ffc107'};">${project.ppe_compliance || 0}%</div>
+
+                        </div>
+
+                        <div style="padding: 12px; background: #f8f9fa; border-radius: 8px; text-align: center;">
+
+                            <div style="font-size: 12px; color: #666; margin-bottom: 5px;">Status</div>
+
+                            <div style="font-size: 18px; font-weight: bold; color: #0b3d91;">${project.status || 'N/A'}</div>
+
+                        </div>
+
+                    </div>
+
+                    <div style="margin-top: 15px; padding: 12px; background: #f8f9fa; border-radius: 8px;">
+
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+
+                            <span style="color: #666;">Location:</span>
+
+                            <strong>${project.location || 'N/A'}</strong>
+
+                        </div>
+
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+
+                            <span style="color: #666;">Last Inspection:</span>
+
+                            <strong>${project.last_inspection_date || 'N/A'}</strong>
+
+                        </div>
+
+                        <div style="display: flex; justify-content: space-between;">
+
+                            <span style="color: #666;">Total Inspections:</span>
+
+                            <strong>${project.total_inspections || 'N/A'}</strong>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+                <div class="modal-footer" style="padding: 15px 20px; border-top: 1px solid #eee; text-align: right;">
+
+                    <button onclick="generateSafetyReport(${projectId})" style="background: #0b3d91; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; margin-right: 8px;">Generate Report</button>
+
+                    <button onclick="document.getElementById('safetyDetailsModal').remove()" style="background: #6c757d; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer;">Close</button>
+
+                </div>
+
+            </div>
+
+        `;
+
+        
+
+        document.body.appendChild(modal);
+
+        modal.addEventListener('click', function(e) {
+
+            if (e.target === modal) modal.remove();
+
+        });
+
+        
+
+    } catch (error) {
+
+        console.error('Error loading safety details:', error);
+
+        customAlert('Failed to load safety details. Please try again.', 'Error', 'error');
+
+    }
 
 }
 
 
 
-function generateSafetyReport(projectId) {
+async function generateSafetyReport(projectId) {
 
-    customAlert(`Generating safety report for Project ID: ${projectId}`, 'Report Generation', 'info');
+    try {
 
-}
+        const baseUrl = (typeof KashTecAPI !== 'undefined' && KashTecAPI.baseUrl) ? KashTecAPI.baseUrl : '';
+
+        const token = (typeof KashTecAPI !== 'undefined' && typeof KashTecAPI.getAuthToken === 'function') ? KashTecAPI.getAuthToken() : localStorage.getItem('token');
+
+        
+
+        customAlert('Generating safety report... Please wait.', 'Report Generation', 'info');
+
+        
+
+        // Fetch project safety data
+
+        const response = await fetch(`${baseUrl}/api/safety/${projectId}`, {
+
+            headers: {
+
+                'Content-Type': 'application/json',
+
+                'Authorization': token ? `Bearer ${token}` : ''
+
+            }
+
+        });
+
+        
+
+        let project = null;
+
+        if (response.ok) {
+
+            const result = await response.json();
+
+            project = result.data || result;
+
+        }
+
+        
+
+        if (!project) {
+
+            // Fallback: find from table
+
+            const rows = document.querySelectorAll('#safetyTableBody .safety-row');
+
+            rows.forEach(row => {
+
+                if (row.querySelector(`[onclick*="${projectId}"]`)) {
+
+                    project = {
+
+                        project_name: row.querySelector('.project-name strong')?.textContent || 'Unknown',
+
+                        location: row.querySelector('.project-name small')?.textContent || 'N/A',
+
+                        safety_score: parseInt(row.querySelector('.score-badge')?.textContent) || 0,
+
+                        days_without_incident: parseInt(row.querySelector('.incident-days')?.textContent) || 0,
+
+                        open_violations: parseInt(row.querySelector('.violation-count')?.textContent) || 0,
+
+                        ppe_compliance: parseInt(row.querySelector('.compliance-text')?.textContent) || 0,
+
+                        last_inspection_date: row.querySelector('.inspection-date')?.textContent || 'N/A',
+
+                        risk_level: row.querySelector('.risk-badge')?.textContent?.trim() || 'N/A',
+
+                        status: row.querySelector('.status-badge')?.textContent?.trim() || 'N/A'
+
+                    };
+
+                }
+
+            });
+
+        }
+
+        
+
+        if (!project) {
+
+            customAlert('Could not load project data for report generation.', 'Error', 'error');
+
+            return;
+
+        }
+
+        
+
+        // Generate report content
+
+        const reportDate = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+
+        const reportContent = `
+
+KASHTEC CONSTRUCTION SYSTEM
+
+SAFETY REPORT
+
+================================
+
+Generated: ${reportDate}
+
+Project: ${project.project_name || 'N/A'}
+
+Location: ${project.location || 'N/A'}
+
+Status: ${project.status || 'N/A'}
 
 
 
-function scheduleInspection(projectId) {
+SAFETY METRICS
 
-    customAlert(`Scheduling inspection for Project ID: ${projectId}`, 'Inspection Scheduling', 'info');
+--------------------------------
+
+Safety Score:           ${project.safety_score || 0}%
+
+Risk Level:             ${project.risk_level || 'N/A'}
+
+Days Without Incident:  ${project.days_without_incident || 0}
+
+Open Violations:        ${project.open_violations || 0}
+
+PPE Compliance:         ${project.ppe_compliance || 0}%
+
+Last Inspection:        ${project.last_inspection_date || 'N/A'}
+
+Total Inspections:      ${project.total_inspections || 'N/A'}
+
+Total Incidents:        ${project.total_incidents || 'N/A'}
+
+
+
+RISK ASSESSMENT
+
+--------------------------------
+
+${(project.safety_score || 0) >= 90 ? 'EXCELLENT - Project demonstrates outstanding safety compliance.' :
+
+  (project.safety_score || 0) >= 75 ? 'GOOD - Project meets safety standards with minor areas for improvement.' :
+
+  (project.safety_score || 0) >= 60 ? 'MODERATE - Project requires attention to improve safety compliance.' :
+
+  'POOR - Immediate action required to address safety deficiencies.'}
+
+
+
+RECOMMENDATIONS
+
+--------------------------------
+
+${(project.open_violations || 0) > 0 ? '- Address ' + project.open_violations + ' open violation(s) immediately.\n' : ''}${(project.ppe_compliance || 0) < 90 ? '- Improve PPE compliance (currently at ' + project.ppe_compliance + '%).\n' : ''}${(project.days_without_incident || 0) < 14 ? '- Recent incident detected. Review safety protocols.\n' : ''}${(project.safety_score || 0) >= 90 ? '- Maintain current excellent safety standards.\n- Continue regular safety drills and inspections.' : '- Schedule additional safety training.\n- Increase inspection frequency.'}
+
+
+
+================================
+
+Report generated by KASHTEC Construction Management System
+
+        `.trim();
+
+        
+
+        // Create downloadable file
+
+        const blob = new Blob([reportContent], { type: 'text/plain' });
+
+        const url = URL.createObjectURL(blob);
+
+        const a = document.createElement('a');
+
+        a.href = url;
+
+        a.download = `Safety_Report_${(project.project_name || 'Project').replace(/[^a-zA-Z0-9]/g, '_')}_${new Date().toISOString().split('T')[0]}.txt`;
+
+        document.body.appendChild(a);
+
+        a.click();
+
+        document.body.removeChild(a);
+
+        URL.revokeObjectURL(url);
+
+        
+
+        customAlert(`Safety report for "${project.project_name}" has been downloaded successfully.`, 'Report Generated', 'success');
+
+        
+
+    } catch (error) {
+
+        console.error('Error generating safety report:', error);
+
+        customAlert('Failed to generate safety report. Please try again.', 'Error', 'error');
+
+    }
 
 }
 
