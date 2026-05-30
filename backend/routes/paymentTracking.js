@@ -3,173 +3,6 @@ const router = express.Router();
 
 console.log('🚀 Payment Tracking route file is being loaded...');
 
-function getSamplePaymentTracking() {
-    return [
-        {
-            id: 1,
-            tracking_reference: 'PT202605001',
-            transaction_id: 'TXN001',
-            transaction_type: 'sale',
-            amount: 150000.00,
-            currency: 'USD',
-            payment_method: 'bank_transfer',
-            payment_status: 'completed',
-            paid_by: 'Client ABC Corporation',
-            paid_to: 'KASHTEC Tanzania Limited',
-            payment_date: '2026-05-01',
-            due_date: '2026-05-01',
-            description: 'Payment for construction project Phase 1',
-            category: 'construction',
-            department: 'Projects',
-            project_id: 'PRJ001',
-            invoice_number: 'INV001',
-            receipt_number: 'REC001',
-            approved_by: 'Finance Manager',
-            approved_date: '2026-05-01T09:00:00Z',
-            processed_by: 'Accounting Team',
-            processed_date: '2026-05-01T10:00:00Z',
-            notes: 'Payment received on time, project progressing well',
-            created_at: '2026-05-01T08:00:00Z',
-            updated_at: '2026-05-01T10:00:00Z'
-        },
-        {
-            id: 2,
-            tracking_reference: 'PT202605002',
-            transaction_id: 'TXN002',
-            transaction_type: 'purchase',
-            amount: 25000.00,
-            currency: 'USD',
-            payment_method: 'card',
-            payment_status: 'completed',
-            paid_by: 'KASHTEC Tanzania Limited',
-            paid_to: 'Construction Supplies Ltd',
-            payment_date: '2026-05-03',
-            due_date: '2026-05-03',
-            description: 'Purchase of construction materials',
-            category: 'procurement',
-            department: 'Procurement',
-            project_id: 'PRJ002',
-            invoice_number: 'INV002',
-            receipt_number: 'REC002',
-            approved_by: 'Procurement Manager',
-            approved_date: '2026-05-03T11:00:00Z',
-            processed_by: 'Finance Team',
-            processed_date: '2026-05-03T14:00:00Z',
-            notes: 'Materials delivered as expected',
-            created_at: '2026-05-03T10:00:00Z',
-            updated_at: '2026-05-03T14:00:00Z'
-        },
-        {
-            id: 3,
-            tracking_reference: 'PT202605003',
-            transaction_id: 'TXN003',
-            transaction_type: 'salary',
-            amount: 8500.00,
-            currency: 'USD',
-            payment_method: 'bank_transfer',
-            payment_status: 'completed',
-            paid_by: 'KASHTEC Tanzania Limited',
-            paid_to: 'John Doe',
-            payment_date: '2026-05-05',
-            due_date: '2026-05-05',
-            description: 'Monthly salary payment - May 2026',
-            category: 'payroll',
-            department: 'HR',
-            project_id: null,
-            invoice_number: 'PAY001',
-            receipt_number: 'PAYREC001',
-            approved_by: 'HR Manager',
-            approved_date: '2026-05-05T08:00:00Z',
-            processed_by: 'Payroll Team',
-            processed_date: '2026-05-05T16:00:00Z',
-            notes: 'Monthly salary processed for all employees',
-            created_at: '2026-05-05T08:00:00Z',
-            updated_at: '2026-05-05T16:00:00Z'
-        },
-        {
-            id: 4,
-            tracking_reference: 'PT202605004',
-            transaction_id: 'TXN004',
-            transaction_type: 'expense',
-            amount: 12000.00,
-            currency: 'USD',
-            payment_method: 'mobile_money',
-            payment_status: 'pending',
-            paid_by: 'KASHTEC Tanzania Limited',
-            paid_to: 'Equipment Rental Service',
-            payment_date: null,
-            due_date: '2026-05-15',
-            description: 'Heavy equipment rental for construction site',
-            category: 'operations',
-            department: 'Operations',
-            project_id: 'PRJ003',
-            invoice_number: 'EXP001',
-            receipt_number: null,
-            approved_by: 'Operations Manager',
-            approved_date: '2026-05-10T14:00:00Z',
-            processed_by: null,
-            processed_date: null,
-            notes: 'Payment to be processed by May 15th',
-            created_at: '2026-05-10T14:00:00Z',
-            updated_at: '2026-05-10T14:00:00Z'
-        },
-        {
-            id: 5,
-            tracking_reference: 'PT202605005',
-            transaction_id: 'TXN005',
-            transaction_type: 'refund',
-            amount: 5000.00,
-            currency: 'USD',
-            payment_method: 'bank_transfer',
-            payment_status: 'completed',
-            paid_by: 'KASHTEC Tanzania Limited',
-            paid_to: 'Client XYZ Corporation',
-            payment_date: '2026-05-08',
-            due_date: '2026-05-08',
-            description: 'Refund for cancelled construction work',
-            category: 'refund',
-            department: 'Finance',
-            project_id: 'PRJ004',
-            invoice_number: 'REF001',
-            receipt_number: 'REFREC001',
-            approved_by: 'Finance Director',
-            approved_date: '2026-05-07T15:00:00Z',
-            processed_by: 'Finance Team',
-            processed_date: '2026-05-08T11:00:00Z',
-            notes: 'Refund processed as per client request',
-            created_at: '2026-05-07T15:00:00Z',
-            updated_at: '2026-05-08T11:00:00Z'
-        },
-        {
-            id: 6,
-            tracking_reference: 'PT202605006',
-            transaction_id: 'TXN006',
-            transaction_type: 'other',
-            amount: 3500.00,
-            currency: 'USD',
-            payment_method: 'check',
-            payment_status: 'processing',
-            paid_by: 'KASHTEC Tanzania Limited',
-            paid_to: 'Consulting Services Ltd',
-            payment_date: null,
-            due_date: '2026-05-20',
-            description: 'Consulting fees for project planning',
-            category: 'consulting',
-            department: 'Management',
-            project_id: 'PRJ005',
-            invoice_number: 'CON001',
-            receipt_number: null,
-            approved_by: 'CEO',
-            approved_date: '2026-05-12T10:00:00Z',
-            processed_by: null,
-            processed_date: null,
-            notes: 'Payment pending consultant invoice verification',
-            created_at: '2026-05-12T10:00:00Z',
-            updated_at: '2026-05-12T10:00:00Z'
-        }
-    ];
-}
-
 function normalizeRows(result) {
     if (!Array.isArray(result)) {
         return result && Array.isArray(result.rows) ? result.rows : [];
@@ -251,15 +84,9 @@ router.get('/', async (req, res) => {
             
             tracking = normalizeRows(trackingResult);
             
-            if (tracking.length === 0) {
-                tracking = getSamplePaymentTracking();
-            }
-            
             console.log('✅ Payment Tracking records fetched from database:', tracking.length);
         } catch (dbError) {
-            console.error('❌ Database error, using fallback payment tracking:', dbError);
-            
-            tracking = getSamplePaymentTracking();
+            console.error('❌ Database error fetching payment tracking:', dbError);
         }
         
         res.json({
@@ -300,40 +127,7 @@ router.get('/:id', async (req, res, next) => {
                 console.log('✅ Payment tracking found:', tracking);
             }
         } catch (dbError) {
-            console.error('❌ Database error, using fallback tracking:', dbError);
-            
-            // Fallback to mock tracking data (using first few from the main mock data)
-            const mockTracking = [
-                {
-                    id: 1,
-                    tracking_reference: 'PT202605001',
-                    transaction_id: 'TXN001',
-                    transaction_type: 'sale',
-                    amount: 150000.00,
-                    currency: 'USD',
-                    payment_method: 'bank_transfer',
-                    payment_status: 'completed',
-                    paid_by: 'Client ABC Corporation',
-                    paid_to: 'KASHTEC Tanzania Limited',
-                    payment_date: '2026-05-01',
-                    due_date: '2026-05-01',
-                    description: 'Payment for construction project Phase 1',
-                    category: 'construction',
-                    department: 'Projects',
-                    project_id: 'PRJ001',
-                    invoice_number: 'INV001',
-                    receipt_number: 'REC001',
-                    approved_by: 'Finance Manager',
-                    approved_date: '2026-05-01T09:00:00Z',
-                    processed_by: 'Accounting Team',
-                    processed_date: '2026-05-01T10:00:00Z',
-                    notes: 'Payment received on time, project progressing well',
-                    created_at: '2026-05-01T08:00:00Z',
-                    updated_at: '2026-05-01T10:00:00Z'
-                }
-            ];
-            
-            tracking = mockTracking.find(t => t.id == trackingId);
+            console.error('❌ Database error fetching payment tracking:', dbError);
         }
         
         if (!tracking) {
@@ -449,39 +243,11 @@ router.post('/', async (req, res) => {
             });
             
         } catch (dbError) {
-            console.error('❌ Database error, using mock tracking creation:', dbError);
-            
-            // Fallback to mock tracking creation
-            const trackingId = `PT${Date.now().toString().slice(-6)}`;
-            
-            res.status(201).json({
-                success: true,
-                message: 'Payment tracking created successfully (mock)',
-                trackingId: trackingId,
-                tracking: {
-                    id: trackingId,
-                    tracking_reference,
-                    transaction_id,
-                    transaction_type,
-                    amount,
-                    currency,
-                    payment_method,
-                    payment_status: approved_by ? 'approved' : 'pending',
-                    paid_by,
-                    paid_to,
-                    payment_date,
-                    due_date,
-                    description,
-                    category,
-                    department,
-                    project_id,
-                    invoice_number,
-                    receipt_number,
-                    notes,
-                    approved_by,
-                    created_at: new Date().toISOString(),
-                    mock: true
-                }
+            console.error('❌ Database error creating payment tracking:', dbError);
+            res.status(500).json({
+                success: false,
+                error: 'Database error creating payment tracking',
+                details: dbError.message
             });
         }
         
@@ -543,14 +309,11 @@ router.put('/:id', async (req, res) => {
             });
             
         } catch (dbError) {
-            console.error('❌ Database error, using mock update:', dbError);
-            
-            // Fallback to mock update
-            res.json({
-                success: true,
-                message: 'Payment tracking updated successfully (mock)',
-                affected_rows: 1,
-                mock: true
+            console.error('❌ Database error updating payment tracking:', dbError);
+            res.status(500).json({
+                success: false,
+                error: 'Database error updating payment tracking',
+                details: dbError.message
             });
         }
         
@@ -601,17 +364,11 @@ router.delete('/:id', async (req, res) => {
             });
             
         } catch (dbError) {
-            console.error('❌ Database error, using mock delete:', dbError);
-            
-            // Fallback to mock delete
-            res.json({
-                success: true,
-                message: 'Payment tracking deleted successfully (mock)',
-                deleted_tracking: {
-                    id: trackingId,
-                    tracking_reference: 'Mock Tracking'
-                },
-                mock: true
+            console.error('❌ Database error deleting payment tracking:', dbError);
+            res.status(500).json({
+                success: false,
+                error: 'Database error deleting payment tracking',
+                details: dbError.message
             });
         }
         
@@ -723,72 +480,23 @@ router.get('/statistics', async (req, res) => {
                 });
             }
             
-            // Get recent transactions (last 10)
+            // Get recent transactions (last 50) with all fields needed by the frontend
             const recentResult = await db.execute(`
-                SELECT tracking_reference, transaction_type, amount, payment_status, payment_date, paid_by, paid_to
+                SELECT id, tracking_reference, transaction_id, transaction_type, amount, currency,
+                       payment_method, payment_status, paid_by, paid_to, payment_date, due_date,
+                       description, category, department, project_id, invoice_number, receipt_number,
+                       notes, created_at, updated_at
                 FROM payment_tracking
                 ORDER BY created_at DESC
-                LIMIT 10
+                LIMIT 50
             `);
             
-            const recent = Array.isArray(recentResult) ? recentResult : recentResult[0] || recentResult;
-            statistics.recent_transactions = recent;
+            statistics.recent_transactions = normalizeRows(recentResult);
             
             console.log('✅ Payment tracking statistics fetched from database');
             
         } catch (dbError) {
-            console.error('❌ Database error, using fallback statistics:', dbError);
-            
-            // Fallback to mock statistics based on the sample data
-            statistics = {
-                total_transactions: 6,
-                total_amount: 193500.00,
-                completed_payments: 4,
-                pending_payments: 1,
-                failed_payments: 0,
-                by_transaction_type: {
-                    sale: { count: 1, total_amount: 150000.00 },
-                    purchase: { count: 1, total_amount: 25000.00 },
-                    salary: { count: 1, total_amount: 8500.00 },
-                    expense: { count: 1, total_amount: 12000.00 },
-                    refund: { count: 1, total_amount: 5000.00 },
-                    other: { count: 1, total_amount: 3500.00 }
-                },
-                by_payment_method: {
-                    bank_transfer: { count: 3, total_amount: 183500.00 },
-                    card: { count: 1, total_amount: 25000.00 },
-                    mobile_money: { count: 1, total_amount: 12000.00 },
-                    check: { count: 1, total_amount: 3500.00 }
-                },
-                by_payment_status: {
-                    completed: { count: 4, total_amount: 188500.00 },
-                    pending: { count: 1, total_amount: 12000.00 },
-                    processing: { count: 1, total_amount: 3500.00 }
-                },
-                monthly_summary: [
-                    { month: '2026-05', transactions: 6, amount: 193500.00 }
-                ],
-                recent_transactions: [
-                    {
-                        tracking_reference: 'PT202605006',
-                        transaction_type: 'other',
-                        amount: 3500.00,
-                        payment_status: 'processing',
-                        payment_date: null,
-                        paid_by: 'KASHTEC Tanzania Limited',
-                        paid_to: 'Consulting Services Ltd'
-                    },
-                    {
-                        tracking_reference: 'PT202605005',
-                        transaction_type: 'refund',
-                        amount: 5000.00,
-                        payment_status: 'completed',
-                        payment_date: '2026-05-08',
-                        paid_by: 'KASHTEC Tanzania Limited',
-                        paid_to: 'Client XYZ Corporation'
-                    }
-                ]
-            };
+            console.error('❌ Database error fetching payment tracking statistics:', dbError);
         }
         
         res.json({
