@@ -128,6 +128,7 @@ const assetsEquipmentRoutes = require('./backend/routes/assetsEquipment');
 const financeRoutes = require('./backend/routes/finance');
 
 const auditRoutes = require('./backend/routes/audit');
+const safetyRoutes = require('./backend/routes/safety');
 
 
 
@@ -884,6 +885,12 @@ app.use('/api/workforce-budget', asyncHandler(async (req, res, next) => {
 app.use('/api/work', asyncHandler(async (req, res, next) => {
 
     return workRoutes(req, res, next);
+
+}));
+
+app.use('/api/safety', asyncHandler(async (req, res, next) => {
+
+    return safetyRoutes(req, res, next);
 
 }));
 
