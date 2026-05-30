@@ -1179,6 +1179,252 @@ router.get('/site-reports', async (req, res) => {
     }
 });
 
+// ============================================
+// Administrative Operations Endpoints
+// ============================================
+
+// GET /operations - Fetch all admin operations data from database
+router.get('/operations', async (req, res) => {
+    try {
+        console.log('📋 Fetching administrative operations data...');
+
+        let adminWork = [];
+        let documents = [];
+        let officeResources = [];
+        let internalComms = [];
+
+        // Fetch admin work items
+        try {
+            const [rows] = await db.execute(
+                `SELECT id, work_type, work_title, work_description, status, priority,
+                        submitted_by, submitted_date, assigned_to, deadline, completion_date
+                 FROM admin_work
+                 ORDER BY submitted_date DESC
+                 LIMIT 50`
+            );
+            adminWork = rows || [];
+            console.log(`✅ Loaded ${adminWork.length} admin work items`);
+        } catch (e) {
+            console.error('⚠️ Error fetching admin_work:', e.message);
+        }
+
+        // Fetch documents
+        try {
+            const [rows] = await db.execute(
+                `SELECT id, title, description, file_name, category, status, created_at, updated_at
+                 FROM documents
+                 ORDER BY updated_at DESC
+                 LIMIT 50`
+            );
+            documents = rows || [];
+            console.log(`✅ Loaded ${documents.length} documents`);
+        } catch (e) {
+            console.error('⚠️ Error fetching documents:', e.message);
+        }
+
+        // Fetch office resources
+        try {
+            const [rows] = await db.execute(
+                `SELECT id, resource_code, resource_name, resource_type, description,
+                        status, \`condition\`, location, assigned_to, created_at
+                 FROM office_resources
+                 ORDER BY created_at DESC
+                 LIMIT 50`
+            );
+            officeResources = rows || [];
+            console.log(`✅ Loaded ${officeResources.length} office resources`);
+        } catch (e) {
+            console.error('⚠️ Error fetching office_resources:', e.message);
+        }
+
+        // Fetch internal communications from admin_work where work_type relates to communication
+        try {
+            const [rows] = await db.execute(
+                `SELECT id, work_type, work_title, work_description, status, priority,
+                        submitted_by, submitted_date
+                 FROM admin_work
+                 WHERE work_type IN ('Administrative Operations', 'Department Coordination', 'Document Management')
+                 ORDER BY submitted_date DESC
+                 LIMIT 20`
+            );
+            internalComms = rows || [];
+            console.log(`✅ Loaded ${internalComms.length} internal communication items`);
+        } catch (e) {
+            console.error('⚠️ Error fetching internal comms:', e.message);
+        }
+
+        // Compute summary stats
+        const totalWork = adminWork.length;
+        const pendingWork = adminWork.filter(w => w.status === 'Pending').length;
+        const inProgressWork = adminWork.filter(w => w.status === 'In Progress').length;
+        const completedWork = adminWork.filter(w => w.status === 'Completed').length;
+        const totalDocs = documents.length;
+        const totalResources = officeResources.length;
+
+        res.json({
+            success: true,
+            data: {
+                adminWork,
+                documents,
+                officeResources,
+                internalComms,
+                summary: {
+                    totalWork,
+                    pendingWork,
+                    inProgressWork,
+                    completedWork,
+                    totalDocs,
+                    totalResources,
+                    internalCommStatus: internalComms.length > 0 ? 'Active' : 'No Records',
+                    documentationControl: totalDocs > 0 ? 'Organized' : 'No Records',
+                    filingSystemStatus: totalDocs > 0 ? 'Updated' : 'No Records'
+                }
+            }
+        });
+    } catch (error) {
+        console.error('❌ Error fetching admin operations:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Failed to fetch administrative operations data',
+            details: error.message
+        });
+    }
+});
+
+// POST /operations/internal-comm - Create/update internal communication record
+router.post('/operations/internal-comm', async (req, res) => {
+    try {
+        const { subject, message, priority, recipients } = req.body;
+        console.log('📨 Creating internal communication record...');
+
+        const [result] = await db.execute(
+            `INSERT INTO admin_work (department_code, work_type, work_title, work_description, status, priority, submitted_by, submitted_date)
+             VALUES ('ADMIN', 'Department Coordination', ?, ?, 'Pending', ?, ?)`,
+            [
+                subject || 'Internal Communication',
+                message || '',
+                priority || 'Medium',
+                (recipients || 'Admin')
+            ]
+        );
+
+        console.log('✅ Internal communication record created, ID:', result.insertId);
+        res.json({
+            success: true,
+            message: 'Internal communication recorded successfully',
+            data: { id: result.insertId }
+        });
+    } catch (error) {
+        console.error('❌ Error creating internal comm:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Failed to create internal communication',
+            details: error.message
+        });
+    }
+});
+
+// POST /operations/filing-system - Update filing system record
+router.post('/operations/filing-system', async (req, res) => {
+    try {
+        const { action, category, description } = req.body;
+        console.log('📂 Updating filing system...');
+
+        const [result] = await db.execute(
+            `INSERT INTO admin_work (department_code, work_type, work_title, work_description, status, priority, submitted_by, submitted_date)
+             VALUES ('ADMIN', 'Document Management', ?, ?, 'Completed', 'Medium', 'Admin System')`,
+            [
+                action || 'Filing System Update',
+                description || `Filing system ${category || 'general'} update performed`
+            ]
+        );
+
+        console.log('✅ Filing system updated, ID:', result.insertId);
+        res.json({
+            success: true,
+            message: 'Filing system updated successfully',
+            data: { id: result.insertId }
+        });
+    } catch (error) {
+        console.error('❌ Error updating filing system:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Failed to update filing system',
+            details: error.message
+        });
+    }
+});
+
+// GET /operations/admin-report - Generate admin report from real data
+router.get('/operations/admin-report', async (req, res) => {
+    try {
+        console.log('📊 Generating administrative report...');
+
+        let workSummary = [];
+        let docSummary = [];
+        let resourceSummary = [];
+
+        try {
+            const [rows] = await db.execute(
+                `SELECT status, COUNT(*) as count FROM admin_work GROUP BY status`
+            );
+            workSummary = rows || [];
+        } catch (e) {
+            console.error('⚠️ Error in work summary:', e.message);
+        }
+
+        try {
+            const [rows] = await db.execute(
+                `SELECT category, status, COUNT(*) as count FROM documents GROUP BY category, status`
+            );
+            docSummary = rows || [];
+        } catch (e) {
+            console.error('⚠️ Error in doc summary:', e.message);
+        }
+
+        try {
+            const [rows] = await db.execute(
+                `SELECT resource_type, status, COUNT(*) as count FROM office_resources GROUP BY resource_type, status`
+            );
+            resourceSummary = rows || [];
+        } catch (e) {
+            console.error('⚠️ Error in resource summary:', e.message);
+        }
+
+        // Recent activity
+        let recentActivity = [];
+        try {
+            const [rows] = await db.execute(
+                `SELECT id, work_type, work_title, status, submitted_date
+                 FROM admin_work
+                 ORDER BY submitted_date DESC
+                 LIMIT 10`
+            );
+            recentActivity = rows || [];
+        } catch (e) {
+            console.error('⚠️ Error in recent activity:', e.message);
+        }
+
+        res.json({
+            success: true,
+            report: {
+                generatedAt: new Date().toISOString(),
+                workSummary,
+                docSummary,
+                resourceSummary,
+                recentActivity
+            }
+        });
+    } catch (error) {
+        console.error('❌ Error generating admin report:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Failed to generate admin report',
+            details: error.message
+        });
+    }
+});
+
 // Get all work items for a specific department
 router.get('/:department', async (req, res, next) => {
     let department = req.params.department;
