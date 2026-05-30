@@ -111,8 +111,8 @@
         <div class="card">
           <h3 style="margin:0 0 12px 0">Departments</h3>
           <div style="margin: 6px 0 12px 0; display:flex; gap:8px; flex-wrap:wrap;">
-            <button type="button" id="newDepartmentBtn">+ New Department</button>
-            <button type="button" id="reloadDepartmentsBtn">Reload</button>
+            <button type="button" id="newDepartmentBtn" class="btn btn-primary">+ New Department</button>
+            <button type="button" id="reloadDepartmentsBtn" class="btn btn-secondary">Reload</button>
           </div>
           <div style="overflow:auto">
             <table style="width:100%;border-collapse:collapse">
