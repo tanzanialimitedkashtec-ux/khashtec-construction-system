@@ -62459,7 +62459,7 @@ async function adminOperations(){
 
     try {
         const token = localStorage.getItem('token') || sessionStorage.getItem('token');
-        const response = await fetch(\`\${baseUrl}/api/admin/operations\`, {
+        const response = await fetch(\`\${baseUrl}/api/admin-operations/operations\`, {
             headers: token ? { 'Authorization': \`Bearer \${token}\` } : {}
         });
         if (response.ok) {
@@ -69590,7 +69590,7 @@ async function reviewInternalComm() {
 
     try {
         const token = localStorage.getItem('token') || sessionStorage.getItem('token');
-        const response = await fetch(\`\${baseUrl}/api/admin/operations\`, {
+        const response = await fetch(\`\${baseUrl}/api/admin-operations/operations\`, {
             headers: token ? { 'Authorization': \`Bearer \${token}\` } : {}
         });
         if (response.ok) {
@@ -69690,7 +69690,7 @@ async function submitInternalComm(e) {
     const token = localStorage.getItem('token') || sessionStorage.getItem('token');
 
     try {
-        const response = await fetch(\`\${baseUrl}/api/admin/operations/internal-comm\`, {
+        const response = await fetch(\`\${baseUrl}/api/admin-operations/operations/internal-comm\`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -69728,7 +69728,7 @@ async function updateFilingSystem() {
 
     try {
         const token = localStorage.getItem('token') || sessionStorage.getItem('token');
-        const response = await fetch(\`\${baseUrl}/api/admin/operations\`, {
+        const response = await fetch(\`\${baseUrl}/api/admin-operations/operations\`, {
             headers: token ? { 'Authorization': \`Bearer \${token}\` } : {}
         });
         if (response.ok) {
@@ -69827,7 +69827,7 @@ async function performFilingUpdate() {
     const token = localStorage.getItem('token') || sessionStorage.getItem('token');
 
     try {
-        const response = await fetch(\`\${baseUrl}/api/admin/operations/filing-system\`, {
+        const response = await fetch(\`\${baseUrl}/api/admin-operations/operations/filing-system\`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -69864,7 +69864,7 @@ async function generateAdminReport() {
 
     try {
         const token = localStorage.getItem('token') || sessionStorage.getItem('token');
-        const response = await fetch(\`\${baseUrl}/api/admin/operations/admin-report\`, {
+        const response = await fetch(\`\${baseUrl}/api/admin-operations/operations/admin-report\`, {
             headers: token ? { 'Authorization': \`Bearer \${token}\` } : {}
         });
         if (response.ok) {

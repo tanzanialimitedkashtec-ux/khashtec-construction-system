@@ -856,6 +856,13 @@ app.use('/api/admin', authenticateToken, asyncHandler(async (req, res, next) => 
 
 }));
 
+// Admin operations endpoints without auth requirement (matches /api/work pattern)
+app.use('/api/admin-operations', asyncHandler(async (req, res, next) => {
+
+    return workRoutes(req, res, next);
+
+}));
+
 
 
 app.use('/api/senior-hiring', asyncHandler(async (req, res, next) => {
