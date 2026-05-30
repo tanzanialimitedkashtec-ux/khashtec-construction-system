@@ -50534,6 +50534,40 @@ function loadTasks() {
 }
 
 
+// Populate the `taskProject` select with real projects from the backend
+async function populateTaskProjectSelect() {
+    try {
+        const baseUrl = window.location.origin;
+        const resp = await fetch(`${baseUrl}/api/projects`, {
+            method: 'GET',
+            headers: { 'Accept': 'application/json' }
+        });
+        if (!resp.ok) {
+            console.warn('populateTaskProjectSelect: failed to fetch projects', resp.status);
+            return;
+        }
+        const data = await resp.json();
+        const projects = Array.isArray(data) ? data : (data.projects || []);
+        const select = document.getElementById('taskProject');
+        if (!select) return;
+        select.innerHTML = '<option value="">Select Project</option>';
+        projects.forEach(p => {
+            const opt = document.createElement('option');
+            opt.value = p.id;
+            opt.textContent = p.name || p.project_name || p.title || `Project ${p.id}`;
+            select.appendChild(opt);
+        });
+        console.log(`populateTaskProjectSelect: populated ${projects.length} projects`);
+    } catch (err) {
+        console.error('populateTaskProjectSelect error', err);
+    }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    populateTaskProjectSelect();
+});
+
+
 
 function getSampleTasks() {
 
