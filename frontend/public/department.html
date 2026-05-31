@@ -14725,11 +14725,15 @@ font-weight: bold;
 
     border-radius: 2px;
 
-    overflow: hidden;
+    overflow-x: auto;
+
+    -webkit-overflow-scrolling: touch;
 
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 
     margin-top: 15px;
+
+    width: 100%;
 
 }
 
@@ -14739,11 +14743,15 @@ font-weight: bold;
 
     width: 100%;
 
+    min-width: 1200px;
+
     border-collapse: collapse;
 
     font-size: 9px;
 
     background: white;
+
+    table-layout: auto;
 
 }
 
@@ -14794,6 +14802,81 @@ font-weight: bold;
 .ppe-table tr:last-child td {
 
     border-bottom: none;
+
+}
+
+
+
+/* PPE Table Responsive Styles */
+
+@media screen and (max-width: 1024px) {
+
+    .ppe-table-container {
+        margin-left: -10px;
+        margin-right: -10px;
+        border-radius: 0;
+        border-left: none;
+        border-right: none;
+    }
+
+    .ppe-table {
+        font-size: 8px;
+    }
+
+    .ppe-table th {
+        padding: 5px 6px;
+        font-size: 8px;
+    }
+
+    .ppe-table td {
+        padding: 6px;
+        font-size: 8px;
+    }
+
+}
+
+@media screen and (max-width: 768px) {
+
+    .ppe-table {
+        min-width: 1000px;
+    }
+
+    .ppe-table th,
+    .ppe-table td {
+        padding: 4px 5px;
+        font-size: 7.5px;
+    }
+
+    .ppe-stats {
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .ppe-overview {
+        padding: 10px;
+    }
+
+}
+
+@media screen and (max-width: 480px) {
+
+    .ppe-table {
+        min-width: 900px;
+    }
+
+    .ppe-tracking h4 {
+        font-size: 14px;
+    }
+
+    .search-section {
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .search-section input,
+    .search-section select {
+        width: 100%;
+    }
 
 }
 
@@ -44621,624 +44704,113 @@ function downloadIncidentReport(incidentId) {
 
 async function loadPpeRecords() {
 
-    console.log('🔄 Loading PPE records...');
-
-    
+    console.log('Loading PPE records from database...');
 
     try {
 
         const baseUrl = window.location.origin;
-
         let response;
 
-        
-
-        // Try to get PPE records from API
-
         try {
-
             response = await fetch(`${baseUrl}/api/work/hse/ppe`, {
-
                 method: 'GET',
-
                 headers: {
-
                     'Content-Type': 'application/json',
-
                     'Authorization': `Bearer ${sessionManager.getAuthToken()}`
-
                 }
-
             });
 
-            
-
             if (!response.ok) {
-
                 throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-
             }
-
         } catch (primaryError) {
-
-            console.warn('⚠️ Primary PPE endpoint failed, trying fallback:', primaryError.message);
-
-            // Try fallback endpoint
-
+            console.warn('Primary PPE endpoint failed, trying fallback:', primaryError.message);
             try {
-
                 response = await fetch(`${baseUrl}/api/work/ppe`, {
-
                     method: 'GET',
-
                     headers: {
-
                         'Content-Type': 'application/json',
-
                         'Authorization': `Bearer ${sessionManager.getAuthToken()}`
-
                     }
-
                 });
 
-                
-
                 if (!response.ok) {
-
-                    throw new Error(`Fallback also failed: HTTP ${response.status}: ${response.statusText}`);
-
+                    throw new Error(`Fallback also failed: HTTP ${response.status}`);
                 }
-
             } catch (fallbackError) {
-
-                console.error('❌ All PPE endpoints failed:', fallbackError.message);
-
-                // Load sample data for demonstration
-
-                loadSamplePpeRecords();
-
+                console.error('All PPE endpoints failed:', fallbackError.message);
+                displayPpeRecords([]);
                 return;
-
             }
-
         }
-
-        
 
         const ppeData = await response.json();
-
-        console.log('📊 PPE records data:', ppeData);
-
-        
-
-        // Ensure we have an array
+        console.log('PPE records data:', ppeData);
 
         let ppeRecords = [];
-
         if (Array.isArray(ppeData)) {
-
             ppeRecords = ppeData;
-
-        } else if (ppeData.ppe && Array.isArray(ppeData.ppe)) {
-
-            ppeRecords = ppeData.ppe;
-
         } else if (ppeData.data && Array.isArray(ppeData.data)) {
-
             ppeRecords = ppeData.data;
-
-        } else if (ppeData) {
-
-            // Single object, convert to array
-
-            ppeRecords = [ppeData];
-
+        } else if (ppeData.ppe && Array.isArray(ppeData.ppe)) {
+            ppeRecords = ppeData.ppe;
         }
-
-        
-
-        // Filter for PPE Issuance records only
-
-        ppeRecords = ppeRecords.filter(item => 
-
-            item.work_type && item.work_type === 'PPE Issuance'
-
-        );
-
-        
-
-        // If no PPE records found from API, use sample data
-
-        if (ppeRecords.length === 0) {
-
-            console.log('⚠️ No PPE records found in API data, using sample data');
-
-            loadSamplePpeRecords();
-
-            return;
-
-        }
-
-        
 
         displayPpeRecords(ppeRecords);
-
-        
+        loadPpeStats();
 
     } catch (error) {
-
-        console.error('❌ Error loading PPE records:', error);
-
-        // Load sample data on error
-
-        loadSamplePpeRecords();
-
+        console.error('Error loading PPE records:', error);
+        displayPpeRecords([]);
     }
 
 }
 
 
 
-// Load sample PPE records for demonstration
-
-function loadSamplePpeRecords() {
-
-    console.log('📋 Loading sample PPE records...');
-
-    
-
-    const samplePpeRecords = [
-
-        {
-
-            id: 'PPE-001',
-
-            issuanceId: 'PPE-2026-001',
-
-            issueDate: '2026-03-15T09:00:00',
-
-            workerName: 'John Michael',
-
-            workerId: 'WRK-001',
-
-            project: 'Masaki Residential Complex',
-
-            department: 'Carpentry',
-
-            ppeItems: [
-
-                { type: 'Safety Helmet', quantity: 1, size: 'L' },
-
-                { type: 'Safety Gloves', quantity: 2, size: 'M' },
-
-                { type: 'Safety Boots', quantity: 1, size: '10' }
-
-            ],
-
-            condition: 'new',
-
-            returnDate: '2026-03-30T17:00:00',
-
-            status: 'issued',
-
-            issuedBy: 'Sarah Johnson'
-
-        },
-
-        {
-
-            id: 'PPE-002',
-
-            issuanceId: 'PPE-2026-002',
-
-            issueDate: '2026-03-16T10:30:00',
-
-            workerName: 'Mary Johnson',
-
-            workerId: 'WRK-002',
-
-            project: 'Kigamboni Commercial Plaza',
-
-            department: 'Masonry',
-
-            ppeItems: [
-
-                { type: 'Safety Helmet', quantity: 1, size: 'M' },
-
-                { type: 'Reflective Vest', quantity: 1, size: 'XL' },
-
-                { type: 'Safety Goggles', quantity: 1, size: 'Standard' }
-
-            ],
-
-            condition: 'new',
-
-            returnDate: '2026-03-31T17:00:00',
-
-            status: 'issued',
-
-            issuedBy: 'Sarah Johnson'
-
-        },
-
-        {
-
-            id: 'PPE-003',
-
-            issuanceId: 'PPE-2026-003',
-
-            issueDate: '2026-03-18T08:15:00',
-
-            workerName: 'Robert Davis',
-
-            workerId: 'WRK-003',
-
-            project: 'Mikochi Industrial Park',
-
-            department: 'Electrical',
-
-            ppeItems: [
-
-                { type: 'Safety Helmet', quantity: 1, size: 'L' },
-
-                { type: 'Safety Gloves', quantity: 3, size: 'L' },
-
-                { type: 'Safety Harness', quantity: 1, size: 'Universal' },
-
-                { type: 'Ear Plugs', quantity: 10, size: 'Standard' }
-
-            ],
-
-            condition: 'replacement',
-
-            returnDate: '2026-04-01T17:00:00',
-
-            status: 'issued',
-
-            issuedBy: 'Sarah Johnson'
-
-        },
-
-        {
-
-            id: 'PPE-004',
-
-            issuanceId: 'PPE-2026-004',
-
-            issueDate: '2026-03-20T11:45:00',
-
-            workerName: 'Lisa Martinez',
-
-            workerId: 'WRK-004',
-
-            project: 'Port Modernization Phase 1',
-
-            department: 'Plumbing',
-
-            ppeItems: [
-
-                { type: 'Safety Helmet', quantity: 1, size: 'S' },
-
-                { type: 'Safety Boots', quantity: 1, size: '8' },
-
-                { type: 'Dust Mask', quantity: 5, size: 'Standard' }
-
-            ],
-
-            condition: 'new',
-
-            returnDate: '2026-04-03T17:00:00',
-
-            status: 'returned',
-
-            issuedBy: 'Sarah Johnson'
-
-        },
-
-        {
-
-            id: 'PPE-005',
-
-            issuanceId: 'PPE-2026-005',
-
-            issueDate: '2026-03-22T14:20:00',
-
-            workerName: 'Thomas Anderson',
-
-            workerId: 'WRK-005',
-
-            project: 'Masaki Residential Complex',
-
-            department: 'Painting',
-
-            ppeItems: [
-
-                { type: 'Safety Helmet', quantity: 1, size: 'M' },
-
-                { type: 'Safety Gloves', quantity: 2, size: 'M' },
-
-                { type: 'Safety Goggles', quantity: 1, size: 'Standard' },
-
-                { type: 'Dust Mask', quantity: 10, size: 'Standard' }
-
-            ],
-
-            condition: 'good',
-
-            returnDate: '2026-04-05T17:00:00',
-
-            status: 'issued',
-
-            issuedBy: 'Sarah Johnson'
-
-        },
-
-        {
-
-            id: 'PPE-006',
-
-            issuanceId: 'PPE-2026-006',
-
-            issueDate: '2026-03-25T09:30:00',
-
-            workerName: 'Jennifer Lee',
-
-            workerId: 'WRK-006',
-
-            project: 'Kigamboni Commercial Plaza',
-
-            department: 'Steelwork',
-
-            ppeItems: [
-
-                { type: 'Safety Helmet', quantity: 1, size: 'L' },
-
-                { type: 'Safety Gloves', quantity: 2, size: 'L' },
-
-                { type: 'Safety Boots', quantity: 1, size: '11' },
-
-                { type: 'Safety Harness', quantity: 1, size: 'Universal' }
-
-            ],
-
-            condition: 'new',
-
-            returnDate: '2026-04-08T17:00:00',
-
-            status: 'issued',
-
-            issuedBy: 'Sarah Johnson'
-
-        },
-
-        {
-
-            id: 'PPE-007',
-
-            issuanceId: 'PPE-2026-007',
-
-            issueDate: '2026-03-28T13:15:00',
-
-            workerName: 'Michael Brown',
-
-            workerId: 'WRK-007',
-
-            project: 'Mikochi Industrial Park',
-
-            department: 'Carpentry',
-
-            ppeItems: [
-
-                { type: 'Safety Helmet', quantity: 1, size: 'XL' },
-
-                { type: 'Safety Gloves', quantity: 3, size: 'XL' },
-
-                { type: 'Safety Boots', quantity: 1, size: '12' }
-
-            ],
-
-            condition: 'replacement',
-
-            returnDate: '2026-04-11T17:00:00',
-
-            status: 'overdue',
-
-            issuedBy: 'Sarah Johnson'
-
-        },
-
-        {
-
-            id: 'PPE-008',
-
-            issuanceId: 'PPE-2026-008',
-
-            issueDate: '2026-04-01T10:00:00',
-
-            workerName: 'Patricia Johnson',
-
-            workerId: 'WRK-008',
-
-            project: 'Port Modernization Phase 1',
-
-            department: 'Electrical',
-
-            ppeItems: [
-
-                { type: 'Safety Helmet', quantity: 1, size: 'M' },
-
-                { type: 'Safety Gloves', quantity: 2, size: 'M' },
-
-                { type: 'Safety Goggles', quantity: 1, size: 'Standard' },
-
-                { type: 'Ear Plugs', quantity: 10, size: 'Standard' }
-
-            ],
-
-            condition: 'new',
-
-            returnDate: '2026-04-15T17:00:00',
-
-            status: 'issued',
-
-            issuedBy: 'Sarah Johnson'
-
-        },
-
-        {
-
-            id: 'PPE-009',
-
-            issuanceId: 'PPE-2026-009',
-
-            issueDate: '2026-04-03T15:45:00',
-
-            workerName: 'David Anderson',
-
-            workerId: 'WRK-009',
-
-            project: 'Masaki Residential Complex',
-
-            department: 'Masonry',
-
-            ppeItems: [
-
-                { type: 'Safety Helmet', quantity: 1, size: 'L' },
-
-                { type: 'Safety Boots', quantity: 1, size: '10' },
-
-                { type: 'Reflective Vest', quantity: 1, size: 'L' }
-
-            ],
-
-            condition: 'good',
-
-            returnDate: '2026-04-17T17:00:00',
-
-            status: 'issued',
-
-            issuedBy: 'Sarah Johnson'
-
-        },
-
-        {
-
-            id: 'PPE-010',
-
-            issuanceId: 'PPE-2026-010',
-
-            issueDate: '2026-04-05T08:30:00',
-
-            workerName: 'James Wilson',
-
-            workerId: 'WRK-010',
-
-            project: 'Kigamboni Commercial Plaza',
-
-            department: 'Plumbing',
-
-            ppeItems: [
-
-                { type: 'Safety Helmet', quantity: 1, size: 'M' },
-
-                { type: 'Safety Gloves', quantity: 2, size: 'M' },
-
-                { type: 'Safety Boots', quantity: 1, size: '9' }
-
-            ],
-
-            condition: 'new',
-
-            returnDate: '2026-04-19T17:00:00',
-
-            status: 'issued',
-
-            issuedBy: 'Sarah Johnson'
-
-        },
-
-        {
-
-            id: 'PPE-011',
-
-            issuanceId: 'PPE-2026-011',
-
-            issueDate: '2026-04-08T11:20:00',
-
-            workerName: 'Sarah Wilson',
-
-            workerId: 'WRK-011',
-
-            project: 'Mikochi Industrial Park',
-
-            department: 'Painting',
-
-            ppeItems: [
-
-                { type: 'Safety Helmet', quantity: 1, size: 'S' },
-
-                { type: 'Safety Gloves', quantity: 2, size: 'S' },
-
-                { type: 'Dust Mask', quantity: 10, size: 'Standard' },
-
-                { type: 'Safety Goggles', quantity: 1, size: 'Standard' }
-
-            ],
-
-            condition: 'replacement',
-
-            returnDate: '2026-04-22T17:00:00',
-
-            status: 'issued',
-
-            issuedBy: 'Sarah Johnson'
-
-        },
-
-        {
-
-            id: 'PPE-012',
-
-            issuanceId: 'PPE-2026-012',
-
-            issueDate: '2026-04-10T14:00:00',
-
-            workerName: 'Emily Taylor',
-
-            workerId: 'WRK-012',
-
-            project: 'Port Modernization Phase 1',
-
-            department: 'Steelwork',
-
-            ppeItems: [
-
-                { type: 'Safety Helmet', quantity: 1, size: 'L' },
-
-                { type: 'Safety Harness', quantity: 1, size: 'Universal' },
-
-                { type: 'Safety Gloves', quantity: 3, size: 'L' },
-
-                { type: 'Safety Boots', quantity: 1, size: '11' }
-
-            ],
-
-            condition: 'new',
-
-            returnDate: '2026-04-24T17:00:00',
-
-            status: 'issued',
-
-            issuedBy: 'Sarah Johnson'
-
+// Load PPE statistics from API
+
+async function loadPpeStats() {
+    try {
+        const baseUrl = window.location.origin;
+        const response = await fetch(`${baseUrl}/api/work/hse/ppe/stats`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${sessionManager.getAuthToken()}`
+            }
+        });
+
+        if (response.ok) {
+            const stats = await response.json();
+            const statValues = document.querySelectorAll('.ppe-stats .stat-value');
+            if (statValues.length >= 3) {
+                statValues[0].textContent = stats.total || 0;
+                statValues[1].textContent = stats.this_month || 0;
+                statValues[2].textContent = stats.low_stock || 0;
+            }
         }
+    } catch (error) {
+        console.error('Error loading PPE stats:', error);
+    }
+}
 
-    ];
 
-    
 
-    displayPpeRecords(samplePpeRecords);
+// Map PPE type codes to display names
 
+function ppeTypeDisplayName(code) {
+    const names = {
+        'helmet': 'Safety Helmet',
+        'gloves': 'Safety Gloves',
+        'boots': 'Safety Boots',
+        'vest': 'Reflective Vest',
+        'goggles': 'Safety Goggles',
+        'mask': 'Dust Mask',
+        'harness': 'Safety Harness',
+        'earplugs': 'Ear Plugs'
+    };
+    return names[code] || code;
 }
 
 
@@ -45249,241 +44821,126 @@ function displayPpeRecords(ppeRecords) {
 
     const ppeList = document.getElementById('ppeList');
 
-    
-
     if (!ppeList) {
-
-        console.error('❌ PPE list container not found!');
-
+        console.error('PPE list container not found!');
         return;
-
     }
-
-    
 
     if (!ppeRecords || ppeRecords.length === 0) {
-
         ppeList.innerHTML = `
-
             <tr>
-
                 <td colspan="12">
-
-                    <div class="no-records">No PPE records found</div>
-
+                    <div class="no-records">No PPE records found. Use the form above to record PPE issuance.</div>
                 </td>
-
             </tr>
-
         `;
-
         return;
-
     }
 
-    
-
-    // Sort PPE records by issued_date (newest first)
-
-    ppeRecords.sort((a, b) => new Date(b.issued_date || b.submitted_date) - new Date(a.issued_date || a.submitted_date));
-
-    
+    ppeRecords.sort((a, b) => new Date(b.issue_date || b.created_at) - new Date(a.issue_date || a.created_at));
 
     let ppeHTML = '';
 
-    
-
     ppeRecords.forEach(ppe => {
-
-        // Map API data to display format
-
-        const issuanceId = `PPE-2026-${String(ppe.id).padStart(3, '0')}`;
-
-        const issueDate = ppe.issued_date || ppe.submitted_date;
-
-        const workerName = ppe.employee_name || 'Unknown Worker';
-
-        const workerId = `WRK-${String(ppe.id + 100).padStart(3, '0')}`;
-
-        const project = ppe.project || 'General Site';
-
-        const department = ppe.department || 'General';
-
-        const ppeType = ppe.ppe_type || 'Safety Equipment';
-
-        const returnDate = ppe.return_date || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
-
+        const issuanceId = ppe.issuance_id || ('PPE-' + ppe.id);
+        const issueDate = ppe.issue_date || ppe.created_at;
+        const workerName = ppe.worker_name || 'Unknown';
+        const workerId = ppe.worker_id || '-';
+        const project = ppe.project || '-';
+        const department = ppe.department || '-';
+        const condition = ppe.ppe_condition || 'new';
+        const returnDate = ppe.return_date;
         const status = ppe.status || 'Issued';
+        const issuedBy = ppe.issued_by || '-';
 
-        const issuedBy = ppe.issued_by || ppe.submitted_by || 'Safety Officer';
+        let ppeItemsDisplay = '-';
+        const items = ppe.ppe_items;
+        if (Array.isArray(items) && items.length > 0) {
+            ppeItemsDisplay = items.map(item => {
+                const name = ppeTypeDisplayName(item.type);
+                const qty = item.quantity || 1;
+                const size = item.size ? ` (${item.size})` : '';
+                return `${name} x${qty}${size}`;
+            }).join(', ');
+        }
 
-        
+        const conditionLabels = { 'new': 'New', 'good': 'Good', 'replacement': 'Replacement' };
+        const conditionLabel = conditionLabels[condition] || condition;
+        const conditionClass = 'condition-' + condition;
 
-        // Get condition display (default to 'new' for API data)
+        const statusLower = status.toLowerCase();
+        const statusLabels = { 'issued': 'Issued', 'returned': 'Returned', 'overdue': 'Overdue', 'lost': 'Lost', 'damaged': 'Damaged' };
+        const statusLabel = statusLabels[statusLower] || status;
+        const statusClass = 'status-' + statusLower;
 
-        const conditionDisplay = '🆕 New';
-
-        const conditionClass = 'condition-new';
-
-        
-
-        // Get status display
-
-        const statusDisplay = status === 'issued' ? '📦 Issued' : 
-
-                             status === 'returned' ? '✅ Returned' : 
-
-                             status === 'overdue' ? '⚠️ Overdue' : 
-
-                             status === 'lost' ? '❌ Lost' : '📦 Issued';
-
-        
-
-        const statusClass = status === 'issued' ? 'status-issued' : 
-
-                           status === 'returned' ? 'status-returned' : 
-
-                           status === 'overdue' ? 'status-overdue' : 
-
-                           status === 'lost' ? 'status-lost' : 'status-issued';
-
-        
-
-        // Format PPE items (use ppe_type as single item)
-
-        const ppeItemsDisplay = ppeType;
-
-        
+        const issueDateFormatted = issueDate ? new Date(issueDate).toLocaleDateString() : '-';
+        const issueTimeFormatted = issueDate ? new Date(issueDate).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : '';
+        const returnDateFormatted = returnDate ? new Date(returnDate).toLocaleDateString() : '-';
 
         ppeHTML += `
-
-            <tr class="ppe-row">
-
+            <tr class="ppe-row" data-project="${project}" data-worker="${workerName}" data-worker-id="${workerId}">
                 <td>
-
                     <div class="issuance-id-info">
-
                         <div class="issuance-id">${issuanceId}</div>
-
                     </div>
-
                 </td>
-
                 <td>
-
                     <div class="date-info">
-
-                        <div class="issue-date">${new Date(issueDate).toLocaleDateString()}</div>
-
-                        <div class="issue-time">${new Date(issueDate).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</div>
-
+                        <div class="issue-date">${issueDateFormatted}</div>
+                        <div class="issue-time">${issueTimeFormatted}</div>
                     </div>
-
                 </td>
-
                 <td>
-
                     <div class="worker-info">
-
                         <div class="worker-name">${workerName}</div>
-
                     </div>
-
                 </td>
-
                 <td>
-
                     <div class="worker-id-info">
-
                         <div class="worker-id">${workerId}</div>
-
                     </div>
-
                 </td>
-
                 <td>
-
                     <div class="project-info">
-
                         <div class="project-name">${project}</div>
-
                     </div>
-
                 </td>
-
                 <td>
-
                     <div class="department-info">
-
                         <div class="department-name">${department}</div>
-
                     </div>
-
                 </td>
-
                 <td>
-
                     <div class="ppe-items-info">
-
                         <div class="ppe-items">${ppeItemsDisplay}</div>
-
                     </div>
-
                 </td>
-
                 <td>
-
-                    <span class="condition-badge ${conditionClass}">${conditionDisplay}</span>
-
+                    <span class="condition-badge ${conditionClass}">${conditionLabel}</span>
                 </td>
-
                 <td>
-
                     <div class="return-date-info">
-
-                        <div class="return-date">${new Date(returnDate).toLocaleDateString()}</div>
-
+                        <div class="return-date">${returnDateFormatted}</div>
                     </div>
-
                 </td>
-
                 <td>
-
-                    <span class="status-badge ${statusClass}">${statusDisplay}</span>
-
+                    <span class="status-badge ${statusClass}">${statusLabel}</span>
                 </td>
-
                 <td>
-
                     <div class="issuer-info">
-
                         <div class="issuer-name">${issuedBy}</div>
-
                     </div>
-
                 </td>
-
                 <td>
-
                     <div class="ppe-actions">
-
-                        <button class="action-btn view" onclick="viewPpeDetails('${ppe.id}')" title="View Details">👁️</button>
-
-                        <button class="action-btn edit" onclick="editPpeRecord('${ppe.id}')" title="Edit Record">✏️</button>
-
-                        <button class="action-btn return" onclick="recordPpeReturn('${ppe.id}')" title="Record Return">🔄</button>
-
+                        <button class="action-btn view" onclick="viewPpeDetails('${ppe.id}')" title="View Details">View</button>
+                        <button class="action-btn edit" onclick="editPpeRecord('${ppe.id}')" title="Edit Record">Edit</button>
+                        <button class="action-btn return" onclick="recordPpeReturn('${ppe.id}')" title="Record Return">Return</button>
                     </div>
-
                 </td>
-
             </tr>
-
         `;
-
     });
-
-    
 
     ppeList.innerHTML = ppeHTML;
 
@@ -45494,27 +44951,20 @@ function displayPpeRecords(ppeRecords) {
 // PPE action functions
 
 function viewPpeDetails(ppeId) {
-
-    customAlert(`Viewing PPE details for ID: ${ppeId}\n\nComplete PPE issuance information will be displayed including all issued items, condition details, return status, and worker acknowledgment for full traceability and compliance documentation.`, "PPE Details", "info");
-
+    customAlert('Viewing PPE details for ID: ' + ppeId, "PPE Details", "info");
 }
 
 
 
 function editPpeRecord(ppeId) {
-
-    customAlert(`Editing PPE record for ID: ${ppeId}\n\nPPE record edit form will open for updating issuance details, modifying issued items, changing return dates, and updating status information for accurate inventory management.`, "Edit PPE Record", "info");
-
+    customAlert('Editing PPE record for ID: ' + ppeId, "Edit PPE Record", "info");
 }
 
 
 
 function recordPpeReturn(ppeId) {
-
-    customAlert(`Recording PPE return for ID: ${ppeId}\n\nPPE return form will open for documenting returned items, condition assessment, damage reporting, and finalizing the issuance cycle for inventory reconciliation.`, "Record PPE Return", "info");
-
+    customAlert('Recording PPE return for ID: ' + ppeId, "Record PPE Return", "info");
 }
-
 
 
 // Filter PPE records
@@ -52988,9 +52438,9 @@ function trackPpeIssuance(){
 
                 
 
-                <div class="ppe-table-container">
+                <div class="ppe-table-container" style="overflow-x: auto; -webkit-overflow-scrolling: touch; width: 100%;">
 
-                    <table class="ppe-table">
+                    <table class="ppe-table" style="min-width: 1200px; width: 100%;">
 
                         <thead>
 
@@ -59397,144 +58847,77 @@ function saveToolboxMeeting() {
 
 function savePpeIssuance() {
 
+    const ppeItemsArr = getPpeItems();
+
+    const projectSelect = document.getElementById('ppeProject');
+    const projectText = projectSelect.options[projectSelect.selectedIndex] ? projectSelect.options[projectSelect.selectedIndex].text : projectSelect.value;
+
+    const deptSelect = document.getElementById('department');
+    const deptText = deptSelect.options[deptSelect.selectedIndex] ? deptSelect.options[deptSelect.selectedIndex].text : deptSelect.value;
+
     const issuance = {
-
-        id: document.getElementById('issuanceId').value || 'PPE-' + Date.now(),
-
-        date: document.getElementById('issueDate').value,
-
-        workerName: document.getElementById('workerName').value,
-
-        workerId: document.getElementById('workerId').value,
-
-        project: document.getElementById('ppeProject').value,
-
-        department: document.getElementById('department').value,
-
-        items: getPpeItems(),
-
-        condition: document.getElementById('ppeCondition').value,
-
-        returnDate: document.getElementById('returnDate').value,
-
-        signature: document.getElementById('workerSignature').value,
-
-        issuedBy: document.getElementById('issuedBy').value,
-
-        recordedBy: 'HSE Manager',
-
-        recordedDate: new Date().toLocaleString()
-
+        issuance_id: document.getElementById('issuanceId').value || 'PPE-' + Date.now(),
+        issue_date: document.getElementById('issueDate').value,
+        worker_name: document.getElementById('workerName').value,
+        worker_id: document.getElementById('workerId').value,
+        project: projectText !== 'Select Project' ? projectText : '',
+        department: deptText !== 'Select Department' ? deptText : '',
+        ppe_items: ppeItemsArr,
+        ppe_condition: document.getElementById('ppeCondition').value,
+        return_date: document.getElementById('returnDate').value || null,
+        worker_signature: document.getElementById('workerSignature').value,
+        issued_by: document.getElementById('issuedBy').value
     };
-
-    
 
     // Validate required fields
-
-    if (!issuance.date || !issuance.workerName || !issuance.project || issuance.items.length === 0) {
-
-        customAlert('Please fill in all required fields:\n\n• Date\n• Worker Name\n• Project\n• At least one PPE item', "Validation Error", "error");
-
+    if (!issuance.issue_date || !issuance.worker_name || !issuance.project || ppeItemsArr.length === 0) {
+        customAlert('Please fill in all required fields', "Validation Error", "error");
         return false;
-
     }
 
-    
-
-    // Prepare work item for HSE department
-
-    const workItem = {
-
-        work_type: 'PPE Issuance',
-
-        work_title: `PPE Issuance - ${issuance.workerName}`,
-
-        work_description: `PPE Issuance for ${issuance.workerName}\n\nDate: ${issuance.date}\nProject: ${issuance.project}\nDepartment: ${issuance.department}\nItems: ${issuance.items.map(item => `${item.type} (${item.quantity})`).join(', ')}\nCondition: ${issuance.condition}\nReturn Date: ${issuance.returnDate}\nIssued By: ${issuance.issuedBy}\nSignature: ${issuance.signature}\nRecorded By: ${issuance.recordedBy}`,
-
-        priority: 'Medium',
-
-        due_date: issuance.returnDate || issuance.date,
-
-        assigned_to: 'HSE Manager',
-
-        submitted_by: 'HSE Manager'
-
-    };
-
-    
-
     // Show loading message
-
     customAlert('Recording PPE issuance...', "Processing", "info");
 
-    
-
-    // Send data to backend API
-
+    // Send data to dedicated PPE issuance endpoint
     const baseUrl = window.location.origin;
-
-    fetch(`${baseUrl}/api/hse/work`, {
-
+    fetch(`${baseUrl}/api/work/hse/ppe`, {
         method: 'POST',
-
         headers: {
-
             'Content-Type': 'application/json',
-
             'Accept': 'application/json',
-
             'Authorization': `Bearer ${sessionManager.getAuthToken()}`
-
         },
-
-        body: JSON.stringify(workItem)
-
+        body: JSON.stringify(issuance)
     })
-
     .then(response => {
-
-        console.log('📡 PPE Issuance API Response status:', response.status);
-
+        console.log('PPE Issuance API Response status:', response.status);
         return response.json();
-
     })
-
     .then(data => {
-
-        console.log('📊 PPE Issuance API Response data:', data);
-
-        
+        console.log('PPE Issuance API Response data:', data);
 
         if (data.error) {
-
             throw new Error(data.error);
-
         }
 
-        
-
-        customAlert(`PPE issuance recorded successfully!\n\nID: ${issuance.id}\nWorker: ${issuance.workerName}\nItems: ${issuance.items.length} items\nProject: ${issuance.project}\nPPE ID: ${data.id}\n\n🎉 PPE issuance saved to database!`, "PPE Issued", "success");
-
-        
+        customAlert('PPE issuance recorded successfully!\n\nID: ' + issuance.issuance_id + '\nWorker: ' + issuance.worker_name + '\nItems: ' + ppeItemsArr.length + ' items\nProject: ' + issuance.project, "PPE Issued", "success");
 
         document.getElementById('ppeForm').reset();
+        document.getElementById('issuanceId').value = 'PPE-' + Date.now();
+        const additionalItems = document.getElementById('additionalPpeItems');
+        if (additionalItems) additionalItems.innerHTML = '';
 
+        // Reload PPE records to show the new entry
+        loadPpeRecords();
     })
-
     .catch(error => {
-
-        console.error('❌ Error recording PPE issuance:', error);
-
-        customAlert(`Failed to record PPE issuance: ${error.message}\n\nPlease check:\n• All required fields are filled\n• Network connection is stable\n• Server is running properly`, "Recording Error", "error");
-
+        console.error('Error recording PPE issuance:', error);
+        customAlert('Failed to record PPE issuance: ' + error.message, "Recording Error", "error");
     });
-
-    
 
     return false;
 
 }
-
 
 
 function saveSafetyViolation() {
