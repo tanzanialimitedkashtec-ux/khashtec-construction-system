@@ -645,100 +645,134 @@ let ppeTableReady = false;
 async function ensurePpeIssuanceTable() {
     if (ppeTableReady) return;
     try {
-        // Check if the table exists and has the new columns
+        // Check if table exists
+        let tableExists = false;
+        let cols = [];
         try {
-            const [cols] = await db.execute('SHOW COLUMNS FROM ppe_issuance');
-            const colNames = new Set(cols.map(c => c.Field));
-
-            if (colNames.has('worker_name') && colNames.has('ppe_items')) {
-                // Table already has the new schema
-                ppeTableReady = true;
-                console.log('  ppe_issuance table already has correct schema');
-                return;
-            }
-
-            // Old schema detected — drop and recreate
-            // First check if there are any rows worth keeping
-            const [[countResult]] = await db.execute('SELECT COUNT(*) as cnt FROM ppe_issuance');
-            if (countResult.cnt === 0) {
-                // No data — safe to drop and recreate
-                await db.execute('DROP TABLE IF EXISTS ppe_issuance');
-                console.log('  Dropped old ppe_issuance table (empty, old schema)');
-            } else {
-                // Has data with old schema — add missing columns instead
-                const columnsToAdd = [
-                    { name: 'issuance_id', def: 'VARCHAR(50)' },
-                    { name: 'worker_name', def: 'VARCHAR(255)' },
-                    { name: 'worker_id', def: 'VARCHAR(50)' },
-                    { name: 'project', def: 'VARCHAR(255)' },
-                    { name: 'department', def: 'VARCHAR(100)' },
-                    { name: 'ppe_items', def: 'JSON' },
-                    { name: 'worker_signature', def: 'VARCHAR(255)' }
-                ];
-                for (const col of columnsToAdd) {
-                    if (!colNames.has(col.name)) {
-                        try {
-                            await db.execute(`ALTER TABLE ppe_issuance ADD COLUMN ${col.name} ${col.def}`);
-                            console.log(`  Added column ${col.name} to ppe_issuance`);
-                        } catch (e) { /* ignore duplicates */ }
-                    }
-                }
-                // Widen issued_by to VARCHAR if it is INT
-                const issuedByCol = cols.find(c => c.Field === 'issued_by');
-                if (issuedByCol && issuedByCol.Type.toLowerCase().includes('int')) {
-                    try {
-                        await db.execute('ALTER TABLE ppe_issuance MODIFY COLUMN issued_by VARCHAR(255)');
-                        console.log('  Widened issued_by to VARCHAR(255)');
-                    } catch (e) { /* ignore */ }
-                }
-                // Widen ppe_condition to VARCHAR if it is ENUM
-                const condCol = cols.find(c => c.Field === 'ppe_condition');
-                if (condCol && condCol.Type.toLowerCase().includes('enum')) {
-                    try {
-                        await db.execute("ALTER TABLE ppe_issuance MODIFY COLUMN ppe_condition VARCHAR(50) DEFAULT 'new'");
-                        console.log('  Widened ppe_condition to VARCHAR(50)');
-                    } catch (e) { /* ignore */ }
-                }
-                // Widen status to VARCHAR if it is ENUM
-                const statusCol = cols.find(c => c.Field === 'status');
-                if (statusCol && statusCol.Type.toLowerCase().includes('enum')) {
-                    try {
-                        await db.execute("ALTER TABLE ppe_issuance MODIFY COLUMN status VARCHAR(50) DEFAULT 'Issued'");
-                        console.log('  Widened status to VARCHAR(50)');
-                    } catch (e) { /* ignore */ }
-                }
-                ppeTableReady = true;
-                console.log('  ppe_issuance table migrated (kept existing data)');
-                return;
-            }
+            const [result] = await db.execute('SHOW COLUMNS FROM ppe_issuance');
+            cols = result;
+            tableExists = true;
         } catch (e) {
-            // Table doesn't exist — will create below
-            console.log('  ppe_issuance table does not exist, creating...');
+            tableExists = false;
         }
 
-        // Create fresh table with new schema
-        await db.execute(`
-            CREATE TABLE IF NOT EXISTS ppe_issuance (
-                id INT AUTO_INCREMENT PRIMARY KEY,
-                issuance_id VARCHAR(50),
-                issue_date DATE,
-                worker_name VARCHAR(255),
-                worker_id VARCHAR(50),
-                project VARCHAR(255),
-                department VARCHAR(100),
-                ppe_items JSON,
-                ppe_condition VARCHAR(50) DEFAULT 'new',
-                return_date DATE,
-                worker_signature VARCHAR(255),
-                issued_by VARCHAR(255),
-                status VARCHAR(50) DEFAULT 'Issued',
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-            )
-        `);
+        if (!tableExists) {
+            // Table does not exist — create with correct schema
+            await db.execute(`
+                CREATE TABLE ppe_issuance (
+                    id INT AUTO_INCREMENT PRIMARY KEY,
+                    issuance_id VARCHAR(50),
+                    issue_date DATE,
+                    worker_name VARCHAR(255),
+                    worker_id VARCHAR(50),
+                    project VARCHAR(255),
+                    department VARCHAR(100),
+                    ppe_items JSON,
+                    ppe_condition VARCHAR(50) DEFAULT 'new',
+                    return_date DATE,
+                    worker_signature VARCHAR(255),
+                    issued_by VARCHAR(255),
+                    status VARCHAR(50) DEFAULT 'Issued',
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+                )
+            `);
+            ppeTableReady = true;
+            console.log('  ppe_issuance table created with new schema');
+            return;
+        }
 
-        ppeTableReady = true;
-        console.log('  ppe_issuance table created with new schema');
+        // Table exists — check if it already has the new schema
+        const colNames = new Set(cols.map(c => c.Field));
+        const requiredCols = ['issuance_id', 'worker_name', 'worker_id', 'project', 'department', 'ppe_items', 'worker_signature'];
+        const allPresent = requiredCols.every(c => colNames.has(c));
+
+        if (allPresent) {
+            ppeTableReady = true;
+            console.log('  ppe_issuance table already has correct schema');
+            return;
+        }
+
+        // Old schema — always use ALTER to add missing columns (never drop,
+        // because DROP fails when the old migration added foreign key constraints)
+        console.log('  ppe_issuance table has old schema, migrating via ALTER...');
+
+        const columnsToAdd = [
+            { name: 'issuance_id', def: 'VARCHAR(50)' },
+            { name: 'worker_name', def: 'VARCHAR(255)' },
+            { name: 'worker_id', def: 'VARCHAR(50)' },
+            { name: 'project', def: 'VARCHAR(255)' },
+            { name: 'department', def: 'VARCHAR(100)' },
+            { name: 'ppe_items', def: 'JSON' },
+            { name: 'worker_signature', def: 'VARCHAR(255)' },
+            { name: 'issue_date', def: 'DATE' },
+            { name: 'return_date', def: 'DATE' },
+            { name: 'status', def: "VARCHAR(50) DEFAULT 'Issued'" },
+            { name: 'issued_by', def: 'VARCHAR(255)' },
+            { name: 'ppe_condition', def: "VARCHAR(50) DEFAULT 'new'" },
+            { name: 'created_at', def: 'TIMESTAMP DEFAULT CURRENT_TIMESTAMP' },
+            { name: 'updated_at', def: 'TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP' }
+        ];
+
+        for (const col of columnsToAdd) {
+            if (!colNames.has(col.name)) {
+                try {
+                    await db.execute(`ALTER TABLE ppe_issuance ADD COLUMN ${col.name} ${col.def}`);
+                    console.log(`  Added column ${col.name}`);
+                } catch (e) {
+                    console.log(`  Skipped adding ${col.name}: ${e.message}`);
+                }
+            }
+        }
+
+        // Widen columns that exist but have incompatible types (ENUM→VARCHAR, INT→VARCHAR)
+        const colMap = {};
+        cols.forEach(c => { colMap[c.Field] = c.Type.toLowerCase(); });
+
+        if (colMap['issued_by'] && colMap['issued_by'].includes('int')) {
+            // Drop FK constraint first if it exists
+            try {
+                const [fks] = await db.execute(
+                    `SELECT CONSTRAINT_NAME FROM information_schema.KEY_COLUMN_USAGE
+                     WHERE TABLE_NAME = 'ppe_issuance' AND COLUMN_NAME = 'issued_by'
+                     AND REFERENCED_TABLE_NAME IS NOT NULL AND TABLE_SCHEMA = DATABASE()`
+                );
+                for (const fk of fks) {
+                    try { await db.execute(`ALTER TABLE ppe_issuance DROP FOREIGN KEY ${fk.CONSTRAINT_NAME}`); } catch (e) {}
+                }
+            } catch (e) {}
+            try {
+                await db.execute('ALTER TABLE ppe_issuance MODIFY COLUMN issued_by VARCHAR(255)');
+                console.log('  Widened issued_by to VARCHAR(255)');
+            } catch (e) { console.log('  Could not widen issued_by:', e.message); }
+        }
+
+        if (colMap['ppe_condition'] && colMap['ppe_condition'].includes('enum')) {
+            try {
+                await db.execute("ALTER TABLE ppe_issuance MODIFY COLUMN ppe_condition VARCHAR(50) DEFAULT 'new'");
+                console.log('  Widened ppe_condition to VARCHAR(50)');
+            } catch (e) {}
+        }
+
+        if (colMap['status'] && colMap['status'].includes('enum')) {
+            try {
+                await db.execute("ALTER TABLE ppe_issuance MODIFY COLUMN status VARCHAR(50) DEFAULT 'Issued'");
+                console.log('  Widened status to VARCHAR(50)');
+            } catch (e) {}
+        }
+
+        // Verify migration succeeded by re-checking columns
+        const [newCols] = await db.execute('SHOW COLUMNS FROM ppe_issuance');
+        const newColNames = new Set(newCols.map(c => c.Field));
+        const migrationOk = requiredCols.every(c => newColNames.has(c));
+
+        if (migrationOk) {
+            ppeTableReady = true;
+            console.log('  ppe_issuance table migration verified');
+        } else {
+            const missing = requiredCols.filter(c => !newColNames.has(c));
+            console.error('  ppe_issuance migration incomplete, missing columns:', missing.join(', '));
+        }
     } catch (error) {
         console.error('  Error ensuring ppe_issuance table:', error.message);
     }
