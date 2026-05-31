@@ -66907,6 +66907,14 @@ function saveDepartmentBudget() {
 
 async function loadBudgetRecords() {
 
+    if (!document.getElementById('budgetRecordsList')) {
+
+        console.log('ℹ️ Budget records list container not active in DOM. Skipping load.');
+
+        return;
+
+    }
+
     console.log('🔄 Loading budget records...');
 
     
