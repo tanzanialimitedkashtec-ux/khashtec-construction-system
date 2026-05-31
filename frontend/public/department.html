@@ -72152,7 +72152,7 @@ async function assignTasks(){
 
                             <tr>
 
-                                <th>Task ID</th>
+                                <th>#</th>
 
                                 <th>Task Name</th>
 
@@ -72176,9 +72176,9 @@ async function assignTasks(){
 
                                 <th>Status</th>
 
-                                <th>Assigned By</th>
+                                <th>Created By</th>
 
-                                <th>Assigned Date</th>
+                                <th>Created At</th>
 
                                 <th>Actions</th>
 
@@ -75361,6 +75361,9 @@ function saveTaskAssignment() {
         created_by: 'Project Manager'
     };
 
+    console.log('📝 [Task Assignment] Sending task to database...');
+    console.log('📦 [Task Assignment] Payload:', JSON.stringify(payload, null, 2));
+
     fetch('/api/tasks', {
         method: 'POST',
         headers: {
@@ -75368,18 +75371,24 @@ function saveTaskAssignment() {
         },
         body: JSON.stringify(payload)
     })
-    .then(response => response.json())
+    .then(response => {
+        console.log('📡 [Task Assignment] Server response status:', response.status);
+        return response.json();
+    })
     .then(data => {
+        console.log('📨 [Task Assignment] Server response data:', data);
         if (data.success) {
+            console.log('✅ [Task Assignment] Task saved successfully! Task ID:', data.taskId);
             customAlert(`Task assigned successfully!\n\nTask: ${payload.task_name}\nAssigned to: ${payload.assigned_to}\nDue: ${payload.due_date}\nPriority: ${payload.task_priority}`, "Task Assigned", "success");
             document.getElementById('taskForm').reset();
             loadTasks();
         } else {
-            customAlert("Error creating task: " + (data.error || "Unknown error"), "Error", "error");
+            console.error('❌ [Task Assignment] Server returned error:', data.error || data.details);
+            customAlert("Error creating task: " + (data.error || data.details || "Unknown error"), "Error", "error");
         }
     })
     .catch(error => {
-        console.error("Failed to save task:", error);
+        console.error('❌ [Task Assignment] Network/fetch error:', error);
         customAlert("Failed to communicate with server.", "Error", "error");
     });
 
@@ -75612,36 +75621,39 @@ function displayTasks(tasks) {
 
     tasksList.innerHTML = tasks.map(task => {
 
-        const rawAssignee = task.assignee || task.assigned_to || 'Unassigned';
+        // Normalize field names — support both DB snake_case and legacy camelCase
+        const rawAssignee = task.assigned_to || task.assignee || 'Unassigned';
         const assigneeName = rawAssignee.includes('@') ? 
             rawAssignee.split('@')[0].toUpperCase() : rawAssignee;
-            
-        const description = task.description || task.task_description || '';
-        const name = task.name || task.task_name || 'Unknown Task';
-        const project = task.project || task.project_name || 'Unknown Project';
-        const assignedDate = task.assignedDate || (task.created_at ? formatDate(task.created_at) : '');
-        const startDate = task.startDate || task.start_date || '';
-        const dueDate = task.dueDate || task.due_date || '';
-        const estimatedHours = task.estimatedHours || task.estimated_hours || '';
-        const requiredSkills = task.requiredSkills || task.required_skills || '';
-        const materials = task.materials || task.task_materials || '';
-        const assignedBy = task.assignedBy || task.created_by || 'Unknown';
-        const status = task.status || task.task_status || 'Not Started';
-        const priority = task.priority || task.task_priority || 'Medium';
+
+        const description = task.task_description || task.description || '';
+        const name = task.task_name || task.name || 'Unknown Task';
+        const project = task.project_name || task.project || 'Unknown Project';
+        const createdAt = task.created_at ? formatDate(task.created_at) : (task.assignedDate || 'N/A');
+        const startDate = task.start_date || task.startDate || '';
+        const dueDate = task.due_date || task.dueDate || '';
+        const estimatedHours = task.estimated_hours || task.estimatedHours || '';
+        const requiredSkills = task.required_skills || task.requiredSkills || '';
+        const materials = task.task_materials || task.materials || '';
+        const createdBy = task.created_by || task.assignedBy || 'Unknown';
+        const status = task.task_status || task.status || 'Not Started';
+        const priority = task.task_priority || task.priority || 'Medium';
+
+        // Safe description truncation — prevent crash if description is undefined/null
+        const descriptionSafe = description || '';
+        const descriptionPreview = descriptionSafe.length > 50 ? descriptionSafe.substring(0, 50) + '...' : descriptionSafe;
 
         const statusBadge = getStatusBadge(status);
-
         const priorityBadge = getPriorityBadge(priority);
 
         return `
             <tr>
                 <td>
-                    <div style="font-weight: 600; color: #2563eb;">${task.id}</div>
-                    <div style="font-size: 11px; color: #666;">${assignedDate}</div>
+                    <div style="font-weight: 600; color: #2563eb;">#${task.id}</div>
                 </td>
                 <td>
                     <div style="font-weight: 500;">${name}</div>
-                    <div style="font-size: 11px; color: #666; margin-top: 2px;">${description.substring(0, 50)}${description.length > 50 ? '...' : ''}</div>
+                    <div style="font-size: 11px; color: #666; margin-top: 2px;">${descriptionPreview}</div>
                 </td>
                 <td>
                     <div style="font-weight: 500;">${project}</div>
@@ -75658,11 +75670,11 @@ function displayTasks(tasks) {
                     <div style="font-weight: 500;">${formatDate(dueDate)}</div>
                 </td>
                 <td>
-                    <div style="max-width: 200px; word-wrap: break-word; font-size: 12px;">${description}</div>
+                    <div style="max-width: 200px; word-wrap: break-word; font-size: 12px;">${descriptionSafe || 'N/A'}</div>
                 </td>
                 <td>
                     <div style="font-weight: 500;">${estimatedHours || 'N/A'}</div>
-                    <div style="font-size: 11px; color: #666;">hours</div>
+                    <div style="font-size: 11px; color: #666;">${estimatedHours ? 'hours' : ''}</div>
                 </td>
                 <td>
                     <div style="max-width: 150px; word-wrap: break-word; font-size: 12px;">${requiredSkills || 'N/A'}</div>
@@ -75672,10 +75684,10 @@ function displayTasks(tasks) {
                 </td>
                 <td>${statusBadge}</td>
                 <td>
-                    <div style="font-weight: 500;">${assignedBy}</div>
+                    <div style="font-weight: 500;">${createdBy}</div>
                 </td>
                 <td>
-                    <div style="font-size: 12px;">${assignedDate}</div>
+                    <div style="font-size: 12px;">${createdAt}</div>
                 </td>
                 <td>
                     <div style="display: flex; gap: 5px; flex-wrap: wrap;">
@@ -75859,19 +75871,33 @@ function updateTaskStatus(taskId) {
 
 function deleteTask(taskId) {
 
-    if (confirm(`Are you sure you want to delete task ${taskId}?`)) {
+    if (confirm(`Are you sure you want to delete task #${taskId}?`)) {
 
-        let tasks = JSON.parse(localStorage.getItem('taskAssignments') || '[]');
+        console.log('🗑️ [Delete Task] Sending DELETE request for task ID:', taskId);
 
-        tasks = tasks.filter(t => t.id !== taskId);
-
-        localStorage.setItem('taskAssignments', JSON.stringify(tasks));
-
-        
-
-        customAlert(`Task ${taskId} deleted successfully.`, "Task Deleted", "success");
-
-        loadTasks();
+        fetch(`/api/tasks/${taskId}`, {
+            method: 'DELETE',
+            headers: { 'Content-Type': 'application/json' }
+        })
+        .then(response => {
+            console.log('📡 [Delete Task] Response status:', response.status);
+            return response.json();
+        })
+        .then(data => {
+            console.log('📨 [Delete Task] Response data:', data);
+            if (data.success) {
+                console.log('✅ [Delete Task] Task deleted from database successfully');
+                customAlert(`Task #${taskId} deleted successfully.`, "Task Deleted", "success");
+                loadTasks();
+            } else {
+                console.error('❌ [Delete Task] Failed:', data.error);
+                customAlert('Failed to delete task: ' + (data.error || 'Unknown error'), 'Error', 'error');
+            }
+        })
+        .catch(error => {
+            console.error('❌ [Delete Task] Network error:', error);
+            customAlert('Failed to communicate with server.', 'Error', 'error');
+        });
 
     }
 
