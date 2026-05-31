@@ -34685,7 +34685,25 @@ async function loadPolicyRecords() {
 
         
 
-        displayPolicyRecords(policyRecords);
+        // Also fetch policy approval statuses from /api/policies to cross-reference
+        let policyStatuses = [];
+        try {
+            const statusResponse = await fetch(`${baseUrl}/api/policies`, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${sessionManager.getAuthToken()}`
+                }
+            });
+            if (statusResponse.ok) {
+                policyStatuses = await statusResponse.json();
+                console.log('Policy statuses for cross-reference:', policyStatuses);
+            }
+        } catch (statusError) {
+            console.warn('Could not fetch policy statuses:', statusError.message);
+        }
+
+        displayPolicyRecords(policyRecords, policyStatuses);
 
         
 
@@ -34881,7 +34899,9 @@ function loadSamplePolicyRecords() {
 
 // Display policy records in the table
 
-function displayPolicyRecords(records) {
+function displayPolicyRecords(records, policyStatuses) {
+
+    policyStatuses = policyStatuses || [];
 
     const recordsList = document.getElementById('policyRecordsList');
 
@@ -34957,11 +34977,42 @@ function displayPolicyRecords(records) {
 
                 uploadDate: record.uploadDate || record.upload_date || record.submitted_date || record.created_at || new Date().toISOString().split('T')[0],
 
-                department_code: record.department_code || 'general'
+                department_code: record.department_code || 'general',
+
+                rejection_reason: '',
+
+                revision_request: ''
 
             };
 
         });
+
+        // Cross-reference with policy statuses to get approval status and reasons
+        if (policyStatuses && policyStatuses.length > 0) {
+            records.forEach(record => {
+                // Match by title (HSE work_title matches policies title)
+                const matchingPolicy = policyStatuses.find(p => 
+                    p.title === record.title || 
+                    p.title === record.title.replace('Safety Policy - ', '') ||
+                    record.title.includes(p.title) ||
+                    p.title.includes(record.title)
+                );
+                if (matchingPolicy) {
+                    const pStatus = (matchingPolicy.status || '').toLowerCase();
+                    if (pStatus === 'approved') {
+                        record.status = 'approved';
+                    } else if (pStatus === 'rejected') {
+                        record.status = 'rejected';
+                        record.rejection_reason = matchingPolicy.rejection_reason || '';
+                    } else if (pStatus === 'revision requested') {
+                        record.status = 'revision requested';
+                        record.revision_request = matchingPolicy.revision_request || '';
+                    } else if (pStatus === 'pending') {
+                        record.status = 'pending';
+                    }
+                }
+            });
+        }
 
         console.log('ðŸ”„ Mapped policy records to display format:', records);
 
@@ -35073,7 +35124,13 @@ function displayPolicyRecords(records) {
 
         const statusClass = statusLower === 'active' ? 'status-active' : 
 
+                           statusLower === 'approved' ? 'status-active' :
+
                            statusLower === 'pending' ? 'status-pending' : 
+
+                           statusLower === 'rejected' ? 'status-expired' :
+
+                           statusLower === 'revision requested' ? 'status-pending' :
 
                            statusLower === 'expired' ? 'status-expired' :
 
@@ -35087,7 +35144,13 @@ function displayPolicyRecords(records) {
 
         const statusBadge = statusLower === 'active' ? 'âœ… Active' : 
 
+                           statusLower === 'approved' ? 'â Approved' :
+
                            statusLower === 'pending' ? 'â³ Pending' : 
+
+                           statusLower === 'rejected' ? 'â Rejected' :
+
+                           statusLower === 'revision requested' ? 'ð Revision Requested' :
 
                            statusLower === 'expired' ? 'âŒ Expired' :
 
@@ -35194,6 +35257,8 @@ function displayPolicyRecords(records) {
                 <td>
 
                     <span class="status-badge ${statusClass}">${statusBadge}</span>
+                    ${record.rejection_reason ? '<div class="policy-reason" style="font-size: 11px; color: #dc3545; margin-top: 4px; font-style: italic;" title="' + record.rejection_reason + '">Reason: ' + (record.rejection_reason.length > 40 ? record.rejection_reason.substring(0, 40) + '...' : record.rejection_reason) + '</div>' : ''}
+                    ${record.revision_request ? '<div class="policy-reason" style="font-size: 11px; color: #ffc107; margin-top: 4px; font-style: italic;" title="' + record.revision_request + '">Reason: ' + (record.revision_request.length > 40 ? record.revision_request.substring(0, 40) + '...' : record.revision_request) + '</div>' : ''}
 
                 </td>
 
