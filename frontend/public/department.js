@@ -408,9 +408,9 @@ function loadPoliciesFromBackend() {
 
                 html += `
 
-                    <div class="policy-item">
+                    <div class="policy-item" data-policy-id="${policy.id}">
 
-                        <h5>${policy.work_title || 'Untitled Policy'}</h5>
+                        <h5>${policy.work_title || policy.title || 'Untitled Policy'}</h5>
 
                         <p><strong>Type:</strong> ${policy.work_type || 'N/A'}</p>
 
@@ -423,6 +423,8 @@ function loadPoliciesFromBackend() {
                             <button class="action" onclick="viewPolicy(${policy.id})">View</button>
 
                             <button class="action" onclick="downloadPolicy(${policy.id})">Download</button>
+
+                            <button class="action" onclick="deletePolicyById('${policy.id}')" style="background: #dc3545; color: white;">Delete</button>
 
                         </div>
 
@@ -2632,7 +2634,7 @@ function displayFilteredPolicies(policies) {
 
         return `
 
-        <div class="policy-item">
+        <div class="policy-item" data-policy-id="${policy.id}">
 
             <h5>${policy.title}</h5>
 
@@ -2646,15 +2648,13 @@ function displayFilteredPolicies(policies) {
 
                 <span><strong>Impact:</strong> ${policy.impact || 'Medium'}</span>
 
+                <span class="status-badge" style="background: ${policy.status === 'approved' ? '#28a745' : policy.status === 'revision requested' ? '#17a2b8' : '#ffc107'}; color: white; padding: 2px 8px; border-radius: 4px; font-size: 12px;">${policy.status || 'pending'}</span>
+
             </div>
 
             <div class="policy-actions">
 
-                <button class="action" onclick="approvePolicy('${policy.id}')">Approve Policy</button>
-
-                <button class="action" onclick="requestPolicyRevision('${policy.id}')" style="background: #ffc107;">Request Revision</button>
-
-                <button class="action" onclick="rejectPolicy('${policy.id}')" style="background: #dc3545;">Reject</button>
+                <button class="action" onclick="deletePolicyById('${policy.id}')" style="background: #dc3545; color: white;">Delete</button>
 
             </div>
 
@@ -34433,7 +34433,7 @@ function saveSafetyPolicy() {
 
     .then(data => {
 
-        console.log('ðŸ“Š Safety Policy API Response data:', data);
+        console.log('📊 Safety Policy API Response data:', data);
 
         
 
@@ -34445,11 +34445,65 @@ function saveSafetyPolicy() {
 
         
 
-        customAlert(`Safety policy uploaded successfully!\n\nTitle: ${policy.title}\nCategory: ${policy.category}\nCompliance: ${policy.complianceLevel}\nEffective: ${policy.effectiveDate}\nPolicy ID: ${data.id}\n\nðŸŽ‰ Safety policy saved to database!`, "Policy Uploaded", "success");
+        // Also create a policy record for approval in Approve Recruitment Policies
+
+        const policyRecord = {
+
+            title: `Safety Policy - ${policy.title}`,
+
+            description: `Safety Policy: ${policy.title}\n\nCategory: ${policy.category}\nDescription: ${policy.description}\nCompliance Level: ${policy.complianceLevel}\nApplicable To: ${policy.applicableTo}\nTraining Required: ${policy.training.join(', ')}\nEffective Date: ${policy.effectiveDate}\nReview Date: ${policy.reviewDate}\nUploaded By: ${policy.uploadedBy}`,
+
+            submittedBy: policy.uploadedBy || 'HSE Manager',
+
+            submittedByRole: 'HSE Manager',
+
+            impact: policy.complianceLevel === 'mandatory' ? 'High' : 'Medium',
+
+            category: policy.category
+
+        };
 
         
 
-        document.getElementById('policyForm').reset();
+        return fetch(`${baseUrl}/api/policies`, {
+
+            method: 'POST',
+
+            headers: {
+
+                'Content-Type': 'application/json',
+
+                'Accept': 'application/json',
+
+                'Authorization': `Bearer ${sessionManager.getAuthToken()}`
+
+            },
+
+            body: JSON.stringify(policyRecord)
+
+        })
+
+        .then(policyResponse => policyResponse.json())
+
+        .then(policyData => {
+
+            console.log('Policy record created for approval:', policyData);
+
+            customAlert(`Safety policy uploaded successfully!\n\nTitle: ${policy.title}\nCategory: ${policy.category}\nCompliance: ${policy.complianceLevel}\nEffective: ${policy.effectiveDate}\nPolicy ID: ${data.id}\n\nThe policy has been sent for approval in Approve Recruitment Policies.`, "Policy Uploaded", "success");
+
+            document.getElementById('policyForm').reset();
+
+        })
+
+        .catch(policyError => {
+
+            console.warn('Policy record creation failed, but HSE record was saved:', policyError);
+
+            customAlert(`Safety policy uploaded successfully!\n\nTitle: ${policy.title}\nCategory: ${policy.category}\nPolicy ID: ${data.id}\n\nNote: Policy was saved but could not be sent for approval.`, "Policy Uploaded", "success");
+
+            document.getElementById('policyForm').reset();
+
+        });
 
     })
 
@@ -35181,21 +35235,97 @@ function deletePolicy(recordId) {
 
     if (confirm('Are you sure you want to delete this policy? This action cannot be undone.')) {
 
-        // TODO: Implement actual API call to delete policy record
+        const baseUrl = window.location.origin;
 
-        console.log('Deleting policy record with ID:', recordId);
+        fetch(`${baseUrl}/api/policies/${recordId}`, {
 
-        customAlert(`Policy record ${recordId} has been deleted.\n\nThe policy has been removed from the system.`, "Record Deleted", "success");
+            method: 'DELETE',
 
-        
+            headers: {
 
-        // Refresh the policy records
+                'Content-Type': 'application/json',
 
-        setTimeout(() => {
+                'Authorization': `Bearer ${sessionManager.getAuthToken()}`
 
-            loadPolicyRecords();
+            }
 
-        }, 1000);
+        })
+
+        .then(response => {
+
+            if (!response.ok) throw new Error(`HTTP ${response.status}`);
+
+            return response.json();
+
+        })
+
+        .then(data => {
+
+            customAlert(`Policy record ${recordId} has been deleted.\n\nThe policy has been removed from the system.`, "Record Deleted", "success");
+
+            setTimeout(() => { loadPolicyRecords(); }, 500);
+
+        })
+
+        .catch(error => {
+
+            console.error('Error deleting policy:', error);
+
+            customAlert(`Error deleting policy: ${error.message}`, "Delete Error", "error");
+
+        });
+
+    }
+
+}
+
+
+
+function deletePolicyById(policyId) {
+
+    if (confirm('Are you sure you want to delete this policy? This action cannot be undone.')) {
+
+        const baseUrl = window.location.origin;
+
+        fetch(`${baseUrl}/api/policies/${policyId}`, {
+
+            method: 'DELETE',
+
+            headers: {
+
+                'Content-Type': 'application/json',
+
+                'Authorization': `Bearer ${sessionManager.getAuthToken()}`
+
+            }
+
+        })
+
+        .then(response => {
+
+            if (!response.ok) throw new Error(`HTTP ${response.status}`);
+
+            return response.json();
+
+        })
+
+        .then(data => {
+
+            customAlert(`Policy has been deleted successfully.`, "Policy Deleted", "success");
+
+            const policyElement = document.querySelector(`[data-policy-id="${policyId}"]`);
+
+            if (policyElement) policyElement.remove();
+
+        })
+
+        .catch(error => {
+
+            console.error('Error deleting policy:', error);
+
+            customAlert(`Error deleting policy: ${error.message}`, "Delete Error", "error");
+
+        });
 
     }
 
