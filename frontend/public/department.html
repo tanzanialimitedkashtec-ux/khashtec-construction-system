@@ -67279,15 +67279,16 @@ function displayBudgetRecords(records) {
 
         records = records.map(record => {
 
-            // Map fields from API response to expected display format
+            // budget_period is both the department name and the period label
+            const deptName = record.department || record.budget_period || 'Unknown';
 
             return {
 
                 id: record.id,
 
-                department: record.department || 'Unknown',
+                department: deptName,
 
-                period: record.period || record.budget_period || 'Unknown',
+                period: record.budget_period || record.period || 'Unknown',
 
                 start_date: record.start_date || record.submission_date || new Date().toISOString().split('T')[0],
 
@@ -67295,15 +67296,21 @@ function displayBudgetRecords(records) {
 
                 total_amount: record.total_amount || record.total_proposed || record.total_budget || 0,
 
-                status: record.status || 'pending',
+                status: record.status || 'Pending',
 
-                utilization: record.utilization || Math.floor(Math.random() * 100), // Random utilization for demo
+                rejection_reason: record.rejection_reason || null,
+
+                modification_request: record.modification_request || null,
+
+                utilization: record.utilization || 0,
 
                 salaries_wages: record.salaries_wages || 0,
 
-                office_supplies: record.office_supplies || 0,
+                // employee_benefits maps to Supplies column
+                office_supplies: record.employee_benefits || record.office_supplies || 0,
 
-                equipment_tools: record.equipment_tools || 0,
+                // recruitment_costs maps to Equipment column
+                equipment_tools: record.recruitment_costs || record.equipment_tools || 0,
 
                 training_development: record.training_development || 0,
 
@@ -67403,25 +67410,26 @@ function displayBudgetRecords(records) {
 
         
 
-        // Get status badge
+        // Get status badge — match against DB values (Pending/approved/rejected/info_requested)
+        const statusLower = (record.status || '').toLowerCase();
 
-        const statusClass = record.status === 'active' ? 'status-active' : 
+        const statusClass = statusLower === 'approved' ? 'status-active' :
+                           statusLower === 'pending' ? 'status-pending' :
+                           statusLower === 'rejected' ? 'status-expired' :
+                           statusLower === 'info_requested' || statusLower === 'modification_requested' ? 'status-pending' :
+                           statusLower === 'completed' ? 'status-completed' : 'status-pending';
 
-                           record.status === 'pending' ? 'status-pending' : 
+        let statusBadge = statusLower === 'approved' ? '✅ Approved' :
+                          statusLower === 'pending' ? '⏳ Pending' :
+                          statusLower === 'rejected' ? '❌ Rejected' :
+                          statusLower === 'info_requested' || statusLower === 'modification_requested' ? '🔄 Info Requested' :
+                          statusLower === 'completed' ? '✅ Completed' : '⏳ Pending';
 
-                           record.status === 'completed' ? 'status-completed' : 
-
-                           record.status === 'expired' ? 'status-expired' : 'status-default';
-
-        
-
-        const statusBadge = record.status === 'active' ? '✅ Active' : 
-
-                           record.status === 'pending' ? '⏳ Pending' : 
-
-                           record.status === 'completed' ? '✅ Completed' : 
-
-                           record.status === 'expired' ? '❌ Expired' : '❓ Unknown';
+        // Append reason tooltip if rejected or info requested
+        const reasonText = record.rejection_reason || record.modification_request;
+        if (reasonText && (statusLower === 'rejected' || statusLower === 'info_requested' || statusLower === 'modification_requested')) {
+            statusBadge += `<div style="font-size:10px;color:#555;font-style:italic;margin-top:3px;max-width:160px;white-space:normal;" title="${reasonText}">${reasonText.substring(0, 60)}${reasonText.length > 60 ? '...' : ''}</div>`;
+        }
 
         
 
