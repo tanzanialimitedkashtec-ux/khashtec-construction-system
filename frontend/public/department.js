@@ -25332,7 +25332,7 @@ async function loadDriversForCarRegistration() {
 
         const data = await response.json();
 
-        const drivers = Array.isArray(data) ? data : (data.drivers || data.data || []);
+        const drivers = Array.isArray(data) ? data : Array.isArray(data.drivers) ? data.drivers : Array.isArray(data.data) ? data.data : [];
 
         
 
@@ -32472,13 +32472,23 @@ function updateSafetyTable(projects) {
 
 function updateSafetySummary(metrics) {
 
-    document.getElementById('totalProjects').textContent = metrics.totalProjects || 0;
+    const totalProjects = metrics.totalProjects || metrics.total_projects || 0;
 
-    document.getElementById('avgSafetyScore').textContent = `${metrics.avgSafetyScore || 0}%`;
+    const avgSafetyScore = metrics.avgSafetyScore || metrics.avg_safety_score || 0;
 
-    document.getElementById('totalIncidents').textContent = metrics.totalIncidents || 0;
+    const totalIncidents = metrics.totalIncidents || metrics.total_incidents || 0;
 
-    document.getElementById('openViolations').textContent = metrics.openViolations || 0;
+    const openViolations = metrics.openViolations || metrics.open_violations || 0;
+
+    
+
+    document.getElementById('totalProjects').textContent = totalProjects;
+
+    document.getElementById('avgSafetyScore').textContent = `${avgSafetyScore}%`;
+
+    document.getElementById('totalIncidents').textContent = totalIncidents;
+
+    document.getElementById('openViolations').textContent = openViolations;
 
 }
 
@@ -34505,6 +34515,10 @@ function saveSafetyPolicy() {
 
         });
 
+        // Auto-refresh the policy records table
+
+        loadPolicyRecords();
+
     })
 
     .catch(error => {
@@ -35025,6 +35039,7 @@ function displayPolicyRecords(records) {
 
                               priorityLower === 'moderate' ? 'priority-moderate' :
 
+                              priorityLower === 'medium' ? 'priority-moderate' :
                               priorityLower === 'low' ? 'priority-low' : 'priority-default';
 
         
@@ -35041,7 +35056,8 @@ function displayPolicyRecords(records) {
 
                               priorityLower === 'moderate' ? 'ðŸŸ¡ Moderate' :
 
-                              priorityLower === 'low' ? 'ðŸŸ¢ Low' : 'â“ Unknown';
+                              priorityLower === 'medium' ? 'ðŸŸ¡ Medium' :
+                              priorityLower === 'low' ? 'ðŸŸ¢ Low' : 'â“ Moderate';
 
         
 
@@ -35183,8 +35199,6 @@ function displayPolicyRecords(records) {
 
                         <button class="action-btn download" onclick="downloadPolicy('${record.id}')" title="Download Policy">ðŸ“¥</button>
 
-                        <button class="action-btn edit" onclick="editPolicy('${record.id}')" title="Edit Policy">âœï¸</button>
-
                         <button class="action-btn delete" onclick="deletePolicy('${record.id}')" title="Delete Policy">ðŸ—‘ï¸</button>
 
                     </div>
@@ -35209,7 +35223,49 @@ function displayPolicyRecords(records) {
 
 function viewPolicy(recordId) {
 
-    customAlert(`Viewing policy details for ID: ${recordId}\n\nFull policy document including description, compliance requirements, and implementation guidelines will be displayed.`, "Policy Details", "info");
+    const baseUrl = window.location.origin;
+
+    fetch(`${baseUrl}/api/hse/hse/${recordId}`, {
+
+        method: 'GET',
+
+        headers: {
+
+            'Content-Type': 'application/json',
+
+            'Authorization': `Bearer ${sessionManager.getAuthToken()}`
+
+        }
+
+    })
+
+    .then(response => {
+
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+
+        return response.json();
+
+    })
+
+    .then(policy => {
+
+        const effectiveDate = policy.due_date ? new Date(policy.due_date).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) : 'N/A';
+
+        const submittedDate = policy.submitted_date ? new Date(policy.submitted_date).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) : 'N/A';
+
+        const details = `Policy ID: ${policy.id}\nTitle: ${policy.work_title || policy.title || 'N/A'}\nType: ${policy.work_type || 'N/A'}\nStatus: ${policy.status || 'N/A'}\nPriority: ${policy.priority || policy.severity || 'N/A'}\nSubmitted By: ${policy.submitted_by || 'N/A'}\nSubmitted Date: ${submittedDate}\nEffective Date: ${effectiveDate}\nAssigned To: ${policy.assigned_to || 'N/A'}\n\nDescription:\n${policy.work_description || policy.description || 'No description available'}`;
+
+        customAlert(details, 'Policy Details', 'info');
+
+    })
+
+    .catch(error => {
+
+        console.error('Error viewing policy:', error);
+
+        customAlert(`Could not load policy details for ID: ${recordId}\n\nError: ${error.message}`, 'Error', 'error');
+
+    });
 
 }
 
@@ -35217,15 +35273,93 @@ function viewPolicy(recordId) {
 
 function downloadPolicy(recordId) {
 
-    customAlert(`Downloading policy ${recordId}...\n\nPolicy document will be downloaded in PDF format for offline reference and distribution.`, "Download Policy", "info");
+    const baseUrl = window.location.origin;
 
-}
+    fetch(`${baseUrl}/api/hse/hse/${recordId}`, {
 
+        method: 'GET',
 
+        headers: {
 
-function editPolicy(recordId) {
+            'Content-Type': 'application/json',
 
-    customAlert(`Editing policy ${recordId}...\n\nPolicy editor will open for modifications, updates, and compliance adjustments.`, "Edit Policy", "info");
+            'Authorization': `Bearer ${sessionManager.getAuthToken()}`
+
+        }
+
+    })
+
+    .then(response => {
+
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+
+        return response.json();
+
+    })
+
+    .then(policy => {
+
+        const effectiveDate = policy.due_date ? new Date(policy.due_date).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) : 'N/A';
+
+        const submittedDate = policy.submitted_date ? new Date(policy.submitted_date).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) : 'N/A';
+
+        const content = 'KASHTEC CONSTRUCTION SYSTEM - POLICY DOCUMENT\n' +
+
+            '================================================\n\n' +
+
+            'Policy ID: ' + policy.id + '\n' +
+
+            'Title: ' + (policy.work_title || policy.title || 'N/A') + '\n' +
+
+            'Type: ' + (policy.work_type || 'N/A') + '\n' +
+
+            'Status: ' + (policy.status || 'N/A') + '\n' +
+
+            'Priority: ' + (policy.priority || policy.severity || 'N/A') + '\n' +
+
+            'Submitted By: ' + (policy.submitted_by || 'N/A') + '\n' +
+
+            'Submitted Date: ' + submittedDate + '\n' +
+
+            'Effective Date: ' + effectiveDate + '\n' +
+
+            'Assigned To: ' + (policy.assigned_to || 'N/A') + '\n\n' +
+
+            'Description:\n' + (policy.work_description || policy.description || 'No description available') + '\n\n' +
+
+            '================================================\n' +
+
+            'Generated on: ' + new Date().toLocaleString() + '\n';
+
+        const blob = new Blob([content], { type: 'text/plain' });
+
+        const url = URL.createObjectURL(blob);
+
+        const a = document.createElement('a');
+
+        a.href = url;
+
+        a.download = 'Policy-' + recordId + '.txt';
+
+        document.body.appendChild(a);
+
+        a.click();
+
+        document.body.removeChild(a);
+
+        URL.revokeObjectURL(url);
+
+        customAlert('Policy ' + recordId + ' downloaded successfully!', 'Download Complete', 'success');
+
+    })
+
+    .catch(error => {
+
+        console.error('Error downloading policy:', error);
+
+        customAlert('Could not download policy ' + recordId + '\n\nError: ' + error.message, 'Download Error', 'error');
+
+    });
 
 }
 
