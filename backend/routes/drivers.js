@@ -90,7 +90,7 @@ router.get('/', async (req, res) => {
             console.log('⚠️ Could not update drivers table:', tableError.message);
         }
         
-        const [drivers] = await db.execute(`
+        const drivers = await db.execute(`
             SELECT *
             FROM drivers 
             ORDER BY created_at DESC
@@ -155,7 +155,7 @@ router.get('/all', async (req, res) => {
     try {
         const db = require('../../database/config/database');
         
-        const [drivers] = await db.execute(`
+        const drivers = await db.execute(`
             SELECT *
             FROM drivers 
             ORDER BY created_at DESC
@@ -472,7 +472,7 @@ router.get('/:id', async (req, res) => {
         const db = require('../../database/config/database');
         const driverId = req.params.id;
         
-        const [drivers] = await db.execute(`
+        const drivers = await db.execute(`
             SELECT *
             FROM drivers 
             WHERE driver_id = ?
@@ -516,7 +516,7 @@ router.put('/:id', async (req, res) => {
             status
         } = req.body;
         
-        const [result] = await db.execute(`
+        const result = await db.execute(`
             UPDATE drivers SET 
                 full_name = ?, description = ?, years_of_experience = ?, license_type = ?,
                 phone_number = ?, email_address = ?, driver_status = ?, updated_at = NOW()
@@ -560,7 +560,7 @@ router.delete('/:id', async (req, res) => {
         const db = require('../../database/config/database');
         const driverId = req.params.id;
         
-        const [result] = await db.execute(`
+        const result = await db.execute(`
             DELETE FROM drivers WHERE driver_id = ?
         `, [driverId]);
         

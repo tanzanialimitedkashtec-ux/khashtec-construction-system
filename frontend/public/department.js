@@ -25332,7 +25332,7 @@ async function loadDriversForCarRegistration() {
 
         const data = await response.json();
 
-        const drivers = Array.isArray(data) ? data : (data.drivers || data.data || []);
+        const drivers = Array.isArray(data) ? data : Array.isArray(data.drivers) ? data.drivers : Array.isArray(data.data) ? data.data : [];
 
         
 
