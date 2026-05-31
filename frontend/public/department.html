@@ -75472,8 +75472,6 @@ function loadTasks() {
 
             tasks = JSON.parse(localStorage.getItem('taskAssignments') || '[]');
 
-            
-
             // If still no tasks, add sample data
 
             if (tasks.length === 0) {
@@ -75698,9 +75696,9 @@ function displayTasks(tasks) {
 
     tasksList.innerHTML = tasks.map(task => {
 
-        const assigneeName = task.assignee.includes('@') ? 
-
-            task.assignee.split('@')[0].toUpperCase() : task.assignee;
+        const rawAssignee = task.assignee || task.assigned_to || 'Unassigned';
+        const assigneeName = rawAssignee.includes('@') ? 
+            rawAssignee.split('@')[0].toUpperCase() : rawAssignee;
 
         
 
