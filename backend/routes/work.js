@@ -649,9 +649,9 @@ async function ensurePpeIssuanceTable() {
         let tableExists = false;
         let cols = [];
         try {
-            const [result] = await db.execute('SHOW COLUMNS FROM ppe_issuance');
-            cols = result;
-            tableExists = true;
+            cols = await db.execute('SHOW COLUMNS FROM ppe_issuance');
+            if (!Array.isArray(cols)) cols = [];
+            tableExists = cols.length > 0;
         } catch (e) {
             tableExists = false;
         }
@@ -732,12 +732,12 @@ async function ensurePpeIssuanceTable() {
         if (colMap['issued_by'] && colMap['issued_by'].includes('int')) {
             // Drop FK constraint first if it exists
             try {
-                const [fks] = await db.execute(
+                const fks = await db.execute(
                     `SELECT CONSTRAINT_NAME FROM information_schema.KEY_COLUMN_USAGE
                      WHERE TABLE_NAME = 'ppe_issuance' AND COLUMN_NAME = 'issued_by'
                      AND REFERENCED_TABLE_NAME IS NOT NULL AND TABLE_SCHEMA = DATABASE()`
                 );
-                for (const fk of fks) {
+                for (const fk of (Array.isArray(fks) ? fks : [])) {
                     try { await db.execute(`ALTER TABLE ppe_issuance DROP FOREIGN KEY ${fk.CONSTRAINT_NAME}`); } catch (e) {}
                 }
             } catch (e) {}
@@ -762,8 +762,8 @@ async function ensurePpeIssuanceTable() {
         }
 
         // Verify migration succeeded by re-checking columns
-        const [newCols] = await db.execute('SHOW COLUMNS FROM ppe_issuance');
-        const newColNames = new Set(newCols.map(c => c.Field));
+        const newCols = await db.execute('SHOW COLUMNS FROM ppe_issuance');
+        const newColNames = new Set((Array.isArray(newCols) ? newCols : []).map(c => c.Field));
         const migrationOk = requiredCols.every(c => newColNames.has(c));
 
         if (migrationOk) {
@@ -800,11 +800,11 @@ function parsePpeItems(record) {
 async function fetchPpeRecords() {
     await ensurePpeIssuanceTable();
 
-    const [ppeRecords] = await db.execute(
+    const ppeRecords = await db.execute(
         `SELECT * FROM ppe_issuance ORDER BY COALESCE(issue_date, created_at) DESC`
     );
 
-    return ppeRecords.map(record => {
+    return (Array.isArray(ppeRecords) ? ppeRecords : []).map(record => {
         // If some fields were stored in `notes` as JSON overflow, merge them back
         let merged = { ...record };
         if (record.notes) {
@@ -875,8 +875,8 @@ router.post('/hse/ppe', async (req, res) => {
         // Dynamically build INSERT based on columns that actually exist in the table.
         // ALTER TABLE may fail on Railway due to permissions, so we adapt to
         // whatever schema is present.
-        const [cols] = await db.execute('SHOW COLUMNS FROM ppe_issuance');
-        const existingCols = new Set(cols.map(c => c.Field));
+        const colRows = await db.execute('SHOW COLUMNS FROM ppe_issuance');
+        const existingCols = new Set((Array.isArray(colRows) ? colRows : []).map(c => c.Field));
 
         // Map of desired column → value
         const fieldMap = {
@@ -926,15 +926,16 @@ router.post('/hse/ppe', async (req, res) => {
             console.log(`📝 Overflow fields stored in notes: ${Object.keys(overflow).join(', ')}`);
         }
 
-        const [result] = await db.execute(
+        const result = await db.execute(
             `INSERT INTO ppe_issuance (${insertCols.join(', ')}) VALUES (${insertPlaceholders.join(', ')})`,
             insertValues
         );
 
-        console.log(`✅ PPE issuance record created with id: ${result.insertId}`);
+        const insertId = result.insertId || result[0]?.insertId || null;
+        console.log(`✅ PPE issuance record created with id: ${insertId}`);
         res.status(201).json({
             message: 'PPE issuance recorded successfully',
-            id: result.insertId,
+            id: insertId,
             issuance_id: issuance_id
         });
     } catch (error) {
@@ -951,21 +952,24 @@ router.get('/hse/ppe/stats', async (req, res) => {
     try {
         await ensurePpeIssuanceTable();
 
-        const [[totalResult]] = await db.execute('SELECT COUNT(*) as total FROM ppe_issuance');
+        const totalRows = await db.execute('SELECT COUNT(*) as total FROM ppe_issuance');
+        const totalResult = Array.isArray(totalRows) ? totalRows[0] : totalRows;
 
-        const [[monthResult]] = await db.execute(
+        const monthRows = await db.execute(
             `SELECT COUNT(*) as this_month FROM ppe_issuance
              WHERE MONTH(issue_date) = MONTH(CURRENT_DATE()) AND YEAR(issue_date) = YEAR(CURRENT_DATE())`
         );
+        const monthResult = Array.isArray(monthRows) ? monthRows[0] : monthRows;
 
         // Simplified low-stock query that works regardless of MySQL version
         let lowStock = 0;
         try {
-            const [[lowStockResult]] = await db.execute(
+            const lowStockRows = await db.execute(
                 `SELECT COUNT(DISTINCT JSON_UNQUOTE(JSON_EXTRACT(ppe_items, '$[0].type'))) as low_stock
                  FROM ppe_issuance WHERE status = 'Issued'`
             );
-            lowStock = lowStockResult.low_stock || 0;
+            const lowStockResult = Array.isArray(lowStockRows) ? lowStockRows[0] : lowStockRows;
+            lowStock = lowStockResult?.low_stock || 0;
         } catch (e) {
             // JSON_TABLE may not be available on all MySQL versions
         }
