@@ -100231,236 +100231,196 @@ function showAddMaterialForm() {
 // Function to show Senior Roles Management form
 
 function showSeniorRoles() {
-
     const formHTML = `
-
         <div class="form-overlay">
-
-            <div class="form-container">
-
+            <div class="form-container" style="max-width: 1000px; width: 95%; max-height: 90vh; overflow-y: auto;">
                 <div class="form-header">
-
                     <h3>Create Senior Hiring Request</h3>
-
                     <button onclick="closeForm()" class="close-btn">&times;</button>
-
                 </div>
-
-                <form id="seniorRolesForm">
-
-                    <div class="form-group">
-
-                        <label for="candidateName">Candidate Name:</label>
-
-                        <input type="text" id="candidateName" name="candidateName" required>
-
+                <div class="form-content-wrapper" style="display: flex; gap: 24px; flex-wrap: wrap; margin-top: 16px;">
+                    <div style="flex: 1; min-width: 300px;">
+                        <form id="seniorRolesForm">
+                            <div class="form-group">
+                                <label for="candidateName">Candidate Name:</label>
+                                <input type="text" id="candidateName" name="candidateName" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="position">Position Level:</label>
+                                <select id="position" name="position" required>
+                                    <option value="">Select Position Level</option>
+                                    <option value="Senior">Senior</option>
+                                    <option value="Manager">Manager</option>
+                                    <option value="Director">Director</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="department">Department:</label>
+                                <select id="department" name="department" required>
+                                    <option value="">Select Department</option>
+                                    <option value="HR">HR</option>
+                                    <option value="FINANCE">Finance</option>
+                                    <option value="PROJECT">Project</option>
+                                    <option value="HSE">HSE</option>
+                                    <option value="REALESTATE">Real Estate</option>
+                                    <option value="ADMIN">Admin</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="proposedSalary">Proposed Salary:</label>
+                                <input type="text" id="proposedSalary" name="proposedSalary" placeholder="e.g., TZS 3,000,000" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="experience">Experience:</label>
+                                <textarea id="experience" name="experience" rows="3" placeholder="Candidate's experience and qualifications" required></textarea>
+                            </div>
+                            <div class="form-group">
+                                <label for="recommendation">HR Recommendation:</label>
+                                <textarea id="recommendation" name="recommendation" rows="3" placeholder="HR recommendation and assessment" required></textarea>
+                            </div>
+                            <div class="form-actions" style="margin-top: 12px; display: flex; gap: 8px;">
+                                <button type="submit" class="btn btn-primary" style="flex: 1;">Submit Request</button>
+                                <button type="button" onclick="closeForm()" class="btn btn-secondary">Close</button>
+                            </div>
+                        </form>
                     </div>
-
-                    <div class="form-group">
-
-                        <label for="position">Position Level:</label>
-
-                        <select id="position" name="position" required>
-
-                            <option value="">Select Position Level</option>
-
-                            <option value="Senior">Senior</option>
-
-                            <option value="Manager">Manager</option>
-
-                            <option value="Director">Director</option>
-
-                        </select>
-
+                    <div style="flex: 1.5; min-width: 400px; border-left: 1px solid #e0e0e0; padding-left: 20px;">
+                        <h4 style="margin-top: 0; margin-bottom: 12px; font-size: 14px; font-weight: 600; color: #333;">Current Senior Hiring Requests</h4>
+                        <div style="overflow-x: auto; max-height: 480px;">
+                            <table style="width: 100%; border-collapse: collapse; font-size: 10px; text-align: left;">
+                                <thead>
+                                    <tr style="background: #f4f6f9;">
+                                        <th style="padding: 8px; border-bottom: 2px solid #ddd;">Candidate</th>
+                                        <th style="padding: 8px; border-bottom: 2px solid #ddd;">Position</th>
+                                        <th style="padding: 8px; border-bottom: 2px solid #ddd;">Department</th>
+                                        <th style="padding: 8px; border-bottom: 2px solid #ddd;">Proposed Salary</th>
+                                        <th style="padding: 8px; border-bottom: 2px solid #ddd;">HR Recommendation</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="seniorHiringTableBodyModal">
+                                    <tr>
+                                        <td colspan="5" style="text-align: center; padding: 12px; color: #888;">Loading requests...</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
-
-                    <div class="form-group">
-
-                        <label for="department">Department:</label>
-
-                        <select id="department" name="department" required>
-
-                            <option value="">Select Department</option>
-
-                            <option value="HR">HR</option>
-
-                            <option value="FINANCE">Finance</option>
-
-                            <option value="PROJECT">Project</option>
-
-                            <option value="HSE">HSE</option>
-
-                            <option value="REALESTATE">Real Estate</option>
-
-                            <option value="ADMIN">Admin</option>
-
-                        </select>
-
-                    </div>
-
-                    <div class="form-group">
-
-                        <label for="proposedSalary">Proposed Salary:</label>
-
-                        <input type="text" id="proposedSalary" name="proposedSalary" placeholder="e.g., TZS 3,000,000" required>
-
-                    </div>
-
-                    <div class="form-group">
-
-                        <label for="experience">Experience:</label>
-
-                        <textarea id="experience" name="experience" rows="3" placeholder="Candidate's experience and qualifications" required></textarea>
-
-                    </div>
-
-                    <div class="form-group">
-
-                        <label for="recommendation">HR Recommendation:</label>
-
-                        <textarea id="recommendation" name="recommendation" rows="3" placeholder="HR recommendation and assessment" required></textarea>
-
-                    </div>
-
-                    <div class="form-actions">
-
-                        <button type="submit" class="btn btn-primary">Submit Request</button>
-
-                        <button type="button" onclick="closeForm()" class="btn btn-secondary">Cancel</button>
-
-                    </div>
-
-                </form>
-
+                </div>
             </div>
-
         </div>
-
     `;
 
     document.body.insertAdjacentHTML('beforeend', formHTML);
 
-    
+    // Helper function to load hiring requests for modal
+    const loadSeniorHiringRequestsForModal = async () => {
+        try {
+            const baseUrl = window.location.origin;
+            const response = await fetch(`${baseUrl}/api/senior-hiring`, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    'Authorization': `Bearer ${sessionManager.getAuthToken()}`
+                }
+            });
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            }
+            const data = await response.json();
+            const tbody = document.getElementById('seniorHiringTableBodyModal');
+            if (!tbody) return;
+
+            if (!data || !Array.isArray(data) || data.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; padding: 12px; color: #888;">No hiring requests found</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = data.map(request => {
+                const salary = request.proposed_salary ? 
+                    (request.proposed_salary.startsWith('TZS') ? request.proposed_salary : `TZS ${parseInt(request.proposed_salary).toLocaleString()}`) : 
+                    'N/A';
+                return `
+                    <tr>
+                        <td style="padding: 8px; border-bottom: 1px solid #eee;"><strong>${request.candidate_name || 'N/A'}</strong></td>
+                        <td style="padding: 8px; border-bottom: 1px solid #eee;">${request.position || 'N/A'}</td>
+                        <td style="padding: 8px; border-bottom: 1px solid #eee;"><span class="badge" style="background:#0b3d91;color:white;font-size:8px;">${request.department || 'N/A'}</span></td>
+                        <td style="padding: 8px; border-bottom: 1px solid #eee;">${salary}</td>
+                        <td style="padding: 8px; border-bottom: 1px solid #eee; max-width: 150px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${request.hr_recommendation || ''}">${request.hr_recommendation || 'N/A'}</td>
+                    </tr>
+                `;
+            }).join('');
+        } catch (error) {
+            console.error('Error loading senior hiring requests for modal:', error);
+            const tbody = document.getElementById('seniorHiringTableBodyModal');
+            if (tbody) {
+                tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; padding: 12px; color: #dc3545;">Error loading requests</td></tr>';
+            }
+        }
+    };
+
+    // Load initial data
+    setTimeout(loadSeniorHiringRequestsForModal, 50);
 
     // Add form submission handler
-
     setTimeout(() => {
-
         const seniorForm = document.getElementById('seniorRolesForm');
-
         if (seniorForm) {
-
             seniorForm.addEventListener('submit', async function(e) {
-
                 e.preventDefault();
-
-                console.log('👔 Senior hiring form submitted');
-
-                
+                console.log('Senior hiring form submitted');
 
                 // Validate required fields
-
                 const candidateName = document.getElementById('candidateName').value.trim();
-
                 const position = document.getElementById('position').value.trim();
-
                 const department = document.getElementById('department').value.trim();
-
                 const proposedSalary = document.getElementById('proposedSalary').value.trim();
-
                 const experience = document.getElementById('experience').value.trim();
-
                 const recommendation = document.getElementById('recommendation').value.trim();
 
-                
-
                 if (!candidateName || !position || !department || !proposedSalary || !experience || !recommendation) {
-
                     showNotification('Please fill in all required fields', 'error');
-
                     return;
-
                 }
 
-                
-
                 const formData = {
-
                     candidateName,
-
                     position,
-
                     department,
-
                     proposedSalary,
-
                     experience,
-
                     recommendation,
-
                     requestedBy: 'HR Manager',
-
                     requestedByRole: 'HR'
-
                 };
 
-                
-
-                console.log('📝 Senior hiring form data:', formData);
-
-                
+                console.log('Senior hiring form data:', formData);
 
                 try {
-
                     const submitBtn = seniorForm.querySelector('button[type="submit"]');
-
                     const originalText = submitBtn.textContent;
-
                     submitBtn.textContent = 'Saving...';
-
                     submitBtn.disabled = true;
-
-                    
 
                     await window.apiService.saveSeniorHiringRequest(formData);
 
-                    
-
                     showNotification('Senior hiring request submitted successfully!', 'success');
-
-                    closeForm();
-
                     seniorForm.reset();
-
-                    
-
+                    await loadSeniorHiringRequestsForModal();
                 } catch (error) {
-
                     console.error('Error saving senior hiring request:', error);
-
                     showNotification('Error saving senior hiring request. Please try again.', 'error');
-
                 } finally {
-
                     const submitBtn = seniorForm.querySelector('button[type="submit"]');
-
-                    submitBtn.textContent = 'Submit Request';
-
-                    submitBtn.disabled = false;
-
+                    if (submitBtn) {
+                        submitBtn.textContent = 'Submit Request';
+                        submitBtn.disabled = false;
+                    }
                 }
-
             });
-
         }
-
     }, 100);
-
 }
-
-
-
-// Function to show Suggestions Management form
 
 function showSuggestionsManagement() {
 
