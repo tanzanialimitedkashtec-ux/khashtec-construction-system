@@ -2,6 +2,71 @@ const express = require('express');
 const router = express.Router();
 const db = require('../../database/config/database');
 
+// Ensure senior hiring tables exist in the database on module load
+async function ensureTablesExist() {
+    try {
+        await db.execute(`
+            CREATE TABLE IF NOT EXISTS senior_hiring_approval (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                candidate_name VARCHAR(255) NOT NULL,
+                position VARCHAR(255) NOT NULL,
+                department VARCHAR(100) NOT NULL,
+                proposed_salary VARCHAR(50) NOT NULL,
+                experience TEXT,
+                hr_recommendation TEXT,
+                status ENUM('pending', 'approved', 'rejected', 'info_requested') DEFAULT 'pending',
+                request_date DATE NOT NULL,
+                approval_date DATE,
+                approved_by VARCHAR(255),
+                requested_by VARCHAR(255) NOT NULL DEFAULT 'HR Manager',
+                requested_by_role VARCHAR(100) DEFAULT 'HR',
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+                INDEX idx_status (status),
+                INDEX idx_department (department),
+                INDEX idx_date (request_date)
+            )
+        `);
+        
+        await db.execute(`
+            CREATE TABLE IF NOT EXISTS senior_hiring_info_request (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                request_id INT NOT NULL,
+                info_request TEXT NOT NULL,
+                requested_by VARCHAR(255) NOT NULL,
+                requested_by_role VARCHAR(100),
+                request_date DATE NOT NULL,
+                response TEXT,
+                response_date DATE,
+                responded_by VARCHAR(255),
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (request_id) REFERENCES senior_hiring_approval(id) ON DELETE CASCADE
+            )
+        `);
+        
+        await db.execute(`
+            CREATE TABLE IF NOT EXISTS senior_hiring_rejection (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                request_id INT NOT NULL,
+                rejection_reason TEXT NOT NULL,
+                rejected_by VARCHAR(255) NOT NULL,
+                rejected_by_role VARCHAR(100),
+                rejection_date DATE NOT NULL,
+                notified_hr BOOLEAN DEFAULT FALSE,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (request_id) REFERENCES senior_hiring_approval(id) ON DELETE CASCADE
+            )
+        `);
+        
+        console.log('✅ Senior hiring database tables verified successfully');
+    } catch (tableError) {
+        console.error('❌ Error ensuring senior hiring tables exist:', tableError);
+    }
+}
+
+// Auto-run startup check
+ensureTablesExist().catch(console.error);
+
 console.log('🚀 Senior hiring routes loaded with database connection');
 
 // Test GET route
@@ -227,20 +292,21 @@ router.post('/:id/request-info', async (req, res) => {
         const infoRequest = req.body.info_request || req.body.infoRequired || req.body.info_required;
         const requestedBy = req.body.requested_by || req.body.requestedBy || 'Managing Director';
         const requestedDate = new Date().toISOString().split('T')[0];
+        const parsedId = parseInt(req.params.id, 10);
         
         // Insert into senior_hiring_info_request table
         const result = await db.execute(`
             INSERT INTO senior_hiring_info_request 
-            (request_id, info_request, requested_by, requested_date, status)
-            VALUES (?, ?, ?, ?, 'pending')
-        `, [req.params.id, infoRequest || 'Please provide additional information', requestedBy, requestedDate]);
+            (request_id, info_request, requested_by, request_date)
+            VALUES (?, ?, ?, ?)
+        `, [parsedId, infoRequest || 'Please provide additional information', requestedBy, requestedDate]);
         
         // Update the main request status
         await db.execute(`
             UPDATE senior_hiring_approval 
             SET status = 'info_requested'
             WHERE id = ?
-        `, [req.params.id]);
+        `, [parsedId]);
         
         console.log('✅ Senior hiring info request created successfully');
         
@@ -266,20 +332,21 @@ router.post('/:id/reject', async (req, res) => {
         const rejectionReason = req.body.rejection_reason || req.body.rejectionReason || req.body.rejection_reason;
         const rejectedBy = req.body.rejected_by || req.body.rejectedBy || 'Managing Director';
         const rejectedDate = new Date().toISOString().split('T')[0];
+        const parsedId = parseInt(req.params.id, 10);
         
         // Insert into senior_hiring_rejection table
         const result = await db.execute(`
             INSERT INTO senior_hiring_rejection 
-            (request_id, rejection_reason, rejected_by, rejected_date)
+            (request_id, rejection_reason, rejected_by, rejection_date)
             VALUES (?, ?, ?, ?)
-        `, [req.params.id, rejectionReason || 'Candidate does not meet requirements', rejectedBy, rejectedDate]);
+        `, [parsedId, rejectionReason || 'Candidate does not meet requirements', rejectedBy, rejectedDate]);
         
         // Update the main request status
         await db.execute(`
             UPDATE senior_hiring_approval 
             SET status = 'rejected'
             WHERE id = ?
-        `, [req.params.id]);
+        `, [parsedId]);
         
         console.log('✅ Senior hiring rejected successfully');
         

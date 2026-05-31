@@ -958,8 +958,8 @@ app.post('/api/senior-hiring/:id/request-info', async (req, res) => {
             // Insert info request
             await db.execute(`
                 INSERT INTO senior_hiring_info_request 
-                (hiring_request_id, info_request, requested_by, requested_date, status)
-                VALUES (?, ?, ?, ?, 'pending')
+                (request_id, info_request, requested_by, request_date)
+                VALUES (?, ?, ?, ?)
             `, [req.params.id, info_request || 'Please provide additional information', requested_by || 'Managing Director', requestedDate]);
             
             // Update main request status
