@@ -985,6 +985,32 @@ router.get('/hse/ppe/stats', async (req, res) => {
     }
 });
 
+// Get projects list for PPE form dropdown
+router.get('/hse/ppe/projects', async (req, res) => {
+    try {
+        const projects = await db.execute(
+            `SELECT id, name, status FROM projects ORDER BY name ASC`
+        );
+        res.json({ data: Array.isArray(projects) ? projects : [] });
+    } catch (error) {
+        console.error('Error fetching projects for PPE:', error.message);
+        res.json({ data: [] });
+    }
+});
+
+// Get departments list for PPE form dropdown
+router.get('/hse/ppe/departments', async (req, res) => {
+    try {
+        const departments = await db.execute(
+            `SELECT id, name, code FROM departments WHERE status = 'Active' ORDER BY name ASC`
+        );
+        res.json({ data: Array.isArray(departments) ? departments : [] });
+    } catch (error) {
+        console.error('Error fetching departments for PPE:', error.message);
+        res.json({ data: [] });
+    }
+});
+
 // Get Toolbox Meeting records
 router.get('/hse/toolbox-meetings', async (req, res) => {
     try {
