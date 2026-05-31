@@ -25746,6 +25746,34 @@ async function loadCompanyCars() {
 
         
 
+        // Fetch drivers to map driver_id to full_name
+
+        let driverMap = {};
+
+        try {
+
+            const baseUrl = window.location.origin;
+
+            const driverResponse = await fetch(`${baseUrl}/api/drivers`);
+
+            if (driverResponse.ok) {
+
+                const driverData = await driverResponse.json();
+
+                const driverList = Array.isArray(driverData) ? driverData : (driverData.drivers || driverData.data || []);
+
+                driverList.forEach(d => { driverMap[d.driver_id] = d.full_name; });
+
+            }
+
+        } catch (driverErr) {
+
+            console.log('Could not load drivers for name lookup:', driverErr.message);
+
+        }
+
+        
+
         const campaigns = response.campaigns || response.data || [];
 
         if (response.success && campaigns.length > 0) {
@@ -25860,7 +25888,7 @@ async function loadCompanyCars() {
 
                         <div class="driver-info">
 
-                            <div class="driver-name">${mappedCar.assigned_driver || 'Unassigned'}</div>
+                            <div class="driver-name">${mappedCar.assigned_driver ? (driverMap[mappedCar.assigned_driver] || mappedCar.assigned_driver) : 'Unassigned'}</div>
 
                         </div>
 
