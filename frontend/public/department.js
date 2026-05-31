@@ -34475,7 +34475,7 @@ function saveSafetyPolicy() {
 
         
 
-        return fetch(`${baseUrl}/api/policies`, {
+        fetch(`${baseUrl}/api/policies`, {
 
             method: 'POST',
 
@@ -34501,8 +34501,6 @@ function saveSafetyPolicy() {
 
             customAlert(`Safety policy uploaded successfully!\n\nTitle: ${policy.title}\nCategory: ${policy.category}\nCompliance: ${policy.complianceLevel}\nEffective: ${policy.effectiveDate}\nPolicy ID: ${data.id}\n\nThe policy has been sent for approval in Approve Recruitment Policies.`, "Policy Uploaded", "success");
 
-            document.getElementById('policyForm').reset();
-
         })
 
         .catch(policyError => {
@@ -34511,13 +34509,17 @@ function saveSafetyPolicy() {
 
             customAlert(`Safety policy uploaded successfully!\n\nTitle: ${policy.title}\nCategory: ${policy.category}\nPolicy ID: ${data.id}\n\nNote: Policy was saved but could not be sent for approval.`, "Policy Uploaded", "success");
 
+        })
+
+        .finally(() => {
+
             document.getElementById('policyForm').reset();
 
+            // Auto-refresh the policy records table after both saves complete
+
+            loadPolicyRecords();
+
         });
-
-        // Auto-refresh the policy records table
-
-        loadPolicyRecords();
 
     })
 
