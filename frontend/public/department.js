@@ -33015,13 +33015,23 @@ function updateSafetyTable(projects) {
 
 function updateSafetySummary(metrics) {
 
-    document.getElementById('totalProjects').textContent = metrics.totalProjects || 0;
+    const totalProjects = metrics.totalProjects || metrics.total_projects || 0;
 
-    document.getElementById('avgSafetyScore').textContent = `${metrics.avgSafetyScore || 0}%`;
+    const avgSafetyScore = metrics.avgSafetyScore || metrics.avg_safety_score || 0;
 
-    document.getElementById('totalIncidents').textContent = metrics.totalIncidents || 0;
+    const totalIncidents = metrics.totalIncidents || metrics.total_incidents || 0;
 
-    document.getElementById('openViolations').textContent = metrics.openViolations || 0;
+    const openViolations = metrics.openViolations || metrics.open_violations || 0;
+
+    
+
+    document.getElementById('totalProjects').textContent = totalProjects;
+
+    document.getElementById('avgSafetyScore').textContent = `${avgSafetyScore}%`;
+
+    document.getElementById('totalIncidents').textContent = totalIncidents;
+
+    document.getElementById('openViolations').textContent = openViolations;
 
 }
 

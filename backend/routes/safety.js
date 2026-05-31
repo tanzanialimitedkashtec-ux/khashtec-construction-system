@@ -135,6 +135,7 @@ router.get('/', async (req, res) => {
             safetyRecords.reduce((sum, r) => sum + (r.safety_score || 0), 0) / totalProjects
         );
         const totalIncidents = safetyRecords.reduce((sum, r) => sum + (r.total_incidents || 0), 0);
+        const openViolations = safetyRecords.reduce((sum, r) => sum + (r.open_violations || 0), 0);
         const avgCompliance = Math.round(
             safetyRecords.reduce((sum, r) => sum + (r.ppe_compliance || 0), 0) / totalProjects
         );
@@ -146,6 +147,7 @@ router.get('/', async (req, res) => {
                 total_projects: totalProjects,
                 avg_safety_score: avgSafetyScore,
                 total_incidents: totalIncidents,
+                open_violations: openViolations,
                 compliance_rate: avgCompliance
             }
         });
