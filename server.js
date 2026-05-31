@@ -91,6 +91,8 @@ const suggestionsViewRoutes = require('./backend/routes/suggestionsView');
 
 const taxRoutes = require('./backend/routes/tax');
 
+const nhifRoutes = require('./backend/routes/nhif');
+
 const nssfRegistrationRoutes = require('./backend/routes/nssfRegistration');
 
 const transportCostsRoutes = require('./backend/routes/transportCosts');
@@ -1003,6 +1005,12 @@ app.use('/api/suggestions-view', suggestionsViewRoutes);
 app.use('/api/tax', asyncHandler(async (req, res, next) => {
 
     return taxRoutes(req, res, next);
+
+}));
+
+app.use('/api/nhif', asyncHandler(async (req, res, next) => {
+
+    return nhifRoutes(req, res, next);
 
 }));
 
