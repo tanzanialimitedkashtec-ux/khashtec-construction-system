@@ -6,9 +6,10 @@ const db = require('../../database/config/database');
 router.get('/', async (req, res) => {
     try {
         const nhifRecords = await db.execute(`
-            SELECT n.*, e.full_name as employee_name, e.employee_id
+            SELECT n.*, ed.full_name as employee_name, e.employee_id
             FROM nhif_contributions n
             LEFT JOIN employees e ON n.employee_id = e.id
+            LEFT JOIN employee_details ed ON e.id = ed.employee_id
             ORDER BY n.contribution_month DESC
         `);
         
@@ -31,9 +32,10 @@ router.get('/employee/:employeeId', async (req, res) => {
         const { employeeId } = req.params;
         
         const nhifRecords = await db.execute(`
-            SELECT n.*, e.full_name as employee_name, e.employee_id
+            SELECT n.*, ed.full_name as employee_name, e.employee_id
             FROM nhif_contributions n
             LEFT JOIN employees e ON n.employee_id = e.id
+            LEFT JOIN employee_details ed ON e.id = ed.employee_id
             WHERE n.employee_id = ?
             ORDER BY n.contribution_month DESC
         `, [employeeId]);
@@ -104,13 +106,16 @@ router.post('/', async (req, res) => {
             submittedById
         ]);
 
+        const insertId = result.insertId || (Array.isArray(result) ? result[0].insertId : null);
+
         // Get the created NHIF record
         const newRecord = await db.execute(`
-            SELECT n.*, e.full_name as employee_name, e.employee_id
+            SELECT n.*, ed.full_name as employee_name, e.employee_id
             FROM nhif_contributions n
             LEFT JOIN employees e ON n.employee_id = e.id
+            LEFT JOIN employee_details ed ON e.id = ed.employee_id
             WHERE n.id = ?
-        `, [result.insertId]);
+        `, [insertId]);
 
         // Create notification for Finance department
         try {
@@ -160,7 +165,9 @@ router.put('/:id/payment', async (req, res) => {
             WHERE id = ?
         `, [paymentStatus, paymentDate || null, receiptNumber || null, updatedById, id]);
 
-        if (result.affectedRows === 0) {
+        const affectedRows = result.affectedRows || (Array.isArray(result) ? result[0].affectedRows : 0);
+
+        if (affectedRows === 0) {
             return res.status(404).json({
                 success: false,
                 error: 'NHIF record not found'
@@ -169,9 +176,10 @@ router.put('/:id/payment', async (req, res) => {
 
         // Get updated record
         const updatedRecord = await db.execute(`
-            SELECT n.*, e.full_name as employee_name, e.employee_id
+            SELECT n.*, ed.full_name as employee_name, e.employee_id
             FROM nhif_contributions n
             LEFT JOIN employees e ON n.employee_id = e.id
+            LEFT JOIN employee_details ed ON e.id = ed.employee_id
             WHERE n.id = ?
         `, [id]);
 
@@ -224,7 +232,9 @@ router.delete('/:id', async (req, res) => {
 
         const result = await db.execute('DELETE FROM nhif_contributions WHERE id = ?', [id]);
 
-        if (result.affectedRows === 0) {
+        const affectedRows = result.affectedRows || (Array.isArray(result) ? result[0].affectedRows : 0);
+
+        if (affectedRows === 0) {
             return res.status(404).json({
                 success: false,
                 error: 'NHIF record not found'
