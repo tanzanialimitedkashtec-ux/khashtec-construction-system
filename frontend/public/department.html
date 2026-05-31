@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 
 <html lang="en">
 
@@ -100295,6 +100295,7 @@ function showSeniorRoles() {
                                         <th style="padding: 8px; border-bottom: 2px solid #ddd;">Department</th>
                                         <th style="padding: 8px; border-bottom: 2px solid #ddd;">Proposed Salary</th>
                                         <th style="padding: 8px; border-bottom: 2px solid #ddd;">HR Recommendation</th>
+                                        <th style="padding: 8px; border-bottom: 2px solid #ddd;">Status</th>
                                     </tr>
                                 </thead>
                                 <tbody id="seniorHiringTableBodyModal">
@@ -100332,7 +100333,7 @@ function showSeniorRoles() {
             if (!tbody) return;
 
             if (!data || !Array.isArray(data) || data.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; padding: 12px; color: #888;">No hiring requests found</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 12px; color: #888;">No hiring requests found</td></tr>';
                 return;
             }
 
@@ -100340,6 +100341,18 @@ function showSeniorRoles() {
                 const salary = request.proposed_salary ? 
                     (request.proposed_salary.startsWith('TZS') ? request.proposed_salary : `TZS ${parseInt(request.proposed_salary).toLocaleString()}`) : 
                     'N/A';
+                const status = (request.status || 'pending').toLowerCase();
+                const reason = request.reason || request.rejection_reason || request.approval_reason || '';
+                let statusBadge = '';
+                if (status === 'approved') {
+                    statusBadge = `<span style="display:inline-block;padding:3px 8px;border-radius:12px;background:#28a745;color:#fff;font-size:8px;font-weight:700;letter-spacing:0.5px;">✔ Approved</span>`;
+                } else if (status === 'rejected') {
+                    statusBadge = `<span style="display:inline-block;padding:3px 8px;border-radius:12px;background:#dc3545;color:#fff;font-size:8px;font-weight:700;letter-spacing:0.5px;" title="${reason}">✖ Rejected</span>${reason ? `<br><span style="font-size:8px;color:#dc3545;display:block;margin-top:2px;max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${reason}">Reason: ${reason}</span>` : ''}`;
+                } else if (status === 'request_info' || status === 'request info' || status === 'info_requested') {
+                    statusBadge = `<span style="display:inline-block;padding:3px 8px;border-radius:12px;background:#fd7e14;color:#fff;font-size:8px;font-weight:700;letter-spacing:0.5px;" title="${reason}">⚠ Info Requested</span>${reason ? `<br><span style="font-size:8px;color:#fd7e14;display:block;margin-top:2px;max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${reason}">Reason: ${reason}</span>` : ''}`;
+                } else {
+                    statusBadge = `<span style="display:inline-block;padding:3px 8px;border-radius:12px;background:#6c757d;color:#fff;font-size:8px;font-weight:700;letter-spacing:0.5px;">⏳ Pending</span>`;
+                }
                 return `
                     <tr>
                         <td style="padding: 8px; border-bottom: 1px solid #eee;"><strong>${request.candidate_name || 'N/A'}</strong></td>
@@ -100347,6 +100360,7 @@ function showSeniorRoles() {
                         <td style="padding: 8px; border-bottom: 1px solid #eee;"><span class="badge" style="background:#0b3d91;color:white;font-size:8px;">${request.department || 'N/A'}</span></td>
                         <td style="padding: 8px; border-bottom: 1px solid #eee;">${salary}</td>
                         <td style="padding: 8px; border-bottom: 1px solid #eee; max-width: 150px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${request.hr_recommendation || ''}">${request.hr_recommendation || 'N/A'}</td>
+                        <td style="padding: 8px; border-bottom: 1px solid #eee;">${statusBadge}</td>
                     </tr>
                 `;
             }).join('');
@@ -100354,7 +100368,7 @@ function showSeniorRoles() {
             console.error('Error loading senior hiring requests for modal:', error);
             const tbody = document.getElementById('seniorHiringTableBodyModal');
             if (tbody) {
-                tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; padding: 12px; color: #dc3545;">Error loading requests</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 12px; color: #dc3545;">Error loading requests</td></tr>';
             }
         }
     };
