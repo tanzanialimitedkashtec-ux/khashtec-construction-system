@@ -32,6 +32,7 @@ router.get('/', async (req, res) => {
                 justification,
                 submitted_by,
                 submitted_by_role,
+                submission_date,
                 submission_date AS start_date,
                 approved_date AS end_date,
                 status,
