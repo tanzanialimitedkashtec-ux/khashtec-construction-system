@@ -59,10 +59,10 @@ router.get('/hse', async (req, res) => {
         let hseItems = [];
         
         try {
-            const [dbRecords] = await db.execute(
+            const dbRecords = await db.execute(
                 `SELECT * FROM hse_work ORDER BY submitted_date DESC`
             );
-            hseItems = dbRecords;
+            hseItems = Array.isArray(dbRecords) ? dbRecords : [];
             console.log(`📊 Found ${hseItems.length} HSE work items from database`);
         } catch (dbError) {
             console.error('❌ Database error, using fallback HSE data:', dbError);
@@ -318,7 +318,7 @@ router.get('/hse/inspections', async (req, res) => {
         let inspectionRecords = [];
         
         try {
-            const [dbRecords] = await db.execute(
+            const dbRecords = await db.execute(
                 `SELECT * FROM hse_work WHERE work_type = 'Inspection Report' ORDER BY submitted_date DESC`
             );
             inspectionRecords = dbRecords;
@@ -399,7 +399,7 @@ router.get('/inspections', async (req, res) => {
         let inspectionRecords = [];
         
         try {
-            const [dbRecords] = await db.execute(
+            const dbRecords = await db.execute(
                 `SELECT * FROM hse_work WHERE work_type = 'Inspection Report' ORDER BY submitted_date DESC`
             );
             inspectionRecords = dbRecords;
@@ -480,7 +480,7 @@ router.get('/hse/violations', async (req, res) => {
         let violations = [];
         
         try {
-            const [dbRecords] = await db.execute(
+            const dbRecords = await db.execute(
                 `SELECT * FROM hse_work WHERE work_type = 'Safety Violation' ORDER BY submitted_date DESC`
             );
             violations = dbRecords;
@@ -561,7 +561,7 @@ router.get('/violations', async (req, res) => {
         let violations = [];
         
         try {
-            const [dbRecords] = await db.execute(
+            const dbRecords = await db.execute(
                 `SELECT * FROM hse_work WHERE work_type = 'Safety Violation' ORDER BY submitted_date DESC`
             );
             violations = dbRecords;
@@ -1019,7 +1019,7 @@ router.get('/hse/toolbox-meetings', async (req, res) => {
         let toolboxMeetings = [];
         
         try {
-            const [dbRecords] = await db.execute(
+            const dbRecords = await db.execute(
                 `SELECT * FROM hse_work WHERE work_type = 'Toolbox Meeting' ORDER BY submitted_date DESC`
             );
             toolboxMeetings = dbRecords;
@@ -1103,7 +1103,7 @@ router.get('/toolbox-meetings', async (req, res) => {
         let toolboxMeetings = [];
         
         try {
-            const [dbRecords] = await db.execute(
+            const dbRecords = await db.execute(
                 `SELECT * FROM hse_work WHERE work_type = 'Toolbox Meeting' ORDER BY submitted_date DESC`
             );
             toolboxMeetings = dbRecords;
@@ -1187,7 +1187,7 @@ router.get('/hse/incidents', async (req, res) => {
         let incidentRecords = [];
         
         try {
-            const [dbRecords] = await db.execute(
+            const dbRecords = await db.execute(
                 `SELECT * FROM hse_work WHERE work_type = 'Incident Reporting' ORDER BY submitted_date DESC`
             );
             incidentRecords = dbRecords;
@@ -1265,7 +1265,7 @@ router.get('/incidents', async (req, res) => {
         let incidentRecords = [];
         
         try {
-            const [dbRecords] = await db.execute(
+            const dbRecords = await db.execute(
                 `SELECT * FROM hse_work WHERE work_type = 'Incident Reporting' ORDER BY submitted_date DESC`
             );
             incidentRecords = dbRecords;
@@ -1366,7 +1366,7 @@ router.get('/site-reports', async (req, res) => {
                 )
             `);
 
-            const [dbRecords] = await db.execute(`
+            const dbRecords = await db.execute(`
                 SELECT sr.id, sr.project_id, sr.report_date, sr.weather_conditions,
                        sr.site_supervisor, sr.workers_present, sr.work_completed,
                        sr.site_issues, sr.safety_incidents, sr.materials_used,
@@ -3868,7 +3868,7 @@ router.get('/approvals/recent', async (req, res) => {
         }
 
         try {
-            const [dbRecords] = await db.execute(`
+            const dbRecords = await db.execute(`
                 SELECT * FROM work_approvals 
                 ORDER BY created_at DESC 
                 LIMIT 20
