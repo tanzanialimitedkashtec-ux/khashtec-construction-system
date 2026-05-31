@@ -34607,7 +34607,7 @@ async function loadPolicyRecords() {
 
         try {
 
-            response = await fetch(`${baseUrl}/api/hse/hse`, {
+            response = await fetch(`${baseUrl}/api/hse/hse?work_type=Safety%20Policy%20Upload`, {
 
                 method: 'GET',
 
