@@ -20,13 +20,15 @@ router.get('/', async (req, res) => {
         const rows = await db.execute(`
             SELECT 
                 id,
-                budget_period AS department,
+                department,
                 budget_period,
                 total_proposed,
                 salaries_wages,
                 employee_benefits,
                 recruitment_costs,
                 training_development,
+                travel_transport,
+                miscellaneous,
                 justification,
                 submitted_by,
                 submitted_by_role,
@@ -58,9 +60,23 @@ router.get('/:id', async (req, res) => {
     console.log('?? GET /api/workforce-budget/:id accessed with id:', req.params.id);
     try {
         const rows = await db.execute(`
-            SELECT id, budget_period as department, total_proposed as total_budget, salaries_wages, training_development, 
-                   employee_benefits, recruitment_costs, status, submission_date,
-                   approved_by, approved_date as approval_date, justification
+            SELECT 
+                id, 
+                department, 
+                budget_period, 
+                total_proposed as total_budget, 
+                salaries_wages, 
+                training_development, 
+                employee_benefits, 
+                recruitment_costs, 
+                travel_transport,
+                miscellaneous,
+                status, 
+                submission_date,
+                approved_by, 
+                approved_date as approval_date, 
+                justification,
+                current_headcount
             FROM workforce_budgets 
             WHERE id = ?
         `, [req.params.id]);
@@ -89,6 +105,8 @@ router.post('/', async (req, res) => {
             training_development,
             employee_benefits,
             recruitment_costs,
+            travel_transport,
+            miscellaneous,
             justification,
             submitted_by,
             budget_period
@@ -105,21 +123,24 @@ router.post('/', async (req, res) => {
         // Generate unique budget ID
         const budgetId = `BUD-${Date.now()}-${Math.random().toString(36).substr(2, 9).toUpperCase()}`;
         
-        // Insert new budget
+        // Insert new budget — store department in its own column and budget_period separately
         const result = await db.execute(`
             INSERT INTO workforce_budgets (
-                id, budget_period, total_proposed, salaries_wages, training_development,
-                employee_benefits, recruitment_costs, status, submission_date,
+                id, department, budget_period, total_proposed, salaries_wages, training_development,
+                employee_benefits, recruitment_costs, travel_transport, miscellaneous, status, submission_date,
                 justification, submitted_by, submitted_by_role, created_at, updated_at
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, 'pending', CURDATE(), ?, ?, ?, NOW(), NOW())
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'Pending', CURDATE(), ?, ?, ?, NOW(), NOW())
         `, [
             budgetId,
+            department,
             budget_period || 'monthly',
             total_budget,
             salaries_wages,
             training_development,
             employee_benefits,
             recruitment_costs,
+            travel_transport || 0,
+            miscellaneous || 0,
             justification || 'No justification provided',
             submitted_by || 'Finance Manager',
             'Finance Manager'

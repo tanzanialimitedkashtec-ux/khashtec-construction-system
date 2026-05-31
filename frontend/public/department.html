@@ -28148,6 +28148,8 @@ window.approveBudget = function(budgetId) {
 
         loadWorkforceBudgets();
 
+        loadBudgetRecords();
+
     })
 
     .catch(error => {
@@ -28558,6 +28560,8 @@ function processBudgetModification(budgetId, modificationRequest, deadline) {
 
         loadWorkforceBudgets();
 
+        loadBudgetRecords();
+
     })
 
     .catch(error => {
@@ -28957,6 +28961,8 @@ function processBudgetRejection(budgetId, rejectionReason) {
         // Reload budgets to show updated status
 
         loadWorkforceBudgets();
+
+        loadBudgetRecords();
 
     })
 
@@ -66738,6 +66744,10 @@ function saveDepartmentBudget() {
         employee_benefits: parseTZSValue(budget.supplies), // Map supplies to benefits
 
         recruitment_costs: parseTZSValue(budget.equipment), // Map equipment to recruitment
+
+        travel_transport: parseTZSValue(budget.travel),
+
+        miscellaneous: parseTZSValue(budget.misc),
 
         justification: budget.justification || `Budget request for ${budget.department} - ${budget.period}`,
 

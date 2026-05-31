@@ -649,12 +649,12 @@ router.get('/report/budget-vs-actual', async (req, res) => {
         let budgets = [];
         if (period) {
             budgets = await db.execute(
-                `SELECT budget_period, total_proposed FROM workforce_budgets WHERE budget_period = ?`,
+                `SELECT department AS budget_period, total_proposed FROM workforce_budgets WHERE department = ?`,
                 [period]
             ).catch(() => []);
         } else {
             budgets = await db.execute(
-                `SELECT budget_period, total_proposed FROM workforce_budgets ORDER BY submission_date DESC LIMIT 2`
+                `SELECT department AS budget_period, total_proposed FROM workforce_budgets ORDER BY submission_date DESC LIMIT 2`
             ).catch(() => []);
         }
         budgets = Array.isArray(budgets) ? budgets : [];
