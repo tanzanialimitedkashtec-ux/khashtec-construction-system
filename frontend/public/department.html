@@ -71886,7 +71886,7 @@ async function assignTasks(){
 
             const projectsData = await projectsResponse.json();
 
-            projects = Array.isArray(projectsData) ? projectsData : [];
+            projects = Array.isArray(projectsData) ? projectsData : (projectsData.projects || []);
 
             console.log('✅ Loaded projects:', projects.length, 'projects');
 
@@ -75428,7 +75428,7 @@ function loadTasks() {
 
     // Try to fetch from API
 
-    fetch('/tasks')
+    fetch('/api/tasks')
 
         .then(response => response.json())
 
