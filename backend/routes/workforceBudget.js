@@ -113,7 +113,8 @@ router.post('/', async (req, res) => {
         } = req.body;
         
         // Validate required fields
-        if (!department || !total_budget || !salaries_wages || !training_development || !employee_benefits || !recruitment_costs) {
+        const isMissing = (val) => val === undefined || val === null || val === '';
+        if (isMissing(department) || isMissing(total_budget) || isMissing(salaries_wages) || isMissing(training_development) || isMissing(employee_benefits) || isMissing(recruitment_costs)) {
             return res.status(400).json({
                 error: 'Missing required fields',
                 required: ['department', 'total_budget', 'salaries_wages', 'training_development', 'employee_benefits', 'recruitment_costs']
