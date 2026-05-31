@@ -2053,6 +2053,9 @@ function displayPolicies(policies) {
                                         <span class="status-badge" style="background: ${statusColor}; color: white; padding: 2px 8px; border-radius: 4px; font-size: 12px;">${policy.status}</span>
                                 </div>
                                 <div class="policy-actions">
+                                        <button class="action" onclick="approvePolicy('${policy.id}')" style="background: #28a745; color: white;">Approve Policy</button>
+                                        <button class="action" onclick="requestPolicyRevision('${policy.id}')" style="background: #ffc107; color: black;">Request Revision</button>
+                                        <button class="action" onclick="rejectPolicy('${policy.id}')" style="background: #dc3545; color: white;">Reject</button>
                                         <button class="action" onclick="deletePolicyById('${policy.id}')" style="background: #dc3545; color: white;">Delete</button>
                                 </div>
                         </div>
