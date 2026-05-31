@@ -44,7 +44,7 @@
     }
 
     if(items.length === 0){
-      tableBody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:#999">No departments found</td></tr>';
+      tableBody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:#999">No departments found</td></tr>';
       return;
     }
 
@@ -56,9 +56,35 @@
         <td>${d.manager_email ?? ''}</td>
         <td><span class="badge" style="background:${(d.status||'Active')==='Active'?'#28a745':((d.status||'')==='Inactive'?'#6c757d':'#ffc107')}">${d.status || 'Active'}</span></td>
         <td>${new Date(d.created_at || Date.now()).toLocaleString()}</td>
+        <td>
+          <button type="button" class="btn btn-secondary delete-dept-btn" data-id="${d.id}" style="background:#dc3545;color:white;padding:4px 8px;font-size:8px;border-radius:4px;border:none;cursor:pointer">Delete</button>
+        </td>
       </tr>
     `).join('');
     tableBody.innerHTML = html;
+
+    // Attach event listeners for delete buttons
+    tableBody.querySelectorAll('.delete-dept-btn').forEach(btn => {
+      btn.addEventListener('click', async (e) => {
+        const id = e.target.getAttribute('data-id');
+        if (confirm('Are you sure you want to delete this department?')) {
+          try {
+            const res = await fetch(`/api/departments/${id}`, {
+              method: 'DELETE'
+            });
+            const data = await res.json();
+            if (!res.ok) {
+              throw new Error(data?.error || 'Failed to delete department');
+            }
+            alert('Department deleted successfully');
+            await loadDepartments();
+          } catch (err) {
+            console.error('Failed to delete department:', err);
+            alert('Error: ' + err.message);
+          }
+        }
+      });
+    });
   }
 
   async function submitDepartment(e){
@@ -124,6 +150,7 @@
                   <th style="text-align:left;border-bottom:1px solid #2f4358;padding:8px">Manager Email</th>
                   <th style="text-align:left;border-bottom:1px solid #2f4358;padding:8px">Status</th>
                   <th style="text-align:left;border-bottom:1px solid #2f4358;padding:8px">Created</th>
+                  <th style="text-align:left;border-bottom:1px solid #2f4358;padding:8px">Actions</th>
                 </tr>
               </thead>
               <tbody id="departmentsTableBody"></tbody>
