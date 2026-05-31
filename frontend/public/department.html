@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 
 <html lang="en">
 
@@ -100384,14 +100384,15 @@ function showSeniorRoles() {
                     (request.proposed_salary.startsWith('TZS') ? request.proposed_salary : `TZS ${parseInt(request.proposed_salary).toLocaleString()}`) : 
                     'N/A';
                 const status = (request.status || 'pending').toLowerCase();
-                const reason = request.reason || request.rejection_reason || request.approval_reason || '';
+                const rejReason = request.rejection_reason || '';
+                const infoReason = request.info_request_reason || '';
                 let statusBadge = '';
                 if (status === 'approved') {
                     statusBadge = `<span style="display:inline-block;padding:3px 8px;border-radius:12px;background:#28a745;color:#fff;font-size:8px;font-weight:700;letter-spacing:0.5px;">✔ Approved</span>`;
                 } else if (status === 'rejected') {
-                    statusBadge = `<span style="display:inline-block;padding:3px 8px;border-radius:12px;background:#dc3545;color:#fff;font-size:8px;font-weight:700;letter-spacing:0.5px;" title="${reason}">✖ Rejected</span>${reason ? `<br><span style="font-size:8px;color:#dc3545;display:block;margin-top:2px;max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${reason}">Reason: ${reason}</span>` : ''}`;
+                    statusBadge = `<span style="display:inline-block;padding:3px 8px;border-radius:12px;background:#dc3545;color:#fff;font-size:8px;font-weight:700;letter-spacing:0.5px;" title="${rejReason}">✖ Rejected</span>${rejReason ? `<br><span style="font-size:8px;color:#dc3545;display:block;margin-top:2px;max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${rejReason}">Reason: ${rejReason}</span>` : ''}`;
                 } else if (status === 'request_info' || status === 'request info' || status === 'info_requested') {
-                    statusBadge = `<span style="display:inline-block;padding:3px 8px;border-radius:12px;background:#fd7e14;color:#fff;font-size:8px;font-weight:700;letter-spacing:0.5px;" title="${reason}">⚠ Info Requested</span>${reason ? `<br><span style="font-size:8px;color:#fd7e14;display:block;margin-top:2px;max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${reason}">Reason: ${reason}</span>` : ''}`;
+                    statusBadge = `<span style="display:inline-block;padding:3px 8px;border-radius:12px;background:#fd7e14;color:#fff;font-size:8px;font-weight:700;letter-spacing:0.5px;" title="${infoReason}">⚠ Info Requested</span>${infoReason ? `<br><span style="font-size:8px;color:#fd7e14;display:block;margin-top:2px;max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${infoReason}">Reason: ${infoReason}</span>` : ''}`;
                 } else {
                     statusBadge = `<span style="display:inline-block;padding:3px 8px;border-radius:12px;background:#6c757d;color:#fff;font-size:8px;font-weight:700;letter-spacing:0.5px;">⏳ Pending</span>`;
                 }
