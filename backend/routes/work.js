@@ -51,24 +51,33 @@ router.get('/test-hr-table', async (req, res) => {
     }
 });
 
-// Get all HSE work items
+// Get HSE work items (optionally filtered by work_type query parameter)
 router.get('/hse', async (req, res) => {
     try {
-        console.log('🔍 Fetching all HSE work items...');
+        const workTypeFilter = req.query.work_type;
+        console.log(`🔍 Fetching HSE work items...${workTypeFilter ? ` (filtered: ${workTypeFilter})` : ' (all)'}`);
         
         let hseItems = [];
         
         try {
-            const dbRecords = await db.execute(
-                `SELECT * FROM hse_work ORDER BY submitted_date DESC`
-            );
+            let query = 'SELECT * FROM hse_work';
+            let params = [];
+            
+            if (workTypeFilter) {
+                query += ' WHERE work_type = ?';
+                params.push(workTypeFilter);
+            }
+            
+            query += ' ORDER BY submitted_date DESC';
+            
+            const dbRecords = await db.execute(query, params);
             hseItems = Array.isArray(dbRecords) ? dbRecords : [];
             console.log(`📊 Found ${hseItems.length} HSE work items from database`);
         } catch (dbError) {
             console.error('❌ Database error, using fallback HSE data:', dbError);
             
             // Fallback to mock HSE data
-            hseItems = [
+            let fallbackItems = [
                 {
                     id: 3408,
                     department_code: 'HSE',
@@ -103,6 +112,13 @@ router.get('/hse', async (req, res) => {
                     status: 'Closed'
                 }
             ];
+            
+            // Apply filter to fallback data too
+            if (workTypeFilter) {
+                fallbackItems = fallbackItems.filter(item => item.work_type === workTypeFilter);
+            }
+            
+            hseItems = fallbackItems;
             console.log(`📋 Using fallback HSE data: ${hseItems.length} items`);
         }
         
