@@ -912,6 +912,12 @@ app.use('/api/company-cars', asyncHandler(async (req, res, next) => {
 
 }));
 
+app.use('/api/vehicles', asyncHandler(async (req, res, next) => {
+
+    return companyCarsRoutes(req, res, next);
+
+}));
+
 
 
 app.use('/api/luggage-campaigns', asyncHandler(async (req, res, next) => {
