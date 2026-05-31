@@ -246,12 +246,16 @@ router.post('/', async (req, res) => {
             regNo,
             plateNumber,
             carDetails,
+            carDescription,
             purchaseDate,
+            registrationDate,
             status,
+            vehicleStatus,
             driver,
             vehicleType,
             fuelType,
             color,
+            carColor,
             yearOfManufacture,
             odometerReading,
             insuranceStatus,
@@ -264,12 +268,13 @@ router.post('/', async (req, res) => {
         const registration_number = regNo;
         const plate_number = plateNumber;
         const car_details = carDetails;
-        const description = carDetails;
+        const description = carDescription || carDetails;
         const assigned_driver = driver;
-        const registration_date = purchaseDate || new Date().toISOString().split('T')[0]; // Default to today if not provided
-        const vehicle_status = status?.toLowerCase() || 'active';
+        const registration_date = registrationDate || purchaseDate || new Date().toISOString().split('T')[0]; // Default to today if not provided
+        const vehicle_status = vehicleStatus?.toLowerCase() || status?.toLowerCase() || 'active';
         const vehicle_type = vehicleType?.toLowerCase() || 'pickup';
         const fuel_type = fuelType?.toLowerCase() || 'diesel';
+        const vehicle_color = carColor || color || null;
 
         // Generate track number
         const track_number = 'TK' + Date.now().toString().slice(-6);
@@ -348,7 +353,7 @@ router.post('/', async (req, res) => {
         `, [
             track_number, car_name, brand_name, registration_number, plate_number,
             car_details || 'Company vehicle', description || 'Company vehicle', validDriverId, registration_date, vehicle_status,
-            vehicle_type, fuel_type, color || null, yearOfManufacture || null, odometerReading || null,
+            vehicle_type, fuel_type, vehicle_color, yearOfManufacture || null, odometerReading || null,
             insuranceStatus || 'pending', additionalNotes || null
         ]);
 
@@ -449,9 +454,20 @@ router.put('/:id', async (req, res) => {
             regNo,
             plateNumber,
             carDetails,
+            carDescription,
             purchaseDate,
+            registrationDate,
             status,
-            driver
+            vehicleStatus,
+            driver,
+            vehicleType,
+            fuelType,
+            color,
+            carColor,
+            yearOfManufacture,
+            odometerReading,
+            insuranceStatus,
+            additionalNotes
         } = req.body;
 
         const db = require('../../database/config/database');
@@ -477,11 +493,20 @@ router.put('/:id', async (req, res) => {
             UPDATE vehicles SET
                 car_name = ?, brand_name = ?, registration_number = ?, plate_number = ?,
                 car_details = ?, description = ?, assigned_driver = ?, registration_date = ?,
-                vehicle_status = ?, updated_at = NOW()
+                vehicle_status = ?, vehicle_type = ?, fuel_type = ?, color = ?,
+                year_of_manufacture = ?, odometer_reading = ?, insurance_status = ?,
+                additional_notes = ?, updated_at = NOW()
             WHERE id = ?
         `, [
             carName, brandName?.toLowerCase(), regNo, plateNumber, carDetails,
-            carDetails, driver, purchaseDate, status?.toLowerCase() || 'active', carId
+            carDescription || carDetails, driver,
+            registrationDate || purchaseDate,
+            vehicleStatus?.toLowerCase() || status?.toLowerCase() || 'active',
+            vehicleType?.toLowerCase(), fuelType?.toLowerCase(),
+            carColor || color || null,
+            yearOfManufacture || null, odometerReading || null,
+            insuranceStatus || 'pending', additionalNotes || null,
+            carId
         ]);
 
         res.status(200).json({
