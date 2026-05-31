@@ -2290,6 +2290,24 @@ function displaySeniorHiringRequests(requests) {
             const department = escapeHtml(request.department || 'N/A');
             const experience = escapeHtml(request.experience || 'N/A');
             const recommendation = escapeHtml(request.hr_recommendation || request.recommendation || 'No recommendation provided');
+            const status = request.status ? request.status.toLowerCase() : 'pending';
+
+            let actionHtml = '';
+            if (status === 'approved') {
+                actionHtml = `<span class="status-badge approved" style="background: #28a745; color: white; padding: 6px 12px; border-radius: 4px; font-weight: bold; font-size: 11px; display: inline-block;">✅ Approved</span>`;
+            } else if (status === 'rejected') {
+                actionHtml = `<span class="status-badge rejected" style="background: #dc3545; color: white; padding: 6px 12px; border-radius: 4px; font-weight: bold; font-size: 11px; display: inline-block;">❌ Rejected</span>`;
+            } else if (status === 'info_requested' || status === 'info-requested') {
+                actionHtml = `<span class="status-badge info" style="background: #17a2b8; color: white; padding: 6px 12px; border-radius: 4px; font-weight: bold; font-size: 11px; display: inline-block;">⚠️ Info Requested</span>`;
+            } else {
+                actionHtml = `
+                                <div class="hiring-table-actions">
+                                    <button class="btn-approve" onclick="approveSeniorHire('${escapeHtml(request.id)}')">✓ Approve</button>
+                                    <button class="btn-request-info" onclick="requestMoreInfo('${escapeHtml(request.id)}')">? Info</button>
+                                    <button class="btn-reject" onclick="rejectSeniorHire('${escapeHtml(request.id)}')">✗ Reject</button>
+                                </div>
+                `;
+            }
 
             html += `
                         <tr class="hiring-request">
@@ -2299,13 +2317,7 @@ function displaySeniorHiringRequests(requests) {
                             <td>${department}</td>
                             <td>${experience}</td>
                             <td>${recommendation}</td>
-                            <td>
-                                <div class="hiring-table-actions">
-                                    <button class="btn-approve" onclick="approveSeniorHire('${escapeHtml(request.id)}')">✓ Approve</button>
-                                    <button class="btn-request-info" onclick="requestMoreInfo('${escapeHtml(request.id)}')">? Info</button>
-                                    <button class="btn-reject" onclick="rejectSeniorHire('${escapeHtml(request.id)}')">✗ Reject</button>
-                                </div>
-                            </td>
+                            <td>${actionHtml}</td>
                         </tr>`;
         });
     }

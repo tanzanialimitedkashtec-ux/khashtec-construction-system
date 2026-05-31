@@ -1100,7 +1100,6 @@ app.get('/api/senior-hiring', async (req, res) => {
                 SELECT id, candidate_name, position, department, proposed_salary, experience, 
                        hr_recommendation, status, request_date, approval_date, approved_by
                 FROM senior_hiring_approval 
-                WHERE status = 'pending'
                 ORDER BY request_date DESC
             `);
             
