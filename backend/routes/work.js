@@ -804,10 +804,27 @@ async function fetchPpeRecords() {
         `SELECT * FROM ppe_issuance ORDER BY COALESCE(issue_date, created_at) DESC`
     );
 
-    return ppeRecords.map(record => ({
-        ...record,
-        ppe_items: parsePpeItems(record)
-    }));
+    return ppeRecords.map(record => {
+        // If some fields were stored in `notes` as JSON overflow, merge them back
+        let merged = { ...record };
+        if (record.notes) {
+            try {
+                const overflow = typeof record.notes === 'string' ? JSON.parse(record.notes) : record.notes;
+                if (overflow && typeof overflow === 'object') {
+                    // Only fill in fields that are missing or null in the record
+                    for (const [key, val] of Object.entries(overflow)) {
+                        if (merged[key] === undefined || merged[key] === null) {
+                            merged[key] = val;
+                        }
+                    }
+                }
+            } catch (e) {
+                // notes is plain text, not JSON overflow
+            }
+        }
+        merged.ppe_items = parsePpeItems(merged);
+        return merged;
+    });
 }
 
 // Get PPE issuance records
@@ -855,23 +872,63 @@ router.post('/hse/ppe', async (req, res) => {
 
         const itemsJson = JSON.stringify(ppe_items || []);
 
+        // Dynamically build INSERT based on columns that actually exist in the table.
+        // ALTER TABLE may fail on Railway due to permissions, so we adapt to
+        // whatever schema is present.
+        const [cols] = await db.execute('SHOW COLUMNS FROM ppe_issuance');
+        const existingCols = new Set(cols.map(c => c.Field));
+
+        // Map of desired column → value
+        const fieldMap = {
+            issuance_id: issuance_id || null,
+            issue_date: issue_date,
+            worker_name: worker_name,
+            worker_id: worker_id,
+            project: project,
+            department: department || null,
+            ppe_items: itemsJson,
+            ppe_condition: ppe_condition || 'new',
+            return_date: return_date || null,
+            worker_signature: worker_signature || null,
+            issued_by: issued_by || null,
+            status: 'Issued'
+        };
+
+        // Store any data that can't go into a dedicated column into `notes` as JSON
+        const insertCols = [];
+        const insertPlaceholders = [];
+        const insertValues = [];
+        const overflow = {};
+
+        for (const [col, val] of Object.entries(fieldMap)) {
+            if (existingCols.has(col)) {
+                insertCols.push(col);
+                insertPlaceholders.push('?');
+                insertValues.push(val);
+            } else {
+                overflow[col] = val;
+            }
+        }
+
+        // If there's overflow data and a `notes` column exists, store it there
+        if (Object.keys(overflow).length > 0 && existingCols.has('notes')) {
+            insertCols.push('notes');
+            insertPlaceholders.push('?');
+            insertValues.push(JSON.stringify(overflow));
+        }
+
+        if (insertCols.length === 0) {
+            return res.status(500).json({ error: 'No matching columns found in ppe_issuance table' });
+        }
+
+        console.log(`📝 Inserting into columns: ${insertCols.join(', ')}`);
+        if (Object.keys(overflow).length > 0) {
+            console.log(`📝 Overflow fields stored in notes: ${Object.keys(overflow).join(', ')}`);
+        }
+
         const [result] = await db.execute(
-            `INSERT INTO ppe_issuance
-                (issuance_id, issue_date, worker_name, worker_id, project, department, ppe_items, ppe_condition, return_date, worker_signature, issued_by, status)
-             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'Issued')`,
-            [
-                issuance_id || null,
-                issue_date,
-                worker_name,
-                worker_id,
-                project,
-                department || null,
-                itemsJson,
-                ppe_condition || 'new',
-                return_date || null,
-                worker_signature || null,
-                issued_by || null
-            ]
+            `INSERT INTO ppe_issuance (${insertCols.join(', ')}) VALUES (${insertPlaceholders.join(', ')})`,
+            insertValues
         );
 
         console.log(`✅ PPE issuance record created with id: ${result.insertId}`);
