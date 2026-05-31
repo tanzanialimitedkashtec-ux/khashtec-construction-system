@@ -21,7 +21,7 @@ router.get('/', async (req, res) => {
         // Check if policies table exists first
         let tableCheck;
         try {
-            [tableCheck] = await db.execute(`
+            tableCheck = await db.execute(`
                 SELECT COUNT(*) as count 
                 FROM information_schema.tables 
                 WHERE table_schema = DATABASE() 
@@ -33,7 +33,7 @@ router.get('/', async (req, res) => {
         }
         
         // Only check if tableCheck is valid
-        if (tableCheck && tableCheck[0] && tableCheck[0].count === 0) {
+        if (tableCheck && Array.isArray(tableCheck) && tableCheck[0] && tableCheck[0].count === 0) {
             console.log('⚠️ Policies table does not exist, returning empty array');
             return res.json([]);
         }
@@ -54,6 +54,7 @@ router.get('/', async (req, res) => {
                   approved_date DATE,
                   rejection_reason TEXT,
                   revision_request TEXT,
+                  category VARCHAR(100) DEFAULT 'General',
                   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
                   INDEX idx_status (status),
@@ -62,6 +63,14 @@ router.get('/', async (req, res) => {
                 )
             `);
             console.log('✅ Policies table verified/created successfully');
+            
+            // Ensure category column exists (may be missing on older tables)
+            try {
+                await db.execute(`ALTER TABLE policies ADD COLUMN category VARCHAR(100) DEFAULT 'General'`);
+                console.log('✅ Added category column to policies table');
+            } catch (alterError) {
+                // Column already exists - ignore
+            }
         } catch (tableError) {
             console.log('⚠️ Could not create policies table:', tableError.message);
         }
