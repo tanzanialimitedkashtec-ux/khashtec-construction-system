@@ -12306,13 +12306,21 @@ function togglePpeForm() {
 
         
 
-        // Generate new issuance ID when opening form
+        // Generate new issuance ID and worker ID when opening form
 
         const issuanceIdField = document.getElementById('issuanceId');
 
         if (issuanceIdField) {
 
             issuanceIdField.value = 'PPE-' + Date.now();
+
+        }
+
+        const workerIdField = document.getElementById('workerId');
+
+        if (workerIdField) {
+
+            workerIdField.value = 'WRK-' + String(Math.floor(1000 + Math.random() * 9000));
 
         }
 
@@ -12378,7 +12386,7 @@ function clearPpeForm() {
 
         
 
-        // Generate new issuance ID
+        // Generate new issuance ID and worker ID
 
         const issuanceIdField = document.getElementById('issuanceId');
 
@@ -12388,7 +12396,17 @@ function clearPpeForm() {
 
         }
 
-        
+        const workerIdField = document.getElementById('workerId');
+
+        if (workerIdField) {
+
+            workerIdField.value = 'WRK-' + String(Math.floor(1000 + Math.random() * 9000));
+
+        }
+
+        // Reload dropdowns after form reset
+        loadPpeProjectDropdown();
+        loadPpeDepartmentDropdown();
 
         showNotification('Form Cleared', 'PPE issuance form has been cleared', 'info');
 
@@ -28650,9 +28668,9 @@ function trackPpeIssuance(){
 
                         <div class="form-group">
 
-                            <label>Worker ID *</label>
+                            <label>Worker ID</label>
 
-                            <input type="text" id="workerId" placeholder="e.g., WRK-001" required>
+                            <input type="text" id="workerId" placeholder="WRK-0001" readonly>
 
                         </div>
 
@@ -28668,13 +28686,7 @@ function trackPpeIssuance(){
 
                             <select id="ppeProject" required>
 
-                                <option value="">Select Project</option>
-
-                                <option value="proj001">Masaki Residential Complex</option>
-
-                                <option value="proj002">Kigamboni Commercial Plaza</option>
-
-                                <option value="proj003">Mikochi Industrial Park</option>
+                                <option value="">Loading projects...</option>
 
                             </select>
 
@@ -28686,19 +28698,7 @@ function trackPpeIssuance(){
 
                             <select id="department" required>
 
-                                <option value="">Select Department</option>
-
-                                <option value="carpentry">Carpentry</option>
-
-                                <option value="masonry">Masonry</option>
-
-                                <option value="electrical">Electrical</option>
-
-                                <option value="plumbing">Plumbing</option>
-
-                                <option value="painting">Painting</option>
-
-                                <option value="steelwork">Steelwork</option>
+                                <option value="">Loading departments...</option>
 
                             </select>
 
@@ -28906,16 +28906,68 @@ function trackPpeIssuance(){
 
     
 
-    // Generate initial issuance ID
-
+    // Generate initial issuance ID and worker ID
     document.getElementById('issuanceId').value = 'PPE-' + Date.now();
+    document.getElementById('workerId').value = 'WRK-' + String(Math.floor(1000 + Math.random() * 9000));
 
-    
+    // Load projects dropdown from database
+    loadPpeProjectDropdown();
+
+    // Load departments dropdown from database
+    loadPpeDepartmentDropdown();
 
     // Load PPE records
-
     loadPpeRecords();
+}
 
+// Load real project names from database into PPE Project dropdown
+async function loadPpeProjectDropdown() {
+    const select = document.getElementById('ppeProject');
+    if (!select) return;
+    try {
+        const baseUrl = window.location.origin;
+        const response = await fetch(`${baseUrl}/api/work/hse/ppe/projects`, {
+            headers: { 'Authorization': `Bearer ${sessionManager.getAuthToken()}` }
+        });
+        const result = await response.json();
+        const projects = result.data || [];
+        select.innerHTML = '<option value="">Select Project</option>';
+        if (projects.length > 0) {
+            projects.forEach(p => {
+                select.innerHTML += `<option value="${p.name}">${p.name}</option>`;
+            });
+        } else {
+            select.innerHTML += '<option value="General Site">General Site</option>';
+        }
+    } catch (e) {
+        console.error('Failed to load projects:', e);
+        select.innerHTML = '<option value="">Select Project</option><option value="General Site">General Site</option>';
+    }
+}
+
+// Load real department names from database into PPE Department dropdown
+async function loadPpeDepartmentDropdown() {
+    const select = document.getElementById('department');
+    if (!select) return;
+    try {
+        const baseUrl = window.location.origin;
+        const response = await fetch(`${baseUrl}/api/work/hse/ppe/departments`, {
+            headers: { 'Authorization': `Bearer ${sessionManager.getAuthToken()}` }
+        });
+        const result = await response.json();
+        const departments = result.data || [];
+        select.innerHTML = '<option value="">Select Department</option>';
+        if (departments.length > 0) {
+            departments.forEach(d => {
+                select.innerHTML += `<option value="${d.name}">${d.name}</option>`;
+            });
+        } else {
+            select.innerHTML += '<option value="General">General</option>';
+        }
+    } catch (e) {
+        console.error('Failed to load departments:', e);
+        select.innerHTML = '<option value="">Select Department</option><option value="General">General</option>';
+    }
 }
 
 
@@ -35330,6 +35382,9 @@ function savePpeIssuance() {
 
         document.getElementById('ppeForm').reset();
         document.getElementById('issuanceId').value = 'PPE-' + Date.now();
+        document.getElementById('workerId').value = 'WRK-' + String(Math.floor(1000 + Math.random() * 9000));
+        loadPpeProjectDropdown();
+        loadPpeDepartmentDropdown();
         const additionalItems = document.getElementById('additionalPpeItems');
         if (additionalItems) additionalItems.innerHTML = '';
 
