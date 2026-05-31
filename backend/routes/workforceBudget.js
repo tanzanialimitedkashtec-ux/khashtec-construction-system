@@ -155,7 +155,7 @@ router.post('/:id/approve', async (req, res) => {
         // Update workforce_budgets table
         const result = await db.execute(`
             UPDATE workforce_budgets 
-            SET status = 'approved', approved_by = ?, approved_date = ?, rejection_reason = NULL, modification_request = NULL
+            SET status = 'Approved', approved_by = ?, approved_date = ?, rejection_reason = NULL, modification_request = NULL
             WHERE id = ?
         `, [approvedBy, approvalDate, req.params.id]);
         
@@ -193,7 +193,7 @@ router.post('/:id/reject', async (req, res) => {
         // Update main budget status AND store the rejection reason directly
         await db.execute(`
             UPDATE workforce_budgets 
-            SET status = 'rejected', rejection_reason = ?
+            SET status = 'Rejected', rejection_reason = ?
             WHERE id = ?
         `, [reason, req.params.id]);
 
@@ -214,7 +214,7 @@ router.post('/:id/reject', async (req, res) => {
         res.json({
             message: 'Workforce budget rejected successfully',
             budget_id: req.params.id,
-            status: 'rejected',
+            status: 'Rejected',
             rejection_reason: reason,
             rejected_by: rejectedBy,
             rejected_date: rejectedDate,
@@ -238,7 +238,7 @@ router.post('/:id/modify', async (req, res) => {
         // Update main budget status AND store the modification_request directly
         await db.execute(`
             UPDATE workforce_budgets 
-            SET status = 'info_requested', modification_request = ?
+            SET status = 'Modification Requested', modification_request = ?
             WHERE id = ?
         `, [reason, req.params.id]);
 
@@ -259,7 +259,7 @@ router.post('/:id/modify', async (req, res) => {
         res.json({
             message: 'Workforce budget modification requested successfully',
             budget_id: req.params.id,
-            status: 'info_requested',
+            status: 'Modification Requested',
             modification_request: reason,
             requested_by: requestedBy,
             requested_date: requestedDate,

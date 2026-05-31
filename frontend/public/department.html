@@ -67410,24 +67410,24 @@ function displayBudgetRecords(records) {
 
         
 
-        // Get status badge — match against DB values (Pending/approved/rejected/info_requested)
-        const statusLower = (record.status || '').toLowerCase();
+        // Get status badge — match against DB ENUM: 'Pending','Approved','Rejected','Modification Requested'
+        const statusLower = (record.status || '').toLowerCase().trim();
 
         const statusClass = statusLower === 'approved' ? 'status-active' :
                            statusLower === 'pending' ? 'status-pending' :
                            statusLower === 'rejected' ? 'status-expired' :
-                           statusLower === 'info_requested' || statusLower === 'modification_requested' ? 'status-pending' :
-                           statusLower === 'completed' ? 'status-completed' : 'status-pending';
+                           statusLower === 'modification requested' ? 'status-pending' :
+                           'status-pending';
 
         let statusBadge = statusLower === 'approved' ? '✅ Approved' :
                           statusLower === 'pending' ? '⏳ Pending' :
                           statusLower === 'rejected' ? '❌ Rejected' :
-                          statusLower === 'info_requested' || statusLower === 'modification_requested' ? '🔄 Info Requested' :
-                          statusLower === 'completed' ? '✅ Completed' : '⏳ Pending';
+                          statusLower === 'modification requested' ? '🔄 Info Requested' :
+                          '⏳ Pending';
 
-        // Append reason tooltip if rejected or info requested
+        // Append reason text if rejected or info requested
         const reasonText = record.rejection_reason || record.modification_request;
-        if (reasonText && (statusLower === 'rejected' || statusLower === 'info_requested' || statusLower === 'modification_requested')) {
+        if (reasonText && (statusLower === 'rejected' || statusLower === 'modification requested')) {
             statusBadge += `<div style="font-size:10px;color:#555;font-style:italic;margin-top:3px;max-width:160px;white-space:normal;" title="${reasonText}">${reasonText.substring(0, 60)}${reasonText.length > 60 ? '...' : ''}</div>`;
         }
 
