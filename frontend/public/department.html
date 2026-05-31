@@ -75347,147 +75347,63 @@ function saveProjectProgress() {
 
 
 function saveTaskAssignment() {
-
-    const task = {
-
-        id: 'TSK-' + Date.now(),
-
-        project: document.getElementById('taskProject').value,
-
-        name: document.getElementById('taskName').value,
-
-        assignee: document.getElementById('taskAssignee').value,
-
-        priority: document.getElementById('taskPriority').value,
-
-        startDate: document.getElementById('taskStartDate').value,
-
-        dueDate: document.getElementById('taskDueDate').value,
-
-        description: document.getElementById('taskDescription').value,
-
-        estimatedHours: document.getElementById('estimatedHours').value,
-
-        requiredSkills: document.getElementById('requiredSkills').value,
-
-        materials: document.getElementById('taskMaterials').value,
-
-        status: 'assigned',
-
-        assignedBy: 'Project Manager',
-
-        assignedDate: new Date().toLocaleString()
-
+    const payload = {
+        project_id: document.getElementById('taskProject').value,
+        task_name: document.getElementById('taskName').value,
+        assigned_to: document.getElementById('taskAssignee').value,
+        task_priority: document.getElementById('taskPriority').value,
+        start_date: document.getElementById('taskStartDate').value,
+        due_date: document.getElementById('taskDueDate').value,
+        task_description: document.getElementById('taskDescription').value,
+        estimated_hours: document.getElementById('estimatedHours').value || null,
+        required_skills: document.getElementById('requiredSkills').value || null,
+        task_materials: document.getElementById('taskMaterials').value || null,
+        created_by: 'Project Manager'
     };
 
-    
-
-    // Save to localStorage
-
-    let tasks = JSON.parse(localStorage.getItem('taskAssignments') || '[]');
-
-    tasks.push(task);
-
-    localStorage.setItem('taskAssignments', JSON.stringify(tasks));
-
-    
-
-    customAlert(`Task assigned successfully!\n\nTask: ${task.name}\nAssigned to: ${task.assignee}\nDue: ${task.dueDate}\nPriority: ${task.priority}`, "Task Assigned", "success");
-
-    
-
-    document.getElementById('taskForm').reset();
-
-    
-
-    // Reload tasks to show in table
-
-    loadTasks();
-
-    
+    fetch('/api/tasks', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(payload)
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            customAlert(`Task assigned successfully!\n\nTask: ${payload.task_name}\nAssigned to: ${payload.assigned_to}\nDue: ${payload.due_date}\nPriority: ${payload.task_priority}`, "Task Assigned", "success");
+            document.getElementById('taskForm').reset();
+            loadTasks();
+        } else {
+            customAlert("Error creating task: " + (data.error || "Unknown error"), "Error", "error");
+        }
+    })
+    .catch(error => {
+        console.error("Failed to save task:", error);
+        customAlert("Failed to communicate with server.", "Error", "error");
+    });
 
     return false;
-
 }
 
-
-
 function loadTasks() {
-
-    // Try to load from API first, then fallback to localStorage
-
     const tasksList = document.getElementById('taskRecordsList');
-
     if (!tasksList) return;
 
-    
-
-    let tasks = [];
-
-    
-
-    // Try to fetch from API
-
     fetch('/api/tasks')
-
         .then(response => response.json())
-
         .then(data => {
-
             if (data.success && data.tasks) {
-
-                tasks = data.tasks;
-
+                displayTasks(data.tasks);
             } else {
-
-                // Fallback to localStorage
-
-                tasks = JSON.parse(localStorage.getItem('taskAssignments') || '[]');
-
+                console.error("Failed to load tasks:", data.error);
+                displayTasks([]);
             }
-
-            
-
-            // If still no tasks, add sample data
-
-            if (tasks.length === 0) {
-
-                tasks = getSampleTasks();
-
-                localStorage.setItem('taskAssignments', JSON.stringify(tasks));
-
-            }
-
-            
-
-            displayTasks(tasks);
-
         })
-
         .catch(error => {
-
             console.error('Error loading tasks:', error);
-
-            // Fallback to localStorage
-
-            tasks = JSON.parse(localStorage.getItem('taskAssignments') || '[]');
-
-            // If still no tasks, add sample data
-
-            if (tasks.length === 0) {
-
-                tasks = getSampleTasks();
-
-                localStorage.setItem('taskAssignments', JSON.stringify(tasks));
-
-            }
-
-            
-
-            displayTasks(tasks);
-
+            displayTasks([]);
         });
-
 }
 
 
