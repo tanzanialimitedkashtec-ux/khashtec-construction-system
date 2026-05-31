@@ -2272,13 +2272,14 @@ function displaySeniorHiringRequests(requests) {
                             <th>Department</th>
                             <th>Experience</th>
                             <th>HR Recommendation</th>
+                            <th>Status / Reason</th>
                             <th>Actions</th>
                         </tr>
                     </thead>
                     <tbody>`;
 
     if (!requests || requests.length === 0) {
-        html += `<tr><td colspan="7" style="text-align: center; padding: 20px;">No senior hiring requests pending approval.</td></tr>`;
+        html += `<tr><td colspan="8" style="text-align: center; padding: 20px;">No senior hiring requests pending approval.</td></tr>`;
     } else {
         requests.forEach(request => {
             const position = escapeHtml(request.position || request.position_level || 'Position not specified');
@@ -2291,15 +2292,26 @@ function displaySeniorHiringRequests(requests) {
             const experience = escapeHtml(request.experience || 'N/A');
             const recommendation = escapeHtml(request.hr_recommendation || request.recommendation || 'No recommendation provided');
             const status = request.status ? request.status.toLowerCase() : 'pending';
+            const rejectionReason = escapeHtml(request.rejection_reason || '');
+            const infoReason = escapeHtml(request.info_request_reason || '');
 
-            let actionHtml = '';
+            // Build Status / Reason cell
+            let statusHtml = '';
             if (status === 'approved') {
-                actionHtml = `<span class="status-badge approved" style="background: #28a745; color: white; padding: 6px 12px; border-radius: 4px; font-weight: bold; font-size: 11px; display: inline-block;">✅ Approved</span>`;
+                statusHtml = `<span style="background:#28a745;color:white;padding:4px 10px;border-radius:4px;font-size:11px;font-weight:bold;display:inline-block;">✅ Approved</span>`;
             } else if (status === 'rejected') {
-                actionHtml = `<span class="status-badge rejected" style="background: #dc3545; color: white; padding: 6px 12px; border-radius: 4px; font-weight: bold; font-size: 11px; display: inline-block;">❌ Rejected</span>`;
+                statusHtml = `<span style="background:#dc3545;color:white;padding:4px 10px;border-radius:4px;font-size:11px;font-weight:bold;display:inline-block;">❌ Rejected</span>`
+                    + (rejectionReason ? `<br><em style="font-size:10px;color:#dc3545;display:block;margin-top:4px;">${rejectionReason}</em>` : '');
             } else if (status === 'info_requested' || status === 'info-requested') {
-                actionHtml = `<span class="status-badge info" style="background: #17a2b8; color: white; padding: 6px 12px; border-radius: 4px; font-weight: bold; font-size: 11px; display: inline-block;">⚠️ Info Requested</span>`;
+                statusHtml = `<span style="background:#17a2b8;color:white;padding:4px 10px;border-radius:4px;font-size:11px;font-weight:bold;display:inline-block;">⚠️ Info Requested</span>`
+                    + (infoReason ? `<br><em style="font-size:10px;color:#17a2b8;display:block;margin-top:4px;">${infoReason}</em>` : '');
             } else {
+                statusHtml = `<span style="background:#6c757d;color:white;padding:4px 10px;border-radius:4px;font-size:11px;font-weight:bold;display:inline-block;">⏳ Pending</span>`;
+            }
+
+            // Build Actions cell — buttons only for pending
+            let actionHtml = '';
+            if (status === 'pending') {
                 actionHtml = `
                                 <div class="hiring-table-actions">
                                     <button class="btn-approve" onclick="approveSeniorHire('${escapeHtml(request.id)}')">✓ Approve</button>
@@ -2307,6 +2319,8 @@ function displaySeniorHiringRequests(requests) {
                                     <button class="btn-reject" onclick="rejectSeniorHire('${escapeHtml(request.id)}')">✗ Reject</button>
                                 </div>
                 `;
+            } else {
+                actionHtml = '<span style="color:#aaa;font-size:11px;">—</span>';
             }
 
             html += `
@@ -2317,6 +2331,7 @@ function displaySeniorHiringRequests(requests) {
                             <td>${department}</td>
                             <td>${experience}</td>
                             <td>${recommendation}</td>
+                            <td>${statusHtml}</td>
                             <td>${actionHtml}</td>
                         </tr>`;
         });

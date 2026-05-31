@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 
 <html lang="en">
 
@@ -27024,6 +27024,8 @@ function showSeniorHiringForm(requests) {
 
                             <th>HR Recommendation</th>
 
+                            <th>Status / Reason</th>
+
                             <th>Actions</th>
 
                         </tr>
@@ -27035,6 +27037,56 @@ function showSeniorHiringForm(requests) {
         
 
         requests.forEach(request => {
+
+            const reqStatus = (request.status || 'pending').toLowerCase();
+
+            const rejReason = (request.rejection_reason || '').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+
+            const infoReason = (request.info_request_reason || '').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+
+
+
+            let statusCell = '';
+
+            if (reqStatus === 'approved') {
+
+                statusCell = `<span style="background:#28a745;color:#fff;padding:3px 8px;border-radius:4px;font-size:11px;font-weight:bold;">✅ Approved</span>`;
+
+            } else if (reqStatus === 'rejected') {
+
+                statusCell = `<span style="background:#dc3545;color:#fff;padding:3px 8px;border-radius:4px;font-size:11px;font-weight:bold;">❌ Rejected</span>`
+
+                    + (rejReason ? `<br><em style="font-size:10px;color:#dc3545;margin-top:3px;display:block;">${rejReason}</em>` : '');
+
+            } else if (reqStatus === 'info_requested' || reqStatus === 'info-requested') {
+
+                statusCell = `<span style="background:#17a2b8;color:#fff;padding:3px 8px;border-radius:4px;font-size:11px;font-weight:bold;">⚠️ Info Requested</span>`
+
+                    + (infoReason ? `<br><em style="font-size:10px;color:#17a2b8;margin-top:3px;display:block;">${infoReason}</em>` : '');
+
+            } else {
+
+                statusCell = `<span style="background:#6c757d;color:#fff;padding:3px 8px;border-radius:4px;font-size:11px;font-weight:bold;">⏳ Pending</span>`;
+
+            }
+
+
+
+            const actionsCell = reqStatus === 'pending' ? `
+
+                    <div class="hiring-table-actions">
+
+                        <button class="btn-approve" onclick="approveSeniorHire('${request.id}')">✓ Approve</button>
+
+                        <button class="btn-request-info" onclick="requestMoreInfo('${request.id}')">? Info</button>
+
+                        <button class="btn-reject" onclick="rejectSeniorHire('${request.id}')">✗ Reject</button>
+
+                    </div>
+
+            ` : '<span style="color:#aaa;font-size:11px;">—</span>';
+
+
 
             hiringHTML += `
 
@@ -27076,19 +27128,9 @@ function showSeniorHiringForm(requests) {
 
                 </td>
 
-                <td>
+                <td>${statusCell}</td>
 
-                    <div class="hiring-table-actions">
-
-                        <button class="btn-approve" onclick="approveSeniorHire('${request.id}')">✓ Approve</button>
-
-                        <button class="btn-request-info" onclick="requestMoreInfo('${request.id}')">? Info</button>
-
-                        <button class="btn-reject" onclick="rejectSeniorHire('${request.id}')">✗ Reject</button>
-
-                    </div>
-
-                </td>
+                <td>${actionsCell}</td>
 
             </tr>`;
 

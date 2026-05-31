@@ -78,16 +78,24 @@ router.get('/test', (req, res) => {
     });
 });
 
-// Main GET route - fetch pending senior hiring requests
+// Main GET route - fetch all senior hiring requests with reason details
 router.get('/', async (req, res) => {
     console.log('📝 GET /api/senior-hiring accessed');
     try {
-        // Fetch pending senior hiring requests from senior_hiring_approval table
         const rows = await db.execute(`
-            SELECT id, candidate_name, position, department, proposed_salary, experience, 
-                   hr_recommendation, status, request_date, approval_date, approved_by
-            FROM senior_hiring_approval 
-            ORDER BY request_date DESC
+            SELECT sha.id, sha.candidate_name, sha.position, sha.department,
+                   sha.proposed_salary, sha.experience, sha.hr_recommendation,
+                   sha.status, sha.request_date, sha.approval_date, sha.approved_by,
+                   shr.rejection_reason,
+                   shr.rejected_by,
+                   shr.rejection_date,
+                   shir.info_request AS info_request_reason,
+                   shir.requested_by AS info_requested_by,
+                   shir.request_date AS info_request_date
+            FROM senior_hiring_approval sha
+            LEFT JOIN senior_hiring_rejection shr ON shr.request_id = sha.id
+            LEFT JOIN senior_hiring_info_request shir ON shir.request_id = sha.id
+            ORDER BY sha.request_date DESC
         `);
         
         res.json(rows);
@@ -97,16 +105,26 @@ router.get('/', async (req, res) => {
     }
 });
 
-// GET by ID route - fetch specific senior hiring request
+// GET by ID route - fetch specific senior hiring request with reason details
 router.get('/:id', async (req, res) => {
     console.log('📝 GET /api/senior-hiring/:id accessed with id:', req.params.id);
     try {
+        const parsedId = parseInt(req.params.id, 10);
         const rows = await db.execute(`
-            SELECT id, candidate_name, position, department, proposed_salary, experience, 
-                   hr_recommendation, status, request_date, approval_date, approved_by
-            FROM senior_hiring_approval 
-            WHERE id = ?
-        `, [req.params.id]);
+            SELECT sha.id, sha.candidate_name, sha.position, sha.department,
+                   sha.proposed_salary, sha.experience, sha.hr_recommendation,
+                   sha.status, sha.request_date, sha.approval_date, sha.approved_by,
+                   shr.rejection_reason,
+                   shr.rejected_by,
+                   shr.rejection_date,
+                   shir.info_request AS info_request_reason,
+                   shir.requested_by AS info_requested_by,
+                   shir.request_date AS info_request_date
+            FROM senior_hiring_approval sha
+            LEFT JOIN senior_hiring_rejection shr ON shr.request_id = sha.id
+            LEFT JOIN senior_hiring_info_request shir ON shir.request_id = sha.id
+            WHERE sha.id = ?
+        `, [parsedId]);
         
         if (rows.length === 0) {
             return res.status(404).json({ error: 'Senior hiring request not found' });
