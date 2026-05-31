@@ -75699,119 +75699,76 @@ function displayTasks(tasks) {
         const rawAssignee = task.assignee || task.assigned_to || 'Unassigned';
         const assigneeName = rawAssignee.includes('@') ? 
             rawAssignee.split('@')[0].toUpperCase() : rawAssignee;
+            
+        const description = task.description || task.task_description || '';
+        const name = task.name || task.task_name || 'Unknown Task';
+        const project = task.project || task.project_name || 'Unknown Project';
+        const assignedDate = task.assignedDate || (task.created_at ? formatDate(task.created_at) : '');
+        const startDate = task.startDate || task.start_date || '';
+        const dueDate = task.dueDate || task.due_date || '';
+        const estimatedHours = task.estimatedHours || task.estimated_hours || '';
+        const requiredSkills = task.requiredSkills || task.required_skills || '';
+        const materials = task.materials || task.task_materials || '';
+        const assignedBy = task.assignedBy || task.created_by || 'Unknown';
+        const status = task.status || task.task_status || 'Not Started';
+        const priority = task.priority || task.task_priority || 'Medium';
 
-        
+        const statusBadge = getStatusBadge(status);
 
-        const statusBadge = getStatusBadge(task.status);
-
-        const priorityBadge = getPriorityBadge(task.priority);
-
-        
+        const priorityBadge = getPriorityBadge(priority);
 
         return `
-
             <tr>
-
                 <td>
-
                     <div style="font-weight: 600; color: #2563eb;">${task.id}</div>
-
-                    <div style="font-size: 11px; color: #666;">${task.assignedDate}</div>
-
+                    <div style="font-size: 11px; color: #666;">${assignedDate}</div>
                 </td>
-
                 <td>
-
-                    <div style="font-weight: 500;">${task.name}</div>
-
-                    <div style="font-size: 11px; color: #666; margin-top: 2px;">${task.description.substring(0, 50)}${task.description.length > 50 ? '...' : ''}</div>
-
+                    <div style="font-weight: 500;">${name}</div>
+                    <div style="font-size: 11px; color: #666; margin-top: 2px;">${description.substring(0, 50)}${description.length > 50 ? '...' : ''}</div>
                 </td>
-
                 <td>
-
-                    <div style="font-weight: 500;">${task.project}</div>
-
+                    <div style="font-weight: 500;">${project}</div>
                 </td>
-
                 <td>
-
                     <div style="font-weight: 500;">${assigneeName}</div>
-
-                    <div style="font-size: 11px; color: #666;">${task.assignee}</div>
-
+                    <div style="font-size: 11px; color: #666;">${rawAssignee}</div>
                 </td>
-
                 <td>${priorityBadge}</td>
-
                 <td>
-
-                    <div style="font-weight: 500;">${formatDate(task.startDate)}</div>
-
+                    <div style="font-weight: 500;">${formatDate(startDate)}</div>
                 </td>
-
                 <td>
-
-                    <div style="font-weight: 500;">${formatDate(task.dueDate)}</div>
-
+                    <div style="font-weight: 500;">${formatDate(dueDate)}</div>
                 </td>
-
                 <td>
-
-                    <div style="max-width: 200px; word-wrap: break-word; font-size: 12px;">${task.description}</div>
-
+                    <div style="max-width: 200px; word-wrap: break-word; font-size: 12px;">${description}</div>
                 </td>
-
                 <td>
-
-                    <div style="font-weight: 500;">${task.estimatedHours || 'N/A'}</div>
-
+                    <div style="font-weight: 500;">${estimatedHours || 'N/A'}</div>
                     <div style="font-size: 11px; color: #666;">hours</div>
-
                 </td>
-
                 <td>
-
-                    <div style="max-width: 150px; word-wrap: break-word; font-size: 12px;">${task.requiredSkills || 'N/A'}</div>
-
+                    <div style="max-width: 150px; word-wrap: break-word; font-size: 12px;">${requiredSkills || 'N/A'}</div>
                 </td>
-
                 <td>
-
-                    <div style="max-width: 150px; word-wrap: break-word; font-size: 12px;">${task.materials || 'N/A'}</div>
-
+                    <div style="max-width: 150px; word-wrap: break-word; font-size: 12px;">${materials || 'N/A'}</div>
                 </td>
-
                 <td>${statusBadge}</td>
-
                 <td>
-
-                    <div style="font-weight: 500;">${task.assignedBy}</div>
-
+                    <div style="font-weight: 500;">${assignedBy}</div>
                 </td>
-
                 <td>
-
-                    <div style="font-size: 12px;">${task.assignedDate}</div>
-
+                    <div style="font-size: 12px;">${assignedDate}</div>
                 </td>
-
                 <td>
-
                     <div style="display: flex; gap: 5px; flex-wrap: wrap;">
-
                         <button class="action" onclick="viewTask('${task.id}')" style="padding: 4px 8px; font-size: 11px;">👁️ View</button>
-
                         <button class="action" onclick="deleteTask('${task.id}')" style="background: #dc3545; padding: 4px 8px; font-size: 11px;">🗑️ Delete</button>
-
                     </div>
-
                 </td>
-
             </tr>
-
         `;
-
     }).join('');
 
 }
