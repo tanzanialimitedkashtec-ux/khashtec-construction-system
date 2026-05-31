@@ -634,78 +634,107 @@ router.get('/violations', async (req, res) => {
     }
 });
 
+// Ensure ppe_issuance table has the columns needed by the PPE form
+async function ensurePpeIssuanceTable() {
+    try {
+        await db.execute(`
+            CREATE TABLE IF NOT EXISTS ppe_issuance (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                issuance_id VARCHAR(50),
+                issue_date DATE,
+                worker_name VARCHAR(255),
+                worker_id VARCHAR(50),
+                project VARCHAR(255),
+                department VARCHAR(100),
+                ppe_items JSON,
+                ppe_condition VARCHAR(50) DEFAULT 'new',
+                return_date DATE,
+                worker_signature VARCHAR(255),
+                issued_by VARCHAR(255),
+                status VARCHAR(50) DEFAULT 'Issued',
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+                INDEX idx_worker_name (worker_name),
+                INDEX idx_worker_id (worker_id),
+                INDEX idx_project (project),
+                INDEX idx_status (status),
+                INDEX idx_issue_date (issue_date)
+            )
+        `);
+
+        // Add columns that may be missing from the original migration schema
+        const columnsToAdd = [
+            { name: 'issuance_id', def: 'VARCHAR(50) AFTER id' },
+            { name: 'worker_name', def: 'VARCHAR(255)' },
+            { name: 'worker_id', def: 'VARCHAR(50)' },
+            { name: 'project', def: 'VARCHAR(255)' },
+            { name: 'department', def: 'VARCHAR(100)' },
+            { name: 'ppe_items', def: 'JSON' },
+            { name: 'ppe_condition', def: "VARCHAR(50) DEFAULT 'new'" },
+            { name: 'worker_signature', def: 'VARCHAR(255)' },
+            { name: 'issued_by', def: 'VARCHAR(255)' }
+        ];
+
+        const [cols] = await db.execute('SHOW COLUMNS FROM ppe_issuance');
+        const existingCols = new Set(cols.map(c => c.Field));
+
+        for (const col of columnsToAdd) {
+            if (!existingCols.has(col.name)) {
+                try {
+                    await db.execute(`ALTER TABLE ppe_issuance ADD COLUMN ${col.name} ${col.def}`);
+                    console.log(`  Added column ${col.name} to ppe_issuance`);
+                } catch (e) {
+                    // Column might already exist or type conflict
+                }
+            }
+        }
+
+        // Ensure issue_date and return_date columns exist
+        if (!existingCols.has('issue_date')) {
+            try { await db.execute('ALTER TABLE ppe_issuance ADD COLUMN issue_date DATE'); } catch (e) {}
+        }
+        if (!existingCols.has('return_date')) {
+            try { await db.execute('ALTER TABLE ppe_issuance ADD COLUMN return_date DATE'); } catch (e) {}
+        }
+        if (!existingCols.has('status')) {
+            try { await db.execute("ALTER TABLE ppe_issuance ADD COLUMN status VARCHAR(50) DEFAULT 'Issued'"); } catch (e) {}
+        }
+
+        console.log('  ppe_issuance table ready');
+    } catch (error) {
+        console.error('  Error ensuring ppe_issuance table:', error.message);
+    }
+}
+
+// Run table setup on module load
+ensurePpeIssuanceTable();
+
 // Get PPE issuance records
 router.get('/hse/ppe', async (req, res) => {
     try {
-        console.log('🔍 Fetching HSE PPE issuance records...');
-        
-        let ppeRecords = [];
-        
-        try {
-            const [dbRecords] = await db.execute(
-                `SELECT * FROM hse_work WHERE work_type = 'PPE Issuance' ORDER BY submitted_date DESC`
-            );
-            ppeRecords = dbRecords;
-            console.log(`📊 Found ${ppeRecords.length} PPE records from database`);
-        } catch (dbError) {
-            console.error('❌ Database error, using fallback PPE records:', dbError);
-            
-            // Fallback to mock PPE records
-            ppeRecords = [
-                {
-                    id: 1,
-                    department_code: 'HSE',
-                    work_type: 'PPE Issuance',
-                    work_title: 'Hard Hat Issuance - Site A',
-                    work_description: 'Issued hard hats to new workers on Site A',
-                    ppe_type: 'Hard Hat',
-                    employee_name: 'John Doe',
-                    issued_date: '2026-04-20',
-                    return_date: '2026-05-20',
-                    status: 'Issued',
-                    issued_by: 'Safety Officer',
-                    submitted_by: 'Safety Officer',
-                    submitted_date: '2026-04-20',
-                    mock: true
-                },
-                {
-                    id: 2,
-                    department_code: 'HSE',
-                    work_type: 'PPE Issuance',
-                    work_title: 'Safety Boots Issuance - Site B',
-                    work_description: 'Issued safety boots to construction team',
-                    ppe_type: 'Safety Boots',
-                    employee_name: 'Mike Wilson',
-                    issued_date: '2026-04-18',
-                    return_date: '2026-05-18',
-                    status: 'Issued',
-                    issued_by: 'HSE Manager',
-                    submitted_by: 'HSE Manager',
-                    submitted_date: '2026-04-18',
-                    mock: true
-                },
-                {
-                    id: 3,
-                    department_code: 'HSE',
-                    work_type: 'PPE Issuance',
-                    work_title: 'Gloves and Goggles Issuance',
-                    work_description: 'Issued protective gloves and safety goggles',
-                    ppe_type: 'Gloves & Goggles',
-                    employee_name: 'Sarah Johnson',
-                    issued_date: '2026-04-15',
-                    return_date: '2026-04-30',
-                    status: 'Returned',
-                    issued_by: 'Safety Officer',
-                    submitted_by: 'Safety Officer',
-                    submitted_date: '2026-04-15',
-                    mock: true
+        console.log('🔍 Fetching HSE PPE issuance records from ppe_issuance table...');
+
+        const [ppeRecords] = await db.execute(
+            `SELECT * FROM ppe_issuance ORDER BY issue_date DESC, created_at DESC`
+        );
+        console.log(`📊 Found ${ppeRecords.length} PPE records from ppe_issuance table`);
+
+        // Parse ppe_items JSON for each record
+        const parsed = ppeRecords.map(record => {
+            let items = [];
+            if (record.ppe_items) {
+                try {
+                    items = typeof record.ppe_items === 'string'
+                        ? JSON.parse(record.ppe_items)
+                        : record.ppe_items;
+                } catch (e) {
+                    items = [];
                 }
-            ];
-            console.log(`📊 Using fallback mock PPE records:`, ppeRecords.length);
-        }
-        
-        console.log(`📋 Returning ${ppeRecords.length} PPE records`);
-        res.json(ppeRecords);
+            }
+            return { ...record, ppe_items: items };
+        });
+
+        res.json({ data: parsed });
     } catch (error) {
         console.error('❌ Error fetching PPE records:', error);
         res.status(500).json({
@@ -719,80 +748,114 @@ router.get('/hse/ppe', async (req, res) => {
 router.get('/ppe', async (req, res) => {
     try {
         console.log('🔍 Fetching PPE issuance records (general endpoint)...');
-        
-        let ppeRecords = [];
-        
-        try {
-            const [dbRecords] = await db.execute(
-                `SELECT * FROM hse_work WHERE work_type = 'PPE Issuance' ORDER BY submitted_date DESC`
-            );
-            ppeRecords = dbRecords;
-            console.log(`📊 Found ${ppeRecords.length} PPE records from database`);
-        } catch (dbError) {
-            console.error('❌ Database error, using fallback PPE records:', dbError);
-            
-            // Same fallback as above
-            ppeRecords = [
-                {
-                    id: 1,
-                    department_code: 'HSE',
-                    work_type: 'PPE Issuance',
-                    work_title: 'Hard Hat Issuance - Site A',
-                    work_description: 'Issued hard hats to new workers on Site A',
-                    ppe_type: 'Hard Hat',
-                    employee_name: 'John Doe',
-                    issued_date: '2026-04-20',
-                    return_date: '2026-05-20',
-                    status: 'Issued',
-                    issued_by: 'Safety Officer',
-                    submitted_by: 'Safety Officer',
-                    submitted_date: '2026-04-20',
-                    mock: true
-                },
-                {
-                    id: 2,
-                    department_code: 'HSE',
-                    work_type: 'PPE Issuance',
-                    work_title: 'Safety Boots Issuance - Site B',
-                    work_description: 'Issued safety boots to construction team',
-                    ppe_type: 'Safety Boots',
-                    employee_name: 'Mike Wilson',
-                    issued_date: '2026-04-18',
-                    return_date: '2026-05-18',
-                    status: 'Issued',
-                    issued_by: 'HSE Manager',
-                    submitted_by: 'HSE Manager',
-                    submitted_date: '2026-04-18',
-                    mock: true
-                },
-                {
-                    id: 3,
-                    department_code: 'HSE',
-                    work_type: 'PPE Issuance',
-                    work_title: 'Gloves and Goggles Issuance',
-                    work_description: 'Issued protective gloves and safety goggles',
-                    ppe_type: 'Gloves & Goggles',
-                    employee_name: 'Sarah Johnson',
-                    issued_date: '2026-04-15',
-                    return_date: '2026-04-30',
-                    status: 'Returned',
-                    issued_by: 'Safety Officer',
-                    submitted_by: 'Safety Officer',
-                    submitted_date: '2026-04-15',
-                    mock: true
+
+        const [ppeRecords] = await db.execute(
+            `SELECT * FROM ppe_issuance ORDER BY issue_date DESC, created_at DESC`
+        );
+        console.log(`📊 Found ${ppeRecords.length} PPE records from ppe_issuance table`);
+
+        const parsed = ppeRecords.map(record => {
+            let items = [];
+            if (record.ppe_items) {
+                try {
+                    items = typeof record.ppe_items === 'string'
+                        ? JSON.parse(record.ppe_items)
+                        : record.ppe_items;
+                } catch (e) {
+                    items = [];
                 }
-            ];
-            console.log(`📊 Using fallback mock PPE records:`, ppeRecords.length);
-        }
-        
-        console.log(`📋 Returning ${ppeRecords.length} PPE records`);
-        res.json(ppeRecords);
+            }
+            return { ...record, ppe_items: items };
+        });
+
+        res.json({ data: parsed });
     } catch (error) {
         console.error('❌ Error fetching PPE records:', error);
         res.status(500).json({
             error: 'Failed to fetch PPE records',
             details: error.message
         });
+    }
+});
+
+// Create a new PPE issuance record
+router.post('/hse/ppe', async (req, res) => {
+    try {
+        console.log('📝 Creating new PPE issuance record...');
+        const {
+            issuance_id, issue_date, worker_name, worker_id,
+            project, department, ppe_items, ppe_condition,
+            return_date, worker_signature, issued_by
+        } = req.body;
+
+        if (!issue_date || !worker_name || !worker_id || !project) {
+            return res.status(400).json({ error: 'Missing required fields: issue_date, worker_name, worker_id, project' });
+        }
+
+        const itemsJson = JSON.stringify(ppe_items || []);
+
+        const [result] = await db.execute(
+            `INSERT INTO ppe_issuance
+                (issuance_id, issue_date, worker_name, worker_id, project, department, ppe_items, ppe_condition, return_date, worker_signature, issued_by, status)
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'Issued')`,
+            [
+                issuance_id || null,
+                issue_date,
+                worker_name,
+                worker_id,
+                project,
+                department || null,
+                itemsJson,
+                ppe_condition || 'new',
+                return_date || null,
+                worker_signature || null,
+                issued_by || null
+            ]
+        );
+
+        console.log(`✅ PPE issuance record created with id: ${result.insertId}`);
+        res.status(201).json({
+            message: 'PPE issuance recorded successfully',
+            id: result.insertId,
+            issuance_id: issuance_id
+        });
+    } catch (error) {
+        console.error('❌ Error creating PPE issuance record:', error);
+        res.status(500).json({
+            error: 'Failed to create PPE issuance record',
+            details: error.message
+        });
+    }
+});
+
+// Get PPE statistics
+router.get('/hse/ppe/stats', async (req, res) => {
+    try {
+        const [[totalResult]] = await db.execute('SELECT COUNT(*) as total FROM ppe_issuance');
+        const [[monthResult]] = await db.execute(
+            `SELECT COUNT(*) as this_month FROM ppe_issuance
+             WHERE MONTH(issue_date) = MONTH(CURRENT_DATE()) AND YEAR(issue_date) = YEAR(CURRENT_DATE())`
+        );
+        const [[lowStockResult]] = await db.execute(
+            `SELECT COUNT(DISTINCT ppe_type_val) as low_stock FROM (
+                SELECT JSON_UNQUOTE(JSON_EXTRACT(item.val, '$.type')) as ppe_type_val,
+                       SUM(CAST(JSON_UNQUOTE(JSON_EXTRACT(item.val, '$.quantity')) AS UNSIGNED)) as total_qty
+                FROM ppe_issuance,
+                     JSON_TABLE(ppe_items, '$[*]' COLUMNS (val JSON PATH '$')) AS item
+                WHERE status = 'Issued'
+                GROUP BY ppe_type_val
+                HAVING total_qty > 10
+            ) as low`
+        );
+
+        res.json({
+            total: totalResult.total || 0,
+            this_month: monthResult.this_month || 0,
+            low_stock: lowStockResult.low_stock || 0
+        });
+    } catch (error) {
+        console.error('❌ Error fetching PPE stats:', error);
+        res.json({ total: 0, this_month: 0, low_stock: 0 });
     }
 });
 
