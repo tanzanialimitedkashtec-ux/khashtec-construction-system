@@ -37497,19 +37497,23 @@ function displayFinancialRecords(records) {
 
         // Get status badge
 
-        const statusClass = record.status === 'completed' ? 'status-completed' : 
+        const statusLower = (record.status || '').toLowerCase();
 
-                           record.status === 'pending' ? 'status-pending' : 
-
-                           record.status === 'failed' ? 'status-failed' : 'status-default';
+        const statusClass = statusLower === 'completed' ? 'status-completed' : 
+                           statusLower === 'approved' ? 'status-completed' : 
+                           statusLower === 'pending' ? 'status-pending' : 
+                           statusLower === 'processing' ? 'status-pending' : 
+                           statusLower === 'failed' ? 'status-failed' : 
+                           statusLower === 'cancelled' ? 'status-failed' : 'status-completed';
 
         
 
-        const statusBadge = record.status === 'completed' ? 'âœ… Completed' : 
-
-                           record.status === 'pending' ? 'â³ Pending' : 
-
-                           record.status === 'failed' ? 'âŒ Failed' : 'â“ Unknown';
+        const statusBadge = statusLower === 'completed' ? '✅ Completed' : 
+                           statusLower === 'approved' ? '✅ Approved' : 
+                           statusLower === 'pending' ? '⏳ Pending' : 
+                           statusLower === 'processing' ? '⏳ Processing' : 
+                           statusLower === 'failed' ? '❌ Failed' : 
+                           statusLower === 'cancelled' ? '❌ Cancelled' : '✅ Completed';
 
         
 

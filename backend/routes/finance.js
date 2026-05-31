@@ -442,6 +442,40 @@ router.get('/summary', async (req, res) => {
     }
 });
 
+// GET - Fetch all financial transactions (primary endpoint for financial table)
+router.get('/transactions', async (req, res) => {
+    console.log('📊 GET /api/finance/transactions accessed');
+    try {
+        const records = await db.execute(`
+            SELECT id, type, category, amount, description, date, status, created_by, created_at
+            FROM financial_transactions
+            ORDER BY date DESC
+            LIMIT 500
+        `);
+
+        const transformed = (Array.isArray(records) ? records : []).map(r => ({
+            id: `FT-${r.id}`,
+            type: String(r.type || '').toLowerCase(),
+            category: r.category || 'Other',
+            amount: Number(r.amount) || 0,
+            description: r.description || '',
+            date: r.date ? (typeof r.date === 'string' ? r.date : new Date(r.date).toISOString().slice(0, 10)) : new Date().toISOString().slice(0, 10),
+            status: (r.status || 'pending').toLowerCase(),
+            reference: '',
+            account: 'General Account',
+            department: 'General'
+        }));
+
+        res.json(transformed);
+    } catch (error) {
+        console.error('❌ Error fetching financial transactions:', error);
+        res.status(500).json({ 
+            error: 'Failed to fetch financial transactions',
+            message: error.message 
+        });
+    }
+});
+
 // GET - Fetch all financial records for reporting dashboard
 router.get('/records', async (req, res) => {
     console.log('📊 GET /api/finance/records accessed');
