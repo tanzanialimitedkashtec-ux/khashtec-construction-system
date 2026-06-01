@@ -70359,16 +70359,10 @@ async function loadAuditNhif(el) {
         var data = await res.json();
         var rows = (data.data || data.contributions || data || []);
         var arr = Array.isArray(rows) ? rows : [];
-        var summaryHtml = '';
-        try {
-            var sRes = await fetch('/api/nhif/summary');
-            var sData = await sRes.json();
-            if (sData) {
-                summaryHtml = '<div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:12px;">' +
-                    '<div class="chg-card"><span class="chg-num">'+(sData.total_contributions||arr.length)+'</span><span class="chg-lbl">Contributions</span></div>' +
-                    '<div class="chg-card"><span class="chg-num">'+(sData.total_amount||'N/A')+'</span><span class="chg-lbl">Total Amount</span></div></div>';
-            }
-        } catch(se) {}
+        var totalAmount = arr.reduce(function(sum, r){ return sum + (parseFloat(r.total_contribution) || 0); }, 0);
+        var summaryHtml = '<div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:12px;">' +
+            '<div class="chg-card"><span class="chg-num">'+arr.length+'</span><span class="chg-lbl">Contributions</span></div>' +
+            '<div class="chg-card"><span class="chg-num">'+totalAmount.toLocaleString()+'</span><span class="chg-lbl">Total Amount</span></div></div>';
         el.innerHTML = summaryHtml + auditTableWrap('NHIF Contributions', ['#','Employee ID','Month','Employee Contrib.','Employer Contrib.','Total','Payment Status','Created'],
             arr.map(function(r,i){ return '<tr><td>'+(i+1)+'</td><td>'+esc(r.employee_id)+'</td><td>'+fmtDate(r.contribution_month)+'</td><td>'+esc(r.employee_contribution)+'</td><td>'+esc(r.employer_contribution)+'</td><td>'+esc(r.total_contribution)+'</td><td>'+esc(r.payment_status)+'</td><td>'+fmtDate(r.created_at)+'</td></tr>'; }).join(''));
     } catch(e) { el.innerHTML = '<p style="color:#dc3545;">Error loading NHIF data: '+e.message+'</p>'; }
