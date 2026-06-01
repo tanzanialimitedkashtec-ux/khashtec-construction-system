@@ -55351,6 +55351,8 @@ function displayInspectionRecords(data) {
 // Inspection report action functions
 
 async function viewInspectionReport(reportId) {
+    console.log('👁️ viewInspectionReport called with ID:', reportId);
+    
     // Remove any existing modal
     const existing = document.getElementById('inspectionViewModal');
     if (existing) existing.remove();
@@ -55363,10 +55365,17 @@ async function viewInspectionReport(reportId) {
     document.body.appendChild(loadingModal);
 
     try {
+        console.log('📦 Current cache size:', (window._loadedInspectionRecords || []).length);
+        console.log('📦 Cache contents (first 3):', (window._loadedInspectionRecords || []).slice(0, 3));
+        
         const record = (window._loadedInspectionRecords || []).find(r => String(r.id) === String(reportId));
+        
         if (!record) {
-            throw new Error("Inspection record not found in cache.");
+            console.error('❌ Inspection record not found in cache for ID:', reportId);
+            throw new Error(`Inspection record #${reportId} not found in cache. Did the records finish loading?`);
         }
+        
+        console.log('✅ Found record in cache:', record);
 
         // Parse the work_description blob
         let p = {};
@@ -55474,11 +55483,12 @@ async function viewInspectionReport(reportId) {
         loadingModal.addEventListener('click', e => { if (e.target === loadingModal) loadingModal.remove(); });
 
     } catch (err) {
-        console.error('Failed to load inspection report:', err);
+        console.error('❌ Failed to load inspection report:', err);
         loadingModal.innerHTML = `<div style="background:#1e2535;border-radius:12px;padding:32px;color:#fff;text-align:center;">
             <div style="font-size:40px;margin-bottom:12px;">⚠️</div>
             <div style="font-size:18px;margin-bottom:16px;">Failed to load report</div>
-            <button onclick="document.getElementById('inspectionViewModal').remove()" style="background:#dc3545;color:#fff;border:none;padding:8px 20px;border-radius:6px;cursor:pointer;">Close</button>
+            <div style="font-size:14px;color:#dc3545;margin-bottom:20px;background:rgba(220,53,69,0.1);padding:10px;border-radius:6px;">${err.message || 'Unknown error occurred'}</div>
+            <button onclick="document.getElementById('inspectionViewModal').remove()" style="background:#0d6efd;color:#fff;border:none;padding:8px 24px;border-radius:6px;cursor:pointer;font-weight:600;">Close</button>
         </div>`;
     }
 }
