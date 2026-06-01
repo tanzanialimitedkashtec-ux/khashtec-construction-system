@@ -260,7 +260,7 @@ async function runMigration() {
                 ALTER TABLE admin_work 
                 MODIFY COLUMN work_type ENUM(
                     'Administrative Operations', 'Compliance Management', 'Staff Oversight', 
-                    'Policy Implementation', 'Document Management', 'Document Upload', 
+                    'Document Management', 'Document Upload', 
                     'User Account Management', 'System Administration', 'Department Coordination'
                 ) DEFAULT 'Administrative Operations'
             `);

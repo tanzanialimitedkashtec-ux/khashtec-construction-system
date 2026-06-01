@@ -820,8 +820,6 @@ function loadMenu(){
 
         addMenu("Staff Oversight", () => staffOversight());
 
-        addMenu("Policy Implementation", policyImplementation);
-
         addMenu("Document Management", documentManagement);
 
         addMenu("User Account Management", () => userAccountManagement());
@@ -924,8 +922,6 @@ function loadMenu(){
         addMenu("Compliance Management", () => complianceManagement());
 
         addMenu("Staff Oversight", () => staffOversight());
-
-        addMenu("Policy Implementation", policyImplementation);
 
         addMenu("Document Management", documentManagement);
 
@@ -64443,56 +64439,6 @@ function showNotification(message, type = 'info') {
 
 
 
-function policyImplementation(){
-
-    showContent(`<div class="card">
-
-        <h3>Policy Implementation</h3>
-
-        <p><strong>Policy Management:</strong> Enforce company rules and maintain internal discipline framework</p>
-
-        
-
-        <div class="policy-dashboard">
-
-            <div class="active-policies">
-
-                <h4>Active Company Policies</h4>
-
-                <div class="policy-list">
-
-                    <div class="policy-item">
-
-                        <div class="policy-info">
-
-                            <h5>Employee Code of Conduct</h5>
-
-                            <p>Status: Enforced | Last Updated: Jan 15, 2026</p>
-
-                        </div>
-
-                        <div class="policy-actions">
-
-                            <button class="action" onclick="reviewPolicy('policy001')">Review</button>
-
-                            <button class="action" onclick="updatePolicy('policy001')">Update</button>
-
-                        </div>
-
-                    </div>
-
-                </div>
-
-            </div>
-
-        </div>
-
-    </div>`);
-
-}
-
-
-
 async function documentManagement(){
 
     console.log('ðŸ“„ Loading Document Management System...');
@@ -70214,22 +70160,6 @@ async function generateAdminReport() {
 
 }
 
-
-
-
-function reviewPolicy() {
-
-    customAlert('Review policy...\n\nThis will open the policy review interface where you can review and analyze company policies.', "Review Policy", "info");
-
-}
-
-
-
-function updatePolicy() {
-
-    customAlert('Update policy...\n\nThis will open the policy update interface where you can modify and update existing policies.', "Update Policy", "info");
-
-}
 
 
 

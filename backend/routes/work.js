@@ -3345,7 +3345,6 @@ router.post('/:department', async (req, res, next) => {
                     'Administrative Operations': 'Administrative Operations',
                     'Compliance Management': 'Compliance Management',
                     'Staff Oversight': 'Staff Oversight',
-                    'Policy Implementation': 'Policy Implementation',
                     'Document Management': 'Document Management',
                     'User Account Management': 'User Account Management',
                     'System Administration': 'System Administration',
