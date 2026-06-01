@@ -805,30 +805,44 @@ async function openNotification(id) {
 }
 
 async function markAllNotificationsRead() {
+    console.log('\ud83d\udd14 markAllNotificationsRead() called');
     var btn = document.querySelector('.notification-panel-header button');
     if (btn) { btn.disabled = true; btn.textContent = 'Marking...'; }
     try {
         // Try bulk endpoint first
+        console.log('\ud83d\udd14 Calling PUT /api/notifications/read-all...');
         var bulkRes = await fetch('/api/notifications/read-all', {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ userId: 'all' })
         });
-        if (!bulkRes.ok) {
+        console.log('\ud83d\udd14 read-all response status:', bulkRes.status);
+        if (bulkRes.ok) {
+            var bulkData = await bulkRes.json();
+            console.log('\ud83d\udd14 read-all result:', bulkData);
+        } else {
+            console.log('\ud83d\udd14 read-all failed, falling back to one-by-one...');
             // Fallback: mark one-by-one
             var res = await fetch('/api/notifications');
             var data = await res.json();
             var notifications = data.notifications || [];
+            var unreadCount = 0;
             for (var i = 0; i < notifications.length; i++) {
                 if (!notifications[i].is_read) {
+                    unreadCount++;
                     await fetch('/api/notifications/' + notifications[i].id + '/read', { method: 'PUT' });
                 }
             }
+            console.log('\ud83d\udd14 Marked', unreadCount, 'notifications as read one-by-one');
         }
-    } catch(e) {}
+    } catch(e) {
+        console.error('\ud83d\udd14 markAllNotificationsRead error:', e);
+    }
     if (btn) { btn.disabled = false; btn.textContent = 'Mark all read'; }
+    console.log('\ud83d\udd14 Updating badge and reloading notifications...');
     updateNotificationBadge();
     loadNotifications();
+    console.log('\ud83d\udd14 markAllNotificationsRead() complete');
 }
 
 function getTimeAgo(dateStr) {
@@ -70016,6 +70030,9 @@ async function submitInternalComm(e) {
         if (result.success) {
             customAlert('Internal communication sent successfully!', 'Success', 'success');
             reviewInternalComm();
+            // Refresh notification badge so the new comm appears in bell icon
+            updateNotificationBadge();
+            loadNotifications();
         } else {
             customAlert('Failed to send communication: ' + (result.error || 'Unknown error'), 'Error', 'error');
         }
