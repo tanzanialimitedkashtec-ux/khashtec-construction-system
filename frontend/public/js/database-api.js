@@ -1,13 +1,13 @@
 // Frontend Database API Connector
 class DatabaseAPI {
     constructor() {
-        const PRODUCTION_API_ORIGIN = 'https://khashtec-construction-system-production-e297.up.railway.app';
         // Check if running locally - use local server on port 8080
         this.isProduction = !(window.location.origin.includes('localhost') || window.location.origin.includes('127.0.0.1'));
         
         if (this.isProduction) {
-            // Production: use Railway URL
-            this.baseURL = `${PRODUCTION_API_ORIGIN}/api`;
+            // Production: use the same origin the page is served from so this
+            // works with any Railway domain or custom domain without CORS errors.
+            this.baseURL = `${window.location.origin}/api`;
         } else {
             // Local development: use local server on port 8080
             this.baseURL = `http://localhost:8080/api`;
