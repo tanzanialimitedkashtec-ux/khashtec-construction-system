@@ -70280,8 +70280,8 @@ async function loadAuditSeniorHiring(el) {
         var data = await res.json();
         var rows = (data.data || data.requests || data || []);
         var arr = Array.isArray(rows) ? rows : [];
-        el.innerHTML = auditTableWrap('Senior Hiring Requests', ['#','Candidate','Department','Level','Proposed Salary','Requested By','Status','Created'],
-            arr.map(function(r,i){ return '<tr><td>'+(i+1)+'</td><td>'+esc(r.candidate_name)+'</td><td>'+esc(r.department)+'</td><td>'+esc(r.position_level)+'</td><td>'+esc(r.proposed_salary)+'</td><td>'+esc(r.requested_by)+'</td><td>'+esc(r.status)+'</td><td>'+fmtDate(r.created_at)+'</td></tr>'; }).join(''));
+        el.innerHTML = auditTableWrap('Senior Hiring Requests', ['#','Candidate','Department','Position','Proposed Salary','Experience','Status','Request Date'],
+            arr.map(function(r,i){ return '<tr><td>'+(i+1)+'</td><td>'+esc(r.candidate_name)+'</td><td>'+esc(r.department)+'</td><td>'+esc(r.position)+'</td><td>'+esc(r.proposed_salary)+'</td><td>'+esc(r.experience)+'</td><td>'+esc(r.status)+'</td><td>'+fmtDate(r.request_date)+'</td></tr>'; }).join(''));
     } catch(e) { el.innerHTML = '<p style="color:#dc3545;">Error loading senior hiring data: '+e.message+'</p>'; }
 }
 
@@ -70291,8 +70291,8 @@ async function loadAuditWorkforceBudget(el) {
         var data = await res.json();
         var rows = (data.data || data.budgets || data || []);
         var arr = Array.isArray(rows) ? rows : [];
-        el.innerHTML = auditTableWrap('Workforce Budget Requests', ['#','Budget Period','Total Proposed','Salaries','Training','Benefits','Submitted By','Status','Created'],
-            arr.map(function(r,i){ return '<tr><td>'+(i+1)+'</td><td>'+esc(r.budget_period)+'</td><td>'+esc(r.total_proposed)+'</td><td>'+esc(r.salaries_wages)+'</td><td>'+esc(r.training_development)+'</td><td>'+esc(r.employee_benefits)+'</td><td>'+esc(r.submitted_by)+'</td><td>'+esc(r.status)+'</td><td>'+fmtDate(r.created_at)+'</td></tr>'; }).join(''));
+        el.innerHTML = auditTableWrap('Workforce Budget Requests', ['#','Department','Total Proposed','Salaries','Training','Benefits','Submitted By','Status','Submitted'],
+            arr.map(function(r,i){ return '<tr><td>'+(i+1)+'</td><td>'+esc(r.department)+'</td><td>'+esc(r.total_proposed)+'</td><td>'+esc(r.salaries_wages)+'</td><td>'+esc(r.training_development)+'</td><td>'+esc(r.employee_benefits)+'</td><td>'+esc(r.submitted_by)+'</td><td>'+esc(r.status)+'</td><td>'+fmtDate(r.submission_date)+'</td></tr>'; }).join(''));
     } catch(e) { el.innerHTML = '<p style="color:#dc3545;">Error loading workforce budget data: '+e.message+'</p>'; }
 }
 
