@@ -208,4 +208,59 @@ router.post('/', async (req, res) => {
     }
 });
 
+// Delete a department
+router.delete('/:id', async (req, res) => {
+    try {
+        const { id } = req.params;
+
+        if (!db) {
+            // Fallback mock delete
+            return res.json({
+                success: true,
+                message: 'Department deleted (mock) successfully',
+                id
+            });
+        }
+
+        let deletedFromDepartments = false;
+        let deletedFromOfficePortal = false;
+
+        // Try deleting from departments table
+        try {
+            const result = await db.execute(`DELETE FROM departments WHERE id = ?`, [id]);
+            const rows = Array.isArray(result) ? result[0] : result;
+            if (rows && rows.affectedRows > 0) {
+                deletedFromDepartments = true;
+            }
+        } catch (e) {
+            // ignore if table doesn't exist
+        }
+
+        // Try deleting from office_portal table
+        try {
+            const result = await db.execute(`DELETE FROM office_portal WHERE id = ?`, [id]);
+            const rows = Array.isArray(result) ? result[0] : result;
+            if (rows && rows.affectedRows > 0) {
+                deletedFromOfficePortal = true;
+            }
+        } catch (e) {
+            // ignore
+        }
+
+        if (deletedFromDepartments || deletedFromOfficePortal) {
+            return res.json({
+                success: true,
+                message: 'Department deleted successfully',
+                id
+            });
+        } else {
+            // If not found by ID, it could be a mock or already deleted. Let's return 404 to be precise.
+            return res.status(404).json({ success: false, error: 'Department not found' });
+        }
+    } catch (error) {
+        console.error('❌ Error deleting department:', error);
+        return res.status(500).json({ success: false, error: 'Failed to delete department', details: error.message });
+    }
+});
+
 module.exports = router;

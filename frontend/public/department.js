@@ -1,4 +1,4 @@
-﻿// Disabled: Allow localhost development
+// Disabled: Allow localhost development
 
         // const PRODUCTION_FRONTEND_URL = 'https://khashtec-construction-system-production-e297.up.railway.app/frontend/public/department.html';
 
@@ -314,6 +314,8 @@ function login(){
 
     loadMenu();
 
+    startNotificationPolling();
+
 }
 
 
@@ -420,9 +422,11 @@ function loadPoliciesFromBackend() {
 
                         <div class="policy-actions">
 
-                            <button class="action" onclick="viewPolicy(${policy.id})">View</button>
+                            <button class="action" onclick="approvePolicy('${policy.id}')" style="background: #28a745; color: white;">Approve Policy</button>
 
-                            <button class="action" onclick="downloadPolicy(${policy.id})">Download</button>
+                            <button class="action" onclick="requestPolicyRevision('${policy.id}')" style="background: #ffc107; color: black;">Request Revision</button>
+
+                            <button class="action" onclick="rejectPolicy('${policy.id}')" style="background: #dc3545; color: white;">Reject</button>
 
                             <button class="action" onclick="deletePolicyById('${policy.id}')" style="background: #dc3545; color: white;">Delete</button>
 
@@ -712,11 +716,118 @@ function logout(){
 
 
 
-function showNotifications(){
+// ===== NOTIFICATION SYSTEM =====
+var notificationPollInterval = null;
 
-    // TODO: Implement notification panel or dropdown
+function toggleNotificationPanel() {
+    var panel = document.getElementById('notificationPanel');
+    if (panel.classList.contains('open')) {
+        panel.classList.remove('open');
+    } else {
+        panel.classList.add('open');
+        loadNotifications();
+    }
+}
 
-    alert('Notifications feature coming soon!');
+document.addEventListener('click', function(e) {
+    var panel = document.getElementById('notificationPanel');
+    var btn = document.querySelector('.notification-btn');
+    if (panel && btn && !panel.contains(e.target) && !btn.contains(e.target)) {
+        panel.classList.remove('open');
+    }
+});
+
+async function loadNotifications() {
+    try {
+        var res = await fetch('/api/notifications');
+        var data = await res.json();
+        var notifications = data.notifications || [];
+        var listEl = document.getElementById('notificationList');
+        if (!notifications.length) {
+            listEl.innerHTML = '<div class="notification-empty">No notifications yet</div>';
+            return;
+        }
+        listEl.innerHTML = notifications.slice(0, 50).map(function(n) {
+            var typeIcon = {info:'ℹ️', success:'✅', warning:'⚠️', error:'❌'}[(n.type||'info').toLowerCase()] || 'ℹ️';
+            var typeCls = (n.type||'info').toLowerCase();
+            var unreadCls = n.is_read ? '' : ' unread';
+            var timeAgo = getTimeAgo(n.created_at);
+            return '<div class="notification-item'+unreadCls+'" onclick="openNotification('+n.id+')">' +
+                '<div class="notif-icon '+typeCls+'">'+typeIcon+'</div>' +
+                '<div class="notif-content">' +
+                '<p class="notif-title">'+(n.title||'Notification').replace(/</g,'&lt;')+'</p>' +
+                '<p class="notif-msg">'+(n.message||'').replace(/</g,'&lt;')+'</p>' +
+                '<span class="notif-time">'+timeAgo+'</span>' +
+                '</div></div>';
+        }).join('');
+    } catch(e) {
+        document.getElementById('notificationList').innerHTML = '<div class="notification-empty">Error loading notifications</div>';
+    }
+}
+
+async function updateNotificationBadge() {
+    try {
+        var res = await fetch('/api/notifications?unread=true');
+        var data = await res.json();
+        var unread = (data.notifications || []).length;
+        var badge = document.getElementById('notifBadge');
+        if (badge) {
+            if (unread > 0) {
+                badge.textContent = unread > 99 ? '99+' : unread;
+                badge.style.display = '';
+            } else {
+                badge.style.display = 'none';
+            }
+        }
+    } catch(e) {}
+}
+
+async function openNotification(id) {
+    try {
+        await fetch('/api/notifications/' + id + '/read', { method: 'PUT' });
+    } catch(e) {}
+    var panel = document.getElementById('notificationPanel');
+    panel.classList.remove('open');
+    updateNotificationBadge();
+    var changesTab = document.querySelector('[data-tab="systemChanges"]');
+    if (changesTab) changesTab.click();
+}
+
+async function markAllNotificationsRead() {
+    try {
+        var res = await fetch('/api/notifications');
+        var data = await res.json();
+        var notifications = data.notifications || [];
+        for (var i = 0; i < notifications.length; i++) {
+            if (!notifications[i].is_read) {
+                await fetch('/api/notifications/' + notifications[i].id + '/read', { method: 'PUT' });
+            }
+        }
+    } catch(e) {}
+    updateNotificationBadge();
+    loadNotifications();
+}
+
+function getTimeAgo(dateStr) {
+    if (!dateStr) return '';
+    var diff = Date.now() - new Date(dateStr).getTime();
+    var mins = Math.floor(diff / 60000);
+    if (mins < 1) return 'Just now';
+    if (mins < 60) return mins + 'm ago';
+    var hrs = Math.floor(mins / 60);
+    if (hrs < 24) return hrs + 'h ago';
+    var days = Math.floor(hrs / 24);
+    if (days < 7) return days + 'd ago';
+    return new Date(dateStr).toLocaleDateString();
+}
+
+function startNotificationPolling() {
+    updateNotificationBadge();
+    if (notificationPollInterval) clearInterval(notificationPollInterval);
+    notificationPollInterval = setInterval(updateNotificationBadge, 30000);
+}
+
+function showNotifications() { toggleNotificationPanel();
 
 }
 
@@ -817,8 +928,6 @@ function loadMenu(){
         addMenu("Compliance Management", () => complianceManagement());
 
         addMenu("Staff Oversight", () => staffOversight());
-
-        addMenu("Policy Implementation", policyImplementation);
 
         addMenu("Document Management", documentManagement);
 
@@ -922,8 +1031,6 @@ function loadMenu(){
         addMenu("Compliance Management", () => complianceManagement());
 
         addMenu("Staff Oversight", () => staffOversight());
-
-        addMenu("Policy Implementation", policyImplementation);
 
         addMenu("Document Management", documentManagement);
 
@@ -39346,6 +39453,27 @@ function financeAudits(){
 
         </div>
 
+        <hr style="margin:20px 0;border-color:#eee;">
+        <h4>📊 Department Overview (Read-Only)</h4>
+        <p>Monitor changes and current state across all departments. This is a read-only view for audit purposes.</p>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin:12px 0;">
+            <button class="action" style="font-size:11px;" onclick="switchAuditDeptSection('auditLeadership')">Leadership</button>
+            <button class="action" style="font-size:11px;" onclick="switchAuditDeptSection('auditAccountant')">Accountant</button>
+            <button class="action" style="font-size:11px;" onclick="switchAuditDeptSection('auditLongTerm')">Long-Term Growth</button>
+            <button class="action" style="font-size:11px;" onclick="switchAuditDeptSection('auditMissionVision')">Mission & Vision</button>
+            <button class="action" style="font-size:11px;" onclick="switchAuditDeptSection('auditStaffOverview')">Staff Overview</button>
+            <button class="action" style="font-size:11px;" onclick="switchAuditDeptSection('auditSeniorHiring')">Senior Hiring</button>
+            <button class="action" style="font-size:11px;" onclick="switchAuditDeptSection('auditWorkforceBudget')">Workforce Budget</button>
+            <button class="action" style="font-size:11px;" onclick="switchAuditDeptSection('auditAssignedWorkers')">Assigned Workers</button>
+            <button class="action" style="font-size:11px;" onclick="switchAuditDeptSection('auditTeamMgmt')">Team Management</button>
+            <button class="action" style="font-size:11px;" onclick="switchAuditDeptSection('auditAssignTasks')">Assign Tasks</button>
+            <button class="action" style="font-size:11px;" onclick="switchAuditDeptSection('auditSafetyStatus')">Project Safety</button>
+            <button class="action" style="font-size:11px;" onclick="switchAuditDeptSection('auditNhif')">NHIF Contribution</button>
+        </div>
+        <div id="auditDeptContent" style="margin-top:15px;">
+            <p style="color:#888;">Select a section above to view its current data.</p>
+        </div>
+
     </div>`);
 
 }
@@ -64441,56 +64569,6 @@ function showNotification(message, type = 'info') {
 
 
 
-function policyImplementation(){
-
-    showContent(`<div class="card">
-
-        <h3>Policy Implementation</h3>
-
-        <p><strong>Policy Management:</strong> Enforce company rules and maintain internal discipline framework</p>
-
-        
-
-        <div class="policy-dashboard">
-
-            <div class="active-policies">
-
-                <h4>Active Company Policies</h4>
-
-                <div class="policy-list">
-
-                    <div class="policy-item">
-
-                        <div class="policy-info">
-
-                            <h5>Employee Code of Conduct</h5>
-
-                            <p>Status: Enforced | Last Updated: Jan 15, 2026</p>
-
-                        </div>
-
-                        <div class="policy-actions">
-
-                            <button class="action" onclick="reviewPolicy('policy001')">Review</button>
-
-                            <button class="action" onclick="updatePolicy('policy001')">Update</button>
-
-                        </div>
-
-                    </div>
-
-                </div>
-
-            </div>
-
-        </div>
-
-    </div>`);
-
-}
-
-
-
 async function documentManagement(){
 
     console.log('ðŸ“„ Loading Document Management System...');
@@ -70215,21 +70293,189 @@ async function generateAdminReport() {
 
 
 
-function reviewPolicy() {
+// ===== DEPARTMENT OVERVIEW — READ-ONLY AUDIT SECTIONS =====
 
-    customAlert('Review policy...\n\nThis will open the policy review interface where you can review and analyze company policies.', "Review Policy", "info");
-
+function switchAuditDeptSection(sectionId) {
+    const el = document.getElementById('auditDeptContent');
+    if (!el) return;
+    el.innerHTML = '<p>Loading...</p>';
+    const loaders = {
+        auditLeadership: loadAuditLeadership,
+        auditAccountant: loadAuditAccountant,
+        auditLongTerm: loadAuditLongTerm,
+        auditMissionVision: loadAuditMissionVision,
+        auditStaffOverview: loadAuditStaffOverview,
+        auditSeniorHiring: loadAuditSeniorHiring,
+        auditWorkforceBudget: loadAuditWorkforceBudget,
+        auditAssignedWorkers: loadAuditAssignedWorkers,
+        auditTeamMgmt: loadAuditTeamMgmt,
+        auditAssignTasks: loadAuditAssignTasks,
+        auditSafetyStatus: loadAuditSafetyStatus,
+        auditNhif: loadAuditNhif
+    };
+    if (loaders[sectionId]) loaders[sectionId](el);
 }
 
-
-
-function updatePolicy() {
-
-    customAlert('Update policy...\n\nThis will open the policy update interface where you can modify and update existing policies.', "Update Policy", "info");
-
+function auditTableWrap(title, headersArr, rowsHtml) {
+    return '<h5 style="margin:0 0 8px;">' + title + '</h5>' +
+        (rowsHtml ? '<div style="overflow-x:auto;"><table class="audit-table" style="width:100%;font-size:12px;"><thead><tr>' +
+        headersArr.map(function(h){ return '<th>' + h + '</th>'; }).join('') +
+        '</tr></thead><tbody>' + rowsHtml + '</tbody></table></div>'
+        : '<p style="color:#999;">No records found.</p>');
 }
 
+function fmtDate(d) { return d ? new Date(d).toLocaleDateString() : 'N/A'; }
+function esc(s) { return (s || 'N/A').toString().replace(/</g, '&lt;'); }
 
+async function loadAuditLeadership(el) {
+    try {
+        var res = await fetch('/api/leadership/leadership');
+        var data = await res.json();
+        var rows = (data.data || data || []);
+        el.innerHTML = auditTableWrap('Leadership Management Records', ['#','Position','Department','Current Holder','Reports To','Level','Status','Appointed'],
+            rows.map(function(r,i){ return '<tr><td>'+(i+1)+'</td><td>'+esc(r.position)+'</td><td>'+esc(r.department)+'</td><td>'+esc(r.current_holder)+'</td><td>'+esc(r.reports_to)+'</td><td>'+esc(r.leadership_level)+'</td><td>'+esc(r.status)+'</td><td>'+fmtDate(r.appointment_date)+'</td></tr>'; }).join(''));
+    } catch(e) { el.innerHTML = '<p style="color:#dc3545;">Error loading leadership data: '+e.message+'</p>'; }
+}
+
+async function loadAuditAccountant(el) {
+    try {
+        var res = await fetch('/api/accountant/accountant');
+        var data = await res.json();
+        var rows = (data.data || data || []);
+        el.innerHTML = auditTableWrap('Accountant Management Records', ['#','Name','Email','Department','Reporting To','Employment','Qualification','Status','Start Date'],
+            rows.map(function(r,i){ return '<tr><td>'+(i+1)+'</td><td>'+esc(r.name)+'</td><td>'+esc(r.email)+'</td><td>'+esc(r.department)+'</td><td>'+esc(r.reporting_to)+'</td><td>'+esc(r.employment_type)+'</td><td>'+esc(r.professional_qualification)+'</td><td>'+esc(r.status)+'</td><td>'+fmtDate(r.start_date)+'</td></tr>'; }).join(''));
+    } catch(e) { el.innerHTML = '<p style="color:#dc3545;">Error loading accountant data: '+e.message+'</p>'; }
+}
+
+async function loadAuditLongTerm(el) {
+    try {
+        var res = await fetch('/api/long-term-growth/long-term-growth');
+        var data = await res.json();
+        var rows = (data.data || data || []);
+        el.innerHTML = auditTableWrap('Long-Term Growth Strategy Records', ['#','Growth Title','Category','Timeframe','Expansion Strategy','Status','Created'],
+            rows.map(function(r,i){ return '<tr><td>'+(i+1)+'</td><td>'+esc(r.growth_title)+'</td><td>'+esc(r.growth_category)+'</td><td>'+esc(r.timeframe)+'</td><td>'+esc(r.expansion_strategy)+'</td><td>'+esc(r.status)+'</td><td>'+fmtDate(r.created_at)+'</td></tr>'; }).join(''));
+    } catch(e) { el.innerHTML = '<p style="color:#dc3545;">Error loading long-term growth data: '+e.message+'</p>'; }
+}
+
+async function loadAuditMissionVision(el) {
+    try {
+        var res = await fetch('/api/mission-vision/mission-vision');
+        var data = await res.json();
+        var rows = (data.data || data || []);
+        el.innerHTML = auditTableWrap('Mission & Vision Records', ['#','Mission Statement','Category','Vision Statement','Vision Timeframe','Status','Created'],
+            rows.map(function(r,i){ return '<tr><td>'+(i+1)+'</td><td>'+esc(r.mission_statement)+'</td><td>'+esc(r.mission_category)+'</td><td>'+esc(r.vision_statement)+'</td><td>'+esc(r.vision_timeframe)+'</td><td>'+esc(r.status)+'</td><td>'+fmtDate(r.created_at)+'</td></tr>'; }).join(''));
+    } catch(e) { el.innerHTML = '<p style="color:#dc3545;">Error loading mission & vision data: '+e.message+'</p>'; }
+}
+
+async function loadAuditStaffOverview(el) {
+    try {
+        var res = await fetch('/api/employees');
+        var data = await res.json();
+        var rows = Array.isArray(data) ? data : (data.data || []);
+        var active = rows.filter(function(e){ return (e.status||'').toLowerCase() === 'active'; }).length;
+        var html = '<div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:12px;">' +
+            '<div class="chg-card"><span class="chg-num">'+rows.length+'</span><span class="chg-lbl">Total Staff</span></div>' +
+            '<div class="chg-card"><span class="chg-num">'+active+'</span><span class="chg-lbl">Active</span></div>' +
+            '<div class="chg-card"><span class="chg-num">'+(rows.length-active)+'</span><span class="chg-lbl">Inactive</span></div></div>';
+        html += auditTableWrap('Staff Overview', ['#','Name','Department','Position','Status','Joined'],
+            rows.slice(0,100).map(function(r,i){ return '<tr><td>'+(i+1)+'</td><td>'+esc(r.full_name||r.name)+'</td><td>'+esc(r.department)+'</td><td>'+esc(r.position)+'</td><td>'+esc(r.status)+'</td><td>'+fmtDate(r.created_at||r.hire_date)+'</td></tr>'; }).join(''));
+        el.innerHTML = html;
+    } catch(e) { el.innerHTML = '<p style="color:#dc3545;">Error loading staff data: '+e.message+'</p>'; }
+}
+
+async function loadAuditSeniorHiring(el) {
+    try {
+        var res = await fetch('/api/senior-hiring');
+        var data = await res.json();
+        var rows = (data.data || data.requests || data || []);
+        var arr = Array.isArray(rows) ? rows : [];
+        el.innerHTML = auditTableWrap('Senior Hiring Requests', ['#','Candidate','Department','Position','Proposed Salary','Experience','Status','Request Date'],
+            arr.map(function(r,i){ return '<tr><td>'+(i+1)+'</td><td>'+esc(r.candidate_name)+'</td><td>'+esc(r.department)+'</td><td>'+esc(r.position)+'</td><td>'+esc(r.proposed_salary)+'</td><td>'+esc(r.experience)+'</td><td>'+esc(r.status)+'</td><td>'+fmtDate(r.request_date)+'</td></tr>'; }).join(''));
+    } catch(e) { el.innerHTML = '<p style="color:#dc3545;">Error loading senior hiring data: '+e.message+'</p>'; }
+}
+
+async function loadAuditWorkforceBudget(el) {
+    try {
+        var res = await fetch('/api/workforce-budget');
+        var data = await res.json();
+        var rows = (data.data || data.budgets || data || []);
+        var arr = Array.isArray(rows) ? rows : [];
+        el.innerHTML = auditTableWrap('Workforce Budget Requests', ['#','Department','Total Proposed','Salaries','Training','Benefits','Submitted By','Status','Submitted'],
+            arr.map(function(r,i){ return '<tr><td>'+(i+1)+'</td><td>'+esc(r.department)+'</td><td>'+esc(r.total_proposed)+'</td><td>'+esc(r.salaries_wages)+'</td><td>'+esc(r.training_development)+'</td><td>'+esc(r.employee_benefits)+'</td><td>'+esc(r.submitted_by)+'</td><td>'+esc(r.status)+'</td><td>'+fmtDate(r.submission_date)+'</td></tr>'; }).join(''));
+    } catch(e) { el.innerHTML = '<p style="color:#dc3545;">Error loading workforce budget data: '+e.message+'</p>'; }
+}
+
+async function loadAuditAssignedWorkers(el) {
+    try {
+        var res = await fetch('/api/employees');
+        var data = await res.json();
+        var rows = Array.isArray(data) ? data : (data.data || []);
+        var assigned = rows.filter(function(e){ return e.department && e.position; });
+        var html = '<div style="margin-bottom:10px;"><strong>Total Assigned:</strong> '+assigned.length+' / '+rows.length+' employees</div>';
+        html += auditTableWrap('Assigned Workers', ['#','Name','Department','Position','Status'],
+            assigned.slice(0,100).map(function(r,i){ return '<tr><td>'+(i+1)+'</td><td>'+esc(r.full_name||r.name)+'</td><td>'+esc(r.department)+'</td><td>'+esc(r.position)+'</td><td>'+esc(r.status)+'</td></tr>'; }).join(''));
+        el.innerHTML = html;
+    } catch(e) { el.innerHTML = '<p style="color:#dc3545;">Error loading assigned workers: '+e.message+'</p>'; }
+}
+
+async function loadAuditTeamMgmt(el) {
+    try {
+        var res = await fetch('/api/team-management/teams');
+        var data = await res.json();
+        var rows = (data.data || data.teams || data || []);
+        var arr = Array.isArray(rows) ? rows : [];
+        if (arr.length === 0) { el.innerHTML = '<h5>Team Management</h5><p style="color:#999;">No teams found.</p>'; return; }
+        el.innerHTML = auditTableWrap('Team Management', ['#','Team Name','Department','Description','Status','Created'],
+            arr.map(function(r,i){ return '<tr><td>'+(i+1)+'</td><td>'+esc(r.name)+'</td><td>'+esc(r.department)+'</td><td>'+esc(r.description)+'</td><td>'+esc(r.status)+'</td><td>'+fmtDate(r.created_at)+'</td></tr>'; }).join(''));
+    } catch(e) { el.innerHTML = '<p style="color:#dc3545;">Error loading team data: '+e.message+'</p>'; }
+}
+
+async function loadAuditAssignTasks(el) {
+    try {
+        var res = await fetch('/api/tasks');
+        var data = await res.json();
+        var rows = (data.data || data.tasks || data || []);
+        var arr = Array.isArray(rows) ? rows : [];
+        var pending = arr.filter(function(t){ return (t.task_status||t.status||'').toLowerCase().indexOf('not started') !== -1 || (t.task_status||t.status||'').toLowerCase() === 'pending'; }).length;
+        var completed = arr.filter(function(t){ return (t.task_status||t.status||'').toLowerCase() === 'completed'; }).length;
+        var html = '<div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:12px;">' +
+            '<div class="chg-card"><span class="chg-num">'+arr.length+'</span><span class="chg-lbl">Total Tasks</span></div>' +
+            '<div class="chg-card"><span class="chg-num">'+pending+'</span><span class="chg-lbl">Pending</span></div>' +
+            '<div class="chg-card"><span class="chg-num">'+completed+'</span><span class="chg-lbl">Completed</span></div></div>';
+        html += auditTableWrap('Task Assignments', ['#','Task','Assigned To','Project','Priority','Status','Due Date'],
+            arr.slice(0,100).map(function(r,i){ return '<tr><td>'+(i+1)+'</td><td>'+esc(r.task_name||r.title||r.description)+'</td><td>'+esc(r.assigned_to)+'</td><td>'+esc(r.project_name||r.project)+'</td><td>'+esc(r.task_priority)+'</td><td>'+esc(r.task_status)+'</td><td>'+fmtDate(r.due_date)+'</td></tr>'; }).join(''));
+        el.innerHTML = html;
+    } catch(e) { el.innerHTML = '<p style="color:#dc3545;">Error loading tasks data: '+e.message+'</p>'; }
+}
+
+async function loadAuditSafetyStatus(el) {
+    try {
+        var res = await fetch('/api/projects');
+        var data = await res.json();
+        var rows = (data.data || data.projects || data || []);
+        var arr = Array.isArray(rows) ? rows : [];
+        var html = '<div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:12px;">' +
+            '<div class="chg-card"><span class="chg-num">'+arr.length+'</span><span class="chg-lbl">Total Projects</span></div></div>';
+        html += auditTableWrap('Project Safety Status', ['#','Project Name','Location','Status','Priority Level','Start Date','End Date'],
+            arr.map(function(r,i){ return '<tr><td>'+(i+1)+'</td><td>'+esc(r.name||r.project_name)+'</td><td>'+esc(r.location)+'</td><td>'+esc(r.status)+'</td><td>'+esc(r.priority_level)+'</td><td>'+fmtDate(r.start_date)+'</td><td>'+fmtDate(r.end_date)+'</td></tr>'; }).join(''));
+        el.innerHTML = html;
+    } catch(e) { el.innerHTML = '<p style="color:#dc3545;">Error loading project safety data: '+e.message+'</p>'; }
+}
+
+async function loadAuditNhif(el) {
+    try {
+        var res = await fetch('/api/nhif');
+        var data = await res.json();
+        var rows = (data.data || data.contributions || data || []);
+        var arr = Array.isArray(rows) ? rows : [];
+        var totalAmount = arr.reduce(function(sum, r){ return sum + (parseFloat(r.total_contribution) || 0); }, 0);
+        var summaryHtml = '<div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:12px;">' +
+            '<div class="chg-card"><span class="chg-num">'+arr.length+'</span><span class="chg-lbl">Contributions</span></div>' +
+            '<div class="chg-card"><span class="chg-num">'+totalAmount.toLocaleString()+'</span><span class="chg-lbl">Total Amount</span></div></div>';
+        el.innerHTML = summaryHtml + auditTableWrap('NHIF Contributions', ['#','Employee ID','Month','Employee Contrib.','Employer Contrib.','Total','Payment Status','Created'],
+            arr.map(function(r,i){ return '<tr><td>'+(i+1)+'</td><td>'+esc(r.employee_id)+'</td><td>'+fmtDate(r.contribution_month)+'</td><td>'+esc(r.employee_contribution)+'</td><td>'+esc(r.employer_contribution)+'</td><td>'+esc(r.total_contribution)+'</td><td>'+esc(r.payment_status)+'</td><td>'+fmtDate(r.created_at)+'</td></tr>'; }).join(''));
+    } catch(e) { el.innerHTML = '<p style="color:#dc3545;">Error loading NHIF data: '+e.message+'</p>'; }
+}
 
 // User management functions (suspendUser, reactivateUser, viewUserDetails) are defined above
 // Additional missing functions
@@ -73653,236 +73899,210 @@ function showAddMaterialForm() {
 // Function to show Senior Roles Management form
 
 function showSeniorRoles() {
-
     const formHTML = `
-
         <div class="form-overlay">
-
-            <div class="form-container">
-
+            <div class="form-container" style="max-width: 1000px; width: 95%; max-height: 90vh; overflow-y: auto;">
                 <div class="form-header">
-
                     <h3>Create Senior Hiring Request</h3>
-
                     <button onclick="closeForm()" class="close-btn">&times;</button>
-
                 </div>
-
-                <form id="seniorRolesForm">
-
-                    <div class="form-group">
-
-                        <label for="candidateName">Candidate Name:</label>
-
-                        <input type="text" id="candidateName" name="candidateName" required>
-
+                <div class="form-content-wrapper" style="display: flex; gap: 24px; flex-wrap: wrap; margin-top: 16px;">
+                    <div style="flex: 1; min-width: 300px;">
+                        <form id="seniorRolesForm">
+                            <div class="form-group">
+                                <label for="candidateName">Candidate Name:</label>
+                                <input type="text" id="candidateName" name="candidateName" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="position">Position Level:</label>
+                                <select id="position" name="position" required>
+                                    <option value="">Select Position Level</option>
+                                    <option value="Senior">Senior</option>
+                                    <option value="Manager">Manager</option>
+                                    <option value="Director">Director</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="department">Department:</label>
+                                <select id="department" name="department" required>
+                                    <option value="">Select Department</option>
+                                    <option value="HR">HR</option>
+                                    <option value="FINANCE">Finance</option>
+                                    <option value="PROJECT">Project</option>
+                                    <option value="HSE">HSE</option>
+                                    <option value="REALESTATE">Real Estate</option>
+                                    <option value="ADMIN">Admin</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="proposedSalary">Proposed Salary:</label>
+                                <input type="text" id="proposedSalary" name="proposedSalary" placeholder="e.g., TZS 3,000,000" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="experience">Experience:</label>
+                                <textarea id="experience" name="experience" rows="3" placeholder="Candidate's experience and qualifications" required></textarea>
+                            </div>
+                            <div class="form-group">
+                                <label for="recommendation">HR Recommendation:</label>
+                                <textarea id="recommendation" name="recommendation" rows="3" placeholder="HR recommendation and assessment" required></textarea>
+                            </div>
+                            <div class="form-actions" style="margin-top: 12px; display: flex; gap: 8px;">
+                                <button type="submit" class="btn btn-primary" style="flex: 1;">Submit Request</button>
+                                <button type="button" onclick="closeForm()" class="btn btn-secondary">Close</button>
+                            </div>
+                        </form>
                     </div>
-
-                    <div class="form-group">
-
-                        <label for="position">Position Level:</label>
-
-                        <select id="position" name="position" required>
-
-                            <option value="">Select Position Level</option>
-
-                            <option value="Senior">Senior</option>
-
-                            <option value="Manager">Manager</option>
-
-                            <option value="Director">Director</option>
-
-                        </select>
-
+                    <div style="flex: 1.5; min-width: 400px; border-left: 1px solid #e0e0e0; padding-left: 20px;">
+                        <h4 style="margin-top: 0; margin-bottom: 12px; font-size: 14px; font-weight: 600; color: #333;">Current Senior Hiring Requests</h4>
+                        <div style="overflow-x: auto; max-height: 480px;">
+                            <table style="width: 100%; border-collapse: collapse; font-size: 10px; text-align: left;">
+                                <thead>
+                                    <tr style="background: #f4f6f9;">
+                                        <th style="padding: 8px; border-bottom: 2px solid #ddd;">Candidate</th>
+                                        <th style="padding: 8px; border-bottom: 2px solid #ddd;">Position</th>
+                                        <th style="padding: 8px; border-bottom: 2px solid #ddd;">Department</th>
+                                        <th style="padding: 8px; border-bottom: 2px solid #ddd;">Proposed Salary</th>
+                                        <th style="padding: 8px; border-bottom: 2px solid #ddd;">HR Recommendation</th>
+                                        <th style="padding: 8px; border-bottom: 2px solid #ddd;">Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="seniorHiringTableBodyModal">
+                                    <tr>
+                                        <td colspan="5" style="text-align: center; padding: 12px; color: #888;">Loading requests...</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
-
-                    <div class="form-group">
-
-                        <label for="department">Department:</label>
-
-                        <select id="department" name="department" required>
-
-                            <option value="">Select Department</option>
-
-                            <option value="HR">HR</option>
-
-                            <option value="FINANCE">Finance</option>
-
-                            <option value="PROJECT">Project</option>
-
-                            <option value="HSE">HSE</option>
-
-                            <option value="REALESTATE">Real Estate</option>
-
-                            <option value="ADMIN">Admin</option>
-
-                        </select>
-
-                    </div>
-
-                    <div class="form-group">
-
-                        <label for="proposedSalary">Proposed Salary:</label>
-
-                        <input type="text" id="proposedSalary" name="proposedSalary" placeholder="e.g., TZS 3,000,000" required>
-
-                    </div>
-
-                    <div class="form-group">
-
-                        <label for="experience">Experience:</label>
-
-                        <textarea id="experience" name="experience" rows="3" placeholder="Candidate's experience and qualifications" required></textarea>
-
-                    </div>
-
-                    <div class="form-group">
-
-                        <label for="recommendation">HR Recommendation:</label>
-
-                        <textarea id="recommendation" name="recommendation" rows="3" placeholder="HR recommendation and assessment" required></textarea>
-
-                    </div>
-
-                    <div class="form-actions">
-
-                        <button type="submit" class="btn btn-primary">Submit Request</button>
-
-                        <button type="button" onclick="closeForm()" class="btn btn-secondary">Cancel</button>
-
-                    </div>
-
-                </form>
-
+                </div>
             </div>
-
         </div>
-
     `;
 
     document.body.insertAdjacentHTML('beforeend', formHTML);
 
-    
+    // Helper function to load hiring requests for modal
+    const loadSeniorHiringRequestsForModal = async () => {
+        try {
+            const baseUrl = window.location.origin;
+            const response = await fetch(`${baseUrl}/api/senior-hiring`, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    'Authorization': `Bearer ${sessionManager.getAuthToken()}`
+                }
+            });
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            }
+            const data = await response.json();
+            const tbody = document.getElementById('seniorHiringTableBodyModal');
+            if (!tbody) return;
+
+            if (!data || !Array.isArray(data) || data.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 12px; color: #888;">No hiring requests found</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = data.map(request => {
+                const salary = request.proposed_salary ? 
+                    (request.proposed_salary.startsWith('TZS') ? request.proposed_salary : `TZS ${parseInt(request.proposed_salary).toLocaleString()}`) : 
+                    'N/A';
+                const status = (request.status || 'pending').toLowerCase();
+                const reason = request.reason || request.rejection_reason || request.approval_reason || '';
+                let statusBadge = '';
+                if (status === 'approved') {
+                    statusBadge = `<span style="display:inline-block;padding:3px 8px;border-radius:12px;background:#28a745;color:#fff;font-size:8px;font-weight:700;letter-spacing:0.5px;">✔ Approved</span>`;
+                } else if (status === 'rejected') {
+                    statusBadge = `<span style="display:inline-block;padding:3px 8px;border-radius:12px;background:#dc3545;color:#fff;font-size:8px;font-weight:700;letter-spacing:0.5px;" title="${reason}">✖ Rejected</span>${reason ? `<br><span style="font-size:8px;color:#dc3545;display:block;margin-top:2px;max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${reason}">Reason: ${reason}</span>` : ''}`;
+                } else if (status === 'request_info' || status === 'request info' || status === 'info_requested') {
+                    statusBadge = `<span style="display:inline-block;padding:3px 8px;border-radius:12px;background:#fd7e14;color:#fff;font-size:8px;font-weight:700;letter-spacing:0.5px;" title="${reason}">⚠ Info Requested</span>${reason ? `<br><span style="font-size:8px;color:#fd7e14;display:block;margin-top:2px;max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${reason}">Reason: ${reason}</span>` : ''}`;
+                } else {
+                    statusBadge = `<span style="display:inline-block;padding:3px 8px;border-radius:12px;background:#6c757d;color:#fff;font-size:8px;font-weight:700;letter-spacing:0.5px;">⏳ Pending</span>`;
+                }
+                return `
+                    <tr>
+                        <td style="padding: 8px; border-bottom: 1px solid #eee;"><strong>${request.candidate_name || 'N/A'}</strong></td>
+                        <td style="padding: 8px; border-bottom: 1px solid #eee;">${request.position || 'N/A'}</td>
+                        <td style="padding: 8px; border-bottom: 1px solid #eee;"><span class="badge" style="background:#0b3d91;color:white;font-size:8px;">${request.department || 'N/A'}</span></td>
+                        <td style="padding: 8px; border-bottom: 1px solid #eee;">${salary}</td>
+                        <td style="padding: 8px; border-bottom: 1px solid #eee; max-width: 150px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${request.hr_recommendation || ''}">${request.hr_recommendation || 'N/A'}</td>
+                        <td style="padding: 8px; border-bottom: 1px solid #eee;">${statusBadge}</td>
+                    </tr>
+                `;
+            }).join('');
+        } catch (error) {
+            console.error('Error loading senior hiring requests for modal:', error);
+            const tbody = document.getElementById('seniorHiringTableBodyModal');
+            if (tbody) {
+                tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 12px; color: #dc3545;">Error loading requests</td></tr>';
+            }
+        }
+    };
+
+    // Load initial data
+    setTimeout(loadSeniorHiringRequestsForModal, 50);
 
     // Add form submission handler
-
     setTimeout(() => {
-
         const seniorForm = document.getElementById('seniorRolesForm');
-
         if (seniorForm) {
-
             seniorForm.addEventListener('submit', async function(e) {
-
                 e.preventDefault();
-
-                console.log('ðŸ‘” Senior hiring form submitted');
-
-                
+                console.log('Senior hiring form submitted');
 
                 // Validate required fields
-
                 const candidateName = document.getElementById('candidateName').value.trim();
-
                 const position = document.getElementById('position').value.trim();
-
                 const department = document.getElementById('department').value.trim();
-
                 const proposedSalary = document.getElementById('proposedSalary').value.trim();
-
                 const experience = document.getElementById('experience').value.trim();
-
                 const recommendation = document.getElementById('recommendation').value.trim();
 
-                
-
                 if (!candidateName || !position || !department || !proposedSalary || !experience || !recommendation) {
-
                     showNotification('Please fill in all required fields', 'error');
-
                     return;
-
                 }
 
-                
-
                 const formData = {
-
                     candidateName,
-
                     position,
-
                     department,
-
                     proposedSalary,
-
                     experience,
-
                     recommendation,
-
                     requestedBy: 'HR Manager',
-
                     requestedByRole: 'HR'
-
                 };
 
-                
-
-                console.log('ðŸ“ Senior hiring form data:', formData);
-
-                
+                console.log('Senior hiring form data:', formData);
 
                 try {
-
                     const submitBtn = seniorForm.querySelector('button[type="submit"]');
-
                     const originalText = submitBtn.textContent;
-
                     submitBtn.textContent = 'Saving...';
-
                     submitBtn.disabled = true;
-
-                    
 
                     await window.apiService.saveSeniorHiringRequest(formData);
 
-                    
-
                     showNotification('Senior hiring request submitted successfully!', 'success');
-
-                    closeForm();
-
                     seniorForm.reset();
-
-                    
-
+                    await loadSeniorHiringRequestsForModal();
                 } catch (error) {
-
                     console.error('Error saving senior hiring request:', error);
-
                     showNotification('Error saving senior hiring request. Please try again.', 'error');
-
                 } finally {
-
                     const submitBtn = seniorForm.querySelector('button[type="submit"]');
-
-                    submitBtn.textContent = 'Submit Request';
-
-                    submitBtn.disabled = false;
-
+                    if (submitBtn) {
+                        submitBtn.textContent = 'Submit Request';
+                        submitBtn.disabled = false;
+                    }
                 }
-
             });
-
         }
-
     }, 100);
-
 }
-
-
-
-// Function to show Suggestions Management form
 
 function showSuggestionsManagement() {
     const contentArea = document.getElementById('contentArea');

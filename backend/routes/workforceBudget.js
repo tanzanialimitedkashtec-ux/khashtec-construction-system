@@ -18,10 +18,29 @@ router.get('/', async (req, res) => {
     console.log('📝 GET /api/workforce-budget accessed');
     try {
         const rows = await db.execute(`
-            SELECT id, budget_period, total_proposed, salaries_wages, training_development, 
-                   employee_benefits, recruitment_costs, submitted_by, submitted_by_role, 
-                   current_headcount, justification, status, submission_date,
-                   approved_by, approved_date, rejection_reason, modification_request
+            SELECT 
+                id,
+                department,
+                budget_period,
+                total_proposed,
+                salaries_wages,
+                employee_benefits,
+                recruitment_costs,
+                training_development,
+                travel_transport,
+                miscellaneous,
+                justification,
+                submitted_by,
+                submitted_by_role,
+                submission_date,
+                submission_date AS start_date,
+                approved_date AS end_date,
+                status,
+                approved_by,
+                approved_date,
+                rejection_reason,
+                modification_request,
+                current_headcount
             FROM workforce_budgets 
             ORDER BY submission_date DESC
         `);
@@ -36,14 +55,29 @@ router.get('/', async (req, res) => {
     }
 });
 
+
 // GET by ID route - fetch specific workforce budget
 router.get('/:id', async (req, res) => {
     console.log('?? GET /api/workforce-budget/:id accessed with id:', req.params.id);
     try {
         const rows = await db.execute(`
-            SELECT id, budget_period as department, total_proposed as total_budget, salaries_wages, training_development, 
-                   employee_benefits, recruitment_costs, status, submission_date,
-                   approved_by, approved_date as approval_date, justification
+            SELECT 
+                id, 
+                department, 
+                budget_period, 
+                total_proposed as total_budget, 
+                salaries_wages, 
+                training_development, 
+                employee_benefits, 
+                recruitment_costs, 
+                travel_transport,
+                miscellaneous,
+                status, 
+                submission_date,
+                approved_by, 
+                approved_date as approval_date, 
+                justification,
+                current_headcount
             FROM workforce_budgets 
             WHERE id = ?
         `, [req.params.id]);
@@ -72,13 +106,16 @@ router.post('/', async (req, res) => {
             training_development,
             employee_benefits,
             recruitment_costs,
+            travel_transport,
+            miscellaneous,
             justification,
             submitted_by,
             budget_period
         } = req.body;
         
         // Validate required fields
-        if (!department || !total_budget || !salaries_wages || !training_development || !employee_benefits || !recruitment_costs) {
+        const isMissing = (val) => val === undefined || val === null || val === '';
+        if (isMissing(department) || isMissing(total_budget) || isMissing(salaries_wages) || isMissing(training_development) || isMissing(employee_benefits) || isMissing(recruitment_costs)) {
             return res.status(400).json({
                 error: 'Missing required fields',
                 required: ['department', 'total_budget', 'salaries_wages', 'training_development', 'employee_benefits', 'recruitment_costs']
@@ -88,21 +125,24 @@ router.post('/', async (req, res) => {
         // Generate unique budget ID
         const budgetId = `BUD-${Date.now()}-${Math.random().toString(36).substr(2, 9).toUpperCase()}`;
         
-        // Insert new budget
+        // Insert new budget — store department in its own column and budget_period separately
         const result = await db.execute(`
             INSERT INTO workforce_budgets (
-                id, budget_period, total_proposed, salaries_wages, training_development,
-                employee_benefits, recruitment_costs, status, submission_date,
+                id, department, budget_period, total_proposed, salaries_wages, training_development,
+                employee_benefits, recruitment_costs, travel_transport, miscellaneous, status, submission_date,
                 justification, submitted_by, submitted_by_role, created_at, updated_at
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, 'pending', CURDATE(), ?, ?, ?, NOW(), NOW())
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'Pending', CURDATE(), ?, ?, ?, NOW(), NOW())
         `, [
             budgetId,
+            department,
             budget_period || 'monthly',
             total_budget,
             salaries_wages,
             training_development,
             employee_benefits,
             recruitment_costs,
+            travel_transport || 0,
+            miscellaneous || 0,
             justification || 'No justification provided',
             submitted_by || 'Finance Manager',
             'Finance Manager'
@@ -138,9 +178,9 @@ router.post('/:id/approve', async (req, res) => {
         // Update workforce_budgets table
         const result = await db.execute(`
             UPDATE workforce_budgets 
-            SET status = 'approved', approved_by = ?, approved_date = ?
+            SET status = 'Approved', approved_by = ?, approved_date = ?, rejection_reason = NULL, modification_request = NULL
             WHERE id = ?
-        `, [approvedBy, new Date().toISOString().split('T')[0], req.params.id]);
+        `, [approvedBy, approvalDate, req.params.id]);
         
         if (result.affectedRows === 0) {
             return res.status(404).json({
@@ -171,28 +211,34 @@ router.post('/:id/reject', async (req, res) => {
         const { rejection_reason } = req.body;
         const rejectedBy = req.body.rejected_by || 'Managing Director';
         const rejectedDate = new Date().toISOString().split('T')[0];
+        const reason = rejection_reason || 'Budget does not meet requirements';
         
-        // Insert into workforce_budget_rejections table
-        await db.execute(`
-            INSERT INTO workforce_budget_rejections 
-            (budget_id, rejection_reason, rejected_by, rejection_date)
-            VALUES (?, ?, ?, ?)
-        `, [req.params.id, rejection_reason || 'Budget does not meet requirements', rejectedBy, rejectedDate]);
-        
-        // Update main budget status
+        // Update main budget status AND store the rejection reason directly
         await db.execute(`
             UPDATE workforce_budgets 
-            SET status = 'rejected'
+            SET status = 'Rejected', rejection_reason = ?
             WHERE id = ?
-        `, [req.params.id]);
+        `, [reason, req.params.id]);
+
+        // Also insert into workforce_budget_rejections table if it exists
+        try {
+            await db.execute(`
+                INSERT INTO workforce_budget_rejections 
+                (budget_id, rejection_reason, rejected_by, rejection_date)
+                VALUES (?, ?, ?, ?)
+            `, [req.params.id, reason, rejectedBy, rejectedDate]);
+        } catch (tableErr) {
+            // Table may not exist — not fatal
+            console.warn('workforce_budget_rejections insert skipped:', tableErr.message);
+        }
         
         console.log('✅ Workforce budget rejected successfully');
         
         res.json({
             message: 'Workforce budget rejected successfully',
             budget_id: req.params.id,
-            status: 'rejected',
-            rejection_reason: rejection_reason || 'Budget does not meet requirements',
+            status: 'Rejected',
+            rejection_reason: reason,
             rejected_by: rejectedBy,
             rejected_date: rejectedDate,
             timestamp: new Date().toISOString()
@@ -203,35 +249,41 @@ router.post('/:id/reject', async (req, res) => {
     }
 });
 
-// POST modify budget
+// POST modify budget (info request)
 router.post('/:id/modify', async (req, res) => {
     try {
         console.log('🔄 Requesting modification for workforce budget:', req.params.id);
         const { modification_request } = req.body;
         const requestedBy = req.body.requested_by || 'Managing Director';
         const requestedDate = new Date().toISOString().split('T')[0];
+        const reason = modification_request || 'Please provide additional details';
         
-        // Insert into workforce_budget_modifications table
-        await db.execute(`
-            INSERT INTO workforce_budget_modifications 
-            (budget_id, modification_request, requested_by, request_date, status)
-            VALUES (?, ?, ?, ?, 'pending')
-        `, [req.params.id, modification_request || 'Please provide additional details', requestedBy, requestedDate]);
-        
-        // Update main budget status
+        // Update main budget status AND store the modification_request directly
         await db.execute(`
             UPDATE workforce_budgets 
-            SET status = 'pending'
+            SET status = 'Modification Requested', modification_request = ?
             WHERE id = ?
-        `, [req.params.id]);
+        `, [reason, req.params.id]);
+
+        // Also insert into workforce_budget_modifications table if it exists
+        try {
+            await db.execute(`
+                INSERT INTO workforce_budget_modifications 
+                (budget_id, modification_request, requested_by, request_date, status)
+                VALUES (?, ?, ?, ?, 'pending')
+            `, [req.params.id, reason, requestedBy, requestedDate]);
+        } catch (tableErr) {
+            // Table may not exist — not fatal
+            console.warn('workforce_budget_modifications insert skipped:', tableErr.message);
+        }
         
         console.log('✅ Workforce budget modification requested successfully');
         
         res.json({
             message: 'Workforce budget modification requested successfully',
             budget_id: req.params.id,
-            status: 'pending',
-            modification_request: modification_request || 'Please provide additional details',
+            status: 'Modification Requested',
+            modification_request: reason,
             requested_by: requestedBy,
             requested_date: requestedDate,
             timestamp: new Date().toISOString()

@@ -29,7 +29,18 @@ db.connect().then(connected => {
 });
 
 // Middleware
-app.use(helmet());
+app.use(helmet({
+    contentSecurityPolicy: {
+        directives: {
+            defaultSrc: ["'self'"],
+            scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'", "https://cdnjs.cloudflare.com"],
+            styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com", "https://cdnjs.cloudflare.com"],
+            fontSrc: ["'self'", "https://fonts.gstatic.com", "https://cdnjs.cloudflare.com"],
+            imgSrc: ["'self'", "data:", "https:"],
+            connectSrc: ["'self'", "https://khashtec-construction-system-production-e297.up.railway.app"]
+        }
+    }
+}));
 app.use(cors());
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
@@ -958,8 +969,8 @@ app.post('/api/senior-hiring/:id/request-info', async (req, res) => {
             // Insert info request
             await db.execute(`
                 INSERT INTO senior_hiring_info_request 
-                (hiring_request_id, info_request, requested_by, requested_date, status)
-                VALUES (?, ?, ?, ?, 'pending')
+                (request_id, info_request, requested_by, request_date)
+                VALUES (?, ?, ?, ?)
             `, [req.params.id, info_request || 'Please provide additional information', requested_by || 'Managing Director', requestedDate]);
             
             // Update main request status
@@ -1100,7 +1111,6 @@ app.get('/api/senior-hiring', async (req, res) => {
                 SELECT id, candidate_name, position, department, proposed_salary, experience, 
                        hr_recommendation, status, request_date, approval_date, approved_by
                 FROM senior_hiring_approval 
-                WHERE status = 'pending'
                 ORDER BY request_date DESC
             `);
             

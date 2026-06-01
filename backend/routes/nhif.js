@@ -1,14 +1,15 @@
 const express = require('express');
 const router = express.Router();
-const db = require('../src/config/database');
+const db = require('../../database/config/database');
 
 // Get all NHIF records
 router.get('/', async (req, res) => {
     try {
-        const [nhifRecords] = await db.execute(`
-            SELECT n.*, e.full_name as employee_name, e.employee_id
+        const nhifRecords = await db.execute(`
+            SELECT n.*, ed.full_name as employee_name, e.employee_id
             FROM nhif_contributions n
             LEFT JOIN employees e ON n.employee_id = e.id
+            LEFT JOIN employee_details ed ON e.id = ed.employee_id
             ORDER BY n.contribution_month DESC
         `);
         
@@ -30,10 +31,11 @@ router.get('/employee/:employeeId', async (req, res) => {
     try {
         const { employeeId } = req.params;
         
-        const [nhifRecords] = await db.execute(`
-            SELECT n.*, e.full_name as employee_name, e.employee_id
+        const nhifRecords = await db.execute(`
+            SELECT n.*, ed.full_name as employee_name, e.employee_id
             FROM nhif_contributions n
             LEFT JOIN employees e ON n.employee_id = e.id
+            LEFT JOIN employee_details ed ON e.id = ed.employee_id
             WHERE n.employee_id = ?
             ORDER BY n.contribution_month DESC
         `, [employeeId]);
@@ -74,10 +76,19 @@ router.post('/', async (req, res) => {
             });
         }
 
+        // Format contribution month (append -01 to make it a valid DATE format for MySQL)
+        let formattedMonth = contributionMonth;
+        if (contributionMonth && contributionMonth.length === 7) {
+            formattedMonth = `${contributionMonth}-01`;
+        }
+
+        // Validate that submittedBy is a valid integer for the FOREIGN KEY users(id) relation
+        const submittedById = (submittedBy && !isNaN(parseInt(submittedBy, 10))) ? parseInt(submittedBy, 10) : null;
+
         // Calculate total if not provided
         const total = totalContribution || (parseFloat(employeeContribution) + parseFloat(employerContribution));
 
-        const [result] = await db.execute(`
+        const result = await db.execute(`
             INSERT INTO nhif_contributions (
                 employee_id, contribution_month, employee_contribution, 
                 employer_contribution, total_contribution, payment_status, 
@@ -85,32 +96,39 @@ router.post('/', async (req, res) => {
             ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())
         `, [
             employeeId,
-            contributionMonth,
+            formattedMonth,
             employeeContribution,
             employerContribution,
             total,
             paymentStatus || 'Pending',
             paymentDate || null,
             receiptNumber || null,
-            submittedBy || null
+            submittedById
         ]);
+
+        const insertId = result.insertId || (Array.isArray(result) ? result[0].insertId : null);
 
         // Get the created NHIF record
-        const [newRecord] = await db.execute(`
-            SELECT n.*, e.full_name as employee_name, e.employee_id
+        const newRecord = await db.execute(`
+            SELECT n.*, ed.full_name as employee_name, e.employee_id
             FROM nhif_contributions n
             LEFT JOIN employees e ON n.employee_id = e.id
+            LEFT JOIN employee_details ed ON e.id = ed.employee_id
             WHERE n.id = ?
-        `, [result.insertId]);
+        `, [insertId]);
 
         // Create notification for Finance department
-        await db.execute(`
-            INSERT INTO notifications (title, message, type, priority, recipient_id, created_at)
-            VALUES (?, ?, 'info', 'Medium', NULL, NOW())
-        `, [
-            'New NHIF Contribution Recorded',
-            `NHIF contribution of ${total} recorded for employee ID: ${employeeId}`
-        ]);
+        try {
+            await db.execute(`
+                INSERT INTO notifications (title, message, type, priority, recipient_id, created_at)
+                VALUES (?, ?, 'info', 'Medium', NULL, NOW())
+            `, [
+                'New NHIF Contribution Recorded',
+                `NHIF contribution of ${total} recorded for employee ID: ${employeeId}`
+            ]);
+        } catch (notifErr) {
+            console.error('Error creating notification:', notifErr);
+        }
 
         res.json({
             success: true,
@@ -138,14 +156,18 @@ router.put('/:id/payment', async (req, res) => {
             });
         }
 
-        const [result] = await db.execute(`
+        const updatedById = (updatedBy && !isNaN(parseInt(updatedBy, 10))) ? parseInt(updatedBy, 10) : null;
+
+        const result = await db.execute(`
             UPDATE nhif_contributions 
             SET payment_status = ?, payment_date = ?, receipt_number = ?, 
                 updated_by = ?, updated_at = NOW()
             WHERE id = ?
-        `, [paymentStatus, paymentDate || null, receiptNumber || null, updatedBy || null, id]);
+        `, [paymentStatus, paymentDate || null, receiptNumber || null, updatedById, id]);
 
-        if (result.affectedRows === 0) {
+        const affectedRows = result.affectedRows || (Array.isArray(result) ? result[0].affectedRows : 0);
+
+        if (affectedRows === 0) {
             return res.status(404).json({
                 success: false,
                 error: 'NHIF record not found'
@@ -153,10 +175,11 @@ router.put('/:id/payment', async (req, res) => {
         }
 
         // Get updated record
-        const [updatedRecord] = await db.execute(`
-            SELECT n.*, e.full_name as employee_name, e.employee_id
+        const updatedRecord = await db.execute(`
+            SELECT n.*, ed.full_name as employee_name, e.employee_id
             FROM nhif_contributions n
             LEFT JOIN employees e ON n.employee_id = e.id
+            LEFT JOIN employee_details ed ON e.id = ed.employee_id
             WHERE n.id = ?
         `, [id]);
 
@@ -176,13 +199,13 @@ router.put('/:id/payment', async (req, res) => {
 // Get NHIF summary
 router.get('/summary', async (req, res) => {
     try {
-        const [summary] = await db.execute(`
+        const summary = await db.execute(`
             SELECT 
                 COUNT(*) as total_contributions,
-                SUM(total_contribution) as total_amount,
-                SUM(CASE WHEN payment_status = 'Paid' THEN total_contribution ELSE 0 END) as paid_amount,
-                SUM(CASE WHEN payment_status = 'Pending' THEN total_contribution ELSE 0 END) as pending_amount,
-                SUM(CASE WHEN payment_status = 'Overdue' THEN total_contribution ELSE 0 END) as overdue_amount,
+                COALESCE(SUM(total_contribution), 0) as total_amount,
+                COALESCE(SUM(CASE WHEN payment_status = 'Paid' THEN total_contribution ELSE 0 END), 0) as paid_amount,
+                COALESCE(SUM(CASE WHEN payment_status = 'Pending' THEN total_contribution ELSE 0 END), 0) as pending_amount,
+                COALESCE(SUM(CASE WHEN payment_status = 'Overdue' THEN total_contribution ELSE 0 END), 0) as overdue_amount,
                 COUNT(CASE WHEN payment_status = 'Paid' THEN 1 END) as paid_count,
                 COUNT(CASE WHEN payment_status = 'Pending' THEN 1 END) as pending_count,
                 COUNT(CASE WHEN payment_status = 'Overdue' THEN 1 END) as overdue_count
@@ -207,9 +230,11 @@ router.delete('/:id', async (req, res) => {
     try {
         const { id } = req.params;
 
-        const [result] = await db.execute('DELETE FROM nhif_contributions WHERE id = ?', [id]);
+        const result = await db.execute('DELETE FROM nhif_contributions WHERE id = ?', [id]);
 
-        if (result.affectedRows === 0) {
+        const affectedRows = result.affectedRows || (Array.isArray(result) ? result[0].affectedRows : 0);
+
+        if (affectedRows === 0) {
             return res.status(404).json({
                 success: false,
                 error: 'NHIF record not found'

@@ -2090,6 +2090,153 @@ function showRevisionModal(title, message, callback) {
     }
 }
 
+// Custom Rejection Modal for policies and senior hiring to avoid global collisions
+function showCustomRejectionModal(title, message, callback) {
+    // Create modal overlay
+    const modalOverlay = document.createElement('div');
+    modalOverlay.className = 'modal-overlay';
+    modalOverlay.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 10000;
+    `;
+    
+    // Create modal content
+    const modalContent = document.createElement('div');
+    modalContent.className = 'modal-content';
+    modalContent.style.cssText = `
+        background: white;
+        padding: 30px;
+        border-radius: 10px;
+        max-width: 500px;
+        width: 90%;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        animation: modalSlideIn 0.3s ease-out;
+    `;
+    
+    modalContent.innerHTML = `
+        <h3 style="margin: 0 0 20px 0; color: #dc3545;">${title}</h3>
+        <p style="margin: 0 0 20px 0; color: #666;">${message}</p>
+        <textarea id="customRejectionReason" rows="4" style="
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            font-size: 14px;
+            resize: vertical;
+            box-sizing: border-box;
+        " placeholder="Enter rejection reason..."></textarea>
+        <div style="margin-top: 20px; text-align: right;">
+            <button id="cancelCustomRejection" style="
+                background: #6c757d;
+                color: white;
+                border: none;
+                padding: 10px 20px;
+                margin-right: 10px;
+                border-radius: 5px;
+                cursor: pointer;
+                font-size: 14px;
+            ">Cancel</button>
+            <button id="confirmCustomRejection" style="
+                background: #dc3545;
+                color: white;
+                border: none;
+                padding: 10px 20px;
+                border-radius: 5px;
+                cursor: pointer;
+                font-size: 14px;
+            ">Reject</button>
+        </div>
+    `;
+    
+    // Add animation styles
+    const style = document.createElement('style');
+    style.textContent = `
+        @keyframes modalSlideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        .modal-overlay {
+            animation: fadeIn 0.3s ease-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        #customRejectionReason:focus {
+            outline: none;
+            border-color: #dc3545;
+            box-shadow: 0 0 5px rgba(220, 53, 69, 0.3);
+        }
+        #confirmCustomRejection:hover {
+            background: #bd2130;
+        }
+        #cancelCustomRejection:hover {
+            background: #5a6268;
+        }
+    `;
+    
+    modalOverlay.appendChild(modalContent);
+    document.head.appendChild(style);
+    document.body.appendChild(modalOverlay);
+    
+    // Add event listeners
+    const confirmBtn = modalContent.querySelector('#confirmCustomRejection');
+    const cancelBtn = modalContent.querySelector('#cancelCustomRejection');
+    const textarea = modalContent.querySelector('#customRejectionReason');
+    
+    // Auto-focus textarea
+    setTimeout(() => textarea.focus(), 100);
+    
+    // Handle confirm
+    confirmBtn.addEventListener('click', () => {
+        const reason = textarea.value.trim();
+        if (reason) {
+            callback(reason);
+            closeModal();
+        } else {
+            showNotification('Please enter rejection reason details', 'warning', 3000);
+            textarea.focus();
+        }
+    });
+    
+    // Handle cancel
+    cancelBtn.addEventListener('click', closeModal);
+    
+    // Handle escape key
+    document.addEventListener('keydown', function handleEscape(e) {
+        if (e.key === 'Escape') {
+            closeModal();
+            document.removeEventListener('keydown', handleEscape);
+        }
+    });
+    
+    // Handle overlay click
+    modalOverlay.addEventListener('click', (e) => {
+        if (e.target === modalOverlay) {
+            closeModal();
+        }
+    });
+    
+    function closeModal() {
+        modalOverlay.remove();
+        style.remove();
+    }
+}
+
 async function loadPolicies() {
     try {
         console.log('🔍 Loading policies...');
@@ -2157,6 +2304,9 @@ function displayPolicies(policies) {
                                         <span class="status-badge" style="background: ${statusColor}; color: white; padding: 2px 8px; border-radius: 4px; font-size: 12px;">${policy.status}</span>
                                 </div>
                                 <div class="policy-actions">
+                                        <button class="action" onclick="approvePolicy('${policy.id}')" style="background: #28a745; color: white;">Approve Policy</button>
+                                        <button class="action" onclick="requestPolicyRevision('${policy.id}')" style="background: #ffc107; color: black;">Request Revision</button>
+                                        <button class="action" onclick="rejectPolicy('${policy.id}')" style="background: #dc3545; color: white;">Reject</button>
                                         <button class="action" onclick="deletePolicyById('${policy.id}')" style="background: #dc3545; color: white;">Delete</button>
                                 </div>
                         </div>
@@ -2226,13 +2376,14 @@ function displaySeniorHiringRequests(requests) {
                             <th>Department</th>
                             <th>Experience</th>
                             <th>HR Recommendation</th>
+                            <th>Status / Reason</th>
                             <th>Actions</th>
                         </tr>
                     </thead>
                     <tbody>`;
 
     if (!requests || requests.length === 0) {
-        html += `<tr><td colspan="7" style="text-align: center; padding: 20px;">No senior hiring requests pending approval.</td></tr>`;
+        html += `<tr><td colspan="8" style="text-align: center; padding: 20px;">No senior hiring requests pending approval.</td></tr>`;
     } else {
         requests.forEach(request => {
             const position = escapeHtml(request.position || request.position_level || 'Position not specified');
@@ -2244,6 +2395,37 @@ function displaySeniorHiringRequests(requests) {
             const department = escapeHtml(request.department || 'N/A');
             const experience = escapeHtml(request.experience || 'N/A');
             const recommendation = escapeHtml(request.hr_recommendation || request.recommendation || 'No recommendation provided');
+            const status = request.status ? request.status.toLowerCase() : 'pending';
+            const rejectionReason = escapeHtml(request.rejection_reason || '');
+            const infoReason = escapeHtml(request.info_request_reason || '');
+
+            // Build Status / Reason cell
+            let statusHtml = '';
+            if (status === 'approved') {
+                statusHtml = `<span style="background:#28a745;color:white;padding:4px 10px;border-radius:4px;font-size:11px;font-weight:bold;display:inline-block;">✅ Approved</span>`;
+            } else if (status === 'rejected') {
+                statusHtml = `<span style="background:#dc3545;color:white;padding:4px 10px;border-radius:4px;font-size:11px;font-weight:bold;display:inline-block;">❌ Rejected</span>`
+                    + (rejectionReason ? `<br><em style="font-size:10px;color:#dc3545;display:block;margin-top:4px;">${rejectionReason}</em>` : '');
+            } else if (status === 'info_requested' || status === 'info-requested') {
+                statusHtml = `<span style="background:#17a2b8;color:white;padding:4px 10px;border-radius:4px;font-size:11px;font-weight:bold;display:inline-block;">⚠️ Info Requested</span>`
+                    + (infoReason ? `<br><em style="font-size:10px;color:#17a2b8;display:block;margin-top:4px;">${infoReason}</em>` : '');
+            } else {
+                statusHtml = `<span style="background:#6c757d;color:white;padding:4px 10px;border-radius:4px;font-size:11px;font-weight:bold;display:inline-block;">⏳ Pending</span>`;
+            }
+
+            // Build Actions cell — buttons only for pending
+            let actionHtml = '';
+            if (status === 'pending') {
+                actionHtml = `
+                                <div class="hiring-table-actions">
+                                    <button class="btn-approve" onclick="approveSeniorHire('${escapeHtml(request.id)}')">✓ Approve</button>
+                                    <button class="btn-request-info" onclick="requestMoreInfo('${escapeHtml(request.id)}')">? Info</button>
+                                    <button class="btn-reject" onclick="rejectSeniorHire('${escapeHtml(request.id)}')">✗ Reject</button>
+                                </div>
+                `;
+            } else {
+                actionHtml = '<span style="color:#aaa;font-size:11px;">—</span>';
+            }
 
             html += `
                         <tr class="hiring-request">
@@ -2253,13 +2435,8 @@ function displaySeniorHiringRequests(requests) {
                             <td>${department}</td>
                             <td>${experience}</td>
                             <td>${recommendation}</td>
-                            <td>
-                                <div class="hiring-table-actions">
-                                    <button class="btn-approve" onclick="approveSeniorHire('${escapeHtml(request.id)}')">✓ Approve</button>
-                                    <button class="btn-request-info" onclick="requestMoreInfo('${escapeHtml(request.id)}')">? Info</button>
-                                    <button class="btn-reject" onclick="rejectSeniorHire('${escapeHtml(request.id)}')">✗ Reject</button>
-                                </div>
-                            </td>
+                            <td>${statusHtml}</td>
+                            <td>${actionHtml}</td>
                         </tr>`;
         });
     }
@@ -2340,7 +2517,7 @@ async function rejectSeniorHire(requestId) {
         const rejectedBy = currentUser.email || 'HR Manager';
         
         // Show custom rejection modal instead of prompt
-        showRejectionModal('Senior Hiring Rejection', 'Please enter rejection reason:', (rejectionReason) => {
+        showCustomRejectionModal('Senior Hiring Rejection', 'Please enter rejection reason:', (rejectionReason) => {
             if (!rejectionReason) {
                 showNotification('Rejection cancelled', 'info', 2000);
                 return;

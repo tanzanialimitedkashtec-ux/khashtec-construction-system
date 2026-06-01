@@ -407,6 +407,38 @@ router.get('/hse/inspections', async (req, res) => {
     }
 });
 
+// Get single inspection record by ID
+router.get('/hse/inspections/:id', async (req, res) => {
+    try {
+        const { id } = req.params;
+        console.log(`🔍 Fetching HSE inspection record #${id}...`);
+        const dbRecords = await db.execute('SELECT * FROM hse_work WHERE id = ?', [id]);
+        const records = Array.isArray(dbRecords) ? dbRecords : [];
+        if (records.length === 0) {
+            return res.status(404).json({ error: 'Inspection record not found' });
+        }
+        console.log(`✅ Found inspection record #${id}`);
+        res.json({ work: records[0] });
+    } catch (error) {
+        console.error('❌ Error fetching inspection record:', error);
+        res.status(500).json({ error: 'Failed to fetch inspection record', details: error.message });
+    }
+});
+
+// Delete inspection record by ID
+router.delete('/hse/inspections/:id', async (req, res) => {
+    try {
+        const { id } = req.params;
+        console.log(`🗑️ Deleting HSE inspection record #${id}...`);
+        await db.execute('DELETE FROM hse_work WHERE id = ?', [id]);
+        console.log(`✅ Inspection record #${id} deleted successfully`);
+        res.json({ success: true, message: `Inspection record #${id} deleted successfully` });
+    } catch (error) {
+        console.error('❌ Error deleting inspection record:', error);
+        res.status(500).json({ error: 'Failed to delete inspection record', details: error.message });
+    }
+});
+
 // Get inspection records (general endpoint)
 router.get('/inspections', async (req, res) => {
     try {
@@ -3313,7 +3345,6 @@ router.post('/:department', async (req, res, next) => {
                     'Administrative Operations': 'Administrative Operations',
                     'Compliance Management': 'Compliance Management',
                     'Staff Oversight': 'Staff Oversight',
-                    'Policy Implementation': 'Policy Implementation',
                     'Document Management': 'Document Management',
                     'User Account Management': 'User Account Management',
                     'System Administration': 'System Administration',
