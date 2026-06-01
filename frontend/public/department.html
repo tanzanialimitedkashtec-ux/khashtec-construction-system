@@ -55109,50 +55109,54 @@ function displayInspectionRecords(data) {
     
 
     // Map database fields to display fields and sort records
+    const mappedRecords = records.map(record => {
+        let parsed = {};
+        if (record.work_description && record.work_description.includes('Inspection Report')) {
+            const desc = record.work_description;
+            const extract = (key, nextKey) => {
+                const regex = new RegExp(`${key}:\\s*([\\s\\S]*?)(?:\\n${nextKey}:|$)`);
+                const match = desc.match(regex);
+                return match ? match[1].trim() : null;
+            };
+            
+            parsed.date = extract('Date', 'Project');
+            parsed.project = extract('Project', 'Type');
+            parsed.type = extract('Type', 'Inspector');
+            parsed.inspector = extract('Inspector', 'Areas Inspected');
+            parsed.areas = extract('Areas Inspected', 'Findings');
+            parsed.findings = extract('Findings', 'Compliance Status');
+            parsed.compliance = extract('Compliance Status', 'Risk Level');
+            parsed.riskLevel = extract('Risk Level', 'Recommendations');
+            parsed.recommendations = extract('Recommendations', 'Follow-up Date');
+        }
 
-    const mappedRecords = records.map(record => ({
+        const inspectorFull = parsed.inspector || record.inspector || record.submitted_by || 'Unknown';
+        const inspectorName = inspectorFull.split(' (')[0];
+        const inspectorLicense = inspectorFull.includes('(') ? inspectorFull.split('(')[1].replace(')','') : (record.inspector_license || '');
 
-        id: record.id || `INSP-${Date.now()}`,
-
-        reportId: record.work_title?.split(' - ')[1] || `INSP-${record.id}`,
-
-        date: record.inspection_date || record.submitted_date || record.created_at,
-
-        project: record.project || 'Unknown',
-
-        projectCode: record.project_code || 'PROJ-001',
-
-        inspectionType: record.work_title?.includes('Routine') ? 'Routine Inspection' :
-
-                      record.work_title?.includes('Compliance') ? 'Compliance Audit' :
-
-                      record.work_title?.includes('Accident') ? 'Accident Investigation' :
-
-                      record.work_title?.includes('Equipment') ? 'Equipment Inspection' :
-
-                      record.work_title?.includes('Environmental') ? 'Environmental Inspection' :
-
-                      record.work_title?.includes('Fire') ? 'Fire Safety Inspection' : 'Routine Inspection',
-
-        inspector: record.inspector || record.submitted_by || 'Unknown',
-
-        inspectorLicense: record.inspector_license || '',
-
-        complianceStatus: record.compliance_status || 'minor-issues',
-
-        riskLevel: record.risk_level || 'medium',
-
-        findings: record.work_description || record.findings || 'No findings recorded',
-
-        recommendations: record.recommendations || '',
-
-        followUpDate: record.follow_up_date || '',
-
-        nextInspectionDate: record.next_inspection_date || '',
-
-        areasInspected: record.areas_inspected || ['General Area'] // Default to one area if not specified
-
-    }));
+        return {
+            id: record.id || `INSP-${Date.now()}`,
+            reportId: record.work_title?.split(' - ')[1] || `INSP-${record.id}`,
+            date: parsed.date || record.inspection_date || record.submitted_date || record.created_at,
+            project: parsed.project || record.project || 'Unknown',
+            projectCode: record.project_code || (parsed.project ? `PROJ-${String(parsed.project).padStart(3, '0')}` : 'PROJ-001'),
+            inspectionType: parsed.type || (record.work_title?.includes('Routine') ? 'Routine Inspection' :
+                          record.work_title?.includes('Compliance') ? 'Compliance Audit' :
+                          record.work_title?.includes('Accident') ? 'Accident Investigation' :
+                          record.work_title?.includes('Equipment') ? 'Equipment Inspection' :
+                          record.work_title?.includes('Environmental') ? 'Environmental Inspection' :
+                          record.work_title?.includes('Fire') ? 'Fire Safety Inspection' : 'Routine Inspection'),
+            inspector: inspectorName,
+            inspectorLicense: inspectorLicense,
+            complianceStatus: parsed.compliance || record.compliance_status || 'minor-issues',
+            riskLevel: parsed.riskLevel || record.risk_level || 'medium',
+            findings: parsed.findings || record.work_description || record.findings || 'No findings recorded',
+            recommendations: parsed.recommendations || record.recommendations || '',
+            followUpDate: record.follow_up_date || '',
+            nextInspectionDate: record.next_inspection_date || '',
+            areasInspected: parsed.areas ? parsed.areas.split(', ') : (record.areas_inspected || ['General Area'])
+        };
+    });
 
     
 
