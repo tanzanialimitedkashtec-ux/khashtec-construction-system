@@ -55359,7 +55359,7 @@ async function viewInspectionReport(reportId) {
 
     try {
         const token = sessionManager.getAuthToken();
-        const res = await fetch(`${window.location.origin}/api/hse/work/${reportId}`, {
+        const res = await fetch(`${window.location.origin}/api/work/hse/inspections/${reportId}`, {
             headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' }
         });
         const json = await res.json();
@@ -55484,7 +55484,7 @@ async function deleteInspectionReport(reportId) {
     if (!confirm(`Are you sure you want to delete Inspection Report #${reportId}? This action cannot be undone.`)) return;
     try {
         const token = sessionManager.getAuthToken();
-        const res = await fetch(`${window.location.origin}/api/hse/work/${reportId}`, {
+        const res = await fetch(`${window.location.origin}/api/work/hse/inspections/${reportId}`, {
             method: 'DELETE',
             headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' }
         });
