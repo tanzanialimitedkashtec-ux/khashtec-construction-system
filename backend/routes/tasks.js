@@ -63,19 +63,21 @@ router.get('/', async (req, res) => {
                 SELECT t.*, p.name as project_name, p.project_code 
                 FROM tasks t 
                 LEFT JOIN projects p ON t.project_id = p.id 
-                ORDER BY t.due_date ASC, t.priority DESC
+                ORDER BY t.due_date ASC, t.task_priority DESC
             `);
             
-            // Handle different database response formats
-            if (Array.isArray(tasksResult)) {
-                tasks = tasksResult;
-            } else if (tasksResult && Array.isArray(tasksResult[0])) {
-                tasks = tasksResult[0];
+            // Handle MySQL2 [rows, fields] format — check rows array FIRST
+            if (tasksResult && Array.isArray(tasksResult[0])) {
+                tasks = tasksResult[0];  // MySQL2: [rows, fields] → take rows
             } else if (tasksResult && tasksResult.rows) {
-                tasks = tasksResult.rows;
+                tasks = tasksResult.rows; // PostgreSQL format
+            } else if (Array.isArray(tasksResult)) {
+                tasks = tasksResult;      // direct array fallback
             } else {
                 tasks = [];
             }
+            
+            console.log('✅ Tasks fetched from DB:', tasks.length, 'records');
             
             console.log('✅ Tasks records fetched from database:', tasks.length);
         } catch (dbError) {
