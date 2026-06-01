@@ -82904,9 +82904,54 @@ function filterPayments() {
 
 
 function exportSalesReport() {
+    customAlert('Exporting sales report...\n\nYour PDF will download in a few seconds.', "Exporting PDF", "info");
 
-    customAlert('Exporting sales report...\n\nReport will be downloaded as PDF file with all metrics and charts.', "Export Report", "info");
+    // Check if html2pdf is already loaded
+    if (typeof html2pdf !== 'undefined') {
+        generatePDF();
+    } else {
+        // Dynamically load html2pdf from CDN
+        const script = document.createElement('script');
+        script.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js';
+        script.onload = () => {
+            generatePDF();
+        };
+        script.onerror = () => {
+            customAlert('Failed to load PDF library. Please check your internet connection.', "Error", "error");
+        };
+        document.head.appendChild(script);
+    }
 
+    function generatePDF() {
+        const element = document.querySelector('.report-preview');
+        
+        if (!element) {
+            customAlert('Report content not found!', "Error", "error");
+            return;
+        }
+
+        // Add a temporary title for the PDF
+        const headerTitle = document.createElement('h2');
+        headerTitle.innerText = "KASHTEC TANZANIA LIMITED - SALES REPORT";
+        headerTitle.style.textAlign = 'center';
+        headerTitle.style.color = '#0b3d91';
+        headerTitle.style.marginBottom = '20px';
+        element.insertBefore(headerTitle, element.firstChild);
+
+        const opt = {
+            margin:       10,
+            filename:     `KashTec_Sales_Report_${new Date().toISOString().split('T')[0]}.pdf`,
+            image:        { type: 'jpeg', quality: 0.98 },
+            html2canvas:  { scale: 2, useCORS: true },
+            jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+        };
+
+        // Generate PDF
+        html2pdf().set(opt).from(element).save().then(() => {
+            // Remove the temporary title after generating
+            element.removeChild(headerTitle);
+        });
+    }
 }
 
 
