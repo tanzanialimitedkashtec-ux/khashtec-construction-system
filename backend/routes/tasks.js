@@ -79,143 +79,9 @@ router.get('/', async (req, res) => {
             
             console.log('✅ Tasks records fetched from database:', tasks.length);
         } catch (dbError) {
-            console.error('❌ Database error, using fallback tasks:', dbError);
-            
-            // Fallback to mock tasks data
-            tasks = [
-                {
-                    id: 1,
-                    project_id: 1,
-                    task_name: 'Foundation Excavation',
-                    task_description: 'Excavate foundation area to required depth and prepare for concrete pouring',
-                    assigned_to: 'John Smith',
-                    task_priority: 'High',
-                    task_status: 'In Progress',
-                    start_date: '2026-05-01',
-                    due_date: '2026-05-15',
-                    estimated_hours: 80,
-                    actual_hours: 45,
-                    completion_percentage: 56.25,
-                    required_skills: 'Heavy Equipment Operation, Site Supervision',
-                    task_materials: 'Excavator, Dump Trucks, Safety Equipment',
-                    dependencies: '',
-                    created_by: 'Project Manager',
-                    project_name: 'Dar es Salaam Office Complex',
-                    project_code: 'PRJ-2026-001',
-                    created_at: '2026-04-28T08:00:00Z',
-                    updated_at: '2026-05-04T14:30:00Z'
-                },
-                {
-                    id: 2,
-                    project_id: 1,
-                    task_name: 'Steel Frame Installation',
-                    task_description: 'Install steel frame structure for floors 1-5 of the office building',
-                    assigned_to: 'Sarah Johnson',
-                    task_priority: 'Critical',
-                    task_status: 'Not Started',
-                    start_date: '2026-05-16',
-                    due_date: '2026-06-30',
-                    estimated_hours: 200,
-                    actual_hours: 0,
-                    completion_percentage: 0,
-                    required_skills: 'Welding, Steel Fabrication, Rigging',
-                    task_materials: 'Steel Beams, Welding Equipment, Cranes',
-                    dependencies: 'Foundation Excavation',
-                    created_by: 'Project Manager',
-                    project_name: 'Dar es Salaam Office Complex',
-                    project_code: 'PRJ-2026-001',
-                    created_at: '2026-05-02T10:15:00Z',
-                    updated_at: '2026-05-02T10:15:00Z'
-                },
-                {
-                    id: 3,
-                    project_id: 2,
-                    task_name: 'Electrical Rough-in',
-                    task_description: 'Install electrical conduits and wiring for residential units 1-25',
-                    assigned_to: 'Michael Chen',
-                    task_priority: 'Medium',
-                    task_status: 'In Progress',
-                    start_date: '2026-05-03',
-                    due_date: '2026-06-15',
-                    estimated_hours: 120,
-                    actual_hours: 35,
-                    completion_percentage: 29.17,
-                    required_skills: 'Electrical Work, Conduit Bending',
-                    task_materials: 'Electrical Conduit, Wiring, Junction Boxes',
-                    dependencies: '',
-                    created_by: 'Site Supervisor',
-                    project_name: 'Kigamboni Residential Estate',
-                    project_code: 'PRJ-2026-002',
-                    created_at: '2026-05-01T09:30:00Z',
-                    updated_at: '2026-05-04T16:45:00Z'
-                },
-                {
-                    id: 4,
-                    project_id: 3,
-                    task_name: 'Concrete Floor Pouring',
-                    task_description: 'Pour concrete floors for warehouse facility sections A-D',
-                    assigned_to: 'David Wilson',
-                    task_priority: 'High',
-                    task_status: 'Not Started',
-                    start_date: '2026-05-20',
-                    due_date: '2026-06-10',
-                    estimated_hours: 60,
-                    actual_hours: 0,
-                    completion_percentage: 0,
-                    required_skills: 'Concrete Finishing, Site Preparation',
-                    task_materials: 'Ready Mix Concrete, Trowels, Floats',
-                    dependencies: 'Foundation Excavation',
-                    created_by: 'Project Manager',
-                    project_name: 'Industrial Warehouse Complex',
-                    project_code: 'PRJ-2026-003',
-                    created_at: '2026-05-04T11:20:00Z',
-                    updated_at: '2026-05-04T11:20:00Z'
-                },
-                {
-                    id: 5,
-                    project_id: 4,
-                    task_name: 'Bridge Support Construction',
-                    task_description: 'Construct concrete support pillars for coastal highway bridge',
-                    assigned_to: 'Emily Brown',
-                    task_priority: 'Critical',
-                    task_status: 'Planning',
-                    start_date: '2026-05-25',
-                    due_date: '2026-08-15',
-                    estimated_hours: 300,
-                    actual_hours: 0,
-                    completion_percentage: 0,
-                    required_skills: 'Bridge Construction, Concrete Work',
-                    task_materials: 'Reinforced Concrete, Formwork, Cranes',
-                    dependencies: '',
-                    created_by: 'Infrastructure Manager',
-                    project_name: 'Coastal Highway Bridge',
-                    project_code: 'PRJ-2026-004',
-                    created_at: '2026-05-03T13:45:00Z',
-                    updated_at: '2026-05-03T13:45:00Z'
-                },
-                {
-                    id: 6,
-                    project_id: 5,
-                    task_name: 'Demolition Work',
-                    task_description: 'Demolish existing interior structures for shopping mall renovation',
-                    assigned_to: 'Robert Anderson',
-                    task_priority: 'Medium',
-                    task_status: 'Completed',
-                    start_date: '2026-04-20',
-                    due_date: '2026-05-05',
-                    estimated_hours: 40,
-                    actual_hours: 38,
-                    completion_percentage: 100,
-                    required_skills: 'Demolition, Safety Management',
-                    task_materials: 'Demolition Tools, Safety Equipment, Debris Containers',
-                    dependencies: '',
-                    created_by: 'Renovation Manager',
-                    project_name: 'Shopping Mall Renovation',
-                    project_code: 'PRJ-2026-005',
-                    created_at: '2026-04-18T14:00:00Z',
-                    updated_at: '2026-05-04T09:15:00Z'
-                }
-            ];
+            console.error('❌ Database error fetching tasks:', dbError.message);
+            // Return empty — never show fake/mock data
+            tasks = [];
         }
         
         // Ensure all tasks have proper default values to prevent frontend errors
@@ -282,35 +148,8 @@ router.get('/:id', async (req, res) => {
                 console.log('✅ Task found:', task);
             }
         } catch (dbError) {
-            console.error('❌ Database error, using fallback task:', dbError);
-            
-            // Fallback to mock task data
-            const mockTasks = [
-                {
-                    id: 1,
-                    project_id: 1,
-                    task_name: 'Foundation Excavation',
-                    task_description: 'Excavate foundation area to required depth and prepare for concrete pouring',
-                    assigned_to: 'John Smith',
-                    task_priority: 'High',
-                    task_status: 'In Progress',
-                    start_date: '2026-05-01',
-                    due_date: '2026-05-15',
-                    estimated_hours: 80,
-                    actual_hours: 45,
-                    completion_percentage: 56.25,
-                    required_skills: 'Heavy Equipment Operation, Site Supervision',
-                    task_materials: 'Excavator, Dump Trucks, Safety Equipment',
-                    dependencies: '',
-                    created_by: 'Project Manager',
-                    project_name: 'Dar es Salaam Office Complex',
-                    project_code: 'PRJ-2026-001',
-                    created_at: '2026-04-28T08:00:00Z',
-                    updated_at: '2026-05-04T14:30:00Z'
-                }
-            ];
-            
-            task = mockTasks.find(t => t.id == taskId);
+            console.error('❌ Database error fetching task by ID:', dbError.message);
+            task = null;
         }
         
         if (!task) {
@@ -416,33 +255,11 @@ router.post('/', async (req, res) => {
             });
             
         } catch (dbError) {
-            console.error('❌ Database error, using mock task creation:', dbError);
-            
-            // Fallback to mock task creation
-            const taskId = `TASK${Date.now().toString().slice(-6)}`;
-            
-            res.status(201).json({
-                success: true,
-                message: 'Task created successfully (mock)',
-                taskId: taskId,
-                task: {
-                    id: taskId,
-                    project_id,
-                    task_name,
-                    task_description,
-                    assigned_to,
-                    task_priority: task_priority || 'Medium',
-                    task_status: 'Not Started',
-                    start_date,
-                    due_date,
-                    estimated_hours,
-                    required_skills,
-                    task_materials,
-                    dependencies,
-                    created_by,
-                    created_at: new Date().toISOString(),
-                    mock: true
-                }
+            console.error('❌ Database error creating task:', dbError.message);
+            return res.status(500).json({
+                success: false,
+                error: 'Failed to save task to database',
+                details: dbError.message
             });
         }
         
@@ -504,14 +321,11 @@ router.put('/:id', async (req, res) => {
             });
             
         } catch (dbError) {
-            console.error('❌ Database error, using mock update:', dbError);
-            
-            // Fallback to mock update
-            res.json({
-                success: true,
-                message: 'Task updated successfully (mock)',
-                affected_rows: 1,
-                mock: true
+            console.error('❌ Database error updating task:', dbError.message);
+            return res.status(500).json({
+                success: false,
+                error: 'Failed to update task in database',
+                details: dbError.message
             });
         }
         
@@ -562,17 +376,11 @@ router.delete('/:id', async (req, res) => {
             });
             
         } catch (dbError) {
-            console.error('❌ Database error, using mock delete:', dbError);
-            
-            // Fallback to mock delete
-            res.json({
-                success: true,
-                message: 'Task deleted successfully (mock)',
-                deleted_task: {
-                    id: taskId,
-                    task_name: 'Mock Task'
-                },
-                mock: true
+            console.error('❌ Database error deleting task:', dbError.message);
+            return res.status(500).json({
+                success: false,
+                error: 'Failed to delete task from database',
+                details: dbError.message
             });
         }
         
