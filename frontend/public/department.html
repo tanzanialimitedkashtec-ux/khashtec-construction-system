@@ -82904,54 +82904,56 @@ function filterPayments() {
 
 
 function exportSalesReport() {
-    customAlert('Exporting sales report...\n\nYour PDF will download in a few seconds.', "Exporting PDF", "info");
+    customAlert('Preparing sales report for export...\n\nPlease select "Save as PDF" as your destination in the print dialog.', "Export Report", "info");
+    
+    // Give the alert a second to show, then trigger print
+    setTimeout(() => {
+        // Create a style element for print-specific CSS
+        const style = document.createElement('style');
+        style.id = 'print-style-pdf';
+        style.innerHTML = `
+            @media print {
+                body * {
+                    visibility: hidden;
+                }
+                .report-preview, .report-preview * {
+                    visibility: visible;
+                }
+                .report-preview {
+                    position: absolute;
+                    left: 0;
+                    top: 0;
+                    width: 100%;
+                    margin: 0;
+                    padding: 20px;
+                }
+                /* Hide any action buttons inside the report if they exist */
+                .report-preview button {
+                    display: none !important;
+                }
+            }
+        `;
+        document.head.appendChild(style);
 
-    // Check if html2pdf is already loaded
-    if (typeof html2pdf !== 'undefined') {
-        generatePDF();
-    } else {
-        // Dynamically load html2pdf from CDN
-        const script = document.createElement('script');
-        script.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js';
-        script.onload = () => {
-            generatePDF();
-        };
-        script.onerror = () => {
-            customAlert('Failed to load PDF library. Please check your internet connection.', "Error", "error");
-        };
-        document.head.appendChild(script);
-    }
-
-    function generatePDF() {
+        // Add a temporary title for the printed PDF
         const element = document.querySelector('.report-preview');
-        
-        if (!element) {
-            customAlert('Report content not found!', "Error", "error");
-            return;
-        }
-
-        // Add a temporary title for the PDF
         const headerTitle = document.createElement('h2');
         headerTitle.innerText = "KASHTEC TANZANIA LIMITED - SALES REPORT";
         headerTitle.style.textAlign = 'center';
         headerTitle.style.color = '#0b3d91';
         headerTitle.style.marginBottom = '20px';
-        element.insertBefore(headerTitle, element.firstChild);
+        headerTitle.id = 'print-header-title';
+        if(element) element.insertBefore(headerTitle, element.firstChild);
 
-        const opt = {
-            margin:       10,
-            filename:     `KashTec_Sales_Report_${new Date().toISOString().split('T')[0]}.pdf`,
-            image:        { type: 'jpeg', quality: 0.98 },
-            html2canvas:  { scale: 2, useCORS: true },
-            jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
-        };
+        // Trigger the print dialog
+        window.print();
 
-        // Generate PDF
-        html2pdf().set(opt).from(element).save().then(() => {
-            // Remove the temporary title after generating
+        // Cleanup after printing dialog closes
+        if(element && document.getElementById('print-header-title')) {
             element.removeChild(headerTitle);
-        });
-    }
+        }
+        document.head.removeChild(style);
+    }, 1500);
 }
 
 
