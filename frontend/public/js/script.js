@@ -1701,8 +1701,8 @@ async function approvePolicy(policyId) {
                 // Refresh policies lists
                 setTimeout(() => {
                     loadPolicies();
-                    if (typeof fetchPoliciesForApproval === 'function') fetchPoliciesForApproval();
-                    if (typeof loadPolicyRecords === 'function') loadPolicyRecords();
+                    if (typeof fetchPoliciesForApproval === 'function' && document.getElementById('policies-container')) fetchPoliciesForApproval();
+                    if (typeof loadPolicyRecords === 'function' && document.getElementById('policyRecordsList')) loadPolicyRecords();
                 }, 2000);
         } else {
                 showNotification('Failed to approve policy: ' + result.error, 'error', 5000);
@@ -1815,8 +1815,8 @@ async function processPolicyRejection(policyId, rejectionReason, rejectedBy) {
                 // Refresh policies lists
                 setTimeout(() => {
                     loadPolicies();
-                    if (typeof fetchPoliciesForApproval === 'function') fetchPoliciesForApproval();
-                    if (typeof loadPolicyRecords === 'function') loadPolicyRecords();
+                    if (typeof fetchPoliciesForApproval === 'function' && document.getElementById('policies-container')) fetchPoliciesForApproval();
+                    if (typeof loadPolicyRecords === 'function' && document.getElementById('policyRecordsList')) loadPolicyRecords();
                 }, 2000);
         } else {
                 showNotification('Failed to reject policy: ' + result.error, 'error', 5000);
@@ -1929,8 +1929,8 @@ async function processPolicyRevision(policyId, revisionRequest, requestedBy) {
                 // Refresh policies lists
                 setTimeout(() => {
                     loadPolicies();
-                    if (typeof fetchPoliciesForApproval === 'function') fetchPoliciesForApproval();
-                    if (typeof loadPolicyRecords === 'function') loadPolicyRecords();
+                    if (typeof fetchPoliciesForApproval === 'function' && document.getElementById('policies-container')) fetchPoliciesForApproval();
+                    if (typeof loadPolicyRecords === 'function' && document.getElementById('policyRecordsList')) loadPolicyRecords();
                 }, 2000);
         } else {
                 showNotification('Failed to request revision: ' + result.error, 'error', 5000);
