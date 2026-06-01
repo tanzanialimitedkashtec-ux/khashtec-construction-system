@@ -55329,7 +55329,7 @@ function displayInspectionRecords(data) {
 
                 <td>
                     <div class="inspection-actions">
-                        <button class="action-btn view" onclick="viewInspectionReport('${record.id}')" title="View Report">👁️ View</button>
+                        <button class="action-btn view" onclick="viewHseInspectionReport('${record.id}')" title="View Report">👁️ View</button>
                         <button class="action-btn" style="background:#dc3545;color:#fff;border:none;padding:4px 10px;border-radius:5px;cursor:pointer;" onclick="deleteInspectionReport('${record.id}')" title="Delete Report">🗑️ Delete</button>
                     </div>
                 </td>
@@ -55350,8 +55350,8 @@ function displayInspectionRecords(data) {
 
 // Inspection report action functions
 
-async function viewInspectionReport(reportId) {
-    console.log('👁️ viewInspectionReport called with ID:', reportId);
+async function viewHseInspectionReport(reportId) {
+    console.log('👁️ viewHseInspectionReport called with ID:', reportId);
     
     // Remove any existing modal
     const existing = document.getElementById('inspectionViewModal');
