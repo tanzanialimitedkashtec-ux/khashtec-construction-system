@@ -314,6 +314,8 @@ function login(){
 
     loadMenu();
 
+    startNotificationPolling();
+
 }
 
 
@@ -714,11 +716,118 @@ function logout(){
 
 
 
-function showNotifications(){
+// ===== NOTIFICATION SYSTEM =====
+var notificationPollInterval = null;
 
-    // TODO: Implement notification panel or dropdown
+function toggleNotificationPanel() {
+    var panel = document.getElementById('notificationPanel');
+    if (panel.classList.contains('open')) {
+        panel.classList.remove('open');
+    } else {
+        panel.classList.add('open');
+        loadNotifications();
+    }
+}
 
-    alert('Notifications feature coming soon!');
+document.addEventListener('click', function(e) {
+    var panel = document.getElementById('notificationPanel');
+    var btn = document.querySelector('.notification-btn');
+    if (panel && btn && !panel.contains(e.target) && !btn.contains(e.target)) {
+        panel.classList.remove('open');
+    }
+});
+
+async function loadNotifications() {
+    try {
+        var res = await fetch('/api/notifications');
+        var data = await res.json();
+        var notifications = data.notifications || [];
+        var listEl = document.getElementById('notificationList');
+        if (!notifications.length) {
+            listEl.innerHTML = '<div class="notification-empty">No notifications yet</div>';
+            return;
+        }
+        listEl.innerHTML = notifications.slice(0, 50).map(function(n) {
+            var typeIcon = {info:'ℹ️', success:'✅', warning:'⚠️', error:'❌'}[(n.type||'info').toLowerCase()] || 'ℹ️';
+            var typeCls = (n.type||'info').toLowerCase();
+            var unreadCls = n.is_read ? '' : ' unread';
+            var timeAgo = getTimeAgo(n.created_at);
+            return '<div class="notification-item'+unreadCls+'" onclick="openNotification('+n.id+')">' +
+                '<div class="notif-icon '+typeCls+'">'+typeIcon+'</div>' +
+                '<div class="notif-content">' +
+                '<p class="notif-title">'+(n.title||'Notification').replace(/</g,'&lt;')+'</p>' +
+                '<p class="notif-msg">'+(n.message||'').replace(/</g,'&lt;')+'</p>' +
+                '<span class="notif-time">'+timeAgo+'</span>' +
+                '</div></div>';
+        }).join('');
+    } catch(e) {
+        document.getElementById('notificationList').innerHTML = '<div class="notification-empty">Error loading notifications</div>';
+    }
+}
+
+async function updateNotificationBadge() {
+    try {
+        var res = await fetch('/api/notifications?unread=true');
+        var data = await res.json();
+        var unread = (data.notifications || []).length;
+        var badge = document.getElementById('notifBadge');
+        if (badge) {
+            if (unread > 0) {
+                badge.textContent = unread > 99 ? '99+' : unread;
+                badge.style.display = '';
+            } else {
+                badge.style.display = 'none';
+            }
+        }
+    } catch(e) {}
+}
+
+async function openNotification(id) {
+    try {
+        await fetch('/api/notifications/' + id + '/read', { method: 'PUT' });
+    } catch(e) {}
+    var panel = document.getElementById('notificationPanel');
+    panel.classList.remove('open');
+    updateNotificationBadge();
+    var changesTab = document.querySelector('[data-tab="systemChanges"]');
+    if (changesTab) changesTab.click();
+}
+
+async function markAllNotificationsRead() {
+    try {
+        var res = await fetch('/api/notifications');
+        var data = await res.json();
+        var notifications = data.notifications || [];
+        for (var i = 0; i < notifications.length; i++) {
+            if (!notifications[i].is_read) {
+                await fetch('/api/notifications/' + notifications[i].id + '/read', { method: 'PUT' });
+            }
+        }
+    } catch(e) {}
+    updateNotificationBadge();
+    loadNotifications();
+}
+
+function getTimeAgo(dateStr) {
+    if (!dateStr) return '';
+    var diff = Date.now() - new Date(dateStr).getTime();
+    var mins = Math.floor(diff / 60000);
+    if (mins < 1) return 'Just now';
+    if (mins < 60) return mins + 'm ago';
+    var hrs = Math.floor(mins / 60);
+    if (hrs < 24) return hrs + 'h ago';
+    var days = Math.floor(hrs / 24);
+    if (days < 7) return days + 'd ago';
+    return new Date(dateStr).toLocaleDateString();
+}
+
+function startNotificationPolling() {
+    updateNotificationBadge();
+    if (notificationPollInterval) clearInterval(notificationPollInterval);
+    notificationPollInterval = setInterval(updateNotificationBadge, 30000);
+}
+
+function showNotifications() { toggleNotificationPanel();
 
 }
 

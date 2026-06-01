@@ -672,6 +672,19 @@ router.post('/', upload.fields([
             ]);
             
             console.log('?? Worker account inserted successfully:', result);
+
+            // Create notification for new worker account
+            try {
+                await db.execute(`
+                    INSERT INTO notifications (title, message, type, priority, recipient_id, created_at)
+                    VALUES (?, ?, 'info', 'Medium', NULL, NOW())
+                `, [
+                    'New Worker Account Created',
+                    `Worker account created for ${fullName} in ${department} department (${mappedAccountType}).`
+                ]);
+            } catch (notifErr) {
+                console.warn('⚠️ Could not create notification:', notifErr.message);
+            }
             
             // Return success response
             res.status(201).json({

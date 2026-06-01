@@ -438,6 +438,19 @@ router.post('/', upload.any(), async (req, res) => {
                 );
             }
             
+            // Create notification for new employee registration
+            try {
+                await db.execute(`
+                    INSERT INTO notifications (title, message, type, priority, recipient_id, created_at)
+                    VALUES (?, ?, 'info', 'Medium', NULL, NOW())
+                `, [
+                    'New Employee Registered',
+                    `New employee ${fullName} has been registered in ${department} department as ${finalJobCategory}.`
+                ]);
+            } catch (notifErr) {
+                console.warn('⚠️ Could not create notification:', notifErr.message);
+            }
+
             // Return success response
             res.status(201).json({
                 message: 'Employee created successfully',
