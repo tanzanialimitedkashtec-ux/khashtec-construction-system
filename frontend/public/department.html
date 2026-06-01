@@ -62686,7 +62686,7 @@ function esc(s) { return (s || 'N/A').toString().replace(/</g, '&lt;'); }
 
 async function loadAuditLeadership(el) {
     try {
-        const res = await fetch('/api/accountant/leadership');
+        const res = await fetch('/api/leadership/leadership');
         const data = await res.json();
         const rows = (data.data || data || []);
         let html = auditTableWrap('Leadership Management Records', ['#','Title','Description','Priority','Status','Created'],
@@ -62708,7 +62708,7 @@ async function loadAuditAccountant(el) {
 
 async function loadAuditLongTerm(el) {
     try {
-        const res = await fetch('/api/accountant/long-term-growth');
+        const res = await fetch('/api/long-term-growth/long-term-growth');
         const data = await res.json();
         const rows = (data.data || data || []);
         let html = auditTableWrap('Long-Term Growth Strategy Records', ['#','Title','Description','Target Date','Status','Created'],
@@ -62719,7 +62719,7 @@ async function loadAuditLongTerm(el) {
 
 async function loadAuditMissionVision(el) {
     try {
-        const res = await fetch('/api/accountant/mission-vision');
+        const res = await fetch('/api/mission-vision/mission-vision');
         const data = await res.json();
         const rows = (data.data || data || []);
         let html = auditTableWrap('Mission & Vision Records', ['#','Title','Description','Category','Status','Created'],
@@ -62783,7 +62783,7 @@ async function loadAuditAssignedWorkers(el) {
 
 async function loadAuditTeamMgmt(el) {
     try {
-        const res = await fetch('/api/teams');
+        const res = await fetch('/api/team-management/teams');
         const data = await res.json();
         const rows = (data.data || data.teams || data || []);
         const arr = Array.isArray(rows) ? rows : [];
