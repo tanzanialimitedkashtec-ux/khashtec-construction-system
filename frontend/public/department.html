@@ -75814,7 +75814,9 @@ function saveNewProject() {
 
         if (data.error) {
 
-            throw new Error(data.error);
+            const errorMessage = data.details ? `${data.error}: ${data.details}` : data.error;
+
+            throw new Error(errorMessage);
 
         }
 
@@ -75842,7 +75844,12 @@ function saveNewProject() {
 
         console.error('❌ Error creating project:', error);
 
-        customAlert(`Failed to create project: ${error.message}\n\nPlease check:\n• All required fields are filled\n• Network connection is stable\n• Server is running properly`, "Creation Error", "error");
+        let alertMsg = `Failed to create project: ${error.message}`;
+        if (!error.message.includes('Project code already exists')) {
+            alertMsg += `\n\nPlease check:\n• All required fields are filled\n• Network connection is stable\n• Server is running properly`;
+        }
+
+        customAlert(alertMsg, "Creation Error", "error");
 
     });
 
