@@ -1,6 +1,6 @@
 // Disabled: Allow localhost development
 
-        // const PRODUCTION_FRONTEND_URL = 'https://khashtec-construction-system-production-e297.up.railway.app/frontend/public/department.html';
+        // const PRODUCTION_FRONTEND_URL = 'https://khashtec-construction-system-production-e7b5.up.railway.app/frontend/public/department.html';
 
         // if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.hostname === '::1') {
 
@@ -42,7 +42,7 @@ function toggleSidebar(){
 
 
 
-const PRODUCTION_API_ORIGIN = 'https://khashtec-construction-system-production-e297.up.railway.app';
+const PRODUCTION_API_ORIGIN = 'https://khashtec-construction-system-production-e7b5.up.railway.app';
 
 const originalFetch = window.fetch.bind(window);
 
