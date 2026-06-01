@@ -55323,17 +55323,10 @@ function displayInspectionRecords(data) {
                 </td>
 
                 <td>
-
                     <div class="inspection-actions">
-
-                        <button class="action-btn view" onclick="viewInspectionReport('${record.id}')" title="View Report">👁️</button>
-
-                        <button class="action-btn download" onclick="downloadInspectionReport('${record.id}')" title="Download Report">📥</button>
-
-                        <button class="action-btn edit" onclick="editInspectionReport('${record.id}')" title="Edit Report">✏️</button>
-
+                        <button class="action-btn view" onclick="viewInspectionReport('${record.id}')" title="View Report">👁️ View</button>
+                        <button class="action-btn" style="background:#dc3545;color:#fff;border:none;padding:4px 10px;border-radius:5px;cursor:pointer;" onclick="deleteInspectionReport('${record.id}')" title="Delete Report">🗑️ Delete</button>
                     </div>
-
                 </td>
 
             </tr>
@@ -55352,26 +55345,158 @@ function displayInspectionRecords(data) {
 
 // Inspection report action functions
 
-function viewInspectionReport(reportId) {
+async function viewInspectionReport(reportId) {
+    // Remove any existing modal
+    const existing = document.getElementById('inspectionViewModal');
+    if (existing) existing.remove();
 
-    customAlert(`Viewing inspection report details for ID: ${reportId}\n\nFull inspection report including findings, recommendations, photos, and compliance status will be displayed.`, "Inspection Report Details", "info");
+    // Show loading overlay
+    const loadingModal = document.createElement('div');
+    loadingModal.id = 'inspectionViewModal';
+    loadingModal.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.7);z-index:10000;display:flex;align-items:center;justify-content:center;';
+    loadingModal.innerHTML = '<div style="color:#fff;font-size:18px;">⏳ Loading inspection report...</div>';
+    document.body.appendChild(loadingModal);
 
+    try {
+        const token = sessionManager?.getToken ? sessionManager.getToken() : (localStorage.getItem('token') || '');
+        const res = await fetch(`${window.location.origin}/api/hse/work/${reportId}`, {
+            headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' }
+        });
+        const json = await res.json();
+        const record = json.work || json.data || json;
+
+        // Parse the work_description blob
+        let p = {};
+        const desc = record.work_description || '';
+        if (desc.includes('Inspection Report')) {
+            const extract = (key, nextKey) => {
+                const regex = new RegExp(`${key}:\\s*([\\s\\S]*?)(?:\\n${nextKey}:|$)`);
+                const m = desc.match(regex);
+                return m ? m[1].trim() : null;
+            };
+            p.date = extract('Date', 'Project');
+            p.project = extract('Project', 'Type');
+            p.type = extract('Type', 'Inspector');
+            p.inspector = extract('Inspector', 'Areas Inspected');
+            p.areas = extract('Areas Inspected', 'Findings');
+            p.findings = extract('Findings', 'Compliance Status');
+            p.compliance = extract('Compliance Status', 'Risk Level');
+            p.riskLevel = extract('Risk Level', 'Recommendations');
+            p.recommendations = extract('Recommendations', 'Follow-up Date');
+            p.followUp = extract('Follow-up Date', 'Next Inspection');
+            p.nextInspection = extract('Next Inspection', 'Documents');
+        }
+
+        const complianceBadgeMap = {
+            'fully-compliant': { label: '✅ Fully Compliant', color: '#28a745' },
+            'minor-issues':    { label: '⚠️ Minor Issues',     color: '#ffc107' },
+            'major-issues':    { label: '🚨 Major Issues',     color: '#fd7e14' },
+            'non-compliant':   { label: '❌ Non-Compliant',    color: '#dc3545' }
+        };
+        const riskBadgeMap = {
+            'low':      { label: '🟢 Low Risk',      color: '#28a745' },
+            'medium':   { label: '🟡 Medium Risk',   color: '#ffc107' },
+            'high':     { label: '🔴 High Risk',     color: '#dc3545' },
+            'critical': { label: '⚫ Critical Risk', color: '#6f42c1' }
+        };
+        const compliance = (p.compliance || record.compliance_status || 'minor-issues').toLowerCase();
+        const riskLevel  = (p.riskLevel  || record.risk_level  || 'medium').toLowerCase();
+        const compBadge  = complianceBadgeMap[compliance] || { label: compliance, color: '#6c757d' };
+        const riskBadge  = riskBadgeMap[riskLevel]        || { label: riskLevel,  color: '#6c757d' };
+
+        const areas = (p.areas || '').split(', ').filter(Boolean).map(a =>
+            `<span style="display:inline-block;background:#e9ecef;border-radius:4px;padding:2px 8px;margin:2px;font-size:12px;">${a}</span>`
+        ).join('');
+
+        loadingModal.innerHTML = `
+        <div style="background:#1e2535;border-radius:16px;max-width:760px;width:95%;max-height:88vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,0.5);color:#e0e6f0;font-family:'Segoe UI',sans-serif;">
+            <!-- Header -->
+            <div style="background:linear-gradient(135deg,#1a3a5c,#0d6efd);padding:24px 28px;border-radius:16px 16px 0 0;display:flex;justify-content:space-between;align-items:center;">
+                <div>
+                    <div style="font-size:11px;text-transform:uppercase;letter-spacing:1px;color:rgba(255,255,255,0.7);">Inspection Report</div>
+                    <div style="font-size:22px;font-weight:700;color:#fff;">Report #${reportId}</div>
+                    <div style="font-size:13px;color:rgba(255,255,255,0.8);margin-top:2px;">${p.date || record.submitted_date || ''}</div>
+                </div>
+                <button onclick="document.getElementById('inspectionViewModal').remove()" style="background:rgba(255,255,255,0.2);border:none;color:#fff;font-size:20px;width:36px;height:36px;border-radius:50%;cursor:pointer;line-height:36px;text-align:center;">✕</button>
+            </div>
+
+            <!-- Badges Row -->
+            <div style="display:flex;gap:12px;padding:16px 28px;border-bottom:1px solid rgba(255,255,255,0.08);flex-wrap:wrap;">
+                <span style="background:${compBadge.color};color:#fff;border-radius:20px;padding:5px 14px;font-size:13px;font-weight:600;">${compBadge.label}</span>
+                <span style="background:${riskBadge.color};color:#fff;border-radius:20px;padding:5px 14px;font-size:13px;font-weight:600;">${riskBadge.label}</span>
+                <span style="background:#17a2b8;color:#fff;border-radius:20px;padding:5px 14px;font-size:13px;">${(p.type || record.work_title || 'Inspection').replace('Inspection Report - ','')}</span>
+            </div>
+
+            <!-- Body -->
+            <div style="padding:24px 28px;display:grid;grid-template-columns:1fr 1fr;gap:18px;">
+                <div style="background:rgba(255,255,255,0.05);border-radius:10px;padding:16px;">
+                    <div style="font-size:11px;color:#8a9dc0;text-transform:uppercase;margin-bottom:6px;">Project</div>
+                    <div style="font-size:15px;font-weight:600;">${p.project || 'N/A'}</div>
+                </div>
+                <div style="background:rgba(255,255,255,0.05);border-radius:10px;padding:16px;">
+                    <div style="font-size:11px;color:#8a9dc0;text-transform:uppercase;margin-bottom:6px;">Inspector</div>
+                    <div style="font-size:15px;font-weight:600;">${p.inspector || record.submitted_by || 'N/A'}</div>
+                </div>
+                <div style="background:rgba(255,255,255,0.05);border-radius:10px;padding:16px;">
+                    <div style="font-size:11px;color:#8a9dc0;text-transform:uppercase;margin-bottom:6px;">Follow-up Date</div>
+                    <div style="font-size:15px;font-weight:600;">${p.followUp || '—'}</div>
+                </div>
+                <div style="background:rgba(255,255,255,0.05);border-radius:10px;padding:16px;">
+                    <div style="font-size:11px;color:#8a9dc0;text-transform:uppercase;margin-bottom:6px;">Next Inspection</div>
+                    <div style="font-size:15px;font-weight:600;">${p.nextInspection || '—'}</div>
+                </div>
+            </div>
+
+            ${areas ? `<div style="padding:0 28px 18px;">
+                <div style="font-size:11px;color:#8a9dc0;text-transform:uppercase;margin-bottom:8px;">Areas Inspected</div>
+                <div>${areas}</div>
+            </div>` : ''}
+
+            <div style="padding:0 28px 18px;">
+                <div style="font-size:11px;color:#8a9dc0;text-transform:uppercase;margin-bottom:8px;">Findings</div>
+                <div style="background:rgba(255,255,255,0.05);border-radius:10px;padding:14px;font-size:14px;line-height:1.6;white-space:pre-wrap;">${p.findings || 'No findings recorded'}</div>
+            </div>
+
+            <div style="padding:0 28px 24px;">
+                <div style="font-size:11px;color:#8a9dc0;text-transform:uppercase;margin-bottom:8px;">Recommendations</div>
+                <div style="background:rgba(255,255,255,0.05);border-radius:10px;padding:14px;font-size:14px;line-height:1.6;white-space:pre-wrap;">${p.recommendations || 'No recommendations recorded'}</div>
+            </div>
+
+            <div style="padding:12px 28px 20px;border-top:1px solid rgba(255,255,255,0.08);display:flex;justify-content:flex-end;">
+                <button onclick="document.getElementById('inspectionViewModal').remove()" style="background:#0d6efd;color:#fff;border:none;border-radius:8px;padding:10px 24px;font-size:14px;font-weight:600;cursor:pointer;">Close</button>
+            </div>
+        </div>`;
+
+        // Close on backdrop click
+        loadingModal.addEventListener('click', e => { if (e.target === loadingModal) loadingModal.remove(); });
+
+    } catch (err) {
+        console.error('Failed to load inspection report:', err);
+        loadingModal.innerHTML = `<div style="background:#1e2535;border-radius:12px;padding:32px;color:#fff;text-align:center;">
+            <div style="font-size:40px;margin-bottom:12px;">⚠️</div>
+            <div style="font-size:18px;margin-bottom:16px;">Failed to load report</div>
+            <button onclick="document.getElementById('inspectionViewModal').remove()" style="background:#dc3545;color:#fff;border:none;padding:8px 20px;border-radius:6px;cursor:pointer;">Close</button>
+        </div>`;
+    }
 }
 
-
-
-function downloadInspectionReport(reportId) {
-
-    customAlert(`Downloading inspection report ${reportId}...\n\nComplete inspection report with all findings, photos, and supporting documents will be downloaded in PDF format.`, "Download Report", "info");
-
-}
-
-
-
-function editInspectionReport(reportId) {
-
-    customAlert(`Editing inspection report ${reportId}...\n\nInspection report editor will open for modifications, corrections, and status updates.`, "Edit Report", "info");
-
+async function deleteInspectionReport(reportId) {
+    if (!confirm(`Are you sure you want to delete Inspection Report #${reportId}? This action cannot be undone.`)) return;
+    try {
+        const token = sessionManager?.getToken ? sessionManager.getToken() : (localStorage.getItem('token') || '');
+        const res = await fetch(`${window.location.origin}/api/hse/work/${reportId}`, {
+            method: 'DELETE',
+            headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' }
+        });
+        if (res.ok) {
+            showNotification('Inspection report deleted successfully.', 'success');
+            loadInspectionRecords();
+        } else {
+            showNotification('Failed to delete report. Please try again.', 'error');
+        }
+    } catch (err) {
+        showNotification('Error deleting report: ' + err.message, 'error');
+    }
 }
 
 
