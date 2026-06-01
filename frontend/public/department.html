@@ -54220,15 +54220,7 @@ function uploadInspectionReports(){
                             <label>Project *</label>
 
                             <select id="inspectionProject" required>
-
-                                <option value="">Select Project</option>
-
-                                <option value="proj001">Masaki Residential Complex</option>
-
-                                <option value="proj002">Kigamboni Commercial Plaza</option>
-
-                                <option value="proj003">Mikochi Industrial Park</option>
-
+                                <option value="">Loading projects...</option>
                             </select>
 
                         </div>
@@ -54500,9 +54492,33 @@ function uploadInspectionReports(){
     
 
     // Load inspection records
-
     loadInspectionRecords();
 
+    // Fetch and populate projects dynamically
+    fetch(`${window.location.origin}/api/projects`, {
+        headers: {
+            'Content-Type': 'application/json',
+            ...(typeof sessionManager !== 'undefined' && sessionManager.getAuthToken() ? {'Authorization': `Bearer ${sessionManager.getAuthToken()}`} : {})
+        }
+    })
+    .then(res => res.ok ? res.json() : Promise.reject(res))
+    .then(data => {
+        const projects = data.projects || data; // Handle both {projects: [...]} and [...] responses
+        const projectSelect = document.getElementById('inspectionProject');
+        if (projectSelect && Array.isArray(projects)) {
+            if (projects.length === 0) {
+                projectSelect.innerHTML = '<option value="">No projects found</option>';
+            } else {
+                projectSelect.innerHTML = '<option value="">Select Project</option>' + 
+                    projects.map(p => `<option value="${p.id || p.project_id || p._id || p.project_name || p.name || p.title}">${p.name || p.project_name || p.title}</option>`).join('');
+            }
+        }
+    })
+    .catch(err => {
+        console.error('Error loading projects for inspection:', err);
+        const projectSelect = document.getElementById('inspectionProject');
+        if (projectSelect) projectSelect.innerHTML = '<option value="">Error loading projects</option>';
+    });
 }
 
 
