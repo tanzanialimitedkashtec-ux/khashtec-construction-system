@@ -143,11 +143,21 @@ router.get('/:id', async (req, res) => {
                 WHERE t.id = ?
             `, [taskId]);
             
-            const taskData = Array.isArray(taskResult) ? taskResult[0] : taskResult;
-            
-            if (taskData.length > 0) {
-                task = taskData[0];
-                console.log('✅ Task found:', task);
+            // Fix: handle both MySQL2 [[rows],[fields]] and plain [rows] formats
+            let taskRows;
+            if (taskResult && Array.isArray(taskResult[0])) {
+                taskRows = taskResult[0]; // MySQL2: [[row1,...], [fields]]
+            } else if (Array.isArray(taskResult)) {
+                taskRows = taskResult;    // Plain array: [row1, row2, ...]
+            } else {
+                taskRows = [];
+            }
+
+            console.log('🔍 GET /:id taskRows length:', taskRows.length);
+
+            if (taskRows.length > 0) {
+                task = taskRows[0];
+                console.log('✅ Task found:', task.task_name);
             }
         } catch (dbError) {
             console.error('❌ Database error fetching task by ID:', dbError.message);
@@ -353,27 +363,40 @@ router.delete('/:id', async (req, res) => {
             
             // Check if task exists
             const taskResult = await db.execute('SELECT task_name FROM tasks WHERE id = ?', [taskId]);
-            const taskData = Array.isArray(taskResult) ? taskResult[0] : taskResult;
-            
-            if (taskData.length === 0) {
+
+            // Fix: handle both MySQL2 [[rows],[fields]] and plain [rows] formats
+            let taskRows;
+            if (taskResult && Array.isArray(taskResult[0])) {
+                taskRows = taskResult[0]; // MySQL2 [[row1,...],[fields]]
+            } else if (Array.isArray(taskResult)) {
+                taskRows = taskResult;    // Plain [row1,...]
+            } else {
+                taskRows = [];
+            }
+
+            console.log('🗑️ DELETE taskRows length:', taskRows.length);
+
+            if (taskRows.length === 0) {
                 return res.status(404).json({
                     success: false,
                     error: 'Task not found'
                 });
             }
-            
+
             // Delete task
             const resultResult = await db.execute('DELETE FROM tasks WHERE id = ?', [taskId]);
-            const result = Array.isArray(resultResult) ? resultResult[0] : resultResult;
-            
+            const result = Array.isArray(resultResult) && Array.isArray(resultResult[0])
+                ? resultResult[0]
+                : (Array.isArray(resultResult) ? resultResult : resultResult);
+
             console.log('✅ Task deleted successfully');
-            
+
             res.json({
                 success: true,
                 message: 'Task deleted successfully',
                 deleted_task: {
                     id: taskId,
-                    task_name: taskData[0].task_name
+                    task_name: (taskRows[0] && taskRows[0].task_name) || `Task #${taskId}`
                 }
             });
             
