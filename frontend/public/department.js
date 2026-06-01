@@ -74650,105 +74650,8 @@ async function loadTransportCosts() {
 
 function getSampleTransportCosts() {
 
-    return [
-
-        {
-
-            id: 1,
-
-            cost_type: 'maintenance',
-
-            category: 'service_maintenance',
-
-            description: 'Regular service for Toyota Hilux - Oil change and filter replacement',
-
-            car_name: 'Toyota Hilux',
-
-            track_number: 'TK001',
-
-            amount: 250000,
-
-            currency: 'TZS',
-
-            date_incurred: '2026-05-01',
-
-            provider: 'Toyota Tanzania Service Center',
-
-            invoice_number: 'INV-2026-001',
-
-            payment_status: 'paid',
-
-            approved_by_name: 'Finance Manager',
-
-            notes: 'Quarterly maintenance service completed'
-
-        },
-
-        {
-
-            id: 2,
-
-            cost_type: 'maintenance',
-
-            category: 'repair',
-
-            description: 'Brake pad replacement for Nissan Patrol',
-
-            car_name: 'Nissan Patrol',
-
-            track_number: 'TK002',
-
-            amount: 450000,
-
-            currency: 'TZS',
-
-            date_incurred: '2026-05-03',
-
-            provider: 'Auto Care Garage',
-
-            invoice_number: 'INV-2026-002',
-
-            payment_status: 'pending',
-
-            approved_by_name: 'Operations Manager',
-
-            notes: 'Emergency brake repair due to wear and tear'
-
-        },
-
-        {
-
-            id: 3,
-
-            cost_type: 'extra',
-
-            category: 'fuel',
-
-            description: 'Additional fuel for site visit - Dar es Salaam to Bagamoyo',
-
-            car_name: 'Toyota Hilux',
-
-            track_number: 'TK001',
-
-            amount: 120000,
-
-            currency: 'TZS',
-
-            date_incurred: '2026-05-05',
-
-            provider: 'BP Station - Kawe',
-
-            invoice_number: 'REC-2026-003',
-
-            payment_status: 'paid',
-
-            approved_by_name: 'Site Manager',
-
-            notes: 'Extra fuel for unplanned site inspection'
-
-        }
-
-    ];
+        // Returns empty array to prevent mock data from being displayed
+        return [];
 
 }
 
@@ -75043,23 +74946,14 @@ async function loadTransportCostSummary() {
 
 
 function getSampleSummary() {
-
     return {
-
-        total_costs: 2170000,
-
-        maintenance_costs: 1900000,
-
-        extra_costs: 270000,
-
-        total_records: 5,
-
-        paid_amount: 455000,
-
-        pending_amount: 450000
-
+        total_costs: 0,
+        maintenance_costs: 0,
+        extra_costs: 0,
+        total_records: 0,
+        paid_amount: 0,
+        pending_amount: 0
     };
-
 }
 
 

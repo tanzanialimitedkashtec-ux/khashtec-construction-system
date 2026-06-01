@@ -17453,7 +17453,7 @@ font-size: 9px;
 
     transition: all 0.2s ease;
 
-    font-size: 7px;
+    font-size: 12px;
 
     box-shadow: 0 1px 3px rgba(0,0,0,0.05);
 
@@ -69802,8 +69802,11 @@ function taxPlanning() {
 
         '<div style="display:flex;gap:20px;flex-wrap:wrap;">' +
             '<div style="flex:1;min-width:320px;">' +
-                '<h4>Record Tax Payment</h4>' +
-                '<form id="taxPlanForm" onsubmit="submitTaxPayment(event)" style="display:flex;flex-direction:column;gap:12px;">' +
+                '<div style="display:flex; justify-content:space-between; align-items:center;">' +
+                    '<h4 style="margin:0;">Record Tax Payment</h4>' +
+                    '<button onclick="toggleTaxForm()" style="background:#3498db;color:white;border:none;padding:6px 12px;border-radius:4px;cursor:pointer;font-size:13px;">Show/Hide Form</button>' +
+                '</div>' +
+                '<form id="taxPlanForm" onsubmit="submitTaxPayment(event)" style="display:none;flex-direction:column;gap:12px;margin-top:15px;">' +
                     '<div style="display:flex;gap:10px;flex-wrap:wrap;">' +
                         '<div style="flex:1;min-width:150px;">' +
                             '<label style="font-weight:600;display:block;margin-bottom:4px;">Tax Type *</label>' +
@@ -69894,6 +69897,17 @@ function taxPlanning() {
 
     loadTaxRecords();
     loadTaxSummary();
+}
+
+function toggleTaxForm() {
+    var form = document.getElementById('taxPlanForm');
+    if (form) {
+        if (form.style.display === 'none' || form.style.display === '') {
+            form.style.display = 'flex';
+        } else {
+            form.style.display = 'none';
+        }
+    }
 }
 
 function loadTaxSummary() {
@@ -81920,10 +81934,10 @@ function generateSalesReport(){
             <h4>Q1 2026 Sales Summary</h4>
 
             <div class="report-metrics" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 30px;">
-                <div class="metric-card" style="background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%); padding: 20px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border-left: 4px solid #4CAF50; transition: transform 0.3s ease;">
-                    <h5 style="color: #666; font-size: 0.9rem; margin-top: 0; text-transform: uppercase; letter-spacing: 0.5px;">Total Sales</h5>
-                    <div id="totalSalesValue" class="metric-value" style="font-size: 1.8rem; font-weight: 700; color: #2c3e50; margin: 10px 0;">TZS 0</div>
-                    <div class="metric-change positive" style="color: #4CAF50; font-size: 0.85rem; font-weight: 600;">Updated automatically</div>
+                <div class="metric-card" style="background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%); padding: 10px 14px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); border-left: 3px solid #4CAF50; transition: transform 0.3s ease;">
+                    <h5 style="color: #666; font-size: 0.72rem; margin: 0 0 3px 0; text-transform: uppercase; letter-spacing: 0.5px;">Total Sales</h5>
+                    <div id="totalSalesValue" class="metric-value" style="font-size: 1.1rem; font-weight: 700; color: #2c3e50; margin: 2px 0;">TZS 0</div>
+                    <div class="metric-change positive" style="color: #4CAF50; font-size: 0.72rem; font-weight: 600;">Updated automatically</div>
                 </div>
                 
                 <div class="metric-card" style="background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%); padding: 20px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border-left: 4px solid #2196F3; transition: transform 0.3s ease;">
@@ -101949,105 +101963,8 @@ async function loadTransportCosts() {
 
 function getSampleTransportCosts() {
 
-    return [
-
-        {
-
-            id: 1,
-
-            cost_type: 'maintenance',
-
-            category: 'service_maintenance',
-
-            description: 'Regular service for Toyota Hilux - Oil change and filter replacement',
-
-            car_name: 'Toyota Hilux',
-
-            track_number: 'TK001',
-
-            amount: 250000,
-
-            currency: 'TZS',
-
-            date_incurred: '2026-05-01',
-
-            provider: 'Toyota Tanzania Service Center',
-
-            invoice_number: 'INV-2026-001',
-
-            payment_status: 'paid',
-
-            approved_by_name: 'Finance Manager',
-
-            notes: 'Quarterly maintenance service completed'
-
-        },
-
-        {
-
-            id: 2,
-
-            cost_type: 'maintenance',
-
-            category: 'repair',
-
-            description: 'Brake pad replacement for Nissan Patrol',
-
-            car_name: 'Nissan Patrol',
-
-            track_number: 'TK002',
-
-            amount: 450000,
-
-            currency: 'TZS',
-
-            date_incurred: '2026-05-03',
-
-            provider: 'Auto Care Garage',
-
-            invoice_number: 'INV-2026-002',
-
-            payment_status: 'pending',
-
-            approved_by_name: 'Operations Manager',
-
-            notes: 'Emergency brake repair due to wear and tear'
-
-        },
-
-        {
-
-            id: 3,
-
-            cost_type: 'extra',
-
-            category: 'fuel',
-
-            description: 'Additional fuel for site visit - Dar es Salaam to Bagamoyo',
-
-            car_name: 'Toyota Hilux',
-
-            track_number: 'TK001',
-
-            amount: 120000,
-
-            currency: 'TZS',
-
-            date_incurred: '2026-05-05',
-
-            provider: 'BP Station - Kawe',
-
-            invoice_number: 'REC-2026-003',
-
-            payment_status: 'paid',
-
-            approved_by_name: 'Site Manager',
-
-            notes: 'Extra fuel for unplanned site inspection'
-
-        }
-
-    ];
+        // Returns empty array to prevent mock data from being displayed
+        return [];
 
 }
 
@@ -102342,23 +102259,14 @@ async function loadTransportCostSummary() {
 
 
 function getSampleSummary() {
-
     return {
-
-        total_costs: 2170000,
-
-        maintenance_costs: 1900000,
-
-        extra_costs: 270000,
-
-        total_records: 5,
-
-        paid_amount: 455000,
-
-        pending_amount: 450000
-
+        total_costs: 0,
+        maintenance_costs: 0,
+        extra_costs: 0,
+        total_records: 0,
+        paid_amount: 0,
+        pending_amount: 0
     };
-
 }
 
 
