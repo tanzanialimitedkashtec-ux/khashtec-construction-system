@@ -55047,6 +55047,9 @@ function loadSampleInspectionRecords() {
 function displayInspectionRecords(data) {
 
     const recordsList = document.getElementById('inspectionRecordsList');
+    
+    // Store globally for quick access in view/delete
+    window._loadedInspectionRecords = [];
 
     
 
@@ -55083,6 +55086,8 @@ function displayInspectionRecords(data) {
         records = [data];
 
     }
+
+    window._loadedInspectionRecords = records || [];
 
     
 
@@ -55358,12 +55363,10 @@ async function viewInspectionReport(reportId) {
     document.body.appendChild(loadingModal);
 
     try {
-        const token = sessionManager.getAuthToken();
-        const res = await fetch(`${window.location.origin}/api/work/hse/inspections/${reportId}`, {
-            headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' }
-        });
-        const json = await res.json();
-        const record = json.work || json.data || json;
+        const record = (window._loadedInspectionRecords || []).find(r => String(r.id) === String(reportId));
+        if (!record) {
+            throw new Error("Inspection record not found in cache.");
+        }
 
         // Parse the work_description blob
         let p = {};
