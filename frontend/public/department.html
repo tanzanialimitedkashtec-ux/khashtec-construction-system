@@ -75758,44 +75758,36 @@ function displayTasks(tasks) {
 
 
 
-function getStatusBadge(status) {
-
+function getStatusBadge(rawStatus) {
+    const status = (rawStatus || '').toLowerCase().trim();
     const badges = {
-
         'assigned': '<span style="background: #007bff; color: white; padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: 500;">Assigned</span>',
-
+        'not started': '<span style="background: #6c757d; color: white; padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: 500;">Not Started</span>',
+        'in progress': '<span style="background: #28a745; color: white; padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: 500;">In Progress</span>',
         'in-progress': '<span style="background: #28a745; color: white; padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: 500;">In Progress</span>',
-
         'completed': '<span style="background: #17a2b8; color: white; padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: 500;">Completed</span>',
-
         'pending': '<span style="background: #ffc107; color: black; padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: 500;">Pending</span>',
-
-        'overdue': '<span style="background: #dc3545; color: white; padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: 500;">Overdue</span>'
-
+        'on hold': '<span style="background: #ffc107; color: black; padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: 500;">On Hold</span>',
+        'overdue': '<span style="background: #dc3545; color: white; padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: 500;">Overdue</span>',
+        'cancelled': '<span style="background: #dc3545; color: white; padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: 500;">Cancelled</span>'
     };
 
-    return badges[status] || '<span style="background: #6c757d; color: white; padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: 500;">Unknown</span>';
-
+    return badges[status] || `<span style="background: #6c757d; color: white; padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: 500;">${rawStatus || 'Unknown'}</span>`;
 }
 
 
 
-function getPriorityBadge(priority) {
-
+function getPriorityBadge(rawPriority) {
+    const priority = (rawPriority || '').toLowerCase().trim();
     const badges = {
-
+        'critical': '<span style="background: #dc3545; color: white; padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: 500;">🔥 Critical</span>',
         'urgent': '<span style="background: #dc3545; color: white; padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: 500;">🔥 Urgent</span>',
-
         'high': '<span style="background: #fd7e14; color: white; padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: 500;">⚡ High</span>',
-
         'medium': '<span style="background: #ffc107; color: black; padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: 500;">📋 Medium</span>',
-
         'low': '<span style="background: #28a745; color: white; padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: 500;">🟢 Low</span>'
-
     };
 
-    return badges[priority] || '<span style="background: #6c757d; color: white; padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: 500;">Medium</span>';
-
+    return badges[priority] || `<span style="background: #6c757d; color: white; padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: 500;">${rawPriority || 'Medium'}</span>`;
 }
 
 
