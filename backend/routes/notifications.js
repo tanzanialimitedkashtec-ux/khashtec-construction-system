@@ -245,21 +245,24 @@ router.put('/:id/unread', async (req, res) => {
     }
 });
 
-// Mark all notifications as read for a user
+// Mark all notifications as read for a user (or all users)
 router.put('/read-all', async (req, res) => {
     try {
         const { userId } = req.body;
         
-        if (!userId) {
-            return res.status(400).json({
-                error: 'userId is required'
-            });
+        let result;
+        if (!userId || userId === 'all') {
+            // Mark ALL unread notifications as read
+            [result] = await db.execute(
+                'UPDATE notifications SET is_read = 1 WHERE is_read = 0'
+            );
+        } else {
+            // Mark unread notifications for a specific user
+            [result] = await db.execute(
+                'UPDATE notifications SET is_read = 1 WHERE recipient_id = ? AND is_read = 0',
+                [userId]
+            );
         }
-        
-        const [result] = await db.execute(
-            'UPDATE notifications SET is_read = 1 WHERE recipient_id = ? AND is_read = 0',
-            [userId]
-        );
         
         res.json({
             message: `${result.affectedRows} notifications marked as read`,
