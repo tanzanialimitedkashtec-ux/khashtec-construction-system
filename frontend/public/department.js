@@ -70223,8 +70223,8 @@ async function loadAuditLeadership(el) {
         var res = await fetch('/api/leadership/leadership');
         var data = await res.json();
         var rows = (data.data || data || []);
-        el.innerHTML = auditTableWrap('Leadership Management Records', ['#','Title','Description','Priority','Status','Created'],
-            rows.map(function(r,i){ return '<tr><td>'+(i+1)+'</td><td>'+esc(r.title)+'</td><td>'+esc(r.description)+'</td><td>'+esc(r.priority)+'</td><td>'+esc(r.status)+'</td><td>'+fmtDate(r.created_at)+'</td></tr>'; }).join(''));
+        el.innerHTML = auditTableWrap('Leadership Management Records', ['#','Position','Department','Current Holder','Reports To','Level','Status','Appointed'],
+            rows.map(function(r,i){ return '<tr><td>'+(i+1)+'</td><td>'+esc(r.position)+'</td><td>'+esc(r.department)+'</td><td>'+esc(r.current_holder)+'</td><td>'+esc(r.reports_to)+'</td><td>'+esc(r.leadership_level)+'</td><td>'+esc(r.status)+'</td><td>'+fmtDate(r.appointment_date)+'</td></tr>'; }).join(''));
     } catch(e) { el.innerHTML = '<p style="color:#dc3545;">Error loading leadership data: '+e.message+'</p>'; }
 }
 
@@ -70233,8 +70233,8 @@ async function loadAuditAccountant(el) {
         var res = await fetch('/api/accountant/accountant');
         var data = await res.json();
         var rows = (data.data || data || []);
-        el.innerHTML = auditTableWrap('Accountant Management Records', ['#','Title','Description','Amount','Status','Created'],
-            rows.map(function(r,i){ return '<tr><td>'+(i+1)+'</td><td>'+esc(r.title)+'</td><td>'+esc(r.description)+'</td><td>'+esc(r.amount)+'</td><td>'+esc(r.status)+'</td><td>'+fmtDate(r.created_at)+'</td></tr>'; }).join(''));
+        el.innerHTML = auditTableWrap('Accountant Management Records', ['#','Name','Email','Department','Reporting To','Employment','Qualification','Status','Start Date'],
+            rows.map(function(r,i){ return '<tr><td>'+(i+1)+'</td><td>'+esc(r.name)+'</td><td>'+esc(r.email)+'</td><td>'+esc(r.department)+'</td><td>'+esc(r.reporting_to)+'</td><td>'+esc(r.employment_type)+'</td><td>'+esc(r.professional_qualification)+'</td><td>'+esc(r.status)+'</td><td>'+fmtDate(r.start_date)+'</td></tr>'; }).join(''));
     } catch(e) { el.innerHTML = '<p style="color:#dc3545;">Error loading accountant data: '+e.message+'</p>'; }
 }
 
@@ -70243,8 +70243,8 @@ async function loadAuditLongTerm(el) {
         var res = await fetch('/api/long-term-growth/long-term-growth');
         var data = await res.json();
         var rows = (data.data || data || []);
-        el.innerHTML = auditTableWrap('Long-Term Growth Strategy Records', ['#','Title','Description','Target Date','Status','Created'],
-            rows.map(function(r,i){ return '<tr><td>'+(i+1)+'</td><td>'+esc(r.title)+'</td><td>'+esc(r.description)+'</td><td>'+fmtDate(r.target_date)+'</td><td>'+esc(r.status)+'</td><td>'+fmtDate(r.created_at)+'</td></tr>'; }).join(''));
+        el.innerHTML = auditTableWrap('Long-Term Growth Strategy Records', ['#','Growth Title','Category','Timeframe','Expansion Strategy','Status','Created'],
+            rows.map(function(r,i){ return '<tr><td>'+(i+1)+'</td><td>'+esc(r.growth_title)+'</td><td>'+esc(r.growth_category)+'</td><td>'+esc(r.timeframe)+'</td><td>'+esc(r.expansion_strategy)+'</td><td>'+esc(r.status)+'</td><td>'+fmtDate(r.created_at)+'</td></tr>'; }).join(''));
     } catch(e) { el.innerHTML = '<p style="color:#dc3545;">Error loading long-term growth data: '+e.message+'</p>'; }
 }
 
@@ -70253,8 +70253,8 @@ async function loadAuditMissionVision(el) {
         var res = await fetch('/api/mission-vision/mission-vision');
         var data = await res.json();
         var rows = (data.data || data || []);
-        el.innerHTML = auditTableWrap('Mission & Vision Records', ['#','Title','Description','Category','Status','Created'],
-            rows.map(function(r,i){ return '<tr><td>'+(i+1)+'</td><td>'+esc(r.title)+'</td><td>'+esc(r.description)+'</td><td>'+esc(r.category)+'</td><td>'+esc(r.status)+'</td><td>'+fmtDate(r.created_at)+'</td></tr>'; }).join(''));
+        el.innerHTML = auditTableWrap('Mission & Vision Records', ['#','Mission Statement','Category','Vision Statement','Vision Timeframe','Status','Created'],
+            rows.map(function(r,i){ return '<tr><td>'+(i+1)+'</td><td>'+esc(r.mission_statement)+'</td><td>'+esc(r.mission_category)+'</td><td>'+esc(r.vision_statement)+'</td><td>'+esc(r.vision_timeframe)+'</td><td>'+esc(r.status)+'</td><td>'+fmtDate(r.created_at)+'</td></tr>'; }).join(''));
     } catch(e) { el.innerHTML = '<p style="color:#dc3545;">Error loading mission & vision data: '+e.message+'</p>'; }
 }
 
@@ -70280,8 +70280,8 @@ async function loadAuditSeniorHiring(el) {
         var data = await res.json();
         var rows = (data.data || data.requests || data || []);
         var arr = Array.isArray(rows) ? rows : [];
-        el.innerHTML = auditTableWrap('Senior Hiring Requests', ['#','Position','Department','Requested By','Status','Salary Range','Created'],
-            arr.map(function(r,i){ return '<tr><td>'+(i+1)+'</td><td>'+esc(r.position_title||r.position)+'</td><td>'+esc(r.department)+'</td><td>'+esc(r.requested_by)+'</td><td>'+esc(r.status)+'</td><td>'+esc(r.salary_range||r.budget)+'</td><td>'+fmtDate(r.created_at)+'</td></tr>'; }).join(''));
+        el.innerHTML = auditTableWrap('Senior Hiring Requests', ['#','Candidate','Department','Level','Proposed Salary','Requested By','Status','Created'],
+            arr.map(function(r,i){ return '<tr><td>'+(i+1)+'</td><td>'+esc(r.candidate_name)+'</td><td>'+esc(r.department)+'</td><td>'+esc(r.position_level)+'</td><td>'+esc(r.proposed_salary)+'</td><td>'+esc(r.requested_by)+'</td><td>'+esc(r.status)+'</td><td>'+fmtDate(r.created_at)+'</td></tr>'; }).join(''));
     } catch(e) { el.innerHTML = '<p style="color:#dc3545;">Error loading senior hiring data: '+e.message+'</p>'; }
 }
 
@@ -70291,8 +70291,8 @@ async function loadAuditWorkforceBudget(el) {
         var data = await res.json();
         var rows = (data.data || data.budgets || data || []);
         var arr = Array.isArray(rows) ? rows : [];
-        el.innerHTML = auditTableWrap('Workforce Budget Requests', ['#','Department','Budget Amount','Purpose','Status','Approved By','Created'],
-            arr.map(function(r,i){ return '<tr><td>'+(i+1)+'</td><td>'+esc(r.department)+'</td><td>'+esc(r.budget_amount||r.amount)+'</td><td>'+esc(r.purpose||r.description)+'</td><td>'+esc(r.status)+'</td><td>'+esc(r.approved_by)+'</td><td>'+fmtDate(r.created_at)+'</td></tr>'; }).join(''));
+        el.innerHTML = auditTableWrap('Workforce Budget Requests', ['#','Budget Period','Total Proposed','Salaries','Training','Benefits','Submitted By','Status','Created'],
+            arr.map(function(r,i){ return '<tr><td>'+(i+1)+'</td><td>'+esc(r.budget_period)+'</td><td>'+esc(r.total_proposed)+'</td><td>'+esc(r.salaries_wages)+'</td><td>'+esc(r.training_development)+'</td><td>'+esc(r.employee_benefits)+'</td><td>'+esc(r.submitted_by)+'</td><td>'+esc(r.status)+'</td><td>'+fmtDate(r.created_at)+'</td></tr>'; }).join(''));
     } catch(e) { el.innerHTML = '<p style="color:#dc3545;">Error loading workforce budget data: '+e.message+'</p>'; }
 }
 
@@ -70316,8 +70316,8 @@ async function loadAuditTeamMgmt(el) {
         var rows = (data.data || data.teams || data || []);
         var arr = Array.isArray(rows) ? rows : [];
         if (arr.length === 0) { el.innerHTML = '<h5>Team Management</h5><p style="color:#999;">No teams found.</p>'; return; }
-        el.innerHTML = auditTableWrap('Team Management', ['#','Team Name','Leader','Members','Department','Status','Created'],
-            arr.map(function(r,i){ return '<tr><td>'+(i+1)+'</td><td>'+esc(r.name||r.team_name)+'</td><td>'+esc(r.leader||r.team_leader)+'</td><td>'+esc(r.member_count||r.members)+'</td><td>'+esc(r.department)+'</td><td>'+esc(r.status)+'</td><td>'+fmtDate(r.created_at)+'</td></tr>'; }).join(''));
+        el.innerHTML = auditTableWrap('Team Management', ['#','Team Name','Department','Description','Status','Created'],
+            arr.map(function(r,i){ return '<tr><td>'+(i+1)+'</td><td>'+esc(r.name)+'</td><td>'+esc(r.department)+'</td><td>'+esc(r.description)+'</td><td>'+esc(r.status)+'</td><td>'+fmtDate(r.created_at)+'</td></tr>'; }).join(''));
     } catch(e) { el.innerHTML = '<p style="color:#dc3545;">Error loading team data: '+e.message+'</p>'; }
 }
 
@@ -70369,8 +70369,8 @@ async function loadAuditNhif(el) {
                     '<div class="chg-card"><span class="chg-num">'+(sData.total_amount||'N/A')+'</span><span class="chg-lbl">Total Amount</span></div></div>';
             }
         } catch(se) {}
-        el.innerHTML = summaryHtml + auditTableWrap('NHIF Contributions', ['#','Employee','NHIF No','Amount','Month','Status','Created'],
-            arr.map(function(r,i){ return '<tr><td>'+(i+1)+'</td><td>'+esc(r.employee_name||r.full_name)+'</td><td>'+esc(r.nhif_number||r.nhif_no)+'</td><td>'+esc(r.amount||r.contribution_amount)+'</td><td>'+esc(r.month||r.period)+'</td><td>'+esc(r.status)+'</td><td>'+fmtDate(r.created_at)+'</td></tr>'; }).join(''));
+        el.innerHTML = summaryHtml + auditTableWrap('NHIF Contributions', ['#','Employee ID','Month','Employee Contrib.','Employer Contrib.','Total','Payment Status','Payment Date'],
+            arr.map(function(r,i){ return '<tr><td>'+(i+1)+'</td><td>'+esc(r.employee_id)+'</td><td>'+fmtDate(r.contribution_month)+'</td><td>'+esc(r.employee_contribution)+'</td><td>'+esc(r.employer_contribution)+'</td><td>'+esc(r.total_contribution)+'</td><td>'+esc(r.payment_status)+'</td><td>'+fmtDate(r.payment_date)+'</td></tr>'; }).join(''));
     } catch(e) { el.innerHTML = '<p style="color:#dc3545;">Error loading NHIF data: '+e.message+'</p>'; }
 }
 

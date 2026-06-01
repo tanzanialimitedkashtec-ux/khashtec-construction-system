@@ -945,119 +945,119 @@ router.get('/system-changes', async (req, res) => {
         // Track leadership management changes
         try {
             const leadership = await db.execute(`
-                SELECT id, title, description, priority, status, created_at
+                SELECT id, position, department, current_holder, leadership_level, status, created_at
                 FROM leadership_management
                 WHERE created_at >= DATE_SUB(NOW(), INTERVAL ${safeDaysVal} DAY)
                 ORDER BY created_at DESC LIMIT 50
             `);
             leadership.forEach(r => {
-                changes.push({ type: 'leadership_change', icon: '👔', title: 'Leadership: ' + (r.title || 'Update'),
-                    description: `${r.description || 'Leadership record'} (Priority: ${r.priority || 'N/A'})`,
-                    entity_id: r.id, entity_name: r.title, status: r.status, timestamp: r.created_at });
+                changes.push({ type: 'leadership_change', icon: '👔', title: 'Leadership: ' + (r.position || 'Update'),
+                    description: `${r.current_holder || 'N/A'} - ${r.department || 'N/A'} (${r.leadership_level || 'N/A'})`,
+                    entity_id: r.id, entity_name: r.position, status: r.status, timestamp: r.created_at });
             });
         } catch (e) { console.log('Leadership tracking:', e.message); }
 
         // Track accountant changes
         try {
             const accountants = await db.execute(`
-                SELECT id, title, description, amount, status, created_at
+                SELECT id, name, email, department, employment_type, status, created_at
                 FROM accountants
                 WHERE created_at >= DATE_SUB(NOW(), INTERVAL ${safeDaysVal} DAY)
                 ORDER BY created_at DESC LIMIT 50
             `);
             accountants.forEach(r => {
-                changes.push({ type: 'accountant_change', icon: '📊', title: 'Accountant: ' + (r.title || 'Update'),
-                    description: `${r.description || 'Accountant record'} (Amount: ${r.amount || 'N/A'})`,
-                    entity_id: r.id, entity_name: r.title, status: r.status, timestamp: r.created_at });
+                changes.push({ type: 'accountant_change', icon: '📊', title: 'Accountant: ' + (r.name || 'Update'),
+                    description: `${r.name || 'N/A'} - ${r.department || 'N/A'} (${r.employment_type || 'N/A'})`,
+                    entity_id: r.id, entity_name: r.name, status: r.status, timestamp: r.created_at });
             });
         } catch (e) { console.log('Accountant tracking:', e.message); }
 
         // Track mission & vision changes
         try {
             const mv = await db.execute(`
-                SELECT id, title, description, category, status, created_at
+                SELECT id, mission_statement, mission_category, vision_statement, status, created_at
                 FROM mission_vision
                 WHERE created_at >= DATE_SUB(NOW(), INTERVAL ${safeDaysVal} DAY)
                 ORDER BY created_at DESC LIMIT 50
             `);
             mv.forEach(r => {
-                changes.push({ type: 'mission_vision_change', icon: '🎯', title: 'Mission/Vision: ' + (r.title || 'Update'),
-                    description: `${r.description || 'Mission/Vision record'} (${r.category || 'General'})`,
-                    entity_id: r.id, entity_name: r.title, status: r.status, timestamp: r.created_at });
+                changes.push({ type: 'mission_vision_change', icon: '🎯', title: 'Mission/Vision: ' + (r.mission_category || 'Update'),
+                    description: `${(r.mission_statement || '').substring(0, 80)} (${r.mission_category || 'General'})`,
+                    entity_id: r.id, entity_name: r.mission_category, status: r.status, timestamp: r.created_at });
             });
         } catch (e) { console.log('Mission/Vision tracking:', e.message); }
 
         // Track long-term growth changes
         try {
             const ltg = await db.execute(`
-                SELECT id, title, description, status, created_at
+                SELECT id, growth_title, growth_category, timeframe, status, created_at
                 FROM long_term_growth
                 WHERE created_at >= DATE_SUB(NOW(), INTERVAL ${safeDaysVal} DAY)
                 ORDER BY created_at DESC LIMIT 50
             `);
             ltg.forEach(r => {
-                changes.push({ type: 'long_term_change', icon: '📈', title: 'Long-Term Growth: ' + (r.title || 'Update'),
-                    description: r.description || 'Growth strategy record',
-                    entity_id: r.id, entity_name: r.title, status: r.status, timestamp: r.created_at });
+                changes.push({ type: 'long_term_change', icon: '📈', title: 'Long-Term Growth: ' + (r.growth_title || 'Update'),
+                    description: `${r.growth_category || 'Strategy'} - Timeframe: ${r.timeframe || 'N/A'}`,
+                    entity_id: r.id, entity_name: r.growth_title, status: r.status, timestamp: r.created_at });
             });
         } catch (e) { console.log('Long-term growth tracking:', e.message); }
 
         // Track senior hiring changes
         try {
             const sh = await db.execute(`
-                SELECT id, position_title, department, requested_by, status, created_at
+                SELECT id, candidate_name, department, position_level, proposed_salary, requested_by, status, created_at
                 FROM senior_hiring_requests
                 WHERE created_at >= DATE_SUB(NOW(), INTERVAL ${safeDaysVal} DAY)
                 ORDER BY created_at DESC LIMIT 50
             `);
             sh.forEach(r => {
-                changes.push({ type: 'senior_hiring_change', icon: '👥', title: 'Senior Hiring: ' + (r.position_title || 'Request'),
-                    description: `${r.position_title || 'Position'} in ${r.department || 'N/A'} by ${r.requested_by || 'Unknown'}`,
-                    entity_id: r.id, entity_name: r.position_title, status: r.status, timestamp: r.created_at });
+                changes.push({ type: 'senior_hiring_change', icon: '👥', title: 'Senior Hiring: ' + (r.candidate_name || 'Request'),
+                    description: `${r.candidate_name || 'Candidate'} - ${r.position_level || 'N/A'} in ${r.department || 'N/A'}`,
+                    entity_id: r.id, entity_name: r.candidate_name, status: r.status, timestamp: r.created_at });
             });
         } catch (e) { console.log('Senior hiring tracking:', e.message); }
 
         // Track workforce budget changes
         try {
             const wb = await db.execute(`
-                SELECT id, department, budget_amount, purpose, status, created_at
+                SELECT id, budget_period, total_proposed, submitted_by, status, created_at
                 FROM workforce_budgets
                 WHERE created_at >= DATE_SUB(NOW(), INTERVAL ${safeDaysVal} DAY)
                 ORDER BY created_at DESC LIMIT 50
             `);
             wb.forEach(r => {
-                changes.push({ type: 'workforce_budget_change', icon: '💰', title: 'Workforce Budget: ' + (r.department || 'Request'),
-                    description: `${r.purpose || 'Budget request'} - Amount: ${Number(r.budget_amount || 0).toLocaleString()}`,
-                    entity_id: r.id, entity_name: r.department, status: r.status, timestamp: r.created_at });
+                changes.push({ type: 'workforce_budget_change', icon: '💰', title: 'Workforce Budget: ' + (r.budget_period || 'Request'),
+                    description: `Period: ${r.budget_period || 'N/A'} - Total: ${Number(r.total_proposed || 0).toLocaleString()}`,
+                    entity_id: r.id, entity_name: r.budget_period, status: r.status, timestamp: r.created_at });
             });
         } catch (e) { console.log('Workforce budget tracking:', e.message); }
 
         // Track NHIF contribution changes
         try {
             const nhif = await db.execute(`
-                SELECT id, employee_name, nhif_number, amount, month, status, created_at
+                SELECT id, employee_id, contribution_month, total_contribution, payment_status, created_at
                 FROM nhif_contributions
                 WHERE created_at >= DATE_SUB(NOW(), INTERVAL ${safeDaysVal} DAY)
                 ORDER BY created_at DESC LIMIT 50
             `);
             nhif.forEach(r => {
-                changes.push({ type: 'nhif_contribution', icon: '🏥', title: 'NHIF: ' + (r.employee_name || 'Contribution'),
-                    description: `${r.employee_name || 'Employee'} - NHIF#${r.nhif_number || 'N/A'} Amount: ${r.amount || 'N/A'} (${r.month || 'N/A'})`,
-                    entity_id: r.id, entity_name: r.employee_name, status: r.status, timestamp: r.created_at });
+                changes.push({ type: 'nhif_contribution', icon: '🏥', title: 'NHIF: Employee #' + (r.employee_id || 'N/A'),
+                    description: `Employee #${r.employee_id || 'N/A'} - Total: ${r.total_contribution || 'N/A'} (${r.contribution_month || 'N/A'})`,
+                    entity_id: r.id, entity_name: 'Employee #' + r.employee_id, status: r.payment_status, timestamp: r.created_at });
             });
         } catch (e) { console.log('NHIF tracking:', e.message); }
 
         // Track team changes
         try {
             const teams = await db.execute(`
-                SELECT id, name, team_leader, department, status, created_at
+                SELECT id, name, department, description, status, created_at
                 FROM teams
                 WHERE created_at >= DATE_SUB(NOW(), INTERVAL ${safeDaysVal} DAY)
                 ORDER BY created_at DESC LIMIT 50
             `);
             teams.forEach(r => {
                 changes.push({ type: 'team_change', icon: '👨‍👩‍👧‍👦', title: 'Team: ' + (r.name || 'Update'),
-                    description: `Team "${r.name}" led by ${r.team_leader || 'N/A'} in ${r.department || 'N/A'}`,
+                    description: `Team "${r.name}" in ${r.department || 'N/A'}`,
                     entity_id: r.id, entity_name: r.name, status: r.status, timestamp: r.created_at });
             });
         } catch (e) { console.log('Team tracking:', e.message); }
