@@ -59857,7 +59857,7 @@ function sendNotifications(){
 
     // Load notifications for the table
 
-    loadNotifications();
+    loadNotificationsTable();
 
 }
 
@@ -60075,7 +60075,7 @@ async function sendNotification() {
 
         // Refresh notifications list after successful save
 
-        await loadNotifications();
+        await loadNotificationsTable();
 
     } catch (error) {
 
@@ -60091,7 +60091,7 @@ async function sendNotification() {
 
 // Load notifications from database for table display
 
-async function loadNotifications() {
+async function loadNotificationsTable() {
 
     console.log('ðŸ”„ Loading notifications...');
 
