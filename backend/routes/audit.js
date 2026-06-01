@@ -942,6 +942,126 @@ router.get('/system-changes', async (req, res) => {
             });
         } catch (e) { console.log('Transport cost tracking:', e.message); }
 
+        // Track leadership management changes
+        try {
+            const leadership = await db.execute(`
+                SELECT id, title, description, priority, status, created_at
+                FROM leadership_management
+                WHERE created_at >= DATE_SUB(NOW(), INTERVAL ${safeDaysVal} DAY)
+                ORDER BY created_at DESC LIMIT 50
+            `);
+            leadership.forEach(r => {
+                changes.push({ type: 'leadership_change', icon: '👔', title: 'Leadership: ' + (r.title || 'Update'),
+                    description: `${r.description || 'Leadership record'} (Priority: ${r.priority || 'N/A'})`,
+                    entity_id: r.id, entity_name: r.title, status: r.status, timestamp: r.created_at });
+            });
+        } catch (e) { console.log('Leadership tracking:', e.message); }
+
+        // Track accountant changes
+        try {
+            const accountants = await db.execute(`
+                SELECT id, title, description, amount, status, created_at
+                FROM accountants
+                WHERE created_at >= DATE_SUB(NOW(), INTERVAL ${safeDaysVal} DAY)
+                ORDER BY created_at DESC LIMIT 50
+            `);
+            accountants.forEach(r => {
+                changes.push({ type: 'accountant_change', icon: '📊', title: 'Accountant: ' + (r.title || 'Update'),
+                    description: `${r.description || 'Accountant record'} (Amount: ${r.amount || 'N/A'})`,
+                    entity_id: r.id, entity_name: r.title, status: r.status, timestamp: r.created_at });
+            });
+        } catch (e) { console.log('Accountant tracking:', e.message); }
+
+        // Track mission & vision changes
+        try {
+            const mv = await db.execute(`
+                SELECT id, title, description, category, status, created_at
+                FROM mission_vision
+                WHERE created_at >= DATE_SUB(NOW(), INTERVAL ${safeDaysVal} DAY)
+                ORDER BY created_at DESC LIMIT 50
+            `);
+            mv.forEach(r => {
+                changes.push({ type: 'mission_vision_change', icon: '🎯', title: 'Mission/Vision: ' + (r.title || 'Update'),
+                    description: `${r.description || 'Mission/Vision record'} (${r.category || 'General'})`,
+                    entity_id: r.id, entity_name: r.title, status: r.status, timestamp: r.created_at });
+            });
+        } catch (e) { console.log('Mission/Vision tracking:', e.message); }
+
+        // Track long-term growth changes
+        try {
+            const ltg = await db.execute(`
+                SELECT id, title, description, status, created_at
+                FROM long_term_growth
+                WHERE created_at >= DATE_SUB(NOW(), INTERVAL ${safeDaysVal} DAY)
+                ORDER BY created_at DESC LIMIT 50
+            `);
+            ltg.forEach(r => {
+                changes.push({ type: 'long_term_change', icon: '📈', title: 'Long-Term Growth: ' + (r.title || 'Update'),
+                    description: r.description || 'Growth strategy record',
+                    entity_id: r.id, entity_name: r.title, status: r.status, timestamp: r.created_at });
+            });
+        } catch (e) { console.log('Long-term growth tracking:', e.message); }
+
+        // Track senior hiring changes
+        try {
+            const sh = await db.execute(`
+                SELECT id, position_title, department, requested_by, status, created_at
+                FROM senior_hiring_requests
+                WHERE created_at >= DATE_SUB(NOW(), INTERVAL ${safeDaysVal} DAY)
+                ORDER BY created_at DESC LIMIT 50
+            `);
+            sh.forEach(r => {
+                changes.push({ type: 'senior_hiring_change', icon: '👥', title: 'Senior Hiring: ' + (r.position_title || 'Request'),
+                    description: `${r.position_title || 'Position'} in ${r.department || 'N/A'} by ${r.requested_by || 'Unknown'}`,
+                    entity_id: r.id, entity_name: r.position_title, status: r.status, timestamp: r.created_at });
+            });
+        } catch (e) { console.log('Senior hiring tracking:', e.message); }
+
+        // Track workforce budget changes
+        try {
+            const wb = await db.execute(`
+                SELECT id, department, budget_amount, purpose, status, created_at
+                FROM workforce_budgets
+                WHERE created_at >= DATE_SUB(NOW(), INTERVAL ${safeDaysVal} DAY)
+                ORDER BY created_at DESC LIMIT 50
+            `);
+            wb.forEach(r => {
+                changes.push({ type: 'workforce_budget_change', icon: '💰', title: 'Workforce Budget: ' + (r.department || 'Request'),
+                    description: `${r.purpose || 'Budget request'} - Amount: ${Number(r.budget_amount || 0).toLocaleString()}`,
+                    entity_id: r.id, entity_name: r.department, status: r.status, timestamp: r.created_at });
+            });
+        } catch (e) { console.log('Workforce budget tracking:', e.message); }
+
+        // Track NHIF contribution changes
+        try {
+            const nhif = await db.execute(`
+                SELECT id, employee_name, nhif_number, amount, month, status, created_at
+                FROM nhif_contributions
+                WHERE created_at >= DATE_SUB(NOW(), INTERVAL ${safeDaysVal} DAY)
+                ORDER BY created_at DESC LIMIT 50
+            `);
+            nhif.forEach(r => {
+                changes.push({ type: 'nhif_contribution', icon: '🏥', title: 'NHIF: ' + (r.employee_name || 'Contribution'),
+                    description: `${r.employee_name || 'Employee'} - NHIF#${r.nhif_number || 'N/A'} Amount: ${r.amount || 'N/A'} (${r.month || 'N/A'})`,
+                    entity_id: r.id, entity_name: r.employee_name, status: r.status, timestamp: r.created_at });
+            });
+        } catch (e) { console.log('NHIF tracking:', e.message); }
+
+        // Track team changes
+        try {
+            const teams = await db.execute(`
+                SELECT id, name, team_leader, department, status, created_at
+                FROM teams
+                WHERE created_at >= DATE_SUB(NOW(), INTERVAL ${safeDaysVal} DAY)
+                ORDER BY created_at DESC LIMIT 50
+            `);
+            teams.forEach(r => {
+                changes.push({ type: 'team_change', icon: '👨‍👩‍👧‍👦', title: 'Team: ' + (r.name || 'Update'),
+                    description: `Team "${r.name}" led by ${r.team_leader || 'N/A'} in ${r.department || 'N/A'}`,
+                    entity_id: r.id, entity_name: r.name, status: r.status, timestamp: r.created_at });
+            });
+        } catch (e) { console.log('Team tracking:', e.message); }
+
         // Filter by type if specified
         let filtered = changes;
         if (type) {
@@ -977,7 +1097,15 @@ router.get('/system-changes', async (req, res) => {
             luggagePurchases: changes.filter(c => c.type === 'luggage_purchase').length,
             materialsIn: changes.filter(c => c.type === 'material_received').length,
             materialsOut: changes.filter(c => c.type === 'material_issued').length,
-            transport: changes.filter(c => c.type === 'transport_cost').length
+            transport: changes.filter(c => c.type === 'transport_cost').length,
+            leadership: changes.filter(c => c.type === 'leadership_change').length,
+            accountant: changes.filter(c => c.type === 'accountant_change').length,
+            missionVision: changes.filter(c => c.type === 'mission_vision_change').length,
+            longTerm: changes.filter(c => c.type === 'long_term_change').length,
+            seniorHiring: changes.filter(c => c.type === 'senior_hiring_change').length,
+            workforceBudget: changes.filter(c => c.type === 'workforce_budget_change').length,
+            nhif: changes.filter(c => c.type === 'nhif_contribution').length,
+            teams: changes.filter(c => c.type === 'team_change').length
         };
 
         console.log(`🔔 System changes loaded: ${filtered.length} changes (${changes.length} total before filter)`);

@@ -39344,6 +39344,27 @@ function financeAudits(){
 
         </div>
 
+        <hr style="margin:20px 0;border-color:#eee;">
+        <h4>📊 Department Overview (Read-Only)</h4>
+        <p>Monitor changes and current state across all departments. This is a read-only view for audit purposes.</p>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin:12px 0;">
+            <button class="action" style="font-size:11px;" onclick="switchAuditDeptSection('auditLeadership')">Leadership</button>
+            <button class="action" style="font-size:11px;" onclick="switchAuditDeptSection('auditAccountant')">Accountant</button>
+            <button class="action" style="font-size:11px;" onclick="switchAuditDeptSection('auditLongTerm')">Long-Term Growth</button>
+            <button class="action" style="font-size:11px;" onclick="switchAuditDeptSection('auditMissionVision')">Mission & Vision</button>
+            <button class="action" style="font-size:11px;" onclick="switchAuditDeptSection('auditStaffOverview')">Staff Overview</button>
+            <button class="action" style="font-size:11px;" onclick="switchAuditDeptSection('auditSeniorHiring')">Senior Hiring</button>
+            <button class="action" style="font-size:11px;" onclick="switchAuditDeptSection('auditWorkforceBudget')">Workforce Budget</button>
+            <button class="action" style="font-size:11px;" onclick="switchAuditDeptSection('auditAssignedWorkers')">Assigned Workers</button>
+            <button class="action" style="font-size:11px;" onclick="switchAuditDeptSection('auditTeamMgmt')">Team Management</button>
+            <button class="action" style="font-size:11px;" onclick="switchAuditDeptSection('auditAssignTasks')">Assign Tasks</button>
+            <button class="action" style="font-size:11px;" onclick="switchAuditDeptSection('auditSafetyStatus')">Project Safety</button>
+            <button class="action" style="font-size:11px;" onclick="switchAuditDeptSection('auditNhif')">NHIF Contribution</button>
+        </div>
+        <div id="auditDeptContent" style="margin-top:15px;">
+            <p style="color:#888;">Select a section above to view its current data.</p>
+        </div>
+
     </div>`);
 
 }
@@ -70162,6 +70183,196 @@ async function generateAdminReport() {
 
 
 
+
+// ===== DEPARTMENT OVERVIEW — READ-ONLY AUDIT SECTIONS =====
+
+function switchAuditDeptSection(sectionId) {
+    const el = document.getElementById('auditDeptContent');
+    if (!el) return;
+    el.innerHTML = '<p>Loading...</p>';
+    const loaders = {
+        auditLeadership: loadAuditLeadership,
+        auditAccountant: loadAuditAccountant,
+        auditLongTerm: loadAuditLongTerm,
+        auditMissionVision: loadAuditMissionVision,
+        auditStaffOverview: loadAuditStaffOverview,
+        auditSeniorHiring: loadAuditSeniorHiring,
+        auditWorkforceBudget: loadAuditWorkforceBudget,
+        auditAssignedWorkers: loadAuditAssignedWorkers,
+        auditTeamMgmt: loadAuditTeamMgmt,
+        auditAssignTasks: loadAuditAssignTasks,
+        auditSafetyStatus: loadAuditSafetyStatus,
+        auditNhif: loadAuditNhif
+    };
+    if (loaders[sectionId]) loaders[sectionId](el);
+}
+
+function auditTableWrap(title, headersArr, rowsHtml) {
+    return '<h5 style="margin:0 0 8px;">' + title + '</h5>' +
+        (rowsHtml ? '<div style="overflow-x:auto;"><table class="audit-table" style="width:100%;font-size:12px;"><thead><tr>' +
+        headersArr.map(function(h){ return '<th>' + h + '</th>'; }).join('') +
+        '</tr></thead><tbody>' + rowsHtml + '</tbody></table></div>'
+        : '<p style="color:#999;">No records found.</p>');
+}
+
+function fmtDate(d) { return d ? new Date(d).toLocaleDateString() : 'N/A'; }
+function esc(s) { return (s || 'N/A').toString().replace(/</g, '&lt;'); }
+
+async function loadAuditLeadership(el) {
+    try {
+        var res = await fetch('/api/accountant/leadership');
+        var data = await res.json();
+        var rows = (data.data || data || []);
+        el.innerHTML = auditTableWrap('Leadership Management Records', ['#','Title','Description','Priority','Status','Created'],
+            rows.map(function(r,i){ return '<tr><td>'+(i+1)+'</td><td>'+esc(r.title)+'</td><td>'+esc(r.description)+'</td><td>'+esc(r.priority)+'</td><td>'+esc(r.status)+'</td><td>'+fmtDate(r.created_at)+'</td></tr>'; }).join(''));
+    } catch(e) { el.innerHTML = '<p style="color:#dc3545;">Error loading leadership data: '+e.message+'</p>'; }
+}
+
+async function loadAuditAccountant(el) {
+    try {
+        var res = await fetch('/api/accountant/accountant');
+        var data = await res.json();
+        var rows = (data.data || data || []);
+        el.innerHTML = auditTableWrap('Accountant Management Records', ['#','Title','Description','Amount','Status','Created'],
+            rows.map(function(r,i){ return '<tr><td>'+(i+1)+'</td><td>'+esc(r.title)+'</td><td>'+esc(r.description)+'</td><td>'+esc(r.amount)+'</td><td>'+esc(r.status)+'</td><td>'+fmtDate(r.created_at)+'</td></tr>'; }).join(''));
+    } catch(e) { el.innerHTML = '<p style="color:#dc3545;">Error loading accountant data: '+e.message+'</p>'; }
+}
+
+async function loadAuditLongTerm(el) {
+    try {
+        var res = await fetch('/api/accountant/long-term-growth');
+        var data = await res.json();
+        var rows = (data.data || data || []);
+        el.innerHTML = auditTableWrap('Long-Term Growth Strategy Records', ['#','Title','Description','Target Date','Status','Created'],
+            rows.map(function(r,i){ return '<tr><td>'+(i+1)+'</td><td>'+esc(r.title)+'</td><td>'+esc(r.description)+'</td><td>'+fmtDate(r.target_date)+'</td><td>'+esc(r.status)+'</td><td>'+fmtDate(r.created_at)+'</td></tr>'; }).join(''));
+    } catch(e) { el.innerHTML = '<p style="color:#dc3545;">Error loading long-term growth data: '+e.message+'</p>'; }
+}
+
+async function loadAuditMissionVision(el) {
+    try {
+        var res = await fetch('/api/accountant/mission-vision');
+        var data = await res.json();
+        var rows = (data.data || data || []);
+        el.innerHTML = auditTableWrap('Mission & Vision Records', ['#','Title','Description','Category','Status','Created'],
+            rows.map(function(r,i){ return '<tr><td>'+(i+1)+'</td><td>'+esc(r.title)+'</td><td>'+esc(r.description)+'</td><td>'+esc(r.category)+'</td><td>'+esc(r.status)+'</td><td>'+fmtDate(r.created_at)+'</td></tr>'; }).join(''));
+    } catch(e) { el.innerHTML = '<p style="color:#dc3545;">Error loading mission & vision data: '+e.message+'</p>'; }
+}
+
+async function loadAuditStaffOverview(el) {
+    try {
+        var res = await fetch('/api/employees');
+        var data = await res.json();
+        var rows = Array.isArray(data) ? data : (data.data || []);
+        var active = rows.filter(function(e){ return (e.status||'').toLowerCase() === 'active'; }).length;
+        var html = '<div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:12px;">' +
+            '<div class="chg-card"><span class="chg-num">'+rows.length+'</span><span class="chg-lbl">Total Staff</span></div>' +
+            '<div class="chg-card"><span class="chg-num">'+active+'</span><span class="chg-lbl">Active</span></div>' +
+            '<div class="chg-card"><span class="chg-num">'+(rows.length-active)+'</span><span class="chg-lbl">Inactive</span></div></div>';
+        html += auditTableWrap('Staff Overview', ['#','Name','Department','Position','Status','Joined'],
+            rows.slice(0,100).map(function(r,i){ return '<tr><td>'+(i+1)+'</td><td>'+esc(r.full_name||r.name)+'</td><td>'+esc(r.department)+'</td><td>'+esc(r.position)+'</td><td>'+esc(r.status)+'</td><td>'+fmtDate(r.created_at||r.hire_date)+'</td></tr>'; }).join(''));
+        el.innerHTML = html;
+    } catch(e) { el.innerHTML = '<p style="color:#dc3545;">Error loading staff data: '+e.message+'</p>'; }
+}
+
+async function loadAuditSeniorHiring(el) {
+    try {
+        var res = await fetch('/api/senior-hiring');
+        var data = await res.json();
+        var rows = (data.data || data.requests || data || []);
+        var arr = Array.isArray(rows) ? rows : [];
+        el.innerHTML = auditTableWrap('Senior Hiring Requests', ['#','Position','Department','Requested By','Status','Salary Range','Created'],
+            arr.map(function(r,i){ return '<tr><td>'+(i+1)+'</td><td>'+esc(r.position_title||r.position)+'</td><td>'+esc(r.department)+'</td><td>'+esc(r.requested_by)+'</td><td>'+esc(r.status)+'</td><td>'+esc(r.salary_range||r.budget)+'</td><td>'+fmtDate(r.created_at)+'</td></tr>'; }).join(''));
+    } catch(e) { el.innerHTML = '<p style="color:#dc3545;">Error loading senior hiring data: '+e.message+'</p>'; }
+}
+
+async function loadAuditWorkforceBudget(el) {
+    try {
+        var res = await fetch('/api/workforce-budget');
+        var data = await res.json();
+        var rows = (data.data || data.budgets || data || []);
+        var arr = Array.isArray(rows) ? rows : [];
+        el.innerHTML = auditTableWrap('Workforce Budget Requests', ['#','Department','Budget Amount','Purpose','Status','Approved By','Created'],
+            arr.map(function(r,i){ return '<tr><td>'+(i+1)+'</td><td>'+esc(r.department)+'</td><td>'+esc(r.budget_amount||r.amount)+'</td><td>'+esc(r.purpose||r.description)+'</td><td>'+esc(r.status)+'</td><td>'+esc(r.approved_by)+'</td><td>'+fmtDate(r.created_at)+'</td></tr>'; }).join(''));
+    } catch(e) { el.innerHTML = '<p style="color:#dc3545;">Error loading workforce budget data: '+e.message+'</p>'; }
+}
+
+async function loadAuditAssignedWorkers(el) {
+    try {
+        var res = await fetch('/api/employees');
+        var data = await res.json();
+        var rows = Array.isArray(data) ? data : (data.data || []);
+        var assigned = rows.filter(function(e){ return e.department && e.position; });
+        var html = '<div style="margin-bottom:10px;"><strong>Total Assigned:</strong> '+assigned.length+' / '+rows.length+' employees</div>';
+        html += auditTableWrap('Assigned Workers', ['#','Name','Department','Position','Status'],
+            assigned.slice(0,100).map(function(r,i){ return '<tr><td>'+(i+1)+'</td><td>'+esc(r.full_name||r.name)+'</td><td>'+esc(r.department)+'</td><td>'+esc(r.position)+'</td><td>'+esc(r.status)+'</td></tr>'; }).join(''));
+        el.innerHTML = html;
+    } catch(e) { el.innerHTML = '<p style="color:#dc3545;">Error loading assigned workers: '+e.message+'</p>'; }
+}
+
+async function loadAuditTeamMgmt(el) {
+    try {
+        var res = await fetch('/api/teams');
+        var data = await res.json();
+        var rows = (data.data || data.teams || data || []);
+        var arr = Array.isArray(rows) ? rows : [];
+        if (arr.length === 0) { el.innerHTML = '<h5>Team Management</h5><p style="color:#999;">No teams found.</p>'; return; }
+        el.innerHTML = auditTableWrap('Team Management', ['#','Team Name','Leader','Members','Department','Status','Created'],
+            arr.map(function(r,i){ return '<tr><td>'+(i+1)+'</td><td>'+esc(r.name||r.team_name)+'</td><td>'+esc(r.leader||r.team_leader)+'</td><td>'+esc(r.member_count||r.members)+'</td><td>'+esc(r.department)+'</td><td>'+esc(r.status)+'</td><td>'+fmtDate(r.created_at)+'</td></tr>'; }).join(''));
+    } catch(e) { el.innerHTML = '<p style="color:#dc3545;">Error loading team data: '+e.message+'</p>'; }
+}
+
+async function loadAuditAssignTasks(el) {
+    try {
+        var res = await fetch('/api/tasks');
+        var data = await res.json();
+        var rows = (data.data || data.tasks || data || []);
+        var arr = Array.isArray(rows) ? rows : [];
+        var pending = arr.filter(function(t){ return (t.status||'').toLowerCase() === 'pending'; }).length;
+        var completed = arr.filter(function(t){ return (t.status||'').toLowerCase() === 'completed'; }).length;
+        var html = '<div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:12px;">' +
+            '<div class="chg-card"><span class="chg-num">'+arr.length+'</span><span class="chg-lbl">Total Tasks</span></div>' +
+            '<div class="chg-card"><span class="chg-num">'+pending+'</span><span class="chg-lbl">Pending</span></div>' +
+            '<div class="chg-card"><span class="chg-num">'+completed+'</span><span class="chg-lbl">Completed</span></div></div>';
+        html += auditTableWrap('Task Assignments', ['#','Task','Assigned To','Project','Priority','Status','Due Date'],
+            arr.slice(0,100).map(function(r,i){ return '<tr><td>'+(i+1)+'</td><td>'+esc(r.title||r.task_name||r.description)+'</td><td>'+esc(r.assigned_to)+'</td><td>'+esc(r.project||r.project_name)+'</td><td>'+esc(r.priority)+'</td><td>'+esc(r.status)+'</td><td>'+fmtDate(r.due_date)+'</td></tr>'; }).join(''));
+        el.innerHTML = html;
+    } catch(e) { el.innerHTML = '<p style="color:#dc3545;">Error loading tasks data: '+e.message+'</p>'; }
+}
+
+async function loadAuditSafetyStatus(el) {
+    try {
+        var res = await fetch('/api/projects');
+        var data = await res.json();
+        var rows = (data.data || data.projects || data || []);
+        var arr = Array.isArray(rows) ? rows : [];
+        var html = '<div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:12px;">' +
+            '<div class="chg-card"><span class="chg-num">'+arr.length+'</span><span class="chg-lbl">Total Projects</span></div></div>';
+        html += auditTableWrap('Project Safety Status', ['#','Project Name','Location','Status','Safety Rating','Start Date','End Date'],
+            arr.map(function(r,i){ return '<tr><td>'+(i+1)+'</td><td>'+esc(r.name||r.project_name)+'</td><td>'+esc(r.location)+'</td><td>'+esc(r.status)+'</td><td>'+esc(r.safety_rating||r.safety_status||'N/A')+'</td><td>'+fmtDate(r.start_date)+'</td><td>'+fmtDate(r.end_date)+'</td></tr>'; }).join(''));
+        el.innerHTML = html;
+    } catch(e) { el.innerHTML = '<p style="color:#dc3545;">Error loading project safety data: '+e.message+'</p>'; }
+}
+
+async function loadAuditNhif(el) {
+    try {
+        var res = await fetch('/api/nhif');
+        var data = await res.json();
+        var rows = (data.data || data.contributions || data || []);
+        var arr = Array.isArray(rows) ? rows : [];
+        var summaryHtml = '';
+        try {
+            var sRes = await fetch('/api/nhif/summary');
+            var sData = await sRes.json();
+            if (sData) {
+                summaryHtml = '<div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:12px;">' +
+                    '<div class="chg-card"><span class="chg-num">'+(sData.total_contributions||arr.length)+'</span><span class="chg-lbl">Contributions</span></div>' +
+                    '<div class="chg-card"><span class="chg-num">'+(sData.total_amount||'N/A')+'</span><span class="chg-lbl">Total Amount</span></div></div>';
+            }
+        } catch(se) {}
+        el.innerHTML = summaryHtml + auditTableWrap('NHIF Contributions', ['#','Employee','NHIF No','Amount','Month','Status','Created'],
+            arr.map(function(r,i){ return '<tr><td>'+(i+1)+'</td><td>'+esc(r.employee_name||r.full_name)+'</td><td>'+esc(r.nhif_number||r.nhif_no)+'</td><td>'+esc(r.amount||r.contribution_amount)+'</td><td>'+esc(r.month||r.period)+'</td><td>'+esc(r.status)+'</td><td>'+fmtDate(r.created_at)+'</td></tr>'; }).join(''));
+    } catch(e) { el.innerHTML = '<p style="color:#dc3545;">Error loading NHIF data: '+e.message+'</p>'; }
+}
 
 // User management functions (suspendUser, reactivateUser, viewUserDetails) are defined above
 // Additional missing functions
