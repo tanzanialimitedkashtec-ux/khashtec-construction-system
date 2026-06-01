@@ -658,7 +658,49 @@ header h2 {
 
 }
 
-
+.notification-btn { position: relative; }
+.notification-badge {
+    position: absolute; top: -4px; right: -4px;
+    background: #dc3545; color: #fff; font-size: 9px; font-weight: 700;
+    min-width: 16px; height: 16px; line-height: 16px; text-align: center;
+    border-radius: 50%; padding: 0 3px;
+}
+.notification-panel {
+    display: none; position: absolute; top: 40px; right: 0;
+    width: 360px; max-height: 480px; background: #fff;
+    border: 1px solid #ddd; border-radius: 8px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.15); z-index: 9999;
+    overflow: hidden; flex-direction: column;
+}
+.notification-panel.open { display: flex; }
+.notification-panel-header {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 12px 16px; border-bottom: 1px solid #eee; background: #f8f9fa;
+}
+.notification-panel-header h4 { margin: 0; font-size: 14px; }
+.notification-panel-header button {
+    background: none; border: none; color: #0b3d91; cursor: pointer; font-size: 12px;
+}
+.notification-panel-body { overflow-y: auto; max-height: 380px; }
+.notification-item {
+    display: flex; gap: 10px; padding: 12px 16px;
+    border-bottom: 1px solid #f0f0f0; cursor: pointer; transition: background 0.15s;
+}
+.notification-item:hover { background: #f0f7ff; }
+.notification-item.unread { background: #f0f7ff; border-left: 3px solid #0b3d91; }
+.notification-item .notif-icon {
+    width: 32px; height: 32px; border-radius: 50%; display: flex;
+    align-items: center; justify-content: center; font-size: 14px; flex-shrink: 0;
+}
+.notification-item .notif-icon.info { background: #e3f2fd; }
+.notification-item .notif-icon.success { background: #e8f5e9; }
+.notification-item .notif-icon.warning { background: #fff3e0; }
+.notification-item .notif-icon.error { background: #fbe9e7; }
+.notification-item .notif-content { flex: 1; min-width: 0; }
+.notification-item .notif-title { font-size: 12px; font-weight: 600; margin: 0 0 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.notification-item .notif-msg { font-size: 11px; color: #666; margin: 0 0 3px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.notification-item .notif-time { font-size: 10px; color: #999; }
+.notification-empty { padding: 40px 16px; text-align: center; color: #999; font-size: 13px; }
 
 .system-content {
 
@@ -23892,7 +23934,16 @@ font-size: 9px;
         <button type="button" class="menu-toggle" onclick="toggleSidebar()">☰</button>
 
         <div class="top-controls-right">
-            <button type="button" class="notification-btn" onclick="showNotifications()">🔔</button>
+            <button type="button" class="notification-btn" onclick="toggleNotificationPanel()">🔔<span id="notifBadge" class="notification-badge" style="display:none;">0</span></button>
+            <div id="notificationPanel" class="notification-panel">
+                <div class="notification-panel-header">
+                    <h4>Notifications</h4>
+                    <button onclick="markAllNotificationsRead()">Mark all read</button>
+                </div>
+                <div class="notification-panel-body" id="notificationList">
+                    <div class="notification-empty">Loading...</div>
+                </div>
+            </div>
 
             <!-- Profile Widget -->
             <div id="profileWidget" class="profile-widget-container">
@@ -24259,6 +24310,8 @@ function login(){
     document.getElementById("userRole").innerText = roleDescriptions[role] + " Dashboard";
 
     loadMenu();
+
+    startNotificationPolling();
 
 }
 
@@ -24660,13 +24713,118 @@ function logout(){
 
 
 
-function showNotifications(){
+// ===== NOTIFICATION SYSTEM =====
+let notificationPollInterval = null;
 
-    // TODO: Implement notification panel or dropdown
-
-    alert('Notifications feature coming soon!');
-
+function toggleNotificationPanel() {
+    const panel = document.getElementById('notificationPanel');
+    if (panel.classList.contains('open')) {
+        panel.classList.remove('open');
+    } else {
+        panel.classList.add('open');
+        loadNotifications();
+    }
 }
+
+// Close panel when clicking outside
+document.addEventListener('click', function(e) {
+    const panel = document.getElementById('notificationPanel');
+    const btn = document.querySelector('.notification-btn');
+    if (panel && btn && !panel.contains(e.target) && !btn.contains(e.target)) {
+        panel.classList.remove('open');
+    }
+});
+
+async function loadNotifications() {
+    try {
+        const res = await fetch('/api/notifications');
+        const data = await res.json();
+        const notifications = data.notifications || [];
+        const listEl = document.getElementById('notificationList');
+        if (!notifications.length) {
+            listEl.innerHTML = '<div class="notification-empty">No notifications yet</div>';
+            return;
+        }
+        listEl.innerHTML = notifications.slice(0, 50).map(n => {
+            const typeIcon = {info:'ℹ️', success:'✅', warning:'⚠️', error:'❌'}[(n.type||'info').toLowerCase()] || 'ℹ️';
+            const typeCls = (n.type||'info').toLowerCase();
+            const unreadCls = n.is_read ? '' : ' unread';
+            const timeAgo = getTimeAgo(n.created_at);
+            return '<div class="notification-item'+unreadCls+'" onclick="openNotification('+n.id+')">' +
+                '<div class="notif-icon '+typeCls+'">'+typeIcon+'</div>' +
+                '<div class="notif-content">' +
+                '<p class="notif-title">'+(n.title||'Notification').replace(/</g,'&lt;')+'</p>' +
+                '<p class="notif-msg">'+(n.message||'').replace(/</g,'&lt;')+'</p>' +
+                '<span class="notif-time">'+timeAgo+'</span>' +
+                '</div></div>';
+        }).join('');
+    } catch(e) {
+        document.getElementById('notificationList').innerHTML = '<div class="notification-empty">Error loading notifications</div>';
+    }
+}
+
+async function updateNotificationBadge() {
+    try {
+        const res = await fetch('/api/notifications?unread=true');
+        const data = await res.json();
+        const unread = (data.notifications || []).length;
+        const badge = document.getElementById('notifBadge');
+        if (badge) {
+            if (unread > 0) {
+                badge.textContent = unread > 99 ? '99+' : unread;
+                badge.style.display = '';
+            } else {
+                badge.style.display = 'none';
+            }
+        }
+    } catch(e) {}
+}
+
+async function openNotification(id) {
+    try {
+        await fetch('/api/notifications/' + id + '/read', { method: 'PUT' });
+    } catch(e) {}
+    const panel = document.getElementById('notificationPanel');
+    panel.classList.remove('open');
+    updateNotificationBadge();
+    // Navigate to system changes tab which shows all changes
+    const changesTab = document.querySelector('[data-tab="systemChanges"]');
+    if (changesTab) changesTab.click();
+}
+
+async function markAllNotificationsRead() {
+    try {
+        const res = await fetch('/api/notifications');
+        const data = await res.json();
+        const notifications = data.notifications || [];
+        for (const n of notifications.filter(x => !x.is_read)) {
+            await fetch('/api/notifications/' + n.id + '/read', { method: 'PUT' });
+        }
+    } catch(e) {}
+    updateNotificationBadge();
+    loadNotifications();
+}
+
+function getTimeAgo(dateStr) {
+    if (!dateStr) return '';
+    const diff = Date.now() - new Date(dateStr).getTime();
+    const mins = Math.floor(diff / 60000);
+    if (mins < 1) return 'Just now';
+    if (mins < 60) return mins + 'm ago';
+    const hrs = Math.floor(mins / 60);
+    if (hrs < 24) return hrs + 'h ago';
+    const days = Math.floor(hrs / 24);
+    if (days < 7) return days + 'd ago';
+    return new Date(dateStr).toLocaleDateString();
+}
+
+function startNotificationPolling() {
+    updateNotificationBadge();
+    if (notificationPollInterval) clearInterval(notificationPollInterval);
+    notificationPollInterval = setInterval(updateNotificationBadge, 30000);
+}
+
+function showNotifications() { toggleNotificationPanel(); }
 
 
 
