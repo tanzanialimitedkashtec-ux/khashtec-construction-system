@@ -70327,14 +70327,14 @@ async function loadAuditAssignTasks(el) {
         var data = await res.json();
         var rows = (data.data || data.tasks || data || []);
         var arr = Array.isArray(rows) ? rows : [];
-        var pending = arr.filter(function(t){ return (t.status||'').toLowerCase() === 'pending'; }).length;
-        var completed = arr.filter(function(t){ return (t.status||'').toLowerCase() === 'completed'; }).length;
+        var pending = arr.filter(function(t){ return (t.task_status||t.status||'').toLowerCase().indexOf('not started') !== -1 || (t.task_status||t.status||'').toLowerCase() === 'pending'; }).length;
+        var completed = arr.filter(function(t){ return (t.task_status||t.status||'').toLowerCase() === 'completed'; }).length;
         var html = '<div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:12px;">' +
             '<div class="chg-card"><span class="chg-num">'+arr.length+'</span><span class="chg-lbl">Total Tasks</span></div>' +
             '<div class="chg-card"><span class="chg-num">'+pending+'</span><span class="chg-lbl">Pending</span></div>' +
             '<div class="chg-card"><span class="chg-num">'+completed+'</span><span class="chg-lbl">Completed</span></div></div>';
         html += auditTableWrap('Task Assignments', ['#','Task','Assigned To','Project','Priority','Status','Due Date'],
-            arr.slice(0,100).map(function(r,i){ return '<tr><td>'+(i+1)+'</td><td>'+esc(r.title||r.task_name||r.description)+'</td><td>'+esc(r.assigned_to)+'</td><td>'+esc(r.project||r.project_name)+'</td><td>'+esc(r.priority)+'</td><td>'+esc(r.status)+'</td><td>'+fmtDate(r.due_date)+'</td></tr>'; }).join(''));
+            arr.slice(0,100).map(function(r,i){ return '<tr><td>'+(i+1)+'</td><td>'+esc(r.task_name||r.title||r.description)+'</td><td>'+esc(r.assigned_to)+'</td><td>'+esc(r.project_name||r.project)+'</td><td>'+esc(r.task_priority)+'</td><td>'+esc(r.task_status)+'</td><td>'+fmtDate(r.due_date)+'</td></tr>'; }).join(''));
         el.innerHTML = html;
     } catch(e) { el.innerHTML = '<p style="color:#dc3545;">Error loading tasks data: '+e.message+'</p>'; }
 }
@@ -70347,8 +70347,8 @@ async function loadAuditSafetyStatus(el) {
         var arr = Array.isArray(rows) ? rows : [];
         var html = '<div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:12px;">' +
             '<div class="chg-card"><span class="chg-num">'+arr.length+'</span><span class="chg-lbl">Total Projects</span></div></div>';
-        html += auditTableWrap('Project Safety Status', ['#','Project Name','Location','Status','Safety Rating','Start Date','End Date'],
-            arr.map(function(r,i){ return '<tr><td>'+(i+1)+'</td><td>'+esc(r.name||r.project_name)+'</td><td>'+esc(r.location)+'</td><td>'+esc(r.status)+'</td><td>'+esc(r.safety_rating||r.safety_status||'N/A')+'</td><td>'+fmtDate(r.start_date)+'</td><td>'+fmtDate(r.end_date)+'</td></tr>'; }).join(''));
+        html += auditTableWrap('Project Safety Status', ['#','Project Name','Location','Status','Priority Level','Start Date','End Date'],
+            arr.map(function(r,i){ return '<tr><td>'+(i+1)+'</td><td>'+esc(r.name||r.project_name)+'</td><td>'+esc(r.location)+'</td><td>'+esc(r.status)+'</td><td>'+esc(r.priority_level)+'</td><td>'+fmtDate(r.start_date)+'</td><td>'+fmtDate(r.end_date)+'</td></tr>'; }).join(''));
         el.innerHTML = html;
     } catch(e) { el.innerHTML = '<p style="color:#dc3545;">Error loading project safety data: '+e.message+'</p>'; }
 }
@@ -70369,8 +70369,8 @@ async function loadAuditNhif(el) {
                     '<div class="chg-card"><span class="chg-num">'+(sData.total_amount||'N/A')+'</span><span class="chg-lbl">Total Amount</span></div></div>';
             }
         } catch(se) {}
-        el.innerHTML = summaryHtml + auditTableWrap('NHIF Contributions', ['#','Employee ID','Month','Employee Contrib.','Employer Contrib.','Total','Payment Status','Payment Date'],
-            arr.map(function(r,i){ return '<tr><td>'+(i+1)+'</td><td>'+esc(r.employee_id)+'</td><td>'+fmtDate(r.contribution_month)+'</td><td>'+esc(r.employee_contribution)+'</td><td>'+esc(r.employer_contribution)+'</td><td>'+esc(r.total_contribution)+'</td><td>'+esc(r.payment_status)+'</td><td>'+fmtDate(r.payment_date)+'</td></tr>'; }).join(''));
+        el.innerHTML = summaryHtml + auditTableWrap('NHIF Contributions', ['#','Employee ID','Month','Employee Contrib.','Employer Contrib.','Total','Payment Status','Created'],
+            arr.map(function(r,i){ return '<tr><td>'+(i+1)+'</td><td>'+esc(r.employee_id)+'</td><td>'+fmtDate(r.contribution_month)+'</td><td>'+esc(r.employee_contribution)+'</td><td>'+esc(r.employer_contribution)+'</td><td>'+esc(r.total_contribution)+'</td><td>'+esc(r.payment_status)+'</td><td>'+fmtDate(r.created_at)+'</td></tr>'; }).join(''));
     } catch(e) { el.innerHTML = '<p style="color:#dc3545;">Error loading NHIF data: '+e.message+'</p>'; }
 }
 
