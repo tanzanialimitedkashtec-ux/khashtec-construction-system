@@ -1698,8 +1698,12 @@ async function approvePolicy(policyId) {
                         policyElement.querySelector('.status-badge').style.background = '#28a745';
                 }
                 
-                // Refresh policies list
-                setTimeout(() => loadPolicies(), 2000);
+                // Refresh policies lists
+                setTimeout(() => {
+                    loadPolicies();
+                    if (typeof fetchPoliciesForApproval === 'function') fetchPoliciesForApproval();
+                    if (typeof loadPolicyRecords === 'function') loadPolicyRecords();
+                }, 2000);
         } else {
                 showNotification('Failed to approve policy: ' + result.error, 'error', 5000);
         }
@@ -1718,20 +1722,66 @@ async function rejectPolicy(policyId) {
         const currentUser = sessionManager.getCurrentUser() || {};
         const rejectedBy = currentUser.email || 'HR Manager';
         
-        // Show custom rejection modal instead of prompt
-        showCustomRejectionModal('Policy Rejection', 'Please enter rejection reason:', (rejectionReason) => {
-            if (!rejectionReason) {
-                showNotification('Rejection cancelled', 'info', 2000);
-                return;
-            }
-            
-            // Process rejection
-            processPolicyRejection(policyId, rejectionReason, rejectedBy);
-        });
+        // Show policy rejection modal
+        showPolicyRejectionModal(policyId, rejectedBy);
     } catch (error) {
         console.error('❌ Error rejecting policy:', error);
         showNotification('Error rejecting policy: ' + error.message, 'error', 5000);
     }
+}
+
+function showPolicyRejectionModal(policyId, rejectedBy) {
+    const modalOverlay = document.createElement('div');
+    modalOverlay.className = 'modal-overlay';
+    modalOverlay.style.cssText = `
+        position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+        background: rgba(0,0,0,0.5); display: flex; align-items: center;
+        justify-content: center; z-index: 10000;
+    `;
+    const modalContent = document.createElement('div');
+    modalContent.style.cssText = `
+        background: white; padding: 30px; border-radius: 10px;
+        max-width: 500px; width: 90%; box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+    `;
+    modalContent.innerHTML = `
+        <h3 style="margin: 0 0 20px 0; color: #dc3545;">Policy Rejection</h3>
+        <p style="margin: 0 0 10px 0; color: #666;">Policy ID: <strong>${policyId}</strong></p>
+        <textarea id="policyRejectionReason" rows="4" style="
+            width: 100%; padding: 10px; border: 2px solid #ddd; border-radius: 5px;
+            font-size: 14px; resize: vertical; box-sizing: border-box;
+        " placeholder="Please enter the reason for rejecting this policy..."></textarea>
+        <div style="margin-top: 20px; text-align: right;">
+            <button id="cancelPolicyRejection" style="
+                background: #6c757d; color: white; border: none; padding: 10px 20px;
+                margin-right: 10px; border-radius: 5px; cursor: pointer; font-size: 14px;
+            ">Cancel</button>
+            <button id="confirmPolicyRejection" style="
+                background: #dc3545; color: white; border: none; padding: 10px 20px;
+                border-radius: 5px; cursor: pointer; font-size: 14px;
+            ">Reject Policy</button>
+        </div>
+    `;
+    modalOverlay.appendChild(modalContent);
+    document.body.appendChild(modalOverlay);
+
+    setTimeout(() => modalContent.querySelector('#policyRejectionReason').focus(), 100);
+
+    modalContent.querySelector('#confirmPolicyRejection').addEventListener('click', () => {
+        const reason = modalContent.querySelector('#policyRejectionReason').value.trim();
+        if (reason) {
+            modalOverlay.remove();
+            processPolicyRejection(policyId, reason, rejectedBy);
+        } else {
+            alert('Please enter a rejection reason');
+        }
+    });
+    modalContent.querySelector('#cancelPolicyRejection').addEventListener('click', () => {
+        modalOverlay.remove();
+        showNotification('Rejection cancelled', 'info', 2000);
+    });
+    modalOverlay.addEventListener('click', (e) => {
+        if (e.target === modalOverlay) modalOverlay.remove();
+    });
 }
 
 async function processPolicyRejection(policyId, rejectionReason, rejectedBy) {
@@ -1762,8 +1812,12 @@ async function processPolicyRejection(policyId, rejectionReason, rejectedBy) {
                         policyElement.querySelector('.status-badge').style.background = '#dc3545';
                 }
                 
-                // Refresh policies list
-                setTimeout(() => loadPolicies(), 2000);
+                // Refresh policies lists
+                setTimeout(() => {
+                    loadPolicies();
+                    if (typeof fetchPoliciesForApproval === 'function') fetchPoliciesForApproval();
+                    if (typeof loadPolicyRecords === 'function') loadPolicyRecords();
+                }, 2000);
         } else {
                 showNotification('Failed to reject policy: ' + result.error, 'error', 5000);
         }
@@ -1782,20 +1836,66 @@ async function requestPolicyRevision(policyId) {
         const currentUser = sessionManager.getCurrentUser() || {};
         const requestedBy = currentUser.email || 'HR Manager';
         
-        // Show custom revision modal instead of prompt
-        showRevisionModal('Policy Revision Request', 'Please enter revision request details:', (revisionRequest) => {
-            if (!revisionRequest) {
-                showNotification('Revision request cancelled', 'info', 2000);
-                return;
-            }
-            
-            // Process revision request
-            processPolicyRevision(policyId, revisionRequest, requestedBy);
-        });
+        // Show policy revision modal
+        showPolicyRevisionModal(policyId, requestedBy);
     } catch (error) {
         console.error('❌ Error requesting revision:', error);
         showNotification('Error requesting revision: ' + error.message, 'error', 5000);
     }
+}
+
+function showPolicyRevisionModal(policyId, requestedBy) {
+    const modalOverlay = document.createElement('div');
+    modalOverlay.className = 'modal-overlay';
+    modalOverlay.style.cssText = `
+        position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+        background: rgba(0,0,0,0.5); display: flex; align-items: center;
+        justify-content: center; z-index: 10000;
+    `;
+    const modalContent = document.createElement('div');
+    modalContent.style.cssText = `
+        background: white; padding: 30px; border-radius: 10px;
+        max-width: 500px; width: 90%; box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+    `;
+    modalContent.innerHTML = `
+        <h3 style="margin: 0 0 20px 0; color: #ffc107;">Policy Revision Request</h3>
+        <p style="margin: 0 0 10px 0; color: #666;">Policy ID: <strong>${policyId}</strong></p>
+        <textarea id="policyRevisionRequest" rows="4" style="
+            width: 100%; padding: 10px; border: 2px solid #ddd; border-radius: 5px;
+            font-size: 14px; resize: vertical; box-sizing: border-box;
+        " placeholder="Please describe what changes are needed..."></textarea>
+        <div style="margin-top: 20px; text-align: right;">
+            <button id="cancelPolicyRevision" style="
+                background: #6c757d; color: white; border: none; padding: 10px 20px;
+                margin-right: 10px; border-radius: 5px; cursor: pointer; font-size: 14px;
+            ">Cancel</button>
+            <button id="confirmPolicyRevision" style="
+                background: #ffc107; color: #212529; border: none; padding: 10px 20px;
+                border-radius: 5px; cursor: pointer; font-size: 14px;
+            ">Request Revision</button>
+        </div>
+    `;
+    modalOverlay.appendChild(modalContent);
+    document.body.appendChild(modalOverlay);
+
+    setTimeout(() => modalContent.querySelector('#policyRevisionRequest').focus(), 100);
+
+    modalContent.querySelector('#confirmPolicyRevision').addEventListener('click', () => {
+        const request = modalContent.querySelector('#policyRevisionRequest').value.trim();
+        if (request) {
+            modalOverlay.remove();
+            processPolicyRevision(policyId, request, requestedBy);
+        } else {
+            alert('Please enter revision request details');
+        }
+    });
+    modalContent.querySelector('#cancelPolicyRevision').addEventListener('click', () => {
+        modalOverlay.remove();
+        showNotification('Revision request cancelled', 'info', 2000);
+    });
+    modalOverlay.addEventListener('click', (e) => {
+        if (e.target === modalOverlay) modalOverlay.remove();
+    });
 }
 
 async function processPolicyRevision(policyId, revisionRequest, requestedBy) {
@@ -1826,8 +1926,12 @@ async function processPolicyRevision(policyId, revisionRequest, requestedBy) {
                         policyElement.querySelector('.status-badge').style.background = '#ffc107';
                 }
                 
-                // Refresh policies list
-                setTimeout(() => loadPolicies(), 2000);
+                // Refresh policies lists
+                setTimeout(() => {
+                    loadPolicies();
+                    if (typeof fetchPoliciesForApproval === 'function') fetchPoliciesForApproval();
+                    if (typeof loadPolicyRecords === 'function') loadPolicyRecords();
+                }, 2000);
         } else {
                 showNotification('Failed to request revision: ' + result.error, 'error', 5000);
         }
