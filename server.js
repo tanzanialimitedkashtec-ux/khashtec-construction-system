@@ -5004,41 +5004,23 @@ async function runMigrations() {
 
 
 
-// Create authentication table directly
+// Create authentication table directly (SAFE: preserves existing data)
 
 async function createAuthenticationTable() {
 
     try {
 
-        console.log('🔧 Creating authentication table directly...');
+        console.log('🔧 Ensuring authentication table exists (data-safe)...');
 
         const db = require('./database/config/database');
 
         
 
-        // First, drop the existing table to ensure clean recreation
-
-        try {
-
-            console.log('🗑️ Dropping existing authentication table...');
-
-            await db.execute('DROP TABLE IF EXISTS authentication');
-
-            console.log('✅ Existing authentication table dropped');
-
-        } catch (dropError) {
-
-            console.log('ℹ️ No existing table to drop:', dropError.message);
-
-        }
-
-        
-
-        // Create authentication table
+        // Create authentication table only if it does not already exist
 
         const createAuthTableSQL = `
 
-            CREATE TABLE authentication (
+            CREATE TABLE IF NOT EXISTS authentication (
 
                 id INT AUTO_INCREMENT PRIMARY KEY,
 
@@ -5082,15 +5064,15 @@ async function createAuthenticationTable() {
 
         await db.execute(createAuthTableSQL);
 
-        console.log('✅ Authentication table created successfully');
+        console.log('✅ Authentication table ensured');
 
         
 
-        // Insert authentication records with correct hashes
+        // Only seed default records if they do not already exist (INSERT IGNORE)
 
         const insertAuthSQL = `
 
-            INSERT INTO authentication (department_code, email, password_hash, role, department_name, manager_name, status) VALUES
+            INSERT IGNORE INTO authentication (department_code, email, password_hash, role, department_name, manager_name, status) VALUES
 
             ('MD', 'md@kashtec.com', '$2a$12$pkTstU3up/l5NQlFpHKTI.OkXHOAbbWzjel7kSuLF/gfyva/v7vti', 'Managing Director', 'Managing Director Office', 'Dr. John Smith', 'Active'),
 
@@ -5114,11 +5096,11 @@ async function createAuthenticationTable() {
 
         await db.execute(insertAuthSQL);
 
-        console.log('✅ Authentication records with correct hashes inserted successfully');
+        console.log('✅ Default authentication records ensured (existing records preserved)');
 
         
 
-        // Verify the HR record has the correct hash
+        // Verify the HR record exists
 
         const verifyQuery = await db.execute('SELECT email, password_hash FROM authentication WHERE email = ?', ['hr@manager0501']);
 
@@ -5771,29 +5753,25 @@ async function createSeniorHiringTables() {
 
         
 
-        // Force insert sample senior hiring data for testing
+        // Seed default sample data only if the table is empty (SAFE: preserves existing data)
         try {
-            // Clear existing data to avoid duplicates - handle foreign key constraints
-            try {
-                await db.execute('DELETE FROM senior_hiring_info_request');
-                await db.execute('DELETE FROM senior_hiring_rejection');
-                await db.execute('DELETE FROM senior_hiring_approval');
-            } catch (fkError) {
-                console.log('Warning: Could not clear tables due to foreign key constraints:', fkError.message);
+            const existingRows = await db.execute('SELECT COUNT(*) as cnt FROM senior_hiring_approval');
+            const count = existingRows[0] ? existingRows[0].cnt : 0;
+            if (count === 0) {
+                await db.execute(`
+                    INSERT IGNORE INTO senior_hiring_approval 
+                    (id, candidate_name, position, department, proposed_salary, experience, hr_recommendation, status, request_date) 
+                    VALUES 
+                    (1, 'John Smith', 'Project Manager', 'Projects', '150000', '10 years in construction management', 'Highly recommended for leadership role', 'pending', '2026-04-15'),
+                    (2, 'Sarah Johnson', 'Senior Engineer', 'Operations', '120000', '8 years in structural engineering', 'Excellent technical skills and project experience', 'pending', '2026-04-16'),
+                    (3, 'Michael Chen', 'Finance Director', 'Finance', '180000', '12 years in financial management', 'Strong leadership background in construction finance', 'pending', '2026-04-17')
+                `);
+                console.log('Sample senior hiring requests seeded (table was empty)');
+            } else {
+                console.log(`✅ Senior hiring approval table already has ${count} records — preserved`);
             }
-            
-            // Insert fresh sample data with explicit id values
-            await db.execute(`
-                INSERT INTO senior_hiring_approval 
-                (id, candidate_name, position, department, proposed_salary, experience, hr_recommendation, status, request_date) 
-                VALUES 
-                (1, 'John Smith', 'Project Manager', 'Projects', '150000', '10 years in construction management', 'Highly recommended for leadership role', 'pending', '2026-04-15'),
-                (2, 'Sarah Johnson', 'Senior Engineer', 'Operations', '120000', '8 years in structural engineering', 'Excellent technical skills and project experience', 'pending', '2026-04-16'),
-                (3, 'Michael Chen', 'Finance Director', 'Finance', '180000', '12 years in financial management', 'Strong leadership background in construction finance', 'pending', '2026-04-17')
-            `);
-            console.log('Sample senior hiring requests inserted successfully');
         } catch (error) {
-            console.log('Error inserting sample senior hiring data:', error.message);
+            console.log('Error seeding sample senior hiring data:', error.message);
         }
 
         
@@ -5904,29 +5882,25 @@ async function createWorkforceBudgetTables() {
             console.error('Error creating workforce_budget_modifications table:', tableError.message);
         }
         
-        // Force insert sample workforce budget data for testing
+        // Seed default sample data only if the table is empty (SAFE: preserves existing data)
         try {
-            // Clear existing data to avoid duplicates - handle foreign key constraints
-            try {
-                await db.execute('DELETE FROM workforce_budget_modifications');
-                await db.execute('DELETE FROM workforce_budget_rejections');
-                await db.execute('DELETE FROM workforce_budgets');
-            } catch (fkError) {
-                console.log('Warning: Could not clear tables due to foreign key constraints:', fkError.message);
+            const existingRows = await db.execute('SELECT COUNT(*) as cnt FROM workforce_budgets');
+            const count = existingRows[0] ? existingRows[0].cnt : 0;
+            if (count === 0) {
+                await db.execute(`
+                    INSERT IGNORE INTO workforce_budgets 
+                    (id, budget_period, total_proposed, salaries_wages, training_development, employee_benefits, recruitment_costs, submitted_by, submitted_by_role, status, submission_date, justification) 
+                    VALUES 
+                    (1, 'IT', '500000000', '300000000', '50000000', '100000000', '50000000', 'Department Head', 'IT Manager', 'pending', '2026-04-15', 'Q2 2026 IT department budget for infrastructure upgrades and team expansion'),
+                    (2, 'Construction', '1200000000', '800000000', '100000000', '200000000', '100000000', 'Department Head', 'Construction Manager', 'pending', '2026-04-16', 'Q2 2026 Construction budget for new projects and equipment'),
+                    (3, 'Operations', '800000000', '500000000', '80000000', '150000000', '70000000', 'Department Head', 'Operations Manager', 'pending', '2026-04-17', 'Q2 2026 Operations budget for process improvements and staffing')
+                `);
+                console.log('Sample workforce budget requests seeded (table was empty)');
+            } else {
+                console.log(`✅ Workforce budgets table already has ${count} records — preserved`);
             }
-            
-            // Insert fresh sample data with explicit id values
-            await db.execute(`
-                INSERT INTO workforce_budgets 
-                (id, budget_period, total_proposed, salaries_wages, training_development, employee_benefits, recruitment_costs, submitted_by, submitted_by_role, status, submission_date, justification) 
-                VALUES 
-                (1, 'IT', '500000000', '300000000', '50000000', '100000000', '50000000', 'Department Head', 'IT Manager', 'pending', '2026-04-15', 'Q2 2026 IT department budget for infrastructure upgrades and team expansion'),
-                (2, 'Construction', '1200000000', '800000000', '100000000', '200000000', '100000000', 'Department Head', 'Construction Manager', 'pending', '2026-04-16', 'Q2 2026 Construction budget for new projects and equipment'),
-                (3, 'Operations', '800000000', '500000000', '80000000', '150000000', '70000000', 'Department Head', 'Operations Manager', 'pending', '2026-04-17', 'Q2 2026 Operations budget for process improvements and staffing')
-            `);
-            console.log('Sample workforce budget requests inserted successfully');
         } catch (error) {
-            console.log('Error inserting sample workforce budget data:', error.message);
+            console.log('Error seeding sample workforce budget data:', error.message);
         }
         
         console.log('All workforce budget tables created successfully');
