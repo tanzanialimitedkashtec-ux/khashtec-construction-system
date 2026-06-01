@@ -62193,6 +62193,8 @@ function financeAudits(){
 
             <button class="audits-tab-btn" onclick="switchAuditsMainTab('loginAudit')">🔐 Login Audit</button>
 
+            <button class="audits-tab-btn" onclick="switchAuditsMainTab('deptOverview')">📊 Department Overview</button>
+
         </div>
 
 
@@ -62322,6 +62324,22 @@ function financeAudits(){
                         <option value="material_issued">Materials Out</option>
 
                         <option value="transport_cost">Transport Costs</option>
+
+                        <option value="leadership_change">Leadership</option>
+
+                        <option value="accountant_change">Accountant</option>
+
+                        <option value="mission_vision_change">Mission & Vision</option>
+
+                        <option value="long_term_change">Long-Term Growth</option>
+
+                        <option value="senior_hiring_change">Senior Hiring</option>
+
+                        <option value="workforce_budget_change">Workforce Budget</option>
+
+                        <option value="nhif_contribution">NHIF Contribution</option>
+
+                        <option value="team_change">Teams</option>
 
                     </select>
 
@@ -62573,6 +62591,31 @@ function financeAudits(){
 
         </div>
 
+        <!-- ===== DEPARTMENT OVERVIEW TAB ===== -->
+        <div id="auditsTab_deptOverview" class="audits-tab-content" style="display:none;">
+            <h4>📊 Department Overview (Read-Only)</h4>
+            <p>Monitor changes and current state across all departments. This is a read-only view for audit purposes.</p>
+
+            <div style="display:flex;gap:8px;flex-wrap:wrap;margin:12px 0;">
+                <button class="action" style="font-size:11px;" onclick="switchAuditDeptSection('auditLeadership')">Leadership</button>
+                <button class="action" style="font-size:11px;" onclick="switchAuditDeptSection('auditAccountant')">Accountant</button>
+                <button class="action" style="font-size:11px;" onclick="switchAuditDeptSection('auditLongTerm')">Long-Term Growth</button>
+                <button class="action" style="font-size:11px;" onclick="switchAuditDeptSection('auditMissionVision')">Mission & Vision</button>
+                <button class="action" style="font-size:11px;" onclick="switchAuditDeptSection('auditStaffOverview')">Staff Overview</button>
+                <button class="action" style="font-size:11px;" onclick="switchAuditDeptSection('auditSeniorHiring')">Senior Hiring</button>
+                <button class="action" style="font-size:11px;" onclick="switchAuditDeptSection('auditWorkforceBudget')">Workforce Budget</button>
+                <button class="action" style="font-size:11px;" onclick="switchAuditDeptSection('auditAssignedWorkers')">Assigned Workers</button>
+                <button class="action" style="font-size:11px;" onclick="switchAuditDeptSection('auditTeamMgmt')">Team Management</button>
+                <button class="action" style="font-size:11px;" onclick="switchAuditDeptSection('auditAssignTasks')">Assign Tasks</button>
+                <button class="action" style="font-size:11px;" onclick="switchAuditDeptSection('auditSafetyStatus')">Project Safety</button>
+                <button class="action" style="font-size:11px;" onclick="switchAuditDeptSection('auditNhif')">NHIF Contribution</button>
+            </div>
+
+            <div id="auditDeptContent" style="margin-top:15px;">
+                <p style="color:#888;">Select a section above to view its current data.</p>
+            </div>
+        </div>
+
     </div>`);
 
     // Load system status data on page load
@@ -62605,6 +62648,207 @@ function switchAuditsMainTab(tabId) {
 
     if (tabId === 'loginAudit') { loadMainLoginAuditLogs(); loadMainActiveSessions(); }
 
+}
+
+// ===== DEPARTMENT OVERVIEW — READ-ONLY AUDIT SECTIONS =====
+
+function switchAuditDeptSection(sectionId) {
+    const el = document.getElementById('auditDeptContent');
+    if (!el) return;
+    el.innerHTML = '<p>Loading...</p>';
+    const loaders = {
+        auditLeadership: loadAuditLeadership,
+        auditAccountant: loadAuditAccountant,
+        auditLongTerm: loadAuditLongTerm,
+        auditMissionVision: loadAuditMissionVision,
+        auditStaffOverview: loadAuditStaffOverview,
+        auditSeniorHiring: loadAuditSeniorHiring,
+        auditWorkforceBudget: loadAuditWorkforceBudget,
+        auditAssignedWorkers: loadAuditAssignedWorkers,
+        auditTeamMgmt: loadAuditTeamMgmt,
+        auditAssignTasks: loadAuditAssignTasks,
+        auditSafetyStatus: loadAuditSafetyStatus,
+        auditNhif: loadAuditNhif
+    };
+    if (loaders[sectionId]) loaders[sectionId](el);
+}
+
+function auditTableWrap(title, headersArr, rowsHtml) {
+    return '<h5 style="margin:0 0 8px;">' + title + '</h5>' +
+        (rowsHtml ? '<div style="overflow-x:auto;"><table class="audit-table" style="width:100%;font-size:12px;"><thead><tr>' +
+        headersArr.map(h => '<th>' + h + '</th>').join('') +
+        '</tr></thead><tbody>' + rowsHtml + '</tbody></table></div>'
+        : '<p style="color:#999;">No records found.</p>');
+}
+
+function fmtDate(d) { return d ? new Date(d).toLocaleDateString() : 'N/A'; }
+function esc(s) { return (s || 'N/A').toString().replace(/</g, '&lt;'); }
+
+async function loadAuditLeadership(el) {
+    try {
+        const res = await fetch('/api/accountant/leadership');
+        const data = await res.json();
+        const rows = (data.data || data || []);
+        let html = auditTableWrap('Leadership Management Records', ['#','Title','Description','Priority','Status','Created'],
+            rows.map((r,i) => '<tr><td>'+(i+1)+'</td><td>'+esc(r.title)+'</td><td>'+esc(r.description)+'</td><td>'+esc(r.priority)+'</td><td>'+esc(r.status)+'</td><td>'+fmtDate(r.created_at)+'</td></tr>').join(''));
+        el.innerHTML = html;
+    } catch(e) { el.innerHTML = '<p style="color:#dc3545;">Error loading leadership data: '+e.message+'</p>'; }
+}
+
+async function loadAuditAccountant(el) {
+    try {
+        const res = await fetch('/api/accountant/accountant');
+        const data = await res.json();
+        const rows = (data.data || data || []);
+        let html = auditTableWrap('Accountant Management Records', ['#','Title','Description','Amount','Status','Created'],
+            rows.map((r,i) => '<tr><td>'+(i+1)+'</td><td>'+esc(r.title)+'</td><td>'+esc(r.description)+'</td><td>'+esc(r.amount)+'</td><td>'+esc(r.status)+'</td><td>'+fmtDate(r.created_at)+'</td></tr>').join(''));
+        el.innerHTML = html;
+    } catch(e) { el.innerHTML = '<p style="color:#dc3545;">Error loading accountant data: '+e.message+'</p>'; }
+}
+
+async function loadAuditLongTerm(el) {
+    try {
+        const res = await fetch('/api/accountant/long-term-growth');
+        const data = await res.json();
+        const rows = (data.data || data || []);
+        let html = auditTableWrap('Long-Term Growth Strategy Records', ['#','Title','Description','Target Date','Status','Created'],
+            rows.map((r,i) => '<tr><td>'+(i+1)+'</td><td>'+esc(r.title)+'</td><td>'+esc(r.description)+'</td><td>'+fmtDate(r.target_date)+'</td><td>'+esc(r.status)+'</td><td>'+fmtDate(r.created_at)+'</td></tr>').join(''));
+        el.innerHTML = html;
+    } catch(e) { el.innerHTML = '<p style="color:#dc3545;">Error loading long-term growth data: '+e.message+'</p>'; }
+}
+
+async function loadAuditMissionVision(el) {
+    try {
+        const res = await fetch('/api/accountant/mission-vision');
+        const data = await res.json();
+        const rows = (data.data || data || []);
+        let html = auditTableWrap('Mission & Vision Records', ['#','Title','Description','Category','Status','Created'],
+            rows.map((r,i) => '<tr><td>'+(i+1)+'</td><td>'+esc(r.title)+'</td><td>'+esc(r.description)+'</td><td>'+esc(r.category)+'</td><td>'+esc(r.status)+'</td><td>'+fmtDate(r.created_at)+'</td></tr>').join(''));
+        el.innerHTML = html;
+    } catch(e) { el.innerHTML = '<p style="color:#dc3545;">Error loading mission & vision data: '+e.message+'</p>'; }
+}
+
+async function loadAuditStaffOverview(el) {
+    try {
+        const res = await fetch('/api/employees');
+        const data = await res.json();
+        const rows = Array.isArray(data) ? data : (data.data || []);
+        const active = rows.filter(e => (e.status||'').toLowerCase() === 'active').length;
+        let html = '<div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:12px;">' +
+            '<div class="chg-card"><span class="chg-num">'+rows.length+'</span><span class="chg-lbl">Total Staff</span></div>' +
+            '<div class="chg-card"><span class="chg-num">'+active+'</span><span class="chg-lbl">Active</span></div>' +
+            '<div class="chg-card"><span class="chg-num">'+(rows.length-active)+'</span><span class="chg-lbl">Inactive</span></div></div>';
+        html += auditTableWrap('Staff Overview', ['#','Name','Department','Position','Status','Joined'],
+            rows.slice(0,100).map((r,i) => '<tr><td>'+(i+1)+'</td><td>'+esc(r.full_name||r.name)+'</td><td>'+esc(r.department)+'</td><td>'+esc(r.position)+'</td><td>'+esc(r.status)+'</td><td>'+fmtDate(r.created_at||r.hire_date)+'</td></tr>').join(''));
+        el.innerHTML = html;
+    } catch(e) { el.innerHTML = '<p style="color:#dc3545;">Error loading staff data: '+e.message+'</p>'; }
+}
+
+async function loadAuditSeniorHiring(el) {
+    try {
+        const res = await fetch('/api/senior-hiring');
+        const data = await res.json();
+        const rows = (data.data || data.requests || data || []);
+        const arr = Array.isArray(rows) ? rows : [];
+        let html = auditTableWrap('Senior Hiring Requests', ['#','Position','Department','Requested By','Status','Salary Range','Created'],
+            arr.map((r,i) => '<tr><td>'+(i+1)+'</td><td>'+esc(r.position_title||r.position)+'</td><td>'+esc(r.department)+'</td><td>'+esc(r.requested_by)+'</td><td>'+esc(r.status)+'</td><td>'+esc(r.salary_range||r.budget)+'</td><td>'+fmtDate(r.created_at)+'</td></tr>').join(''));
+        el.innerHTML = html;
+    } catch(e) { el.innerHTML = '<p style="color:#dc3545;">Error loading senior hiring data: '+e.message+'</p>'; }
+}
+
+async function loadAuditWorkforceBudget(el) {
+    try {
+        const res = await fetch('/api/workforce-budget');
+        const data = await res.json();
+        const rows = (data.data || data.budgets || data || []);
+        const arr = Array.isArray(rows) ? rows : [];
+        let html = auditTableWrap('Workforce Budget Requests', ['#','Department','Budget Amount','Purpose','Status','Approved By','Created'],
+            arr.map((r,i) => '<tr><td>'+(i+1)+'</td><td>'+esc(r.department)+'</td><td>'+esc(r.budget_amount||r.amount)+'</td><td>'+esc(r.purpose||r.description)+'</td><td>'+esc(r.status)+'</td><td>'+esc(r.approved_by)+'</td><td>'+fmtDate(r.created_at)+'</td></tr>').join(''));
+        el.innerHTML = html;
+    } catch(e) { el.innerHTML = '<p style="color:#dc3545;">Error loading workforce budget data: '+e.message+'</p>'; }
+}
+
+async function loadAuditAssignedWorkers(el) {
+    try {
+        const res = await fetch('/api/employees');
+        const data = await res.json();
+        const rows = Array.isArray(data) ? data : (data.data || []);
+        const assigned = rows.filter(e => e.department && e.position);
+        let html = '<div style="margin-bottom:10px;"><strong>Total Assigned:</strong> '+assigned.length+' / '+rows.length+' employees</div>';
+        html += auditTableWrap('Assigned Workers', ['#','Name','Department','Position','Status'],
+            assigned.slice(0,100).map((r,i) => '<tr><td>'+(i+1)+'</td><td>'+esc(r.full_name||r.name)+'</td><td>'+esc(r.department)+'</td><td>'+esc(r.position)+'</td><td>'+esc(r.status)+'</td></tr>').join(''));
+        el.innerHTML = html;
+    } catch(e) { el.innerHTML = '<p style="color:#dc3545;">Error loading assigned workers: '+e.message+'</p>'; }
+}
+
+async function loadAuditTeamMgmt(el) {
+    try {
+        const res = await fetch('/api/teams');
+        const data = await res.json();
+        const rows = (data.data || data.teams || data || []);
+        const arr = Array.isArray(rows) ? rows : [];
+        if (arr.length === 0) {
+            el.innerHTML = '<h5>Team Management</h5><p style="color:#999;">No teams found.</p>';
+            return;
+        }
+        let html = auditTableWrap('Team Management', ['#','Team Name','Leader','Members','Department','Status','Created'],
+            arr.map((r,i) => '<tr><td>'+(i+1)+'</td><td>'+esc(r.name||r.team_name)+'</td><td>'+esc(r.leader||r.team_leader)+'</td><td>'+esc(r.member_count||r.members)+'</td><td>'+esc(r.department)+'</td><td>'+esc(r.status)+'</td><td>'+fmtDate(r.created_at)+'</td></tr>').join(''));
+        el.innerHTML = html;
+    } catch(e) { el.innerHTML = '<p style="color:#dc3545;">Error loading team data: '+e.message+'</p>'; }
+}
+
+async function loadAuditAssignTasks(el) {
+    try {
+        const res = await fetch('/api/tasks');
+        const data = await res.json();
+        const rows = (data.data || data.tasks || data || []);
+        const arr = Array.isArray(rows) ? rows : [];
+        const pending = arr.filter(t => (t.status||'').toLowerCase() === 'pending').length;
+        const completed = arr.filter(t => (t.status||'').toLowerCase() === 'completed').length;
+        let html = '<div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:12px;">' +
+            '<div class="chg-card"><span class="chg-num">'+arr.length+'</span><span class="chg-lbl">Total Tasks</span></div>' +
+            '<div class="chg-card"><span class="chg-num">'+pending+'</span><span class="chg-lbl">Pending</span></div>' +
+            '<div class="chg-card"><span class="chg-num">'+completed+'</span><span class="chg-lbl">Completed</span></div></div>';
+        html += auditTableWrap('Task Assignments', ['#','Task','Assigned To','Project','Priority','Status','Due Date'],
+            arr.slice(0,100).map((r,i) => '<tr><td>'+(i+1)+'</td><td>'+esc(r.title||r.task_name||r.description)+'</td><td>'+esc(r.assigned_to)+'</td><td>'+esc(r.project||r.project_name)+'</td><td>'+esc(r.priority)+'</td><td>'+esc(r.status)+'</td><td>'+fmtDate(r.due_date)+'</td></tr>').join(''));
+        el.innerHTML = html;
+    } catch(e) { el.innerHTML = '<p style="color:#dc3545;">Error loading tasks data: '+e.message+'</p>'; }
+}
+
+async function loadAuditSafetyStatus(el) {
+    try {
+        const res = await fetch('/api/projects');
+        const data = await res.json();
+        const rows = (data.data || data.projects || data || []);
+        const arr = Array.isArray(rows) ? rows : [];
+        let html = '<div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:12px;">' +
+            '<div class="chg-card"><span class="chg-num">'+arr.length+'</span><span class="chg-lbl">Total Projects</span></div></div>';
+        html += auditTableWrap('Project Safety Status', ['#','Project Name','Location','Status','Safety Rating','Start Date','End Date'],
+            arr.map((r,i) => '<tr><td>'+(i+1)+'</td><td>'+esc(r.name||r.project_name)+'</td><td>'+esc(r.location)+'</td><td>'+esc(r.status)+'</td><td>'+esc(r.safety_rating||r.safety_status||'N/A')+'</td><td>'+fmtDate(r.start_date)+'</td><td>'+fmtDate(r.end_date)+'</td></tr>').join(''));
+        el.innerHTML = html;
+    } catch(e) { el.innerHTML = '<p style="color:#dc3545;">Error loading project safety data: '+e.message+'</p>'; }
+}
+
+async function loadAuditNhif(el) {
+    try {
+        const res = await fetch('/api/nhif');
+        const data = await res.json();
+        const rows = (data.data || data.contributions || data || []);
+        const arr = Array.isArray(rows) ? rows : [];
+        let summaryHtml = '';
+        try {
+            const sRes = await fetch('/api/nhif/summary');
+            const sData = await sRes.json();
+            if (sData) {
+                summaryHtml = '<div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:12px;">' +
+                    '<div class="chg-card"><span class="chg-num">'+(sData.total_contributions||arr.length)+'</span><span class="chg-lbl">Contributions</span></div>' +
+                    '<div class="chg-card"><span class="chg-num">'+(sData.total_amount||'N/A')+'</span><span class="chg-lbl">Total Amount</span></div></div>';
+            }
+        } catch(se) {}
+        let html = summaryHtml + auditTableWrap('NHIF Contributions', ['#','Employee','NHIF No','Amount','Month','Status','Created'],
+            arr.map((r,i) => '<tr><td>'+(i+1)+'</td><td>'+esc(r.employee_name||r.full_name)+'</td><td>'+esc(r.nhif_number||r.nhif_no)+'</td><td>'+esc(r.amount||r.contribution_amount)+'</td><td>'+esc(r.month||r.period)+'</td><td>'+esc(r.status)+'</td><td>'+fmtDate(r.created_at)+'</td></tr>').join(''));
+        el.innerHTML = html;
+    } catch(e) { el.innerHTML = '<p style="color:#dc3545;">Error loading NHIF data: '+e.message+'</p>'; }
 }
 
 
@@ -62769,7 +63013,11 @@ async function loadSystemChanges() {
                     ['Properties', summary.properties], ['Claims', summary.claims], ['Risks', summary.risks],
                     ['Talent', summary.talent], ['Resources', summary.resources], ['Discipline', summary.discipline],
                     ['Depts', summary.departments], ['Campaigns', summary.campaigns], ['Purchases', summary.luggagePurchases],
-                    ['Mat. In', summary.materialsIn], ['Mat. Out', summary.materialsOut], ['Transport', summary.transport]
+                    ['Mat. In', summary.materialsIn], ['Mat. Out', summary.materialsOut], ['Transport', summary.transport],
+                    ['Leadership', summary.leadership], ['Accountant', summary.accountant],
+                    ['Mission/Vision', summary.missionVision], ['Long-Term', summary.longTerm],
+                    ['Sr. Hiring', summary.seniorHiring], ['W. Budget', summary.workforceBudget],
+                    ['NHIF', summary.nhif], ['Teams', summary.teams]
                 ];
                 summaryEl.innerHTML = cards.map(function(c) {
                     return '<div class="chg-card"><span class="chg-num">' + (c[1] || 0) + '</span><span class="chg-lbl">' + c[0] + '</span></div>';
