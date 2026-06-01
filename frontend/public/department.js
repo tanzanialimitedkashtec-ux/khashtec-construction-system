@@ -743,6 +743,19 @@ async function loadNotifications() {
         var data = await res.json();
         var notifications = data.notifications || [];
         var listEl = document.getElementById('notificationList');
+
+        // Update badge count from fetched data
+        var unreadCount = notifications.filter(function(n) { return !n.is_read; }).length;
+        var badge = document.getElementById('notifBadge');
+        if (badge) {
+            if (unreadCount > 0) {
+                badge.textContent = unreadCount > 99 ? '99+' : unreadCount;
+                badge.style.display = '';
+            } else {
+                badge.style.display = 'none';
+            }
+        }
+
         if (!notifications.length) {
             listEl.innerHTML = '<div class="notification-empty">No notifications yet</div>';
             return;
@@ -750,14 +763,17 @@ async function loadNotifications() {
         listEl.innerHTML = notifications.slice(0, 50).map(function(n) {
             var typeIcon = {info:'ℹ️', success:'✅', warning:'⚠️', error:'❌'}[(n.type||'info').toLowerCase()] || 'ℹ️';
             var typeCls = (n.type||'info').toLowerCase();
-            var unreadCls = n.is_read ? '' : ' unread';
+            var isRead = !!n.is_read;
+            var statusCls = isRead ? ' read' : ' unread';
+            var dotCls = isRead ? 'read-dot' : 'unread-dot';
             var timeAgo = getTimeAgo(n.created_at);
-            return '<div class="notification-item'+unreadCls+'" onclick="openNotification('+n.id+')">' +
+            return '<div class="notification-item'+statusCls+'" onclick="openNotification('+n.id+'">'+
+                '<div class="notif-read-indicator '+dotCls+'"></div>'+
                 '<div class="notif-icon '+typeCls+'">'+typeIcon+'</div>' +
                 '<div class="notif-content">' +
                 '<p class="notif-title">'+(n.title||'Notification').replace(/</g,'&lt;')+'</p>' +
                 '<p class="notif-msg">'+(n.message||'').replace(/</g,'&lt;')+'</p>' +
-                '<span class="notif-time">'+timeAgo+'</span>' +
+                '<span class="notif-time">'+(isRead ? 'Read \u00b7 ' : '')+timeAgo+'</span>' +
                 '</div></div>';
         }).join('');
     } catch(e) {
@@ -789,21 +805,34 @@ async function openNotification(id) {
     var panel = document.getElementById('notificationPanel');
     panel.classList.remove('open');
     updateNotificationBadge();
+    loadNotifications();
     var changesTab = document.querySelector('[data-tab="systemChanges"]');
     if (changesTab) changesTab.click();
 }
 
 async function markAllNotificationsRead() {
+    var btn = document.querySelector('.notification-panel-header button');
+    if (btn) { btn.disabled = true; btn.textContent = 'Marking...'; }
     try {
-        var res = await fetch('/api/notifications');
-        var data = await res.json();
-        var notifications = data.notifications || [];
-        for (var i = 0; i < notifications.length; i++) {
-            if (!notifications[i].is_read) {
-                await fetch('/api/notifications/' + notifications[i].id + '/read', { method: 'PUT' });
+        // Try bulk endpoint first
+        var bulkRes = await fetch('/api/notifications/read-all', {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ userId: 'all' })
+        });
+        if (!bulkRes.ok) {
+            // Fallback: mark one-by-one
+            var res = await fetch('/api/notifications');
+            var data = await res.json();
+            var notifications = data.notifications || [];
+            for (var i = 0; i < notifications.length; i++) {
+                if (!notifications[i].is_read) {
+                    await fetch('/api/notifications/' + notifications[i].id + '/read', { method: 'PUT' });
+                }
             }
         }
     } catch(e) {}
+    if (btn) { btn.disabled = false; btn.textContent = 'Mark all read'; }
     updateNotificationBadge();
     loadNotifications();
 }
