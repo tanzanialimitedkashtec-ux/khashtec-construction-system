@@ -190,7 +190,7 @@ router.post('/', async (req, res) => {
 // Mark notification as read
 router.put('/:id/read', async (req, res) => {
     try {
-        const [result] = await db.execute(
+        const result = await db.execute(
             'UPDATE notifications SET is_read = 1 WHERE id = ?',
             [req.params.id]
         );
@@ -201,14 +201,14 @@ router.put('/:id/read', async (req, res) => {
             });
         }
         
-        const [updatedNotification] = await db.execute(
+        const updatedNotifications = await db.execute(
             'SELECT * FROM notifications WHERE id = ?',
             [req.params.id]
         );
         
         res.json({
             message: 'Notification marked as read',
-            notification: updatedNotification[0]
+            notification: updatedNotifications[0]
         });
     } catch (error) {
         console.error('Error marking notification as read:', error);
@@ -219,7 +219,7 @@ router.put('/:id/read', async (req, res) => {
 // Mark notification as unread
 router.put('/:id/unread', async (req, res) => {
     try {
-        const [result] = await db.execute(
+        const result = await db.execute(
             'UPDATE notifications SET is_read = 0 WHERE id = ?',
             [req.params.id]
         );
@@ -230,14 +230,14 @@ router.put('/:id/unread', async (req, res) => {
             });
         }
         
-        const [updatedNotification] = await db.execute(
+        const updatedNotifications = await db.execute(
             'SELECT * FROM notifications WHERE id = ?',
             [req.params.id]
         );
         
         res.json({
             message: 'Notification marked as unread',
-            notification: updatedNotification[0]
+            notification: updatedNotifications[0]
         });
     } catch (error) {
         console.error('Error marking notification as unread:', error);
@@ -253,12 +253,12 @@ router.put('/read-all', async (req, res) => {
         let result;
         if (!userId || userId === 'all') {
             // Mark ALL unread notifications as read
-            [result] = await db.execute(
+            result = await db.execute(
                 'UPDATE notifications SET is_read = 1 WHERE is_read = 0'
             );
         } else {
             // Mark unread notifications for a specific user
-            [result] = await db.execute(
+            result = await db.execute(
                 'UPDATE notifications SET is_read = 1 WHERE recipient_id = ? AND is_read = 0',
                 [userId]
             );
@@ -277,7 +277,7 @@ router.put('/read-all', async (req, res) => {
 // Delete notification
 router.delete('/:id', async (req, res) => {
     try {
-        const [result] = await db.execute(
+        const result = await db.execute(
             'DELETE FROM notifications WHERE id = ?',
             [req.params.id]
         );
@@ -309,7 +309,7 @@ router.delete('/clear', async (req, res) => {
             });
         }
         
-        const [result] = await db.execute(
+        const result = await db.execute(
             'DELETE FROM notifications WHERE recipient_id = ?',
             [userId]
         );
@@ -340,9 +340,9 @@ router.get('/stats/overview', async (req, res) => {
         }
         
         // Get total, read, unread counts
-        const [totalResult] = await db.execute(countQuery, params);
-        const [readResult] = await db.execute(`${countQuery} AND is_read = 1`, params);
-        const [unreadResult] = await db.execute(`${countQuery} AND is_read = 0`, params);
+        const totalResult = await db.execute(countQuery, params);
+        const readResult = await db.execute(`${countQuery} AND is_read = 1`, params);
+        const unreadResult = await db.execute(`${countQuery} AND is_read = 0`, params);
         
         const total = totalResult[0].total;
         const read = readResult[0].total;
@@ -352,19 +352,19 @@ router.get('/stats/overview', async (req, res) => {
         const typeQuery = userId 
             ? 'SELECT type, COUNT(*) as count FROM notifications WHERE recipient_id = ? GROUP BY type'
             : 'SELECT type, COUNT(*) as count FROM notifications GROUP BY type';
-        const [typeStats] = await db.execute(typeQuery, params);
+        const typeStats = await db.execute(typeQuery, params);
         
         // Category breakdown - Note: category field doesn't exist in schema, using type instead
         const categoryQuery = userId
             ? 'SELECT type as category, COUNT(*) as count FROM notifications WHERE recipient_id = ? GROUP BY type'
             : 'SELECT type as category, COUNT(*) as count FROM notifications GROUP BY type';
-        const [categoryStats] = await db.execute(categoryQuery, params);
+        const categoryStats = await db.execute(categoryQuery, params);
         
         // Recent notifications
         const recentQuery = userId
             ? 'SELECT * FROM notifications WHERE recipient_id = ? ORDER BY created_at DESC LIMIT 10'
             : 'SELECT * FROM notifications ORDER BY created_at DESC LIMIT 10';
-        const [recentNotifications] = await db.execute(recentQuery, params);
+        const recentNotifications = await db.execute(recentQuery, params);
         
         res.json({
             total,
