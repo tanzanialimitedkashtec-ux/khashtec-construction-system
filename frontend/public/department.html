@@ -54448,7 +54448,8 @@ function uploadInspectionReports(){
                                 <th>Inspection Type</th>
 
                                 <th>Inspector</th>
-
+                                <th>Findings</th>
+                                <th>Recommendations</th>
                                 <th>Compliance Status</th>
 
                                 <th>Risk Level</th>
@@ -55290,17 +55291,21 @@ function displayInspectionRecords(data) {
                 </td>
 
                 <td>
-
                     <div class="inspector-info">
-
                         <div class="inspector-name">${record.inspector}</div>
-
                         <div class="inspector-license">${record.inspectorLicense}</div>
-
                     </div>
-
                 </td>
-
+                <td>
+                    <div style="max-width: 150px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${record.findings}">
+                        ${record.findings}
+                    </div>
+                </td>
+                <td>
+                    <div style="max-width: 150px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${record.recommendations}">
+                        ${record.recommendations}
+                    </div>
+                </td>
                 <td>
 
                     <span class="compliance-badge ${complianceClass}">${complianceBadge}</span>
