@@ -794,8 +794,14 @@ async function updateNotificationBadge() {
 
 async function openNotification(id) {
     try {
-        await fetch('/api/notifications/' + id + '/read', { method: 'PUT' });
-    } catch(e) {}
+        var res = await fetch('/api/notifications/' + id + '/read', { method: 'PUT' });
+        if (res.ok) {
+            console.log('\ud83d\udd14 Notification', id, 'marked as read successfully');
+            if (typeof customAlert === 'function') customAlert('Notification marked as read', 'Success', 'success');
+        }
+    } catch(e) {
+        console.error('\ud83d\udd14 Error marking notification as read:', e);
+    }
     var panel = document.getElementById('notificationPanel');
     panel.classList.remove('open');
     updateNotificationBadge();
@@ -842,6 +848,7 @@ async function markAllNotificationsRead() {
     console.log('\ud83d\udd14 Updating badge and reloading notifications...');
     updateNotificationBadge();
     loadNotifications();
+    if (typeof customAlert === 'function') customAlert('All notifications marked as read', 'Success', 'success');
     console.log('\ud83d\udd14 markAllNotificationsRead() complete');
 }
 
@@ -69978,31 +69985,45 @@ function showNewCommForm() {
     showContent(\`<div class="card">
         <h3>New Internal Communication</h3>
         <form onsubmit="submitInternalComm(event)">
-            <div style="margin-bottom:10px;">
-                <label><strong>Subject:</strong></label><br>
-                <input type="text" id="commSubject" placeholder="Communication subject" style="width:100%; padding:8px; margin-top:5px;" required>
-            </div>
-            <div style="margin-bottom:10px;">
-                <label><strong>Message:</strong></label><br>
-                <textarea id="commMessage" rows="4" placeholder="Communication message" style="width:100%; padding:8px; margin-top:5px;" required></textarea>
-            </div>
-            <div style="margin-bottom:10px;">
-                <label><strong>Priority:</strong></label><br>
-                <select id="commPriority" style="width:100%; padding:8px; margin-top:5px;">
-                    <option value="Low">Low</option>
-                    <option value="Medium" selected>Medium</option>
-                    <option value="High">High</option>
-                    <option value="Critical">Critical</option>
-                </select>
-            </div>
-            <div style="margin-bottom:10px;">
-                <label><strong>Recipients/Department:</strong></label><br>
-                <input type="text" id="commRecipients" placeholder="e.g. All Departments, HR, Finance" style="width:100%; padding:8px; margin-top:5px;">
-            </div>
-            <div class="action-buttons">
-                <button type="submit" class="action">Send Communication</button>
-                <button type="button" class="action" onclick="reviewInternalComm()">Cancel</button>
-            </div>
+            <table style="width:100%; border-collapse:collapse;">
+                <tbody>
+                    <tr>
+                        <td style="padding:8px; font-weight:600; width:160px; vertical-align:top; border-bottom:1px solid #eee;">Subject</td>
+                        <td style="padding:8px; border-bottom:1px solid #eee;">
+                            <input type="text" id="commSubject" placeholder="Communication subject" style="width:100%; padding:8px; border:1px solid #ddd; border-radius:4px; box-sizing:border-box;" required>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="padding:8px; font-weight:600; vertical-align:top; border-bottom:1px solid #eee;">Message</td>
+                        <td style="padding:8px; border-bottom:1px solid #eee;">
+                            <textarea id="commMessage" rows="4" placeholder="Communication message" style="width:100%; padding:8px; border:1px solid #ddd; border-radius:4px; box-sizing:border-box;" required></textarea>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="padding:8px; font-weight:600; vertical-align:top; border-bottom:1px solid #eee;">Priority</td>
+                        <td style="padding:8px; border-bottom:1px solid #eee;">
+                            <select id="commPriority" style="width:100%; padding:8px; border:1px solid #ddd; border-radius:4px; box-sizing:border-box;">
+                                <option value="Low">Low</option>
+                                <option value="Medium" selected>Medium</option>
+                                <option value="High">High</option>
+                                <option value="Critical">Critical</option>
+                            </select>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="padding:8px; font-weight:600; vertical-align:top; border-bottom:1px solid #eee;">Recipients/Department</td>
+                        <td style="padding:8px; border-bottom:1px solid #eee;">
+                            <input type="text" id="commRecipients" placeholder="e.g. All Departments, HR, Finance" style="width:100%; padding:8px; border:1px solid #ddd; border-radius:4px; box-sizing:border-box;">
+                        </td>
+                    </tr>
+                    <tr>
+                        <td colspan="2" style="padding:12px 8px; text-align:right;">
+                            <button type="submit" class="action" style="margin-right:8px;">Send Communication</button>
+                            <button type="button" class="action" onclick="reviewInternalComm()">Cancel</button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
         </form>
     </div>\`);
 }
