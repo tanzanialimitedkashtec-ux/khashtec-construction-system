@@ -62835,16 +62835,10 @@ async function loadAuditNhif(el) {
         const data = await res.json();
         const rows = (data.data || data.contributions || data || []);
         const arr = Array.isArray(rows) ? rows : [];
-        let summaryHtml = '';
-        try {
-            const sRes = await fetch('/api/nhif/summary');
-            const sData = await sRes.json();
-            if (sData) {
-                summaryHtml = '<div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:12px;">' +
-                    '<div class="chg-card"><span class="chg-num">'+(sData.total_contributions||arr.length)+'</span><span class="chg-lbl">Contributions</span></div>' +
-                    '<div class="chg-card"><span class="chg-num">'+(sData.total_amount||'N/A')+'</span><span class="chg-lbl">Total Amount</span></div></div>';
-            }
-        } catch(se) {}
+        const totalAmount = arr.reduce((sum, r) => sum + (parseFloat(r.total_contribution) || 0), 0);
+        let summaryHtml = '<div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:12px;">' +
+            '<div class="chg-card"><span class="chg-num">'+arr.length+'</span><span class="chg-lbl">Contributions</span></div>' +
+            '<div class="chg-card"><span class="chg-num">'+totalAmount.toLocaleString()+'</span><span class="chg-lbl">Total Amount</span></div></div>';
         let html = summaryHtml + auditTableWrap('NHIF Contributions', ['#','Employee ID','Month','Employee Contrib.','Employer Contrib.','Total','Payment Status','Created'],
             arr.map((r,i) => '<tr><td>'+(i+1)+'</td><td>'+esc(r.employee_id)+'</td><td>'+fmtDate(r.contribution_month)+'</td><td>'+esc(r.employee_contribution)+'</td><td>'+esc(r.employer_contribution)+'</td><td>'+esc(r.total_contribution)+'</td><td>'+esc(r.payment_status)+'</td><td>'+fmtDate(r.created_at)+'</td></tr>').join(''));
         el.innerHTML = html;
