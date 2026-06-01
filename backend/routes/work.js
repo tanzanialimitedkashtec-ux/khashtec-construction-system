@@ -412,11 +412,12 @@ router.get('/hse/inspections/:id', async (req, res) => {
     try {
         const { id } = req.params;
         console.log(`🔍 Fetching HSE inspection record #${id}...`);
-        const [rows] = await db.execute('SELECT * FROM hse_work WHERE id = ?', [id]);
-        const records = Array.isArray(rows) ? rows : (rows ? [rows] : []);
+        const dbRecords = await db.execute('SELECT * FROM hse_work WHERE id = ?', [id]);
+        const records = Array.isArray(dbRecords) ? dbRecords : [];
         if (records.length === 0) {
             return res.status(404).json({ error: 'Inspection record not found' });
         }
+        console.log(`✅ Found inspection record #${id}`);
         res.json({ work: records[0] });
     } catch (error) {
         console.error('❌ Error fetching inspection record:', error);
