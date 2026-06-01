@@ -24810,28 +24810,42 @@ async function openNotification(id) {
 }
 
 async function markAllNotificationsRead() {
+    console.log('🔔 markAllNotificationsRead() called');
     const btn = document.querySelector('.notification-panel-header button');
     if (btn) { btn.disabled = true; btn.textContent = 'Marking...'; }
     try {
         // Try bulk endpoint first
+        console.log('🔔 Calling PUT /api/notifications/read-all...');
         const bulkRes = await fetch('/api/notifications/read-all', {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ userId: 'all' })
         });
-        if (!bulkRes.ok) {
+        console.log('🔔 read-all response status:', bulkRes.status);
+        if (bulkRes.ok) {
+            const bulkData = await bulkRes.json();
+            console.log('🔔 read-all result:', bulkData);
+        } else {
+            console.log('🔔 read-all failed, falling back to one-by-one...');
             // Fallback: mark one-by-one
             const res = await fetch('/api/notifications');
             const data = await res.json();
             const notifications = data.notifications || [];
-            for (const n of notifications.filter(x => !x.is_read)) {
+            const unread = notifications.filter(x => !x.is_read);
+            console.log('🔔 Marking', unread.length, 'unread notifications one-by-one');
+            for (const n of unread) {
                 await fetch('/api/notifications/' + n.id + '/read', { method: 'PUT' });
             }
+            console.log('🔔 One-by-one marking complete');
         }
-    } catch(e) {}
+    } catch(e) {
+        console.error('🔔 markAllNotificationsRead error:', e);
+    }
     if (btn) { btn.disabled = false; btn.textContent = 'Mark all read'; }
+    console.log('🔔 Updating badge and reloading notifications...');
     updateNotificationBadge();
     loadNotifications();
+    console.log('🔔 markAllNotificationsRead() complete');
 }
 
 function getTimeAgo(dateStr) {
@@ -97195,6 +97209,9 @@ async function submitInternalComm(e) {
         if (result.success) {
             customAlert('Internal communication sent successfully!', 'Success', 'success');
             reviewInternalComm();
+            // Refresh notification badge so the new comm appears in bell icon
+            updateNotificationBadge();
+            loadNotifications();
         } else {
             customAlert('Failed to send communication: ' + (result.error || 'Unknown error'), 'Error', 'error');
         }

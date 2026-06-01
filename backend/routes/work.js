@@ -1562,7 +1562,7 @@ router.post('/operations/internal-comm', async (req, res) => {
 
         const result = await db.execute(
             `INSERT INTO admin_work (department_code, work_type, work_title, work_description, status, priority, submitted_by, submitted_date)
-             VALUES ('ADMIN', 'Department Coordination', ?, ?, 'Pending', ?, ?)`,
+             VALUES ('ADMIN', 'Department Coordination', ?, ?, 'Pending', ?, ?, NOW())`,
             [
                 subject || 'Internal Communication',
                 message || '',
@@ -1572,6 +1572,25 @@ router.post('/operations/internal-comm', async (req, res) => {
         );
 
         console.log('✅ Internal communication record created, ID:', result.insertId);
+
+        // Create a notification so it appears in the bell icon
+        try {
+            await db.execute(
+                `INSERT INTO notifications (title, message, type, priority, recipient_type, recipients, sent_by, status, is_read, created_at)
+                 VALUES (?, ?, 'info', ?, 'all', ?, ?, 'sent', 0, NOW())`,
+                [
+                    'Internal Communication: ' + (subject || 'New Message'),
+                    message || '',
+                    priority || 'Medium',
+                    recipients || 'All Staff',
+                    'Admin'
+                ]
+            );
+            console.log('🔔 Notification created for internal communication');
+        } catch (notifError) {
+            console.error('⚠️ Failed to create notification for internal comm:', notifError.message);
+        }
+
         res.json({
             success: true,
             message: 'Internal communication recorded successfully',
@@ -1595,7 +1614,7 @@ router.post('/operations/filing-system', async (req, res) => {
 
         const result = await db.execute(
             `INSERT INTO admin_work (department_code, work_type, work_title, work_description, status, priority, submitted_by, submitted_date)
-             VALUES ('ADMIN', 'Document Management', ?, ?, 'Completed', 'Medium', 'Admin System')`,
+             VALUES ('ADMIN', 'Document Management', ?, ?, 'Completed', 'Medium', 'Admin System', NOW())`,
             [
                 action || 'Filing System Update',
                 description || `Filing system ${category || 'general'} update performed`
