@@ -75766,53 +75766,183 @@ function formatDate(dateString) {
 
 
 function viewTask(taskId) {
+    console.log('👁️ [View Task] Fetching task ID:', taskId);
 
-    const tasks = JSON.parse(localStorage.getItem('taskAssignments') || '[]');
+    // Show loading indicator
+    const existingModal = document.getElementById('taskViewModal');
+    if (existingModal) existingModal.remove();
 
-    const task = tasks.find(t => t.id === taskId);
+    // Create and show modal immediately with loading state
+    const modalHtml = `
+        <div id="taskViewModal" style="
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+            background: rgba(0,0,0,0.55); z-index: 99999; 
+            display: flex; align-items: center; justify-content: center;
+            backdrop-filter: blur(4px);
+            animation: fadeIn 0.2s ease;
+        " onclick="if(event.target===this)closeTaskModal()">
+            <div style="
+                background: #fff; border-radius: 16px; padding: 0;
+                width: 90%; max-width: 680px; max-height: 90vh;
+                overflow-y: auto; box-shadow: 0 25px 60px rgba(0,0,0,0.3);
+                animation: slideUp 0.3s cubic-bezier(0.16,1,0.3,1);
+            ">
+                <!-- Modal Header -->
+                <div style="
+                    background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+                    color: white; padding: 24px 28px; border-radius: 16px 16px 0 0;
+                    display: flex; justify-content: space-between; align-items: center;
+                ">
+                    <div>
+                        <div style="font-size: 11px; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px;">Task Details</div>
+                        <h3 id="modalTaskTitle" style="margin:0; font-size: 1.3rem; font-weight: 700;">Loading...</h3>
+                        <div id="modalTaskId" style="font-size: 12px; color: #64748b; margin-top: 4px;">#${taskId}</div>
+                    </div>
+                    <button onclick="closeTaskModal()" style="
+                        background: rgba(255,255,255,0.1); border: none; color: white;
+                        width: 36px; height: 36px; border-radius: 50%; cursor: pointer;
+                        font-size: 18px; display: flex; align-items: center; justify-content: center;
+                        transition: background 0.2s;
+                    " onmouseover="this.style.background='rgba(255,255,255,0.2)'" onmouseout="this.style.background='rgba(255,255,255,0.1)'">✕</button>
+                </div>
+                <!-- Modal Body -->
+                <div id="modalBody" style="padding: 28px;">
+                    <div style="text-align:center; padding: 40px; color: #94a3b8;">
+                        <div style="font-size: 2rem; margin-bottom: 8px;">⏳</div>
+                        <div>Loading task details...</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+    document.body.insertAdjacentHTML('beforeend', modalHtml);
 
-    
+    // Fetch real task data from DB
+    fetch(`/api/tasks/${taskId}`)
+        .then(response => response.json())
+        .then(data => {
+            console.log('📨 [View Task] Response:', data);
+            if (data.success && data.task) {
+                const t = data.task;
+                const priorityColors = {
+                    'urgent': '#dc3545', 'critical': '#dc3545',
+                    'high': '#fd7e14', 'medium': '#ffc107', 'low': '#28a745'
+                };
+                const statusColors = {
+                    'Not Started': '#6c757d', 'In Progress': '#28a745',
+                    'Completed': '#17a2b8', 'On Hold': '#ffc107', 'Cancelled': '#dc3545'
+                };
+                const p = (t.task_priority || 'medium').toLowerCase();
+                const pColor = priorityColors[p] || '#6c757d';
+                const sColor = statusColors[t.task_status] || '#6c757d';
 
-    if (task) {
+                document.getElementById('modalTaskTitle').textContent = t.task_name || 'Unknown Task';
 
-        customAlert(`
+                document.getElementById('modalBody').innerHTML = `
+                    <!-- Status + Priority Badges -->
+                    <div style="display:flex; gap: 10px; margin-bottom: 24px; flex-wrap: wrap;">
+                        <span style="background:${pColor}22; color:${pColor}; border:1px solid ${pColor}44; padding: 5px 14px; border-radius: 20px; font-size: 13px; font-weight: 600;">
+                            ⚡ ${t.task_priority || 'Medium'}
+                        </span>
+                        <span style="background:${sColor}22; color:${sColor}; border:1px solid ${sColor}44; padding: 5px 14px; border-radius: 20px; font-size: 13px; font-weight: 600;">
+                            ● ${t.task_status || 'Not Started'}
+                        </span>
+                        <span style="background:#3b82f622; color:#3b82f6; border:1px solid #3b82f644; padding: 5px 14px; border-radius: 20px; font-size: 13px; font-weight: 600;">
+                            🏗️ ${t.project_name || 'Unknown Project'}
+                        </span>
+                    </div>
 
-            Task Details:
+                    <!-- Description -->
+                    <div style="background:#f8fafc; border-left: 4px solid #3b82f6; padding: 16px; border-radius: 0 8px 8px 0; margin-bottom: 24px;">
+                        <div style="font-size:11px; color:#64748b; text-transform:uppercase; letter-spacing:1px; margin-bottom:6px;">Description</div>
+                        <div style="color:#1e293b; line-height:1.6;">${t.task_description || 'No description provided.'}</div>
+                    </div>
 
-            
+                    <!-- Info Grid -->
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 20px;">
+                        <div style="background:#f8fafc; padding:14px; border-radius:10px; border:1px solid #e2e8f0;">
+                            <div style="font-size:11px; color:#64748b; text-transform:uppercase; letter-spacing:1px; margin-bottom:4px;">👤 Assigned To</div>
+                            <div style="font-weight:600; color:#1e293b;">${t.assigned_to || 'Unassigned'}</div>
+                        </div>
+                        <div style="background:#f8fafc; padding:14px; border-radius:10px; border:1px solid #e2e8f0;">
+                            <div style="font-size:11px; color:#64748b; text-transform:uppercase; letter-spacing:1px; margin-bottom:4px;">👷 Created By</div>
+                            <div style="font-weight:600; color:#1e293b;">${t.created_by || 'N/A'}</div>
+                        </div>
+                        <div style="background:#f8fafc; padding:14px; border-radius:10px; border:1px solid #e2e8f0;">
+                            <div style="font-size:11px; color:#64748b; text-transform:uppercase; letter-spacing:1px; margin-bottom:4px;">📅 Start Date</div>
+                            <div style="font-weight:600; color:#1e293b;">${formatDate(t.start_date) || 'N/A'}</div>
+                        </div>
+                        <div style="background:#f8fafc; padding:14px; border-radius:10px; border:1px solid #e2e8f0;">
+                            <div style="font-size:11px; color:#64748b; text-transform:uppercase; letter-spacing:1px; margin-bottom:4px;">🗓️ Due Date</div>
+                            <div style="font-weight:600; color:#dc3545;">${formatDate(t.due_date) || 'N/A'}</div>
+                        </div>
+                        <div style="background:#f8fafc; padding:14px; border-radius:10px; border:1px solid #e2e8f0;">
+                            <div style="font-size:11px; color:#64748b; text-transform:uppercase; letter-spacing:1px; margin-bottom:4px;">⏱️ Est. Hours</div>
+                            <div style="font-weight:600; color:#1e293b;">${t.estimated_hours ? t.estimated_hours + ' hrs' : 'N/A'}</div>
+                        </div>
+                        <div style="background:#f8fafc; padding:14px; border-radius:10px; border:1px solid #e2e8f0;">
+                            <div style="font-size:11px; color:#64748b; text-transform:uppercase; letter-spacing:1px; margin-bottom:4px;">📋 Created At</div>
+                            <div style="font-weight:600; color:#1e293b;">${formatDate(t.created_at) || 'N/A'}</div>
+                        </div>
+                    </div>
 
-            Task ID: ${task.id}
+                    <!-- Skills -->
+                    ${t.required_skills ? `
+                    <div style="background:#f8fafc; padding:14px; border-radius:10px; border:1px solid #e2e8f0; margin-bottom:12px;">
+                        <div style="font-size:11px; color:#64748b; text-transform:uppercase; letter-spacing:1px; margin-bottom:8px;">🛠️ Required Skills</div>
+                        <div style="display:flex; flex-wrap:wrap; gap:6px;">
+                            ${t.required_skills.split(',').map(s => `<span style="background:#dbeafe; color:#1e40af; padding:3px 10px; border-radius:12px; font-size:12px; font-weight:500;">${s.trim()}</span>`).join('')}
+                        </div>
+                    </div>` : ''}
 
-            Task Name: ${task.name}
+                    <!-- Materials -->
+                    ${t.task_materials ? `
+                    <div style="background:#f8fafc; padding:14px; border-radius:10px; border:1px solid #e2e8f0; margin-bottom:20px;">
+                        <div style="font-size:11px; color:#64748b; text-transform:uppercase; letter-spacing:1px; margin-bottom:8px;">📦 Materials / Equipment</div>
+                        <div style="display:flex; flex-wrap:wrap; gap:6px;">
+                            ${t.task_materials.split(',').map(m => `<span style="background:#dcfce7; color:#166534; padding:3px 10px; border-radius:12px; font-size:12px; font-weight:500;">${m.trim()}</span>`).join('')}
+                        </div>
+                    </div>` : ''}
 
-            Project: ${task.project}
+                    <!-- Close Button -->
+                    <div style="text-align:right; border-top:1px solid #e2e8f0; padding-top:16px;">
+                        <button onclick="closeTaskModal()" style="
+                            background:#0f172a; color:white; border:none; padding:10px 24px;
+                            border-radius:8px; cursor:pointer; font-weight:600; font-size:14px;
+                            transition:background 0.2s;
+                        " onmouseover="this.style.background='#1e293b'" onmouseout="this.style.background='#0f172a'">
+                            Close
+                        </button>
+                    </div>
+                `;
+            } else {
+                document.getElementById('modalBody').innerHTML = `
+                    <div style="text-align:center; padding:40px; color:#dc3545;">
+                        <div style="font-size:2rem; margin-bottom:8px;">❌</div>
+                        <div>Task not found or failed to load.</div>
+                    </div>
+                `;
+            }
+        })
+        .catch(error => {
+            console.error('❌ [View Task] Error:', error);
+            document.getElementById('modalBody').innerHTML = `
+                <div style="text-align:center; padding:40px; color:#dc3545;">
+                    <div style="font-size:2rem; margin-bottom:8px;">❌</div>
+                    <div>Failed to load task: ${error.message}</div>
+                </div>
+            `;
+        });
+}
 
-            Assigned To: ${task.assignee}
-
-            Priority: ${task.priority}
-
-            Start Date: ${task.startDate}
-
-            Due Date: ${task.dueDate}
-
-            Description: ${task.description}
-
-            Estimated Hours: ${task.estimatedHours || 'N/A'}
-
-            Required Skills: ${task.requiredSkills || 'N/A'}
-
-            Materials/Equipment: ${task.materials || 'N/A'}
-
-            Status: ${task.status}
-
-            Assigned By: ${task.assignedBy}
-
-            Assigned Date: ${task.assignedDate}
-
-        `, "Task Details", "info");
-
+function closeTaskModal() {
+    const modal = document.getElementById('taskViewModal');
+    if (modal) {
+        modal.style.animation = 'none';
+        modal.style.opacity = '0';
+        modal.style.transition = 'opacity 0.2s';
+        setTimeout(() => modal.remove(), 200);
     }
-
 }
 
 
