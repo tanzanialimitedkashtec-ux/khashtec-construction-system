@@ -69339,13 +69339,13 @@ function calculateTotalBudget() {
 
 function processInvoices() {
     showContent(`<div class="card">
-        <h3>Process Invoices</h3>
+        <h3 style="display:flex;align-items:center;gap:10px;"><span onclick="showFinanceDashboard()" style="cursor:pointer;font-size:20px;" title="Back">&#8592;</span> Process Invoices</h3>
         <p><strong>Financial Authority:</strong> Create and manage invoices</p>
 
         <div style="display:flex;gap:20px;flex-wrap:wrap;">
             <div style="flex:1;min-width:320px;">
-                <h4>Create New Invoice</h4>
-                <form id="invoiceForm" onsubmit="submitInvoice(event)" style="display:flex;flex-direction:column;gap:12px;">
+                <h4 style="display:flex;align-items:center;gap:10px;">Create New Invoice <button onclick="toggleInvoiceForm()" style="background:#3498db;color:white;border:none;padding:6px 12px;border-radius:4px;cursor:pointer;font-size:13px;">Show/Hide Form</button></h4>
+                <form id="invoiceForm" onsubmit="submitInvoice(event)" style="display:none;flex-direction:column;gap:12px;">
                     <div style="display:flex;gap:10px;flex-wrap:wrap;">
                         <div style="flex:1;min-width:150px;">
                             <label style="font-weight:600;display:block;margin-bottom:4px;">Client / Vendor Name *</label>
@@ -69901,6 +69901,17 @@ function taxPlanning() {
 
 function toggleTaxForm() {
     var form = document.getElementById('taxPlanForm');
+    if (form) {
+        if (form.style.display === 'none' || form.style.display === '') {
+            form.style.display = 'flex';
+        } else {
+            form.style.display = 'none';
+        }
+    }
+}
+
+function toggleInvoiceForm() {
+    var form = document.getElementById('invoiceForm');
     if (form) {
         if (form.style.display === 'none' || form.style.display === '') {
             form.style.display = 'flex';
