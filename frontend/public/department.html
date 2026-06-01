@@ -159,6 +159,61 @@ function submitEmailPayslipsForm(event) {
     
 
     <style>
+/* Premium Task Table Styling */
+.task-table-container {
+    background: #ffffff;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+    overflow: auto; /* enable horizontal scroll if needed */
+    margin: 20px 0;
+    border: 1px solid #edf2f7;
+}
+.task-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    font-size: 13px;
+}
+.task-table thead th {
+    background-color: #f8fafc;
+    color: #475569;
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 11px;
+    letter-spacing: 0.5px;
+    padding: 16px 20px;
+    border-bottom: 2px solid #e2e8f0;
+    text-align: left;
+    white-space: nowrap;
+}
+.task-table tbody td {
+    padding: 16px 20px;
+    border-bottom: 1px solid #f1f5f9;
+    color: #334155;
+    vertical-align: top;
+    transition: background-color 0.2s;
+}
+.task-table tbody tr:hover td {
+    background-color: #f8fafc;
+}
+.task-table tbody tr:last-child td {
+    border-bottom: none;
+}
+.task-table button.action {
+    border: none;
+    background: #3b82f6;
+    color: white;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 500;
+    transition: all 0.2s;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+.task-table button.action:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+    filter: brightness(110%);
+}
 
 *{
 

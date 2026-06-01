@@ -227,13 +227,22 @@ router.post('/', async (req, res) => {
                     task_materials, dependencies, created_by, created_at
                 ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())
             `;
-            
+            // Normalize priority to match DB Enum
+            const priorityMap = {
+                'urgent': 'Critical',
+                'critical': 'Critical',
+                'high': 'High',
+                'medium': 'Medium',
+                'low': 'Low'
+            };
+            const normalizedPriority = priorityMap[(task_priority || '').toLowerCase()] || 'Medium';
+
             const values = [
                 project_id,
                 task_name,
                 task_description || null,
                 assigned_to,
-                task_priority || 'Medium',
+                normalizedPriority,
                 'Not Started',
                 start_date,
                 due_date,
@@ -297,6 +306,18 @@ router.put('/:id', async (req, res) => {
         // Try database first, fallback to mock
         try {
             const db = require('../../database/config/database');
+            
+            // Normalize priority to match DB Enum
+            if (updateData.task_priority) {
+                const priorityMap = {
+                    'urgent': 'Critical',
+                    'critical': 'Critical',
+                    'high': 'High',
+                    'medium': 'Medium',
+                    'low': 'Low'
+                };
+                updateData.task_priority = priorityMap[updateData.task_priority.toLowerCase()] || 'Medium';
+            }
             
             // Build dynamic update query
             const updateFields = [];
