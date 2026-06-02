@@ -20331,13 +20331,7 @@ function recordIncidentReports(){
 
     
 
-        // Removed PAGE FREEZE logic
-
-        
-
-    }, 100);
-
-}
+    // Removed PAGE FREEZE logic`n`n}
 
 
 
@@ -79919,6 +79913,7 @@ async function showMaterialsOutRecords() {
         </div>
     `);
 }
+
 
 
 

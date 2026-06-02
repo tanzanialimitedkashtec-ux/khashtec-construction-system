@@ -169,8 +169,12 @@ router.post('/', async (req, res, next) => {
             severity,
             location,
             project_name,
-            status = 'pending'
+            status: rawStatus = 'pending'
         } = req.body;
+
+        // Normalize status to match DB ENUM: 'Pending', 'In Progress', 'Completed'
+        const statusMap = { 'pending': 'Pending', 'in progress': 'In Progress', 'in-progress': 'In Progress', 'completed': 'Completed', 'investigating': 'Investigating', 'resolved': 'Resolved' };
+        const status = statusMap[String(rawStatus).toLowerCase()] || rawStatus || 'Pending';
         
         console.log('📝 Extracted HSE data:', {
             work_type,
@@ -3036,8 +3040,12 @@ router.post('/hse', async (req, res) => {
             severity,
             location,
             project_name,
-            status = 'pending'
+            status: rawStatus = 'pending'
         } = req.body;
+
+        // Normalize status to match DB ENUM: 'Pending', 'In Progress', 'Completed'
+        const statusMap = { 'pending': 'Pending', 'in progress': 'In Progress', 'in-progress': 'In Progress', 'completed': 'Completed', 'investigating': 'Investigating', 'resolved': 'Resolved' };
+        const status = statusMap[String(rawStatus).toLowerCase()] || rawStatus || 'Pending';
         
         console.log('📝 Extracted HSE data:', {
             work_type,

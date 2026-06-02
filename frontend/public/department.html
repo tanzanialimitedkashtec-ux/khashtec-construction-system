@@ -43933,11 +43933,8 @@ function recordIncidentReports(){
 
     // Removed PAGE FREEZE logic
 
-        
-
-    }, 100);
-
 }
+
 
 
 
@@ -97923,7 +97920,7 @@ function updateNavigationForRole(role) {
 
     menuContainer.innerHTML = '';
 
-    resetMenuSearch();
+    if (typeof resetMenuSearch === 'function') resetMenuSearch();
 
     
 
