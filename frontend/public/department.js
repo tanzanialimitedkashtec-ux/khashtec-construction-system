@@ -16426,6 +16426,7 @@ function saveEmployee() {
         return false;
 
     });
+            window.isSavingIncident = false;
 
     
 
@@ -34073,11 +34074,12 @@ window.addEventListener('click', function(event) {
 // HSE Helper Functions
 
 function saveIncidentReport() {
-
-    console.log('ðŸš€ saveIncidentReport function called');
-
-    
-
+    console.log('🚀 saveIncidentReport function called');
+    if (window.isSavingIncident) {
+        console.log('⚠️ Save already in progress, ignoring double click');
+        return false;
+    }
+    window.isSavingIncident = true;
     try {
 
         // Validate required fields
@@ -34093,11 +34095,11 @@ function saveIncidentReport() {
 
         
 
-        console.log('ðŸ“ Form values:', { incidentType, severityLevel, incidentDescription });
+        console.log('📝 Form values:', { incidentType, severityLevel, incidentDescription, project, location, status });
 
         
 
-        if (!incidentType || !severityLevel || !incidentDescription) {
+        if (!incidentType || !severityLevel || !incidentDescription || !project || !location) {
 
             console.log('âŒ Validation failed - missing required fields');
 
@@ -34127,8 +34129,8 @@ function saveIncidentReport() {
 
             location: document.getElementById('incidentLocation')?.value || 'Construction Site', // Required field
 
-            project_name: document.getElementById('incidentProject')?.value || 'Building A', // Required field
-
+            project_name: document.getElementById('incidentProject')?.value || 'Building A',
+            status: document.getElementById('incidentStatus') ? document.getElementById('incidentStatus').value : 'pending',
             priority: severityLevel === 'critical' ? 'Critical' : 
 
                       severityLevel === 'major' ? 'High' : 
@@ -34239,11 +34241,8 @@ function saveIncidentReport() {
             // Generate new incident ID
 
             document.getElementById('incidentId').value = 'INC-' + Date.now();
-
-            
-
+            window.isSavingIncident = false;
             return false;
-
         })
 
         .catch(error => {
@@ -34323,6 +34322,7 @@ function saveIncidentReport() {
             return false;
 
         });
+            window.isSavingIncident = false;
 
         
 
