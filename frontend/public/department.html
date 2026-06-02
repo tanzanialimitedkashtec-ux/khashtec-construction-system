@@ -69466,36 +69466,35 @@ function submitInvoice(e) {
             receiptArea.style.display = 'block';
             var now = new Date();
             var dateStr = now.toLocaleDateString('en-GB', { day: '2-digit', month: 'long', year: 'numeric' });
-            receiptDiv.innerHTML = '<div style="border:2px solid #1a5276;border-radius:10px;padding:25px;background:#fdfdfd;font-family:Georgia,serif;">' +
-                '<div style="text-align:center;border-bottom:2px solid #1a5276;padding-bottom:15px;margin-bottom:15px;">' +
-                    '<h3 style="margin:0;color:#1a5276;font-size:20px;">KASHTEC TANZANIA LIMITED</h3>' +
-                    '<p style="margin:4px 0;color:#666;font-size:13px;">Construction Management System</p>' +
-                    '<h4 style="margin:10px 0 0;color:#2c3e50;">INVOICE</h4>' +
+            receiptDiv.innerHTML = '<div style="max-width:350px;border:1px solid #1a5276;border-radius:8px;padding:15px;background:#fdfdfd;font-family:Georgia,serif;box-shadow:0 2px 5px rgba(0,0,0,0.05);margin-top:20px;">' +
+                '<div style="text-align:center;border-bottom:1px solid #1a5276;padding-bottom:10px;margin-bottom:10px;">' +
+                    '<img src="images/khashtec%20logo.png" alt="Khashtec logo" style="display:block;margin:0 auto 5px;max-height:40px;width:auto;">' +
+                    '<h3 style="margin:0;color:#1a5276;font-size:16px;">KASHTEC TANZANIA LIMITED</h3>' +
+                    '<p style="margin:2px 0;color:#666;font-size:11px;">Construction Management System</p>' +
+                    '<h4 style="margin:5px 0 0;color:#2c3e50;font-size:14px;">INVOICE</h4>' +
                 '</div>' +
-                '<div style="display:flex;justify-content:space-between;margin-bottom:15px;font-size:14px;">' +
+                '<div style="display:flex;justify-content:space-between;margin-bottom:10px;font-size:12px;">' +
                     '<div><strong>Invoice #:</strong> ' + invoiceNum + '</div>' +
                     '<div><strong>Date:</strong> ' + dateStr + '</div>' +
                 '</div>' +
-                '<div style="display:flex;justify-content:space-between;margin-bottom:15px;font-size:14px;">' +
+                '<div style="display:flex;justify-content:space-between;margin-bottom:10px;font-size:12px;">' +
                     '<div><strong>Bill To:</strong> ' + vendor + '</div>' +
                     '<div><strong>Due Date:</strong> ' + dueDate + '</div>' +
                 '</div>' +
-                '<table style="width:100%;border-collapse:collapse;margin:15px 0;">' +
+                '<table style="width:100%;border-collapse:collapse;margin:10px 0;font-size:12px;">' +
                     '<thead><tr style="background:#1a5276;color:white;">' +
-                        '<th style="padding:10px;text-align:left;border:1px solid #1a5276;">Description</th>' +
-                        '<th style="padding:10px;text-align:left;border:1px solid #1a5276;">Category</th>' +
-                        '<th style="padding:10px;text-align:right;border:1px solid #1a5276;">Amount</th>' +
+                        '<th style="padding:6px;text-align:left;border:1px solid #1a5276;">Desc.</th>' +
+                        '<th style="padding:6px;text-align:right;border:1px solid #1a5276;">Amount</th>' +
                     '</tr></thead>' +
                     '<tbody><tr>' +
-                        '<td style="padding:10px;border:1px solid #ddd;">' + description + '</td>' +
-                        '<td style="padding:10px;border:1px solid #ddd;">' + category + '</td>' +
-                        '<td style="padding:10px;text-align:right;border:1px solid #ddd;">TZS ' + formatTZS(amount) + '</td>' +
+                        '<td style="padding:6px;border:1px solid #ddd;">' + description + '</td>' +
+                        '<td style="padding:6px;text-align:right;border:1px solid #ddd;">TZS ' + formatTZS(amount) + '</td>' +
                     '</tr></tbody>' +
                 '</table>' +
-                '<div style="text-align:right;border-top:2px solid #1a5276;padding-top:12px;margin-top:10px;">' +
-                    '<strong style="font-size:18px;color:#1a5276;">Total: TZS ' + formatTZS(amount) + '</strong>' +
+                '<div style="text-align:right;border-top:1px solid #1a5276;padding-top:8px;margin-top:8px;">' +
+                    '<strong style="font-size:14px;color:#1a5276;">Total: TZS ' + formatTZS(amount) + '</strong>' +
                 '</div>' +
-                '<div style="text-align:center;margin-top:20px;padding-top:15px;border-top:1px dashed #ccc;color:#888;font-size:12px;">' +
+                '<div style="text-align:center;margin-top:12px;padding-top:10px;border-top:1px dashed #ccc;color:#888;font-size:11px;">' +
                     '<p style="margin:2px 0;">Status: <strong style="color:#e67e22;">Pending</strong> | Priority: <strong>' + priority + '</strong></p>' +
                     '<p style="margin:2px 0;">Invoice ID: ' + (data.work_id || 'N/A') + '</p>' +
                     '<p style="margin:8px 0 0;">Thank you for your business!</p>' +
