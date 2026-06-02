@@ -2105,7 +2105,7 @@ CREATE TABLE IF NOT EXISTS payment_requests (
 );
 
 -- Payment History Table
-CREATE TABLE IF NOT EXISTS payment_history (
+CREATE TABLE IF NOT EXISTS payment_requests_history (
     id INT AUTO_INCREMENT PRIMARY KEY,
     payment_id INT NOT NULL,
     status ENUM('pending_finance_approval', 'approved', 'rejected', 'processed', 'paid', 'cancelled') NOT NULL,

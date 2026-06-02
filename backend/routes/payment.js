@@ -277,9 +277,24 @@ router.put('/:id/status', async (req, res) => {
             id
         ]);
         
+        // Ensure payment_requests_history table exists
+        await db.execute(`
+            CREATE TABLE IF NOT EXISTS payment_requests_history (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                payment_id INT NOT NULL,
+                status ENUM('pending_finance_approval', 'approved', 'rejected', 'processed', 'paid', 'cancelled') NOT NULL,
+                changed_by INT NOT NULL,
+                notes TEXT,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                INDEX idx_payment_id (payment_id),
+                INDEX idx_status (status),
+                INDEX idx_changed_by (changed_by)
+            )
+        `);
+
         // Add to payment history
         await db.execute(`
-            INSERT INTO payment_history (
+            INSERT INTO payment_requests_history (
                 payment_id, status, changed_by, notes, created_at
             ) VALUES (?, ?, ?, ?, ?)
         `, [
@@ -518,7 +533,7 @@ router.get('/:id', async (req, res, next) => {
         
         // Get payment history
         const history = await db.execute(`
-            SELECT * FROM payment_history 
+            SELECT * FROM payment_requests_history 
             WHERE payment_id = ? 
             ORDER BY created_at DESC
         `, [id]);
