@@ -20315,9 +20315,9 @@ function recordIncidentReports(){
 
     
 
-    // NUCLEAR PAGE FREEZE - PREVENT ANY AND ALL NAVIGATION
+    
 
-    setTimeout(() => {
+    
 
         console.log('ðŸ›¡ï¸ Deploying NUCLEAR page freeze...');
 
