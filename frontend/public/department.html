@@ -24902,365 +24902,138 @@ function loadMenu(){
 
     
 
-    console.log('Loading menu for role:', currentRole); // Debug line
-
-
-
-    if(currentRole === "MD"){
-
-        addMenu("Approve Recruitment Policies", approveRecruitmentPolicies);
-
-        addMenu("Approve Senior Staff Hiring", approveSeniorHiring);
-
-        addMenu("Create Senior Hiring Request", showSeniorRoles);
-
-        addMenu("Approve Workforce Budget", approveWorkforceBudget);
-
-        addMenu("Review Employee Count", reviewEmployeeCount);
-
-        addMenu("View All Workers", viewAllWorkers);
-
-        addMenu("View Assigned Workers", viewAssignedWorkers);
-
-        addMenu("View Employee List", viewEmployeeList);
-
-        addMenu("Schedule Meetings", scheduleMeeting);
-
-        addMenu("Suspend/Terminate Employment", suspendTerminateEmployment);
-
-        addMenu("View Workforce Reports", viewWorkforceReports);
-
-        addMenu("Upload Safety Policies", uploadSafetyPolicies);
-
-        addMenu("Project Manage", showCreateProjectForm);
-
-        addMenu("Accountant Management", showAccountantForm);
-
-        addMenu("Leadership Management", showLeadershipForm);
-
-        addMenu("Mission & Vision", showMissionVisionForm);
-
-        addMenu("Long-Term Growth Strategy", showLongTermGrowthForm);
-
-        addMenu("Payment Management", showPaymentManagement);
-
-        addMenu("Register Company Car", registerCompanyCar);
-
-        addMenu("Manage Company Cars", manageCompanyCars);
-
-        addMenu("Transport Costs", manageTransportCosts);
-
-        addMenu("Register Driver", registerDriver);
-
-        addMenu("Manage Drivers", manageDrivers);
-
-        addMenu("Register Employee", registerEmployee);
-
-        addMenu("Create Worker Account", createWorkerAccount);
-
-        addMenu("Assign Project Workers", assignWorker);
-
-        addMenu("Update Employee Records", updateEmployeeRecords);
-
-        addMenu("Team Management", showTeamManagementDashboard);
-
-        addMenu("Track Attendance", attendance);
-
-        addMenu("Manage Leave & Contracts", manageLeaveContracts);
-
-        addMenu("Manage Policies", loadPolicies);
-
-        addMenu("Administrative Operations", adminOperations);
-
-        addMenu("Compliance Management", () => complianceManagement());
-
-        addMenu("Staff Oversight", () => staffOversight());
-
-        addMenu("Document Management", documentManagement);
-
-        addMenu("User Account Management", () => userAccountManagement());
-
-        addMenu("Budgeting", financeBudgeting);
-
-        addMenu("Financial Management", financialManagement);
-
-        addMenu("Approve Invoices", showMDInvoiceApproval);
-
-        addMenu("View Invoices", showViewInvoices);
-
-        addMenu("Investment Management", showInvestmentManagement);
-
-        addMenu("Payroll Processing", payrollProcessing);
-
-        addMenu("Expense Control", expenseControl);
-
-        addMenu("Financial Reporting", financialReporting);
-
-        addMenu("Audits", financeAudits);
-
-        addMenu("Compliance", financeCompliance);
-
-        addMenu("Luggage Campaigns", manageLuggageCampaigns);
-
-        addMenu("Luggage Purchases", manageLuggagePurchases);
-
-        addMenu("Payment Tracking", trackLuggagePayments);
-
-        addMenu("Add Property", addProperty);
-
-        addMenu("Edit Property Details", editPropertyDetails);
-
-        addMenu("Register Client", registerClient);
-
-        addMenu("Record Sale", recordSale);
-
-        addMenu("Manage Sales", manageSales);
-
-        addMenu("Track Payment Progress", trackPaymentProgress);
-
-        addMenu("Generate Sales Report", generateSalesReport);
-
-        addMenu("Upload Documents", uploadDocs);
-
-        addMenu("Edit Documents", editDocuments);
-
-        addMenu("Send Notifications", sendNotifications);
-
-        addMenu("Record Meeting Minutes", recordMeetingMinutes);
-
-        addMenu("Office Portal", officePortal);
-
-        addMenu("Create New Project", createNewProject);
-
-        addMenu("Update Project Progress", updateProjectProgress);
-
-        addMenu("Assign Tasks", () => assignTasks());
-
-        addMenu("Request Workforce", requestWorkforce);
-
-        addMenu("Record Site Reports", recordSiteReports);
-
-        addMenu("Approve Completed Work", approveCompletedWork);
-
-        addMenu("Record Incident Reports", recordIncidentReports);
-
-        addMenu("Record Toolbox Meetings", recordToolboxMeetings);
-
-        addMenu("Track PPE Issuance", trackPpeIssuance);
-
-        addMenu("Mark Safety Violations", markSafetyViolations);
-
-        addMenu("Upload Inspection Reports", uploadInspectionReports);
-
-        addMenu("View Project Safety Status", viewProjectSafetyStatus);
-
-        addMenu("Department Management", showDepartmentManagement);
-
-        addMenu("Tax", tax);
-
-        addMenu("Procurement Sale", procurementSale);
-
-        addMenu("NHIF Contribute", nhifContribute);
-
-        addMenu("Senior", senior);
-
-        addMenu("Suggestions", suggestions);
-
-        addMenu("View Suggestions", loadViewSuggestions);
-
-        addMenu("Materials Inventory", showMaterialsInventory);
-
-        addMenu("Record Materials In", showMaterialsInForm);
-
-        addMenu("Record Materials Out", showMaterialsOutForm);
-
-        addMenu("Materials Dashboard", showMaterialsDashboard);
-
-        addMenu("Claims Management", loadClaimsManagement);
-
-        addMenu("NSSF Registration", loadNssfRegistration);
-
-        addMenu("Discipline Monitoring", loadDisciplineMonitoring);
-
-        addMenu("Office Resources", loadOfficeResources);
-
-        addMenu("Talent Acquisition", loadTalentAcquisition);
-
-        addMenu("Promotions", loadPromotions);
-
-        addMenu("Risk Management", loadRiskManagement);
-
-
+        console.log('Loading menu for role:', currentRole);
+
+    const rolePermissions = {
+        "HR": ["Register Employee", "Create Worker Account", "Assign Project Workers", "Update Employee Records", "Register Driver", "Register Company Car", "Manage Company Cars", "Track Attendance", "Manage Leave & Contracts", "Manage Policies", "Approve Workforce Budget", "Manage Drivers", "View Suggestions"],
+        "FINANCE": ["Budgeting", "Financial Management", "Payroll Processing", "Expense Control", "Financial Reporting", "Audits", "Compliance", "Luggage Campaigns", "Luggage Purchases", "Payment Tracking", "View Suggestions", "Record Sale", "Manage Sales", "Generate Sales Report", "Procurement Sale", "Accountant Management", "Payment Management", "Track Payment Progress"],
+        "PROJECT": ["Create New Project", "Update Project Progress", "Assign Tasks", "Assign Project Workers", "Request Workforce", "Record Site Reports", "Approve Completed Work", "Materials Inventory", "Record Materials Out", "View Suggestions", "View Project Safety Status"],
+        "REALESTATE": ["Add Property", "Edit Property Details", "Register Client", "Record Sale", "Manage Sales", "Track Payment Progress", "Generate Sales Report", "View Suggestions", "Materials Inventory", "Record Materials In", "Record Materials Out", "Materials Dashboard", "Office Resources", "Procurement Sale", "Property"],
+        "HSE": ["Record Incident Reports", "Record Toolbox Meetings", "Track PPE Issuance", "Mark Safety Violations", "Upload Inspection Reports", "View Project Safety Status", "View Suggestions", "Upload Safety Policies", "Compliance Management", "Compliance", "Risk Management"],
+        "ADMIN": ["Administrative Operations", "Compliance Management", "Staff Oversight", "Document Management", "User Account Management", "View Suggestions", "Office Portal", "View Employee List", "Track Attendance", "Schedule Meetings", "Upload Documents", "Edit Documents", "Send Notifications", "Record Meeting Minutes", "Suggestions", "Office Resources", "View Invoices", "Payment Tracking"]
+    };
+
+    const isAuthorized = (menuName) => {
+        if (currentRole === "MD") return true;
         
-    }
-
-
-
-    if(currentRole === "ADMIN"){
-
-        addMenu("Administrative Operations", adminOperations);
-
-        addMenu("Compliance Management", () => complianceManagement());
-
-        addMenu("Staff Oversight", () => staffOversight());
-
-        addMenu("Document Management", documentManagement);
-
-        addMenu("User Account Management", () => userAccountManagement());
-
-        addMenu("View Suggestions", loadViewSuggestions);
-
-    }
-
-
-
-    if(currentRole === "HR"){
-
-        addMenu("Register Employee", registerEmployee);
-
-        addMenu("Create Worker Account", createWorkerAccount);
-
-        addMenu("Assign Project Workers", assignWorker);
-
-        addMenu("Update Employee Records", updateEmployeeRecords);
-
-        addMenu("Track Attendance", attendance);
-
-        addMenu("Manage Leave & Contracts", manageLeaveContracts);
-
-        addMenu("Manage Policies", loadPolicies);
-
-        addMenu("Approve Workforce Budget", approveWorkforceBudget);
-
-        addMenu("Register Driver", registerDriver);
-
-        addMenu("Manage Drivers", manageDrivers);
-
-        addMenu("View Suggestions", loadViewSuggestions);
-
-    }
-
-
-
-    if(currentRole === "HSE"){
-
-        addMenu("Record Incident Reports", recordIncidentReports);
-
-        addMenu("Record Toolbox Meetings", recordToolboxMeetings);
-
-        addMenu("Track PPE Issuance", trackPpeIssuance);
-
-        addMenu("Mark Safety Violations", markSafetyViolations);
-
-        addMenu("Upload Inspection Reports", uploadInspectionReports);
-
-        addMenu("View Project Safety Status", viewProjectSafetyStatus);
-
-        addMenu("View Suggestions", loadViewSuggestions);
-
-    }
-
-
-
-    if(currentRole === "FINANCE"){
-
-        addMenu("Budgeting", financeBudgeting);
-
-        addMenu("Financial Management", financialManagement);
-
-        addMenu("Payroll Processing", payrollProcessing);
-
-        addMenu("Expense Control", expenseControl);
-
-        addMenu("Financial Reporting", financialReporting);
-
-        addMenu("Audits", financeAudits);
-
-        addMenu("Compliance", financeCompliance);
-
-        addMenu("Luggage Campaigns", manageLuggageCampaigns);
-
-        addMenu("Luggage Purchases", manageLuggagePurchases);
-
-        addMenu("Payment Tracking", trackLuggagePayments);
-
-        addMenu("View Suggestions", loadViewSuggestions);
-
-    }
-
-
-
-    if(currentRole === "PROJECT"){
-
-        addMenu("Create New Project", createNewProject);
-
-        addMenu("Update Project Progress", updateProjectProgress);
-
-        addMenu("Assign Tasks", () => assignTasks());
-
-        addMenu("Request Workforce", requestWorkforce);
-
-        addMenu("View Assigned Workers", viewAssignedWorkers);
-
-        addMenu("Record Site Reports", recordSiteReports);
-
-        addMenu("Approve Completed Work", approveCompletedWork);
-
-        addMenu("Materials Inventory", showMaterialsInventory);
-
-        addMenu("Record Materials Out", showMaterialsOutForm);
-
-        addMenu("View Suggestions", loadViewSuggestions);
-
-    }
-
-
-
-    if(currentRole === "REALESTATE"){
-
-        addMenu("Add Property", addProperty);
-
-        addMenu("Edit Property Details", editPropertyDetails);
-
-        addMenu("Register Client", registerClient);
-
-        addMenu("Record Sale", recordSale);
-
-        addMenu("Manage Sales", manageSales);
-
-        addMenu("Track Payment Progress", trackPaymentProgress);
-
-        addMenu("Generate Sales Report", generateSalesReport);
-
-        addMenu("View Suggestions", loadViewSuggestions);
-
-    }
-
-
-
-    if(currentRole === "ASSISTANT"){
-
-        console.log('Adding Admin Assistant menu items'); // Debug line
-
+        let roleKey = currentRole;
+        if (currentRole === "REAL ESTATE") roleKey = "REALESTATE";
+        if (currentRole === "HR manager" || currentRole === "hr@manager") roleKey = "HR";
+        if (currentRole === "Finance Manager" || currentRole === "finance maneger") roleKey = "FINANCE";
+        if (currentRole === "project manager") roleKey = "PROJECT";
+        if (currentRole === "real estate") roleKey = "REALESTATE";
+        if (currentRole === "hse maneger" || currentRole === "HSE Manager") roleKey = "HSE";
+        if (currentRole === "admin") roleKey = "ADMIN";
+        if (currentRole === "ASSISTANT") roleKey = "ASSISTANT";
         
+        roleKey = roleKey.toUpperCase().replace(/\s+/g, '');
+        
+        if (rolePermissions[roleKey]) {
+            return rolePermissions[roleKey].includes(menuName);
+        }
+        return false;
+    };
 
-        addMenu("Upload Documents", uploadDocs);
+    const addMenuRBAC = (name, func) => {
+        if (isAuthorized(name)) {
+            addMenu(name, func);
+        } else {
+            addMenu(name, func, { unauthorized: true });
+        }
+    };
 
-        addMenu("Edit Documents", editDocuments);
-
-        addMenu("Send Notifications", sendNotifications);
-
-        addMenu("Record Meeting Minutes", recordMeetingMinutes);
-
-        addMenu("View Employee List", viewEmployeeList);
-
-        addMenu("Office Portal", officePortal);
-
-        addMenu("View Suggestions", loadViewSuggestions);
-
-    }
-
-    
+    // Master list of all menus (MD's access list covers all functionality)
+    addMenuRBAC("Approve Recruitment Policies", approveRecruitmentPolicies);
+    addMenuRBAC("Approve Senior Staff Hiring", approveSeniorHiring);
+    addMenuRBAC("Create Senior Hiring Request", showSeniorRoles);
+    addMenuRBAC("Approve Workforce Budget", approveWorkforceBudget);
+    addMenuRBAC("Review Employee Count", reviewEmployeeCount);
+    addMenuRBAC("View All Workers", viewAllWorkers);
+    addMenuRBAC("View Assigned Workers", viewAssignedWorkers);
+    addMenuRBAC("View Employee List", viewEmployeeList);
+    addMenuRBAC("Schedule Meetings", scheduleMeeting);
+    addMenuRBAC("Suspend/Terminate Employment", suspendTerminateEmployment);
+    addMenuRBAC("View Workforce Reports", viewWorkforceReports);
+    addMenuRBAC("Upload Safety Policies", uploadSafetyPolicies);
+    addMenuRBAC("Project Manage", showCreateProjectForm);
+    addMenuRBAC("Accountant Management", showAccountantForm);
+    addMenuRBAC("Leadership Management", showLeadershipForm);
+    addMenuRBAC("Mission & Vision", showMissionVisionForm);
+    addMenuRBAC("Long-Term Growth Strategy", showLongTermGrowthForm);
+    addMenuRBAC("Payment Management", showPaymentManagement);
+    addMenuRBAC("Register Company Car", registerCompanyCar);
+    addMenuRBAC("Manage Company Cars", manageCompanyCars);
+    addMenuRBAC("Transport Costs", manageTransportCosts);
+    addMenuRBAC("Register Driver", registerDriver);
+    addMenuRBAC("Manage Drivers", manageDrivers);
+    addMenuRBAC("Register Employee", registerEmployee);
+    addMenuRBAC("Create Worker Account", createWorkerAccount);
+    addMenuRBAC("Assign Project Workers", assignWorker);
+    addMenuRBAC("Update Employee Records", updateEmployeeRecords);
+    addMenuRBAC("Team Management", showTeamManagementDashboard);
+    addMenuRBAC("Track Attendance", attendance);
+    addMenuRBAC("Manage Leave & Contracts", manageLeaveContracts);
+    addMenuRBAC("Manage Policies", loadPolicies);
+    addMenuRBAC("Administrative Operations", adminOperations);
+    addMenuRBAC("Compliance Management", () => complianceManagement());
+    addMenuRBAC("Staff Oversight", () => staffOversight());
+    addMenuRBAC("Document Management", documentManagement);
+    addMenuRBAC("User Account Management", () => userAccountManagement());
+    addMenuRBAC("Budgeting", financeBudgeting);
+    addMenuRBAC("Financial Management", financialManagement);
+    addMenuRBAC("Approve Invoices", showMDInvoiceApproval);
+    addMenuRBAC("View Invoices", showViewInvoices);
+    addMenuRBAC("Investment Management", showInvestmentManagement);
+    addMenuRBAC("Payroll Processing", payrollProcessing);
+    addMenuRBAC("Expense Control", expenseControl);
+    addMenuRBAC("Financial Reporting", financialReporting);
+    addMenuRBAC("Audits", financeAudits);
+    addMenuRBAC("Compliance", financeCompliance);
+    addMenuRBAC("Luggage Campaigns", manageLuggageCampaigns);
+    addMenuRBAC("Luggage Purchases", manageLuggagePurchases);
+    addMenuRBAC("Payment Tracking", trackLuggagePayments);
+    addMenuRBAC("Add Property", addProperty);
+    addMenuRBAC("Edit Property Details", editPropertyDetails);
+    addMenuRBAC("Register Client", registerClient);
+    addMenuRBAC("Record Sale", recordSale);
+    addMenuRBAC("Manage Sales", manageSales);
+    addMenuRBAC("Track Payment Progress", trackPaymentProgress);
+    addMenuRBAC("Generate Sales Report", generateSalesReport);
+    addMenuRBAC("Upload Documents", uploadDocs);
+    addMenuRBAC("Edit Documents", editDocuments);
+    addMenuRBAC("Send Notifications", sendNotifications);
+    addMenuRBAC("Record Meeting Minutes", recordMeetingMinutes);
+    addMenuRBAC("Office Portal", officePortal);
+    addMenuRBAC("Create New Project", createNewProject);
+    addMenuRBAC("Update Project Progress", updateProjectProgress);
+    addMenuRBAC("Assign Tasks", () => assignTasks());
+    addMenuRBAC("Request Workforce", requestWorkforce);
+    addMenuRBAC("Record Site Reports", recordSiteReports);
+    addMenuRBAC("Approve Completed Work", approveCompletedWork);
+    addMenuRBAC("Record Incident Reports", recordIncidentReports);
+    addMenuRBAC("Record Toolbox Meetings", recordToolboxMeetings);
+    addMenuRBAC("Track PPE Issuance", trackPpeIssuance);
+    addMenuRBAC("Mark Safety Violations", markSafetyViolations);
+    addMenuRBAC("Upload Inspection Reports", uploadInspectionReports);
+    addMenuRBAC("View Project Safety Status", viewProjectSafetyStatus);
+    addMenuRBAC("Department Management", showDepartmentManagement);
+    addMenuRBAC("Tax", tax);
+    addMenuRBAC("Procurement Sale", procurementSale);
+    addMenuRBAC("NHIF Contribute", nhifContribute);
+    addMenuRBAC("Senior", senior);
+    addMenuRBAC("Suggestions", suggestions);
+    addMenuRBAC("View Suggestions", loadViewSuggestions);
+    addMenuRBAC("Materials Inventory", showMaterialsInventory);
+    addMenuRBAC("Record Materials In", showMaterialsInForm);
+    addMenuRBAC("Record Materials Out", showMaterialsOutForm);
+    addMenuRBAC("Materials Dashboard", showMaterialsDashboard);
+    addMenuRBAC("Claims Management", loadClaimsManagement);
+    addMenuRBAC("NSSF Registration", loadNssfRegistration);
+    addMenuRBAC("Discipline Monitoring", loadDisciplineMonitoring);
+    addMenuRBAC("Office Resources", loadOfficeResources);
+    addMenuRBAC("Talent Acquisition", loadTalentAcquisition);
+    addMenuRBAC("Promotions", loadPromotions);
+    addMenuRBAC("Risk Management", loadRiskManagement);
 
     filterMenuItems();
 
@@ -25467,35 +25240,28 @@ function ensureMenuSection(sectionConfig) {
 
 
 function addMenuItem(label, onClick, options = {}) {
-
     const sectionConfig = getMenuSectionConfig(label);
-
     const section = ensureMenuSection(sectionConfig);
-
-    if (!section) {
-
-        return null;
-
-    }
+    if (!section) return null;
 
     const button = document.createElement('button');
-
     button.textContent = label;
-
     button.title = label;
-
     button.onclick = onClick;
-
     button.dataset.menuLabel = label.toLowerCase();
 
-    if (options.disabled) {
-
+    if (options.unauthorized) {
         button.disabled = true;
-
-        button.style.opacity = '0.5';
-
+        button.style.backgroundColor = 'rgba(0,0,0,0.05)';
+        button.style.color = 'transparent';
+        button.style.boxShadow = 'inset 0 0 5px rgba(0,0,0,0.1)';
         button.style.cursor = 'not-allowed';
-
+        button.style.pointerEvents = 'none';
+        button.style.border = '1px solid #e0e0e0';
+    } else if (options.disabled) {
+        button.disabled = true;
+        button.style.opacity = '0.5';
+        button.style.cursor = 'not-allowed';
     }
 
     const buttonsContainer = section.querySelector('.menu-section-buttons');
@@ -25583,11 +25349,9 @@ function clearMenuSearch() {
 
 
 
-function addMenu(name, func){
-
+function addMenu(name, func, options = {}){
     try {
-
-        const btn = addMenuItem(name, func);
+        const btn = addMenuItem(name, func, options);
 
         if (!btn) {
 
