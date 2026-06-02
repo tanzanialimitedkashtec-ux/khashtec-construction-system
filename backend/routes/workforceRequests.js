@@ -421,6 +421,8 @@ router.put('/:id/status', async (req, res) => {
         // Check if this is a mock request (non-numeric string ID in an integer ID table)
         if (isIdInteger && isNaN(Number(id))) {
             console.log(`ℹ️ Mock workforce request ${id} status updated to ${status} (simulated success)`);
+            global.mockWorkforceStatuses = global.mockWorkforceStatuses || {};
+            global.mockWorkforceStatuses[id] = status; // Persist in memory
             return res.json({
                 success: true,
                 message: 'Workforce request status updated successfully (mock simulation)',

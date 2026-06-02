@@ -2,6 +2,10 @@ const express = require('express');
 const router = express.Router();
 const db = require('../../database/config/database');
 
+// Global in-memory state for mock workforce requests to allow status changes to persist across GET requests
+global.mockWorkforceStatuses = global.mockWorkforceStatuses || {};
+const mockWorkforceStatuses = global.mockWorkforceStatuses;
+
 // Test endpoint to verify API is working
 router.get('/test', (req, res) => {
     console.log('🧪 Test endpoint accessed');
@@ -4577,6 +4581,13 @@ router.get('/workforce-requests', async (req, res) => {
                     }
                 ];
                 
+                // Apply persistent in-memory statuses for mock requests
+                sampleRequests.forEach(sample => {
+                    if (mockWorkforceStatuses[sample.id]) {
+                        sample.status = mockWorkforceStatuses[sample.id];
+                    }
+                });
+
                 // Add sample data that doesn't conflict with real IDs
                 const additionalSampleData = sampleRequests.filter(sample => 
                     !workforceRequests.some(real => real.id === sample.id)
@@ -4876,6 +4887,7 @@ router.put('/workforce-requests/:id/status', async (req, res) => {
         // Check if this is a mock request (non-numeric string ID in an integer ID table)
         if (isIdInteger && isNaN(Number(id))) {
             console.log(`ℹ️ Mock workforce request ${id} status updated to ${status} (simulated success)`);
+            mockWorkforceStatuses[id] = status; // Persist in memory
             return res.json({
                 message: 'Workforce request status updated successfully (mock simulation)',
                 id: id,
