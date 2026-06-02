@@ -4,13 +4,17 @@ require('dotenv').config();
 // Gmail SMTP transporter
 const transporter = nodemailer.createTransport({
     host: 'smtp.gmail.com',
-    port: 465,
-    secure: true,
-    family: 4,  // Force IPv4 — Railway does NOT support IPv6 outbound
+    port: 587,
+    secure: false,  // Use STARTTLS on port 587
+    family: 4,      // Force IPv4 — Railway does NOT support IPv6 outbound
     auth: {
         user: process.env.EMAIL_USER || 'tanzanialimitedkashtec@gmail.com',
         pass: process.env.EMAIL_APP_PASSWORD || ''
     },
+    requireTLS: true,
+    connectionTimeout: 10000,  // 10s timeout
+    greetingTimeout: 10000,
+    socketTimeout: 15000,
     tls: {
         rejectUnauthorized: false
     }
