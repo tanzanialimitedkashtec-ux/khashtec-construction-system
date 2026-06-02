@@ -29459,9 +29459,9 @@ function markSafetyViolations(){
 
                 <h4>Safety Violations Registry</h4>
 
-                <div class="violations-table-container">
+                <div class="violations-table-container" style="overflow-x: auto; width: 100%;">
 
-                    <table class="violations-table">
+                    <table class="violations-table" style="min-width: 1400px; white-space: nowrap;">
 
                         <thead>
 
@@ -29548,12 +29548,12 @@ async function loadViolationProjects() {
         });
         if (response.ok) {
             const result = await response.json();
-            const projects = Array.isArray(result) ? result : (result.data || []);
+            const projects = Array.isArray(result) ? result : (result.projects || result.data || []);
             const select = document.getElementById('violationProject');
             if (select && projects && projects.length) {
                 let html = '<option value="">Select Project</option>';
                 projects.forEach(p => {
-                    html += `<option value="${p.id}">${p.name}</option>`;
+                    html += `<option value="${p.name}">${p.name}</option>`;
                 });
                 select.innerHTML = html;
             }
