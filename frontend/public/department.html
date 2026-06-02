@@ -24934,106 +24934,114 @@ function loadMenu(){
         return false;
     };
 
-    const addMenuRBAC = (name, func) => {
-        if (isAuthorized(name)) {
-            addMenu(name, func);
-        } else {
-            addMenu(name, func, { unauthorized: true });
-        }
-    };
+        const allMenusConfig = [
+        { name: "Approve Recruitment Policies", func: approveRecruitmentPolicies },
+        { name: "Approve Senior Staff Hiring", func: approveSeniorHiring },
+        { name: "Create Senior Hiring Request", func: showSeniorRoles },
+        { name: "Approve Workforce Budget", func: approveWorkforceBudget },
+        { name: "Review Employee Count", func: reviewEmployeeCount },
+        { name: "View All Workers", func: viewAllWorkers },
+        { name: "View Assigned Workers", func: viewAssignedWorkers },
+        { name: "View Employee List", func: viewEmployeeList },
+        { name: "Schedule Meetings", func: scheduleMeeting },
+        { name: "Suspend/Terminate Employment", func: suspendTerminateEmployment },
+        { name: "View Workforce Reports", func: viewWorkforceReports },
+        { name: "Upload Safety Policies", func: uploadSafetyPolicies },
+        { name: "Project Manage", func: showCreateProjectForm },
+        { name: "Accountant Management", func: showAccountantForm },
+        { name: "Leadership Management", func: showLeadershipForm },
+        { name: "Mission & Vision", func: showMissionVisionForm },
+        { name: "Long-Term Growth Strategy", func: showLongTermGrowthForm },
+        { name: "Payment Management", func: showPaymentManagement },
+        { name: "Register Company Car", func: registerCompanyCar },
+        { name: "Manage Company Cars", func: manageCompanyCars },
+        { name: "Transport Costs", func: manageTransportCosts },
+        { name: "Register Driver", func: registerDriver },
+        { name: "Manage Drivers", func: manageDrivers },
+        { name: "Register Employee", func: registerEmployee },
+        { name: "Create Worker Account", func: createWorkerAccount },
+        { name: "Assign Project Workers", func: assignWorker },
+        { name: "Update Employee Records", func: updateEmployeeRecords },
+        { name: "Team Management", func: showTeamManagementDashboard },
+        { name: "Track Attendance", func: attendance },
+        { name: "Manage Leave & Contracts", func: manageLeaveContracts },
+        { name: "Manage Policies", func: loadPolicies },
+        { name: "Administrative Operations", func: adminOperations },
+        { name: "Compliance Management", func: () => complianceManagement() },
+        { name: "Staff Oversight", func: () => staffOversight() },
+        { name: "Document Management", func: documentManagement },
+        { name: "User Account Management", func: () => userAccountManagement() },
+        { name: "Budgeting", func: financeBudgeting },
+        { name: "Financial Management", func: financialManagement },
+        { name: "Approve Invoices", func: showMDInvoiceApproval },
+        { name: "View Invoices", func: showViewInvoices },
+        { name: "Investment Management", func: showInvestmentManagement },
+        { name: "Payroll Processing", func: payrollProcessing },
+        { name: "Expense Control", func: expenseControl },
+        { name: "Financial Reporting", func: financialReporting },
+        { name: "Audits", func: financeAudits },
+        { name: "Compliance", func: financeCompliance },
+        { name: "Luggage Campaigns", func: manageLuggageCampaigns },
+        { name: "Luggage Purchases", func: manageLuggagePurchases },
+        { name: "Payment Tracking", func: trackLuggagePayments },
+        { name: "Add Property", func: addProperty },
+        { name: "Edit Property Details", func: editPropertyDetails },
+        { name: "Register Client", func: registerClient },
+        { name: "Record Sale", func: recordSale },
+        { name: "Manage Sales", func: manageSales },
+        { name: "Track Payment Progress", func: trackPaymentProgress },
+        { name: "Generate Sales Report", func: generateSalesReport },
+        { name: "Upload Documents", func: uploadDocs },
+        { name: "Edit Documents", func: editDocuments },
+        { name: "Send Notifications", func: sendNotifications },
+        { name: "Record Meeting Minutes", func: recordMeetingMinutes },
+        { name: "Office Portal", func: officePortal },
+        { name: "Create New Project", func: createNewProject },
+        { name: "Update Project Progress", func: updateProjectProgress },
+        { name: "Assign Tasks", func: () => assignTasks() },
+        { name: "Request Workforce", func: requestWorkforce },
+        { name: "Record Site Reports", func: recordSiteReports },
+        { name: "Approve Completed Work", func: approveCompletedWork },
+        { name: "Record Incident Reports", func: recordIncidentReports },
+        { name: "Record Toolbox Meetings", func: recordToolboxMeetings },
+        { name: "Track PPE Issuance", func: trackPpeIssuance },
+        { name: "Mark Safety Violations", func: markSafetyViolations },
+        { name: "Upload Inspection Reports", func: uploadInspectionReports },
+        { name: "View Project Safety Status", func: viewProjectSafetyStatus },
+        { name: "Department Management", func: showDepartmentManagement },
+        { name: "Tax", func: tax },
+        { name: "Procurement Sale", func: procurementSale },
+        { name: "NHIF Contribute", func: nhifContribute },
+        { name: "Senior", func: senior },
+        { name: "Suggestions", func: suggestions },
+        { name: "View Suggestions", func: loadViewSuggestions },
+        { name: "Materials Inventory", func: showMaterialsInventory },
+        { name: "Record Materials In", func: showMaterialsInForm },
+        { name: "Record Materials Out", func: showMaterialsOutForm },
+        { name: "Materials Dashboard", func: showMaterialsDashboard },
+        { name: "Claims Management", func: loadClaimsManagement },
+        { name: "NSSF Registration", func: loadNssfRegistration },
+        { name: "Discipline Monitoring", func: loadDisciplineMonitoring },
+        { name: "Office Resources", func: loadOfficeResources },
+        { name: "Talent Acquisition", func: loadTalentAcquisition },
+        { name: "Promotions", func: loadPromotions },
+        { name: "Risk Management", func: loadRiskManagement }
+    ];
 
-    // Master list of all menus (MD's access list covers all functionality)
-    addMenuRBAC("Approve Recruitment Policies", approveRecruitmentPolicies);
-    addMenuRBAC("Approve Senior Staff Hiring", approveSeniorHiring);
-    addMenuRBAC("Create Senior Hiring Request", showSeniorRoles);
-    addMenuRBAC("Approve Workforce Budget", approveWorkforceBudget);
-    addMenuRBAC("Review Employee Count", reviewEmployeeCount);
-    addMenuRBAC("View All Workers", viewAllWorkers);
-    addMenuRBAC("View Assigned Workers", viewAssignedWorkers);
-    addMenuRBAC("View Employee List", viewEmployeeList);
-    addMenuRBAC("Schedule Meetings", scheduleMeeting);
-    addMenuRBAC("Suspend/Terminate Employment", suspendTerminateEmployment);
-    addMenuRBAC("View Workforce Reports", viewWorkforceReports);
-    addMenuRBAC("Upload Safety Policies", uploadSafetyPolicies);
-    addMenuRBAC("Project Manage", showCreateProjectForm);
-    addMenuRBAC("Accountant Management", showAccountantForm);
-    addMenuRBAC("Leadership Management", showLeadershipForm);
-    addMenuRBAC("Mission & Vision", showMissionVisionForm);
-    addMenuRBAC("Long-Term Growth Strategy", showLongTermGrowthForm);
-    addMenuRBAC("Payment Management", showPaymentManagement);
-    addMenuRBAC("Register Company Car", registerCompanyCar);
-    addMenuRBAC("Manage Company Cars", manageCompanyCars);
-    addMenuRBAC("Transport Costs", manageTransportCosts);
-    addMenuRBAC("Register Driver", registerDriver);
-    addMenuRBAC("Manage Drivers", manageDrivers);
-    addMenuRBAC("Register Employee", registerEmployee);
-    addMenuRBAC("Create Worker Account", createWorkerAccount);
-    addMenuRBAC("Assign Project Workers", assignWorker);
-    addMenuRBAC("Update Employee Records", updateEmployeeRecords);
-    addMenuRBAC("Team Management", showTeamManagementDashboard);
-    addMenuRBAC("Track Attendance", attendance);
-    addMenuRBAC("Manage Leave & Contracts", manageLeaveContracts);
-    addMenuRBAC("Manage Policies", loadPolicies);
-    addMenuRBAC("Administrative Operations", adminOperations);
-    addMenuRBAC("Compliance Management", () => complianceManagement());
-    addMenuRBAC("Staff Oversight", () => staffOversight());
-    addMenuRBAC("Document Management", documentManagement);
-    addMenuRBAC("User Account Management", () => userAccountManagement());
-    addMenuRBAC("Budgeting", financeBudgeting);
-    addMenuRBAC("Financial Management", financialManagement);
-    addMenuRBAC("Approve Invoices", showMDInvoiceApproval);
-    addMenuRBAC("View Invoices", showViewInvoices);
-    addMenuRBAC("Investment Management", showInvestmentManagement);
-    addMenuRBAC("Payroll Processing", payrollProcessing);
-    addMenuRBAC("Expense Control", expenseControl);
-    addMenuRBAC("Financial Reporting", financialReporting);
-    addMenuRBAC("Audits", financeAudits);
-    addMenuRBAC("Compliance", financeCompliance);
-    addMenuRBAC("Luggage Campaigns", manageLuggageCampaigns);
-    addMenuRBAC("Luggage Purchases", manageLuggagePurchases);
-    addMenuRBAC("Payment Tracking", trackLuggagePayments);
-    addMenuRBAC("Add Property", addProperty);
-    addMenuRBAC("Edit Property Details", editPropertyDetails);
-    addMenuRBAC("Register Client", registerClient);
-    addMenuRBAC("Record Sale", recordSale);
-    addMenuRBAC("Manage Sales", manageSales);
-    addMenuRBAC("Track Payment Progress", trackPaymentProgress);
-    addMenuRBAC("Generate Sales Report", generateSalesReport);
-    addMenuRBAC("Upload Documents", uploadDocs);
-    addMenuRBAC("Edit Documents", editDocuments);
-    addMenuRBAC("Send Notifications", sendNotifications);
-    addMenuRBAC("Record Meeting Minutes", recordMeetingMinutes);
-    addMenuRBAC("Office Portal", officePortal);
-    addMenuRBAC("Create New Project", createNewProject);
-    addMenuRBAC("Update Project Progress", updateProjectProgress);
-    addMenuRBAC("Assign Tasks", () => assignTasks());
-    addMenuRBAC("Request Workforce", requestWorkforce);
-    addMenuRBAC("Record Site Reports", recordSiteReports);
-    addMenuRBAC("Approve Completed Work", approveCompletedWork);
-    addMenuRBAC("Record Incident Reports", recordIncidentReports);
-    addMenuRBAC("Record Toolbox Meetings", recordToolboxMeetings);
-    addMenuRBAC("Track PPE Issuance", trackPpeIssuance);
-    addMenuRBAC("Mark Safety Violations", markSafetyViolations);
-    addMenuRBAC("Upload Inspection Reports", uploadInspectionReports);
-    addMenuRBAC("View Project Safety Status", viewProjectSafetyStatus);
-    addMenuRBAC("Department Management", showDepartmentManagement);
-    addMenuRBAC("Tax", tax);
-    addMenuRBAC("Procurement Sale", procurementSale);
-    addMenuRBAC("NHIF Contribute", nhifContribute);
-    addMenuRBAC("Senior", senior);
-    addMenuRBAC("Suggestions", suggestions);
-    addMenuRBAC("View Suggestions", loadViewSuggestions);
-    addMenuRBAC("Materials Inventory", showMaterialsInventory);
-    addMenuRBAC("Record Materials In", showMaterialsInForm);
-    addMenuRBAC("Record Materials Out", showMaterialsOutForm);
-    addMenuRBAC("Materials Dashboard", showMaterialsDashboard);
-    addMenuRBAC("Claims Management", loadClaimsManagement);
-    addMenuRBAC("NSSF Registration", loadNssfRegistration);
-    addMenuRBAC("Discipline Monitoring", loadDisciplineMonitoring);
-    addMenuRBAC("Office Resources", loadOfficeResources);
-    addMenuRBAC("Talent Acquisition", loadTalentAcquisition);
-    addMenuRBAC("Promotions", loadPromotions);
-    addMenuRBAC("Risk Management", loadRiskManagement);
+    const authorizedItems = [];
+    const unauthorizedItems = [];
+
+    allMenusConfig.forEach(item => {
+        if (isAuthorized(item.name)) {
+            authorizedItems.push(item);
+        } else {
+            unauthorizedItems.push(item);
+        }
+    });
+
+    authorizedItems.forEach(item => addMenu(item.name, item.func));
+    unauthorizedItems.forEach(item => addMenu(item.name, item.func, { unauthorized: true }));
+
 
     filterMenuItems();
 
