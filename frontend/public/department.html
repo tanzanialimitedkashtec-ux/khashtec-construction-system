@@ -69633,6 +69633,139 @@ function rejectInvoice(invoiceId) {
     });
 }
 
+function showViewInvoices() {
+    showContent('<div class="card">' +
+        '<h3>View Processed Invoices</h3>' +
+        '<p><strong>Managing Director:</strong> View and download receipts for processed invoices.</p>' +
+        '<div id="mdProcessedInvoicesList"><p>Loading invoices...</p></div>' +
+    '</div>');
+
+    fetch('/api/finance/invoices', {
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + (typeof sessionManager !== 'undefined' && sessionManager.getAuthToken ? sessionManager.getAuthToken() : '')
+        }
+    })
+    .then(function(res) { return res.json(); })
+    .then(function(data) {
+        var container = document.getElementById('mdProcessedInvoicesList');
+        if (!container) return;
+        var invoices = Array.isArray(data) ? data : [];
+        var processed = invoices.filter(function(inv) { return inv.status === 'Completed' || inv.status === 'Approved'; });
+
+        if (processed.length === 0) {
+            container.innerHTML = '<p style="color:#888;">No processed invoices found.</p>';
+            return;
+        }
+
+        var html = '<div style="display:flex;flex-wrap:wrap;gap:20px;">';
+        for (var i = 0; i < processed.length; i++) {
+            var inv = processed[i];
+            var dateStr = inv.due_date ? new Date(inv.due_date).toLocaleDateString('en-GB', { day: '2-digit', month: 'long', year: 'numeric' }) : new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'long', year: 'numeric' });
+            var invStr = encodeURIComponent(JSON.stringify(inv));
+            var formattedAmt = typeof formatTZS === 'function' ? formatTZS(inv.amount || 0) : Number(inv.amount || 0).toLocaleString();
+            html += '<div style="flex:1;min-width:350px;">';
+            html += '<div style="border:2px solid #1a5276;border-radius:10px;padding:25px;background:#fdfdfd;font-family:Georgia,serif;">';
+            html += '<div style="text-align:center;border-bottom:2px solid #1a5276;padding-bottom:15px;margin-bottom:15px;">';
+            html += '<h3 style="margin:0;color:#1a5276;font-size:20px;">KASHTEC TANZANIA LIMITED</h3>';
+            html += '<p style="margin:4px 0;color:#666;font-size:13px;">Construction Management System</p>';
+            html += '<h4 style="margin:10px 0 0;color:#2c3e50;">INVOICE</h4>';
+            html += '</div>';
+            html += '<div style="display:flex;justify-content:space-between;margin-bottom:15px;font-size:14px;">';
+            html += '<div><strong>Invoice #:</strong> ' + (inv.invoice_number || inv.id || 'N/A') + '</div>';
+            html += '<div><strong>Date:</strong> ' + new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'long', year: 'numeric' }) + '</div>';
+            html += '</div>';
+            html += '<div style="display:flex;justify-content:space-between;margin-bottom:15px;font-size:14px;">';
+            html += '<div><strong>Bill To:</strong> ' + (inv.vendor_name || '-') + '</div>';
+            html += '<div><strong>Due Date:</strong> ' + (inv.due_date ? new Date(inv.due_date).toLocaleDateString('en-GB') : '-') + '</div>';
+            html += '</div>';
+            html += '<table style="width:100%;border-collapse:collapse;margin:15px 0;">';
+            html += '<thead><tr style="background:#1a5276;color:white;">';
+            html += '<th style="padding:10px;text-align:left;border:1px solid #1a5276;">Description</th>';
+            html += '<th style="padding:10px;text-align:left;border:1px solid #1a5276;">Category</th>';
+            html += '<th style="padding:10px;text-align:right;border:1px solid #1a5276;">Amount</th>';
+            html += '</tr></thead>';
+            html += '<tbody><tr>';
+            html += '<td style="padding:10px;border:1px solid #ddd;">' + (inv.work_title || inv.description || '-') + '</td>';
+            html += '<td style="padding:10px;border:1px solid #ddd;">' + (inv.category || '-') + '</td>';
+            html += '<td style="padding:10px;text-align:right;border:1px solid #ddd;">TZS ' + formattedAmt + '</td>';
+            html += '</tr></tbody>';
+            html += '</table>';
+            html += '<div style="text-align:right;border-top:2px solid #1a5276;padding-top:12px;margin-top:10px;">';
+            html += '<strong style="font-size:18px;color:#1a5276;">Total: TZS ' + formattedAmt + '</strong>';
+            html += '</div>';
+            html += '<div style="text-align:center;margin-top:20px;padding-top:15px;border-top:1px dashed #ccc;color:#888;font-size:12px;">';
+            html += '<p style="margin:2px 0;">Status: <strong style="color:#27ae60;">Approved</strong> | Priority: <strong>' + (inv.priority || 'Medium') + '</strong></p>';
+            html += '<p style="margin:2px 0;">Invoice ID: ' + inv.id + '</p>';
+            html += '<p style="margin:8px 0 0;">Thank you for your business!</p>';
+            html += '</div>';
+            html += '<div style="text-align:center;margin-top:15px;">';
+            html += '<button onclick="downloadReceiptInvoice(\'' + invStr + '\')" style="background:#27ae60;color:white;border:none;padding:8px 15px;border-radius:5px;cursor:pointer;">📥 Download Receipt Invoice</button>';
+            html += '</div>';
+            html += '</div></div>';
+        }
+        html += '</div>';
+        container.innerHTML = html;
+    })
+    .catch(function(err) {
+        console.error('Error loading invoices:', err);
+        var container = document.getElementById('mdProcessedInvoicesList');
+        if (container) container.innerHTML = '<p style="color:red;">Failed to load invoices.</p>';
+    });
+}
+
+function downloadReceiptInvoice(invDataStr) {
+    try {
+        var inv = JSON.parse(decodeURIComponent(invDataStr));
+        var printWindow = window.open('', '_blank');
+        var formattedAmt = Number(inv.amount || 0).toLocaleString();
+        
+        var html = '<!DOCTYPE html><html><head><title>Invoice Receipt - ' + (inv.invoice_number || inv.id) + '</title></head><body onload="window.print(); window.setTimeout(function(){ window.close(); }, 500);">';
+        html += '<div style="max-width:800px;margin:20px auto;border:2px solid #1a5276;border-radius:10px;padding:25px;background:#fdfdfd;font-family:Georgia,serif;">';
+        html += '<div style="text-align:center;border-bottom:2px solid #1a5276;padding-bottom:15px;margin-bottom:15px;">';
+        html += '<h3 style="margin:0;color:#1a5276;font-size:20px;">KASHTEC TANZANIA LIMITED</h3>';
+        html += '<p style="margin:4px 0;color:#666;font-size:13px;">Construction Management System</p>';
+        html += '<h4 style="margin:10px 0 0;color:#2c3e50;">INVOICE</h4>';
+        html += '</div>';
+        html += '<div style="display:flex;justify-content:space-between;margin-bottom:15px;font-size:14px;">';
+        html += '<div><strong>Invoice #:</strong> ' + (inv.invoice_number || inv.id || 'N/A') + '</div>';
+        html += '<div><strong>Date:</strong> ' + new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'long', year: 'numeric' }) + '</div>';
+        html += '</div>';
+        html += '<div style="display:flex;justify-content:space-between;margin-bottom:15px;font-size:14px;">';
+        html += '<div><strong>Bill To:</strong> ' + (inv.vendor_name || '-') + '</div>';
+        html += '<div><strong>Due Date:</strong> ' + (inv.due_date ? new Date(inv.due_date).toLocaleDateString('en-GB') : '-') + '</div>';
+        html += '</div>';
+        html += '<table style="width:100%;border-collapse:collapse;margin:15px 0;">';
+        html += '<thead><tr style="background:#1a5276;color:white;text-align:left;">';
+        html += '<th style="padding:10px;border:1px solid #1a5276;">Description</th>';
+        html += '<th style="padding:10px;border:1px solid #1a5276;">Category</th>';
+        html += '<th style="padding:10px;text-align:right;border:1px solid #1a5276;">Amount</th>';
+        html += '</tr></thead>';
+        html += '<tbody><tr>';
+        html += '<td style="padding:10px;border:1px solid #ddd;">' + (inv.work_title || inv.description || '-') + '</td>';
+        html += '<td style="padding:10px;border:1px solid #ddd;">' + (inv.category || '-') + '</td>';
+        html += '<td style="padding:10px;text-align:right;border:1px solid #ddd;">TZS ' + formattedAmt + '</td>';
+        html += '</tr></tbody>';
+        html += '</table>';
+        html += '<div style="text-align:right;border-top:2px solid #1a5276;padding-top:12px;margin-top:10px;">';
+        html += '<strong style="font-size:18px;color:#1a5276;">Total: TZS ' + formattedAmt + '</strong>';
+        html += '</div>';
+        html += '<div style="text-align:center;margin-top:20px;padding-top:15px;border-top:1px dashed #ccc;color:#888;font-size:12px;">';
+        html += '<p style="margin:2px 0;">Status: <strong style="color:#27ae60;">Approved</strong> | Priority: <strong>' + (inv.priority || 'Medium') + '</strong></p>';
+        html += '<p style="margin:2px 0;">Invoice ID: ' + inv.id + '</p>';
+        html += '<p style="margin:8px 0 0;">Thank you for your business!</p>';
+        html += '</div>';
+        html += '</div></body></html>';
+        
+        printWindow.document.write(html);
+        printWindow.document.close();
+    } catch(e) {
+        console.error('Error generating receipt', e);
+        alert('Failed to generate receipt invoice.');
+    }
+}
+
 function showMDInvoiceApproval() {
     showContent('<div class="card">' +
         '<h3>Approve Invoices</h3>' +
@@ -97777,7 +97910,9 @@ const roleMenus = {
 
             'Materials Management',
 
-            'Department Management'
+            'Department Management',
+
+            'View Invoices'
 
         ]
 
@@ -98160,6 +98295,12 @@ function handleMenuClick(menuItem) {
                 } else {
                     alert('Department Management module not loaded');
                 }
+
+                break;
+
+            case 'View Invoices':
+
+                showViewInvoices();
 
                 break;
 
