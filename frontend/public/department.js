@@ -54251,9 +54251,18 @@ async function recordSale(){
 
     // Fetch real properties and clients from database dynamically
     try {
+        const baseUrl = window.location.origin;
+        const fetchOptions = {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${sessionManager.getAuthToken()}`
+            }
+        };
+
         const [propsRes, clientsRes] = await Promise.all([
-            fetch('/api/properties/all'),
-            fetch('/api/clients')
+            fetch(`${baseUrl}/api/properties/all`, fetchOptions),
+            fetch(`${baseUrl}/api/clients`, fetchOptions)
         ]);
         
         const propertySelect = document.getElementById('saleProperty');
@@ -54264,7 +54273,7 @@ async function recordSale(){
             const properties = Array.isArray(data) ? data : (data.properties || data.data || []);
             const availableProps = properties.filter(p => {
                 const status = (p.status || '').toLowerCase();
-                return status === 'available' || status === 'reserved' || status === 'under offer';
+                return status === 'available' || status === 'reserved' || status === 'under offer' || status === 'sold';
             });
             
             if (propertySelect) {
