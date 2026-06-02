@@ -20292,6 +20292,8 @@ function recordIncidentReports(){
                     </table>
 
                 </div>
+        // Populate project dropdown after form is rendered
+        populateIncidentProjectSelect();
 
             </div>
 
@@ -22654,6 +22656,7 @@ function submitIncidentToDatabase() {
         // Validate required fields
 
         const incidentType = document.getElementById('incidentType').value;
+        const incidentProject = document.getElementById('incidentProject').value;
 
         const severityLevel = document.getElementById('severityLevel').value;
 
@@ -22667,7 +22670,7 @@ function submitIncidentToDatabase() {
 
         
 
-        if (!incidentType || !severityLevel || !incidentDescription || !reportedBy) {
+        if (!incidentType || !severityLevel || !incidentDescription || !reportedBy || !incidentProject) {
 
             console.log('âŒ Validation failed - missing required fields');
 
@@ -22702,6 +22705,7 @@ function submitIncidentToDatabase() {
             work_description: incidentDescription,
 
             incident_type: incidentType,
+            project_id: incidentProject,
 
             severity: severityLevel,
 
