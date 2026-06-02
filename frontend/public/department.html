@@ -69670,6 +69670,7 @@ function showViewInvoices() {
             html += '<div style="flex:1;min-width:280px;max-width:350px;">';
             html += '<div style="border:1px solid #1a5276;border-radius:8px;padding:15px;background:#fdfdfd;font-family:Georgia,serif;box-shadow:0 2px 5px rgba(0,0,0,0.05);">';
             html += '<div style="text-align:center;border-bottom:1px solid #1a5276;padding-bottom:10px;margin-bottom:10px;">';
+            html += '<img src="images/khashtec%20logo.png" alt="Khashtec logo" style="display:block;margin:0 auto 5px;max-height:40px;width:auto;">';
             html += '<h3 style="margin:0;color:#1a5276;font-size:16px;">KASHTEC TANZANIA LIMITED</h3>';
             html += '<p style="margin:2px 0;color:#666;font-size:11px;">Construction Management System</p>';
             html += '<h4 style="margin:5px 0 0;color:#2c3e50;font-size:14px;">INVOICE</h4>';
@@ -69723,6 +69724,7 @@ function downloadReceiptInvoice(invDataStr) {
         var html = '<!DOCTYPE html><html><head><title>Invoice Receipt - ' + (inv.invoice_number || inv.id) + '</title></head><body onload="window.print(); window.setTimeout(function(){ window.close(); }, 500);">';
         html += '<div style="max-width:800px;margin:20px auto;border:2px solid #1a5276;border-radius:10px;padding:25px;background:#fdfdfd;font-family:Georgia,serif;">';
         html += '<div style="text-align:center;border-bottom:2px solid #1a5276;padding-bottom:15px;margin-bottom:15px;">';
+        html += '<img src="' + window.location.origin + '/images/khashtec%20logo.png" alt="Khashtec logo" style="display:block;margin:0 auto 10px;max-height:80px;width:auto;">';
         html += '<h3 style="margin:0;color:#1a5276;font-size:20px;">KASHTEC TANZANIA LIMITED</h3>';
         html += '<p style="margin:4px 0;color:#666;font-size:13px;">Construction Management System</p>';
         html += '<h4 style="margin:10px 0 0;color:#2c3e50;">INVOICE</h4>';
