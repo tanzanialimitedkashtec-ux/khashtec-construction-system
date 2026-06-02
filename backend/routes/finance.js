@@ -34,54 +34,53 @@ router.get('/test', (req, res) => {
     });
 });
 
-// Diagnostic email test route
+// Diagnostic email test route (uses Resend HTTP API — SMTP is blocked on Railway)
 router.get('/test-email', async (req, res) => {
     console.log('🧪 GET /api/finance/test-email accessed');
     try {
-        const nodemailer = require('nodemailer');
-        const transporter = nodemailer.createTransport({
-            host: 'smtp.gmail.com',
-            port: 587,
-            secure: false,  // Use STARTTLS on port 587
-            family: 4,      // Force IPv4 — Railway does NOT support IPv6
-            auth: {
-                user: process.env.EMAIL_USER || 'tanzanialimitedkashtec@gmail.com',
-                pass: process.env.EMAIL_APP_PASSWORD || ''
+        const RESEND_API_KEY = process.env.RESEND_API_KEY;
+        if (!RESEND_API_KEY) {
+            return res.status(500).json({
+                success: false,
+                error: 'RESEND_API_KEY not set. Get a free key at https://resend.com',
+                hasKey: false
+            });
+        }
+
+        const recipient = process.env.EMAIL_RECIPIENT || process.env.EMAIL_USER || 'tanzanialimitedkashtec@gmail.com';
+        const response = await fetch('https://api.resend.com/emails', {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${RESEND_API_KEY}`,
+                'Content-Type': 'application/json'
             },
-            requireTLS: true,
-            connectionTimeout: 10000,
-            greetingTimeout: 10000,
-            socketTimeout: 15000,
-            tls: {
-                rejectUnauthorized: false
-            }
+            body: JSON.stringify({
+                from: process.env.EMAIL_FROM || 'KASHTEC <onboarding@resend.dev>',
+                to: [recipient],
+                subject: '🧪 KASHTEC Test Email — Resend API Working',
+                html: '<h2>✅ Email service is working!</h2><p>This test email was sent via Resend HTTP API from your KASHTEC Construction System on Railway.</p>'
+            })
         });
-        
-        await transporter.verify();
-        
-        const info = await transporter.sendMail({
-            from: `"Test" <${process.env.EMAIL_USER}>`,
-            to: process.env.EMAIL_RECIPIENT || process.env.EMAIL_USER,
-            subject: 'Test Email Diagnostic',
-            text: 'If you receive this, SMTP is working.'
-        });
-        
+
+        const data = await response.json();
+
+        if (!response.ok) {
+            throw new Error(data.message || JSON.stringify(data));
+        }
+
         res.json({
             success: true,
-            message: 'Email sent successfully',
-            info: info.messageId,
-            user: process.env.EMAIL_USER,
-            hasPassword: !!process.env.EMAIL_APP_PASSWORD
+            message: 'Email sent successfully via Resend API',
+            id: data.id,
+            recipient: recipient,
+            method: 'Resend HTTP API (not SMTP)'
         });
     } catch (error) {
         console.error('Diagnostic email error:', error);
         res.status(500).json({
             success: false,
             error: error.message,
-            code: error.code,
-            command: error.command,
-            user: process.env.EMAIL_USER,
-            hasPassword: !!process.env.EMAIL_APP_PASSWORD
+            hasKey: !!process.env.RESEND_API_KEY
         });
     }
 });

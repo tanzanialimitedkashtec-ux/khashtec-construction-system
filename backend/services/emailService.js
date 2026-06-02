@@ -1,29 +1,49 @@
-const nodemailer = require('nodemailer');
 require('dotenv').config();
 
-// Gmail SMTP transporter
-const transporter = nodemailer.createTransport({
-    host: 'smtp.gmail.com',
-    port: 587,
-    secure: false,  // Use STARTTLS on port 587
-    family: 4,      // Force IPv4 — Railway does NOT support IPv6 outbound
-    auth: {
-        user: process.env.EMAIL_USER || 'tanzanialimitedkashtec@gmail.com',
-        pass: process.env.EMAIL_APP_PASSWORD || ''
-    },
-    requireTLS: true,
-    connectionTimeout: 10000,  // 10s timeout
-    greetingTimeout: 10000,
-    socketTimeout: 15000,
-    tls: {
-        rejectUnauthorized: false
-    }
-});
+// ============================================
+// RESEND HTTP EMAIL SERVICE
+// Railway blocks ALL outbound SMTP ports (25, 465, 587).
+// Resend uses HTTPS API calls instead — works perfectly on Railway.
+// Free tier: 100 emails/day, 3000/month
+// ============================================
 
-// Verify connection on startup (non-blocking)
-transporter.verify()
-    .then(() => console.log('✅ Email service connected successfully (Gmail SMTP)'))
-    .catch(err => console.warn('⚠️ Email service not available:', err.message, '— Invoice emails will be skipped.'));
+const RESEND_API_KEY = process.env.RESEND_API_KEY || '';
+const EMAIL_FROM = process.env.EMAIL_FROM || 'KASHTEC <onboarding@resend.dev>';
+const EMAIL_RECIPIENT = process.env.EMAIL_RECIPIENT || process.env.EMAIL_USER || 'tanzanialimitedkashtec@gmail.com';
+
+// Verify on startup
+if (RESEND_API_KEY) {
+    console.log('✅ Email service configured (Resend HTTP API)');
+} else {
+    console.warn('⚠️ RESEND_API_KEY not set — Invoice emails will be skipped. Get a free key at https://resend.com');
+}
+
+/**
+ * Send email via Resend HTTP API (no SMTP needed)
+ */
+async function sendViaResend(to, subject, html) {
+    const response = await fetch('https://api.resend.com/emails', {
+        method: 'POST',
+        headers: {
+            'Authorization': `Bearer ${RESEND_API_KEY}`,
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            from: EMAIL_FROM,
+            to: Array.isArray(to) ? to : [to],
+            subject: subject,
+            html: html
+        })
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+        throw new Error(`Resend API error: ${data.message || JSON.stringify(data)}`);
+    }
+
+    return data;
+}
 
 /**
  * Format number as TZS currency
@@ -176,7 +196,12 @@ function buildInvoiceEmailHTML(invoiceData, actionType) {
  * @returns {Promise<boolean>} - true if sent successfully, false otherwise
  */
 async function sendInvoiceEmail(invoiceData, actionType) {
-    const recipient = process.env.EMAIL_RECIPIENT || process.env.EMAIL_USER || 'tanzanialimitedkashtec@gmail.com';
+    if (!RESEND_API_KEY) {
+        console.warn('⚠️ Skipping invoice email — RESEND_API_KEY not configured');
+        return false;
+    }
+
+    const recipient = EMAIL_RECIPIENT;
 
     let subjectPrefix;
     switch (actionType) {
@@ -187,17 +212,11 @@ async function sendInvoiceEmail(invoiceData, actionType) {
     }
 
     const subject = `${subjectPrefix} — ${invoiceData.invoice_number || 'N/A'} | TZS ${formatTZS(invoiceData.amount)} | KASHTEC`;
-
-    const mailOptions = {
-        from: `"KASHTEC Construction System" <${process.env.EMAIL_USER || 'tanzanialimitedkashtec@gmail.com'}>`,
-        to: recipient,
-        subject: subject,
-        html: buildInvoiceEmailHTML(invoiceData, actionType)
-    };
+    const html = buildInvoiceEmailHTML(invoiceData, actionType);
 
     try {
-        const info = await transporter.sendMail(mailOptions);
-        console.log(`✅ Invoice email sent (${actionType}): ${info.messageId} → ${recipient}`);
+        const result = await sendViaResend(recipient, subject, html);
+        console.log(`✅ Invoice email sent (${actionType}): ${result.id} → ${recipient}`);
         return true;
     } catch (error) {
         console.error(`⚠️ Failed to send invoice email (${actionType}):`, error.message);
