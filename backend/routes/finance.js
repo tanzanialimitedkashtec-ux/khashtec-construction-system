@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const db = require('../../database/config/database');
+const { sendInvoiceEmail } = require('../services/emailService');
 
 console.log('🚀 Finance routes loaded with database connection');
 
@@ -336,6 +337,20 @@ router.post('/invoice', async (req, res) => {
         );
 
         console.log('✅ Invoice created:', invoice_number);
+
+        // Send email notification (fire-and-forget)
+        sendInvoiceEmail({
+            invoice_number,
+            vendor_name,
+            amount: Number(amount) || 0,
+            description,
+            category: category || 'General',
+            priority,
+            due_date,
+            status: 'Pending',
+            work_id: result.insertId
+        }, 'created').catch(err => console.error('⚠️ Email send error:', err.message));
+
         res.status(201).json({
             message: 'Invoice created successfully',
             work_id: result.insertId,
@@ -374,11 +389,31 @@ router.put('/invoice/:id/approve', async (req, res) => {
     const { id } = req.params;
     console.log('📝 PUT /api/finance/invoice/' + id + '/approve accessed');
     try {
+        // Fetch invoice details before updating for the email
+        const invoiceRows = await db.execute(
+            `SELECT invoice_number, vendor_name, amount, work_description, priority, due_date FROM finance_work WHERE id = ? AND work_type = 'Invoice Processing'`,
+            [id]
+        ).catch(() => []);
+        const inv = Array.isArray(invoiceRows) && invoiceRows.length > 0 ? invoiceRows[0] : {};
+
         await db.execute(
             `UPDATE finance_work SET status = 'Completed', completion_date = NOW() WHERE id = ? AND work_type = 'Invoice Processing'`,
             [id]
         );
         console.log('✅ Invoice ' + id + ' approved');
+
+        // Send approval email notification (fire-and-forget)
+        sendInvoiceEmail({
+            invoice_number: inv.invoice_number || 'N/A',
+            vendor_name: inv.vendor_name || 'N/A',
+            amount: Number(inv.amount) || 0,
+            description: inv.work_description || '',
+            priority: inv.priority || 'Medium',
+            due_date: inv.due_date || 'N/A',
+            status: 'Completed',
+            work_id: id
+        }, 'approved').catch(err => console.error('⚠️ Email send error:', err.message));
+
         res.json({ message: 'Invoice approved successfully', id, status: 'Completed' });
     } catch (error) {
         console.error('❌ Error approving invoice:', error);
@@ -392,12 +427,33 @@ router.put('/invoice/:id/reject', async (req, res) => {
     const { reason } = req.body || {};
     console.log('📝 PUT /api/finance/invoice/' + id + '/reject accessed');
     try {
+        // Fetch invoice details before updating for the email
+        const invoiceRows = await db.execute(
+            `SELECT invoice_number, vendor_name, amount, work_description, priority, due_date FROM finance_work WHERE id = ? AND work_type = 'Invoice Processing'`,
+            [id]
+        ).catch(() => []);
+        const inv = Array.isArray(invoiceRows) && invoiceRows.length > 0 ? invoiceRows[0] : {};
+
         const description = reason ? ` | Rejection reason: ${reason}` : '';
         await db.execute(
             `UPDATE finance_work SET status = 'Rejected', work_description = CONCAT(COALESCE(work_description,''), ?) WHERE id = ? AND work_type = 'Invoice Processing'`,
             [description, id]
         );
         console.log('✅ Invoice ' + id + ' rejected');
+
+        // Send rejection email notification (fire-and-forget)
+        sendInvoiceEmail({
+            invoice_number: inv.invoice_number || 'N/A',
+            vendor_name: inv.vendor_name || 'N/A',
+            amount: Number(inv.amount) || 0,
+            description: inv.work_description || '',
+            priority: inv.priority || 'Medium',
+            due_date: inv.due_date || 'N/A',
+            status: 'Rejected',
+            work_id: id,
+            rejection_reason: reason || ''
+        }, 'rejected').catch(err => console.error('⚠️ Email send error:', err.message));
+
         res.json({ message: 'Invoice rejected', id, status: 'Rejected' });
     } catch (error) {
         console.error('❌ Error rejecting invoice:', error);
