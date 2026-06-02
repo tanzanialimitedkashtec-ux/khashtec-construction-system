@@ -66,35 +66,34 @@ function buildInvoiceEmailHTML(invoiceData, actionType) {
     } = invoiceData;
 
     const now = new Date();
+    // Assuming the date format should match the frontend: DD MMMM YYYY
     const dateStr = now.toLocaleDateString('en-GB', { day: '2-digit', month: 'long', year: 'numeric' });
-    const timeStr = now.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
     const statusColor = getStatusColor(status);
     const statusText = getStatusText(status);
 
-    let actionTitle, actionMessage, actionColor;
+    let actionTitle, actionMessage;
     switch (actionType) {
         case 'created':
-            actionTitle = '📝 New Invoice Created';
+            actionTitle = 'New Invoice Created';
             actionMessage = 'A new invoice has been created and is awaiting approval.';
-            actionColor = '#3498db';
             break;
         case 'approved':
-            actionTitle = '✅ Invoice Approved';
+            actionTitle = 'Invoice Approved';
             actionMessage = 'This invoice has been approved and marked as completed.';
-            actionColor = '#27ae60';
             break;
         case 'rejected':
-            actionTitle = '❌ Invoice Rejected';
+            actionTitle = 'Invoice Rejected';
             actionMessage = rejection_reason
                 ? `This invoice has been rejected. Reason: ${rejection_reason}`
                 : 'This invoice has been rejected.';
-            actionColor = '#e74c3c';
             break;
         default:
-            actionTitle = '📋 Invoice Update';
+            actionTitle = 'Invoice Update';
             actionMessage = 'An invoice has been updated.';
-            actionColor = '#2c3e50';
     }
+
+    const appUrl = process.env.APP_URL || 'https://khashtec-construction-system-production-e7b5.up.railway.app';
+    const logoUrl = `${appUrl}/images/khashtec%20logo.png`;
 
     return `
 <!DOCTYPE html>
@@ -104,112 +103,58 @@ function buildInvoiceEmailHTML(invoiceData, actionType) {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>KASHTEC Invoice Notification</title>
 </head>
-<body style="margin:0;padding:0;background-color:#f0f2f5;font-family:Georgia,'Times New Roman',serif;">
-    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background-color:#f0f2f5;padding:30px 0;">
-        <tr>
-            <td align="center">
-                <table role="presentation" width="600" cellspacing="0" cellpadding="0" style="background:#ffffff;border-radius:12px;overflow:hidden;box-shadow:0 4px 20px rgba(0,0,0,0.08);">
-                    
-                    <!-- Header -->
-                    <tr>
-                        <td style="background:linear-gradient(135deg,#1a5276 0%,#2c3e50 100%);padding:30px 40px;text-align:center;">
-                            <h1 style="margin:0;color:#ffffff;font-size:24px;letter-spacing:1px;">KASHTEC TANZANIA LIMITED</h1>
-                            <p style="margin:6px 0 0;color:#bdc3c7;font-size:13px;letter-spacing:0.5px;">Construction Management System</p>
-                        </td>
-                    </tr>
+<body style="margin:0;padding:20px;background-color:#f0f2f5;font-family:Georgia,'Times New Roman',serif;">
+    <div style="max-width:350px;border:1px solid #1a5276;border-radius:8px;padding:15px;background:#fdfdfd;font-family:Georgia,serif;box-shadow:0 2px 5px rgba(0,0,0,0.05);margin:20px auto;">
+        <div style="text-align:center;border-bottom:1px solid #1a5276;padding-bottom:10px;margin-bottom:10px;">
+            <img src="${logoUrl}" alt="Khashtec logo" style="display:block;margin:0 auto 5px;max-height:40px;width:auto;">
+            <h3 style="margin:0;color:#1a5276;font-size:16px;">KASHTEC TANZANIA LIMITED</h3>
+            <p style="margin:2px 0;color:#666;font-size:11px;">Construction Management System</p>
+            <h4 style="margin:5px 0 0;color:#2c3e50;font-size:14px;">INVOICE</h4>
+        </div>
+        
+        <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="margin-bottom:10px;font-size:12px;">
+            <tr>
+                <td><strong>Invoice #:</strong> ${invoice_number || 'N/A'}</td>
+                <td style="text-align:right;"><strong>Date:</strong> ${dateStr}</td>
+            </tr>
+        </table>
+        
+        <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="margin-bottom:10px;font-size:12px;">
+            <tr>
+                <td><strong>Bill To:</strong> ${vendor_name || 'N/A'}</td>
+                <td style="text-align:right;"><strong>Due Date:</strong> ${due_date || 'N/A'}</td>
+            </tr>
+        </table>
 
-                    <!-- Action Banner -->
-                    <tr>
-                        <td style="background:${actionColor};padding:15px 40px;text-align:center;">
-                            <h2 style="margin:0;color:#ffffff;font-size:18px;">${actionTitle}</h2>
-                            <p style="margin:6px 0 0;color:rgba(255,255,255,0.9);font-size:13px;">${actionMessage}</p>
-                        </td>
-                    </tr>
+        <table style="width:100%;border-collapse:collapse;margin:10px 0;font-size:12px;">
+            <thead>
+                <tr style="background:#1a5276;color:white;">
+                    <th style="padding:6px;text-align:left;border:1px solid #1a5276;">Desc.</th>
+                    <th style="padding:6px;text-align:right;border:1px solid #1a5276;">Amount</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td style="padding:6px;border:1px solid #ddd;">${description || 'N/A'}</td>
+                    <td style="padding:6px;text-align:right;border:1px solid #ddd;">TZS ${formatTZS(amount)}</td>
+                </tr>
+            </tbody>
+        </table>
 
-                    <!-- Invoice Details -->
-                    <tr>
-                        <td style="padding:30px 40px;">
-                            
-                            <!-- Invoice Header Info -->
-                            <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="margin-bottom:20px;">
-                                <tr>
-                                    <td style="padding:8px 0;border-bottom:1px solid #ecf0f1;">
-                                        <strong style="color:#1a5276;font-size:14px;">Invoice Number:</strong>
-                                        <span style="float:right;color:#2c3e50;font-size:14px;font-weight:bold;">${invoice_number || 'N/A'}</span>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td style="padding:8px 0;border-bottom:1px solid #ecf0f1;">
-                                        <strong style="color:#1a5276;font-size:14px;">Client / Vendor:</strong>
-                                        <span style="float:right;color:#2c3e50;font-size:14px;">${vendor_name || 'N/A'}</span>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td style="padding:8px 0;border-bottom:1px solid #ecf0f1;">
-                                        <strong style="color:#1a5276;font-size:14px;">Category:</strong>
-                                        <span style="float:right;color:#2c3e50;font-size:14px;">${category || 'General'}</span>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td style="padding:8px 0;border-bottom:1px solid #ecf0f1;">
-                                        <strong style="color:#1a5276;font-size:14px;">Due Date:</strong>
-                                        <span style="float:right;color:#2c3e50;font-size:14px;">${due_date || 'N/A'}</span>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td style="padding:8px 0;border-bottom:1px solid #ecf0f1;">
-                                        <strong style="color:#1a5276;font-size:14px;">Priority:</strong>
-                                        <span style="float:right;color:#2c3e50;font-size:14px;">${priority || 'Medium'}</span>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td style="padding:8px 0;border-bottom:1px solid #ecf0f1;">
-                                        <strong style="color:#1a5276;font-size:14px;">Status:</strong>
-                                        <span style="float:right;background:${statusColor};color:#fff;padding:3px 12px;border-radius:12px;font-size:12px;font-weight:bold;">${statusText}</span>
-                                    </td>
-                                </tr>
-                            </table>
+        <div style="text-align:right;border-top:1px solid #1a5276;padding-top:8px;margin-top:8px;">
+            <strong style="font-size:14px;color:#1a5276;">Total: TZS ${formatTZS(amount)}</strong>
+        </div>
 
-                            <!-- Description -->
-                            <div style="background:#f8f9fa;border-left:4px solid #1a5276;padding:15px;border-radius:0 6px 6px 0;margin-bottom:20px;">
-                                <strong style="color:#1a5276;font-size:13px;display:block;margin-bottom:5px;">Description:</strong>
-                                <p style="margin:0;color:#555;font-size:14px;line-height:1.5;">${description || 'No description provided'}</p>
-                            </div>
-
-                            <!-- Amount Box -->
-                            <div style="background:linear-gradient(135deg,#1a5276 0%,#2c3e50 100%);border-radius:8px;padding:20px;text-align:center;margin-bottom:20px;">
-                                <p style="margin:0 0 5px;color:#bdc3c7;font-size:12px;text-transform:uppercase;letter-spacing:1px;">Total Amount</p>
-                                <p style="margin:0;color:#ffffff;font-size:28px;font-weight:bold;">TZS ${formatTZS(amount)}</p>
-                            </div>
-
-                            <!-- Meta Info -->
-                            <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background:#f8f9fa;border-radius:6px;padding:12px;">
-                                <tr>
-                                    <td style="padding:8px 15px;font-size:12px;color:#888;">
-                                        📅 Date: ${dateStr} at ${timeStr}
-                                    </td>
-                                    <td style="padding:8px 15px;font-size:12px;color:#888;text-align:right;">
-                                        🆔 Invoice ID: ${work_id || 'N/A'}
-                                    </td>
-                                </tr>
-                            </table>
-
-                        </td>
-                    </tr>
-
-                    <!-- Footer -->
-                    <tr>
-                        <td style="background:#f8f9fa;padding:20px 40px;text-align:center;border-top:2px solid #ecf0f1;">
-                            <p style="margin:0 0 5px;color:#1a5276;font-size:14px;font-weight:bold;">Thank you for your business!</p>
-                            <p style="margin:0;color:#999;font-size:11px;">KASHTEC Tanzania Limited — Construction Management System</p>
-                            <p style="margin:5px 0 0;color:#bbb;font-size:10px;">This is an automated notification. Please do not reply to this email.</p>
-                        </td>
-                    </tr>
-
-                </table>
-            </td>
-        </tr>
-    </table>
+        <div style="text-align:center;margin-top:12px;padding-top:10px;border-top:1px dashed #ccc;color:#888;font-size:11px;">
+            <p style="margin:2px 0;">Status: <strong style="color:${statusColor};">${statusText}</strong> | Priority: <strong>${priority || 'Medium'}</strong></p>
+            <p style="margin:2px 0;">Invoice ID: ${work_id || 'N/A'}</p>
+            
+            <div style="margin-top:15px;padding-top:10px;border-top:1px solid #eee;">
+                <p style="margin:0 0 4px 0;color:#1a5276;font-weight:bold;font-size:12px;">${actionTitle}</p>
+                <p style="margin:0;color:#666;">${actionMessage}</p>
+            </div>
+        </div>
+    </div>
 </body>
 </html>`;
 }
