@@ -249,53 +249,8 @@ router.get('/documents', async (req, res) => {
             console.log('✅ Documents fetched from database:', documents.length);
             
         } catch (dbError) {
-            console.error('❌ Database error, using fallback documents:', dbError);
-            
-            // Fallback to mock documents
-            documents = [
-                {
-                    id: 1,
-                    title: 'Employee Handbook 2024',
-                    description: 'Complete employee handbook with policies and procedures',
-                    category: 'HR',
-                    type: 'PDF',
-                    uploadedBy: 'HR Manager',
-                    uploadedDate: '2024-01-15',
-                    status: 'active',
-                    fileName: 'employee-handbook-2024.pdf',
-                    filePath: '/uploads/documents/employee-handbook-2024.pdf',
-                    department: 'HR',
-                    mock: true
-                },
-                {
-                    id: 2,
-                    title: 'Safety Manual',
-                    description: 'Construction site safety procedures and guidelines',
-                    category: 'Safety',
-                    type: 'PDF',
-                    uploadedBy: 'HSE Manager',
-                    uploadedDate: '2024-01-20',
-                    status: 'active',
-                    fileName: 'safety-manual.pdf',
-                    filePath: '/uploads/documents/safety-manual.pdf',
-                    department: 'HSE',
-                    mock: true
-                },
-                {
-                    id: 3,
-                    title: 'Financial Report Q1 2024',
-                    description: 'Quarterly financial report and analysis',
-                    category: 'Finance',
-                    type: 'PDF',
-                    uploadedBy: 'Finance Manager',
-                    uploadedDate: '2024-04-01',
-                    status: 'active',
-                    fileName: 'financial-report-q1-2024.pdf',
-                    filePath: '/uploads/documents/financial-report-q1-2024.pdf',
-                    department: 'Finance',
-                    mock: true
-                }
-            ];
+            console.error('❌ Database error, returning empty documents list:', dbError);
+            documents = [];
         }
         
         // Apply filters

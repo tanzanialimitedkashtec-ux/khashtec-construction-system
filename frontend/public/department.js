@@ -20162,7 +20162,11 @@ function recordIncidentReports(){
                         </div>
 
                         <div class="form-group">
-
+                            <label>Project *</label>
+                            <select id="incidentProject" required>
+                                <option value="">Select Project</option>
+                            </select>
+                        </div>
                             <label>Severity Level *</label>
 
                             <select id="severityLevel" required>
@@ -50505,7 +50509,33 @@ function loadTasks() {
 }
 
 
-// Populate the `taskProject` select with real projects from the backend
+async function populateIncidentProjectSelect() {
+    try {
+        const baseUrl = window.location.origin;
+        const resp = await fetch(`${baseUrl}/api/projects`, {
+            method: 'GET',
+            headers: { 'Accept': 'application/json' }
+        });
+        if (!resp.ok) {
+            console.warn('populateIncidentProjectSelect: failed to fetch projects', resp.status);
+            return;
+        }
+        const data = await resp.json();
+        const projects = Array.isArray(data) ? data : (data.projects || []);
+        const select = document.getElementById('incidentProject');
+        if (!select) return;
+        select.innerHTML = '<option value="">Select Project</option>';
+        projects.forEach(p => {
+            const opt = document.createElement('option');
+            opt.value = p.id;
+            opt.textContent = p.name || p.project_name || p.title || `Project ${p.id}`;
+            select.appendChild(opt);
+        });
+        console.log(`populateIncidentProjectSelect: populated ${projects.length} projects`);
+    } catch (err) {
+        console.error('populateIncidentProjectSelect error', err);
+    }
+}
 async function populateTaskProjectSelect() {
     try {
         const baseUrl = window.location.origin;
@@ -50536,6 +50566,7 @@ async function populateTaskProjectSelect() {
 
 document.addEventListener('DOMContentLoaded', () => {
     populateTaskProjectSelect();
+    populateIncidentProjectSelect();
 });
 
 
