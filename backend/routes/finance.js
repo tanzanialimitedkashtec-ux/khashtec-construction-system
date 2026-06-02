@@ -34,6 +34,48 @@ router.get('/test', (req, res) => {
     });
 });
 
+// Diagnostic email test route
+router.get('/test-email', async (req, res) => {
+    console.log('🧪 GET /api/finance/test-email accessed');
+    try {
+        const nodemailer = require('nodemailer');
+        const transporter = nodemailer.createTransport({
+            service: 'gmail',
+            auth: {
+                user: process.env.EMAIL_USER || 'tanzanialimitedkashtec@gmail.com',
+                pass: process.env.EMAIL_APP_PASSWORD || ''
+            }
+        });
+        
+        await transporter.verify();
+        
+        const info = await transporter.sendMail({
+            from: `"Test" <${process.env.EMAIL_USER}>`,
+            to: process.env.EMAIL_RECIPIENT || process.env.EMAIL_USER,
+            subject: 'Test Email Diagnostic',
+            text: 'If you receive this, SMTP is working.'
+        });
+        
+        res.json({
+            success: true,
+            message: 'Email sent successfully',
+            info: info.messageId,
+            user: process.env.EMAIL_USER,
+            hasPassword: !!process.env.EMAIL_APP_PASSWORD
+        });
+    } catch (error) {
+        console.error('Diagnostic email error:', error);
+        res.status(500).json({
+            success: false,
+            error: error.message,
+            code: error.code,
+            command: error.command,
+            user: process.env.EMAIL_USER,
+            hasPassword: !!process.env.EMAIL_APP_PASSWORD
+        });
+    }
+});
+
 // ===== BUDGET MANAGEMENT =====
 
 // POST - Create department budget (records request in finance_work)
