@@ -24935,6 +24935,8 @@ function loadMenu(){
     };
 
         const allMenusConfig = [
+        { name: "Approve Workforce Requests", func: showWorkforceApprovals },
+        { name: "Approve Payment Requests", func: showPaymentApprovals },
         { name: "Approve Recruitment Policies", func: approveRecruitmentPolicies },
         { name: "Approve Senior Staff Hiring", func: approveSeniorHiring },
         { name: "Create Senior Hiring Request", func: showSeniorRoles },
@@ -73696,7 +73698,8 @@ function displayWorkforceRequests(requests) {
 
                         <button class="action-btn edit" onclick="editWorkforceRequest('${request.id}')" title="Edit Request">✏️</button>
 
-                        <button class="action-btn approve" onclick="approveWorkforceRequest('${request.id}')" title="Approve">✅</button>
+                        ${request.status === 'pending' ? `<button class="action-btn approve" onclick="approveWorkforceRequest('${request.id}')" title="Approve">✅</button>
+                        <button class="action-btn reject" onclick="rejectWorkforceRequest('${request.id}')" title="Reject">🚫</button>` : ''}
 
                     </div>
 
@@ -73734,10 +73737,52 @@ function editWorkforceRequest(requestId) {
 
 
 
-function approveWorkforceRequest(requestId) {
+async function approveWorkforceRequest(requestId) {
+    if (!confirm('Are you sure you want to approve this workforce request?')) return;
+    try {
+        let response = await fetch(`${window.location.origin}/api/workforce-requests/${requestId}/status`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ status: 'approved' })
+        });
+        if (!response.ok) {
+            response = await fetch(`${window.location.origin}/api/work/workforce-requests/${requestId}/status`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ status: 'approved' })
+            });
+        }
+        if (!response.ok) throw new Error('Failed to approve request');
+        customAlert('Workforce request approved successfully.', 'Success', 'success');
+        if (typeof loadWorkforceRequests === 'function') loadWorkforceRequests();
+    } catch (error) {
+        console.error('Error approving workforce request:', error);
+        customAlert(error.message, 'Error', 'error');
+    }
+}
 
-    customAlert(`Approving workforce request ${requestId}...\n\nRequest approval process will be initiated with HR notification and workforce allocation scheduling.`, "Approve Workforce Request", "info");
-
+async function rejectWorkforceRequest(requestId) {
+    if (!confirm('Are you sure you want to reject this workforce request?')) return;
+    try {
+        let response = await fetch(`${window.location.origin}/api/workforce-requests/${requestId}/status`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ status: 'rejected' })
+        });
+        if (!response.ok) {
+            response = await fetch(`${window.location.origin}/api/work/workforce-requests/${requestId}/status`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ status: 'rejected' })
+            });
+        }
+        if (!response.ok) throw new Error('Failed to reject request');
+        customAlert('Workforce request rejected successfully.', 'Success', 'success');
+        if (typeof loadWorkforceRequests === 'function') loadWorkforceRequests();
+    } catch (error) {
+        console.error('Error rejecting workforce request:', error);
+        customAlert(error.message, 'Error', 'error');
+    }
 }
 
 
@@ -107104,7 +107149,9 @@ function displayPaymentRequests(payments) {
                 <td>${new Date(payment.submitted_date).toLocaleDateString()}</td>
                 <td>
                     <button onclick="viewPaymentDetails(${payment.id})" class="action-btn" title="View Details">👁️</button>
-                    ${payment.status === 'pending_finance_approval' ? `<button onclick="cancelPayment(${payment.id})" class="action-btn" title="Cancel">❌</button>` : ''}
+                    ${payment.status === 'pending_finance_approval' ? `<button onclick="approvePaymentRequest(${payment.id})" class="action-btn" title="Approve">✅</button>
+                    <button onclick="rejectPaymentRequest(${payment.id})" class="action-btn" title="Reject">🚫</button>
+                    <button onclick="cancelPayment(${payment.id})" class="action-btn" title="Cancel">❌</button>` : ''}
                 </td>
             </tr>
         `;
@@ -107230,6 +107277,51 @@ async function viewPaymentDetails(paymentId) {
     } catch (error) {
         console.error('❌ Error viewing payment details:', error);
         customAlert(`Failed to load payment details: ${error.message}`, 'Error', 'error');
+    }
+}
+
+async function approvePaymentRequest(paymentId) {
+    if (!confirm('Are you sure you want to approve this payment request?')) return;
+    try {
+        const response = await fetch(`/api/payment/${paymentId}/status`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                status: 'approved',
+                approvedBy: sessionManager.getCurrentUser()?.id || 1,
+                notes: 'Approved via Quick Action'
+            })
+        });
+        const result = await response.json();
+        if (!response.ok) throw new Error(result.error || 'Failed to approve payment');
+        customAlert('Payment request approved successfully.', 'Success', 'success');
+        loadPaymentRequests();
+    } catch (error) {
+        console.error('Error approving payment request:', error);
+        customAlert(error.message, 'Error', 'error');
+    }
+}
+
+async function rejectPaymentRequest(paymentId) {
+    const notes = prompt('Please enter rejection reason:');
+    if (notes === null) return;
+    try {
+        const response = await fetch(`/api/payment/${paymentId}/status`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                status: 'rejected',
+                approvedBy: sessionManager.getCurrentUser()?.id || 1,
+                notes: notes || 'Rejected via Quick Action'
+            })
+        });
+        const result = await response.json();
+        if (!response.ok) throw new Error(result.error || 'Failed to reject payment');
+        customAlert('Payment request rejected successfully.', 'Success', 'success');
+        loadPaymentRequests();
+    } catch (error) {
+        console.error('Error rejecting payment request:', error);
+        customAlert(error.message, 'Error', 'error');
     }
 }
 
@@ -107964,6 +108056,30 @@ async function showMaterialsOutRecords() {
             </div>
         </div>
     `);
+}
+
+function showWorkforceApprovals() {
+    showContent(`
+        <div class="card workforce-approvals">
+            <h3>Approve Workforce Requests</h3>
+            <div id="workforceRequestsList">
+                <div class="loading">Loading pending workforce requests...</div>
+            </div>
+        </div>
+    `);
+    loadWorkforceRequests();
+}
+
+function showPaymentApprovals() {
+    showContent(`
+        <div class="card payment-approvals">
+            <h3>Approve Payment Requests</h3>
+            <div id="paymentRequestsList">
+                <div class="loading">Loading pending payment requests...</div>
+            </div>
+        </div>
+    `);
+    loadPaymentRequests();
 }
 
 </script>
