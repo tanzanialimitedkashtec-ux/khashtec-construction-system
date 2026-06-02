@@ -69355,7 +69355,7 @@ function processInvoices() {
                         </div>
                         <div style="flex:1;min-width:150px;">
                             <label style="font-weight:600;display:block;margin-bottom:4px;">Invoice Number *</label>
-                            <input type="text" id="invoiceNumber" required style="width:100%;padding:8px;border:1px solid #ccc;border-radius:6px;" placeholder="e.g. INV-001">
+                            <input type="text" id="invoiceNumber" required readonly style="width:100%;padding:8px;border:1px solid #ccc;border-radius:6px;background-color:#f8f9fa;color:#555;cursor:not-allowed;" placeholder="Auto-generated">
                         </div>
                     </div>
                     <div style="display:flex;gap:10px;flex-wrap:wrap;">
@@ -69503,6 +69503,10 @@ function submitInvoice(e) {
         }
 
         document.getElementById('invoiceForm').reset();
+        var invoiceInput = document.getElementById('invoiceNumber');
+        if (invoiceInput) {
+            invoiceInput.value = 'INV-' + Math.floor(100000 + Math.random() * 900000);
+        }
         loadInvoicesList();
         customAlert('Invoice ' + invoiceNum + ' created successfully!', 'Invoice Created', 'success');
     })
@@ -70048,6 +70052,10 @@ function toggleInvoiceForm() {
     if (form) {
         if (form.style.display === 'none' || form.style.display === '') {
             form.style.display = 'flex';
+            var invoiceInput = document.getElementById('invoiceNumber');
+            if (invoiceInput && !invoiceInput.value) {
+                invoiceInput.value = 'INV-' + Math.floor(100000 + Math.random() * 900000);
+            }
         } else {
             form.style.display = 'none';
         }
