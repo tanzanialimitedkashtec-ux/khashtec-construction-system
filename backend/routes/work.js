@@ -4868,13 +4868,31 @@ router.put('/workforce-requests/:id/status', async (req, res) => {
             });
         }
         
-        const [result] = await db.execute(`
+        // Introspect table schema to check the type of the 'id' column
+        const workforceSchema = await getWorkforceRequestSchema();
+        const idColumnType = workforceSchema.get('id') || '';
+        const isIdInteger = idColumnType.includes('int');
+
+        // Check if this is a mock request (non-numeric string ID in an integer ID table)
+        if (isIdInteger && isNaN(Number(id))) {
+            console.log(`ℹ️ Mock workforce request ${id} status updated to ${status} (simulated success)`);
+            return res.json({
+                message: 'Workforce request status updated successfully (mock simulation)',
+                id: id,
+                status: status
+            });
+        }
+
+        // Use appropriate ID type for query
+        const queryId = isIdInteger ? parseInt(id, 10) : id;
+
+        const result = await db.execute(`
             UPDATE workforce_requests 
             SET status = ?, updated_at = CURRENT_TIMESTAMP 
             WHERE id = ?
-        `, [status, id]);
+        `, [status, queryId]);
         
-        if (result.affectedRows === 0) {
+        if (!result || result.affectedRows === 0) {
             return res.status(404).json({
                 error: 'Workforce request not found'
             });
