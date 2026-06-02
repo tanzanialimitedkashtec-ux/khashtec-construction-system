@@ -29231,7 +29231,7 @@ function markSafetyViolations(){
 
                         <div class="form-group">
 
-                            <label>Violation Date *</label>
+                            <label>Date *</label>
 
                             <input type="datetime-local" id="violationDate" required>
 
@@ -29263,7 +29263,7 @@ function markSafetyViolations(){
 
                         <div class="form-group">
 
-                            <label>Violation Type *</label>
+                            <label>Type *</label>
 
                             <select id="violationType" required>
 
@@ -29295,7 +29295,7 @@ function markSafetyViolations(){
 
                         <div class="form-group">
 
-                            <label>Severity Level *</label>
+                            <label>Severity *</label>
 
                             <select id="violationSeverity" required>
 
@@ -29337,7 +29337,7 @@ function markSafetyViolations(){
 
                     <div class="form-group">
 
-                        <label>Description of Violation *</label>
+                        <label>Description *</label>
 
                         <textarea id="violationDescription" rows="4" placeholder="Detailed description of safety violation..." required></textarea>
 
@@ -29347,7 +29347,7 @@ function markSafetyViolations(){
 
                     <div class="form-group">
 
-                        <label>Immediate Action Taken *</label>
+                        <label>Immediate Action *</label>
 
                         <textarea id="immediateAction" rows="3" placeholder="Stop work, remove from area, etc..." required></textarea>
 
@@ -29359,7 +29359,7 @@ function markSafetyViolations(){
 
                         <div class="form-group">
 
-                            <label>Corrective Action Required *</label>
+                            <label>Corrective Action *</label>
 
                             <select id="correctiveAction" required>
 
@@ -29381,7 +29381,7 @@ function markSafetyViolations(){
 
                         <div class="form-group">
 
-                            <label>Action Deadline *</label>
+                            <label>Deadline *</label>
 
                             <input type="date" id="actionDeadline" required>
 
@@ -29535,6 +29535,32 @@ function markSafetyViolations(){
 
     loadViolations();
 
+    // Load actual projects
+    loadViolationProjects();
+
+}
+
+async function loadViolationProjects() {
+    try {
+        const baseUrl = window.location.origin;
+        const response = await fetch(`${baseUrl}/api/projects`, {
+            headers: { 'Authorization': `Bearer ${sessionManager.getAuthToken()}` }
+        });
+        if (response.ok) {
+            const result = await response.json();
+            const projects = Array.isArray(result) ? result : (result.data || []);
+            const select = document.getElementById('violationProject');
+            if (select && projects && projects.length) {
+                let html = '<option value="">Select Project</option>';
+                projects.forEach(p => {
+                    html += `<option value="${p.id}">${p.name}</option>`;
+                });
+                select.innerHTML = html;
+            }
+        }
+    } catch (e) {
+        console.warn('Could not load violation projects', e);
+    }
 }
 
 
@@ -29695,6 +29721,41 @@ async function loadViolations() {
 
                     
 
+                    let descriptionText = item.work_description || '';
+                    let actionTakenParsed = descriptionText.substring(0, 100) + (descriptionText.length > 100 ? '...' : '');
+                    let violatorsParsed = item.assigned_to || 'HSE Manager';
+                    let immediateActionParsed = 'Under Review';
+                    let correctiveActionParsed = 'To be determined';
+                    let deadlineParsed = item.due_date || new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+                    let reportedByParsed = item.submitted_by || 'HSE Manager';
+                    let descParsed = descriptionText;
+
+                    if (descriptionText.includes('Safety Violation Report')) {
+                        const vMatch = descriptionText.match(/Violators:\s*(.*)/);
+                        if (vMatch) violatorsParsed = vMatch[1];
+                        
+                        const dMatch = descriptionText.match(/Description:\s*(.*)/);
+                        if (dMatch) {
+                            descParsed = dMatch[1];
+                        } else {
+                            descParsed = "No description provided";
+                        }
+                        
+                        const iaMatch = descriptionText.match(/Immediate Action:\s*(.*)/);
+                        if (iaMatch) immediateActionParsed = iaMatch[1];
+                        
+                        const caMatch = descriptionText.match(/Corrective Action:\s*(.*)/);
+                        if (caMatch) correctiveActionParsed = caMatch[1];
+                        
+                        const dlMatch = descriptionText.match(/Deadline:\s*(.*)/);
+                        if (dlMatch) deadlineParsed = dlMatch[1];
+                        
+                        const rbMatch = descriptionText.match(/Reported By:\s*(.*)/);
+                        if (rbMatch) reportedByParsed = rbMatch[1];
+                        
+                        actionTakenParsed = descParsed.substring(0, 100) + (descParsed.length > 100 ? '...' : '');
+                    }
+
                     return {
 
                         id: `VIO-${item.id}`,
@@ -29709,23 +29770,29 @@ async function loadViolations() {
 
                         severity: severity,
 
-                        violators: item.assigned_to || 'HSE Manager',
+                        violators: violatorsParsed,
 
                         location: item.location || 'HSE Office',
 
-                        actionTaken: item.work_description ? item.work_description.substring(0, 100) + '...' : 'Under Review',
+                        actionTaken: actionTakenParsed,
+
+                        description: descParsed,
+
+                        immediateAction: immediateActionParsed,
+                        
+                        correctiveAction: correctiveActionParsed,
 
                         status: item.status === 'completed' ? 'resolved' : 
 
                                item.status === 'Pending' ? 'pending' : 'pending',
 
-                        reportedBy: item.submitted_by || 'HSE Manager',
+                        reportedBy: reportedByParsed,
 
                         evidence: '',
 
                         followUpRequired: item.status === 'pending' ? 'yes' : 'no',
 
-                        deadline: item.due_date || new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
+                        deadline: deadlineParsed
 
                     };
 
