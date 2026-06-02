@@ -3286,9 +3286,13 @@ router.post('/:department', async (req, res, next) => {
             project_name, client_name,
             property_name, property_type,
             affected_systems,
-            status = 'pending'
+            status: rawStatus = 'pending'
         } = req.body;
-        
+
+        // Normalize status to match DB ENUM: 'Pending', 'In Progress', 'Completed', etc.
+        const statusNormMap = { 'pending': 'Pending', 'in progress': 'In Progress', 'in-progress': 'In Progress', 'completed': 'Completed', 'investigating': 'Investigating', 'resolved': 'Resolved', 'scheduled': 'Scheduled' };
+        const status = statusNormMap[String(rawStatus || 'pending').toLowerCase()] || rawStatus || 'Pending';
+
         console.log('📝 Extracted data:', {
             work_type,
             work_title,

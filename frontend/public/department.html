@@ -57512,6 +57512,16 @@ window.addEventListener('click', function(event) {
 
         
 
+        // Guard against double-click
+
+        if (window.isSavingIncident) {
+
+            console.log('⚠️ Global click catcher: save in progress, ignoring');
+
+            return false;
+
+        }
+
         // Call save function
 
         saveIncidentReport();
@@ -57772,10 +57782,12 @@ function saveIncidentReport() {
 
             });
 
+            window.isSavingIncident = false;
             return false;
 
         });
-            window.isSavingIncident = false;
+        // Note: flag is reset inside .then() and .catch() above since fetch is async
+
 
         
 
