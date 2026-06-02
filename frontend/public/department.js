@@ -20130,15 +20130,23 @@ function recordIncidentReports(){
                             <input type="datetime-local" id="incidentDate" required>
 
                         </div>
-
                     </div>
-
                     
-
                     <div class="form-row">
-
                         <div class="form-group">
-
+                            <label>Project *</label>
+                            <select id="incidentProject" required>
+                                <option value="">Loading Projects...</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Location *</label>
+                            <input type="text" id="incidentLocation" placeholder="Location details..." required>
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
                             <label>Incident Type *</label>
 
                             <select id="incidentType" required>
@@ -20162,11 +20170,6 @@ function recordIncidentReports(){
                         </div>
 
                         <div class="form-group">
-                            <label>Project *</label>
-                            <select id="incidentProject" required>
-                                <option value="">Select Project</option>
-                            </select>
-                        </div>
                             <label>Severity Level *</label>
 
                             <select id="severityLevel" required>
@@ -20204,8 +20207,15 @@ function recordIncidentReports(){
                         <label>Reported By *</label>
 
                         <input type="text" id="reportedBy" placeholder="HSE Manager Name" required>
-
-                    </div>
+                        </div>
+                        <div class="form-group">
+                            <label>Status *</label>
+                            <select id="incidentStatus" required>
+                                <option value="pending">Pending</option>
+                                <option value="investigating">Investigating</option>
+                                <option value="resolved">Resolved</option>
+                            </select>
+                        </div>
 
                     
 
@@ -20312,6 +20322,7 @@ function recordIncidentReports(){
     // Load incidents
 
     loadIncidents();
+    loadProjectsForIncidents();
 
     
 
@@ -20535,6 +20546,35 @@ function recordIncidentReports(){
 
 // Load incidents for table display
 
+
+async function loadProjectsForIncidents() {
+    try {
+        const baseUrl = window.location.origin;
+        const token = typeof sessionManager !== 'undefined' && sessionManager.getAuthToken ? sessionManager.getAuthToken() : null;
+        const headers = { 'Content-Type': 'application/json' };
+        if (token) headers['Authorization'] = `Bearer ${token}`;
+        
+        const response = await fetch(`${baseUrl}/api/projects`, { method: 'GET', headers });
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        
+        const data = await response.json();
+        const projects = Array.isArray(data) ? data : (data.projects || []);
+        
+        const select = document.getElementById('incidentProject');
+        if (!select) return;
+        
+        select.innerHTML = '<option value="">Select Project</option>';
+        projects.forEach(p => {
+            const name = p.name || p.title || p.project_name || 'Unnamed Project';
+            select.innerHTML += `<option value="${name}">${name}</option>`;
+        });
+    } catch (e) {
+        console.error('Error loading projects:', e);
+        const select = document.getElementById('incidentProject');
+        if (select) select.innerHTML = '<option value="">Failed to load projects</option>';
+    }
+}
+
 async function loadIncidents() {
 
     console.log('ðŸ”„ Loading incidents...');
@@ -20607,9 +20647,8 @@ async function loadIncidents() {
 
             } catch (fallbackError) {
 
-                console.error('âŒ All incidents endpoints failed:', fallbackError.message);
-
-                loadSampleIncidents();
+                console.error('All incidents endpoints failed:', fallbackError.message);
+                displayIncidents([]);
 
                 return;
 
@@ -20653,11 +20692,8 @@ async function loadIncidents() {
 
     } catch (error) {
 
-        console.error('âŒ Error loading incidents:', error);
-
-        // Load sample data on error
-
-        loadSampleIncidents();
+        console.error('Error loading incidents:', error);
+        displayIncidents([]);
 
     }
 
@@ -22602,6 +22638,9 @@ function testSimpleSave() {
         const severityLevel = document.getElementById('severityLevel').value;
 
         const incidentDescription = document.getElementById('incidentDescription').value;
+        const project = document.getElementById('incidentProject').value;
+        const location = document.getElementById('incidentLocation').value;
+        const status = document.getElementById('incidentStatus') ? document.getElementById('incidentStatus').value : 'pending';
 
         const reportedBy = document.getElementById('reportedBy').value;
 
@@ -22611,7 +22650,7 @@ function testSimpleSave() {
 
         
 
-        if (!incidentType || !severityLevel || !incidentDescription || !reportedBy) {
+        if (!incidentType || !severityLevel || !incidentDescription || !reportedBy || !project || !location) {
 
             customAlert('Please fill in all required fields for the test.', "Test Validation", "error");
 
@@ -22661,12 +22700,15 @@ function submitIncidentToDatabase() {
         const severityLevel = document.getElementById('severityLevel').value;
 
         const incidentDescription = document.getElementById('incidentDescription').value;
+        const project = document.getElementById('incidentProject').value;
+        const location = document.getElementById('incidentLocation').value;
+        const status = document.getElementById('incidentStatus') ? document.getElementById('incidentStatus').value : 'pending';
 
         const reportedBy = document.getElementById('reportedBy').value;
 
         
 
-        console.log('ðŸ“ Form values:', { incidentType, severityLevel, incidentDescription, reportedBy });
+        console.log('Form values:', { incidentType, severityLevel, incidentDescription, reportedBy, project, location });
 
         
 
@@ -22682,7 +22724,7 @@ function submitIncidentToDatabase() {
 
                     severityLevel: !severityLevel,
 
-                    incidentDescription: !incidentDescription,
+                    incidentDescription: !incidentDescription, project: !project, location: !location,
 
                     reportedBy: !reportedBy
 
@@ -22717,8 +22759,11 @@ function submitIncidentToDatabase() {
 
             assigned_to: 'HSE Manager',
 
-            submitted_by: reportedBy
-
+            submitted_by: reportedBy,
+            project: project,
+            project_name: project,
+            location: location,
+            status: status
         };
 
         
@@ -24462,16 +24507,19 @@ function manualSubmitIncident() {
         const severityLevel = document.getElementById('severityLevel').value;
 
         const incidentDescription = document.getElementById('incidentDescription').value;
+        const project = document.getElementById('incidentProject').value;
+        const location = document.getElementById('incidentLocation').value;
+        const status = document.getElementById('incidentStatus') ? document.getElementById('incidentStatus').value : 'pending';
 
         const reportedBy = document.getElementById('reportedBy').value;
 
         
 
-        console.log('ðŸ“ Form values:', { incidentType, severityLevel, incidentDescription, reportedBy });
+        console.log('Form values:', { incidentType, severityLevel, incidentDescription, reportedBy, project, location });
 
         
 
-        if (!incidentType || !severityLevel || !incidentDescription || !reportedBy) {
+        if (!incidentType || !severityLevel || !incidentDescription || !reportedBy || !project || !location) {
 
             console.log('âŒ Validation failed - missing required fields');
 
@@ -24503,8 +24551,11 @@ function manualSubmitIncident() {
 
             assigned_to: 'HSE Manager',
 
-            submitted_by: reportedBy
-
+            submitted_by: reportedBy,
+            project: project,
+            project_name: project,
+            location: location,
+            status: status
         };
 
         
@@ -29426,7 +29477,14 @@ function markSafetyViolations(){
                             <label>Reported By *</label>
 
                             <input type="text" id="reportedBy" placeholder="HSE Manager Name" required>
-
+                        </div>
+                        <div class="form-group">
+                            <label>Status *</label>
+                            <select id="incidentStatus" required>
+                                <option value="pending">Pending</option>
+                                <option value="investigating">Investigating</option>
+                                <option value="resolved">Resolved</option>
+                            </select>
                         </div>
 
                         <div class="form-group">
@@ -34029,6 +34087,9 @@ function saveIncidentReport() {
         const severityLevel = document.getElementById('severityLevel').value;
 
         const incidentDescription = document.getElementById('incidentDescription').value;
+        const project = document.getElementById('incidentProject').value;
+        const location = document.getElementById('incidentLocation').value;
+        const status = document.getElementById('incidentStatus') ? document.getElementById('incidentStatus').value : 'pending';
 
         
 
