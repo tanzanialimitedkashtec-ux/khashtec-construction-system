@@ -123,87 +123,9 @@ router.get('/users', async (req, res) => {
         } catch (dbError) {
             console.error('❌ Database error, using fallback personnel:', dbError);
             
-            // Fallback to mock personnel
-            personnel = [
-                {
-                    id: 1,
-                    name: 'John Doe',
-                    email: 'john.doe@kashtec.com',
-                    phone: '+255 712 345 678',
-                    role: 'Employee',
-                    department: 'HR',
-                    position: 'HR Manager',
-                    salary: 2500000,
-                    hireDate: '2024-01-15',
-                    status: 'Active',
-                    nida: '1990010112345678',
-                    passport: 'PA1234567',
-                    profileImage: '/assets/images/john-doe.jpg',
-                    passportImage: '/uploads/passports/PA1234567.jpg',
-                    contractType: 'permanent',
-                    registrationDate: '2024-01-15',
-                    type: 'employee',
-                    accessLevel: 'standard',
-                    lastLogin: '2024-04-04',
-                    permissions: ['view_documents', 'view_policies', 'manage_personnel'],
-                    documents: ['Employee Handbook', 'Contract'],
-                    certifications: ['HR Certification'],
-                    trainingCompleted: ['Safety Training', 'Harassment Training'],
-                    mock: true
-                },
-                {
-                    id: 2,
-                    name: 'Jane Smith',
-                    email: 'jane.smith@kashtec.com',
-                    phone: '+255 712 345 679',
-                    role: 'Worker',
-                    department: 'Operations',
-                    position: 'Construction Worker',
-                    salary: 800000,
-                    hireDate: '2024-02-01',
-                    status: 'Active',
-                    nida: '1990020212345679',
-                    passport: 'PA1234568',
-                    profileImage: '/assets/images/jane-smith.jpg',
-                    passportImage: '/uploads/passports/PA1234568.jpg',
-                    contractType: 'temporary',
-                    registrationDate: '2024-02-01',
-                    type: 'worker',
-                    accessLevel: 'basic',
-                    lastLogin: '2024-04-04',
-                    permissions: ['view_documents', 'view_policies'],
-                    documents: ['Safety Manual'],
-                    certifications: ['Construction Safety'],
-                    trainingCompleted: ['Site Safety'],
-                    mock: true
-                },
-                {
-                    id: 3,
-                    name: 'Mike Johnson',
-                    email: 'mike.johnson@kashtec.com',
-                    phone: '+255 712 345 680',
-                    role: 'Employee',
-                    department: 'Finance',
-                    position: 'Finance Manager',
-                    salary: 3500000,
-                    hireDate: '2024-01-20',
-                    status: 'Active',
-                    nida: '1990030312345680',
-                    passport: 'PA1234569',
-                    profileImage: '/assets/images/mike-johnson.jpg',
-                    passportImage: '/uploads/passports/PA1234569.jpg',
-                    contractType: 'permanent',
-                    registrationDate: '2024-01-20',
-                    type: 'employee',
-                    accessLevel: 'standard',
-                    lastLogin: '2024-04-04',
-                    permissions: ['view_documents', 'view_policies', 'manage_finances', 'approve_expenses'],
-                    documents: ['Financial Reports', 'Budget Documents'],
-                    certifications: ['Finance Certification'],
-                    trainingCompleted: ['Financial Management'],
-                    mock: true
-                }
-            ];
+            // On database error, return empty personnel list instead of mock data
+            console.error('❌ Database error, returning empty personnel list:', dbError);
+            personnel = [];
         }
         
         // Apply filters if provided
