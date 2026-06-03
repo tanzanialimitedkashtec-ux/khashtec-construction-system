@@ -5997,6 +5997,49 @@ async function createWorkforceBudgetTables() {
     }
 }
 
+// Create missing invoices table
+async function createInvoicesTable() {
+    try {
+        console.log('Creating missing invoices table...');
+        const db = require('./database/config/database');
+        
+        const createInvoicesTableSQL = `
+            CREATE TABLE IF NOT EXISTS invoices (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                invoice_number VARCHAR(100) UNIQUE NOT NULL,
+                vendor_name VARCHAR(255) NOT NULL,
+                amount DECIMAL(15, 2) NOT NULL,
+                description TEXT NOT NULL,
+                category VARCHAR(100),
+                due_date DATE NOT NULL,
+                priority VARCHAR(50) DEFAULT 'Medium',
+                status VARCHAR(50) DEFAULT 'Pending',
+                submitted_by VARCHAR(255),
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+                INDEX idx_status (status),
+                INDEX idx_invoice_number (invoice_number)
+            )
+        `;
+        
+        try {
+            await db.execute(createInvoicesTableSQL);
+            console.log('Invoices table created successfully');
+            
+            // Verify table structure
+            const columns = await db.execute('DESCRIBE invoices');
+            const colsArr = Array.isArray(columns) ? columns : [];
+            console.log('Invoices table columns:', colsArr.map(col => col.Field));
+        } catch (tableError) {
+            console.error('Error creating invoices table:', tableError.message);
+        }
+        
+    } catch (error) {
+        console.error('Error creating invoices table:', error);
+        throw error;
+    }
+}
+
 
 
 // Ensure LONGBLOB columns exist on employee_details for DB-persisted profile images
@@ -6140,6 +6183,10 @@ async function startServer() {
         console.log('🔄 Step 8: Creating missing workforce budget tables...');
         await createWorkforceBudgetTables();
         console.log('✅ Step 8 completed: Workforce budget tables ready');
+
+        console.log('🔄 Step 8a: Creating missing invoices table...');
+        await createInvoicesTable();
+        console.log('✅ Step 8a completed: Invoices table ready');
 
         console.log('🔄 Step 8b: Ensuring profile image BLOB columns exist...');
         await ensureProfileImageBlobColumns();
