@@ -1242,7 +1242,7 @@ app.get('/api/violations', async (req, res) => {
 
         let query = 'SELECT * FROM violations ORDER BY date DESC';
 
-        const [violations] = await db.execute(query);
+        const violations = await db.execute(query);
 
         res.status(200).json({ success: true, violations });
 
@@ -1296,7 +1296,7 @@ app.put('/api/violations/:id/status', async (req, res) => {
 
         const query = 'UPDATE violations SET status = ? WHERE violation_id = ?';
 
-        const [result] = await db.execute(query, [status, id]);
+        const result = await db.execute(query, [status, id]);
 
         if (result.affectedRows === 0) {
 
