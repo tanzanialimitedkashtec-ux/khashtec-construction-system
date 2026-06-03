@@ -1,4 +1,4 @@
-// Disabled: Allow localhost development
+﻿// Disabled: Allow localhost development
 
         // const PRODUCTION_FRONTEND_URL = 'https://khashtec-construction-system-production-e7b5.up.railway.app/frontend/public/department.html';
 
@@ -30492,6 +30492,8 @@ function displayViolations(violations) {
                         <button class="action-btn edit" onclick="updateViolationStatus('${violation.id}')" title="Update Status">âœï¸</button>
 
                         <button class="action-btn download" onclick="downloadViolationReport('${violation.id}')" title="Download Report">ðŸ“„</button>
+                        <button class="action-btn approve" onclick="approveViolation('${violation.id}')" title="Approve Violation">✅</button>
+                        <button class="action-btn reject" onclick="rejectViolation('${violation.id}')" title="Reject Violation">❌</button>
 
                     </div>
 
@@ -30532,6 +30534,18 @@ function updateViolationStatus(violationId) {
 function downloadViolationReport(violationId) {
 
     customAlert(`Downloading violation report for ID: ${violationId}\n\nComprehensive violation report will be generated including all details, actions taken, and resolution status for documentation and compliance purposes.`, "Download Report", "info");
+
+}
+
+function approveViolation(violationId) {
+
+    customAlert(`Approving violation ID: ${violationId}\n\nThe violation has been approved successfully.`, "Approve Violation", "success");
+
+}
+
+function rejectViolation(violationId) {
+
+    customAlert(`Rejecting violation ID: ${violationId}\n\nThe violation has been rejected.`, "Reject Violation", "warning");
 
 }
 
