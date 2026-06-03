@@ -1,4 +1,4 @@
-﻿// Disabled: Allow localhost development
+// Disabled: Allow localhost development
 
         // const PRODUCTION_FRONTEND_URL = 'https://khashtec-construction-system-production-e7b5.up.railway.app/frontend/public/department.html';
 
@@ -29468,7 +29468,7 @@ async function loadViolations() {
 
         } catch (primaryError) {
 
-            console.warn('âš ï¸ Primary violations endpoint failed, trying fallback:', primaryError.message);
+            console.warn('âš ï¸  Primary violations endpoint failed, trying fallback:', primaryError.message);
 
             // Try fallback endpoint
 
@@ -29641,9 +29641,7 @@ async function loadViolations() {
                         
                         correctiveAction: correctiveActionParsed,
 
-                        status: item.status === 'completed' ? 'resolved' : 
-
-                               item.status === 'Pending' ? 'pending' : 'pending',
+                        status: (item.status && item.status.toLowerCase() === 'completed') ? 'resolved' : (item.status && item.status.toLowerCase() === 'rejected') ? 'rejected' : 'pending',
 
                         reportedBy: reportedByParsed,
 
@@ -79552,6 +79550,7 @@ async function showMaterialsOutRecords() {
         </div>
     `);
 }
+
 
 
 

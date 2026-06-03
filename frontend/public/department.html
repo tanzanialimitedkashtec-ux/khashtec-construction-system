@@ -53160,9 +53160,7 @@ async function loadViolations() {
                         
                         correctiveAction: correctiveActionParsed,
 
-                        status: item.status === 'completed' ? 'resolved' : 
-
-                               item.status === 'Pending' ? 'pending' : 'pending',
+                        status: (item.status && item.status.toLowerCase() === 'completed') ? 'resolved' : (item.status && item.status.toLowerCase() === 'rejected') ? 'rejected' : 'pending',
 
                         reportedBy: reportedByParsed,
 
@@ -108049,6 +108047,7 @@ function showPaymentApprovals() {
 }
 
 </script>
+
 
 
 
