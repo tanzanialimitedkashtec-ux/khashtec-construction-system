@@ -1232,6 +1232,92 @@ app.post('/api/test', (req, res) => {
 
 
 
+// Violations API endpoints
+
+app.get('/api/violations', async (req, res) => {
+
+    try {
+
+        const db = require('./database/config/database');
+
+        let query = 'SELECT * FROM violations ORDER BY date DESC';
+
+        const [violations] = await db.execute(query);
+
+        res.status(200).json({ success: true, violations });
+
+    } catch (error) {
+
+        console.error('Error fetching violations:', error);
+
+        res.status(500).json({ success: false, message: 'Failed to fetch violations' });
+
+    }
+
+});
+
+
+
+app.post('/api/violations', async (req, res) => {
+
+    try {
+
+        const db = require('./database/config/database');
+
+        const { violation_id, date, project, type, severity, violators, location, description, immediate_action, corrective_action, action_deadline, reported_by } = req.body;
+
+        const query = `INSERT INTO violations (violation_id, date, project, type, severity, violators, location, description, immediate_action, corrective_action, action_deadline, status, reported_by) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending', ?)`;
+
+        await db.execute(query, [violation_id, date, project, type, severity, violators, location, description, immediate_action, corrective_action, action_deadline, reported_by]);
+
+        res.status(201).json({ success: true, message: 'Violation created' });
+
+    } catch (error) {
+
+        console.error('Error creating violation:', error);
+
+        res.status(500).json({ success: false, message: 'Failed to create violation' });
+
+    }
+
+});
+
+
+
+app.put('/api/violations/:id/status', async (req, res) => {
+
+    try {
+
+        const db = require('./database/config/database');
+
+        const { id } = req.params;
+
+        const { status } = req.body;
+
+        const query = 'UPDATE violations SET status = ? WHERE violation_id = ?';
+
+        const [result] = await db.execute(query, [status, id]);
+
+        if (result.affectedRows === 0) {
+
+            return res.status(404).json({ success: false, message: 'Violation not found' });
+
+        }
+
+        res.status(200).json({ success: true, message: 'Status updated' });
+
+    } catch (error) {
+
+        console.error('Error updating violation status:', error);
+
+        res.status(500).json({ success: false, message: 'Failed to update violation' });
+
+    }
+
+});
+
+
+
 // Site Reports API endpoints
 
 app.post('/api/site-reports', async (req, res) => {
