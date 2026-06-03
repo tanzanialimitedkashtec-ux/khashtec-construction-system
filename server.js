@@ -1294,14 +1294,33 @@ app.put('/api/violations/:id/status', async (req, res) => {
 
         const { status } = req.body;
 
-        const query = 'UPDATE violations SET status = ? WHERE violation_id = ?';
+        let query = 'UPDATE violations SET status = ? WHERE violation_id = ?';
 
-        const result = await db.execute(query, [status, id]);
+        let result = await db.execute(query, [status, id]);
 
         if (result.affectedRows === 0) {
-
-            return res.status(404).json({ success: false, message: 'Violation not found' });
-
+            // Check if it's an HSE work item (e.g. 'VIO-176')
+            let numericId = null;
+            if (id.startsWith('VIO-') && !id.startsWith('VIO-SITE-') && !id.startsWith('VIO-2026-')) {
+                numericId = id.replace('VIO-', '');
+            } else if (!isNaN(id)) {
+                numericId = id;
+            }
+            
+            if (numericId && !isNaN(numericId)) {
+                // Map status for hse_work
+                let hseStatus = status;
+                if (status === 'resolved') hseStatus = 'Completed';
+                else if (status === 'rejected') hseStatus = 'Closed';
+                else if (status === 'pending') hseStatus = 'Pending';
+                
+                const hseQuery = "UPDATE hse_work SET status = ? WHERE id = ?";
+                result = await db.execute(hseQuery, [hseStatus, numericId]);
+            }
+            
+            if (result.affectedRows === 0) {
+                return res.status(404).json({ success: false, message: 'Violation not found' });
+            }
         }
 
         res.status(200).json({ success: true, message: 'Status updated' });
