@@ -1311,7 +1311,7 @@ app.put('/api/violations/:id/status', async (req, res) => {
                 // Map status for hse_work
                 let hseStatus = status;
                 if (status === 'resolved') hseStatus = 'Completed';
-                else if (status === 'rejected') hseStatus = 'Closed';
+                else if (status === 'rejected') hseStatus = 'Rejected';
                 else if (status === 'pending') hseStatus = 'Pending';
                 
                 const hseQuery = "UPDATE hse_work SET status = ? WHERE id = ?";
