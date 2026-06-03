@@ -365,20 +365,25 @@ router.post('/invoice', async (req, res) => {
     }
 
     try {
+        const workTitle = `Invoice ${invoice_number} - ${category || 'General'}`;
         const result = await db.execute(
-            `INSERT INTO invoices 
-             (invoice_number, vendor_name, amount, description, category, due_date, priority, status, submitted_by)
-             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+            `INSERT INTO finance_work 
+             (department_code, work_type, work_title, work_description, amount, vendor_name, invoice_number, status, priority, submitted_by, submitted_date, assigned_to, due_date)
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
             [
-                invoice_number,
-                vendor_name,
-                Number(amount) || 0,
+                'FINANCE',
+                'Invoice Processing',
+                workTitle,
                 description,
-                category,
-                due_date,
-                priority,
+                Number(amount) || 0,
+                vendor_name,
+                invoice_number,
                 'Pending',
-                submittedBy
+                priority,
+                submittedBy,
+                new Date().toISOString().slice(0, 10),
+                'Finance Manager',
+                due_date
             ]
         );
 
@@ -416,10 +421,11 @@ router.get('/invoices', async (req, res) => {
     console.log('📝 GET /api/finance/invoices accessed');
     try {
         const rows = await db.execute(`
-            SELECT id, description AS work_title, description AS work_description, amount, vendor_name, invoice_number,
-                   status, priority, submitted_by, created_at AS submitted_date, due_date
-            FROM invoices 
-            ORDER BY created_at DESC, id DESC
+            SELECT id, work_title, work_description, amount, vendor_name, invoice_number,
+                   status, priority, submitted_by, submitted_date, due_date
+            FROM finance_work 
+            WHERE work_type = 'Invoice Processing'
+            ORDER BY submitted_date DESC, id DESC
             LIMIT 200
         `).catch(() => []);
         res.json(Array.isArray(rows) ? rows : []);
@@ -436,13 +442,13 @@ router.put('/invoice/:id/approve', async (req, res) => {
     try {
         // Fetch invoice details before updating for the email
         const invoiceRows = await db.execute(
-            `SELECT invoice_number, vendor_name, amount, description AS work_description, priority, due_date FROM invoices WHERE id = ?`,
+            `SELECT invoice_number, vendor_name, amount, work_description, priority, due_date FROM finance_work WHERE id = ? AND work_type = 'Invoice Processing'`,
             [id]
         ).catch(() => []);
         const inv = Array.isArray(invoiceRows) && invoiceRows.length > 0 ? invoiceRows[0] : {};
 
         await db.execute(
-            `UPDATE invoices SET status = 'Completed', updated_at = NOW() WHERE id = ?`,
+            `UPDATE finance_work SET status = 'Completed', completion_date = NOW() WHERE id = ? AND work_type = 'Invoice Processing'`,
             [id]
         );
         console.log('✅ Invoice ' + id + ' approved');
@@ -474,14 +480,14 @@ router.put('/invoice/:id/reject', async (req, res) => {
     try {
         // Fetch invoice details before updating for the email
         const invoiceRows = await db.execute(
-            `SELECT invoice_number, vendor_name, amount, description AS work_description, priority, due_date FROM invoices WHERE id = ?`,
+            `SELECT invoice_number, vendor_name, amount, work_description, priority, due_date FROM finance_work WHERE id = ? AND work_type = 'Invoice Processing'`,
             [id]
         ).catch(() => []);
         const inv = Array.isArray(invoiceRows) && invoiceRows.length > 0 ? invoiceRows[0] : {};
 
         const description = reason ? ` | Rejection reason: ${reason}` : '';
         await db.execute(
-            `UPDATE invoices SET status = 'Rejected', description = CONCAT(COALESCE(description,''), ?), updated_at = NOW() WHERE id = ?`,
+            `UPDATE finance_work SET status = 'Rejected', work_description = CONCAT(COALESCE(work_description,''), ?) WHERE id = ? AND work_type = 'Invoice Processing'`,
             [description, id]
         );
         console.log('✅ Invoice ' + id + ' rejected');
