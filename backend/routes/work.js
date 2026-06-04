@@ -172,9 +172,9 @@ router.post('/', async (req, res, next) => {
             status: rawStatus = 'pending'
         } = req.body;
 
-        // Normalize status to match DB ENUM: 'Pending', 'In Progress', 'Completed'
-        const statusMap = { 'pending': 'Pending', 'in progress': 'In Progress', 'in-progress': 'In Progress', 'completed': 'Completed', 'investigating': 'Investigating', 'resolved': 'Resolved' };
-        const status = statusMap[String(rawStatus).toLowerCase()] || rawStatus || 'Pending';
+        // Normalize status to match DB ENUM: 'Pending', 'In Progress', 'Completed', 'Rejected', 'Revision Requested'
+        const statusMap = { 'pending': 'Pending', 'in progress': 'In Progress', 'in-progress': 'In Progress', 'completed': 'Completed', 'investigating': 'In Progress', 'resolved': 'Completed', 'rejected': 'Rejected', 'revision requested': 'Revision Requested' };
+        const status = statusMap[String(rawStatus).toLowerCase()] || 'Pending';
         
         console.log('📝 Extracted HSE data:', {
             work_type,
@@ -3289,9 +3289,9 @@ router.post('/:department', async (req, res, next) => {
             status: rawStatus = 'pending'
         } = req.body;
 
-        // Normalize status to match DB ENUM: 'Pending', 'In Progress', 'Completed', etc.
-        const statusNormMap = { 'pending': 'Pending', 'in progress': 'In Progress', 'in-progress': 'In Progress', 'completed': 'Completed', 'investigating': 'Investigating', 'resolved': 'Resolved', 'scheduled': 'Scheduled' };
-        const status = statusNormMap[String(rawStatus || 'pending').toLowerCase()] || rawStatus || 'Pending';
+        // Normalize status to match DB ENUM: 'Pending', 'In Progress', 'Completed', 'Rejected', 'Revision Requested'
+        const statusNormMap = { 'pending': 'Pending', 'in progress': 'In Progress', 'in-progress': 'In Progress', 'completed': 'Completed', 'investigating': 'In Progress', 'resolved': 'Completed', 'scheduled': 'Pending', 'rejected': 'Rejected', 'revision requested': 'Revision Requested' };
+        const status = statusNormMap[String(rawStatus || 'pending').toLowerCase()] || 'Pending';
 
         console.log('📝 Extracted data:', {
             work_type,

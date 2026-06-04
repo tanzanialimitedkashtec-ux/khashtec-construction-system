@@ -46168,6 +46168,9 @@ function submitIncidentToDatabase() {
         
 
         // Send data to backend API - NO FORM INVOLVED
+        const authToken = (window.sessionManager && typeof sessionManager.getAuthToken === 'function')
+            ? sessionManager.getAuthToken()
+            : (sessionStorage.getItem('authToken') || localStorage.getItem('authToken') || '');
 
         fetch(`${baseUrl}/api/hse/work`, {
 
@@ -46175,7 +46178,9 @@ function submitIncidentToDatabase() {
 
             headers: {
 
-                'Content-Type': 'application/json'
+                'Content-Type': 'application/json',
+
+                ...(authToken ? { 'Authorization': `Bearer ${authToken}` } : {})
 
             },
 
@@ -57531,6 +57536,13 @@ window.addEventListener('click', function(event) {
     
 
     if (form && (target.tagName === 'BUTTON' || target.type === 'submit')) {
+
+        // Check if the button has its own onclick handler (like submitIncidentToDatabase)
+        const onclickAttr = target.getAttribute('onclick');
+        if (onclickAttr && (onclickAttr.includes('submitIncidentToDatabase') || onclickAttr.includes('clearIncidentForm') || onclickAttr.includes('toggleIncidentForm'))) {
+            console.log('🌐 Global click catcher - allowing button onclick handler:', onclickAttr);
+            return; // Let the button's own onclick handle it
+        }
 
         console.log('🌐 Global click catcher - PREVENTING form submission!');
 
