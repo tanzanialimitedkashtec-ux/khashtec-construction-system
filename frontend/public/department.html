@@ -12586,11 +12586,9 @@ font-weight: bold;
 
 
 .status-badge.status-rejected {
-
-    background: #f8d7da;
-
-    color: #721c24;
-
+    background: #dc3545;
+    color: #ffffff;
+    font-weight: bold;
 }
 
 
@@ -54007,10 +54005,6 @@ function displayViolations(violations) {
                     <div class="violation-actions">
 
                         <button class="action-btn view" onclick="viewViolationDetails('${violation.id}')" title="View Details">👁️</button>
-
-                        <button class="action-btn edit" onclick="updateViolationStatus('${violation.id}')" title="Update Status">✏️</button>
-
-                        <button class="action-btn download" onclick="downloadViolationReport('${violation.id}')" title="Download Report">📄</button>
                         <button class="action-btn approve" onclick="approveViolation('${violation.id}')" title="Approve Violation" style="background:#28a745;color:white;">✅</button>
                         <button class="action-btn reject" onclick="rejectViolation('${violation.id}')" title="Reject Violation" style="background:#dc3545;color:white;">❌</button>
 
@@ -103084,11 +103078,9 @@ const transportCostStyles = `
 
 
 .status-rejected {
-
-    background: #f8d7da;
-
-    color: #721c24;
-
+    background: #dc3545;
+    color: #ffffff;
+    font-weight: bold;
 }
 
 

@@ -29894,6 +29894,8 @@ function displayViolations(violations) {
 
                              violation.status === 'investigating' ? 'ðŸ” Investigating' : 
 
+                             violation.status === 'rejected' ? '❌ Rejected' : 
+
                              violation.status === 'closed' ? 'ðŸ”’ Closed' : violation.status;
 
         
@@ -29904,7 +29906,9 @@ function displayViolations(violations) {
 
                            violation.status === 'investigating' ? 'status-investigating' : 
 
-                           violation.status === 'closed' ? 'status-closed' : '';
+                           violation.status === 'rejected' ? 'status-rejected' : 
+
+                             violation.status === 'closed' ? 'status-closed' : '';
 
         
 
@@ -30073,10 +30077,6 @@ function displayViolations(violations) {
                     <div class="violation-actions">
 
                         <button class="action-btn view" onclick="viewViolationDetails('${violation.id}')" title="View Details">ðŸ‘ï¸</button>
-
-                        <button class="action-btn edit" onclick="updateViolationStatus('${violation.id}')" title="Update Status">âœï¸</button>
-
-                        <button class="action-btn download" onclick="downloadViolationReport('${violation.id}')" title="Download Report">ðŸ“„</button>
                         <button class="action-btn approve" onclick="approveViolation('${violation.id}')" title="Approve Violation">✅</button>
                         <button class="action-btn reject" onclick="rejectViolation('${violation.id}')" title="Reject Violation">❌</button>
 
