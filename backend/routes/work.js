@@ -3749,8 +3749,8 @@ router.post('/:department', async (req, res, next) => {
         console.error('❌ Error creating work item:', error);
         console.error('❌ Error stack:', error.stack);
         res.status(500).json({ 
-            error: 'Failed to create work item',
-            details: error.message 
+            error: 'Failed to create work item: ' + error.message,
+            details: error.stack 
         });
     }
 });
