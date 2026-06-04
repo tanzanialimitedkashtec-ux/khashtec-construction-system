@@ -9,21 +9,11 @@ router.get('/', async (req, res) => {
 
         let safetyRecords = [];
 
+        // Always build safety data from real tables (projects, hse_work, etc.)
         try {
-            // First try to get data from project_safety table
-            const records = await db.query(
-                `SELECT * FROM project_safety ORDER BY safety_score DESC`
+            const projects = await db.query(
+                `SELECT id, name, location, status FROM projects WHERE status IN ('Planning', 'In Progress', 'Completed') ORDER BY name`
             );
-            safetyRecords = records;
-            console.log(`✅ Found ${safetyRecords.length} project safety records from project_safety table`);
-        } catch (tableError) {
-            console.warn('⚠️ project_safety table not available, building from projects + hse data:', tableError.message);
-
-            // Fallback: Build safety data from projects table + hse_work + hse_incidents
-            try {
-                const projects = await db.query(
-                    `SELECT id, name, location, status FROM projects WHERE status IN ('Planning', 'In Progress', 'Completed') ORDER BY name`
-                );
 
                 if (projects && projects.length > 0) {
                     // For each project, calculate safety metrics from related tables
@@ -112,7 +102,6 @@ router.get('/', async (req, res) => {
             } catch (projectError) {
                 console.error('❌ Failed to build safety data from projects:', projectError.message);
             }
-        }
 
         // If no records found from any source, return empty array
         if (!safetyRecords || safetyRecords.length === 0) {
@@ -171,39 +160,67 @@ router.get('/:id', async (req, res) => {
         let safetyRecord = null;
 
         try {
-            const records = await db.query(
-                `SELECT * FROM project_safety WHERE id = ? OR project_id = ?`,
-                [id, id]
+            const projects = await db.query(
+                `SELECT id, name, location, status FROM projects WHERE id = ?`,
+                [id]
             );
-            if (records && records.length > 0) {
-                safetyRecord = records[0];
-            }
-        } catch (tableError) {
-            // Fallback to building from projects table
-            try {
-                const projects = await db.query(
-                    `SELECT id, name, location, status FROM projects WHERE id = ?`,
-                    [id]
-                );
-                if (projects && projects.length > 0) {
-                    const project = projects[0];
-                    safetyRecord = {
-                        id: project.id,
-                        project_id: project.id,
-                        project_name: project.name,
-                        location: project.location || 'Not specified',
-                        safety_score: 85,
-                        days_without_incident: 30,
-                        open_violations: 0,
-                        ppe_compliance: 90,
-                        last_inspection_date: new Date().toISOString().split('T')[0],
-                        risk_level: 'Low',
-                        status: project.status === 'In Progress' ? 'Active' : project.status
-                    };
+            if (projects && projects.length > 0) {
+                const project = projects[0];
+                
+                let incidents = [];
+                let violations = [];
+                let inspections = [];
+                let ppeRecords = [];
+
+                try { incidents = await db.query(`SELECT COUNT(*) as count, MAX(incident_date) as last_incident FROM hse_incidents WHERE project_id = ?`, [project.id]); } catch(e){}
+                try { violations = await db.query(`SELECT COUNT(*) as count FROM hse_work WHERE work_type = 'Safety Violation' AND project_name = ? AND status != 'Completed'`, [project.name]); } catch(e){}
+                try { inspections = await db.query(`SELECT COUNT(*) as count, MAX(submitted_date) as last_inspection FROM hse_work WHERE work_type = 'Inspection Report' AND project_name = ?`, [project.name]); } catch(e){}
+                try { ppeRecords = await db.query(`SELECT COUNT(*) as total, SUM(CASE WHEN status = 'Issued' THEN 1 ELSE 0 END) as issued FROM ppe_issuance WHERE project_id = ?`, [project.id]); } catch(e){}
+
+                const incidentCount = (incidents && incidents[0]) ? incidents[0].count : 0;
+                const lastIncident = (incidents && incidents[0]) ? incidents[0].last_incident : null;
+                const violationCount = (violations && violations[0]) ? violations[0].count : 0;
+                const inspectionCount = (inspections && inspections[0]) ? inspections[0].count : 0;
+                const lastInspection = (inspections && inspections[0]) ? inspections[0].last_inspection : null;
+                const ppeTotal = (ppeRecords && ppeRecords[0]) ? ppeRecords[0].total : 0;
+                const ppeIssued = (ppeRecords && ppeRecords[0]) ? ppeRecords[0].issued : 0;
+
+                let daysWithoutIncident = 30;
+                if (lastIncident) {
+                    const diffTime = Math.abs(new Date() - new Date(lastIncident));
+                    daysWithoutIncident = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
                 }
-            } catch (e) {
-                console.error('❌ Failed to get project for safety details:', e.message);
+
+                const ppeCompliance = ppeTotal > 0 ? Math.round((ppeIssued / ppeTotal) * 100) : 85;
+
+                let safetyScore = 100;
+                safetyScore -= (violationCount * 5);
+                safetyScore -= (incidentCount * 10);
+                if (daysWithoutIncident < 7) safetyScore -= 10;
+                safetyScore = Math.max(0, Math.min(100, safetyScore));
+
+                let riskLevel = 'Low';
+                if (safetyScore < 60) riskLevel = 'High';
+                else if (safetyScore < 80) riskLevel = 'Medium';
+
+                safetyRecord = {
+                    id: project.id,
+                    project_id: project.id,
+                    project_name: project.name,
+                    location: project.location || 'Not specified',
+                    safety_score: safetyScore,
+                    days_without_incident: daysWithoutIncident,
+                    open_violations: violationCount,
+                    ppe_compliance: ppeCompliance,
+                    last_inspection_date: lastInspection || new Date().toISOString().split('T')[0],
+                    risk_level: riskLevel,
+                    status: project.status === 'In Progress' ? 'Active' : project.status,
+                    total_inspections: inspectionCount,
+                    total_incidents: incidentCount
+                };
             }
+        } catch (e) {
+            console.error('❌ Failed to get project for safety details:', e.message);
         }
 
         if (!safetyRecord) {
