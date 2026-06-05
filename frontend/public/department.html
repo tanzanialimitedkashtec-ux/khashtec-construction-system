@@ -14124,6 +14124,16 @@ font-weight: bold;
 
 
 
+.status-badge.status-rejected {
+
+    background: #f8d7da;
+
+    color: #721c24;
+
+}
+
+
+
 .status-badge.status-investigating {
 
     background: #cce5ff;
@@ -54076,6 +54086,8 @@ function displayViolations(violations) {
 
                              violation.status === 'resolved' ? '✅ Resolved' : 
 
+                             violation.status === 'rejected' ? '❌ Rejected' : 
+
                              violation.status === 'investigating' ? '🔍 Investigating' : 
 
                              violation.status === 'closed' ? '🔒 Closed' : violation.status;
@@ -54085,6 +54097,8 @@ function displayViolations(violations) {
         const statusClass = violation.status === 'pending' ? 'status-pending' : 
 
                            violation.status === 'resolved' ? 'status-resolved' : 
+
+                           violation.status === 'rejected' ? 'status-rejected' : 
 
                            violation.status === 'investigating' ? 'status-investigating' : 
 
@@ -54124,7 +54138,7 @@ function displayViolations(violations) {
 
         // Format deadline
 
-        const deadline = violation.actionDeadline ? new Date(violation.actionDeadline).toLocaleDateString() : 'Not set';
+        const deadline = violation.actionDeadline ? new Date(violation.actionDeadline).toLocaleDateString() : (violation.deadline ? new Date(violation.deadline).toLocaleDateString() : 'Not set');
 
         
 
