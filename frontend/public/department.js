@@ -38201,9 +38201,7 @@ function displayIncomeStatement(records) {
 
     try {
 
-        console.log('ðŸ“‹ displayIncomeStatement called with records:', records.length);
-
-        // Calculate totals by type
+        console.log('📊 displayIncomeStatement called with records:', records.length);
 
         const revenue = records
 
@@ -38211,9 +38209,7 @@ function displayIncomeStatement(records) {
 
             .reduce((sum, r) => sum + (r.amount || 0), 0);
 
-        console.log('ðŸ’° Total revenue:', revenue);
-
-            
+        console.log('💰 Total revenue:', revenue);
 
         const expenses = records
 
@@ -38221,17 +38217,11 @@ function displayIncomeStatement(records) {
 
             .reduce((sum, r) => sum + (r.amount || 0), 0);
 
-        console.log('ðŸ’¸ Total expenses:', expenses);
-
-        
+        console.log('💸 Total expenses:', expenses);
 
         const netProfit = revenue - expenses;
 
-        console.log('ðŸ“ˆ Net profit:', netProfit);
-
-        
-
-        // Group expenses by category
+        console.log('📈 Net profit:', netProfit);
 
         const expensesByCategory = {};
 
@@ -38247,95 +38237,51 @@ function displayIncomeStatement(records) {
 
             });
 
-        console.log('ðŸ“Š Expenses by category:', expensesByCategory);
+        console.log('📌 Expenses by category:', expensesByCategory);
 
-        
+        const categories = Object.entries(expensesByCategory).sort(([a], [b]) => a.localeCompare(b));
+        const maxBarValue = Math.max(revenue, expenses, ...categories.map(([, amount]) => amount), 1);
 
-        // Generate HTML
+        const buildBarRow = (label, value, colorClass) => `
+            <div class="graph-row">
+                <div class="graph-label">${label}</div>
+                <div class="graph-bar-wrap">
+                    <div class="graph-bar ${colorClass}" style="width: ${Math.round((value / maxBarValue) * 100)}%;"></div>
+                </div>
+                <div class="graph-value">TZS ${value.toLocaleString()}</div>
+            </div>
+        `;
 
         let html = `
-
-            <div class="statement-section">
-
-                <h5>Revenue</h5>
-
-                <div class="statement-item">
-
-                    <span>Total Revenue from Services</span>
-
-                    <span>TZS ${revenue.toLocaleString()}</span>
-
+            <div class="income-statement-graph">
+                <div class="income-summary-cards">
+                    <div class="summary-card summary-revenue">
+                        <div class="summary-title">Total Revenue</div>
+                        <div class="summary-value">TZS ${revenue.toLocaleString()}</div>
+                    </div>
+                    <div class="summary-card summary-expenses">
+                        <div class="summary-title">Total Expenses</div>
+                        <div class="summary-value">TZS ${expenses.toLocaleString()}</div>
+                    </div>
+                    <div class="summary-card summary-profit ${netProfit >= 0 ? 'positive' : 'negative'}">
+                        <div class="summary-title">Net Profit</div>
+                        <div class="summary-value">TZS ${netProfit.toLocaleString()}</div>
+                    </div>
                 </div>
 
-                <div class="statement-item total">
-
-                    <span>Total Revenue</span>
-
-                    <span>TZS ${revenue.toLocaleString()}</span>
-
+                <div class="income-section">
+                    <div class="section-header">Revenue vs Expenses</div>
+                    ${buildBarRow('Revenue', revenue, 'bar-revenue')}
+                    ${buildBarRow('Expenses', expenses, 'bar-expense')}
                 </div>
 
+                <div class="income-section">
+                    <div class="section-header">Expense Categories</div>
+                    ${categories.length === 0 ? '<div class="empty-row">No expense categories found</div>' : ''}
+                    ${categories.map(([category, amount]) => buildBarRow(category, amount, 'bar-category')).join('')}
+                </div>
             </div>
-
-            
-
-            <div class="statement-section">
-
-                <h5>Expenses</h5>
-
         `;
-
-        
-
-        // Add expense categories
-
-        Object.entries(expensesByCategory).sort().forEach(([category, amount]) => {
-
-            html += `
-
-                <div class="statement-item">
-
-                    <span>${category}</span>
-
-                    <span>TZS ${amount.toLocaleString()}</span>
-
-                </div>
-
-            `;
-
-        });
-
-        
-
-        html += `
-
-                <div class="statement-item total">
-
-                    <span>Total Expenses</span>
-
-                    <span>TZS ${expenses.toLocaleString()}</span>
-
-                </div>
-
-            </div>
-
-            
-
-            <div class="statement-section profit">
-
-                <div class="statement-item total">
-
-                    <span>Net Profit</span>
-
-                    <span>TZS ${netProfit.toLocaleString()}</span>
-
-                </div>
-
-            </div>
-
-        `;
-
-        
 
         const container = document.getElementById('incomeStatementContent');
 
@@ -38343,17 +38289,17 @@ function displayIncomeStatement(records) {
 
             container.innerHTML = html;
 
-            console.log('âœ… Income statement displayed successfully');
+            console.log('✅ Income statement displayed successfully');
 
         } else {
 
-            console.error('âŒ Container incomeStatementContent not found');
+            console.error('❌ Container incomeStatementContent not found');
 
         }
 
     } catch (error) {
 
-        console.error('âŒ Error displaying income statement:', error);
+        console.error('❌ Error displaying income statement:', error);
 
         const container = document.getElementById('incomeStatementContent');
 

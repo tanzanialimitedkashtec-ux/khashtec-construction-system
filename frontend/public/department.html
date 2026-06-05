@@ -69043,33 +69043,51 @@ function loadIncomeStatementData() {
         var revenueItems = Array.isArray(data.revenue) ? data.revenue : [];
         var expenseItems = Array.isArray(data.expenses) ? data.expenses : [];
         var totals = data.totals || {};
+        var revenueTotal = totals.totalRevenue || 0;
+        var expensesTotal = totals.totalExpenses || 0;
+        var netProfit = totals.netProfit || 0;
+        var maxValue = Math.max(revenueTotal, expensesTotal, 1);
 
-        var html = '<div class="statement-section"><h5>Revenue</h5>';
-        if (revenueItems.length === 0) {
-            html += '<div class="statement-item"><span>No revenue records found</span><span>TZS 0</span></div>';
-        } else {
-            for (var i = 0; i < revenueItems.length; i++) {
-                html += '<div class="statement-item"><span>' + (revenueItems[i].category || 'Other') + '</span><span>TZS ' + formatTZS(revenueItems[i].total) + '</span></div>';
-            }
-        }
-        html += '<div class="statement-item total"><span>Total Revenue</span><span>TZS ' + formatTZS(totals.totalRevenue || 0) + '</span></div>';
+        expenseItems.forEach(function(item) {
+            maxValue = Math.max(maxValue, item.total || 0);
+        });
+
+        var buildBarRow = function(label, amount, barClass) {
+            var width = maxValue > 0 ? Math.round((amount / maxValue) * 100) : 0;
+            return '<div class="graph-row">' +
+                '<div class="graph-label">' + label + '</div>' +
+                '<div class="graph-bar-wrap">' +
+                    '<div class="graph-bar ' + barClass + '" style="width:' + width + '%"></div>' +
+                '</div>' +
+                '<div class="graph-value">TZS ' + formatTZS(amount) + '</div>' +
+            '</div>';
+        };
+
+        var html = '<div class="income-statement-graph">';
+        html += '<div class="income-summary-cards">';
+        html += '<div class="summary-card summary-revenue"><div class="summary-title">Total Revenue</div><div class="summary-value">TZS ' + formatTZS(revenueTotal) + '</div></div>';
+        html += '<div class="summary-card summary-expenses"><div class="summary-title">Total Expenses</div><div class="summary-value">TZS ' + formatTZS(expensesTotal) + '</div></div>';
+        html += '<div class="summary-card summary-profit ' + (netProfit >= 0 ? 'positive' : 'negative') + '"><div class="summary-title">Net Profit</div><div class="summary-value">TZS ' + formatTZS(netProfit) + '</div></div>';
         html += '</div>';
 
-        html += '<div class="statement-section"><h5>Expenses</h5>';
+        html += '<div class="income-section"><div class="section-header">Revenue vs Expenses</div>';
+        html += buildBarRow('Revenue', revenueTotal, 'bar-revenue');
+        html += buildBarRow('Expenses', expensesTotal, 'bar-expense');
+        html += '</div>';
+
+        html += '<div class="income-section"><div class="section-header">Expense Categories</div>';
         if (expenseItems.length === 0) {
-            html += '<div class="statement-item"><span>No expense records found</span><span>TZS 0</span></div>';
+            html += '<div class="empty-row">No expense categories found</div>';
         } else {
-            for (var j = 0; j < expenseItems.length; j++) {
-                html += '<div class="statement-item"><span>' + (expenseItems[j].category || 'Other') + '</span><span>TZS ' + formatTZS(expenseItems[j].total) + '</span></div>';
-            }
+            expenseItems.forEach(function(item) {
+                html += buildBarRow(item.category || 'Other', item.total || 0, 'bar-category');
+            });
         }
-        html += '<div class="statement-item total"><span>Total Expenses</span><span>TZS ' + formatTZS(totals.totalExpenses || 0) + '</span></div>';
         html += '</div>';
 
-        var profitClass = (totals.netProfit || 0) >= 0 ? 'profit' : '';
-        html += '<div class="statement-section ' + profitClass + '"><div class="statement-item total"><span>Net Profit</span><span>TZS ' + formatTZS(totals.netProfit || 0) + '</span></div></div>';
+        html += '</div>';
 
-        console.log('✅ Income Statement loaded successfully from database — Revenue items: ' + revenueItems.length + ', Expense items: ' + expenseItems.length + ', Total Revenue: TZS ' + formatTZS(totals.totalRevenue || 0) + ', Total Expenses: TZS ' + formatTZS(totals.totalExpenses || 0) + ', Net Profit: TZS ' + formatTZS(totals.netProfit || 0));
+        console.log('✅ Income Statement loaded successfully from database — Revenue items: ' + revenueItems.length + ', Expense items: ' + expenseItems.length + ', Total Revenue: TZS ' + formatTZS(revenueTotal) + ', Total Expenses: TZS ' + formatTZS(expensesTotal) + ', Net Profit: TZS ' + formatTZS(netProfit));
         container.innerHTML = html;
     })
     .catch(function(err) {
