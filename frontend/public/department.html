@@ -55884,18 +55884,24 @@ async function loadSafetyData() {
         // Fetch incidents data
         let totalIncidentsCount = 0;
         try {
+            const incidentsHeaders = {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            };
+            if (token) {
+                incidentsHeaders['Authorization'] = `Bearer ${token}`;
+            }
+            
             const incidentsResponse = await fetch(`${baseUrl}/api/work/hse/incidents`, {
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Accept': 'application/json',
-                    'Authorization': token ? `Bearer ${token}` : ''
-                }
+                headers: incidentsHeaders
             });
             
             if (incidentsResponse.ok) {
                 const incidentsData = await incidentsResponse.json();
                 totalIncidentsCount = Array.isArray(incidentsData) ? incidentsData.length : (incidentsData.data ? incidentsData.data.length : 0);
                 console.log('✅ Incidents data loaded:', totalIncidentsCount);
+            } else {
+                console.warn(`⚠️ Incidents API returned ${incidentsResponse.status}:`, incidentsResponse.statusText);
             }
         } catch (e) {
             console.warn('⚠️ Could not fetch incidents:', e.message);
@@ -55904,12 +55910,16 @@ async function loadSafetyData() {
         // Fetch violations data
         let totalViolationsCount = 0;
         try {
+            const violationsHeaders = {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            };
+            if (token) {
+                violationsHeaders['Authorization'] = `Bearer ${token}`;
+            }
+            
             const violationsResponse = await fetch(`${baseUrl}/api/work/hse/violations`, {
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Accept': 'application/json',
-                    'Authorization': token ? `Bearer ${token}` : ''
-                }
+                headers: violationsHeaders
             });
             
             if (violationsResponse.ok) {
@@ -55917,6 +55927,8 @@ async function loadSafetyData() {
                 const violations = Array.isArray(violationsData) ? violationsData : (violationsData.data ? violationsData.data : []);
                 totalViolationsCount = violations.filter(v => v.status && v.status.toLowerCase() !== 'resolved').length;
                 console.log('✅ Violations data loaded:', totalViolationsCount);
+            } else {
+                console.warn(`⚠️ Violations API returned ${violationsResponse.status}:`, violationsResponse.statusText);
             }
         } catch (e) {
             console.warn('⚠️ Could not fetch violations:', e.message);
@@ -56065,12 +56077,16 @@ async function initializeSafetyTable(baseUrl, token) {
                     // Fetch incidents data
                     let totalIncidentsCount = 0;
                     try {
+                        const incidentsHeaders = {
+                            'Content-Type': 'application/json',
+                            'Accept': 'application/json'
+                        };
+                        if (token) {
+                            incidentsHeaders['Authorization'] = `Bearer ${token}`;
+                        }
+                        
                         const incidentsResponse = await fetch(`${baseUrl}/api/work/hse/incidents`, {
-                            headers: {
-                                'Content-Type': 'application/json',
-                                'Accept': 'application/json',
-                                'Authorization': token ? `Bearer ${token}` : ''
-                            }
+                            headers: incidentsHeaders
                         });
                         
                         if (incidentsResponse.ok) {
@@ -56084,12 +56100,16 @@ async function initializeSafetyTable(baseUrl, token) {
                     // Fetch violations data
                     let totalViolationsCount = 0;
                     try {
+                        const violationsHeaders = {
+                            'Content-Type': 'application/json',
+                            'Accept': 'application/json'
+                        };
+                        if (token) {
+                            violationsHeaders['Authorization'] = `Bearer ${token}`;
+                        }
+                        
                         const violationsResponse = await fetch(`${baseUrl}/api/work/hse/violations`, {
-                            headers: {
-                                'Content-Type': 'application/json',
-                                'Accept': 'application/json',
-                                'Authorization': token ? `Bearer ${token}` : ''
-                            }
+                            headers: violationsHeaders
                         });
                         
                         if (violationsResponse.ok) {
