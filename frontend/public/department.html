@@ -30148,29 +30148,21 @@ function suspendTerminateEmployment(){
                 </div>
                 
                 <div id="actionsTableContainer" style="overflow-x: auto;">
-                    <table id="actionsTable" style="width: 100%; border-collapse: collapse; margin-top: 10px;">
+                    <table id="actionsTable" class="workforce-table">
                         <thead>
-                            <tr style="background: #f8f9fa; border-bottom: 2px solid #dee2e6;">
-                                <th style="padding: 12px; text-align: left; border: 1px solid #dee2e6;">Employee Name</th>
-                                <th style="padding: 12px; text-align: left; border: 1px solid #dee2e6;">Employee ID</th>
-                                <th style="padding: 12px; text-align: left; border: 1px solid #dee2e6;">Position</th>
-                                <th style="padding: 12px; text-align: left; border: 1px solid #dee2e6;">Department</th>
-                                <th style="padding: 12px; text-align: center; border: 1px solid #dee2e6;">Action Type</th>
-                                <th style="padding: 12px; text-align: left; border: 1px solid #dee2e6;">Action Date</th>
-                                <th style="padding: 12px; text-align: left; border: 1px solid #dee2e6;">Reason Category</th>
-                                <th style="padding: 12px; text-align: left; border: 1px solid #dee2e6;">Action Details</th>
-                                <th style="padding: 12px; text-align: center; border: 1px solid #dee2e6;">Suspension Days</th>
-                                <th style="padding: 12px; text-align: left; border: 1px solid #dee2e6;">Final Payment Date</th>
-                                <th style="padding: 12px; text-align: left; border: 1px solid #dee2e6;">MD Notes</th>
-                                <th style="padding: 12px; text-align: left; border: 1px solid #dee2e6;">Decided By</th>
-                                <th style="padding: 12px; text-align: left; border: 1px solid #dee2e6;">Decided Date</th>
-                                <th style="padding: 12px; text-align: center; border: 1px solid #dee2e6;">Action Status</th>
-                                <th style="padding: 12px; text-align: center; border: 1px solid #dee2e6; background: #e8f4f8; font-weight: bold;">📱 Current Account Status</th>
+                            <tr>
+                                <th>Employee Info</th>
+                                <th>Action Details</th>
+                                <th>Action Type & Date</th>
+                                <th>Reason</th>
+                                <th>Additional Info</th>
+                                <th>Decision & Status</th>
+                                <th>Account Status</th>
                             </tr>
                         </thead>
                         <tbody id="actionsTableBody">
                             <tr>
-                                <td colspan="15" style="padding: 20px; text-align: center; color: #6c757d;">Loading employment actions...</td>
+                                <td colspan="7" style="text-align: center; padding: 20px; color: #6c757d;">Loading employment actions...</td>
                             </tr>
                         </tbody>
                     </table>
@@ -34861,40 +34853,40 @@ async function loadTerminatedEmployeesTable() {
         }
         
         if (actions.length === 0) {
-            tableBody.innerHTML = '<tr><td colspan="15" style="padding: 20px; text-align: center; color: #6c757d;">No employment actions found</td></tr>';
+            tableBody.innerHTML = '<tr><td colspan="7" style="text-align: center; padding: 20px; color: #6c757d;">No employment actions found</td></tr>';
             return;
         }
         
-        // Build table rows
+        // Build table rows with new simplified layout
         tableBody.innerHTML = actions.map(action => {
             // Get current status from User Account Management
             const currentStatus = currentStatuses[action.employee_id];
             const isReactivated = (action.action_type === 'suspend' || action.action_type === 'demote') && currentStatus && (currentStatus.toLowerCase() === 'active');
             
             // Format original action status badge
-            let actionStatusStyle = 'background: #28a745; color: white;';
+            let actionStatusClass = 'status-active';
             if (action.status === 'pending') {
-                actionStatusStyle = 'background: #ffc107; color: black;';
+                actionStatusClass = 'status-temporary';
             } else if (action.status === 'cancelled') {
-                actionStatusStyle = 'background: #dc3545; color: white;';
+                actionStatusClass = 'status-suspended';
             }
             
             // Format current account status badge from User Account Management
-            let currentStatusStyle = 'background: #6c757d; color: white;';
+            let currentStatusClass = 'status-suspended';
             let currentStatusLabel = 'Unknown';
             if (currentStatus) {
                 const statusLower = currentStatus.toLowerCase();
                 if (statusLower === 'active') {
-                    currentStatusStyle = 'background: #28a745; color: white;';
+                    currentStatusClass = 'status-active';
                     currentStatusLabel = '✓ Active';
                 } else if (statusLower === 'suspended') {
-                    currentStatusStyle = 'background: #ffc107; color: black;';
+                    currentStatusClass = 'status-suspended';
                     currentStatusLabel = 'Suspended';
                 } else if (statusLower === 'terminated') {
-                    currentStatusStyle = 'background: #dc3545; color: white;';
+                    currentStatusClass = 'status-contract';
                     currentStatusLabel = 'Terminated';
                 } else if (statusLower === 'demoted') {
-                    currentStatusStyle = 'background: #fd7e14; color: white;';
+                    currentStatusClass = 'status-senior';
                     currentStatusLabel = 'Demoted';
                 } else {
                     currentStatusLabel = currentStatus;
@@ -34902,48 +34894,69 @@ async function loadTerminatedEmployeesTable() {
             }
             
             // Format action type badge
-            let actionTypeStyle = 'background: #007bff; color: white;';
+            let actionTypeClass = 'status-active';
             let actionTypeLabel = action.action_type || 'N/A';
             if (action.action_type === 'terminate') {
-                actionTypeStyle = 'background: #dc3545; color: white;';
-                actionTypeLabel = 'TERMINATE';
+                actionTypeClass = 'status-contract';
+                actionTypeLabel = '❌ TERMINATE';
             } else if (action.action_type === 'suspend') {
-                actionTypeStyle = 'background: #ffc107; color: black;';
-                actionTypeLabel = 'SUSPEND';
+                actionTypeClass = 'status-temporary';
+                actionTypeLabel = '⏸ SUSPEND';
             } else if (action.action_type === 'demote') {
-                actionTypeStyle = 'background: #fd7e14; color: white;';
-                actionTypeLabel = 'DEMOTE';
+                actionTypeClass = 'status-senior';
+                actionTypeLabel = '⬇ DEMOTE';
             } else if (action.action_type === 'reactivate') {
-                actionTypeStyle = 'background: #28a745; color: white;';
-                actionTypeLabel = 'REACTIVATE';
+                actionTypeClass = 'status-active';
+                actionTypeLabel = '✓ REACTIVATE';
             }
             
-            // Highlight row if reactivated
-            const rowStyle = isReactivated ? 'background: #e8f5e9; border-bottom: 2px solid #28a745;' : 'border-bottom: 1px solid #dee2e6;';
+            // Format date display
+            const actionDate = action.action_date ? new Date(action.action_date).toLocaleDateString() : 'N/A';
+            const decidedDate = action.decided_date ? new Date(action.decided_date).toLocaleDateString() : 'N/A';
             
             return `
-                <tr style="${rowStyle} hover: background: #f8f9fa;">
-                    <td style="padding: 12px; border: 1px solid #dee2e6;">${action.full_name || 'N/A'}</td>
-                    <td style="padding: 12px; border: 1px solid #dee2e6;">${action.employee_id || 'N/A'}</td>
-                    <td style="padding: 12px; border: 1px solid #dee2e6;">${action.position || 'N/A'}</td>
-                    <td style="padding: 12px; border: 1px solid #dee2e6;">${action.department || 'N/A'}</td>
-                    <td style="padding: 12px; text-align: center; border: 1px solid #dee2e6;">
-                        <span style="padding: 5px 10px; border-radius: 5px; ${actionTypeStyle}">${actionTypeLabel}</span>
+                <tr class="workforce-row" style="${isReactivated ? 'background: #e8f5e9;' : ''}">
+                    <td>
+                        <div class="category-info">
+                            <div class="category-name">${action.full_name || 'N/A'}</div>
+                            <div class="category-desc">ID: ${action.employee_id} | ${action.position || 'N/A'} (${action.department || 'N/A'})</div>
+                        </div>
                     </td>
-                    <td style="padding: 12px; border: 1px solid #dee2e6;">${action.action_date || 'N/A'}</td>
-                    <td style="padding: 12px; border: 1px solid #dee2e6;">${action.reason_category || 'N/A'}</td>
-                    <td style="padding: 12px; border: 1px solid #dee2e6; max-width: 200px; word-wrap: break-word;">${action.action_details || 'N/A'}</td>
-                    <td style="padding: 12px; text-align: center; border: 1px solid #dee2e6;">${action.suspension_days || '-'}</td>
-                    <td style="padding: 12px; border: 1px solid #dee2e6;">${action.final_payment_date || '-'}</td>
-                    <td style="padding: 12px; border: 1px solid #dee2e6; max-width: 200px; word-wrap: break-word;">${action.md_notes || '-'}</td>
-                    <td style="padding: 12px; border: 1px solid #dee2e6;">${action.decided_by || 'N/A'}</td>
-                    <td style="padding: 12px; border: 1px solid #dee2e6;">${action.decided_date || 'N/A'}</td>
-                    <td style="padding: 12px; text-align: center; border: 1px solid #dee2e6;">
-                        <span style="padding: 5px 10px; border-radius: 5px; ${actionStatusStyle}">${action.status ? action.status.charAt(0).toUpperCase() + action.status.slice(1) : 'N/A'}</span>
+                    <td>
+                        <div class="category-info">
+                            <div class="category-name">${action.action_details || 'N/A'}</div>
+                            <div class="category-desc">Reason: ${action.reason_category || 'N/A'}</div>
+                        </div>
                     </td>
-                    <td style="padding: 12px; text-align: center; border: 1px solid #dee2e6;">
-                        <span style="padding: 5px 10px; border-radius: 5px; ${currentStatusStyle}; font-weight: ${isReactivated ? 'bold' : 'normal'};">${currentStatusLabel}</span>
-                        ${isReactivated ? '<br><small style="color: #28a745; font-weight: bold;">↻ Reactivated</small>' : ''}
+                    <td>
+                        <div class="category-info">
+                            <span class="status-badge ${actionTypeClass}" style="display: inline-block; margin-bottom: 4px;">${actionTypeLabel}</span>
+                            <div class="category-desc">${actionDate}</div>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="category-info">
+                            <div class="category-name">${action.reason_category ? action.reason_category.charAt(0).toUpperCase() + action.reason_category.slice(1) : 'N/A'}</div>
+                            <div class="category-desc" style="font-size: 11px;">${action.suspension_days ? 'Days: ' + action.suspension_days : action.final_payment_date ? 'Payment: ' + new Date(action.final_payment_date).toLocaleDateString() : '-'}</div>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="category-info">
+                            <div class="category-name">${action.decided_by || 'N/A'}</div>
+                            <div class="category-desc">${decidedDate}</div>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="category-info">
+                            <span class="status-badge ${actionStatusClass}" style="display: inline-block; margin-bottom: 4px;">${action.status ? action.status.charAt(0).toUpperCase() + action.status.slice(1) : 'N/A'}</span>
+                            <div class="category-desc" style="font-size: 11px;">${action.md_notes ? action.md_notes.substring(0, 30) + '...' : 'No notes'}</div>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="category-info">
+                            <span class="status-badge ${currentStatusClass}" style="display: inline-block; margin-bottom: 4px; font-weight: ${isReactivated ? 'bold' : 'normal'};">${currentStatusLabel}</span>
+                            ${isReactivated ? '<div class="category-desc" style="color: #28a745; font-weight: bold; font-size: 11px;">↻ Reactivated</div>' : ''}
+                        </div>
                     </td>
                 </tr>
             `;
@@ -34955,7 +34968,7 @@ async function loadTerminatedEmployeesTable() {
         console.error('❌ Error loading employment actions table:', error);
         const tableBody = document.getElementById('actionsTableBody');
         if (tableBody) {
-            tableBody.innerHTML = `<tr><td colspan="15" style="padding: 20px; text-align: center; color: #dc3545;">Error loading employment actions: ${error.message}</td></tr>`;
+            tableBody.innerHTML = `<tr><td colspan="7" style="padding: 20px; text-align: center; color: #dc3545;">Error loading employment actions: ${error.message}</td></tr>`;
         }
     }
 }
