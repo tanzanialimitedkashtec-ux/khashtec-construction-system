@@ -108352,8 +108352,31 @@ function showWorkforceApprovals() {
     showContent(`
         <div class="card workforce-approvals">
             <h3>Approve Workforce Requests</h3>
-            <div id="workforceRequestsList">
-                <div class="loading">Loading pending workforce requests...</div>
+            <div style="overflow-x: auto;">
+                <table id="workforceRequestsTable" class="workforce-table">
+                    <thead>
+                        <tr>
+                            <th>Request ID</th>
+                            <th>Project</th>
+                            <th>Request Type</th>
+                            <th>Workers Needed</th>
+                            <th>Job Categories</th>
+                            <th>Justification</th>
+                            <th>Start Date</th>
+                            <th>End Date</th>
+                            <th>Duration</th>
+                            <th>Special Requirements</th>
+                            <th>Submitted Date</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="workforceRequestsList">
+                        <tr>
+                            <td colspan="13" style="text-align: center; padding: 20px; color: #6c757d;">Loading workforce requests...</td>
+                        </tr>
+                    </tbody>
+                </table>
             </div>
         </div>
     `);
