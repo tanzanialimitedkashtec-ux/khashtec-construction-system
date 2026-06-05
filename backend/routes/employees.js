@@ -1153,4 +1153,90 @@ router.post('/action', async (req, res) => {
     }
 });
 
+// Get all employment actions (terminated/suspended employees)
+router.get('/actions/list', async (req, res) => {
+    console.log('🔍 GET /api/employees/actions/list endpoint called');
+    
+    try {
+        // Create worker_action table if it doesn't exist
+        try {
+            await db.execute(`
+                CREATE TABLE IF NOT EXISTS worker_action (
+                    id INT AUTO_INCREMENT PRIMARY KEY,
+                    employee_id INT NOT NULL,
+                    action_type ENUM('suspend', 'terminate', 'demote') NOT NULL,
+                    action_date DATE NOT NULL,
+                    reason_category ENUM('misconduct', 'performance', 'violation', 'redundancy', 'restructuring', 'other') NOT NULL,
+                    action_details TEXT NOT NULL,
+                    suspension_days INT NULL,
+                    final_payment_date DATE NULL,
+                    md_notes TEXT NULL,
+                    decided_by VARCHAR(255) NOT NULL,
+                    decided_date DATE NOT NULL,
+                    status ENUM('pending', 'executed', 'cancelled') DEFAULT 'executed',
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    INDEX idx_employee_id (employee_id),
+                    INDEX idx_action_type (action_type),
+                    INDEX idx_status (status)
+                )
+            `);
+        } catch (tableError) {
+            console.log('📝 Worker action table check:', tableError.message);
+        }
+        
+        // Fetch all actions with employee details
+        let actions;
+        const actionsResult = await db.execute(`
+            SELECT 
+                wa.id,
+                wa.employee_id,
+                wa.action_type,
+                wa.action_date,
+                wa.reason_category,
+                wa.action_details,
+                wa.suspension_days,
+                wa.final_payment_date,
+                wa.md_notes,
+                wa.decided_by,
+                wa.decided_date,
+                wa.status,
+                wa.created_at,
+                ed.full_name,
+                e.position,
+                e.department
+            FROM worker_action wa
+            LEFT JOIN employee_details ed ON wa.employee_id = ed.employee_id
+            LEFT JOIN employees e ON wa.employee_id = e.id
+            ORDER BY wa.created_at DESC
+        `);
+        
+        // Handle different database response formats
+        if (Array.isArray(actionsResult)) {
+            actions = actionsResult;
+        } else if (actionsResult && Array.isArray(actionsResult[0])) {
+            actions = actionsResult[0];
+        } else if (actionsResult && actionsResult.rows) {
+            actions = actionsResult.rows;
+        } else {
+            actions = [];
+        }
+        
+        console.log('📊 Found', actions.length, 'employment actions');
+        
+        res.json({
+            success: true,
+            data: actions,
+            total: actions.length,
+            message: 'Employment actions retrieved successfully'
+        });
+        
+    } catch (error) {
+        console.error('❌ Error fetching employment actions:', error);
+        res.status(500).json({
+            error: 'Failed to fetch employment actions',
+            details: error.message
+        });
+    }
+});
+
 module.exports = router;

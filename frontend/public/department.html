@@ -30140,6 +30140,42 @@ function suspendTerminateEmployment(){
 
             </div>
 
+            <!-- Terminated/Suspended Employees Table -->
+            <div style="margin-top: 30px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                    <h3>Employment Actions History</h3>
+                    <button type="button" id="refreshActionsBtn" onclick="loadTerminatedEmployeesTable()" class="action" style="background: #28a745;">🔄 Refresh</button>
+                </div>
+                
+                <div id="actionsTableContainer" style="overflow-x: auto;">
+                    <table id="actionsTable" style="width: 100%; border-collapse: collapse; margin-top: 10px;">
+                        <thead>
+                            <tr style="background: #f8f9fa; border-bottom: 2px solid #dee2e6;">
+                                <th style="padding: 12px; text-align: left; border: 1px solid #dee2e6;">Employee Name</th>
+                                <th style="padding: 12px; text-align: left; border: 1px solid #dee2e6;">Employee ID</th>
+                                <th style="padding: 12px; text-align: left; border: 1px solid #dee2e6;">Position</th>
+                                <th style="padding: 12px; text-align: left; border: 1px solid #dee2e6;">Department</th>
+                                <th style="padding: 12px; text-align: center; border: 1px solid #dee2e6;">Action Type</th>
+                                <th style="padding: 12px; text-align: left; border: 1px solid #dee2e6;">Action Date</th>
+                                <th style="padding: 12px; text-align: left; border: 1px solid #dee2e6;">Reason Category</th>
+                                <th style="padding: 12px; text-align: left; border: 1px solid #dee2e6;">Action Details</th>
+                                <th style="padding: 12px; text-align: center; border: 1px solid #dee2e6;">Suspension Days</th>
+                                <th style="padding: 12px; text-align: left; border: 1px solid #dee2e6;">Final Payment Date</th>
+                                <th style="padding: 12px; text-align: left; border: 1px solid #dee2e6;">MD Notes</th>
+                                <th style="padding: 12px; text-align: left; border: 1px solid #dee2e6;">Decided By</th>
+                                <th style="padding: 12px; text-align: left; border: 1px solid #dee2e6;">Decided Date</th>
+                                <th style="padding: 12px; text-align: center; border: 1px solid #dee2e6;">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="actionsTableBody">
+                            <tr>
+                                <td colspan="14" style="padding: 20px; text-align: center; color: #6c757d;">Loading employment actions...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
     `);
 
     
@@ -30147,6 +30183,9 @@ function suspendTerminateEmployment(){
     // Load employees for dropdown
 
     loadEmployeesForAction();
+    
+    // Load terminated employees table
+    loadTerminatedEmployeesTable();
 
 }
 
@@ -34711,6 +34750,11 @@ async function saveEmploymentAction() {
         document.getElementById('suspensionDetails').classList.add('hidden');
 
         document.getElementById('terminationDetails').classList.add('hidden');
+        
+        // Refresh the table with the new action
+        setTimeout(() => {
+            loadTerminatedEmployeesTable();
+        }, 1000);
 
         
 
@@ -34754,6 +34798,133 @@ function cancelEmploymentAction() {
 
     });
 
+}
+
+
+
+// Load and display terminated/suspended employees table
+async function loadTerminatedEmployeesTable() {
+    try {
+        console.log('📊 Loading employment actions table...');
+        
+        const baseUrl = window.location.origin;
+        const response = await fetch(`${baseUrl}/api/employees/actions/list`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+                'Authorization': `Bearer ${sessionManager.getAuthToken()}` // eslint-disable-line no-undef
+            }
+        });
+        
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+        
+        const result = await response.json();
+        console.log('📊 Employment actions response:', result);
+        
+        if (!result.success || !result.data) {
+            throw new Error(result.error || 'Invalid response format');
+        }
+        
+        const actions = result.data;
+        const tableBody = document.getElementById('actionsTableBody');
+        
+        if (!tableBody) {
+            console.error('❌ Table body element not found');
+            return;
+        }
+        
+        if (actions.length === 0) {
+            tableBody.innerHTML = '<tr><td colspan="14" style="padding: 20px; text-align: center; color: #6c757d;">No employment actions found</td></tr>';
+            return;
+        }
+        
+        // Build table rows
+        tableBody.innerHTML = actions.map(action => {
+            // Format status badge
+            let statusStyle = 'background: #28a745; color: white;';
+            if (action.status === 'pending') {
+                statusStyle = 'background: #ffc107; color: black;';
+            } else if (action.status === 'cancelled') {
+                statusStyle = 'background: #dc3545; color: white;';
+            }
+            
+            // Format action type badge
+            let actionTypeStyle = 'background: #007bff; color: white;';
+            let actionTypeLabel = action.action_type || 'N/A';
+            if (action.action_type === 'terminate') {
+                actionTypeStyle = 'background: #dc3545; color: white;';
+                actionTypeLabel = 'TERMINATE';
+            } else if (action.action_type === 'suspend') {
+                actionTypeStyle = 'background: #ffc107; color: black;';
+                actionTypeLabel = 'SUSPEND';
+            } else if (action.action_type === 'demote') {
+                actionTypeStyle = 'background: #fd7e14; color: white;';
+                actionTypeLabel = 'DEMOTE';
+            }
+            
+            return `
+                <tr style="border-bottom: 1px solid #dee2e6; hover: background: #f8f9fa;">
+                    <td style="padding: 12px; border: 1px solid #dee2e6;">${action.full_name || 'N/A'}</td>
+                    <td style="padding: 12px; border: 1px solid #dee2e6;">${action.employee_id || 'N/A'}</td>
+                    <td style="padding: 12px; border: 1px solid #dee2e6;">${action.position || 'N/A'}</td>
+                    <td style="padding: 12px; border: 1px solid #dee2e6;">${action.department || 'N/A'}</td>
+                    <td style="padding: 12px; text-align: center; border: 1px solid #dee2e6;">
+                        <span style="padding: 5px 10px; border-radius: 5px; ${actionTypeStyle}">${actionTypeLabel}</span>
+                    </td>
+                    <td style="padding: 12px; border: 1px solid #dee2e6;">${action.action_date || 'N/A'}</td>
+                    <td style="padding: 12px; border: 1px solid #dee2e6;">${action.reason_category || 'N/A'}</td>
+                    <td style="padding: 12px; border: 1px solid #dee2e6; max-width: 200px; word-wrap: break-word;">${action.action_details || 'N/A'}</td>
+                    <td style="padding: 12px; text-align: center; border: 1px solid #dee2e6;">${action.suspension_days || '-'}</td>
+                    <td style="padding: 12px; border: 1px solid #dee2e6;">${action.final_payment_date || '-'}</td>
+                    <td style="padding: 12px; border: 1px solid #dee2e6; max-width: 200px; word-wrap: break-word;">${action.md_notes || '-'}</td>
+                    <td style="padding: 12px; border: 1px solid #dee2e6;">${action.decided_by || 'N/A'}</td>
+                    <td style="padding: 12px; border: 1px solid #dee2e6;">${action.decided_date || 'N/A'}</td>
+                    <td style="padding: 12px; text-align: center; border: 1px solid #dee2e6;">
+                        <span style="padding: 5px 10px; border-radius: 5px; ${statusStyle}">${action.status ? action.status.charAt(0).toUpperCase() + action.status.slice(1) : 'N/A'}</span>
+                    </td>
+                </tr>
+            `;
+        }).join('');
+        
+        console.log('✅ Employment actions table populated with', actions.length, 'records');
+        
+    } catch (error) {
+        console.error('❌ Error loading employment actions table:', error);
+        const tableBody = document.getElementById('actionsTableBody');
+        if (tableBody) {
+            tableBody.innerHTML = `<tr><td colspan="14" style="padding: 20px; text-align: center; color: #dc3545;">Error loading employment actions: ${error.message}</td></tr>`;
+        }
+    }
+}
+
+
+
+// Toggle employment action form visibility
+function toggleEmploymentActionForm() {
+    const container = document.getElementById('employmentActionFormContainer');
+    if (container) {
+        container.style.display = container.style.display === 'none' ? 'block' : 'none';
+    }
+    
+    // Load table when form is toggled
+    if (container && container.style.display === 'block') {
+        loadTerminatedEmployeesTable();
+    }
+}
+
+
+
+// Clear employment action form
+function clearEmploymentActionForm() {
+    const form = document.getElementById('employmentActionForm');
+    if (form) {
+        form.reset();
+    }
+    document.getElementById('suspensionDetails').classList.add('hidden');
+    document.getElementById('terminationDetails').classList.add('hidden');
 }
 
 
