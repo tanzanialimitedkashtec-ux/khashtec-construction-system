@@ -55850,6 +55850,7 @@ async function loadSafetyData() {
 
         
 
+        // Fetch safety data
         const response = await fetch(`${baseUrl}/api/safety`, {
 
             headers: {
@@ -55878,6 +55879,48 @@ async function loadSafetyData() {
 
         console.log('✅ Safety data loaded from database:', result);
 
+        
+
+        // Fetch incidents data
+        let totalIncidentsCount = 0;
+        try {
+            const incidentsResponse = await fetch(`${baseUrl}/api/hse/incidents`, {
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    'Authorization': token ? `Bearer ${token}` : ''
+                }
+            });
+            
+            if (incidentsResponse.ok) {
+                const incidentsData = await incidentsResponse.json();
+                totalIncidentsCount = Array.isArray(incidentsData) ? incidentsData.length : (incidentsData.data ? incidentsData.data.length : 0);
+                console.log('✅ Incidents data loaded:', totalIncidentsCount);
+            }
+        } catch (e) {
+            console.warn('⚠️ Could not fetch incidents:', e.message);
+        }
+
+        // Fetch violations data
+        let totalViolationsCount = 0;
+        try {
+            const violationsResponse = await fetch(`${baseUrl}/api/hse/violations`, {
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    'Authorization': token ? `Bearer ${token}` : ''
+                }
+            });
+            
+            if (violationsResponse.ok) {
+                const violationsData = await violationsResponse.json();
+                const violations = Array.isArray(violationsData) ? violationsData : (violationsData.data ? violationsData.data : []);
+                totalViolationsCount = violations.filter(v => v.status && v.status.toLowerCase() !== 'resolved').length;
+                console.log('✅ Violations data loaded:', totalViolationsCount);
+            }
+        } catch (e) {
+            console.warn('⚠️ Could not fetch violations:', e.message);
+        }
         
 
         if (result.success && result.data && result.data.length > 0) {
@@ -55909,8 +55952,13 @@ async function loadSafetyData() {
             
 
             updateSafetyTable(safetyProjects);
+            
+            // Calculate metrics with real incident and violation counts
+            const metrics = result.metrics || calculateSafetyMetrics(safetyProjects);
+            metrics.totalIncidents = totalIncidentsCount;
+            metrics.openViolations = totalViolationsCount;
 
-            updateSafetySummary(result.metrics || calculateSafetyMetrics(safetyProjects));
+            updateSafetySummary(metrics);
 
         } else {
 
@@ -56013,8 +56061,51 @@ async function initializeSafetyTable(baseUrl, token) {
                     }));
 
                     updateSafetyTable(safetyProjects);
+                    
+                    // Fetch incidents data
+                    let totalIncidentsCount = 0;
+                    try {
+                        const incidentsResponse = await fetch(`${baseUrl}/api/hse/incidents`, {
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Accept': 'application/json',
+                                'Authorization': token ? `Bearer ${token}` : ''
+                            }
+                        });
+                        
+                        if (incidentsResponse.ok) {
+                            const incidentsData = await incidentsResponse.json();
+                            totalIncidentsCount = Array.isArray(incidentsData) ? incidentsData.length : (incidentsData.data ? incidentsData.data.length : 0);
+                        }
+                    } catch (e) {
+                        console.warn('⚠️ Could not fetch incidents:', e.message);
+                    }
 
-                    updateSafetySummary(result.metrics || calculateSafetyMetrics(safetyProjects));
+                    // Fetch violations data
+                    let totalViolationsCount = 0;
+                    try {
+                        const violationsResponse = await fetch(`${baseUrl}/api/hse/violations`, {
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Accept': 'application/json',
+                                'Authorization': token ? `Bearer ${token}` : ''
+                            }
+                        });
+                        
+                        if (violationsResponse.ok) {
+                            const violationsData = await violationsResponse.json();
+                            const violations = Array.isArray(violationsData) ? violationsData : (violationsData.data ? violationsData.data : []);
+                            totalViolationsCount = violations.filter(v => v.status && v.status.toLowerCase() !== 'resolved').length;
+                        }
+                    } catch (e) {
+                        console.warn('⚠️ Could not fetch violations:', e.message);
+                    }
+                    
+                    const metrics = result.metrics || calculateSafetyMetrics(safetyProjects);
+                    metrics.totalIncidents = totalIncidentsCount;
+                    metrics.openViolations = totalViolationsCount;
+
+                    updateSafetySummary(metrics);
 
                     return;
 
