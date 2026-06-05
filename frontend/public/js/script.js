@@ -2443,21 +2443,6 @@ function displaySeniorHiringRequests(requests) {
                 </table>
             </div>
             
-            <div class="approval-summary">
-                <h4>Senior Hiring Authority</h4>
-                <div class="authority-item">
-                    <span>✅ Can approve all senior staff hires</span>
-                </div>
-                <div class="authority-item">
-                    <span>✅ Can approve manager-level positions and above</span>
-                </div>
-                <div class="authority-item">
-                    <span>✅ Final authority on senior recruitment</span>
-                </div>
-                <div class="authority-item restriction">
-                    <span>❌ Cannot directly register workers (HR function)</span>
-                </div>
-            </div>
         </div>
     </div>`;
 
