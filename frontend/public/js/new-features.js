@@ -913,33 +913,34 @@ async function loadPromotions() {
             <div class="card">
                 <h3>Promotions</h3>
                 <button onclick="showPromotionForm()">+ New Promotion</button>
-                <table style="width: 100%; margin-top: 20px; border-collapse: collapse;">
-                    <thead>
-                        <tr style="background: #f4f4f4;">
-                            <th style="padding: 10px; border: 1px solid #ddd;">Promo #</th>
-                            <th style="padding: 10px; border: 1px solid #ddd;">Employee</th>
-                            <th style="padding: 10px; border: 1px solid #ddd;">Type</th>
-                            <th style="padding: 10px; border: 1px solid #ddd;">Current Position</th>
-                            <th style="padding: 10px; border: 1px solid #ddd;">New Position</th>
-                            <th style="padding: 10px; border: 1px solid #ddd;">Effective Date</th>
-                            <th style="padding: 10px; border: 1px solid #ddd;">Status</th>
-                            <th style="padding: 10px; border: 1px solid #ddd;">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
+                <div class="department-table-container" style="margin-top:20px;">
+                    <table class="department-table">
+                        <thead>
+                            <tr>
+                                <th>Promo #</th>
+                                <th>Employee</th>
+                                <th>Type</th>
+                                <th>Current Position</th>
+                                <th>New Position</th>
+                                <th>Effective Date</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
         `;
 
         promotions.forEach(promo => {
             html += `
                 <tr>
-                    <td style="padding: 10px; border: 1px solid #ddd;">${promo.promotion_number}</td>
-                    <td style="padding: 10px; border: 1px solid #ddd;">${promo.full_name || 'N/A'}</td>
-                    <td style="padding: 10px; border: 1px solid #ddd;">${promo.promotion_type}</td>
-                    <td style="padding: 10px; border: 1px solid #ddd;">${promo.current_position}</td>
-                    <td style="padding: 10px; border: 1px solid #ddd;">${promo.new_position}</td>
-                    <td style="padding: 10px; border: 1px solid #ddd;">${promo.effective_date}</td>
-                    <td style="padding: 10px; border: 1px solid #ddd;">${promo.status}</td>
-                    <td style="padding: 10px; border: 1px solid #ddd;">
+                    <td>${promo.promotion_number}</td>
+                    <td>${promo.full_name || 'N/A'}</td>
+                    <td>${promo.promotion_type}</td>
+                    <td>${promo.current_position}</td>
+                    <td>${promo.new_position}</td>
+                    <td>${promo.effective_date}</td>
+                    <td>${promo.status}</td>
+                    <td>
                         <button onclick="viewPromotion(${promo.id})">View</button>
                         <button onclick="editPromotion(${promo.id})">Edit</button>
                     </td>
