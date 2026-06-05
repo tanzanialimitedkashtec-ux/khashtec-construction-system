@@ -55884,7 +55884,7 @@ async function loadSafetyData() {
         // Fetch incidents data
         let totalIncidentsCount = 0;
         try {
-            const incidentsResponse = await fetch(`${baseUrl}/api/hse/incidents`, {
+            const incidentsResponse = await fetch(`${baseUrl}/api/work/hse/incidents`, {
                 headers: {
                     'Content-Type': 'application/json',
                     'Accept': 'application/json',
@@ -55904,7 +55904,7 @@ async function loadSafetyData() {
         // Fetch violations data
         let totalViolationsCount = 0;
         try {
-            const violationsResponse = await fetch(`${baseUrl}/api/hse/violations`, {
+            const violationsResponse = await fetch(`${baseUrl}/api/work/hse/violations`, {
                 headers: {
                     'Content-Type': 'application/json',
                     'Accept': 'application/json',
@@ -56065,7 +56065,7 @@ async function initializeSafetyTable(baseUrl, token) {
                     // Fetch incidents data
                     let totalIncidentsCount = 0;
                     try {
-                        const incidentsResponse = await fetch(`${baseUrl}/api/hse/incidents`, {
+                        const incidentsResponse = await fetch(`${baseUrl}/api/work/hse/incidents`, {
                             headers: {
                                 'Content-Type': 'application/json',
                                 'Accept': 'application/json',
@@ -56084,7 +56084,7 @@ async function initializeSafetyTable(baseUrl, token) {
                     // Fetch violations data
                     let totalViolationsCount = 0;
                     try {
-                        const violationsResponse = await fetch(`${baseUrl}/api/hse/violations`, {
+                        const violationsResponse = await fetch(`${baseUrl}/api/work/hse/violations`, {
                             headers: {
                                 'Content-Type': 'application/json',
                                 'Accept': 'application/json',
