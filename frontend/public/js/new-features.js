@@ -1308,18 +1308,19 @@ async function loadViewSuggestions() {
             html += '<p style="color:#555;margin-bottom:15px;">Suggestions submitted by all departments.</p>';
         }
 
-        html += '<table style="width:100%;margin-top:10px;border-collapse:collapse;">';
-        html += '<thead><tr style="background:#f4f4f4;">';
-        html += '<th style="padding:10px;border:1px solid #ddd;">#</th>';
-        html += '<th style="padding:10px;border:1px solid #ddd;">Title</th>';
-        html += '<th style="padding:10px;border:1px solid #ddd;">Category</th>';
-        html += '<th style="padding:10px;border:1px solid #ddd;">Department</th>';
-        html += '<th style="padding:10px;border:1px solid #ddd;">Submitted By</th>';
-        html += '<th style="padding:10px;border:1px solid #ddd;">Priority</th>';
-        html += '<th style="padding:10px;border:1px solid #ddd;">Status</th>';
-        html += '<th style="padding:10px;border:1px solid #ddd;">Date</th>';
+        html += '<div class="department-table-container" style="margin-top:10px;">';
+        html += '<table class="department-table">';
+        html += '<thead><tr>';
+        html += '<th>#</th>';
+        html += '<th>Title</th>';
+        html += '<th>Category</th>';
+        html += '<th>Department</th>';
+        html += '<th>Submitted By</th>';
+        html += '<th>Priority</th>';
+        html += '<th>Status</th>';
+        html += '<th>Date</th>';
         if (isMD) {
-            html += '<th style="padding:10px;border:1px solid #ddd;">Actions</th>';
+            html += '<th>Actions</th>';
         }
         html += '</tr></thead><tbody>';
 
@@ -1339,17 +1340,17 @@ async function loadViewSuggestions() {
             var dateStr = s.created_at ? new Date(s.created_at).toLocaleDateString() : 'N/A';
 
             html += '<tr>';
-            html += '<td style="padding:10px;border:1px solid #ddd;">' + (idx + 1) + '</td>';
-            html += '<td style="padding:10px;border:1px solid #ddd;cursor:pointer;color:#007bff;" onclick="viewSuggestionDetail(' + s.id + ')">' + _escHtml(s.title) + '</td>';
-            html += '<td style="padding:10px;border:1px solid #ddd;">' + _escHtml(cLabel) + '</td>';
-            html += '<td style="padding:10px;border:1px solid #ddd;">' + _escHtml(dept) + '</td>';
-            html += '<td style="padding:10px;border:1px solid #ddd;">' + _escHtml(submitter) + '</td>';
-            html += '<td style="padding:10px;border:1px solid #ddd;"><span style="color:' + pColor + ';font-weight:bold;">' + _escHtml(pLabel) + '</span></td>';
-            html += '<td style="padding:10px;border:1px solid #ddd;"><span style="background:' + sColor + ';color:#fff;padding:3px 8px;border-radius:4px;font-size:12px;">' + _escHtml(sLabel) + '</span></td>';
-            html += '<td style="padding:10px;border:1px solid #ddd;">' + dateStr + '</td>';
+            html += '<td>' + (idx + 1) + '</td>';
+            html += '<td style="cursor:pointer;color:#007bff;" onclick="viewSuggestionDetail(' + s.id + ')">' + _escHtml(s.title) + '</td>';
+            html += '<td>' + _escHtml(cLabel) + '</td>';
+            html += '<td>' + _escHtml(dept) + '</td>';
+            html += '<td>' + _escHtml(submitter) + '</td>';
+            html += '<td><span style="color:' + pColor + ';font-weight:bold;">' + _escHtml(pLabel) + '</span></td>';
+            html += '<td><span style="background:' + sColor + ';color:#fff;padding:3px 8px;border-radius:4px;font-size:12px;">' + _escHtml(sLabel) + '</span></td>';
+            html += '<td>' + dateStr + '</td>';
 
             if (isMD) {
-                html += '<td style="padding:10px;border:1px solid #ddd;white-space:nowrap;">';
+                html += '<td style="white-space:nowrap;">';
                 if (s.status === 'pending' || s.status === 'under-review') {
                     html += '<button onclick="approveSuggestion(' + s.id + ')" style="background:#28a745;color:#fff;border:none;padding:5px 10px;border-radius:4px;cursor:pointer;margin-right:4px;">Approve</button>';
                     html += '<button onclick="rejectSuggestion(' + s.id + ')" style="background:#dc3545;color:#fff;border:none;padding:5px 10px;border-radius:4px;cursor:pointer;">Reject</button>';
