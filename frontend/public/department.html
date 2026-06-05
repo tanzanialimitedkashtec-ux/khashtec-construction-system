@@ -30164,12 +30164,13 @@ function suspendTerminateEmployment(){
                                 <th style="padding: 12px; text-align: left; border: 1px solid #dee2e6;">MD Notes</th>
                                 <th style="padding: 12px; text-align: left; border: 1px solid #dee2e6;">Decided By</th>
                                 <th style="padding: 12px; text-align: left; border: 1px solid #dee2e6;">Decided Date</th>
-                                <th style="padding: 12px; text-align: center; border: 1px solid #dee2e6;">Status</th>
+                                <th style="padding: 12px; text-align: center; border: 1px solid #dee2e6;">Action Status</th>
+                                <th style="padding: 12px; text-align: center; border: 1px solid #dee2e6; background: #e8f4f8; font-weight: bold;">📱 Current Account Status</th>
                             </tr>
                         </thead>
                         <tbody id="actionsTableBody">
                             <tr>
-                                <td colspan="14" style="padding: 20px; text-align: center; color: #6c757d;">Loading employment actions...</td>
+                                <td colspan="15" style="padding: 20px; text-align: center; color: #6c757d;">Loading employment actions...</td>
                             </tr>
                         </tbody>
                     </table>
@@ -34808,24 +34809,47 @@ async function loadTerminatedEmployeesTable() {
         console.log('📊 Loading employment actions table...');
         
         const baseUrl = window.location.origin;
-        const response = await fetch(`${baseUrl}/api/employees/actions/list`, {
-            method: 'GET',
-            headers: {
-                'Content-Type': 'application/json',
-                'Accept': 'application/json',
-                'Authorization': `Bearer ${sessionManager.getAuthToken()}` // eslint-disable-line no-undef
-            }
-        });
         
-        if (!response.ok) {
-            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        // Fetch both actions and current employee statuses
+        const [actionsResponse, employeesResponse] = await Promise.all([
+            fetch(`${baseUrl}/api/employees/actions/list`, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    'Authorization': `Bearer ${sessionManager.getAuthToken()}` // eslint-disable-line no-undef
+                }
+            }),
+            fetch(`${baseUrl}/api/employees`, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    'Authorization': `Bearer ${sessionManager.getAuthToken()}` // eslint-disable-line no-undef
+                }
+            })
+        ]);
+        
+        if (!actionsResponse.ok) {
+            throw new Error(`HTTP ${actionsResponse.status}: ${actionsResponse.statusText}`);
         }
         
-        const result = await response.json();
+        const result = await actionsResponse.json();
         console.log('📊 Employment actions response:', result);
         
         if (!result.success || !result.data) {
             throw new Error(result.error || 'Invalid response format');
+        }
+        
+        // Get current employee statuses to show integration with User Account Management
+        let currentStatuses = {};
+        if (employeesResponse.ok) {
+            const employeesData = await employeesResponse.json();
+            const employees = Array.isArray(employeesData) ? employeesData : [];
+            employees.forEach(emp => {
+                currentStatuses[emp.id] = emp.status || 'Active';
+            });
+            console.log('📊 Current employee statuses loaded:', currentStatuses);
         }
         
         const actions = result.data;
@@ -34837,18 +34861,44 @@ async function loadTerminatedEmployeesTable() {
         }
         
         if (actions.length === 0) {
-            tableBody.innerHTML = '<tr><td colspan="14" style="padding: 20px; text-align: center; color: #6c757d;">No employment actions found</td></tr>';
+            tableBody.innerHTML = '<tr><td colspan="15" style="padding: 20px; text-align: center; color: #6c757d;">No employment actions found</td></tr>';
             return;
         }
         
         // Build table rows
         tableBody.innerHTML = actions.map(action => {
-            // Format status badge
-            let statusStyle = 'background: #28a745; color: white;';
+            // Get current status from User Account Management
+            const currentStatus = currentStatuses[action.employee_id];
+            const isReactivated = (action.action_type === 'suspend' || action.action_type === 'demote') && currentStatus && (currentStatus.toLowerCase() === 'active');
+            
+            // Format original action status badge
+            let actionStatusStyle = 'background: #28a745; color: white;';
             if (action.status === 'pending') {
-                statusStyle = 'background: #ffc107; color: black;';
+                actionStatusStyle = 'background: #ffc107; color: black;';
             } else if (action.status === 'cancelled') {
-                statusStyle = 'background: #dc3545; color: white;';
+                actionStatusStyle = 'background: #dc3545; color: white;';
+            }
+            
+            // Format current account status badge from User Account Management
+            let currentStatusStyle = 'background: #6c757d; color: white;';
+            let currentStatusLabel = 'Unknown';
+            if (currentStatus) {
+                const statusLower = currentStatus.toLowerCase();
+                if (statusLower === 'active') {
+                    currentStatusStyle = 'background: #28a745; color: white;';
+                    currentStatusLabel = '✓ Active';
+                } else if (statusLower === 'suspended') {
+                    currentStatusStyle = 'background: #ffc107; color: black;';
+                    currentStatusLabel = 'Suspended';
+                } else if (statusLower === 'terminated') {
+                    currentStatusStyle = 'background: #dc3545; color: white;';
+                    currentStatusLabel = 'Terminated';
+                } else if (statusLower === 'demoted') {
+                    currentStatusStyle = 'background: #fd7e14; color: white;';
+                    currentStatusLabel = 'Demoted';
+                } else {
+                    currentStatusLabel = currentStatus;
+                }
             }
             
             // Format action type badge
@@ -34863,10 +34913,16 @@ async function loadTerminatedEmployeesTable() {
             } else if (action.action_type === 'demote') {
                 actionTypeStyle = 'background: #fd7e14; color: white;';
                 actionTypeLabel = 'DEMOTE';
+            } else if (action.action_type === 'reactivate') {
+                actionTypeStyle = 'background: #28a745; color: white;';
+                actionTypeLabel = 'REACTIVATE';
             }
             
+            // Highlight row if reactivated
+            const rowStyle = isReactivated ? 'background: #e8f5e9; border-bottom: 2px solid #28a745;' : 'border-bottom: 1px solid #dee2e6;';
+            
             return `
-                <tr style="border-bottom: 1px solid #dee2e6; hover: background: #f8f9fa;">
+                <tr style="${rowStyle} hover: background: #f8f9fa;">
                     <td style="padding: 12px; border: 1px solid #dee2e6;">${action.full_name || 'N/A'}</td>
                     <td style="padding: 12px; border: 1px solid #dee2e6;">${action.employee_id || 'N/A'}</td>
                     <td style="padding: 12px; border: 1px solid #dee2e6;">${action.position || 'N/A'}</td>
@@ -34883,7 +34939,11 @@ async function loadTerminatedEmployeesTable() {
                     <td style="padding: 12px; border: 1px solid #dee2e6;">${action.decided_by || 'N/A'}</td>
                     <td style="padding: 12px; border: 1px solid #dee2e6;">${action.decided_date || 'N/A'}</td>
                     <td style="padding: 12px; text-align: center; border: 1px solid #dee2e6;">
-                        <span style="padding: 5px 10px; border-radius: 5px; ${statusStyle}">${action.status ? action.status.charAt(0).toUpperCase() + action.status.slice(1) : 'N/A'}</span>
+                        <span style="padding: 5px 10px; border-radius: 5px; ${actionStatusStyle}">${action.status ? action.status.charAt(0).toUpperCase() + action.status.slice(1) : 'N/A'}</span>
+                    </td>
+                    <td style="padding: 12px; text-align: center; border: 1px solid #dee2e6;">
+                        <span style="padding: 5px 10px; border-radius: 5px; ${currentStatusStyle}; font-weight: ${isReactivated ? 'bold' : 'normal'};">${currentStatusLabel}</span>
+                        ${isReactivated ? '<br><small style="color: #28a745; font-weight: bold;">↻ Reactivated</small>' : ''}
                     </td>
                 </tr>
             `;
@@ -34895,7 +34955,7 @@ async function loadTerminatedEmployeesTable() {
         console.error('❌ Error loading employment actions table:', error);
         const tableBody = document.getElementById('actionsTableBody');
         if (tableBody) {
-            tableBody.innerHTML = `<tr><td colspan="14" style="padding: 20px; text-align: center; color: #dc3545;">Error loading employment actions: ${error.message}</td></tr>`;
+            tableBody.innerHTML = `<tr><td colspan="15" style="padding: 20px; text-align: center; color: #dc3545;">Error loading employment actions: ${error.message}</td></tr>`;
         }
     }
 }
@@ -89484,47 +89544,147 @@ async function reactivateUser(userId) {
 
     if (userId) {
 
-        // Reactivate specific user
+        // First check if the user is terminated or suspended
 
-        if (confirm(`Are you sure you want to reactivate user ID: ${userId}?`)) {
+        try {
 
-            console.log('🔄 Reactivating user:', userId);
+            const baseUrl = window.location.origin;
 
-            
+            // Get user details to check status
 
-            try {
+            const usersResponse = await fetch(`${baseUrl}/api/employees`, {
 
-                const baseUrl = window.location.origin;
+                method: 'GET',
 
-                // For now, we'll use a simple approach to reactivate by updating status
+                headers: {
 
-                const response = await xhrRequest('POST', '/api/employees/reactivate', { employeeId: userId });
+                    'Content-Type': 'application/json',
 
-                
-
-                if (response.ok) {
-
-                    showNotification('User reactivated successfully', 'success');
-
-                    // Refresh the user list
-
-                    userAccountManagement();
-
-                } else {
-
-                    // If the endpoint doesn't exist, show a message
-
-                    showNotification('Reactivate endpoint not available. Please contact system administrator.', 'info');
+                    'Accept': 'application/json'
 
                 }
 
-            } catch (error) {
+            });
 
-                console.error('❌ Error reactivating user:', error);
+            
 
-                showNotification('Error reactivating user. Please try again.', 'error');
+            if (!usersResponse.ok) {
+
+                showNotification('Failed to retrieve user details', 'error');
+
+                return;
 
             }
+
+            
+
+            const users = await usersResponse.json();
+
+            const user = users.find(u => u.id === userId);
+
+            
+
+            if (!user) {
+
+                showNotification('User not found', 'error');
+
+                return;
+
+            }
+
+            
+
+            const userStatus = (user.status || '').toLowerCase();
+
+            
+
+            // Check if terminated
+
+            if (userStatus === 'terminated') {
+
+                showNotification('Cannot reactivate terminated employee.\n\nTerminated employees cannot be reactivated. Their account status can only be viewed in the Employment Actions history.\n\nTo view terminated employee details, go to the "Suspend/Terminate Employment" section.', 'warning');
+
+                return;
+
+            }
+
+            
+
+            // Check if already active
+
+            if (userStatus === 'active') {
+
+                showNotification('User is already active', 'info');
+
+                return;
+
+            }
+
+            
+
+            // Reactivate specific user
+
+            if (confirm(`Are you sure you want to reactivate user ID: ${userId}? (Current status: ${userStatus})`)) {
+
+                console.log('🔄 Reactivating user:', userId, 'Current status:', userStatus);
+
+                
+
+                try {
+
+                    // For now, we'll use a simple approach to reactivate by updating status
+
+                    const response = await xhrRequest('POST', '/api/employees/reactivate', { employeeId: userId });
+
+                    
+
+                    if (response.ok) {
+
+                        showNotification('✅ User reactivated successfully!\n\nAccount status changed to Active.', 'success');
+
+                        
+
+                        // Refresh both the user list and terminated employees table
+
+                        userAccountManagement();
+
+                        
+
+                        // If the terminated employees table is visible, refresh it too
+
+                        if (document.getElementById('actionsTableBody')) {
+
+                            setTimeout(() => {
+
+                                loadTerminatedEmployeesTable();
+
+                            }, 500);
+
+                        }
+
+                    } else {
+
+                        // If the endpoint doesn't exist, show a message
+
+                        showNotification('Reactivate endpoint not available. Please contact system administrator.', 'info');
+
+                    }
+
+                } catch (error) {
+
+                    console.error('❌ Error reactivating user:', error);
+
+                    showNotification('Error reactivating user. Please try again.', 'error');
+
+                }
+
+            }
+
+        } catch (error) {
+
+            console.error('❌ Error checking user status:', error);
+
+            showNotification('Error checking user status. Please try again.', 'error');
 
         }
 

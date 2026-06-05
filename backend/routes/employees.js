@@ -523,6 +523,26 @@ router.post('/reactivate', async (req, res) => {
             return res.status(404).json({ error: 'Employee not found' });
         }
         
+        const employee = employees[0];
+        const currentStatus = (employee.status || '').toLowerCase();
+        
+        // Only allow reactivation of suspended employees, not terminated
+        if (currentStatus === 'terminated') {
+            return res.status(403).json({ 
+                error: 'Cannot reactivate terminated employee',
+                message: 'Terminated employees cannot be reactivated. They can only be viewed in the employment actions history.',
+                status: currentStatus
+            });
+        }
+        
+        if (currentStatus !== 'suspended' && currentStatus !== 'demoted') {
+            return res.status(400).json({ 
+                error: 'Employee is not suspended',
+                message: `Employee status is currently "${currentStatus}", only suspended or demoted employees can be reactivated.`,
+                status: currentStatus
+            });
+        }
+        
         await db.execute(
             'UPDATE employees SET status = ? WHERE id = ?',
             ['Active', employeeId]
@@ -546,7 +566,8 @@ router.post('/reactivate', async (req, res) => {
         res.json({
             message: 'Employee reactivated successfully',
             employeeId: employeeId,
-            status: 'Active'
+            status: 'Active',
+            previousStatus: currentStatus
         });
         
     } catch (error) {
