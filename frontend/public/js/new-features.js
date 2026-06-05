@@ -752,31 +752,32 @@ async function loadTalentAcquisition() {
             <div class="card">
                 <h3>Talent Acquisition</h3>
                 <button onclick="showTalentForm()">+ New Requisition</button>
-                <table style="width: 100%; margin-top: 20px; border-collapse: collapse;">
-                    <thead>
-                        <tr style="background: #f4f4f4;">
-                            <th style="padding: 10px; border: 1px solid #ddd;">Req #</th>
-                            <th style="padding: 10px; border: 1px solid #ddd;">Position</th>
-                            <th style="padding: 10px; border: 1px solid #ddd;">Department</th>
-                            <th style="padding: 10px; border: 1px solid #ddd;">Type</th>
-                            <th style="padding: 10px; border: 1px solid #ddd;">Level</th>
-                            <th style="padding: 10px; border: 1px solid #ddd;">Status</th>
-                            <th style="padding: 10px; border: 1px solid #ddd;">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
+                <div class="department-table-container" style="margin-top:20px;">
+                    <table class="department-table">
+                        <thead>
+                            <tr>
+                                <th>Req #</th>
+                                <th>Position</th>
+                                <th>Department</th>
+                                <th>Type</th>
+                                <th>Level</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
         `;
 
         requisitions.forEach(req => {
             html += `
                 <tr>
-                    <td style="padding: 10px; border: 1px solid #ddd;">${req.requisition_number}</td>
-                    <td style="padding: 10px; border: 1px solid #ddd;">${req.position_title}</td>
-                    <td style="padding: 10px; border: 1px solid #ddd;">${req.department}</td>
-                    <td style="padding: 10px; border: 1px solid #ddd;">${req.position_type}</td>
-                    <td style="padding: 10px; border: 1px solid #ddd;">${req.experience_level}</td>
-                    <td style="padding: 10px; border: 1px solid #ddd;">${req.status}</td>
-                    <td style="padding: 10px; border: 1px solid #ddd;">
+                    <td>${req.requisition_number}</td>
+                    <td>${req.position_title}</td>
+                    <td>${req.department}</td>
+                    <td>${req.position_type}</td>
+                    <td>${req.experience_level}</td>
+                    <td>${req.status}</td>
+                    <td>
                         <button onclick="viewTalent(${req.id})">View</button>
                         <button onclick="editTalent(${req.id})">Edit</button>
                     </td>
