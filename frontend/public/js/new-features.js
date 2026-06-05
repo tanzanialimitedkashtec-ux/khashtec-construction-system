@@ -334,29 +334,30 @@ async function loadNssfRegistration() {
             <div class="card">
                 <h3>NSSF Registration</h3>
                 <button onclick="showNssfForm()">+ New Registration</button>
-                <table style="width: 100%; margin-top: 20px; border-collapse: collapse;">
-                    <thead>
-                        <tr style="background: #f4f4f4;">
-                            <th style="padding: 10px; border: 1px solid #ddd;">Reg #</th>
-                            <th style="padding: 10px; border: 1px solid #ddd;">Employee</th>
-                            <th style="padding: 10px; border: 1px solid #ddd;">NSSF #</th>
-                            <th style="padding: 10px; border: 1px solid #ddd;">Reg Date</th>
-                            <th style="padding: 10px; border: 1px solid #ddd;">Status</th>
-                            <th style="padding: 10px; border: 1px solid #ddd;">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
+                <div class="department-table-container" style="margin-top:20px;">
+                    <table class="department-table">
+                        <thead>
+                            <tr>
+                                <th>Reg #</th>
+                                <th>Employee</th>
+                                <th>NSSF #</th>
+                                <th>Reg Date</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
         `;
 
         registrations.forEach(reg => {
             html += `
                 <tr>
-                    <td style="padding: 10px; border: 1px solid #ddd;">${reg.registration_number}</td>
-                    <td style="padding: 10px; border: 1px solid #ddd;">${reg.full_name || 'N/A'}</td>
-                    <td style="padding: 10px; border: 1px solid #ddd;">${reg.nssf_number}</td>
-                    <td style="padding: 10px; border: 1px solid #ddd;">${reg.registration_date}</td>
-                    <td style="padding: 10px; border: 1px solid #ddd;">${reg.status}</td>
-                    <td style="padding: 10px; border: 1px solid #ddd;">
+                    <td>${reg.registration_number}</td>
+                    <td>${reg.full_name || 'N/A'}</td>
+                    <td>${reg.nssf_number}</td>
+                    <td>${reg.registration_date}</td>
+                    <td>${reg.status}</td>
+                    <td>
                         <button onclick="viewNssf(${reg.id})">View</button>
                         <button onclick="editNssf(${reg.id})">Edit</button>
                     </td>
@@ -601,31 +602,32 @@ async function loadOfficeResources() {
             <div class="card">
                 <h3>Office Resources</h3>
                 <button onclick="showResourceForm()">+ New Resource</button>
-                <table style="width: 100%; margin-top: 20px; border-collapse: collapse;">
-                    <thead>
-                        <tr style="background: #f4f4f4;">
-                            <th style="padding: 10px; border: 1px solid #ddd;">Code</th>
-                            <th style="padding: 10px; border: 1px solid #ddd;">Name</th>
-                            <th style="padding: 10px; border: 1px solid #ddd;">Type</th>
-                            <th style="padding: 10px; border: 1px solid #ddd;">Condition</th>
-                            <th style="padding: 10px; border: 1px solid #ddd;">Status</th>
-                            <th style="padding: 10px; border: 1px solid #ddd;">Assigned To</th>
-                            <th style="padding: 10px; border: 1px solid #ddd;">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
+                <div class="department-table-container" style="margin-top:20px;">
+                    <table class="department-table">
+                        <thead>
+                            <tr>
+                                <th>Code</th>
+                                <th>Name</th>
+                                <th>Type</th>
+                                <th>Condition</th>
+                                <th>Status</th>
+                                <th>Assigned To</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
         `;
 
         resources.forEach(resource => {
             html += `
                 <tr>
-                    <td style="padding: 10px; border: 1px solid #ddd;">${resource.resource_code}</td>
-                    <td style="padding: 10px; border: 1px solid #ddd;">${resource.resource_name}</td>
-                    <td style="padding: 10px; border: 1px solid #ddd;">${resource.resource_type}</td>
-                    <td style="padding: 10px; border: 1px solid #ddd;">${resource.condition}</td>
-                    <td style="padding: 10px; border: 1px solid #ddd;">${resource.status}</td>
-                    <td style="padding: 10px; border: 1px solid #ddd;">${resource.full_name || 'Unassigned'}</td>
-                    <td style="padding: 10px; border: 1px solid #ddd;">
+                    <td>${resource.resource_code}</td>
+                    <td>${resource.resource_name}</td>
+                    <td>${resource.resource_type}</td>
+                    <td>${resource.condition}</td>
+                    <td>${resource.status}</td>
+                    <td>${resource.full_name || 'Unassigned'}</td>
+                    <td>
                         <button onclick="viewResource(${resource.id})">View</button>
                         <button onclick="editResource(${resource.id})">Edit</button>
                     </td>
