@@ -140,17 +140,17 @@
             <button type="button" id="newDepartmentBtn" class="btn btn-primary">+ New Department</button>
             <button type="button" id="reloadDepartmentsBtn" class="btn btn-secondary">Reload</button>
           </div>
-          <div style="overflow:auto">
-            <table style="width:100%;border-collapse:collapse">
+          <div class="department-table-container">
+            <table class="department-table">
               <thead>
                 <tr>
-                  <th style="text-align:left;border-bottom:1px solid #2f4358;padding:8px">ID</th>
-                  <th style="text-align:left;border-bottom:1px solid #2f4358;padding:8px">Code</th>
-                  <th style="text-align:left;border-bottom:1px solid #2f4358;padding:8px">Name</th>
-                  <th style="text-align:left;border-bottom:1px solid #2f4358;padding:8px">Manager Email</th>
-                  <th style="text-align:left;border-bottom:1px solid #2f4358;padding:8px">Status</th>
-                  <th style="text-align:left;border-bottom:1px solid #2f4358;padding:8px">Created</th>
-                  <th style="text-align:left;border-bottom:1px solid #2f4358;padding:8px">Actions</th>
+                  <th>ID</th>
+                  <th>Code</th>
+                  <th>Name</th>
+                  <th>Manager Email</th>
+                  <th>Status</th>
+                  <th>Created</th>
+                  <th>Actions</th>
                 </tr>
               </thead>
               <tbody id="departmentsTableBody"></tbody>
