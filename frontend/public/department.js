@@ -65099,35 +65099,50 @@ async function userAccountManagement(){
 
                             <tbody>
 
-                                ${users.map(user => `
-
+                                ${users.map(user => {
+                                    const statusLower = (user.status || user.account_status || '').toLowerCase();
+                                    let statusClass = 'status-active';
+                                    let statusLabel = 'Active';
+                                    let actionButton = '';
+                                    
+                                    if (statusLower === 'suspended') {
+                                        statusClass = 'status-suspended';
+                                        statusLabel = 'Suspended';
+                                        actionButton = `<button class="action-btn reactivate-btn" onclick="reactivateUser(${user.id})">Reactivate</button>`;
+                                    } else if (statusLower === 'terminated') {
+                                        statusClass = 'status-contract';
+                                        statusLabel = 'Terminated';
+                                        actionButton = `<button class="action-btn" onclick="void(0)" style="background: #6c757d; cursor: not-allowed;" disabled title="Terminated employees cannot be reactivated">View History</button>`;
+                                    } else if (statusLower === 'demoted') {
+                                        statusClass = 'status-senior';
+                                        statusLabel = 'Demoted';
+                                        actionButton = `<button class="action-btn reactivate-btn" onclick="reactivateUser(${user.id})">Reactivate</button>`;
+                                    } else {
+                                        statusClass = 'status-active';
+                                        statusLabel = 'Active';
+                                        actionButton = `<button class="action-btn suspend-btn" onclick="suspendUser(${user.id})">Suspend</button>`;
+                                    }
+                                    
+                                    return `
                                     <tr class="user-row" data-user-id="${user.id}">
-
                                         <td>${user.id}</td>
-
                                         <td>${user.full_name || user.fullName || 'N/A'}</td>
-
                                         <td>${user.gmail || user.email || 'N/A'}</td>
-
                                         <td>${user.position || user.role || user.job_category || 'N/A'}</td>
-
                                         <td>
-
-                                            <span class="status-badge ${(user.status || '').toLowerCase() === 'suspended' || (user.account_status || '').toLowerCase() === 'suspended' ? 'status-suspended' : 'status-active'}">
-
-                                                ${(user.status || '').toLowerCase() === 'suspended' || (user.account_status || '').toLowerCase() === 'suspended' ? 'Suspended' : 'Active'}
-
+                                            <span class="status-badge ${statusClass}">
+                                                ${statusLabel}
                                             </span>
-
                                         </td>
-
                                         <td>
-
                                             <div class="action-buttons">
-
-                                                ${(user.status || '').toLowerCase() === 'suspended' || (user.account_status || '').toLowerCase() === 'suspended' ? 
-
-                                                    `<button class="action-btn reactivate-btn" onclick="reactivateUser(${user.id})">Reactivate</button>` :
+                                                ${actionButton}
+                                                <button class="action-btn view-btn" onclick="viewUserDetails(${user.id})">View</button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    `;
+                                }).join('')}
 
                                                     `<button class="action-btn suspend-btn" onclick="suspendUser(${user.id})">Suspend</button>`
 
