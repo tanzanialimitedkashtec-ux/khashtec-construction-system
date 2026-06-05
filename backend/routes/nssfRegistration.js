@@ -68,6 +68,11 @@ router.get('/:id', async (req, res) => {
         `, [req.params.id]);
         const registration = Array.isArray(result) ? result : [];
         if (registration.length === 0) {
+            // Check sample data as fallback
+            const fallback = sampleRegistrations.find(item => String(item.id) === String(req.params.id));
+            if (fallback) {
+                return res.json(fallback);
+            }
             return res.status(404).json({ error: 'NSSF registration not found' });
         }
         res.json(registration[0]);
