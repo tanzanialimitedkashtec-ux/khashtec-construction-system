@@ -1065,31 +1065,32 @@ async function loadRiskManagement() {
             <div class="card">
                 <h3>Risk Management</h3>
                 <button onclick="showRiskForm()" class="btn btn-primary">+ New Risk</button>
-                <table style="width: 100%; margin-top: 20px; border-collapse: collapse;">
-                    <thead>
-                        <tr style="background: #f4f4f4;">
-                            <th style="padding: 10px; border: 1px solid #031865de;">Risk #</th>
-                            <th style="padding: 10px; border: 1px solid #031865de;">Title</th>
-                            <th style="padding: 10px; border: 1px solid #031865de">Category</th>
-                            <th style="padding: 10px; border: 1px solid #031865de;">Probability</th>
-                            <th style="padding: 10px; border: 1px solid #031865de;">Impact</th>
-                            <th style="padding: 10px; border: 1px solid #031865de;">Status</th>
-                            <th style="padding: 10px; border: 1px solid #031865de;">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
+                <div class="department-table-container" style="margin-top:20px;">
+                    <table class="department-table">
+                        <thead>
+                            <tr>
+                                <th>Risk #</th>
+                                <th>Title</th>
+                                <th>Category</th>
+                                <th>Probability</th>
+                                <th>Impact</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
         `;
 
         risks.forEach(risk => {
             html += `
                 <tr>
-                    <td style="padding: 10px; border: 1px solid #ddd;">${risk.risk_number}</td>
-                    <td style="padding: 10px; border: 1px solid #ddd;">${risk.risk_title}</td>
-                    <td style="padding: 10px; border: 1px solid #ddd;">${risk.risk_category}</td>
-                    <td style="padding: 10px; border: 1px solid #ddd;">${risk.probability}</td>
-                    <td style="padding: 10px; border: 1px solid #ddd;">${risk.impact}</td>
-                    <td style="padding: 10px; border: 1px solid #ddd;">${risk.status}</td>
-                    <td style="padding: 10px; border: 1px solid #ddd;">
+                    <td>${risk.risk_number}</td>
+                    <td>${risk.risk_title}</td>
+                    <td>${risk.risk_category}</td>
+                    <td>${risk.probability}</td>
+                    <td>${risk.impact}</td>
+                    <td>${risk.status}</td>
+                    <td>
                         <button onclick="viewRisk(${risk.id})">View</button>
                         <button onclick="editRisk(${risk.id})">Edit</button>
                     </td>
