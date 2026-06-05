@@ -27,31 +27,32 @@ async function loadAssetsEquipment() {
             <div class="card">
                 <h3>Asset & Equipment Management</h3>
                 <button onclick="showAssetForm()">+ New Asset/Equipment</button>
-                <table style="width: 100%; margin-top: 20px; border-collapse: collapse;">
-                    <thead>
-                        <tr style="background: #f4f4f4;">
-                            <th style="padding: 10px; border: 1px solid #ddd;">Code</th>
-                            <th style="padding: 10px; border: 1px solid #ddd;">Name</th>
-                            <th style="padding: 10px; border: 1px solid #ddd;">Category</th>
-                            <th style="padding: 10px; border: 1px solid #ddd;">Condition</th>
-                            <th style="padding: 10px; border: 1px solid #ddd;">Status</th>
-                            <th style="padding: 10px; border: 1px solid #ddd;">Assigned To</th>
-                            <th style="padding: 10px; border: 1px solid #ddd;">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
+                <div class="department-table-container" style="margin-top:20px;">
+                    <table class="department-table">
+                        <thead>
+                            <tr>
+                                <th>Code</th>
+                                <th>Name</th>
+                                <th>Category</th>
+                                <th>Condition</th>
+                                <th>Status</th>
+                                <th>Assigned To</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
         `;
 
         assets.forEach(asset => {
             html += `
                 <tr>
-                    <td style="padding: 10px; border: 1px solid #ddd;">${asset.asset_code}</td>
-                    <td style="padding: 10px; border: 1px solid #ddd;">${asset.asset_name}</td>
-                    <td style="padding: 10px; border: 1px solid #ddd;">${asset.category}</td>
-                    <td style="padding: 10px; border: 1px solid #ddd;">${asset.condition}</td>
-                    <td style="padding: 10px; border: 1px solid #ddd;">${asset.status}</td>
-                    <td style="padding: 10px; border: 1px solid #ddd;">${asset.full_name || 'Unassigned'}</td>
-                    <td style="padding: 10px; border: 1px solid #ddd;">
+                    <td>${asset.asset_code}</td>
+                    <td>${asset.asset_name}</td>
+                    <td>${asset.category}</td>
+                    <td>${asset.condition}</td>
+                    <td>${asset.status}</td>
+                    <td>${asset.full_name || 'Unassigned'}</td>
+                    <td>
                         <button onclick="viewAsset(${asset.id})">View</button>
                         <button onclick="editAsset(${asset.id})">Edit</button>
                     </td>
@@ -195,29 +196,30 @@ async function saveAsset(event, assetId = null) {
             <div class="card">
                 <h3>Claims Management</h3>
                 <button onclick="showClaimForm()">+ New Claim</button>
-                <table style="width: 100%; margin-top: 20px; border-collapse: collapse;">
-                    <thead>
-                        <tr style="background: #f4f4f4;">
-                            <th style="padding: 10px; border: 1px solid #ddd;">Claim #</th>
-                            <th style="padding: 10px; border: 1px solid #ddd;">Type</th>
-                            <th style="padding: 10px; border: 1px solid #ddd;">Title</th>
-                            <th style="padding: 10px; border: 1px solid #ddd;">Date</th>
-                            <th style="padding: 10px; border: 1px solid #ddd;">Status</th>
-                            <th style="padding: 10px; border: 1px solid #ddd;">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
+                <div class="department-table-container" style="margin-top:20px;">
+                    <table class="department-table">
+                        <thead>
+                            <tr>
+                                <th>Claim #</th>
+                                <th>Type</th>
+                                <th>Title</th>
+                                <th>Date</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
         `;
 
         claims.forEach(claim => {
             html += `
                 <tr>
-                    <td style="padding: 10px; border: 1px solid #ddd;">${claim.claim_number}</td>
-                    <td style="padding: 10px; border: 1px solid #ddd;">${claim.claim_type}</td>
-                    <td style="padding: 10px; border: 1px solid #ddd;">${claim.title}</td>
-                    <td style="padding: 10px; border: 1px solid #ddd;">${claim.claim_date}</td>
-                    <td style="padding: 10px; border: 1px solid #ddd;">${claim.status}</td>
-                    <td style="padding: 10px; border: 1px solid #ddd;">
+                    <td>${claim.claim_number}</td>
+                    <td>${claim.claim_type}</td>
+                    <td>${claim.title}</td>
+                    <td>${claim.claim_date}</td>
+                    <td>${claim.status}</td>
+                    <td>
                         <button onclick="viewClaim(${claim.id})">View</button>
                         <button onclick="editClaim(${claim.id})">Edit</button>
                     </td>
@@ -455,31 +457,32 @@ async function loadDisciplineMonitoring() {
             <div class="card">
                 <h3>Discipline Monitoring</h3>
                 <button onclick="showDisciplineForm()">+ New Case</button>
-                <table style="width: 100%; margin-top: 20px; border-collapse: collapse;">
-                    <thead>
-                        <tr style="background: #f4f4f4;">
-                            <th style="padding: 10px; border: 1px solid #ddd;">Case #</th>
-                            <th style="padding: 10px; border: 1px solid #ddd;">Employee</th>
-                            <th style="padding: 10px; border: 1px solid #ddd;">Type</th>
-                            <th style="padding: 10px; border: 1px solid #ddd;">Date</th>
-                            <th style="padding: 10px; border: 1px solid #ddd;">Severity</th>
-                            <th style="padding: 10px; border: 1px solid #ddd;">Status</th>
-                            <th style="padding: 10px; border: 1px solid #ddd;">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
+                <div class="department-table-container" style="margin-top:20px;">
+                    <table class="department-table">
+                        <thead>
+                            <tr>
+                                <th>Case #</th>
+                                <th>Employee</th>
+                                <th>Type</th>
+                                <th>Date</th>
+                                <th>Severity</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
         `;
 
         cases.forEach(caseRecord => {
             html += `
                 <tr>
-                    <td style="padding: 10px; border: 1px solid #ddd;">${caseRecord.case_number}</td>
-                    <td style="padding: 10px; border: 1px solid #ddd;">${caseRecord.full_name || 'N/A'}</td>
-                    <td style="padding: 10px; border: 1px solid #ddd;">${caseRecord.incident_type}</td>
-                    <td style="padding: 10px; border: 1px solid #ddd;">${caseRecord.incident_date}</td>
-                    <td style="padding: 10px; border: 1px solid #ddd;">${caseRecord.severity}</td>
-                    <td style="padding: 10px; border: 1px solid #ddd;">${caseRecord.status}</td>
-                    <td style="padding: 10px; border: 1px solid #ddd;">
+                    <td>${caseRecord.case_number}</td>
+                    <td>${caseRecord.full_name || 'N/A'}</td>
+                    <td>${caseRecord.incident_type}</td>
+                    <td>${caseRecord.incident_date}</td>
+                    <td>${caseRecord.severity}</td>
+                    <td>${caseRecord.status}</td>
+                    <td>
                         <button onclick="viewDiscipline(${caseRecord.id})">View</button>
                         <button onclick="editDiscipline(${caseRecord.id})">Edit</button>
                     </td>
