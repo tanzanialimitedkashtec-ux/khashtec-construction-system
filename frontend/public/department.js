@@ -65142,21 +65142,8 @@ async function userAccountManagement(){
                                         </td>
                                     </tr>
                                     `;
+
                                 }).join('')}
-
-                                                    `<button class="action-btn suspend-btn" onclick="suspendUser(${user.id})">Suspend</button>`
-
-                                                }
-
-                                                <button class="action-btn view-btn" onclick="viewUserDetails(${user.id})">View</button>
-
-                                            </div>
-
-                                        </td>
-
-                                    </tr>
-
-                                `).join('')}
 
                             </tbody>
 
