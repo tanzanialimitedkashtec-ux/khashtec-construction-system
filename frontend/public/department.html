@@ -91076,13 +91076,24 @@ async function documentManagement(){
 
             const result = await response.json();
 
-            documents = result.documents || [];
+            console.log('📄 Raw documents API response:', result);
 
-            console.log(`✅ Loaded ${documents.length} documents from database`);
+            documents = result.documents || result.data || result || [];
+
+            if (!Array.isArray(documents)) {
+                console.log('⚠️ Documents is not an array, attempting to convert or extract array. Type:', typeof documents);
+                if (typeof documents === 'object' && Object.keys(documents).length > 0) {
+                   documents = Object.values(documents).find(val => Array.isArray(val)) || [];
+                } else {
+                   documents = [];
+                }
+            }
+
+            console.log(`✅ Loaded ${documents.length} documents from database:`, documents);
 
         } else {
 
-            console.warn('⚠️ Failed to load documents, using empty list');
+            console.warn('⚠️ Failed to load documents, using empty list. Status:', response.status);
 
         }
 
