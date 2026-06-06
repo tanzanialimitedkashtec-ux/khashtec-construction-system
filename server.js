@@ -320,7 +320,7 @@ app.get('/api/profile-image/:employeeId', async (req, res) => {
             // 1) BLOB in DB
             if (row.profile_image_data) {
                 res.set('Content-Type', row.profile_image_mime || 'image/jpeg');
-                res.set('Cache-Control', 'public, max-age=86400');
+                res.set('Cache-Control', 'public, max-age=300');
                 return res.send(Buffer.from(row.profile_image_data));
             }
             // 2) On-disk file referenced by profile_image
@@ -330,7 +330,7 @@ app.get('/api/profile-image/:employeeId', async (req, res) => {
                 const rel = idx !== -1 ? raw.slice(idx) : raw.replace(/^\/+/, '');
                 const filePath = path.join(__dirname, rel);
                 if (fs.existsSync(filePath)) {
-                    res.set('Cache-Control', 'public, max-age=86400');
+                    res.set('Cache-Control', 'public, max-age=300');
                     return res.sendFile(filePath);
                 }
             }

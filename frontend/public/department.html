@@ -88484,7 +88484,7 @@ function showEmployeeDetailsModal(employee) {
 
                     <div class="employee-avatar">
 
-                        <img src="${employee.profile_image || (employee.id || employee.employee_id ? `/api/profile-image/${employee.id || employee.employee_id}` : '/assets/images/default-avatar.png')}" 
+                        <img src="${(employee.profile_image || (employee.id || employee.employee_id ? `/api/profile-image/${employee.id || employee.employee_id}` : '/assets/images/default-avatar.png')) + '?t=' + Date.now()}" 
 
                              alt="${employee.fullName || employee.full_name || employee.name}" 
 
@@ -92065,7 +92065,7 @@ async function loadOfficePortalData() {
 
                     type: 'Employee',
 
-                    profileImage: emp.profile_image || emp.profileImage || `/api/profile-image/${emp.id}`,
+                    profileImage: (emp.profile_image || emp.profileImage || `/api/profile-image/${emp.id}`) + '?t=' + Date.now(),
 
                     accessLevel: 'user',
 
