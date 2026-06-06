@@ -18121,7 +18121,7 @@ async function fetchLeaveContractsTableData() {
     console.log('ðŸ”„ Fetching leave and contracts data...');
     try {
         const baseUrl = window.location.origin;
-        const response = await fetch(`${baseUrl}/api/hr/work`, {
+        const response = await fetch(`${baseUrl}/api/work/hr`, {
             method: 'GET',
             headers: {
                 'Accept': 'application/json',
