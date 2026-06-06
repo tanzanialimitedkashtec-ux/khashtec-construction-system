@@ -89636,13 +89636,95 @@ async function complianceManagement(){
 
             
 
-            <div class="compliance-actions">
+            <div class="doc-upload collapsed" id="docUpload">
 
-                    <h4>Quick Actions</h4>
+                <div class="doc-upload-header" style="display:flex;align-items:center;justify-content:space-between;gap:6px">
 
-                    <button class="action-btn" onclick="documentManagement()">View All Documents</button>
+                    <h4 style="font-size:12px;margin:0">Upload Company Certificates</h4>
+
+                    <button class="toggle-btn" id="docToggle" aria-expanded="false" onclick="toggleDocUpload()" style="background:#007bff;color:#fff;border:none;padding:4px 6px;font-size:11px;border-radius:4px;cursor:pointer;line-height:1">
+
+                        <span class="toggle-arrow">▸</span>
+
+                    </button>
 
                 </div>
+
+                <div class="doc-upload-body" id="docUploadBody" style="margin-top:8px;display:none">
+
+                    <div class="form-group" style="margin-bottom:6px">
+
+                        <label style="display:block;font-size:11px;margin-bottom:3px;color:#333">Certificate Type</label>
+
+                        <select id="certType" style="width:100%;font-size:11px;padding:4px;border:1px solid #ccc;border-radius:4px;box-sizing:border-box">
+
+                            <option value="">Select Type</option>
+
+                            <option value="tin">TIN Certificate</option>
+
+                            <option value="vrn">VRN Certificate</option>
+
+                            <option value="crb">CRB Certificate</option>
+
+                            <option value="license">Business License</option>
+
+                            <option value="osha">OSHA Compliance</option>
+
+                            <option value="nssf">NSSF Compliance</option>
+
+                            <option value="wcf">WCF Compliance</option>
+
+                        </select>
+
+                    </div>
+
+                    <div class="form-group" style="margin-bottom:6px">
+
+                        <label style="display:block;font-size:11px;margin-bottom:3px;color:#333">Document File</label>
+
+                        <input type="file" id="certFile" accept=".pdf,.jpg,.jpeg,.png" style="width:100%;font-size:11px;padding:4px;border:1px solid #ccc;border-radius:4px;box-sizing:border-box" />
+
+                    </div>
+
+                    <div class="form-group" style="margin-bottom:6px">
+
+                        <label style="display:block;font-size:11px;margin-bottom:3px;color:#333">Expiry Date</label>
+
+                        <input type="date" id="certExpiry" style="width:100%;font-size:11px;padding:4px;border:1px solid #ccc;border-radius:4px;box-sizing:border-box" />
+
+                    </div>
+
+                    <div class="form-group" style="margin-bottom:6px">
+
+                        <label style="display:block;font-size:11px;margin-bottom:3px;color:#333">Description</label>
+
+                        <textarea id="certDescription" placeholder="Enter certificate description..." style="width:100%;font-size:11px;padding:4px;border:1px solid #ccc;border-radius:4px;box-sizing:border-box;height:44px;resize:vertical"></textarea>
+
+                    </div>
+
+                    <button class="action" onclick="uploadCertificate()" style="width:100%;padding:6px;font-size:11px;border-radius:4px;border:none;background:#28a745;color:#fff;cursor:pointer">Upload Certificate</button>
+
+                </div>
+
+            </div>
+
+            
+
+            <div class="compliance-actions" style="margin-top:20px;">
+
+                <h4>Quick Actions</h4>
+
+                <button class="action-btn" onclick="documentManagement()">View All Documents</button>
+
+            </div>
+
+            
+
+            <div class="disclaimer" style="margin-top:20px;">
+
+                <p><strong>Note:</strong> Upload certificates in PDF, JPG, or PNG format. Maximum file size: 10MB.</p>
+
+            </div>
 
         </div>`;
 
@@ -91436,7 +91518,7 @@ async function uploadCertificate() {
 
             // Refresh document list
 
-            documentManagement();
+            complianceManagement();
 
         } else {
             console.log('❌ Upload failed with status:', response.status);
