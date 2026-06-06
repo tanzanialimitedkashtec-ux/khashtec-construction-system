@@ -311,7 +311,7 @@ function sendDefaultAvatar(res, seed = '') {
 app.get('/api/profile-image/:employeeId', async (req, res) => {
     try {
         const db = require('./database/config/database');
-        const [rows] = await db.execute(
+        const rows = await db.execute(
             'SELECT profile_image, profile_image_data, profile_image_mime FROM employee_details WHERE employee_id = ? LIMIT 1',
             [req.params.employeeId]
         );
@@ -321,10 +321,10 @@ app.get('/api/profile-image/:employeeId', async (req, res) => {
             if (row.profile_image_data) {
                 res.set('Content-Type', row.profile_image_mime || 'image/jpeg');
                 res.set('Cache-Control', 'public, max-age=86400');
-                return res.end(row.profile_image_data);
+                return res.send(Buffer.from(row.profile_image_data));
             }
             // 2) On-disk file referenced by profile_image
-            if (row.profile_image && typeof row.profile_image === 'string') {
+            if (row.profile_image && typeof row.profile_image === 'string' && !row.profile_image.startsWith('/api/')) {
                 const raw = row.profile_image.replace(/\\/g, '/');
                 const idx = raw.toLowerCase().lastIndexOf('uploads/');
                 const rel = idx !== -1 ? raw.slice(idx) : raw.replace(/^\/+/, '');
@@ -359,7 +359,7 @@ app.get('/api/employee-file/:employeeId/:fileType', async (req, res) => {
             return res.status(400).send('Invalid file type');
         }
 
-        const [rows] = await db.execute(
+        const rows = await db.execute(
             `SELECT ${pathCol}, ${dataCol}, ${mimeCol} FROM employee_details WHERE employee_id = ? LIMIT 1`,
             [employeeId]
         );
@@ -370,7 +370,7 @@ app.get('/api/employee-file/:employeeId/:fileType', async (req, res) => {
             if (row[dataCol]) {
                 res.set('Content-Type', row[mimeCol] || 'application/pdf');
                 res.set('Cache-Control', 'public, max-age=86400');
-                return res.end(row[dataCol]);
+                return res.send(Buffer.from(row[dataCol]));
             }
             // 2) On-disk file
             if (row[pathCol] && typeof row[pathCol] === 'string') {
