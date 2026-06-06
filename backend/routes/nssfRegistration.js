@@ -14,14 +14,10 @@ router.get('/', async (req, res) => {
         `);
         const registrations = Array.isArray(result) ? result : [];
 
-        if (registrations.length === 0) {
-            return res.json(sampleRegistrations);
-        }
-
         return res.json(registrations);
     } catch (error) {
         console.error('Error fetching NSSF registrations:', error);
-        return res.json(sampleRegistrations);
+        return res.status(500).json({ error: 'Failed to fetch NSSF registrations' });
     }
 });
 
@@ -37,21 +33,11 @@ router.get('/:id', async (req, res) => {
         `, [req.params.id]);
         const registration = Array.isArray(result) ? result : [];
         if (registration.length === 0) {
-            // Check sample data as fallback
-            const fallback = sampleRegistrations.find(item => String(item.id) === String(req.params.id));
-            if (fallback) {
-                return res.json(fallback);
-            }
             return res.status(404).json({ error: 'NSSF registration not found' });
         }
         res.json(registration[0]);
     } catch (error) {
         console.error('Error fetching NSSF registration:', error);
-        const fallback = sampleRegistrations.find(item => String(item.id) === String(req.params.id));
-        if (fallback) {
-            return res.json(fallback);
-        }
-
         return res.status(500).json({ error: 'Failed to fetch NSSF registration' });
     }
 });
