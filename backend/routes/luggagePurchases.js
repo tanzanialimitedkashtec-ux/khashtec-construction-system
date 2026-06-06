@@ -68,9 +68,12 @@ router.get('/', async (req, res) => {
                 console.log('⚠️ Could not create luggage_purchases table:', tableError.message);
             }
             
+            await db.execute('ALTER TABLE luggage_purchases ADD COLUMN IF NOT EXISTS luggage_name VARCHAR(100) NULL AFTER buyer_phone');
             const purchasesResult = await db.execute(`
-                SELECT * FROM luggage_purchases 
-                ORDER BY purchase_date DESC, created_at DESC
+                SELECT lp.*, lc.campaign_name, COALESCE(lp.luggage_name, lc.luggage_name) AS display_luggage_name
+                FROM luggage_purchases lp
+                LEFT JOIN luggage_campaigns lc ON lp.campaign_id = lc.id
+                ORDER BY lp.purchase_date DESC, lp.created_at DESC
             `);
             
             // Handle different database response formats
@@ -359,6 +362,7 @@ router.post('/', async (req, res) => {
             buyer_name,
             buyer_email,
             buyer_phone,
+            luggage_name,
             units_purchased,
             price_per_unit,
             total_amount,
@@ -399,14 +403,15 @@ router.post('/', async (req, res) => {
         // Try database insert with actual schema columns
         try {
             const db = require('../../database/config/database');
+                await db.execute('ALTER TABLE luggage_purchases ADD COLUMN IF NOT EXISTS luggage_name VARCHAR(100) NULL AFTER buyer_phone');
             
             const query = `
                 INSERT INTO luggage_purchases (
                     campaign_id, buyer_name, buyer_email, buyer_phone,
-                    units_purchased, price_per_unit, total_amount,
+                    luggage_name, units_purchased, price_per_unit, total_amount,
                     payment_method, buyer_address, purchase_notes,
                     purchase_status, purchase_date, created_by
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             `;
             
             const values = [
@@ -414,13 +419,14 @@ router.post('/', async (req, res) => {
                 buyer_name,
                 buyer_email,
                 buyer_phone || null,
+                luggage_name || null,
                 units_purchased,
                 finalPricePerUnit,
                 finalAmount,
                 payment_method || 'Bank Transfer',
                 buyer_address || null,
                 purchase_notes || notes || null,
-                purchase_status || 'Pending',
+                purchase_status || 'Confirmed',
                 purchase_date,
                 created_by || employee_id || null
             ];

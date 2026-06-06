@@ -65046,7 +65046,17 @@ function recordLuggagePurchase() {
 
                 </div>
 
-                
+                <div class="form-row">
+
+                    <div class="form-group">
+
+                        <label>Luggage Name</label>
+
+                        <input type="text" id="purchaseLuggageName" required>
+
+                    </div>
+
+                </div>
 
                 <div class="form-row">
 
@@ -65141,6 +65151,17 @@ function recordLuggagePurchase() {
     
 
     loadCampaignsForPurchase();
+
+    document.getElementById('campaignSelect').addEventListener('change', function() {
+        const luggageField = document.getElementById('purchaseLuggageName');
+        const selectedText = this.selectedOptions[0]?.textContent || '';
+        if (luggageField && !luggageField.value.trim()) {
+            const match = selectedText.match(/ - ([^\(]+)/);
+            if (match && match[1]) {
+                luggageField.value = match[1].trim();
+            }
+        }
+    });
 
     document.getElementById('purchaseForm').addEventListener('submit', function(e) {
 
@@ -65397,17 +65418,24 @@ async function saveLuggagePurchase() {
         const selectedCampaignText = selectedCampaignOption ? selectedCampaignOption.textContent : '';
         
         // Extract price and luggage name from option text: "CampaignName - LuggageName (TZS <price>)"
+        const luggageNameInput = document.getElementById('purchaseLuggageName');
+        let explicitLuggageName = luggageNameInput?.value.trim() || '';
+        let derivedLuggageName = '';
         let pricePerUnit = 0;
         try {
-            // Extract price from text like "(TZS 50000)"
+            const match = selectedCampaignText.match(/ - ([^\(]+)/);
+            if (match && match[1]) {
+                derivedLuggageName = match[1].trim();
+            }
             const priceMatch = selectedCampaignText.match(/\(TZS\s*([\d,]+(?:\.\d{2})?)\)/);
             if (priceMatch && priceMatch[1]) {
                 pricePerUnit = parseFloat(priceMatch[1].replace(/,/g, ''));
             }
         } catch (e) {
-            console.warn('Could not parse campaign price:', e);
+            console.warn('Could not parse campaign details:', e);
         }
         
+        const luggageName = explicitLuggageName || derivedLuggageName;
         const totalAmount = units * pricePerUnit;
         
         const buyerName = document.getElementById('buyerName')?.value || '';
@@ -65429,8 +65457,9 @@ async function saveLuggagePurchase() {
             total_amount: totalAmount,
             payment_method: document.getElementById('paymentMethod')?.value || 'Bank Transfer',
             purchase_notes: document.getElementById('purchaseNotes')?.value || '',
-            purchase_status: 'Pending',
+            purchase_status: 'Confirmed',
             purchase_date: new Date().toISOString().split('T')[0],
+            luggage_name: luggageName || null,
             created_by: getCurrentUserId()
         };
 
@@ -66116,7 +66145,7 @@ async function loadLuggagePurchases() {
                 // Use actual database field names from luggage_purchases table
                 const purchaseId = purchase.id || '';
                 const campaignName = purchase.campaign_name || 'Unknown Campaign';
-                const campaignLuggage = purchase.luggage_name || purchase.campaign_luggage || 'Unknown Luggage';
+                const campaignLuggage = purchase.display_luggage_name || purchase.luggage_name || purchase.campaign_luggage || 'Unknown Luggage';
                 const companyName = purchase.campaign_name || 'Unknown Company';
                 const buyerName = purchase.buyer_name || '';
                 const buyerEmail = purchase.buyer_email || '';
