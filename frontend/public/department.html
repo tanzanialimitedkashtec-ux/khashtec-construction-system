@@ -1,109 +1,112 @@
-<!DOCTYPE html>
+        if (purchases && purchases.length > 0) {
+            const formatDate = d => {
+                if (!d) return '';
+                try { return new Date(d).toLocaleDateString(); } catch (e) { return d; }
+            };
 
-<html lang="en">
+            recordsList.innerHTML = purchases.map(purchase => {
+                // Prefer explicit fields, avoid showing 'Unknown' or 'N/A'
+                const purchaseId = purchase.purchase_reference || purchase.purchase_id || purchase.id || '';
+                const trackingNumber = purchase.tracking_number || purchase.purchase_reference || purchase.purchase_id || (purchase.id ? `LP${purchase.id}` : '');
+                const paymentStatus = (purchase.payment_status || purchase.purchase_status || 'Pending');
+                const campaignName = purchase.campaign_name || purchase.campaign_name || '';
+                const campaignDetails = purchase.luggage || purchase.luggage_name || purchase.campaign_luggage || '';
+                const buyerName = purchase.employee_name || purchase.buyer_name || '';
+                const buyerId = purchase.employee_id || purchase.buyer_id || '';
+                const buyerEmail = purchase.buyer_email || purchase.employee_email || (buyerId ? buyerId + '@khashtec.com' : '');
+                const buyerPhone = purchase.buyer_phone || purchase.buyer_phone_number || '';
+                const unitsPurchased = purchase.units_purchased || purchase.course_type || '';
+                const amountVal = (typeof purchase.amount === 'number') ? purchase.amount : (purchase.total_amount || 0);
+                const currency = purchase.currency || 'TZS';
+                const purchaseDate = purchase.purchase_date || purchase.created_at || '';
+                const location = purchase.location || purchase.buyer_address || '';
+                const notes = purchase.notes || purchase.purchase_notes || '';
 
-<head>
+                return `
 
-    <meta charset="UTF-8">
+                <tr>
 
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                    <td>
 
-    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+                        <div class="purchase-info">
 
-    <meta http-equiv="Pragma" content="no-cache">
+                            <div class="purchase-id">${purchaseId || '-'}</div>
 
-    <meta http-equiv="Expires" content="0">
+                            <div class="tracking-number">${trackingNumber ? 'Tracking: ' + trackingNumber : ''}</div>
 
-    <title>KASHTEC tanzania limited</title>
+                            <div class="purchase-status">Status: ${paymentStatus}</div>
 
-    
+                        </div>
 
-        <script>
+                    </td>
 
-        // Disabled: Allow localhost development
+                    <td>
 
-        // const PRODUCTION_FRONTEND_URL = 'https://khashtec-construction-system-production-e7b5.up.railway.app/frontend/public/department.html';
+                        <div class="campaign-info">
 
-        // if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.hostname === '::1') {
+                            <div class="campaign-name">${campaignName || '-'}</div>
 
-        //     window.location.replace(PRODUCTION_FRONTEND_URL);
+                            <div class="campaign-details">${campaignDetails || '-'}</div>
 
-        // }
+                        </div>
 
-function handleGeneratePayslips(event) {
+                    </td>
 
-    if (event && event.preventDefault) event.preventDefault();
+                    <td>
 
-    const monthSel = document.getElementById('payslipMonth');
+                        <div class="buyer-info">
 
-    if (!monthSel || !monthSel.value) {
+                            <div class="buyer-name">${buyerName || '-'}</div>
 
-        customAlert('Select a month.', "Missing Month", "error");
+                            <div class="buyer-id">${buyerId ? 'ID: ' + buyerId : ''}</div>
 
-        return false;
+                        </div>
 
-    }
+                    </td>
 
-    // Reuse existing logic which reads #payslipEmployee and #payslipMonth
-    generateIndividualPayslip();
+                    <td>
 
-    return false;
+                        <div class="contact-info">
 
-}
+                            <div class="buyer-email">${buyerEmail || ''}</div>
 
-function toggleEmailPayslipsForm() {
+                            <div class="buyer-phone">${buyerPhone || ''}</div>
 
-    const container = document.getElementById('emailPayslipsFormContainer');
+                        </div>
 
-    if (!container) return;
+                    </td>
 
-    const isHidden = container.classList.contains('hidden');
+                    <td>
 
-    // Sync dropdown options with main selectors when showing the form
-    if (isHidden) {
+                        <div class="units-info">
 
-        const srcEmp = document.getElementById('payslipEmployee');
+                            <div class="units-purchased">${unitsPurchased || ''}</div>
 
-        const srcMonth = document.getElementById('payslipMonth');
+                            <div class="unit-price">${currency} ${Number(amountVal || 0).toLocaleString()}</div>
 
-        const dstEmp = document.getElementById('emailPayslipsEmployee');
+                        </div>
 
-        const dstMonth = document.getElementById('emailPayslipsMonth');
+                    </td>
 
-        if (srcEmp && dstEmp) {
+                    <td>
 
-            dstEmp.innerHTML = srcEmp.innerHTML;
+                        <div class="payment-info">
 
-            dstEmp.value = srcEmp.value;
+                            <span class="payment-badge payment-${String(paymentStatus).toLowerCase().replace('_', '-')}">${paymentStatus}</span>
 
-        }
+                        </div>
 
-        if (srcMonth && dstMonth) {
+                    </td>
 
-            dstMonth.innerHTML = srcMonth.innerHTML;
+                    <td>
 
-            dstMonth.value = srcMonth.value;
+                        <div class="address-info">
 
-        }
+                            <div class="buyer-address">${location || ''}</div>
 
-    }
+                        </div>
 
-    container.classList.toggle('hidden');
-
-}
-
-function submitEmailPayslipsForm(event) {
-
-    if (event && event.preventDefault) event.preventDefault();
-
-    const empSel = document.getElementById('emailPayslipsEmployee');
-
-    const monthSel = document.getElementById('emailPayslipsMonth');
-
-    if (!monthSel || !monthSel.value) {
-
-        customAlert('Select a month.', "Missing Month", "error");
-
+                    </td>
         return false;
 
     }
@@ -140,47 +143,47 @@ function submitEmailPayslipsForm(event) {
     return false;
 
 }
+                    <td>
 
-    </script>
-    <script>
-    // Ensure toggleSidebar is defined globally early to avoid runtime ReferenceError
-    window.toggleSidebar = window.toggleSidebar || function() {
-        try {
-            const sidebar = document.querySelector('.sidebar');
-            if (!sidebar) return console.warn('toggleSidebar: sidebar not found');
-            sidebar.classList.toggle('collapsed');
-            console.log('toggleSidebar invoked');
-        } catch (e) {
-            console.warn('toggleSidebar error', e);
+                        <div class="notes-info">
+
+                            <div class="purchase-notes">${notes || ''}</div>
+
+                        </div>
+
+                    </td>
+
+                    <td>
+
+                        <div class="date-info">
+
+                            <div class="purchase-date">${formatDate(purchaseDate) || ''}</div>
+
+                        </div>
+
+                    </td>
+
+                    <td>
+
+                        <div class="purchase-actions">
+
+                            <button class="action-btn view" onclick="viewPurchaseDetails('${purchaseId || purchase.id || ''}')" title="View Details">👁️</button>
+
+                            <button class="action-btn edit" onclick="editPurchase('${purchaseId || purchase.id || ''}')" title="Edit Purchase">✏️</button>
+
+                            <button class="action-btn delete" onclick="deletePurchase('${purchaseId || purchase.id || ''}')" title="Delete Purchase">🗑️</button>
+
+                        </div>
+
+                    </td>
+
+                </tr>
+
+                `;
+            }).join('');
+        } else {
+            recordsList.innerHTML = '<tr><td colspan="10" class="no-records">No purchase records found.</td></tr>';
         }
-    };
-    </script>
-
-    
-
-    <style>
-/* Task Table Styling Using Workforce Table Style */
-.workforce-table-container,
-.task-table-container {
-    background: white;
-    border: 1px solid #dee2e6;
-    border-radius: 2px;
-    overflow: hidden;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    margin-top: 15px;
-    overflow-x: auto; /* Enable horizontal scrolling on small screens */
-}
-.workforce-table,
-.task-table {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 12px;
-    background: white;
-    min-width: 500px;
-}
-.workforce-table th,
-.task-table th {
-    background: #0b3d91;
     color: white;
     padding: 8px 6px;
     text-align: left;
