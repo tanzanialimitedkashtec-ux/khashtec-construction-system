@@ -17771,23 +17771,6 @@ function manageLeaveContracts(){
                 </button>
 
             </div>
-            
-            <div class="workforce-table-container">
-                <table class="workforce-table" id="leaveContractsTable">
-                    <thead>
-                        <tr>
-                            <th>Type</th>
-                            <th>Title</th>
-                            <th>Description</th>
-                            <th>Priority</th>
-                            <th>Due Date</th>
-                        </tr>
-                    </thead>
-                    <tbody id="leaveContractsTableBody">
-                        <tr><td colspan="5" style="text-align: center;">Loading data...</td></tr>
-                    </tbody>
-                </table>
-            </div>
 
             
 
@@ -17816,6 +17799,23 @@ function manageLeaveContracts(){
                 <div id="leaveTab" class="tab-content">
 
                     <h4>Leave Management</h4>
+                    
+                    <div class="workforce-table-container" style="margin-bottom: 20px;">
+                        <table class="workforce-table" id="leaveTable">
+                            <thead>
+                                <tr>
+                                    <th>Employee</th>
+                                    <th>Leave Type</th>
+                                    <th>Description</th>
+                                    <th>Priority</th>
+                                    <th>Due Date</th>
+                                </tr>
+                            </thead>
+                            <tbody id="leaveTableBody">
+                                <tr><td colspan="5" style="text-align: center;">Loading data...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
 
                     <form id="leaveForm" onsubmit="return saveLeaveRequest()">
 
@@ -17942,6 +17942,23 @@ function manageLeaveContracts(){
                 <div id="contractsTab" class="tab-content hidden">
 
                     <h4>Contract Management</h4>
+                    
+                    <div class="workforce-table-container" style="margin-bottom: 20px;">
+                        <table class="workforce-table" id="contractsTable">
+                            <thead>
+                                <tr>
+                                    <th>Employee</th>
+                                    <th>Contract Type</th>
+                                    <th>Description</th>
+                                    <th>Priority</th>
+                                    <th>Due Date</th>
+                                </tr>
+                            </thead>
+                            <tbody id="contractsTableBody">
+                                <tr><td colspan="5" style="text-align: center;">Loading data...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
 
                     <form id="contractForm" onsubmit="return saveContract()">
 
@@ -18115,33 +18132,61 @@ async function fetchLeaveContractsTableData() {
         if (!response.ok) throw new Error('Failed to fetch data');
 
         const works = await response.json();
-        const tbody = document.getElementById('leaveContractsTableBody');
-        if (!tbody) return;
-        tbody.innerHTML = '';
+        const leaveTbody = document.getElementById('leaveTableBody');
+        const contractsTbody = document.getElementById('contractsTableBody');
         
-        const filteredWorks = works.filter(w => w.work_type === 'Leave Request' || w.work_type === 'Contract Management');
+        if (leaveTbody) leaveTbody.innerHTML = '';
+        if (contractsTbody) contractsTbody.innerHTML = '';
+        
+        const leaveWorks = works.filter(w => w.work_type === 'Leave Request');
+        const contractWorks = works.filter(w => w.work_type === 'Contract Management');
 
-        if (filteredWorks.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="5" style="text-align: center;">No leave requests or contracts found.</td></tr>';
-            return;
+        if (leaveTbody) {
+            if (leaveWorks.length === 0) {
+                leaveTbody.innerHTML = '<tr><td colspan="5" style="text-align: center;">No leave requests found.</td></tr>';
+            } else {
+                leaveWorks.forEach(w => {
+                    let employee = w.work_description ? w.work_description.split('\\n')[0].replace('Leave request for ', '') : 'N/A';
+                    
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td><strong>${employee}</strong></td>
+                        <td><span class="status-badge status-active">${w.work_title ? w.work_title.replace('Leave Request - ', '') : 'Leave Request'}</span></td>
+                        <td><div style="max-width: 250px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${w.work_description || ''}">${w.work_description ? w.work_description.replace(/\\n/g, '<br>') : 'N/A'}</div></td>
+                        <td>${w.priority || 'N/A'}</td>
+                        <td>${w.due_date || 'N/A'}</td>
+                    `;
+                    leaveTbody.appendChild(tr);
+                });
+            }
         }
-
-        filteredWorks.forEach(w => {
-            const tr = document.createElement('tr');
-            tr.innerHTML = `
-                <td><span class="status-badge ${w.work_type === 'Leave Request' ? 'status-active' : 'status-contract'}">${w.work_type}</span></td>
-                <td><strong>${w.work_title || 'N/A'}</strong></td>
-                <td><div style="max-width: 250px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${w.work_description || ''}">${w.work_description ? w.work_description.replace(/\\n/g, '<br>') : 'N/A'}</div></td>
-                <td>${w.priority || 'N/A'}</td>
-                <td>${w.due_date || 'N/A'}</td>
-            `;
-            tbody.appendChild(tr);
-        });
+        
+        if (contractsTbody) {
+            if (contractWorks.length === 0) {
+                contractsTbody.innerHTML = '<tr><td colspan="5" style="text-align: center;">No contracts found.</td></tr>';
+            } else {
+                contractWorks.forEach(w => {
+                    let employee = w.work_description ? w.work_description.split('\\n')[0].replace('Contract for ', '') : 'N/A';
+                    
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td><strong>${employee}</strong></td>
+                        <td><span class="status-badge status-contract">${w.work_title ? w.work_title.replace('Contract - ', '') : 'Contract'}</span></td>
+                        <td><div style="max-width: 250px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${w.work_description || ''}">${w.work_description ? w.work_description.replace(/\\n/g, '<br>') : 'N/A'}</div></td>
+                        <td>${w.priority || 'N/A'}</td>
+                        <td>${w.due_date || 'N/A'}</td>
+                    `;
+                    contractsTbody.appendChild(tr);
+                });
+            }
+        }
 
     } catch (error) {
         console.error('â Œ Error fetching leave contracts data:', error);
-        const tbody = document.getElementById('leaveContractsTableBody');
-        if (tbody) tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: #dc3545;">Failed to load data</td></tr>';
+        const leaveTbody = document.getElementById('leaveTableBody');
+        const contractsTbody = document.getElementById('contractsTableBody');
+        if (leaveTbody) leaveTbody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: #dc3545;">Failed to load data</td></tr>';
+        if (contractsTbody) contractsTbody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: #dc3545;">Failed to load data</td></tr>';
     }
 }
 
