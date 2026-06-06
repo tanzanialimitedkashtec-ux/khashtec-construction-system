@@ -333,8 +333,73 @@ router.get('/', async (req, res) => {
                 console.error('❌ Error fetching from employee_details table:', empError);
             }
             
+            // Fetch from worker_accounts
+            let workerDocuments = [];
+            try {
+                const workerItems = await db.execute(`
+                    SELECT id, full_name, created_at,
+                           id_document, contract_document
+                    FROM worker_accounts 
+                    WHERE id_document IS NOT NULL OR contract_document IS NOT NULL
+                `);
+                
+                let workerArray = [];
+                if (Array.isArray(workerItems)) {
+                    workerArray = workerItems;
+                } else if (workerItems && Array.isArray(workerItems[0])) {
+                    workerArray = workerItems[0];
+                } else if (workerItems && workerItems.rows) {
+                    workerArray = workerItems.rows;
+                }
+                
+                workerArray.forEach(item => {
+                    if (item.contract_document) {
+                        workerDocuments.push({
+                            id: `work_cont_${item.id}`,
+                            title: `Contract - ${item.full_name}`,
+                            name: `Contract - ${item.full_name}`,
+                            description: `Worker contract for ${item.full_name}`,
+                            category: 'Contract',
+                            type: item.contract_document.toLowerCase().endsWith('.pdf') ? 'PDF' : 'Other',
+                            uploadedBy: 1,
+                            uploadedByName: 'System',
+                            uploadedDate: item.created_at,
+                            status: 'active',
+                            fileName: item.contract_document.split('/').pop() || `contract_${item.id}`,
+                            filePath: item.contract_document,
+                            fileSize: 0,
+                            expiry_date: null,
+                            source: 'worker_accounts'
+                        });
+                    }
+                    if (item.id_document) {
+                        workerDocuments.push({
+                            id: `work_id_${item.id}`,
+                            title: `ID - ${item.full_name}`,
+                            name: `ID - ${item.full_name}`,
+                            description: `ID document for ${item.full_name}`,
+                            category: 'Identification',
+                            type: item.id_document.toLowerCase().endsWith('.pdf') ? 'PDF' : 'Image',
+                            uploadedBy: 1,
+                            uploadedByName: 'System',
+                            uploadedDate: item.created_at,
+                            status: 'active',
+                            fileName: item.id_document.split('/').pop() || `id_${item.id}`,
+                            filePath: item.id_document,
+                            fileSize: 0,
+                            expiry_date: null,
+                            source: 'worker_accounts'
+                        });
+                    }
+                });
+                
+                console.log('✅ Documents fetched from worker_accounts:', workerDocuments.length);
+            } catch (workerError) {
+                console.error('❌ Error fetching from worker_accounts table:', workerError);
+            }
+            
             // Combine all sources
-            documents = [...realDocuments, ...adminWorkDocuments, ...employeeDocuments];
+            documents = [...realDocuments, ...adminWorkDocuments, ...employeeDocuments, ...workerDocuments];
             
             // Sort by date (newest first)
             documents.sort((a, b) => new Date(b.uploadedDate) - new Date(a.uploadedDate));
@@ -477,6 +542,57 @@ router.get('/:id', async (req, res) => {
                     }
                 } catch (empErr) {
                     console.warn('⚠️ employee_details lookup failed:', empErr.message);
+                }
+            }
+        } else if (docId.startsWith('work_')) {
+            const isIdDoc = docId.startsWith('work_id_');
+            const isContDoc = docId.startsWith('work_cont_');
+            const workerIdStr = isIdDoc ? docId.replace('work_id_', '') : docId.replace('work_cont_', '');
+            const workerId = parseInt(workerIdStr, 10);
+            
+            if (!isNaN(workerId)) {
+                try {
+                    const workerRows = await db.execute(
+                        'SELECT id, full_name, created_at, id_document, contract_document FROM worker_accounts WHERE id = ?', [workerId]
+                    );
+                    if (Array.isArray(workerRows) && workerRows.length > 0) {
+                        const item = workerRows[0];
+                        if (isIdDoc && item.id_document) {
+                            return res.json({
+                                id: `work_id_${item.id}`,
+                                title: `ID - ${item.full_name}`,
+                                description: `ID document for ${item.full_name}`,
+                                category: 'Identification',
+                                type: item.id_document.toLowerCase().endsWith('.pdf') ? 'PDF' : 'Image',
+                                uploadedBy: 1,
+                                uploadedDate: item.created_at ? new Date(item.created_at).toISOString().split('T')[0] : null,
+                                status: 'active',
+                                fileName: item.id_document.split('/').pop() || `id_${item.id}`,
+                                filePath: item.id_document,
+                                size: 0,
+                                department: 'admin',
+                                source: 'worker_accounts'
+                            });
+                        } else if (isContDoc && item.contract_document) {
+                            return res.json({
+                                id: `work_cont_${item.id}`,
+                                title: `Contract - ${item.full_name}`,
+                                description: `Worker contract for ${item.full_name}`,
+                                category: 'Contract',
+                                type: item.contract_document.toLowerCase().endsWith('.pdf') ? 'PDF' : 'Other',
+                                uploadedBy: 1,
+                                uploadedDate: item.created_at ? new Date(item.created_at).toISOString().split('T')[0] : null,
+                                status: 'active',
+                                fileName: item.contract_document.split('/').pop() || `contract_${item.id}`,
+                                filePath: item.contract_document,
+                                size: 0,
+                                department: 'admin',
+                                source: 'worker_accounts'
+                            });
+                        }
+                    }
+                } catch (workErr) {
+                    console.warn('⚠️ worker_accounts lookup failed:', workErr.message);
                 }
             }
         }

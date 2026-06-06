@@ -91217,6 +91217,8 @@ async function documentManagement(){
 
                                     <th>Type</th>
 
+                                    <th>Category</th>
+
                                     <th>Name</th>
 
                                     <th>Description</th>
@@ -91242,6 +91244,8 @@ async function documentManagement(){
                                             <td>${doc.id}</td>
 
                                             <td>${getDocumentTypeLabel(doc.type)}</td>
+
+                                            <td><span class="category-tag" style="background:#e9ecef;color:#495057;padding:4px 8px;border-radius:12px;font-size:12px;font-weight:500">${doc.category || 'General'}</span></td>
 
                                             <td>${doc.title || doc.name || doc.filename || 'N/A'}</td>
 
