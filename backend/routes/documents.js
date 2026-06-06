@@ -1280,20 +1280,20 @@ router.get('/:id/download', async (req, res) => {
                 if (workRows.length > 0 && workRows[0][column]) {
                     const filePath = workRows[0][column];
                     const fileName = filePath.split('/').pop() || `worker_document_${workerId}`;
-                    
-                    // If it's a relative path starting with /uploads, redirect to the static file
-                    if (filePath.startsWith('/uploads/')) {
-                        return res.redirect(filePath);
-                    }
-                    // Otherwise try to resolve the absolute path and send it
+                    const fs = require('fs');
                     const path = require('path');
                     const absolutePath = path.resolve(__dirname, '../../', filePath.replace(/^\//, ''));
-                    return res.download(absolutePath, fileName);
+                    
+                    if (fs.existsSync(absolutePath)) {
+                        return res.download(absolutePath, fileName);
+                    } else {
+                        console.error('❌ Physical file not found at:', absolutePath);
+                        return res.status(404).json({ error: 'The physical file is missing from the server storage. It may have been deleted.' });
+                    }
                 }
             }
             
-            return res.status(404).json({ error: 'Worker document not found' });
-            return res.status(404).json({ error: 'Worker document not found' });
+            return res.status(404).json({ error: 'Worker document not found in database.' });
         }
 
         // Try to fetch from documents table first
@@ -1310,12 +1310,18 @@ router.get('/:id/download', async (req, res) => {
                     
                     // If we have a real file path, serve it
                     if (doc.file_path) {
-                        if (doc.file_path.startsWith('/uploads/')) {
-                            return res.redirect(doc.file_path);
-                        }
+                        const fs = require('fs');
                         const path = require('path');
                         const absolutePath = path.resolve(__dirname, '../../', doc.file_path.replace(/^\//, ''));
-                        return res.download(absolutePath, doc.file_name);
+                        
+                        if (fs.existsSync(absolutePath)) {
+                            return res.download(absolutePath, doc.file_name);
+                        } else {
+                            console.error('❌ Physical file not found at:', absolutePath);
+                            // Do NOT fallback to PDF generation if a file_path was specified but missing, 
+                            // because it means it was a real file upload that got lost.
+                            return res.status(404).json({ error: 'The physical file is missing from the server storage.' });
+                        }
                     }
                     
                     // Otherwise, generate a PDF using metadata
