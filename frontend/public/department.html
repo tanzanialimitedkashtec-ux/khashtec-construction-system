@@ -65619,6 +65619,9 @@ async function loadLuggageCampaigns() {
 
                 // Map backend fields to frontend expected fields
 
+                const totalUnitsAvailable = campaign.total_units || campaign.total_units_available || campaign.participants_count || 0;
+                const unitsSoldValue = campaign.units_sold || campaign.sold_units || Math.floor((campaign.completion_rate || 0) / 100 * totalUnitsAvailable);
+
                 const mappedCampaign = {
 
                     id: campaign.id,
@@ -65631,9 +65634,9 @@ async function loadLuggageCampaigns() {
 
                     price_per_unit: campaign.budget || campaign.price_per_unit || 0,
 
-                    total_units_available: campaign.participants_count || campaign.total_units_available || 0,
+                    total_units_available: totalUnitsAvailable,
 
-                    units_sold: Math.floor((campaign.completion_rate || 0) / 100 * (campaign.participants_count || 0)),
+                    units_sold: unitsSoldValue,
 
                     status: campaign.status || 'planning',
 

@@ -467,6 +467,17 @@ router.post('/', async (req, res) => {
             console.log('✅ Luggage purchase created successfully:', result);
             
             // Fetch the created purchase
+            // Update campaign sold units for linked campaign records
+            if (campaign_id) {
+                const purchasedQty = parseInt(units_purchased, 10) || 0;
+                if (purchasedQty > 0) {
+                    await db.execute(
+                        'UPDATE luggage_campaigns SET units_sold = units_sold + ? WHERE id = ?',
+                        [purchasedQty, campaign_id]
+                    );
+                }
+            }
+
             const createdPurchaseResult = await db.execute('SELECT * FROM luggage_purchases WHERE id = ?', [result.insertId]);
             const createdPurchase = Array.isArray(createdPurchaseResult) ? createdPurchaseResult[0] : createdPurchaseResult;
             
