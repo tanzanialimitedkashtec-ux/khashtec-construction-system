@@ -65452,7 +65452,10 @@ async function saveLuggagePurchase() {
 
         if (response.success) {
 
-            customAlert(`Purchase recorded successfully! Tracking Number: ${response.data.tracking_number}`, 'Success', 'success');
+            const message = response.purchase?.purchase_reference 
+                ? `Purchase recorded successfully! Reference: ${response.purchase.purchase_reference}`
+                : 'Purchase recorded successfully!';
+            customAlert(message, 'Success', 'success');
 
             manageLuggagePurchases();
 

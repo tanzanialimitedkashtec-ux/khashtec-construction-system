@@ -86,170 +86,13 @@ router.get('/', async (req, res) => {
             
             console.log('✅ Luggage Purchases records fetched from database:', purchases.length);
             
-            // If no purchases in database, use fallback data
-            if (purchases.length === 0) {
-                console.log('📋 No purchases in database, using fallback data...');
-                purchases = [
-                {
-                    id: 1,
-                    purchase_reference: 'LP202605001',
-                    campaign_id: 1,
-                    campaign_name: 'English Proficiency Program',
-                    employee_id: 'EMP001',
-                    employee_name: 'John Doe',
-                    department: 'IT',
-                    luggage: 'English',
-                    course_type: 'intermediate',
-                    purchase_date: '2026-05-01',
-                    amount: 1500.00,
-                    currency: 'USD',
-                    payment_method: 'company_sponsored',
-                    payment_status: 'paid',
-                    enrollment_status: 'in_progress',
-                    start_date: '2026-05-01',
-                    end_date: '2026-06-30',
-                    instructor: 'Sarah Johnson',
-                    location: 'Training Center - Room A',
-                    schedule: 'Mon-Wed-Fri 9:00-11:00',
-                    progress_percentage: 35.5,
-                    certificate_issued: false,
-                    certificate_date: null,
-                    notes: 'Good progress, active participation',
-                    approved_by: 'HR Manager',
-                    approved_date: '2026-05-01T08:00:00Z',
-                    created_at: '2026-05-01T08:00:00Z',
-                    updated_at: '2026-05-04T00:00:00Z'
-                },
-                {
-                    id: 2,
-                    purchase_reference: 'LP202604002',
-                    campaign_id: 2,
-                    campaign_name: 'Swahili Communication Skills',
-                    employee_id: 'EMP002',
-                    employee_name: 'Jane Smith',
-                    department: 'Operations',
-                    luggage: 'Swahili',
-                    course_type: 'basic',
-                    purchase_date: '2026-04-15',
-                    amount: 800.00,
-                    currency: 'USD',
-                    payment_method: 'company_sponsored',
-                    payment_status: 'paid',
-                    enrollment_status: 'completed',
-                    start_date: '2026-04-15',
-                    end_date: '2026-05-15',
-                    instructor: 'Joseph Mwangi',
-                    location: 'Conference Room B',
-                    schedule: 'Tue-Thu 14:00-16:00',
-                    progress_percentage: 100.0,
-                    certificate_issued: true,
-                    certificate_date: '2026-05-15T00:00:00Z',
-                    notes: 'Excellent performance, certificate awarded',
-                    approved_by: 'Operations Manager',
-                    approved_date: '2026-04-15T09:00:00Z',
-                    created_at: '2026-04-15T09:00:00Z',
-                    updated_at: '2026-05-15T17:00:00Z'
-                },
-                {
-                    id: 3,
-                    purchase_reference: 'LP202606003',
-                    campaign_id: 3,
-                    campaign_name: 'French for Project Management',
-                    employee_id: 'EMP003',
-                    employee_name: 'Mike Johnson',
-                    department: 'Projects',
-                    luggage: 'French',
-                    course_type: 'business',
-                    purchase_date: '2026-06-01',
-                    amount: 2500.00,
-                    currency: 'USD',
-                    payment_method: 'company_sponsored',
-                    payment_status: 'paid',
-                    enrollment_status: 'enrolled',
-                    start_date: '2026-06-01',
-                    end_date: '2026-08-31',
-                    instructor: 'Marie Dubois',
-                    location: 'Online - Zoom',
-                    schedule: 'Mon-Wed-Fri 16:00-18:00',
-                    progress_percentage: 0.0,
-                    certificate_issued: false,
-                    certificate_date: null,
-                    notes: 'Awaiting course start',
-                    approved_by: 'Project Director',
-                    approved_date: '2026-06-01T10:00:00Z',
-                    created_at: '2026-06-01T10:00:00Z',
-                    updated_at: '2026-06-01T10:00:00Z'
-                },
-                {
-                    id: 4,
-                    purchase_reference: 'LP202607004',
-                    campaign_id: 4,
-                    campaign_name: 'Mandarin Business Basics',
-                    employee_id: 'EMP004',
-                    employee_name: 'Sarah Wilson',
-                    department: 'Management',
-                    luggage: 'Mandarin',
-                    course_type: 'business',
-                    purchase_date: '2026-07-01',
-                    amount: 3000.00,
-                    currency: 'USD',
-                    payment_method: 'company_sponsored',
-                    payment_status: 'paid',
-                    enrollment_status: 'enrolled',
-                    start_date: '2026-07-01',
-                    end_date: '2026-09-30',
-                    instructor: 'Li Wei',
-                    location: 'Executive Training Room',
-                    schedule: 'Tue-Thu 09:00-11:00',
-                    progress_percentage: 0.0,
-                    certificate_issued: false,
-                    certificate_date: null,
-                    notes: 'Senior management priority enrollment',
-                    approved_by: 'CEO',
-                    approved_date: '2026-07-01T08:00:00Z',
-                    created_at: '2026-07-01T08:00:00Z',
-                    updated_at: '2026-07-01T08:00:00Z'
-                },
-                {
-                    id: 5,
-                    purchase_reference: 'LP202605005',
-                    campaign_id: 1,
-                    campaign_name: 'English Proficiency Program',
-                    employee_id: 'EMP005',
-                    employee_name: 'Robert Chen',
-                    department: 'Finance',
-                    luggage: 'English',
-                    course_type: 'advanced',
-                    purchase_date: '2026-05-03',
-                    amount: 2000.00,
-                    currency: 'USD',
-                    payment_method: 'card',
-                    payment_status: 'paid',
-                    enrollment_status: 'in_progress',
-                    start_date: '2026-05-03',
-                    end_date: '2026-07-03',
-                    instructor: 'Emily Davis',
-                    location: 'Luggage Lab - Room C',
-                    schedule: 'Mon-Tue-Wed-Thu 13:00-15:00',
-                    progress_percentage: 15.0,
-                    certificate_issued: false,
-                    certificate_date: null,
-                    notes: 'Self-funded advanced course',
-                    approved_by: 'Finance Manager',
-                    approved_date: '2026-05-03T11:00:00Z',
-                    created_at: '2026-05-03T11:00:00Z',
-                    updated_at: '2026-05-04T00:00:00Z'
-                }
-            ];
-            }
-            
         } catch (dbError) {
-            console.error('❌ Database error:', dbError);
+            console.error('❌ Database error fetching purchases:', dbError);
         }
         
         res.json({
             success: true,
-            purchases: purchases,
+            data: purchases,
             total: purchases.length
         });
         
@@ -597,44 +440,14 @@ router.post('/', async (req, res) => {
             });
             
         } catch (dbError) {
-            console.error('❌ Database error, using mock purchase creation:', dbError);
-            
-            // Fallback to mock purchase creation
-            const purchaseId = `LP${Date.now().toString().slice(-6)}`;
-            
-            res.status(201).json({
-                success: true,
-                message: 'Luggage purchase created successfully (mock)',
-                purchaseId: purchaseId,
-                purchase: {
-                    id: purchaseId,
-                    purchase_reference,
-                    campaign_id,
-                    campaign_name,
-                    employee_id,
-                    employee_name,
-                    department,
-                    luggage,
-                    course_type,
-                    purchase_date,
-                    amount,
-                    currency,
-                    payment_method,
-                    payment_status: 'paid',
-                    enrollment_status: 'enrolled',
-                    start_date,
-                    end_date,
-                    instructor,
-                    location,
-                    schedule,
-                    progress_percentage: 0.0,
-                    certificate_issued: false,
-                    notes,
-                    approved_by,
-                    created_at: new Date().toISOString(),
-                    mock: true
-                }
+            console.error('❌ Database error creating purchase:', dbError);
+            res.status(500).json({ 
+                success: false,
+                error: 'Database connection error',
+                details: 'Unable to save purchase to database. Please check database connection and try again.',
+                message: dbError.message
             });
+            return;
         }
         
     } catch (error) {
