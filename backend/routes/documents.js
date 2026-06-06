@@ -922,29 +922,65 @@ router.delete('/:id', async (req, res) => {
     try {
         const docId = req.params.id;
         console.log(`🗑️ Delete request for document ID: ${docId}`);
-        
+
         // Try database first
         const db = require('../../database/config/database');
-        
-        // Delete from admin_work table
-        const [result] = await db.execute(
+
+        // Run delete and normalize result because different DB libs return
+        // different shapes (mysql2 returns [result, fields], some wrappers
+        // may return result directly).
+        const execResult = await db.execute(
             'DELETE FROM admin_work WHERE id = ?', [docId]
         );
-        
-        if (result.affectedRows === 0) {
+
+        // Determine affectedRows in a robust way
+        let affectedRows;
+        if (Array.isArray(execResult)) {
+            // Common pattern: [result, fields]
+            const first = execResult[0];
+            if (first && typeof first === 'object' && ('affectedRows' in first)) {
+                affectedRows = first.affectedRows;
+            }
+        } else if (execResult && typeof execResult === 'object' && ('affectedRows' in execResult)) {
+            affectedRows = execResult.affectedRows;
+        }
+
+        // Fallback: if we couldn't read affectedRows, check if the record still exists
+        if (typeof affectedRows !== 'number') {
+            try {
+                const check = await db.execute('SELECT id FROM admin_work WHERE id = ?', [docId]);
+                let rows = Array.isArray(check) && Array.isArray(check[0]) ? check[0] : check;
+                if (rows && rows.length > 0) {
+                    // Record still exists and delete did not report affectedRows
+                    console.error('❌ Delete returned unexpected result and document still exists:', execResult);
+                    return res.status(500).json({
+                        error: 'Failed to delete document',
+                        details: 'Delete returned unexpected result and document still exists'
+                    });
+                } else {
+                    // No rows => treat as deleted
+                    affectedRows = 1;
+                }
+            } catch (chkErr) {
+                console.error('❌ Error verifying deletion:', chkErr);
+                return res.status(500).json({ error: 'Failed to delete document', details: chkErr.message });
+            }
+        }
+
+        if (affectedRows === 0) {
             return res.status(404).json({
                 error: 'Document not found',
                 details: `No document found with ID: ${docId}`
             });
         }
-        
+
         console.log(`✅ Document deleted from database: ${docId}`);
-        
+
         res.json({
             message: 'Document deleted successfully',
             documentId: docId
         });
-        
+
     } catch (error) {
         console.error('❌ Error deleting document:', error);
         res.status(500).json({ 
