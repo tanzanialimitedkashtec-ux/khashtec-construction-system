@@ -104868,6 +104868,29 @@ function filterLeadershipRecords() {
     });
 }
 
+function filterInvestmentRecords() {
+    const searchInput = document.getElementById('investmentSearchInput');
+    const tbody = document.getElementById('investmentRecordsTbody');
+    if (!searchInput || !tbody) {
+        return;
+    }
+
+    const searchTerm = searchInput.value.trim().toLowerCase();
+    const rows = Array.from(tbody.querySelectorAll('tr'));
+
+    if (!searchTerm) {
+        rows.forEach((row) => {
+            row.style.display = '';
+        });
+        return;
+    }
+
+    rows.forEach((row) => {
+        const rowText = row.textContent.toLowerCase();
+        row.style.display = rowText.includes(searchTerm) ? '' : 'none';
+    });
+}
+
 // Update project fields based on project type
 function updateProjectFields() {
     const projectType = document.getElementById('projectType').value;
@@ -107215,6 +107238,7 @@ function showInvestmentManagement() {
             <div style="margin-top: 25px;">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
                     <h4 style="margin: 0;">📋 Investment Portfolio</h4>
+                    <input type="text" id="investmentSearchInput" placeholder="🔍 Search investment records..." style="padding: 3px; border: 2px solid #ddd; border-radius: 3px; font-size: 9px; width: 290px;" onkeyup="filterInvestmentRecords()">
                     <button type="button" class="action" style="background: #0b3d91;" onclick="loadInvestmentRecords()">🔄 Refresh</button>
                 </div>
                 <div style="overflow: auto; border: 1px solid #dee2e6; border-radius: 5px;">
