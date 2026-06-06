@@ -25,29 +25,29 @@ router.get('/', async (req, res) => {
 
                         try {
                             incidents = await db.query(
-                                `SELECT COUNT(*) as count, MAX(incident_date) as last_incident FROM hse_incidents WHERE project_id = ?`,
-                                [project.id]
+                                `SELECT COUNT(*) as count, MAX(submitted_date) as last_incident FROM hse_work WHERE work_type = 'Incident Reporting' AND (project = ? OR project = ?)`,
+                                [project.id, project.name]
                             );
                         } catch (e) { /* table may not exist */ }
 
                         try {
                             violations = await db.query(
-                                `SELECT COUNT(*) as count FROM hse_work WHERE work_type = 'Safety Violation' AND project_name = ? AND status != 'Completed'`,
-                                [project.name]
+                                `SELECT COUNT(*) as count FROM hse_work WHERE work_type = 'Safety Violation' AND (project = ? OR project = ?) AND status != 'Completed'`,
+                                [project.id, project.name]
                             );
                         } catch (e) { /* table may not exist */ }
 
                         try {
                             inspections = await db.query(
-                                `SELECT COUNT(*) as count, MAX(submitted_date) as last_inspection FROM hse_work WHERE work_type = 'Inspection Report' AND project_name = ?`,
-                                [project.name]
+                                `SELECT COUNT(*) as count, MAX(submitted_date) as last_inspection FROM hse_work WHERE work_type = 'Inspection Report' AND (project = ? OR project = ?)`,
+                                [project.id, project.name]
                             );
                         } catch (e) { /* table may not exist */ }
 
                         try {
                             ppeRecords = await db.query(
-                                `SELECT COUNT(*) as total, SUM(CASE WHEN status = 'Issued' THEN 1 ELSE 0 END) as issued FROM ppe_issuance WHERE project_id = ?`,
-                                [project.id]
+                                `SELECT COUNT(*) as total, SUM(CASE WHEN status = 'Issued' THEN 1 ELSE 0 END) as issued FROM ppe_issuance WHERE project = ? OR project = ?`,
+                                [project.id, project.name]
                             );
                         } catch (e) { /* table may not exist */ }
 
@@ -172,10 +172,10 @@ router.get('/:id', async (req, res) => {
                 let inspections = [];
                 let ppeRecords = [];
 
-                try { incidents = await db.query(`SELECT COUNT(*) as count, MAX(incident_date) as last_incident FROM hse_incidents WHERE project_id = ?`, [project.id]); } catch(e){}
-                try { violations = await db.query(`SELECT COUNT(*) as count FROM hse_work WHERE work_type = 'Safety Violation' AND project_name = ? AND status != 'Completed'`, [project.name]); } catch(e){}
-                try { inspections = await db.query(`SELECT COUNT(*) as count, MAX(submitted_date) as last_inspection FROM hse_work WHERE work_type = 'Inspection Report' AND project_name = ?`, [project.name]); } catch(e){}
-                try { ppeRecords = await db.query(`SELECT COUNT(*) as total, SUM(CASE WHEN status = 'Issued' THEN 1 ELSE 0 END) as issued FROM ppe_issuance WHERE project_id = ?`, [project.id]); } catch(e){}
+                try { incidents = await db.query(`SELECT COUNT(*) as count, MAX(submitted_date) as last_incident FROM hse_work WHERE work_type = 'Incident Reporting' AND (project = ? OR project = ?)`, [project.id, project.name]); } catch(e){}
+                try { violations = await db.query(`SELECT COUNT(*) as count FROM hse_work WHERE work_type = 'Safety Violation' AND (project = ? OR project = ?) AND status != 'Completed'`, [project.id, project.name]); } catch(e){}
+                try { inspections = await db.query(`SELECT COUNT(*) as count, MAX(submitted_date) as last_inspection FROM hse_work WHERE work_type = 'Inspection Report' AND (project = ? OR project = ?)`, [project.id, project.name]); } catch(e){}
+                try { ppeRecords = await db.query(`SELECT COUNT(*) as total, SUM(CASE WHEN status = 'Issued' THEN 1 ELSE 0 END) as issued FROM ppe_issuance WHERE project = ? OR project = ?`, [project.id, project.name]); } catch(e){}
 
                 const incidentCount = (incidents && incidents[0]) ? incidents[0].count : 0;
                 const lastIncident = (incidents && incidents[0]) ? incidents[0].last_incident : null;
