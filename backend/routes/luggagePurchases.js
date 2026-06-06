@@ -384,86 +384,62 @@ router.post('/', async (req, res) => {
             });
         }
         
-        // Generate purchase reference based on current timestamp
-        const purchase_reference = `LP${new Date().getFullYear()}${String(new Date().getMonth() + 1).padStart(2, '0')}${String(Date.now()).slice(-3)}`;
-        
-        // Try database first
+        // Try database first, align inserts to migration-defined columns
         try {
             const db = require('../../database/config/database');
-            
-            // First, check what columns exist in the table
-            let query = `
+
+            // Normalize input: support both buyer_* and employee_* payload variations
+            const buyerName = req.body.buyer_name || req.body.employee_name || null;
+            const buyerEmail = req.body.buyer_email || null;
+            const buyerPhone = req.body.buyer_phone || null;
+            const buyerAddress = req.body.buyer_address || null;
+            const unitsPurchased = parseInt(req.body.units_purchased) || null;
+            const pricePerUnit = parseFloat(req.body.price_per_unit) || parseFloat(req.body.price) || 0;
+            const totalAmount = parseFloat(req.body.total_amount) || parseFloat(req.body.amount) || (unitsPurchased ? unitsPurchased * pricePerUnit : 0);
+            const purchaseNotes = req.body.notes || req.body.purchase_notes || null;
+            const paymentMethod = req.body.payment_method || 'Bank Transfer';
+            const purchaseDateVal = req.body.purchase_date || req.body.purchaseDate || new Date().toISOString().split('T')[0];
+
+            const insertQuery = `
                 INSERT INTO luggage_purchases (
-                    campaign_id, employee_id, employee_name,
-                    luggage, purchase_date, amount, currency,
-                    payment_method, notes, created_by
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    campaign_id, buyer_name, buyer_email, buyer_phone,
+                    units_purchased, price_per_unit, total_amount, payment_method,
+                    buyer_address, purchase_notes, purchase_status, purchase_date, created_by, created_at
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())
             `;
-            
-            let values = [
+
+            const insertValues = [
                 campaign_id || null,
-                employee_id,
-                employee_name,
-                luggage,
-                purchase_date,
-                amount,
-                currency || 'TZS',
-                payment_method || 'company_sponsored',
-                notes || null,
-                req.body.created_by || employee_id
+                buyerName,
+                buyerEmail,
+                buyerPhone,
+                unitsPurchased,
+                pricePerUnit,
+                totalAmount,
+                paymentMethod,
+                buyerAddress,
+                purchaseNotes,
+                'Pending',
+                purchaseDateVal,
+                req.body.created_by || null
             ];
-            
-            // Try with all optional fields if they exist
-            try {
-                query = `
-                    INSERT INTO luggage_purchases (
-                        campaign_id, campaign_name, employee_id, employee_name,
-                        department, luggage, course_type, purchase_date, amount, currency,
-                        payment_method, start_date, end_date, instructor, location, schedule,
-                        notes, created_by, created_at
-                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())
-                `;
-                
-                values = [
-                    campaign_id || null,
-                    req.body.campaign_name || null,
-                    employee_id,
-                    employee_name,
-                    department || null,
-                    luggage,
-                    course_type || 'basic',
-                    purchase_date,
-                    amount,
-                    currency || 'TZS',
-                    payment_method || 'company_sponsored',
-                    req.body.start_date || null,
-                    req.body.end_date || null,
-                    req.body.instructor || null,
-                    req.body.location || null,
-                    req.body.schedule || null,
-                    notes || null,
-                    req.body.created_by || employee_id
-                ];
-            } catch (e) {
-                // Fallback to minimal set
-            }
-            
-            const resultResult = await db.execute(query, values);
+
+            const resultResult = await db.execute(insertQuery, insertValues);
             const result = Array.isArray(resultResult) ? resultResult[0] : resultResult;
-            
+
             console.log('✅ Luggage purchase created successfully:', result);
-            
+
             // Fetch the created purchase
             const createdPurchaseResult = await db.execute('SELECT * FROM luggage_purchases WHERE id = ?', [result.insertId]);
             const createdPurchase = Array.isArray(createdPurchaseResult) ? createdPurchaseResult[0] : createdPurchaseResult;
-            
+
             res.status(201).json({
                 success: true,
                 message: 'Luggage purchase created successfully',
                 purchaseId: result.insertId,
                 purchase: createdPurchase[0]
             });
-            
+
         } catch (dbError) {
             console.error('❌ Database error creating purchase:', dbError);
             res.status(500).json({ 
@@ -540,7 +516,8 @@ router.put('/:id', async (req, res) => {
                 details: dbError.message
             });
             return;
-        
+        }
+
     } catch (error) {
         console.error('❌ Error updating luggage purchase:', error);
         res.status(500).json({ 
@@ -594,7 +571,8 @@ router.delete('/:id', async (req, res) => {
                 details: dbError.message
             });
             return;
-        
+        }
+
     } catch (error) {
         console.error('❌ Error deleting luggage purchase:', error);
         res.status(500).json({ 
