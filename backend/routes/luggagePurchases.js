@@ -384,44 +384,69 @@ router.post('/', async (req, res) => {
             });
         }
         
-        // Generate purchase reference
+        // Generate purchase reference based on current timestamp
         const purchase_reference = `LP${new Date().getFullYear()}${String(new Date().getMonth() + 1).padStart(2, '0')}${String(Date.now()).slice(-3)}`;
         
-        // Try database first, fallback to mock
+        // Try database first
         try {
             const db = require('../../database/config/database');
             
-            const query = `
+            // First, check what columns exist in the table
+            let query = `
                 INSERT INTO luggage_purchases (
-                    purchase_reference, campaign_id, campaign_name, employee_id, employee_name,
-                    department, luggage, course_type, purchase_date, amount, currency,
-                    payment_method, start_date, end_date, instructor, location, schedule,
-                    notes, approved_by, approved_date, created_at
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())
+                    campaign_id, employee_id, employee_name,
+                    luggage, purchase_date, amount, currency,
+                    payment_method, notes, created_by
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             `;
             
-            const values = [
-                purchase_reference,
+            let values = [
                 campaign_id || null,
-                campaign_name || null,
                 employee_id,
                 employee_name,
-                department || null,
                 luggage,
-                course_type || 'basic',
                 purchase_date,
                 amount,
-                currency || 'USD',
+                currency || 'TZS',
                 payment_method || 'company_sponsored',
-                start_date || null,
-                end_date || null,
-                instructor || null,
-                location || null,
-                schedule || null,
                 notes || null,
-                approved_by || null,
-                approved_by ? new Date() : null
+                req.body.created_by || employee_id
             ];
+            
+            // Try with all optional fields if they exist
+            try {
+                query = `
+                    INSERT INTO luggage_purchases (
+                        campaign_id, campaign_name, employee_id, employee_name,
+                        department, luggage, course_type, purchase_date, amount, currency,
+                        payment_method, start_date, end_date, instructor, location, schedule,
+                        notes, created_by, created_at
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())
+                `;
+                
+                values = [
+                    campaign_id || null,
+                    req.body.campaign_name || null,
+                    employee_id,
+                    employee_name,
+                    department || null,
+                    luggage,
+                    course_type || 'basic',
+                    purchase_date,
+                    amount,
+                    currency || 'TZS',
+                    payment_method || 'company_sponsored',
+                    req.body.start_date || null,
+                    req.body.end_date || null,
+                    req.body.instructor || null,
+                    req.body.location || null,
+                    req.body.schedule || null,
+                    notes || null,
+                    req.body.created_by || employee_id
+                ];
+            } catch (e) {
+                // Fallback to minimal set
+            }
             
             const resultResult = await db.execute(query, values);
             const result = Array.isArray(resultResult) ? resultResult[0] : resultResult;
@@ -469,7 +494,7 @@ router.put('/:id', async (req, res) => {
         console.log('🔄 Updating luggage purchase:', purchaseId);
         console.log('📝 Update data:', updateData);
         
-        // Try database first, fallback to mock
+        // Try database first
         try {
             const db = require('../../database/config/database');
             
@@ -478,7 +503,7 @@ router.put('/:id', async (req, res) => {
             const updateValues = [];
             
             Object.keys(updateData).forEach(key => {
-                if (updateData[key] !== undefined && key !== 'id') {
+                if (updateData[key] !== undefined && key !== 'id' && key !== 'purchase_reference') {
                     updateFields.push(`${key} = ?`);
                     updateValues.push(updateData[key]);
                 }
@@ -508,16 +533,13 @@ router.put('/:id', async (req, res) => {
             });
             
         } catch (dbError) {
-            console.error('❌ Database error, using mock update:', dbError);
-            
-            // Fallback to mock update
-            res.json({
-                success: true,
-                message: 'Luggage purchase updated successfully (mock)',
-                affected_rows: 1,
-                mock: true
+            console.error('❌ Database error updating purchase:', dbError);
+            res.status(500).json({
+                success: false,
+                error: 'Failed to update luggage purchase',
+                details: dbError.message
             });
-        }
+            return;
         
     } catch (error) {
         console.error('❌ Error updating luggage purchase:', error);
@@ -535,12 +557,12 @@ router.delete('/:id', async (req, res) => {
         const purchaseId = req.params.id;
         console.log('🗑️ Deleting luggage purchase:', purchaseId);
         
-        // Try database first, fallback to mock
+        // Try database first
         try {
             const db = require('../../database/config/database');
             
             // Check if purchase exists
-            const purchaseResult = await db.execute('SELECT purchase_reference FROM luggage_purchases WHERE id = ?', [purchaseId]);
+            const purchaseResult = await db.execute('SELECT id FROM luggage_purchases WHERE id = ?', [purchaseId]);
             const purchaseData = Array.isArray(purchaseResult) ? purchaseResult[0] : purchaseResult;
             
             if (purchaseData.length === 0) {
@@ -560,25 +582,18 @@ router.delete('/:id', async (req, res) => {
                 success: true,
                 message: 'Luggage purchase deleted successfully',
                 deleted_purchase: {
-                    id: purchaseId,
-                    purchase_reference: purchaseData[0].purchase_reference
+                    id: purchaseId
                 }
             });
             
         } catch (dbError) {
-            console.error('❌ Database error, using mock delete:', dbError);
-            
-            // Fallback to mock delete
-            res.json({
-                success: true,
-                message: 'Luggage purchase deleted successfully (mock)',
-                deleted_purchase: {
-                    id: purchaseId,
-                    purchase_reference: 'Mock Purchase'
-                },
-                mock: true
+            console.error('❌ Database error deleting purchase:', dbError);
+            res.status(500).json({
+                success: false,
+                error: 'Failed to delete luggage purchase',
+                details: dbError.message
             });
-        }
+            return;
         
     } catch (error) {
         console.error('❌ Error deleting luggage purchase:', error);

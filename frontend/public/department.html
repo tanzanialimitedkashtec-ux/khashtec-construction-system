@@ -65452,8 +65452,8 @@ async function saveLuggagePurchase() {
 
         if (response.success) {
 
-            const message = response.purchase?.purchase_reference 
-                ? `Purchase recorded successfully! Reference: ${response.purchase.purchase_reference}`
+            const message = response.purchaseId || response.purchase?.id
+                ? `Purchase recorded successfully! ID: ${response.purchaseId || response.purchase?.id}`
                 : 'Purchase recorded successfully!';
             customAlert(message, 'Success', 'success');
 
@@ -66129,9 +66129,9 @@ async function loadLuggagePurchases() {
 
                 const mappedPurchase = {
 
-                    purchase_id: purchase.purchase_reference || purchase.purchase_id || 'Unknown',
+                    purchase_id: purchase.id || 'Unknown',
 
-                    tracking_number: purchase.purchase_reference || purchase.tracking_number || 'Unknown',
+                    tracking_number: `LP${purchase.id || 'Unknown'}`,
 
                     payment_status: purchase.payment_status || 'pending',
 
@@ -66147,7 +66147,7 @@ async function loadLuggagePurchases() {
 
                     amount: purchase.amount || 0,
 
-                    currency: purchase.currency || 'USD',
+                    currency: purchase.currency || 'TZS',
 
                     purchase_date: purchase.purchase_date,
 

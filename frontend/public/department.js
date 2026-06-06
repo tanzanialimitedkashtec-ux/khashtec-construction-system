@@ -40914,8 +40914,8 @@ async function saveLuggagePurchase() {
 
         if (response.success) {
 
-            const message = response.purchase?.purchase_reference 
-                ? `Purchase recorded successfully! Reference: ${response.purchase.purchase_reference}`
+            const message = response.purchaseId || response.purchase?.id
+                ? `Purchase recorded successfully! ID: ${response.purchaseId || response.purchase?.id}`
                 : 'Purchase recorded successfully!';
             customAlert(message, 'Success', 'success');
 
@@ -41607,9 +41607,9 @@ async function loadLuggagePurchases() {
 
                 const mappedPurchase = {
 
-                    purchase_id: purchase.purchase_reference || purchase.purchase_id || 'Unknown',
+                    purchase_id: purchase.id || 'Unknown',
 
-                    tracking_number: purchase.tracking_number || purchase.purchase_reference || 'Unknown',
+                    tracking_number: `LP${purchase.id || 'Unknown'}`,
 
                     payment_status: purchase.payment_status || 'pending',
 
@@ -41617,17 +41617,17 @@ async function loadLuggagePurchases() {
 
                     campaign_details: purchase.luggage_name || purchase.luggage || purchase.campaign_luggage || 'N/A',
 
-                    buyer_name: purchase.buyer_name || 'Unknown Buyer',
+                    buyer_name: purchase.employee_name || purchase.buyer_name || 'Unknown Buyer',
 
-                    buyer_id: purchase.buyer_id || 'N/A',
+                    buyer_id: purchase.employee_id || purchase.buyer_id || 'N/A',
 
-                    buyer_email: purchase.buyer_email || 'N/A',
+                    buyer_email: purchase.buyer_email || (purchase.employee_id ? purchase.employee_id + '@khashtec.com' : 'N/A'),
 
                     buyer_phone: purchase.buyer_phone || 'N/A',
 
                     units_purchased: purchase.units_purchased != null ? purchase.units_purchased : 'N/A',
 
-                    unit_price: purchase.total_amount != null ? purchase.total_amount : 0,
+                    unit_price: purchase.amount != null ? purchase.amount : 0,
 
                     payment_method: purchase.payment_method || 'N/A',
 
@@ -41637,7 +41637,7 @@ async function loadLuggagePurchases() {
 
                     purchase_date: purchase.purchase_date || purchase.created_at || '',
 
-                    record_id: purchase.id || purchase.purchase_id || purchase.purchase_reference || 'unknown',
+                    record_id: purchase.id || 'unknown',
 
                 };
 
