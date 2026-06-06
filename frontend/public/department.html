@@ -91796,7 +91796,7 @@ async function downloadDocument(docId) {
     } catch (error) {
         console.error('❌ Error downloading document:', error);
         if (typeof showNotification === 'function') {
-            showNotification('Error downloading document. Please try again.', 'error');
+            showNotification(error.message || 'Error downloading document. Please try again.', 'error');
         } else {
             alert('Error downloading document: ' + error.message);
         }

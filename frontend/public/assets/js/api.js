@@ -571,7 +571,16 @@ async function downloadDocument(id) {
     });
     
     if (!response.ok) {
-        throw new Error(`Download failed: ${response.statusText}`);
+        let errorMsg = response.statusText;
+        try {
+            const errorData = await response.json();
+            if (errorData && errorData.error) {
+                errorMsg = errorData.error;
+            }
+        } catch (e) {
+            // Ignore parse error
+        }
+        throw new Error(errorMsg);
     }
     
     return response.blob();

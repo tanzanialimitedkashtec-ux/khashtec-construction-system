@@ -279,7 +279,18 @@ router.get('/', async (req, res) => {
 });
 
 // Create new employee
-router.post('/', upload.any(), async (req, res) => {
+router.post('/', (req, res, next) => {
+    upload.any()(req, res, (err) => {
+        if (err) {
+            console.error('❌ File upload error:', err.message);
+            return res.status(400).json({ 
+                error: 'File upload failed', 
+                details: err.message 
+            });
+        }
+        next();
+    });
+}, async (req, res) => {
     console.log('🔍 POST /api/employees endpoint called');
     console.log('📋 Request method:', req.method);
     console.log('📋 Request URL:', req.url);

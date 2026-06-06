@@ -12,6 +12,14 @@ const db = require('../database/config/database');
 const app = express();
 const PORT = process.env.PORT || 8080;
 
+// Ensure uploads directory exists
+const fsSync = require('fs');
+const uploadsDir = path.join(__dirname, '../uploads');
+if (!fsSync.existsSync(uploadsDir)) {
+    console.log('📁 Creating uploads directory...');
+    fsSync.mkdirSync(uploadsDir, { recursive: true });
+}
+
 // Initialize Railway Database Connection
 console.log('🚀 Starting KASHTEC Backend Server...');
 console.log('🔧 Environment:', process.env.NODE_ENV || 'development');
