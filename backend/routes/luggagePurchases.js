@@ -540,7 +540,7 @@ router.put('/:id', async (req, res) => {
                 details: dbError.message
             });
             return;
-        
+        }
     } catch (error) {
         console.error('❌ Error updating luggage purchase:', error);
         res.status(500).json({ 
@@ -594,7 +594,7 @@ router.delete('/:id', async (req, res) => {
                 details: dbError.message
             });
             return;
-        
+        }
     } catch (error) {
         console.error('❌ Error deleting luggage purchase:', error);
         res.status(500).json({ 
