@@ -91108,81 +91108,7 @@ async function documentManagement(){
 
             <div class="doc-management">
 
-                <div class="doc-upload collapsed" id="docUpload">
-
-                    <div class="doc-upload-header" style="display:flex;align-items:center;justify-content:space-between;gap:6px">
-
-                        <h4 style="font-size:12px;margin:0">Upload Company Certificates</h4>
-
-                        <button class="toggle-btn" id="docToggle" aria-expanded="false" onclick="toggleDocUpload()" style="background:#007bff;color:#fff;border:none;padding:4px 6px;font-size:11px;border-radius:4px;cursor:pointer;line-height:1">
-
-                            <span class="toggle-arrow">▸</span>
-
-                        </button>
-
-                    </div>
-
-                    <div class="doc-upload-body" id="docUploadBody" style="margin-top:8px;display:none">
-
-                        <div class="form-group" style="margin-bottom:6px">
-
-                            <label style="display:block;font-size:11px;margin-bottom:3px;color:#333">Certificate Type</label>
-
-                            <select id="certType" style="width:100%;font-size:11px;padding:4px;border:1px solid #ccc;border-radius:4px;box-sizing:border-box">
-
-                                <option value="">Select Type</option>
-
-                                <option value="tin">TIN Certificate</option>
-
-                                <option value="vrn">VRN Certificate</option>
-
-                                <option value="crb">CRB Certificate</option>
-
-                                <option value="license">Business License</option>
-
-                                <option value="osha">OSHA Compliance</option>
-
-                                <option value="nssf">NSSF Compliance</option>
-
-                                <option value="wcf">WCF Compliance</option>
-
-                            </select>
-
-                        </div>
-
-                        <div class="form-group" style="margin-bottom:6px">
-
-                            <label style="display:block;font-size:11px;margin-bottom:3px;color:#333">Document File</label>
-
-                            <input type="file" id="certFile" accept=".pdf,.jpg,.jpeg,.png" style="width:100%;font-size:11px;padding:4px;border:1px solid #ccc;border-radius:4px;box-sizing:border-box" />
-
-                        </div>
-
-                        <div class="form-group" style="margin-bottom:6px">
-
-                            <label style="display:block;font-size:11px;margin-bottom:3px;color:#333">Expiry Date</label>
-
-                            <input type="date" id="certExpiry" style="width:100%;font-size:11px;padding:4px;border:1px solid #ccc;border-radius:4px;box-sizing:border-box" />
-
-                        </div>
-
-                        <div class="form-group" style="margin-bottom:6px">
-
-                            <label style="display:block;font-size:11px;margin-bottom:3px;color:#333">Description</label>
-
-                            <textarea id="certDescription" placeholder="Enter certificate description..." style="width:100%;font-size:11px;padding:4px;border:1px solid #ccc;border-radius:4px;box-sizing:border-box;height:44px;resize:vertical"></textarea>
-
-                        </div>
-
-                        <button class="action" onclick="uploadCertificate()" style="width:100%;padding:6px;font-size:11px;border-radius:4px;border:none;background:#28a745;color:#fff;cursor:pointer">Upload Certificate</button>
-
-                    </div>
-
-                </div>
-
-                
-
-                <div class="doc-list">
+<div class="doc-list">
 
                     <h4>Existing Documents</h4>
 
@@ -91244,9 +91170,9 @@ async function documentManagement(){
 
                                                 <div class="action-buttons">
 
-                                                    <button class="action-btn view-btn" onclick="viewDocument(${doc.id})">View</button>
+                                                    <button class="action-btn view-btn" onclick="viewDocument('${doc.id}')">View</button>
 
-                                                    <button class="action-btn download-btn" onclick="downloadDocument(${doc.id})">Download</button>
+                                                    <button class="action-btn download-btn" onclick="downloadDocument('${doc.id}')">Download</button>
 
                                                 </div>
 
@@ -91614,7 +91540,7 @@ async function viewDocument(docId) {
                         </div>` : ''}
                     </div>
                     <div style="padding:16px 24px;background:#f8f9fa;border-top:1px solid #e9ecef;display:flex;gap:10px;justify-content:flex-end">
-                        <button onclick="downloadDocument(${docId}); this.closest('.modal-overlay').remove();" style="background:linear-gradient(135deg,#28a745,#20c997);color:#fff;border:none;padding:10px 20px;border-radius:8px;font-size:14px;font-weight:500;cursor:pointer;display:flex;align-items:center;gap:6px">📥 Download PDF</button>
+                        <button onclick="downloadDocument('${docId}'); this.closest('.modal-overlay').remove();" style="background:linear-gradient(135deg,#28a745,#20c997);color:#fff;border:none;padding:10px 20px;border-radius:8px;font-size:14px;font-weight:500;cursor:pointer;display:flex;align-items:center;gap:6px">📥 Download PDF</button>
                         <button onclick="this.closest('.modal-overlay').remove()" style="background:#6c757d;color:#fff;border:none;padding:10px 20px;border-radius:8px;font-size:14px;font-weight:500;cursor:pointer">Close</button>
                     </div>
                 </div>
@@ -91671,6 +91597,27 @@ async function downloadDocument(docId) {
     }
 
     try {
+        // Handle employee documents directly (CV / Agreement)
+        if (typeof docId === 'string' && (docId.startsWith('emp_agr_') || docId.startsWith('emp_cv_'))) {
+            const isCV = docId.startsWith('emp_cv_');
+            const empId = docId.replace('emp_agr_', '').replace('emp_cv_', '');
+            const fileType = isCV ? 'cv' : 'agreement';
+            const fileUrl = `${baseUrl}/api/employee-file/${empId}/${fileType}`;
+            
+            const a = window.document.createElement('a');
+            a.href = fileUrl;
+            a.download = `${fileType}_${empId}`;
+            a.target = '_blank';
+            window.document.body.appendChild(a);
+            a.click();
+            window.document.body.removeChild(a);
+            
+            if (typeof showNotification === 'function') {
+                showNotification(`Employee ${isCV ? 'CV' : 'Agreement'} download started`, 'success');
+            }
+            return;
+        }
+
         // Try KashTecAPI first if available
         if (typeof KashTecAPI !== 'undefined' && KashTecAPI.downloadDocument) {
             console.log('📥 Using KashTecAPI to download document:', docId);

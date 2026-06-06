@@ -267,8 +267,74 @@ router.get('/', async (req, res) => {
                 console.error('❌ Error fetching from admin_work table:', adminError);
             }
             
-            // Combine both sources
-            documents = [...realDocuments, ...adminWorkDocuments];
+            // Fetch employee agreements and CVs from employee_details
+            let employeeDocuments = [];
+            try {
+                const empItems = await db.execute(`
+                    SELECT employee_id, full_name, contract_type, created_at, 
+                           cv_data IS NOT NULL as has_cv, cv_mime,
+                           agreement_data IS NOT NULL as has_agreement, agreement_mime 
+                    FROM employee_details 
+                    WHERE cv_data IS NOT NULL OR agreement_data IS NOT NULL
+                `);
+                
+                let empArray = [];
+                if (Array.isArray(empItems)) {
+                    empArray = empItems;
+                } else if (empItems && Array.isArray(empItems[0])) {
+                    empArray = empItems[0];
+                } else if (empItems && empItems.rows) {
+                    empArray = empItems.rows;
+                }
+                
+                empArray.forEach(item => {
+                    if (item.has_agreement) {
+                        employeeDocuments.push({
+                            id: `emp_agr_${item.employee_id}`,
+                            title: `Employment Contract - ${item.full_name}`,
+                            name: `Employment Contract - ${item.full_name}`,
+                            description: `Employment agreement/contract for ${item.full_name} (${item.contract_type || 'Employee'})`,
+                            category: 'Contract',
+                            type: item.agreement_mime === 'application/pdf' ? 'PDF' : 'Image',
+                            uploadedBy: 1,
+                            uploadedByName: 'System',
+                            uploadedDate: item.created_at,
+                            status: 'active',
+                            fileName: `agreement_${item.employee_id}`,
+                            filePath: `/api/employee-file/${item.employee_id}/agreement`,
+                            fileSize: 0,
+                            expiry_date: null,
+                            source: 'employee_details'
+                        });
+                    }
+                    if (item.has_cv) {
+                        employeeDocuments.push({
+                            id: `emp_cv_${item.employee_id}`,
+                            title: `CV - ${item.full_name}`,
+                            name: `CV - ${item.full_name}`,
+                            description: `Curriculum Vitae for ${item.full_name}`,
+                            category: 'Other',
+                            type: item.cv_mime === 'application/pdf' ? 'PDF' : 'Image',
+                            uploadedBy: 1,
+                            uploadedByName: 'System',
+                            uploadedDate: item.created_at,
+                            status: 'active',
+                            fileName: `cv_${item.employee_id}`,
+                            filePath: `/api/employee-file/${item.employee_id}/cv`,
+                            fileSize: 0,
+                            expiry_date: null,
+                            source: 'employee_details'
+                        });
+                    }
+                });
+                
+                console.log('✅ Documents fetched from employee_details:', employeeDocuments.length);
+            } catch (empError) {
+                console.error('❌ Error fetching from employee_details table:', empError);
+            }
+            
+            // Combine all sources
+            documents = [...realDocuments, ...adminWorkDocuments, ...employeeDocuments];
             
             // Sort by date (newest first)
             documents.sort((a, b) => new Date(b.uploadedDate) - new Date(a.uploadedDate));
@@ -361,6 +427,59 @@ router.get('/:id', async (req, res) => {
     const docId = req.params.id;
     try {
         const db = require('../../database/config/database');
+
+        // Handle special employee documents
+        if (typeof docId === 'string' && (docId.startsWith('emp_agr_') || docId.startsWith('emp_cv_'))) {
+            const isCV = docId.startsWith('emp_cv_');
+            const empIdStr = docId.replace('emp_agr_', '').replace('emp_cv_', '');
+            const empId = parseInt(empIdStr, 10);
+            
+            if (!isNaN(empId)) {
+                try {
+                    const empRows = await db.execute(
+                        'SELECT employee_id, full_name, contract_type, created_at, cv_mime, agreement_mime FROM employee_details WHERE employee_id = ?', [empId]
+                    );
+                    if (Array.isArray(empRows) && empRows.length > 0) {
+                        const item = empRows[0];
+                        if (isCV) {
+                            return res.json({
+                                id: `emp_cv_${item.employee_id}`,
+                                title: `CV - ${item.full_name}`,
+                                description: `Curriculum Vitae for ${item.full_name}`,
+                                category: 'Other',
+                                type: item.cv_mime === 'application/pdf' ? 'PDF' : 'Image',
+                                uploadedBy: 1,
+                                uploadedDate: item.created_at ? new Date(item.created_at).toISOString().split('T')[0] : null,
+                                status: 'active',
+                                fileName: `cv_${item.employee_id}`,
+                                filePath: `/api/employee-file/${item.employee_id}/cv`,
+                                size: 0,
+                                department: 'admin',
+                                source: 'employee_details'
+                            });
+                        } else {
+                            return res.json({
+                                id: `emp_agr_${item.employee_id}`,
+                                title: `Employment Contract - ${item.full_name}`,
+                                description: `Employment agreement/contract for ${item.full_name} (${item.contract_type || 'Employee'})`,
+                                category: 'Contract',
+                                type: item.agreement_mime === 'application/pdf' ? 'PDF' : 'Image',
+                                uploadedBy: 1,
+                                uploadedDate: item.created_at ? new Date(item.created_at).toISOString().split('T')[0] : null,
+                                status: 'active',
+                                fileName: `agreement_${item.employee_id}`,
+                                filePath: `/api/employee-file/${item.employee_id}/agreement`,
+                                size: 0,
+                                department: 'admin',
+                                source: 'employee_details'
+                            });
+                        }
+                    }
+                } catch (empErr) {
+                    console.warn('⚠️ employee_details lookup failed:', empErr.message);
+                }
+            }
+        }
 
         // 1) Try the `documents` table first (this is where the upload endpoint
         //    stores the record and returns its insertId to the frontend).
@@ -995,6 +1114,36 @@ router.get('/:id/download', async (req, res) => {
     try {
         const docId = req.params.id;
         console.log(`📄 Download request for document ID: ${docId}`);
+        
+        // Handle employee document downloads (CV / Agreement from employee_details LONGBLOB)
+        if (typeof docId === 'string' && (docId.startsWith('emp_agr_') || docId.startsWith('emp_cv_'))) {
+            const isCV = docId.startsWith('emp_cv_');
+            const empId = parseInt(docId.replace('emp_agr_', '').replace('emp_cv_', ''), 10);
+            
+            if (!isNaN(empId) && db) {
+                const column = isCV ? 'cv_data' : 'agreement_data';
+                const mimeCol = isCV ? 'cv_mime' : 'agreement_mime';
+                const rows = await db.execute(
+                    `SELECT full_name, ${column}, ${mimeCol} FROM employee_details WHERE employee_id = ?`, [empId]
+                );
+                
+                let empRows = Array.isArray(rows) ? rows : (rows && Array.isArray(rows[0]) ? rows[0] : []);
+                
+                if (empRows.length > 0 && empRows[0][column]) {
+                    const emp = empRows[0];
+                    const mime = emp[mimeCol] || 'application/octet-stream';
+                    const ext = mime === 'application/pdf' ? '.pdf' : mime.includes('png') ? '.png' : '.jpg';
+                    const label = isCV ? 'CV' : 'Agreement';
+                    const fileName = `${label}_${emp.full_name.replace(/[^a-zA-Z0-9]/g, '_')}${ext}`;
+                    
+                    res.set('Content-Type', mime);
+                    res.set('Content-Disposition', `attachment; filename="${fileName}"`);
+                    return res.send(Buffer.from(emp[column]));
+                }
+            }
+            
+            return res.status(404).json({ error: 'Employee document not found' });
+        }
         
         let adminWorkItems;
         
