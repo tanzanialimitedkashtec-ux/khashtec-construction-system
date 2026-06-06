@@ -56165,10 +56165,8 @@ async function loadSafetyData() {
 
             updateSafetyTable(safetyProjects);
             
-            // Calculate metrics with real incident and violation counts
+            // Use the metrics provided by the backend, which accurately sums the counts for the active projects in the table.
             const metrics = result.metrics || calculateSafetyMetrics(safetyProjects);
-            metrics.totalIncidents = totalIncidentsCount;
-            metrics.openViolations = totalViolationsCount;
 
             updateSafetySummary(metrics);
 
