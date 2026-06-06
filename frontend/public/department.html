@@ -7778,7 +7778,7 @@ font-weight: bold;
 
     border: 1px solid #dee2e6;
 
-    border-radius: 12px;
+    border-radius: 2px;
 
     overflow: hidden;
 
@@ -65380,26 +65380,40 @@ async function saveLuggagePurchase() {
 
         
 
+        // Build purchase payload and include both frontend and backend expected fields
+        const units = parseInt(document.getElementById('unitsPurchased').value) || 0;
+        const pricePerUnit = parseFloat(document.getElementById('pricePerUnit').value) || 0;
+        const computedAmount = units * pricePerUnit;
+
+        const selectedCampaignOption = document.querySelector('#campaignSelect option:checked');
+        const selectedCampaignText = selectedCampaignOption ? selectedCampaignOption.textContent : '';
+        // Try to extract luggage name from option text: "CampaignName - LuggageName (TZS ...)"
+        let luggageName = '';
+        try {
+            luggageName = selectedCampaignText.split(' - ')[1].split(' (')[0];
+        } catch (e) {
+            luggageName = '';
+        }
+
         const purchaseData = {
-
+            // original buyer fields (kept for compatibility)
             campaign_id: parseInt(campaignId),
-
             buyer_name: document.getElementById('buyerName').value,
-
             buyer_email: document.getElementById('buyerEmail').value,
-
             buyer_phone: document.getElementById('buyerPhone').value,
-
             buyer_address: document.getElementById('buyerAddress').value,
-
-            units_purchased: parseInt(document.getElementById('unitsPurchased').value),
-
+            units_purchased: units,
             payment_method: document.getElementById('paymentMethod').value,
-
             notes: document.getElementById('purchaseNotes').value,
+            created_by: getCurrentUserId(),
 
-            created_by: getCurrentUserId()
-
+            // backend-required fields for `luggagePurchases` route
+            employee_id: getCurrentUserId() || document.getElementById('buyerEmployeeId')?.value || '',
+            employee_name: document.getElementById('buyerName').value || '',
+            luggage: luggageName || document.getElementById('luggageName')?.value || '',
+            purchase_date: document.getElementById('purchaseDate')?.value || new Date().toISOString().split('T')[0],
+            amount: computedAmount || parseFloat(document.getElementById('amount')?.value) || 0,
+            currency: document.getElementById('currency')?.value || 'TZS'
         };
 
 
