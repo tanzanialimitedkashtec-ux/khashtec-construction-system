@@ -69,11 +69,20 @@ router.get('/', async (req, res) => {
             }
             
             const [columnRows] = await db.execute(`
-                SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS
+                SELECT COUNT(*) AS cnt FROM INFORMATION_SCHEMA.COLUMNS
                 WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'luggage_purchases' AND COLUMN_NAME = 'luggage_name'
             `);
-            if (!Array.isArray(columnRows) || columnRows.length === 0) {
-                await db.execute('ALTER TABLE luggage_purchases ADD COLUMN luggage_name VARCHAR(100) NULL AFTER buyer_phone');
+            const columnCount = Array.isArray(columnRows) && columnRows[0] ? (columnRows[0].cnt || columnRows[0]['COUNT(*)'] || 0) : 0;
+            if (!columnCount) {
+                try {
+                    await db.execute('ALTER TABLE luggage_purchases ADD COLUMN luggage_name VARCHAR(100) NULL AFTER buyer_phone');
+                } catch (alterErr) {
+                    if (alterErr && (alterErr.code === 'ER_DUP_FIELDNAME' || /Duplicate column name/i.test(alterErr.message || ''))) {
+                        console.warn('luggage_name column already exists, ignoring ALTER TABLE');
+                    } else {
+                        throw alterErr;
+                    }
+                }
             }
             const purchasesResult = await db.execute(`
                 SELECT lp.*, lc.campaign_name, COALESCE(lp.luggage_name, lc.luggage_name) AS display_luggage_name
@@ -410,11 +419,20 @@ router.post('/', async (req, res) => {
         try {
             const db = require('../../database/config/database');
             const [columnRows] = await db.execute(`
-                SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS
+                SELECT COUNT(*) AS cnt FROM INFORMATION_SCHEMA.COLUMNS
                 WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'luggage_purchases' AND COLUMN_NAME = 'luggage_name'
             `);
-            if (!Array.isArray(columnRows) || columnRows.length === 0) {
-                await db.execute('ALTER TABLE luggage_purchases ADD COLUMN luggage_name VARCHAR(100) NULL AFTER buyer_phone');
+            const columnCount = Array.isArray(columnRows) && columnRows[0] ? (columnRows[0].cnt || columnRows[0]['COUNT(*)'] || 0) : 0;
+            if (!columnCount) {
+                try {
+                    await db.execute('ALTER TABLE luggage_purchases ADD COLUMN luggage_name VARCHAR(100) NULL AFTER buyer_phone');
+                } catch (alterErr) {
+                    if (alterErr && (alterErr.code === 'ER_DUP_FIELDNAME' || /Duplicate column name/i.test(alterErr.message || ''))) {
+                        console.warn('luggage_name column already exists, ignoring ALTER TABLE');
+                    } else {
+                        throw alterErr;
+                    }
+                }
             }
             
             const query = `
