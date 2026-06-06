@@ -61263,46 +61263,30 @@ function financialManagement(){
 
             <h4>Financial Overview</h4>
 
-            <div class="finance-bars" style="display: flex; flex-direction: column; gap: 15px; margin-top: 15px;">
+            <div class="finance-bars" style="display: flex; justify-content: space-around; align-items: flex-end; height: 200px; margin-top: 20px; padding-bottom: 10px; border-bottom: 2px solid #e9ecef;">
 
-                <div class="bar-item">
-                    <div style="display: flex; justify-content: space-between; margin-bottom: 5px; font-size: 13px;">
-                        <strong>Total Revenue <span class="stat-change positive" style="font-size: 11px; margin-left: 5px;">+12.5% YTD</span></strong>
-                        <strong id="fmTotalRevenue" style="color: #28a745;">Loading...</strong>
-                    </div>
-                    <div style="background: #e9ecef; border-radius: 4px; height: 10px; width: 100%; overflow: hidden;">
-                        <div style="background: #28a745; height: 100%; width: 85%;"></div>
-                    </div>
+                <div class="bar-col" style="display: flex; flex-direction: column; align-items: center; width: 80px; text-align: center;">
+                    <div style="font-size: 11px; margin-bottom: 5px; color: #28a745; font-weight: bold;" id="fmTotalRevenue">Loading...</div>
+                    <div style="background: #28a745; width: 40px; height: 120px; border-radius: 4px 4px 0 0; box-shadow: 0 2px 4px rgba(0,0,0,0.1);"></div>
+                    <strong style="font-size: 11px; margin-top: 8px;">Revenue<br><span class="stat-change positive" style="font-size: 9px;">+12.5%</span></strong>
                 </div>
                 
-                <div class="bar-item">
-                    <div style="display: flex; justify-content: space-between; margin-bottom: 5px; font-size: 13px;">
-                        <strong>Total Expenses <span class="stat-change negative" style="font-size: 11px; margin-left: 5px;">+8.3% YTD</span></strong>
-                        <strong id="fmTotalExpenses" style="color: #dc3545;">Loading...</strong>
-                    </div>
-                    <div style="background: #e9ecef; border-radius: 4px; height: 10px; width: 100%; overflow: hidden;">
-                        <div style="background: #dc3545; height: 100%; width: 45%;"></div>
-                    </div>
+                <div class="bar-col" style="display: flex; flex-direction: column; align-items: center; width: 80px; text-align: center;">
+                    <div style="font-size: 11px; margin-bottom: 5px; color: #dc3545; font-weight: bold;" id="fmTotalExpenses">Loading...</div>
+                    <div style="background: #dc3545; width: 40px; height: 50px; border-radius: 4px 4px 0 0; box-shadow: 0 2px 4px rgba(0,0,0,0.1);"></div>
+                    <strong style="font-size: 11px; margin-top: 8px;">Expenses<br><span class="stat-change negative" style="font-size: 9px;">+8.3%</span></strong>
                 </div>
                 
-                <div class="bar-item">
-                    <div style="display: flex; justify-content: space-between; margin-bottom: 5px; font-size: 13px;">
-                        <strong>Net Profit <span class="stat-change positive" style="font-size: 11px; margin-left: 5px;">+18.7% YTD</span></strong>
-                        <strong id="fmNetProfit" style="color: #0b3d91;">Loading...</strong>
-                    </div>
-                    <div style="background: #e9ecef; border-radius: 4px; height: 10px; width: 100%; overflow: hidden;">
-                        <div style="background: #0b3d91; height: 100%; width: 65%;"></div>
-                    </div>
+                <div class="bar-col" style="display: flex; flex-direction: column; align-items: center; width: 80px; text-align: center;">
+                    <div style="font-size: 11px; margin-bottom: 5px; color: #0b3d91; font-weight: bold;" id="fmNetProfit">Loading...</div>
+                    <div style="background: #0b3d91; width: 40px; height: 80px; border-radius: 4px 4px 0 0; box-shadow: 0 2px 4px rgba(0,0,0,0.1);"></div>
+                    <strong style="font-size: 11px; margin-top: 8px;">Net Profit<br><span class="stat-change positive" style="font-size: 9px;">+18.7%</span></strong>
                 </div>
                 
-                <div class="bar-item">
-                    <div style="display: flex; justify-content: space-between; margin-bottom: 5px; font-size: 13px;">
-                        <strong>Cash Balance <span class="stat-change neutral" style="font-size: 11px; margin-left: 5px;">Stable</span></strong>
-                        <strong id="fmCashBalance" style="color: #17a2b8;">Loading...</strong>
-                    </div>
-                    <div style="background: #e9ecef; border-radius: 4px; height: 10px; width: 100%; overflow: hidden;">
-                        <div style="background: #17a2b8; height: 100%; width: 75%;"></div>
-                    </div>
+                <div class="bar-col" style="display: flex; flex-direction: column; align-items: center; width: 80px; text-align: center;">
+                    <div style="font-size: 11px; margin-bottom: 5px; color: #17a2b8; font-weight: bold;" id="fmCashBalance">Loading...</div>
+                    <div style="background: #17a2b8; width: 40px; height: 90px; border-radius: 4px 4px 0 0; box-shadow: 0 2px 4px rgba(0,0,0,0.1);"></div>
+                    <strong style="font-size: 11px; margin-top: 8px;">Balance<br><span class="stat-change neutral" style="font-size: 9px;">Stable</span></strong>
                 </div>
 
             </div>
@@ -69720,7 +69704,7 @@ function calculateTotalBudget() {
 
 function processInvoices() {
     showContent(`<div class="card">
-        <h3 style="display:flex;align-items:center;gap:10px;"><span onclick="showFinanceDashboard()" style="cursor:pointer;font-size:20px;" title="Back">&#8592;</span> Process Invoices</h3>
+        <h3 style="display:flex;align-items:center;gap:10px;"><span onclick="financialManagement()" style="cursor:pointer;font-size:20px;" title="Back">&#8592;</span> Process Invoices</h3>
         <p><strong>Financial Authority:</strong> Create and manage invoices</p>
 
         <div style="display:flex;gap:20px;flex-wrap:wrap;">
