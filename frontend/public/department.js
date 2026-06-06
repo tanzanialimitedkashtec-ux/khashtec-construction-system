@@ -17771,6 +17771,23 @@ function manageLeaveContracts(){
                 </button>
 
             </div>
+            
+            <div class="workforce-table-container">
+                <table class="workforce-table" id="leaveContractsTable">
+                    <thead>
+                        <tr>
+                            <th>Type</th>
+                            <th>Title</th>
+                            <th>Description</th>
+                            <th>Priority</th>
+                            <th>Due Date</th>
+                        </tr>
+                    </thead>
+                    <tbody id="leaveContractsTableBody">
+                        <tr><td colspan="5" style="text-align: center;">Loading data...</td></tr>
+                    </tbody>
+                </table>
+            </div>
 
             
 
@@ -18079,7 +18096,53 @@ function manageLeaveContracts(){
     // Load real employees for both forms
 
     loadEmployeesForLeaveContracts();
+    fetchLeaveContractsTableData();
 
+}
+
+async function fetchLeaveContractsTableData() {
+    console.log('ðŸ”„ Fetching leave and contracts data...');
+    try {
+        const baseUrl = window.location.origin;
+        const response = await fetch(`${baseUrl}/api/hr/work`, {
+            method: 'GET',
+            headers: {
+                'Accept': 'application/json',
+                'Authorization': `Bearer ${sessionManager.getAuthToken()}`
+            }
+        });
+
+        if (!response.ok) throw new Error('Failed to fetch data');
+
+        const works = await response.json();
+        const tbody = document.getElementById('leaveContractsTableBody');
+        if (!tbody) return;
+        tbody.innerHTML = '';
+        
+        const filteredWorks = works.filter(w => w.work_type === 'Leave Request' || w.work_type === 'Contract Management');
+
+        if (filteredWorks.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="5" style="text-align: center;">No leave requests or contracts found.</td></tr>';
+            return;
+        }
+
+        filteredWorks.forEach(w => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td><span class="status-badge ${w.work_type === 'Leave Request' ? 'status-active' : 'status-contract'}">${w.work_type}</span></td>
+                <td><strong>${w.work_title || 'N/A'}</strong></td>
+                <td><div style="max-width: 250px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${w.work_description || ''}">${w.work_description ? w.work_description.replace(/\\n/g, '<br>') : 'N/A'}</div></td>
+                <td>${w.priority || 'N/A'}</td>
+                <td>${w.due_date || 'N/A'}</td>
+            `;
+            tbody.appendChild(tr);
+        });
+
+    } catch (error) {
+        console.error('â Œ Error fetching leave contracts data:', error);
+        const tbody = document.getElementById('leaveContractsTableBody');
+        if (tbody) tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: #dc3545;">Failed to load data</td></tr>';
+    }
 }
 
 
