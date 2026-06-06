@@ -65386,93 +65386,76 @@ async function saveLuggagePurchase() {
             throw new Error('Please select a campaign');
         }
 
-        // Build purchase payload and include both frontend and backend expected fields
+        // Build purchase payload with correct field names matching database schema
         const units = parseInt(document.getElementById('unitsPurchased')?.value) || 0;
+        
+        if (!units || units <= 0) {
+            throw new Error('Please enter a valid number of units');
+        }
 
         const selectedCampaignOption = document.querySelector('#campaignSelect option:checked');
         const selectedCampaignText = selectedCampaignOption ? selectedCampaignOption.textContent : '';
         
         // Extract price and luggage name from option text: "CampaignName - LuggageName (TZS <price>)"
-        let luggageName = '';
         let pricePerUnit = 0;
         try {
-            const parts = selectedCampaignText.split(' - ');
-            if (parts[1]) {
-                luggageName = parts[1].split(' (')[0];
-            }
             // Extract price from text like "(TZS 50000)"
             const priceMatch = selectedCampaignText.match(/\(TZS\s*([\d,]+(?:\.\d{2})?)\)/);
             if (priceMatch && priceMatch[1]) {
                 pricePerUnit = parseFloat(priceMatch[1].replace(/,/g, ''));
             }
         } catch (e) {
-            console.warn('Could not parse campaign text:', e);
+            console.warn('Could not parse campaign price:', e);
         }
         
-        const computedAmount = units * pricePerUnit;
+        const totalAmount = units * pricePerUnit;
+        
+        const buyerName = document.getElementById('buyerName')?.value || '';
+        const buyerEmail = document.getElementById('buyerEmail')?.value || '';
+        
+        if (!buyerName || !buyerEmail) {
+            throw new Error('Please enter buyer name and email');
+        }
 
         const purchaseData = {
-            // original buyer fields (kept for compatibility)
+            // Correct field names matching luggage_purchases table schema
             campaign_id: parseInt(campaignId),
-            buyer_name: document.getElementById('buyerName')?.value || '',
-            buyer_email: document.getElementById('buyerEmail')?.value || '',
+            buyer_name: buyerName,
+            buyer_email: buyerEmail,
             buyer_phone: document.getElementById('buyerPhone')?.value || '',
             buyer_address: document.getElementById('buyerAddress')?.value || '',
             units_purchased: units,
+            price_per_unit: pricePerUnit,
+            total_amount: totalAmount,
             payment_method: document.getElementById('paymentMethod')?.value || 'Bank Transfer',
-            notes: document.getElementById('purchaseNotes')?.value || '',
-            created_by: getCurrentUserId(),
-
-            // backend-required fields for `luggagePurchases` route
-            employee_id: getCurrentUserId() || '',
-            employee_name: document.getElementById('buyerName')?.value || '',
-            luggage: luggageName || '',
+            purchase_notes: document.getElementById('purchaseNotes')?.value || '',
+            purchase_status: 'Pending',
             purchase_date: new Date().toISOString().split('T')[0],
-            amount: computedAmount,
-            currency: 'TZS'
+            created_by: getCurrentUserId()
         };
 
-
-
         // Check if KashTecAPI is available
-
         if (!window.KashTecAPI || typeof window.KashTecAPI.post !== 'function') {
-
             console.error('❌ KashTecAPI.post is not available');
-
             throw new Error('API service not loaded properly');
-
         }
 
-
-
         const response = await window.KashTecAPI.post('/luggage-purchases', purchaseData);
-
         
-
         if (response.success) {
-
             const message = response.purchaseId || response.purchase?.id
                 ? `Purchase recorded successfully! ID: ${response.purchaseId || response.purchase?.id}`
                 : 'Purchase recorded successfully!';
             customAlert(message, 'Success', 'success');
-
             manageLuggagePurchases();
-
         } else {
-
             customAlert('Error recording purchase: ' + response.error, 'Error', 'error');
-
         }
 
     } catch (error) {
-
         console.error('Error saving purchase:', error);
-
         customAlert('Error recording purchase: ' + error.message, 'Error', 'error');
-
     }
-
 }
 
 
@@ -66120,49 +66103,32 @@ async function loadLuggagePurchases() {
         const purchases = response.data || response.purchases || response;
 
         
+        const formatDate = d => {
+            if (!d) return '';
+            try { return new Date(d).toLocaleDateString(); } catch (e) { return d; }
+        };
 
+        
         if (purchases && purchases.length > 0) {
 
             recordsList.innerHTML = purchases.map(purchase => {
 
-                // Map backend fields to frontend expected fields
-
-                const mappedPurchase = {
-
-                    purchase_id: purchase.id || 'Unknown',
-
-                    tracking_number: `LP${purchase.id || 'Unknown'}`,
-
-                    payment_status: purchase.payment_status || 'pending',
-
-                    campaign_name: purchase.campaign_name || 'Unknown Campaign',
-
-                    campaign_luggage: purchase.luggage || purchase.campaign_luggage || 'Unknown',
-
-                    employee_name: purchase.employee_name || 'Unknown Employee',
-
-                    department: purchase.department || 'Unknown',
-
-                    course_type: purchase.course_type || 'basic',
-
-                    amount: purchase.amount || 0,
-
-                    currency: purchase.currency || 'TZS',
-
-                    purchase_date: purchase.purchase_date,
-
-                    enrollment_status: purchase.enrollment_status || 'enrolled',
-
-                    progress_percentage: purchase.progress_percentage || 0,
-
-                    instructor: purchase.instructor || 'Not Assigned',
-
-                    location: purchase.location || 'TBD'
-
-                };
+                // Use actual database field names from luggage_purchases table
+                const purchaseId = purchase.id || '';
+                const campaignId = purchase.campaign_id || '';
+                const buyerName = purchase.buyer_name || '';
+                const buyerEmail = purchase.buyer_email || '';
+                const buyerPhone = purchase.buyer_phone || '';
+                const unitsCount = purchase.units_purchased || '';
+                const priceEach = purchase.price_per_unit || 0;
+                const totalAmount = purchase.total_amount || 0;
+                const paymentMethod = purchase.payment_method || 'Bank Transfer';
+                const buyerAddress = purchase.buyer_address || '';
+                const purchaseNotes = purchase.purchase_notes || '';
+                const purchaseStatus = purchase.purchase_status || 'Pending';
+                const purchaseDate = purchase.purchase_date || '';
 
                 
-
                 return `
 
                 <tr>
@@ -66171,11 +66137,11 @@ async function loadLuggagePurchases() {
 
                         <div class="purchase-info">
 
-                            <div class="purchase-id">${mappedPurchase.purchase_id}</div>
+                            <div class="purchase-id">ID: ${purchaseId}</div>
 
-                            <div class="tracking-number">Tracking: ${mappedPurchase.tracking_number}</div>
+                            <div class="tracking-number">Campaign: ${campaignId}</div>
 
-                            <div class="purchase-status">Status: ${mappedPurchase.payment_status}</div>
+                            <div class="purchase-status">Status: ${purchaseStatus}</div>
 
                         </div>
 
@@ -66185,9 +66151,9 @@ async function loadLuggagePurchases() {
 
                         <div class="campaign-info">
 
-                            <div class="campaign-name">${mappedPurchase.campaign_name}</div>
+                            <div class="campaign-name">Purchase #${purchaseId}</div>
 
-                            <div class="campaign-details">${mappedPurchase.campaign_luggage || 'N/A'}</div>
+                            <div class="campaign-details">${buyerName}</div>
 
                         </div>
 
@@ -66197,9 +66163,9 @@ async function loadLuggagePurchases() {
 
                         <div class="buyer-info">
 
-                            <div class="buyer-name">${mappedPurchase.employee_name}</div>
+                            <div class="buyer-name">${buyerName}</div>
 
-                            <div class="buyer-id">ID: ${purchase.employee_id || 'N/A'}</div>
+                            <div class="buyer-email">${buyerEmail}</div>
 
                         </div>
 
@@ -66209,9 +66175,9 @@ async function loadLuggagePurchases() {
 
                         <div class="contact-info">
 
-                            <div class="buyer-email">${purchase.employee_id ? purchase.employee_id + '@khashtec.com' : 'N/A'}</div>
+                            <div class="buyer-phone">${buyerPhone || ''}</div>
 
-                            <div class="buyer-phone">${purchase.employee_phone || 'N/A'}</div>
+                            <div class="buyer-address">${buyerAddress || ''}</div>
 
                         </div>
 
@@ -66221,9 +66187,9 @@ async function loadLuggagePurchases() {
 
                         <div class="units-info">
 
-                            <div class="units-purchased">${mappedPurchase.course_type}</div>
+                            <div class="units-purchased">Units: ${unitsCount}</div>
 
-                            <div class="unit-price">${mappedPurchase.currency} ${mappedPurchase.amount.toLocaleString()}</div>
+                            <div class="unit-price">TZS ${Number(priceEach || 0).toLocaleString()}/unit</div>
 
                         </div>
 
@@ -66233,7 +66199,7 @@ async function loadLuggagePurchases() {
 
                         <div class="payment-info">
 
-                            <span class="payment-badge payment-${mappedPurchase.payment_status.toLowerCase().replace('_', '-')}">${mappedPurchase.payment_status}</span>
+                            <span class="payment-badge payment-${String(paymentMethod).toLowerCase().replace(' ', '-')}">${paymentMethod}</span>
 
                         </div>
 
@@ -66243,7 +66209,7 @@ async function loadLuggagePurchases() {
 
                         <div class="address-info">
 
-                            <div class="buyer-address">${mappedPurchase.location}</div>
+                            <div class="total-amount">Total: TZS ${Number(totalAmount || 0).toLocaleString()}</div>
 
                         </div>
 
@@ -66253,7 +66219,7 @@ async function loadLuggagePurchases() {
 
                         <div class="notes-info">
 
-                            <div class="purchase-notes">${mappedPurchase.instructor ? 'Instructor: ' + mappedPurchase.instructor : 'No notes'}</div>
+                            <div class="purchase-notes">${purchaseNotes || ''}</div>
 
                         </div>
 
@@ -66263,7 +66229,7 @@ async function loadLuggagePurchases() {
 
                         <div class="date-info">
 
-                            <div class="purchase-date">${mappedPurchase.purchase_date ? new Date(mappedPurchase.purchase_date).toLocaleDateString() : 'N/A'}</div>
+                            <div class="purchase-date">${formatDate(purchaseDate)}</div>
 
                         </div>
 
@@ -66273,11 +66239,11 @@ async function loadLuggagePurchases() {
 
                         <div class="purchase-actions">
 
-                            <button class="action-btn view" onclick="viewPurchaseDetails('${purchase.id}')" title="View Details">👁️</button>
+                            <button class="action-btn view" onclick="viewPurchaseDetails('${purchaseId}')" title="View Details">👁️</button>
 
-                            <button class="action-btn edit" onclick="editPurchase('${purchase.id}')" title="Edit Purchase">✏️</button>
+                            <button class="action-btn edit" onclick="editPurchase('${purchaseId}')" title="Edit Purchase">✏️</button>
 
-                            <button class="action-btn delete" onclick="deletePurchase('${purchase.id}')" title="Delete Purchase">🗑️</button>
+                            <button class="action-btn delete" onclick="deletePurchase('${purchaseId}')" title="Delete Purchase">🗑️</button>
 
                         </div>
 

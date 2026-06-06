@@ -356,97 +356,74 @@ router.post('/', async (req, res) => {
         
         const {
             campaign_id,
-            campaign_name,
-            employee_id,
-            employee_name,
-            department,
-            luggage,
-            course_type,
-            purchase_date,
-            amount,
-            currency,
+            buyer_name,
+            buyer_email,
+            buyer_phone,
+            units_purchased,
+            price_per_unit,
+            total_amount,
             payment_method,
-            start_date,
-            end_date,
-            instructor,
-            location,
-            schedule,
+            buyer_address,
+            purchase_notes,
+            purchase_status,
+            purchase_date,
+            created_by,
+            // Legacy/alternative field names for backward compatibility
+            amount,
             notes,
-            approved_by
+            employee_id
         } = req.body;
         
-        // Validate required fields
-        if (!employee_id || !employee_name || !luggage || !purchase_date || !amount) {
+        // Validate required fields - must have buyer info and purchase details
+        if (!buyer_name || !buyer_email || !units_purchased || !purchase_date) {
             return res.status(400).json({
                 success: false,
                 error: 'Missing required fields',
-                details: 'employee_id, employee_name, luggage, purchase_date, and amount are required'
+                details: 'buyer_name, buyer_email, units_purchased, and purchase_date are required'
             });
         }
         
-        // Generate purchase reference based on current timestamp
-        const purchase_reference = `LP${new Date().getFullYear()}${String(new Date().getMonth() + 1).padStart(2, '0')}${String(Date.now()).slice(-3)}`;
+        // Use provided total_amount or the legacy 'amount' field
+        const finalAmount = total_amount || amount;
+        if (!finalAmount) {
+            return res.status(400).json({
+                success: false,
+                error: 'Missing amount',
+                details: 'total_amount or amount is required'
+            });
+        }
         
-        // Try database first
+        // Calculate price_per_unit if not provided
+        const finalPricePerUnit = price_per_unit || (finalAmount / units_purchased);
+        
+        // Try database insert with actual schema columns
         try {
             const db = require('../../database/config/database');
             
-            // First, check what columns exist in the table
-            let query = `
+            const query = `
                 INSERT INTO luggage_purchases (
-                    campaign_id, employee_id, employee_name,
-                    luggage, purchase_date, amount, currency,
-                    payment_method, notes, created_by
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    campaign_id, buyer_name, buyer_email, buyer_phone,
+                    units_purchased, price_per_unit, total_amount,
+                    payment_method, buyer_address, purchase_notes,
+                    purchase_status, purchase_date, created_by
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             `;
             
-            let values = [
+            const values = [
                 campaign_id || null,
-                employee_id,
-                employee_name,
-                luggage,
+                buyer_name,
+                buyer_email,
+                buyer_phone || null,
+                units_purchased,
+                finalPricePerUnit,
+                finalAmount,
+                payment_method || 'Bank Transfer',
+                buyer_address || null,
+                purchase_notes || notes || null,
+                purchase_status || 'Pending',
                 purchase_date,
-                amount,
-                currency || 'TZS',
-                payment_method || 'company_sponsored',
-                notes || null,
-                req.body.created_by || employee_id
+                created_by || employee_id || null
             ];
-            
-            // Try with all optional fields if they exist
-            try {
-                query = `
-                    INSERT INTO luggage_purchases (
-                        campaign_id, campaign_name, employee_id, employee_name,
-                        department, luggage, course_type, purchase_date, amount, currency,
-                        payment_method, start_date, end_date, instructor, location, schedule,
-                        notes, created_by, created_at
-                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())
-                `;
-                
-                values = [
-                    campaign_id || null,
-                    req.body.campaign_name || null,
-                    employee_id,
-                    employee_name,
-                    department || null,
-                    luggage,
-                    course_type || 'basic',
-                    purchase_date,
-                    amount,
-                    currency || 'TZS',
-                    payment_method || 'company_sponsored',
-                    req.body.start_date || null,
-                    req.body.end_date || null,
-                    req.body.instructor || null,
-                    req.body.location || null,
-                    req.body.schedule || null,
-                    notes || null,
-                    req.body.created_by || employee_id
-                ];
-            } catch (e) {
-                // Fallback to minimal set
-            }
             
             const resultResult = await db.execute(query, values);
             const result = Array.isArray(resultResult) ? resultResult[0] : resultResult;
