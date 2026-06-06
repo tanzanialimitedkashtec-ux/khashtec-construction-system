@@ -1,4 +1,13 @@
-        if (purchases && purchases.length > 0) {
+        <!DOCTYPE html>
+        <html lang="en">
+        <head>
+            <meta charset="utf-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1">
+            <title>Department - Khashtec</title>
+        </head>
+        <body>
+        <script>
+            if (purchases && purchases.length > 0) {
             const formatDate = d => {
                 if (!d) return '';
                 try { return new Date(d).toLocaleDateString(); } catch (e) { return d; }
@@ -107,42 +116,6 @@
                         </div>
 
                     </td>
-        return false;
-
-    }
-
-    // Temporarily apply selected values to the main selectors and reuse emailPayslips()
-    const mainEmp = document.getElementById('payslipEmployee');
-
-    const mainMonth = document.getElementById('payslipMonth');
-
-    const prevEmp = mainEmp ? mainEmp.value : null;
-
-    const prevMonth = mainMonth ? mainMonth.value : null;
-
-    if (mainEmp && empSel) mainEmp.value = empSel.value;
-
-    if (mainMonth && monthSel) mainMonth.value = monthSel.value;
-
-    try {
-
-        emailPayslips();
-
-    } finally {
-
-        if (mainEmp && prevEmp !== null) mainEmp.value = prevEmp;
-
-        if (mainMonth && prevMonth !== null) mainMonth.value = prevMonth;
-
-    }
-
-    const container = document.getElementById('emailPayslipsFormContainer');
-
-    if (container) container.classList.add('hidden');
-
-    return false;
-
-}
                     <td>
 
                         <div class="notes-info">
@@ -184,14 +157,7 @@
         } else {
             recordsList.innerHTML = '<tr><td colspan="10" class="no-records">No purchase records found.</td></tr>';
         }
-    color: white;
-    padding: 8px 6px;
-    text-align: left;
-    font-weight: 600;
-    border-bottom: 2px solid #093278;
-    white-space: nowrap;
-    font-size: 12px;
-}
+    </script>
 .workforce-table td,
 .task-table td {
     padding: 6px 4px;
@@ -24523,7 +24489,7 @@ function loadPoliciesFromBackend() {
 
                     </div>
 
-                `;
+.                `;
 
             });
 
