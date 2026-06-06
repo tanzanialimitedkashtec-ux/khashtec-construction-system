@@ -345,6 +345,52 @@ app.get('/api/profile-image/:employeeId', async (req, res) => {
 // Also catch direct requests to the (non-existent) default avatar file
 app.get('/assets/images/default-avatar.png', (req, res) => sendDefaultAvatar(res, 'default'));
 
+app.get('/api/employee-file/:employeeId/:fileType', async (req, res) => {
+    try {
+        const { fileType, employeeId } = req.params;
+        const db = require('./database/config/database');
+        
+        let pathCol, dataCol, mimeCol;
+        if (fileType === 'cv') {
+            pathCol = 'cv_path'; dataCol = 'cv_data'; mimeCol = 'cv_mime';
+        } else if (fileType === 'agreement') {
+            pathCol = 'agreement_path'; dataCol = 'agreement_data'; mimeCol = 'agreement_mime';
+        } else {
+            return res.status(400).send('Invalid file type');
+        }
+
+        const [rows] = await db.execute(
+            `SELECT ${pathCol}, ${dataCol}, ${mimeCol} FROM employee_details WHERE employee_id = ? LIMIT 1`,
+            [employeeId]
+        );
+        
+        if (rows && rows.length > 0) {
+            const row = rows[0];
+            // 1) BLOB in DB
+            if (row[dataCol]) {
+                res.set('Content-Type', row[mimeCol] || 'application/pdf');
+                res.set('Cache-Control', 'public, max-age=86400');
+                return res.end(row[dataCol]);
+            }
+            // 2) On-disk file
+            if (row[pathCol] && typeof row[pathCol] === 'string') {
+                const raw = row[pathCol].replace(/\\/g, '/');
+                const idx = raw.toLowerCase().lastIndexOf('uploads/');
+                const rel = idx !== -1 ? raw.slice(idx) : raw.replace(/^\/+/, '');
+                const filePath = path.join(__dirname, rel);
+                if (fs.existsSync(filePath)) {
+                    res.set('Cache-Control', 'public, max-age=86400');
+                    return res.sendFile(filePath);
+                }
+            }
+        }
+        return res.status(404).send('File not found');
+    } catch (err) {
+        console.error('Employee file serve error:', err.message);
+        return res.status(500).send('Server error');
+    }
+});
+
 
 
 // Ensure uploads directory exists
@@ -5350,6 +5396,22 @@ async function createEmployeeDetailsTable() {
               contract_type VARCHAR(100),
 
               profile_image VARCHAR(255),
+
+              profile_image_data LONGBLOB,
+
+              profile_image_mime VARCHAR(100),
+
+              cv_path VARCHAR(255),
+
+              cv_data LONGBLOB,
+
+              cv_mime VARCHAR(100),
+
+              agreement_path VARCHAR(255),
+
+              agreement_data LONGBLOB,
+
+              agreement_mime VARCHAR(100),
 
               created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 

@@ -405,6 +405,15 @@ router.post('/', upload.any(), async (req, res) => {
             let profileImagePath = '';
             let profileImageBuffer = null;
             let profileImageMime = null;
+            
+            let cvPath = '';
+            let cvBuffer = null;
+            let cvMime = null;
+            
+            let agreementPath = '';
+            let agreementBuffer = null;
+            let agreementMime = null;
+
             if (req.files && req.files.length > 0) {
                 const profileFile = req.files.find(f => f.fieldname === 'profileImage');
                 if (profileFile) {
@@ -419,15 +428,37 @@ router.post('/', upload.any(), async (req, res) => {
                         ? `/api/profile-image/${employeeDbId}`
                         : `/uploads/${profileFile.filename}`;
                 }
+                
+                const cvFile = req.files.find(f => f.fieldname === 'empCV');
+                if (cvFile) {
+                    cvMime = cvFile.mimetype || 'application/pdf';
+                    try {
+                        cvBuffer = fs.readFileSync(cvFile.path);
+                    } catch (readErr) {
+                        console.warn('⚠️ Could not read uploaded CV for BLOB storage:', readErr.message);
+                    }
+                    cvPath = cvBuffer ? `/api/employee-file/${employeeDbId}/cv` : `/uploads/${cvFile.filename}`;
+                }
+                
+                const agreementFile = req.files.find(f => f.fieldname === 'empAgreement');
+                if (agreementFile) {
+                    agreementMime = agreementFile.mimetype || 'application/pdf';
+                    try {
+                        agreementBuffer = fs.readFileSync(agreementFile.path);
+                    } catch (readErr) {
+                        console.warn('⚠️ Could not read uploaded Agreement for BLOB storage:', readErr.message);
+                    }
+                    agreementPath = agreementBuffer ? `/api/employee-file/${employeeDbId}/agreement` : `/uploads/${agreementFile.filename}`;
+                }
             }
             
             // Create employee details (try with BLOB columns; gracefully fall back if missing)
             let detailsResult;
             try {
                 detailsResult = await db.execute(
-                    `INSERT INTO employee_details (employee_id, full_name, gmail, phone, nida, passport, contract_type, profile_image, profile_image_data, profile_image_mime)
-                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-                    [employeeDbId, fullName, gmail, phone, nida, passport || '', contract, profileImagePath, profileImageBuffer, profileImageMime]
+                    `INSERT INTO employee_details (employee_id, full_name, gmail, phone, nida, passport, contract_type, profile_image, profile_image_data, profile_image_mime, cv_path, cv_data, cv_mime, agreement_path, agreement_data, agreement_mime)
+                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+                    [employeeDbId, fullName, gmail, phone, nida, passport || '', contract, profileImagePath, profileImageBuffer, profileImageMime, cvPath, cvBuffer, cvMime, agreementPath, agreementBuffer, agreementMime]
                 );
             } catch (blobErr) {
                 console.warn('⚠️ BLOB insert failed, retrying without BLOB columns:', blobErr.message);
