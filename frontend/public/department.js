@@ -41757,7 +41757,7 @@ async function loadLuggagePurchases() {
 
                             <button class="action-btn edit" onclick="editPurchase('${mappedPurchase.record_id}')" title="Edit Purchase">✏️</button>
 
-                            <button class="action-btn delete" onclick="deletePurchase('${mappedPurchase.record_id}')" title="Delete Purchase">🗑️</button>
+                            <button class="action-btn delete" onclick="deletePurchase_API('${mappedPurchase.record_id}')" title="Delete Purchase">🗑️</button>
 
                         </div>
 
@@ -41789,12 +41789,6 @@ async function loadLuggagePurchases() {
 
 // Purchase Action Functions
 
-function editPurchase(purchaseId) {
-
-    customAlert(`Editing purchase: ${purchaseId}`, 'Edit Purchase', 'info');
-
-}
-
 
 
 function deletePurchase(purchaseId) {
@@ -41810,6 +41804,37 @@ function deletePurchase(purchaseId) {
 }
 
 
+
+async function deletePurchase_API(purchaseId) {
+    if (!confirm(`Are you sure you want to delete purchase: ${purchaseId}?`)) return;
+
+    try {
+        if (window.KashTecAPI && typeof window.KashTecAPI.delete === 'function') {
+            const resp = await window.KashTecAPI.delete(`/luggage-purchases/${purchaseId}`);
+            if (resp && resp.success) {
+                customAlert(`Purchase ${purchaseId} deleted successfully!`, 'Success', 'success');
+                await loadLuggagePurchases();
+                return;
+            } else {
+                throw new Error((resp && resp.message) || 'Failed to delete purchase');
+            }
+        } else {
+            const base = (window.KashTecAPI && KashTecAPI.baseUrl) ? KashTecAPI.baseUrl : '';
+            const url = `${base}/api/luggage-purchases/${purchaseId}`;
+            const r = await fetch(url, { method: 'DELETE', credentials: 'include' });
+            const data = await r.json().catch(() => null);
+            if (r.ok && data && data.success !== false) {
+                customAlert(`Purchase ${purchaseId} deleted successfully!`, 'Success', 'success');
+                await loadLuggagePurchases();
+                return;
+            }
+            throw new Error((data && data.message) || `Delete failed (status ${r.status})`);
+        }
+    } catch (err) {
+        console.error('❌ Error deleting purchase:', err);
+        customAlert(`Error deleting purchase: ${err.message || err}`, 'Error', 'error');
+    }
+}
 
 async function loadPaymentTracking() {
 

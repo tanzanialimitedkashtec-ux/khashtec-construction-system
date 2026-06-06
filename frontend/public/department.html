@@ -66273,9 +66273,7 @@ async function loadLuggagePurchases() {
 
                             <button class="action-btn view" onclick="viewPurchaseDetails('${purchaseId}')" title="View Details">👁️</button>
 
-                            <button class="action-btn edit" onclick="editPurchase('${purchaseId}')" title="Edit Purchase">✏️</button>
-
-                            <button class="action-btn delete" onclick="deletePurchase('${purchaseId}')" title="Delete Purchase">🗑️</button>
+                            <button class="action-btn delete" onclick="deletePurchase_API('${purchaseId}')" title="Delete Purchase">🗑️</button>
 
                         </div>
 
@@ -66599,15 +66597,13 @@ function loadSamplePurchases() {
 
             </td>
 
-            <td>
+                    <td>
 
                 <div class="purchase-actions">
 
                     <button class="action-btn view" onclick="viewPurchaseDetails('${purchase.purchase_id}')" title="View Details">👁️</button>
 
-                    <button class="action-btn edit" onclick="editPurchase('${purchase.purchase_id}')" title="Edit Purchase">✏️</button>
-
-                    <button class="action-btn delete" onclick="deletePurchase('${purchase.purchase_id}')" title="Delete Purchase">🗑️</button>
+                    <button class="action-btn delete" onclick="deletePurchase_API('${purchase.purchase_id}')" title="Delete Purchase">🗑️</button>
 
                 </div>
 
@@ -66635,16 +66631,36 @@ function editPurchase(purchaseId) {
 
 
 
-function deletePurchase(purchaseId) {
+async function deletePurchase(purchaseId) {
+    if (!confirm(`Are you sure you want to delete purchase: ${purchaseId}?`)) return;
 
-    if (confirm(`Are you sure you want to delete purchase: ${purchaseId}?`)) {
-
-        customAlert(`Purchase ${purchaseId} deleted successfully!`, 'Success', 'success');
-
-        loadLuggagePurchases();
-
+    try {
+        if (window.KashTecAPI && typeof window.KashTecAPI.delete === 'function') {
+            const resp = await window.KashTecAPI.delete(`/luggage-purchases/${purchaseId}`);
+            if (resp && resp.success) {
+                customAlert(`Purchase ${purchaseId} deleted successfully!`, 'Success', 'success');
+                await loadLuggagePurchases();
+                return;
+            } else {
+                throw new Error((resp && resp.message) || 'Failed to delete purchase');
+            }
+        } else {
+            // Fallback to fetch
+            const base = (window.KashTecAPI && KashTecAPI.baseUrl) ? KashTecAPI.baseUrl : '';
+            const url = `${base}/api/luggage-purchases/${purchaseId}`;
+            const r = await fetch(url, { method: 'DELETE', credentials: 'include' });
+            const data = await r.json().catch(() => null);
+            if (r.ok && data && data.success !== false) {
+                customAlert(`Purchase ${purchaseId} deleted successfully!`, 'Success', 'success');
+                await loadLuggagePurchases();
+                return;
+            }
+            throw new Error((data && data.message) || `Delete failed (status ${r.status})`);
+        }
+    } catch (err) {
+        console.error('❌ Error deleting purchase:', err);
+        customAlert(`Error deleting purchase: ${err.message || err}`, 'Error', 'error');
     }
-
 }
 
 
