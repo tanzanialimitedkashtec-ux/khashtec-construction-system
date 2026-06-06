@@ -66115,7 +66115,9 @@ async function loadLuggagePurchases() {
 
                 // Use actual database field names from luggage_purchases table
                 const purchaseId = purchase.id || '';
-                const campaignId = purchase.campaign_id || '';
+                const campaignName = purchase.campaign_name || 'Unknown Campaign';
+                const campaignLuggage = purchase.luggage_name || purchase.campaign_luggage || 'Unknown Luggage';
+                const companyName = purchase.campaign_name || 'Unknown Company';
                 const buyerName = purchase.buyer_name || '';
                 const buyerEmail = purchase.buyer_email || '';
                 const buyerPhone = purchase.buyer_phone || '';
@@ -66125,7 +66127,8 @@ async function loadLuggagePurchases() {
                 const paymentMethod = purchase.payment_method || 'Bank Transfer';
                 const buyerAddress = purchase.buyer_address || '';
                 const purchaseNotes = purchase.purchase_notes || '';
-                const purchaseStatus = purchase.purchase_status || 'Pending';
+                const rawStatus = purchase.purchase_status || 'Confirmed';
+                const purchaseStatus = ['Cancelled', 'Refunded'].includes(rawStatus) ? rawStatus : 'Active';
                 const purchaseDate = purchase.purchase_date || '';
 
                 
@@ -66139,7 +66142,7 @@ async function loadLuggagePurchases() {
 
                             <div class="purchase-id">ID: ${purchaseId}</div>
 
-                            <div class="tracking-number">Campaign: ${campaignId}</div>
+                            <div class="tracking-number">Campaign: ${campaignName}</div>
 
                             <div class="purchase-status">Status: ${purchaseStatus}</div>
 
@@ -66151,9 +66154,9 @@ async function loadLuggagePurchases() {
 
                         <div class="campaign-info">
 
-                            <div class="campaign-name">Purchase #${purchaseId}</div>
+                            <div class="campaign-name">${companyName}</div>
 
-                            <div class="campaign-details">${buyerName}</div>
+                            <div class="campaign-details">${campaignLuggage}</div>
 
                         </div>
 
@@ -66209,7 +66212,7 @@ async function loadLuggagePurchases() {
 
                         <div class="address-info">
 
-                            <div class="total-amount">Total: TZS ${Number(totalAmount || 0).toLocaleString()}</div>
+                            <div class="buyer-address">${buyerAddress || 'No address available'}</div>
 
                         </div>
 
