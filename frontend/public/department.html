@@ -65375,45 +65375,61 @@ async function saveLuggagePurchase() {
     try {
 
         const campaignSelect = document.getElementById('campaignSelect');
+        
+        // Add null check for campaignSelect
+        if (!campaignSelect) {
+            throw new Error('Campaign select element not found');
+        }
 
         const campaignId = campaignSelect.value;
-
-        
+        if (!campaignId) {
+            throw new Error('Please select a campaign');
+        }
 
         // Build purchase payload and include both frontend and backend expected fields
-        const units = parseInt(document.getElementById('unitsPurchased').value) || 0;
-        const pricePerUnit = parseFloat(document.getElementById('pricePerUnit').value) || 0;
-        const computedAmount = units * pricePerUnit;
+        const units = parseInt(document.getElementById('unitsPurchased')?.value) || 0;
 
         const selectedCampaignOption = document.querySelector('#campaignSelect option:checked');
         const selectedCampaignText = selectedCampaignOption ? selectedCampaignOption.textContent : '';
-        // Try to extract luggage name from option text: "CampaignName - LuggageName (TZS ...)"
+        
+        // Extract price and luggage name from option text: "CampaignName - LuggageName (TZS <price>)"
         let luggageName = '';
+        let pricePerUnit = 0;
         try {
-            luggageName = selectedCampaignText.split(' - ')[1].split(' (')[0];
+            const parts = selectedCampaignText.split(' - ');
+            if (parts[1]) {
+                luggageName = parts[1].split(' (')[0];
+            }
+            // Extract price from text like "(TZS 50000)"
+            const priceMatch = selectedCampaignText.match(/\(TZS\s*([\d,]+(?:\.\d{2})?)\)/);
+            if (priceMatch && priceMatch[1]) {
+                pricePerUnit = parseFloat(priceMatch[1].replace(/,/g, ''));
+            }
         } catch (e) {
-            luggageName = '';
+            console.warn('Could not parse campaign text:', e);
         }
+        
+        const computedAmount = units * pricePerUnit;
 
         const purchaseData = {
             // original buyer fields (kept for compatibility)
             campaign_id: parseInt(campaignId),
-            buyer_name: document.getElementById('buyerName').value,
-            buyer_email: document.getElementById('buyerEmail').value,
-            buyer_phone: document.getElementById('buyerPhone').value,
-            buyer_address: document.getElementById('buyerAddress').value,
+            buyer_name: document.getElementById('buyerName')?.value || '',
+            buyer_email: document.getElementById('buyerEmail')?.value || '',
+            buyer_phone: document.getElementById('buyerPhone')?.value || '',
+            buyer_address: document.getElementById('buyerAddress')?.value || '',
             units_purchased: units,
-            payment_method: document.getElementById('paymentMethod').value,
-            notes: document.getElementById('purchaseNotes').value,
+            payment_method: document.getElementById('paymentMethod')?.value || 'Bank Transfer',
+            notes: document.getElementById('purchaseNotes')?.value || '',
             created_by: getCurrentUserId(),
 
             // backend-required fields for `luggagePurchases` route
-            employee_id: getCurrentUserId() || document.getElementById('buyerEmployeeId')?.value || '',
-            employee_name: document.getElementById('buyerName').value || '',
-            luggage: luggageName || document.getElementById('luggageName')?.value || '',
-            purchase_date: document.getElementById('purchaseDate')?.value || new Date().toISOString().split('T')[0],
-            amount: computedAmount || parseFloat(document.getElementById('amount')?.value) || 0,
-            currency: document.getElementById('currency')?.value || 'TZS'
+            employee_id: getCurrentUserId() || '',
+            employee_name: document.getElementById('buyerName')?.value || '',
+            luggage: luggageName || '',
+            purchase_date: new Date().toISOString().split('T')[0],
+            amount: computedAmount,
+            currency: 'TZS'
         };
 
 
