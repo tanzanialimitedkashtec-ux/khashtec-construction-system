@@ -424,7 +424,7 @@ router.post('/', upload.fields([
     const finalTemporaryPassword = password || temporaryPassword;
     
     // Handle uploaded files - store web-accessible URL paths, not absolute container paths
-    const toUrl = (f) => f ? `/uploads/${f.filename}` : null;
+    const toUrl = (f) => f ? `/uploads/worker-documents/${f.filename}` : null;
     const profilePicturePath = toUrl(req.files?.workerProfile?.[0]);
     const idDocumentPath = toUrl(req.files?.workerID?.[0]);
     const contractDocumentPath = toUrl(req.files?.workerContract?.[0]);

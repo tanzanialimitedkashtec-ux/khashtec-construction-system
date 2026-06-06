@@ -690,24 +690,25 @@ router.post('/test-upload', (req, res) => {
 });
 
 // Upload new document endpoint (matches frontend call to /api/documents/upload)
-router.post('/upload', async (req, res) => {
+router.post('/upload', upload.single('document'), async (req, res) => {
     try {
         console.log('📤 Certificate upload request received');
         console.log('📋 Request body:', req.body);
-        console.log('🔍 Request method:', req.method);
-        console.log('🔍 Request URL:', req.url);
-        console.log('🔍 Content-Type:', req.get('Content-Type'));
+        console.log('📁 Request file:', req.file);
         
         const {
             type,
             name,
-            filename,
-            file_size,
-            mime_type,
             expiry_date,
             description,
             uploaded_by
         } = req.body;
+        
+        // Use req.file details if a file was uploaded, otherwise fallback
+        const filename = req.file ? req.file.filename : (req.body.filename || `${type}_certificate.pdf`);
+        const file_size = req.file ? req.file.size : (req.body.file_size || 0);
+        const mime_type = req.file ? req.file.mimetype : (req.body.mime_type || 'application/pdf');
+        const filePath = req.file ? `/uploads/documents/${req.file.filename}` : null;
         
         // Validate required fields
         if (!type) {
@@ -723,7 +724,7 @@ router.post('/upload', async (req, res) => {
         }
         
         console.log('🔍 Extracted certificate data:', {
-            type, name, filename, file_size, mime_type, expiry_date, description, uploaded_by
+            type, name, filename, file_size, mime_type, expiry_date, description, uploaded_by, filePath
         });
         
         try {
@@ -793,19 +794,21 @@ router.post('/upload', async (req, res) => {
                     title,
                     description,
                     file_name,
+                    file_path,
                     file_size,
                     file_type,
                     category,
                     uploaded_by,
                     status,
                     expiry_date
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, 'Pending', ?)
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'Pending', ?)
             `;
             
             const documentsValues = [
                 name,
                 description || `${type} certificate uploaded via form`,
                 filename || `${type}_certificate.pdf`,
+                filePath,
                 file_size || 0,
                 mime_type || 'application/pdf',
                 category,
@@ -1260,7 +1263,82 @@ router.get('/:id/download', async (req, res) => {
             
             return res.status(404).json({ error: 'Employee document not found' });
         }
-        
+
+        // Handle worker account document downloads (ID / Contract from worker_accounts)
+        if (typeof docId === 'string' && (docId.startsWith('work_id_') || docId.startsWith('work_cont_'))) {
+            const isIdDoc = docId.startsWith('work_id_');
+            const workerId = parseInt(docId.replace('work_id_', '').replace('work_cont_', ''), 10);
+            
+            if (!isNaN(workerId) && db) {
+                const column = isIdDoc ? 'id_document' : 'contract_document';
+                const rows = await db.execute(
+                    `SELECT full_name, ${column} FROM worker_accounts WHERE id = ?`, [workerId]
+                );
+                
+                let workRows = Array.isArray(rows) ? rows : (rows && Array.isArray(rows[0]) ? rows[0] : []);
+                
+                if (workRows.length > 0 && workRows[0][column]) {
+                    const filePath = workRows[0][column];
+                    const fileName = filePath.split('/').pop() || `worker_document_${workerId}`;
+                    
+                    // If it's a relative path starting with /uploads, redirect to the static file
+                    if (filePath.startsWith('/uploads/')) {
+                        return res.redirect(filePath);
+                    }
+                    // Otherwise try to resolve the absolute path and send it
+                    const path = require('path');
+                    const absolutePath = path.resolve(__dirname, '../../', filePath.replace(/^\//, ''));
+                    return res.download(absolutePath, fileName);
+                }
+            }
+            
+            return res.status(404).json({ error: 'Worker document not found' });
+            return res.status(404).json({ error: 'Worker document not found' });
+        }
+
+        // Try to fetch from documents table first
+        if (db && !isNaN(parseInt(docId, 10))) {
+            try {
+                const docRows = await db.execute(
+                    'SELECT * FROM documents WHERE id = ?', [docId]
+                );
+                const items = Array.isArray(docRows) ? (Array.isArray(docRows[0]) ? docRows[0] : docRows) : [];
+                
+                if (items.length > 0) {
+                    const doc = items[0];
+                    console.log(`✅ Found document in documents table: ${doc.title}`);
+                    
+                    // If we have a real file path, serve it
+                    if (doc.file_path) {
+                        if (doc.file_path.startsWith('/uploads/')) {
+                            return res.redirect(doc.file_path);
+                        }
+                        const path = require('path');
+                        const absolutePath = path.resolve(__dirname, '../../', doc.file_path.replace(/^\//, ''));
+                        return res.download(absolutePath, doc.file_name);
+                    }
+                    
+                    // Otherwise, generate a PDF using metadata
+                    const mappedItem = {
+                        work_title: doc.title,
+                        work_description: doc.description,
+                        work_type: doc.category,
+                        department_code: 'admin',
+                        status: doc.status,
+                        submitted_date: doc.created_at ? new Date(doc.created_at).toISOString().split('T')[0] : new Date().toISOString().split('T')[0]
+                    };
+                    const pdfContent = generatePDF(mappedItem);
+                    const fileName = `${doc.title.replace(/[^a-zA-Z0-9\s]/g, '_').trim()}.pdf`;
+                    res.setHeader('Content-Type', 'application/pdf');
+                    res.setHeader('Content-Disposition', `attachment; filename="${fileName}"`);
+                    res.setHeader('Content-Length', Buffer.byteLength(pdfContent, 'utf8'));
+                    return res.send(pdfContent);
+                }
+            } catch (docError) {
+                console.error('❌ Database error querying documents table:', docError);
+            }
+        }
+
         let adminWorkItems;
         
         // Try to fetch from database if available
