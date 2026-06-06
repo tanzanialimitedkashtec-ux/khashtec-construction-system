@@ -24995,7 +24995,7 @@ function loadMenu(){
 
     const rolePermissions = {
         "HR": ["Register Employee", "Create Worker Account", "Assign Project Workers", "Update Employee Records", "Register Driver", "Register Company Car", "Manage Company Cars", "Track Attendance", "Manage Leave & Contracts", "Manage Policies", "Approve Workforce Budget", "Manage Drivers", "View Suggestions"],
-        "FINANCE": ["Budgeting", "Financial Management", "Payroll Processing", "Expense Control", "Financial Reporting", "Audits", "Compliance", "Luggage Campaigns", "Luggage Purchases", "Payment Tracking", "View Suggestions", "Record Sale", "Manage Sales", "Generate Sales Report", "Procurement Sale", "Accountant Management", "Payment Management", "Track Payment Progress"],
+        "FINANCE": ["Budgeting", "Financial Management", "Payroll Processing", "Expense Control", "Financial Reporting", "Audits", "Compliance", "Luggage Companies", "Luggage Purchases", "Payment Tracking", "View Suggestions", "Record Sale", "Manage Sales", "Generate Sales Report", "Procurement Sale", "Accountant Management", "Payment Management", "Track Payment Progress"],
         "PROJECT": ["Create New Project", "Update Project Progress", "Assign Tasks", "Assign Project Workers", "Request Workforce", "Record Site Reports", "Approve Completed Work", "Materials Inventory", "Record Materials Out", "View Suggestions", "View Project Safety Status"],
         "REALESTATE": ["Add Property", "Edit Property Details", "Register Client", "Record Sale", "Manage Sales", "Track Payment Progress", "Generate Sales Report", "View Suggestions", "Materials Inventory", "Record Materials In", "Record Materials Out", "Materials Dashboard", "Office Resources", "Procurement Sale", "Property"],
         "HSE": ["Record Incident Reports", "Record Toolbox Meetings", "Track PPE Issuance", "Mark Safety Violations", "Upload Inspection Reports", "View Project Safety Status", "View Suggestions", "Upload Safety Policies", "Compliance Management", "Compliance", "Risk Management"],
@@ -25072,7 +25072,7 @@ function loadMenu(){
         { name: "Financial Reporting", func: financialReporting },
         { name: "Audits", func: financeAudits },
         { name: "Compliance", func: financeCompliance },
-        { name: "Luggage Campaigns", func: manageLuggageCampaigns },
+        { name: "Luggage Companies", func: manageLuggageCampaigns },
         { name: "Luggage Purchases", func: manageLuggagePurchases },
         { name: "Payment Tracking", func: trackLuggagePayments },
         { name: "Add Property", func: addProperty },
@@ -62721,7 +62721,7 @@ function financeAudits(){
 
                         <option value="department_added">Departments</option>
 
-                        <option value="luggage_campaign">Luggage Campaigns</option>
+                        <option value="luggage_campaign">Luggage Companies</option>
 
                         <option value="luggage_purchase">Luggage Purchases</option>
 
@@ -64636,7 +64636,7 @@ function manageLuggageCampaigns() {
 
                             <tr>
 
-                                <th>Campaign Name</th>
+                                <th>Company Name</th>
 
                                 <th>Luggage Name</th>
 
@@ -64872,7 +64872,7 @@ function createLuggageCampaign() {
 
         <div class="card">
 
-            <h3>Create Luggage Campaign</h3>
+            <h3>Create Luggage Company</h3>
 
             <form id="campaignForm" class="compact-form">
 
@@ -64880,7 +64880,7 @@ function createLuggageCampaign() {
 
                     <div class="form-group">
 
-                        <label>Campaign Name</label>
+                        <label>Company Name</label>
 
                         <input type="text" id="campaignName" required>
 
@@ -64932,7 +64932,7 @@ function createLuggageCampaign() {
 
                     <div class="form-group">
 
-                        <label>Campaign Status</label>
+                        <label>Company Status</label>
 
                         <select id="campaignStatus">
 
@@ -64976,7 +64976,7 @@ function createLuggageCampaign() {
 
                 <div class="form-group">
 
-                    <label>Campaign Description</label>
+                    <label>Company Description</label>
 
                     <textarea id="campaignDescription" rows="3"></textarea>
 
@@ -64986,7 +64986,7 @@ function createLuggageCampaign() {
 
                 <div class="form-actions">
 
-                    <button type="submit" class="btn-primary">Create Campaign</button>
+                    <button type="submit" class="btn-primary">Create Company</button>
 
                     <button type="button" class="btn-secondary" onclick="manageLuggageCampaigns()">Cancel</button>
 
@@ -67269,7 +67269,7 @@ async function viewCampaignDetails(campaignId) {
 
                         <div class="campaign-details">
 
-                            <p><strong>Campaign Name:</strong> ${campaign.campaign_name}</p>
+                            <p><strong>Company Name:</strong> ${campaign.campaign_name}</p>
 
                             <p><strong>Luggage:</strong> ${campaign.luggage_name} (${campaign.luggage_code})</p>
 

@@ -991,7 +991,7 @@ function loadMenu(){
 
         addMenu("Compliance", financeCompliance);
 
-        addMenu("Luggage Campaigns", manageLuggageCampaigns);
+        addMenu("Luggage Companies", manageLuggageCampaigns);
 
         addMenu("Luggage Purchases", manageLuggagePurchases);
 
@@ -1146,7 +1146,7 @@ function loadMenu(){
 
         addMenu("Compliance", financeCompliance);
 
-        addMenu("Luggage Campaigns", manageLuggageCampaigns);
+        addMenu("Luggage Companies", manageLuggageCampaigns);
 
         addMenu("Luggage Purchases", manageLuggagePurchases);
 
@@ -40128,7 +40128,7 @@ function manageLuggageCampaigns() {
 
                             <tr>
 
-                                <th>Campaign Name</th>
+                                <th>Company Name</th>
 
                                 <th>Luggage Name</th>
 
@@ -40364,7 +40364,7 @@ function createLuggageCampaign() {
 
         <div class="card">
 
-            <h3>Create Luggage Campaign</h3>
+            <h3>Create Luggage Company</h3>
 
             <form id="campaignForm" class="compact-form">
 
@@ -40372,7 +40372,7 @@ function createLuggageCampaign() {
 
                     <div class="form-group">
 
-                        <label>Campaign Name</label>
+                        <label>Company Name</label>
 
                         <input type="text" id="campaignName" required />
 
@@ -40424,7 +40424,7 @@ function createLuggageCampaign() {
 
                     <div class="form-group">
 
-                        <label>Campaign Status</label>
+                        <label>Company Status</label>
 
                         <select id="campaignStatus">
 
@@ -40468,7 +40468,7 @@ function createLuggageCampaign() {
 
                 <div class="form-group">
 
-                    <label>Campaign Description</label>
+                    <label>Company Description</label>
 
                     <textarea id="campaignDescription" rows="3"></textarea>
 
@@ -40478,7 +40478,7 @@ function createLuggageCampaign() {
 
                 <div class="form-actions">
 
-                    <button type="submit" class="btn-primary">Create Campaign</button>
+                    <button type="submit" class="btn-primary">Create Company</button>
 
                     <button type="button" class="btn-secondary" onclick="manageLuggageCampaigns()">Cancel</button>
 
@@ -42439,7 +42439,7 @@ async function viewCampaignDetails(campaignId) {
 
                         <div class="campaign-details">
 
-                            <p><strong>Campaign Name:</strong> ${campaign.campaign_name}</p>
+                            <p><strong>Company Name:</strong> ${campaign.campaign_name}</p>
 
                             <p><strong>Luggage:</strong> ${campaign.luggage_name} (${campaign.luggage_code})</p>
 
