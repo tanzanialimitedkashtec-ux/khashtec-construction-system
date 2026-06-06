@@ -61263,52 +61263,46 @@ function financialManagement(){
 
             <h4>Financial Overview</h4>
 
-            <div class="finance-stats">
+            <div class="finance-bars" style="display: flex; flex-direction: column; gap: 15px; margin-top: 15px;">
 
-                <div class="stat-card">
-
-                    <h5>Total Revenue</h5>
-
-                    <div class="stat-number" id="fmTotalRevenue">Loading...</div>
-
-                    <div class="stat-change positive">+12.5% YTD</div>
-
+                <div class="bar-item">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 5px; font-size: 13px;">
+                        <strong>Total Revenue <span class="stat-change positive" style="font-size: 11px; margin-left: 5px;">+12.5% YTD</span></strong>
+                        <strong id="fmTotalRevenue" style="color: #28a745;">Loading...</strong>
+                    </div>
+                    <div style="background: #e9ecef; border-radius: 4px; height: 10px; width: 100%; overflow: hidden;">
+                        <div style="background: #28a745; height: 100%; width: 85%;"></div>
+                    </div>
                 </div>
-
                 
-
-                <div class="stat-card">
-
-                    <h5>Total Expenses</h5>
-
-                    <div class="stat-number" id="fmTotalExpenses">Loading...</div>
-
-                    <div class="stat-change negative">+8.3% YTD</div>
-
+                <div class="bar-item">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 5px; font-size: 13px;">
+                        <strong>Total Expenses <span class="stat-change negative" style="font-size: 11px; margin-left: 5px;">+8.3% YTD</span></strong>
+                        <strong id="fmTotalExpenses" style="color: #dc3545;">Loading...</strong>
+                    </div>
+                    <div style="background: #e9ecef; border-radius: 4px; height: 10px; width: 100%; overflow: hidden;">
+                        <div style="background: #dc3545; height: 100%; width: 45%;"></div>
+                    </div>
                 </div>
-
                 
-
-                <div class="stat-card">
-
-                    <h5>Net Profit</h5>
-
-                    <div class="stat-number" id="fmNetProfit">Loading...</div>
-
-                    <div class="stat-change positive">+18.7% YTD</div>
-
+                <div class="bar-item">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 5px; font-size: 13px;">
+                        <strong>Net Profit <span class="stat-change positive" style="font-size: 11px; margin-left: 5px;">+18.7% YTD</span></strong>
+                        <strong id="fmNetProfit" style="color: #0b3d91;">Loading...</strong>
+                    </div>
+                    <div style="background: #e9ecef; border-radius: 4px; height: 10px; width: 100%; overflow: hidden;">
+                        <div style="background: #0b3d91; height: 100%; width: 65%;"></div>
+                    </div>
                 </div>
-
                 
-
-                <div class="stat-card">
-
-                    <h5>Cash Balance</h5>
-
-                    <div class="stat-number" id="fmCashBalance">Loading...</div>
-
-                    <div class="stat-change neutral">Stable</div>
-
+                <div class="bar-item">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 5px; font-size: 13px;">
+                        <strong>Cash Balance <span class="stat-change neutral" style="font-size: 11px; margin-left: 5px;">Stable</span></strong>
+                        <strong id="fmCashBalance" style="color: #17a2b8;">Loading...</strong>
+                    </div>
+                    <div style="background: #e9ecef; border-radius: 4px; height: 10px; width: 100%; overflow: hidden;">
+                        <div style="background: #17a2b8; height: 100%; width: 75%;"></div>
+                    </div>
                 </div>
 
             </div>
