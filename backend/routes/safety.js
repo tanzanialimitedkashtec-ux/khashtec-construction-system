@@ -171,11 +171,19 @@ router.get('/:id', async (req, res) => {
                 let violations = [];
                 let inspections = [];
                 let ppeRecords = [];
+                let incidentDetails = [];
+                let violationDetails = [];
 
                 try { incidents = await db.query(`SELECT COUNT(*) as count, MAX(submitted_date) as last_incident FROM hse_work WHERE work_type = 'Incident Reporting' AND (project = ? OR project = ?)`, [project.id, project.name]); } catch(e){}
                 try { violations = await db.query(`SELECT COUNT(*) as count FROM hse_work WHERE work_type = 'Safety Violation' AND (project = ? OR project = ?) AND status != 'Completed'`, [project.id, project.name]); } catch(e){}
                 try { inspections = await db.query(`SELECT COUNT(*) as count, MAX(submitted_date) as last_inspection FROM hse_work WHERE work_type = 'Inspection Report' AND (project = ? OR project = ?)`, [project.id, project.name]); } catch(e){}
                 try { ppeRecords = await db.query(`SELECT COUNT(*) as total, SUM(CASE WHEN status = 'Issued' THEN 1 ELSE 0 END) as issued FROM ppe_issuance WHERE project = ? OR project = ?`, [project.id, project.name]); } catch(e){}
+                
+                // Fetch actual incident detail records
+                try { incidentDetails = await db.query(`SELECT id, work_title, work_description, severity, priority, submitted_date, submitted_by, status, location, incident_type FROM hse_work WHERE work_type = 'Incident Reporting' AND (project = ? OR project = ?) ORDER BY submitted_date DESC LIMIT 50`, [project.id, project.name]); } catch(e){}
+                
+                // Fetch actual violation detail records
+                try { violationDetails = await db.query(`SELECT id, work_title, work_description, severity, priority, submitted_date, submitted_by, status, location FROM hse_work WHERE work_type = 'Safety Violation' AND (project = ? OR project = ?) ORDER BY submitted_date DESC LIMIT 50`, [project.id, project.name]); } catch(e){}
 
                 const incidentCount = (incidents && incidents[0]) ? incidents[0].count : 0;
                 const lastIncident = (incidents && incidents[0]) ? incidents[0].last_incident : null;
@@ -216,7 +224,9 @@ router.get('/:id', async (req, res) => {
                     risk_level: riskLevel,
                     status: project.status === 'In Progress' ? 'Active' : project.status,
                     total_inspections: inspectionCount,
-                    total_incidents: incidentCount
+                    total_incidents: incidentCount,
+                    incident_details: incidentDetails || [],
+                    violation_details: violationDetails || []
                 };
             }
         } catch (e) {

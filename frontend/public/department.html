@@ -57085,6 +57085,40 @@ async function viewProjectSafetyDetails(projectId) {
 
         
 
+        const incidentsList = (project.incident_details && project.incident_details.length > 0)
+            ? project.incident_details.map(inc => `
+                <tr>
+                    <td style="padding:8px;border-bottom:1px solid #f0f0f0;font-size:13px;">${inc.work_title || inc.incident_type || 'Incident'}</td>
+                    <td style="padding:8px;border-bottom:1px solid #f0f0f0;text-align:center;">
+                        <span style="background:${inc.severity === 'critical' || inc.severity === 'fatal' ? '#e74c3c' : inc.severity === 'major' ? '#e67e22' : '#f39c12'};color:white;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:600;">${(inc.severity || 'N/A').toUpperCase()}</span>
+                    </td>
+                    <td style="padding:8px;border-bottom:1px solid #f0f0f0;font-size:13px;">${inc.submitted_date ? new Date(inc.submitted_date).toLocaleDateString() : 'N/A'}</td>
+                    <td style="padding:8px;border-bottom:1px solid #f0f0f0;font-size:13px;">${inc.submitted_by || 'N/A'}</td>
+                    <td style="padding:8px;border-bottom:1px solid #f0f0f0;font-size:13px;">${inc.location || 'N/A'}</td>
+                    <td style="padding:8px;border-bottom:1px solid #f0f0f0;text-align:center;">
+                        <span style="background:${inc.status === 'Completed' || inc.status === 'Resolved' ? '#27ae60' : inc.status === 'In Progress' ? '#3498db' : '#e74c3c'};color:white;padding:2px 8px;border-radius:10px;font-size:11px;">${inc.status || 'Open'}</span>
+                    </td>
+                </tr>
+            `).join('')
+            : '<tr><td colspan="6" style="padding:12px;text-align:center;color:#27ae60;font-weight:600;">✅ No incidents recorded for this project</td></tr>';
+
+        const violationsList = (project.violation_details && project.violation_details.length > 0)
+            ? project.violation_details.map(vio => `
+                <tr>
+                    <td style="padding:8px;border-bottom:1px solid #f0f0f0;font-size:13px;">${vio.work_title || 'Violation'}</td>
+                    <td style="padding:8px;border-bottom:1px solid #f0f0f0;text-align:center;">
+                        <span style="background:${vio.severity === 'critical' ? '#e74c3c' : vio.severity === 'major' ? '#e67e22' : '#f39c12'};color:white;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:600;">${(vio.severity || 'N/A').toUpperCase()}</span>
+                    </td>
+                    <td style="padding:8px;border-bottom:1px solid #f0f0f0;font-size:13px;">${vio.submitted_date ? new Date(vio.submitted_date).toLocaleDateString() : 'N/A'}</td>
+                    <td style="padding:8px;border-bottom:1px solid #f0f0f0;font-size:13px;">${vio.submitted_by || 'N/A'}</td>
+                    <td style="padding:8px;border-bottom:1px solid #f0f0f0;font-size:13px;">${vio.location || 'N/A'}</td>
+                    <td style="padding:8px;border-bottom:1px solid #f0f0f0;text-align:center;">
+                        <span style="background:${vio.status === 'Completed' || vio.status === 'Resolved' ? '#27ae60' : vio.status === 'In Progress' ? '#3498db' : '#e67e22'};color:white;padding:2px 8px;border-radius:10px;font-size:11px;">${vio.status || 'Open'}</span>
+                    </td>
+                </tr>
+            `).join('')
+            : '<tr><td colspan="6" style="padding:12px;text-align:center;color:#27ae60;font-weight:600;">✅ No violations recorded for this project</td></tr>';
+
         const modal = document.createElement('div');
 
         modal.className = 'modal-overlay';
@@ -57093,9 +57127,9 @@ async function viewProjectSafetyDetails(projectId) {
 
         modal.innerHTML = `
 
-            <div class="modal-content" style="max-width: 600px; width: 90%;">
+            <div class="modal-content" style="max-width: 900px; width: 95%; max-height: 90vh; overflow-y: auto;">
 
-                <div class="modal-header" style="background: #0b3d91; color: white; padding: 15px 20px; border-radius: 8px 8px 0 0;">
+                <div class="modal-header" style="background: #0b3d91; color: white; padding: 15px 20px; border-radius: 8px 8px 0 0; display:flex; justify-content:space-between; align-items:center;">
 
                     <h3 style="margin: 0;">Safety Details - ${project.project_name || 'Project'}</h3>
 
@@ -57105,7 +57139,7 @@ async function viewProjectSafetyDetails(projectId) {
 
                 <div class="modal-body" style="padding: 20px;">
 
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                    <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px;">
 
                         <div style="padding: 12px; background: #f8f9fa; border-radius: 8px; text-align: center;">
 
@@ -57123,6 +57157,14 @@ async function viewProjectSafetyDetails(projectId) {
 
                         </div>
 
+                        <div style="padding: 12px; background: ${(project.total_incidents || 0) > 0 ? '#fdf2f2' : '#f0fdf4'}; border-radius: 8px; text-align: center; border: 2px solid ${(project.total_incidents || 0) > 0 ? '#e74c3c' : '#27ae60'};">
+
+                            <div style="font-size: 12px; color: #666; margin-bottom: 5px;">Total Incidents</div>
+
+                            <div style="font-size: 28px; font-weight: bold; color: ${(project.total_incidents || 0) > 0 ? '#e74c3c' : '#27ae60'};">${project.total_incidents || 0}</div>
+
+                        </div>
+
                         <div style="padding: 12px; background: #f8f9fa; border-radius: 8px; text-align: center;">
 
                             <div style="font-size: 12px; color: #666; margin-bottom: 5px;">Days Without Incident</div>
@@ -57131,11 +57173,11 @@ async function viewProjectSafetyDetails(projectId) {
 
                         </div>
 
-                        <div style="padding: 12px; background: #f8f9fa; border-radius: 8px; text-align: center;">
+                        <div style="padding: 12px; background: ${(project.open_violations || 0) > 0 ? '#fff8f0' : '#f8f9fa'}; border-radius: 8px; text-align: center; border: ${(project.open_violations || 0) > 0 ? '2px solid #e67e22' : 'none'};">
 
                             <div style="font-size: 12px; color: #666; margin-bottom: 5px;">Open Violations</div>
 
-                            <div style="font-size: 28px; font-weight: bold; color: ${(project.open_violations || 0) > 3 ? '#dc3545' : '#ffc107'};">${project.open_violations || 0}</div>
+                            <div style="font-size: 28px; font-weight: bold; color: ${(project.open_violations || 0) > 0 ? '#e67e22' : '#28a745'};">${project.open_violations || 0}</div>
 
                         </div>
 
@@ -57144,14 +57186,6 @@ async function viewProjectSafetyDetails(projectId) {
                             <div style="font-size: 12px; color: #666; margin-bottom: 5px;">PPE Compliance</div>
 
                             <div style="font-size: 28px; font-weight: bold; color: ${(project.ppe_compliance || 0) >= 90 ? '#28a745' : '#ffc107'};">${project.ppe_compliance || 0}%</div>
-
-                        </div>
-
-                        <div style="padding: 12px; background: #f8f9fa; border-radius: 8px; text-align: center;">
-
-                            <div style="font-size: 12px; color: #666; margin-bottom: 5px;">Status</div>
-
-                            <div style="font-size: 18px; font-weight: bold; color: #0b3d91;">${project.status || 'N/A'}</div>
 
                         </div>
 
@@ -57183,6 +57217,56 @@ async function viewProjectSafetyDetails(projectId) {
 
                         </div>
 
+                    </div>
+
+                    <!-- Incident Details Table -->
+                    <div style="margin-top: 20px;">
+                        <h4 style="margin:0 0 10px; display:flex; align-items:center; gap:8px;">
+                            <span style="background:${(project.total_incidents || 0) > 0 ? '#e74c3c' : '#27ae60'}; color:white; width:28px; height:28px; border-radius:50%; display:inline-flex; align-items:center; justify-content:center; font-size:14px;">${project.total_incidents || 0}</span>
+                            Incident Records
+                        </h4>
+                        <div style="overflow-x:auto; border:1px solid #e0e0e0; border-radius:8px;">
+                            <table style="width:100%; border-collapse:collapse;">
+                                <thead>
+                                    <tr style="background:#e74c3c; color:white;">
+                                        <th style="padding:10px; text-align:left; font-size:12px;">Incident</th>
+                                        <th style="padding:10px; text-align:center; font-size:12px;">Severity</th>
+                                        <th style="padding:10px; text-align:left; font-size:12px;">Date</th>
+                                        <th style="padding:10px; text-align:left; font-size:12px;">Reported By</th>
+                                        <th style="padding:10px; text-align:left; font-size:12px;">Location</th>
+                                        <th style="padding:10px; text-align:center; font-size:12px;">Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${incidentsList}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Violation Details Table -->
+                    <div style="margin-top: 20px;">
+                        <h4 style="margin:0 0 10px; display:flex; align-items:center; gap:8px;">
+                            <span style="background:${(project.open_violations || 0) > 0 ? '#e67e22' : '#27ae60'}; color:white; width:28px; height:28px; border-radius:50%; display:inline-flex; align-items:center; justify-content:center; font-size:14px;">${project.open_violations || 0}</span>
+                            Violation Records
+                        </h4>
+                        <div style="overflow-x:auto; border:1px solid #e0e0e0; border-radius:8px;">
+                            <table style="width:100%; border-collapse:collapse;">
+                                <thead>
+                                    <tr style="background:#e67e22; color:white;">
+                                        <th style="padding:10px; text-align:left; font-size:12px;">Violation</th>
+                                        <th style="padding:10px; text-align:center; font-size:12px;">Severity</th>
+                                        <th style="padding:10px; text-align:left; font-size:12px;">Date</th>
+                                        <th style="padding:10px; text-align:left; font-size:12px;">Reported By</th>
+                                        <th style="padding:10px; text-align:left; font-size:12px;">Location</th>
+                                        <th style="padding:10px; text-align:center; font-size:12px;">Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${violationsList}
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
 
                 </div>
