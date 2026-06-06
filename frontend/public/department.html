@@ -67358,33 +67358,33 @@ async function viewPurchaseDetails(purchaseId) {
 
                         <div class="purchase-details">
 
-                            <p><strong>Purchase ID:</strong> ${purchase.purchase_id}</p>
+                            <p><strong>Purchase ID:</strong> ${purchase.id || purchase.purchase_reference || 'N/A'}</p>
 
-                            <p><strong>Campaign:</strong> ${purchase.campaign_name}</p>
+                            <p><strong>Campaign:</strong> ${purchase.campaign_name || 'N/A'}</p>
 
-                            <p><strong>Buyer Name:</strong> ${purchase.buyer_name}</p>
+                            <p><strong>Buyer Name:</strong> ${purchase.buyer_name || 'N/A'}</p>
 
-                            <p><strong>Buyer Email:</strong> ${purchase.buyer_email}</p>
+                            <p><strong>Buyer Email:</strong> ${purchase.buyer_email || 'N/A'}</p>
 
                             <p><strong>Buyer Phone:</strong> ${purchase.buyer_phone || 'Not provided'}</p>
 
                             <p><strong>Buyer Address:</strong> ${purchase.buyer_address || 'Not provided'}</p>
 
-                            <p><strong>Units Purchased:</strong> ${purchase.units_purchased}</p>
+                            <p><strong>Units Purchased:</strong> ${purchase.units_purchased != null ? purchase.units_purchased : 'N/A'}</p>
 
-                            <p><strong>Total Amount:</strong> TZS ${purchase.total_amount}</p>
+                            <p><strong>Total Amount:</strong> TZS ${purchase.total_amount != null ? purchase.total_amount : 'N/A'}</p>
 
-                            <p><strong>Payment Method:</strong> ${purchase.payment_method}</p>
+                            <p><strong>Payment Method:</strong> ${purchase.payment_method || purchase.payment_method || 'N/A'}</p>
 
-                            <p><strong>Payment Status:</strong> ${purchase.payment_status}</p>
+                            <p><strong>Payment Status:</strong> ${purchase.purchase_status || purchase.payment_status || 'N/A'}</p>
 
-                            <p><strong>Tracking Number:</strong> ${purchase.tracking_number}</p>
+                            <p><strong>Tracking Number:</strong> ${purchase.tracking_number || purchase.tracking_no || 'N/A'}</p>
 
-                            <p><strong>Purchase Date:</strong> ${new Date(purchase.purchase_date).toLocaleString()}</p>
+                            <p><strong>Purchase Date:</strong> ${purchase.purchase_date ? new Date(purchase.purchase_date).toLocaleString() : 'N/A'}</p>
 
-                            <p><strong>Notes:</strong> ${purchase.notes || 'No notes'}</p>
+                            <p><strong>Notes:</strong> ${purchase.purchase_notes || purchase.notes || 'No notes'}</p>
 
-                            <p><strong>Created By:</strong> ${purchase.created_by_name || 'Unknown'}</p>
+                            <p><strong>Created By:</strong> ${purchase.created_by_name || purchase.created_by || purchase.buyer_name || 'Unknown'}</p>
 
                         </div>
 
