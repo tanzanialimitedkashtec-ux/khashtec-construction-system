@@ -221,5 +221,47 @@
   window.showDepartmentManagement = showDepartmentManagement;
   window.hideDepartmentForm = hideDepartmentForm;
   window.showDepartmentForm = showDepartmentForm;
+
+  // Global helper for luggage purchase deletion from department page buttons
+  window.deletePurchase_API = async function(purchaseId) {
+    if (!confirm(`Are you sure you want to delete purchase: ${purchaseId}?`)) return;
+
+    try {
+      if (window.KashTecAPI && typeof window.KashTecAPI.delete === 'function') {
+        const resp = await window.KashTecAPI.delete(`/luggage-purchases/${purchaseId}`);
+        if (resp && resp.success) {
+          alert(`Purchase ${purchaseId} deleted successfully!`);
+          if (typeof window.loadLuggagePurchases === 'function') {
+            await window.loadLuggagePurchases();
+          } else {
+            window.location.reload();
+          }
+          return;
+        }
+        throw new Error((resp && resp.message) || 'Failed to delete purchase');
+      }
+
+      const base = (window.KashTecAPI && window.KashTecAPI.baseUrl) ? window.KashTecAPI.baseUrl : '';
+      const url = `${base}/api/luggage-purchases/${purchaseId}`;
+      const response = await fetch(url, { method: 'DELETE', credentials: 'include' });
+      const json = await response.json().catch(() => null);
+
+      if (response.ok && json && json.success !== false) {
+        alert(`Purchase ${purchaseId} deleted successfully!`);
+        if (typeof window.loadLuggagePurchases === 'function') {
+          await window.loadLuggagePurchases();
+        } else {
+          window.location.reload();
+        }
+        return;
+      }
+
+      throw new Error((json && json.message) || `Delete failed (status ${response.status})`);
+    } catch (error) {
+      console.error('Error deleting purchase:', error);
+      alert(`Error deleting purchase: ${error.message || error}`);
+    }
+  };
+
   // Optional: if contentArea exists and a global flag set later, we could auto-run
 })();
