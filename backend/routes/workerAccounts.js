@@ -4,6 +4,25 @@ const db = require('../src/config/database');
 const multer = require('multer');
 const path = require('path');
 const fs = require('fs').promises;
+const fsSync = require('fs');
+
+// Ensure BLOB columns exist in worker_accounts (survives Railway redeploys)
+(async () => {
+    try {
+        const cols = ['id_document_data LONGBLOB', 'id_document_mime VARCHAR(100)', 'contract_document_data LONGBLOB', 'contract_document_mime VARCHAR(100)', 'profile_picture_data LONGBLOB', 'profile_picture_mime VARCHAR(100)'];
+        for (const col of cols) {
+            const colName = col.split(' ')[0];
+            try {
+                await db.execute(`ALTER TABLE worker_accounts ADD COLUMN ${col}`);
+                console.log(`✅ Added column ${colName} to worker_accounts`);
+            } catch (e) {
+                // Column already exists — ignore
+            }
+        }
+    } catch (e) {
+        console.warn('⚠️ Could not ensure BLOB columns on worker_accounts:', e.message);
+    }
+})();
 
 // Configure multer for file uploads
 const storage = multer.diskStorage({
@@ -423,11 +442,24 @@ router.post('/', upload.fields([
     const finalPhoneNumber = phone || phoneNumber;
     const finalTemporaryPassword = password || temporaryPassword;
     
-    // Handle uploaded files - store web-accessible URL paths, not absolute container paths
-    const toUrl = (f) => f ? `/uploads/worker-documents/${f.filename}` : null;
-    const profilePicturePath = toUrl(req.files?.workerProfile?.[0]);
-    const idDocumentPath = toUrl(req.files?.workerID?.[0]);
-    const contractDocumentPath = toUrl(req.files?.workerContract?.[0]);
+    // Handle uploaded files - read bytes into memory for BLOB storage (Railway-safe)
+    const readFile = (f) => {
+        if (!f) return { path: null, data: null, mime: null };
+        const urlPath = `/uploads/worker-documents/${f.filename}`;
+        let data = null;
+        try {
+            data = fsSync.readFileSync(f.path);
+        } catch (readErr) {
+            console.warn('⚠️ Could not read uploaded file for BLOB storage:', readErr.message);
+        }
+        return { path: urlPath, data, mime: f.mimetype || 'application/octet-stream' };
+    };
+    const profilePicFile = readFile(req.files?.workerProfile?.[0]);
+    const idDocFile = readFile(req.files?.workerID?.[0]);
+    const contractDocFile = readFile(req.files?.workerContract?.[0]);
+    const profilePicturePath = profilePicFile.path;
+    const idDocumentPath = idDocFile.path;
+    const contractDocumentPath = contractDocFile.path;
     
     console.log('📁 Uploaded files:', {
         profilePicture: profilePicturePath,
@@ -512,13 +544,15 @@ router.post('/', upload.fields([
         console.log('?? Mapped account_type:', accountType, '->', mappedAccountType);
         console.log('?? Mapped access_level:', accessLevel, '->', mappedAccessLevel);
         
-        // Prepare INSERT query with proper column names
+        // Prepare INSERT query with proper column names (includes BLOB columns)
         const insertQuery = `
             INSERT INTO worker_accounts (
                 employee_id, full_name, work_email, phone_number, department, 
                 job_title, account_type, access_level, temporary_password, 
-                account_notes, profile_picture, id_document, contract_document
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                account_notes, profile_picture, id_document, contract_document,
+                id_document_data, id_document_mime, contract_document_data, contract_document_mime,
+                profile_picture_data, profile_picture_mime
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         `;
         
         // Try direct insertion first - if table schema is wrong, we'll handle the error
@@ -668,7 +702,13 @@ router.post('/', upload.fields([
                 accountNotes || null,
                 profilePicturePath,
                 idDocumentPath,
-                contractDocumentPath
+                contractDocumentPath,
+                idDocFile.data,
+                idDocFile.mime,
+                contractDocFile.data,
+                contractDocFile.mime,
+                profilePicFile.data,
+                profilePicFile.mime
             ]);
             
             console.log('?? Worker account inserted successfully:', result);

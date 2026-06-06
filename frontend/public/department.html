@@ -91627,7 +91627,7 @@ async function viewDocument(docId) {
                         </div>` : ''}
                     </div>
                     <div style="padding:16px 24px;background:#f8f9fa;border-top:1px solid #e9ecef;display:flex;gap:10px;justify-content:flex-end">
-                        <button onclick="downloadDocument('${docId}'); this.closest('.modal-overlay').remove();" style="background:linear-gradient(135deg,#28a745,#20c997);color:#fff;border:none;padding:10px 20px;border-radius:8px;font-size:14px;font-weight:500;cursor:pointer;display:flex;align-items:center;gap:6px">📥 Download PDF</button>
+                        <button onclick="downloadDocument('${docId}'); this.closest('.modal-overlay').remove();" style="background:linear-gradient(135deg,#28a745,#20c997);color:#fff;border:none;padding:10px 20px;border-radius:8px;font-size:14px;font-weight:500;cursor:pointer;display:flex;align-items:center;gap:6px">📥 Download Document</button>
                         <button onclick="this.closest('.modal-overlay').remove()" style="background:#6c757d;color:#fff;border:none;padding:10px 20px;border-radius:8px;font-size:14px;font-weight:500;cursor:pointer">Close</button>
                     </div>
                 </div>
@@ -91709,17 +91709,28 @@ async function downloadDocument(docId) {
         if (typeof KashTecAPI !== 'undefined' && KashTecAPI.downloadDocument) {
             console.log('📥 Using KashTecAPI to download document:', docId);
             const blob = await KashTecAPI.downloadDocument(docId);
-            const pdfBlob = new Blob([blob], { type: 'application/pdf' });
-            const url = window.URL.createObjectURL(pdfBlob);
+            
+            // Check if it's already a blob, otherwise wrap it
+            const fileBlob = blob instanceof Blob ? blob : new Blob([blob], { type: blob.type || 'application/octet-stream' });
+            const url = window.URL.createObjectURL(fileBlob);
+            
             const a = window.document.createElement('a');
             a.href = url;
-            a.download = `document_${docId}.pdf`;
+            
+            let extension = '.pdf';
+            if (fileBlob.type) {
+                if (fileBlob.type.includes('image/jpeg')) extension = '.jpg';
+                else if (fileBlob.type.includes('image/png')) extension = '.png';
+                else if (fileBlob.type.includes('word')) extension = '.docx';
+            }
+            a.download = `document_${docId}${extension}`;
+            
             window.document.body.appendChild(a);
             a.click();
             window.URL.revokeObjectURL(url);
             window.document.body.removeChild(a);
             if (typeof showNotification === 'function') {
-                showNotification('Document downloaded successfully as PDF', 'success');
+                showNotification(`Document downloaded successfully`, 'success');
             }
             return;
         }
@@ -91739,21 +91750,27 @@ async function downloadDocument(docId) {
             
             // Get filename from response headers or create a default one
             const contentDisposition = response.headers.get('Content-Disposition');
-            let fileName = `document_${docId}.pdf`;
+            const contentType = response.headers.get('Content-Type') || blob.type;
+            
+            let fileName = `document_${docId}`;
             
             if (contentDisposition) {
-                const fileNameMatch = contentDisposition.match(/filename="(.+)"/);
+                const fileNameMatch = contentDisposition.match(/filename="?([^"]+)"?/);
                 if (fileNameMatch) {
                     fileName = fileNameMatch[1];
-                    if (!fileName.endsWith('.pdf')) {
-                        fileName += '.pdf';
-                    }
                 }
             }
+            
+            if (!fileName.includes('.')) {
+                if (contentType.includes('pdf')) fileName += '.pdf';
+                else if (contentType.includes('image/jpeg')) fileName += '.jpg';
+                else if (contentType.includes('image/png')) fileName += '.png';
+                else if (contentType.includes('word')) fileName += '.docx';
+                else fileName += '.pdf'; // fallback
+            }
 
-            // Ensure blob is typed as PDF
-            const pdfBlob = new Blob([blob], { type: 'application/pdf' });
-            const url = window.URL.createObjectURL(pdfBlob);
+            // Create object URL from original blob
+            const url = window.URL.createObjectURL(blob);
             const a = window.document.createElement('a');
             a.href = url;
             a.download = fileName;

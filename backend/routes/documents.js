@@ -1270,26 +1270,49 @@ router.get('/:id/download', async (req, res) => {
             const workerId = parseInt(docId.replace('work_id_', '').replace('work_cont_', ''), 10);
             
             if (!isNaN(workerId) && db) {
-                const column = isIdDoc ? 'id_document' : 'contract_document';
-                const rows = await db.execute(
-                    `SELECT full_name, ${column} FROM worker_accounts WHERE id = ?`, [workerId]
-                );
+                const dataCol = isIdDoc ? 'id_document_data' : 'contract_document_data';
+                const mimeCol = isIdDoc ? 'id_document_mime' : 'contract_document_mime';
+                const pathCol = isIdDoc ? 'id_document' : 'contract_document';
                 
-                let workRows = Array.isArray(rows) ? rows : (rows && Array.isArray(rows[0]) ? rows[0] : []);
-                
-                if (workRows.length > 0 && workRows[0][column]) {
-                    const filePath = workRows[0][column];
-                    const fileName = filePath.split('/').pop() || `worker_document_${workerId}`;
-                    const fs = require('fs');
-                    const path = require('path');
-                    const absolutePath = path.resolve(__dirname, '../../', filePath.replace(/^\//, ''));
+                try {
+                    const rows = await db.execute(
+                        `SELECT full_name, ${pathCol}, ${dataCol}, ${mimeCol} FROM worker_accounts WHERE id = ?`, [workerId]
+                    );
                     
-                    if (fs.existsSync(absolutePath)) {
-                        return res.download(absolutePath, fileName);
-                    } else {
-                        console.error('❌ Physical file not found at:', absolutePath);
-                        return res.status(404).json({ error: 'The physical file is missing from the server storage. It may have been deleted.' });
+                    let workRows = Array.isArray(rows) ? rows : (rows && Array.isArray(rows[0]) ? rows[0] : []);
+                    
+                    if (workRows.length > 0) {
+                        const worker = workRows[0];
+                        const label = isIdDoc ? 'ID' : 'Contract';
+                        
+                        // 1) Try BLOB data from database first (survives Railway redeploys)
+                        if (worker[dataCol]) {
+                            const mime = worker[mimeCol] || 'application/octet-stream';
+                            const ext = mime.includes('pdf') ? '.pdf' : mime.includes('doc') ? '.docx' : mime.includes('png') ? '.png' : mime.includes('jpeg') || mime.includes('jpg') ? '.jpg' : '';
+                            const fileName = `${label}_${(worker.full_name || 'worker').replace(/[^a-zA-Z0-9]/g, '_')}${ext}`;
+                            
+                            res.set('Content-Type', mime);
+                            res.set('Content-Disposition', `attachment; filename="${fileName}"`);
+                            return res.send(Buffer.from(worker[dataCol]));
+                        }
+                        
+                        // 2) Fallback: try filesystem (works during same deploy session)
+                        if (worker[pathCol]) {
+                            const filePath = worker[pathCol];
+                            const fileName = filePath.split('/').pop() || `worker_${label}_${workerId}`;
+                            const fsCheck = require('fs');
+                            const pathMod = require('path');
+                            const absolutePath = pathMod.resolve(__dirname, '../../', filePath.replace(/^\//, ''));
+                            
+                            if (fsCheck.existsSync(absolutePath)) {
+                                return res.download(absolutePath, fileName);
+                            }
+                        }
+                        
+                        return res.status(404).json({ error: `Worker ${label} document file data not found. The file may have been lost during a server restart. Please re-upload the document.` });
                     }
+                } catch (blobErr) {
+                    console.error('❌ Error fetching worker document BLOB:', blobErr.message);
                 }
             }
             
