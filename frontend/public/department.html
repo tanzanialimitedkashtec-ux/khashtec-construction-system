@@ -55982,6 +55982,8 @@ async function viewProjectSafetyStatus(){
 
                             <th>Safety Score</th>
 
+                            <th>Incidents</th>
+
                             <th>Days Without Incident</th>
 
                             <th>Open Violations</th>
@@ -56004,7 +56006,7 @@ async function viewProjectSafetyStatus(){
 
                         <tr>
 
-                            <td colspan="9" class="loading-cell">Loading safety data...</td>
+                            <td colspan="10" class="loading-cell">Loading safety data...</td>
 
                         </tr>
 
@@ -56032,7 +56034,7 @@ async function loadSafetyData() {
 
     const tableBody = document.getElementById('safetyTableBody');
 
-    tableBody.innerHTML = '<tr><td colspan="9" class="loading-cell">Loading safety data from database...</td></tr>';
+    tableBody.innerHTML = '<tr><td colspan="10" class="loading-cell">Loading safety data from database...</td></tr>';
 
     
 
@@ -56153,7 +56155,9 @@ async function loadSafetyData() {
 
                 status: record.status || 'Active',
 
-                location: record.location || 'Various Sites'
+                location: record.location || 'Various Sites',
+
+                total_incidents: record.total_incidents || 0
 
             }));
 
@@ -56188,7 +56192,7 @@ async function loadSafetyData() {
 
             console.error('❌ All safety data sources failed:', fallbackError);
 
-            tableBody.innerHTML = '<tr><td colspan="9" class="no-data">Failed to load safety data. Please try again later.</td></tr>';
+            tableBody.innerHTML = '<tr><td colspan="10" class="no-data">Failed to load safety data. Please try again later.</td></tr>';
 
         }
 
@@ -56341,7 +56345,7 @@ async function initializeSafetyTable(baseUrl, token) {
 
     const tableBody = document.getElementById('safetyTableBody');
 
-    tableBody.innerHTML = '<tr><td colspan="9" class="no-data">No safety data available. Please add project safety records.</td></tr>';
+    tableBody.innerHTML = '<tr><td colspan="10" class="no-data">No safety data available. Please add project safety records.</td></tr>';
 
 }
 
@@ -56707,7 +56711,7 @@ function updateSafetyTable(projects) {
 
     if (!projects || projects.length === 0) {
 
-        tableBody.innerHTML = '<tr><td colspan="9" class="no-data">No safety data available</td></tr>';
+        tableBody.innerHTML = '<tr><td colspan="10" class="no-data">No safety data available</td></tr>';
 
         return;
 
@@ -56739,6 +56743,16 @@ function updateSafetyTable(projects) {
 
                 </span>
 
+            </td>
+
+            <td class="incidents-count">
+                ${project.total_incidents > 0 
+                    ? `<div style="display:flex;flex-direction:column;align-items:center;gap:3px;">
+                        <span style="background:#e74c3c;color:white;padding:4px 12px;border-radius:12px;font-size:13px;font-weight:700;display:inline-flex;align-items:center;gap:4px;">⚠️ ${project.total_incidents}</span>
+                        <small style="color:#e74c3c;font-weight:600;font-size:10px;">Incident${project.total_incidents > 1 ? 's' : ''} Recorded</small>
+                       </div>`
+                    : `<span style="background:#27ae60;color:white;padding:4px 12px;border-radius:12px;font-size:12px;font-weight:600;">✅ No Incidents</span>`
+                }
             </td>
 
             <td class="days-incident">
