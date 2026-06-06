@@ -68,7 +68,13 @@ router.get('/', async (req, res) => {
                 console.log('⚠️ Could not create luggage_purchases table:', tableError.message);
             }
             
-            await db.execute('ALTER TABLE luggage_purchases ADD COLUMN IF NOT EXISTS luggage_name VARCHAR(100) NULL AFTER buyer_phone');
+            const [columnRows] = await db.execute(`
+                SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS
+                WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'luggage_purchases' AND COLUMN_NAME = 'luggage_name'
+            `);
+            if (!Array.isArray(columnRows) || columnRows.length === 0) {
+                await db.execute('ALTER TABLE luggage_purchases ADD COLUMN luggage_name VARCHAR(100) NULL AFTER buyer_phone');
+            }
             const purchasesResult = await db.execute(`
                 SELECT lp.*, lc.campaign_name, COALESCE(lp.luggage_name, lc.luggage_name) AS display_luggage_name
                 FROM luggage_purchases lp
@@ -403,7 +409,13 @@ router.post('/', async (req, res) => {
         // Try database insert with actual schema columns
         try {
             const db = require('../../database/config/database');
-                await db.execute('ALTER TABLE luggage_purchases ADD COLUMN IF NOT EXISTS luggage_name VARCHAR(100) NULL AFTER buyer_phone');
+            const [columnRows] = await db.execute(`
+                SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS
+                WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'luggage_purchases' AND COLUMN_NAME = 'luggage_name'
+            `);
+            if (!Array.isArray(columnRows) || columnRows.length === 0) {
+                await db.execute('ALTER TABLE luggage_purchases ADD COLUMN luggage_name VARCHAR(100) NULL AFTER buyer_phone');
+            }
             
             const query = `
                 INSERT INTO luggage_purchases (
