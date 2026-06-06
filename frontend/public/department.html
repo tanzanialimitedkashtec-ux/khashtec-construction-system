@@ -42075,7 +42075,7 @@ async function fetchLeaveContractsTableData() {
         if (leaveTbody) leaveTbody.innerHTML = '';
         if (contractsTbody) contractsTbody.innerHTML = '';
         
-        const leaveWorks = works.filter(w => w.work_type === 'Leave Request');
+        const leaveWorks = works.filter(w => w.work_type === 'Leave Request' || w.work_type === 'Leave Management');
         const contractWorks = works.filter(w => w.work_type === 'Contract Management');
 
         if (leaveTbody) {
