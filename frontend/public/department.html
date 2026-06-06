@@ -56165,8 +56165,10 @@ async function loadSafetyData() {
 
             updateSafetyTable(safetyProjects);
             
-            // Use the metrics provided by the backend, which accurately sums the counts for the active projects in the table.
+            // Calculate metrics with real incident and violation counts
             const metrics = result.metrics || calculateSafetyMetrics(safetyProjects);
+            metrics.totalIncidents = totalIncidentsCount;
+            metrics.openViolations = totalViolationsCount;
 
             updateSafetySummary(metrics);
 
@@ -60287,7 +60289,13 @@ function saveSafetyViolation() {
 
         assigned_to: 'HSE Manager',
 
-        submitted_by: 'HSE Manager'
+        submitted_by: violation.reportedBy || 'HSE Manager',
+
+        project_name: violation.project,
+
+        location: violation.location,
+
+        severity: violation.severity
 
     };
 
