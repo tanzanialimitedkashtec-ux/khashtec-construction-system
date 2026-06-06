@@ -67255,7 +67255,8 @@ async function viewCampaignDetails(campaignId) {
 
         if (response.success) {
 
-            const campaign = response.data.find(c => c.id == campaignId);
+            const campaigns = Array.isArray(response.data) ? response.data : Array.isArray(response.campaigns) ? response.campaigns : [];
+            const campaign = campaigns.find(c => c.id == campaignId);
 
             
 
@@ -67363,7 +67364,8 @@ async function viewPurchaseDetails(purchaseId) {
 
         if (response.success) {
 
-            const purchase = response.data.find(p => p.id == purchaseId);
+            const purchases = Array.isArray(response.data) ? response.data : Array.isArray(response.purchases) ? response.purchases : [];
+            const purchase = purchases.find(p => p.id == purchaseId);
 
             
 
@@ -67477,7 +67479,8 @@ async function viewTrackingDetails(trackingId) {
 
         if (response.success) {
 
-            const tracking = response.data.find(t => t.id == trackingId);
+            const trackings = Array.isArray(response.data) ? response.data : Array.isArray(response.trackings) ? response.trackings : [];
+            const tracking = trackings.find(t => t.id == trackingId);
 
             
 
