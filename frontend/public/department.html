@@ -41735,9 +41735,12 @@ function manageLeaveContracts(){
 
                 <div id="leaveTab" class="tab-content">
 
-                    <h4>Leave Management</h4>
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                        <h4 style="margin: 0;">Leave Management</h4>
+                        <button class="action" style="background: #0b3d91;" onclick="document.getElementById('leaveForm').style.display='block'">Add Leave Request</button>
+                    </div>
                     
-                    <form id="leaveForm" onsubmit="return saveLeaveRequest()">
+                    <form id="leaveForm" onsubmit="return saveLeaveRequest()" style="display: none; background: #f8f9fa; padding: 15px; border-radius: 4px; margin-bottom: 20px; border: 1px solid #dee2e6;">
 
                         <div class="form-row">
 
@@ -41851,6 +41854,8 @@ function manageLeaveContracts(){
 
                             <button type="button" onclick="clearLeaveForm()" class="action" style="background: #6c757d; margin-left: 10px;">Clear Form</button>
 
+                            <button type="button" onclick="document.getElementById('leaveForm').style.display='none'" class="action" style="background: #dc3545; margin-left: 10px; float: right;">Close Form</button>
+
                         </div>
 
                     </form>
@@ -41878,9 +41883,12 @@ function manageLeaveContracts(){
 
                 <div id="contractsTab" class="tab-content hidden">
 
-                    <h4>Contract Management</h4>
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                        <h4 style="margin: 0;">Contract Management</h4>
+                        <button class="action" style="background: #0b3d91;" onclick="document.getElementById('contractForm').style.display='block'">Add Contract</button>
+                    </div>
                     
-                    <form id="contractForm" onsubmit="return saveContract()">
+                    <form id="contractForm" onsubmit="return saveContract()" style="display: none; background: #f8f9fa; padding: 15px; border-radius: 4px; margin-bottom: 20px; border: 1px solid #dee2e6;">
 
                         <div class="form-row">
 
@@ -42007,6 +42015,8 @@ function manageLeaveContracts(){
                             <button type="submit" class="action" style="background: #28a745;">Save Contract</button>
 
                             <button type="button" onclick="clearContractForm()" class="action" style="background: #6c757d; margin-left: 10px;">Clear Form</button>
+
+                            <button type="button" onclick="document.getElementById('contractForm').style.display='none'" class="action" style="background: #dc3545; margin-left: 10px; float: right;">Close Form</button>
 
                         </div>
 
