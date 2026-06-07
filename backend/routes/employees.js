@@ -94,10 +94,11 @@ router.get('/', async (req, res) => {
             );
             
             // Handle different database response formats
-            if (Array.isArray(empResult)) {
-                employees = empResult;
-            } else if (empResult && Array.isArray(empResult[0])) {
+            // mysql2 returns [rows, fields], so check nested array first
+            if (Array.isArray(empResult) && Array.isArray(empResult[0])) {
                 employees = empResult[0];
+            } else if (Array.isArray(empResult)) {
+                employees = empResult;
             } else if (empResult && empResult.rows) {
                 employees = empResult.rows;
             } else {
@@ -127,10 +128,11 @@ router.get('/', async (req, res) => {
                 const simpleResult = await db.execute('SELECT * FROM employees ORDER BY hire_date DESC');
                 
                 // Handle different database response formats
-                if (Array.isArray(simpleResult)) {
-                    employees = simpleResult;
-                } else if (simpleResult && Array.isArray(simpleResult[0])) {
+                // mysql2 returns [rows, fields], so check nested array first
+                if (Array.isArray(simpleResult) && Array.isArray(simpleResult[0])) {
                     employees = simpleResult[0];
+                } else if (Array.isArray(simpleResult)) {
+                    employees = simpleResult;
                 } else if (simpleResult && simpleResult.rows) {
                     employees = simpleResult.rows;
                 } else {
