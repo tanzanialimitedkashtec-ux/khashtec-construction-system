@@ -775,6 +775,8 @@ async function loadNotifications() {
     }
 }
 
+let lastUnreadCount = -1;
+
 async function updateNotificationBadge() {
     try {
         var res = await fetch('/api/notifications?unread=true');
@@ -789,6 +791,15 @@ async function updateNotificationBadge() {
                 badge.style.display = 'none';
             }
         }
+
+        // Play popup water sound if unread count increased
+        if (lastUnreadCount !== -1 && unread > lastUnreadCount) {
+            try {
+                const sound = new Audio('https://actions.google.com/sounds/v1/water/water_drop.ogg');
+                sound.play().catch(e => console.log('Audio play blocked/failed:', e));
+            } catch(e) {}
+        }
+        lastUnreadCount = unread;
     } catch(e) {}
 }
 
