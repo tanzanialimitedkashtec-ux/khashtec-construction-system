@@ -64997,8 +64997,8 @@ function formatDate(dateString) {
     }
 }
 
-async function downloadDocument(docId) {
-    console.log('Downloading document:', docId);
+async function downloadDocument(docId, docName = '') {
+    console.log('Downloading document:', docId, docName);
     const baseUrl = window.location.origin;
 
     // Safely get auth token
@@ -65015,17 +65015,16 @@ async function downloadDocument(docId) {
         if (typeof KashTecAPI !== 'undefined' && KashTecAPI.downloadDocument) {
             console.log('Using KashTecAPI to download document:', docId);
             const blob = await KashTecAPI.downloadDocument(docId);
-            const pdfBlob = new Blob([blob], { type: 'application/pdf' });
-            const url = window.URL.createObjectURL(pdfBlob);
+            const url = window.URL.createObjectURL(blob);
             const a = window.document.createElement('a');
             a.href = url;
-            a.download = `document_${docId}.pdf`;
+            a.download = docName ? (docName.endsWith('.pdf') || docName.includes('.') ? docName : `${docName}.pdf`) : `document_${docId}.pdf`;
             window.document.body.appendChild(a);
             a.click();
             window.URL.revokeObjectURL(url);
             window.document.body.removeChild(a);
             if (typeof showNotification === 'function') {
-                showNotification('Document downloaded successfully as PDF', 'success');
+                showNotification(`Document ${docName || docId} downloaded successfully`, 'success');
             }
             return;
         }
@@ -65045,21 +65044,16 @@ async function downloadDocument(docId) {
             
             // Get filename from response headers or create a default one
             const contentDisposition = response.headers.get('Content-Disposition');
-            let fileName = `document_${docId}.pdf`;
+            let fileName = docName ? (docName.includes('.') ? docName : `${docName}.pdf`) : `document_${docId}.pdf`;
             
             if (contentDisposition) {
-                const fileNameMatch = contentDisposition.match(/filename="(.+)"/);
+                const fileNameMatch = contentDisposition.match(/filename="([^"]+)"/);
                 if (fileNameMatch) {
                     fileName = fileNameMatch[1];
-                    if (!fileName.endsWith('.pdf')) {
-                        fileName += '.pdf';
-                    }
                 }
             }
 
-            // Ensure blob is typed as PDF
-            const pdfBlob = new Blob([blob], { type: 'application/pdf' });
-            const url = window.URL.createObjectURL(pdfBlob);
+            const url = window.URL.createObjectURL(blob);
             const a = window.document.createElement('a');
             a.href = url;
             a.download = fileName;
