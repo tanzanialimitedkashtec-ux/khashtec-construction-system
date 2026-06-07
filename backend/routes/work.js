@@ -2867,6 +2867,14 @@ router.post('/approvals', async (req, res) => {
                 sourceTable = 'hr_work';
                 sourceId = parseInt(work_id.replace('HW-', ''), 10);
                 numericWorkId = work_id;
+            } else if (typeof work_id === 'string' && work_id.startsWith('PW-')) {
+                sourceTable = 'projects_work';
+                sourceId = parseInt(work_id.replace('PW-', ''), 10);
+                numericWorkId = work_id;
+            } else if (typeof work_id === 'string' && work_id.startsWith('FW-')) {
+                sourceTable = 'finance_work';
+                sourceId = parseInt(work_id.replace('FW-', ''), 10);
+                numericWorkId = work_id;
             }
             
             // Fetch the details of the work completion if available
@@ -2900,6 +2908,32 @@ router.post('/approvals', async (req, res) => {
                     }
                 } catch (err) {
                     console.log('⚠️ Could not query hr_work details:', err.message);
+                }
+            } else if (sourceTable === 'projects_work' && sourceId) {
+                try {
+                    const pwRows = await db.execute(
+                        'SELECT * FROM projects_work WHERE id = ? LIMIT 1',
+                        [sourceId]
+                    );
+                    if (pwRows && pwRows.length > 0) {
+                        completedBy = pwRows[0].submitted_by || 'Project Manager';
+                        completionDate = pwRows[0].submitted_date ? new Date(pwRows[0].submitted_date).toISOString().split('T')[0] : completionDate;
+                    }
+                } catch (err) {
+                    console.log('⚠️ Could not query projects_work details:', err.message);
+                }
+            } else if (sourceTable === 'finance_work' && sourceId) {
+                try {
+                    const fwRows = await db.execute(
+                        'SELECT * FROM finance_work WHERE id = ? LIMIT 1',
+                        [sourceId]
+                    );
+                    if (fwRows && fwRows.length > 0) {
+                        completedBy = fwRows[0].submitted_by || 'Finance Manager';
+                        completionDate = fwRows[0].submitted_date ? new Date(fwRows[0].submitted_date).toISOString().split('T')[0] : completionDate;
+                    }
+                } catch (err) {
+                    console.log('⚠️ Could not query finance_work details:', err.message);
                 }
             } else {
                 try {
@@ -2956,6 +2990,26 @@ router.post('/approvals', async (req, res) => {
                     console.log(`✅ Updated hr_work status to Resolved for ID ${sourceId}`);
                 } catch (updateError) {
                     console.log('⚠️ Failed to update hr_work status:', updateError.message);
+                }
+            } else if (sourceTable === 'projects_work' && sourceId) {
+                try {
+                    await db.execute(
+                        `UPDATE projects_work SET status = 'Completed' WHERE id = ?`,
+                        [sourceId]
+                    );
+                    console.log(`✅ Updated projects_work status to Completed for ID ${sourceId}`);
+                } catch (updateError) {
+                    console.log('⚠️ Failed to update projects_work status:', updateError.message);
+                }
+            } else if (sourceTable === 'finance_work' && sourceId) {
+                try {
+                    await db.execute(
+                        `UPDATE finance_work SET status = 'Completed' WHERE id = ?`,
+                        [sourceId]
+                    );
+                    console.log(`✅ Updated finance_work status to Completed for ID ${sourceId}`);
+                } catch (updateError) {
+                    console.log('⚠️ Failed to update finance_work status:', updateError.message);
                 }
             }
 
@@ -3902,6 +3956,96 @@ router.get('/completions/pending', async (req, res) => {
             }
         } catch (hrErr) {
             console.log('⚠️ hr_work query:', hrErr.message);
+        }
+
+        // 4) Also pull from projects_work (has real project names)
+        try {
+            const pwRows = await db.execute(`
+                SELECT pw.id, pw.work_title AS work_details,
+                       pw.project_name AS project,
+                       pw.submitted_by AS completed_by,
+                       pw.submitted_date AS completed_date,
+                       CASE pw.priority
+                           WHEN 'Low' THEN 90
+                           WHEN 'Medium' THEN 85
+                           WHEN 'High' THEN 75
+                           WHEN 'Critical' THEN 65
+                           ELSE 85
+                       END AS quality_score,
+                       pw.status,
+                       'projects_work' AS source_table,
+                       pw.id AS source_id
+                FROM projects_work pw
+                WHERE (pw.status = 'Pending' OR pw.status = 'In Progress')
+                  AND pw.id NOT IN (
+                      SELECT COALESCE(source_id, 0) FROM work_completions WHERE source_table = 'projects_work'
+                  )
+                ORDER BY pw.submitted_date DESC
+                LIMIT 50
+            `);
+            if (pwRows && pwRows.length > 0) {
+                const mapped = pwRows.map(pw => ({
+                    id: 'PW-' + pw.id,
+                    work_details: pw.work_details || 'Project Work Item',
+                    project: pw.project || 'N/A',
+                    completed_by: pw.completed_by || 'N/A',
+                    completed_date: pw.completed_date,
+                    quality_score: pw.quality_score || 85,
+                    quality_level: pw.quality_score >= 90 ? 'excellent' : pw.quality_score >= 80 ? 'good' : 'acceptable',
+                    status: 'pending',
+                    source_table: 'projects_work',
+                    source_id: pw.source_id
+                }));
+                allCompletions = allCompletions.concat(mapped);
+                console.log(`📊 Found ${pwRows.length} project work items pending approval`);
+            }
+        } catch (pwErr) {
+            console.log('⚠️ projects_work query:', pwErr.message);
+        }
+
+        // 5) Also pull from finance_work (expense/invoice items pending approval)
+        try {
+            const fwRows = await db.execute(`
+                SELECT fw.id, fw.work_title AS work_details,
+                       COALESCE(fw.work_type, 'Finance') AS project,
+                       fw.submitted_by AS completed_by,
+                       fw.submitted_date AS completed_date,
+                       CASE fw.priority
+                           WHEN 'Low' THEN 90
+                           WHEN 'Medium' THEN 85
+                           WHEN 'High' THEN 75
+                           WHEN 'Critical' THEN 65
+                           ELSE 85
+                       END AS quality_score,
+                       fw.status,
+                       'finance_work' AS source_table,
+                       fw.id AS source_id
+                FROM finance_work fw
+                WHERE (fw.status = 'Pending' OR fw.status = 'submitted')
+                  AND fw.id NOT IN (
+                      SELECT COALESCE(source_id, 0) FROM work_completions WHERE source_table = 'finance_work'
+                  )
+                ORDER BY fw.submitted_date DESC
+                LIMIT 50
+            `);
+            if (fwRows && fwRows.length > 0) {
+                const mapped = fwRows.map(fw => ({
+                    id: 'FW-' + fw.id,
+                    work_details: fw.work_details || 'Finance Work Item',
+                    project: fw.project || 'Finance',
+                    completed_by: fw.completed_by || 'N/A',
+                    completed_date: fw.completed_date,
+                    quality_score: fw.quality_score || 85,
+                    quality_level: fw.quality_score >= 90 ? 'excellent' : fw.quality_score >= 80 ? 'good' : 'acceptable',
+                    status: 'pending',
+                    source_table: 'finance_work',
+                    source_id: fw.source_id
+                }));
+                allCompletions = allCompletions.concat(mapped);
+                console.log(`📊 Found ${fwRows.length} finance work items pending approval`);
+            }
+        } catch (fwErr) {
+            console.log('⚠️ finance_work query:', fwErr.message);
         }
 
         console.log(`📊 Total pending completions: ${allCompletions.length}`);
