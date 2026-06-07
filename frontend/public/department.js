@@ -59186,7 +59186,6 @@ async function loadDocuments() {
 
                     <button class="action view-btn" onclick="viewDoc('${doc.id}')">View</button>
 
-                    <button class="action download-btn" onclick="downloadDoc('${doc.id}')">Download</button>
 
                     <button class="action delete-btn" onclick="deleteDoc('${doc.id}', '${doc.title}')">ðŸ—‘ï¸ Delete</button>
 
@@ -64616,7 +64615,6 @@ async function documentManagement(){
 
                                                     <button class="action-btn view-btn" onclick="viewDocument('${doc.id}')">View</button>
 
-                                                    <button class="action-btn download-btn" onclick="downloadDocument('${doc.id}')">Download</button>
                                                     
                                                     <button class="action-btn qr-btn" style="background: #28a745; color: white;" onclick="showDocumentQR('${doc.id}', '${doc.name ? doc.name.replace(/'/g, "\\'") : doc.filename ? doc.filename.replace(/'/g, "\\'") : 'Document'}')">QR Code</button>
 

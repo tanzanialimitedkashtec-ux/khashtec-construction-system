@@ -578,7 +578,6 @@ function displayDocuments(documents) {
             <div class="doc-actions">
                 <button class="action edit-btn" onclick="editDoc('${doc.id}')">Edit</button>
                 <button class="action view-btn" onclick="viewDoc('${doc.id}')">View</button>
-                <button class="action download-btn" onclick="downloadDoc('${doc.id}')">Download</button>
             </div>
         </div>
     `).join('');
