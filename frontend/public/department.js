@@ -64470,9 +64470,9 @@ async function documentManagement(){
 
                     <h4>Existing Documents</h4>
 
-                    <div class="table-container">
+                    <div class="workforce-table-container">
 
-                        <table class="doc-table">
+                        <table class="workforce-table">
 
                             <thead>
 
