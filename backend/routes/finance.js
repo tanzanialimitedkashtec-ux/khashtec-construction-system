@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const db = require('../../database/config/database');
-const { sendInvoiceEmail } = require('../services/emailService');
+const { sendInvoiceEmail, sendExpenseEmail } = require('../services/emailService');
 
 console.log('🚀 Finance routes loaded with database connection');
 
@@ -237,6 +237,17 @@ router.post('/expense', async (req, res) => {
             ]
         );
 
+        // Send email notification for new expense
+        sendExpenseEmail({
+            id: txRes.insertId,
+            category,
+            amount: Number(amount) || 0,
+            description,
+            department,
+            submittedBy,
+            status: 'Pending'
+        }, 'created').catch(err => console.error('Expense email error:', err.message));
+
         res.status(201).json({
             message: 'Expense submitted successfully',
             transaction_id: txRes.insertId,
@@ -267,6 +278,27 @@ router.put('/expense/:id/confirm', async (req, res) => {
         if (!result.affectedRows && !workRes.affectedRows) {
             return res.status(404).json({ error: 'Expense not found or already confirmed' });
         }
+
+        // Send confirmation email with expense details
+        try {
+            const rows = await db.execute(
+                `SELECT id, category, amount, description, status FROM financial_transactions WHERE id = ?`, [id]
+            );
+            if (rows.length > 0) {
+                sendExpenseEmail({
+                    id: rows[0].id,
+                    category: rows[0].category,
+                    amount: rows[0].amount,
+                    description: rows[0].description,
+                    department: 'Finance',
+                    submittedBy: 'Finance Manager',
+                    status: 'Approved'
+                }, 'confirmed').catch(err => console.error('Expense confirm email error:', err.message));
+            }
+        } catch (emailErr) {
+            console.error('Could not fetch expense for email:', emailErr.message);
+        }
+
         console.log('  ✅ Expense confirmed: id=' + id + ', tx_updated=' + result.affectedRows + ', work_updated=' + (workRes.affectedRows || 0));
         res.json({
             message: 'Expense confirmed successfully',
