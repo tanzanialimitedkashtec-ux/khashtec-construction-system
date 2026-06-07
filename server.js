@@ -162,7 +162,7 @@ app.use(helmet({
 
             imgSrc: ["'self'", "data:", "https://picsum.photos"],
 
-            scriptSrc: ["'self'", "'unsafe-inline'"],
+            scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'", "https://unpkg.com", "https://cdnjs.cloudflare.com"],
 
             connectSrc: ["'self'"]
 
@@ -257,15 +257,15 @@ app.use((req, res, next) => {
 
         "default-src 'self'; " +
 
-        "script-src 'self' 'unsafe-inline' 'unsafe-eval'; " +
+        "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://unpkg.com https://cdnjs.cloudflare.com; " +
 
         "script-src-attr 'unsafe-inline'; " +
 
-        "style-src 'self' 'unsafe-inline'; " +
+        "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; " +
 
         "img-src 'self' data: https:; " +
 
-        "font-src 'self'; " +
+        "font-src 'self' https://fonts.gstatic.com; " +
 
         "connect-src 'self' ws: wss: https:;"
 
