@@ -10,6 +10,10 @@ function isValidDepartment(department) {
     return VALID_DEPARTMENTS.includes(department.toLowerCase());
 }
 
+// Global in-memory state for mock workforce requests to allow status changes to persist across GET requests
+global.mockWorkforceStatuses = global.mockWorkforceStatuses || {};
+const mockWorkforceStatuses = global.mockWorkforceStatuses;
+
 // Test endpoint to verify API is working
 router.get('/test', (req, res) => {
     console.log('🧪 Test endpoint accessed');
@@ -173,8 +177,12 @@ router.post('/', async (req, res, next) => {
             severity,
             location,
             project_name,
-            status = 'pending'
+            status: rawStatus = 'pending'
         } = req.body;
+
+        // Normalize status to match DB ENUM: 'Pending', 'In Progress', 'Completed', 'Rejected', 'Revision Requested'
+        const statusMap = { 'pending': 'Pending', 'in progress': 'In Progress', 'in-progress': 'In Progress', 'completed': 'Completed', 'investigating': 'In Progress', 'resolved': 'Completed', 'rejected': 'Rejected', 'revision requested': 'Revision Requested' };
+        const status = statusMap[String(rawStatus).toLowerCase()] || 'Pending';
         
         console.log('📝 Extracted HSE data:', {
             work_type,
@@ -1761,7 +1769,7 @@ router.get('/:department', async (req, res, next) => {
         let workItems = [];
         
         try {
-            const [dbWorkItems] = await db.execute(
+            const dbWorkItems = await db.execute(
                 `SELECT * FROM \`${department}_work\` ORDER BY submitted_date DESC`
             );
             workItems = dbWorkItems;
@@ -3040,8 +3048,12 @@ router.post('/hse', async (req, res) => {
             severity,
             location,
             project_name,
-            status = 'pending'
+            status: rawStatus = 'pending'
         } = req.body;
+
+        // Normalize status to match DB ENUM: 'Pending', 'In Progress', 'Completed'
+        const statusMap = { 'pending': 'Pending', 'in progress': 'In Progress', 'in-progress': 'In Progress', 'completed': 'Completed', 'investigating': 'Investigating', 'resolved': 'Resolved' };
+        const status = statusMap[String(rawStatus).toLowerCase()] || rawStatus || 'Pending';
         
         console.log('📝 Extracted HSE data:', {
             work_type,
@@ -3282,9 +3294,13 @@ router.post('/:department', async (req, res, next) => {
             project_name, client_name,
             property_name, property_type,
             affected_systems,
-            status = 'pending'
+            status: rawStatus = 'pending'
         } = req.body;
-        
+
+        // Normalize status to match DB ENUM: 'Pending', 'In Progress', 'Completed', 'Rejected', 'Revision Requested'
+        const statusNormMap = { 'pending': 'Pending', 'in progress': 'In Progress', 'in-progress': 'In Progress', 'completed': 'Completed', 'investigating': 'In Progress', 'resolved': 'Completed', 'scheduled': 'Pending', 'rejected': 'Rejected', 'revision requested': 'Revision Requested' };
+        const status = statusNormMap[String(rawStatus || 'pending').toLowerCase()] || 'Pending';
+
         console.log('📝 Extracted data:', {
             work_type,
             work_title,
@@ -3741,8 +3757,8 @@ router.post('/:department', async (req, res, next) => {
         console.error('❌ Error creating work item:', error);
         console.error('❌ Error stack:', error.stack);
         res.status(500).json({ 
-            error: 'Failed to create work item',
-            details: error.message 
+            error: 'Failed to create work item: ' + error.message,
+            details: error.stack 
         });
     }
 });
@@ -4606,6 +4622,13 @@ router.get('/workforce-requests', async (req, res) => {
                     }
                 ];
                 
+                // Apply persistent in-memory statuses for mock requests
+                sampleRequests.forEach(sample => {
+                    if (mockWorkforceStatuses[sample.id]) {
+                        sample.status = mockWorkforceStatuses[sample.id];
+                    }
+                });
+
                 // Add sample data that doesn't conflict with real IDs
                 const additionalSampleData = sampleRequests.filter(sample => 
                     !workforceRequests.some(real => real.id === sample.id)
@@ -4897,13 +4920,32 @@ router.put('/workforce-requests/:id/status', async (req, res) => {
             });
         }
         
-        const [result] = await db.execute(`
+        // Introspect table schema to check the type of the 'id' column
+        const workforceSchema = await getWorkforceRequestSchema();
+        const idColumnType = workforceSchema.get('id') || '';
+        const isIdInteger = idColumnType.includes('int');
+
+        // Check if this is a mock request (non-numeric string ID in an integer ID table)
+        if (isIdInteger && isNaN(Number(id))) {
+            console.log(`ℹ️ Mock workforce request ${id} status updated to ${status} (simulated success)`);
+            mockWorkforceStatuses[id] = status; // Persist in memory
+            return res.json({
+                message: 'Workforce request status updated successfully (mock simulation)',
+                id: id,
+                status: status
+            });
+        }
+
+        // Use appropriate ID type for query
+        const queryId = isIdInteger ? parseInt(id, 10) : id;
+
+        const result = await db.execute(`
             UPDATE workforce_requests 
             SET status = ?, updated_at = CURRENT_TIMESTAMP 
             WHERE id = ?
-        `, [status, id]);
+        `, [status, queryId]);
         
-        if (result.affectedRows === 0) {
+        if (!result || result.affectedRows === 0) {
             return res.status(404).json({
                 error: 'Workforce request not found'
             });

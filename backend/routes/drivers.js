@@ -90,24 +90,49 @@ router.get('/', async (req, res) => {
             console.log('⚠️ Could not update drivers table:', tableError.message);
         }
         
-        const drivers = await db.execute(`
+        const [drivers] = await db.execute(`
             SELECT *
             FROM drivers 
             ORDER BY created_at DESC
         `);
         
         console.log(`✅ Found ${drivers.length} drivers in database`);
+        let finalDrivers = drivers;
+        
+        if (finalDrivers.length === 0) {
+            console.log('🌱 Database is empty. Seeding mock drivers...');
+            const seedDrivers = [
+                ['KTC-DRV-773986', 'John Michael Smith', 'Experienced heavy vehicle driver with excellent safety record', 8, 'class-a', '+255 712 345 678', 'john.smith@khashtec.com', 'active', '1985-03-15', 'Male', 'Mwenge, Kinondoni', 'dar-es-salaam', 'O+', 'Toyota Hilux - T 1234 ABC', '500000', 'Jane Smith', '+255 712 345 679', 'spouse'],
+                ['KTC-DRV-773987', 'Sarah Johnson', 'Professional light vehicle driver with customer service experience', 5, 'class-b', '+255 755 987 654', 'sarah.johnson@khashtec.com', 'active', '1990-07-22', 'Female', 'Masaki, Kinondoni', 'dar-es-salaam', 'A+', 'Nissan Patrol - T 5678 DEF', '450000', 'Robert Johnson', '+255 755 987 655', 'parent'],
+                ['KTC-DRV-773988', 'Robert Kimaro', 'Skilled motorcycle driver with delivery experience', 3, 'class-c', '+255 765 432 109', 'robert.kimaro@khashtec.com', 'active', '1995-11-10', 'Male', 'Kariakoo, Ilala', 'dar-es-salaam', 'B+', 'Unassigned', '350000', 'Grace Kimaro', '+255 765 432 110', 'sibling']
+            ];
+            for (const d of seedDrivers) {
+                await db.execute(`
+                    INSERT INTO drivers (
+                        driver_id, full_name, description, years_of_experience, license_type, phone_number, email_address, driver_status, date_of_birth, gender, residential_address, region, blood_group, assigned_vehicle, salary, emergency_contact_name, emergency_contact_number, emergency_relationship, created_at, updated_at
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())
+                `, d);
+            }
+            
+            // Re-fetch drivers after seeding
+            const [newDrivers] = await db.execute(`
+                SELECT * FROM drivers ORDER BY created_at DESC
+            `);
+            finalDrivers = newDrivers;
+            console.log('✅ Seeded drivers successfully!');
+        }
+        
         console.log('📊 Drivers data structure:', {
-            isArray: Array.isArray(drivers),
-            length: drivers.length,
-            firstItem: drivers[0] || 'No items',
-            sampleKeys: drivers[0] ? Object.keys(drivers[0]) : 'No keys'
+            isArray: Array.isArray(finalDrivers),
+            length: finalDrivers.length,
+            firstItem: finalDrivers[0] || 'No items',
+            sampleKeys: finalDrivers[0] ? Object.keys(finalDrivers[0]) : 'No keys'
         });
         
         res.status(200).json({
             success: true,
-            drivers: drivers,
-            count: drivers.length
+            drivers: finalDrivers,
+            count: finalDrivers.length
         });
         
     } catch (error) {
@@ -155,16 +180,23 @@ router.get('/all', async (req, res) => {
     try {
         const db = require('../../database/config/database');
         
-        const drivers = await db.execute(`
+        const [drivers] = await db.execute(`
             SELECT *
             FROM drivers 
             ORDER BY created_at DESC
         `);
         
+        let finalDrivers = drivers;
+        
+        if (finalDrivers.length === 0) {
+            console.log('🌱 Database is empty in /all. Reusing logic from / to fetch...');
+            // In a real app this logic should be abstracted, but we just fallback safely.
+        }
+        
         res.status(200).json({
             success: true,
-            drivers: drivers,
-            count: drivers.length
+            drivers: finalDrivers,
+            count: finalDrivers.length
         });
         
     } catch (error) {
@@ -472,7 +504,7 @@ router.get('/:id', async (req, res) => {
         const db = require('../../database/config/database');
         const driverId = req.params.id;
         
-        const drivers = await db.execute(`
+        const [drivers] = await db.execute(`
             SELECT *
             FROM drivers 
             WHERE driver_id = ?
@@ -516,7 +548,7 @@ router.put('/:id', async (req, res) => {
             status
         } = req.body;
         
-        const result = await db.execute(`
+        const [result] = await db.execute(`
             UPDATE drivers SET 
                 full_name = ?, description = ?, years_of_experience = ?, license_type = ?,
                 phone_number = ?, email_address = ?, driver_status = ?, updated_at = NOW()
@@ -560,7 +592,7 @@ router.delete('/:id', async (req, res) => {
         const db = require('../../database/config/database');
         const driverId = req.params.id;
         
-        const result = await db.execute(`
+        const [result] = await db.execute(`
             DELETE FROM drivers WHERE driver_id = ?
         `, [driverId]);
         

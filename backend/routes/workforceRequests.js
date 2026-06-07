@@ -389,6 +389,96 @@ router.put('/:id', async (req, res) => {
     }
 });
 
+// Update workforce request status (matching /:id/status path)
+router.put('/:id/status', async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { status } = req.body;
+        
+        if (!['pending', 'approved', 'rejected', 'completed', 'cancelled'].includes(status)) {
+            return res.status(400).json({
+                success: false,
+                error: 'Invalid status',
+                validStatuses: ['pending', 'approved', 'rejected', 'completed', 'cancelled']
+            });
+        }
+
+        const db = require('../../database/config/database');
+
+        // Introspect table schema to check the type of the 'id' column
+        let isIdInteger = true;
+        try {
+            const columns = await db.execute('SHOW COLUMNS FROM workforce_requests');
+            const rows = Array.isArray(columns) ? columns : (columns && Array.isArray(columns[0]) ? columns[0] : []);
+            const idCol = rows.find(col => col.Field === 'id');
+            if (idCol && !String(idCol.Type).toLowerCase().includes('int')) {
+                isIdInteger = false;
+            }
+        } catch (schemaErr) {
+            console.warn('⚠️ Could not introspect workforce_requests table schema:', schemaErr.message);
+        }
+
+        // Check if this is a mock request (non-numeric string ID in an integer ID table)
+        if (isIdInteger && isNaN(Number(id))) {
+            console.log(`ℹ️ Mock workforce request ${id} status updated to ${status} (simulated success)`);
+            global.mockWorkforceStatuses = global.mockWorkforceStatuses || {};
+            global.mockWorkforceStatuses[id] = status; // Persist in memory
+            return res.json({
+                success: true,
+                message: 'Workforce request status updated successfully (mock simulation)',
+                id: id,
+                status: status
+            });
+        }
+
+        // Use appropriate ID type for query
+        const queryId = isIdInteger ? parseInt(id, 10) : id;
+
+        // Try to update both possible status update schema variants
+        let resultResult;
+        try {
+            resultResult = await db.execute(`
+                UPDATE workforce_requests 
+                SET status = ?, approved_by = ?, approval_date = NOW(), updated_at = NOW()
+                WHERE id = ?
+            `, [status, 'MD', queryId]);
+        } catch (firstTryErr) {
+            console.warn('⚠️ First status update query failed, trying fallback schema query:', firstTryErr.message);
+            resultResult = await db.execute(`
+                UPDATE workforce_requests 
+                SET status = ?, updated_at = NOW()
+                WHERE id = ?
+            `, [status, queryId]);
+        }
+        
+        const result = Array.isArray(resultResult) ? resultResult[0] : resultResult;
+        
+        if (!result || result.affectedRows === 0) {
+            return res.status(404).json({
+                success: false,
+                error: 'Workforce request not found'
+            });
+        }
+        
+        console.log(`✅ Workforce request ${id} status updated to ${status} via /workforce-requests/:id/status`);
+        
+        res.json({
+            success: true,
+            message: 'Workforce request status updated successfully',
+            id: id,
+            status: status
+        });
+        
+    } catch (error) {
+        console.error('❌ Error updating workforce request status:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Failed to update workforce request status',
+            details: error.message
+        });
+    }
+});
+
 // Delete workforce request
 router.delete('/:id', async (req, res) => {
     try {

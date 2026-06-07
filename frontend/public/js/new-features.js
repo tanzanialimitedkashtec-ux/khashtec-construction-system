@@ -27,31 +27,32 @@ async function loadAssetsEquipment() {
             <div class="card">
                 <h3>Asset & Equipment Management</h3>
                 <button onclick="showAssetForm()">+ New Asset/Equipment</button>
-                <table style="width: 100%; margin-top: 20px; border-collapse: collapse;">
-                    <thead>
-                        <tr style="background: #f4f4f4;">
-                            <th style="padding: 10px; border: 1px solid #ddd;">Code</th>
-                            <th style="padding: 10px; border: 1px solid #ddd;">Name</th>
-                            <th style="padding: 10px; border: 1px solid #ddd;">Category</th>
-                            <th style="padding: 10px; border: 1px solid #ddd;">Condition</th>
-                            <th style="padding: 10px; border: 1px solid #ddd;">Status</th>
-                            <th style="padding: 10px; border: 1px solid #ddd;">Assigned To</th>
-                            <th style="padding: 10px; border: 1px solid #ddd;">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
+                <div class="department-table-container" style="margin-top:20px;">
+                    <table class="department-table">
+                        <thead>
+                            <tr>
+                                <th>Code</th>
+                                <th>Name</th>
+                                <th>Category</th>
+                                <th>Condition</th>
+                                <th>Status</th>
+                                <th>Assigned To</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
         `;
 
         assets.forEach(asset => {
             html += `
                 <tr>
-                    <td style="padding: 10px; border: 1px solid #ddd;">${asset.asset_code}</td>
-                    <td style="padding: 10px; border: 1px solid #ddd;">${asset.asset_name}</td>
-                    <td style="padding: 10px; border: 1px solid #ddd;">${asset.category}</td>
-                    <td style="padding: 10px; border: 1px solid #ddd;">${asset.condition}</td>
-                    <td style="padding: 10px; border: 1px solid #ddd;">${asset.status}</td>
-                    <td style="padding: 10px; border: 1px solid #ddd;">${asset.full_name || 'Unassigned'}</td>
-                    <td style="padding: 10px; border: 1px solid #ddd;">
+                    <td>${asset.asset_code}</td>
+                    <td>${asset.asset_name}</td>
+                    <td>${asset.category}</td>
+                    <td>${asset.condition}</td>
+                    <td>${asset.status}</td>
+                    <td>${asset.full_name || 'Unassigned'}</td>
+                    <td>
                         <button onclick="viewAsset(${asset.id})">View</button>
                         <button onclick="editAsset(${asset.id})">Edit</button>
                     </td>
@@ -195,29 +196,30 @@ async function saveAsset(event, assetId = null) {
             <div class="card">
                 <h3>Claims Management</h3>
                 <button onclick="showClaimForm()">+ New Claim</button>
-                <table style="width: 100%; margin-top: 20px; border-collapse: collapse;">
-                    <thead>
-                        <tr style="background: #f4f4f4;">
-                            <th style="padding: 10px; border: 1px solid #ddd;">Claim #</th>
-                            <th style="padding: 10px; border: 1px solid #ddd;">Type</th>
-                            <th style="padding: 10px; border: 1px solid #ddd;">Title</th>
-                            <th style="padding: 10px; border: 1px solid #ddd;">Date</th>
-                            <th style="padding: 10px; border: 1px solid #ddd;">Status</th>
-                            <th style="padding: 10px; border: 1px solid #ddd;">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
+                <div class="department-table-container" style="margin-top:20px;">
+                    <table class="department-table">
+                        <thead>
+                            <tr>
+                                <th>Claim #</th>
+                                <th>Type</th>
+                                <th>Title</th>
+                                <th>Date</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
         `;
 
         claims.forEach(claim => {
             html += `
                 <tr>
-                    <td style="padding: 10px; border: 1px solid #ddd;">${claim.claim_number}</td>
-                    <td style="padding: 10px; border: 1px solid #ddd;">${claim.claim_type}</td>
-                    <td style="padding: 10px; border: 1px solid #ddd;">${claim.title}</td>
-                    <td style="padding: 10px; border: 1px solid #ddd;">${claim.claim_date}</td>
-                    <td style="padding: 10px; border: 1px solid #ddd;">${claim.status}</td>
-                    <td style="padding: 10px; border: 1px solid #ddd;">
+                    <td>${claim.claim_number}</td>
+                    <td>${claim.claim_type}</td>
+                    <td>${claim.title}</td>
+                    <td>${claim.claim_date}</td>
+                    <td>${claim.status}</td>
+                    <td>
                         <button onclick="viewClaim(${claim.id})">View</button>
                         <button onclick="editClaim(${claim.id})">Edit</button>
                     </td>
@@ -332,29 +334,30 @@ async function loadNssfRegistration() {
             <div class="card">
                 <h3>NSSF Registration</h3>
                 <button onclick="showNssfForm()">+ New Registration</button>
-                <table style="width: 100%; margin-top: 20px; border-collapse: collapse;">
-                    <thead>
-                        <tr style="background: #f4f4f4;">
-                            <th style="padding: 10px; border: 1px solid #ddd;">Reg #</th>
-                            <th style="padding: 10px; border: 1px solid #ddd;">Employee</th>
-                            <th style="padding: 10px; border: 1px solid #ddd;">NSSF #</th>
-                            <th style="padding: 10px; border: 1px solid #ddd;">Reg Date</th>
-                            <th style="padding: 10px; border: 1px solid #ddd;">Status</th>
-                            <th style="padding: 10px; border: 1px solid #ddd;">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
+                <div class="department-table-container" style="margin-top:20px;">
+                    <table class="department-table">
+                        <thead>
+                            <tr>
+                                <th>Reg #</th>
+                                <th>Employee</th>
+                                <th>NSSF #</th>
+                                <th>Reg Date</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
         `;
 
         registrations.forEach(reg => {
             html += `
                 <tr>
-                    <td style="padding: 10px; border: 1px solid #ddd;">${reg.registration_number}</td>
-                    <td style="padding: 10px; border: 1px solid #ddd;">${reg.full_name || 'N/A'}</td>
-                    <td style="padding: 10px; border: 1px solid #ddd;">${reg.nssf_number}</td>
-                    <td style="padding: 10px; border: 1px solid #ddd;">${reg.registration_date}</td>
-                    <td style="padding: 10px; border: 1px solid #ddd;">${reg.status}</td>
-                    <td style="padding: 10px; border: 1px solid #ddd;">
+                    <td>${reg.registration_number}</td>
+                    <td>${reg.full_name || 'N/A'}</td>
+                    <td>${reg.nssf_number}</td>
+                    <td>${reg.registration_date}</td>
+                    <td>${reg.status}</td>
+                    <td>
                         <button onclick="viewNssf(${reg.id})">View</button>
                         <button onclick="editNssf(${reg.id})">Edit</button>
                     </td>
@@ -455,31 +458,32 @@ async function loadDisciplineMonitoring() {
             <div class="card">
                 <h3>Discipline Monitoring</h3>
                 <button onclick="showDisciplineForm()">+ New Case</button>
-                <table style="width: 100%; margin-top: 20px; border-collapse: collapse;">
-                    <thead>
-                        <tr style="background: #f4f4f4;">
-                            <th style="padding: 10px; border: 1px solid #ddd;">Case #</th>
-                            <th style="padding: 10px; border: 1px solid #ddd;">Employee</th>
-                            <th style="padding: 10px; border: 1px solid #ddd;">Type</th>
-                            <th style="padding: 10px; border: 1px solid #ddd;">Date</th>
-                            <th style="padding: 10px; border: 1px solid #ddd;">Severity</th>
-                            <th style="padding: 10px; border: 1px solid #ddd;">Status</th>
-                            <th style="padding: 10px; border: 1px solid #ddd;">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
+                <div class="department-table-container" style="margin-top:20px;">
+                    <table class="department-table">
+                        <thead>
+                            <tr>
+                                <th>Case #</th>
+                                <th>Employee</th>
+                                <th>Type</th>
+                                <th>Date</th>
+                                <th>Severity</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
         `;
 
         cases.forEach(caseRecord => {
             html += `
                 <tr>
-                    <td style="padding: 10px; border: 1px solid #ddd;">${caseRecord.case_number}</td>
-                    <td style="padding: 10px; border: 1px solid #ddd;">${caseRecord.full_name || 'N/A'}</td>
-                    <td style="padding: 10px; border: 1px solid #ddd;">${caseRecord.incident_type}</td>
-                    <td style="padding: 10px; border: 1px solid #ddd;">${caseRecord.incident_date}</td>
-                    <td style="padding: 10px; border: 1px solid #ddd;">${caseRecord.severity}</td>
-                    <td style="padding: 10px; border: 1px solid #ddd;">${caseRecord.status}</td>
-                    <td style="padding: 10px; border: 1px solid #ddd;">
+                    <td>${caseRecord.case_number}</td>
+                    <td>${caseRecord.full_name || 'N/A'}</td>
+                    <td>${caseRecord.incident_type}</td>
+                    <td>${caseRecord.incident_date}</td>
+                    <td>${caseRecord.severity}</td>
+                    <td>${caseRecord.status}</td>
+                    <td>
                         <button onclick="viewDiscipline(${caseRecord.id})">View</button>
                         <button onclick="editDiscipline(${caseRecord.id})">Edit</button>
                     </td>
@@ -598,31 +602,32 @@ async function loadOfficeResources() {
             <div class="card">
                 <h3>Office Resources</h3>
                 <button onclick="showResourceForm()">+ New Resource</button>
-                <table style="width: 100%; margin-top: 20px; border-collapse: collapse;">
-                    <thead>
-                        <tr style="background: #f4f4f4;">
-                            <th style="padding: 10px; border: 1px solid #ddd;">Code</th>
-                            <th style="padding: 10px; border: 1px solid #ddd;">Name</th>
-                            <th style="padding: 10px; border: 1px solid #ddd;">Type</th>
-                            <th style="padding: 10px; border: 1px solid #ddd;">Condition</th>
-                            <th style="padding: 10px; border: 1px solid #ddd;">Status</th>
-                            <th style="padding: 10px; border: 1px solid #ddd;">Assigned To</th>
-                            <th style="padding: 10px; border: 1px solid #ddd;">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
+                <div class="department-table-container" style="margin-top:20px;">
+                    <table class="department-table">
+                        <thead>
+                            <tr>
+                                <th>Code</th>
+                                <th>Name</th>
+                                <th>Type</th>
+                                <th>Condition</th>
+                                <th>Status</th>
+                                <th>Assigned To</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
         `;
 
         resources.forEach(resource => {
             html += `
                 <tr>
-                    <td style="padding: 10px; border: 1px solid #ddd;">${resource.resource_code}</td>
-                    <td style="padding: 10px; border: 1px solid #ddd;">${resource.resource_name}</td>
-                    <td style="padding: 10px; border: 1px solid #ddd;">${resource.resource_type}</td>
-                    <td style="padding: 10px; border: 1px solid #ddd;">${resource.condition}</td>
-                    <td style="padding: 10px; border: 1px solid #ddd;">${resource.status}</td>
-                    <td style="padding: 10px; border: 1px solid #ddd;">${resource.full_name || 'Unassigned'}</td>
-                    <td style="padding: 10px; border: 1px solid #ddd;">
+                    <td>${resource.resource_code}</td>
+                    <td>${resource.resource_name}</td>
+                    <td>${resource.resource_type}</td>
+                    <td>${resource.condition}</td>
+                    <td>${resource.status}</td>
+                    <td>${resource.full_name || 'Unassigned'}</td>
+                    <td>
                         <button onclick="viewResource(${resource.id})">View</button>
                         <button onclick="editResource(${resource.id})">Edit</button>
                     </td>
@@ -749,31 +754,32 @@ async function loadTalentAcquisition() {
             <div class="card">
                 <h3>Talent Acquisition</h3>
                 <button onclick="showTalentForm()">+ New Requisition</button>
-                <table style="width: 100%; margin-top: 20px; border-collapse: collapse;">
-                    <thead>
-                        <tr style="background: #f4f4f4;">
-                            <th style="padding: 10px; border: 1px solid #ddd;">Req #</th>
-                            <th style="padding: 10px; border: 1px solid #ddd;">Position</th>
-                            <th style="padding: 10px; border: 1px solid #ddd;">Department</th>
-                            <th style="padding: 10px; border: 1px solid #ddd;">Type</th>
-                            <th style="padding: 10px; border: 1px solid #ddd;">Level</th>
-                            <th style="padding: 10px; border: 1px solid #ddd;">Status</th>
-                            <th style="padding: 10px; border: 1px solid #ddd;">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
+                <div class="department-table-container" style="margin-top:20px;">
+                    <table class="department-table">
+                        <thead>
+                            <tr>
+                                <th>Req #</th>
+                                <th>Position</th>
+                                <th>Department</th>
+                                <th>Type</th>
+                                <th>Level</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
         `;
 
         requisitions.forEach(req => {
             html += `
                 <tr>
-                    <td style="padding: 10px; border: 1px solid #ddd;">${req.requisition_number}</td>
-                    <td style="padding: 10px; border: 1px solid #ddd;">${req.position_title}</td>
-                    <td style="padding: 10px; border: 1px solid #ddd;">${req.department}</td>
-                    <td style="padding: 10px; border: 1px solid #ddd;">${req.position_type}</td>
-                    <td style="padding: 10px; border: 1px solid #ddd;">${req.experience_level}</td>
-                    <td style="padding: 10px; border: 1px solid #ddd;">${req.status}</td>
-                    <td style="padding: 10px; border: 1px solid #ddd;">
+                    <td>${req.requisition_number}</td>
+                    <td>${req.position_title}</td>
+                    <td>${req.department}</td>
+                    <td>${req.position_type}</td>
+                    <td>${req.experience_level}</td>
+                    <td>${req.status}</td>
+                    <td>
                         <button onclick="viewTalent(${req.id})">View</button>
                         <button onclick="editTalent(${req.id})">Edit</button>
                     </td>
@@ -909,33 +915,34 @@ async function loadPromotions() {
             <div class="card">
                 <h3>Promotions</h3>
                 <button onclick="showPromotionForm()">+ New Promotion</button>
-                <table style="width: 100%; margin-top: 20px; border-collapse: collapse;">
-                    <thead>
-                        <tr style="background: #f4f4f4;">
-                            <th style="padding: 10px; border: 1px solid #ddd;">Promo #</th>
-                            <th style="padding: 10px; border: 1px solid #ddd;">Employee</th>
-                            <th style="padding: 10px; border: 1px solid #ddd;">Type</th>
-                            <th style="padding: 10px; border: 1px solid #ddd;">Current Position</th>
-                            <th style="padding: 10px; border: 1px solid #ddd;">New Position</th>
-                            <th style="padding: 10px; border: 1px solid #ddd;">Effective Date</th>
-                            <th style="padding: 10px; border: 1px solid #ddd;">Status</th>
-                            <th style="padding: 10px; border: 1px solid #ddd;">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
+                <div class="department-table-container" style="margin-top:20px;">
+                    <table class="department-table">
+                        <thead>
+                            <tr>
+                                <th>Promo #</th>
+                                <th>Employee</th>
+                                <th>Type</th>
+                                <th>Current Position</th>
+                                <th>New Position</th>
+                                <th>Effective Date</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
         `;
 
         promotions.forEach(promo => {
             html += `
                 <tr>
-                    <td style="padding: 10px; border: 1px solid #ddd;">${promo.promotion_number}</td>
-                    <td style="padding: 10px; border: 1px solid #ddd;">${promo.full_name || 'N/A'}</td>
-                    <td style="padding: 10px; border: 1px solid #ddd;">${promo.promotion_type}</td>
-                    <td style="padding: 10px; border: 1px solid #ddd;">${promo.current_position}</td>
-                    <td style="padding: 10px; border: 1px solid #ddd;">${promo.new_position}</td>
-                    <td style="padding: 10px; border: 1px solid #ddd;">${promo.effective_date}</td>
-                    <td style="padding: 10px; border: 1px solid #ddd;">${promo.status}</td>
-                    <td style="padding: 10px; border: 1px solid #ddd;">
+                    <td>${promo.promotion_number}</td>
+                    <td>${promo.full_name || 'N/A'}</td>
+                    <td>${promo.promotion_type}</td>
+                    <td>${promo.current_position}</td>
+                    <td>${promo.new_position}</td>
+                    <td>${promo.effective_date}</td>
+                    <td>${promo.status}</td>
+                    <td>
                         <button onclick="viewPromotion(${promo.id})">View</button>
                         <button onclick="editPromotion(${promo.id})">Edit</button>
                     </td>
@@ -1060,31 +1067,32 @@ async function loadRiskManagement() {
             <div class="card">
                 <h3>Risk Management</h3>
                 <button onclick="showRiskForm()" class="btn btn-primary">+ New Risk</button>
-                <table style="width: 100%; margin-top: 20px; border-collapse: collapse;">
-                    <thead>
-                        <tr style="background: #f4f4f4;">
-                            <th style="padding: 10px; border: 1px solid #031865de;">Risk #</th>
-                            <th style="padding: 10px; border: 1px solid #031865de;">Title</th>
-                            <th style="padding: 10px; border: 1px solid #031865de">Category</th>
-                            <th style="padding: 10px; border: 1px solid #031865de;">Probability</th>
-                            <th style="padding: 10px; border: 1px solid #031865de;">Impact</th>
-                            <th style="padding: 10px; border: 1px solid #031865de;">Status</th>
-                            <th style="padding: 10px; border: 1px solid #031865de;">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
+                <div class="department-table-container" style="margin-top:20px;">
+                    <table class="department-table">
+                        <thead>
+                            <tr>
+                                <th>Risk #</th>
+                                <th>Title</th>
+                                <th>Category</th>
+                                <th>Probability</th>
+                                <th>Impact</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
         `;
 
         risks.forEach(risk => {
             html += `
                 <tr>
-                    <td style="padding: 10px; border: 1px solid #ddd;">${risk.risk_number}</td>
-                    <td style="padding: 10px; border: 1px solid #ddd;">${risk.risk_title}</td>
-                    <td style="padding: 10px; border: 1px solid #ddd;">${risk.risk_category}</td>
-                    <td style="padding: 10px; border: 1px solid #ddd;">${risk.probability}</td>
-                    <td style="padding: 10px; border: 1px solid #ddd;">${risk.impact}</td>
-                    <td style="padding: 10px; border: 1px solid #ddd;">${risk.status}</td>
-                    <td style="padding: 10px; border: 1px solid #ddd;">
+                    <td>${risk.risk_number}</td>
+                    <td>${risk.risk_title}</td>
+                    <td>${risk.risk_category}</td>
+                    <td>${risk.probability}</td>
+                    <td>${risk.impact}</td>
+                    <td>${risk.status}</td>
+                    <td>
                         <button onclick="viewRisk(${risk.id})">View</button>
                         <button onclick="editRisk(${risk.id})">Edit</button>
                     </td>
@@ -1300,23 +1308,25 @@ async function loadViewSuggestions() {
             html += '<p style="color:#555;margin-bottom:15px;">Suggestions submitted by all departments.</p>';
         }
 
-        html += '<table style="width:100%;margin-top:10px;border-collapse:collapse;">';
-        html += '<thead><tr style="background:#f4f4f4;">';
-        html += '<th style="padding:10px;border:1px solid #ddd;">#</th>';
-        html += '<th style="padding:10px;border:1px solid #ddd;">Title</th>';
-        html += '<th style="padding:10px;border:1px solid #ddd;">Category</th>';
-        html += '<th style="padding:10px;border:1px solid #ddd;">Department</th>';
-        html += '<th style="padding:10px;border:1px solid #ddd;">Submitted By</th>';
-        html += '<th style="padding:10px;border:1px solid #ddd;">Priority</th>';
-        html += '<th style="padding:10px;border:1px solid #ddd;">Status</th>';
-        html += '<th style="padding:10px;border:1px solid #ddd;">Date</th>';
+        html += '<div class="department-table-container" style="margin-top:10px;">';
+        html += '<table class="department-table">';
+        html += '<thead><tr>';
+        html += '<th>#</th>';
+        html += '<th>Title</th>';
+        html += '<th>Description</th>';
+        html += '<th>Category</th>';
+        html += '<th>Department</th>';
+        html += '<th>Submitted By</th>';
+        html += '<th>Priority</th>';
+        html += '<th>Status</th>';
+        html += '<th>Date</th>';
         if (isMD) {
-            html += '<th style="padding:10px;border:1px solid #ddd;">Actions</th>';
+            html += '<th>Actions</th>';
         }
         html += '</tr></thead><tbody>';
 
         if (suggestions.length === 0) {
-            const colspan = isMD ? 9 : 8;
+            var colspan = isMD ? 10 : 9;
             html += '<tr><td colspan="' + colspan + '" style="padding:20px;text-align:center;border:1px solid #ddd;">No suggestions found.</td></tr>';
         }
 
@@ -1329,19 +1339,22 @@ async function loadViewSuggestions() {
             var submitter = s.submitted_by_name || s.employee_name || 'Unknown';
             var dept = s.department || 'N/A';
             var dateStr = s.created_at ? new Date(s.created_at).toLocaleDateString() : 'N/A';
+            var desc = s.description || 'No description';
+            var shortDesc = desc.length > 80 ? desc.substring(0, 80) + '...' : desc;
 
             html += '<tr>';
-            html += '<td style="padding:10px;border:1px solid #ddd;">' + (idx + 1) + '</td>';
-            html += '<td style="padding:10px;border:1px solid #ddd;cursor:pointer;color:#007bff;" onclick="viewSuggestionDetail(' + s.id + ')">' + _escHtml(s.title) + '</td>';
-            html += '<td style="padding:10px;border:1px solid #ddd;">' + _escHtml(cLabel) + '</td>';
-            html += '<td style="padding:10px;border:1px solid #ddd;">' + _escHtml(dept) + '</td>';
-            html += '<td style="padding:10px;border:1px solid #ddd;">' + _escHtml(submitter) + '</td>';
-            html += '<td style="padding:10px;border:1px solid #ddd;"><span style="color:' + pColor + ';font-weight:bold;">' + _escHtml(pLabel) + '</span></td>';
-            html += '<td style="padding:10px;border:1px solid #ddd;"><span style="background:' + sColor + ';color:#fff;padding:3px 8px;border-radius:4px;font-size:12px;">' + _escHtml(sLabel) + '</span></td>';
-            html += '<td style="padding:10px;border:1px solid #ddd;">' + dateStr + '</td>';
+            html += '<td>' + (idx + 1) + '</td>';
+            html += '<td style="cursor:pointer;color:#007bff;font-weight:bold;" onclick="viewSuggestionDetail(' + s.id + ')">' + _escHtml(s.title) + '</td>';
+            html += '<td style="max-width:220px;white-space:normal;word-wrap:break-word;font-size:12px;color:#555;" title="' + _escHtml(desc) + '">' + _escHtml(shortDesc) + '</td>';
+            html += '<td>' + _escHtml(cLabel) + '</td>';
+            html += '<td>' + _escHtml(dept) + '</td>';
+            html += '<td>' + _escHtml(submitter) + '</td>';
+            html += '<td><span style="color:' + pColor + ';font-weight:bold;">' + _escHtml(pLabel) + '</span></td>';
+            html += '<td><span style="background:' + sColor + ';color:#fff;padding:3px 8px;border-radius:4px;font-size:12px;">' + _escHtml(sLabel) + '</span></td>';
+            html += '<td>' + dateStr + '</td>';
 
             if (isMD) {
-                html += '<td style="padding:10px;border:1px solid #ddd;white-space:nowrap;">';
+                html += '<td style="white-space:nowrap;">';
                 if (s.status === 'pending' || s.status === 'under-review') {
                     html += '<button onclick="approveSuggestion(' + s.id + ')" style="background:#28a745;color:#fff;border:none;padding:5px 10px;border-radius:4px;cursor:pointer;margin-right:4px;">Approve</button>';
                     html += '<button onclick="rejectSuggestion(' + s.id + ')" style="background:#dc3545;color:#fff;border:none;padding:5px 10px;border-radius:4px;cursor:pointer;">Reject</button>';

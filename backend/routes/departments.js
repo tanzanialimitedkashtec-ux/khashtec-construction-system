@@ -57,13 +57,16 @@ router.get(['/','/all'], async (req, res) => {
                 FROM departments
                 ORDER BY created_at DESC
             `;
-            const r1 = await db.execute(q1);
+            const r1Raw = await db.execute(q1);
+            const r1 = Array.isArray(r1Raw) ? (Array.isArray(r1Raw[0]) ? r1Raw[0] : r1Raw) : [];
             if (Array.isArray(r1)) {
                 for (const row of r1) {
-                    const code = row.code || '';
-                    if (!byCode.has(code)) {
-                        byCode.set(code, true);
-                        combined.push(row);
+                    if (row && row.code !== undefined) {
+                        const code = row.code || '';
+                        if (!byCode.has(code)) {
+                            byCode.set(code, true);
+                            combined.push(row);
+                        }
                     }
                 }
             }
@@ -86,13 +89,16 @@ router.get(['/','/all'], async (req, res) => {
                 FROM office_portal
                 ORDER BY created_at DESC
             `;
-            const r2 = await db.execute(q2);
+            const r2Raw = await db.execute(q2);
+            const r2 = Array.isArray(r2Raw) ? (Array.isArray(r2Raw[0]) ? r2Raw[0] : r2Raw) : [];
             if (Array.isArray(r2)) {
                 for (const row of r2) {
-                    const code = row.code || '';
-                    if (!byCode.has(code)) {
-                        byCode.set(code, true);
-                        combined.push(row);
+                    if (row && row.code !== undefined) {
+                        const code = row.code || '';
+                        if (!byCode.has(code)) {
+                            byCode.set(code, true);
+                            combined.push(row);
+                        }
                     }
                 }
             }

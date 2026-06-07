@@ -1,6 +1,6 @@
 // Disabled: Allow localhost development
 
-        // const PRODUCTION_FRONTEND_URL = 'https://khashtec-construction-system-production-e297.up.railway.app/frontend/public/department.html';
+        // const PRODUCTION_FRONTEND_URL = 'https://khashtec-construction-system-production-e7b5.up.railway.app/frontend/public/department.html';
 
         // if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.hostname === '::1') {
 
@@ -42,7 +42,7 @@ function toggleSidebar(){
 
 
 
-const PRODUCTION_API_ORIGIN = 'https://khashtec-construction-system-production-e297.up.railway.app';
+const PRODUCTION_API_ORIGIN = 'https://khashtec-construction-system-production-e7b5.up.railway.app';
 
 const originalFetch = window.fetch.bind(window);
 
@@ -68,9 +68,9 @@ window.fetch = function(resource, init) {
 
                 resource = resource.replace(window.location.origin, `${PRODUCTION_API_ORIGIN}/api`);
 
-            } else if (/^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?/.test(resource)) {
+            } else if (/^https?:\/\/(localhost|127.0.0.1)(:\d+)?/.test(resource)) {
 
-                resource = resource.replace(/^(https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?)/, PRODUCTION_API_ORIGIN);
+                resource = resource.replace(/^(https?:\/\/(localhost|127.0.0.1)(:\d+)?)/, PRODUCTION_API_ORIGIN);
 
             }
 
@@ -94,9 +94,9 @@ window.fetch = function(resource, init) {
 
                 url = url.replace(window.location.origin, `${PRODUCTION_API_ORIGIN}/api`);
 
-            } else if (/^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?/.test(url)) {
+            } else if (/^https?:\/\/(localhost|127.0.0.1)(:\d+)?/.test(url)) {
 
-                url = url.replace(/^(https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?)/, PRODUCTION_API_ORIGIN);
+                url = url.replace(/^(https?:\/\/(localhost|127.0.0.1)(:\d+)?)/, PRODUCTION_API_ORIGIN);
 
             }
 
@@ -340,7 +340,7 @@ function loadPolicies() {
 
                        style="width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 8px; font-size: 14px; box-sizing: border-box;"
 
-                       onkeyup="filterPolicyManagement()">
+                       onkeyup="filterPolicyManagement()" />
 
                 <div id="policyManagementSearchResults" style="margin-top: 5px; font-size: 12px; color: #666;"></div>
 
@@ -464,7 +464,7 @@ function loadSeniorHiringRequests() {
 
             <div class="search-container" style="margin-bottom: 15px;">
 
-                <input type="text" id="hiringSearchInput" placeholder="ðŸ” Search candidates..." style="width: 100%; padding: 8px; border: 2px solid #ddd; border-radius: 6px; font-size: 12px; box-sizing: border-box;" onkeyup="filterHiringRequests()">
+                <input type="text" id="hiringSearchInput" placeholder="ðŸ” Search candidates..." style="width: 100%; padding: 8px; border: 2px solid #ddd; border-radius: 6px; font-size: 12px; box-sizing: border-box;" onkeyup="filterHiringRequests()" />
 
                 <div id="hiringSearchResults" style="margin-top:3px; font-size: 10px; color: #666;"></div>
 
@@ -767,13 +767,15 @@ async function loadNotifications() {
                 '<div class="notif-content">' +
                 '<p class="notif-title">'+(n.title||'Notification').replace(/</g,'&lt;')+'</p>' +
                 '<p class="notif-msg">'+(n.message||'').replace(/</g,'&lt;')+'</p>' +
-                '<span class="notif-time">'+(isRead ? 'Read \u00b7 ' : '')+timeAgo+'</span>' +
+                '<span class="notif-time">'+(isRead ? 'Read u00b7 ' : '')+timeAgo+'</span>' +
                 '</div></div>';
         }).join('');
     } catch(e) {
         document.getElementById('notificationList').innerHTML = '<div class="notification-empty">Error loading notifications</div>';
     }
 }
+
+let lastUnreadCount = -1;
 
 async function updateNotificationBadge() {
     try {
@@ -789,13 +791,28 @@ async function updateNotificationBadge() {
                 badge.style.display = 'none';
             }
         }
+
+        // Play popup water sound if unread count increased
+        if (lastUnreadCount !== -1 && unread > lastUnreadCount) {
+            try {
+                const sound = new Audio('https://actions.google.com/sounds/v1/water/water_drop.ogg');
+                sound.play().catch(e => console.log('Audio play blocked/failed:', e));
+            } catch(e) {}
+        }
+        lastUnreadCount = unread;
     } catch(e) {}
 }
 
 async function openNotification(id) {
     try {
-        await fetch('/api/notifications/' + id + '/read', { method: 'PUT' });
-    } catch(e) {}
+        var res = await fetch('/api/notifications/' + id + '/read', { method: 'PUT' });
+        if (res.ok) {
+            console.log('ud83dudd14 Notification', id, 'marked as read successfully');
+            if (typeof customAlert === 'function') customAlert('Notification marked as read', 'Success', 'success');
+        }
+    } catch(e) {
+        console.error('ud83dudd14 Error marking notification as read:', e);
+    }
     var panel = document.getElementById('notificationPanel');
     panel.classList.remove('open');
     updateNotificationBadge();
@@ -805,23 +822,23 @@ async function openNotification(id) {
 }
 
 async function markAllNotificationsRead() {
-    console.log('\ud83d\udd14 markAllNotificationsRead() called');
+    console.log('ud83dudd14 markAllNotificationsRead() called');
     var btn = document.querySelector('.notification-panel-header button');
     if (btn) { btn.disabled = true; btn.textContent = 'Marking...'; }
     try {
         // Try bulk endpoint first
-        console.log('\ud83d\udd14 Calling PUT /api/notifications/read-all...');
+        console.log('ud83dudd14 Calling PUT /api/notifications/read-all...');
         var bulkRes = await fetch('/api/notifications/read-all', {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ userId: 'all' })
         });
-        console.log('\ud83d\udd14 read-all response status:', bulkRes.status);
+        console.log('ud83dudd14 read-all response status:', bulkRes.status);
         if (bulkRes.ok) {
             var bulkData = await bulkRes.json();
-            console.log('\ud83d\udd14 read-all result:', bulkData);
+            console.log('ud83dudd14 read-all result:', bulkData);
         } else {
-            console.log('\ud83d\udd14 read-all failed, falling back to one-by-one...');
+            console.log('ud83dudd14 read-all failed, falling back to one-by-one...');
             // Fallback: mark one-by-one
             var res = await fetch('/api/notifications');
             var data = await res.json();
@@ -833,16 +850,17 @@ async function markAllNotificationsRead() {
                     await fetch('/api/notifications/' + notifications[i].id + '/read', { method: 'PUT' });
                 }
             }
-            console.log('\ud83d\udd14 Marked', unreadCount, 'notifications as read one-by-one');
+            console.log('ud83dudd14 Marked', unreadCount, 'notifications as read one-by-one');
         }
     } catch(e) {
-        console.error('\ud83d\udd14 markAllNotificationsRead error:', e);
+        console.error('ud83dudd14 markAllNotificationsRead error:', e);
     }
     if (btn) { btn.disabled = false; btn.textContent = 'Mark all read'; }
-    console.log('\ud83d\udd14 Updating badge and reloading notifications...');
+    console.log('ud83dudd14 Updating badge and reloading notifications...');
     updateNotificationBadge();
     loadNotifications();
-    console.log('\ud83d\udd14 markAllNotificationsRead() complete');
+    if (typeof customAlert === 'function') customAlert('All notifications marked as read', 'Success', 'success');
+    console.log('ud83dudd14 markAllNotificationsRead() complete');
 }
 
 function getTimeAgo(dateStr) {
@@ -984,7 +1002,7 @@ function loadMenu(){
 
         addMenu("Compliance", financeCompliance);
 
-        addMenu("Luggage Campaigns", manageLuggageCampaigns);
+        addMenu("Luggage Companies", manageLuggageCampaigns);
 
         addMenu("Luggage Purchases", manageLuggagePurchases);
 
@@ -1033,6 +1051,7 @@ function loadMenu(){
         addMenu("Track PPE Issuance", trackPpeIssuance);
 
         addMenu("Mark Safety Violations", markSafetyViolations);
+        addMenu("Approve Violation", markSafetyViolations);
 
         addMenu("Upload Inspection Reports", uploadInspectionReports);
 
@@ -1112,6 +1131,7 @@ function loadMenu(){
         addMenu("Track PPE Issuance", trackPpeIssuance);
 
         addMenu("Mark Safety Violations", markSafetyViolations);
+        addMenu("Approve Violation", markSafetyViolations);
 
         addMenu("Upload Inspection Reports", uploadInspectionReports);
 
@@ -1137,7 +1157,7 @@ function loadMenu(){
 
         addMenu("Compliance", financeCompliance);
 
-        addMenu("Luggage Campaigns", manageLuggageCampaigns);
+        addMenu("Luggage Companies", manageLuggageCampaigns);
 
         addMenu("Luggage Purchases", manageLuggagePurchases);
 
@@ -1847,7 +1867,7 @@ function approveRecruitmentPolicies(){
 
                                style="width: 100%; padding: 6px; border: 2px solid #ddd; border-radius: 2px; font-size: 9px; box-sizing: border-box;"
 
-                               onkeyup="filterPolicies()">
+                               onkeyup="filterPolicies()" />
 
                         <div id="searchResults" style="margin-top: 5px; font-size: 12px; color: #666;"></div>
 
@@ -2918,7 +2938,7 @@ function showSeniorHiringForm(requests) {
 
                        style="width: 100%; padding: 8px; border: 2px solid #ddd; border-radius: 6px; font-size: 12px; box-sizing: border-box;"
 
-                       onkeyup="filterHiringRequests()">
+                       onkeyup="filterHiringRequests()" />
 
                 <div id="hiringSearchResults" style="margin-top: 3px; font-size: 10px; color: #666;"></div>
 
@@ -3536,7 +3556,7 @@ function showWorkforceBudgetForm(budgets) {
 
                                style="width: 100%; padding: 6px; border: 2px solid #ddd; border-radius: 2px; font-size: 9px; box-sizing: border-box;"
 
-                               onkeyup="filterBudgets()">
+                               onkeyup="filterBudgets()" />
 
                         <div id="budgetSearchResults" style="margin-top: 5px; font-size: 12px; color: #666;"></div>
 
@@ -4220,7 +4240,7 @@ function showModificationModal(budgetId) {
 
                 box-sizing: border-box;
 
-            " value="2026-05-01">
+            " value="2026-05-01" />
 
         </div>
 
@@ -5484,7 +5504,7 @@ function viewAllWorkers(){
 
                 <label for="mdWorkerSearch" class="sr-only">Search Workers</label>
 
-                <input type="text" id="mdWorkerSearch" name="worker_search" placeholder="Search workers by name, department, or job..." onkeyup="filterAllWorkers()">
+                <input type="text" id="mdWorkerSearch" name="worker_search" placeholder="Search workers by name, department, or job..." onkeyup="filterAllWorkers()" />
 
                 <label for="mdDepartmentFilter" class="sr-only">Filter by Department</label>
 
@@ -6007,7 +6027,7 @@ function suspendTerminateEmployment(){
 
                                 <label>Effective Date *</label>
 
-                                <input type="date" id="actionDate" required>
+                                <input type="date" id="actionDate" required />
 
                             </div>
 
@@ -6053,7 +6073,7 @@ function suspendTerminateEmployment(){
 
                             <label>Suspension Period (Days)</label>
 
-                            <input type="number" id="suspensionDays" placeholder="Number of days for suspension">
+                            <input type="number" id="suspensionDays" placeholder="Number of days for suspension" />
 
                         </div>
 
@@ -6063,7 +6083,7 @@ function suspendTerminateEmployment(){
 
                             <label>Final Payment Date</label>
 
-                            <input type="date" id="finalPaymentDate">
+                            <input type="date" id="finalPaymentDate" />
 
                         </div>
 
@@ -6739,7 +6759,7 @@ function displayEmployeeData(employees) {
 
         <div class="table-controls">
 
-            <input type="text" id="employeeSearch" placeholder="Search employees..." onkeyup="filterEmployeeTable()">
+            <input type="text" id="employeeSearch" placeholder="Search employees..." onkeyup="filterEmployeeTable()" />
 
             <select id="departmentFilter" onchange="filterEmployeeTable()">
 
@@ -7479,7 +7499,7 @@ function approvePolicy(policyId) {
 
     // Show confirmation dialog
 
-    const confirmApproval = confirm(`Are you sure you want to approve this recruitment policy?\n\nPolicy ID: ${policyId}\n\nOnce approved, this policy will be implemented by the HR department.`);
+    const confirmApproval = confirm(`Are you sure you want to approve this recruitment policy?nnPolicy ID: ${policyId}nnOnce approved, this policy will be implemented by the HR department.`);
 
     
 
@@ -7563,7 +7583,7 @@ function approvePolicy(policyId) {
 
             showRealProblemNotification('SUCCESS', {
 
-                message: `âœ… Policy approved successfully!\n\nðŸ“‹ Details:\nâ€¢ Policy ID: ${policyId}\nâ€¢ Approved by: Managing Director\nâ€¢ Status: Approved\nâ€¢ Database ID: ${data.id || policyId}\n\nðŸŽ‰ Policy saved to database without page refresh!`,
+                message: `âœ… Policy approved successfully!nnðŸ“‹ Details:nâ€¢ Policy ID: ${policyId}nâ€¢ Approved by: Managing Directornâ€¢ Status: Approvednâ€¢ Database ID: ${data.id || policyId}nnðŸŽ‰ Policy saved to database without page refresh!`,
 
                 policyId: policyId,
 
@@ -7617,31 +7637,31 @@ function approvePolicy(policyId) {
 
                 errorCause = 'Network connection failed';
 
-                troubleshooting = 'â€¢ Check internet connection\nâ€¢ Verify server is running\nâ€¢ Try again in a moment';
+                troubleshooting = 'â€¢ Check internet connectionnâ€¢ Verify server is runningnâ€¢ Try again in a moment';
 
             } else if (error.message.includes('400')) {
 
                 errorCause = 'Invalid approval data';
 
-                troubleshooting = 'â€¢ Policy ID is valid\nâ€¢ Approver information is correct\nâ€¢ Check request format';
+                troubleshooting = 'â€¢ Policy ID is validnâ€¢ Approver information is correctnâ€¢ Check request format';
 
             } else if (error.message.includes('404')) {
 
                 errorCause = 'Policy not found';
 
-                troubleshooting = 'â€¢ Policy ID may not exist\nâ€¢ Check policy list\nâ€¢ Verify policy is still pending';
+                troubleshooting = 'â€¢ Policy ID may not existnâ€¢ Check policy listnâ€¢ Verify policy is still pending';
 
             } else if (error.message.includes('500')) {
 
                 errorCause = 'Server internal error';
 
-                troubleshooting = 'â€¢ Database connection issue\nâ€¢ Server configuration problem\nâ€¢ Contact system administrator';
+                troubleshooting = 'â€¢ Database connection issuenâ€¢ Server configuration problemnâ€¢ Contact system administrator';
 
             } else if (error.message.includes('database') || error.message.includes('SQL')) {
 
                 errorCause = 'Database operation failed';
 
-                troubleshooting = 'â€¢ Database connection issue\nâ€¢ Policies table might not exist\nâ€¢ Contact system administrator';
+                troubleshooting = 'â€¢ Database connection issuenâ€¢ Policies table might not existnâ€¢ Contact system administrator';
 
             }
 
@@ -7657,7 +7677,7 @@ function approvePolicy(policyId) {
 
                 troubleshooting: troubleshooting,
 
-                message: `âŒ Policy approval failed!\n\nðŸ” Error Cause: ${errorCause}\n\nðŸ› ï¸ Troubleshooting:\n${troubleshooting}\n\nðŸ“ Technical Details:\n${error.message}\n\nðŸ’¡ Please fix the issue and try again.`,
+                message: `âŒ Policy approval failed!nnðŸ” Error Cause: ${errorCause}nnðŸ› ï¸ Troubleshooting:n${troubleshooting}nnðŸ“ Technical Details:n${error.message}nnðŸ’¡ Please fix the issue and try again.`,
 
                 policyId: policyId,
 
@@ -7699,7 +7719,7 @@ function requestPolicyRevision(policyId) {
 
                     <label><strong>Policy ID:</strong></label>
 
-                    <input type="text" value="${policyId}" readonly style="background: #f8f9fa;">
+                    <input type="text" value="${policyId}" readonly style="background: #f8f9fa;" />
 
                 </div>
 
@@ -7755,7 +7775,7 @@ function requestPolicyRevision(policyId) {
 
                     <label><strong>Expected Timeline:</strong></label>
 
-                    <input type="date" id="expectedTimeline" required>
+                    <input type="date" id="expectedTimeline" required />
 
                 </div>
 
@@ -7813,7 +7833,7 @@ function rejectPolicy(policyId) {
 
                     <label><strong>Policy ID:</strong></label>
 
-                    <input type="text" value="${policyId}" readonly style="background: #f8f9fa;">
+                    <input type="text" value="${policyId}" readonly style="background: #f8f9fa;" />
 
                 </div>
 
@@ -7969,7 +7989,7 @@ function submitRevisionRequest(policyId) {
 
         body: JSON.stringify({
 
-            revisionRequest: `Type: ${revisionType}\n\nDetails: ${revisionDetails}\nPriority: ${revisionPriority}\nExpected Timeline: ${expectedTimeline}`,
+            revisionRequest: `Type: ${revisionType}nnDetails: ${revisionDetails}nPriority: ${revisionPriority}nExpected Timeline: ${expectedTimeline}`,
 
             requestedBy: 'HR Manager'
 
@@ -8031,7 +8051,7 @@ function submitRevisionRequest(policyId) {
 
         showRealProblemNotification('SUCCESS', {
 
-            message: `âœ… Revision request submitted successfully!\n\nðŸ“‹ Details:\nâ€¢ Policy ID: ${policyId}\nâ€¢ Revision Type: ${revisionType}\nâ€¢ Priority: ${revisionPriority}\nâ€¢ Expected Review: ${expectedTimeline}\nâ€¢ Requested by: HR Manager\nâ€¢ Status: Revision Requested\nâ€¢ Database ID: ${data.id || policyId}\n\nðŸŽ‰ Revision request saved to database without page refresh!`,
+            message: `âœ… Revision request submitted successfully!nnðŸ“‹ Details:nâ€¢ Policy ID: ${policyId}nâ€¢ Revision Type: ${revisionType}nâ€¢ Priority: ${revisionPriority}nâ€¢ Expected Review: ${expectedTimeline}nâ€¢ Requested by: HR Managernâ€¢ Status: Revision Requestednâ€¢ Database ID: ${data.id || policyId}nnðŸŽ‰ Revision request saved to database without page refresh!`,
 
             policyId: policyId,
 
@@ -8069,31 +8089,31 @@ function submitRevisionRequest(policyId) {
 
             errorCause = 'Network connection failed';
 
-            troubleshooting = 'â€¢ Check internet connection\nâ€¢ Verify server is running\nâ€¢ Try again in a moment';
+            troubleshooting = 'â€¢ Check internet connectionnâ€¢ Verify server is runningnâ€¢ Try again in a moment';
 
         } else if (error.message.includes('400')) {
 
             errorCause = 'Invalid revision data';
 
-            troubleshooting = 'â€¢ Fill all required fields correctly\nâ€¢ Check revision type selection\nâ€¢ Verify expected timeline\nâ€¢ Ensure details are provided';
+            troubleshooting = 'â€¢ Fill all required fields correctlynâ€¢ Check revision type selectionnâ€¢ Verify expected timelinenâ€¢ Ensure details are provided';
 
         } else if (error.message.includes('404')) {
 
             errorCause = 'Policy not found';
 
-            troubleshooting = 'â€¢ Policy ID may not exist\nâ€¢ Check policy list\nâ€¢ Verify policy is still active';
+            troubleshooting = 'â€¢ Policy ID may not existnâ€¢ Check policy listnâ€¢ Verify policy is still active';
 
         } else if (error.message.includes('500')) {
 
             errorCause = 'Server internal error';
 
-            troubleshooting = 'â€¢ Database connection issue\nâ€¢ Server configuration problem\nâ€¢ Contact system administrator';
+            troubleshooting = 'â€¢ Database connection issuenâ€¢ Server configuration problemnâ€¢ Contact system administrator';
 
         } else if (error.message.includes('database') || error.message.includes('SQL')) {
 
             errorCause = 'Database operation failed';
 
-            troubleshooting = 'â€¢ Database connection issue\nâ€¢ Policy revisions table might not exist\nâ€¢ Contact system administrator';
+            troubleshooting = 'â€¢ Database connection issuenâ€¢ Policy revisions table might not existnâ€¢ Contact system administrator';
 
         }
 
@@ -8109,7 +8129,7 @@ function submitRevisionRequest(policyId) {
 
             troubleshooting: troubleshooting,
 
-            message: `âŒ Revision request failed!\n\nðŸ” Error Cause: ${errorCause}\n\nðŸ› ï¸ Troubleshooting:\n${troubleshooting}\n\nðŸ“ Technical Details:\n${error.message}\n\nðŸ’¡ Please fix the issue and try again.`,
+            message: `âŒ Revision request failed!nnðŸ” Error Cause: ${errorCause}nnðŸ› ï¸ Troubleshooting:n${troubleshooting}nnðŸ“ Technical Details:n${error.message}nnðŸ’¡ Please fix the issue and try again.`,
 
             policyId: policyId,
 
@@ -8267,7 +8287,7 @@ function submitRejection(policyId) {
 
         showRealProblemNotification('SUCCESS', {
 
-            message: `âœ… Policy rejected successfully!\n\nðŸ“‹ Details:\nâ€¢ Policy ID: ${policyId}\nâ€¢ Rejection Reason: ${rejectionReason}\nâ€¢ Rejected by: Managing Director\nâ€¢ Status: Rejected\nâ€¢ Database ID: ${data.id || policyId}\n\nðŸŽ‰ Policy rejection saved to database without page refresh!`,
+            message: `âœ… Policy rejected successfully!nnðŸ“‹ Details:nâ€¢ Policy ID: ${policyId}nâ€¢ Rejection Reason: ${rejectionReason}nâ€¢ Rejected by: Managing Directornâ€¢ Status: Rejectednâ€¢ Database ID: ${data.id || policyId}nnðŸŽ‰ Policy rejection saved to database without page refresh!`,
 
             policyId: policyId,
 
@@ -8305,31 +8325,31 @@ function submitRejection(policyId) {
 
             errorCause = 'Network connection failed';
 
-            troubleshooting = 'â€¢ Check internet connection\nâ€¢ Verify server is running\nâ€¢ Try again in a moment';
+            troubleshooting = 'â€¢ Check internet connectionnâ€¢ Verify server is runningnâ€¢ Try again in a moment';
 
         } else if (error.message.includes('400')) {
 
             errorCause = 'Invalid rejection data';
 
-            troubleshooting = 'â€¢ Fill all required fields correctly\nâ€¢ Check rejection reason selection\nâ€¢ Verify rejection details\nâ€¢ Ensure next steps are specified';
+            troubleshooting = 'â€¢ Fill all required fields correctlynâ€¢ Check rejection reason selectionnâ€¢ Verify rejection detailsnâ€¢ Ensure next steps are specified';
 
         } else if (error.message.includes('404')) {
 
             errorCause = 'Policy not found';
 
-            troubleshooting = 'â€¢ Policy ID may not exist\nâ€¢ Check policy list\nâ€¢ Verify policy is still active';
+            troubleshooting = 'â€¢ Policy ID may not existnâ€¢ Check policy listnâ€¢ Verify policy is still active';
 
         } else if (error.message.includes('500')) {
 
             errorCause = 'Server internal error';
 
-            troubleshooting = 'â€¢ Database connection issue\nâ€¢ Server configuration problem\nâ€¢ Contact system administrator';
+            troubleshooting = 'â€¢ Database connection issuenâ€¢ Server configuration problemnâ€¢ Contact system administrator';
 
         } else if (error.message.includes('database') || error.message.includes('SQL')) {
 
             errorCause = 'Database operation failed';
 
-            troubleshooting = 'â€¢ Database connection issue\nâ€¢ Policy rejections table might not exist\nâ€¢ Contact system administrator';
+            troubleshooting = 'â€¢ Database connection issuenâ€¢ Policy rejections table might not existnâ€¢ Contact system administrator';
 
         }
 
@@ -8345,7 +8365,7 @@ function submitRejection(policyId) {
 
             troubleshooting: troubleshooting,
 
-            message: `âŒ Policy rejection failed!\n\nðŸ” Error Cause: ${errorCause}\n\nðŸ› ï¸ Troubleshooting:\n${troubleshooting}\n\nðŸ“ Technical Details:\n${error.message}\n\nðŸ’¡ Please fix the issue and try again.`,
+            message: `âŒ Policy rejection failed!nnðŸ” Error Cause: ${errorCause}nnðŸ› ï¸ Troubleshooting:n${troubleshooting}nnðŸ“ Technical Details:n${error.message}nnðŸ’¡ Please fix the issue and try again.`,
 
             policyId: policyId,
 
@@ -8557,7 +8577,7 @@ window.customPrompt = function(message, defaultValue = '', title = 'Input Requir
 
                 <p>${message}</p>
 
-                <input type="text" id="promptInput" value="${defaultValue}" placeholder="Enter your response..." style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px;">
+                <input type="text" id="promptInput" value="${defaultValue}" placeholder="Enter your response..." style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px;" />
 
             </div>
 
@@ -8739,7 +8759,7 @@ function approveSeniorHire(hireId) {
 
     // Show confirmation dialog
 
-    const confirmApproval = confirm(`Are you sure you want to approve this senior hiring request?\n\nHire ID: ${hireId}\n\nOnce approved, HR department may proceed with employment contract preparation.`);
+    const confirmApproval = confirm(`Are you sure you want to approve this senior hiring request?nnHire ID: ${hireId}nnOnce approved, HR department may proceed with employment contract preparation.`);
 
     
 
@@ -8807,7 +8827,7 @@ function approveSeniorHire(hireId) {
 
             showRealProblemNotification('SUCCESS', {
 
-                message: `âœ… Senior hiring request approved successfully!\n\nðŸ“‹ Details:\nâ€¢ Hire ID: ${hireId}\nâ€¢ Approved by: Managing Director\nâ€¢ Status: Approved\nâ€¢ Database ID: ${data.id || hireId}\n\nðŸŽ‰ Senior hiring request saved to database without page refresh!`,
+                message: `âœ… Senior hiring request approved successfully!nnðŸ“‹ Details:nâ€¢ Hire ID: ${hireId}nâ€¢ Approved by: Managing Directornâ€¢ Status: Approvednâ€¢ Database ID: ${data.id || hireId}nnðŸŽ‰ Senior hiring request saved to database without page refresh!`,
 
                 hireId: hireId,
 
@@ -8837,31 +8857,31 @@ function approveSeniorHire(hireId) {
 
                 errorCause = 'Network connection failed';
 
-                troubleshooting = 'â€¢ Check internet connection\nâ€¢ Verify server is running\nâ€¢ Try again in a moment';
+                troubleshooting = 'â€¢ Check internet connectionnâ€¢ Verify server is runningnâ€¢ Try again in a moment';
 
             } else if (error.message.includes('400')) {
 
                 errorCause = 'Invalid approval data';
 
-                troubleshooting = 'â€¢ Hire ID is valid\nâ€¢ Approver information is correct\nâ€¢ Check request format';
+                troubleshooting = 'â€¢ Hire ID is validnâ€¢ Approver information is correctnâ€¢ Check request format';
 
             } else if (error.message.includes('404')) {
 
                 errorCause = 'Senior hiring request not found';
 
-                troubleshooting = 'â€¢ Hire ID may not exist\nâ€¢ Check hiring request list\nâ€¢ Verify request is still pending';
+                troubleshooting = 'â€¢ Hire ID may not existnâ€¢ Check hiring request listnâ€¢ Verify request is still pending';
 
             } else if (error.message.includes('500')) {
 
                 errorCause = 'Server internal error';
 
-                troubleshooting = 'â€¢ Database connection issue\nâ€¢ Server configuration problem\nâ€¢ Contact system administrator';
+                troubleshooting = 'â€¢ Database connection issuenâ€¢ Server configuration problemnâ€¢ Contact system administrator';
 
             } else if (error.message.includes('database') || error.message.includes('SQL')) {
 
                 errorCause = 'Database operation failed';
 
-                troubleshooting = 'â€¢ Database connection issue\nâ€¢ Senior hiring tables might not exist\nâ€¢ Contact system administrator';
+                troubleshooting = 'â€¢ Database connection issuenâ€¢ Senior hiring tables might not existnâ€¢ Contact system administrator';
 
             }
 
@@ -8877,7 +8897,7 @@ function approveSeniorHire(hireId) {
 
                 troubleshooting: troubleshooting,
 
-                message: `âŒ Senior hiring approval failed!\n\nðŸ” Error Cause: ${errorCause}\n\nðŸ› ï¸ Troubleshooting:\n${troubleshooting}\n\nðŸ“ Technical Details:\n${error.message}\n\nðŸ’¡ Please fix the issue and try again.`,
+                message: `âŒ Senior hiring approval failed!nnðŸ” Error Cause: ${errorCause}nnðŸ› ï¸ Troubleshooting:n${troubleshooting}nnðŸ“ Technical Details:n${error.message}nnðŸ’¡ Please fix the issue and try again.`,
 
                 hireId: hireId,
 
@@ -8897,7 +8917,7 @@ function requestMoreInfo(hireId) {
 
     // Show confirmation dialog
 
-    const confirmRequest = confirm(`Are you sure you want to request more information for this senior hiring request?\n\nHire ID: ${hireId}\n\nThis will send a notification to the HR department.`);
+    const confirmRequest = confirm(`Are you sure you want to request more information for this senior hiring request?nnHire ID: ${hireId}nnThis will send a notification to the HR department.`);
 
     
 
@@ -8965,7 +8985,7 @@ function requestMoreInfo(hireId) {
 
             showRealProblemNotification('SUCCESS', {
 
-                message: `âœ… Information request submitted successfully!\n\nðŸ“‹ Details:\nâ€¢ Hire ID: ${hireId}\nâ€¢ Requested by: Managing Director\nâ€¢ Status: Information Requested\nâ€¢ Database ID: ${data.id || hireId}\n\nðŸŽ‰ Information request saved to database without page refresh!`,
+                message: `âœ… Information request submitted successfully!nnðŸ“‹ Details:nâ€¢ Hire ID: ${hireId}nâ€¢ Requested by: Managing Directornâ€¢ Status: Information Requestednâ€¢ Database ID: ${data.id || hireId}nnðŸŽ‰ Information request saved to database without page refresh!`,
 
                 hireId: hireId,
 
@@ -8995,31 +9015,31 @@ function requestMoreInfo(hireId) {
 
                 errorCause = 'Network connection failed';
 
-                troubleshooting = 'â€¢ Check internet connection\nâ€¢ Verify server is running\nâ€¢ Try again in a moment';
+                troubleshooting = 'â€¢ Check internet connectionnâ€¢ Verify server is runningnâ€¢ Try again in a moment';
 
             } else if (error.message.includes('400')) {
 
                 errorCause = 'Invalid request data';
 
-                troubleshooting = 'â€¢ Hire ID is valid\nâ€¢ Requester information is correct\nâ€¢ Check request format';
+                troubleshooting = 'â€¢ Hire ID is validnâ€¢ Requester information is correctnâ€¢ Check request format';
 
             } else if (error.message.includes('404')) {
 
                 errorCause = 'Senior hiring request not found';
 
-                troubleshooting = 'â€¢ Hire ID may not exist\nâ€¢ Check hiring request list\nâ€¢ Verify request is still pending';
+                troubleshooting = 'â€¢ Hire ID may not existnâ€¢ Check hiring request listnâ€¢ Verify request is still pending';
 
             } else if (error.message.includes('500')) {
 
                 errorCause = 'Server internal error';
 
-                troubleshooting = 'â€¢ Database connection issue\nâ€¢ Server configuration problem\nâ€¢ Contact system administrator';
+                troubleshooting = 'â€¢ Database connection issuenâ€¢ Server configuration problemnâ€¢ Contact system administrator';
 
             } else if (error.message.includes('database') || error.message.includes('SQL')) {
 
                 errorCause = 'Database operation failed';
 
-                troubleshooting = 'â€¢ Database connection issue\nâ€¢ Senior hiring tables might not exist\nâ€¢ Contact system administrator';
+                troubleshooting = 'â€¢ Database connection issuenâ€¢ Senior hiring tables might not existnâ€¢ Contact system administrator';
 
             }
 
@@ -9035,7 +9055,7 @@ function requestMoreInfo(hireId) {
 
                 troubleshooting: troubleshooting,
 
-                message: `âŒ Information request failed!\n\nðŸ” Error Cause: ${errorCause}\n\nðŸ› ï¸ Troubleshooting:\n${troubleshooting}\n\nðŸ“ Technical Details:\n${error.message}\n\nðŸ’¡ Please fix the issue and try again.`,
+                message: `âŒ Information request failed!nnðŸ” Error Cause: ${errorCause}nnðŸ› ï¸ Troubleshooting:n${troubleshooting}nnðŸ“ Technical Details:n${error.message}nnðŸ’¡ Please fix the issue and try again.`,
 
                 hireId: hireId,
 
@@ -9125,7 +9145,7 @@ function rejectSeniorHire(hireId) {
 
             showRealProblemNotification('SUCCESS', {
 
-                message: `âœ… Senior hiring request rejected successfully!\n\nðŸ“‹ Details:\nâ€¢ Hire ID: ${hireId}\nâ€¢ Rejection Reason: ${formData.rejectionReason}\nâ€¢ Rejected by: Managing Director\nâ€¢ Status: Rejected\nâ€¢ Database ID: ${data.id || hireId}\n\nðŸŽ‰ Senior hiring request saved to database without page refresh!`,
+                message: `âœ… Senior hiring request rejected successfully!nnðŸ“‹ Details:nâ€¢ Hire ID: ${hireId}nâ€¢ Rejection Reason: ${formData.rejectionReason}nâ€¢ Rejected by: Managing Directornâ€¢ Status: Rejectednâ€¢ Database ID: ${data.id || hireId}nnðŸŽ‰ Senior hiring request saved to database without page refresh!`,
 
                 hireId: hireId,
 
@@ -9161,31 +9181,31 @@ function rejectSeniorHire(hireId) {
 
                 errorCause = 'Network connection failed';
 
-                troubleshooting = 'â€¢ Check internet connection\nâ€¢ Verify server is running\nâ€¢ Try again in a moment';
+                troubleshooting = 'â€¢ Check internet connectionnâ€¢ Verify server is runningnâ€¢ Try again in a moment';
 
             } else if (error.message.includes('400')) {
 
                 errorCause = 'Invalid rejection data';
 
-                troubleshooting = 'â€¢ Fill all required fields correctly\nâ€¢ Check rejection reason selection\nâ€¢ Verify rejection details\nâ€¢ Ensure rejection details are provided';
+                troubleshooting = 'â€¢ Fill all required fields correctlynâ€¢ Check rejection reason selectionnâ€¢ Verify rejection detailsnâ€¢ Ensure rejection details are provided';
 
             } else if (error.message.includes('404')) {
 
                 errorCause = 'Senior hiring request not found';
 
-                troubleshooting = 'â€¢ Hire ID may not exist\nâ€¢ Check hiring request list\nâ€¢ Verify request is still pending';
+                troubleshooting = 'â€¢ Hire ID may not existnâ€¢ Check hiring request listnâ€¢ Verify request is still pending';
 
             } else if (error.message.includes('500')) {
 
                 errorCause = 'Server internal error';
 
-                troubleshooting = 'â€¢ Database connection issue\nâ€¢ Server configuration problem\nâ€¢ Contact system administrator';
+                troubleshooting = 'â€¢ Database connection issuenâ€¢ Server configuration problemnâ€¢ Contact system administrator';
 
             } else if (error.message.includes('database') || error.message.includes('SQL')) {
 
                 errorCause = 'Database operation failed';
 
-                troubleshooting = 'â€¢ Database connection issue\nâ€¢ Senior hiring tables might not exist\nâ€¢ Contact system administrator';
+                troubleshooting = 'â€¢ Database connection issuenâ€¢ Senior hiring tables might not existnâ€¢ Contact system administrator';
 
             }
 
@@ -9201,7 +9221,7 @@ function rejectSeniorHire(hireId) {
 
                 troubleshooting: troubleshooting,
 
-                message: `âŒ Senior hiring rejection failed!\n\nðŸ” Error Cause: ${errorCause}\n\nðŸ› ï¸ Troubleshooting:\n${troubleshooting}\n\nðŸ“ Technical Details:\n${error.message}\n\nðŸ’¡ Please fix the issue and try again.`,
+                message: `âŒ Senior hiring rejection failed!nnðŸ” Error Cause: ${errorCause}nnðŸ› ï¸ Troubleshooting:n${troubleshooting}nnðŸ“ Technical Details:n${error.message}nnðŸ’¡ Please fix the issue and try again.`,
 
                 hireId: hireId,
 
@@ -9229,7 +9249,7 @@ function approveBudget(budgetId) {
 
     // Show confirmation dialog
 
-    const confirmApproval = confirm(`Are you sure you want to approve this workforce budget request?\n\nBudget ID: ${budgetId}\n\nOnce approved, Finance department may proceed with budget implementation.`);
+    const confirmApproval = confirm(`Are you sure you want to approve this workforce budget request?nnBudget ID: ${budgetId}nnOnce approved, Finance department may proceed with budget implementation.`);
 
     
 
@@ -9297,7 +9317,7 @@ function approveBudget(budgetId) {
 
             showRealProblemNotification('SUCCESS', {
 
-                message: `âœ… Workforce budget approved successfully!\n\nðŸ“‹ Details:\nâ€¢ Budget ID: ${budgetId}\nâ€¢ Approved by: Managing Director\nâ€¢ Status: Approved\nâ€¢ Database ID: ${data.id || budgetId}\n\nðŸŽ‰ Workforce budget request saved to database without page refresh!`,
+                message: `âœ… Workforce budget approved successfully!nnðŸ“‹ Details:nâ€¢ Budget ID: ${budgetId}nâ€¢ Approved by: Managing Directornâ€¢ Status: Approvednâ€¢ Database ID: ${data.id || budgetId}nnðŸŽ‰ Workforce budget request saved to database without page refresh!`,
 
                 budgetId: budgetId,
 
@@ -9327,31 +9347,31 @@ function approveBudget(budgetId) {
 
                 errorCause = 'Network connection failed';
 
-                troubleshooting = 'â€¢ Check internet connection\nâ€¢ Verify server is running\nâ€¢ Try again in a moment';
+                troubleshooting = 'â€¢ Check internet connectionnâ€¢ Verify server is runningnâ€¢ Try again in a moment';
 
             } else if (error.message.includes('400')) {
 
                 errorCause = 'Invalid approval data';
 
-                troubleshooting = 'â€¢ Budget ID is valid\nâ€¢ Approver information is correct\nâ€¢ Check request format';
+                troubleshooting = 'â€¢ Budget ID is validnâ€¢ Approver information is correctnâ€¢ Check request format';
 
             } else if (error.message.includes('404')) {
 
                 errorCause = 'Workforce budget request not found';
 
-                troubleshooting = 'â€¢ Budget ID may not exist\nâ€¢ Check budget request list\nâ€¢ Verify request is still pending';
+                troubleshooting = 'â€¢ Budget ID may not existnâ€¢ Check budget request listnâ€¢ Verify request is still pending';
 
             } else if (error.message.includes('500')) {
 
                 errorCause = 'Server internal error';
 
-                troubleshooting = 'â€¢ Database connection issue\nâ€¢ Server configuration problem\nâ€¢ Contact system administrator';
+                troubleshooting = 'â€¢ Database connection issuenâ€¢ Server configuration problemnâ€¢ Contact system administrator';
 
             } else if (error.message.includes('database') || error.message.includes('SQL')) {
 
                 errorCause = 'Database operation failed';
 
-                troubleshooting = 'â€¢ Database connection issue\nâ€¢ Workforce budget tables might not exist\nâ€¢ Contact system administrator';
+                troubleshooting = 'â€¢ Database connection issuenâ€¢ Workforce budget tables might not existnâ€¢ Contact system administrator';
 
             }
 
@@ -9367,7 +9387,7 @@ function approveBudget(budgetId) {
 
                 troubleshooting: troubleshooting,
 
-                message: `âŒ Workforce budget approval failed!\n\nðŸ” Error Cause: ${errorCause}\n\nðŸ› ï¸ Troubleshooting:\n${troubleshooting}\n\nðŸ“ Technical Details:\n${error.message}\n\nðŸ’¡ Please fix the issue and try again.`,
+                message: `âŒ Workforce budget approval failed!nnðŸ” Error Cause: ${errorCause}nnðŸ› ï¸ Troubleshooting:n${troubleshooting}nnðŸ“ Technical Details:n${error.message}nnðŸ’¡ Please fix the issue and try again.`,
 
                 budgetId: budgetId,
 
@@ -9387,7 +9407,7 @@ function modifyBudget(budgetId) {
 
     // Show confirmation dialog
 
-    const confirmModification = confirm(`Are you sure you want to request modification for this workforce budget?\n\nBudget ID: ${budgetId}\n\nThis will send a notification to Finance department.`);
+    const confirmModification = confirm(`Are you sure you want to request modification for this workforce budget?nnBudget ID: ${budgetId}nnThis will send a notification to Finance department.`);
 
     
 
@@ -9455,7 +9475,7 @@ function modifyBudget(budgetId) {
 
             showRealProblemNotification('SUCCESS', {
 
-                message: `âœ… Budget modification requested successfully!\n\nðŸ“‹ Details:\nâ€¢ Budget ID: ${budgetId}\nâ€¢ Requested by: Managing Director\nâ€¢ Status: Modification Requested\nâ€¢ Database ID: ${data.id || budgetId}\n\nðŸŽ‰ Budget modification request saved to database without page refresh!`,
+                message: `âœ… Budget modification requested successfully!nnðŸ“‹ Details:nâ€¢ Budget ID: ${budgetId}nâ€¢ Requested by: Managing Directornâ€¢ Status: Modification Requestednâ€¢ Database ID: ${data.id || budgetId}nnðŸŽ‰ Budget modification request saved to database without page refresh!`,
 
                 budgetId: budgetId,
 
@@ -9485,31 +9505,31 @@ function modifyBudget(budgetId) {
 
                 errorCause = 'Network connection failed';
 
-                troubleshooting = 'â€¢ Check internet connection\nâ€¢ Verify server is running\nâ€¢ Try again in a moment';
+                troubleshooting = 'â€¢ Check internet connectionnâ€¢ Verify server is runningnâ€¢ Try again in a moment';
 
             } else if (error.message.includes('400')) {
 
                 errorCause = 'Invalid modification data';
 
-                troubleshooting = 'â€¢ Budget ID is valid\nâ€¢ Requester information is correct\nâ€¢ Check request format';
+                troubleshooting = 'â€¢ Budget ID is validnâ€¢ Requester information is correctnâ€¢ Check request format';
 
             } else if (error.message.includes('404')) {
 
                 errorCause = 'Workforce budget request not found';
 
-                troubleshooting = 'â€¢ Budget ID may not exist\nâ€¢ Check budget request list\nâ€¢ Verify request is still active';
+                troubleshooting = 'â€¢ Budget ID may not existnâ€¢ Check budget request listnâ€¢ Verify request is still active';
 
             } else if (error.message.includes('500')) {
 
                 errorCause = 'Server internal error';
 
-                troubleshooting = 'â€¢ Database connection issue\nâ€¢ Server configuration problem\nâ€¢ Contact system administrator';
+                troubleshooting = 'â€¢ Database connection issuenâ€¢ Server configuration problemnâ€¢ Contact system administrator';
 
             } else if (error.message.includes('database') || error.message.includes('SQL')) {
 
                 errorCause = 'Database operation failed';
 
-                troubleshooting = 'â€¢ Database connection issue\nâ€¢ Workforce budget tables might not exist\nâ€¢ Contact system administrator';
+                troubleshooting = 'â€¢ Database connection issuenâ€¢ Workforce budget tables might not existnâ€¢ Contact system administrator';
 
             }
 
@@ -9525,7 +9545,7 @@ function modifyBudget(budgetId) {
 
                 troubleshooting: troubleshooting,
 
-                message: `âŒ Budget modification request failed!\n\nðŸ” Error Cause: ${errorCause}\n\nðŸ› ï¸ Troubleshooting:\n${troubleshooting}\n\nðŸ“ Technical Details:\n${error.message}\n\nðŸ’¡ Please fix the issue and try again.`,
+                message: `âŒ Budget modification request failed!nnðŸ” Error Cause: ${errorCause}nnðŸ› ï¸ Troubleshooting:n${troubleshooting}nnðŸ“ Technical Details:n${error.message}nnðŸ’¡ Please fix the issue and try again.`,
 
                 budgetId: budgetId,
 
@@ -9615,7 +9635,7 @@ function rejectBudget(budgetId) {
 
             showRealProblemNotification('SUCCESS', {
 
-                message: `âœ… Workforce budget rejected successfully!\n\nðŸ“‹ Details:\nâ€¢ Budget ID: ${budgetId}\nâ€¢ Rejection Reason: ${formData.rejectionReason}\nâ€¢ Rejected by: Managing Director\nâ€¢ Status: Rejected\nâ€¢ Database ID: ${data.id || budgetId}\n\nðŸŽ‰ Workforce budget request saved to database without page refresh!`,
+                message: `âœ… Workforce budget rejected successfully!nnðŸ“‹ Details:nâ€¢ Budget ID: ${budgetId}nâ€¢ Rejection Reason: ${formData.rejectionReason}nâ€¢ Rejected by: Managing Directornâ€¢ Status: Rejectednâ€¢ Database ID: ${data.id || budgetId}nnðŸŽ‰ Workforce budget request saved to database without page refresh!`,
 
                 budgetId: budgetId,
 
@@ -9651,31 +9671,31 @@ function rejectBudget(budgetId) {
 
                 errorCause = 'Network connection failed';
 
-                troubleshooting = 'â€¢ Check internet connection\nâ€¢ Verify server is running\nâ€¢ Try again in a moment';
+                troubleshooting = 'â€¢ Check internet connectionnâ€¢ Verify server is runningnâ€¢ Try again in a moment';
 
             } else if (error.message.includes('400')) {
 
                 errorCause = 'Invalid rejection data';
 
-                troubleshooting = 'â€¢ Fill all required fields correctly\nâ€¢ Check rejection reason selection\nâ€¢ Verify rejection details\nâ€¢ Ensure rejection details are provided';
+                troubleshooting = 'â€¢ Fill all required fields correctlynâ€¢ Check rejection reason selectionnâ€¢ Verify rejection detailsnâ€¢ Ensure rejection details are provided';
 
             } else if (error.message.includes('404')) {
 
                 errorCause = 'Workforce budget request not found';
 
-                troubleshooting = 'â€¢ Budget ID may not exist\nâ€¢ Check budget request list\nâ€¢ Verify request is still active';
+                troubleshooting = 'â€¢ Budget ID may not existnâ€¢ Check budget request listnâ€¢ Verify request is still active';
 
             } else if (error.message.includes('500')) {
 
                 errorCause = 'Server internal error';
 
-                troubleshooting = 'â€¢ Database connection issue\nâ€¢ Server configuration problem\nâ€¢ Contact system administrator';
+                troubleshooting = 'â€¢ Database connection issuenâ€¢ Server configuration problemnâ€¢ Contact system administrator';
 
             } else if (error.message.includes('database') || error.message.includes('SQL')) {
 
                 errorCause = 'Database operation failed';
 
-                troubleshooting = 'â€¢ Database connection issue\nâ€¢ Workforce budget tables might not exist\nâ€¢ Contact system administrator';
+                troubleshooting = 'â€¢ Database connection issuenâ€¢ Workforce budget tables might not existnâ€¢ Contact system administrator';
 
             }
 
@@ -9691,7 +9711,7 @@ function rejectBudget(budgetId) {
 
                 troubleshooting: troubleshooting,
 
-                message: `âŒ Workforce budget rejection failed!\n\nðŸ” Error Cause: ${errorCause}\n\nðŸ› ï¸ Troubleshooting:\n${troubleshooting}\n\nðŸ“ Technical Details:\n${error.message}\n\nðŸ’¡ Please fix the issue and try again.`,
+                message: `âŒ Workforce budget rejection failed!nnðŸ” Error Cause: ${errorCause}nnðŸ› ï¸ Troubleshooting:n${troubleshooting}nnðŸ“ Technical Details:n${error.message}nnðŸ’¡ Please fix the issue and try again.`,
 
                 budgetId: budgetId,
 
@@ -9719,7 +9739,7 @@ function generateWorkforceReport() {
 
     console.log('generateWorkforceReport() called');
 
-    customAlert('Generating comprehensive workforce report...\n\nReport will include all employee data, analytics, and trends.', 'Report Generation', 'info');
+    customAlert('Generating comprehensive workforce report...nnReport will include all employee data, analytics, and trends.', 'Report Generation', 'info');
 
     
 
@@ -9803,7 +9823,7 @@ function generateWorkforceReport() {
 
         if (employees.length === 0) {
 
-            customAlert('No employee data available for report generation.\n\nCreating sample report for demonstration...', 'No Data', 'warning');
+            customAlert('No employee data available for report generation.nnCreating sample report for demonstration...', 'No Data', 'warning');
 
             // Create sample data for demonstration
 
@@ -9877,7 +9897,7 @@ function generateWorkforceReport() {
 
         // Try to generate a sample report even if API fails
 
-        customAlert(`API Error: ${error.message}\n\nGenerating sample report for demonstration...`, 'API Error - Using Sample Data', 'warning');
+        customAlert(`API Error: ${error.message}nnGenerating sample report for demonstration...`, 'API Error - Using Sample Data', 'warning');
 
         
 
@@ -9993,17 +10013,17 @@ function generateEnhancedExcelReport(employees) {
 
         // Add summary section
 
-        reportContent += 'WORKFORCE COMPREHENSIVE REPORT\n';
+        reportContent += 'WORKFORCE COMPREHENSIVE REPORTn';
 
-        reportContent += `Generated on: ${new Date().toLocaleString()}\n`;
+        reportContent += `Generated on: ${new Date().toLocaleString()}n`;
 
-        reportContent += `Total Employees: ${stats.total}\n`;
+        reportContent += `Total Employees: ${stats.total}n`;
 
-        reportContent += `Active Employees: ${stats.active}\n`;
+        reportContent += `Active Employees: ${stats.active}n`;
 
-        reportContent += `Temporary Staff: ${stats.temporary}\n`;
+        reportContent += `Temporary Staff: ${stats.temporary}n`;
 
-        reportContent += `Senior Staff: ${stats.senior}\n\n`;
+        reportContent += `Senior Staff: ${stats.senior}nn`;
 
         console.log('Added summary section');
 
@@ -10011,19 +10031,19 @@ function generateEnhancedExcelReport(employees) {
 
         // Add department breakdown
 
-        reportContent += 'DEPARTMENT BREAKDOWN\n';
+        reportContent += 'DEPARTMENT BREAKDOWNn';
 
-        reportContent += 'Department,Employee Count,Percentage\n';
+        reportContent += 'Department,Employee Count,Percentagen';
 
         Object.entries(stats.departments).forEach(([dept, count]) => {
 
             const percentage = stats.total > 0 ? ((count / stats.total) * 100).toFixed(1) : '0.0';
 
-            reportContent += `"${dept}",${count},"${percentage}%"\n`;
+            reportContent += `"${dept}",${count},"${percentage}%"n`;
 
         });
 
-        reportContent += '\n';
+        reportContent += 'n';
 
         console.log('Added department breakdown');
 
@@ -10031,7 +10051,7 @@ function generateEnhancedExcelReport(employees) {
 
         // Add detailed employee data
 
-        reportContent += 'DETAILED EMPLOYEE DATA\n';
+        reportContent += 'DETAILED EMPLOYEE DATAn';
 
         const headers = [
 
@@ -10045,7 +10065,7 @@ function generateEnhancedExcelReport(employees) {
 
         
 
-        reportContent += headers.join(',') + '\n';
+        reportContent += headers.join(',') + 'n';
 
         console.log('Added employee data headers');
 
@@ -10085,7 +10105,7 @@ function generateEnhancedExcelReport(employees) {
 
             ].join(',');
 
-            reportContent += row + '\n';
+            reportContent += row + 'n';
 
         });
 
@@ -10095,17 +10115,17 @@ function generateEnhancedExcelReport(employees) {
 
         // Add analytics section
 
-        reportContent += '\nWORKFORCE ANALYTICS\n';
+        reportContent += 'nWORKFORCE ANALYTICSn';
 
-        reportContent += 'Metric,Value,Insight\n';
+        reportContent += 'Metric,Value,Insightn';
 
-        reportContent += `"Average Tenure","${stats.averageTenure} months","Employee retention indicator"\n`;
+        reportContent += `"Average Tenure","${stats.averageTenure} months","Employee retention indicator"n`;
 
-        reportContent += `"Department Count","${Object.keys(stats.departments).length}","Organizational complexity"\n`;
+        reportContent += `"Department Count","${Object.keys(stats.departments).length}","Organizational complexity"n`;
 
-        reportContent += `"Temporary Ratio","${stats.total > 0 ? ((stats.temporary / stats.total) * 100).toFixed(1) : '0.0'}%","Workforce flexibility"\n`;
+        reportContent += `"Temporary Ratio","${stats.total > 0 ? ((stats.temporary / stats.total) * 100).toFixed(1) : '0.0'}%","Workforce flexibility"n`;
 
-        reportContent += `"Senior Ratio","${stats.total > 0 ? ((stats.senior / stats.total) * 100).toFixed(1) : '0.0'}%","Leadership depth"\n`;
+        reportContent += `"Senior Ratio","${stats.total > 0 ? ((stats.senior / stats.total) * 100).toFixed(1) : '0.0'}%","Leadership depth"n`;
 
         console.log('Added analytics section');
 
@@ -10177,29 +10197,29 @@ function generateEnhancedExcelReport(employees) {
 
         customAlert(
 
-            `Comprehensive workforce report generated successfully!\n\n` +
+            `Comprehensive workforce report generated successfully!nn` +
 
-            `Report Details:\n` +
+            `Report Details:n` +
 
-            `Total Employees: ${stats.total}\n` +
+            `Total Employees: ${stats.total}n` +
 
-            `Active Employees: ${stats.active}\n` +
+            `Active Employees: ${stats.active}n` +
 
-            `Departments: ${Object.keys(stats.departments).length}\n` +
+            `Departments: ${Object.keys(stats.departments).length}n` +
 
-            `Report Format: Enhanced Excel CSV\n` +
+            `Report Format: Enhanced Excel CSVn` +
 
-            `Filename: ${filename}\n\n` +
+            `Filename: ${filename}nn` +
 
-            `Report includes:\n` +
+            `Report includes:n` +
 
-            `Executive Summary\n` +
+            `Executive Summaryn` +
 
-            `Department Breakdown\n` +
+            `Department Breakdownn` +
 
-            `Detailed Employee Data\n` +
+            `Detailed Employee Datan` +
 
-            `Workforce Analytics\n\n` +
+            `Workforce Analyticsnn` +
 
             `File downloaded to your default download folder.`,
 
@@ -10233,7 +10253,7 @@ function generateEnhancedExcelReport(employees) {
 
         // Show error message and try fallback
 
-        customAlert(`Error generating enhanced report: ${error.message}\n\nTrying basic CSV format...`, 'Report Error - Trying Fallback', 'warning');
+        customAlert(`Error generating enhanced report: ${error.message}nnTrying basic CSV format...`, 'Report Error - Trying Fallback', 'warning');
 
         
 
@@ -10247,7 +10267,7 @@ function generateEnhancedExcelReport(employees) {
 
             console.error('Fallback also failed:', fallbackError);
 
-            customAlert(`Both enhanced and basic report generation failed.\n\nError: ${fallbackError.message}\n\nPlease check browser settings and try again.`, 'Report Generation Failed', 'error');
+            customAlert(`Both enhanced and basic report generation failed.nnError: ${fallbackError.message}nnPlease check browser settings and try again.`, 'Report Generation Failed', 'error');
 
         }
 
@@ -10413,7 +10433,7 @@ function generateCSVReport(employees) {
 
         ].join(','))
 
-    ].join('\n');
+    ].join('n');
 
     
 
@@ -10445,7 +10465,7 @@ function generateCSVReport(employees) {
 
     
 
-    customAlert(`CSV report generated successfully!\n\nðŸ“Š Report Details:\nâ€¢ Total Employees: ${employees.length}\nâ€¢ Report Format: CSV\nâ€¢ Filename: ${filename}\n\nðŸ“ File downloaded to your default download folder.`, 'CSV Report Generated', 'success');
+    customAlert(`CSV report generated successfully!nnðŸ“Š Report Details:nâ€¢ Total Employees: ${employees.length}nâ€¢ Report Format: CSVnâ€¢ Filename: ${filename}nnðŸ“ File downloaded to your default download folder.`, 'CSV Report Generated', 'success');
 
 }
 
@@ -10453,7 +10473,7 @@ function generateCSVReport(employees) {
 
 function approveHiringPlan() {
 
-    customAlert('Hiring plan approved!\n\nCompany may proceed with planned recruitment activities.', 'Hiring Plan Approved', 'success');
+    customAlert('Hiring plan approved!nnCompany may proceed with planned recruitment activities.', 'Hiring Plan Approved', 'success');
 
 }
 
@@ -10461,7 +10481,7 @@ function approveHiringPlan() {
 
 function reviewOrgStructure() {
 
-    customAlert('Opening organization structure review interface...\n\nThis will show current reporting lines and department hierarchies.', 'Organization Structure', 'info');
+    customAlert('Opening organization structure review interface...nnThis will show current reporting lines and department hierarchies.', 'Organization Structure', 'info');
 
 }
 
@@ -10619,7 +10639,7 @@ async function saveEmploymentAction() {
 
         if (!rawAction.employeeId || !rawAction.actionType || !rawAction.actionDate || !rawAction.reasonCategory || !rawAction.actionDetails) {
 
-            customAlert('Please fill in all required fields:\n\nâ€¢ Employee\nâ€¢ Action Type\nâ€¢ Effective Date\nâ€¢ Reason Category\nâ€¢ Detailed Reason', "Validation Error", "error");
+            customAlert('Please fill in all required fields:nnâ€¢ Employeenâ€¢ Action Typenâ€¢ Effective Datenâ€¢ Reason Categorynâ€¢ Detailed Reason', "Validation Error", "error");
 
             return false;
 
@@ -10731,7 +10751,7 @@ async function saveEmploymentAction() {
 
         
 
-        customAlert(`Employment action executed successfully!\n\nAction: ${action.actionType.toUpperCase()}\nEmployee ID: ${action.employeeId}\nEffective Date: ${action.actionDate}\nAction ID: ${data.actionId}\n\nðŸŽ‰ Employment action saved to worker_action table!`, "Action Completed", "success");
+        customAlert(`Employment action executed successfully!nnAction: ${action.actionType.toUpperCase()}nEmployee ID: ${action.employeeId}nEffective Date: ${action.actionDate}nAction ID: ${data.actionId}nnðŸŽ‰ Employment action saved to worker_action table!`, "Action Completed", "success");
 
         
 
@@ -10759,7 +10779,7 @@ async function saveEmploymentAction() {
 
         console.error('âŒ Error message:', error.message);
 
-        customAlert(`Failed to process employment action: ${error.message}\n\nPlease check:\nâ€¢ All required fields are filled\nâ€¢ Network connection is stable\nâ€¢ Server is running properly\n\nCheck browser console for more details.`, "Processing Error", "error");
+        customAlert(`Failed to process employment action: ${error.message}nnPlease check:nâ€¢ All required fields are fillednâ€¢ Network connection is stablenâ€¢ Server is running properlynnCheck browser console for more details.`, "Processing Error", "error");
 
         return false;
 
@@ -10791,7 +10811,7 @@ function cancelEmploymentAction() {
 
 function exportWorkforceReport() {
 
-    customAlert('Exporting workforce report...\n\nReport will be downloaded as Excel file with all metrics.', 'Export Report', 'info');
+    customAlert('Exporting workforce report...nnReport will be downloaded as Excel file with all metrics.', 'Export Report', 'info');
 
 }
 
@@ -10799,7 +10819,7 @@ function exportWorkforceReport() {
 
 function scheduleBoardReview() {
 
-    customAlert('Board review scheduled...\n\nMeeting invitation sent to all board members for next quarter.', 'Board Review Scheduled', 'success');
+    customAlert('Board review scheduled...nnMeeting invitation sent to all board members for next quarter.', 'Board Review Scheduled', 'success');
 
 }
 
@@ -10807,7 +10827,7 @@ function scheduleBoardReview() {
 
 function generateComplianceReport() {
 
-    customAlert('Generating compliance report...\n\nFull compliance audit report will be prepared for board review.', 'Compliance Report', 'info');
+    customAlert('Generating compliance report...nnFull compliance audit report will be prepared for board review.', 'Compliance Report', 'info');
 
 }
 
@@ -10901,7 +10921,7 @@ function registerEmployee(){
 
                             <label for="empFullName">Full Name *</label>
 
-                            <input type="text" id="empFullName" name="full_name" placeholder="Enter employee full name" required>
+                            <input type="text" id="empFullName" name="full_name" placeholder="Enter employee full name" required />
 
                         </div>
 
@@ -10909,7 +10929,7 @@ function registerEmployee(){
 
                             <label for="empPhone">Phone Number *</label>
 
-                            <input type="tel" id="empPhone" name="phone_number" placeholder="+255 XXX XXX XXX" required>
+                            <input type="tel" id="empPhone" name="phone_number" placeholder="+255 XXX XXX XXX" required />
 
                         </div>
 
@@ -10923,7 +10943,7 @@ function registerEmployee(){
 
                             <label for="empGmail">Gmail Address *</label>
 
-                            <input type="email" id="empGmail" name="gmail_address" placeholder="employee@gmail.com" required>
+                            <input type="email" id="empGmail" name="gmail_address" placeholder="employee@gmail.com" required />
 
                         </div>
 
@@ -10931,7 +10951,7 @@ function registerEmployee(){
 
                             <label for="empNIDA">NIDA Number *</label>
 
-                            <input type="text" id="empNIDA" name="nida_number" placeholder="National ID Number" required>
+                            <input type="text" id="empNIDA" name="nida_number" placeholder="National ID Number" required />
 
                         </div>
 
@@ -10945,7 +10965,7 @@ function registerEmployee(){
 
                             <label for="empPassport">Passport Number</label>
 
-                            <input type="text" id="empPassport" name="passport_number" placeholder="Passport Number (if applicable)">
+                            <input type="text" id="empPassport" name="passport_number" placeholder="Passport Number (if applicable)" />
 
                         </div>
 
@@ -11039,7 +11059,7 @@ function registerEmployee(){
 
                         <label>Agreement Document</label>
 
-                        <input type="file" id="empAgreement" accept=".pdf,.doc,.docx">
+                        <input type="file" id="empAgreement" accept=".pdf,.doc,.docx" />
 
                         <small>Upload employment agreement (PDF/DOC)</small>
 
@@ -11051,7 +11071,7 @@ function registerEmployee(){
 
                         <label>CV/Resume</label>
 
-                        <input type="file" id="empCV" accept=".pdf,.doc,.docx">
+                        <input type="file" id="empCV" accept=".pdf,.doc,.docx" />
 
                         <small>Upload curriculum vitae (PDF/DOC)</small>
 
@@ -11063,7 +11083,7 @@ function registerEmployee(){
 
                         <label>Profile Picture</label>
 
-                        <input type="file" id="empProfile" accept="image/*">
+                        <input type="file" id="empProfile" accept="image/*" />
 
                         <small>Upload passport size photo</small>
 
@@ -11419,14 +11439,14 @@ function generatePayslipExcel(payslips, month) {
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = 'Payslips_' + month.replace(/\s+/g, '_') + '.xls';
+    a.download = 'Payslips_' + month.replace(/s+/g, '_') + '.xls';
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
 
     console.log('âœ… Excel payslip file downloaded:', a.download);
-    customAlert(`Payslips generated successfully!\n\nMonth: ${month}\nEmployees: ${payslips.length}\nFile: ${a.download}\n\nThe Excel file has been downloaded.`, 'Payslips Generated', 'success');
+    customAlert(`Payslips generated successfully!nnMonth: ${month}nEmployees: ${payslips.length}nFile: ${a.download}nnThe Excel file has been downloaded.`, 'Payslips Generated', 'success');
 
     // Show results in the UI
     const resultsDiv = document.getElementById('payslipResults');
@@ -15360,7 +15380,7 @@ function assignWorker(){
 
                         <label>Role in Project *</label>
 
-                        <input type="text" id="assignRole" placeholder="e.g., Site Supervisor, Engineer, Labor" required>
+                        <input type="text" id="assignRole" placeholder="e.g., Site Supervisor, Engineer, Labor" required />
 
                     </div>
 
@@ -15370,7 +15390,7 @@ function assignWorker(){
 
                         <label>Start Date *</label>
 
-                        <input type="date" id="assignStartDate" required>
+                        <input type="date" id="assignStartDate" required />
 
                     </div>
 
@@ -15380,7 +15400,7 @@ function assignWorker(){
 
                         <label>End Date</label>
 
-                        <input type="date" id="assignEndDate">
+                        <input type="date" id="assignEndDate" />
 
                         <small>Leave empty if ongoing</small>
 
@@ -15626,7 +15646,7 @@ function attendance(){
 
                                 <label>Date *</label>
 
-                                <input type="date" id="attDate" required>
+                                <input type="date" id="attDate" required />
 
                             </div>
 
@@ -15652,7 +15672,7 @@ function attendance(){
 
                                 <label>Check In Time</label>
 
-                                <input type="time" id="attCheckIn">
+                                <input type="time" id="attCheckIn" />
 
                             </div>
 
@@ -15660,7 +15680,7 @@ function attendance(){
 
                                 <label>Check Out Time</label>
 
-                                <input type="time" id="attCheckOut">
+                                <input type="time" id="attCheckOut" />
 
                             </div>
 
@@ -15896,7 +15916,7 @@ async function loadEmployeesForAttendance() {
 
 async function loadTodayAttendanceSummary() {
 
-    console.log('ðŸ”„ Loading today\'s attendance summary...');
+    console.log("ðŸ”„ Loading today's attendance summary...");
 
     
 
@@ -15978,7 +15998,7 @@ async function loadTodayAttendanceSummary() {
 
         const attendanceData = await response.json();
 
-        console.log('ðŸ“Š Today\'s attendance data:', attendanceData);
+        console.log("ðŸ“Š Today's attendance data:", attendanceData);
 
         
 
@@ -16378,7 +16398,7 @@ function saveEmployee() {
 
         if (agreementFile || cvFile || profileFile) {
 
-            fileUploadMessage = `\nðŸ“„ Files ready for upload: ${[agreementFile, cvFile, profileFile].filter(f => f).length} file(s)`;
+            fileUploadMessage = `nðŸ“„ Files ready for upload: ${[agreementFile, cvFile, profileFile].filter(f => f).length} file(s)`;
 
         }
 
@@ -16386,7 +16406,7 @@ function saveEmployee() {
 
         // Success message
 
-        customAlert(`Employee ${employee.fullName} registered successfully!${fileUploadMessage}\n\nðŸ“‹ Details:\nâ€¢ ID: ${data.id}\nâ€¢ Department: ${employee.department}\nâ€¢ Job Category: ${employee.jobCategory}\nâ€¢ Contract: ${employee.contract}\nâ€¢ Status: ${employee.status}\n\nâœ… Employee has been added to the database.`, "Employee Registered", "success");
+        customAlert(`Employee ${employee.fullName} registered successfully!${fileUploadMessage}nnðŸ“‹ Details:nâ€¢ ID: ${data.id}nâ€¢ Department: ${employee.department}nâ€¢ Job Category: ${employee.jobCategory}nâ€¢ Contract: ${employee.contract}nâ€¢ Status: ${employee.status}nnâœ… Employee has been added to the database.`, "Employee Registered", "success");
 
         
 
@@ -16414,11 +16434,12 @@ function saveEmployee() {
 
         console.error('Error registering employee:', error);
 
-        customAlert(`Failed to register employee: ${error.message}\n\nPlease check:\nâ€¢ All fields are filled correctly\nâ€¢ Email address is unique\nâ€¢ Network connection is stable`, "Registration Error", "error");
+        customAlert(`Failed to register employee: ${error.message}nnPlease check:nâ€¢ All fields are filled correctlynâ€¢ Email address is uniquenâ€¢ Network connection is stable`, "Registration Error", "error");
 
         return false;
 
     });
+            window.isSavingIncident = false;
 
     
 
@@ -16484,7 +16505,7 @@ function saveAssignment() {
 
     var projectOption = projectSelect.options[projectSelect.selectedIndex];
 
-    var projectName = projectOption ? (projectOption.getAttribute('data-name') || projectOption.text.replace(/\s*\(.*\)\s*$/, '')) : '';
+    var projectName = projectOption ? (projectOption.getAttribute('data-name') || projectOption.text.replace(/s*(.*)s*$/, '')) : '';
 
     
 
@@ -16522,7 +16543,7 @@ function saveAssignment() {
 
     if (!assignment.employee_id || !assignment.project_id || !assignment.role_in_project || !assignment.start_date) {
 
-        customAlert('Please fill in all required fields:\n\n- Employee\n- Project\n- Role\n- Start Date', "Validation Error", "error");
+        customAlert('Please fill in all required fields:nn- Employeen- Projectn- Rolen- Start Date', "Validation Error", "error");
 
         window.assignmentSubmitting = false;
 
@@ -16588,7 +16609,7 @@ function saveAssignment() {
 
         customAlert(
 
-            'Worker assigned to project successfully!\n\nEmployee: ' + assignment.employee_name + '\nProject: ' + assignment.project_name + '\nRole: ' + assignment.role_in_project + '\nAssignment ID: ' + assignmentId,
+            'Worker assigned to project successfully!nnEmployee: ' + assignment.employee_name + 'nProject: ' + assignment.project_name + 'nRole: ' + assignment.role_in_project + 'nAssignment ID: ' + assignmentId,
 
             "Assignment Completed",
 
@@ -16620,7 +16641,7 @@ function saveAssignment() {
 
         customAlert(
 
-            'Failed to assign worker: ' + error.message + '\n\nPlease check that all fields are filled and the server is running.',
+            'Failed to assign worker: ' + error.message + 'nnPlease check that all fields are filled and the server is running.',
 
             "Assignment Error",
 
@@ -16674,7 +16695,7 @@ function saveAttendance() {
 
     if (!attendance.attendance_date || !attendance.employee_id || !attendance.attendance_status) {
 
-        customAlert('Please fill in all required fields:\n\nÂ· Date\nÂ· Employee\nÂ· Status', "Validation Error", "error");
+        customAlert('Please fill in all required fields:nnÂ· DatenÂ· EmployeenÂ· Status', "Validation Error", "error");
 
         return false;
 
@@ -17214,7 +17235,7 @@ function displayAttendanceRecords(records) {
 
 function viewAttendanceDetails(recordId) {
 
-    customAlert(`Viewing attendance record details for ID: ${recordId}\n\nFull attendance details including check-in/out times, work hours, and notes will be displayed.`, "Attendance Details", "info");
+    customAlert(`Viewing attendance record details for ID: ${recordId}nnFull attendance details including check-in/out times, work hours, and notes will be displayed.`, "Attendance Details", "info");
 
 }
 
@@ -17222,7 +17243,7 @@ function viewAttendanceDetails(recordId) {
 
 function editAttendance(recordId) {
 
-    customAlert(`Editing attendance record ${recordId}...\n\nAttendance editor will open for modifications and updates.`, "Edit Attendance", "info");
+    customAlert(`Editing attendance record ${recordId}...nnAttendance editor will open for modifications and updates.`, "Edit Attendance", "info");
 
 }
 
@@ -17320,7 +17341,7 @@ function createWorkerAccount(){
 
                             <label>Employee ID *</label>
 
-                            <input type="text" id="workerEmpID" placeholder="e.g., EMP001" required>
+                            <input type="text" id="workerEmpID" placeholder="e.g., EMP001" required />
 
                         </div>
 
@@ -17328,7 +17349,7 @@ function createWorkerAccount(){
 
                             <label>Full Name *</label>
 
-                            <input type="text" id="workerFullName" placeholder="Worker full name" required>
+                            <input type="text" id="workerFullName" placeholder="Worker full name" required />
 
                         </div>
 
@@ -17342,7 +17363,7 @@ function createWorkerAccount(){
 
                             <label>Work Email *</label>
 
-                            <input type="email" id="workerEmail" placeholder="worker@kashtec.co.tz" required>
+                            <input type="email" id="workerEmail" placeholder="worker@kashtec.co.tz" required />
 
                         </div>
 
@@ -17350,7 +17371,7 @@ function createWorkerAccount(){
 
                             <label>Phone Number *</label>
 
-                            <input type="tel" id="workerPhone" placeholder="+255 XXX XXX XXX" required>
+                            <input type="tel" id="workerPhone" placeholder="+255 XXX XXX XXX" required />
 
                         </div>
 
@@ -17388,7 +17409,7 @@ function createWorkerAccount(){
 
                             <label>Job Title *</label>
 
-                            <input type="text" id="workerJobTitle" placeholder="e.g., Site Engineer, Foreman" required>
+                            <input type="text" id="workerJobTitle" placeholder="e.g., Site Engineer, Foreman" required />
 
                         </div>
 
@@ -17442,7 +17463,7 @@ function createWorkerAccount(){
 
                         <label>Temporary Password *</label>
 
-                        <input type="password" id="workerPassword" placeholder="Enter temporary password" required>
+                        <input type="password" id="workerPassword" placeholder="Enter temporary password" required />
 
                         <small>Worker will be prompted to change on first login</small>
 
@@ -17464,7 +17485,7 @@ function createWorkerAccount(){
 
                         <label>Profile Picture</label>
 
-                        <input type="file" id="workerProfile" accept="image/*">
+                        <input type="file" id="workerProfile" accept="image/*" />
 
                         <small>Upload passport size photo</small>
 
@@ -17476,7 +17497,7 @@ function createWorkerAccount(){
 
                         <label>ID Document</label>
 
-                        <input type="file" id="workerID" accept=".pdf,.jpg,.jpeg,.png">
+                        <input type="file" id="workerID" accept=".pdf,.jpg,.jpeg,.png" />
 
                         <small>Upload ID document (PDF or Image)</small>
 
@@ -17488,7 +17509,7 @@ function createWorkerAccount(){
 
                         <label>Contract Document</label>
 
-                        <input type="file" id="workerContract" accept=".pdf,.doc,.docx">
+                        <input type="file" id="workerContract" accept=".pdf,.doc,.docx" />
 
                         <small>Upload employment contract (PDF/DOC)</small>
 
@@ -17538,7 +17559,7 @@ function updateEmployeeRecords(){
 
             <div class="search-section">
 
-                <input type="text" id="searchEmployee" placeholder="Search by name, ID, or department...">
+                <input type="text" id="searchEmployee" placeholder="Search by name, ID, or department..." />
 
                 <button class="action" onclick="loadEmployeeForUpdate()">Search Employee</button>
 
@@ -17560,7 +17581,7 @@ function updateEmployeeRecords(){
 
                             <label>Employee ID</label>
 
-                            <input type="text" id="updateEmpID" readonly>
+                            <input type="text" id="updateEmpID" readonly />
 
                         </div>
 
@@ -17568,7 +17589,7 @@ function updateEmployeeRecords(){
 
                             <label>Full Name *</label>
 
-                            <input type="text" id="updateFullName" required>
+                            <input type="text" id="updateFullName" required />
 
                         </div>
 
@@ -17582,7 +17603,7 @@ function updateEmployeeRecords(){
 
                             <label>Phone Number *</label>
 
-                            <input type="tel" id="updatePhone" required>
+                            <input type="tel" id="updatePhone" required />
 
                         </div>
 
@@ -17590,7 +17611,7 @@ function updateEmployeeRecords(){
 
                             <label>Gmail Address *</label>
 
-                            <input type="email" id="updateGmail" required>
+                            <input type="email" id="updateGmail" required />
 
                         </div>
 
@@ -17789,6 +17810,23 @@ function manageLeaveContracts(){
                 <div id="leaveTab" class="tab-content">
 
                     <h4>Leave Management</h4>
+                    
+                    <div class="workforce-table-container" style="margin-bottom: 20px;">
+                        <table class="workforce-table" id="leaveTable">
+                            <thead>
+                                <tr>
+                                    <th>Employee</th>
+                                    <th>Leave Type</th>
+                                    <th>Description</th>
+                                    <th>Priority</th>
+                                    <th>Due Date</th>
+                                </tr>
+                            </thead>
+                            <tbody id="leaveTableBody">
+                                <tr><td colspan="5" style="text-align: center;">Loading data...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
 
                     <form id="leaveForm" onsubmit="return saveLeaveRequest()">
 
@@ -17842,7 +17880,7 @@ function manageLeaveContracts(){
 
                                 <label>Start Date *</label>
 
-                                <input type="date" id="leaveStartDate" required>
+                                <input type="date" id="leaveStartDate" required />
 
                             </div>
 
@@ -17850,7 +17888,7 @@ function manageLeaveContracts(){
 
                                 <label>End Date *</label>
 
-                                <input type="date" id="leaveEndDate" required>
+                                <input type="date" id="leaveEndDate" required />
 
                             </div>
 
@@ -17864,7 +17902,7 @@ function manageLeaveContracts(){
 
                                 <label>Days Requested</label>
 
-                                <input type="number" id="leaveDays" readonly placeholder="Auto-calculated">
+                                <input type="number" id="leaveDays" readonly placeholder="Auto-calculated" />
 
                             </div>
 
@@ -17915,6 +17953,23 @@ function manageLeaveContracts(){
                 <div id="contractsTab" class="tab-content hidden">
 
                     <h4>Contract Management</h4>
+                    
+                    <div class="workforce-table-container" style="margin-bottom: 20px;">
+                        <table class="workforce-table" id="contractsTable">
+                            <thead>
+                                <tr>
+                                    <th>Employee</th>
+                                    <th>Contract Type</th>
+                                    <th>Description</th>
+                                    <th>Priority</th>
+                                    <th>Due Date</th>
+                                </tr>
+                            </thead>
+                            <tbody id="contractsTableBody">
+                                <tr><td colspan="5" style="text-align: center;">Loading data...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
 
                     <form id="contractForm" onsubmit="return saveContract()">
 
@@ -17964,7 +18019,7 @@ function manageLeaveContracts(){
 
                                 <label>Start Date *</label>
 
-                                <input type="date" id="contractStartDate" required>
+                                <input type="date" id="contractStartDate" required />
 
                             </div>
 
@@ -17972,7 +18027,7 @@ function manageLeaveContracts(){
 
                                 <label>End Date</label>
 
-                                <input type="date" id="contractEndDate">
+                                <input type="date" id="contractEndDate" />
 
                                 <small>Leave empty for permanent contracts</small>
 
@@ -17988,7 +18043,7 @@ function manageLeaveContracts(){
 
                                 <label>Salary (TZS) *</label>
 
-                                <input type="number" id="contractSalary" placeholder="Monthly salary" required>
+                                <input type="number" id="contractSalary" placeholder="Monthly salary" required />
 
                             </div>
 
@@ -18030,7 +18085,7 @@ function manageLeaveContracts(){
 
                             <label>Contract Document</label>
 
-                            <input type="file" id="contractDocument" accept=".pdf,.doc,.docx">
+                            <input type="file" id="contractDocument" accept=".pdf,.doc,.docx" />
 
                             <small>Upload signed contract document</small>
 
@@ -18069,7 +18124,81 @@ function manageLeaveContracts(){
     // Load real employees for both forms
 
     loadEmployeesForLeaveContracts();
+    fetchLeaveContractsTableData();
 
+}
+
+async function fetchLeaveContractsTableData() {
+    console.log('ðŸ”„ Fetching leave and contracts data...');
+    try {
+        const baseUrl = window.location.origin;
+        const response = await fetch(`${baseUrl}/api/work/hr`, {
+            method: 'GET',
+            headers: {
+                'Accept': 'application/json',
+                'Authorization': `Bearer ${sessionManager.getAuthToken()}`
+            }
+        });
+
+        if (!response.ok) throw new Error('Failed to fetch data');
+
+        const works = await response.json();
+        const leaveTbody = document.getElementById('leaveTableBody');
+        const contractsTbody = document.getElementById('contractsTableBody');
+        
+        if (leaveTbody) leaveTbody.innerHTML = '';
+        if (contractsTbody) contractsTbody.innerHTML = '';
+        
+        const leaveWorks = works.filter(w => w.work_type === 'Leave Request' || w.work_type === 'Leave Management');
+        const contractWorks = works.filter(w => w.work_type === 'Contract Management');
+
+        if (leaveTbody) {
+            if (leaveWorks.length === 0) {
+                leaveTbody.innerHTML = '<tr><td colspan="5" style="text-align: center;">No leave requests found.</td></tr>';
+            } else {
+                leaveWorks.forEach(w => {
+                    let employee = w.work_description ? w.work_description.split('\\n')[0].replace('Leave request for ', '') : 'N/A';
+                    
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td><strong>${employee}</strong></td>
+                        <td><span class="status-badge status-active">${w.work_title ? w.work_title.replace('Leave Request - ', '') : 'Leave Request'}</span></td>
+                        <td><div style="max-width: 250px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${w.work_description || ''}">${w.work_description ? w.work_description.replace(/\\n/g, '<br>') : 'N/A'}</div></td>
+                        <td>${w.priority || 'N/A'}</td>
+                        <td>${w.due_date || 'N/A'}</td>
+                    `;
+                    leaveTbody.appendChild(tr);
+                });
+            }
+        }
+        
+        if (contractsTbody) {
+            if (contractWorks.length === 0) {
+                contractsTbody.innerHTML = '<tr><td colspan="5" style="text-align: center;">No contracts found.</td></tr>';
+            } else {
+                contractWorks.forEach(w => {
+                    let employee = w.work_description ? w.work_description.split('\\n')[0].replace('Contract for ', '') : 'N/A';
+                    
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td><strong>${employee}</strong></td>
+                        <td><span class="status-badge status-contract">${w.work_title ? w.work_title.replace('Contract - ', '') : 'Contract'}</span></td>
+                        <td><div style="max-width: 250px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${w.work_description || ''}">${w.work_description ? w.work_description.replace(/\\n/g, '<br>') : 'N/A'}</div></td>
+                        <td>${w.priority || 'N/A'}</td>
+                        <td>${w.due_date || 'N/A'}</td>
+                    `;
+                    contractsTbody.appendChild(tr);
+                });
+            }
+        }
+
+    } catch (error) {
+        console.error('â Œ Error fetching leave contracts data:', error);
+        const leaveTbody = document.getElementById('leaveTableBody');
+        const contractsTbody = document.getElementById('contractsTableBody');
+        if (leaveTbody) leaveTbody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: #dc3545;">Failed to load data</td></tr>';
+        if (contractsTbody) contractsTbody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: #dc3545;">Failed to load data</td></tr>';
+    }
 }
 
 
@@ -18318,7 +18447,7 @@ async function testAPIConnection() {
 
         console.error('âŒ API connection test failed:', error);
 
-        customAlert(`âŒ API connection failed: ${error.message}\n\nCheck browser console for more details.`, 'Error', 'error');
+        customAlert(`âŒ API connection failed: ${error.message}nnCheck browser console for more details.`, 'Error', 'error');
 
     }
 
@@ -18454,9 +18583,9 @@ function saveWorkerAccount() {
 
         if (missingFields.length > 0) {
 
-            const missingFieldsText = missingFields.map(field => `â€¢ ${field}`).join('\n');
+            const missingFieldsText = missingFields.map(field => `â€¢ ${field}`).join('n');
 
-            customAlert(`Please fill in all required fields:\n\n${missingFieldsText}`, "Validation Error", "error");
+            customAlert(`Please fill in all required fields:nn${missingFieldsText}`, "Validation Error", "error");
 
             window.workerAccountSubmitting = false;
 
@@ -18596,7 +18725,7 @@ function saveWorkerAccount() {
 
                 console.log('âš ï¸ Worker account already exists - showing user notification');
 
-                customAlert(`âš ï¸ Worker account already exists!\n\nðŸ“‹ Details:\nâ€¢ Email: ${email}\nâ€¢ Employee ID: ${empID}\n\nðŸ’¡ This worker account is already registered in the system.\n\nPlease use a different email address or check if the account already exists.`, "Account Already Exists", "warning");
+                customAlert(`âš ï¸ Worker account already exists!nnðŸ“‹ Details:nâ€¢ Email: ${email}nâ€¢ Employee ID: ${empID}nnðŸ’¡ This worker account is already registered in the system.nnPlease use a different email address or check if the account already exists.`, "Account Already Exists", "warning");
 
                 
 
@@ -18622,7 +18751,7 @@ function saveWorkerAccount() {
 
                     const missingFieldsText = missingFields.length > 0 
 
-                        ? '\n\nâŒ Missing required fields:\n' + missingFields.map(field => `â€¢ ${field}`).join('\n')
+                        ? 'nnâŒ Missing required fields:n' + missingFields.map(field => `â€¢ ${field}`).join('n')
 
                         : '';
 
@@ -18660,7 +18789,7 @@ function saveWorkerAccount() {
 
             // Success message
 
-            customAlert(`âœ… Worker account created successfully!\n\nðŸ“‹ Details:\nâ€¢ Employee ID: ${empID}\nâ€¢ Name: ${fullName}\nâ€¢ Email: ${email}\nâ€¢ Department: ${department}\nâ€¢ Job Title: ${jobTitle}\nâ€¢ Account Type: ${accountType}\nâ€¢ Access Level: ${accessLevel}\n\nðŸŽ‰ Worker account saved to database!`, "Worker Account Created", "success");
+            customAlert(`âœ… Worker account created successfully!nnðŸ“‹ Details:nâ€¢ Employee ID: ${empID}nâ€¢ Name: ${fullName}nâ€¢ Email: ${email}nâ€¢ Department: ${department}nâ€¢ Job Title: ${jobTitle}nâ€¢ Account Type: ${accountType}nâ€¢ Access Level: ${accessLevel}nnðŸŽ‰ Worker account saved to database!`, "Worker Account Created", "success");
 
             
 
@@ -18728,7 +18857,7 @@ function saveWorkerAccount() {
 
             
 
-            customAlert(`âŒ Failed to create worker account!\n\nðŸ” Error: ${errorMessage}\n\nðŸ’¡ Please fix the issue and try again.`, "Account Creation Failed", "error");
+            customAlert(`âŒ Failed to create worker account!nnðŸ” Error: ${errorMessage}nnðŸ’¡ Please fix the issue and try again.`, "Account Creation Failed", "error");
 
         })
 
@@ -18746,7 +18875,7 @@ function saveWorkerAccount() {
 
         console.error('âŒ Error saving worker account:', error);
 
-        customAlert(`Unexpected error: ${error.message}\n\nPlease check browser console for details.`, "System Error", "error");
+        customAlert(`Unexpected error: ${error.message}nnPlease check browser console for details.`, "System Error", "error");
 
         window.workerAccountSubmitting = false;
 
@@ -19638,7 +19767,7 @@ function saveEmployeeUpdate() {
 
         customAlert(
 
-            `Employee record updated successfully!\n\nName: ${updatedEmployee.fullName}\nDepartment: ${updatedEmployee.department}\nStatus: ${updatedEmployee.status}`, 
+            `Employee record updated successfully!nnName: ${updatedEmployee.fullName}nDepartment: ${updatedEmployee.department}nStatus: ${updatedEmployee.status}`, 
 
             "Employee Updated", 
 
@@ -19664,7 +19793,7 @@ function saveEmployeeUpdate() {
 
         console.error('âŒ Error updating employee:', error);
 
-        customAlert(`Failed to update employee: ${error.message}\n\nPlease check the employee ID and try again.`, 'Update Failed', 'error');
+        customAlert(`Failed to update employee: ${error.message}nnPlease check the employee ID and try again.`, 'Update Failed', 'error');
 
     })
 
@@ -19740,7 +19869,7 @@ function saveLeaveRequest() {
 
     if (!leave.employee || !leave.leaveType || !leave.startDate || !leave.endDate || !leave.days) {
 
-        customAlert('Please fill in all required fields:\n\nâ€¢ Employee\nâ€¢ Leave Type\nâ€¢ Start Date\nâ€¢ End Date\nâ€¢ Days', "Validation Error", "error");
+        customAlert('Please fill in all required fields:nnâ€¢ Employeenâ€¢ Leave Typenâ€¢ Start Datenâ€¢ End Datenâ€¢ Days', "Validation Error", "error");
 
         window.leaveSubmitting = false;
 
@@ -19758,7 +19887,7 @@ function saveLeaveRequest() {
 
         work_title: `Leave Request - ${leave.leaveType}`,
 
-        work_description: `Leave request for ${leave.employee}\n\nReason: ${leave.reason}\nDuration: ${leave.days} days\nFrom: ${leave.startDate}\nTo: ${leave.endDate}`,
+        work_description: `Leave request for ${leave.employee}nnReason: ${leave.reason}nDuration: ${leave.days} daysnFrom: ${leave.startDate}nTo: ${leave.endDate}`,
 
         priority: leave.status === 'urgent' ? 'High' : 'Medium',
 
@@ -19822,7 +19951,7 @@ function saveLeaveRequest() {
 
         
 
-        customAlert(`Leave request saved successfully!\n\nEmployee: ${leave.employee}\nLeave Type: ${leave.leaveType}\nDays: ${leave.days}\nRequest ID: ${data.id}\n\nðŸŽ‰ Leave request saved to database!`, "Leave Request Saved", "success");
+        customAlert(`Leave request saved successfully!nnEmployee: ${leave.employee}nLeave Type: ${leave.leaveType}nDays: ${leave.days}nRequest ID: ${data.id}nnðŸŽ‰ Leave request saved to database!`, "Leave Request Saved", "success");
 
         
 
@@ -19834,7 +19963,7 @@ function saveLeaveRequest() {
 
         console.error('âŒ Error saving leave request:', error);
 
-        customAlert(`Failed to save leave request: ${error.message}\n\nPlease check:\nâ€¢ All required fields are filled\nâ€¢ Network connection is stable\nâ€¢ Server is running properly`, "Save Error", "error");
+        customAlert(`Failed to save leave request: ${error.message}nnPlease check:nâ€¢ All required fields are fillednâ€¢ Network connection is stablenâ€¢ Server is running properly`, "Save Error", "error");
 
     })
 
@@ -19900,7 +20029,7 @@ function saveContract() {
 
     if (!contract.employee || !contract.contractType || !contract.startDate || !contract.salary) {
 
-        customAlert('Please fill in all required fields:\n\nâ€¢ Employee\nâ€¢ Contract Type\nâ€¢ Start Date\nâ€¢ Salary', "Validation Error", "error");
+        customAlert('Please fill in all required fields:nnâ€¢ Employeenâ€¢ Contract Typenâ€¢ Start Datenâ€¢ Salary', "Validation Error", "error");
 
         window.contractSubmitting = false;
 
@@ -19918,7 +20047,7 @@ function saveContract() {
 
         work_title: `Contract - ${contract.contractType}`,
 
-        work_description: `Contract for ${contract.employee}\n\nType: ${contract.contractType}\nSalary: TZS ${contract.salary}\nStart: ${contract.startDate}\nEnd: ${contract.endDate}\nTerms: ${contract.terms}\nStatus: ${contract.status}`,
+        work_description: `Contract for ${contract.employee}nnType: ${contract.contractType}nSalary: TZS ${contract.salary}nStart: ${contract.startDate}nEnd: ${contract.endDate}nTerms: ${contract.terms}nStatus: ${contract.status}`,
 
         priority: contract.status === 'urgent' ? 'High' : 'Medium',
 
@@ -19982,7 +20111,7 @@ function saveContract() {
 
         
 
-        customAlert(`Contract saved successfully!\n\nEmployee: ${contract.employee}\nContract Type: ${contract.contractType}\nSalary: TZS ${contract.salary}\nContract ID: ${data.id}\n\nðŸŽ‰ Contract saved to database!`, "Contract Saved", "success");
+        customAlert(`Contract saved successfully!nnEmployee: ${contract.employee}nContract Type: ${contract.contractType}nSalary: TZS ${contract.salary}nContract ID: ${data.id}nnðŸŽ‰ Contract saved to database!`, "Contract Saved", "success");
 
         
 
@@ -19994,7 +20123,7 @@ function saveContract() {
 
         console.error('âŒ Error saving contract:', error);
 
-        customAlert(`Failed to save contract: ${error.message}\n\nPlease check:\nâ€¢ All required fields are filled\nâ€¢ Network connection is stable\nâ€¢ Server is running properly`, "Save Error", "error");
+        customAlert(`Failed to save contract: ${error.message}nnPlease check:nâ€¢ All required fields are fillednâ€¢ Network connection is stablenâ€¢ Server is running properly`, "Save Error", "error");
 
     })
 
@@ -20112,7 +20241,7 @@ function recordIncidentReports(){
 
                             <label>Incident ID</label>
 
-                            <input type="text" id="incidentId" placeholder="INC-2026-001" readonly>
+                            <input type="text" id="incidentId" placeholder="INC-2026-001" readonly />
 
                         </div>
 
@@ -20120,18 +20249,26 @@ function recordIncidentReports(){
 
                             <label>Incident Date *</label>
 
-                            <input type="datetime-local" id="incidentDate" required>
+                            <input type="datetime-local" id="incidentDate" required />
 
                         </div>
-
                     </div>
-
                     
-
                     <div class="form-row">
-
                         <div class="form-group">
-
+                            <label>Project *</label>
+                            <select id="incidentProject" required>
+                                <option value="">Loading Projects...</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Location *</label>
+                            <input type="text" id="incidentLocation" placeholder="Location details..." required />
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
                             <label>Incident Type *</label>
 
                             <select id="incidentType" required>
@@ -20155,7 +20292,6 @@ function recordIncidentReports(){
                         </div>
 
                         <div class="form-group">
-
                             <label>Severity Level *</label>
 
                             <select id="severityLevel" required>
@@ -20192,9 +20328,16 @@ function recordIncidentReports(){
 
                         <label>Reported By *</label>
 
-                        <input type="text" id="reportedBy" placeholder="HSE Manager Name" required>
-
-                    </div>
+                        <input type="text" id="reportedBy" placeholder="HSE Manager Name" required />
+                        </div>
+                        <div class="form-group">
+                            <label>Status *</label>
+                            <select id="incidentStatus" required>
+                                <option value="pending">Pending</option>
+                                <option value="investigating">Investigating</option>
+                                <option value="resolved">Resolved</option>
+                            </select>
+                        </div>
 
                     
 
@@ -20281,6 +20424,8 @@ function recordIncidentReports(){
                     </table>
 
                 </div>
+        // Populate project dropdown after form is rendered
+        populateIncidentProjectSelect();
 
             </div>
 
@@ -20299,228 +20444,49 @@ function recordIncidentReports(){
     // Load incidents
 
     loadIncidents();
+    loadProjectsForIncidents();
 
     
 
-    // NUCLEAR PAGE FREEZE - PREVENT ANY AND ALL NAVIGATION
+    
 
-    setTimeout(() => {
+    
 
-        console.log('ðŸ›¡ï¸ Deploying NUCLEAR page freeze...');
-
-        
-
-        // 1. Freeze the page completely
-
-        let pageFrozen = true;
-
-        
-
-        // 2. Block ALL navigation attempts with multiple layers
-
-        window.addEventListener('beforeunload', function(e) {
-
-            console.log('ðŸš« BEFORE UNLOAD BLOCKED');
-
-            e.preventDefault();
-
-            e.stopPropagation();
-
-            e.stopImmediatePropagation();
-
-            e.returnValue = 'Are you sure you want to leave? Data may be lost.';
-
-            return e.returnValue;
-
-        }, true);
-
-        
-
-        window.addEventListener('unload', function(e) {
-
-            console.log('ðŸš« UNLOAD BLOCKED');
-
-            e.preventDefault();
-
-            e.stopPropagation();
-
-            e.stopImmediatePropagation();
-
-            return false;
-
-        }, true);
-
-        
-
-        // 3. Allow form submissions to proceed normally
-
-        // Removed global submit prevention to allow proper data saving
-
-        
-
-        // 4. Removed aggressive button blocking - allowing normal button functionality
-
-        
-
-        // 5. Override ALL navigation methods
-
-        const originalLocationAssign = window.location.assign;
-
-        window.location.assign = function(url) {
-
-            console.log('ðŸš« LOCATION.ASSIGN BLOCKED:', url);
-
-            throw new Error('Navigation blocked by page freeze');
-
-        };
-
-        
-
-        const originalLocationReplace = window.location.replace;
-
-        window.location.replace = function(url) {
-
-            console.log('ðŸš« LOCATION.REPLACE BLOCKED:', url);
-
-            throw new Error('Navigation blocked by page freeze');
-
-        };
-
-        
-
-        const originalLocationReload = window.location.reload;
-
-        window.location.reload = function() {
-
-            console.log('ðŸš« LOCATION.RELOAD BLOCKED');
-
-            throw new Error('Navigation blocked by page freeze');
-
-        };
-
-        
-
-        // 6. Freeze location.href (only if not already defined)
-
-        let currentHref = window.location.href;
-
-        try {
-
-            Object.defineProperty(window.location, 'href', {
-
-                get: function() { return currentHref; },
-
-                set: function(value) {
-
-                    console.log('ðŸš« LOCATION.HREF BLOCKED:', value);
-
-                    throw new Error('Navigation blocked by page freeze');
-
-                }
-
-            });
-
-        } catch (e) {
-
-            console.log('â„¹ï¸ location.href already defined, skipping');
-
-        }
-
-        
-
-        // 7. Override form submit globally
-
-        const originalSubmit = HTMLFormElement.prototype.submit;
-
-        HTMLFormElement.prototype.submit = function() {
-
-            console.log('ðŸš« FORM.SUBMIT() PREVENTED');
-
-            throw new Error('Form submission blocked by page freeze');
-
-        };
-
-        
-
-        // 8. Block any script-based navigation
-
-        const originalOpen = window.open;
-
-        window.open = function(url, name, specs) {
-
-            console.log('ðŸš« WINDOW.OPEN BLOCKED:', url);
-
-            throw new Error('Window opening blocked by page freeze');
-
-        };
-
-        
-
-        // 9. Intercept and block any redirects
-
-        const originalPushState = history.pushState;
-
-        history.pushState = function(state, title, url) {
-
-            console.log('ðŸš« HISTORY.PUSHSTATE BLOCKED:', url);
-
-            throw new Error('History navigation blocked by page freeze');
-
-        };
-
-        
-
-        const originalReplaceState = history.replaceState;
-
-        history.replaceState = function(state, title, url) {
-
-            console.log('ðŸš« HISTORY.REPLACESTATE BLOCKED:', url);
-
-            throw new Error('History navigation blocked by page freeze');
-
-        };
-
-        
-
-        // 10. Add visual indicator that page is frozen
-
-        const freezeIndicator = document.createElement('div');
-
-        freezeIndicator.innerHTML = 'ðŸ›¡ï¸ PAGE FROZEN - No Navigation Allowed';
-
-        freezeIndicator.style.cssText = 'position:fixed;top:0;left:0;right:0;background:red;color:white;padding:5px;text-align:center;z-index:99999;font-weight:bold;';
-
-        document.body.appendChild(freezeIndicator);
-
-        
-
-        console.log('âœ… NUCLEAR page freeze deployed - NO NAVIGATION POSSIBLE');
-
-        
-
-        // 11. Add periodic check to ensure page stays frozen
-
-        setInterval(() => {
-
-            if (window.location.href !== currentHref) {
-
-                console.log('ðŸš« PAGE NAVIGATION DETECTED - FORCING BACK');
-
-                window.location.href = currentHref;
-
-            }
-
-        }, 100);
-
-        
-
-    }, 100);
-
+    // Removed PAGE FREEZE logic
 }
 
 
 
 // Load incidents for table display
+
+
+async function loadProjectsForIncidents() {
+    try {
+        const baseUrl = window.location.origin;
+        const token = typeof sessionManager !== 'undefined' && sessionManager.getAuthToken ? sessionManager.getAuthToken() : null;
+        const headers = { 'Content-Type': 'application/json' };
+        if (token) headers['Authorization'] = `Bearer ${token}`;
+        
+        const response = await fetch(`${baseUrl}/api/projects`, { method: 'GET', headers });
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        
+        const data = await response.json();
+        const projects = Array.isArray(data) ? data : (data.projects || []);
+        
+        const select = document.getElementById('incidentProject');
+        if (!select) return;
+        
+        select.innerHTML = '<option value="">Select Project</option>';
+        projects.forEach(p => {
+            const name = p.name || p.title || p.project_name || 'Unnamed Project';
+            select.innerHTML += `<option value="${name}">${name}</option>`;
+        });
+    } catch (e) {
+        console.error('Error loading projects:', e);
+        const select = document.getElementById('incidentProject');
+        if (select) select.innerHTML = '<option value="">Failed to load projects</option>';
+    }
+}
 
 async function loadIncidents() {
 
@@ -20594,9 +20560,8 @@ async function loadIncidents() {
 
             } catch (fallbackError) {
 
-                console.error('âŒ All incidents endpoints failed:', fallbackError.message);
-
-                loadSampleIncidents();
+                console.error('All incidents endpoints failed:', fallbackError.message);
+                displayIncidents([]);
 
                 return;
 
@@ -20640,11 +20605,8 @@ async function loadIncidents() {
 
     } catch (error) {
 
-        console.error('âŒ Error loading incidents:', error);
-
-        // Load sample data on error
-
-        loadSampleIncidents();
+        console.error('Error loading incidents:', error);
+        displayIncidents([]);
 
     }
 
@@ -21103,14 +21065,14 @@ function displayIncidents(incidents) {
             `INC-${new Date(raw.submitted_date || raw.report_date || raw.created_at || raw.date || Date.now()).getFullYear()}-${String(id).padStart(4, '0')}`;
         const dateRaw = raw.date || raw.submitted_date || raw.report_date || raw.incident_date || raw.created_at || raw.updated_at;
         const dateObj = dateRaw ? new Date(dateRaw) : null;
-        const project = raw.project_name || raw.project || raw.work_title?.replace(/^Incident Reporting\s*-\s*/i, '') || raw.department_code || 'General Construction Site';
-        const typeRaw = (raw.type || raw.incident_type || raw.work_type || '').toString().toLowerCase().replace(/\s+/g, '-');
+        const project = raw.project_name || raw.project || raw.work_title?.replace(/^Incident Reportings*-s*/i, '') || raw.department_code || 'General Construction Site';
+        const typeRaw = (raw.type || raw.incident_type || raw.work_type || '').toString().toLowerCase().replace(/s+/g, '-');
         const type = typeRaw === 'incident-reporting' ? 'incident' : (typeRaw || 'incident');
         const severity = (raw.severity || raw.severity_level || 'moderate').toString().toLowerCase();
         const location = raw.location || raw.site_location || raw.area || raw.work_location || 'Construction Site';
         const description = raw.description || raw.work_description || raw.incident_description || raw.details || raw.work_title || 'No description available';
         const reportedBy = raw.reportedBy || raw.reported_by || raw.reported_by_name || raw.submitted_by || raw.submitted_by_name || raw.created_by || 'Site Personnel';
-        const status = (raw.status || raw.incident_status || 'reported').toString().toLowerCase().replace(/\s+/g, '-');
+        const status = (raw.status || raw.incident_status || 'reported').toString().toLowerCase().replace(/s+/g, '-');
         return { id, incidentId, dateObj, project, type, severity, location, description, reportedBy, status };
     });
 
@@ -21121,7 +21083,7 @@ function displayIncidents(incidents) {
         return bt - at;
     });
 
-    const titleCase = s => s.toString().replace(/[-_]/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+    const titleCase = s => s.toString().replace(/[-_]/g, ' ').replace(/bw/g, c => c.toUpperCase());
 
     let incidentsHTML = '';
     mapped.forEach(incident => {
@@ -21173,7 +21135,7 @@ function displayIncidents(incidents) {
 
 function viewIncidentDetails(incidentId) {
 
-    customAlert(`Viewing incident details for ID: ${incidentId}\n\nFull incident information including detailed description, witnesses, immediate actions taken, corrective measures, investigation findings, and follow-up requirements will be displayed.`, "Incident Details", "info");
+    customAlert(`Viewing incident details for ID: ${incidentId}nnFull incident information including detailed description, witnesses, immediate actions taken, corrective measures, investigation findings, and follow-up requirements will be displayed.`, "Incident Details", "info");
 
 }
 
@@ -21181,7 +21143,7 @@ function viewIncidentDetails(incidentId) {
 
 function updateIncidentStatus(incidentId) {
 
-    customAlert(`Updating incident status for ID: ${incidentId}\n\nStatus update form will open for recording investigation progress, corrective actions completed, and final resolution of the incident.`, "Update Incident", "info");
+    customAlert(`Updating incident status for ID: ${incidentId}nnStatus update form will open for recording investigation progress, corrective actions completed, and final resolution of the incident.`, "Update Incident", "info");
 
 }
 
@@ -21189,7 +21151,7 @@ function updateIncidentStatus(incidentId) {
 
 function downloadIncidentReport(incidentId) {
 
-    customAlert(`Downloading incident report for ID: ${incidentId}\n\nComprehensive incident report will be generated including all details, investigation findings, actions taken, and resolution status for documentation and compliance purposes.`, "Download Report", "info");
+    customAlert(`Downloading incident report for ID: ${incidentId}nnComprehensive incident report will be generated including all details, investigation findings, actions taken, and resolution status for documentation and compliance purposes.`, "Download Report", "info");
 
 }
 
@@ -21364,7 +21326,7 @@ function displayPpeRecords(ppeRecords) {
 
         // Condition badge
         const conditionLabels = { 'new': 'New', 'good': 'Good', 'replacement': 'Replacement' };
-        const conditionIcons = { 'new': '\ud83c\udd95', 'good': '\u2705', 'replacement': '\ud83d\udd04' };
+        const conditionIcons = { 'new': 'ud83cudd95', 'good': 'u2705', 'replacement': 'ud83dudd04' };
         const conditionLabel = conditionLabels[condition] || condition;
         const conditionIcon = conditionIcons[condition] || '';
         const conditionClass = 'condition-' + condition;
@@ -21372,9 +21334,9 @@ function displayPpeRecords(ppeRecords) {
         // Status badge
         const statusLower = status.toLowerCase();
         const statusLabels = { 'issued': 'Issued', 'returned': 'Returned', 'overdue': 'Overdue', 'lost': 'Lost', 'damaged': 'Damaged' };
-        const statusIcons = { 'issued': '\ud83d\udce6', 'returned': '\u2705', 'overdue': '\u26a0\ufe0f', 'lost': '\u274c', 'damaged': '\ud83d\udee0\ufe0f' };
+        const statusIcons = { 'issued': 'ud83dudce6', 'returned': 'u2705', 'overdue': 'u26a0ufe0f', 'lost': 'u274c', 'damaged': 'ud83dudee0ufe0f' };
         const statusLabel = statusLabels[statusLower] || status;
-        const statusIcon = statusIcons[statusLower] || '\ud83d\udce6';
+        const statusIcon = statusIcons[statusLower] || 'ud83dudce6';
         const statusClass = 'status-' + statusLower;
 
         // Format dates
@@ -21438,9 +21400,9 @@ function displayPpeRecords(ppeRecords) {
                 </td>
                 <td>
                     <div class="ppe-actions">
-                        <button class="action-btn view" onclick="viewPpeDetails('${ppe.id}')" title="View Details">\ud83d\udc41\ufe0f</button>
-                        <button class="action-btn edit" onclick="editPpeRecord('${ppe.id}')" title="Edit Record">\u270f\ufe0f</button>
-                        <button class="action-btn return" onclick="recordPpeReturn('${ppe.id}')" title="Record Return">\ud83d\udd04</button>
+                        <button class="action-btn view" onclick="viewPpeDetails('${ppe.id}')" title="View Details">ud83dudc41ufe0f</button>
+                        <button class="action-btn edit" onclick="editPpeRecord('${ppe.id}')" title="Edit Record">u270fufe0f</button>
+                        <button class="action-btn return" onclick="recordPpeReturn('${ppe.id}')" title="Record Return">ud83dudd04</button>
                     </div>
                 </td>
             </tr>
@@ -21720,7 +21682,7 @@ function loadSampleToolboxMeetings() {
 
             issuesRaised: 'Some workers reported damaged safety harnesses that need immediate replacement. Request for additional anchor points on the west wing scaffolding.',
 
-            actionItems: '1. Replace damaged harnesses within 48 hours\n2. Install additional anchor points by end of week\n3. Conduct follow-up inspection of all fall protection equipment',
+            actionItems: '1. Replace damaged harnesses within 48 hoursn2. Install additional anchor points by end of weekn3. Conduct follow-up inspection of all fall protection equipment',
 
             status: 'completed',
 
@@ -21756,7 +21718,7 @@ function loadSampleToolboxMeetings() {
 
             issuesRaised: 'Need more insulated tools for the team. Some circuit breakers are not properly labeled. Request for additional electrical safety training for new apprentices.',
 
-            actionItems: '1. Order additional insulated tools by next week\n2. Label all circuit breakers within 3 days\n3. Schedule advanced electrical safety training for apprentices',
+            actionItems: '1. Order additional insulated tools by next weekn2. Label all circuit breakers within 3 daysn3. Schedule advanced electrical safety training for apprentices',
 
             status: 'completed',
 
@@ -21792,7 +21754,7 @@ function loadSampleToolboxMeetings() {
 
             issuesRaised: 'Some equipment shows signs of wear and tear. Need more comprehensive pre-operation checklists. Request for additional operator training on new equipment.',
 
-            actionItems: '1. Schedule maintenance for worn equipment\n2. Develop comprehensive pre-operation checklists\n3. Arrange training session for new equipment operation',
+            actionItems: '1. Schedule maintenance for worn equipmentn2. Develop comprehensive pre-operation checklistsn3. Arrange training session for new equipment operation',
 
             status: 'in-progress',
 
@@ -21828,7 +21790,7 @@ function loadSampleToolboxMeetings() {
 
             issuesRaised: 'Some fire extinguishers are expired. Need more clearly marked fire assembly points. Request for additional fire drills on the site.',
 
-            actionItems: '1. Replace expired fire extinguishers immediately\n2. Mark additional fire assembly points\n3. Schedule monthly fire drills',
+            actionItems: '1. Replace expired fire extinguishers immediatelyn2. Mark additional fire assembly pointsn3. Schedule monthly fire drills',
 
             status: 'completed',
 
@@ -21864,7 +21826,7 @@ function loadSampleToolboxMeetings() {
 
             issuesRaised: 'Need better ventilation in chemical storage area. Some MSDS sheets are missing. Request for additional chemical spill kits.',
 
-            actionItems: '1. Improve ventilation in chemical storage area\n2. Obtain missing MSDS sheets\n3. Order additional chemical spill kits',
+            actionItems: '1. Improve ventilation in chemical storage arean2. Obtain missing MSDS sheetsn3. Order additional chemical spill kits',
 
             status: 'in-progress',
 
@@ -21900,7 +21862,7 @@ function loadSampleToolboxMeetings() {
 
             issuesRaised: 'Need gas detection equipment calibration. Some rescue equipment needs servicing. Request for additional confined space training.',
 
-            actionItems: '1. Calibrate gas detection equipment\n2. Service rescue equipment\n3. Schedule advanced confined space training',
+            actionItems: '1. Calibrate gas detection equipmentn2. Service rescue equipmentn3. Schedule advanced confined space training',
 
             status: 'completed',
 
@@ -21936,7 +21898,7 @@ function loadSampleToolboxMeetings() {
 
             issuesRaised: 'Insufficient waste disposal containers. Some areas have poor drainage. Need more regular housekeeping inspections.',
 
-            actionItems: '1. Order additional waste disposal containers\n2. Improve drainage in problem areas\n3. Implement daily housekeeping inspections',
+            actionItems: '1. Order additional waste disposal containersn2. Improve drainage in problem areasn3. Implement daily housekeeping inspections',
 
             status: 'completed',
 
@@ -21972,7 +21934,7 @@ function loadSampleToolboxMeetings() {
 
             issuesRaised: 'Some PPE items are showing wear. Need better fitting PPE for some workers. Request for additional PPE training.',
 
-            actionItems: '1. Replace worn PPE items\n2. Order better fitting PPE sizes\n3. Conduct PPE fitting and training session',
+            actionItems: '1. Replace worn PPE itemsn2. Order better fitting PPE sizesn3. Conduct PPE fitting and training session',
 
             status: 'in-progress',
 
@@ -22008,7 +21970,7 @@ function loadSampleToolboxMeetings() {
 
             issuesRaised: 'Need more scaffold inspection training. Some scaffold components need replacement. Request for additional safety nets.',
 
-            actionItems: '1. Schedule scaffold inspection training\n2. Replace worn scaffold components\n3. Install additional safety nets',
+            actionItems: '1. Schedule scaffold inspection trainingn2. Replace worn scaffold componentsn3. Install additional safety nets',
 
             status: 'completed',
 
@@ -22044,7 +22006,7 @@ function loadSampleToolboxMeetings() {
 
             issuesRaised: 'Need more trench boxes for deeper excavations. Some soil conditions are unstable. Request for additional trench safety training.',
 
-            actionItems: '1. Order additional trench boxes\n2. Implement soil stabilization measures\n3. Conduct trench safety refresher training',
+            actionItems: '1. Order additional trench boxesn2. Implement soil stabilization measuresn3. Conduct trench safety refresher training',
 
             status: 'in-progress',
 
@@ -22080,7 +22042,7 @@ function loadSampleToolboxMeetings() {
 
             issuesRaised: 'Some rigging equipment needs certification. Need better load calculation charts. Request for advanced rigging training.',
 
-            actionItems: '1. Certify rigging equipment\n2. Update load calculation charts\n3. Schedule advanced rigging training',
+            actionItems: '1. Certify rigging equipmentn2. Update load calculation chartsn3. Schedule advanced rigging training',
 
             status: 'completed',
 
@@ -22116,7 +22078,7 @@ function loadSampleToolboxMeetings() {
 
             issuesRaised: 'Need more roof anchors. Some roof access ladders are inadequate. Request for weather monitoring equipment.',
 
-            actionItems: '1. Install additional roof anchors\n2. Upgrade roof access ladders\n3. Install weather monitoring equipment',
+            actionItems: '1. Install additional roof anchorsn2. Upgrade roof access laddersn3. Install weather monitoring equipment',
 
             status: 'completed',
 
@@ -22218,7 +22180,7 @@ function displayToolboxMeetings(toolboxMeetings) {
 
         if (workDescription && workDescription.includes('Toolbox Meeting Details:')) {
 
-            const lines = workDescription.split('\n');
+            const lines = workDescription.split('n');
 
             lines.forEach(line => {
 
@@ -22444,7 +22406,7 @@ function getTopicDisplayName(topic) {
 
 function viewMeetingDetails(meetingId) {
 
-    customAlert(`Viewing toolbox meeting details for ID: ${meetingId}\n\nComplete toolbox meeting information will be displayed including all attendees, key points discussed, issues raised, action items, and meeting materials for comprehensive documentation and compliance tracking.`, "Meeting Details", "info");
+    customAlert(`Viewing toolbox meeting details for ID: ${meetingId}nnComplete toolbox meeting information will be displayed including all attendees, key points discussed, issues raised, action items, and meeting materials for comprehensive documentation and compliance tracking.`, "Meeting Details", "info");
 
 }
 
@@ -22452,7 +22414,7 @@ function viewMeetingDetails(meetingId) {
 
 function downloadAttendance(meetingId) {
 
-    customAlert(`Downloading attendance sheet for meeting ID: ${meetingId}\n\nAttendance sheet will be generated with all attendee names, positions, signatures, and meeting details for record-keeping and compliance purposes.`, "Download Attendance", "info");
+    customAlert(`Downloading attendance sheet for meeting ID: ${meetingId}nnAttendance sheet will be generated with all attendee names, positions, signatures, and meeting details for record-keeping and compliance purposes.`, "Download Attendance", "info");
 
 }
 
@@ -22460,7 +22422,7 @@ function downloadAttendance(meetingId) {
 
 function viewMeetingMaterials(meetingId) {
 
-    customAlert(`Viewing meeting materials for ID: ${meetingId}\n\nAll meeting materials including presentations, handouts, photos, and supporting documents will be displayed for reference and future training purposes.`, "Meeting Materials", "info");
+    customAlert(`Viewing meeting materials for ID: ${meetingId}nnAll meeting materials including presentations, handouts, photos, and supporting documents will be displayed for reference and future training purposes.`, "Meeting Materials", "info");
 
 }
 
@@ -22562,7 +22524,7 @@ function testPageFreeze() {
 
     showRealProblemNotification('FREEZE_TEST', { 
 
-        message: 'ðŸ§ª Page freeze test completed!\n\nâœ… All navigation methods are blocked\nâœ… Form submissions are blocked\nâœ… Page is completely frozen\n\nðŸ›¡ï¸ Your data is safe from page refresh!',
+        message: 'ðŸ§ª Page freeze test completed!nnâœ… All navigation methods are blockednâœ… Form submissions are blockednâœ… Page is completely frozennnðŸ›¡ï¸ Your data is safe from page refresh!',
 
         status: 'success'
 
@@ -22589,6 +22551,9 @@ function testSimpleSave() {
         const severityLevel = document.getElementById('severityLevel').value;
 
         const incidentDescription = document.getElementById('incidentDescription').value;
+        const project = document.getElementById('incidentProject').value;
+        const location = document.getElementById('incidentLocation').value;
+        const status = document.getElementById('incidentStatus') ? document.getElementById('incidentStatus').value : 'pending';
 
         const reportedBy = document.getElementById('reportedBy').value;
 
@@ -22598,7 +22563,7 @@ function testSimpleSave() {
 
         
 
-        if (!incidentType || !severityLevel || !incidentDescription || !reportedBy) {
+        if (!incidentType || !severityLevel || !incidentDescription || !reportedBy || !project || !location) {
 
             customAlert('Please fill in all required fields for the test.', "Test Validation", "error");
 
@@ -22610,7 +22575,7 @@ function testSimpleSave() {
 
         // Show test message
 
-        customAlert(`ðŸ§ª SIMPLE TEST SUCCESS!\n\nâœ… Form values captured\nâœ… No page refresh occurred\nâœ… Function completed successfully\n\nðŸ“ Data captured:\nâ€¢ Type: ${incidentType}\nâ€¢ Severity: ${severityLevel}\nâ€¢ Description: ${incidentDescription.substring(0, 50)}...\nâ€¢ Reported by: ${reportedBy}\n\nðŸŽ‰ This proves the page refresh issue is NOT from this function!`, "Test Success!", "success");
+        customAlert(`ðŸ§ª SIMPLE TEST SUCCESS!nnâœ… Form values capturednâœ… No page refresh occurrednâœ… Function completed successfullynnðŸ“ Data captured:nâ€¢ Type: ${incidentType}nâ€¢ Severity: ${severityLevel}nâ€¢ Description: ${incidentDescription.substring(0, 50)}...nâ€¢ Reported by: ${reportedBy}nnðŸŽ‰ This proves the page refresh issue is NOT from this function!`, "Test Success!", "success");
 
         
 
@@ -22643,20 +22608,24 @@ function submitIncidentToDatabase() {
         // Validate required fields
 
         const incidentType = document.getElementById('incidentType').value;
+        const incidentProject = document.getElementById('incidentProject').value;
 
         const severityLevel = document.getElementById('severityLevel').value;
 
         const incidentDescription = document.getElementById('incidentDescription').value;
+        const project = document.getElementById('incidentProject').value;
+        const location = document.getElementById('incidentLocation').value;
+        const status = document.getElementById('incidentStatus') ? document.getElementById('incidentStatus').value : 'pending';
 
         const reportedBy = document.getElementById('reportedBy').value;
 
         
 
-        console.log('ðŸ“ Form values:', { incidentType, severityLevel, incidentDescription, reportedBy });
+        console.log('Form values:', { incidentType, severityLevel, incidentDescription, reportedBy, project, location });
 
         
 
-        if (!incidentType || !severityLevel || !incidentDescription || !reportedBy) {
+        if (!incidentType || !severityLevel || !incidentDescription || !reportedBy || !incidentProject) {
 
             console.log('âŒ Validation failed - missing required fields');
 
@@ -22668,7 +22637,7 @@ function submitIncidentToDatabase() {
 
                     severityLevel: !severityLevel,
 
-                    incidentDescription: !incidentDescription,
+                    incidentDescription: !incidentDescription, project: !project, location: !location,
 
                     reportedBy: !reportedBy
 
@@ -22691,6 +22660,7 @@ function submitIncidentToDatabase() {
             work_description: incidentDescription,
 
             incident_type: incidentType,
+            project_id: incidentProject,
 
             severity: severityLevel,
 
@@ -22702,8 +22672,11 @@ function submitIncidentToDatabase() {
 
             assigned_to: 'HSE Manager',
 
-            submitted_by: reportedBy
-
+            submitted_by: reportedBy,
+            project: project,
+            project_name: project,
+            location: location,
+            status: status
         };
 
         
@@ -22998,7 +22971,7 @@ function debugAPIConnection() {
 
             console.log('âœ… HSE API test successful:', data);
 
-            customAlert('âœ… All API tests passed!\n\nThe API is working correctly.\nData should be saving to database.\nCheck console for detailed logs.', "API Debug Success", "success");
+            customAlert('âœ… All API tests passed!nnThe API is working correctly.nData should be saving to database.nCheck console for detailed logs.', "API Debug Success", "success");
 
         })
 
@@ -23014,7 +22987,7 @@ function debugAPIConnection() {
 
             });
 
-            customAlert(`âŒ API test failed!\n\nError: ${error.message}\n\nCheck console for detailed debug information.`, "API Debug Failed", "error");
+            customAlert(`âŒ API test failed!nnError: ${error.message}nnCheck console for detailed debug information.`, "API Debug Failed", "error");
 
         });
 
@@ -23686,7 +23659,7 @@ function saveEmployeeManual() {
 
             showRealProblemNotification('SUCCESS', {
 
-                message: `âœ… Employee registered successfully!\n\nðŸ“‹ Details:\nâ€¢ Name: ${fullName}\nâ€¢ Email: ${gmail}\nâ€¢ Department: ${department}\nâ€¢ Job Category: ${jobCategory}\nâ€¢ Contract: ${contract}\nâ€¢ Employee ID: ${data.id}\n\nðŸ“ Document Upload Status:\nâ€¢ ðŸ“¸ ${profileImageStatus}\nâ€¢ ðŸ“„ ${cvStatus}\nâ€¢ ðŸ“„ ${agreementStatus}\n\nðŸŽ‰ Employee saved to database without page refresh!`,
+                message: `âœ… Employee registered successfully!nnðŸ“‹ Details:nâ€¢ Name: ${fullName}nâ€¢ Email: ${gmail}nâ€¢ Department: ${department}nâ€¢ Job Category: ${jobCategory}nâ€¢ Contract: ${contract}nâ€¢ Employee ID: ${data.id}nnðŸ“ Document Upload Status:nâ€¢ ðŸ“¸ ${profileImageStatus}nâ€¢ ðŸ“„ ${cvStatus}nâ€¢ ðŸ“„ ${agreementStatus}nnðŸŽ‰ Employee saved to database without page refresh!`,
 
                 employeeId: data.id,
 
@@ -23734,49 +23707,49 @@ function saveEmployeeManual() {
 
                 errorCause = 'Network connection failed';
 
-                troubleshooting = 'â€¢ Check internet connection\nâ€¢ Verify server is running\nâ€¢ Try again in a moment';
+                troubleshooting = 'â€¢ Check internet connectionnâ€¢ Verify server is runningnâ€¢ Try again in a moment';
 
             } else if (error.message.includes('400')) {
 
                 errorCause = 'Invalid employee data';
 
-                troubleshooting = 'â€¢ Fill all required fields correctly\nâ€¢ Check email format\nâ€¢ Verify phone number format\nâ€¢ Ensure NIDA is valid';
+                troubleshooting = 'â€¢ Fill all required fields correctlynâ€¢ Check email formatnâ€¢ Verify phone number formatnâ€¢ Ensure NIDA is valid';
 
             } else if (error.message.includes('409')) {
 
                 errorCause = 'Employee already exists';
 
-                troubleshooting = 'â€¢ Email or NIDA already registered\nâ€¢ Use different email or NIDA\nâ€¢ Check if employee already exists';
+                troubleshooting = 'â€¢ Email or NIDA already registerednâ€¢ Use different email or NIDAnâ€¢ Check if employee already exists';
 
             } else if (error.message.includes('404')) {
 
                 errorCause = 'Employee API endpoint not found';
 
-                troubleshooting = 'â€¢ Server routing issue\nâ€¢ Contact system administrator';
+                troubleshooting = 'â€¢ Server routing issuenâ€¢ Contact system administrator';
 
             } else if (error.message.includes('500')) {
 
                 errorCause = 'Server internal error';
 
-                troubleshooting = 'â€¢ Database connection issue\nâ€¢ Server configuration problem\nâ€¢ Contact system administrator';
+                troubleshooting = 'â€¢ Database connection issuenâ€¢ Server configuration problemnâ€¢ Contact system administrator';
 
             } else if (error.message.includes('validation') || error.message.includes('required')) {
 
                 errorCause = 'Form validation failed';
 
-                troubleshooting = 'â€¢ Fill all required fields\nâ€¢ Check field formats\nâ€¢ Ensure email is valid\nâ€¢ Verify NIDA format';
+                troubleshooting = 'â€¢ Fill all required fieldsnâ€¢ Check field formatsnâ€¢ Ensure email is validnâ€¢ Verify NIDA format';
 
             } else if (error.message.includes('database') || error.message.includes('SQL')) {
 
                 errorCause = 'Database operation failed';
 
-                troubleshooting = 'â€¢ Database connection issue\nâ€¢ Employees table might not exist\nâ€¢ Contact system administrator';
+                troubleshooting = 'â€¢ Database connection issuenâ€¢ Employees table might not existnâ€¢ Contact system administrator';
 
             } else if (error.message.includes('duplicate') || error.message.includes('unique')) {
 
                 errorCause = 'Duplicate employee record';
 
-                troubleshooting = 'â€¢ Employee with this email already exists\nâ€¢ Employee with this NIDA already exists\nâ€¢ Use unique identifiers';
+                troubleshooting = 'â€¢ Employee with this email already existsnâ€¢ Employee with this NIDA already existsnâ€¢ Use unique identifiers';
 
             }
 
@@ -23792,7 +23765,7 @@ function saveEmployeeManual() {
 
                 troubleshooting: troubleshooting,
 
-                message: `âŒ Employee registration failed!\n\nðŸ” Error Cause: ${errorCause}\n\nðŸ› ï¸ Troubleshooting:\n${troubleshooting}\n\nðŸ“ Technical Details:\n${error.message}\n\nðŸ’¡ Please fix the issue and try again.`,
+                message: `âŒ Employee registration failed!nnðŸ” Error Cause: ${errorCause}nnðŸ› ï¸ Troubleshooting:n${troubleshooting}nnðŸ“ Technical Details:n${error.message}nnðŸ’¡ Please fix the issue and try again.`,
 
                 employeeName: fullName || 'Unknown',
 
@@ -23814,7 +23787,7 @@ function saveEmployeeManual() {
 
             error: error.message,
 
-            message: `Unexpected error: ${error.message}\n\nPlease check browser console for details.`
+            message: `Unexpected error: ${error.message}nnPlease check browser console for details.`
 
         });
 
@@ -23986,7 +23959,7 @@ function testServerConnection() {
 
     showRealProblemNotification('TESTING_CONNECTION', {
 
-        message: 'ðŸ”— Testing server connection...\n\nðŸ“¡ Testing endpoints:\nâ€¢ API Health Check\nâ€¢ Work API Test\nâ€¢ Database Connection\n\nâ³ Please wait...'
+        message: 'ðŸ”— Testing server connection...nnðŸ“¡ Testing endpoints:nâ€¢ API Health Checknâ€¢ Work API Testnâ€¢ Database Connectionnnâ³ Please wait...'
 
     });
 
@@ -24072,7 +24045,7 @@ function testServerConnection() {
 
             showRealProblemNotification('CONNECTION_SUCCESS', {
 
-                message: `ðŸŽ‰ All server connections successful!\n\nâœ… API Health Check: Working\nâœ… Work API Test: Working\nâœ… Database Connection: Working\n\nðŸ“Š Server Details:\nâ€¢ Environment: ${healthData.environment || 'Unknown'}\nâ€¢ Database: ${dbData.database || 'Connected'}\nâ€¢ Timestamp: ${new Date().toLocaleString()}\n\nðŸš€ Ready to save data to database!`,
+                message: `ðŸŽ‰ All server connections successful!nnâœ… API Health Check: Workingnâœ… Work API Test: Workingnâœ… Database Connection: WorkingnnðŸ“Š Server Details:nâ€¢ Environment: ${healthData.environment || 'Unknown'}nâ€¢ Database: ${dbData.database || 'Connected'}nâ€¢ Timestamp: ${new Date().toLocaleString()}nnðŸš€ Ready to save data to database!`,
 
                 serverStatus: 'healthy',
 
@@ -24154,7 +24127,7 @@ function showRealProblemNotification(problemType, details) {
 
             title = 'âš ï¸ Button Not Configured';
 
-            message = `âŒ This button has no action handler!\n\nðŸ” Real Problem:\nâ€¢ Button: "${details.buttonText}"\nâ€¢ No onclick function assigned\nâ€¢ This is a system configuration issue\n\nðŸ› ï¸ Solutions:\nâ€¢ Contact developer to add handler\nâ€¢ Use a different button\nâ€¢ Check if this feature is implemented\n\nðŸ“ Button text: ${details.buttonText}`;
+            message = `âŒ This button has no action handler!nnðŸ” Real Problem:nâ€¢ Button: "${details.buttonText}"nâ€¢ No onclick function assignednâ€¢ This is a system configuration issuennðŸ› ï¸ Solutions:nâ€¢ Contact developer to add handlernâ€¢ Use a different buttonnâ€¢ Check if this feature is implementednnðŸ“ Button text: ${details.buttonText}`;
 
             type = 'warning';
 
@@ -24166,7 +24139,7 @@ function showRealProblemNotification(problemType, details) {
 
             title = 'ðŸ›¡ï¸ Page Freeze Working!';
 
-            message = `âœ… Page freeze is active and working!\n\nðŸ” Navigation Test Results:\nâ€¢ Navigation methods are blocked: âœ…\nâ€¢ Error: ${details.error}\nâ€¢ Page is completely frozen\n\nðŸ›¡ï¸ Your data is protected from page refresh!`;
+            message = `âœ… Page freeze is active and working!nnðŸ” Navigation Test Results:nâ€¢ Navigation methods are blocked: âœ…nâ€¢ Error: ${details.error}nâ€¢ Page is completely frozennnðŸ›¡ï¸ Your data is protected from page refresh!`;
 
             type = 'success';
 
@@ -24178,7 +24151,7 @@ function showRealProblemNotification(problemType, details) {
 
             title = 'ðŸ§ª Page Freeze Test Complete';
 
-            message = `${details.message}\n\nðŸ›¡ï¸ The page is now completely frozen.\nNo navigation or refresh can occur while this is active.`;
+            message = `${details.message}nnðŸ›¡ï¸ The page is now completely frozen.nNo navigation or refresh can occur while this is active.`;
 
             type = 'success';
 
@@ -24202,19 +24175,19 @@ function showRealProblemNotification(problemType, details) {
 
                 // HSE incident saving
 
-                message = `ðŸ“ Sending incident report to database...\n\nâ€¢ Type: ${details.workItem.incident_type}\nâ€¢ Severity: ${details.workItem.severity}\nâ€¢ Description: ${details.workItem.work_description.substring(0, 50)}...\n\nâ³ Please wait...`;
+                message = `ðŸ“ Sending incident report to database...nnâ€¢ Type: ${details.workItem.incident_type}nâ€¢ Severity: ${details.workItem.severity}nâ€¢ Description: ${details.workItem.work_description.substring(0, 50)}...nnâ³ Please wait...`;
 
             } else if (details && details.employeeData) {
 
                 // Employee registration
 
-                message = `ðŸ“ Registering employee to database...\n\nâ€¢ Name: ${details.employeeData.fullName}\nâ€¢ Department: ${details.employeeData.department}\nâ€¢ Email: ${details.employeeData.gmail}\n\nâ³ Please wait...`;
+                message = `ðŸ“ Registering employee to database...nnâ€¢ Name: ${details.employeeData.fullName}nâ€¢ Department: ${details.employeeData.department}nâ€¢ Email: ${details.employeeData.gmail}nnâ³ Please wait...`;
 
             } else {
 
                 // Generic saving
 
-                message = `ðŸ“ Saving data to database...\n\n${details ? details.message || 'Processing your request...' : 'Processing your request...'}\n\nâ³ Please wait...`;
+                message = `ðŸ“ Saving data to database...nn${details ? details.message || 'Processing your request...' : 'Processing your request...'}nnâ³ Please wait...`;
 
             }
 
@@ -24232,19 +24205,19 @@ function showRealProblemNotification(problemType, details) {
 
                 // HSE incident success
 
-                message = `ðŸŽ‰ Incident report saved to database!\n\nðŸ“‹ Details:\nâ€¢ Database ID: ${details.databaseId}\nâ€¢ Type: ${details.savedData.incident_type}\nâ€¢ Severity: ${details.savedData.severity}\nâ€¢ Priority: ${details.savedData.priority}\nâ€¢ Assigned to: ${details.savedData.assigned_to}\nâ€¢ Submitted by: ${details.savedData.submitted_by}\nâ€¢ Date: ${new Date().toLocaleString()}\n\nðŸ’¾ Stored in: hse_work table\nðŸš« NO PAGE REFRESH - DATA SAVED SUCCESSFULLY!`;
+                message = `ðŸŽ‰ Incident report saved to database!nnðŸ“‹ Details:nâ€¢ Database ID: ${details.databaseId}nâ€¢ Type: ${details.savedData.incident_type}nâ€¢ Severity: ${details.savedData.severity}nâ€¢ Priority: ${details.savedData.priority}nâ€¢ Assigned to: ${details.savedData.assigned_to}nâ€¢ Submitted by: ${details.savedData.submitted_by}nâ€¢ Date: ${new Date().toLocaleString()}nnðŸ’¾ Stored in: hse_work tablenðŸš« NO PAGE REFRESH - DATA SAVED SUCCESSFULLY!`;
 
             } else if (details.employeeData) {
 
                 // Employee registration success
 
-                message = `ðŸŽ‰ Employee registered successfully!\n\nðŸ“‹ Details:\nâ€¢ Name: ${details.employeeData.fullName}\nâ€¢ Department: ${details.employeeData.department}\nâ€¢ Email: ${details.employeeData.gmail}\nâ€¢ Database ID: ${details.databaseId}\nâ€¢ Date: ${new Date().toLocaleString()}\n\nðŸ’¾ Stored in: employees table\nðŸš« NO PAGE REFRESH - DATA SAVED SUCCESSFULLY!`;
+                message = `ðŸŽ‰ Employee registered successfully!nnðŸ“‹ Details:nâ€¢ Name: ${details.employeeData.fullName}nâ€¢ Department: ${details.employeeData.department}nâ€¢ Email: ${details.employeeData.gmail}nâ€¢ Database ID: ${details.databaseId}nâ€¢ Date: ${new Date().toLocaleString()}nnðŸ’¾ Stored in: employees tablenðŸš« NO PAGE REFRESH - DATA SAVED SUCCESSFULLY!`;
 
             } else {
 
                 // Generic success
 
-                message = `ðŸŽ‰ Data saved successfully!\n\nðŸ“‹ Details:\nâ€¢ Database ID: ${details.databaseId}\nâ€¢ Date: ${new Date().toLocaleString()}\n\nðŸ’¾ Data saved to database\nðŸš« NO PAGE REFRESH - DATA SAVED SUCCESSFULLY!`;
+                message = `ðŸŽ‰ Data saved successfully!nnðŸ“‹ Details:nâ€¢ Database ID: ${details.databaseId}nâ€¢ Date: ${new Date().toLocaleString()}nnðŸ’¾ Data saved to databasenðŸš« NO PAGE REFRESH - DATA SAVED SUCCESSFULLY!`;
 
             }
 
@@ -24258,7 +24231,7 @@ function showRealProblemNotification(problemType, details) {
 
             title = 'ðŸ” Data Verified!';
 
-            message = `âœ… Database save verified!\n\nðŸ“Š Verification Results:\nâ€¢ Total items in database: ${details.totalItems}\nâ€¢ Your item confirmed in database: âœ…\nâ€¢ Item ID: ${details.savedItem.id}\nâ€¢ Timestamp: ${details.savedItem.submitted_date}\n\nðŸŽ‰ Complete success - Data is permanently stored!`;
+            message = `âœ… Database save verified!nnðŸ“Š Verification Results:nâ€¢ Total items in database: ${details.totalItems}nâ€¢ Your item confirmed in database: âœ…nâ€¢ Item ID: ${details.savedItem.id}nâ€¢ Timestamp: ${details.savedItem.submitted_date}nnðŸŽ‰ Complete success - Data is permanently stored!`;
 
             type = 'success';
 
@@ -24270,7 +24243,7 @@ function showRealProblemNotification(problemType, details) {
 
             title = 'âš ï¸ Save Successful';
 
-            message = `âœ… Data saved to database!\n\nâš ï¸ Could not verify due to: ${details.error}\n\nBut the save operation completed successfully.\nYour data should be in the database.`;
+            message = `âœ… Data saved to database!nnâš ï¸ Could not verify due to: ${details.error}nnBut the save operation completed successfully.nYour data should be in the database.`;
 
             type = 'warning';
 
@@ -24282,7 +24255,7 @@ function showRealProblemNotification(problemType, details) {
 
             title = 'ðŸŒ Network Connection Problem';
 
-            message = `âŒ Network connectivity issue detected!\n\nðŸ” Real Problem:\nâ€¢ Cannot reach the server\nâ€¢ Internet connection may be unstable\nâ€¢ Server may be down\n\nðŸ› ï¸ Solutions:\nâ€¢ Check your internet connection\nâ€¢ Try again in a few moments\nâ€¢ Contact IT if problem persists\n\nðŸ“¡ Error: ${details.error}`;
+            message = `âŒ Network connectivity issue detected!nnðŸ” Real Problem:nâ€¢ Cannot reach the servernâ€¢ Internet connection may be unstablenâ€¢ Server may be downnnðŸ› ï¸ Solutions:nâ€¢ Check your internet connectionnâ€¢ Try again in a few momentsnâ€¢ Contact IT if problem persistsnnðŸ“¡ Error: ${details.error}`;
 
             type = 'error';
 
@@ -24294,7 +24267,7 @@ function showRealProblemNotification(problemType, details) {
 
             title = 'ðŸ” API Route Not Found';
 
-            message = `âŒ Server API endpoint missing!\n\nðŸ” Real Problem:\nâ€¢ The API route /api/hse/work doesn't exist\nâ€¢ Server may not be properly configured\nâ€¢ Routes may not be loaded\n\nðŸ› ï¸ Solutions:\nâ€¢ Check server configuration\nâ€¢ Verify routes are properly mounted\nâ€¢ Contact developer to fix API routes\n\nðŸŒ Missing endpoint: /api/hse/work`;
+            message = `âŒ Server API endpoint missing!nnðŸ” Real Problem:nâ€¢ The API route /api/hse/work doesn't existnâ€¢ Server may not be properly configurednâ€¢ Routes may not be loadednnðŸ› ï¸ Solutions:nâ€¢ Check server configurationnâ€¢ Verify routes are properly mountednâ€¢ Contact developer to fix API routesnnðŸŒ Missing endpoint: /api/hse/work`;
 
             type = 'error';
 
@@ -24306,7 +24279,7 @@ function showRealProblemNotification(problemType, details) {
 
             title = 'ðŸ–¥ï¸ Server Internal Error';
 
-            message = `âŒ Server encountered an error!\n\nðŸ” Real Problem:\nâ€¢ Database connection may be down\nâ€¢ Server code has an error\nâ€¢ Database table may not exist\n\nðŸ› ï¸ Solutions:\nâ€¢ Check server logs for details\nâ€¢ Verify database is running\nâ€¢ Contact system administrator\n\nðŸ’¥ Server error: ${details.error}`;
+            message = `âŒ Server encountered an error!nnðŸ” Real Problem:nâ€¢ Database connection may be downnâ€¢ Server code has an errornâ€¢ Database table may not existnnðŸ› ï¸ Solutions:nâ€¢ Check server logs for detailsnâ€¢ Verify database is runningnâ€¢ Contact system administratornnðŸ’¥ Server error: ${details.error}`;
 
             type = 'error';
 
@@ -24318,7 +24291,7 @@ function showRealProblemNotification(problemType, details) {
 
             title = 'ðŸ’¾ Database Connection Failed';
 
-            message = `âŒ Cannot connect to database!\n\nðŸ” Real Problem:\nâ€¢ Database server is down\nâ€¢ Connection credentials are wrong\nâ€¢ Network cannot reach database\n\nðŸ› ï¸ Solutions:\nâ€¢ Check database server status\nâ€¢ Verify connection settings\nâ€¢ Contact database administrator\n\nðŸ”Œ Database error: ${details.error}`;
+            message = `âŒ Cannot connect to database!nnðŸ” Real Problem:nâ€¢ Database server is downnâ€¢ Connection credentials are wrongnâ€¢ Network cannot reach databasennðŸ› ï¸ Solutions:nâ€¢ Check database server statusnâ€¢ Verify connection settingsnâ€¢ Contact database administratornnðŸ”Œ Database error: ${details.error}`;
 
             type = 'error';
 
@@ -24330,7 +24303,7 @@ function showRealProblemNotification(problemType, details) {
 
             title = 'â° Request Timeout';
 
-            message = `âŒ Server took too long to respond!\n\nðŸ” Real Problem:\nâ€¢ Server is overloaded\nâ€¢ Network is very slow\nâ€¢ Database query is too complex\n\nðŸ› ï¸ Solutions:\nâ€¢ Try again with simpler data\nâ€¢ Check if server is responding\nâ€¢ Contact support if continues\n\nâ±ï¸ Timeout error: ${details.error}`;
+            message = `âŒ Server took too long to respond!nnðŸ” Real Problem:nâ€¢ Server is overloadednâ€¢ Network is very slownâ€¢ Database query is too complexnnðŸ› ï¸ Solutions:nâ€¢ Try again with simpler datanâ€¢ Check if server is respondingnâ€¢ Contact support if continuesnnâ±ï¸ Timeout error: ${details.error}`;
 
             type = 'error';
 
@@ -24342,7 +24315,7 @@ function showRealProblemNotification(problemType, details) {
 
             title = 'ðŸš« CORS Policy Blocked';
 
-            message = `âŒ Browser blocked the request!\n\nðŸ” Real Problem:\nâ€¢ Server CORS policy is restrictive\nâ€¢ Frontend and backend domains don't match\nâ€¢ Server doesn't allow this origin\n\nðŸ› ï¸ Solutions:\nâ€¢ Configure server CORS settings\nâ€¢ Check allowed origins in server\nâ€¢ Contact developer to fix CORS\n\nðŸš« CORS error: ${details.error}`;
+            message = `âŒ Browser blocked the request!nnðŸ” Real Problem:nâ€¢ Server CORS policy is restrictivenâ€¢ Frontend and backend domains don't matchnâ€¢ Server doesn't allow this originnnðŸ› ï¸ Solutions:nâ€¢ Configure server CORS settingsnâ€¢ Check allowed origins in servernâ€¢ Contact developer to fix CORSnnðŸš« CORS error: ${details.error}`;
 
             type = 'error';
 
@@ -24354,7 +24327,7 @@ function showRealProblemNotification(problemType, details) {
 
             title = 'ðŸ“ Form Validation Error';
 
-            message = `âŒ Server rejected the data!\n\nðŸ” Real Problem:\nâ€¢ Required fields are missing\nâ€¢ Data format is incorrect\nâ€¢ Server validation rules not met\n\nðŸ› ï¸ Solutions:\nâ€¢ Fill all required fields\nâ€¢ Check data format\nâ€¢ Ensure all data is valid\n\nâŒ Validation error: ${details.error}`;
+            message = `âŒ Server rejected the data!nnðŸ” Real Problem:nâ€¢ Required fields are missingnâ€¢ Data format is incorrectnâ€¢ Server validation rules not metnnðŸ› ï¸ Solutions:nâ€¢ Fill all required fieldsnâ€¢ Check data formatnâ€¢ Ensure all data is validnnâŒ Validation error: ${details.error}`;
 
             type = 'error';
 
@@ -24366,7 +24339,7 @@ function showRealProblemNotification(problemType, details) {
 
             title = 'ðŸ’» System Error';
 
-            message = `âŒ Unexpected system error occurred!\n\nðŸ” Real Problem:\nâ€¢ JavaScript code has a bug\nâ€¢ Browser compatibility issue\nâ€¢ Memory or resource problem\n\nðŸ› ï¸ Solutions:\nâ€¢ Refresh the page and try again\nâ€¢ Try a different browser\nâ€¢ Contact technical support\n\nðŸ’» System error: ${details.error}`;
+            message = `âŒ Unexpected system error occurred!nnðŸ” Real Problem:nâ€¢ JavaScript code has a bugnâ€¢ Browser compatibility issuenâ€¢ Memory or resource problemnnðŸ› ï¸ Solutions:nâ€¢ Refresh the page and try againnâ€¢ Try a different browsernâ€¢ Contact technical supportnnðŸ’» System error: ${details.error}`;
 
             type = 'error';
 
@@ -24378,7 +24351,7 @@ function showRealProblemNotification(problemType, details) {
 
             title = 'âŒ Unknown Error';
 
-            message = `âŒ An unknown error occurred!\n\nðŸ” Real Problem:\nâ€¢ Error type could not be identified\nâ€¢ May be a combination of issues\n\nðŸ› ï¸ Solutions:\nâ€¢ Try again\nâ€¢ Check all steps above\nâ€¢ Contact support with details\n\nâ“ Unknown error: ${details.error}`;
+            message = `âŒ An unknown error occurred!nnðŸ” Real Problem:nâ€¢ Error type could not be identifiednâ€¢ May be a combination of issuesnnðŸ› ï¸ Solutions:nâ€¢ Try againnâ€¢ Check all steps abovenâ€¢ Contact support with detailsnnâ“ Unknown error: ${details.error}`;
 
             type = 'error';
 
@@ -24447,20 +24420,23 @@ function manualSubmitIncident() {
         const severityLevel = document.getElementById('severityLevel').value;
 
         const incidentDescription = document.getElementById('incidentDescription').value;
+        const project = document.getElementById('incidentProject').value;
+        const location = document.getElementById('incidentLocation').value;
+        const status = document.getElementById('incidentStatus') ? document.getElementById('incidentStatus').value : 'pending';
 
         const reportedBy = document.getElementById('reportedBy').value;
 
         
 
-        console.log('ðŸ“ Form values:', { incidentType, severityLevel, incidentDescription, reportedBy });
+        console.log('Form values:', { incidentType, severityLevel, incidentDescription, reportedBy, project, location });
 
         
 
-        if (!incidentType || !severityLevel || !incidentDescription || !reportedBy) {
+        if (!incidentType || !severityLevel || !incidentDescription || !reportedBy || !project || !location) {
 
             console.log('âŒ Validation failed - missing required fields');
 
-            customAlert('Please fill in all required fields:\n\nâ€¢ Incident Type\nâ€¢ Severity Level\nâ€¢ Incident Description\nâ€¢ Reported By', "Validation Error", "error");
+            customAlert('Please fill in all required fields:nnâ€¢ Incident Typenâ€¢ Severity Levelnâ€¢ Incident Descriptionnâ€¢ Reported By', "Validation Error", "error");
 
             return;
 
@@ -24488,8 +24464,11 @@ function manualSubmitIncident() {
 
             assigned_to: 'HSE Manager',
 
-            submitted_by: reportedBy
-
+            submitted_by: reportedBy,
+            project: project,
+            project_name: project,
+            location: location,
+            status: status
         };
 
         
@@ -24562,7 +24541,7 @@ function manualSubmitIncident() {
 
             // Success message with database confirmation
 
-            customAlert(`âœ… Incident report saved to database!\n\nðŸ“‹ Details:\nâ€¢ ID: ${data.workItem.id}\nâ€¢ Type: ${workItem.incident_type}\nâ€¢ Severity: ${workItem.severity}\nâ€¢ Priority: ${workItem.priority}\nâ€¢ Assigned to: ${workItem.assigned_to}\nâ€¢ Submitted by: ${workItem.submitted_by}\nâ€¢ Date: ${new Date().toLocaleString()}\n\nðŸŽ‰ Data successfully stored in MySQL database!\nðŸ’¾ Table: hse_work`, "Database Save Success!", "success");
+            customAlert(`âœ… Incident report saved to database!nnðŸ“‹ Details:nâ€¢ ID: ${data.workItem.id}nâ€¢ Type: ${workItem.incident_type}nâ€¢ Severity: ${workItem.severity}nâ€¢ Priority: ${workItem.priority}nâ€¢ Assigned to: ${workItem.assigned_to}nâ€¢ Submitted by: ${workItem.submitted_by}nâ€¢ Date: ${new Date().toLocaleString()}nnðŸŽ‰ Data successfully stored in MySQL database!nðŸ’¾ Table: hse_work`, "Database Save Success!", "success");
 
             
 
@@ -24612,7 +24591,7 @@ function manualSubmitIncident() {
 
             console.error('âŒ Failed to save to database:', error);
 
-            customAlert(`âŒ Failed to save to database: ${error.message}\n\nPlease check:\nâ€¢ Server is running\nâ€¢ Network connection is stable\nâ€¢ Try again in a moment`, "Database Error", "error");
+            customAlert(`âŒ Failed to save to database: ${error.message}nnPlease check:nâ€¢ Server is runningnâ€¢ Network connection is stablenâ€¢ Try again in a moment`, "Database Error", "error");
 
         });
 
@@ -24622,7 +24601,7 @@ function manualSubmitIncident() {
 
         console.error('âŒ Unexpected error:', error);
 
-        customAlert(`System error: ${error.message}\n\nPlease try again or contact support.`, "Error", "error");
+        customAlert(`System error: ${error.message}nnPlease try again or contact support.`, "Error", "error");
 
     }
 
@@ -24736,13 +24715,13 @@ function testDataFlow() {
 
                 console.log('ðŸŽ‰ SUCCESS! Test data found in database:', testItem);
 
-                customAlert(`âœ… Database test successful!\n\nâ€¢ Test data sent to database âœ…\nâ€¢ Data retrieved from database âœ…\nâ€¢ Found ${workItems.length} total items\nâ€¢ Test item ID: ${testItem.id}\n\nðŸŽ‰ Frontend-Backend communication is working perfectly!`, "Database Test Success", "success");
+                customAlert(`âœ… Database test successful!nnâ€¢ Test data sent to database âœ…nâ€¢ Data retrieved from database âœ…nâ€¢ Found ${workItems.length} total itemsnâ€¢ Test item ID: ${testItem.id}nnðŸŽ‰ Frontend-Backend communication is working perfectly!`, "Database Test Success", "success");
 
             } else {
 
                 console.log('âš ï¸ Test data not found, but other data exists');
 
-                customAlert(`âš ï¸ Partial success\n\nâ€¢ Test data sent to database âœ…\nâ€¢ Data retrieved from database âœ…\nâ€¢ Found ${workItems.length} total items\nâ€¢ Test item not immediately visible (may need refresh)\n\nðŸ”„ Database operations are working!`, "Database Test Partial", "info");
+                customAlert(`âš ï¸ Partial successnnâ€¢ Test data sent to database âœ…nâ€¢ Data retrieved from database âœ…nâ€¢ Found ${workItems.length} total itemsnâ€¢ Test item not immediately visible (may need refresh)nnðŸ”„ Database operations are working!`, "Database Test Partial", "info");
 
             }
 
@@ -24752,7 +24731,7 @@ function testDataFlow() {
 
             console.error('âŒ Database test failed:', error);
 
-            customAlert(`âŒ Database test failed: ${error.message}\n\nPlease check:\nâ€¢ Server is running\nâ€¢ Database connection is active\nâ€¢ Network connectivity is stable\nâ€¢ You are logged in properly`, "Database Test Error", "error");
+            customAlert(`âŒ Database test failed: ${error.message}nnPlease check:nâ€¢ Server is runningnâ€¢ Database connection is activenâ€¢ Network connectivity is stablenâ€¢ You are logged in properly`, "Database Test Error", "error");
 
         });
 
@@ -24844,13 +24823,13 @@ function testDataFlow() {
 
                 console.log('ðŸŽ‰ SUCCESS! Test data found in database:', testItem);
 
-                customAlert(`âœ… Database test successful!\n\nâ€¢ Test data sent to database âœ…\nâ€¢ Data retrieved from database âœ…\nâ€¢ Found ${workItems.length} total items\nâ€¢ Test item ID: ${testItem.id}\n\nðŸŽ‰ Frontend-Backend communication is working perfectly!`, "Database Test Success", "success");
+                customAlert(`âœ… Database test successful!nnâ€¢ Test data sent to database âœ…nâ€¢ Data retrieved from database âœ…nâ€¢ Found ${workItems.length} total itemsnâ€¢ Test item ID: ${testItem.id}nnðŸŽ‰ Frontend-Backend communication is working perfectly!`, "Database Test Success", "success");
 
             } else {
 
                 console.log('âš ï¸ Test data not found, but other data exists');
 
-                customAlert(`âš ï¸ Partial success\n\nâ€¢ Test data sent to database âœ…\nâ€¢ Data retrieved from database âœ…\nâ€¢ Found ${workItems.length} total items\nâ€¢ Test item not immediately visible (may need refresh)\n\nðŸ”„ Database operations are working!`, "Database Test Partial", "info");
+                customAlert(`âš ï¸ Partial successnnâ€¢ Test data sent to database âœ…nâ€¢ Data retrieved from database âœ…nâ€¢ Found ${workItems.length} total itemsnâ€¢ Test item not immediately visible (may need refresh)nnðŸ”„ Database operations are working!`, "Database Test Partial", "info");
 
             }
 
@@ -24860,7 +24839,7 @@ function testDataFlow() {
 
             console.error('âŒ Database test failed:', error);
 
-            customAlert(`âŒ Database test failed: ${error.message}\n\nPlease check:\nâ€¢ Server is running\nâ€¢ Database connection is active\nâ€¢ Network connectivity is stable`, "Database Test Error", "error");
+            customAlert(`âŒ Database test failed: ${error.message}nnPlease check:nâ€¢ Server is runningnâ€¢ Database connection is activenâ€¢ Network connectivity is stable`, "Database Test Error", "error");
 
         });
 
@@ -24944,7 +24923,7 @@ function uploadSafetyPolicies(){
 
                             <label>Policy Title *</label>
 
-                            <input type="text" id="policyTitle" placeholder="e.g., Personal Protective Equipment Policy" required>
+                            <input type="text" id="policyTitle" placeholder="e.g., Personal Protective Equipment Policy" required />
 
                         </div>
 
@@ -24966,7 +24945,7 @@ function uploadSafetyPolicies(){
 
                         <label>Policy Document *</label>
 
-                        <input type="file" id="policyDocument" accept=".pdf,.doc,.docx" required>
+                        <input type="file" id="policyDocument" accept=".pdf,.doc,.docx" required />
 
                     </div>
 
@@ -24978,7 +24957,7 @@ function uploadSafetyPolicies(){
 
                             <label>Effective Date *</label>
 
-                            <input type="date" id="effectiveDate" required>
+                            <input type="date" id="effectiveDate" required />
 
                         </div>
 
@@ -24986,7 +24965,7 @@ function uploadSafetyPolicies(){
 
                             <label>Review Date *</label>
 
-                            <input type="date" id="reviewDate" required>
+                            <input type="date" id="reviewDate" required />
 
                         </div>
 
@@ -25166,7 +25145,7 @@ function registerCompanyCar(){
 
                         <label>Car Name *</label>
 
-                        <input type="text" id="carName" placeholder="e.g., Toyota Hilux" required>
+                        <input type="text" id="carName" placeholder="e.g., Toyota Hilux" required />
 
                     </div>
 
@@ -25214,7 +25193,7 @@ function registerCompanyCar(){
 
                         <label>Registration Number *</label>
 
-                        <input type="text" id="regNo" placeholder="e.g., T 1234 ABC" required>
+                        <input type="text" id="regNo" placeholder="e.g., T 1234 ABC" required />
 
                     </div>
 
@@ -25222,7 +25201,7 @@ function registerCompanyCar(){
 
                         <label>Plate Number *</label>
 
-                        <input type="text" id="plateNumber" placeholder="e.g., ABC 123" required>
+                        <input type="text" id="plateNumber" placeholder="e.g., ABC 123" required />
 
                     </div>
 
@@ -25268,7 +25247,7 @@ function registerCompanyCar(){
 
                         <label>Registration Date *</label>
 
-                        <input type="date" id="registrationDate" required>
+                        <input type="date" id="registrationDate" required />
 
                     </div>
 
@@ -25282,7 +25261,7 @@ function registerCompanyCar(){
 
                         <label>Track Number (Auto-generated)</label>
 
-                        <input type="text" id="trackNumber" value="${trackNumber}" readonly style="background: #f8f9fa; color: #6c757d;">
+                        <input type="text" id="trackNumber" value="${trackNumber}" readonly style="background: #f8f9fa; color: #6c757d;" />
 
                     </div>
 
@@ -25340,7 +25319,7 @@ function registerCompanyCar(){
 
                         <label>Color</label>
 
-                        <input type="text" id="carColor" placeholder="e.g., White, Black, Blue">
+                        <input type="text" id="carColor" placeholder="e.g., White, Black, Blue" />
 
                     </div>
 
@@ -25354,7 +25333,7 @@ function registerCompanyCar(){
 
                         <label>Year of Manufacture</label>
 
-                        <input type="number" id="yearOfManufacture" placeholder="e.g., 2022" min="2000" max="${new Date().getFullYear() + 1}">
+                        <input type="number" id="yearOfManufacture" placeholder="e.g., 2022" min="2000" max="${new Date().getFullYear() + 1}" />
 
                     </div>
 
@@ -25362,7 +25341,7 @@ function registerCompanyCar(){
 
                         <label>Odometer Reading (km)</label>
 
-                        <input type="number" id="odometerReading" placeholder="e.g., 15000">
+                        <input type="number" id="odometerReading" placeholder="e.g., 15000" />
 
                     </div>
 
@@ -25680,7 +25659,7 @@ async function saveCarRegistration(){
 
         // Show success notification
 
-        showNotification('âœ… Vehicle Registration Successful!', `Track Number: ${formData.trackNumber}\nVehicle: ${formData.carName} (${formData.regNo})\nDriver: ${formData.driver}\nRegistered: ${new Date().toLocaleString()}`, 'success');
+        showNotification('âœ… Vehicle Registration Successful!', `Track Number: ${formData.trackNumber}nVehicle: ${formData.carName} (${formData.regNo})nDriver: ${formData.driver}nRegistered: ${new Date().toLocaleString()}`, 'success');
 
         
 
@@ -25704,7 +25683,7 @@ async function saveCarRegistration(){
 
         console.error('âŒ Error details:', error.message);
 
-        showNotification('âŒ Registration Failed', `Please try again or contact system administrator\n\nError: ${error.message}`, 'error');
+        showNotification('âŒ Registration Failed', `Please try again or contact system administratornnError: ${error.message}`, 'error');
 
         return false;
 
@@ -26776,7 +26755,7 @@ function registerDriver(){
 
                         <label>Driver ID (Auto-generated)</label>
 
-                        <input type="text" id="driverId" value="${driverId}" readonly style="background: #f8f9fa; color: #6c757d;">
+                        <input type="text" id="driverId" value="${driverId}" readonly style="background: #f8f9fa; color: #6c757d;" />
 
                     </div>
 
@@ -26784,7 +26763,7 @@ function registerDriver(){
 
                         <label>Full Name *</label>
 
-                        <input type="text" id="driverName" placeholder="e.g., John Michael Smith" required>
+                        <input type="text" id="driverName" placeholder="e.g., John Michael Smith" required />
 
                     </div>
 
@@ -26808,7 +26787,7 @@ function registerDriver(){
 
                         <label>Years of Experience *</label>
 
-                        <input type="number" id="experience" placeholder="e.g., 5" min="0" max="50" required>
+                        <input type="number" id="experience" placeholder="e.g., 5" min="0" max="50" required />
 
                     </div>
 
@@ -26844,7 +26823,7 @@ function registerDriver(){
 
                         <label>Phone Number *</label>
 
-                        <input type="tel" id="phoneNumber" placeholder="e.g., +255 712 345 678" required>
+                        <input type="tel" id="phoneNumber" placeholder="e.g., +255 712 345 678" required />
 
                     </div>
 
@@ -26852,7 +26831,7 @@ function registerDriver(){
 
                         <label>Email Address *</label>
 
-                        <input type="email" id="email" placeholder="e.g., driver@example.com" required>
+                        <input type="email" id="email" placeholder="e.g., driver@example.com" required />
 
                     </div>
 
@@ -26866,7 +26845,7 @@ function registerDriver(){
 
                         <label>NIDA Number *</label>
 
-                        <input type="text" id="nidaNumber" placeholder="e.g., 1234567890123456789" maxlength="20" required>
+                        <input type="text" id="nidaNumber" placeholder="e.g., 1234567890123456789" maxlength="20" required />
 
                     </div>
 
@@ -26874,7 +26853,7 @@ function registerDriver(){
 
                         <label>Passport Number</label>
 
-                        <input type="text" id="passportNumber" placeholder="e.g., AB1234567">
+                        <input type="text" id="passportNumber" placeholder="e.g., AB1234567" />
 
                     </div>
 
@@ -26888,7 +26867,7 @@ function registerDriver(){
 
                         <label>Date of Birth *</label>
 
-                        <input type="date" id="dateOfBirth" required>
+                        <input type="date" id="dateOfBirth" required />
 
                     </div>
 
@@ -26920,7 +26899,7 @@ function registerDriver(){
 
                         <label>Residential Address *</label>
 
-                        <input type="text" id="address" placeholder="e.g., Mwenge, Kinondoni, Dar es Salaam" required>
+                        <input type="text" id="address" placeholder="e.g., Mwenge, Kinondoni, Dar es Salaam" required />
 
                     </div>
 
@@ -26998,7 +26977,7 @@ function registerDriver(){
 
                         <label>Emergency Contact Name *</label>
 
-                        <input type="text" id="emergencyContactName" placeholder="e.g., Jane Smith" required>
+                        <input type="text" id="emergencyContactName" placeholder="e.g., Jane Smith" required />
 
                     </div>
 
@@ -27006,7 +26985,7 @@ function registerDriver(){
 
                         <label>Emergency Contact Number *</label>
 
-                        <input type="tel" id="emergencyContactNumber" placeholder="e.g., +255 712 345 679" required>
+                        <input type="tel" id="emergencyContactNumber" placeholder="e.g., +255 712 345 679" required />
 
                     </div>
 
@@ -27078,7 +27057,7 @@ function registerDriver(){
 
                         <label>License Issue Date *</label>
 
-                        <input type="date" id="licenseIssueDate" required>
+                        <input type="date" id="licenseIssueDate" required />
 
                     </div>
 
@@ -27086,7 +27065,7 @@ function registerDriver(){
 
                         <label>License Expiry Date *</label>
 
-                        <input type="date" id="licenseExpiryDate" required>
+                        <input type="date" id="licenseExpiryDate" required />
 
                     </div>
 
@@ -27120,7 +27099,7 @@ function registerDriver(){
 
                         <label>Hire Date *</label>
 
-                        <input type="date" id="hireDate" required>
+                        <input type="date" id="hireDate" required />
 
                     </div>
 
@@ -27134,7 +27113,7 @@ function registerDriver(){
 
                         <label>Salary/Compensation</label>
 
-                        <input type="number" id="salary" placeholder="e.g., 500000">
+                        <input type="number" id="salary" placeholder="e.g., 500000" />
 
                     </div>
 
@@ -27198,7 +27177,7 @@ function registerDriver(){
 
                         <label>Medical Certificate Expiry</label>
 
-                        <input type="date" id="medicalExpiryDate">
+                        <input type="date" id="medicalExpiryDate" />
 
                     </div>
 
@@ -27437,7 +27416,7 @@ async function saveDriverRegistration(){
         console.log('âœ… Driver registered successfully:', data);
         
         // Show success notification
-        showNotification('âœ… Driver Registration Successful!', `Driver ID: ${formData.driverId}\nName: ${formData.driverName}\nLicense: ${formData.licenseType}\nPhone: ${formData.phoneNumber}\nEmail: ${formData.email}\nRegistered: ${new Date().toLocaleString()}`, 'success');
+        showNotification('âœ… Driver Registration Successful!', `Driver ID: ${formData.driverId}nName: ${formData.driverName}nLicense: ${formData.licenseType}nPhone: ${formData.phoneNumber}nEmail: ${formData.email}nRegistered: ${new Date().toLocaleString()}`, 'success');
         
         // Reset form after successful registration
         setTimeout(() => {
@@ -27680,7 +27659,7 @@ async function loadDrivers() {
 
                         <div class="status-info">
 
-                            <span class="status-badge status-${String(driver.driver_status).toLowerCase().replace(/\s+/g, '-')}">${driver.driver_status}</span>
+                            <span class="status-badge status-${String(driver.driver_status).toLowerCase().replace(/s+/g, '-')}">${driver.driver_status}</span>
 
                         </div>
 
@@ -28256,9 +28235,9 @@ async function viewUserDetails(userId) {
             '</table>' +
             '<div style="display:flex;gap:8px;justify-content:flex-end;margin-top:20px;">' +
             (statusText === 'Active' ?
-                '<button onclick="document.getElementById(\'userDetailsOverlay\').remove(); suspendUser(' + user.id + ')" style="padding:8px 16px;background:#dc3545;color:#fff;border:none;border-radius:4px;cursor:pointer;">Suspend</button>' :
-                '<button onclick="document.getElementById(\'userDetailsOverlay\').remove(); reactivateUser(' + user.id + ')" style="padding:8px 16px;background:#28a745;color:#fff;border:none;border-radius:4px;cursor:pointer;">Reactivate</button>') +
-            '<button onclick="document.getElementById(\'userDetailsOverlay\').remove()" style="padding:8px 16px;background:#6c757d;color:#fff;border:none;border-radius:4px;cursor:pointer;">Close</button></div>';
+                "<button onclick=\"document.getElementById('userDetailsOverlay').remove(); suspendUser(" + user.id + ")\" style=\"padding:8px 16px;background:#dc3545;color:#fff;border:none;border-radius:4px;cursor:pointer;\">Suspend</button>" :
+                "<button onclick=\"document.getElementById('userDetailsOverlay').remove(); reactivateUser(" + user.id + ")\" style=\"padding:8px 16px;background:#28a745;color:#fff;border:none;border-radius:4px;cursor:pointer;\">Reactivate</button>") +
+            "<button onclick=\"document.getElementById('userDetailsOverlay').remove()\" style=\"padding:8px 16px;background:#6c757d;color:#fff;border:none;border-radius:4px;cursor:pointer;\">Close</button></div>";
         overlay.appendChild(modal);
         overlay.addEventListener('click', function(e) { if (e.target === overlay) overlay.remove(); });
         document.body.appendChild(overlay);
@@ -28456,7 +28435,7 @@ function recordToolboxMeetings(){
 
                             <label>Meeting ID</label>
 
-                            <input type="text" id="meetingId" placeholder="TBT-2026-001" readonly>
+                            <input type="text" id="meetingId" placeholder="TBT-2026-001" readonly />
 
                         </div>
 
@@ -28464,7 +28443,7 @@ function recordToolboxMeetings(){
 
                             <label>Meeting Date *</label>
 
-                            <input type="datetime-local" id="meetingDate" required>
+                            <input type="datetime-local" id="meetingDate" required />
 
                         </div>
 
@@ -28496,7 +28475,7 @@ function recordToolboxMeetings(){
 
                             <label>Meeting Duration (minutes)</label>
 
-                            <input type="number" id="meetingDuration" placeholder="e.g., 30">
+                            <input type="number" id="meetingDuration" placeholder="e.g., 30" />
 
                         </div>
 
@@ -28538,7 +28517,7 @@ function recordToolboxMeetings(){
 
                         <label>Custom Topic</label>
 
-                        <input type="text" id="customTopic" placeholder="If not in list above">
+                        <input type="text" id="customTopic" placeholder="If not in list above" />
 
                     </div>
 
@@ -28570,7 +28549,7 @@ function recordToolboxMeetings(){
 
                             <label>Total Attendees *</label>
 
-                            <input type="number" id="totalAttendees" placeholder="e.g., 15" required>
+                            <input type="number" id="totalAttendees" placeholder="e.g., 15" required />
 
                         </div>
 
@@ -28578,7 +28557,7 @@ function recordToolboxMeetings(){
 
                             <label>Conducted By *</label>
 
-                            <input type="text" id="conductedBy" placeholder="HSE Manager Name" required>
+                            <input type="text" id="conductedBy" placeholder="HSE Manager Name" required />
 
                         </div>
 
@@ -28610,7 +28589,7 @@ function recordToolboxMeetings(){
 
                         <label>Meeting Materials</label>
 
-                        <input type="file" id="meetingMaterials" accept=".pdf,.ppt,.jpg,.png" multiple>
+                        <input type="file" id="meetingMaterials" accept=".pdf,.ppt,.jpg,.png" multiple />
 
                     </div>
 
@@ -28620,7 +28599,7 @@ function recordToolboxMeetings(){
 
                         <label>Photos of Meeting</label>
 
-                        <input type="file" id="meetingPhotos" accept=".jpg,.jpeg,.png" multiple>
+                        <input type="file" id="meetingPhotos" accept=".jpg,.jpeg,.png" multiple />
 
                     </div>
 
@@ -28648,7 +28627,7 @@ function recordToolboxMeetings(){
 
                 <div class="search-section">
 
-                    <input type="text" id="toolboxSearchInput" placeholder="Search by topic or conductor..." onkeyup="filterToolboxMeetings()">
+                    <input type="text" id="toolboxSearchInput" placeholder="Search by topic or conductor..." onkeyup="filterToolboxMeetings()" />
 
                     <select id="toolboxProjectFilter" onchange="filterToolboxMeetings()">
 
@@ -28816,7 +28795,7 @@ function trackPpeIssuance(){
 
                             <label>Issuance ID</label>
 
-                            <input type="text" id="issuanceId" placeholder="PPE-2026-001" readonly>
+                            <input type="text" id="issuanceId" placeholder="PPE-2026-001" readonly />
 
                         </div>
 
@@ -28824,7 +28803,7 @@ function trackPpeIssuance(){
 
                             <label>Issue Date *</label>
 
-                            <input type="date" id="issueDate" required>
+                            <input type="date" id="issueDate" required />
 
                         </div>
 
@@ -28838,7 +28817,7 @@ function trackPpeIssuance(){
 
                             <label>Worker Name *</label>
 
-                            <input type="text" id="workerName" placeholder="e.g., John Michael" required>
+                            <input type="text" id="workerName" placeholder="e.g., John Michael" required />
 
                         </div>
 
@@ -28846,7 +28825,7 @@ function trackPpeIssuance(){
 
                             <label>Worker ID</label>
 
-                            <input type="text" id="workerId" placeholder="WRK-0001" readonly>
+                            <input type="text" id="workerId" placeholder="WRK-0001" readonly />
 
                         </div>
 
@@ -28914,9 +28893,9 @@ function trackPpeIssuance(){
 
                                 </select>
 
-                                <input type="number" class="ppe-quantity" placeholder="Qty" min="1" required>
+                                <input type="number" class="ppe-quantity" placeholder="Qty" min="1" required />
 
-                                <input type="text" class="ppe-size" placeholder="Size/Type">
+                                <input type="text" class="ppe-size" placeholder="Size/Type" />
 
                                 <button type="button" onclick="addPpeItem()">Add Item</button>
 
@@ -28952,7 +28931,7 @@ function trackPpeIssuance(){
 
                         <label>Expected Return Date</label>
 
-                        <input type="date" id="returnDate">
+                        <input type="date" id="returnDate" />
 
                     </div>
 
@@ -28962,7 +28941,7 @@ function trackPpeIssuance(){
 
                         <label>Worker Signature</label>
 
-                        <input type="text" id="workerSignature" placeholder="Worker signature or ID confirmation">
+                        <input type="text" id="workerSignature" placeholder="Worker signature or ID confirmation" />
 
                     </div>
 
@@ -28972,7 +28951,7 @@ function trackPpeIssuance(){
 
                         <label>Issued By *</label>
 
-                        <input type="text" id="issuedBy" placeholder="HSE Manager Name" required>
+                        <input type="text" id="issuedBy" placeholder="HSE Manager Name" required />
 
                     </div>
 
@@ -29000,7 +28979,7 @@ function trackPpeIssuance(){
 
                 <div class="search-section">
 
-                    <input type="text" id="ppeSearchInput" placeholder="Search by worker name or ID..." onkeyup="filterPpeRecords()">
+                    <input type="text" id="ppeSearchInput" placeholder="Search by worker name or ID..." onkeyup="filterPpeRecords()" />
 
                     <select id="ppeProjectFilter" onchange="filterPpeRecords()">
 
@@ -29218,15 +29197,15 @@ function markSafetyViolations(){
 
                             <label>Violation ID</label>
 
-                            <input type="text" id="violationId" placeholder="VIO-2026-001" readonly>
+                            <input type="text" id="violationId" placeholder="VIO-2026-001" readonly />
 
                         </div>
 
                         <div class="form-group">
 
-                            <label>Violation Date *</label>
+                            <label>Date *</label>
 
-                            <input type="datetime-local" id="violationDate" required>
+                            <input type="datetime-local" id="violationDate" required />
 
                         </div>
 
@@ -29256,7 +29235,7 @@ function markSafetyViolations(){
 
                         <div class="form-group">
 
-                            <label>Violation Type *</label>
+                            <label>Type *</label>
 
                             <select id="violationType" required>
 
@@ -29288,7 +29267,7 @@ function markSafetyViolations(){
 
                         <div class="form-group">
 
-                            <label>Severity Level *</label>
+                            <label>Severity *</label>
 
                             <select id="violationSeverity" required>
 
@@ -29310,7 +29289,7 @@ function markSafetyViolations(){
 
                             <label>Location *</label>
 
-                            <input type="text" id="violationLocation" placeholder="e.g., Site A - 2nd Floor" required>
+                            <input type="text" id="violationLocation" placeholder="e.g., Site A - 2nd Floor" required />
 
                         </div>
 
@@ -29322,7 +29301,7 @@ function markSafetyViolations(){
 
                         <label>Violator(s) *</label>
 
-                        <input type="text" id="violators" placeholder="Names of individuals involved" required>
+                        <input type="text" id="violators" placeholder="Names of individuals involved" required />
 
                     </div>
 
@@ -29330,7 +29309,7 @@ function markSafetyViolations(){
 
                     <div class="form-group">
 
-                        <label>Description of Violation *</label>
+                        <label>Description *</label>
 
                         <textarea id="violationDescription" rows="4" placeholder="Detailed description of safety violation..." required></textarea>
 
@@ -29340,7 +29319,7 @@ function markSafetyViolations(){
 
                     <div class="form-group">
 
-                        <label>Immediate Action Taken *</label>
+                        <label>Immediate Action *</label>
 
                         <textarea id="immediateAction" rows="3" placeholder="Stop work, remove from area, etc..." required></textarea>
 
@@ -29352,7 +29331,7 @@ function markSafetyViolations(){
 
                         <div class="form-group">
 
-                            <label>Corrective Action Required *</label>
+                            <label>Corrective Action *</label>
 
                             <select id="correctiveAction" required>
 
@@ -29374,9 +29353,9 @@ function markSafetyViolations(){
 
                         <div class="form-group">
 
-                            <label>Action Deadline *</label>
+                            <label>Deadline *</label>
 
-                            <input type="date" id="actionDeadline" required>
+                            <input type="date" id="actionDeadline" required />
 
                         </div>
 
@@ -29388,7 +29367,7 @@ function markSafetyViolations(){
 
                         <label>Witnesses</label>
 
-                        <input type="text" id="violationWitnesses" placeholder="Names of witnesses">
+                        <input type="text" id="violationWitnesses" placeholder="Names of witnesses" />
 
                     </div>
 
@@ -29398,7 +29377,7 @@ function markSafetyViolations(){
 
                         <label>Evidence Photos</label>
 
-                        <input type="file" id="violationEvidence" accept=".jpg,.jpeg,.png" multiple>
+                        <input type="file" id="violationEvidence" accept=".jpg,.jpeg,.png" multiple />
 
                     </div>
 
@@ -29410,8 +29389,15 @@ function markSafetyViolations(){
 
                             <label>Reported By *</label>
 
-                            <input type="text" id="reportedBy" placeholder="HSE Manager Name" required>
-
+                            <input type="text" id="reportedBy" placeholder="HSE Manager Name" required />
+                        </div>
+                        <div class="form-group">
+                            <label>Status *</label>
+                            <select id="incidentStatus" required>
+                                <option value="pending">Pending</option>
+                                <option value="investigating">Investigating</option>
+                                <option value="resolved">Resolved</option>
+                            </select>
                         </div>
 
                         <div class="form-group">
@@ -29452,9 +29438,9 @@ function markSafetyViolations(){
 
                 <h4>Safety Violations Registry</h4>
 
-                <div class="violations-table-container">
+                <div class="violations-table-container" style="overflow-x: auto; width: 100%;">
 
-                    <table class="violations-table">
+                    <table class="violations-table" style="min-width: 1400px; white-space: nowrap;">
 
                         <thead>
 
@@ -29528,6 +29514,32 @@ function markSafetyViolations(){
 
     loadViolations();
 
+    // Load actual projects
+    loadViolationProjects();
+
+}
+
+async function loadViolationProjects() {
+    try {
+        const baseUrl = window.location.origin;
+        const response = await fetch(`${baseUrl}/api/projects`, {
+            headers: { 'Authorization': `Bearer ${sessionManager.getAuthToken()}` }
+        });
+        if (response.ok) {
+            const result = await response.json();
+            const projects = Array.isArray(result) ? result : (result.projects || result.data || []);
+            const select = document.getElementById('violationProject');
+            if (select && projects && projects.length) {
+                let html = '<option value="">Select Project</option>';
+                projects.forEach(p => {
+                    html += `<option value="${p.name}">${p.name}</option>`;
+                });
+                select.innerHTML = html;
+            }
+        }
+    } catch (e) {
+        console.warn('Could not load violation projects', e);
+    }
 }
 
 
@@ -29576,7 +29588,7 @@ async function loadViolations() {
 
         } catch (primaryError) {
 
-            console.warn('âš ï¸ Primary violations endpoint failed, trying fallback:', primaryError.message);
+            console.warn('âš ï¸  Primary violations endpoint failed, trying fallback:', primaryError.message);
 
             // Try fallback endpoint
 
@@ -29688,6 +29700,41 @@ async function loadViolations() {
 
                     
 
+                    let descriptionText = item.work_description || '';
+                    let actionTakenParsed = descriptionText.substring(0, 100) + (descriptionText.length > 100 ? '...' : '');
+                    let violatorsParsed = item.assigned_to || 'HSE Manager';
+                    let immediateActionParsed = 'Under Review';
+                    let correctiveActionParsed = 'To be determined';
+                    let deadlineParsed = item.due_date || new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+                    let reportedByParsed = item.submitted_by || 'HSE Manager';
+                    let descParsed = descriptionText;
+
+                    if (descriptionText.includes('Safety Violation Report')) {
+                        const vMatch = descriptionText.match(/Violators:s*(.*)/);
+                        if (vMatch) violatorsParsed = vMatch[1];
+                        
+                        const dMatch = descriptionText.match(/Description:s*(.*)/);
+                        if (dMatch) {
+                            descParsed = dMatch[1];
+                        } else {
+                            descParsed = "No description provided";
+                        }
+                        
+                        const iaMatch = descriptionText.match(/Immediate Action:s*(.*)/);
+                        if (iaMatch) immediateActionParsed = iaMatch[1];
+                        
+                        const caMatch = descriptionText.match(/Corrective Action:s*(.*)/);
+                        if (caMatch) correctiveActionParsed = caMatch[1];
+                        
+                        const dlMatch = descriptionText.match(/Deadline:s*(.*)/);
+                        if (dlMatch) deadlineParsed = dlMatch[1];
+                        
+                        const rbMatch = descriptionText.match(/Reported By:s*(.*)/);
+                        if (rbMatch) reportedByParsed = rbMatch[1];
+                        
+                        actionTakenParsed = descParsed.substring(0, 100) + (descParsed.length > 100 ? '...' : '');
+                    }
+
                     return {
 
                         id: `VIO-${item.id}`,
@@ -29702,23 +29749,27 @@ async function loadViolations() {
 
                         severity: severity,
 
-                        violators: item.assigned_to || 'HSE Manager',
+                        violators: violatorsParsed,
 
                         location: item.location || 'HSE Office',
 
-                        actionTaken: item.work_description ? item.work_description.substring(0, 100) + '...' : 'Under Review',
+                        actionTaken: actionTakenParsed,
 
-                        status: item.status === 'completed' ? 'resolved' : 
+                        description: descParsed,
 
-                               item.status === 'Pending' ? 'pending' : 'pending',
+                        immediateAction: immediateActionParsed,
+                        
+                        correctiveAction: correctiveActionParsed,
 
-                        reportedBy: item.submitted_by || 'HSE Manager',
+                        status: (item.status && item.status.toLowerCase() === 'completed') ? 'resolved' : (item.status && item.status.toLowerCase() === 'rejected') ? 'rejected' : 'pending',
+
+                        reportedBy: reportedByParsed,
 
                         evidence: '',
 
                         followUpRequired: item.status === 'pending' ? 'yes' : 'no',
 
-                        deadline: item.due_date || new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
+                        deadline: deadlineParsed
 
                     };
 
@@ -29810,469 +29861,54 @@ function loadSampleViolations() {
 
     
 
-    const sampleViolations = [
-
-        {
-
-            id: 'VIO-001',
-
-            violationId: 'VIO-2026-001',
-
-            date: '2026-03-15T10:30:00',
-
-            project: 'Port Modernization Phase 1',
-
-            type: 'no-ppe',
-
-            severity: 'major',
-
-            violators: 'James Wilson, Michael Brown',
-
-            location: 'Foundation Area - Site A',
-
-            actionTaken: 'Safety Retraining',
-
-            status: 'pending',
-
-            reportedBy: 'John Mwangi',
-
-            description: 'Workers found without proper PPE in construction zone',
-
-            immediateAction: 'Work stopped, workers removed from area',
-
-            correctiveAction: 'Safety Retraining',
-
-            actionDeadline: '2026-03-20',
-
-            witnesses: 'Sarah Johnson, Robert Davis',
-
-            followUpRequired: 'yes'
-
-        },
-
-        {
-
-            id: 'VIO-002',
-
-            violationId: 'VIO-2026-002',
-
-            date: '2026-03-18T14:15:00',
-
-            project: 'Warehouse Construction',
-
-            type: 'unsafe-act',
-
-            severity: 'critical',
-
-            violators: 'David Anderson',
-
-            location: 'Scaffolding Level 3',
-
-            actionTaken: 'Written Warning',
-
-            status: 'resolved',
-
-            reportedBy: 'Mary Johnson',
-
-            description: 'Unauthorized work at height without proper fall protection',
-
-            immediateAction: 'Work immediately stopped, area secured',
-
-            correctiveAction: 'Written Warning',
-
-            actionDeadline: '2026-03-19',
-
-            witnesses: 'Lisa Martinez, Thomas Wilson',
-
-            followUpRequired: 'no'
-
-        },
-
-        {
-
-            id: 'VIO-003',
-
-            violationId: 'VIO-2026-003',
-
-            date: '2026-03-22T09:45:00',
-
-            project: 'Road Infrastructure Development',
-
-            type: 'equipment-misuse',
-
-            severity: 'moderate',
-
-            violators: 'Robert Davis, Emily Taylor',
-
-            location: 'Excavation Site B',
-
-            actionTaken: 'Verbal Warning',
-
-            status: 'pending',
-
-            reportedBy: 'Robert Davis',
-
-            description: 'Heavy equipment operated without proper authorization',
-
-            immediateAction: 'Equipment shut down, operators interviewed',
-
-            correctiveAction: 'Verbal Warning',
-
-            actionDeadline: '2026-03-25',
-
-            witnesses: 'James Wilson, Patricia Johnson',
-
-            followUpRequired: 'yes'
-
-        },
-
-        {
-
-            id: 'VIO-004',
-
-            violationId: 'VIO-2026-004',
-
-            date: '2026-03-25T16:20:00',
-
-            project: 'Office Building Renovation',
-
-            type: 'improper-ppe',
-
-            severity: 'minor',
-
-            violators: 'Sarah Wilson',
-
-            location: 'Electrical Room - 2nd Floor',
-
-            actionTaken: 'Verbal Warning',
-
-            status: 'resolved',
-
-            reportedBy: 'Sarah Wilson',
-
-            description: 'Improper use of electrical safety gloves',
-
-            immediateAction: 'Work stopped, proper PPE provided',
-
-            correctiveAction: 'Verbal Warning',
-
-            actionDeadline: '2026-03-26',
-
-            witnesses: 'Michael Brown, David Anderson',
-
-            followUpRequired: 'no'
-
-        },
-
-        {
-
-            id: 'VIO-005',
-
-            violationId: 'VIO-2026-005',
-
-            date: '2026-03-28T11:30:00',
-
-            project: 'Water Treatment Plant',
-
-            type: 'procedure-violation',
-
-            severity: 'major',
-
-            violators: 'Michael Brown, Jennifer Lee',
-
-            location: 'Chemical Storage Area',
-
-            actionTaken: 'Safety Retraining',
-
-            status: 'pending',
-
-            reportedBy: 'Michael Brown',
-
-            description: 'Violation of chemical handling procedures',
-
-            immediateAction: 'Area evacuated, safety team deployed',
-
-            correctiveAction: 'Safety Retraining',
-
-            actionDeadline: '2026-04-01',
-
-            witnesses: 'John Mwangi, Mary Johnson',
-
-            followUpRequired: 'yes'
-
-        },
-
-        {
-
-            id: 'VIO-006',
-
-            violationId: 'VIO-2026-006',
-
-            date: '2026-04-02T13:45:00',
-
-            project: 'Shopping Mall Construction',
-
-            type: 'unsafe-condition',
-
-            severity: 'critical',
-
-            violators: 'N/A - Site Condition',
-
-            location: 'Roof Work Area',
-
-            actionTaken: 'Work Suspension',
-
-            status: 'resolved',
-
-            reportedBy: 'Emily Taylor',
-
-            description: 'Unsafe working conditions on roof structure',
-
-            immediateAction: 'All roof work suspended immediately',
-
-            correctiveAction: 'Work Suspension',
-
-            actionDeadline: '2026-04-03',
-
-            witnesses: 'Thomas Anderson, Lisa Martinez',
-
-            followUpRequired: 'no'
-
-        },
-
-        {
-
-            id: 'VIO-007',
-
-            violationId: 'VIO-2026-007',
-
-            date: '2026-04-05T08:15:00',
-
-            project: 'School Infrastructure',
-
-            type: 'unauthorized-work',
-
-            severity: 'moderate',
-
-            violators: 'David Anderson',
-
-            location: 'Foundation Site - Area C',
-
-            actionTaken: 'Written Warning',
-
-            status: 'pending',
-
-            reportedBy: 'David Anderson',
-
-            description: 'Unauthorized work in restricted area',
-
-            immediateAction: 'Worker escorted from area, access revoked',
-
-            correctiveAction: 'Written Warning',
-
-            actionDeadline: '2026-04-08',
-
-            witnesses: 'James Wilson, Sarah Johnson',
-
-            followUpRequired: 'yes'
-
-        },
-
-        {
-
-            id: 'VIO-008',
-
-            violationId: 'VIO-2026-008',
-
-            date: '2026-04-08T15:30:00',
-
-            project: 'Hospital Expansion',
-
-            type: 'no-ppe',
-
-            severity: 'minor',
-
-            violators: 'Lisa Martinez',
-
-            location: 'Demolition Area',
-
-            actionTaken: 'Verbal Warning',
-
-            status: 'resolved',
-
-            reportedBy: 'Lisa Martinez',
-
-            description: 'Worker without proper demolition PPE',
-
-            immediateAction: 'Work stopped, proper PPE provided',
-
-            correctiveAction: 'Verbal Warning',
-
-            actionDeadline: '2026-04-09',
-
-            witnesses: 'Jennifer Lee, Thomas Anderson',
-
-            followUpRequired: 'no'
-
-        },
-
-        {
-
-            id: 'VIO-009',
-
-            violationId: 'VIO-2026-009',
-
-            date: '2026-04-12T10:00:00',
-
-            project: 'Bridge Construction',
-
-            type: 'equipment-misuse',
-
-            severity: 'major',
-
-            violators: 'Robert Davis, James Wilson',
-
-            location: 'Crane Operation Zone',
-
-            actionTaken: 'Safety Retraining',
-
-            status: 'pending',
-
-            reportedBy: 'James Wilson',
-
-            description: 'Improper use of crane equipment',
-
-            immediateAction: 'Crane operations suspended, investigation initiated',
-
-            correctiveAction: 'Safety Retraining',
-
-            actionDeadline: '2026-04-15',
-
-            witnesses: 'Mary Johnson, David Anderson',
-
-            followUpRequired: 'yes'
-
-        },
-
-        {
-
-            id: 'VIO-010',
-
-            violationId: 'VIO-2026-010',
-
-            date: '2026-04-15T14:20:00',
-
-            project: 'Industrial Park Development',
-
-            type: 'procedure-violation',
-
-            severity: 'moderate',
-
-            violators: 'Patricia Johnson',
-
-            location: 'Welding Area - Section B',
-
-            actionTaken: 'Verbal Warning',
-
-            status: 'resolved',
-
-            reportedBy: 'Patricia Johnson',
-
-            description: 'Violation of welding safety procedures',
-
-            immediateAction: 'Welding stopped, safety briefing conducted',
-
-            correctiveAction: 'Verbal Warning',
-
-            actionDeadline: '2026-04-16',
-
-            witnesses: 'Thomas Anderson, Lisa Martinez',
-
-            followUpRequired: 'no'
-
-        },
-
-        {
-
-            id: 'VIO-011',
-
-            violationId: 'VIO-2026-011',
-
-            date: '2026-04-18T09:30:00',
-
-            project: 'Sports Complex',
-
-            type: 'unsafe-act',
-
-            severity: 'critical',
-
-            violators: 'Thomas Anderson',
-
-            location: 'Foundation Excavation',
-
-            actionTaken: 'Suspension',
-
-            status: 'pending',
-
-            reportedBy: 'Thomas Anderson',
-
-            description: 'Unsafe excavation practices endangering workers',
-
-            immediateAction: 'Work stopped, worker suspended pending investigation',
-
-            correctiveAction: 'Suspension',
-
-            actionDeadline: '2026-04-20',
-
-            witnesses: 'James Wilson, Michael Brown',
-
-            followUpRequired: 'yes'
-
-        },
-
-        {
-
-            id: 'VIO-012',
-
-            violationId: 'VIO-2026-012',
-
-            date: '2026-04-22T11:45:00',
-
-            project: 'Telecommunications Tower',
-
-            type: 'improper-ppe',
-
-            severity: 'minor',
-
-            violators: 'Jennifer Lee',
-
-            location: 'Tower Base Area',
-
-            actionTaken: 'Verbal Warning',
-
-            status: 'resolved',
-
-            reportedBy: 'Jennifer Lee',
-
-            description: 'Improper use of safety harness',
-
-            immediateAction: 'Work stopped, proper harness fitted',
-
-            correctiveAction: 'Verbal Warning',
-
-            actionDeadline: '2026-04-23',
-
-            witnesses: 'Patricia Johnson, David Anderson',
-
-            followUpRequired: 'no'
-
-        }
-
-    ];
-
     
+async function fetchAndDisplayViolations() {
+    const violationsList = document.getElementById('violationsList');
+    if (violationsList) {
+        violationsList.innerHTML = '<tr><td colspan="14"><div class="loading">Loading violations from database...</div></td></tr>';
+    }
+    
+    try {
+        const response = await fetch('/api/violations', {
+            headers: {
+                'Authorization': `Bearer ${sessionManager?.getAuthToken() || localStorage.getItem('authToken')}`
+            }
+        });
+        
+        if (!response.ok) throw new Error('Failed to fetch violations');
+        
+        const data = await response.json();
+        if (data.success && data.violations) {
+            // Map the DB fields to the format expected by displayViolations
+            const formattedViolations = data.violations.map(v => ({
+                id: v.violation_id,
+                violationId: v.violation_id,
+                date: v.date,
+                project: v.project,
+                type: v.type,
+                severity: v.severity,
+                violators: v.violators,
+                location: v.location,
+                description: v.description,
+                immediateAction: v.immediate_action,
+                correctiveAction: v.corrective_action,
+                actionDeadline: v.action_deadline,
+                status: v.status,
+                reportedBy: v.reported_by
+            }));
+            displayViolations(formattedViolations);
+        } else {
+            displayViolations([]);
+        }
+    } catch (error) {
+        console.error('Error fetching violations:', error);
+        if (violationsList) {
+            violationsList.innerHTML = '<tr><td colspan="14"><div class="error" style="color: red; text-align: center; padding: 20px;">Failed to load violations. Please try again.</div></td></tr>';
+        }
+    }
+}
 
-    displayViolations(sampleViolations);
+fetchAndDisplayViolations();
 
 }
 
@@ -30378,6 +30014,8 @@ function displayViolations(violations) {
 
                              violation.status === 'investigating' ? 'ðŸ” Investigating' : 
 
+                             violation.status === 'rejected' ? '❌ Rejected' : 
+
                              violation.status === 'closed' ? 'ðŸ”’ Closed' : violation.status;
 
         
@@ -30388,7 +30026,9 @@ function displayViolations(violations) {
 
                            violation.status === 'investigating' ? 'status-investigating' : 
 
-                           violation.status === 'closed' ? 'status-closed' : '';
+                           violation.status === 'rejected' ? 'status-rejected' : 
+
+                             violation.status === 'closed' ? 'status-closed' : '';
 
         
 
@@ -30557,10 +30197,8 @@ function displayViolations(violations) {
                     <div class="violation-actions">
 
                         <button class="action-btn view" onclick="viewViolationDetails('${violation.id}')" title="View Details">ðŸ‘ï¸</button>
-
-                        <button class="action-btn edit" onclick="updateViolationStatus('${violation.id}')" title="Update Status">âœï¸</button>
-
-                        <button class="action-btn download" onclick="downloadViolationReport('${violation.id}')" title="Download Report">ðŸ“„</button>
+                        <button class="action-btn approve" onclick="approveViolation('${violation.id}')" title="Approve Violation">✅</button>
+                        <button class="action-btn reject" onclick="rejectViolation('${violation.id}')" title="Reject Violation">❌</button>
 
                     </div>
 
@@ -30584,7 +30222,7 @@ function displayViolations(violations) {
 
 function viewViolationDetails(violationId) {
 
-    customAlert(`Viewing violation details for ID: ${violationId}\n\nFull violation information including description, immediate actions taken, corrective measures, witnesses, evidence photos, and follow-up requirements will be displayed.`, "Violation Details", "info");
+    customAlert(`Viewing violation details for ID: ${violationId}nnFull violation information including description, immediate actions taken, corrective measures, witnesses, evidence photos, and follow-up requirements will be displayed.`, "Violation Details", "info");
 
 }
 
@@ -30592,7 +30230,7 @@ function viewViolationDetails(violationId) {
 
 function updateViolationStatus(violationId) {
 
-    customAlert(`Updating violation status for ID: ${violationId}\n\nStatus update form will open for recording follow-up actions, corrective measures completed, and final resolution of the safety violation.`, "Update Violation", "info");
+    customAlert(`Updating violation status for ID: ${violationId}nnStatus update form will open for recording follow-up actions, corrective measures completed, and final resolution of the safety violation.`, "Update Violation", "info");
 
 }
 
@@ -30600,7 +30238,55 @@ function updateViolationStatus(violationId) {
 
 function downloadViolationReport(violationId) {
 
-    customAlert(`Downloading violation report for ID: ${violationId}\n\nComprehensive violation report will be generated including all details, actions taken, and resolution status for documentation and compliance purposes.`, "Download Report", "info");
+    customAlert(`Downloading violation report for ID: ${violationId}nnComprehensive violation report will be generated including all details, actions taken, and resolution status for documentation and compliance purposes.`, "Download Report", "info");
+
+}
+
+async function approveViolation(violationId) {
+    if(!confirm('Are you sure you want to approve this violation?')) return;
+    try {
+        const response = await fetch(`/api/violations/${violationId}/status`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${sessionManager?.getAuthToken() || localStorage.getItem('authToken')}`
+            },
+            body: JSON.stringify({ status: 'resolved' })
+        });
+        if (response.ok) {
+            customAlert(`Violation ID: ${violationId} has been approved successfully.`, "Approve Violation", "success");
+            fetchAndDisplayViolations();
+        } else {
+            customAlert("Failed to approve violation.", "Error", "error");
+        }
+    } catch (error) {
+        console.error(error);
+        customAlert("An error occurred.", "Error", "error");
+    }
+}
+
+async function rejectViolation(violationId) {
+    if(!confirm('Are you sure you want to reject this violation?')) return;
+    try {
+        const response = await fetch(`/api/violations/${violationId}/status`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${sessionManager?.getAuthToken() || localStorage.getItem('authToken')}`
+            },
+            body: JSON.stringify({ status: 'rejected' })
+        });
+        if (response.ok) {
+            customAlert(`Violation ID: ${violationId} has been rejected.`, "Reject Violation", "warning");
+            fetchAndDisplayViolations();
+        } else {
+            customAlert("Failed to reject violation.", "Error", "error");
+        }
+    } catch (error) {
+        console.error(error);
+        customAlert("An error occurred.", "Error", "error");
+    }
+
 
 }
 
@@ -30646,7 +30332,7 @@ function uploadInspectionReports(){
 
                             <label>Report ID</label>
 
-                            <input type="text" id="reportId" placeholder="INSP-2026-001" readonly>
+                            <input type="text" id="reportId" placeholder="INSP-2026-001" readonly />
 
                         </div>
 
@@ -30654,7 +30340,7 @@ function uploadInspectionReports(){
 
                             <label>Inspection Date *</label>
 
-                            <input type="date" id="inspectionDate" required>
+                            <input type="date" id="inspectionDate" required />
 
                         </div>
 
@@ -30716,7 +30402,7 @@ function uploadInspectionReports(){
 
                             <label>Inspector *</label>
 
-                            <input type="text" id="inspector" placeholder="HSE Inspector Name" required>
+                            <input type="text" id="inspector" placeholder="HSE Inspector Name" required />
 
                         </div>
 
@@ -30724,7 +30410,7 @@ function uploadInspectionReports(){
 
                             <label>Inspector License</label>
 
-                            <input type="text" id="inspectorLicense" placeholder="License/Registration Number">
+                            <input type="text" id="inspectorLicense" placeholder="License/Registration Number" />
 
                         </div>
 
@@ -30738,21 +30424,21 @@ function uploadInspectionReports(){
 
                         <div class="checkbox-group">
 
-                            <label><input type="checkbox" value="site-access"> Site Access & Security</label>
+                            <label><input type="checkbox" value="site-access" /> Site Access & Security</label>
 
-                            <label><input type="checkbox" value="work-areas"> Work Areas</label>
+                            <label><input type="checkbox" value="work-areas" /> Work Areas</label>
 
-                            <label><input type="checkbox" value="storage"> Storage Areas</label>
+                            <label><input type="checkbox" value="storage" /> Storage Areas</label>
 
-                            <label><input type="checkbox" value="equipment"> Equipment & Machinery</label>
+                            <label><input type="checkbox" value="equipment" /> Equipment & Machinery</label>
 
-                            <label><input type="checkbox" value="electrical"> Electrical Systems</label>
+                            <label><input type="checkbox" value="electrical" /> Electrical Systems</label>
 
-                            <label><input type="checkbox" value="fire-safety"> Fire Safety</label>
+                            <label><input type="checkbox" value="fire-safety" /> Fire Safety</label>
 
-                            <label><input type="checkbox" value="waste"> Waste Management</label>
+                            <label><input type="checkbox" value="waste" /> Waste Management</label>
 
-                            <label><input type="checkbox" value="facilities"> Sanitary Facilities</label>
+                            <label><input type="checkbox" value="facilities" /> Sanitary Facilities</label>
 
                         </div>
 
@@ -30832,7 +30518,7 @@ function uploadInspectionReports(){
 
                             <label>Follow-up Date</label>
 
-                            <input type="date" id="followUpDate">
+                            <input type="date" id="followUpDate" />
 
                         </div>
 
@@ -30840,7 +30526,7 @@ function uploadInspectionReports(){
 
                             <label>Next Inspection Date</label>
 
-                            <input type="date" id="nextInspectionDate">
+                            <input type="date" id="nextInspectionDate" />
 
                         </div>
 
@@ -30852,7 +30538,7 @@ function uploadInspectionReports(){
 
                         <label>Inspection Report Document *</label>
 
-                        <input type="file" id="inspectionDocument" accept=".pdf,.doc,.docx" required>
+                        <input type="file" id="inspectionDocument" accept=".pdf,.doc,.docx" required />
 
                     </div>
 
@@ -30862,7 +30548,7 @@ function uploadInspectionReports(){
 
                         <label>Supporting Photos</label>
 
-                        <input type="file" id="inspectionPhotos" accept=".jpg,.jpeg,.png" multiple>
+                        <input type="file" id="inspectionPhotos" accept=".jpg,.jpeg,.png" multiple />
 
                     </div>
 
@@ -31778,7 +31464,7 @@ function displayInspectionRecords(data) {
 
 function viewInspectionReport(reportId) {
 
-    customAlert(`Viewing inspection report details for ID: ${reportId}\n\nFull inspection report including findings, recommendations, photos, and compliance status will be displayed.`, "Inspection Report Details", "info");
+    customAlert(`Viewing inspection report details for ID: ${reportId}nnFull inspection report including findings, recommendations, photos, and compliance status will be displayed.`, "Inspection Report Details", "info");
 
 }
 
@@ -31786,7 +31472,7 @@ function viewInspectionReport(reportId) {
 
 function downloadInspectionReport(reportId) {
 
-    customAlert(`Downloading inspection report ${reportId}...\n\nComplete inspection report with all findings, photos, and supporting documents will be downloaded in PDF format.`, "Download Report", "info");
+    customAlert(`Downloading inspection report ${reportId}...nnComplete inspection report with all findings, photos, and supporting documents will be downloaded in PDF format.`, "Download Report", "info");
 
 }
 
@@ -31794,7 +31480,7 @@ function downloadInspectionReport(reportId) {
 
 function editInspectionReport(reportId) {
 
-    customAlert(`Editing inspection report ${reportId}...\n\nInspection report editor will open for modifications, corrections, and status updates.`, "Edit Report", "info");
+    customAlert(`Editing inspection report ${reportId}...nnInspection report editor will open for modifications, corrections, and status updates.`, "Edit Report", "info");
 
 }
 
@@ -33214,7 +32900,7 @@ async function generateSafetyReport(projectId) {
    <Row ss:StyleID="subheader">
     <Cell><Data ss:Type="String">RECOMMENDATIONS</Data></Cell>
    </Row>
-   ${recommendations.map(r => `<Row><Cell><Data ss:Type="String">${escXml(r)}</Data></Cell></Row>`).join('\n   ')}
+   ${recommendations.map(r => `<Row><Cell><Data ss:Type="String">${escXml(r)}</Data></Cell></Row>`).join('n   ')}
   </Table>
  </Worksheet>
 </Workbook>`;
@@ -33568,7 +33254,7 @@ function filterSafetyProjects() {
 
             const safetyScoreText = item.querySelector('.safety-score')?.textContent || '';
 
-            const safetyScore = parseInt(safetyScoreText.match(/\d+/)?.[0] || '0');
+            const safetyScore = parseInt(safetyScoreText.match(/d+/)?.[0] || '0');
 
             shouldShow = safetyScore >= 90;
 
@@ -33933,11 +33619,12 @@ window.addEventListener('click', function(event) {
 // HSE Helper Functions
 
 function saveIncidentReport() {
-
-    console.log('ðŸš€ saveIncidentReport function called');
-
-    
-
+    console.log('🚀 saveIncidentReport function called');
+    if (window.isSavingIncident) {
+        console.log('⚠️ Save already in progress, ignoring double click');
+        return false;
+    }
+    window.isSavingIncident = true;
     try {
 
         // Validate required fields
@@ -33947,18 +33634,21 @@ function saveIncidentReport() {
         const severityLevel = document.getElementById('severityLevel').value;
 
         const incidentDescription = document.getElementById('incidentDescription').value;
+        const project = document.getElementById('incidentProject').value;
+        const location = document.getElementById('incidentLocation').value;
+        const status = document.getElementById('incidentStatus') ? document.getElementById('incidentStatus').value : 'pending';
 
         
 
-        console.log('ðŸ“ Form values:', { incidentType, severityLevel, incidentDescription });
+        console.log('📝 Form values:', { incidentType, severityLevel, incidentDescription, project, location, status });
 
         
 
-        if (!incidentType || !severityLevel || !incidentDescription) {
+        if (!incidentType || !severityLevel || !incidentDescription || !project || !location) {
 
             console.log('âŒ Validation failed - missing required fields');
 
-            customAlert('Please fill in all required fields:\n\nâ€¢ Incident Type\nâ€¢ Severity Level\nâ€¢ Incident Description', "Validation Error", "error");
+            customAlert('Please fill in all required fields:nnâ€¢ Incident Typenâ€¢ Severity Levelnâ€¢ Incident Description', "Validation Error", "error");
 
             return false;
 
@@ -33984,8 +33674,8 @@ function saveIncidentReport() {
 
             location: document.getElementById('incidentLocation')?.value || 'Construction Site', // Required field
 
-            project_name: document.getElementById('incidentProject')?.value || 'Building A', // Required field
-
+            project_name: document.getElementById('incidentProject')?.value || 'Building A',
+            status: document.getElementById('incidentStatus') ? document.getElementById('incidentStatus').value : 'pending',
             priority: severityLevel === 'critical' ? 'Critical' : 
 
                       severityLevel === 'major' ? 'High' : 
@@ -34064,7 +33754,7 @@ function saveIncidentReport() {
 
             showRealProblemNotification('SUCCESS', {
 
-                message: `âœ… Incident report recorded successfully!\n\nðŸ“‹ Details:\nâ€¢ Incident ID: ${data.id}\nâ€¢ Type: ${workItem.incident_type}\nâ€¢ Severity: ${workItem.severity}\nâ€¢ Priority: ${workItem.priority}\nâ€¢ Assigned to: ${workItem.assigned_to}\nâ€¢ Due Date: ${workItem.due_date}\n\nðŸŽ‰ Incident saved to database without page refresh!`,
+                message: `âœ… Incident report recorded successfully!nnðŸ“‹ Details:nâ€¢ Incident ID: ${data.id}nâ€¢ Type: ${workItem.incident_type}nâ€¢ Severity: ${workItem.severity}nâ€¢ Priority: ${workItem.priority}nâ€¢ Assigned to: ${workItem.assigned_to}nâ€¢ Due Date: ${workItem.due_date}nnðŸŽ‰ Incident saved to database without page refresh!`,
 
                 incidentId: data.id,
 
@@ -34096,11 +33786,8 @@ function saveIncidentReport() {
             // Generate new incident ID
 
             document.getElementById('incidentId').value = 'INC-' + Date.now();
-
-            
-
+            window.isSavingIncident = false;
             return false;
-
         })
 
         .catch(error => {
@@ -34121,37 +33808,37 @@ function saveIncidentReport() {
 
                 errorCause = 'Network connection failed';
 
-                troubleshooting = 'â€¢ Check internet connection\nâ€¢ Verify server is running\nâ€¢ Try again in a moment';
+                troubleshooting = 'â€¢ Check internet connectionnâ€¢ Verify server is runningnâ€¢ Try again in a moment';
 
             } else if (error.message.includes('400')) {
 
                 errorCause = 'Invalid incident data';
 
-                troubleshooting = 'â€¢ Fill all required fields correctly\nâ€¢ Check incident type selection\nâ€¢ Verify severity level\nâ€¢ Ensure description is provided';
+                troubleshooting = 'â€¢ Fill all required fields correctlynâ€¢ Check incident type selectionnâ€¢ Verify severity levelnâ€¢ Ensure description is provided';
 
             } else if (error.message.includes('404')) {
 
                 errorCause = 'HSE API endpoint not found';
 
-                troubleshooting = 'â€¢ Server routing issue\nâ€¢ Contact system administrator';
+                troubleshooting = 'â€¢ Server routing issuenâ€¢ Contact system administrator';
 
             } else if (error.message.includes('500')) {
 
                 errorCause = 'Server internal error';
 
-                troubleshooting = 'â€¢ Database connection issue\nâ€¢ Server configuration problem\nâ€¢ Contact system administrator';
+                troubleshooting = 'â€¢ Database connection issuenâ€¢ Server configuration problemnâ€¢ Contact system administrator';
 
             } else if (error.message.includes('validation') || error.message.includes('required')) {
 
                 errorCause = 'Form validation failed';
 
-                troubleshooting = 'â€¢ Fill all required fields\nâ€¢ Check field formats\nâ€¢ Ensure incident type is selected\nâ€¢ Verify severity level';
+                troubleshooting = 'â€¢ Fill all required fieldsnâ€¢ Check field formatsnâ€¢ Ensure incident type is selectednâ€¢ Verify severity level';
 
             } else if (error.message.includes('database') || error.message.includes('SQL')) {
 
                 errorCause = 'Database operation failed';
 
-                troubleshooting = 'â€¢ Database connection issue\nâ€¢ HSE work table might not exist\nâ€¢ Contact system administrator';
+                troubleshooting = 'â€¢ Database connection issuenâ€¢ HSE work table might not existnâ€¢ Contact system administrator';
 
             }
 
@@ -34167,7 +33854,7 @@ function saveIncidentReport() {
 
                 troubleshooting: troubleshooting,
 
-                message: `âŒ Incident report failed!\n\nðŸ” Error Cause: ${errorCause}\n\nðŸ› ï¸ Troubleshooting:\n${troubleshooting}\n\nðŸ“ Technical Details:\n${error.message}\n\nðŸ’¡ Please fix the issue and try again.`,
+                message: `âŒ Incident report failed!nnðŸ” Error Cause: ${errorCause}nnðŸ› ï¸ Troubleshooting:n${troubleshooting}nnðŸ“ Technical Details:n${error.message}nnðŸ’¡ Please fix the issue and try again.`,
 
                 incidentType: incidentType || 'Unknown',
 
@@ -34180,6 +33867,7 @@ function saveIncidentReport() {
             return false;
 
         });
+            window.isSavingIncident = false;
 
         
 
@@ -34193,7 +33881,7 @@ function saveIncidentReport() {
 
         console.error('âŒ Unexpected error in saveIncidentReport:', error);
 
-        customAlert(`Unexpected error: ${error.message}\n\nPlease try again or contact support.`, "System Error", "error");
+        customAlert(`Unexpected error: ${error.message}nnPlease try again or contact support.`, "System Error", "error");
 
         return false;
 
@@ -34235,7 +33923,7 @@ function testAPIConnectivity() {
 
             console.log('âœ… Database connection test successful:', data);
 
-            customAlert('API connectivity test passed!\n\nâœ… Basic API working\nâœ… Database connected\n\nThe system should be able to save data.', "API Test Successful", "success");
+            customAlert('API connectivity test passed!nnâœ… Basic API workingnâœ… Database connectednnThe system should be able to save data.', "API Test Successful", "success");
 
         })
 
@@ -34243,7 +33931,7 @@ function testAPIConnectivity() {
 
             console.error('âŒ API connectivity test failed:', error);
 
-            customAlert(`API connectivity test failed: ${error.message}\n\nThis explains why forms cannot save data to database.`, "API Test Failed", "error");
+            customAlert(`API connectivity test failed: ${error.message}nnThis explains why forms cannot save data to database.`, "API Test Failed", "error");
 
         });
 
@@ -34401,7 +34089,7 @@ async function testKashTecAPI() {
 
 
 
-${failedEndpoints.length > 0 ? `âš ï¸ ${failedEndpoints.length} endpoints need attention:\n` + failedEndpoints.map(e => `- ${e.name}: ${e.error || e.status}`).join('\n') : 'ðŸš€ All systems operational - forms should work perfectly!'}
+${failedEndpoints.length > 0 ? `âš ï¸ ${failedEndpoints.length} endpoints need attention:n` + failedEndpoints.map(e => `- ${e.name}: ${e.error || e.status}`).join('n') : 'ðŸš€ All systems operational - forms should work perfectly!'}
 
 
 
@@ -34499,7 +34187,7 @@ function saveSafetyPolicy() {
 
     if (!policy.category || !policy.title || !policy.description || !policy.effectiveDate) {
 
-        customAlert('Please fill in all required fields:\n\nâ€¢ Category\nâ€¢ Title\nâ€¢ Description\nâ€¢ Effective Date', "Validation Error", "error");
+        customAlert('Please fill in all required fields:nnâ€¢ Categorynâ€¢ Titlenâ€¢ Descriptionnâ€¢ Effective Date', "Validation Error", "error");
 
         return false;
 
@@ -34515,7 +34203,7 @@ function saveSafetyPolicy() {
 
         work_title: `Safety Policy - ${policy.title}`,
 
-        work_description: `Safety Policy: ${policy.title}\n\nCategory: ${policy.category}\nDescription: ${policy.description}\nCompliance Level: ${policy.complianceLevel}\nApplicable To: ${policy.applicableTo}\nTraining Required: ${policy.training.join(', ')}\nEffective Date: ${policy.effectiveDate}\nReview Date: ${policy.reviewDate}\nUploaded By: ${policy.uploadedBy}`,
+        work_description: `Safety Policy: ${policy.title}nnCategory: ${policy.category}nDescription: ${policy.description}nCompliance Level: ${policy.complianceLevel}nApplicable To: ${policy.applicableTo}nTraining Required: ${policy.training.join(', ')}nEffective Date: ${policy.effectiveDate}nReview Date: ${policy.reviewDate}nUploaded By: ${policy.uploadedBy}`,
 
         incident_type: 'Policy Update', // Required for HSE department
 
@@ -34609,7 +34297,7 @@ function saveSafetyPolicy() {
 
             title: `Safety Policy - ${policy.title}`,
 
-            description: `Safety Policy: ${policy.title}\n\nCategory: ${policy.category}\nDescription: ${policy.description}\nCompliance Level: ${policy.complianceLevel}\nApplicable To: ${policy.applicableTo}\nTraining Required: ${policy.training.join(', ')}\nEffective Date: ${policy.effectiveDate}\nReview Date: ${policy.reviewDate}\nUploaded By: ${policy.uploadedBy}`,
+            description: `Safety Policy: ${policy.title}nnCategory: ${policy.category}nDescription: ${policy.description}nCompliance Level: ${policy.complianceLevel}nApplicable To: ${policy.applicableTo}nTraining Required: ${policy.training.join(', ')}nEffective Date: ${policy.effectiveDate}nReview Date: ${policy.reviewDate}nUploaded By: ${policy.uploadedBy}`,
 
             submittedBy: policy.uploadedBy || 'HSE Manager',
 
@@ -34647,7 +34335,7 @@ function saveSafetyPolicy() {
 
             console.log('Policy record created for approval:', policyData);
 
-            customAlert(`Safety policy uploaded successfully!\n\nTitle: ${policy.title}\nCategory: ${policy.category}\nCompliance: ${policy.complianceLevel}\nEffective: ${policy.effectiveDate}\nPolicy ID: ${data.id}\n\nThe policy has been sent for approval in Approve Recruitment Policies.`, "Policy Uploaded", "success");
+            customAlert(`Safety policy uploaded successfully!nnTitle: ${policy.title}nCategory: ${policy.category}nCompliance: ${policy.complianceLevel}nEffective: ${policy.effectiveDate}nPolicy ID: ${data.id}nnThe policy has been sent for approval in Approve Recruitment Policies.`, "Policy Uploaded", "success");
 
         })
 
@@ -34655,7 +34343,7 @@ function saveSafetyPolicy() {
 
             console.warn('Policy record creation failed, but HSE record was saved:', policyError);
 
-            customAlert(`Safety policy uploaded successfully!\n\nTitle: ${policy.title}\nCategory: ${policy.category}\nPolicy ID: ${data.id}\n\nNote: Policy was saved but could not be sent for approval.`, "Policy Uploaded", "success");
+            customAlert(`Safety policy uploaded successfully!nnTitle: ${policy.title}nCategory: ${policy.category}nPolicy ID: ${data.id}nnNote: Policy was saved but could not be sent for approval.`, "Policy Uploaded", "success");
 
         })
 
@@ -34699,31 +34387,31 @@ function saveSafetyPolicy() {
 
             errorMessage = 'Network connection failed';
 
-            troubleshooting = '\n\nðŸ”§ Troubleshooting:\nâ€¢ Check internet connection\nâ€¢ Verify server is running\nâ€¢ Check if server URL is correct';
+            troubleshooting = 'nnðŸ”§ Troubleshooting:nâ€¢ Check internet connectionnâ€¢ Verify server is runningnâ€¢ Check if server URL is correct';
 
         } else if (error.message.includes('404')) {
 
             errorMessage = 'API endpoint not found';
 
-            troubleshooting = '\n\nðŸ”§ Troubleshooting:\nâ€¢ Server routes may not be configured\nâ€¢ Check if /api/hse/work endpoint exists';
+            troubleshooting = 'nnðŸ”§ Troubleshooting:nâ€¢ Server routes may not be configurednâ€¢ Check if /api/hse/work endpoint exists';
 
         } else if (error.message.includes('500')) {
 
             errorMessage = 'Server internal error';
 
-            troubleshooting = '\n\nðŸ”§ Troubleshooting:\nâ€¢ Database connection may be down\nâ€¢ Server logs needed for details';
+            troubleshooting = 'nnðŸ”§ Troubleshooting:nâ€¢ Database connection may be downnâ€¢ Server logs needed for details';
 
-        } else if (error.message.includes('table') && error.message.includes('doesn\'t exist')) {
+        } else if (error.message.includes('table') && error.message.includes("doesn't exist")) {
 
             errorMessage = 'Database table missing';
 
-            troubleshooting = '\n\nðŸ”§ Troubleshooting:\nâ€¢ Run database migrations\nâ€¢ Check if hse_work table exists';
+            troubleshooting = 'nnðŸ”§ Troubleshooting:nâ€¢ Run database migrationsnâ€¢ Check if hse_work table exists';
 
         }
 
         
 
-        customAlert(`Failed to upload safety policy: ${errorMessage}${troubleshooting}\n\nTechnical Details: ${error.message}`, "Upload Error", "error");
+        customAlert(`Failed to upload safety policy: ${errorMessage}${troubleshooting}nnTechnical Details: ${error.message}`, "Upload Error", "error");
 
     });
 
@@ -35468,7 +35156,7 @@ function viewPolicy(recordId) {
 
         const submittedDate = policy.submitted_date ? new Date(policy.submitted_date).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) : 'N/A';
 
-        const details = `Policy ID: ${policy.id}\nTitle: ${policy.work_title || policy.title || 'N/A'}\nType: ${policy.work_type || 'N/A'}\nStatus: ${policy.status || 'N/A'}\nPriority: ${policy.priority || policy.severity || 'N/A'}\nSubmitted By: ${policy.submitted_by || 'N/A'}\nSubmitted Date: ${submittedDate}\nEffective Date: ${effectiveDate}\nAssigned To: ${policy.assigned_to || 'N/A'}\n\nDescription:\n${policy.work_description || policy.description || 'No description available'}`;
+        const details = `Policy ID: ${policy.id}nTitle: ${policy.work_title || policy.title || 'N/A'}nType: ${policy.work_type || 'N/A'}nStatus: ${policy.status || 'N/A'}nPriority: ${policy.priority || policy.severity || 'N/A'}nSubmitted By: ${policy.submitted_by || 'N/A'}nSubmitted Date: ${submittedDate}nEffective Date: ${effectiveDate}nAssigned To: ${policy.assigned_to || 'N/A'}nnDescription:n${policy.work_description || policy.description || 'No description available'}`;
 
         customAlert(details, 'Policy Details', 'info');
 
@@ -35478,7 +35166,7 @@ function viewPolicy(recordId) {
 
         console.error('Error viewing policy:', error);
 
-        customAlert(`Could not load policy details for ID: ${recordId}\n\nError: ${error.message}`, 'Error', 'error');
+        customAlert(`Could not load policy details for ID: ${recordId}nnError: ${error.message}`, 'Error', 'error');
 
     });
 
@@ -35518,33 +35206,33 @@ function downloadPolicy(recordId) {
 
         const submittedDate = policy.submitted_date ? new Date(policy.submitted_date).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) : 'N/A';
 
-        const content = 'KASHTEC CONSTRUCTION SYSTEM - POLICY DOCUMENT\n' +
+        const content = 'KASHTEC CONSTRUCTION SYSTEM - POLICY DOCUMENTn' +
 
-            '================================================\n\n' +
+            '================================================nn' +
 
-            'Policy ID: ' + policy.id + '\n' +
+            'Policy ID: ' + policy.id + 'n' +
 
-            'Title: ' + (policy.work_title || policy.title || 'N/A') + '\n' +
+            'Title: ' + (policy.work_title || policy.title || 'N/A') + 'n' +
 
-            'Type: ' + (policy.work_type || 'N/A') + '\n' +
+            'Type: ' + (policy.work_type || 'N/A') + 'n' +
 
-            'Status: ' + (policy.status || 'N/A') + '\n' +
+            'Status: ' + (policy.status || 'N/A') + 'n' +
 
-            'Priority: ' + (policy.priority || policy.severity || 'N/A') + '\n' +
+            'Priority: ' + (policy.priority || policy.severity || 'N/A') + 'n' +
 
-            'Submitted By: ' + (policy.submitted_by || 'N/A') + '\n' +
+            'Submitted By: ' + (policy.submitted_by || 'N/A') + 'n' +
 
-            'Submitted Date: ' + submittedDate + '\n' +
+            'Submitted Date: ' + submittedDate + 'n' +
 
-            'Effective Date: ' + effectiveDate + '\n' +
+            'Effective Date: ' + effectiveDate + 'n' +
 
-            'Assigned To: ' + (policy.assigned_to || 'N/A') + '\n\n' +
+            'Assigned To: ' + (policy.assigned_to || 'N/A') + 'nn' +
 
-            'Description:\n' + (policy.work_description || policy.description || 'No description available') + '\n\n' +
+            'Description:n' + (policy.work_description || policy.description || 'No description available') + 'nn' +
 
-            '================================================\n' +
+            '================================================n' +
 
-            'Generated on: ' + new Date().toLocaleString() + '\n';
+            'Generated on: ' + new Date().toLocaleString() + 'n';
 
         const blob = new Blob([content], { type: 'text/plain' });
 
@@ -35572,7 +35260,7 @@ function downloadPolicy(recordId) {
 
         console.error('Error downloading policy:', error);
 
-        customAlert('Could not download policy ' + recordId + '\n\nError: ' + error.message, 'Download Error', 'error');
+        customAlert('Could not download policy ' + recordId + 'nnError: ' + error.message, 'Download Error', 'error');
 
     });
 
@@ -35610,7 +35298,7 @@ function deletePolicy(recordId) {
 
         .then(data => {
 
-            customAlert(`Policy record ${recordId} has been deleted.\n\nThe policy has been removed from the system.`, "Record Deleted", "success");
+            customAlert(`Policy record ${recordId} has been deleted.nnThe policy has been removed from the system.`, "Record Deleted", "success");
 
             setTimeout(() => { loadPolicyRecords(); }, 500);
 
@@ -35726,7 +35414,7 @@ function saveToolboxMeeting() {
 
     if (!meeting.date || !meeting.project || !meeting.topic || !meeting.conductedBy) {
 
-        customAlert('Please fill in all required fields:\n\nâ€¢ Date\nâ€¢ Project\nâ€¢ Topic\nâ€¢ Conducted By', "Validation Error", "error");
+        customAlert('Please fill in all required fields:nnâ€¢ Datenâ€¢ Projectnâ€¢ Topicnâ€¢ Conducted By', "Validation Error", "error");
 
         return false;
 
@@ -35742,7 +35430,7 @@ function saveToolboxMeeting() {
 
         work_title: `Toolbox Meeting - ${meeting.topic}`,
 
-        work_description: `Toolbox Meeting Details:\n\nTopic: ${meeting.topic}\nProject: ${meeting.project}\nDate: ${meeting.date}\nDuration: ${meeting.duration}\nKey Points: ${meeting.keyPoints}\nAttendees: ${meeting.totalAttendees}\nConducted By: ${meeting.conductedBy}\nIssues Raised: ${meeting.issues}\nAction Items: ${meeting.actions}`,
+        work_description: `Toolbox Meeting Details:nnTopic: ${meeting.topic}nProject: ${meeting.project}nDate: ${meeting.date}nDuration: ${meeting.duration}nKey Points: ${meeting.keyPoints}nAttendees: ${meeting.totalAttendees}nConducted By: ${meeting.conductedBy}nIssues Raised: ${meeting.issues}nAction Items: ${meeting.actions}`,
 
         priority: 'Medium',
 
@@ -35806,7 +35494,7 @@ function saveToolboxMeeting() {
 
         
 
-        customAlert(`Toolbox meeting recorded successfully!\n\nID: ${meeting.id}\nTopic: ${meeting.topic}\nAttendees: ${meeting.totalAttendees}\nProject: ${meeting.project}\nMeeting ID: ${data.id}\n\nðŸŽ‰ Toolbox meeting saved to database!`, "Meeting Recorded", "success");
+        customAlert(`Toolbox meeting recorded successfully!nnID: ${meeting.id}nTopic: ${meeting.topic}nAttendees: ${meeting.totalAttendees}nProject: ${meeting.project}nMeeting ID: ${data.id}nnðŸŽ‰ Toolbox meeting saved to database!`, "Meeting Recorded", "success");
 
         
 
@@ -35818,7 +35506,7 @@ function saveToolboxMeeting() {
 
         console.error('âŒ Error recording toolbox meeting:', error);
 
-        customAlert(`Failed to record toolbox meeting: ${error.message}\n\nPlease check:\nâ€¢ All required fields are filled\nâ€¢ Network connection is stable\nâ€¢ Server is running properly`, "Recording Error", "error");
+        customAlert(`Failed to record toolbox meeting: ${error.message}nnPlease check:nâ€¢ All required fields are fillednâ€¢ Network connection is stablenâ€¢ Server is running properly`, "Recording Error", "error");
 
     });
 
@@ -35885,7 +35573,7 @@ function savePpeIssuance() {
             throw new Error(data.error);
         }
 
-        customAlert('PPE issuance recorded successfully!\n\nID: ' + issuance.issuance_id + '\nWorker: ' + issuance.worker_name + '\nItems: ' + ppeItemsArr.length + ' items\nProject: ' + issuance.project, "PPE Issued", "success");
+        customAlert('PPE issuance recorded successfully!nnID: ' + issuance.issuance_id + 'nWorker: ' + issuance.worker_name + 'nItems: ' + ppeItemsArr.length + ' itemsnProject: ' + issuance.project, "PPE Issued", "success");
 
         document.getElementById('ppeForm').reset();
         document.getElementById('issuanceId').value = 'PPE-' + Date.now();
@@ -35954,7 +35642,7 @@ function saveSafetyViolation() {
 
     if (!violation.date || !violation.project || !violation.type || !violation.severity || !violation.description) {
 
-        customAlert('Please fill in all required fields:\n\nâ€¢ Date\nâ€¢ Project\nâ€¢ Type\nâ€¢ Severity\nâ€¢ Description', "Validation Error", "error");
+        customAlert('Please fill in all required fields:nnâ€¢ Datenâ€¢ Projectnâ€¢ Typenâ€¢ Severitynâ€¢ Description', "Validation Error", "error");
 
         return false;
 
@@ -35970,7 +35658,7 @@ function saveSafetyViolation() {
 
         work_title: `Safety Violation - ${violation.type}`,
 
-        work_description: `Safety Violation Report\n\nDate: ${violation.date}\nProject: ${violation.project}\nType: ${violation.type}\nSeverity: ${violation.severity}\nLocation: ${violation.location}\nViolators: ${violation.violators}\nDescription: ${violation.description}\nImmediate Action: ${violation.immediateAction}\nCorrective Action: ${violation.correctiveAction}\nDeadline: ${violation.deadline}\nWitnesses: ${violation.witnesses}\nEvidence Files: ${violation.evidence}\nReported By: ${violation.reportedBy}\nFollow Up Required: ${violation.followUp}\nRecorded By: ${violation.recordedBy}`,
+        work_description: `Safety Violation ReportnnDate: ${violation.date}nProject: ${violation.project}nType: ${violation.type}nSeverity: ${violation.severity}nLocation: ${violation.location}nViolators: ${violation.violators}nDescription: ${violation.description}nImmediate Action: ${violation.immediateAction}nCorrective Action: ${violation.correctiveAction}nDeadline: ${violation.deadline}nWitnesses: ${violation.witnesses}nEvidence Files: ${violation.evidence}nReported By: ${violation.reportedBy}nFollow Up Required: ${violation.followUp}nRecorded By: ${violation.recordedBy}`,
 
         priority: violation.severity === 'critical' ? 'High' : violation.severity === 'major' ? 'Medium' : 'Low',
 
@@ -36034,7 +35722,7 @@ function saveSafetyViolation() {
 
         
 
-        customAlert(`Safety violation recorded successfully!\n\nID: ${violation.id}\nType: ${violation.type}\nSeverity: ${violation.severity}\nProject: ${violation.project}\nCorrective action required by: ${violation.deadline}\nViolation ID: ${data.id}\n\nðŸŽ‰ Safety violation saved to database!`, "Violation Recorded", "success");
+        customAlert(`Safety violation recorded successfully!nnID: ${violation.id}nType: ${violation.type}nSeverity: ${violation.severity}nProject: ${violation.project}nCorrective action required by: ${violation.deadline}nViolation ID: ${data.id}nnðŸŽ‰ Safety violation saved to database!`, "Violation Recorded", "success");
 
         
 
@@ -36046,7 +35734,7 @@ function saveSafetyViolation() {
 
         console.error('âŒ Error recording safety violation:', error);
 
-        customAlert(`Failed to record safety violation: ${error.message}\n\nPlease check:\nâ€¢ All required fields are filled\nâ€¢ Network connection is stable\nâ€¢ Server is running properly`, "Recording Error", "error");
+        customAlert(`Failed to record safety violation: ${error.message}nnPlease check:nâ€¢ All required fields are fillednâ€¢ Network connection is stablenâ€¢ Server is running properly`, "Recording Error", "error");
 
     });
 
@@ -36104,7 +35792,7 @@ function saveInspectionReport() {
 
     if (!inspection.date || !inspection.project || !inspection.type || !inspection.inspector || !inspection.compliance) {
 
-        customAlert('Please fill in all required fields:\n\nâ€¢ Date\nâ€¢ Project\nâ€¢ Type\nâ€¢ Inspector\nâ€¢ Compliance Status', "Validation Error", "error");
+        customAlert('Please fill in all required fields:nnâ€¢ Datenâ€¢ Projectnâ€¢ Typenâ€¢ Inspectornâ€¢ Compliance Status', "Validation Error", "error");
 
         return false;
 
@@ -36120,7 +35808,7 @@ function saveInspectionReport() {
 
         work_title: `Inspection Report - ${inspection.type}`,
 
-        work_description: `Inspection Report\n\nDate: ${inspection.date}\nProject: ${inspection.project}\nType: ${inspection.type}\nInspector: ${inspection.inspector} (${inspection.license})\nAreas Inspected: ${inspection.areas.join(', ')}\nFindings: ${inspection.findings}\nCompliance Status: ${inspection.compliance}\nRisk Level: ${inspection.riskLevel}\nRecommendations: ${inspection.recommendations}\nFollow-up Date: ${inspection.followUpDate}\nNext Inspection: ${inspection.nextInspection}\nDocuments: ${inspection.document} files\nPhotos: ${inspection.photos} files\nUploaded By: ${inspection.uploadedBy}`,
+        work_description: `Inspection ReportnnDate: ${inspection.date}nProject: ${inspection.project}nType: ${inspection.type}nInspector: ${inspection.inspector} (${inspection.license})nAreas Inspected: ${inspection.areas.join(', ')}nFindings: ${inspection.findings}nCompliance Status: ${inspection.compliance}nRisk Level: ${inspection.riskLevel}nRecommendations: ${inspection.recommendations}nFollow-up Date: ${inspection.followUpDate}nNext Inspection: ${inspection.nextInspection}nDocuments: ${inspection.document} filesnPhotos: ${inspection.photos} filesnUploaded By: ${inspection.uploadedBy}`,
 
         priority: inspection.riskLevel === 'high' ? 'High' : inspection.riskLevel === 'medium' ? 'Medium' : 'Low',
 
@@ -36184,7 +35872,7 @@ function saveInspectionReport() {
 
         
 
-        customAlert(`Inspection report uploaded successfully!\n\nID: ${inspection.id}\nType: ${inspection.type}\nCompliance: ${inspection.compliance}\nRisk Level: ${inspection.riskLevel}\nInspection ID: ${data.id}\n\nðŸŽ‰ Inspection report saved to database!`, "Report Uploaded", "success");
+        customAlert(`Inspection report uploaded successfully!nnID: ${inspection.id}nType: ${inspection.type}nCompliance: ${inspection.compliance}nRisk Level: ${inspection.riskLevel}nInspection ID: ${data.id}nnðŸŽ‰ Inspection report saved to database!`, "Report Uploaded", "success");
 
         
 
@@ -36204,7 +35892,7 @@ function saveInspectionReport() {
 
         console.error('âŒ Error uploading inspection report:', error);
 
-        customAlert(`Failed to upload inspection report: ${error.message}\n\nPlease check:\nâ€¢ All required fields are filled\nâ€¢ Network connection is stable\nâ€¢ Server is running properly`, "Upload Error", "error");
+        customAlert(`Failed to upload inspection report: ${error.message}nnPlease check:nâ€¢ All required fields are fillednâ€¢ Network connection is stablenâ€¢ Server is running properly`, "Upload Error", "error");
 
     });
 
@@ -36270,9 +35958,9 @@ function addPpeItem() {
 
         </select>
 
-        <input type="number" class="ppe-quantity" placeholder="Qty" min="1" required>
+        <input type="number" class="ppe-quantity" placeholder="Qty" min="1" required />
 
-        <input type="text" class="ppe-size" placeholder="Size/Type">
+        <input type="text" class="ppe-size" placeholder="Size/Type" />
 
         <button type="button" onclick="this.parentElement.remove()">Remove</button>
 
@@ -36560,7 +36248,7 @@ function showPolicyModal(policy) {
 
         .status-badge.Rejected { background: #dc3545; color: white; }
 
-        .status-badge.Revision\:Requested { background: #17a2b8; color: white; }
+        .status-badge.Revision:Requested { background: #17a2b8; color: white; }
 
     `;
 
@@ -36572,7 +36260,7 @@ function showPolicyModal(policy) {
 
 function downloadPolicy(policyId) {
 
-    customAlert(`Downloading safety policy ${policyId}...\n\nPolicy document will be downloaded as PDF file.`, "Download Policy", "info");
+    customAlert(`Downloading safety policy ${policyId}...nnPolicy document will be downloaded as PDF file.`, "Download Policy", "info");
 
 }
 
@@ -36580,7 +36268,7 @@ function downloadPolicy(policyId) {
 
 function viewMeetingDetails(meetingId) {
 
-    customAlert(`Opening toolbox meeting details for ${meetingId}...\n\nFull meeting minutes, attendance list, and action items will be displayed.`, "Meeting Details", "info");
+    customAlert(`Opening toolbox meeting details for ${meetingId}...nnFull meeting minutes, attendance list, and action items will be displayed.`, "Meeting Details", "info");
 
 }
 
@@ -36588,7 +36276,7 @@ function viewMeetingDetails(meetingId) {
 
 function downloadAttendance(meetingId) {
 
-    customAlert(`Downloading attendance sheet for meeting ${meetingId}...\n\nAttendance list will be downloaded as Excel file.`, "Download Attendance", "info");
+    customAlert(`Downloading attendance sheet for meeting ${meetingId}...nnAttendance list will be downloaded as Excel file.`, "Download Attendance", "info");
 
 }
 
@@ -36604,7 +36292,7 @@ function filterPpeRecords() {
 
 function viewPpeDetails(issuanceId) {
 
-    customAlert(`Opening PPE issuance details for ${issuanceId}...\n\nFull issuance record with items and return status will be displayed.`, "PPE Details", "info");
+    customAlert(`Opening PPE issuance details for ${issuanceId}...nnFull issuance record with items and return status will be displayed.`, "PPE Details", "info");
 
 }
 
@@ -36616,7 +36304,7 @@ function recordReturn(issuanceId) {
 
         if (condition) {
 
-            customAlert(`PPE return recorded for ${issuanceId}.\n\nCondition: ${condition}\nWorker account updated.`, "Return Recorded", "success");
+            customAlert(`PPE return recorded for ${issuanceId}.nnCondition: ${condition}nWorker account updated.`, "Return Recorded", "success");
 
         }
 
@@ -36628,7 +36316,7 @@ function recordReturn(issuanceId) {
 
 function viewViolationDetails(violationId) {
 
-    customAlert(`Opening violation details for ${violationId}...\n\nFull violation report with evidence and corrective actions will be displayed.`, "Violation Details", "info");
+    customAlert(`Opening violation details for ${violationId}...nnFull violation report with evidence and corrective actions will be displayed.`, "Violation Details", "info");
 
 }
 
@@ -36652,7 +36340,7 @@ function updateViolationStatus(violationId) {
 
 function viewInspectionReport(inspectionId) {
 
-    customAlert(`Opening inspection report ${inspectionId}...\n\nFull inspection report with findings and recommendations will be displayed.`, "Inspection Report", "info");
+    customAlert(`Opening inspection report ${inspectionId}...nnFull inspection report with findings and recommendations will be displayed.`, "Inspection Report", "info");
 
 }
 
@@ -36660,7 +36348,7 @@ function viewInspectionReport(inspectionId) {
 
 function downloadInspectionReport(inspectionId) {
 
-    customAlert(`Downloading inspection report ${inspectionId}...\n\nReport will be downloaded as PDF file.`, "Download Report", "info");
+    customAlert(`Downloading inspection report ${inspectionId}...nnReport will be downloaded as PDF file.`, "Download Report", "info");
 
 }
 
@@ -36676,7 +36364,7 @@ function filterSafetyProjects() {
 
 function viewProjectDetails(projectId) {
 
-    customAlert(`Opening detailed safety dashboard for project ${projectId}...\n\nComprehensive safety metrics, incidents, violations, and trends will be displayed.`, "Project Safety Dashboard", "info");
+    customAlert(`Opening detailed safety dashboard for project ${projectId}...nnComprehensive safety metrics, incidents, violations, and trends will be displayed.`, "Project Safety Dashboard", "info");
 
 }
 
@@ -36684,7 +36372,7 @@ function viewProjectDetails(projectId) {
 
 function generateSafetyReport(projectId) {
 
-    customAlert(`Generating safety report for project ${projectId}...\n\nComprehensive safety performance report will be generated with all metrics and recommendations.`, "Safety Report", "info");
+    customAlert(`Generating safety report for project ${projectId}...nnComprehensive safety performance report will be generated with all metrics and recommendations.`, "Safety Report", "info");
 
 }
 
@@ -36692,7 +36380,7 @@ function generateSafetyReport(projectId) {
 
 function scheduleInspection(projectId) {
 
-    customAlert(`Scheduling safety inspection for project ${projectId}...\n\nInspection will be scheduled within 48 hours due to safety concerns.`, "Schedule Inspection", "info");
+    customAlert(`Scheduling safety inspection for project ${projectId}...nnInspection will be scheduled within 48 hours due to safety concerns.`, "Schedule Inspection", "info");
 
 }
 
@@ -36700,7 +36388,7 @@ function scheduleInspection(projectId) {
 
 function emergencyReview(projectId) {
 
-    customAlert(`Emergency safety review initiated for project ${projectId}...\n\nImmediate safety assessment will be conducted due to high-risk status.`, "Emergency Review", "warning");
+    customAlert(`Emergency safety review initiated for project ${projectId}...nnImmediate safety assessment will be conducted due to high-risk status.`, "Emergency Review", "warning");
 
 }
 
@@ -36834,7 +36522,7 @@ function financeBudgeting(){
 
                                 <label>Start Date *</label>
 
-                                <input type="date" id="budgetStartDate" required>
+                                <input type="date" id="budgetStartDate" required />
 
                             </div>
 
@@ -36842,7 +36530,7 @@ function financeBudgeting(){
 
                                 <label>End Date *</label>
 
-                                <input type="date" id="budgetEndDate" required>
+                                <input type="date" id="budgetEndDate" required />
 
                             </div>
 
@@ -36860,7 +36548,7 @@ function financeBudgeting(){
 
                                     <label>Salaries & Wages</label>
 
-                                    <input type="number" id="budgetSalaries" placeholder="TZS 0.00" required oninput="calculateTotalBudget()">
+                                    <input type="number" id="budgetSalaries" placeholder="TZS 0.00" required oninput="calculateTotalBudget()" />
 
                                 </div>
 
@@ -36868,7 +36556,7 @@ function financeBudgeting(){
 
                                     <label>Office Supplies</label>
 
-                                    <input type="number" id="budgetSupplies" placeholder="TZS 0.00" oninput="calculateTotalBudget()">
+                                    <input type="number" id="budgetSupplies" placeholder="TZS 0.00" oninput="calculateTotalBudget()" />
 
                                 </div>
 
@@ -36882,7 +36570,7 @@ function financeBudgeting(){
 
                                     <label>Equipment & Tools</label>
 
-                                    <input type="number" id="budgetEquipment" placeholder="TZS 0.00" oninput="calculateTotalBudget()">
+                                    <input type="number" id="budgetEquipment" placeholder="TZS 0.00" oninput="calculateTotalBudget()" />
 
                                 </div>
 
@@ -36890,7 +36578,7 @@ function financeBudgeting(){
 
                                     <label>Training & Development</label>
 
-                                    <input type="number" id="budgetTraining" placeholder="TZS 0.00" oninput="calculateTotalBudget()">
+                                    <input type="number" id="budgetTraining" placeholder="TZS 0.00" oninput="calculateTotalBudget()" />
 
                                 </div>
 
@@ -36904,7 +36592,7 @@ function financeBudgeting(){
 
                                     <label>Travel & Transport</label>
 
-                                    <input type="number" id="budgetTravel" placeholder="TZS 0.00" oninput="calculateTotalBudget()">
+                                    <input type="number" id="budgetTravel" placeholder="TZS 0.00" oninput="calculateTotalBudget()" />
 
                                 </div>
 
@@ -36912,7 +36600,7 @@ function financeBudgeting(){
 
                                     <label>Miscellaneous</label>
 
-                                    <input type="number" id="budgetMisc" placeholder="TZS 0.00" oninput="calculateTotalBudget()">
+                                    <input type="number" id="budgetMisc" placeholder="TZS 0.00" oninput="calculateTotalBudget()" />
 
                                 </div>
 
@@ -36928,7 +36616,7 @@ function financeBudgeting(){
 
                                 <label>Total Budget Amount</label>
 
-                                <input type="text" id="totalBudget" readonly placeholder="TZS 0.00">
+                                <input type="text" id="totalBudget" readonly placeholder="TZS 0.00" />
 
                             </div>
 
@@ -37828,7 +37516,7 @@ function displayFinancialRecords(records) {
 
 function viewTransaction(recordId) {
 
-    customAlert(`Viewing transaction details for ID: ${recordId}\n\nFull transaction information including payment details, associated invoices, and audit trail will be displayed.`, "Transaction Details", "info");
+    customAlert(`Viewing transaction details for ID: ${recordId}nnFull transaction information including payment details, associated invoices, and audit trail will be displayed.`, "Transaction Details", "info");
 
 }
 
@@ -37836,7 +37524,7 @@ function viewTransaction(recordId) {
 
 function editTransaction(recordId) {
 
-    customAlert(`Editing transaction ${recordId}...\n\nTransaction editor will open for modifications, corrections, and status updates.`, "Edit Transaction", "info");
+    customAlert(`Editing transaction ${recordId}...nnTransaction editor will open for modifications, corrections, and status updates.`, "Edit Transaction", "info");
 
 }
 
@@ -37844,7 +37532,7 @@ function editTransaction(recordId) {
 
 function downloadTransaction(recordId) {
 
-    customAlert(`Downloading transaction receipt ${recordId}...\n\nTransaction receipt and supporting documents will be downloaded in PDF format.`, "Download Receipt", "info");
+    customAlert(`Downloading transaction receipt ${recordId}...nnTransaction receipt and supporting documents will be downloaded in PDF format.`, "Download Receipt", "info");
 
 }
 
@@ -38008,7 +37696,7 @@ function payrollProcessing(){
 
                         <label>Basic Salary (TZS) *</label>
 
-                        <input type="number" id="basicSalary" placeholder="e.g., 2500000" required oninput="calculateGrossSalary()">
+                        <input type="number" id="basicSalary" placeholder="e.g., 2500000" required oninput="calculateGrossSalary()" />
 
                     </div>
 
@@ -38022,7 +37710,7 @@ function payrollProcessing(){
 
                         <label>Housing Allowance</label>
 
-                        <input type="number" id="housingAllowance" placeholder="e.g., 300000" oninput="calculateGrossSalary()">
+                        <input type="number" id="housingAllowance" placeholder="e.g., 300000" oninput="calculateGrossSalary()" />
 
                     </div>
 
@@ -38030,7 +37718,7 @@ function payrollProcessing(){
 
                         <label>Transport Allowance</label>
 
-                        <input type="number" id="transportAllowance" placeholder="e.g., 150000" oninput="calculateGrossSalary()">
+                        <input type="number" id="transportAllowance" placeholder="e.g., 150000" oninput="calculateGrossSalary()" />
 
                     </div>
 
@@ -38044,7 +37732,7 @@ function payrollProcessing(){
 
                         <label>Medical Allowance</label>
 
-                        <input type="number" id="medicalAllowance" placeholder="e.g., 100000" oninput="calculateGrossSalary()">
+                        <input type="number" id="medicalAllowance" placeholder="e.g., 100000" oninput="calculateGrossSalary()" />
 
                     </div>
 
@@ -38052,7 +37740,7 @@ function payrollProcessing(){
 
                         <label>Other Allowances</label>
 
-                        <input type="number" id="otherAllowances" placeholder="e.g., 50000" oninput="calculateGrossSalary()">
+                        <input type="number" id="otherAllowances" placeholder="e.g., 50000" oninput="calculateGrossSalary()" />
 
                     </div>
 
@@ -38066,7 +37754,7 @@ function payrollProcessing(){
 
                         <label>Gross Monthly Salary</label>
 
-                        <input type="text" id="grossSalary" readonly placeholder="TZS 0.00">
+                        <input type="text" id="grossSalary" readonly placeholder="TZS 0.00" />
 
                     </div>
 
@@ -38106,7 +37794,7 @@ function payrollProcessing(){
 
                         <label>Payment Date *</label>
 
-                        <input type="date" id="paymentDate" required>
+                        <input type="date" id="paymentDate" required />
 
                     </div>
 
@@ -38343,7 +38031,7 @@ function expenseControl(){
 
                             <label>Amount (TZS) *</label>
 
-                            <input type="number" id="expenseAmount" placeholder="e.g., 500000" required>
+                            <input type="number" id="expenseAmount" placeholder="e.g., 500000" required />
 
                         </div>
 
@@ -38387,7 +38075,7 @@ function expenseControl(){
 
                             <label>Receipt/Invoice</label>
 
-                            <input type="file" id="expenseReceipt" accept=".pdf,.jpg,.png">
+                            <input type="file" id="expenseReceipt" accept=".pdf,.jpg,.png" />
 
                         </div>
 
@@ -38718,57 +38406,7 @@ function displayIncomeStatement(records) {
 
         
 
-        // Add expense categories
-
-        Object.entries(expensesByCategory).sort().forEach(([category, amount]) => {
-
-            html += `
-
-                <div class="statement-item">
-
-                    <span>${category}</span>
-
-                    <span>TZS ${amount.toLocaleString()}</span>
-
-                </div>
-
-            `;
-
-        });
-
-        
-
-        html += `
-
-                <div class="statement-item total">
-
-                    <span>Total Expenses</span>
-
-                    <span>TZS ${expenses.toLocaleString()}</span>
-
-                </div>
-
-            </div>
-
-            
-
-            <div class="statement-section profit">
-
-                <div class="statement-item total">
-
-                    <span>Net Profit</span>
-
-                    <span>TZS ${netProfit.toLocaleString()}</span>
-
-                </div>
-
-            </div>
-
-        `;
-
-        
-
-        const container = document.getElementById('incomeStatementContent');
+                const container = document.getElementById('incomeStatementContent');
 
         if (container) {
 
@@ -39490,7 +39128,7 @@ function financeAudits(){
 
         </div>
 
-        <hr style="margin:20px 0;border-color:#eee;">
+        <hr style="margin:20px 0;border-color:#eee;" />
         <h4>📊 Department Overview (Read-Only)</h4>
         <p>Monitor changes and current state across all departments. This is a read-only view for audit purposes.</p>
         <div style="display:flex;gap:8px;flex-wrap:wrap;margin:12px 0;">
@@ -40400,11 +40038,11 @@ function updateLoginAuditTable(logs) {
         const statusClass = log.status === 'success' ? 'color:#2e7d32;font-weight:600;' : 'color:#c62828;font-weight:600;';
         const statusIcon = log.status === 'success' ? '✅' : '❌';
         const dateStr = log.created_at ? new Date(log.created_at).toLocaleString() : 'N/A';
-        const escapedEmail = (log.email || '').replace(/'/g, "\\'");
-        const escapedName = (log.user_name || log.email || 'Unknown').replace(/'/g, "\\'");
+        const escapedEmail = (log.email || '').replace(/'/g, "'");
+        const escapedName = (log.user_name || log.email || 'Unknown').replace(/'/g, "'");
         return '<tr>' +
             '<td>' + (idx + 1) + '</td>' +
-            '<td style="cursor:pointer;color:#1565c0;text-decoration:underline;" onclick="viewUserActivity(\'' + escapedEmail + '\', \'' + escapedName + '\')">' + (log.user_name || log.email || 'Unknown') + '</td>' +
+            '<td style="cursor:pointer;color:#1565c0;text-decoration:underline;" onclick="viewUserActivity(\'' + escapedEmail + '\', \'" + escapedName + "\')">' + (log.user_name || log.email || 'Unknown') + '</td>' +
             '<td>' + (log.email || 'N/A') + '</td>' +
             '<td>' + (log.role || 'N/A') + '</td>' +
             '<td>' + (log.department_name || 'N/A') + '</td>' +
@@ -40412,7 +40050,7 @@ function updateLoginAuditTable(logs) {
             '<td style="' + statusClass + '">' + statusIcon + ' ' + (log.status || 'N/A') + '</td>' +
             '<td>' + (log.ip_address || 'N/A') + '</td>' +
             '<td>' + dateStr + '</td>' +
-            '<td><button onclick="viewUserActivity(\'' + escapedEmail + '\', \'' + escapedName + '\')" style="padding:3px 10px;border-radius:4px;border:1px solid #1565c0;background:#e3f2fd;color:#1565c0;cursor:pointer;font-size:12px;">View</button></td>' +
+            '<td><button onclick="viewUserActivity(\'' + escapedEmail + '\', \'" + escapedName + "\')" style="padding:3px 10px;border-radius:4px;border:1px solid #1565c0;background:#e3f2fd;color:#1565c0;cursor:pointer;font-size:12px;">View</button></td>' +
             '</tr>';
     }).join('');
 }
@@ -40609,7 +40247,7 @@ function manageLuggageCampaigns() {
 
                             <tr>
 
-                                <th>Campaign Name</th>
+                                <th>Company Name</th>
 
                                 <th>Luggage Name</th>
 
@@ -40845,7 +40483,7 @@ function createLuggageCampaign() {
 
         <div class="card">
 
-            <h3>Create Luggage Campaign</h3>
+            <h3>Create Luggage Company</h3>
 
             <form id="campaignForm" class="compact-form">
 
@@ -40853,9 +40491,9 @@ function createLuggageCampaign() {
 
                     <div class="form-group">
 
-                        <label>Campaign Name</label>
+                        <label>Company Name</label>
 
-                        <input type="text" id="campaignName" required>
+                        <input type="text" id="campaignName" required />
 
                     </div>
 
@@ -40863,7 +40501,7 @@ function createLuggageCampaign() {
 
                         <label>Luggage Name</label>
 
-                        <input type="text" id="luggageName" required>
+                        <input type="text" id="luggageName" required />
 
                     </div>
 
@@ -40877,7 +40515,7 @@ function createLuggageCampaign() {
 
                         <label>Luggage Code</label>
 
-                        <input type="text" id="luggageCode" placeholder="e.g., EN, SW, FR" required>
+                        <input type="text" id="luggageCode" placeholder="e.g., EN, SW, FR" required />
 
                     </div>
 
@@ -40885,7 +40523,7 @@ function createLuggageCampaign() {
 
                         <label>Price per Unit (TZS)</label>
 
-                        <input type="number" id="pricePerUnit" step="0.01" required>
+                        <input type="number" id="pricePerUnit" step="0.01" required />
 
                     </div>
 
@@ -40899,13 +40537,13 @@ function createLuggageCampaign() {
 
                         <label>Total Units Available</label>
 
-                        <input type="number" id="totalUnits" required>
+                        <input type="number" id="totalUnits" required />
 
                     </div>
 
                     <div class="form-group">
 
-                        <label>Campaign Status</label>
+                        <label>Company Status</label>
 
                         <select id="campaignStatus">
 
@@ -40931,7 +40569,7 @@ function createLuggageCampaign() {
 
                         <label>Start Date</label>
 
-                        <input type="date" id="startDate">
+                        <input type="date" id="startDate" />
 
                     </div>
 
@@ -40939,7 +40577,7 @@ function createLuggageCampaign() {
 
                         <label>End Date</label>
 
-                        <input type="date" id="endDate">
+                        <input type="date" id="endDate" />
 
                     </div>
 
@@ -40949,7 +40587,7 @@ function createLuggageCampaign() {
 
                 <div class="form-group">
 
-                    <label>Campaign Description</label>
+                    <label>Company Description</label>
 
                     <textarea id="campaignDescription" rows="3"></textarea>
 
@@ -40959,7 +40597,7 @@ function createLuggageCampaign() {
 
                 <div class="form-actions">
 
-                    <button type="submit" class="btn-primary">Create Campaign</button>
+                    <button type="submit" class="btn-primary">Create Company</button>
 
                     <button type="button" class="btn-secondary" onclick="manageLuggageCampaigns()">Cancel</button>
 
@@ -41013,7 +40651,7 @@ function recordLuggagePurchase() {
 
                         <label>Buyer Name</label>
 
-                        <input type="text" id="buyerName" required>
+                        <input type="text" id="buyerName" required />
 
                     </div>
 
@@ -41027,7 +40665,7 @@ function recordLuggagePurchase() {
 
                         <label>Buyer Email</label>
 
-                        <input type="email" id="buyerEmail" required>
+                        <input type="email" id="buyerEmail" required />
 
                     </div>
 
@@ -41035,7 +40673,7 @@ function recordLuggagePurchase() {
 
                         <label>Buyer Phone</label>
 
-                        <input type="tel" id="buyerPhone">
+                        <input type="tel" id="buyerPhone" />
 
                     </div>
 
@@ -41049,7 +40687,7 @@ function recordLuggagePurchase() {
 
                         <label>Units Purchased</label>
 
-                        <input type="number" id="unitsPurchased" min="1" required>
+                        <input type="number" id="unitsPurchased" min="1" required />
 
                     </div>
 
@@ -41181,7 +40819,7 @@ function generateTrackingNumber() {
 
                         <label>Payment Reference</label>
 
-                        <input type="text" id="paymentReference">
+                        <input type="text" id="paymentReference" />
 
                     </div>
 
@@ -41189,7 +40827,7 @@ function generateTrackingNumber() {
 
                         <label>Bank Reference</label>
 
-                        <input type="text" id="bankReference">
+                        <input type="text" id="bankReference" />
 
                     </div>
 
@@ -41203,7 +40841,7 @@ function generateTrackingNumber() {
 
                         <label>Transaction ID</label>
 
-                        <input type="text" id="transactionId">
+                        <input type="text" id="transactionId" />
 
                     </div>
 
@@ -41211,7 +40849,7 @@ function generateTrackingNumber() {
 
                         <label>Amount (TZS)</label>
 
-                        <input type="number" id="trackingAmount" step="0.01" required>
+                        <input type="number" id="trackingAmount" step="0.01" required />
 
                     </div>
 
@@ -41395,7 +41033,10 @@ async function saveLuggagePurchase() {
 
         if (response.success) {
 
-            customAlert(`Purchase recorded successfully! Tracking Number: ${response.data.tracking_number}`, 'Success', 'success');
+            const message = response.purchaseId || response.purchase?.id
+                ? `Purchase recorded successfully! ID: ${response.purchaseId || response.purchase?.id}`
+                : 'Purchase recorded successfully!';
+            customAlert(message, 'Success', 'success');
 
             manageLuggagePurchases();
 
@@ -42085,9 +41726,9 @@ async function loadLuggagePurchases() {
 
                 const mappedPurchase = {
 
-                    purchase_id: purchase.purchase_reference || purchase.purchase_id || 'Unknown',
+                    purchase_id: purchase.id || 'Unknown',
 
-                    tracking_number: purchase.tracking_number || purchase.purchase_reference || 'Unknown',
+                    tracking_number: `LP${purchase.id || 'Unknown'}`,
 
                     payment_status: purchase.payment_status || 'pending',
 
@@ -42095,17 +41736,17 @@ async function loadLuggagePurchases() {
 
                     campaign_details: purchase.luggage_name || purchase.luggage || purchase.campaign_luggage || 'N/A',
 
-                    buyer_name: purchase.buyer_name || 'Unknown Buyer',
+                    buyer_name: purchase.employee_name || purchase.buyer_name || 'Unknown Buyer',
 
-                    buyer_id: purchase.buyer_id || 'N/A',
+                    buyer_id: purchase.employee_id || purchase.buyer_id || 'N/A',
 
-                    buyer_email: purchase.buyer_email || 'N/A',
+                    buyer_email: purchase.buyer_email || (purchase.employee_id ? purchase.employee_id + '@khashtec.com' : 'N/A'),
 
                     buyer_phone: purchase.buyer_phone || 'N/A',
 
                     units_purchased: purchase.units_purchased != null ? purchase.units_purchased : 'N/A',
 
-                    unit_price: purchase.total_amount != null ? purchase.total_amount : 0,
+                    unit_price: purchase.amount != null ? purchase.amount : 0,
 
                     payment_method: purchase.payment_method || 'N/A',
 
@@ -42115,7 +41756,7 @@ async function loadLuggagePurchases() {
 
                     purchase_date: purchase.purchase_date || purchase.created_at || '',
 
-                    record_id: purchase.id || purchase.purchase_id || purchase.purchase_reference || 'unknown',
+                    record_id: purchase.id || 'unknown',
 
                 };
 
@@ -42235,7 +41876,7 @@ async function loadLuggagePurchases() {
 
                             <button class="action-btn edit" onclick="editPurchase('${mappedPurchase.record_id}')" title="Edit Purchase">✏️</button>
 
-                            <button class="action-btn delete" onclick="deletePurchase('${mappedPurchase.record_id}')" title="Delete Purchase">🗑️</button>
+                            <button class="action-btn delete" onclick="deletePurchase_API('${mappedPurchase.record_id}')" title="Delete Purchase">🗑️</button>
 
                         </div>
 
@@ -42267,12 +41908,6 @@ async function loadLuggagePurchases() {
 
 // Purchase Action Functions
 
-function editPurchase(purchaseId) {
-
-    customAlert(`Editing purchase: ${purchaseId}`, 'Edit Purchase', 'info');
-
-}
-
 
 
 function deletePurchase(purchaseId) {
@@ -42288,6 +41923,37 @@ function deletePurchase(purchaseId) {
 }
 
 
+
+async function deletePurchase_API(purchaseId) {
+    if (!confirm(`Are you sure you want to delete purchase: ${purchaseId}?`)) return;
+
+    try {
+        if (window.KashTecAPI && typeof window.KashTecAPI.delete === 'function') {
+            const resp = await window.KashTecAPI.delete(`/luggage-purchases/${purchaseId}`);
+            if (resp && resp.success) {
+                customAlert(`Purchase ${purchaseId} deleted successfully!`, 'Success', 'success');
+                await loadLuggagePurchases();
+                return;
+            } else {
+                throw new Error((resp && resp.message) || 'Failed to delete purchase');
+            }
+        } else {
+            const base = (window.KashTecAPI && KashTecAPI.baseUrl) ? KashTecAPI.baseUrl : '';
+            const url = `${base}/api/luggage-purchases/${purchaseId}`;
+            const r = await fetch(url, { method: 'DELETE', credentials: 'include' });
+            const data = await r.json().catch(() => null);
+            if (r.ok && data && data.success !== false) {
+                customAlert(`Purchase ${purchaseId} deleted successfully!`, 'Success', 'success');
+                await loadLuggagePurchases();
+                return;
+            }
+            throw new Error((data && data.message) || `Delete failed (status ${r.status})`);
+        }
+    } catch (err) {
+        console.error('❌ Error deleting purchase:', err);
+        customAlert(`Error deleting purchase: ${err.message || err}`, 'Error', 'error');
+    }
+}
 
 async function loadPaymentTracking() {
 
@@ -42892,7 +42558,7 @@ async function viewCampaignDetails(campaignId) {
 
                         <div class="campaign-details">
 
-                            <p><strong>Campaign Name:</strong> ${campaign.campaign_name}</p>
+                            <p><strong>Company Name:</strong> ${campaign.campaign_name}</p>
 
                             <p><strong>Luggage:</strong> ${campaign.luggage_name} (${campaign.luggage_code})</p>
 
@@ -43230,7 +42896,7 @@ function saveDepartmentBudget() {
 
         // Remove "TZS " prefix and any commas, then parse as number
 
-        const numericValue = value.toString().replace(/^TZS\s*/, '').replace(/,/g, '');
+        const numericValue = value.toString().replace(/^TZSs*/, '').replace(/,/g, '');
 
         return parseFloat(numericValue) || 0;
 
@@ -43242,7 +42908,7 @@ function saveDepartmentBudget() {
 
     if (!budget.department || !budget.period || !budget.startDate || !budget.endDate || !budget.total) {
 
-        customAlert('Please fill in all required fields:\n\nâ€¢ Department\nâ€¢ Budget Period\nâ€¢ Start Date\nâ€¢ End Date\nâ€¢ Total Budget Amount', "Validation Error", "error");
+        customAlert('Please fill in all required fields:nnâ€¢ Departmentnâ€¢ Budget Periodnâ€¢ Start Datenâ€¢ End Datenâ€¢ Total Budget Amount', "Validation Error", "error");
 
         return false;
 
@@ -43374,7 +43040,7 @@ function saveDepartmentBudget() {
 
         
 
-        customAlert(`Budget created successfully!\n\nDepartment: ${budget.department}\nTotal Amount: TZS ${budget.total}\nPeriod: ${budget.period}\nBudget ID: ${data.id}\n\nðŸŽ‰ Budget saved to database!`, "Budget Created", "success");
+        customAlert(`Budget created successfully!nnDepartment: ${budget.department}nTotal Amount: TZS ${budget.total}nPeriod: ${budget.period}nBudget ID: ${data.id}nnðŸŽ‰ Budget saved to database!`, "Budget Created", "success");
 
         
 
@@ -44190,7 +43856,7 @@ function displayBudgetRecords(records) {
 
 function viewBudgetDetails(recordId) {
 
-    customAlert(`Viewing budget details for ID: ${recordId}\n\nFull budget breakdown including department allocation, utilization metrics, and expenditure details will be displayed.`, "Budget Details", "info");
+    customAlert(`Viewing budget details for ID: ${recordId}nnFull budget breakdown including department allocation, utilization metrics, and expenditure details will be displayed.`, "Budget Details", "info");
 
 }
 
@@ -44198,7 +43864,7 @@ function viewBudgetDetails(recordId) {
 
 function editBudget(recordId) {
 
-    customAlert(`Editing budget ${recordId}...\n\nBudget editor will open for modifications and reallocation adjustments.`, "Edit Budget", "info");
+    customAlert(`Editing budget ${recordId}...nnBudget editor will open for modifications and reallocation adjustments.`, "Edit Budget", "info");
 
 }
 
@@ -44212,7 +43878,7 @@ function deleteBudget(recordId) {
 
         console.log('Deleting budget record with ID:', recordId);
 
-        customAlert(`Budget record ${recordId} has been deleted.\n\nThe budget has been removed from the system.`, "Record Deleted", "success");
+        customAlert(`Budget record ${recordId} has been deleted.nnThe budget has been removed from the system.`, "Record Deleted", "success");
 
         
 
@@ -44269,7 +43935,7 @@ function saveSalaryStructure() {
     .then(data => {
         if (data.success) {
             console.log('âœ… Salary structure saved successfully:', data);
-            customAlert(`Salary structure approved!\n\nEmployee ID: ${employeeId}\nGross Salary: TZS ${(data.grossSalary || grossSalary).toLocaleString()}`, 'Salary Structure Approved', 'success');
+            customAlert(`Salary structure approved!nnEmployee ID: ${employeeId}nGross Salary: TZS ${(data.grossSalary || grossSalary).toLocaleString()}`, 'Salary Structure Approved', 'success');
             document.getElementById('salaryForm').reset();
             document.getElementById('grossSalary').value = '';
             loadPayrollData();
@@ -44316,7 +43982,7 @@ function processPayroll() {
             console.log('âœ… Payroll processed successfully:', data);
             const d = data.data || {};
             customAlert(
-                `Payroll processed successfully!\n\nMonth: ${payrollMonth}\nTotal Employees: ${d.totalEmployees || 0}\nTotal Gross: TZS ${(d.totalGross || 0).toLocaleString()}\nTotal Deductions: TZS ${(d.totalDeductions || 0).toLocaleString()}\nNet Payment: TZS ${(d.netPayment || 0).toLocaleString()}\nPayment Date: ${paymentDate}`,
+                `Payroll processed successfully!nnMonth: ${payrollMonth}nTotal Employees: ${d.totalEmployees || 0}nTotal Gross: TZS ${(d.totalGross || 0).toLocaleString()}nTotal Deductions: TZS ${(d.totalDeductions || 0).toLocaleString()}nNet Payment: TZS ${(d.netPayment || 0).toLocaleString()}nPayment Date: ${paymentDate}`,
                 'Payroll Processed', 'success'
             );
             document.getElementById('payrollProcessForm').reset();
@@ -44524,7 +44190,7 @@ function submitNewExpense() {
     .then(function(data) {
         console.log('[Expense] Expense submitted:', data);
         if (data.transaction_id || data.work_id) {
-            customAlert('Expense submitted successfully!\\n\\nCategory: ' + category + '\\nAmount: TZS ' + Number(amount).toLocaleString() + '\\nStatus: Pending Confirmation', 'Expense Submitted', 'success');
+            customAlert('Expense submitted successfully!nnCategory: ' + category + 'nAmount: TZS ' + Number(amount).toLocaleString() + 'nStatus: Pending Confirmation', 'Expense Submitted', 'success');
             document.getElementById('newExpenseForm').reset();
             loadPendingExpenses();
             loadAllExpenses();
@@ -44824,7 +44490,7 @@ function calculateTotalBudget() {
 
             // Remove "TZS " prefix and any commas, then parse as number
 
-            const numericValue = value.replace(/^TZS\s*/, '').replace(/,/g, '');
+            const numericValue = value.replace(/^TZSs*/, '').replace(/,/g, '');
 
             return parseFloat(numericValue) || 0;
 
@@ -44892,7 +44558,7 @@ function calculateTotalBudget() {
 
 function manageCashFlow() {
 
-    customAlert('Opening cash flow management interface...\n\nThis will show detailed cash flow analysis and forecasting tools.', "Cash Flow Management", "info");
+    customAlert('Opening cash flow management interface...nnThis will show detailed cash flow analysis and forecasting tools.', "Cash Flow Management", "info");
 
 }
 
@@ -44900,7 +44566,7 @@ function manageCashFlow() {
 
 function processInvoices() {
 
-    customAlert('Opening invoice processing interface...\n\nThis will show pending invoices and payment processing options.', "Invoice Processing", "info");
+    customAlert('Opening invoice processing interface...nnThis will show pending invoices and payment processing options.', "Invoice Processing", "info");
 
 }
 
@@ -44908,7 +44574,7 @@ function processInvoices() {
 
 function manageReceivables() {
 
-    customAlert('Opening accounts receivable management...\n\nThis will show outstanding payments and collection status.', "Accounts Receivable", "info");
+    customAlert('Opening accounts receivable management...nnThis will show outstanding payments and collection status.', "Accounts Receivable", "info");
 
 }
 
@@ -44916,7 +44582,7 @@ function manageReceivables() {
 
 function financialForecasting() {
 
-    customAlert('Opening financial forecasting tools...\n\nThis will provide revenue and expense forecasting capabilities.', "Financial Forecasting", "info");
+    customAlert('Opening financial forecasting tools...nnThis will provide revenue and expense forecasting capabilities.', "Financial Forecasting", "info");
 
 }
 
@@ -44924,7 +44590,7 @@ function financialForecasting() {
 
 function investmentManagement() {
 
-    customAlert('Opening investment management interface...\n\nThis will show company investments and portfolio analysis.', "Investment Management", "info");
+    customAlert('Opening investment management interface...nnThis will show company investments and portfolio analysis.', "Investment Management", "info");
 
 }
 
@@ -44932,7 +44598,7 @@ function investmentManagement() {
 
 function taxPlanning() {
 
-    customAlert('Opening tax planning tools...\n\nThis will provide tax optimization strategies and compliance guidance.', "Tax Planning", "info");
+    customAlert('Opening tax planning tools...nnThis will provide tax optimization strategies and compliance guidance.', "Tax Planning", "info");
 
 }
 
@@ -44946,7 +44612,7 @@ function processMonthlyPayroll() {
 
 function approveOvertime() {
 
-    customAlert('Opening overtime approval interface...\n\nThis will show pending overtime requests for approval.', "Overtime Approval", "info");
+    customAlert('Opening overtime approval interface...nnThis will show pending overtime requests for approval.', "Overtime Approval", "info");
 
 }
 
@@ -44954,7 +44620,7 @@ function approveOvertime() {
 
 function manageAllowances() {
 
-    customAlert('Opening allowance management...\n\nThis will show and manage employee allowances and benefits.', "Allowance Management", "info");
+    customAlert('Opening allowance management...nnThis will show and manage employee allowances and benefits.', "Allowance Management", "info");
 
 }
 
@@ -45014,7 +44680,7 @@ function generateIndividualPayslip() {
 
 function generateBulkPayslips() {
 
-    customAlert('Generating payslips for all employees...\n\nAll payslips will be generated and available for distribution.', "Generate Bulk Payslips", "info");
+    customAlert('Generating payslips for all employees...nnAll payslips will be generated and available for distribution.', "Generate Bulk Payslips", "info");
 
 }
 
@@ -45045,7 +44711,7 @@ function emailPayslips() {
     .then(data => {
         if (data.success) {
             console.log('âœ… Payslips emailed successfully:', data);
-            customAlert(`Payslips emailed successfully!\n\nMonth: ${month}\nRecords updated: ${data.updated || 0}`, 'Payslips Emailed', 'success');
+            customAlert(`Payslips emailed successfully!nnMonth: ${month}nRecords updated: ${data.updated || 0}`, 'Payslips Emailed', 'success');
         } else {
             console.error('âŒ Failed to email payslips:', data.error);
             customAlert(`Failed to email payslips: ${data.error}`, 'Error', 'error');
@@ -45061,7 +44727,7 @@ function emailPayslips() {
 
 function exportIncomeStatement() {
 
-    customAlert('Exporting income statement...\n\nReport will be downloaded as PDF file.', "Export Statement", "info");
+    customAlert('Exporting income statement...nnReport will be downloaded as PDF file.', "Export Statement", "info");
 
 }
 
@@ -45069,7 +44735,7 @@ function exportIncomeStatement() {
 
 function shareReport() {
 
-    customAlert('Sharing financial report...\n\nReport will be shared with authorized stakeholders.', "Share Report", "info");
+    customAlert('Sharing financial report...nnReport will be shared with authorized stakeholders.', "Share Report", "info");
 
 }
 
@@ -45077,7 +44743,7 @@ function shareReport() {
 
 function startAudit(auditId) {
 
-    customAlert(`Starting audit ${auditId}...\n\nAudit procedures will begin and progress will be tracked.`, "Start Audit", "info");
+    customAlert(`Starting audit ${auditId}...nnAudit procedures will begin and progress will be tracked.`, "Start Audit", "info");
 
 }
 
@@ -45085,7 +44751,7 @@ function startAudit(auditId) {
 
 function rescheduleAudit(auditId) {
 
-    customAlert(`Rescheduling audit ${auditId}...\n\nNew date and time will be scheduled.`, "Reschedule Audit", "info");
+    customAlert(`Rescheduling audit ${auditId}...nnNew date and time will be scheduled.`, "Reschedule Audit", "info");
 
 }
 
@@ -45093,7 +44759,7 @@ function rescheduleAudit(auditId) {
 
 function viewAuditReport(auditId) {
 
-    customAlert(`Opening audit report ${auditId}...\n\nDetailed audit findings and recommendations will be displayed.`, "Audit Report", "info");
+    customAlert(`Opening audit report ${auditId}...nnDetailed audit findings and recommendations will be displayed.`, "Audit Report", "info");
 
 }
 
@@ -45101,7 +44767,7 @@ function viewAuditReport(auditId) {
 
 function manageTaxCompliance() {
 
-    customAlert('Opening tax compliance management...\n\nThis will show tax filing status and compliance requirements.', "Tax Compliance", "info");
+    customAlert('Opening tax compliance management...nnThis will show tax filing status and compliance requirements.', "Tax Compliance", "info");
 
 }
 
@@ -45109,7 +44775,7 @@ function manageTaxCompliance() {
 
 function manageNSSF() {
 
-    customAlert('Opening NSSF management...\n\nThis will show NSSF contributions and compliance status.', "NSSF Management", "info");
+    customAlert('Opening NSSF management...nnThis will show NSSF contributions and compliance status.', "NSSF Management", "info");
 
 }
 
@@ -45117,7 +44783,7 @@ function manageNSSF() {
 
 function regulatoryFilings() {
 
-    customAlert('Opening regulatory filings...\n\nThis will show required filings and submission deadlines.', "Regulatory Filings", "info");
+    customAlert('Opening regulatory filings...nnThis will show required filings and submission deadlines.', "Regulatory Filings", "info");
 
 }
 
@@ -45125,7 +44791,7 @@ function regulatoryFilings() {
 
 function complianceReports() {
 
-    customAlert('Generating compliance reports...\n\nCompliance status reports will be generated for management review.', "Compliance Reports", "info");
+    customAlert('Generating compliance reports...nnCompliance status reports will be generated for management review.', "Compliance Reports", "info");
 
 }
 
@@ -45209,7 +44875,7 @@ function createNewProject(){
 
                             <label>Project Name *</label>
 
-                            <input type="text" id="projectName" placeholder="e.g., Port Modernization Phase 2" required>
+                            <input type="text" id="projectName" placeholder="e.g., Port Modernization Phase 2" required />
 
                         </div>
 
@@ -45217,7 +44883,7 @@ function createNewProject(){
 
                             <label>Project Code *</label>
 
-                            <input type="text" id="projectCode" placeholder="e.g., PRJ-2026-002" required>
+                            <input type="text" id="projectCode" placeholder="e.g., PRJ-2026-002" required />
 
                         </div>
 
@@ -45231,7 +44897,7 @@ function createNewProject(){
 
                             <label>Client Name *</label>
 
-                            <input type="text" id="clientName" placeholder="e.g., Tanzania Ports Authority" required>
+                            <input type="text" id="clientName" placeholder="e.g., Tanzania Ports Authority" required />
 
                         </div>
 
@@ -45267,7 +44933,7 @@ function createNewProject(){
 
                             <label>Start Date *</label>
 
-                            <input type="date" id="projectStartDate" required>
+                            <input type="date" id="projectStartDate" required />
 
                         </div>
 
@@ -45275,7 +44941,7 @@ function createNewProject(){
 
                             <label>End Date *</label>
 
-                            <input type="date" id="projectEndDate" required>
+                            <input type="date" id="projectEndDate" required />
 
                         </div>
 
@@ -45289,7 +44955,7 @@ function createNewProject(){
 
                             <label>Contract Value (TZS) *</label>
 
-                            <input type="number" id="contractValue" placeholder="e.g., 500000000" required>
+                            <input type="number" id="contractValue" placeholder="e.g., 500000000" required />
 
                         </div>
 
@@ -45297,7 +44963,7 @@ function createNewProject(){
 
                             <label>Project Manager *</label>
 
-                            <input type="text" id="projectManager" value="Current User" readonly>
+                            <input type="text" id="projectManager" value="Current User" readonly />
 
                         </div>
 
@@ -45331,7 +44997,7 @@ function createNewProject(){
 
                             <label>Site Location *</label>
 
-                            <input type="text" id="siteLocation" placeholder="e.g., Dar es Salaam Port" required>
+                            <input type="text" id="siteLocation" placeholder="e.g., Dar es Salaam Port" required />
 
                         </div>
 
@@ -46315,7 +45981,7 @@ function displayProjects(projects) {
 
 function viewProject(projectId) {
 
-    customAlert(`Viewing project details for ID: ${projectId}\n\nFull project information including scope, timeline, budget, team members, milestones, deliverables, risks, and current progress status will be displayed.`, "Project Details", "info");
+    customAlert(`Viewing project details for ID: ${projectId}nnFull project information including scope, timeline, budget, team members, milestones, deliverables, risks, and current progress status will be displayed.`, "Project Details", "info");
 
 }
 
@@ -46323,7 +45989,7 @@ function viewProject(projectId) {
 
 function editProject(projectId) {
 
-    customAlert(`Editing project ${projectId}...\n\nProject editor will open for modifications to project details, timeline, budget, team assignments, milestones, and deliverables.`, "Edit Project", "info");
+    customAlert(`Editing project ${projectId}...nnProject editor will open for modifications to project details, timeline, budget, team assignments, milestones, and deliverables.`, "Edit Project", "info");
 
 }
 
@@ -46331,7 +45997,7 @@ function editProject(projectId) {
 
 function updateProgress(projectId) {
 
-    customAlert(`Updating progress for project ${projectId}...\n\nProgress update form will open for recording completed milestones, updating percentage complete, and documenting current project status.`, "Update Progress", "info");
+    customAlert(`Updating progress for project ${projectId}...nnProgress update form will open for recording completed milestones, updating percentage complete, and documenting current project status.`, "Update Progress", "info");
 
 }
 
@@ -46711,7 +46377,7 @@ function updateProjectProgress(){
 
                         <label>Progress Percentage *</label>
 
-                        <input type="number" id="progressPercentage" min="0" max="100" placeholder="e.g., 45" required>
+                        <input type="number" id="progressPercentage" min="0" max="100" placeholder="e.g., 45" required />
 
                     </div>
 
@@ -46757,7 +46423,7 @@ function updateProjectProgress(){
 
                         <label>Completed Milestones</label>
 
-                        <input type="text" id="completedMilestones" placeholder="e.g., Foundation, Structure">
+                        <input type="text" id="completedMilestones" placeholder="e.g., Foundation, Structure" />
 
                     </div>
 
@@ -46765,7 +46431,7 @@ function updateProjectProgress(){
 
                         <label>Next Milestones</label>
 
-                        <input type="text" id="nextMilestones" placeholder="e.g., Finishing, Inspection">
+                        <input type="text" id="nextMilestones" placeholder="e.g., Finishing, Inspection" />
 
                     </div>
 
@@ -46779,7 +46445,7 @@ function updateProjectProgress(){
 
                         <label>Budget Used (TZS)</label>
 
-                        <input type="number" id="budgetUsed" placeholder="e.g., 250000000">
+                        <input type="number" id="budgetUsed" placeholder="e.g., 250000000" />
 
                     </div>
 
@@ -46787,7 +46453,7 @@ function updateProjectProgress(){
 
                         <label>Issues/Concerns</label>
 
-                        <input type="text" id="projectIssues" placeholder="e.g., Material delays, Weather issues">
+                        <input type="text" id="projectIssues" placeholder="e.g., Material delays, Weather issues" />
 
                     </div>
 
@@ -47017,7 +46683,7 @@ async function assignTasks(){
 
                         <label>Task Name *</label>
 
-                        <input type="text" id="taskName" placeholder="e.g., Foundation Excavation" required>
+                        <input type="text" id="taskName" placeholder="e.g., Foundation Excavation" required />
 
                     </div>
 
@@ -47075,7 +46741,7 @@ async function assignTasks(){
 
                         <label>Start Date *</label>
 
-                        <input type="date" id="taskStartDate" required>
+                        <input type="date" id="taskStartDate" required />
 
                     </div>
 
@@ -47083,7 +46749,7 @@ async function assignTasks(){
 
                         <label>Due Date *</label>
 
-                        <input type="date" id="taskDueDate" required>
+                        <input type="date" id="taskDueDate" required />
 
                     </div>
 
@@ -47107,7 +46773,7 @@ async function assignTasks(){
 
                         <label>Estimated Hours</label>
 
-                        <input type="number" id="estimatedHours" placeholder="e.g., 40">
+                        <input type="number" id="estimatedHours" placeholder="e.g., 40" />
 
                     </div>
 
@@ -47115,7 +46781,7 @@ async function assignTasks(){
 
                         <label>Required Skills</label>
 
-                        <input type="text" id="requiredSkills" placeholder="e.g., Masonry, Concrete Work">
+                        <input type="text" id="requiredSkills" placeholder="e.g., Masonry, Concrete Work" />
 
                     </div>
 
@@ -47333,7 +46999,7 @@ function requestWorkforce(){
 
                             <label>Number of Workers Needed *</label>
 
-                            <input type="number" id="workersNeeded" placeholder="e.g., 5" required>
+                            <input type="number" id="workersNeeded" placeholder="e.g., 5" required />
 
                         </div>
 
@@ -47341,7 +47007,7 @@ function requestWorkforce(){
 
                             <label>Duration *</label>
 
-                            <input type="text" id="workDuration" placeholder="e.g., 2 weeks, 1 month" required>
+                            <input type="text" id="workDuration" placeholder="e.g., 2 weeks, 1 month" required />
 
                         </div>
 
@@ -47355,17 +47021,17 @@ function requestWorkforce(){
 
                         <div class="checkbox-group">
 
-                            <label><input type="checkbox" value="construction"> Construction Workers</label>
+                            <label><input type="checkbox" value="construction" /> Construction Workers</label>
 
-                            <label><input type="checkbox" value="engineering"> Engineers</label>
+                            <label><input type="checkbox" value="engineering" /> Engineers</label>
 
-                            <label><input type="checkbox" value="labor"> General Labor</label>
+                            <label><input type="checkbox" value="labor" /> General Labor</label>
 
-                            <label><input type="checkbox" value="driver"> Drivers/Operators</label>
+                            <label><input type="checkbox" value="driver" /> Drivers/Operators</label>
 
-                            <label><input type="checkbox" value="supervisor"> Supervisors</label>
+                            <label><input type="checkbox" value="supervisor" /> Supervisors</label>
 
-                            <label><input type="checkbox" value="safety"> Safety Officers</label>
+                            <label><input type="checkbox" value="safety" /> Safety Officers</label>
 
                         </div>
 
@@ -47389,7 +47055,7 @@ function requestWorkforce(){
 
                             <label>Start Date *</label>
 
-                            <input type="date" id="workforceStartDate" required>
+                            <input type="date" id="workforceStartDate" required />
 
                         </div>
 
@@ -47397,7 +47063,7 @@ function requestWorkforce(){
 
                             <label>End Date</label>
 
-                            <input type="date" id="workforceEndDate">
+                            <input type="date" id="workforceEndDate" />
 
                         </div>
 
@@ -48059,7 +47725,7 @@ function displayWorkforceRequests(requests) {
 
 function viewWorkforceRequest(requestId) {
 
-    customAlert(`Viewing workforce request details for ID: ${requestId}\n\nFull request information including project details, worker requirements, job categories, duration, justification, special requirements, and approval status will be displayed.`, "Workforce Request Details", "info");
+    customAlert(`Viewing workforce request details for ID: ${requestId}nnFull request information including project details, worker requirements, job categories, duration, justification, special requirements, and approval status will be displayed.`, "Workforce Request Details", "info");
 
 }
 
@@ -48067,7 +47733,7 @@ function viewWorkforceRequest(requestId) {
 
 function editWorkforceRequest(requestId) {
 
-    customAlert(`Editing workforce request ${requestId}...\n\nRequest editor will open for modifications to worker counts, job categories, duration, justification, and special requirements.`, "Edit Workforce Request", "info");
+    customAlert(`Editing workforce request ${requestId}...nnRequest editor will open for modifications to worker counts, job categories, duration, justification, and special requirements.`, "Edit Workforce Request", "info");
 
 }
 
@@ -48075,7 +47741,7 @@ function editWorkforceRequest(requestId) {
 
 function approveWorkforceRequest(requestId) {
 
-    customAlert(`Approving workforce request ${requestId}...\n\nRequest approval process will be initiated with HR notification and workforce allocation scheduling.`, "Approve Workforce Request", "info");
+    customAlert(`Approving workforce request ${requestId}...nnRequest approval process will be initiated with HR notification and workforce allocation scheduling.`, "Approve Workforce Request", "info");
 
 }
 
@@ -48149,7 +47815,7 @@ function viewAssignedWorkers(){
 
                 <div class="search-section">
 
-                    <input type="text" id="workerSearch" placeholder="Search workers by name, project, or role..." onkeyup="filterAssignedWorkers()">
+                    <input type="text" id="workerSearch" placeholder="Search workers by name, project, or role..." onkeyup="filterAssignedWorkers()" />
 
                     <select id="projectFilter" onchange="filterAssignedWorkers()">
 
@@ -48314,7 +47980,7 @@ function recordSiteReports(){
 
                             <label>Report Date *</label>
 
-                            <input type="date" id="reportDate" required>
+                            <input type="date" id="reportDate" required />
 
                         </div>
 
@@ -48348,7 +48014,7 @@ function recordSiteReports(){
 
                             <label>Site Supervisor *</label>
 
-                            <input type="text" id="siteSupervisor" value="Current User" readonly>
+                            <input type="text" id="siteSupervisor" value="Current User" readonly />
 
                         </div>
 
@@ -48360,7 +48026,7 @@ function recordSiteReports(){
 
                         <label>Workers Present *</label>
 
-                        <input type="number" id="workersPresent" placeholder="e.g., 15" required>
+                        <input type="number" id="workersPresent" placeholder="e.g., 15" required />
 
                     </div>
 
@@ -48402,7 +48068,7 @@ function recordSiteReports(){
 
                             <label>Materials Used</label>
 
-                            <input type="text" id="materialsUsed" placeholder="e.g., Cement: 50 bags, Steel: 2 tons">
+                            <input type="text" id="materialsUsed" placeholder="e.g., Cement: 50 bags, Steel: 2 tons" />
 
                         </div>
 
@@ -48410,7 +48076,7 @@ function recordSiteReports(){
 
                             <label>Equipment Used</label>
 
-                            <input type="text" id="equipmentUsed" placeholder="e.g., Excavator, Concrete Mixer">
+                            <input type="text" id="equipmentUsed" placeholder="e.g., Excavator, Concrete Mixer" />
 
                         </div>
 
@@ -48432,7 +48098,7 @@ function recordSiteReports(){
 
                         <label>Photos/Videos</label>
 
-                        <input type="file" id="sitePhotos" accept="image/*,video/*" multiple>
+                        <input type="file" id="sitePhotos" accept="image/*,video/*" multiple />
 
                     </div>
 
@@ -49368,7 +49034,7 @@ function displaySiteReports(reports, _retry) {
 
 function viewSiteReport(reportId) {
 
-    customAlert(`Viewing site report details for ID: ${reportId}\n\nFull site report information including project details, weather conditions, work completed, safety incidents, materials used, equipment deployed, issues encountered, and next day's plan will be displayed.`, "Site Report Details", "info");
+    customAlert(`Viewing site report details for ID: ${reportId}nnFull site report information including project details, weather conditions, work completed, safety incidents, materials used, equipment deployed, issues encountered, and next day's plan will be displayed.`, "Site Report Details", "info");
 
 }
 
@@ -49376,7 +49042,7 @@ function viewSiteReport(reportId) {
 
 function editSiteReport(reportId) {
 
-    customAlert(`Editing site report ${reportId}...\n\nSite report editor will open for modifications to work completed, safety incidents, materials used, equipment deployed, and next day's plan.`, "Edit Site Report", "info");
+    customAlert(`Editing site report ${reportId}...nnSite report editor will open for modifications to work completed, safety incidents, materials used, equipment deployed, and next day's plan.`, "Edit Site Report", "info");
 
 }
 
@@ -49384,7 +49050,7 @@ function editSiteReport(reportId) {
 
 function downloadSiteReport(reportId) {
 
-    customAlert(`Downloading site report ${reportId} as PDF...\n\nSite report will be generated and downloaded as a PDF document with all project details, work progress, safety information, and daily activities.`, "Download Site Report", "info");
+    customAlert(`Downloading site report ${reportId} as PDF...nnSite report will be generated and downloaded as a PDF document with all project details, work progress, safety information, and daily activities.`, "Download Site Report", "info");
 
 }
 
@@ -49724,11 +49390,11 @@ function loadPendingWorkCompletions() {
 
                 '<td>' +
 
-                    '<button class="action" onclick="approveWork(\'' + work.id + '\')" style="background: #28a745;">Approve</button>' +
+                    '<button class="action" onclick="approveWork(' + work.id + ')" style="background: #28a745;">Approve</button>' +
 
-                    '<button class="action" onclick="requestRework(\'' + work.id + '\')" style="background: #ffc107;">Request Rework</button>' +
+                    '<button class="action" onclick="requestRework(' + work.id + ')" style="background: #ffc107;">Request Rework</button>' +
 
-                    '<button class="action" onclick="rejectWork(\'' + work.id + '\')" style="background: #dc3545;">Reject</button>' +
+                    '<button class="action" onclick="rejectWork(' + work.id + ')" style="background: #dc3545;">Reject</button>' +
 
                 '</td>' +
 
@@ -49982,7 +49648,7 @@ function saveNewProject() {
 
     if (!project.projectName || !project.projectCode || !project.clientName || !project.projectStartDate || !project.projectManager) {
 
-        customAlert('Please fill in all required fields:\n\nâ€¢ Project Name\nâ€¢ Project Code\nâ€¢ Client Name\nâ€¢ Start Date\nâ€¢ Project Manager', "Validation Error", "error");
+        customAlert('Please fill in all required fields:nnâ€¢ Project Namenâ€¢ Project Codenâ€¢ Client Namenâ€¢ Start Datenâ€¢ Project Manager', "Validation Error", "error");
 
         return false;
 
@@ -49998,7 +49664,7 @@ function saveNewProject() {
 
         work_title: `New Project - ${project.projectName}`,
 
-        work_description: `New Project Created\n\nProject Name: ${project.projectName}\nProject Code: ${project.projectCode}\nClient: ${project.clientName}\nType: ${project.projectType}\nStart Date: ${project.projectStartDate}\nEnd Date: ${project.projectEndDate}\nContract Value: TZS ${project.contractValue}\nManager: ${project.projectManager}\nDescription: ${project.projectDescription}\nDeliverables: ${project.keyDeliverables}\nLocation: ${project.siteLocation}\nPriority: ${project.priorityLevel}\nStatus: ${project.status}\nCreated Date: ${project.createdDate}`,
+        work_description: `New Project CreatednnProject Name: ${project.projectName}nProject Code: ${project.projectCode}nClient: ${project.clientName}nType: ${project.projectType}nStart Date: ${project.projectStartDate}nEnd Date: ${project.projectEndDate}nContract Value: TZS ${project.contractValue}nManager: ${project.projectManager}nDescription: ${project.projectDescription}nDeliverables: ${project.keyDeliverables}nLocation: ${project.siteLocation}nPriority: ${project.priorityLevel}nStatus: ${project.status}nCreated Date: ${project.createdDate}`,
 
         project_name: project.projectName, // Required field
 
@@ -50094,7 +49760,7 @@ function saveNewProject() {
 
         
 
-        customAlert(`Project created successfully!\n\nProject: ${project.projectName}\nCode: ${project.projectCode}\nContract Value: TZS ${parseInt(project.contractValue).toLocaleString()}\nStatus: ${project.status}\nProject ID: ${data.id}\n\nðŸŽ‰ Project saved to database!`, "Project Created", "success");
+        customAlert(`Project created successfully!nnProject: ${project.projectName}nCode: ${project.projectCode}nContract Value: TZS ${parseInt(project.contractValue).toLocaleString()}nStatus: ${project.status}nProject ID: ${data.id}nnðŸŽ‰ Project saved to database!`, "Project Created", "success");
 
         
 
@@ -50116,7 +49782,7 @@ function saveNewProject() {
 
         console.error('âŒ Error creating project:', error);
 
-        customAlert(`Failed to create project: ${error.message}\n\nPlease check:\nâ€¢ All required fields are filled\nâ€¢ Network connection is stable\nâ€¢ Server is running properly`, "Creation Error", "error");
+        customAlert(`Failed to create project: ${error.message}nnPlease check:nâ€¢ All required fields are fillednâ€¢ Network connection is stablenâ€¢ Server is running properly`, "Creation Error", "error");
 
     });
 
@@ -50240,7 +49906,7 @@ function saveProjectProgress() {
 
             
 
-            customAlert(`Project progress updated successfully!\n\nProject: ${progressData.projectName}\nProgress: ${progressData.progressPercentage}%\nStatus: ${progressData.status}\nUpdated: ${new Date().toLocaleString()}`, "Progress Updated", "success");
+            customAlert(`Project progress updated successfully!nnProject: ${progressData.projectName}nProgress: ${progressData.progressPercentage}%nStatus: ${progressData.status}nUpdated: ${new Date().toLocaleString()}`, "Progress Updated", "success");
 
             
 
@@ -50330,7 +49996,7 @@ function saveTaskAssignment() {
 
     
 
-    customAlert(`Task assigned successfully!\n\nTask: ${task.name}\nAssigned to: ${task.assignee}\nDue: ${task.dueDate}\nPriority: ${task.priority}`, "Task Assigned", "success");
+    customAlert(`Task assigned successfully!nnTask: ${task.name}nAssigned to: ${task.assignee}nDue: ${task.dueDate}nPriority: ${task.priority}`, "Task Assigned", "success");
 
     
 
@@ -50431,7 +50097,33 @@ function loadTasks() {
 }
 
 
-// Populate the `taskProject` select with real projects from the backend
+async function populateIncidentProjectSelect() {
+    try {
+        const baseUrl = window.location.origin;
+        const resp = await fetch(`${baseUrl}/api/projects`, {
+            method: 'GET',
+            headers: { 'Accept': 'application/json' }
+        });
+        if (!resp.ok) {
+            console.warn('populateIncidentProjectSelect: failed to fetch projects', resp.status);
+            return;
+        }
+        const data = await resp.json();
+        const projects = Array.isArray(data) ? data : (data.projects || []);
+        const select = document.getElementById('incidentProject');
+        if (!select) return;
+        select.innerHTML = '<option value="">Select Project</option>';
+        projects.forEach(p => {
+            const opt = document.createElement('option');
+            opt.value = p.id;
+            opt.textContent = p.name || p.project_name || p.title || `Project ${p.id}`;
+            select.appendChild(opt);
+        });
+        console.log(`populateIncidentProjectSelect: populated ${projects.length} projects`);
+    } catch (err) {
+        console.error('populateIncidentProjectSelect error', err);
+    }
+}
 async function populateTaskProjectSelect() {
     try {
         const baseUrl = window.location.origin;
@@ -50462,6 +50154,7 @@ async function populateTaskProjectSelect() {
 
 document.addEventListener('DOMContentLoaded', () => {
     populateTaskProjectSelect();
+    populateIncidentProjectSelect();
 });
 
 
@@ -51071,7 +50764,7 @@ async function submitWorkforceRequest(event) {
 
             
 
-            customAlert(`Please fill in all required fields:\n\n${missingFields.join('\n')}`, 'Validation Error', 'error');
+            customAlert(`Please fill in all required fields:nn${missingFields.join('n')}`, 'Validation Error', 'error');
 
             return false;
 
@@ -51126,7 +50819,7 @@ async function submitWorkforceRequest(event) {
 
         
 
-        customAlert(`Workforce request submitted successfully!\n\nRequest ID: ${result.requestId}\nProject: ${request.project}\nWorkers Needed: ${request.workersNeeded}\nDuration: ${request.duration}\nStatus: Pending Approval`, "Request Submitted", "success");
+        customAlert(`Workforce request submitted successfully!nnRequest ID: ${result.requestId}nProject: ${request.project}nWorkers Needed: ${request.workersNeeded}nDuration: ${request.duration}nStatus: Pending Approval`, "Request Submitted", "success");
 
         
 
@@ -51218,7 +50911,7 @@ function saveSiteReport() {
 
     
 
-    customAlert(`Site report submitted successfully!\n\nProject: ${report.project}\nDate: ${report.date}\nWorkers Present: ${report.workersPresent}\nWeather: ${report.weather}`, "Report Submitted", "success");
+    customAlert(`Site report submitted successfully!nnProject: ${report.project}nDate: ${report.date}nWorkers Present: ${report.workersPresent}nWeather: ${report.weather}`, "Report Submitted", "success");
 
     
 
@@ -51290,7 +50983,7 @@ function saveWorkApproval(event) {
 
         if (data.success) {
 
-            customAlert(`Work approval submitted successfully!\n\nWork ID: ${approvalData.work_id}\nQuality: ${approvalData.quality_assessment}\nCompliance: ${approvalData.compliance_check}\nStatus: Approved`, 'Work Approved', 'success');
+            customAlert(`Work approval submitted successfully!nnWork ID: ${approvalData.work_id}nQuality: ${approvalData.quality_assessment}nCompliance: ${approvalData.compliance_check}nStatus: Approved`, 'Work Approved', 'success');
 
             document.getElementById('approvalForm').reset();
 
@@ -51540,7 +51233,7 @@ function displayAssignedWorkersCards(workers) {
 
     workerResults.innerHTML = workers.map(function(worker) {
 
-        var statusClass = (worker.status || 'Active').toLowerCase().replace(/\s+/g, '-');
+        var statusClass = (worker.status || 'Active').toLowerCase().replace(/s+/g, '-');
 
         var startDate = worker.start_date ? new Date(worker.start_date).toLocaleDateString() : 'N/A';
 
@@ -51711,7 +51404,7 @@ function requestRework(workId) {
 
         // Show success message
 
-        customAlert(`Work ${workId} sent for rework.\n\nType: ${formData.revisionType}\nDetails: ${formData.revisionDetails}\nPriority: ${formData.revisionPriority}\n\nWorker has been notified.`, "Rework Requested", "warning");
+        customAlert(`Work ${workId} sent for rework.nnType: ${formData.revisionType}nDetails: ${formData.revisionDetails}nPriority: ${formData.revisionPriority}nnWorker has been notified.`, "Rework Requested", "warning");
 
         
 
@@ -51745,7 +51438,7 @@ function rejectWork(workId) {
 
         // Show success message
 
-        customAlert(`Work ${workId} rejected successfully.\n\nReason: ${formData.rejectionReason}\nDetails: ${formData.rejectionDetails}\n\nSubmitter has been notified.`, "Work Rejected", "error");
+        customAlert(`Work ${workId} rejected successfully.nnReason: ${formData.rejectionReason}nDetails: ${formData.rejectionDetails}nnSubmitter has been notified.`, "Work Rejected", "error");
 
         
 
@@ -51769,7 +51462,7 @@ function rejectWork(workId) {
 
 function viewSiteReport(reportId) {
 
-    customAlert(`Opening site report ${reportId}...\n\nFull report details will be displayed with photos and documentation.`, "Site Report", "info");
+    customAlert(`Opening site report ${reportId}...nnFull report details will be displayed with photos and documentation.`, "Site Report", "info");
 
 }
 
@@ -51853,7 +51546,7 @@ function addProperty(){
 
                             <label>Plot Number *</label>
 
-                            <input type="text" id="plotNumber" placeholder="e.g., PLT-2026-001" required>
+                            <input type="text" id="plotNumber" placeholder="e.g., PLT-2026-001" required />
 
                         </div>
 
@@ -51887,7 +51580,7 @@ function addProperty(){
 
                             <label>Location *</label>
 
-                            <input type="text" id="propertyLocation" placeholder="e.g., Masaki, Dar es Salaam" required>
+                            <input type="text" id="propertyLocation" placeholder="e.g., Masaki, Dar es Salaam" required />
 
                         </div>
 
@@ -51895,7 +51588,7 @@ function addProperty(){
 
                             <label>Area (sqm) *</label>
 
-                            <input type="number" id="propertyArea" placeholder="e.g., 500" required>
+                            <input type="number" id="propertyArea" placeholder="e.g., 500" required />
 
                         </div>
 
@@ -51909,7 +51602,7 @@ function addProperty(){
 
                             <label>Price (TZS) *</label>
 
-                            <input type="number" id="propertyPrice" placeholder="e.g., 50000000" required>
+                            <input type="number" id="propertyPrice" placeholder="e.g., 50000000" required />
 
                         </div>
 
@@ -51941,7 +51634,7 @@ function addProperty(){
 
                         <label>Survey Plans</label>
 
-                        <input type="file" id="surveyPlans" accept=".pdf,.jpg,.png" multiple>
+                        <input type="file" id="surveyPlans" accept=".pdf,.jpg,.png" multiple />
 
                     </div>
 
@@ -51951,7 +51644,7 @@ function addProperty(){
 
                         <label>Title Deed/TP Number</label>
 
-                        <input type="text" id="tpNumber" placeholder="e.g., TP-123456">
+                        <input type="text" id="tpNumber" placeholder="e.g., TP-123456" />
 
                     </div>
 
@@ -51975,13 +51668,13 @@ function addProperty(){
 
                             <div class="checkbox-group">
 
-                                <label><input type="checkbox" value="water"> Water</label>
+                                <label><input type="checkbox" value="water" /> Water</label>
 
-                                <label><input type="checkbox" value="electricity"> Electricity</label>
+                                <label><input type="checkbox" value="electricity" /> Electricity</label>
 
-                                <label><input type="checkbox" value="road"> Road Access</label>
+                                <label><input type="checkbox" value="road" /> Road Access</label>
 
-                                <label><input type="checkbox" value="sewage"> Sewage System</label>
+                                <label><input type="checkbox" value="sewage" /> Sewage System</label>
 
                             </div>
 
@@ -52909,7 +52602,7 @@ function displayPropertiesRecords(records) {
 
 function viewPropertyDetails(propertyId) {
 
-    customAlert(`Viewing property details for ID: ${propertyId}\n\nFull property information including location details, utilities, zoning regulations, survey plans, title deeds, and property descriptions will be displayed.`, "Property Details", "info");
+    customAlert(`Viewing property details for ID: ${propertyId}nnFull property information including location details, utilities, zoning regulations, survey plans, title deeds, and property descriptions will be displayed.`, "Property Details", "info");
 
 }
 
@@ -52917,7 +52610,7 @@ function viewPropertyDetails(propertyId) {
 
 function editProperty(propertyId) {
 
-    customAlert(`Editing property ${propertyId}...\n\nProperty editor will open for modifications to pricing, status, description, and other property details.`, "Edit Property", "info");
+    customAlert(`Editing property ${propertyId}...nnProperty editor will open for modifications to pricing, status, description, and other property details.`, "Edit Property", "info");
 
 }
 
@@ -52925,7 +52618,7 @@ function editProperty(propertyId) {
 
 function downloadPropertyDocs(propertyId) {
 
-    customAlert(`Downloading property documents for ${propertyId}...\n\nComplete property documentation including survey plans, title deeds, zoning certificates, and other legal documents will be downloaded.`, "Download Documents", "info");
+    customAlert(`Downloading property documents for ${propertyId}...nnComplete property documentation including survey plans, title deeds, zoning certificates, and other legal documents will be downloaded.`, "Download Documents", "info");
 
 }
 
@@ -53046,7 +52739,7 @@ async function editPropertyDetails(){
 
                         <label>Plot Number *</label>
 
-                        <input type="text" id="editPlotNumber" required>
+                        <input type="text" id="editPlotNumber" required />
 
                     </div>
 
@@ -53080,7 +52773,7 @@ async function editPropertyDetails(){
 
                         <label>Location *</label>
 
-                        <input type="text" id="editPropertyLocation" required>
+                        <input type="text" id="editPropertyLocation" required />
 
                     </div>
 
@@ -53088,7 +52781,7 @@ async function editPropertyDetails(){
 
                         <label>Area (sqm) *</label>
 
-                        <input type="number" id="editPropertyArea" required>
+                        <input type="number" id="editPropertyArea" required />
 
                     </div>
 
@@ -53102,7 +52795,7 @@ async function editPropertyDetails(){
 
                         <label>Price (TZS) *</label>
 
-                        <input type="number" id="editPropertyPrice" required>
+                        <input type="number" id="editPropertyPrice" required />
 
                     </div>
 
@@ -53134,7 +52827,7 @@ async function editPropertyDetails(){
 
                     <label>Update Survey Plans</label>
 
-                    <input type="file" id="editSurveyPlans" accept=".pdf,.jpg,.png" multiple>
+                    <input type="file" id="editSurveyPlans" accept=".pdf,.jpg,.png" multiple />
 
                 </div>
 
@@ -53144,7 +52837,7 @@ async function editPropertyDetails(){
 
                     <label>Title Deed/TP Number</label>
 
-                    <input type="text" id="editTpNumber">
+                    <input type="text" id="editTpNumber" />
 
                 </div>
 
@@ -53282,7 +52975,7 @@ function registerClient(){
 
                             <label>Client ID</label>
 
-                            <input type="text" id="clientId" placeholder="e.g., CLT-2026-001" readonly>
+                            <input type="text" id="clientId" placeholder="e.g., CLT-2026-001" readonly />
 
                         </div>
 
@@ -53296,7 +52989,7 @@ function registerClient(){
 
                             <label>Full Name *</label>
 
-                            <input type="text" id="clientFullName" placeholder="e.g., John Michael Smith" required>
+                            <input type="text" id="clientFullName" placeholder="e.g., John Michael Smith" required />
 
                         </div>
 
@@ -53304,7 +52997,7 @@ function registerClient(){
 
                             <label>Company Name</label>
 
-                            <input type="text" id="companyName" placeholder="e.g., ABC Investments Ltd">
+                            <input type="text" id="companyName" placeholder="e.g., ABC Investments Ltd" />
 
                         </div>
 
@@ -53318,7 +53011,7 @@ function registerClient(){
 
                             <label>Phone Number *</label>
 
-                            <input type="tel" id="clientPhone" placeholder="e.g., +255 712 345 678" required>
+                            <input type="tel" id="clientPhone" placeholder="e.g., +255 712 345 678" required />
 
                         </div>
 
@@ -53326,7 +53019,7 @@ function registerClient(){
 
                             <label>Email Address *</label>
 
-                            <input type="email" id="clientEmail" placeholder="e.g., john.smith@email.com" required>
+                            <input type="email" id="clientEmail" placeholder="e.g., john.smith@email.com" required />
 
                         </div>
 
@@ -53340,7 +53033,7 @@ function registerClient(){
 
                             <label>NIDA Number *</label>
 
-                            <input type="text" id="clientNida" placeholder="National ID Number" required>
+                            <input type="text" id="clientNida" placeholder="National ID Number" required />
 
                         </div>
 
@@ -53348,7 +53041,7 @@ function registerClient(){
 
                             <label>TIN Number</label>
 
-                            <input type="text" id="clientTin" placeholder="Tax Identification Number">
+                            <input type="text" id="clientTin" placeholder="Tax Identification Number" />
 
                         </div>
 
@@ -53360,7 +53053,7 @@ function registerClient(){
 
                         <label>Physical Address *</label>
 
-                        <input type="text" id="clientAddress" placeholder="e.g., P.O. Box 1234, Dar es Salaam" required>
+                        <input type="text" id="clientAddress" placeholder="e.g., P.O. Box 1234, Dar es Salaam" required />
 
                     </div>
 
@@ -53786,7 +53479,7 @@ function displayClientsRecords(data) {
 
         // Escape helpers for safe HTML
 
-        const esc = (v) => String(v == null ? '' : v).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\'':'&#39;'}[c]));
+        const esc = (v) => String(v == null ? '' : v).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c]));
 
         
 
@@ -53924,7 +53617,7 @@ function displayClientsRecords(data) {
 
 function viewClientDetails(clientId) {
 
-    customAlert(`Viewing client details for ID: ${clientId}\n\nFull client information including contact details, identification numbers, property preferences, budget ranges, special requirements, and transaction history will be displayed.`, "Client Details", "info");
+    customAlert(`Viewing client details for ID: ${clientId}nnFull client information including contact details, identification numbers, property preferences, budget ranges, special requirements, and transaction history will be displayed.`, "Client Details", "info");
 
 }
 
@@ -53932,7 +53625,7 @@ function viewClientDetails(clientId) {
 
 function editClient(clientId) {
 
-    customAlert(`Editing client ${clientId}...\n\nClient editor will open for modifications to contact information, property interests, budget ranges, and other client details.`, "Edit Client", "info");
+    customAlert(`Editing client ${clientId}...nnClient editor will open for modifications to contact information, property interests, budget ranges, and other client details.`, "Edit Client", "info");
 
 }
 
@@ -53940,7 +53633,7 @@ function editClient(clientId) {
 
 function contactClient(clientId) {
 
-    customAlert(`Contacting client ${clientId}...\n\nCommunication options including phone call, email, SMS, and appointment scheduling will be available for client outreach.`, "Contact Client", "info");
+    customAlert(`Contacting client ${clientId}...nnCommunication options including phone call, email, SMS, and appointment scheduling will be available for client outreach.`, "Contact Client", "info");
 
 }
 
@@ -54058,7 +53751,7 @@ async function recordSale(){
 
                             <label>Sale Price (TZS) *</label>
 
-                            <input type="number" id="salePrice" placeholder="e.g., 50000000" required>
+                            <input type="number" id="salePrice" placeholder="e.g., 50000000" required />
 
                         </div>
 
@@ -54066,7 +53759,7 @@ async function recordSale(){
 
                             <label>Sale Date *</label>
 
-                            <input type="date" id="saleDate" required>
+                            <input type="date" id="saleDate" required />
 
                         </div>
 
@@ -54104,7 +53797,7 @@ async function recordSale(){
 
                                 <label>Installment Period (Months)</label>
 
-                                <input type="number" id="installmentPeriod" placeholder="e.g., 24">
+                                <input type="number" id="installmentPeriod" placeholder="e.g., 24" />
 
                             </div>
 
@@ -54112,7 +53805,7 @@ async function recordSale(){
 
                                 <label>Down Payment (TZS)</label>
 
-                                <input type="number" id="downPayment" placeholder="e.g., 10000000">
+                                <input type="number" id="downPayment" placeholder="e.g., 10000000" />
 
                             </div>
 
@@ -54126,7 +53819,7 @@ async function recordSale(){
 
                                 <label>Monthly Installment (TZS)</label>
 
-                                <input type="number" id="monthlyInstallment" placeholder="e.g., 1666667">
+                                <input type="number" id="monthlyInstallment" placeholder="e.g., 1666667" />
 
                             </div>
 
@@ -54134,7 +53827,7 @@ async function recordSale(){
 
                                 <label>Interest Rate (%)</label>
 
-                                <input type="number" id="interestRate" placeholder="e.g., 15" step="0.1">
+                                <input type="number" id="interestRate" placeholder="e.g., 15" step="0.1" />
 
                             </div>
 
@@ -54148,7 +53841,7 @@ async function recordSale(){
 
                         <label>Sales Agreement</label>
 
-                        <input type="file" id="salesAgreement" accept=".pdf,.doc,.docx">
+                        <input type="file" id="salesAgreement" accept=".pdf,.doc,.docx" />
 
                     </div>
 
@@ -54180,7 +53873,7 @@ async function recordSale(){
 
                         <label>Commission Agent</label>
 
-                        <input type="text" id="commissionAgent" placeholder="e.g., Agent Name or Self">
+                        <input type="text" id="commissionAgent" placeholder="e.g., Agent Name or Self" />
 
                     </div>
 
@@ -54244,9 +53937,18 @@ async function recordSale(){
 
     // Fetch real properties and clients from database dynamically
     try {
+        const baseUrl = window.location.origin;
+        const fetchOptions = {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${sessionManager.getAuthToken()}`
+            }
+        };
+
         const [propsRes, clientsRes] = await Promise.all([
-            fetch('/api/properties/all'),
-            fetch('/api/clients')
+            fetch(`${baseUrl}/api/properties/all`, fetchOptions),
+            fetch(`${baseUrl}/api/clients`, fetchOptions)
         ]);
         
         const propertySelect = document.getElementById('saleProperty');
@@ -54257,7 +53959,7 @@ async function recordSale(){
             const properties = Array.isArray(data) ? data : (data.properties || data.data || []);
             const availableProps = properties.filter(p => {
                 const status = (p.status || '').toLowerCase();
-                return status === 'available' || status === 'reserved' || status === 'under offer';
+                return status === 'available' || status === 'reserved' || status === 'under offer' || status === 'sold';
             });
             
             if (propertySelect) {
@@ -55107,7 +54809,7 @@ async function trackPaymentProgress(){
 
             <div class="search-filters">
 
-                <input type="text" id="paymentSearch" placeholder="Search by client name, property, or sale ID..." onkeyup="filterPaymentTable()">
+                <input type="text" id="paymentSearch" placeholder="Search by client name, property, or sale ID..." onkeyup="filterPaymentTable()" />
 
                 <select id="paymentStatusFilter" onchange="filterPaymentTable()">
 
@@ -55774,7 +55476,7 @@ function showPaymentRecordingForm(sale) {
 
                         <label>Payment Amount *</label>
 
-                        <input type="number" id="paymentAmount" min="1" max="${sale.outstanding_balance}" required>
+                        <input type="number" id="paymentAmount" min="1" max="${sale.outstanding_balance}" required />
 
                     </div>
 
@@ -55810,7 +55512,7 @@ function showPaymentRecordingForm(sale) {
 
                         <label>Payment Date *</label>
 
-                        <input type="date" id="paymentDate" required>
+                        <input type="date" id="paymentDate" required />
 
                     </div>
 
@@ -56110,7 +55812,7 @@ function generateSalesReport(){
 
                             <label>Start Date</label>
 
-                            <input type="date" id="reportStartDate">
+                            <input type="date" id="reportStartDate" />
 
                         </div>
 
@@ -56118,7 +55820,7 @@ function generateSalesReport(){
 
                             <label>End Date</label>
 
-                            <input type="date" id="reportEndDate">
+                            <input type="date" id="reportEndDate" />
 
                         </div>
 
@@ -57066,7 +56768,7 @@ function displaySalesRecords(records) {
 
 function viewSalesTransaction(transactionId) {
 
-    customAlert(`Viewing sales transaction details for ID: ${transactionId}\n\nFull transaction details including property information, client details, payment status, and contract terms will be displayed.`, "Sales Transaction Details", "info");
+    customAlert(`Viewing sales transaction details for ID: ${transactionId}nnFull transaction details including property information, client details, payment status, and contract terms will be displayed.`, "Sales Transaction Details", "info");
 
 }
 
@@ -57074,7 +56776,7 @@ function viewSalesTransaction(transactionId) {
 
 function downloadSalesContract(transactionId) {
 
-    customAlert(`Downloading sales contract for transaction ${transactionId}...\n\nComplete sales contract with all terms, conditions, and supporting documents will be downloaded in PDF format.`, "Download Contract", "info");
+    customAlert(`Downloading sales contract for transaction ${transactionId}...nnComplete sales contract with all terms, conditions, and supporting documents will be downloaded in PDF format.`, "Download Contract", "info");
 
 }
 
@@ -57082,7 +56784,7 @@ function downloadSalesContract(transactionId) {
 
 function editSalesTransaction(transactionId) {
 
-    customAlert(`Editing sales transaction ${transactionId}...\n\nTransaction editor will open for modifications, payment updates, and status changes.`, "Edit Transaction", "info");
+    customAlert(`Editing sales transaction ${transactionId}...nnTransaction editor will open for modifications, payment updates, and status changes.`, "Edit Transaction", "info");
 
 }
 
@@ -57132,7 +56834,7 @@ function saveNewProperty() {
 
         !property.status || property.status.trim() === '') {
 
-        customAlert('Please fill in all required fields:\n\nâ€¢ Plot Number\nâ€¢ Property Type\nâ€¢ Location\nâ€¢ Area\nâ€¢ Price\nâ€¢ Status', "Validation Error", "error");
+        customAlert('Please fill in all required fields:nnâ€¢ Plot Numbernâ€¢ Property Typenâ€¢ Locationnâ€¢ Areanâ€¢ Pricenâ€¢ Status', "Validation Error", "error");
 
         return false;
 
@@ -57148,7 +56850,7 @@ function saveNewProperty() {
 
         work_title: `New Property - ${property.propertyName}`,
 
-        work_description: `New Property Added\n\nPlot Number: ${property.propertyName}\nProperty Type: ${property.propertyType}\nLocation: ${property.location}\nArea: ${property.size} sqm\nPrice: TZS ${parseInt(property.value).toLocaleString()}\nStatus: ${property.status}\nDescription: ${property.description}`,
+        work_description: `New Property AddednnPlot Number: ${property.propertyName}nProperty Type: ${property.propertyType}nLocation: ${property.location}nArea: ${property.size} sqmnPrice: TZS ${parseInt(property.value).toLocaleString()}nStatus: ${property.status}nDescription: ${property.description}`,
 
         property_name: property.propertyName, // Required field
 
@@ -57258,7 +56960,7 @@ function saveNewProperty() {
 
         
 
-        customAlert(`Property added successfully!\n\nPlot: ${property.propertyName}\nLocation: ${property.location}\nPrice: TZS ${parseInt(property.value).toLocaleString()}\nStatus: ${property.status}\nProperty ID: ${data.id}\n\nðŸŽ‰ Property saved to database!`, "Property Added", "success");
+        customAlert(`Property added successfully!nnPlot: ${property.propertyName}nLocation: ${property.location}nPrice: TZS ${parseInt(property.value).toLocaleString()}nStatus: ${property.status}nProperty ID: ${data.id}nnðŸŽ‰ Property saved to database!`, "Property Added", "success");
 
         
 
@@ -57334,15 +57036,15 @@ function saveNewClient() {
 
         !client.address || client.address.trim() === '') {
 
-        customAlert('Please fill in all required fields:\n\n' +
+        customAlert('Please fill in all required fields:nn' +
 
-                    'Full Name *\n' +
+                    'Full Name *n' +
 
-                    'Phone Number *\n' +
+                    'Phone Number *n' +
 
-                    'Email Address *\n' +
+                    'Email Address *n' +
 
-                    'NIDA Number *\n' +
+                    'NIDA Number *n' +
 
                     'Physical Address *', "Validation Error", "error");
 
@@ -57438,7 +57140,7 @@ function saveNewClient() {
 
         
 
-        customAlert(`Client registered successfully!\n\nName: ${client.fullName}\nID: ${client.id}\nPhone: ${client.phone}\nEmail: ${client.email}\nNIDA: ${client.nida}\nRegistration ID: ${data.clientId || data.id}\n\nðŸŽ‰ Client saved to database!`, "Client Registered", "success");
+        customAlert(`Client registered successfully!nnName: ${client.fullName}nID: ${client.id}nPhone: ${client.phone}nEmail: ${client.email}nNIDA: ${client.nida}nRegistration ID: ${data.clientId || data.id}nnðŸŽ‰ Client saved to database!`, "Client Registered", "success");
 
         
 
@@ -57555,7 +57257,7 @@ async function saveNewSale(event) {
 
         if (response.ok) {
             console.log('âœ… Sale recorded successfully in the database!', result);
-            customAlert(`Sale recorded successfully!\n\nProperty: ${propertyName}\nClient: ${clientName}\nPrice: TZS ${parseInt(price).toLocaleString()}\nPayment Method: ${paymentMethod}\nStatus: ${paymentStatus}`, "Sale Recorded", "success");
+            customAlert(`Sale recorded successfully!nnProperty: ${propertyName}nClient: ${clientName}nPrice: TZS ${parseInt(price).toLocaleString()}nPayment Method: ${paymentMethod}nStatus: ${paymentStatus}`, "Sale Recorded", "success");
             document.getElementById('saleForm').reset();
         } else {
             console.error('âŒ Failed to record sale. Server response error:', result);
@@ -57596,7 +57298,7 @@ function generateReport() {
 
     
 
-    customAlert(`Generating ${report.type} report for ${report.period} period...\n\nReport will include:\nâ€¢ Sales summary and trends\nâ€¢ Payment tracking\nâ€¢ Property performance\nâ€¢ Client analysis\nâ€¢ Commission calculations\n\nReport will be ready for download shortly.`, "Generate Report", "info");
+    customAlert(`Generating ${report.type} report for ${report.period} period...nnReport will include:nâ€¢ Sales summary and trendsnâ€¢ Payment trackingnâ€¢ Property performancenâ€¢ Client analysisnâ€¢ Commission calculationsnnReport will be ready for download shortly.`, "Generate Report", "info");
 
     
 
@@ -57634,7 +57336,7 @@ function savePropertyEdits() {
 
     const propertyId = document.getElementById('editPropertySelect').value;
 
-    customAlert(`Property ${propertyId} updated successfully!\n\nChanges have been saved and property status updated.`, "Property Updated", "success");
+    customAlert(`Property ${propertyId} updated successfully!nnChanges have been saved and property status updated.`, "Property Updated", "success");
 
     document.getElementById('editPropertyForm').reset();
 
@@ -57678,7 +57380,7 @@ function recordPayment(saleId) {
 
         if (amount) {
 
-            customAlert(`Payment of TZS ${parseInt(amount).toLocaleString()} recorded for sale ${saleId}.\n\nPayment receipt has been generated and client notified.`, "Payment Recorded", "success");
+            customAlert(`Payment of TZS ${parseInt(amount).toLocaleString()} recorded for sale ${saleId}.nnPayment receipt has been generated and client notified.`, "Payment Recorded", "success");
 
         }
 
@@ -57690,7 +57392,7 @@ function recordPayment(saleId) {
 
 function viewPaymentHistory(saleId) {
 
-    customAlert(`Opening payment history for sale ${saleId}...\n\nFull payment history with dates, amounts, and receipts will be displayed.`, "Payment History", "info");
+    customAlert(`Opening payment history for sale ${saleId}...nnFull payment history with dates, amounts, and receipts will be displayed.`, "Payment History", "info");
 
 }
 
@@ -57698,7 +57400,7 @@ function viewPaymentHistory(saleId) {
 
 function sendReminder(saleId) {
 
-    customAlert(`Payment reminder sent for sale ${saleId}.\n\nClient has been notified via SMS and email about overdue payment.`, "Reminder Sent", "info");
+    customAlert(`Payment reminder sent for sale ${saleId}.nnClient has been notified via SMS and email about overdue payment.`, "Reminder Sent", "info");
 
 }
 
@@ -57718,7 +57420,7 @@ function filterPayments() {
 
 function exportSalesReport() {
 
-    customAlert('Exporting sales report...\n\nReport will be downloaded as PDF file with all metrics and charts.', "Export Report", "info");
+    customAlert('Exporting sales report...nnReport will be downloaded as PDF file with all metrics and charts.', "Export Report", "info");
 
 }
 
@@ -57726,7 +57428,7 @@ function exportSalesReport() {
 
 function shareSalesReport() {
 
-    customAlert('Sharing sales report...\n\nReport will be shared with management and stakeholders via email.', "Share Report", "info");
+    customAlert('Sharing sales report...nnReport will be shared with management and stakeholders via email.', "Share Report", "info");
 
 }
 
@@ -57734,7 +57436,7 @@ function shareSalesReport() {
 
 function scheduleReport() {
 
-    customAlert('Scheduling monthly sales report...\n\nReport will be automatically generated and emailed on the 1st of each month.', "Schedule Report", "info");
+    customAlert('Scheduling monthly sales report...nnReport will be automatically generated and emailed on the 1st of each month.', "Schedule Report", "info");
 
 }
 
@@ -57846,7 +57548,7 @@ function uploadDocs(){
 
                         <label>Document Title</label>
 
-                        <input type="text" id="docTitle" placeholder="Enter document title">
+                        <input type="text" id="docTitle" placeholder="Enter document title" />
 
                     </div>
 
@@ -57892,7 +57594,7 @@ function uploadDocs(){
 
                         <label>File</label>
 
-                        <input type="file" id="docFile" accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx">
+                        <input type="file" id="docFile" accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx" />
 
                     </div>
 
@@ -57938,7 +57640,7 @@ function uploadDocs(){
 
                 <div class="search-section">
 
-                    <input type="text" id="documentSearchInput" placeholder="Search by title or department..." onkeyup="filterDocuments()">
+                    <input type="text" id="documentSearchInput" placeholder="Search by title or department..." onkeyup="filterDocuments()" />
 
                     <select id="documentTypeFilter" onchange="filterDocuments()">
 
@@ -58888,7 +58590,7 @@ function formatFileSize(size) {
 
 function editDocument(documentId) {
 
-    customAlert(`Editing document with ID: ${documentId}\n\nDocument editor will be opened allowing you to modify content, update metadata, change status, and manage document properties. All changes will be tracked and version controlled.`, "Edit Document", "info");
+    customAlert(`Editing document with ID: ${documentId}nnDocument editor will be opened allowing you to modify content, update metadata, change status, and manage document properties. All changes will be tracked and version controlled.`, "Edit Document", "info");
 
 }
 
@@ -59008,7 +58710,7 @@ function uploadDocument() {
 
     if (!docType || !docTitle || !docDepartment || !docFile) {
 
-        customAlert('Please fill all required fields and select a file:\n\nâ€¢ Document Type\nâ€¢ Document Title\nâ€¢ Department\nâ€¢ File', "Validation Error", "error");
+        customAlert('Please fill all required fields and select a file:nnâ€¢ Document Typenâ€¢ Document Titlenâ€¢ Departmentnâ€¢ File', "Validation Error", "error");
 
         return;
 
@@ -59130,7 +58832,7 @@ function uploadDocument() {
 
         showRealProblemNotification('SUCCESS', {
 
-            message: `âœ… Document uploaded successfully!\n\nðŸ“‹ Details:\nâ€¢ Title: ${docTitle}\nâ€¢ Type: ${docType}\nâ€¢ Department: ${docDepartment}\nâ€¢ File: ${docFile.name}\nâ€¢ Priority: ${docPriority}\nâ€¢ Document ID: ${data.id}\nâ€¢ Status: ${data.status || 'pending'}\n\nðŸŽ‰ Document saved to database without page refresh!`,
+            message: `âœ… Document uploaded successfully!nnðŸ“‹ Details:nâ€¢ Title: ${docTitle}nâ€¢ Type: ${docType}nâ€¢ Department: ${docDepartment}nâ€¢ File: ${docFile.name}nâ€¢ Priority: ${docPriority}nâ€¢ Document ID: ${data.id}nâ€¢ Status: ${data.status || 'pending'}nnðŸŽ‰ Document saved to database without page refresh!`,
 
             documentId: data.id,
 
@@ -59182,37 +58884,37 @@ function uploadDocument() {
 
             errorCause = 'Network connection failed';
 
-            troubleshooting = 'â€¢ Check internet connection\nâ€¢ Verify server is running\nâ€¢ Try again in a moment';
+            troubleshooting = 'â€¢ Check internet connectionnâ€¢ Verify server is runningnâ€¢ Try again in a moment';
 
         } else if (error.message.includes('400')) {
 
             errorCause = 'Invalid request data';
 
-            troubleshooting = 'â€¢ Fill all required fields\nâ€¢ Select a valid file\nâ€¢ Check file size limits';
+            troubleshooting = 'â€¢ Fill all required fieldsnâ€¢ Select a valid filenâ€¢ Check file size limits';
 
         } else if (error.message.includes('404')) {
 
             errorCause = 'API endpoint not found';
 
-            troubleshooting = 'â€¢ Server routing issue\nâ€¢ Contact system administrator';
+            troubleshooting = 'â€¢ Server routing issuenâ€¢ Contact system administrator';
 
         } else if (error.message.includes('500')) {
 
             errorCause = 'Server internal error';
 
-            troubleshooting = 'â€¢ Database connection issue\nâ€¢ Server configuration problem\nâ€¢ Contact system administrator';
+            troubleshooting = 'â€¢ Database connection issuenâ€¢ Server configuration problemnâ€¢ Contact system administrator';
 
         } else if (error.message.includes('validation') || error.message.includes('required')) {
 
             errorCause = 'Form validation failed';
 
-            troubleshooting = 'â€¢ Fill all required fields\nâ€¢ Check field formats\nâ€¢ Ensure file is selected';
+            troubleshooting = 'â€¢ Fill all required fieldsnâ€¢ Check field formatsnâ€¢ Ensure file is selected';
 
         } else if (error.message.includes('database') || error.message.includes('SQL')) {
 
             errorCause = 'Database operation failed';
 
-            troubleshooting = 'â€¢ Database connection issue\nâ€¢ Table might not exist\nâ€¢ Contact system administrator';
+            troubleshooting = 'â€¢ Database connection issuenâ€¢ Table might not existnâ€¢ Contact system administrator';
 
         }
 
@@ -59228,7 +58930,7 @@ function uploadDocument() {
 
             troubleshooting: troubleshooting,
 
-            message: `âŒ Document upload failed!\n\nðŸ” Error Cause: ${errorCause}\n\nðŸ› ï¸ Troubleshooting:\n${troubleshooting}\n\nðŸ“ Technical Details:\n${error.message}\n\nðŸ’¡ Please fix the issue and try again.`,
+            message: `âŒ Document upload failed!nnðŸ” Error Cause: ${errorCause}nnðŸ› ï¸ Troubleshooting:n${troubleshooting}nnðŸ“ Technical Details:n${error.message}nnðŸ’¡ Please fix the issue and try again.`,
 
             fileName: docFile?.name || 'No file selected',
 
@@ -59258,7 +58960,7 @@ function editDocuments(){
 
             <div class="search-section">
 
-                <input type="text" id="docSearchInput" placeholder="Search documents..." onkeyup="filterDocs()">
+                <input type="text" id="docSearchInput" placeholder="Search documents..." onkeyup="filterDocs()" />
 
                 <select id="deptFilter" onchange="filterDocsByDept()">
 
@@ -59720,7 +59422,7 @@ function sendNotifications(){
 
                         <label>Notification Title</label>
 
-                        <input type="text" id="notifTitle" placeholder="Enter notification title">
+                        <input type="text" id="notifTitle" placeholder="Enter notification title" />
 
                     </div>
 
@@ -59774,7 +59476,7 @@ function sendNotifications(){
 
                         <label>Schedule Date & Time</label>
 
-                        <input type="datetime-local" id="scheduleDateTime">
+                        <input type="datetime-local" id="scheduleDateTime" />
 
                     </div>
 
@@ -59802,7 +59504,7 @@ function sendNotifications(){
 
                 <div class="search-section">
 
-                    <input type="text" id="notificationSearchInput" placeholder="Search by title or recipient..." onkeyup="filterNotifications()">
+                    <input type="text" id="notificationSearchInput" placeholder="Search by title or recipient..." onkeyup="filterNotifications()" />
 
                     <select id="notificationPriorityFilter" onchange="filterNotifications()">
 
@@ -60086,7 +59788,7 @@ async function sendNotification() {
 
         
 
-        alert('Notification ' + statusText + '!\n\nTitle: ' + title + '\nTo: ' + recipientText + '\nPriority: ' + priority);
+        alert('Notification ' + statusText + '!nnTitle: ' + title + 'nTo: ' + recipientText + 'nPriority: ' + priority);
 
         
 
@@ -60602,7 +60304,7 @@ function getPriorityDisplayName(priority) {
 
 function viewNotification(notificationId) {
 
-    customAlert(`Viewing notification with ID: ${notificationId}\n\nNotification details will be displayed including title, message content, recipient information, sent date, priority level, delivery status, read receipts, and full interaction history. All notification metadata and engagement metrics will be available for comprehensive analysis and reporting.`, "View Notification", "info");
+    customAlert(`Viewing notification with ID: ${notificationId}nnNotification details will be displayed including title, message content, recipient information, sent date, priority level, delivery status, read receipts, and full interaction history. All notification metadata and engagement metrics will be available for comprehensive analysis and reporting.`, "View Notification", "info");
 
 }
 
@@ -60610,7 +60312,7 @@ function viewNotification(notificationId) {
 
 function resendNotification(notificationId) {
 
-    customAlert(`Resending notification with ID: ${notificationId}\n\nNotification will be resent to all original recipients with updated timestamp and tracking. The original message content will remain unchanged while new delivery metrics will be captured for the resend operation. Recipients who haven't read the original will receive priority delivery.`, "Resend Notification", "info");
+    customAlert(`Resending notification with ID: ${notificationId}nnNotification will be resent to all original recipients with updated timestamp and tracking. The original message content will remain unchanged while new delivery metrics will be captured for the resend operation. Recipients who haven't read the original will receive priority delivery.`, "Resend Notification", "info");
 
 }
 
@@ -60618,7 +60320,7 @@ function resendNotification(notificationId) {
 
 function deleteNotification(notificationId) {
 
-    customAlert(`Deleting notification with ID: ${notificationId}\n\nNotification will be permanently deleted from the system. This action cannot be undone and will remove all associated data including delivery records, read receipts, and engagement metrics. Consider archiving instead if preservation of records is required.`, "Delete Notification", "warning");
+    customAlert(`Deleting notification with ID: ${notificationId}nnNotification will be permanently deleted from the system. This action cannot be undone and will remove all associated data including delivery records, read receipts, and engagement metrics. Consider archiving instead if preservation of records is required.`, "Delete Notification", "warning");
 
 }
 
@@ -60760,7 +60462,7 @@ function recordMeetingMinutes(){
 
                         <label>Meeting Title</label>
 
-                        <input type="text" id="meetingTitle" placeholder="Enter meeting title">
+                        <input type="text" id="meetingTitle" placeholder="Enter meeting title" />
 
                     </div>
 
@@ -60796,7 +60498,7 @@ function recordMeetingMinutes(){
 
                             <label>Date</label>
 
-                            <input type="date" id="meetingDate">
+                            <input type="date" id="meetingDate" />
 
                         </div>
 
@@ -60804,7 +60506,7 @@ function recordMeetingMinutes(){
 
                             <label>Time</label>
 
-                            <input type="time" id="meetingTime">
+                            <input type="time" id="meetingTime" />
 
                         </div>
 
@@ -60918,7 +60620,7 @@ function saveMeetingMinutes() {
 
     if (!title || !type || !date || !time || !minutes) {
 
-        alert('Please fill all required fields:\n\nâ€¢ Meeting Title\nâ€¢ Meeting Type\nâ€¢ Date\nâ€¢ Time\nâ€¢ Meeting Minutes');
+        alert('Please fill all required fields:nnâ€¢ Meeting Titlenâ€¢ Meeting Typenâ€¢ Datenâ€¢ Timenâ€¢ Meeting Minutes');
 
         return;
 
@@ -60996,7 +60698,7 @@ function saveMeetingMinutes() {
 
         
 
-        alert('Meeting minutes saved successfully!\n\nTitle: ' + title + '\nDate: ' + date + '\nTime: ' + time + '\nType: ' + type);
+        alert('Meeting minutes saved successfully!nnTitle: ' + title + 'nDate: ' + date + 'nTime: ' + time + 'nType: ' + type);
 
         
 
@@ -61032,7 +60734,7 @@ function saveMeetingMinutes() {
 
         if (error.message.includes('404') || error.message.includes('Not Found')) {
 
-            alert('Meeting minutes saved locally!\n\nTitle: ' + title + '\nDate: ' + date + '\nTime: ' + time + '\nType: ' + type + '\n\n(Note: API endpoint will be available soon)');
+            alert('Meeting minutes saved locally!nnTitle: ' + title + 'nDate: ' + date + 'nTime: ' + time + 'nType: ' + type + 'nn(Note: API endpoint will be available soon)');
 
             
 
@@ -61128,7 +60830,7 @@ function viewEmployeeList() {
 
             <div class="search-section">
 
-                <input type="text" id="employeeSearchInput" placeholder="Search employees by name, department, or role..." onkeyup="filterEmployeeList()">
+                <input type="text" id="employeeSearchInput" placeholder="Search employees by name, department, or role..." onkeyup="filterEmployeeList()" />
 
                 <select id="departmentFilter" onchange="filterEmployeeList()">
 
@@ -61584,7 +61286,7 @@ function populateDepartmentFilter(departments) {
 
         const option = document.createElement('option');
 
-        option.value = dept.toLowerCase().replace(/\s+/g, '');
+        option.value = dept.toLowerCase().replace(/s+/g, '');
 
         option.textContent = dept;
 
@@ -61690,13 +61392,13 @@ function filterEmployeeList() {
 
                                        // Match without spaces/special chars
 
-                                       deptLower.replace(/\s+/g, '') === filterLower ||
+                                       deptLower.replace(/s+/g, '') === filterLower ||
 
                                        // Partial match for safety
 
                                        deptLower.includes(filterLower) ||
 
-                                       filterLower.includes(deptLower.replace(/\s+/g, ''));
+                                       filterLower.includes(deptLower.replace(/s+/g, ''));
 
                 }
 
@@ -61788,13 +61490,13 @@ function filterEmployeeList() {
 
                                            // Match without spaces/special chars
 
-                                           deptLower.replace(/\s+/g, '') === filterLower ||
+                                           deptLower.replace(/s+/g, '') === filterLower ||
 
                                            // Partial match for safety
 
                                            deptLower.includes(filterLower) ||
 
-                                           filterLower.includes(deptLower.replace(/\s+/g, ''));
+                                           filterLower.includes(deptLower.replace(/s+/g, ''));
 
                     }
 
@@ -62000,7 +61702,7 @@ function showEmployeeDetailsModal(employee) {
 
                              alt="${employee.fullName || employee.full_name || employee.name}" 
 
-                             onerror="this.src='https://picsum.photos/seed/default/100/100.jpg'">
+                             onerror="this.src='https://picsum.photos/seed/default/100/100.jpg'" />
 
                     </div>
 
@@ -62320,7 +62022,7 @@ function scheduleMeeting(){
 
                         <label>Meeting Title</label>
 
-                        <input type="text" id="meetingTitle" placeholder="Enter meeting title">
+                        <input type="text" id="meetingTitle" placeholder="Enter meeting title" />
 
                     </div>
 
@@ -62360,7 +62062,7 @@ function scheduleMeeting(){
 
                             <label>Date</label>
 
-                            <input type="date" id="meetingDate">
+                            <input type="date" id="meetingDate" />
 
                         </div>
 
@@ -62368,7 +62070,7 @@ function scheduleMeeting(){
 
                             <label>Start Time</label>
 
-                            <input type="time" id="meetingStartTime">
+                            <input type="time" id="meetingStartTime" />
 
                         </div>
 
@@ -62376,7 +62078,7 @@ function scheduleMeeting(){
 
                             <label>End Time</label>
 
-                            <input type="time" id="meetingEndTime">
+                            <input type="time" id="meetingEndTime" />
 
                         </div>
 
@@ -62388,7 +62090,7 @@ function scheduleMeeting(){
 
                         <label>Location</label>
 
-                        <input type="text" id="meetingLocation" placeholder="Enter meeting location">
+                        <input type="text" id="meetingLocation" placeholder="Enter meeting location" />
 
                     </div>
 
@@ -62424,7 +62126,7 @@ function scheduleMeeting(){
 
                         <label>Expected Attendees</label>
 
-                        <input type="number" id="attendeeCount" placeholder="Number of expected attendees" min="1">
+                        <input type="number" id="attendeeCount" placeholder="Number of expected attendees" min="1" />
 
                     </div>
 
@@ -62446,13 +62148,13 @@ function scheduleMeeting(){
 
                         <div class="resource-checklist">
 
-                            <label><input type="checkbox" id="projector"> Projector</label>
+                            <label><input type="checkbox" id="projector" /> Projector</label>
 
-                            <label><input type="checkbox" id="whiteboard"> Whiteboard</label>
+                            <label><input type="checkbox" id="whiteboard" /> Whiteboard</label>
 
-                            <label><input type="checkbox" id="refreshments"> Refreshments</label>
+                            <label><input type="checkbox" id="refreshments" /> Refreshments</label>
 
-                            <label><input type="checkbox" id="parking"> Parking Arrangement</label>
+                            <label><input type="checkbox" id="parking" /> Parking Arrangement</label>
 
                         </div>
 
@@ -62716,7 +62418,7 @@ function scheduleMeetingSubmit() {
 
         
 
-        alert('Meeting scheduled successfully!\n\n' + title + '\nDate: ' + date + '\nTime: ' + startTime + ' - ' + endTime + '\nLocation: ' + location + '\nResources: ' + resources.join(', '));
+        alert('Meeting scheduled successfully!nn' + title + 'nDate: ' + date + 'nTime: ' + startTime + ' - ' + endTime + 'nLocation: ' + location + 'nResources: ' + resources.join(', '));
 
         
 
@@ -62782,25 +62484,25 @@ function viewMeetingDetails(meetingId) {
 
     if (meeting) {
 
-        alert('Meeting Details:\n\n' +
+        alert('Meeting Details:nn' +
 
-              'Title: ' + meeting.title + '\n' +
+              'Title: ' + meeting.title + 'n' +
 
-              'Type: ' + meeting.type + '\n' +
+              'Type: ' + meeting.type + 'n' +
 
-              'Date: ' + meeting.date + '\n' +
+              'Date: ' + meeting.date + 'n' +
 
-              'Time: ' + meeting.startTime + ' - ' + meeting.endTime + '\n' +
+              'Time: ' + meeting.startTime + ' - ' + meeting.endTime + 'n' +
 
-              'Location: ' + meeting.location + '\n' +
+              'Location: ' + meeting.location + 'n' +
 
-              'Department: ' + meeting.department + '\n' +
+              'Department: ' + meeting.department + 'n' +
 
-              'Attendees: ' + meeting.attendeeCount + '\n' +
+              'Attendees: ' + meeting.attendeeCount + 'n' +
 
-              'Description: ' + meeting.description + '\n' +
+              'Description: ' + meeting.description + 'n' +
 
-              'Resources: ' + (meeting.resources ? meeting.resources.join(', ') : 'None') + '\n' +
+              'Resources: ' + (meeting.resources ? meeting.resources.join(', ') : 'None') + 'n' +
 
               'Status: ' + meeting.status);
 
@@ -62832,8 +62534,8 @@ async function adminOperations(){
 
     try {
         const token = localStorage.getItem('token') || sessionStorage.getItem('token');
-        const response = await fetch(\`\${baseUrl}/api/admin-operations/operations\`, {
-            headers: token ? { 'Authorization': \`Bearer \${token}\` } : {}
+        const response = await fetch(`${baseUrl}/api/admin-operations/operations`, {
+            headers: token ? { 'Authorization': `Bearer ${token}` } : {}
         });
         if (response.ok) {
             const result = await response.json();
@@ -62854,15 +62556,15 @@ async function adminOperations(){
         adminWork.forEach(item => {
             const statusClass = item.status === 'Completed' ? 'active' : (item.status === 'In Progress' ? 'warning' : 'pending');
             const date = item.submitted_date ? new Date(item.submitted_date).toLocaleDateString() : 'N/A';
-            adminWorkRows += \`<tr>
-                <td>\${item.id}</td>
-                <td>\${item.work_type || 'N/A'}</td>
-                <td>\${item.work_title || 'N/A'}</td>
-                <td><span class="status-badge \${statusClass}">\${item.status || 'N/A'}</span></td>
-                <td>\${item.priority || 'N/A'}</td>
-                <td>\${item.submitted_by || 'N/A'}</td>
-                <td>\${date}</td>
-            </tr>\`;
+            adminWorkRows += `<tr>
+                <td>${item.id}</td>
+                <td>${item.work_type || 'N/A'}</td>
+                <td>${item.work_title || 'N/A'}</td>
+                <td><span class="status-badge ${statusClass}">${item.status || 'N/A'}</span></td>
+                <td>${item.priority || 'N/A'}</td>
+                <td>${item.submitted_by || 'N/A'}</td>
+                <td>${date}</td>
+            </tr>`;
         });
     } else {
         adminWorkRows = '<tr><td colspan="7" style="text-align:center;">No admin work records found</td></tr>';
@@ -62874,14 +62576,14 @@ async function adminOperations(){
         documents.forEach(doc => {
             const statusClass = doc.status === 'Approved' ? 'active' : (doc.status === 'Draft' ? 'warning' : 'pending');
             const date = doc.updated_at ? new Date(doc.updated_at).toLocaleDateString() : 'N/A';
-            docRows += \`<tr>
-                <td>\${doc.id}</td>
-                <td>\${doc.title || 'N/A'}</td>
-                <td>\${doc.category || 'N/A'}</td>
-                <td><span class="status-badge \${statusClass}">\${doc.status || 'N/A'}</span></td>
-                <td>\${doc.file_name || 'N/A'}</td>
-                <td>\${date}</td>
-            </tr>\`;
+            docRows += `<tr>
+                <td>${doc.id}</td>
+                <td>${doc.title || 'N/A'}</td>
+                <td>${doc.category || 'N/A'}</td>
+                <td><span class="status-badge ${statusClass}">${doc.status || 'N/A'}</span></td>
+                <td>${doc.file_name || 'N/A'}</td>
+                <td>${date}</td>
+            </tr>`;
         });
     } else {
         docRows = '<tr><td colspan="6" style="text-align:center;">No document records found</td></tr>';
@@ -62893,20 +62595,20 @@ async function adminOperations(){
         officeResources.forEach(r => {
             const statusClass = r.status === 'Available' ? 'active' : (r.status === 'In Use' ? 'warning' : 'pending');
             const date = r.created_at ? new Date(r.created_at).toLocaleDateString() : 'N/A';
-            resourceRows += \`<tr>
-                <td>\${r.resource_code || 'N/A'}</td>
-                <td>\${r.resource_name || 'N/A'}</td>
-                <td>\${r.resource_type || 'N/A'}</td>
-                <td>\${r.condition || 'N/A'}</td>
-                <td><span class="status-badge \${statusClass}">\${r.status || 'N/A'}</span></td>
-                <td>\${date}</td>
-            </tr>\`;
+            resourceRows += `<tr>
+                <td>${r.resource_code || 'N/A'}</td>
+                <td>${r.resource_name || 'N/A'}</td>
+                <td>${r.resource_type || 'N/A'}</td>
+                <td>${r.condition || 'N/A'}</td>
+                <td><span class="status-badge ${statusClass}">${r.status || 'N/A'}</span></td>
+                <td>${date}</td>
+            </tr>`;
         });
     } else {
         resourceRows = '<tr><td colspan="6" style="text-align:center;">No office resource records found</td></tr>';
     }
 
-    showContent(\`<div class="card">
+    showContent(`<div class="card">
         <h3>Administrative Operations</h3>
         <p><strong>Office Management:</strong> Oversee all administrative operations and internal communication</p>
 
@@ -62916,31 +62618,31 @@ async function adminOperations(){
                 <div class="operation-items">
                     <div class="operation-item">
                         <span>Internal Communication Status</span>
-                        <span class="status-badge active">\${summary.internalCommStatus || 'N/A'}</span>
+                        <span class="status-badge active">${summary.internalCommStatus || 'N/A'}</span>
                     </div>
                     <div class="operation-item">
                         <span>Documentation Control</span>
-                        <span class="status-badge active">\${summary.documentationControl || 'N/A'}</span>
+                        <span class="status-badge active">${summary.documentationControl || 'N/A'}</span>
                     </div>
                     <div class="operation-item">
                         <span>Filing System Status</span>
-                        <span class="status-badge active">\${summary.filingSystemStatus || 'N/A'}</span>
+                        <span class="status-badge active">${summary.filingSystemStatus || 'N/A'}</span>
                     </div>
                     <div class="operation-item">
                         <span>Total Work Items</span>
-                        <span class="status-badge">\${summary.totalWork || 0}</span>
+                        <span class="status-badge">${summary.totalWork || 0}</span>
                     </div>
                     <div class="operation-item">
                         <span>Pending</span>
-                        <span class="status-badge pending">\${summary.pendingWork || 0}</span>
+                        <span class="status-badge pending">${summary.pendingWork || 0}</span>
                     </div>
                     <div class="operation-item">
                         <span>In Progress</span>
-                        <span class="status-badge warning">\${summary.inProgressWork || 0}</span>
+                        <span class="status-badge warning">${summary.inProgressWork || 0}</span>
                     </div>
                     <div class="operation-item">
                         <span>Completed</span>
-                        <span class="status-badge active">\${summary.completedWork || 0}</span>
+                        <span class="status-badge active">${summary.completedWork || 0}</span>
                     </div>
                 </div>
             </div>
@@ -62972,7 +62674,7 @@ async function adminOperations(){
                     </tr>
                 </thead>
                 <tbody>
-                    \${adminWorkRows}
+                    ${adminWorkRows}
                 </tbody>
             </table>
         </div>
@@ -62993,7 +62695,7 @@ async function adminOperations(){
                     </tr>
                 </thead>
                 <tbody>
-                    \${docRows}
+                    ${docRows}
                 </tbody>
             </table>
         </div>
@@ -63014,11 +62716,11 @@ async function adminOperations(){
                     </tr>
                 </thead>
                 <tbody>
-                    \${resourceRows}
+                    ${resourceRows}
                 </tbody>
             </table>
         </div>
-    </div>\`);
+    </div>`);
 
 }
 
@@ -63427,7 +63129,7 @@ async function staffOversight(){
                             <td><button class="action-btn" onclick="reviewDeptStructure('${deptCode.toLowerCase() || deptName.toLowerCase()}')">Review</button></td>
                         </tr>`;
 
-            }).join('\n');
+            }).join('n');
 
         } else {
 
@@ -63461,7 +63163,7 @@ async function staffOversight(){
                             <td><button class="action-btn" onclick="reviewDeptStructure('${deptName.toLowerCase()}')">Review</button></td>
                         </tr>`;
 
-                }).join('\n');
+                }).join('n');
 
             } else {
 
@@ -63951,7 +63653,7 @@ function showEditDriverModal(driver) {
 
                         <label for="editFullName">Full Name:</label>
 
-                        <input type="text" id="editFullName" name="full_name" value="${driver.full_name || ''}" required>
+                        <input type="text" id="editFullName" name="full_name" value="${driver.full_name || ''}" required />
 
                     </div>
 
@@ -63959,7 +63661,7 @@ function showEditDriverModal(driver) {
 
                         <label for="editLicenseNumber">License Number:</label>
 
-                        <input type="text" id="editLicenseNumber" name="license_number" value="${driver.license_number || ''}" required>
+                        <input type="text" id="editLicenseNumber" name="license_number" value="${driver.license_number || ''}" required />
 
                     </div>
 
@@ -63985,7 +63687,7 @@ function showEditDriverModal(driver) {
 
                         <label for="editPhoneNumber">Phone Number:</label>
 
-                        <input type="tel" id="editPhoneNumber" name="phone_number" value="${driver.phone_number || ''}" required>
+                        <input type="tel" id="editPhoneNumber" name="phone_number" value="${driver.phone_number || ''}" required />
 
                     </div>
 
@@ -63993,7 +63695,7 @@ function showEditDriverModal(driver) {
 
                         <label for="editEmail">Email:</label>
 
-                        <input type="email" id="editEmail" name="gmail" value="${driver.gmail || ''}">
+                        <input type="email" id="editEmail" name="gmail" value="${driver.gmail || ''}" />
 
                     </div>
 
@@ -64768,9 +64470,9 @@ async function documentManagement(){
 
                     <h4>Existing Documents</h4>
 
-                    <div class="table-container">
+                    <div class="workforce-table-container">
 
-                        <table class="doc-table">
+                        <table class="workforce-table">
 
                             <thead>
 
@@ -65494,49 +65196,51 @@ async function userAccountManagement(){
 
                             <tbody>
 
-                                ${users.map(user => `
-
+                                ${users.map(user => {
+                                    const statusLower = (user.status || user.account_status || '').toLowerCase();
+                                    let statusClass = 'status-active';
+                                    let statusLabel = 'Active';
+                                    let actionButton = '';
+                                    
+                                    if (statusLower === 'suspended') {
+                                        statusClass = 'status-suspended';
+                                        statusLabel = 'Suspended';
+                                        actionButton = `<button class="action-btn reactivate-btn" onclick="reactivateUser(${user.id})">Reactivate</button>`;
+                                    } else if (statusLower === 'terminated') {
+                                        statusClass = 'status-contract';
+                                        statusLabel = 'Terminated';
+                                        actionButton = `<button class="action-btn" onclick="void(0)" style="background: #6c757d; cursor: not-allowed;" disabled title="Terminated employees cannot be reactivated">View History</button>`;
+                                    } else if (statusLower === 'demoted') {
+                                        statusClass = 'status-senior';
+                                        statusLabel = 'Demoted';
+                                        actionButton = `<button class="action-btn reactivate-btn" onclick="reactivateUser(${user.id})">Reactivate</button>`;
+                                    } else {
+                                        statusClass = 'status-active';
+                                        statusLabel = 'Active';
+                                        actionButton = `<button class="action-btn suspend-btn" onclick="suspendUser(${user.id})">Suspend</button>`;
+                                    }
+                                    
+                                    return `
                                     <tr class="user-row" data-user-id="${user.id}">
-
                                         <td>${user.id}</td>
-
                                         <td>${user.full_name || user.fullName || 'N/A'}</td>
-
                                         <td>${user.gmail || user.email || 'N/A'}</td>
-
                                         <td>${user.position || user.role || user.job_category || 'N/A'}</td>
-
                                         <td>
-
-                                            <span class="status-badge ${(user.status || '').toLowerCase() === 'suspended' || (user.account_status || '').toLowerCase() === 'suspended' ? 'status-suspended' : 'status-active'}">
-
-                                                ${(user.status || '').toLowerCase() === 'suspended' || (user.account_status || '').toLowerCase() === 'suspended' ? 'Suspended' : 'Active'}
-
+                                            <span class="status-badge ${statusClass}">
+                                                ${statusLabel}
                                             </span>
-
                                         </td>
-
                                         <td>
-
                                             <div class="action-buttons">
-
-                                                ${(user.status || '').toLowerCase() === 'suspended' || (user.account_status || '').toLowerCase() === 'suspended' ? 
-
-                                                    `<button class="action-btn reactivate-btn" onclick="reactivateUser(${user.id})">Reactivate</button>` :
-
-                                                    `<button class="action-btn suspend-btn" onclick="suspendUser(${user.id})">Suspend</button>`
-
-                                                }
-
+                                                ${actionButton}
                                                 <button class="action-btn view-btn" onclick="viewUserDetails(${user.id})">View</button>
-
                                             </div>
-
                                         </td>
-
                                     </tr>
+                                    `;
 
-                                `).join('')}
+                                }).join('')}
 
                             </tbody>
 
@@ -66090,7 +65794,7 @@ function renderOfficePortal(officePortalUsers, documents, policies, contracts) {
 
                                 <div class="personnel-avatar-small">
 
-                                    <img src="${user.profileImage}" alt="${user.name}" onerror="this.src='https://picsum.photos/seed/default/40/40.jpg'">
+                                    <img src="${user.profileImage}" alt="${user.name}" onerror="this.src='https://picsum.photos/seed/default/40/40.jpg'" />
 
                                 </div>
 
@@ -66308,7 +66012,7 @@ function renderOfficePortal(officePortalUsers, documents, policies, contracts) {
 
             <div class="portal-search compact">
 
-                <input type="text" placeholder="Search..." onkeyup="searchPortal(this.value)">
+                <input type="text" placeholder="Search..." onkeyup="searchPortal(this.value)" />
 
                 <select onchange="filterPortal(this.value)">
 
@@ -66964,7 +66668,7 @@ function viewPersonnelDetails(personId, name, position) {
 
 ðŸ“‹ Responsibilities:
 
-${user.responsibilities.map(r => `â€¢ ${r}`).join('\n')}
+${user.responsibilities.map(r => `â€¢ ${r}`).join('n')}
 
 
 
@@ -67190,7 +66894,7 @@ function viewPolicy(policyId, title) {
 
     showNotification('Policy Viewed', `Viewing policy: ${title}`, 'info');
 
-    customAlert(`Policy Viewer`, `Viewing policy: ${title}\n\nPolicy ID: ${policyId}\n\nThis would display the full policy document with all sections and compliance information.`, 'info', 6000);
+    customAlert(`Policy Viewer`, `Viewing policy: ${title}nnPolicy ID: ${policyId}nnThis would display the full policy document with all sections and compliance information.`, 'info', 6000);
 
 }
 
@@ -67200,7 +66904,7 @@ function downloadPolicy(policyId, title) {
 
     showNotification('Policy Downloaded', `Downloading policy: ${title}`, 'success');
 
-    customAlert(`Download Complete`, `Policy downloaded: ${title}\n\nPolicy ID: ${policyId}\n\nPDF file has been downloaded to your device.`, 'success', 3000);
+    customAlert(`Download Complete`, `Policy downloaded: ${title}nnPolicy ID: ${policyId}nnPDF file has been downloaded to your device.`, 'success', 3000);
 
 }
 
@@ -67208,11 +66912,11 @@ function downloadPolicy(policyId, title) {
 
 function signContract(contractId, title) {
 
-    if (confirm(`Sign Contract: ${title}\n\nDo you want to electronically sign this contract?\n\nThis action cannot be undone.`)) {
+    if (confirm(`Sign Contract: ${title}nnDo you want to electronically sign this contract?nnThis action cannot be undone.`)) {
 
         showNotification('Contract Signed', `Contract signed: ${title}`, 'success');
 
-        customAlert(`Contract Signed`, `Contract successfully signed: ${title}\n\nContract ID: ${contractId}\n\nDigital signature has been recorded.`, 'success', 3000);
+        customAlert(`Contract Signed`, `Contract successfully signed: ${title}nnContract ID: ${contractId}nnDigital signature has been recorded.`, 'success', 3000);
 
     }
 
@@ -67222,11 +66926,11 @@ function signContract(contractId, title) {
 
 function terminateContract(contractId, title) {
 
-    if (confirm(`Terminate Contract: ${title}\n\nAre you sure you want to terminate this contract?\n\nThis action requires management approval.`)) {
+    if (confirm(`Terminate Contract: ${title}nnAre you sure you want to terminate this contract?nnThis action requires management approval.`)) {
 
         showNotification('Contract Terminated', `Contract terminated: ${title}`, 'warning');
 
-        customAlert(`Contract Terminated`, `Contract terminated: ${title}\n\nContract ID: ${contractId}\n\nTermination reason has been recorded.`, 'warning', 4000);
+        customAlert(`Contract Terminated`, `Contract terminated: ${title}nnContract ID: ${contractId}nnTermination reason has been recorded.`, 'warning', 4000);
 
     }
 
@@ -67242,7 +66946,7 @@ function editPersonnel(personId, name) {
 
         showNotification('Personnel Edit Mode', `Editing profile for ${name}`, 'info');
 
-        customAlert(`Edit Personnel`, `Editing profile for: ${name}\n\nThis would open an edit form to modify personnel details.\n\nCurrent information:\n\nName: ${user.name}\nPosition: ${user.position}\nDepartment: ${user.department}\nEmail: ${user.email}\nPhone: ${user.phone}\n\nOnly administrators can edit personnel records.`, 'info', 8000);
+        customAlert(`Edit Personnel`, `Editing profile for: ${name}nnThis would open an edit form to modify personnel details.nnCurrent information:nnName: ${user.name}nPosition: ${user.position}nDepartment: ${user.department}nEmail: ${user.email}nPhone: ${user.phone}nnOnly administrators can edit personnel records.`, 'info', 8000);
 
     } else {
 
@@ -67300,7 +67004,7 @@ function printPortalReport() {
 
     showNotification('Report Generated', 'Office portal report is being generated', 'info');
 
-    customAlert('Print Report', 'Office Portal Report', 'A comprehensive report of all personnel, documents, policies, and contracts is being prepared for printing.\n\nThis includes:\n\nâ€¢ Personnel statistics\nâ€¢ Document inventory\nâ€¢ Policy compliance status\nâ€¢ Contract status summary\nâ€¢ Department breakdown\n\nThe report will be sent to the printer.', 'info', 4000);
+    customAlert('Print Report', 'Office Portal Report', 'A comprehensive report of all personnel, documents, policies, and contracts is being prepared for printing.nnThis includes:nnâ€¢ Personnel statisticsnâ€¢ Document inventorynâ€¢ Policy compliance statusnâ€¢ Contract status summarynâ€¢ Department breakdownnnThe report will be sent to the printer.', 'info', 4000);
 
 }
 
@@ -67426,7 +67130,7 @@ function viewFile(personId, fileType, fileName) {
 
                         ${file.type === 'profile' ? 
 
-                            `<img src="${file.data}" alt="${fileName}" style="max-width: 100%; height: auto; border-radius: 8px;">` :
+                            `<img src="${file.data}" alt="${fileName}" style="max-width: 100%; height: auto; border-radius: 8px;" />` :
 
                             file.type === 'cv' || file.type === 'agreement' || file.type === 'id' || file.type === 'contract' ?
 
@@ -67806,7 +67510,7 @@ async function editDoc(docId) {
 
                                 <label>Document Title</label>
 
-                                <input type="text" id="docTitle" value="${doc.title}" required>
+                                <input type="text" id="docTitle" value="${doc.title}" required />
 
                             </div>
 
@@ -67970,7 +67674,7 @@ function editDocFallback(docId) {
 
                         <label>Document Title</label>
 
-                        <input type="text" id="docTitle" value="${sampleDoc.title}" required>
+                        <input type="text" id="docTitle" value="${sampleDoc.title}" required />
 
                     </div>
 
@@ -68278,7 +67982,7 @@ async function viewDoc(docId) {
 
                         <div style="background:#fafbfc;border-radius:10px;padding:16px 20px;margin-bottom:20px;border:1px solid #e9ecef">
                             <h4 style="margin:0 0 10px;font-size:13px;color:#6c757d;text-transform:uppercase;letter-spacing:0.5px">Content</h4>
-                            <div style="font-size:14px;color:#333;line-height:1.7">${doc.content ? doc.content.replace(/\\n/g, '<br>') : '<span style="color:#999;font-style:italic">No content available</span>'}</div>
+                            <div style="font-size:14px;color:#333;line-height:1.7">${doc.content ? doc.content.replace(/n/g, '<br>') : '<span style="color:#999;font-style:italic">No content available</span>'}</div>
                         </div>
                     </div>
 
@@ -68382,7 +68086,7 @@ function viewDocFallback(docId) {
 
                 <div style="background:#fafbfc;border-radius:10px;padding:16px 20px;margin-bottom:20px;border:1px solid #e9ecef">
                     <h4 style="margin:0 0 10px;font-size:13px;color:#6c757d;text-transform:uppercase;letter-spacing:0.5px">Content</h4>
-                    <div style="font-size:14px;color:#333;line-height:1.7">${doc.content ? doc.content.replace(/\n/g, '<br>') : '<span style="color:#999;font-style:italic">No content available</span>'}</div>
+                    <div style="font-size:14px;color:#333;line-height:1.7">${doc.content ? doc.content.replace(/n/g, '<br>') : '<span style="color:#999;font-style:italic">No content available</span>'}</div>
                 </div>
             </div>
 
@@ -68482,7 +68186,7 @@ function downloadDocFallback(docId) {
 
         // Create a text file with document content
 
-        const content = `Document: ${doc.title}\nType: ${doc.type}\nID: ${doc.id}\n\n${doc.content}`;
+        const content = `Document: ${doc.title}nType: ${doc.type}nID: ${doc.id}nn${doc.content}`;
 
         const blob = new Blob([content], { type: 'text/plain' });
 
@@ -68492,7 +68196,7 @@ function downloadDocFallback(docId) {
 
         a.href = url;
 
-        a.download = `${doc.title.replace(/\s+/g, '_')}_${docId}.txt`;
+        a.download = `${doc.title.replace(/s+/g, '_')}_${docId}.txt`;
 
         document.body.appendChild(a);
 
@@ -68524,7 +68228,7 @@ async function deleteDoc(docId, docTitle) {
 
     // Confirm deletion
 
-    const confirmed = confirm(`Are you sure you want to delete "${docTitle}"?\n\nThis action cannot be undone.`);
+    const confirmed = confirm(`Are you sure you want to delete "${docTitle}"?nnThis action cannot be undone.`);
 
     if (!confirmed) {
 
@@ -68632,7 +68336,7 @@ function deleteDocFallback(docId, docTitle) {
 
 function viewMinutes(minutesId) {
 
-    customAlert(`Viewing meeting minutes ${minutesId}...\n\nFull meeting minutes will be displayed with all discussion points and decisions.`, "Meeting Minutes", "info");
+    customAlert(`Viewing meeting minutes ${minutesId}...nnFull meeting minutes will be displayed with all discussion points and decisions.`, "Meeting Minutes", "info");
 
 }
 
@@ -68640,7 +68344,7 @@ function viewMinutes(minutesId) {
 
 function editMinutes(minutesId) {
 
-    customAlert(`Editing meeting minutes ${minutesId}...\n\nMinutes editor will open for modifications and updates.`, "Edit Minutes", "info");
+    customAlert(`Editing meeting minutes ${minutesId}...nnMinutes editor will open for modifications and updates.`, "Edit Minutes", "info");
 
 }
 
@@ -68650,7 +68354,7 @@ function editMinutes(minutesId) {
 
 function recordPayment(saleId) {
 
-    customAlert(`Recording payment for sale ${saleId}...\n\nPayment entry form will open for amount and payment method details.`, "Record Payment", "info");
+    customAlert(`Recording payment for sale ${saleId}...nnPayment entry form will open for amount and payment method details.`, "Record Payment", "info");
 
 }
 
@@ -68658,7 +68362,7 @@ function recordPayment(saleId) {
 
 function viewPaymentHistory(saleId) {
 
-    customAlert(`Viewing payment history for sale ${saleId}...\n\nComplete payment history will be displayed with dates, amounts, and payment methods.`, "Payment History", "info");
+    customAlert(`Viewing payment history for sale ${saleId}...nnComplete payment history will be displayed with dates, amounts, and payment methods.`, "Payment History", "info");
 
 }
 
@@ -68666,7 +68370,7 @@ function viewPaymentHistory(saleId) {
 
 function sendReminder(saleId) {
 
-    customAlert(`Sending payment reminder for sale ${saleId}...\n\nAutomated reminder will be sent to the customer via email and SMS.`, "Send Reminder", "success");
+    customAlert(`Sending payment reminder for sale ${saleId}...nnAutomated reminder will be sent to the customer via email and SMS.`, "Send Reminder", "success");
 
 }
 
@@ -68674,7 +68378,7 @@ function sendReminder(saleId) {
 
 function viewAuditReport(auditId) {
 
-    customAlert(`Viewing audit report ${auditId}...\n\nDetailed audit findings and recommendations will be displayed.`, "Audit Report", "info");
+    customAlert(`Viewing audit report ${auditId}...nnDetailed audit findings and recommendations will be displayed.`, "Audit Report", "info");
 
 }
 
@@ -68682,7 +68386,7 @@ function viewAuditReport(auditId) {
 
 function updateTaskStatus(taskId) {
 
-    customAlert(`Updating status for task ${taskId}...\n\nStatus update form will open for progress tracking.`, "Update Task", "info");
+    customAlert(`Updating status for task ${taskId}...nnStatus update form will open for progress tracking.`, "Update Task", "info");
 
 }
 
@@ -68690,7 +68394,7 @@ function updateTaskStatus(taskId) {
 
 function viewSiteReport(reportId) {
 
-    customAlert(`Viewing site report ${reportId}...\n\nComplete site inspection report will be displayed with photos and findings.`, "Site Report", "info");
+    customAlert(`Viewing site report ${reportId}...nnComplete site inspection report will be displayed with photos and findings.`, "Site Report", "info");
 
 }
 
@@ -68698,7 +68402,7 @@ function viewSiteReport(reportId) {
 
 function downloadAttendance(meetingId) {
 
-    customAlert(`Downloading attendance sheet for meeting ${meetingId}...\n\nAttendance list will be downloaded as Excel file.`, "Download Attendance", "info");
+    customAlert(`Downloading attendance sheet for meeting ${meetingId}...nnAttendance list will be downloaded as Excel file.`, "Download Attendance", "info");
 
 }
 
@@ -68836,7 +68540,7 @@ Generated on: ${new Date().toLocaleDateString()}
 
     
 
-    customAlert(`Download Complete`, `Policy downloaded: ${policy.work_title}\n\nPolicy ID: ${policy.id}\n\nFile has been downloaded to your device.`, 'success', 3000);
+    customAlert(`Download Complete`, `Policy downloaded: ${policy.work_title}nnPolicy ID: ${policy.id}nnFile has been downloaded to your device.`, 'success', 3000);
 
 }
 
@@ -68844,7 +68548,7 @@ Generated on: ${new Date().toLocaleDateString()}
 
 function viewViolationDetails(violationId) {
 
-    customAlert(`Viewing violation details for ${violationId}...\n\nComplete violation report with photos and corrective actions will be displayed.`, "Violation Details", "info");
+    customAlert(`Viewing violation details for ${violationId}...nnComplete violation report with photos and corrective actions will be displayed.`, "Violation Details", "info");
 
 }
 
@@ -68852,7 +68556,7 @@ function viewViolationDetails(violationId) {
 
 function updateViolationStatus(violationId) {
 
-    customAlert(`Updating status for violation ${violationId}...\n\nStatus update form will open for tracking corrective actions.`, "Update Violation", "info");
+    customAlert(`Updating status for violation ${violationId}...nnStatus update form will open for tracking corrective actions.`, "Update Violation", "info");
 
 }
 
@@ -68860,7 +68564,7 @@ function updateViolationStatus(violationId) {
 
 function viewInspectionReport(inspectionId) {
 
-    customAlert(`Viewing inspection report ${inspectionId}...\n\nDetailed inspection findings and recommendations will be displayed.`, "Inspection Report", "info");
+    customAlert(`Viewing inspection report ${inspectionId}...nnDetailed inspection findings and recommendations will be displayed.`, "Inspection Report", "info");
 
 }
 
@@ -68868,7 +68572,7 @@ function viewInspectionReport(inspectionId) {
 
 function downloadInspectionReport(inspectionId) {
 
-    customAlert(`Downloading inspection report ${inspectionId}...\n\nReport will be downloaded as PDF file with all attachments.`, "Download Report", "info");
+    customAlert(`Downloading inspection report ${inspectionId}...nnReport will be downloaded as PDF file with all attachments.`, "Download Report", "info");
 
 }
 
@@ -68876,7 +68580,7 @@ function downloadInspectionReport(inspectionId) {
 
 function viewProjectDetails(projectId) {
 
-    customAlert(`Viewing full details for project ${projectId}...\n\nComplete project information including timeline, budget, and team details will be displayed.`, "Project Details", "info");
+    customAlert(`Viewing full details for project ${projectId}...nnComplete project information including timeline, budget, and team details will be displayed.`, "Project Details", "info");
 
 }
 
@@ -68884,7 +68588,7 @@ function viewProjectDetails(projectId) {
 
 function generateSafetyReport(projectId) {
 
-    customAlert(`Generating safety report for project ${projectId}...\n\nComprehensive safety analysis report will be generated with all metrics and recommendations.`, "Safety Report", "info");
+    customAlert(`Generating safety report for project ${projectId}...nnComprehensive safety analysis report will be generated with all metrics and recommendations.`, "Safety Report", "info");
 
 }
 
@@ -68892,7 +68596,7 @@ function generateSafetyReport(projectId) {
 
 function scheduleInspection(projectId) {
 
-    customAlert(`Scheduling inspection for project ${projectId}...\n\nInspection scheduling form will open for date and time selection.`, "Schedule Inspection", "info");
+    customAlert(`Scheduling inspection for project ${projectId}...nnInspection scheduling form will open for date and time selection.`, "Schedule Inspection", "info");
 
 }
 
@@ -68900,7 +68604,7 @@ function scheduleInspection(projectId) {
 
 function emergencyReview(projectId) {
 
-    customAlert(`Initiating emergency review for project ${projectId}...\n\nUrgent safety review process will begin with immediate site assessment.`, "Emergency Review", "warning");
+    customAlert(`Initiating emergency review for project ${projectId}...nnUrgent safety review process will begin with immediate site assessment.`, "Emergency Review", "warning");
 
 }
 
@@ -68908,7 +68612,7 @@ function emergencyReview(projectId) {
 
 function filterPpeRecords() {
 
-    customAlert('Filtering PPE records based on search criteria...\n\nRecords will be filtered by selected criteria and displayed.', "Filter Records", "info");
+    customAlert('Filtering PPE records based on search criteria...nnRecords will be filtered by selected criteria and displayed.', "Filter Records", "info");
 
 }
 
@@ -68916,7 +68620,7 @@ function filterPpeRecords() {
 
 function downloadPolicy(policyId) {
 
-    customAlert(`Downloading safety policy ${policyId}...\n\nPolicy document will be downloaded as PDF file.`, "Download Policy", "info");
+    customAlert(`Downloading safety policy ${policyId}...nnPolicy document will be downloaded as PDF file.`, "Download Policy", "info");
 
 }
 
@@ -68924,7 +68628,7 @@ function downloadPolicy(policyId) {
 
 function viewMeetingDetails(meetingId) {
 
-    customAlert(`Opening toolbox meeting details for ${meetingId}...\n\nFull meeting minutes, attendance list, and action items will be displayed.`, "Meeting Details", "info");
+    customAlert(`Opening toolbox meeting details for ${meetingId}...nnFull meeting minutes, attendance list, and action items will be displayed.`, "Meeting Details", "info");
 
 }
 
@@ -68932,7 +68636,7 @@ function viewMeetingDetails(meetingId) {
 
 function viewPpeDetails(issuanceId) {
 
-    customAlert(`Viewing PPE issuance details for ${issuanceId}...\n\nComplete issuance record with item details and condition will be displayed.`, "PPE Details", "info");
+    customAlert(`Viewing PPE issuance details for ${issuanceId}...nnComplete issuance record with item details and condition will be displayed.`, "PPE Details", "info");
 
 }
 
@@ -68942,7 +68646,7 @@ function viewPpeDetails(issuanceId) {
 
 function generateWorkforceReport() {
 
-    customAlert(`Generating comprehensive workforce report...\n\nReport will include all employee statistics, department breakdowns, and workforce analytics.`, "Workforce Report", "info");
+    customAlert(`Generating comprehensive workforce report...nnReport will include all employee statistics, department breakdowns, and workforce analytics.`, "Workforce Report", "info");
 
 }
 
@@ -68950,7 +68654,7 @@ function generateWorkforceReport() {
 
 function approveHiringPlan() {
 
-    customAlert(`Approving hiring plan...\n\nHiring plan will be reviewed and approved based on current workforce needs and budget constraints.`, "Hiring Plan", "success");
+    customAlert(`Approving hiring plan...nnHiring plan will be reviewed and approved based on current workforce needs and budget constraints.`, "Hiring Plan", "success");
 
 }
 
@@ -68958,7 +68662,7 @@ function approveHiringPlan() {
 
 function reviewOrgStructure() {
 
-    customAlert(`Reviewing organization structure...\n\nComplete organizational chart and reporting structure will be displayed with current positions and vacancies.`, "Organization Structure", "info");
+    customAlert(`Reviewing organization structure...nnComplete organizational chart and reporting structure will be displayed with current positions and vacancies.`, "Organization Structure", "info");
 
 }
 
@@ -68966,7 +68670,7 @@ function reviewOrgStructure() {
 
 function exportWorkforceReport() {
 
-    customAlert(`Exporting workforce report...\n\nReport will be exported as Excel file with all workforce data and analytics.`, "Export Report", "info");
+    customAlert(`Exporting workforce report...nnReport will be exported as Excel file with all workforce data and analytics.`, "Export Report", "info");
 
 }
 
@@ -68974,7 +68678,7 @@ function exportWorkforceReport() {
 
 function scheduleBoardReview() {
 
-    customAlert(`Scheduling board review...\n\nBoard meeting will be scheduled to review workforce reports and strategic initiatives.`, "Board Review", "info");
+    customAlert(`Scheduling board review...nnBoard meeting will be scheduled to review workforce reports and strategic initiatives.`, "Board Review", "info");
 
 }
 
@@ -68982,7 +68686,7 @@ function scheduleBoardReview() {
 
 function generateComplianceReport() {
 
-    customAlert(`Generating compliance report...\n\nCompliance report will include all regulatory requirements and current compliance status.`, "Compliance Report", "info");
+    customAlert(`Generating compliance report...nnCompliance report will include all regulatory requirements and current compliance status.`, "Compliance Report", "info");
 
 }
 
@@ -68990,7 +68694,7 @@ function generateComplianceReport() {
 
 function modifyBudget(budgetId) {
 
-    customAlert(`Modifying budget ${budgetId}...\n\nBudget modification form will open for adjustments and reallocations.`, "Modify Budget", "info");
+    customAlert(`Modifying budget ${budgetId}...nnBudget modification form will open for adjustments and reallocations.`, "Modify Budget", "info");
 
 }
 
@@ -68998,7 +68702,7 @@ function modifyBudget(budgetId) {
 
 function rejectBudget(budgetId) {
 
-    customAlert(`Rejecting budget ${budgetId}...\n\nBudget will be rejected with feedback for revision and resubmission.`, "Reject Budget", "warning");
+    customAlert(`Rejecting budget ${budgetId}...nnBudget will be rejected with feedback for revision and resubmission.`, "Reject Budget", "warning");
 
 }
 
@@ -69006,7 +68710,7 @@ function rejectBudget(budgetId) {
 
 function cancelEmploymentAction() {
 
-    customAlert(`Employment action cancelled...\n\nNo changes have been made to employee records.`, "Action Cancelled", "info");
+    customAlert(`Employment action cancelled...nnNo changes have been made to employee records.`, "Action Cancelled", "info");
 
 }
 
@@ -69052,7 +68756,7 @@ function showReportTab(tabName) {
 
     
 
-    customAlert(`Switched to ${tabName} report view...\n\nReport data has been updated to show ${tabName} information.`, "Report View Changed", "info");
+    customAlert(`Switched to ${tabName} report view...nnReport data has been updated to show ${tabName} information.`, "Report View Changed", "info");
 
 }
 
@@ -69100,7 +68804,7 @@ function submitRevisionRequest(policyId) {
 
     
 
-    customAlert(`Revision request submitted for policy ${policyId}!\n\nType: ${revisionType}\nPriority: ${revisionPriority}\nExpected Timeline: ${expectedTimeline}\n\nDetails: ${revisionDetails}`, "Revision Requested", "success");
+    customAlert(`Revision request submitted for policy ${policyId}!nnType: ${revisionType}nPriority: ${revisionPriority}nExpected Timeline: ${expectedTimeline}nnDetails: ${revisionDetails}`, "Revision Requested", "success");
 
     closeModal();
 
@@ -69128,7 +68832,7 @@ function submitRejection(policyId) {
 
     
 
-    customAlert(`Policy ${policyId} rejected!\n\nReason: ${rejectionReason}\nDetails: ${rejectionDetails}\nRecommendation: ${rejectionRecommendation}`, "Policy Rejected", "warning");
+    customAlert(`Policy ${policyId} rejected!nnReason: ${rejectionReason}nDetails: ${rejectionDetails}nRecommendation: ${rejectionRecommendation}`, "Policy Rejected", "warning");
 
     closeModal();
 
@@ -69138,7 +68842,7 @@ function submitRejection(policyId) {
 
 function requestMoreInfo(hireId) {
 
-    customAlert(`Requesting more information for hire ${hireId}...\n\nInformation request will be sent to HR department for additional details.`, "Request More Info", "info");
+    customAlert(`Requesting more information for hire ${hireId}...nnInformation request will be sent to HR department for additional details.`, "Request More Info", "info");
 
 }
 
@@ -69146,7 +68850,7 @@ function requestMoreInfo(hireId) {
 
 function rejectSeniorHire(hireId) {
 
-    customAlert(`Rejecting senior staff hire ${hireId}...\n\nHiring decision will be rejected with feedback for HR department.`, "Hire Rejected", "warning");
+    customAlert(`Rejecting senior staff hire ${hireId}...nnHiring decision will be rejected with feedback for HR department.`, "Hire Rejected", "warning");
 
 }
 
@@ -69154,7 +68858,7 @@ function rejectSeniorHire(hireId) {
 
 function approveBudget(budgetId) {
 
-    customAlert(`Budget ${budgetId} approved!\n\nBudget allocation has been approved and funds will be released.`, "Budget Approved", "success");
+    customAlert(`Budget ${budgetId} approved!nnBudget allocation has been approved and funds will be released.`, "Budget Approved", "success");
 
 }
 
@@ -69162,7 +68866,7 @@ function approveBudget(budgetId) {
 
 function editMinutes(minutesId) {
 
-    customAlert(`Editing meeting minutes ${minutesId}...\n\nMinutes editor will open for modifications and updates.`, "Edit Minutes", "info");
+    customAlert(`Editing meeting minutes ${minutesId}...nnMinutes editor will open for modifications and updates.`, "Edit Minutes", "info");
 
 }
 
@@ -69170,7 +68874,7 @@ function editMinutes(minutesId) {
 
 function viewMinutes(minutesId) {
 
-    customAlert(`Viewing meeting minutes ${minutesId}...\n\nFull meeting minutes will be displayed with all discussion points and decisions.`, "Meeting Minutes", "info");
+    customAlert(`Viewing meeting minutes ${minutesId}...nnFull meeting minutes will be displayed with all discussion points and decisions.`, "Meeting Minutes", "info");
 
 }
 
@@ -69178,7 +68882,7 @@ function viewMinutes(minutesId) {
 
 function downloadAttendance(meetingId) {
 
-    customAlert(`Downloading attendance for meeting ${meetingId}...\n\nAttendance list will be downloaded as Excel file.`, "Download Attendance", "info");
+    customAlert(`Downloading attendance for meeting ${meetingId}...nnAttendance list will be downloaded as Excel file.`, "Download Attendance", "info");
 
 }
 
@@ -69234,7 +68938,7 @@ Status: ${meeting.status}
 
 function editMeeting(meetingId) {
 
-    customAlert(`Editing meeting ${meetingId}...\n\nMeeting editor will open for modifications and updates.`, "Edit Meeting", "info");
+    customAlert(`Editing meeting ${meetingId}...nnMeeting editor will open for modifications and updates.`, "Edit Meeting", "info");
 
 }
 
@@ -69248,7 +68952,7 @@ function deleteMeeting(meetingId) {
 
         console.log('Deleting meeting with ID:', meetingId);
 
-        customAlert(`Meeting ${meetingId} has been deleted.\n\nThe meeting has been removed from the schedule.`, "Meeting Deleted", "success");
+        customAlert(`Meeting ${meetingId} has been deleted.nnThe meeting has been removed from the schedule.`, "Meeting Deleted", "success");
 
         
 
@@ -69268,7 +68972,7 @@ function deleteMeeting(meetingId) {
 
 function viewPolicy(policyId) {
 
-    customAlert(`Viewing policy ${policyId}...\n\nFull policy document will be displayed with all sections and compliance information.`, "View Policy", "info");
+    customAlert(`Viewing policy ${policyId}...nnFull policy document will be displayed with all sections and compliance information.`, "View Policy", "info");
 
 }
 
@@ -69276,7 +68980,7 @@ function viewPolicy(policyId) {
 
 function downloadPolicy(policyId) {
 
-    customAlert(`Downloading policy ${policyId}...\n\nPolicy document will be downloaded as PDF file.`, "Download Policy", "info");
+    customAlert(`Downloading policy ${policyId}...nnPolicy document will be downloaded as PDF file.`, "Download Policy", "info");
 
 }
 
@@ -69284,7 +68988,7 @@ function downloadPolicy(policyId) {
 
 function viewPpeDetails(issuanceId) {
 
-    customAlert(`Viewing PPE issuance details for ${issuanceId}...\n\nComplete issuance record with item details and condition will be displayed.`, "PPE Details", "info");
+    customAlert(`Viewing PPE issuance details for ${issuanceId}...nnComplete issuance record with item details and condition will be displayed.`, "PPE Details", "info");
 
 }
 
@@ -69292,7 +68996,7 @@ function viewPpeDetails(issuanceId) {
 
 function recordReturn(issuanceId) {
 
-    customAlert(`Recording PPE return for ${issuanceId}...\n\nReturn form will open for condition assessment and restocking.`, "Record Return", "info");
+    customAlert(`Recording PPE return for ${issuanceId}...nnReturn form will open for condition assessment and restocking.`, "Record Return", "info");
 
 }
 
@@ -69300,7 +69004,7 @@ function recordReturn(issuanceId) {
 
 function viewViolationDetails(violationId) {
 
-    customAlert(`Viewing violation details for ${violationId}...\n\nComplete violation report with photos and corrective actions will be displayed.`, "Violation Details", "info");
+    customAlert(`Viewing violation details for ${violationId}...nnComplete violation report with photos and corrective actions will be displayed.`, "Violation Details", "info");
 
 }
 
@@ -69308,7 +69012,7 @@ function viewViolationDetails(violationId) {
 
 function updateViolationStatus(violationId) {
 
-    customAlert(`Updating status for violation ${violationId}...\n\nStatus update form will open for tracking corrective actions.`, "Update Violation", "info");
+    customAlert(`Updating status for violation ${violationId}...nnStatus update form will open for tracking corrective actions.`, "Update Violation", "info");
 
 }
 
@@ -69316,7 +69020,7 @@ function updateViolationStatus(violationId) {
 
 function viewInspectionReport(inspectionId) {
 
-    customAlert(`Viewing inspection report ${inspectionId}...\n\nDetailed inspection findings and recommendations will be displayed.`, "Inspection Report", "info");
+    customAlert(`Viewing inspection report ${inspectionId}...nnDetailed inspection findings and recommendations will be displayed.`, "Inspection Report", "info");
 
 }
 
@@ -69324,7 +69028,7 @@ function viewInspectionReport(inspectionId) {
 
 function downloadInspectionReport(inspectionId) {
 
-    customAlert(`Downloading inspection report ${inspectionId}...\n\nReport will be downloaded as PDF file with all attachments.`, "Download Report", "info");
+    customAlert(`Downloading inspection report ${inspectionId}...nnReport will be downloaded as PDF file with all attachments.`, "Download Report", "info");
 
 }
 
@@ -69332,7 +69036,7 @@ function downloadInspectionReport(inspectionId) {
 
 function viewProjectDetails(projectId) {
 
-    customAlert(`Viewing full details for project ${projectId}...\n\nComplete project information including timeline, budget, and team details will be displayed.`, "Project Details", "info");
+    customAlert(`Viewing full details for project ${projectId}...nnComplete project information including timeline, budget, and team details will be displayed.`, "Project Details", "info");
 
 }
 
@@ -69340,7 +69044,7 @@ function viewProjectDetails(projectId) {
 
 function generateSafetyReport(projectId) {
 
-    customAlert(`Generating safety report for project ${projectId}...\n\nComprehensive safety analysis report will be generated with all metrics and recommendations.`, "Safety Report", "info");
+    customAlert(`Generating safety report for project ${projectId}...nnComprehensive safety analysis report will be generated with all metrics and recommendations.`, "Safety Report", "info");
 
 }
 
@@ -69348,7 +69052,7 @@ function generateSafetyReport(projectId) {
 
 function scheduleInspection(projectId) {
 
-    customAlert(`Scheduling inspection for project ${projectId}...\n\nInspection scheduling form will open for date and time selection.`, "Schedule Inspection", "info");
+    customAlert(`Scheduling inspection for project ${projectId}...nnInspection scheduling form will open for date and time selection.`, "Schedule Inspection", "info");
 
 }
 
@@ -69356,7 +69060,7 @@ function scheduleInspection(projectId) {
 
 function emergencyReview(projectId) {
 
-    customAlert(`Initiating emergency review for project ${projectId}...\n\nUrgent safety review process will begin with immediate site assessment.`, "Emergency Review", "warning");
+    customAlert(`Initiating emergency review for project ${projectId}...nnUrgent safety review process will begin with immediate site assessment.`, "Emergency Review", "warning");
 
 }
 
@@ -69364,7 +69068,7 @@ function emergencyReview(projectId) {
 
 function viewAuditReport(auditId) {
 
-    customAlert(`Viewing audit report ${auditId}...\n\nDetailed audit findings and recommendations will be displayed.`, "Audit Report", "info");
+    customAlert(`Viewing audit report ${auditId}...nnDetailed audit findings and recommendations will be displayed.`, "Audit Report", "info");
 
 }
 
@@ -69372,7 +69076,7 @@ function viewAuditReport(auditId) {
 
 function updateTaskStatus(taskId) {
 
-    customAlert(`Updating status for task ${taskId}...\n\nStatus update form will open for progress tracking.`, "Update Task", "info");
+    customAlert(`Updating status for task ${taskId}...nnStatus update form will open for progress tracking.`, "Update Task", "info");
 
 }
 
@@ -69380,7 +69084,7 @@ function updateTaskStatus(taskId) {
 
 function viewSiteReport(reportId) {
 
-    customAlert(`Viewing site report ${reportId}...\n\nComplete site inspection report will be displayed with photos and findings.`, "Site Report", "info");
+    customAlert(`Viewing site report ${reportId}...nnComplete site inspection report will be displayed with photos and findings.`, "Site Report", "info");
 
 }
 
@@ -69388,7 +69092,7 @@ function viewSiteReport(reportId) {
 
 function recordPayment(saleId) {
 
-    customAlert(`Recording payment for sale ${saleId}...\n\nPayment entry form will open for amount and payment method details.`, "Record Payment", "info");
+    customAlert(`Recording payment for sale ${saleId}...nnPayment entry form will open for amount and payment method details.`, "Record Payment", "info");
 
 }
 
@@ -69396,7 +69100,7 @@ function recordPayment(saleId) {
 
 function viewPaymentHistory(saleId) {
 
-    customAlert(`Viewing payment history for sale ${saleId}...\n\nComplete payment history will be displayed with dates, amounts, and payment methods.`, "Payment History", "info");
+    customAlert(`Viewing payment history for sale ${saleId}...nnComplete payment history will be displayed with dates, amounts, and payment methods.`, "Payment History", "info");
 
 }
 
@@ -69404,7 +69108,7 @@ function viewPaymentHistory(saleId) {
 
 function sendReminder(saleId) {
 
-    customAlert(`Sending payment reminder for sale ${saleId}...\n\nAutomated reminder will be sent to the customer via email and SMS.`, "Send Reminder", "success");
+    customAlert(`Sending payment reminder for sale ${saleId}...nnAutomated reminder will be sent to the customer via email and SMS.`, "Send Reminder", "success");
 
 }
 
@@ -69414,7 +69118,7 @@ function sendReminder(saleId) {
 
 function filterPpeRecords() {
 
-    customAlert('Filtering PPE records based on search criteria...\n\nRecords will be filtered by selected criteria and displayed.', "Filter Records", "info");
+    customAlert('Filtering PPE records based on search criteria...nnRecords will be filtered by selected criteria and displayed.', "Filter Records", "info");
 
 }
 
@@ -69720,7 +69424,7 @@ function showRevisionModal(workId, workType, callback) {
 
                     <label for="expectedTimeline">Expected Completion Date</label>
 
-                    <input type="date" id="expectedTimeline" min="${new Date().toISOString().split('T')[0]}">
+                    <input type="date" id="expectedTimeline" min="${new Date().toISOString().split('T')[0]}" />
 
                 </div>
 
@@ -69876,7 +69580,7 @@ function closeModal() {
 
 function updateComplianceDoc(docType) {
 
-    customAlert(`Updating ${docType} document...\n\nThis will open the document update interface where you can upload the new version of the compliance document.`, "Update Compliance Document", "info");
+    customAlert(`Updating ${docType} document...nnThis will open the document update interface where you can upload the new version of the compliance document.`, "Update Compliance Document", "info");
 
 }
 
@@ -69887,7 +69591,7 @@ function updateComplianceDoc(docType) {
 
 function reviewCompliance() {
 
-    customAlert('Compliance review interface...\n\nThis will open the compliance review dashboard where you can review all compliance documents and their status.', "Review Compliance", "info");
+    customAlert('Compliance review interface...nnThis will open the compliance review dashboard where you can review all compliance documents and their status.', "Review Compliance", "info");
 
 }
 
@@ -69895,7 +69599,7 @@ function reviewCompliance() {
 
 function notifyMD() {
 
-    customAlert('Notify Managing Director...\n\nThis will send a notification to the Managing Director about important updates or issues requiring attention.', "Notify MD", "info");
+    customAlert('Notify Managing Director...nnThis will send a notification to the Managing Director about important updates or issues requiring attention.', "Notify MD", "info");
 
 }
 
@@ -69913,8 +69617,8 @@ async function reviewInternalComm() {
 
     try {
         const token = localStorage.getItem('token') || sessionStorage.getItem('token');
-        const response = await fetch(\`\${baseUrl}/api/admin-operations/operations\`, {
-            headers: token ? { 'Authorization': \`Bearer \${token}\` } : {}
+        const response = await fetch(`${baseUrl}/api/admin-operations/operations`, {
+            headers: token ? { 'Authorization': `Bearer ${token}` } : {}
         });
         if (response.ok) {
             const result = await response.json();
@@ -69929,21 +69633,21 @@ async function reviewInternalComm() {
         comms.forEach(c => {
             const statusClass = c.status === 'Completed' ? 'active' : (c.status === 'In Progress' ? 'warning' : 'pending');
             const date = c.submitted_date ? new Date(c.submitted_date).toLocaleDateString() : 'N/A';
-            commRows += \`<tr>
-                <td>\${c.id}</td>
-                <td>\${c.work_type || 'N/A'}</td>
-                <td>\${c.work_title || 'N/A'}</td>
-                <td>\${c.work_description ? c.work_description.substring(0, 80) : 'N/A'}</td>
-                <td><span class="status-badge \${statusClass}">\${c.status || 'N/A'}</span></td>
-                <td>\${c.priority || 'N/A'}</td>
-                <td>\${date}</td>
-            </tr>\`;
+            commRows += `<tr>
+                <td>${c.id}</td>
+                <td>${c.work_type || 'N/A'}</td>
+                <td>${c.work_title || 'N/A'}</td>
+                <td>${c.work_description ? c.work_description.substring(0, 80) : 'N/A'}</td>
+                <td><span class="status-badge ${statusClass}">${c.status || 'N/A'}</span></td>
+                <td>${c.priority || 'N/A'}</td>
+                <td>${date}</td>
+            </tr>`;
         });
     } else {
         commRows = '<tr><td colspan="7" style="text-align:center;">No internal communication records found</td></tr>';
     }
 
-    showContent(\`<div class="card">
+    showContent(`<div class="card">
         <h3>Internal Communication Review</h3>
         <p><strong>Review and manage company internal communications</strong></p>
 
@@ -69966,45 +69670,59 @@ async function reviewInternalComm() {
                     </tr>
                 </thead>
                 <tbody>
-                    \${commRows}
+                    ${commRows}
                 </tbody>
             </table>
         </div>
-    </div>\`);
+    </div>`);
 
 }
 
 function showNewCommForm() {
-    showContent(\`<div class="card">
+    showContent(`<div class="card">
         <h3>New Internal Communication</h3>
         <form onsubmit="submitInternalComm(event)">
-            <div style="margin-bottom:10px;">
-                <label><strong>Subject:</strong></label><br>
-                <input type="text" id="commSubject" placeholder="Communication subject" style="width:100%; padding:8px; margin-top:5px;" required>
-            </div>
-            <div style="margin-bottom:10px;">
-                <label><strong>Message:</strong></label><br>
-                <textarea id="commMessage" rows="4" placeholder="Communication message" style="width:100%; padding:8px; margin-top:5px;" required></textarea>
-            </div>
-            <div style="margin-bottom:10px;">
-                <label><strong>Priority:</strong></label><br>
-                <select id="commPriority" style="width:100%; padding:8px; margin-top:5px;">
-                    <option value="Low">Low</option>
-                    <option value="Medium" selected>Medium</option>
-                    <option value="High">High</option>
-                    <option value="Critical">Critical</option>
-                </select>
-            </div>
-            <div style="margin-bottom:10px;">
-                <label><strong>Recipients/Department:</strong></label><br>
-                <input type="text" id="commRecipients" placeholder="e.g. All Departments, HR, Finance" style="width:100%; padding:8px; margin-top:5px;">
-            </div>
-            <div class="action-buttons">
-                <button type="submit" class="action">Send Communication</button>
-                <button type="button" class="action" onclick="reviewInternalComm()">Cancel</button>
-            </div>
+            <table style="width:100%; border-collapse:collapse;">
+                <tbody>
+                    <tr>
+                        <td style="padding:8px; font-weight:600; width:160px; vertical-align:top; border-bottom:1px solid #eee;">Subject</td>
+                        <td style="padding:8px; border-bottom:1px solid #eee;">
+                            <input type="text" id="commSubject" placeholder="Communication subject" style="width:100%; padding:8px; border:1px solid #ddd; border-radius:4px; box-sizing:border-box;" required />
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="padding:8px; font-weight:600; vertical-align:top; border-bottom:1px solid #eee;">Message</td>
+                        <td style="padding:8px; border-bottom:1px solid #eee;">
+                            <textarea id="commMessage" rows="4" placeholder="Communication message" style="width:100%; padding:8px; border:1px solid #ddd; border-radius:4px; box-sizing:border-box;" required></textarea>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="padding:8px; font-weight:600; vertical-align:top; border-bottom:1px solid #eee;">Priority</td>
+                        <td style="padding:8px; border-bottom:1px solid #eee;">
+                            <select id="commPriority" style="width:100%; padding:8px; border:1px solid #ddd; border-radius:4px; box-sizing:border-box;">
+                                <option value="Low">Low</option>
+                                <option value="Medium" selected>Medium</option>
+                                <option value="High">High</option>
+                                <option value="Critical">Critical</option>
+                            </select>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="padding:8px; font-weight:600; vertical-align:top; border-bottom:1px solid #eee;">Recipients/Department</td>
+                        <td style="padding:8px; border-bottom:1px solid #eee;">
+                            <input type="text" id="commRecipients" placeholder="e.g. All Departments, HR, Finance" style="width:100%; padding:8px; border:1px solid #ddd; border-radius:4px; box-sizing:border-box;" />
+                        </td>
+                    </tr>
+                    <tr>
+                        <td colspan="2" style="padding:12px 8px; text-align:right;">
+                            <button type="submit" class="action" style="margin-right:8px;">Send Communication</button>
+                            <button type="button" class="action" onclick="reviewInternalComm()">Cancel</button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
         </form>
-    </div>\`);
+    </div>`);
 }
 
 async function submitInternalComm(e) {
@@ -70013,11 +69731,11 @@ async function submitInternalComm(e) {
     const token = localStorage.getItem('token') || sessionStorage.getItem('token');
 
     try {
-        const response = await fetch(\`\${baseUrl}/api/admin-operations/operations/internal-comm\`, {
+        const response = await fetch(`${baseUrl}/api/admin-operations/operations/internal-comm`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                ...(token ? { 'Authorization': \`Bearer \${token}\` } : {})
+                ...(token ? { 'Authorization': `Bearer ${token}` } : {})
             },
             body: JSON.stringify({
                 subject: document.getElementById('commSubject').value,
@@ -70054,8 +69772,8 @@ async function updateFilingSystem() {
 
     try {
         const token = localStorage.getItem('token') || sessionStorage.getItem('token');
-        const response = await fetch(\`\${baseUrl}/api/admin-operations/operations\`, {
-            headers: token ? { 'Authorization': \`Bearer \${token}\` } : {}
+        const response = await fetch(`${baseUrl}/api/admin-operations/operations`, {
+            headers: token ? { 'Authorization': `Bearer ${token}` } : {}
         });
         if (response.ok) {
             const result = await response.json();
@@ -70078,10 +69796,10 @@ async function updateFilingSystem() {
         const docs = categories[cat];
         const approved = docs.filter(d => d.status === 'Approved').length;
         const pending = docs.filter(d => d.status === 'Pending' || d.status === 'Draft').length;
-        categoryCards += \`<div class="operation-item">
-            <span>\${cat} (\${docs.length} files)</span>
-            <span class="status-badge active">\${approved} approved, \${pending} pending</span>
-        </div>\`;
+        categoryCards += `<div class="operation-item">
+            <span>${cat} (${docs.length} files)</span>
+            <span class="status-badge active">${approved} approved, ${pending} pending</span>
+        </div>`;
     });
 
     if (!categoryCards) {
@@ -70093,20 +69811,20 @@ async function updateFilingSystem() {
         documents.forEach(doc => {
             const statusClass = doc.status === 'Approved' ? 'active' : (doc.status === 'Draft' ? 'warning' : 'pending');
             const date = doc.updated_at ? new Date(doc.updated_at).toLocaleDateString() : 'N/A';
-            docRows += \`<tr>
-                <td>\${doc.id}</td>
-                <td>\${doc.title || 'N/A'}</td>
-                <td>\${doc.category || 'N/A'}</td>
-                <td><span class="status-badge \${statusClass}">\${doc.status || 'N/A'}</span></td>
-                <td>\${doc.file_name || 'N/A'}</td>
-                <td>\${date}</td>
-            </tr>\`;
+            docRows += `<tr>
+                <td>${doc.id}</td>
+                <td>${doc.title || 'N/A'}</td>
+                <td>${doc.category || 'N/A'}</td>
+                <td><span class="status-badge ${statusClass}">${doc.status || 'N/A'}</span></td>
+                <td>${doc.file_name || 'N/A'}</td>
+                <td>${date}</td>
+            </tr>`;
         });
     } else {
         docRows = '<tr><td colspan="6" style="text-align:center;">No documents found</td></tr>';
     }
 
-    showContent(\`<div class="card">
+    showContent(`<div class="card">
         <h3>Filing System Management</h3>
         <p><strong>Organize and update document filing structures</strong></p>
 
@@ -70119,7 +69837,7 @@ async function updateFilingSystem() {
             <div class="operation-section">
                 <h4>Filing Categories Overview</h4>
                 <div class="operation-items">
-                    \${categoryCards}
+                    ${categoryCards}
                 </div>
             </div>
         </div>
@@ -70140,11 +69858,11 @@ async function updateFilingSystem() {
                     </tr>
                 </thead>
                 <tbody>
-                    \${docRows}
+                    ${docRows}
                 </tbody>
             </table>
         </div>
-    </div>\`);
+    </div>`);
 
 }
 
@@ -70153,11 +69871,11 @@ async function performFilingUpdate() {
     const token = localStorage.getItem('token') || sessionStorage.getItem('token');
 
     try {
-        const response = await fetch(\`\${baseUrl}/api/admin-operations/operations/filing-system\`, {
+        const response = await fetch(`${baseUrl}/api/admin-operations/operations/filing-system`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                ...(token ? { 'Authorization': \`Bearer \${token}\` } : {})
+                ...(token ? { 'Authorization': `Bearer ${token}` } : {})
             },
             body: JSON.stringify({
                 action: 'Filing System Audit',
@@ -70190,8 +69908,8 @@ async function generateAdminReport() {
 
     try {
         const token = localStorage.getItem('token') || sessionStorage.getItem('token');
-        const response = await fetch(\`\${baseUrl}/api/admin-operations/operations/admin-report\`, {
-            headers: token ? { 'Authorization': \`Bearer \${token}\` } : {}
+        const response = await fetch(`${baseUrl}/api/admin-operations/operations/admin-report`, {
+            headers: token ? { 'Authorization': `Bearer ${token}` } : {}
         });
         if (response.ok) {
             const result = await response.json();
@@ -70202,13 +69920,13 @@ async function generateAdminReport() {
     }
 
     if (!report) {
-        showContent(\`<div class="card">
+        showContent(`<div class="card">
             <h3>Administrative Report</h3>
             <p>Failed to generate report. Please try again.</p>
             <div class="action-buttons">
                 <button class="action" onclick="adminOperations()">Back to Admin Operations</button>
             </div>
-        </div>\`);
+        </div>`);
         return;
     }
 
@@ -70216,7 +69934,7 @@ async function generateAdminReport() {
     let workSummaryRows = '';
     if (report.workSummary && report.workSummary.length > 0) {
         report.workSummary.forEach(w => {
-            workSummaryRows += \`<tr><td>\${w.status || 'N/A'}</td><td>\${w.count}</td></tr>\`;
+            workSummaryRows += `<tr><td>${w.status || 'N/A'}</td><td>${w.count}</td></tr>`;
         });
     } else {
         workSummaryRows = '<tr><td colspan="2" style="text-align:center;">No work data</td></tr>';
@@ -70226,7 +69944,7 @@ async function generateAdminReport() {
     let docSummaryRows = '';
     if (report.docSummary && report.docSummary.length > 0) {
         report.docSummary.forEach(d => {
-            docSummaryRows += \`<tr><td>\${d.category || 'N/A'}</td><td>\${d.status || 'N/A'}</td><td>\${d.count}</td></tr>\`;
+            docSummaryRows += `<tr><td>${d.category || 'N/A'}</td><td>${d.status || 'N/A'}</td><td>${d.count}</td></tr>`;
         });
     } else {
         docSummaryRows = '<tr><td colspan="3" style="text-align:center;">No document data</td></tr>';
@@ -70236,7 +69954,7 @@ async function generateAdminReport() {
     let resourceSummaryRows = '';
     if (report.resourceSummary && report.resourceSummary.length > 0) {
         report.resourceSummary.forEach(r => {
-            resourceSummaryRows += \`<tr><td>\${r.resource_type || 'N/A'}</td><td>\${r.status || 'N/A'}</td><td>\${r.count}</td></tr>\`;
+            resourceSummaryRows += `<tr><td>${r.resource_type || 'N/A'}</td><td>${r.status || 'N/A'}</td><td>${r.count}</td></tr>`;
         });
     } else {
         resourceSummaryRows = '<tr><td colspan="3" style="text-align:center;">No resource data</td></tr>';
@@ -70248,13 +69966,13 @@ async function generateAdminReport() {
         report.recentActivity.forEach(a => {
             const date = a.submitted_date ? new Date(a.submitted_date).toLocaleDateString() : 'N/A';
             const statusClass = a.status === 'Completed' ? 'active' : (a.status === 'In Progress' ? 'warning' : 'pending');
-            activityRows += \`<tr>
-                <td>\${a.id}</td>
-                <td>\${a.work_type || 'N/A'}</td>
-                <td>\${a.work_title || 'N/A'}</td>
-                <td><span class="status-badge \${statusClass}">\${a.status || 'N/A'}</span></td>
-                <td>\${date}</td>
-            </tr>\`;
+            activityRows += `<tr>
+                <td>${a.id}</td>
+                <td>${a.work_type || 'N/A'}</td>
+                <td>${a.work_title || 'N/A'}</td>
+                <td><span class="status-badge ${statusClass}">${a.status || 'N/A'}</span></td>
+                <td>${date}</td>
+            </tr>`;
         });
     } else {
         activityRows = '<tr><td colspan="5" style="text-align:center;">No recent activity</td></tr>';
@@ -70262,9 +69980,9 @@ async function generateAdminReport() {
 
     const generatedAt = report.generatedAt ? new Date(report.generatedAt).toLocaleString() : new Date().toLocaleString();
 
-    showContent(\`<div class="card">
+    showContent(`<div class="card">
         <h3>Administrative Report</h3>
-        <p><strong>Generated:</strong> \${generatedAt}</p>
+        <p><strong>Generated:</strong> ${generatedAt}</p>
 
         <div class="action-buttons" style="margin-bottom:15px;">
             <button class="action" onclick="window.print()">Print Report</button>
@@ -70280,7 +69998,7 @@ async function generateAdminReport() {
                     <tr><th>Status</th><th>Count</th></tr>
                 </thead>
                 <tbody>
-                    \${workSummaryRows}
+                    ${workSummaryRows}
                 </tbody>
             </table>
         </div>
@@ -70294,7 +70012,7 @@ async function generateAdminReport() {
                     <tr><th>Category</th><th>Status</th><th>Count</th></tr>
                 </thead>
                 <tbody>
-                    \${docSummaryRows}
+                    ${docSummaryRows}
                 </tbody>
             </table>
         </div>
@@ -70308,7 +70026,7 @@ async function generateAdminReport() {
                     <tr><th>Resource Type</th><th>Status</th><th>Count</th></tr>
                 </thead>
                 <tbody>
-                    \${resourceSummaryRows}
+                    ${resourceSummaryRows}
                 </tbody>
             </table>
         </div>
@@ -70322,11 +70040,11 @@ async function generateAdminReport() {
                     <tr><th>ID</th><th>Type</th><th>Title</th><th>Status</th><th>Date</th></tr>
                 </thead>
                 <tbody>
-                    \${activityRows}
+                    ${activityRows}
                 </tbody>
             </table>
         </div>
-    </div>\`);
+    </div>`);
 
 }
 
@@ -70572,7 +70290,7 @@ function showReportTab(tabName) {
 
 function exportWorkforceReport() {
 
-    customAlert('Exporting workforce report...\n\nThe comprehensive workforce report will be generated and downloaded as a PDF file.', "Export Report", "info");
+    customAlert('Exporting workforce report...nnThe comprehensive workforce report will be generated and downloaded as a PDF file.', "Export Report", "info");
 
 }
 
@@ -70580,7 +70298,7 @@ function exportWorkforceReport() {
 
 function scheduleBoardReview() {
 
-    customAlert('Schedule board review...\n\nThis will open the scheduling interface to arrange a board review meeting.', "Schedule Board Review", "info");
+    customAlert('Schedule board review...nnThis will open the scheduling interface to arrange a board review meeting.', "Schedule Board Review", "info");
 
 }
 
@@ -70588,7 +70306,7 @@ function scheduleBoardReview() {
 
 function generateComplianceReport() {
 
-    customAlert('Generating compliance report...\n\nThe compliance report will be generated with all current compliance status and requirements.', "Generate Compliance Report", "info");
+    customAlert('Generating compliance report...nnThe compliance report will be generated with all current compliance status and requirements.', "Generate Compliance Report", "info");
 
 }
 
@@ -70596,7 +70314,7 @@ function generateComplianceReport() {
 
 function generateWorkforceReport() {
 
-    customAlert('Generating workforce report...\n\nThe workforce report will be generated with current employee statistics and analysis.', "Generate Workforce Report", "info");
+    customAlert('Generating workforce report...nnThe workforce report will be generated with current employee statistics and analysis.', "Generate Workforce Report", "info");
 
 }
 
@@ -70604,7 +70322,7 @@ function generateWorkforceReport() {
 
 function approveHiringPlan() {
 
-    customAlert('Approve hiring plan...\n\nThis will review and approve the current hiring plan for implementation.', "Approve Hiring Plan", "info");
+    customAlert('Approve hiring plan...nnThis will review and approve the current hiring plan for implementation.', "Approve Hiring Plan", "info");
 
 }
 
@@ -70612,7 +70330,7 @@ function approveHiringPlan() {
 
 function reviewOrgStructure() {
 
-    customAlert('Review organization structure...\n\nThis will open the organization structure review interface.', "Review Organization Structure", "info");
+    customAlert('Review organization structure...nnThis will open the organization structure review interface.', "Review Organization Structure", "info");
 
 }
 
@@ -71154,7 +70872,7 @@ function showNHIFContributions() {
 
                         <label for="nhifAmount">Amount:</label>
 
-                        <input type="number" id="nhifAmount" name="nhifAmount" required>
+                        <input type="number" id="nhifAmount" name="nhifAmount" required />
 
                     </div>
 
@@ -71162,7 +70880,7 @@ function showNHIFContributions() {
 
                         <label for="nhifMonth">Month:</label>
 
-                        <input type="month" id="nhifMonth" name="nhifMonth" required>
+                        <input type="month" id="nhifMonth" name="nhifMonth" required />
 
                     </div>
 
@@ -71515,7 +71233,7 @@ function showProcurementForm() {
 
                         <label for="requestTitle">Request Title:</label>
 
-                        <input type="text" id="requestTitle" name="requestTitle" required>
+                        <input type="text" id="requestTitle" name="requestTitle" required />
 
                     </div>
 
@@ -71531,7 +71249,7 @@ function showProcurementForm() {
 
                         <label for="procurementQuantity">Quantity:</label>
 
-                        <input type="number" id="procurementQuantity" name="quantity" required>
+                        <input type="number" id="procurementQuantity" name="quantity" required />
 
                     </div>
 
@@ -71539,7 +71257,7 @@ function showProcurementForm() {
 
                         <label for="unitPrice">Unit Price:</label>
 
-                        <input type="number" id="unitPrice" name="unitPrice" step="0.01" required>
+                        <input type="number" id="unitPrice" name="unitPrice" step="0.01" required />
 
                     </div>
 
@@ -71547,7 +71265,7 @@ function showProcurementForm() {
 
                         <label for="procurementTotalBudget">Total Budget:</label>
 
-                        <input type="number" id="procurementTotalBudget" name="totalBudget" step="0.01" readonly>
+                        <input type="number" id="procurementTotalBudget" name="totalBudget" step="0.01" readonly />
 
                     </div>
 
@@ -71555,7 +71273,7 @@ function showProcurementForm() {
 
                         <label for="purpose">Purpose:</label>
 
-                        <input type="text" id="purpose" name="purpose" required>
+                        <input type="text" id="purpose" name="purpose" required />
 
                     </div>
 
@@ -71583,7 +71301,7 @@ function showProcurementForm() {
 
                         <label for="expectedDeliveryDate">Expected Delivery:</label>
 
-                        <input type="date" id="expectedDeliveryDate" name="expectedDeliveryDate" required>
+                        <input type="date" id="expectedDeliveryDate" name="expectedDeliveryDate" required />
 
                     </div>
 
@@ -71607,7 +71325,7 @@ function showProcurementForm() {
 
                         <label for="budgetAllocation">Budget Allocation:</label>
 
-                        <input type="text" id="budgetAllocation" name="budgetAllocation">
+                        <input type="text" id="budgetAllocation" name="budgetAllocation" />
 
                     </div>
 
@@ -71615,7 +71333,7 @@ function showProcurementForm() {
 
                         <label for="department">Department:</label>
 
-                        <input type="text" id="department" name="department" required>
+                        <input type="text" id="department" name="department" required />
 
                     </div>
 
@@ -71870,7 +71588,7 @@ function showTaxPayments() {
 
                         <label for="taxAmount">Amount:</label>
 
-                        <input type="number" id="taxAmount" name="taxAmount" step="0.01" required>
+                        <input type="number" id="taxAmount" name="taxAmount" step="0.01" required />
 
                     </div>
 
@@ -71878,7 +71596,7 @@ function showTaxPayments() {
 
                         <label for="taxPeriod">Period:</label>
 
-                        <input type="month" id="taxPeriod" name="taxPeriod" required>
+                        <input type="month" id="taxPeriod" name="taxPeriod" required />
 
                     </div>
 
@@ -71886,7 +71604,7 @@ function showTaxPayments() {
 
                         <label for="taxDueDate">Due Date:</label>
 
-                        <input type="date" id="taxDueDate" name="taxDueDate" required>
+                        <input type="date" id="taxDueDate" name="taxDueDate" required />
 
                     </div>
 
@@ -71936,7 +71654,7 @@ function showTaxPayments() {
 
                         <label for="paymentReference">Payment Reference:</label>
 
-                        <input type="text" id="paymentReference" name="paymentReference" placeholder="Enter payment reference number">
+                        <input type="text" id="paymentReference" name="paymentReference" placeholder="Enter payment reference number" />
 
                     </div>
 
@@ -71944,7 +71662,7 @@ function showTaxPayments() {
 
                         <label for="penalties">Penalties (TZS):</label>
 
-                        <input type="number" id="penalties" name="penalties" step="0.01" min="0" value="0">
+                        <input type="number" id="penalties" name="penalties" step="0.01" min="0" value="0" />
 
                     </div>
 
@@ -71952,7 +71670,7 @@ function showTaxPayments() {
 
                         <label for="interest">Interest (TZS):</label>
 
-                        <input type="number" id="interest" name="interest" step="0.01" min="0" value="0">
+                        <input type="number" id="interest" name="interest" step="0.01" min="0" value="0" />
 
                     </div>
 
@@ -71968,7 +71686,7 @@ function showTaxPayments() {
 
                         <label for="taxAttachments">Attachments:</label>
 
-                        <input type="file" id="taxAttachments" name="taxAttachments" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png" multiple>
+                        <input type="file" id="taxAttachments" name="taxAttachments" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png" multiple />
 
                         <small>Upload supporting documents (PDF, DOC, Images)</small>
 
@@ -72269,7 +71987,7 @@ async function showMaterialsInventory() {
 
                     style="padding: 8px; border: 1px solid #ddd; border-radius: 4px; width: 300px;"
 
-                    onkeyup="searchMaterials()">
+                    onkeyup="searchMaterials()" />
 
             </div>
 
@@ -72531,7 +72249,7 @@ function showMaterialsInForm() {
 
                             <label for="minTrackNumber">Track Number:</label>
 
-                            <input type="text" id="minTrackNumber" name="track_number" placeholder="Auto-generated if blank">
+                            <input type="text" id="minTrackNumber" name="track_number" placeholder="Auto-generated if blank" />
 
                         </div>
 
@@ -72543,7 +72261,7 @@ function showMaterialsInForm() {
 
                             <label for="minReceiptDate">Receipt Date:</label>
 
-                            <input type="date" id="minReceiptDate" name="receipt_date" required>
+                            <input type="date" id="minReceiptDate" name="receipt_date" required />
 
                         </div>
 
@@ -72551,7 +72269,7 @@ function showMaterialsInForm() {
 
                             <label for="minQuantity">Quantity Received:</label>
 
-                            <input type="number" id="minQuantity" name="quantity_received" step="0.01" required>
+                            <input type="number" id="minQuantity" name="quantity_received" step="0.01" required />
 
                         </div>
 
@@ -72597,7 +72315,7 @@ function showMaterialsInForm() {
 
                             <label for="minUnitPrice">Unit Price (TZS):</label>
 
-                            <input type="number" id="minUnitPrice" name="unit_price" step="0.01" required>
+                            <input type="number" id="minUnitPrice" name="unit_price" step="0.01" required />
 
                         </div>
 
@@ -72609,7 +72327,7 @@ function showMaterialsInForm() {
 
                             <label for="minTransportCost">Transport Cost (TZS):</label>
 
-                            <input type="number" id="minTransportCost" name="transport_cost" step="0.01" value="0">
+                            <input type="number" id="minTransportCost" name="transport_cost" step="0.01" value="0" />
 
                         </div>
 
@@ -72647,7 +72365,7 @@ function showMaterialsInForm() {
 
                             <label for="minSupplierName">Supplier Name:</label>
 
-                            <input type="text" id="minSupplierName" name="supplier_name" required>
+                            <input type="text" id="minSupplierName" name="supplier_name" required />
 
                         </div>
 
@@ -72655,7 +72373,7 @@ function showMaterialsInForm() {
 
                             <label for="minSupplierContact">Supplier Contact:</label>
 
-                            <input type="text" id="minSupplierContact" name="supplier_contact">
+                            <input type="text" id="minSupplierContact" name="supplier_contact" />
 
                         </div>
 
@@ -72667,7 +72385,7 @@ function showMaterialsInForm() {
 
                             <label for="minInvoiceNumber">Invoice Number:</label>
 
-                            <input type="text" id="minInvoiceNumber" name="invoice_number">
+                            <input type="text" id="minInvoiceNumber" name="invoice_number" />
 
                         </div>
 
@@ -72675,7 +72393,7 @@ function showMaterialsInForm() {
 
                             <label for="minPONumber">Purchase Order #:</label>
 
-                            <input type="text" id="minPONumber" name="purchase_order_number">
+                            <input type="text" id="minPONumber" name="purchase_order_number" />
 
                         </div>
 
@@ -72683,7 +72401,7 @@ function showMaterialsInForm() {
 
                             <label for="minDeliveryNote">Delivery Note #:</label>
 
-                            <input type="text" id="minDeliveryNote" name="delivery_note_number">
+                            <input type="text" id="minDeliveryNote" name="delivery_note_number" />
 
                         </div>
 
@@ -72713,7 +72431,7 @@ function showMaterialsInForm() {
 
                             <label for="minReceivedBy">Received By:</label>
 
-                            <input type="text" id="minReceivedBy" name="received_by" required>
+                            <input type="text" id="minReceivedBy" name="received_by" required />
 
                         </div>
 
@@ -72731,7 +72449,7 @@ function showMaterialsInForm() {
 
                         <label for="minProjectName">Project Name:</label>
 
-                        <input type="text" id="minProjectName" name="project_name" placeholder="Associated project">
+                        <input type="text" id="minProjectName" name="project_name" placeholder="Associated project" />
 
                     </div>
 
@@ -72739,7 +72457,7 @@ function showMaterialsInForm() {
 
                         <label for="minWarehouseLocation">Warehouse Location:</label>
 
-                        <input type="text" id="minWarehouseLocation" name="warehouse_location">
+                        <input type="text" id="minWarehouseLocation" name="warehouse_location" />
 
                     </div>
 
@@ -72921,7 +72639,7 @@ function showMaterialsOutForm() {
 
                             <label for="moutTrackNumber">Track Number:</label>
 
-                            <input type="text" id="moutTrackNumber" name="track_number" placeholder="Auto-generated if blank">
+                            <input type="text" id="moutTrackNumber" name="track_number" placeholder="Auto-generated if blank" />
 
                         </div>
 
@@ -72933,7 +72651,7 @@ function showMaterialsOutForm() {
 
                             <label for="moutIssueDate">Issue Date:</label>
 
-                            <input type="date" id="moutIssueDate" name="issue_date" required>
+                            <input type="date" id="moutIssueDate" name="issue_date" required />
 
                         </div>
 
@@ -72941,7 +72659,7 @@ function showMaterialsOutForm() {
 
                             <label for="moutQuantity">Quantity Out:</label>
 
-                            <input type="number" id="moutQuantity" name="quantity_out" step="0.01" required>
+                            <input type="number" id="moutQuantity" name="quantity_out" step="0.01" required />
 
                         </div>
 
@@ -72987,7 +72705,7 @@ function showMaterialsOutForm() {
 
                             <label for="moutUnitPrice">Unit Price (TZS):</label>
 
-                            <input type="number" id="moutUnitPrice" name="unit_price" step="0.01" value="0">
+                            <input type="number" id="moutUnitPrice" name="unit_price" step="0.01" value="0" />
 
                         </div>
 
@@ -73021,7 +72739,7 @@ function showMaterialsOutForm() {
 
                             <label for="moutIssuedTo">Issued To:</label>
 
-                            <input type="text" id="moutIssuedTo" name="issued_to" required placeholder="Person/Company receiving">
+                            <input type="text" id="moutIssuedTo" name="issued_to" required placeholder="Person/Company receiving" />
 
                         </div>
 
@@ -73033,7 +72751,7 @@ function showMaterialsOutForm() {
 
                             <label for="moutIssuedToRole">Role:</label>
 
-                            <input type="text" id="moutIssuedToRole" name="issued_to_role" placeholder="Role of recipient">
+                            <input type="text" id="moutIssuedToRole" name="issued_to_role" placeholder="Role of recipient" />
 
                         </div>
 
@@ -73073,7 +72791,7 @@ function showMaterialsOutForm() {
 
                         <label for="moutProjectName">Project Name:</label>
 
-                        <input type="text" id="moutProjectName" name="project_name" placeholder="Associated project (if applicable)">
+                        <input type="text" id="moutProjectName" name="project_name" placeholder="Associated project (if applicable)" />
 
                     </div>
 
@@ -73083,7 +72801,7 @@ function showMaterialsOutForm() {
 
                             <label for="moutDestination">Destination:</label>
 
-                            <input type="text" id="moutDestination" name="destination" placeholder="Where materials are going">
+                            <input type="text" id="moutDestination" name="destination" placeholder="Where materials are going" />
 
                         </div>
 
@@ -73091,7 +72809,7 @@ function showMaterialsOutForm() {
 
                             <label for="moutPurpose">Purpose:</label>
 
-                            <input type="text" id="moutPurpose" name="purpose" placeholder="Purpose of issue">
+                            <input type="text" id="moutPurpose" name="purpose" placeholder="Purpose of issue" />
 
                         </div>
 
@@ -73103,7 +72821,7 @@ function showMaterialsOutForm() {
 
                             <label for="moutAuthorizedBy">Authorized By:</label>
 
-                            <input type="text" id="moutAuthorizedBy" name="authorized_by" required>
+                            <input type="text" id="moutAuthorizedBy" name="authorized_by" required />
 
                         </div>
 
@@ -73111,7 +72829,7 @@ function showMaterialsOutForm() {
 
                             <label for="moutAuthorizedRole">Authorizer Role:</label>
 
-                            <input type="text" id="moutAuthorizedRole" name="authorized_by_role" placeholder="Role of authorizer">
+                            <input type="text" id="moutAuthorizedRole" name="authorized_by_role" placeholder="Role of authorizer" />
 
                         </div>
 
@@ -73141,7 +72859,7 @@ function showMaterialsOutForm() {
 
                             <label for="moutDeliveryReceipt">Delivery Receipt #:</label>
 
-                            <input type="text" id="moutDeliveryReceipt" name="delivery_receipt_number">
+                            <input type="text" id="moutDeliveryReceipt" name="delivery_receipt_number" />
 
                         </div>
 
@@ -73187,7 +72905,7 @@ function showMaterialsOutForm() {
 
                         <label for="moutExpectedReturn">Expected Return Date:</label>
 
-                        <input type="date" id="moutExpectedReturn" name="expected_return_date">
+                        <input type="date" id="moutExpectedReturn" name="expected_return_date" />
 
                     </div>
 
@@ -73648,7 +73366,7 @@ function showAddMaterialForm() {
 
                             <label for="newMaterialCode">Material Code:</label>
 
-                            <input type="text" id="newMaterialCode" name="material_code" placeholder="Auto-generated if blank">
+                            <input type="text" id="newMaterialCode" name="material_code" placeholder="Auto-generated if blank" />
 
                         </div>
 
@@ -73656,7 +73374,7 @@ function showAddMaterialForm() {
 
                             <label for="newMaterialName">Material Name:</label>
 
-                            <input type="text" id="newMaterialName" name="material_name" required>
+                            <input type="text" id="newMaterialName" name="material_name" required />
 
                         </div>
 
@@ -73760,7 +73478,7 @@ function showAddMaterialForm() {
 
                             <label for="newMinStock">Min Stock Level:</label>
 
-                            <input type="number" id="newMinStock" name="min_stock_level" value="10">
+                            <input type="number" id="newMinStock" name="min_stock_level" value="10" />
 
                         </div>
 
@@ -73768,7 +73486,7 @@ function showAddMaterialForm() {
 
                             <label for="newMaxStock">Max Stock Level:</label>
 
-                            <input type="number" id="newMaxStock" name="max_stock_level" value="1000">
+                            <input type="number" id="newMaxStock" name="max_stock_level" value="1000" />
 
                         </div>
 
@@ -73776,7 +73494,7 @@ function showAddMaterialForm() {
 
                             <label for="newReorderPoint">Reorder Point:</label>
 
-                            <input type="number" id="newReorderPoint" name="reorder_point" value="50">
+                            <input type="number" id="newReorderPoint" name="reorder_point" value="50" />
 
                         </div>
 
@@ -73788,7 +73506,7 @@ function showAddMaterialForm() {
 
                             <label for="newUnitCost">Unit Cost (TZS):</label>
 
-                            <input type="number" id="newUnitCost" name="unit_cost" step="0.01" value="0">
+                            <input type="number" id="newUnitCost" name="unit_cost" step="0.01" value="0" />
 
                         </div>
 
@@ -73796,7 +73514,7 @@ function showAddMaterialForm() {
 
                             <label for="newStorageLocation">Storage Location:</label>
 
-                            <input type="text" id="newStorageLocation" name="storage_location">
+                            <input type="text" id="newStorageLocation" name="storage_location" />
 
                         </div>
 
@@ -73808,7 +73526,7 @@ function showAddMaterialForm() {
 
                             <label for="newSupplierName">Supplier Name:</label>
 
-                            <input type="text" id="newSupplierName" name="supplier_name">
+                            <input type="text" id="newSupplierName" name="supplier_name" />
 
                         </div>
 
@@ -73816,7 +73534,7 @@ function showAddMaterialForm() {
 
                             <label for="newSupplierContact">Supplier Contact:</label>
 
-                            <input type="text" id="newSupplierContact" name="supplier_contact">
+                            <input type="text" id="newSupplierContact" name="supplier_contact" />
 
                         </div>
 
@@ -73951,7 +73669,7 @@ function showSeniorRoles() {
                         <form id="seniorRolesForm">
                             <div class="form-group">
                                 <label for="candidateName">Candidate Name:</label>
-                                <input type="text" id="candidateName" name="candidateName" required>
+                                <input type="text" id="candidateName" name="candidateName" required />
                             </div>
                             <div class="form-group">
                                 <label for="position">Position Level:</label>
@@ -73976,7 +73694,7 @@ function showSeniorRoles() {
                             </div>
                             <div class="form-group">
                                 <label for="proposedSalary">Proposed Salary:</label>
-                                <input type="text" id="proposedSalary" name="proposedSalary" placeholder="e.g., TZS 3,000,000" required>
+                                <input type="text" id="proposedSalary" name="proposedSalary" placeholder="e.g., TZS 3,000,000" required />
                             </div>
                             <div class="form-group">
                                 <label for="experience">Experience:</label>
@@ -74175,7 +73893,7 @@ function showSuggestionsManagement() {
 
                         <label for="suggestionTitle">Suggestion Title:</label>
 
-                        <input type="text" id="suggestionTitle" name="suggestionTitle" required>
+                        <input type="text" id="suggestionTitle" name="suggestionTitle" required />
 
                     </div>
 
@@ -74215,7 +73933,7 @@ function showSuggestionsManagement() {
 
                         <label for="suggestionSubmittedBy">Submitted By:</label>
 
-                        <input type="text" id="suggestionSubmittedBy" name="suggestionSubmittedBy" required>
+                        <input type="text" id="suggestionSubmittedBy" name="suggestionSubmittedBy" required />
 
                     </div>
 
@@ -74629,105 +74347,8 @@ async function loadTransportCosts() {
 
 function getSampleTransportCosts() {
 
-    return [
-
-        {
-
-            id: 1,
-
-            cost_type: 'maintenance',
-
-            category: 'service_maintenance',
-
-            description: 'Regular service for Toyota Hilux - Oil change and filter replacement',
-
-            car_name: 'Toyota Hilux',
-
-            track_number: 'TK001',
-
-            amount: 250000,
-
-            currency: 'TZS',
-
-            date_incurred: '2026-05-01',
-
-            provider: 'Toyota Tanzania Service Center',
-
-            invoice_number: 'INV-2026-001',
-
-            payment_status: 'paid',
-
-            approved_by_name: 'Finance Manager',
-
-            notes: 'Quarterly maintenance service completed'
-
-        },
-
-        {
-
-            id: 2,
-
-            cost_type: 'maintenance',
-
-            category: 'repair',
-
-            description: 'Brake pad replacement for Nissan Patrol',
-
-            car_name: 'Nissan Patrol',
-
-            track_number: 'TK002',
-
-            amount: 450000,
-
-            currency: 'TZS',
-
-            date_incurred: '2026-05-03',
-
-            provider: 'Auto Care Garage',
-
-            invoice_number: 'INV-2026-002',
-
-            payment_status: 'pending',
-
-            approved_by_name: 'Operations Manager',
-
-            notes: 'Emergency brake repair due to wear and tear'
-
-        },
-
-        {
-
-            id: 3,
-
-            cost_type: 'extra',
-
-            category: 'fuel',
-
-            description: 'Additional fuel for site visit - Dar es Salaam to Bagamoyo',
-
-            car_name: 'Toyota Hilux',
-
-            track_number: 'TK001',
-
-            amount: 120000,
-
-            currency: 'TZS',
-
-            date_incurred: '2026-05-05',
-
-            provider: 'BP Station - Kawe',
-
-            invoice_number: 'REC-2026-003',
-
-            payment_status: 'paid',
-
-            approved_by_name: 'Site Manager',
-
-            notes: 'Extra fuel for unplanned site inspection'
-
-        }
-
-    ];
+        // Returns empty array to prevent mock data from being displayed
+        return [];
 
 }
 
@@ -75022,23 +74643,14 @@ async function loadTransportCostSummary() {
 
 
 function getSampleSummary() {
-
     return {
-
-        total_costs: 2170000,
-
-        maintenance_costs: 1900000,
-
-        extra_costs: 270000,
-
-        total_records: 5,
-
-        paid_amount: 455000,
-
-        pending_amount: 450000
-
+        total_costs: 0,
+        maintenance_costs: 0,
+        extra_costs: 0,
+        total_records: 0,
+        paid_amount: 0,
+        pending_amount: 0
     };
-
 }
 
 
@@ -75241,7 +74853,7 @@ function showAddTransportCostForm() {
 
                             <label for="amount">Amount (TZS) *</label>
 
-                            <input type="number" id="amount" name="amount" placeholder="250000" required>
+                            <input type="number" id="amount" name="amount" placeholder="250000" required />
 
                         </div>
 
@@ -75255,7 +74867,7 @@ function showAddTransportCostForm() {
 
                             <label for="dateIncurred">Date Incurred *</label>
 
-                            <input type="date" id="dateIncurred" name="dateIncurred" required>
+                            <input type="date" id="dateIncurred" name="dateIncurred" required />
 
                         </div>
 
@@ -75263,7 +74875,7 @@ function showAddTransportCostForm() {
 
                             <label for="provider">Provider</label>
 
-                            <input type="text" id="provider" name="provider" placeholder="Service provider name">
+                            <input type="text" id="provider" name="provider" placeholder="Service provider name" />
 
                         </div>
 
@@ -75277,7 +74889,7 @@ function showAddTransportCostForm() {
 
                             <label for="invoiceNumber">Invoice Number</label>
 
-                            <input type="text" id="invoiceNumber" name="invoiceNumber" placeholder="INV-2026-001">
+                            <input type="text" id="invoiceNumber" name="invoiceNumber" placeholder="INV-2026-001" />
 
                         </div>
 
@@ -75713,7 +75325,7 @@ function deleteTransportCost(costId) {
 
     
 
-    if (confirm(`Are you sure you want to delete this transport cost?\n\n${cost.description}\nAmount: ${formatCurrency(cost.amount)}`)) {
+    if (confirm(`Are you sure you want to delete this transport cost?nn${cost.description}nAmount: ${formatCurrency(cost.amount)}`)) {
 
         // For now, just show success - in a real implementation, this would call the API
 
@@ -76140,7 +75752,7 @@ function showCreateProjectForm() {
                 <div class="form-row">
                     <div class="form-group">
                         <label>Project Name *</label>
-                        <input type="text" id="projectName" placeholder="e.g., Highway Bridge Construction" required>
+                        <input type="text" id="projectName" placeholder="e.g., Highway Bridge Construction" required />
                     </div>
                     <div class="form-group">
                         <label>Project Type *</label>
@@ -76156,29 +75768,29 @@ function showCreateProjectForm() {
                 <div class="form-row">
                     <div class="form-group">
                         <label>Client/Owner *</label>
-                        <input type="text" id="projectClient" placeholder="e.g., Ministry of Infrastructure" required>
+                        <input type="text" id="projectClient" placeholder="e.g., Ministry of Infrastructure" required />
                     </div>
                     <div class="form-group">
                         <label>Project Manager *</label>
-                        <input type="text" id="projectManager" placeholder="e.g., John Smith" required>
+                        <input type="text" id="projectManager" placeholder="e.g., John Smith" required />
                     </div>
                 </div>
                 
                 <div class="form-row">
                     <div class="form-group">
                         <label>Start Date *</label>
-                        <input type="date" id="projectStartDate" required>
+                        <input type="date" id="projectStartDate" required />
                     </div>
                     <div class="form-group">
                         <label>End Date *</label>
-                        <input type="date" id="projectEndDate" required>
+                        <input type="date" id="projectEndDate" required />
                     </div>
                 </div>
                 
                 <div class="form-row">
                     <div class="form-group">
                         <label>Total Budget *</label>
-                        <input type="number" id="projectBudget" placeholder="e.g., 5000000" required>
+                        <input type="number" id="projectBudget" placeholder="e.g., 5000000" required />
                     </div>
                     <div class="form-group">
                         <label>Priority *</label>
@@ -76241,17 +75853,17 @@ function showCreateProjectForm() {
                         </div>
                         <div class="form-group">
                             <label>Total Units</label>
-                            <input type="number" id="totalUnits" placeholder="e.g., 150">
+                            <input type="number" id="totalUnits" placeholder="e.g., 150" />
                         </div>
                     </div>
                     <div class="form-row">
                         <div class="form-group">
                             <label>Land Area (sqm)</label>
-                            <input type="number" id="landArea" placeholder="e.g., 5000">
+                            <input type="number" id="landArea" placeholder="e.g., 5000" />
                         </div>
                         <div class="form-group">
                             <label>Location</label>
-                            <input type="text" id="projectLocation" placeholder="e.g., Dar es Salaam City Center">
+                            <input type="text" id="projectLocation" placeholder="e.g., Dar es Salaam City Center" />
                         </div>
                     </div>
                 </div>
@@ -76272,17 +75884,17 @@ function showCreateProjectForm() {
                         </div>
                         <div class="form-group">
                             <label>Team Size</label>
-                            <input type="number" id="teamSize" placeholder="e.g., 25">
+                            <input type="number" id="teamSize" placeholder="e.g., 25" />
                         </div>
                     </div>
                     <div class="form-row">
                         <div class="form-group">
                             <label>Sub-Projects Count</label>
-                            <input type="number" id="subProjectsCount" placeholder="e.g., 8">
+                            <input type="number" id="subProjectsCount" placeholder="e.g., 8" />
                         </div>
                         <div class="form-group">
                             <label>Stakeholders</label>
-                            <input type="text" id="stakeholders" placeholder="e.g., Government, Private Sector, Community">
+                            <input type="text" id="stakeholders" placeholder="e.g., Government, Private Sector, Community" />
                         </div>
                     </div>
                 </div>
@@ -76476,7 +76088,7 @@ async function loadMissionVisionRecords() {
             statusTd.style.padding = '8px';
             const statusValue = (record.status || 'unknown');
             const statusSpan = document.createElement('span');
-            statusSpan.className = `status-badge status-${String(statusValue).toLowerCase().replace(/\s+/g, '-')}`;
+            statusSpan.className = `status-badge status-${String(statusValue).toLowerCase().replace(/s+/g, '-')}`;
             statusSpan.textContent = String(statusValue);
             statusTd.appendChild(statusSpan);
             tr.appendChild(statusTd);
@@ -76633,7 +76245,7 @@ async function loadLongTermGrowthRecords() {
             statusTd.style.padding = '8px';
             const statusValue = (record.status || 'unknown');
             const statusSpan = document.createElement('span');
-            statusSpan.className = `status-badge status-${String(statusValue).toLowerCase().replace(/\s+/g, '-')}`;
+            statusSpan.className = `status-badge status-${String(statusValue).toLowerCase().replace(/s+/g, '-')}`;
             statusSpan.textContent = String(statusValue);
             statusTd.appendChild(statusSpan);
             tr.appendChild(statusTd);
@@ -76777,7 +76389,7 @@ async function loadLeadershipRecords() {
             statusTd.style.padding = '8px';
             const statusValue = (record.status || 'unknown');
             const statusSpan = document.createElement('span');
-            statusSpan.className = `status-badge status-${String(statusValue).toLowerCase().replace(/\s+/g, '-')}`;
+            statusSpan.className = `status-badge status-${String(statusValue).toLowerCase().replace(/s+/g, '-')}`;
             statusSpan.textContent = String(statusValue);
             statusTd.appendChild(statusSpan);
             tr.appendChild(statusTd);
@@ -76875,7 +76487,7 @@ async function submitNewProject() {
         const result = await response.json();
         console.log('âœ… Project created successfully:', result);
         
-        customAlert(`Project created successfully!\n\nProject Name: ${projectData.name}\nProject Type: ${projectData.type}\nBudget: ${projectData.budget.toLocaleString()}\nStatus: Planning Phase`, "Project Created", "success");
+        customAlert(`Project created successfully!nnProject Name: ${projectData.name}nProject Type: ${projectData.type}nBudget: ${projectData.budget.toLocaleString()}nStatus: Planning Phase`, "Project Created", "success");
         
         // Reset form and return to dashboard
         document.getElementById('createProjectForm').reset();
@@ -76909,22 +76521,22 @@ function showAccountantForm() {
                 <div class="form-row">
                     <div class="form-group">
                         <label>Accountant Name *</label>
-                        <input type="text" id="accountantName" placeholder="e.g., Jane Smith" required>
+                        <input type="text" id="accountantName" placeholder="e.g., Jane Smith" required />
                     </div>
                     <div class="form-group">
                         <label>Employee ID *</label>
-                        <input type="text" id="accountantId" placeholder="e.g., ACC-2024-001" required>
+                        <input type="text" id="accountantId" placeholder="e.g., ACC-2024-001" required />
                     </div>
                 </div>
                 
                 <div class="form-row">
                     <div class="form-group">
                         <label>Email Address *</label>
-                        <input type="email" id="accountantEmail" placeholder="e.g., jane.smith@khashtec.com" required>
+                        <input type="email" id="accountantEmail" placeholder="e.g., jane.smith@khashtec.com" required />
                     </div>
                     <div class="form-group">
                         <label>Phone Number *</label>
-                        <input type="tel" id="accountantPhone" placeholder="e.g., +255 123 456 789" required>
+                        <input type="tel" id="accountantPhone" placeholder="e.g., +255 123 456 789" required />
                     </div>
                 </div>
                 
@@ -76952,7 +76564,7 @@ function showAccountantForm() {
                 <div class="form-row">
                     <div class="form-group">
                         <label>Start Date *</label>
-                        <input type="date" id="accountantStartDate" required>
+                        <input type="date" id="accountantStartDate" required />
                     </div>
                     <div class="form-group">
                         <label>Employment Type *</label>
@@ -76970,14 +76582,14 @@ function showAccountantForm() {
                 <div class="form-section">
                     <h5>ðŸ“Š Financial Reporting Responsibilities</h5>
                     <div class="checkbox-group">
-                        <label><input type="checkbox" name="financialReporting" value="monthly-reports"> Monthly Financial Reports</label>
-                        <label><input type="checkbox" name="financialReporting" value="quarterly-reports"> Quarterly Financial Statements</label>
-                        <label><input type="checkbox" name="financialReporting" value="annual-reports"> Annual Financial Reports</label>
-                        <label><input type="checkbox" name="financialReporting" value="budget-analysis"> Budget Analysis & Variance Reports</label>
-                        <label><input type="checkbox" name="financialReporting" value="cash-flow"> Cash Flow Statements</label>
-                        <label><input type="checkbox" name="financialReporting" value="profit-loss"> Profit & Loss Statements</label>
-                        <label><input type="checkbox" name="financialReporting" value="balance-sheet"> Balance Sheet Preparation</label>
-                        <label><input type="checkbox" name="financialReporting" value="audit-support"> Audit Support Documentation</label>
+                        <label><input type="checkbox" name="financialReporting" value="monthly-reports" /> Monthly Financial Reports</label>
+                        <label><input type="checkbox" name="financialReporting" value="quarterly-reports" /> Quarterly Financial Statements</label>
+                        <label><input type="checkbox" name="financialReporting" value="annual-reports" /> Annual Financial Reports</label>
+                        <label><input type="checkbox" name="financialReporting" value="budget-analysis" /> Budget Analysis & Variance Reports</label>
+                        <label><input type="checkbox" name="financialReporting" value="cash-flow" /> Cash Flow Statements</label>
+                        <label><input type="checkbox" name="financialReporting" value="profit-loss" /> Profit & Loss Statements</label>
+                        <label><input type="checkbox" name="financialReporting" value="balance-sheet" /> Balance Sheet Preparation</label>
+                        <label><input type="checkbox" name="financialReporting" value="audit-support" /> Audit Support Documentation</label>
                     </div>
                 </div>
                 
@@ -76985,14 +76597,14 @@ function showAccountantForm() {
                 <div class="form-section">
                     <h5>ðŸ“ Day-to-Day Bookkeeping</h5>
                     <div class="checkbox-group">
-                        <label><input type="checkbox" name="bookkeeping" value="accounts-payable"> Accounts Payable Management</label>
-                        <label><input type="checkbox" name="bookkeeping" value="accounts-receivable"> Accounts Receivable Management</label>
-                        <label><input type="checkbox" name="bookkeeping" value="bank-reconciliation"> Bank Reconciliation</label>
-                        <label><input type="checkbox" name="bookkeeping" value="expense-tracking"> Expense Tracking & Categorization</label>
-                        <label><input type="checkbox" name="bookkeeping" value="invoice-processing"> Invoice Processing</label>
-                        <label><input type="checkbox" name="bookkeeping" value="payroll-processing"> Payroll Processing Support</label>
-                        <label><input type="checkbox" name="bookkeeping" value="tax-calculations"> Tax Calculations</label>
-                        <label><input type="checkbox" name="bookkeeping" value="fixed-assets"> Fixed Asset Management</label>
+                        <label><input type="checkbox" name="bookkeeping" value="accounts-payable" /> Accounts Payable Management</label>
+                        <label><input type="checkbox" name="bookkeeping" value="accounts-receivable" /> Accounts Receivable Management</label>
+                        <label><input type="checkbox" name="bookkeeping" value="bank-reconciliation" /> Bank Reconciliation</label>
+                        <label><input type="checkbox" name="bookkeeping" value="expense-tracking" /> Expense Tracking & Categorization</label>
+                        <label><input type="checkbox" name="bookkeeping" value="invoice-processing" /> Invoice Processing</label>
+                        <label><input type="checkbox" name="bookkeeping" value="payroll-processing" /> Payroll Processing Support</label>
+                        <label><input type="checkbox" name="bookkeeping" value="tax-calculations" /> Tax Calculations</label>
+                        <label><input type="checkbox" name="bookkeeping" value="fixed-assets" /> Fixed Asset Management</label>
                     </div>
                 </div>
                 
@@ -77000,14 +76612,14 @@ function showAccountantForm() {
                 <div class="form-section">
                     <h5>âš–ï¸ Regulatory Adherence</h5>
                     <div class="checkbox-group">
-                        <label><input type="checkbox" name="regulatory" value="tax-compliance"> Tax Compliance (VAT, PAYE, etc.)</label>
-                        <label><input type="checkbox" name="regulatory" value="financial-regulations"> Financial Regulations Compliance</label>
-                        <label><input type="checkbox" name="regulatory" value="trra-compliance"> TRRA (Tanzania Revenue) Compliance</label>
-                        <label><input type="checkbox" name="regulatory" value="audit-readiness"> Audit Readiness Preparation</label>
-                        <label><input type="checkbox" name="regulatory" value="internal-controls"> Internal Controls Implementation</label>
-                        <label><input type="checkbox" name="regulatory" value="policy-compliance"> Company Financial Policy Compliance</label>
-                        <label><input type="checkbox" name="regulatory" value="documentation"> Regulatory Documentation Maintenance</label>
-                        <label><input type="checkbox" name="regulatory" value="reporting-deadlines"> Regulatory Reporting Deadlines</label>
+                        <label><input type="checkbox" name="regulatory" value="tax-compliance" /> Tax Compliance (VAT, PAYE, etc.)</label>
+                        <label><input type="checkbox" name="regulatory" value="financial-regulations" /> Financial Regulations Compliance</label>
+                        <label><input type="checkbox" name="regulatory" value="trra-compliance" /> TRRA (Tanzania Revenue) Compliance</label>
+                        <label><input type="checkbox" name="regulatory" value="audit-readiness" /> Audit Readiness Preparation</label>
+                        <label><input type="checkbox" name="regulatory" value="internal-controls" /> Internal Controls Implementation</label>
+                        <label><input type="checkbox" name="regulatory" value="policy-compliance" /> Company Financial Policy Compliance</label>
+                        <label><input type="checkbox" name="regulatory" value="documentation" /> Regulatory Documentation Maintenance</label>
+                        <label><input type="checkbox" name="regulatory" value="reporting-deadlines" /> Regulatory Reporting Deadlines</label>
                     </div>
                 </div>
                 
@@ -77029,7 +76641,7 @@ function showAccountantForm() {
                         </div>
                         <div class="form-group">
                             <label>Years of Experience</label>
-                            <input type="number" id="yearsExperience" placeholder="e.g., 3" min="0" max="50">
+                            <input type="number" id="yearsExperience" placeholder="e.g., 3" min="0" max="50" />
                         </div>
                     </div>
                     <div class="form-group">
@@ -77042,12 +76654,12 @@ function showAccountantForm() {
                 <div class="form-section">
                     <h5>ðŸ” System Access & Permissions</h5>
                     <div class="checkbox-group">
-                        <label><input type="checkbox" name="systemAccess" value="accounting-software"> Accounting Software Access</label>
-                        <label><input type="checkbox" name="systemAccess" value="banking-portal"> Online Banking Portal</label>
-                        <label><input type="checkbox" name="systemAccess" value="tax-portal"> Tax Authority Portal</label>
-                        <label><input type="checkbox" name="systemAccess" value="payroll-system"> Payroll System Access</label>
-                        <label><input type="checkbox" name="systemAccess" value="reporting-tools"> Financial Reporting Tools</label>
-                        <label><input type="checkbox" name="systemAccess" value="document-management"> Document Management System</label>
+                        <label><input type="checkbox" name="systemAccess" value="accounting-software" /> Accounting Software Access</label>
+                        <label><input type="checkbox" name="systemAccess" value="banking-portal" /> Online Banking Portal</label>
+                        <label><input type="checkbox" name="systemAccess" value="tax-portal" /> Tax Authority Portal</label>
+                        <label><input type="checkbox" name="systemAccess" value="payroll-system" /> Payroll System Access</label>
+                        <label><input type="checkbox" name="systemAccess" value="reporting-tools" /> Financial Reporting Tools</label>
+                        <label><input type="checkbox" name="systemAccess" value="document-management" /> Document Management System</label>
                     </div>
                 </div>
                 
@@ -77340,7 +76952,7 @@ async function loadAccountantRecords() {
             statusTd.style.padding = '8px';
             const statusValue = (record.status || 'unknown');
             const statusSpan = document.createElement('span');
-            statusSpan.className = `status-badge status-${String(statusValue).toLowerCase().replace(/\s+/g, '-')}`;
+            statusSpan.className = `status-badge status-${String(statusValue).toLowerCase().replace(/s+/g, '-')}`;
             statusSpan.textContent = String(statusValue);
             statusTd.appendChild(statusSpan);
             tr.appendChild(statusTd);
@@ -77465,7 +77077,7 @@ async function submitAccountantForm(event) {
         console.log('âœ… Accountant details saved successfully:', result);
         
         if (result.success) {
-            customAlert(`Accountant details saved successfully!\n\nName: ${accountantData.name}\nEmployee ID: ${accountantData.employeeId}\nDepartment: ${accountantData.department}\nReporting To: ${accountantData.reportingTo}\nFinancial Reporting Tasks: ${accountantData.financialReporting.length}\nBookkeeping Tasks: ${accountantData.bookkeeping.length}\nRegulatory Tasks: ${accountantData.regulatory.length}`, "Accountant Created", "success");
+            customAlert(`Accountant details saved successfully!nnName: ${accountantData.name}nEmployee ID: ${accountantData.employeeId}nDepartment: ${accountantData.department}nReporting To: ${accountantData.reportingTo}nFinancial Reporting Tasks: ${accountantData.financialReporting.length}nBookkeeping Tasks: ${accountantData.bookkeeping.length}nRegulatory Tasks: ${accountantData.regulatory.length}`, "Accountant Created", "success");
             
             // Reset form and return to dashboard
             document.getElementById('accountantForm').reset();
@@ -77513,18 +77125,18 @@ function showLeadershipForm() {
                 <div class="form-row">
                     <div class="form-group">
                         <label>Leadership Position *</label>
-                        <input type="text" id="leadershipPosition" placeholder="e.g., Chief Executive Officer" required>
+                        <input type="text" id="leadershipPosition" placeholder="e.g., Chief Executive Officer" required />
                     </div>
                     <div class="form-group">
                         <label>Department/Division *</label>
-                        <input type="text" id="leadershipDepartment" placeholder="e.g., Executive Office" required>
+                        <input type="text" id="leadershipDepartment" placeholder="e.g., Executive Office" required />
                     </div>
                 </div>
                 
                 <div class="form-row">
                     <div class="form-group">
                         <label>Current Holder *</label>
-                        <input type="text" id="currentHolder" placeholder="e.g., John Smith" required>
+                        <input type="text" id="currentHolder" placeholder="e.g., John Smith" required />
                     </div>
                     <div class="form-group">
                         <label>Reports To *</label>
@@ -77555,7 +77167,7 @@ function showLeadershipForm() {
                     </div>
                     <div class="form-group">
                         <label>Appointment Date *</label>
-                        <input type="date" id="appointmentDate" required>
+                        <input type="date" id="appointmentDate" required />
                     </div>
                 </div>
                 
@@ -77563,16 +77175,16 @@ function showLeadershipForm() {
                 <div class="form-section">
                     <h5>ðŸŽ¯ Leadership Responsibilities</h5>
                     <div class="checkbox-group">
-                        <label><input type="checkbox" name="leadershipResponsibilities" value="strategic-planning"> Strategic Planning & Vision Setting</label>
-                        <label><input type="checkbox" name="leadershipResponsibilities" value="team-management"> Team Management & Development</label>
-                        <label><input type="checkbox" name="leadershipResponsibilities" value="financial-oversight"> Financial Oversight & Budget Management</label>
-                        <label><input type="checkbox" name="leadershipResponsibilities" value="stakeholder-relations"> Stakeholder Relations</label>
-                        <label><input type="checkbox" name="leadershipResponsibilities" value="risk-management"> Risk Management & Compliance</label>
-                        <label><input type="checkbox" name="leadershipResponsibilities" value="innovation"> Innovation & Technology Strategy</label>
-                        <label><input type="checkbox" name="leadershipResponsibilities" value="operational-excellence"> Operational Excellence</label>
-                        <label><input type="checkbox" name="leadershipResponsibilities" value="talent-development"> Talent Development & Succession</label>
-                        <label><input type="checkbox" name="leadershipResponsibilities" value="corporate-governance"> Corporate Governance</label>
-                        <label><input type="checkbox" name="leadershipResponsibilities" value="market-development"> Market Development & Growth</label>
+                        <label><input type="checkbox" name="leadershipResponsibilities" value="strategic-planning" /> Strategic Planning & Vision Setting</label>
+                        <label><input type="checkbox" name="leadershipResponsibilities" value="team-management" /> Team Management & Development</label>
+                        <label><input type="checkbox" name="leadershipResponsibilities" value="financial-oversight" /> Financial Oversight & Budget Management</label>
+                        <label><input type="checkbox" name="leadershipResponsibilities" value="stakeholder-relations" /> Stakeholder Relations</label>
+                        <label><input type="checkbox" name="leadershipResponsibilities" value="risk-management" /> Risk Management & Compliance</label>
+                        <label><input type="checkbox" name="leadershipResponsibilities" value="innovation" /> Innovation & Technology Strategy</label>
+                        <label><input type="checkbox" name="leadershipResponsibilities" value="operational-excellence" /> Operational Excellence</label>
+                        <label><input type="checkbox" name="leadershipResponsibilities" value="talent-development" /> Talent Development & Succession</label>
+                        <label><input type="checkbox" name="leadershipResponsibilities" value="corporate-governance" /> Corporate Governance</label>
+                        <label><input type="checkbox" name="leadershipResponsibilities" value="market-development" /> Market Development & Growth</label>
                     </div>
                 </div>
                 
@@ -77669,7 +77281,7 @@ function showLeadershipForm() {
                         </div>
                         <div class="form-group">
                             <label>Last Review Date</label>
-                            <input type="date" id="lastReviewDate">
+                            <input type="date" id="lastReviewDate" />
                         </div>
                     </div>
                 </div>
@@ -77831,7 +77443,7 @@ function showMissionVisionForm() {
                         </div>
                         <div class="form-group">
                             <label>Last Reviewed</label>
-                            <input type="date" id="missionLastReviewed">
+                            <input type="date" id="missionLastReviewed" />
                         </div>
                     </div>
                 </div>
@@ -77857,7 +77469,7 @@ function showMissionVisionForm() {
                         </div>
                         <div class="form-group">
                             <label>Last Reviewed</label>
-                            <input type="date" id="visionLastReviewed">
+                            <input type="date" id="visionLastReviewed" />
                         </div>
                     </div>
                 </div>
@@ -77866,16 +77478,16 @@ function showMissionVisionForm() {
                 <div class="form-section">
                     <h5>ðŸ’Ž Core Values</h5>
                     <div class="checkbox-group">
-                        <label><input type="checkbox" name="coreValues" value="integrity"> Integrity</label>
-                        <label><input type="checkbox" name="coreValues" value="excellence"> Excellence</label>
-                        <label><input type="checkbox" name="coreValues" value="innovation"> Innovation</label>
-                        <label><input type="checkbox" name="coreValues" value="teamwork"> Teamwork</label>
-                        <label><input type="checkbox" name="coreValues" value="customer-focus"> Customer Focus</label>
-                        <label><input type="checkbox" name="coreValues" value="accountability"> Accountability</label>
-                        <label><input type="checkbox" name="coreValues" value="sustainability"> Sustainability</label>
-                        <label><input type="checkbox" name="coreValues" value="respect"> Respect</label>
-                        <label><input type="checkbox" name="coreValues" value="transparency"> Transparency</label>
-                        <label><input type="checkbox" name="coreValues" value="adaptability"> Adaptability</label>
+                        <label><input type="checkbox" name="coreValues" value="integrity" /> Integrity</label>
+                        <label><input type="checkbox" name="coreValues" value="excellence" /> Excellence</label>
+                        <label><input type="checkbox" name="coreValues" value="innovation" /> Innovation</label>
+                        <label><input type="checkbox" name="coreValues" value="teamwork" /> Teamwork</label>
+                        <label><input type="checkbox" name="coreValues" value="customer-focus" /> Customer Focus</label>
+                        <label><input type="checkbox" name="coreValues" value="accountability" /> Accountability</label>
+                        <label><input type="checkbox" name="coreValues" value="sustainability" /> Sustainability</label>
+                        <label><input type="checkbox" name="coreValues" value="respect" /> Respect</label>
+                        <label><input type="checkbox" name="coreValues" value="transparency" /> Transparency</label>
+                        <label><input type="checkbox" name="coreValues" value="adaptability" /> Adaptability</label>
                     </div>
                     <div class="form-group">
                         <label>Additional Core Values</label>
@@ -77900,14 +77512,14 @@ function showMissionVisionForm() {
                 <div class="form-section">
                     <h5>ðŸ‘¥ Stakeholder Focus</h5>
                     <div class="checkbox-group">
-                        <label><input type="checkbox" name="stakeholderFocus" value="customers"> Customers</label>
-                        <label><input type="checkbox" name="stakeholderFocus" value="employees"> Employees</label>
-                        <label><input type="checkbox" name="stakeholderFocus" value="shareholders"> Shareholders</label>
-                        <label><input type="checkbox" name="stakeholderFocus" value="partners"> Business Partners</label>
-                        <label><input type="checkbox" name="stakeholderFocus" value="community"> Community</label>
-                        <label><input type="checkbox" name="stakeholderFocus" value="environment"> Environment</label>
-                        <label><input type="checkbox" name="stakeholderFocus" value="suppliers"> Suppliers</label>
-                        <label><input type="checkbox" name="stakeholderFocus" value="government"> Government</label>
+                        <label><input type="checkbox" name="stakeholderFocus" value="customers" /> Customers</label>
+                        <label><input type="checkbox" name="stakeholderFocus" value="employees" /> Employees</label>
+                        <label><input type="checkbox" name="stakeholderFocus" value="shareholders" /> Shareholders</label>
+                        <label><input type="checkbox" name="stakeholderFocus" value="partners" /> Business Partners</label>
+                        <label><input type="checkbox" name="stakeholderFocus" value="community" /> Community</label>
+                        <label><input type="checkbox" name="stakeholderFocus" value="environment" /> Environment</label>
+                        <label><input type="checkbox" name="stakeholderFocus" value="suppliers" /> Suppliers</label>
+                        <label><input type="checkbox" name="stakeholderFocus" value="government" /> Government</label>
                     </div>
                 </div>
                 
@@ -77935,7 +77547,7 @@ function showMissionVisionForm() {
                         </div>
                         <div class="form-group">
                             <label>Next Review Date</label>
-                            <input type="date" id="nextReviewDate">
+                            <input type="date" id="nextReviewDate" />
                         </div>
                     </div>
                 </div>
@@ -78086,7 +77698,7 @@ function showLongTermGrowthForm() {
                 <div class="form-row">
                     <div class="form-group">
                         <label>Strategy Name *</label>
-                        <input type="text" id="strategyName" placeholder="e.g., Digital Transformation Strategy 2025-2030" required>
+                        <input type="text" id="strategyName" placeholder="e.g., Digital Transformation Strategy 2025-2030" required />
                     </div>
                     <div class="form-group">
                         <label>Strategy Type *</label>
@@ -78107,11 +77719,11 @@ function showLongTermGrowthForm() {
                 <div class="form-row">
                     <div class="form-group">
                         <label>Start Date *</label>
-                        <input type="date" id="strategyStartDate" required>
+                        <input type="date" id="strategyStartDate" required />
                     </div>
                     <div class="form-group">
                         <label>Target Completion Date *</label>
-                        <input type="date" id="targetCompletionDate" required>
+                        <input type="date" id="targetCompletionDate" required />
                     </div>
                 </div>
                 
@@ -78129,11 +77741,11 @@ function showLongTermGrowthForm() {
                     <div class="form-row">
                         <div class="form-group">
                             <label>Revenue Growth Target (%)</label>
-                            <input type="number" id="revenueGrowthTarget" placeholder="e.g., 25" min="0" max="500">
+                            <input type="number" id="revenueGrowthTarget" placeholder="e.g., 25" min="0" max="500" />
                         </div>
                         <div class="form-group">
                             <label>Market Share Target (%)</label>
-                            <input type="number" id="marketShareTarget" placeholder="e.g., 15" min="0" max="100">
+                            <input type="number" id="marketShareTarget" placeholder="e.g., 15" min="0" max="100" />
                         </div>
                     </div>
                 </div>
@@ -78159,16 +77771,16 @@ function showLongTermGrowthForm() {
                 <div class="form-section">
                     <h5>ðŸš€ Strategic Initiatives</h5>
                     <div class="checkbox-group">
-                        <label><input type="checkbox" name="strategicInitiatives" value="technology-investment"> Technology Investment</label>
-                        <label><input type="checkbox" name="strategicInitiatives" value="talent-acquisition"> Talent Acquisition & Development</label>
-                        <label><input type="checkbox" name="strategicInitiatives" value="process-optimization"> Process Optimization</label>
-                        <label><input type="checkbox" name="strategicInitiatives" value="customer-experience"> Customer Experience Enhancement</label>
-                        <label><input type="checkbox" name="strategicInitiatives" value="product-innovation"> Product Innovation</label>
-                        <label><input type="checkbox" name="strategicInitiatives" value="strategic-acquisitions"> Strategic Acquisitions</label>
-                        <label><input type="checkbox" name="strategicInitiatives" value="partnership-development"> Partnership Development</label>
-                        <label><input type="checkbox" name="strategicInitiatives" value="brand-enhancement"> Brand Enhancement</label>
-                        <label><input type="checkbox" name="strategicInitiatives" value="international-expansion"> International Expansion</label>
-                        <label><input type="checkbox" name="strategicInitiatives" value="sustainability-initiatives"> Sustainability Initiatives</label>
+                        <label><input type="checkbox" name="strategicInitiatives" value="technology-investment" /> Technology Investment</label>
+                        <label><input type="checkbox" name="strategicInitiatives" value="talent-acquisition" /> Talent Acquisition & Development</label>
+                        <label><input type="checkbox" name="strategicInitiatives" value="process-optimization" /> Process Optimization</label>
+                        <label><input type="checkbox" name="strategicInitiatives" value="customer-experience" /> Customer Experience Enhancement</label>
+                        <label><input type="checkbox" name="strategicInitiatives" value="product-innovation" /> Product Innovation</label>
+                        <label><input type="checkbox" name="strategicInitiatives" value="strategic-acquisitions" /> Strategic Acquisitions</label>
+                        <label><input type="checkbox" name="strategicInitiatives" value="partnership-development" /> Partnership Development</label>
+                        <label><input type="checkbox" name="strategicInitiatives" value="brand-enhancement" /> Brand Enhancement</label>
+                        <label><input type="checkbox" name="strategicInitiatives" value="international-expansion" /> International Expansion</label>
+                        <label><input type="checkbox" name="strategicInitiatives" value="sustainability-initiatives" /> Sustainability Initiatives</label>
                     </div>
                 </div>
                 
@@ -78178,11 +77790,11 @@ function showLongTermGrowthForm() {
                     <div class="form-row">
                         <div class="form-group">
                             <label>Estimated Budget (TZS)</label>
-                            <input type="number" id="estimatedBudget" placeholder="e.g., 500000000" min="0">
+                            <input type="number" id="estimatedBudget" placeholder="e.g., 500000000" min="0" />
                         </div>
                         <div class="form-group">
                             <label>Required Team Size</label>
-                            <input type="number" id="requiredTeamSize" placeholder="e.g., 25" min="1">
+                            <input type="number" id="requiredTeamSize" placeholder="e.g., 25" min="1" />
                         </div>
                     </div>
                     <div class="form-group">
@@ -78266,7 +77878,7 @@ function showLongTermGrowthForm() {
                         </div>
                         <div class="form-group">
                             <label>First Review Date</label>
-                            <input type="date" id="firstReviewDate">
+                            <input type="date" id="firstReviewDate" />
                         </div>
                     </div>
                 </div>
@@ -78500,7 +78112,7 @@ async function submitLeadershipForm(event) {
         console.log('âœ… Leadership data saved successfully:', result);
         
         if (result.success) {
-            customAlert(`Leadership details saved successfully!\n\nPosition: ${leadershipData.position}\nCurrent Holder: ${leadershipData.currentHolder}\nDepartment: ${leadershipData.department}\nLeadership Level: ${leadershipData.leadershipLevel}`, "Leadership Created", "success");
+            customAlert(`Leadership details saved successfully!nnPosition: ${leadershipData.position}nCurrent Holder: ${leadershipData.currentHolder}nDepartment: ${leadershipData.department}nLeadership Level: ${leadershipData.leadershipLevel}`, "Leadership Created", "success");
             
             // Reset form and return to dashboard
             document.getElementById('leadershipForm').reset();
@@ -78630,7 +78242,7 @@ async function submitMissionVisionForm(event) {
         console.log('âœ… Mission & Vision data saved successfully:', result);
         
         if (result.success) {
-            customAlert(`Mission & Vision saved successfully!\n\nMission Category: ${missionVisionData.missionCategory}\nVision Timeframe: ${missionVisionData.visionTimeframe}`, "Mission & Vision Created", "success");
+            customAlert(`Mission & Vision saved successfully!nnMission Category: ${missionVisionData.missionCategory}nVision Timeframe: ${missionVisionData.visionTimeframe}`, "Mission & Vision Created", "success");
             
             // Reset form and return to dashboard
             document.getElementById('missionVisionForm').reset();
@@ -78751,7 +78363,7 @@ async function submitLongTermGrowthForm(event) {
                 return [];
             }
             return String(value)
-                .split(/\r?\n|,/)
+                .split(/r?n|,/)
                 .map(s => s.trim())
                 .filter(Boolean);
         };
@@ -78838,7 +78450,7 @@ async function submitLongTermGrowthForm(event) {
         const result = await response.json();
         console.log('âœ… Growth strategy saved successfully:', result);
         
-        customAlert(`Growth strategy saved successfully!\n\nStrategy: ${growthData.strategyName}\nType: ${growthData.strategyType}\nDuration: ${growthData.startDate} to ${growthData.targetCompletionDate}\nRevenue Target: ${growthData.objectives.revenueGrowthTarget}%`, "Growth Strategy Created", "success");
+        customAlert(`Growth strategy saved successfully!nnStrategy: ${growthData.strategyName}nType: ${growthData.strategyType}nDuration: ${growthData.startDate} to ${growthData.targetCompletionDate}nRevenue Target: ${growthData.objectives.revenueGrowthTarget}%`, "Growth Strategy Created", "success");
         
         // Reset form and close only after successful submission
         document.getElementById('longTermGrowthForm').reset();
@@ -78901,22 +78513,22 @@ function showPaymentManagement() {
                     <div class="form-row">
                         <div class="form-group">
                             <label for="employeeName">Employee Name *</label>
-                            <input type="text" id="employeeName" readonly required placeholder="Auto-filled from employee selection">
+                            <input type="text" id="employeeName" readonly required placeholder="Auto-filled from employee selection" />
                         </div>
                         <div class="form-group">
                             <label for="employeeEmail">Employee Email *</label>
-                            <input type="email" id="employeeEmail" readonly required placeholder="Auto-filled from employee selection">
+                            <input type="email" id="employeeEmail" readonly required placeholder="Auto-filled from employee selection" />
                         </div>
                         <div class="form-group">
                             <label for="employeePhone">Phone Number *</label>
-                            <input type="tel" id="employeePhone" readonly required placeholder="Auto-filled from employee selection">
+                            <input type="tel" id="employeePhone" readonly required placeholder="Auto-filled from employee selection" />
                         </div>
                     </div>
 
                     <div class="form-row">
                         <div class="form-group">
                             <label for="amount">Amount *</label>
-                            <input type="number" id="amount" step="0.01" min="0" required placeholder="Enter amount" oninput="calculateEquivalent()">
+                            <input type="number" id="amount" step="0.01" min="0" required placeholder="Enter amount" oninput="calculateEquivalent()" />
                         </div>
                         <div class="form-group">
                             <label for="currency">Currency *</label>
@@ -78927,7 +78539,7 @@ function showPaymentManagement() {
                         </div>
                         <div class="form-group">
                             <label for="equivalentAmount">Equivalent (TZS)</label>
-                            <input type="text" id="equivalentAmount" readonly placeholder="Auto-calculated">
+                            <input type="text" id="equivalentAmount" readonly placeholder="Auto-calculated" />
                         </div>
                     </div>
 
@@ -78952,22 +78564,22 @@ function showPaymentManagement() {
                         </div>
                         <div class="form-group">
                             <label for="expectedPaymentDate">Expected Payment Date</label>
-                            <input type="date" id="expectedPaymentDate">
+                            <input type="date" id="expectedPaymentDate" />
                         </div>
                     </div>
 
                     <div class="form-row">
                         <div class="form-group">
                             <label for="department">Department</label>
-                            <input type="text" id="department" readonly placeholder="Auto-filled from employee selection">
+                            <input type="text" id="department" readonly placeholder="Auto-filled from employee selection" />
                         </div>
                         <div class="form-group">
                             <label for="projectCode">Project Code</label>
-                            <input type="text" id="projectCode" placeholder="Optional project code">
+                            <input type="text" id="projectCode" placeholder="Optional project code" />
                         </div>
                         <div class="form-group">
                             <label for="workOrderNumber">Work Order Number</label>
-                            <input type="text" id="workOrderNumber" placeholder="Optional work order number">
+                            <input type="text" id="workOrderNumber" placeholder="Optional work order number" />
                         </div>
                     </div>
 
@@ -79010,7 +78622,7 @@ function showPaymentManagement() {
                         <option value="TZS">TZS</option>
                         <option value="USD">USD</option>
                     </select>
-                    <input type="text" id="searchPayment" placeholder="Search payments..." oninput="filterPaymentRequests()">
+                    <input type="text" id="searchPayment" placeholder="Search payments..." oninput="filterPaymentRequests()" />
                 </div>
                 <div id="paymentRequestsList">
                     <p>Loading payment requests...</p>
@@ -79145,7 +78757,7 @@ async function submitPaymentRequest(event) {
         }
         
         if (result.success) {
-            customAlert(`Payment request created successfully!\n\nTracking Number: ${result.data.trackingNumber}\nAmount: ${result.data.currency} ${result.data.amount}\nStatus: ${result.data.status}`, "Payment Request Created", "success");
+            customAlert(`Payment request created successfully!nnTracking Number: ${result.data.trackingNumber}nAmount: ${result.data.currency} ${result.data.amount}nStatus: ${result.data.status}`, "Payment Request Created", "success");
             resetPaymentForm();
             loadPaymentRequests();
         } else {
@@ -79566,7 +79178,7 @@ async function showMaterialsInventory() {
         <div class="card">
             <h3>Materials Inventory</h3>
             <div style="margin-bottom:15px;display:flex;gap:10px;flex-wrap:wrap;">
-                <input type="text" id="inventorySearch" placeholder="Search materials..." onkeyup="filterMaterialsInventory()" style="padding:8px;border:1px solid #ddd;border-radius:4px;flex:1;min-width:200px;">
+                <input type="text" id="inventorySearch" placeholder="Search materials..." onkeyup="filterMaterialsInventory()" style="padding:8px;border:1px solid #ddd;border-radius:4px;flex:1;min-width:200px;" />
                 <select id="categoryFilter" onchange="filterMaterialsInventory()" style="padding:8px;border:1px solid #ddd;border-radius:4px;">
                     <option value="">All Categories</option>
                     <option>Cement</option><option>Sand</option><option>Gravel</option><option>Steel/Rebar</option>
@@ -79627,15 +79239,15 @@ function showMaterialsInForm(preselectedMaterialId, preselectedMaterialName) {
                         </div>
                         <div class="form-group">
                             <label for="minTrackNumber">Track / Delivery Note No *</label>
-                            <input type="text" id="minTrackNumber" name="track_number" placeholder="e.g. DN-2026-001" required>
+                            <input type="text" id="minTrackNumber" name="track_number" placeholder="e.g. DN-2026-001" required />
                         </div>
                         <div class="form-group">
                             <label for="minReceiptDate">Receipt Date *</label>
-                            <input type="date" id="minReceiptDate" name="receipt_date" value="${today}" required>
+                            <input type="date" id="minReceiptDate" name="receipt_date" value="${today}" required />
                         </div>
                         <div class="form-group">
                             <label for="minQuantity">Quantity Received *</label>
-                            <input type="number" id="minQuantity" name="quantity_received" step="0.01" min="0.01" required>
+                            <input type="number" id="minQuantity" name="quantity_received" step="0.01" min="0.01" required />
                         </div>
                         <div class="form-group">
                             <label for="minUnitMeasure">Unit of Measure</label>
@@ -79643,31 +79255,31 @@ function showMaterialsInForm(preselectedMaterialId, preselectedMaterialName) {
                         </div>
                         <div class="form-group">
                             <label for="minUnitPrice">Unit Price (TZS) *</label>
-                            <input type="number" id="minUnitPrice" name="unit_price" step="0.01" min="0" required>
+                            <input type="number" id="minUnitPrice" name="unit_price" step="0.01" min="0" required />
                         </div>
                         <div class="form-group">
                             <label for="minTransportCost">Transport Cost (TZS)</label>
-                            <input type="number" id="minTransportCost" name="transport_cost" step="0.01" min="0" value="0">
+                            <input type="number" id="minTransportCost" name="transport_cost" step="0.01" min="0" value="0" />
                         </div>
                         <div class="form-group">
                             <label for="minSupplierName">Supplier Name *</label>
-                            <input type="text" id="minSupplierName" name="supplier_name" required>
+                            <input type="text" id="minSupplierName" name="supplier_name" required />
                         </div>
                         <div class="form-group">
                             <label for="minSupplierContact">Supplier Contact</label>
-                            <input type="text" id="minSupplierContact" name="supplier_contact" placeholder="Phone or email">
+                            <input type="text" id="minSupplierContact" name="supplier_contact" placeholder="Phone or email" />
                         </div>
                         <div class="form-group">
                             <label for="minInvoiceNumber">Invoice Number</label>
-                            <input type="text" id="minInvoiceNumber" name="invoice_number">
+                            <input type="text" id="minInvoiceNumber" name="invoice_number" />
                         </div>
                         <div class="form-group">
                             <label for="minPurchaseOrder">Purchase Order Number</label>
-                            <input type="text" id="minPurchaseOrder" name="purchase_order_number">
+                            <input type="text" id="minPurchaseOrder" name="purchase_order_number" />
                         </div>
                         <div class="form-group">
                             <label for="minDeliveryNote">Delivery Note Number</label>
-                            <input type="text" id="minDeliveryNote" name="delivery_note_number">
+                            <input type="text" id="minDeliveryNote" name="delivery_note_number" />
                         </div>
                         <div class="form-group">
                             <label for="minDeliveryCondition">Delivery Condition</label>
@@ -79683,19 +79295,19 @@ function showMaterialsInForm(preselectedMaterialId, preselectedMaterialName) {
                         </div>
                         <div class="form-group">
                             <label for="minReceivedBy">Received By *</label>
-                            <input type="text" id="minReceivedBy" name="received_by" required>
+                            <input type="text" id="minReceivedBy" name="received_by" required />
                         </div>
                         <div class="form-group">
                             <label for="minReceivedByRole">Receiver Role</label>
-                            <input type="text" id="minReceivedByRole" name="received_by_role" value="Store Keeper">
+                            <input type="text" id="minReceivedByRole" name="received_by_role" value="Store Keeper" />
                         </div>
                         <div class="form-group">
                             <label for="minWarehouseLocation">Warehouse Location</label>
-                            <input type="text" id="minWarehouseLocation" name="warehouse_location" placeholder="e.g. Warehouse A - Section 1">
+                            <input type="text" id="minWarehouseLocation" name="warehouse_location" placeholder="e.g. Warehouse A - Section 1" />
                         </div>
                         <div class="form-group">
                             <label for="minProjectName">Project Name</label>
-                            <input type="text" id="minProjectName" name="project_name" placeholder="Project this material is for">
+                            <input type="text" id="minProjectName" name="project_name" placeholder="Project this material is for" />
                         </div>
                     </div>
                     <div class="form-group" style="margin-top:10px;">
@@ -79800,15 +79412,15 @@ function showMaterialsOutForm(preselectedMaterialId, preselectedMaterialName) {
                         </div>
                         <div class="form-group">
                             <label for="moutTrackNumber">Track / Issue Number *</label>
-                            <input type="text" id="moutTrackNumber" name="track_number" placeholder="e.g. MOUT-2026-001" required>
+                            <input type="text" id="moutTrackNumber" name="track_number" placeholder="e.g. MOUT-2026-001" required />
                         </div>
                         <div class="form-group">
                             <label for="moutIssueDate">Issue Date *</label>
-                            <input type="date" id="moutIssueDate" name="issue_date" value="${today}" required>
+                            <input type="date" id="moutIssueDate" name="issue_date" value="${today}" required />
                         </div>
                         <div class="form-group">
                             <label for="moutQuantity">Quantity Out *</label>
-                            <input type="number" id="moutQuantity" name="quantity_out" step="0.01" min="0.01" required>
+                            <input type="number" id="moutQuantity" name="quantity_out" step="0.01" min="0.01" required />
                         </div>
                         <div class="form-group">
                             <label for="moutUnitMeasure">Unit of Measure</label>
@@ -79816,7 +79428,7 @@ function showMaterialsOutForm(preselectedMaterialId, preselectedMaterialName) {
                         </div>
                         <div class="form-group">
                             <label for="moutUnitPrice">Unit Price (TZS)</label>
-                            <input type="number" id="moutUnitPrice" name="unit_price" step="0.01" min="0" value="0">
+                            <input type="number" id="moutUnitPrice" name="unit_price" step="0.01" min="0" value="0" />
                         </div>
                         <div class="form-group">
                             <label for="moutIssueType">Issue Type</label>
@@ -79826,11 +79438,11 @@ function showMaterialsOutForm(preselectedMaterialId, preselectedMaterialName) {
                         </div>
                         <div class="form-group">
                             <label for="moutIssuedTo">Issued To *</label>
-                            <input type="text" id="moutIssuedTo" name="issued_to" placeholder="Person or company name" required>
+                            <input type="text" id="moutIssuedTo" name="issued_to" placeholder="Person or company name" required />
                         </div>
                         <div class="form-group">
                             <label for="moutIssuedToRole">Issued To Role</label>
-                            <input type="text" id="moutIssuedToRole" name="issued_to_role" placeholder="e.g. Site Engineer">
+                            <input type="text" id="moutIssuedToRole" name="issued_to_role" placeholder="e.g. Site Engineer" />
                         </div>
                         <div class="form-group">
                             <label for="moutIssuedToDepartment">Department</label>
@@ -79840,19 +79452,19 @@ function showMaterialsOutForm(preselectedMaterialId, preselectedMaterialName) {
                         </div>
                         <div class="form-group">
                             <label for="moutProjectName">Project Name</label>
-                            <input type="text" id="moutProjectName" name="project_name">
+                            <input type="text" id="moutProjectName" name="project_name" />
                         </div>
                         <div class="form-group">
                             <label for="moutDestination">Destination</label>
-                            <input type="text" id="moutDestination" name="destination" placeholder="Site address or location">
+                            <input type="text" id="moutDestination" name="destination" placeholder="Site address or location" />
                         </div>
                         <div class="form-group">
                             <label for="moutAuthorizedBy">Authorized By *</label>
-                            <input type="text" id="moutAuthorizedBy" name="authorized_by" required>
+                            <input type="text" id="moutAuthorizedBy" name="authorized_by" required />
                         </div>
                         <div class="form-group">
                             <label for="moutAuthorizedByRole">Authorizer Role</label>
-                            <input type="text" id="moutAuthorizedByRole" name="authorized_by_role" value="Project Manager">
+                            <input type="text" id="moutAuthorizedByRole" name="authorized_by_role" value="Project Manager" />
                         </div>
                         <div class="form-group">
                             <label for="moutDeliveryMethod">Delivery Method</label>
@@ -79862,7 +79474,7 @@ function showMaterialsOutForm(preselectedMaterialId, preselectedMaterialName) {
                         </div>
                         <div class="form-group">
                             <label for="moutDeliveryReceipt">Delivery Receipt Number</label>
-                            <input type="text" id="moutDeliveryReceipt" name="delivery_receipt_number">
+                            <input type="text" id="moutDeliveryReceipt" name="delivery_receipt_number" />
                         </div>
                         <div class="form-group">
                             <label for="moutCondition">Condition on Issue</label>
@@ -79878,7 +79490,7 @@ function showMaterialsOutForm(preselectedMaterialId, preselectedMaterialName) {
                         </div>
                         <div class="form-group">
                             <label for="moutExpectedReturnDate">Expected Return Date</label>
-                            <input type="date" id="moutExpectedReturnDate" name="expected_return_date">
+                            <input type="date" id="moutExpectedReturnDate" name="expected_return_date" />
                         </div>
                     </div>
                     <div class="form-group" style="margin-top:10px;">
@@ -80036,7 +79648,3 @@ async function showMaterialsOutRecords() {
         </div>
     `);
 }
-
-
-
-

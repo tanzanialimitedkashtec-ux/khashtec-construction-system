@@ -94,10 +94,11 @@ router.get('/', async (req, res) => {
             );
             
             // Handle different database response formats
-            if (Array.isArray(empResult)) {
-                employees = empResult;
-            } else if (empResult && Array.isArray(empResult[0])) {
+            // mysql2 returns [rows, fields], so check nested array first
+            if (Array.isArray(empResult) && Array.isArray(empResult[0])) {
                 employees = empResult[0];
+            } else if (Array.isArray(empResult)) {
+                employees = empResult;
             } else if (empResult && empResult.rows) {
                 employees = empResult.rows;
             } else {
@@ -127,10 +128,11 @@ router.get('/', async (req, res) => {
                 const simpleResult = await db.execute('SELECT * FROM employees ORDER BY hire_date DESC');
                 
                 // Handle different database response formats
-                if (Array.isArray(simpleResult)) {
-                    employees = simpleResult;
-                } else if (simpleResult && Array.isArray(simpleResult[0])) {
+                // mysql2 returns [rows, fields], so check nested array first
+                if (Array.isArray(simpleResult) && Array.isArray(simpleResult[0])) {
                     employees = simpleResult[0];
+                } else if (Array.isArray(simpleResult)) {
+                    employees = simpleResult;
                 } else if (simpleResult && simpleResult.rows) {
                     employees = simpleResult.rows;
                 } else {
@@ -279,7 +281,18 @@ router.get('/', async (req, res) => {
 });
 
 // Create new employee
-router.post('/', upload.any(), async (req, res) => {
+router.post('/', (req, res, next) => {
+    upload.any()(req, res, (err) => {
+        if (err) {
+            console.error('❌ File upload error:', err.message);
+            return res.status(400).json({ 
+                error: 'File upload failed', 
+                details: err.message 
+            });
+        }
+        next();
+    });
+}, async (req, res) => {
     console.log('🔍 POST /api/employees endpoint called');
     console.log('📋 Request method:', req.method);
     console.log('📋 Request URL:', req.url);
@@ -405,6 +418,15 @@ router.post('/', upload.any(), async (req, res) => {
             let profileImagePath = '';
             let profileImageBuffer = null;
             let profileImageMime = null;
+            
+            let cvPath = '';
+            let cvBuffer = null;
+            let cvMime = null;
+            
+            let agreementPath = '';
+            let agreementBuffer = null;
+            let agreementMime = null;
+
             if (req.files && req.files.length > 0) {
                 const profileFile = req.files.find(f => f.fieldname === 'profileImage');
                 if (profileFile) {
@@ -419,15 +441,37 @@ router.post('/', upload.any(), async (req, res) => {
                         ? `/api/profile-image/${employeeDbId}`
                         : `/uploads/${profileFile.filename}`;
                 }
+                
+                const cvFile = req.files.find(f => f.fieldname === 'empCV');
+                if (cvFile) {
+                    cvMime = cvFile.mimetype || 'application/pdf';
+                    try {
+                        cvBuffer = fs.readFileSync(cvFile.path);
+                    } catch (readErr) {
+                        console.warn('⚠️ Could not read uploaded CV for BLOB storage:', readErr.message);
+                    }
+                    cvPath = cvBuffer ? `/api/employee-file/${employeeDbId}/cv` : `/uploads/${cvFile.filename}`;
+                }
+                
+                const agreementFile = req.files.find(f => f.fieldname === 'empAgreement');
+                if (agreementFile) {
+                    agreementMime = agreementFile.mimetype || 'application/pdf';
+                    try {
+                        agreementBuffer = fs.readFileSync(agreementFile.path);
+                    } catch (readErr) {
+                        console.warn('⚠️ Could not read uploaded Agreement for BLOB storage:', readErr.message);
+                    }
+                    agreementPath = agreementBuffer ? `/api/employee-file/${employeeDbId}/agreement` : `/uploads/${agreementFile.filename}`;
+                }
             }
             
             // Create employee details (try with BLOB columns; gracefully fall back if missing)
             let detailsResult;
             try {
                 detailsResult = await db.execute(
-                    `INSERT INTO employee_details (employee_id, full_name, gmail, phone, nida, passport, contract_type, profile_image, profile_image_data, profile_image_mime)
-                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-                    [employeeDbId, fullName, gmail, phone, nida, passport || '', contract, profileImagePath, profileImageBuffer, profileImageMime]
+                    `INSERT INTO employee_details (employee_id, full_name, gmail, phone, nida, passport, contract_type, profile_image, profile_image_data, profile_image_mime, cv_path, cv_data, cv_mime, agreement_path, agreement_data, agreement_mime)
+                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+                    [employeeDbId, fullName, gmail, phone, nida, passport || '', contract, profileImagePath, profileImageBuffer, profileImageMime, cvPath, cvBuffer, cvMime, agreementPath, agreementBuffer, agreementMime]
                 );
             } catch (blobErr) {
                 console.warn('⚠️ BLOB insert failed, retrying without BLOB columns:', blobErr.message);
@@ -523,6 +567,26 @@ router.post('/reactivate', async (req, res) => {
             return res.status(404).json({ error: 'Employee not found' });
         }
         
+        const employee = employees[0];
+        const currentStatus = (employee.status || '').toLowerCase();
+        
+        // Only allow reactivation of suspended employees, not terminated
+        if (currentStatus === 'terminated') {
+            return res.status(403).json({ 
+                error: 'Cannot reactivate terminated employee',
+                message: 'Terminated employees cannot be reactivated. They can only be viewed in the employment actions history.',
+                status: currentStatus
+            });
+        }
+        
+        if (currentStatus !== 'suspended' && currentStatus !== 'demoted') {
+            return res.status(400).json({ 
+                error: 'Employee is not suspended',
+                message: `Employee status is currently "${currentStatus}", only suspended or demoted employees can be reactivated.`,
+                status: currentStatus
+            });
+        }
+        
         await db.execute(
             'UPDATE employees SET status = ? WHERE id = ?',
             ['Active', employeeId]
@@ -546,7 +610,8 @@ router.post('/reactivate', async (req, res) => {
         res.json({
             message: 'Employee reactivated successfully',
             employeeId: employeeId,
-            status: 'Active'
+            status: 'Active',
+            previousStatus: currentStatus
         });
         
     } catch (error) {
@@ -1149,6 +1214,92 @@ router.post('/action', async (req, res) => {
         res.status(500).json({ 
             error: 'Failed to execute employee action',
             details: error.message 
+        });
+    }
+});
+
+// Get all employment actions (terminated/suspended employees)
+router.get('/actions/list', async (req, res) => {
+    console.log('🔍 GET /api/employees/actions/list endpoint called');
+    
+    try {
+        // Create worker_action table if it doesn't exist
+        try {
+            await db.execute(`
+                CREATE TABLE IF NOT EXISTS worker_action (
+                    id INT AUTO_INCREMENT PRIMARY KEY,
+                    employee_id INT NOT NULL,
+                    action_type ENUM('suspend', 'terminate', 'demote') NOT NULL,
+                    action_date DATE NOT NULL,
+                    reason_category ENUM('misconduct', 'performance', 'violation', 'redundancy', 'restructuring', 'other') NOT NULL,
+                    action_details TEXT NOT NULL,
+                    suspension_days INT NULL,
+                    final_payment_date DATE NULL,
+                    md_notes TEXT NULL,
+                    decided_by VARCHAR(255) NOT NULL,
+                    decided_date DATE NOT NULL,
+                    status ENUM('pending', 'executed', 'cancelled') DEFAULT 'executed',
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    INDEX idx_employee_id (employee_id),
+                    INDEX idx_action_type (action_type),
+                    INDEX idx_status (status)
+                )
+            `);
+        } catch (tableError) {
+            console.log('📝 Worker action table check:', tableError.message);
+        }
+        
+        // Fetch all actions with employee details
+        let actions;
+        const actionsResult = await db.execute(`
+            SELECT 
+                wa.id,
+                wa.employee_id,
+                wa.action_type,
+                wa.action_date,
+                wa.reason_category,
+                wa.action_details,
+                wa.suspension_days,
+                wa.final_payment_date,
+                wa.md_notes,
+                wa.decided_by,
+                wa.decided_date,
+                wa.status,
+                wa.created_at,
+                ed.full_name,
+                e.position,
+                e.department
+            FROM worker_action wa
+            LEFT JOIN employee_details ed ON wa.employee_id = ed.employee_id
+            LEFT JOIN employees e ON wa.employee_id = e.id
+            ORDER BY wa.created_at DESC
+        `);
+        
+        // Handle different database response formats
+        if (Array.isArray(actionsResult)) {
+            actions = actionsResult;
+        } else if (actionsResult && Array.isArray(actionsResult[0])) {
+            actions = actionsResult[0];
+        } else if (actionsResult && actionsResult.rows) {
+            actions = actionsResult.rows;
+        } else {
+            actions = [];
+        }
+        
+        console.log('📊 Found', actions.length, 'employment actions');
+        
+        res.json({
+            success: true,
+            data: actions,
+            total: actions.length,
+            message: 'Employment actions retrieved successfully'
+        });
+        
+    } catch (error) {
+        console.error('❌ Error fetching employment actions:', error);
+        res.status(500).json({
+            error: 'Failed to fetch employment actions',
+            details: error.message
         });
     }
 });

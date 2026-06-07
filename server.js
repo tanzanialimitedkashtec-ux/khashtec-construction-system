@@ -177,7 +177,7 @@ app.use(helmet({
 // Rate limiting — general API
 const limiter = rateLimit({
     windowMs: 15 * 60 * 1000, // 15 minutes
-    max: 100, // limit each IP to 100 requests per windowMs
+    max: 2000, // Increased from 100 to 2000 to prevent 429 errors during normal heavy usage
     message: 'Too many requests from this IP, please try again later.',
     trustProxy: true,
     standardHeaders: true,
@@ -355,26 +355,28 @@ function sendDefaultAvatar(res, seed = '') {
 app.get('/api/profile-image/:employeeId', async (req, res) => {
     try {
         const db = require('./database/config/database');
-        const [rows] = await db.execute(
+        const dbResult = await db.execute(
             'SELECT profile_image, profile_image_data, profile_image_mime FROM employee_details WHERE employee_id = ? LIMIT 1',
             [req.params.employeeId]
         );
+        const rows = Array.isArray(dbResult) ? (Array.isArray(dbResult[0]) ? dbResult[0] : dbResult) : (dbResult.rows || []);
+        
         if (rows && rows.length > 0) {
             const row = rows[0];
             // 1) BLOB in DB
             if (row.profile_image_data) {
                 res.set('Content-Type', row.profile_image_mime || 'image/jpeg');
-                res.set('Cache-Control', 'public, max-age=86400');
-                return res.end(row.profile_image_data);
+                res.set('Cache-Control', 'public, max-age=300');
+                return res.send(Buffer.from(row.profile_image_data));
             }
             // 2) On-disk file referenced by profile_image
-            if (row.profile_image && typeof row.profile_image === 'string') {
+            if (row.profile_image && typeof row.profile_image === 'string' && !row.profile_image.startsWith('/api/')) {
                 const raw = row.profile_image.replace(/\\/g, '/');
                 const idx = raw.toLowerCase().lastIndexOf('uploads/');
                 const rel = idx !== -1 ? raw.slice(idx) : raw.replace(/^\/+/, '');
                 const filePath = path.join(__dirname, rel);
                 if (fs.existsSync(filePath)) {
-                    res.set('Cache-Control', 'public, max-age=86400');
+                    res.set('Cache-Control', 'public, max-age=300');
                     return res.sendFile(filePath);
                 }
             }
@@ -388,6 +390,53 @@ app.get('/api/profile-image/:employeeId', async (req, res) => {
 
 // Also catch direct requests to the (non-existent) default avatar file
 app.get('/assets/images/default-avatar.png', (req, res) => sendDefaultAvatar(res, 'default'));
+
+app.get('/api/employee-file/:employeeId/:fileType', async (req, res) => {
+    try {
+        const { fileType, employeeId } = req.params;
+        const db = require('./database/config/database');
+        
+        let pathCol, dataCol, mimeCol;
+        if (fileType === 'cv') {
+            pathCol = 'cv_path'; dataCol = 'cv_data'; mimeCol = 'cv_mime';
+        } else if (fileType === 'agreement') {
+            pathCol = 'agreement_path'; dataCol = 'agreement_data'; mimeCol = 'agreement_mime';
+        } else {
+            return res.status(400).send('Invalid file type');
+        }
+
+        const dbResult = await db.execute(
+            `SELECT ${pathCol}, ${dataCol}, ${mimeCol} FROM employee_details WHERE employee_id = ? LIMIT 1`,
+            [employeeId]
+        );
+        const rows = Array.isArray(dbResult) ? (Array.isArray(dbResult[0]) ? dbResult[0] : dbResult) : (dbResult.rows || []);
+        
+        if (rows && rows.length > 0) {
+            const row = rows[0];
+            // 1) BLOB in DB
+            if (row[dataCol]) {
+                res.set('Content-Type', row[mimeCol] || 'application/pdf');
+                res.set('Cache-Control', 'public, max-age=86400');
+                return res.send(Buffer.from(row[dataCol]));
+            }
+            // 2) On-disk file
+            if (row[pathCol] && typeof row[pathCol] === 'string') {
+                const raw = row[pathCol].replace(/\\/g, '/');
+                const idx = raw.toLowerCase().lastIndexOf('uploads/');
+                const rel = idx !== -1 ? raw.slice(idx) : raw.replace(/^\/+/, '');
+                const filePath = path.join(__dirname, rel);
+                if (fs.existsSync(filePath)) {
+                    res.set('Cache-Control', 'public, max-age=86400');
+                    return res.sendFile(filePath);
+                }
+            }
+        }
+        return res.status(404).send('File not found');
+    } catch (err) {
+        console.error('Employee file serve error:', err.message);
+        return res.status(500).send('Server error');
+    }
+});
 
 
 
@@ -1271,6 +1320,111 @@ app.post('/api/test', (req, res) => {
         headers: req.headers
 
     });
+
+});
+
+
+
+// Violations API endpoints
+
+app.get('/api/violations', async (req, res) => {
+
+    try {
+
+        const db = require('./database/config/database');
+
+        let query = 'SELECT * FROM violations ORDER BY date DESC';
+
+        const violations = await db.execute(query);
+
+        res.status(200).json({ success: true, violations });
+
+    } catch (error) {
+
+        console.error('Error fetching violations:', error);
+
+        res.status(500).json({ success: false, message: 'Failed to fetch violations' });
+
+    }
+
+});
+
+
+
+app.post('/api/violations', async (req, res) => {
+
+    try {
+
+        const db = require('./database/config/database');
+
+        const { violation_id, date, project, type, severity, violators, location, description, immediate_action, corrective_action, action_deadline, reported_by } = req.body;
+
+        const query = `INSERT INTO violations (violation_id, date, project, type, severity, violators, location, description, immediate_action, corrective_action, action_deadline, status, reported_by) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending', ?)`;
+
+        await db.execute(query, [violation_id, date, project, type, severity, violators, location, description, immediate_action, corrective_action, action_deadline, reported_by]);
+
+        res.status(201).json({ success: true, message: 'Violation created' });
+
+    } catch (error) {
+
+        console.error('Error creating violation:', error);
+
+        res.status(500).json({ success: false, message: 'Failed to create violation' });
+
+    }
+
+});
+
+
+
+app.put('/api/violations/:id/status', async (req, res) => {
+
+    try {
+
+        const db = require('./database/config/database');
+
+        const { id } = req.params;
+
+        const { status } = req.body;
+
+        let query = 'UPDATE violations SET status = ? WHERE violation_id = ?';
+
+        let result = await db.execute(query, [status, id]);
+
+        if (result.affectedRows === 0) {
+            // Check if it's an HSE work item (e.g. 'VIO-176')
+            let numericId = null;
+            if (id.startsWith('VIO-') && !id.startsWith('VIO-SITE-') && !id.startsWith('VIO-2026-')) {
+                numericId = id.replace('VIO-', '');
+            } else if (!isNaN(id)) {
+                numericId = id;
+            }
+            
+            if (numericId && !isNaN(numericId)) {
+                // Map status for hse_work
+                let hseStatus = status;
+                if (status === 'resolved') hseStatus = 'Completed';
+                else if (status === 'rejected') hseStatus = 'Rejected';
+                else if (status === 'pending') hseStatus = 'Pending';
+                
+                const hseQuery = "UPDATE hse_work SET status = ? WHERE id = ?";
+                result = await db.execute(hseQuery, [hseStatus, numericId]);
+            }
+            
+            if (result.affectedRows === 0) {
+                return res.status(404).json({ success: false, message: 'Violation not found' });
+            }
+        }
+
+        res.status(200).json({ success: true, message: 'Status updated' });
+
+    } catch (error) {
+
+        console.error('Error updating violation status:', error);
+
+        res.status(500).json({ success: false, message: 'Failed to update violation' });
+
+    }
 
 });
 
@@ -5289,6 +5443,22 @@ async function createEmployeeDetailsTable() {
               contract_type VARCHAR(100),
 
               profile_image VARCHAR(255),
+
+              profile_image_data LONGBLOB,
+
+              profile_image_mime VARCHAR(100),
+
+              cv_path VARCHAR(255),
+
+              cv_data LONGBLOB,
+
+              cv_mime VARCHAR(100),
+
+              agreement_path VARCHAR(255),
+
+              agreement_data LONGBLOB,
+
+              agreement_mime VARCHAR(100),
 
               created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 

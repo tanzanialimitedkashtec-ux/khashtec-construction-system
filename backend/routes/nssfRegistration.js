@@ -2,37 +2,6 @@ const express = require('express');
 const router = express.Router();
 const db = require('../../database/config/database');
 
-const sampleRegistrations = [
-    {
-        id: 1,
-        registration_number: 'NSSF-000001',
-        employee_id: 1,
-        employee_name: 'Employee 1',
-        nssf_number: 'NSSF-123456',
-        registration_date: '2026-05-01',
-        employer_contribution_rate: 10.00,
-        employee_contribution_rate: 10.00,
-        monthly_salary: 1500000,
-        monthly_contribution: 150000,
-        status: 'Active',
-        full_name: 'Employee 1'
-    },
-    {
-        id: 2,
-        registration_number: 'NSSF-000002',
-        employee_id: 2,
-        employee_name: 'Employee 2',
-        nssf_number: 'NSSF-654321',
-        registration_date: '2026-05-05',
-        employer_contribution_rate: 10.00,
-        employee_contribution_rate: 10.00,
-        monthly_salary: 1800000,
-        monthly_contribution: 180000,
-        status: 'Active',
-        full_name: 'Employee 2'
-    }
-];
-
 // Get all NSSF registrations
 router.get('/', async (req, res) => {
     try {
@@ -45,14 +14,10 @@ router.get('/', async (req, res) => {
         `);
         const registrations = Array.isArray(result) ? result : [];
 
-        if (registrations.length === 0) {
-            return res.json(sampleRegistrations);
-        }
-
         return res.json(registrations);
     } catch (error) {
         console.error('Error fetching NSSF registrations:', error);
-        return res.json(sampleRegistrations);
+        return res.status(500).json({ error: 'Failed to fetch NSSF registrations' });
     }
 });
 
@@ -73,11 +38,6 @@ router.get('/:id', async (req, res) => {
         res.json(registration[0]);
     } catch (error) {
         console.error('Error fetching NSSF registration:', error);
-        const fallback = sampleRegistrations.find(item => String(item.id) === String(req.params.id));
-        if (fallback) {
-            return res.json(fallback);
-        }
-
         return res.status(500).json({ error: 'Failed to fetch NSSF registration' });
     }
 });

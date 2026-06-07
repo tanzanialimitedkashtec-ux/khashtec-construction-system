@@ -171,6 +171,51 @@ class Database {
                 }
                 
                 const [rows] = await this.pool.execute(query, params);
+
+                // Intercept notification inserts to send an email via Resend
+                if (typeof query === 'string' && query.trim().toUpperCase().startsWith('INSERT INTO NOTIFICATIONS')) {
+                    try {
+                        const https = require('https');
+                        // title is usually params[0], message is usually params[1]
+                        const title = (params && params.length > 0) ? params[0] : 'System Notification';
+                        const message = (params && params.length > 1) ? params[1] : 'You have a new notification.';
+
+                        const data = JSON.stringify({
+                            from: 'Kashtec Notification <onboarding@resend.dev>',
+                            to: 'tanzanialimitedkashtec@gmail.com',
+                            subject: 'New System Notification: ' + title,
+                            html: `<div style="font-family: Arial, sans-serif; padding: 20px; color: #333;">
+                                     <h2 style="color: #2196F3;">New Notification</h2>
+                                     <p><strong>Title:</strong> ${title}</p>
+                                     <p><strong>Message:</strong></p>
+                                     <p style="background: #f5f5f5; padding: 15px; border-radius: 5px; border-left: 4px solid #2196F3;">${message}</p>
+                                     <br>
+                                     <p style="font-size: 12px; color: #777;">This is an automated system notification from KASHTEC Construction System.</p>
+                                   </div>`
+                        });
+
+                        const req = https.request({
+                            hostname: 'api.resend.com',
+                            port: 443,
+                            path: '/emails',
+                            method: 'POST',
+                            headers: {
+                                'Authorization': 'Bearer re_anoc42tU_MXy9ePaVpP8uHZvauksrB7Ad',
+                                'Content-Type': 'application/json',
+                                'Content-Length': Buffer.byteLength(data)
+                            }
+                        }, (res) => {
+                            res.on('data', () => {}); // Consume data
+                        });
+
+                        req.on('error', (e) => console.error('Error sending Resend email:', e.message));
+                        req.write(data);
+                        req.end();
+                    } catch (emailErr) {
+                        console.error('Failed to process notification email:', emailErr.message);
+                    }
+                }
+
                 return rows;
             } catch (error) {
                 // Handle connection-specific errors

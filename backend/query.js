@@ -1,0 +1,1 @@
+const db = require('./database/config/database'); db.query('SELECT project, COUNT(*) as count FROM hse_work WHERE work_type = \'Incident Reporting\' GROUP BY project').then(r => console.log(r)).catch(e => console.error(e)); setTimeout(() => process.exit(0), 1000);

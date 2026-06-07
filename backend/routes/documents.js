@@ -267,8 +267,139 @@ router.get('/', async (req, res) => {
                 console.error('❌ Error fetching from admin_work table:', adminError);
             }
             
-            // Combine both sources
-            documents = [...realDocuments, ...adminWorkDocuments];
+            // Fetch employee agreements and CVs from employee_details
+            let employeeDocuments = [];
+            try {
+                const empItems = await db.execute(`
+                    SELECT employee_id, full_name, contract_type, created_at, 
+                           cv_data IS NOT NULL as has_cv, cv_mime,
+                           agreement_data IS NOT NULL as has_agreement, agreement_mime 
+                    FROM employee_details 
+                    WHERE cv_data IS NOT NULL OR agreement_data IS NOT NULL
+                `);
+                
+                let empArray = [];
+                if (Array.isArray(empItems)) {
+                    empArray = empItems;
+                } else if (empItems && Array.isArray(empItems[0])) {
+                    empArray = empItems[0];
+                } else if (empItems && empItems.rows) {
+                    empArray = empItems.rows;
+                }
+                
+                empArray.forEach(item => {
+                    if (item.has_agreement) {
+                        employeeDocuments.push({
+                            id: `emp_agr_${item.employee_id}`,
+                            title: `Employment Contract - ${item.full_name}`,
+                            name: `Employment Contract - ${item.full_name}`,
+                            description: `Employment agreement/contract for ${item.full_name} (${item.contract_type || 'Employee'})`,
+                            category: 'Contract',
+                            type: item.agreement_mime === 'application/pdf' ? 'PDF' : 'Image',
+                            uploadedBy: 1,
+                            uploadedByName: 'System',
+                            uploadedDate: item.created_at,
+                            status: 'active',
+                            fileName: `agreement_${item.employee_id}`,
+                            filePath: `/api/employee-file/${item.employee_id}/agreement`,
+                            fileSize: 0,
+                            expiry_date: null,
+                            source: 'employee_details'
+                        });
+                    }
+                    if (item.has_cv) {
+                        employeeDocuments.push({
+                            id: `emp_cv_${item.employee_id}`,
+                            title: `CV - ${item.full_name}`,
+                            name: `CV - ${item.full_name}`,
+                            description: `Curriculum Vitae for ${item.full_name}`,
+                            category: 'Other',
+                            type: item.cv_mime === 'application/pdf' ? 'PDF' : 'Image',
+                            uploadedBy: 1,
+                            uploadedByName: 'System',
+                            uploadedDate: item.created_at,
+                            status: 'active',
+                            fileName: `cv_${item.employee_id}`,
+                            filePath: `/api/employee-file/${item.employee_id}/cv`,
+                            fileSize: 0,
+                            expiry_date: null,
+                            source: 'employee_details'
+                        });
+                    }
+                });
+                
+                console.log('✅ Documents fetched from employee_details:', employeeDocuments.length);
+            } catch (empError) {
+                console.error('❌ Error fetching from employee_details table:', empError);
+            }
+            
+            // Fetch from worker_accounts
+            let workerDocuments = [];
+            try {
+                const workerItems = await db.execute(`
+                    SELECT id, full_name, created_at,
+                           id_document, contract_document
+                    FROM worker_accounts 
+                    WHERE id_document IS NOT NULL OR contract_document IS NOT NULL
+                `);
+                
+                let workerArray = [];
+                if (Array.isArray(workerItems)) {
+                    workerArray = workerItems;
+                } else if (workerItems && Array.isArray(workerItems[0])) {
+                    workerArray = workerItems[0];
+                } else if (workerItems && workerItems.rows) {
+                    workerArray = workerItems.rows;
+                }
+                
+                workerArray.forEach(item => {
+                    if (item.contract_document) {
+                        workerDocuments.push({
+                            id: `work_cont_${item.id}`,
+                            title: `Contract - ${item.full_name}`,
+                            name: `Contract - ${item.full_name}`,
+                            description: `Worker contract for ${item.full_name}`,
+                            category: 'Contract',
+                            type: item.contract_document.toLowerCase().endsWith('.pdf') ? 'PDF' : 'Other',
+                            uploadedBy: 1,
+                            uploadedByName: 'System',
+                            uploadedDate: item.created_at,
+                            status: 'active',
+                            fileName: item.contract_document.split('/').pop() || `contract_${item.id}`,
+                            filePath: item.contract_document,
+                            fileSize: 0,
+                            expiry_date: null,
+                            source: 'worker_accounts'
+                        });
+                    }
+                    if (item.id_document) {
+                        workerDocuments.push({
+                            id: `work_id_${item.id}`,
+                            title: `ID - ${item.full_name}`,
+                            name: `ID - ${item.full_name}`,
+                            description: `ID document for ${item.full_name}`,
+                            category: 'Identification',
+                            type: item.id_document.toLowerCase().endsWith('.pdf') ? 'PDF' : 'Image',
+                            uploadedBy: 1,
+                            uploadedByName: 'System',
+                            uploadedDate: item.created_at,
+                            status: 'active',
+                            fileName: item.id_document.split('/').pop() || `id_${item.id}`,
+                            filePath: item.id_document,
+                            fileSize: 0,
+                            expiry_date: null,
+                            source: 'worker_accounts'
+                        });
+                    }
+                });
+                
+                console.log('✅ Documents fetched from worker_accounts:', workerDocuments.length);
+            } catch (workerError) {
+                console.error('❌ Error fetching from worker_accounts table:', workerError);
+            }
+            
+            // Combine all sources
+            documents = [...realDocuments, ...adminWorkDocuments, ...employeeDocuments, ...workerDocuments];
             
             // Sort by date (newest first)
             documents.sort((a, b) => new Date(b.uploadedDate) - new Date(a.uploadedDate));
@@ -361,6 +492,110 @@ router.get('/:id', async (req, res) => {
     const docId = req.params.id;
     try {
         const db = require('../../database/config/database');
+
+        // Handle special employee documents
+        if (typeof docId === 'string' && (docId.startsWith('emp_agr_') || docId.startsWith('emp_cv_'))) {
+            const isCV = docId.startsWith('emp_cv_');
+            const empIdStr = docId.replace('emp_agr_', '').replace('emp_cv_', '');
+            const empId = parseInt(empIdStr, 10);
+            
+            if (!isNaN(empId)) {
+                try {
+                    const empRows = await db.execute(
+                        'SELECT employee_id, full_name, contract_type, created_at, cv_mime, agreement_mime FROM employee_details WHERE employee_id = ?', [empId]
+                    );
+                    if (Array.isArray(empRows) && empRows.length > 0) {
+                        const item = empRows[0];
+                        if (isCV) {
+                            return res.json({
+                                id: `emp_cv_${item.employee_id}`,
+                                title: `CV - ${item.full_name}`,
+                                description: `Curriculum Vitae for ${item.full_name}`,
+                                category: 'Other',
+                                type: item.cv_mime === 'application/pdf' ? 'PDF' : 'Image',
+                                uploadedBy: 1,
+                                uploadedDate: item.created_at ? new Date(item.created_at).toISOString().split('T')[0] : null,
+                                status: 'active',
+                                fileName: `cv_${item.employee_id}`,
+                                filePath: `/api/employee-file/${item.employee_id}/cv`,
+                                size: 0,
+                                department: 'admin',
+                                source: 'employee_details'
+                            });
+                        } else {
+                            return res.json({
+                                id: `emp_agr_${item.employee_id}`,
+                                title: `Employment Contract - ${item.full_name}`,
+                                description: `Employment agreement/contract for ${item.full_name} (${item.contract_type || 'Employee'})`,
+                                category: 'Contract',
+                                type: item.agreement_mime === 'application/pdf' ? 'PDF' : 'Image',
+                                uploadedBy: 1,
+                                uploadedDate: item.created_at ? new Date(item.created_at).toISOString().split('T')[0] : null,
+                                status: 'active',
+                                fileName: `agreement_${item.employee_id}`,
+                                filePath: `/api/employee-file/${item.employee_id}/agreement`,
+                                size: 0,
+                                department: 'admin',
+                                source: 'employee_details'
+                            });
+                        }
+                    }
+                } catch (empErr) {
+                    console.warn('⚠️ employee_details lookup failed:', empErr.message);
+                }
+            }
+        } else if (docId.startsWith('work_')) {
+            const isIdDoc = docId.startsWith('work_id_');
+            const isContDoc = docId.startsWith('work_cont_');
+            const workerIdStr = isIdDoc ? docId.replace('work_id_', '') : docId.replace('work_cont_', '');
+            const workerId = parseInt(workerIdStr, 10);
+            
+            if (!isNaN(workerId)) {
+                try {
+                    const workerRows = await db.execute(
+                        'SELECT id, full_name, created_at, id_document, contract_document FROM worker_accounts WHERE id = ?', [workerId]
+                    );
+                    if (Array.isArray(workerRows) && workerRows.length > 0) {
+                        const item = workerRows[0];
+                        if (isIdDoc && item.id_document) {
+                            return res.json({
+                                id: `work_id_${item.id}`,
+                                title: `ID - ${item.full_name}`,
+                                description: `ID document for ${item.full_name}`,
+                                category: 'Identification',
+                                type: item.id_document.toLowerCase().endsWith('.pdf') ? 'PDF' : 'Image',
+                                uploadedBy: 1,
+                                uploadedDate: item.created_at ? new Date(item.created_at).toISOString().split('T')[0] : null,
+                                status: 'active',
+                                fileName: item.id_document.split('/').pop() || `id_${item.id}`,
+                                filePath: item.id_document,
+                                size: 0,
+                                department: 'admin',
+                                source: 'worker_accounts'
+                            });
+                        } else if (isContDoc && item.contract_document) {
+                            return res.json({
+                                id: `work_cont_${item.id}`,
+                                title: `Contract - ${item.full_name}`,
+                                description: `Worker contract for ${item.full_name}`,
+                                category: 'Contract',
+                                type: item.contract_document.toLowerCase().endsWith('.pdf') ? 'PDF' : 'Other',
+                                uploadedBy: 1,
+                                uploadedDate: item.created_at ? new Date(item.created_at).toISOString().split('T')[0] : null,
+                                status: 'active',
+                                fileName: item.contract_document.split('/').pop() || `contract_${item.id}`,
+                                filePath: item.contract_document,
+                                size: 0,
+                                department: 'admin',
+                                source: 'worker_accounts'
+                            });
+                        }
+                    }
+                } catch (workErr) {
+                    console.warn('⚠️ worker_accounts lookup failed:', workErr.message);
+                }
+            }
+        }
 
         // 1) Try the `documents` table first (this is where the upload endpoint
         //    stores the record and returns its insertId to the frontend).
@@ -455,24 +690,25 @@ router.post('/test-upload', (req, res) => {
 });
 
 // Upload new document endpoint (matches frontend call to /api/documents/upload)
-router.post('/upload', async (req, res) => {
+router.post('/upload', upload.single('document'), async (req, res) => {
     try {
         console.log('📤 Certificate upload request received');
         console.log('📋 Request body:', req.body);
-        console.log('🔍 Request method:', req.method);
-        console.log('🔍 Request URL:', req.url);
-        console.log('🔍 Content-Type:', req.get('Content-Type'));
+        console.log('📁 Request file:', req.file);
         
         const {
             type,
             name,
-            filename,
-            file_size,
-            mime_type,
             expiry_date,
             description,
             uploaded_by
         } = req.body;
+        
+        // Use req.file details if a file was uploaded, otherwise fallback
+        const filename = req.file ? req.file.filename : (req.body.filename || `${type}_certificate.pdf`);
+        const file_size = req.file ? req.file.size : (req.body.file_size || 0);
+        const mime_type = req.file ? req.file.mimetype : (req.body.mime_type || 'application/pdf');
+        const filePath = req.file ? `/uploads/documents/${req.file.filename}` : null;
         
         // Validate required fields
         if (!type) {
@@ -488,7 +724,7 @@ router.post('/upload', async (req, res) => {
         }
         
         console.log('🔍 Extracted certificate data:', {
-            type, name, filename, file_size, mime_type, expiry_date, description, uploaded_by
+            type, name, filename, file_size, mime_type, expiry_date, description, uploaded_by, filePath
         });
         
         try {
@@ -558,19 +794,21 @@ router.post('/upload', async (req, res) => {
                     title,
                     description,
                     file_name,
+                    file_path,
                     file_size,
                     file_type,
                     category,
                     uploaded_by,
                     status,
                     expiry_date
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, 'Pending', ?)
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'Pending', ?)
             `;
             
             const documentsValues = [
                 name,
                 description || `${type} certificate uploaded via form`,
                 filename || `${type}_certificate.pdf`,
+                filePath,
                 file_size || 0,
                 mime_type || 'application/pdf',
                 category,
@@ -922,29 +1160,65 @@ router.delete('/:id', async (req, res) => {
     try {
         const docId = req.params.id;
         console.log(`🗑️ Delete request for document ID: ${docId}`);
-        
+
         // Try database first
         const db = require('../../database/config/database');
-        
-        // Delete from admin_work table
-        const [result] = await db.execute(
+
+        // Run delete and normalize result because different DB libs return
+        // different shapes (mysql2 returns [result, fields], some wrappers
+        // may return result directly).
+        const execResult = await db.execute(
             'DELETE FROM admin_work WHERE id = ?', [docId]
         );
-        
-        if (result.affectedRows === 0) {
+
+        // Determine affectedRows in a robust way
+        let affectedRows;
+        if (Array.isArray(execResult)) {
+            // Common pattern: [result, fields]
+            const first = execResult[0];
+            if (first && typeof first === 'object' && ('affectedRows' in first)) {
+                affectedRows = first.affectedRows;
+            }
+        } else if (execResult && typeof execResult === 'object' && ('affectedRows' in execResult)) {
+            affectedRows = execResult.affectedRows;
+        }
+
+        // Fallback: if we couldn't read affectedRows, check if the record still exists
+        if (typeof affectedRows !== 'number') {
+            try {
+                const check = await db.execute('SELECT id FROM admin_work WHERE id = ?', [docId]);
+                let rows = Array.isArray(check) && Array.isArray(check[0]) ? check[0] : check;
+                if (rows && rows.length > 0) {
+                    // Record still exists and delete did not report affectedRows
+                    console.error('❌ Delete returned unexpected result and document still exists:', execResult);
+                    return res.status(500).json({
+                        error: 'Failed to delete document',
+                        details: 'Delete returned unexpected result and document still exists'
+                    });
+                } else {
+                    // No rows => treat as deleted
+                    affectedRows = 1;
+                }
+            } catch (chkErr) {
+                console.error('❌ Error verifying deletion:', chkErr);
+                return res.status(500).json({ error: 'Failed to delete document', details: chkErr.message });
+            }
+        }
+
+        if (affectedRows === 0) {
             return res.status(404).json({
                 error: 'Document not found',
                 details: `No document found with ID: ${docId}`
             });
         }
-        
+
         console.log(`✅ Document deleted from database: ${docId}`);
-        
+
         res.json({
             message: 'Document deleted successfully',
             documentId: docId
         });
-        
+
     } catch (error) {
         console.error('❌ Error deleting document:', error);
         res.status(500).json({ 
@@ -960,6 +1234,140 @@ router.get('/:id/download', async (req, res) => {
         const docId = req.params.id;
         console.log(`📄 Download request for document ID: ${docId}`);
         
+        // Handle employee document downloads (CV / Agreement from employee_details LONGBLOB)
+        if (typeof docId === 'string' && (docId.startsWith('emp_agr_') || docId.startsWith('emp_cv_'))) {
+            const isCV = docId.startsWith('emp_cv_');
+            const empId = parseInt(docId.replace('emp_agr_', '').replace('emp_cv_', ''), 10);
+            
+            if (!isNaN(empId) && db) {
+                const column = isCV ? 'cv_data' : 'agreement_data';
+                const mimeCol = isCV ? 'cv_mime' : 'agreement_mime';
+                const dbResult = await db.execute(
+                    `SELECT full_name, ${column}, ${mimeCol} FROM employee_details WHERE employee_id = ?`, [empId]
+                );
+                
+                let empRows = Array.isArray(dbResult) ? (Array.isArray(dbResult[0]) ? dbResult[0] : dbResult) : (dbResult && dbResult.rows ? dbResult.rows : []);
+                
+                if (empRows && empRows.length > 0 && empRows[0][column]) {
+                    const emp = empRows[0];
+                    const mime = emp[mimeCol] || 'application/octet-stream';
+                    const ext = mime === 'application/pdf' ? '.pdf' : mime.includes('png') ? '.png' : '.jpg';
+                    const label = isCV ? 'CV' : 'Agreement';
+                    const fileName = `${label}_${emp.full_name.replace(/[^a-zA-Z0-9]/g, '_')}${ext}`;
+                    
+                    res.set('Content-Type', mime);
+                    res.set('Content-Disposition', `attachment; filename="${fileName}"`);
+                    return res.send(Buffer.from(emp[column]));
+                }
+            }
+            
+            return res.status(404).json({ error: 'Employee document not found' });
+        }
+
+        // Handle worker account document downloads (ID / Contract from worker_accounts)
+        if (typeof docId === 'string' && (docId.startsWith('work_id_') || docId.startsWith('work_cont_'))) {
+            const isIdDoc = docId.startsWith('work_id_');
+            const workerId = parseInt(docId.replace('work_id_', '').replace('work_cont_', ''), 10);
+            
+            if (!isNaN(workerId) && db) {
+                const dataCol = isIdDoc ? 'id_document_data' : 'contract_document_data';
+                const mimeCol = isIdDoc ? 'id_document_mime' : 'contract_document_mime';
+                const pathCol = isIdDoc ? 'id_document' : 'contract_document';
+                
+                try {
+                    const dbResult = await db.execute(
+                        `SELECT full_name, ${pathCol}, ${dataCol}, ${mimeCol} FROM worker_accounts WHERE id = ?`, [workerId]
+                    );
+                    
+                    let workRows = Array.isArray(dbResult) ? (Array.isArray(dbResult[0]) ? dbResult[0] : dbResult) : (dbResult && dbResult.rows ? dbResult.rows : []);
+                    
+                    if (workRows && workRows.length > 0) {
+                        const worker = workRows[0];
+                        const label = isIdDoc ? 'ID' : 'Contract';
+                        
+                        // 1) Try BLOB data from database first (survives Railway redeploys)
+                        if (worker[dataCol]) {
+                            const mime = worker[mimeCol] || 'application/octet-stream';
+                            const ext = mime.includes('pdf') ? '.pdf' : mime.includes('doc') ? '.docx' : mime.includes('png') ? '.png' : mime.includes('jpeg') || mime.includes('jpg') ? '.jpg' : '';
+                            const fileName = `${label}_${(worker.full_name || 'worker').replace(/[^a-zA-Z0-9]/g, '_')}${ext}`;
+                            
+                            res.set('Content-Type', mime);
+                            res.set('Content-Disposition', `attachment; filename="${fileName}"`);
+                            return res.send(Buffer.from(worker[dataCol]));
+                        }
+                        
+                        // 2) Fallback: try filesystem (works during same deploy session)
+                        if (worker[pathCol]) {
+                            const filePath = worker[pathCol];
+                            const fileName = filePath.split('/').pop() || `worker_${label}_${workerId}`;
+                            const fsCheck = require('fs');
+                            const pathMod = require('path');
+                            const absolutePath = pathMod.resolve(__dirname, '../../', filePath.replace(/^\//, ''));
+                            
+                            if (fsCheck.existsSync(absolutePath)) {
+                                return res.download(absolutePath, fileName);
+                            }
+                        }
+                        
+                        return res.status(404).json({ error: `Worker ${label} document file data not found. The file may have been lost during a server restart. Please re-upload the document.` });
+                    }
+                } catch (blobErr) {
+                    console.error('❌ Error fetching worker document BLOB:', blobErr.message);
+                }
+            }
+            
+            return res.status(404).json({ error: 'Worker document not found in database.' });
+        }
+
+        // Try to fetch from documents table first
+        if (db && !isNaN(parseInt(docId, 10))) {
+            try {
+                const docRows = await db.execute(
+                    'SELECT * FROM documents WHERE id = ?', [docId]
+                );
+                const items = Array.isArray(docRows) ? (Array.isArray(docRows[0]) ? docRows[0] : docRows) : [];
+                
+                if (items.length > 0) {
+                    const doc = items[0];
+                    console.log(`✅ Found document in documents table: ${doc.title}`);
+                    
+                    // If we have a real file path, serve it
+                    if (doc.file_path) {
+                        const fs = require('fs');
+                        const path = require('path');
+                        const absolutePath = path.resolve(__dirname, '../../', doc.file_path.replace(/^\//, ''));
+                        
+                        if (fs.existsSync(absolutePath)) {
+                            return res.download(absolutePath, doc.file_name);
+                        } else {
+                            console.error('❌ Physical file not found at:', absolutePath);
+                            // Do NOT fallback to PDF generation if a file_path was specified but missing, 
+                            // because it means it was a real file upload that got lost.
+                            return res.status(404).json({ error: 'The physical file is missing from the server storage.' });
+                        }
+                    }
+                    
+                    // Otherwise, generate a PDF using metadata
+                    const mappedItem = {
+                        work_title: doc.title,
+                        work_description: doc.description,
+                        work_type: doc.category,
+                        department_code: 'admin',
+                        status: doc.status,
+                        submitted_date: doc.created_at ? new Date(doc.created_at).toISOString().split('T')[0] : new Date().toISOString().split('T')[0]
+                    };
+                    const pdfContent = generatePDF(mappedItem);
+                    const fileName = `${doc.title.replace(/[^a-zA-Z0-9\s]/g, '_').trim()}.pdf`;
+                    res.setHeader('Content-Type', 'application/pdf');
+                    res.setHeader('Content-Disposition', `attachment; filename="${fileName}"`);
+                    res.setHeader('Content-Length', Buffer.byteLength(pdfContent, 'utf8'));
+                    return res.send(pdfContent);
+                }
+            } catch (docError) {
+                console.error('❌ Database error querying documents table:', docError);
+            }
+        }
+
         let adminWorkItems;
         
         // Try to fetch from database if available

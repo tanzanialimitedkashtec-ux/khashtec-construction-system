@@ -140,17 +140,17 @@
             <button type="button" id="newDepartmentBtn" class="btn btn-primary">+ New Department</button>
             <button type="button" id="reloadDepartmentsBtn" class="btn btn-secondary">Reload</button>
           </div>
-          <div style="overflow:auto">
-            <table style="width:100%;border-collapse:collapse">
+          <div class="department-table-container">
+            <table class="department-table">
               <thead>
                 <tr>
-                  <th style="text-align:left;border-bottom:1px solid #2f4358;padding:8px">ID</th>
-                  <th style="text-align:left;border-bottom:1px solid #2f4358;padding:8px">Code</th>
-                  <th style="text-align:left;border-bottom:1px solid #2f4358;padding:8px">Name</th>
-                  <th style="text-align:left;border-bottom:1px solid #2f4358;padding:8px">Manager Email</th>
-                  <th style="text-align:left;border-bottom:1px solid #2f4358;padding:8px">Status</th>
-                  <th style="text-align:left;border-bottom:1px solid #2f4358;padding:8px">Created</th>
-                  <th style="text-align:left;border-bottom:1px solid #2f4358;padding:8px">Actions</th>
+                  <th>ID</th>
+                  <th>Code</th>
+                  <th>Name</th>
+                  <th>Manager Email</th>
+                  <th>Status</th>
+                  <th>Created</th>
+                  <th>Actions</th>
                 </tr>
               </thead>
               <tbody id="departmentsTableBody"></tbody>
@@ -221,5 +221,47 @@
   window.showDepartmentManagement = showDepartmentManagement;
   window.hideDepartmentForm = hideDepartmentForm;
   window.showDepartmentForm = showDepartmentForm;
+
+  // Global helper for luggage purchase deletion from department page buttons
+  window.deletePurchase_API = async function(purchaseId) {
+    if (!confirm(`Are you sure you want to delete purchase: ${purchaseId}?`)) return;
+
+    try {
+      if (window.KashTecAPI && typeof window.KashTecAPI.delete === 'function') {
+        const resp = await window.KashTecAPI.delete(`/luggage-purchases/${purchaseId}`);
+        if (resp && resp.success) {
+          alert(`Purchase ${purchaseId} deleted successfully!`);
+          if (typeof window.loadLuggagePurchases === 'function') {
+            await window.loadLuggagePurchases();
+          } else {
+            window.location.reload();
+          }
+          return;
+        }
+        throw new Error((resp && resp.message) || 'Failed to delete purchase');
+      }
+
+      const base = (window.KashTecAPI && window.KashTecAPI.baseUrl) ? window.KashTecAPI.baseUrl : '';
+      const url = `${base}/api/luggage-purchases/${purchaseId}`;
+      const response = await fetch(url, { method: 'DELETE', credentials: 'include' });
+      const json = await response.json().catch(() => null);
+
+      if (response.ok && json && json.success !== false) {
+        alert(`Purchase ${purchaseId} deleted successfully!`);
+        if (typeof window.loadLuggagePurchases === 'function') {
+          await window.loadLuggagePurchases();
+        } else {
+          window.location.reload();
+        }
+        return;
+      }
+
+      throw new Error((json && json.message) || `Delete failed (status ${response.status})`);
+    } catch (error) {
+      console.error('Error deleting purchase:', error);
+      alert(`Error deleting purchase: ${error.message || error}`);
+    }
+  };
+
   // Optional: if contentArea exists and a global flag set later, we could auto-run
 })();

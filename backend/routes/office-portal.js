@@ -123,87 +123,9 @@ router.get('/users', async (req, res) => {
         } catch (dbError) {
             console.error('❌ Database error, using fallback personnel:', dbError);
             
-            // Fallback to mock personnel
-            personnel = [
-                {
-                    id: 1,
-                    name: 'John Doe',
-                    email: 'john.doe@kashtec.com',
-                    phone: '+255 712 345 678',
-                    role: 'Employee',
-                    department: 'HR',
-                    position: 'HR Manager',
-                    salary: 2500000,
-                    hireDate: '2024-01-15',
-                    status: 'Active',
-                    nida: '1990010112345678',
-                    passport: 'PA1234567',
-                    profileImage: '/assets/images/john-doe.jpg',
-                    passportImage: '/uploads/passports/PA1234567.jpg',
-                    contractType: 'permanent',
-                    registrationDate: '2024-01-15',
-                    type: 'employee',
-                    accessLevel: 'standard',
-                    lastLogin: '2024-04-04',
-                    permissions: ['view_documents', 'view_policies', 'manage_personnel'],
-                    documents: ['Employee Handbook', 'Contract'],
-                    certifications: ['HR Certification'],
-                    trainingCompleted: ['Safety Training', 'Harassment Training'],
-                    mock: true
-                },
-                {
-                    id: 2,
-                    name: 'Jane Smith',
-                    email: 'jane.smith@kashtec.com',
-                    phone: '+255 712 345 679',
-                    role: 'Worker',
-                    department: 'Operations',
-                    position: 'Construction Worker',
-                    salary: 800000,
-                    hireDate: '2024-02-01',
-                    status: 'Active',
-                    nida: '1990020212345679',
-                    passport: 'PA1234568',
-                    profileImage: '/assets/images/jane-smith.jpg',
-                    passportImage: '/uploads/passports/PA1234568.jpg',
-                    contractType: 'temporary',
-                    registrationDate: '2024-02-01',
-                    type: 'worker',
-                    accessLevel: 'basic',
-                    lastLogin: '2024-04-04',
-                    permissions: ['view_documents', 'view_policies'],
-                    documents: ['Safety Manual'],
-                    certifications: ['Construction Safety'],
-                    trainingCompleted: ['Site Safety'],
-                    mock: true
-                },
-                {
-                    id: 3,
-                    name: 'Mike Johnson',
-                    email: 'mike.johnson@kashtec.com',
-                    phone: '+255 712 345 680',
-                    role: 'Employee',
-                    department: 'Finance',
-                    position: 'Finance Manager',
-                    salary: 3500000,
-                    hireDate: '2024-01-20',
-                    status: 'Active',
-                    nida: '1990030312345680',
-                    passport: 'PA1234569',
-                    profileImage: '/assets/images/mike-johnson.jpg',
-                    passportImage: '/uploads/passports/PA1234569.jpg',
-                    contractType: 'permanent',
-                    registrationDate: '2024-01-20',
-                    type: 'employee',
-                    accessLevel: 'standard',
-                    lastLogin: '2024-04-04',
-                    permissions: ['view_documents', 'view_policies', 'manage_finances', 'approve_expenses'],
-                    documents: ['Financial Reports', 'Budget Documents'],
-                    certifications: ['Finance Certification'],
-                    trainingCompleted: ['Financial Management'],
-                    mock: true
-                }
-            ];
+            // On database error, return empty personnel list instead of mock data
+            console.error('❌ Database error, returning empty personnel list:', dbError);
+            personnel = [];
         }
         
         // Apply filters if provided
@@ -327,53 +249,8 @@ router.get('/documents', async (req, res) => {
             console.log('✅ Documents fetched from database:', documents.length);
             
         } catch (dbError) {
-            console.error('❌ Database error, using fallback documents:', dbError);
-            
-            // Fallback to mock documents
-            documents = [
-                {
-                    id: 1,
-                    title: 'Employee Handbook 2024',
-                    description: 'Complete employee handbook with policies and procedures',
-                    category: 'HR',
-                    type: 'PDF',
-                    uploadedBy: 'HR Manager',
-                    uploadedDate: '2024-01-15',
-                    status: 'active',
-                    fileName: 'employee-handbook-2024.pdf',
-                    filePath: '/uploads/documents/employee-handbook-2024.pdf',
-                    department: 'HR',
-                    mock: true
-                },
-                {
-                    id: 2,
-                    title: 'Safety Manual',
-                    description: 'Construction site safety procedures and guidelines',
-                    category: 'Safety',
-                    type: 'PDF',
-                    uploadedBy: 'HSE Manager',
-                    uploadedDate: '2024-01-20',
-                    status: 'active',
-                    fileName: 'safety-manual.pdf',
-                    filePath: '/uploads/documents/safety-manual.pdf',
-                    department: 'HSE',
-                    mock: true
-                },
-                {
-                    id: 3,
-                    title: 'Financial Report Q1 2024',
-                    description: 'Quarterly financial report and analysis',
-                    category: 'Finance',
-                    type: 'PDF',
-                    uploadedBy: 'Finance Manager',
-                    uploadedDate: '2024-04-01',
-                    status: 'active',
-                    fileName: 'financial-report-q1-2024.pdf',
-                    filePath: '/uploads/documents/financial-report-q1-2024.pdf',
-                    department: 'Finance',
-                    mock: true
-                }
-            ];
+            console.error('❌ Database error, returning empty documents list:', dbError);
+            documents = [];
         }
         
         // Apply filters
