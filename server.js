@@ -5070,17 +5070,31 @@ async function runMigrations() {
 
         
 
-        // Execute statements
-
+        // Execute statements — skip INSERT statements for tables that already have data
+        // to prevent data duplication on every deployment
         for (let i = 0; i < statements.length; i++) {
 
             const statement = statements[i].trim();
 
             if (!statement) continue;
 
-            
-
             try {
+                // Check if this is an INSERT statement — only insert into empty tables
+                const insertMatch = statement.match(/^INSERT\s+(?:IGNORE\s+)?INTO\s+(\w+)/i);
+                if (insertMatch) {
+                    const tableName = insertMatch[1];
+                    try {
+                        const countResult = await db.execute(`SELECT COUNT(*) as cnt FROM ${tableName}`);
+                        const rowCount = countResult[0] ? countResult[0].cnt : 0;
+                        if (rowCount > 0) {
+                            console.log(`Migration ${i + 1}: SKIPPED INSERT into ${tableName} (already has ${rowCount} records — data preserved)`);
+                            skippedCount++;
+                            continue;
+                        }
+                    } catch (countErr) {
+                        // Table might not exist yet — proceed with INSERT
+                    }
+                }
 
                 await db.execute(statement);
 
@@ -5198,6 +5212,69 @@ async function runMigrations() {
 
     }
 
+}
+
+
+
+// Remove duplicate rows created by previous deployments re-running seed INSERTs.
+// SAFE: only deletes rows where EVERY business column is identical to an
+// older row (same record inserted multiple times), keeping the oldest (min id).
+// Real user data with any differing field is never touched.
+async function deduplicateSeedTables() {
+    const db = require('./database/config/database');
+
+    // Small strategy/seed tables that receive seed INSERTs on every startup
+    // but lack a UNIQUE constraint, so INSERT IGNORE duplicated them each deploy.
+    const seedTables = [
+        'leadership_management',
+        'long_term_growth',
+        'investment_management',
+        'mission_vision',
+        'meeting_minutes',
+        'worker_assignments',
+        'contracts',
+    ];
+
+    console.log('🧹 Checking for duplicate seed records to clean up...');
+    let totalRemoved = 0;
+
+    for (const tableName of seedTables) {
+        try {
+            // Introspect business columns (exclude id and timestamps)
+            const cols = await db.execute(
+                `SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS
+                 WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = ?`,
+                [tableName]
+            );
+            const colNames = (cols || [])
+                .map(c => c.COLUMN_NAME)
+                .filter(c => !['id', 'created_at', 'updated_at'].includes(String(c).toLowerCase()));
+
+            if (colNames.length === 0) continue;
+
+            // NULL-safe equality across all business columns
+            const joinCond = colNames.map(c => `(t1.\`${c}\` <=> t2.\`${c}\`)`).join(' AND ');
+            const sql = `DELETE t1 FROM \`${tableName}\` t1
+                INNER JOIN \`${tableName}\` t2
+                WHERE t1.id > t2.id AND ${joinCond}`;
+
+            const result = await db.execute(sql);
+            const removed = result && typeof result.affectedRows === 'number' ? result.affectedRows : 0;
+            if (removed > 0) {
+                totalRemoved += removed;
+                console.log(`🧹 ${tableName}: removed ${removed} duplicate row(s), kept original`);
+            }
+        } catch (err) {
+            // Table may not exist or have no id column — safe to skip
+            console.log(`⚠️ Dedup skipped for ${tableName}: ${err.message}`);
+        }
+    }
+
+    if (totalRemoved > 0) {
+        console.log(`✅ Deduplication complete: removed ${totalRemoved} duplicate record(s) total`);
+    } else {
+        console.log('✅ No duplicate seed records found — database is clean');
+    }
 }
 
 
@@ -6216,6 +6293,12 @@ async function startServer() {
         await runMigrations();
 
         console.log('✅ Step 1 completed: All database tables created successfully (including worker_accounts table)');
+
+        console.log('🔄 Step 1b: Cleaning up duplicate seed records from previous deployments...');
+
+        await deduplicateSeedTables();
+
+        console.log('✅ Step 1b completed: Duplicate records cleaned up');
 
         
 
