@@ -1313,6 +1313,7 @@ async function loadViewSuggestions() {
         html += '<thead><tr>';
         html += '<th>#</th>';
         html += '<th>Title</th>';
+        html += '<th>Description</th>';
         html += '<th>Category</th>';
         html += '<th>Department</th>';
         html += '<th>Submitted By</th>';
@@ -1325,7 +1326,7 @@ async function loadViewSuggestions() {
         html += '</tr></thead><tbody>';
 
         if (suggestions.length === 0) {
-            const colspan = isMD ? 9 : 8;
+            var colspan = isMD ? 10 : 9;
             html += '<tr><td colspan="' + colspan + '" style="padding:20px;text-align:center;border:1px solid #ddd;">No suggestions found.</td></tr>';
         }
 
@@ -1338,10 +1339,13 @@ async function loadViewSuggestions() {
             var submitter = s.submitted_by_name || s.employee_name || 'Unknown';
             var dept = s.department || 'N/A';
             var dateStr = s.created_at ? new Date(s.created_at).toLocaleDateString() : 'N/A';
+            var desc = s.description || 'No description';
+            var shortDesc = desc.length > 80 ? desc.substring(0, 80) + '...' : desc;
 
             html += '<tr>';
             html += '<td>' + (idx + 1) + '</td>';
-            html += '<td style="cursor:pointer;color:#007bff;" onclick="viewSuggestionDetail(' + s.id + ')">' + _escHtml(s.title) + '</td>';
+            html += '<td style="cursor:pointer;color:#007bff;font-weight:bold;" onclick="viewSuggestionDetail(' + s.id + ')">' + _escHtml(s.title) + '</td>';
+            html += '<td style="max-width:220px;white-space:normal;word-wrap:break-word;font-size:12px;color:#555;" title="' + _escHtml(desc) + '">' + _escHtml(shortDesc) + '</td>';
             html += '<td>' + _escHtml(cLabel) + '</td>';
             html += '<td>' + _escHtml(dept) + '</td>';
             html += '<td>' + _escHtml(submitter) + '</td>';
