@@ -99372,20 +99372,21 @@ function filterNHIFTable() {
     }
 
     let tableHTML = `
-        <table style="width: 100%; border-collapse: collapse; font-size: 13px; text-align: left;">
-            <thead>
-                <tr style="background: #f8fafc; border-bottom: 2px solid #e2e8f0;">
-                    <th style="padding: 12px 10px; color: #475569; font-weight: 600;">Employee</th>
-                    <th style="padding: 12px 10px; color: #475569; font-weight: 600;">Month</th>
-                    <th style="padding: 12px 10px; color: #475569; font-weight: 600;">Employee Cont.</th>
-                    <th style="padding: 12px 10px; color: #475569; font-weight: 600;">Employer Cont.</th>
-                    <th style="padding: 12px 10px; color: #475569; font-weight: 600;">Total</th>
-                    <th style="padding: 12px 10px; color: #475569; font-weight: 600;">Status</th>
-                    <th style="padding: 12px 10px; color: #475569; font-weight: 600;">Receipt</th>
-                    <th style="padding: 12px 10px; color: #475569; font-weight: 600; text-align: center;">Actions</th>
-                </tr>
-            </thead>
-            <tbody>
+        <div class="workforce-table-container">
+            <table class="workforce-table">
+                <thead>
+                    <tr>
+                        <th>Employee</th>
+                        <th>Month</th>
+                        <th>Employee Cont.</th>
+                        <th>Employer Cont.</th>
+                        <th>Total</th>
+                        <th>Status</th>
+                        <th>Receipt</th>
+                        <th style="text-align: center;">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
     `;
 
     filtered.forEach(function(r) {
@@ -99401,15 +99402,15 @@ function filterNHIFTable() {
         const employeeName = r.employee_name || 'Unknown Employee';
 
         tableHTML += `
-            <tr style="border-bottom: 1px solid #f1f5f9; transition: background 0.15s;" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background='transparent'">
-                <td style="padding: 12px 10px; font-weight: 500; color: #1e293b;">${employeeName}<div style="font-size: 11px; color: #64748b; font-weight: 400;">${r.employee_id || 'N/A'}</div></td>
-                <td style="padding: 12px 10px; color: #334155;">${formatContributionMonth(r.contribution_month)}</td>
-                <td style="padding: 12px 10px; color: #334155;">${parseFloat(r.employee_contribution || 0).toLocaleString()} TZS</td>
-                <td style="padding: 12px 10px; color: #334155;">${parseFloat(r.employer_contribution || 0).toLocaleString()} TZS</td>
-                <td style="padding: 12px 10px; font-weight: 600; color: #0f172a;">${parseFloat(r.total_contribution || 0).toLocaleString()} TZS</td>
-                <td style="padding: 12px 10px;">${statusBadge}</td>
-                <td style="padding: 12px 10px; font-family: monospace; color: #475569;">${r.receipt_number || 'â€”'}</td>
-                <td style="padding: 12px 10px; text-align: center; white-space: nowrap;">
+            <tr>
+                <td>${employeeName}<div style="font-size: 11px; color: #64748b; font-weight: 400;">${r.employee_id || 'N/A'}</div></td>
+                <td>${formatContributionMonth(r.contribution_month)}</td>
+                <td>${parseFloat(r.employee_contribution || 0).toLocaleString()} TZS</td>
+                <td>${parseFloat(r.employer_contribution || 0).toLocaleString()} TZS</td>
+                <td style="font-weight: 600; color: #0f172a;">${parseFloat(r.total_contribution || 0).toLocaleString()} TZS</td>
+                <td>${statusBadge}</td>
+                <td style="font-family: monospace; color: #475569;">${r.receipt_number || '—'}</td>
+                <td style="text-align: center; white-space: nowrap;">
                     <button onclick="toggleNHIFStatus(${r.id}, '${r.payment_status}')" class="btn" style="background: #eff6ff; color: #2563eb; border: none; padding: 6px 10px; border-radius: 6px; font-size: 12px; font-weight: 500; cursor: pointer; margin-right: 5px; display: inline-flex; align-items: center; gap: 4px;" title="Change Status"><i class="fas fa-toggle-on"></i> Status</button>
                     <button onclick="deleteNHIFRecord(${r.id})" class="btn" style="background: #fee2e2; color: #dc2626; border: none; padding: 6px 10px; border-radius: 6px; font-size: 12px; font-weight: 500; cursor: pointer; display: inline-flex; align-items: center; gap: 4px;" title="Delete Record"><i class="fas fa-trash-alt"></i></button>
                 </td>
@@ -99418,9 +99419,10 @@ function filterNHIFTable() {
     });
 
     tableHTML += `
-            </tbody>
-        </table>
-    `;
+                </tbody>
+            </table>
+        </div>
+    `;    `;
 
     container.innerHTML = tableHTML;
 }
