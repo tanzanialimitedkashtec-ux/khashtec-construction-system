@@ -1242,13 +1242,13 @@ router.get('/:id/download', async (req, res) => {
             if (!isNaN(empId) && db) {
                 const column = isCV ? 'cv_data' : 'agreement_data';
                 const mimeCol = isCV ? 'cv_mime' : 'agreement_mime';
-                const rows = await db.execute(
+                const dbResult = await db.execute(
                     `SELECT full_name, ${column}, ${mimeCol} FROM employee_details WHERE employee_id = ?`, [empId]
                 );
                 
-                let empRows = Array.isArray(rows) ? rows : (rows && Array.isArray(rows[0]) ? rows[0] : []);
+                let empRows = Array.isArray(dbResult) ? (Array.isArray(dbResult[0]) ? dbResult[0] : dbResult) : (dbResult && dbResult.rows ? dbResult.rows : []);
                 
-                if (empRows.length > 0 && empRows[0][column]) {
+                if (empRows && empRows.length > 0 && empRows[0][column]) {
                     const emp = empRows[0];
                     const mime = emp[mimeCol] || 'application/octet-stream';
                     const ext = mime === 'application/pdf' ? '.pdf' : mime.includes('png') ? '.png' : '.jpg';
@@ -1275,13 +1275,13 @@ router.get('/:id/download', async (req, res) => {
                 const pathCol = isIdDoc ? 'id_document' : 'contract_document';
                 
                 try {
-                    const rows = await db.execute(
+                    const dbResult = await db.execute(
                         `SELECT full_name, ${pathCol}, ${dataCol}, ${mimeCol} FROM worker_accounts WHERE id = ?`, [workerId]
                     );
                     
-                    let workRows = Array.isArray(rows) ? rows : (rows && Array.isArray(rows[0]) ? rows[0] : []);
+                    let workRows = Array.isArray(dbResult) ? (Array.isArray(dbResult[0]) ? dbResult[0] : dbResult) : (dbResult && dbResult.rows ? dbResult.rows : []);
                     
-                    if (workRows.length > 0) {
+                    if (workRows && workRows.length > 0) {
                         const worker = workRows[0];
                         const label = isIdDoc ? 'ID' : 'Contract';
                         

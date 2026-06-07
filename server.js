@@ -311,10 +311,12 @@ function sendDefaultAvatar(res, seed = '') {
 app.get('/api/profile-image/:employeeId', async (req, res) => {
     try {
         const db = require('./database/config/database');
-        const rows = await db.execute(
+        const dbResult = await db.execute(
             'SELECT profile_image, profile_image_data, profile_image_mime FROM employee_details WHERE employee_id = ? LIMIT 1',
             [req.params.employeeId]
         );
+        const rows = Array.isArray(dbResult) ? (Array.isArray(dbResult[0]) ? dbResult[0] : dbResult) : (dbResult.rows || []);
+        
         if (rows && rows.length > 0) {
             const row = rows[0];
             // 1) BLOB in DB
@@ -359,10 +361,11 @@ app.get('/api/employee-file/:employeeId/:fileType', async (req, res) => {
             return res.status(400).send('Invalid file type');
         }
 
-        const rows = await db.execute(
+        const dbResult = await db.execute(
             `SELECT ${pathCol}, ${dataCol}, ${mimeCol} FROM employee_details WHERE employee_id = ? LIMIT 1`,
             [employeeId]
         );
+        const rows = Array.isArray(dbResult) ? (Array.isArray(dbResult[0]) ? dbResult[0] : dbResult) : (dbResult.rows || []);
         
         if (rows && rows.length > 0) {
             const row = rows[0];
