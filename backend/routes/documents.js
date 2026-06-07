@@ -1256,7 +1256,7 @@ router.get('/:id/download', async (req, res) => {
                     const fileName = `${label}_${emp.full_name.replace(/[^a-zA-Z0-9]/g, '_')}${ext}`;
                     
                     res.set('Content-Type', mime);
-                    res.set('Content-Disposition', `attachment; filename="${fileName}"`);
+                    res.set('Content-Disposition', `${req.query.view === 'true' ? 'inline' : 'attachment'}; filename="${fileName}"`);
                     return res.send(Buffer.from(emp[column]));
                 }
             }
@@ -1292,7 +1292,7 @@ router.get('/:id/download', async (req, res) => {
                             const fileName = `${label}_${(worker.full_name || 'worker').replace(/[^a-zA-Z0-9]/g, '_')}${ext}`;
                             
                             res.set('Content-Type', mime);
-                            res.set('Content-Disposition', `attachment; filename="${fileName}"`);
+                            res.set('Content-Disposition', `${req.query.view === 'true' ? 'inline' : 'attachment'}; filename="${fileName}"`);
                             return res.send(Buffer.from(worker[dataCol]));
                         }
                         
@@ -1305,7 +1305,7 @@ router.get('/:id/download', async (req, res) => {
                             const absolutePath = pathMod.resolve(__dirname, '../../', filePath.replace(/^\//, ''));
                             
                             if (fsCheck.existsSync(absolutePath)) {
-                                return res.download(absolutePath, fileName);
+                                return req.query.view === 'true' ? res.sendFile(absolutePath) : res.download(absolutePath, fileName);
                             }
                         }
                         
@@ -1338,7 +1338,7 @@ router.get('/:id/download', async (req, res) => {
                         const absolutePath = path.resolve(__dirname, '../../', doc.file_path.replace(/^\//, ''));
                         
                         if (fs.existsSync(absolutePath)) {
-                            return res.download(absolutePath, doc.file_name);
+                            return req.query.view === 'true' ? res.sendFile(absolutePath) : res.download(absolutePath, doc.file_name);
                         } else {
                             console.error('❌ Physical file not found at:', absolutePath);
                             // Do NOT fallback to PDF generation if a file_path was specified but missing, 
@@ -1359,7 +1359,7 @@ router.get('/:id/download', async (req, res) => {
                     const pdfContent = generatePDF(mappedItem);
                     const fileName = `${doc.title.replace(/[^a-zA-Z0-9\s]/g, '_').trim()}.pdf`;
                     res.setHeader('Content-Type', 'application/pdf');
-                    res.setHeader('Content-Disposition', `attachment; filename="${fileName}"`);
+                    res.setHeader('Content-Disposition', `${req.query.view === 'true' ? 'inline' : 'attachment'}; filename="${fileName}"`);
                     res.setHeader('Content-Length', Buffer.byteLength(pdfContent, 'utf8'));
                     return res.send(pdfContent);
                 }
@@ -1432,7 +1432,7 @@ router.get('/:id/download', async (req, res) => {
         
         // Set headers for PDF download
         res.setHeader('Content-Type', 'application/pdf');
-        res.setHeader('Content-Disposition', `attachment; filename="${fileName}"`);
+        res.setHeader('Content-Disposition', `${req.query.view === 'true' ? 'inline' : 'attachment'}; filename="${fileName}"`);
         res.setHeader('Content-Length', Buffer.byteLength(pdfContent, 'utf8'));
         
         console.log(`📤 Sending PDF: ${fileName}`);

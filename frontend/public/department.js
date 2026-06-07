@@ -64313,7 +64313,7 @@ function showDocumentQR(docId, docName) {
         if (loadingEl) loadingEl.style.display = 'none';
         
         // Generate a URL that can be directly accessed from a mobile browser
-        const qrUrl = window.location.origin + '/api/documents/' + docId + '/download';
+        const qrUrl = window.location.origin + '/api/documents/' + docId + '/download?view=true';
         
         new QRCode(document.getElementById("qrcode-box"), {
             text: qrUrl,
