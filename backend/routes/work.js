@@ -2,6 +2,14 @@ const express = require('express');
 const router = express.Router();
 const db = require('../../database/config/database');
 
+// Whitelist of valid department names to prevent SQL injection
+// Only these departments can be used in dynamic table queries
+const VALID_DEPARTMENTS = ['hr', 'admin', 'finance', 'hse', 'projects', 'realestate', 'operations'];
+
+function isValidDepartment(department) {
+    return VALID_DEPARTMENTS.includes(department.toLowerCase());
+}
+
 // Global in-memory state for mock workforce requests to allow status changes to persist across GET requests
 global.mockWorkforceStatuses = global.mockWorkforceStatuses || {};
 const mockWorkforceStatuses = global.mockWorkforceStatuses;
@@ -2080,33 +2088,33 @@ router.post('/assignments', async (req, res) => {
             ]);
         } catch (columnError) {
             if (columnError.message.includes('Unknown column')) {
-                console.log('?? Missing column detected, recreating worker_assignments table...');
+                console.log('⚠️ Missing column detected, adding missing columns safely (preserving data)...');
                 
-                // Drop and recreate table with correct schema
-                await db.execute("DROP TABLE IF EXISTS worker_assignments");
-                await db.execute(`
-                    CREATE TABLE worker_assignments (
-                        id INT AUTO_INCREMENT PRIMARY KEY,
-                        employee_id VARCHAR(50) NOT NULL,
-                        employee_name VARCHAR(255) NOT NULL,
-                        project_id VARCHAR(50) NOT NULL,
-                        project_name VARCHAR(255) NOT NULL,
-                        role_in_project VARCHAR(255) NOT NULL,
-                        start_date DATE NOT NULL,
-                        end_date DATE NULL,
-                        assignment_notes TEXT NULL,
-                        status VARCHAR(50) DEFAULT 'Active',
-                        assigned_by VARCHAR(255) NOT NULL,
-                        assigned_by_role VARCHAR(255) NOT NULL,
-                        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-                        INDEX idx_employee_id (employee_id),
-                        INDEX idx_project_id (project_id),
-                        INDEX idx_status (status)
-                    )
-                `);
+                // Add missing columns instead of dropping the table (DATA SAFE)
+                const requiredColumns = [
+                    { name: 'employee_id', def: "VARCHAR(50) NOT NULL DEFAULT ''" },
+                    { name: 'employee_name', def: "VARCHAR(255) NOT NULL DEFAULT ''" },
+                    { name: 'project_id', def: "VARCHAR(50) NOT NULL DEFAULT ''" },
+                    { name: 'project_name', def: "VARCHAR(255) NOT NULL DEFAULT ''" },
+                    { name: 'role_in_project', def: "VARCHAR(255) NOT NULL DEFAULT ''" },
+                    { name: 'start_date', def: "DATE NULL" },
+                    { name: 'end_date', def: "DATE NULL" },
+                    { name: 'assignment_notes', def: "TEXT NULL" },
+                    { name: 'status', def: "VARCHAR(50) DEFAULT 'Active'" },
+                    { name: 'assigned_by', def: "VARCHAR(255) NOT NULL DEFAULT ''" },
+                    { name: 'assigned_by_role', def: "VARCHAR(255) NOT NULL DEFAULT ''" }
+                ];
                 
-                console.log('?? worker_assignments table recreated, retrying insertion...');
+                for (const col of requiredColumns) {
+                    try {
+                        await db.execute(`ALTER TABLE worker_assignments ADD COLUMN ${col.name} ${col.def}`);
+                        console.log(`✅ Added missing column: ${col.name}`);
+                    } catch (alterErr) {
+                        // Column already exists — safe to ignore
+                    }
+                }
+                
+                console.log('✅ worker_assignments schema updated safely, retrying insertion...');
                 
                 // Retry insertion
                 result = await db.execute(`
@@ -4098,6 +4106,12 @@ router.post('/completions/:workId/reject', async (req, res) => {
 router.put('/:department/:id', async (req, res) => {
     try {
         const { department, id } = req.params;
+        
+        // Validate department to prevent SQL injection
+        if (!isValidDepartment(department)) {
+            return res.status(400).json({ error: 'Invalid department name' });
+        }
+        
         const updates = req.body;
         
         // Check if work item exists
@@ -4231,6 +4245,11 @@ router.delete('/:department/:id', async (req, res) => {
     try {
         const { department, id } = req.params;
         
+        // Validate department to prevent SQL injection
+        if (!isValidDepartment(department)) {
+            return res.status(400).json({ error: 'Invalid department name' });
+        }
+        
         const [result] = await db.execute(
             `DELETE FROM ${department}_work WHERE id = ?`,
             [id]
@@ -4253,6 +4272,11 @@ router.get('/:department/:id', async (req, res) => {
     try {
         const { department, id } = req.params;
         
+        // Validate department to prevent SQL injection
+        if (!isValidDepartment(department)) {
+            return res.status(400).json({ error: 'Invalid department name' });
+        }
+        
         const [workItems] = await db.execute(
             `SELECT * FROM ${department}_work WHERE id = ?`,
             [id]
@@ -4274,6 +4298,11 @@ router.get('/:department/:id', async (req, res) => {
 router.get('/:department/stats', async (req, res) => {
     try {
         const { department } = req.params;
+        
+        // Validate department to prevent SQL injection
+        if (!isValidDepartment(department)) {
+            return res.status(400).json({ error: 'Invalid department name' });
+        }
         
         // Get total work items
         const [totalResult] = await db.execute(
