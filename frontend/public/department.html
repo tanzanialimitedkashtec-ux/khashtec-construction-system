@@ -91235,8 +91235,19 @@ async function documentManagement(){
             <div class="doc-management">
 
 <div class="doc-list">
-
-                    <h4>Existing Documents</h4>
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                        <h4>Existing Documents</h4>
+                        <button class="action-btn" onclick="toggleQRScanner()" style="background: #17a2b8; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 11px; font-weight: 600; display: flex; align-items: center; gap: 5px;">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7V5a2 2 0 0 1 2-2h2"></path><path d="M17 3h2a2 2 0 0 1 2 2v2"></path><path d="M21 17v2a2 2 0 0 1-2 2h-2"></path><path d="M7 21H5a2 2 0 0 1-2-2v-2"></path><rect x="7" y="7" width="10" height="10"></rect></svg>
+                            Scan QR Code
+                        </button>
+                    </div>
+                    <div id="qr-scanner-container" style="display: none; margin-bottom: 15px; border: 1px solid #dee2e6; border-radius: 6px; padding: 15px; background: #f8f9fa;">
+                        <h5 style="margin-top: 0; margin-bottom: 10px; font-size: 12px; color: #333; text-align: center;">Scan Document QR Code</h5>
+                        <div id="qr-reader" style="width: 100%; max-width: 300px; margin: 0 auto; border-radius: 4px; overflow: hidden;"></div>
+                        <p id="qr-scanner-status" style="text-align: center; font-size: 11px; margin-top: 10px; color: #666;">Looking for QR code...</p>
+                        <button onclick="toggleQRScanner()" style="display: block; margin: 10px auto 0; background: #dc3545; color: white; border: none; padding: 6px 15px; border-radius: 4px; cursor: pointer; font-size: 11px; font-weight: 500;">Close Scanner</button>
+                    </div>
 
                     <div class="workforce-table-container">
 
@@ -91303,6 +91314,8 @@ async function documentManagement(){
                                                     <button class="action-btn view-btn" onclick="viewDocument('${doc.id}')">View</button>
 
                                                     <button class="action-btn download-btn" onclick="downloadDocument('${doc.id}')">Download</button>
+                                                    
+                                                    <button class="action-btn qr-btn" style="background: #28a745; color: white;" onclick="showDocumentQR('${doc.id}', '${doc.title ? doc.title.replace(/'/g, "\\'") : doc.name ? doc.name.replace(/'/g, "\\'") : doc.filename ? doc.filename.replace(/'/g, "\\'") : 'Document'}')">QR Code</button>
 
                                                 </div>
 
@@ -108977,6 +108990,128 @@ function showPaymentApprovals() {
     loadPaymentRequests();
 }
 
+let html5QrcodeScanner = null;
+
+window.toggleQRScanner = function() {
+    const container = document.getElementById('qr-scanner-container');
+    if (!container) return;
+    
+    if (container.style.display === 'none') {
+        container.style.display = 'block';
+        
+        if (typeof Html5QrcodeScanner === 'undefined') {
+            document.getElementById('qr-scanner-status').innerText = 'Loading scanner...';
+            const script = document.createElement('script');
+            script.src = 'https://unpkg.com/html5-qrcode';
+            script.onload = initScanner;
+            document.head.appendChild(script);
+        } else {
+            initScanner();
+        }
+    } else {
+        container.style.display = 'none';
+        if (html5QrcodeScanner) {
+            html5QrcodeScanner.clear().catch(error => {
+                console.error("Failed to clear html5QrcodeScanner. ", error);
+            });
+            html5QrcodeScanner = null;
+        }
+    }
+}
+
+window.initScanner = function() {
+    document.getElementById('qr-scanner-status').innerText = 'Camera starting...';
+    html5QrcodeScanner = new Html5QrcodeScanner(
+        "qr-reader", { fps: 10, qrbox: {width: 250, height: 250} });
+        
+    html5QrcodeScanner.render(onScanSuccess, onScanFailure);
+}
+
+window.onScanSuccess = function(decodedText, decodedResult) {
+    console.log(`Scan result: ${decodedText}`);
+    document.getElementById('qr-scanner-status').innerText = 'Document found! Loading...';
+    
+    if (html5QrcodeScanner) {
+        html5QrcodeScanner.clear();
+        html5QrcodeScanner = null;
+    }
+    document.getElementById('qr-scanner-container').style.display = 'none';
+    
+    let docId = decodedText;
+    if (docId.includes('/')) {
+        const parts = docId.split('/');
+        docId = parts[parts.length - 1];
+    }
+    
+    if (typeof viewDocument === 'function') {
+        // Try parsing to int if it's purely numeric
+        const numericId = parseInt(docId, 10);
+        if (!isNaN(numericId) && numericId.toString() === docId) {
+            viewDocument(numericId);
+        } else {
+            viewDocument(docId);
+        }
+    }
+}
+
+window.onScanFailure = function(error) {
+    // console.warn(`Code scan error = ${error}`);
+}
+
+window.showDocumentQR = function(docId, docName) {
+    const modal = document.createElement('div');
+    modal.className = 'modal-overlay';
+    modal.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.6);display:flex;justify-content:center;align-items:center;z-index:10000;animation:fadeIn 0.3s ease';
+    
+    const docTitle = docName ? docName : `Document ${docId}`;
+    
+    modal.innerHTML = `
+        <div style="background:#fff;border-radius:12px;box-shadow:0 20px 60px rgba(0,0,0,0.3);width:350px;max-width:92%;overflow:hidden;animation:slideIn 0.3s ease;text-align:center;">
+            <div style="background:linear-gradient(135deg,#28a745,#20c997);color:#fff;padding:15px 20px;display:flex;justify-content:space-between;align-items:center">
+                <h3 style="margin:0;font-size:16px;font-weight:600">Document QR Code</h3>
+                <button onclick="this.closest('.modal-overlay').remove()" style="background:rgba(255,255,255,0.2);border:none;color:#fff;width:28px;height:28px;border-radius:6px;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center">&times;</button>
+            </div>
+            <div style="padding:24px;">
+                <h4 style="margin:0 0 5px;font-size:14px;color:#333;">${docTitle}</h4>
+                <p style="margin:0 0 20px;font-size:12px;color:#666;">Scan to view document</p>
+                <div id="qrcode-box" style="display:flex;justify-content:center;align-items:center;min-height:200px;">
+                    <span id="qr-loading">Generating QR Code...</span>
+                </div>
+            </div>
+            <div style="padding:12px 20px;background:#f8f9fa;border-top:1px solid #e9ecef;">
+                <button onclick="this.closest('.modal-overlay').remove()" style="background:#6c757d;color:#fff;border:none;padding:8px 16px;border-radius:6px;font-size:13px;cursor:pointer;width:100%;">Close</button>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(modal);
+    
+    modal.addEventListener('click', function(e) {
+        if (e.target === modal) modal.remove();
+    });
+    
+    const renderQR = function() {
+        const loadingEl = document.getElementById('qr-loading');
+        if (loadingEl) loadingEl.style.display = 'none';
+        new QRCode(document.getElementById("qrcode-box"), {
+            text: String(docId),
+            width: 200,
+            height: 200,
+            colorDark : "#0b3d91",
+            colorLight : "#ffffff",
+            correctLevel : QRCode.CorrectLevel.H
+        });
+    };
+    
+    if (typeof QRCode === 'undefined') {
+        const script = document.createElement('script');
+        script.src = 'https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js';
+        script.onload = renderQR;
+        document.head.appendChild(script);
+    } else {
+        renderQR();
+    }
+}
 </script>
 
 
