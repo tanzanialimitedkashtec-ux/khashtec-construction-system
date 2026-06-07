@@ -225,4 +225,140 @@ async function sendInvoiceEmail(invoiceData, actionType) {
     }
 }
 
-module.exports = { sendInvoiceEmail };
+/**
+ * Build the branded HTML email template for expenses
+ */
+function buildExpenseEmailHTML(expenseData, actionType) {
+    const {
+        id,
+        category,
+        amount,
+        description,
+        department,
+        submittedBy,
+        status
+    } = expenseData;
+
+    const now = new Date();
+    const dateStr = now.toLocaleDateString('en-GB', { day: '2-digit', month: 'long', year: 'numeric' });
+    const statusColor = getStatusColor(status);
+    const statusText = getStatusText(status);
+
+    let actionTitle, actionMessage;
+    switch (actionType) {
+        case 'created':
+            actionTitle = 'New Expense Submitted';
+            actionMessage = 'A new expense has been submitted and is awaiting approval.';
+            break;
+        case 'confirmed':
+            actionTitle = 'Expense Confirmed';
+            actionMessage = 'This expense has been confirmed and approved for payment.';
+            break;
+        default:
+            actionTitle = 'Expense Update';
+            actionMessage = 'An expense record has been updated.';
+    }
+
+    const appUrl = process.env.APP_URL || 'https://khashtec-construction-system-production-e7b5.up.railway.app';
+    const logoUrl = `${appUrl}/images/khashtec%20logo.png`;
+
+    return `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KASHTEC Expense Notification</title>
+</head>
+<body style="margin:0;padding:20px;background-color:#f0f2f5;font-family:Georgia,'Times New Roman',serif;">
+    <div style="max-width:350px;border:1px solid #1a5276;border-radius:8px;padding:15px;background:#fdfdfd;font-family:Georgia,serif;box-shadow:0 2px 5px rgba(0,0,0,0.05);margin:20px auto;">
+        <div style="text-align:center;border-bottom:1px solid #1a5276;padding-bottom:10px;margin-bottom:10px;">
+            <img src="${logoUrl}" alt="Khashtec logo" style="display:block;margin:0 auto 5px;max-height:40px;width:auto;">
+            <h3 style="margin:0;color:#1a5276;font-size:16px;">KASHTEC TANZANIA LIMITED</h3>
+            <p style="margin:2px 0;color:#666;font-size:11px;">Construction Management System</p>
+            <h4 style="margin:5px 0 0;color:#2c3e50;font-size:14px;">EXPENSE REPORT</h4>
+        </div>
+        
+        <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="margin-bottom:10px;font-size:12px;">
+            <tr>
+                <td><strong>Expense ID:</strong> ${id || 'N/A'}</td>
+                <td style="text-align:right;"><strong>Date:</strong> ${dateStr}</td>
+            </tr>
+        </table>
+        
+        <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="margin-bottom:10px;font-size:12px;">
+            <tr>
+                <td><strong>Department:</strong> ${department || 'N/A'}</td>
+                <td style="text-align:right;"><strong>Submitted By:</strong> ${submittedBy || 'Employee'}</td>
+            </tr>
+        </table>
+
+        <table style="width:100%;border-collapse:collapse;margin:10px 0;font-size:12px;">
+            <thead>
+                <tr style="background:#1a5276;color:white;">
+                    <th style="padding:6px;text-align:left;border:1px solid #1a5276;">Category</th>
+                    <th style="padding:6px;text-align:left;border:1px solid #1a5276;">Description</th>
+                    <th style="padding:6px;text-align:right;border:1px solid #1a5276;">Amount</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td style="padding:6px;border:1px solid #ddd;">${category || 'N/A'}</td>
+                    <td style="padding:6px;border:1px solid #ddd;">${description || 'N/A'}</td>
+                    <td style="padding:6px;text-align:right;border:1px solid #ddd;">TZS ${formatTZS(amount)}</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div style="text-align:right;border-top:1px solid #1a5276;padding-top:8px;margin-top:8px;">
+            <strong style="font-size:14px;color:#1a5276;">Total: TZS ${formatTZS(amount)}</strong>
+        </div>
+
+        <div style="text-align:center;margin-top:12px;padding-top:10px;border-top:1px dashed #ccc;color:#888;font-size:11px;">
+            <p style="margin:2px 0;">Status: <strong style="color:${statusColor};">${statusText}</strong></p>
+            
+            <div style="margin-top:15px;padding-top:10px;border-top:1px solid #eee;">
+                <p style="margin:0 0 4px 0;color:#1a5276;font-weight:bold;font-size:12px;">${actionTitle}</p>
+                <p style="margin:0;color:#666;">${actionMessage}</p>
+            </div>
+        </div>
+    </div>
+</body>
+</html>`;
+}
+
+/**
+ * Send an expense notification email
+ * @param {Object} expenseData - The expense details (id, category, amount, description, department, submittedBy, status)
+ * @param {string} actionType - 'created' or 'confirmed'
+ * @returns {Promise<boolean>} - true if sent successfully, false otherwise
+ */
+async function sendExpenseEmail(expenseData, actionType) {
+    if (!RESEND_API_KEY) {
+        console.warn('⚠️ Skipping expense email — RESEND_API_KEY not configured');
+        return false;
+    }
+
+    const recipient = EMAIL_RECIPIENT;
+
+    let subjectPrefix;
+    switch (actionType) {
+        case 'created':   subjectPrefix = '📝 New Expense Submitted'; break;
+        case 'confirmed': subjectPrefix = '✅ Expense Confirmed'; break;
+        default:          subjectPrefix = '📋 Expense Update'; break;
+    }
+
+    const subject = `${subjectPrefix} — ${expenseData.category || 'N/A'} | TZS ${formatTZS(expenseData.amount)} | KASHTEC`;
+    const html = buildExpenseEmailHTML(expenseData, actionType);
+
+    try {
+        const result = await sendViaResend(recipient, subject, html);
+        console.log(`✅ Expense email sent (${actionType}): ${result.id} → ${recipient}`);
+        return true;
+    } catch (error) {
+        console.error(`⚠️ Failed to send expense email (${actionType}):`, error.message);
+        return false;
+    }
+}
+
+module.exports = { sendInvoiceEmail, sendExpenseEmail };
