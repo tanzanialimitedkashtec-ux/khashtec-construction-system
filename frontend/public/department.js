@@ -64484,7 +64484,7 @@ async function documentManagement(){
 
                         <button class="toggle-btn" id="docToggle" aria-expanded="false" onclick="toggleDocUpload()" style="background:#007bff;color:#fff;border:none;padding:4px 6px;font-size:11px;border-radius:4px;cursor:pointer;line-height:1">
 
-                            <span class="toggle-arrow">â–¸</span>
+                            <span class="toggle-arrow">▸</span>
 
                         </button>
 
@@ -64791,116 +64791,86 @@ function toggleDocUpload(){
 }
 
 async function uploadCertificate() {
-    console.log('ðŸš€ uploadCertificate function called');
+    console.log('uploadCertificate function called');
     
     const certType = document.getElementById('certType').value;
     const certFile = document.getElementById('certFile').files[0];
     const certExpiry = document.getElementById('certExpiry').value;
     const certDescription = document.getElementById('certDescription').value;
 
-    console.log('ðŸ“‹ Form values:', {
-        certType,
-        certFile: certFile ? certFile.name : 'No file selected',
-        certExpiry,
-        certDescription
-    });
-
     if (!certType) {
-        console.log('âŒ Validation failed: No certificate type selected');
         showNotification('Please select certificate type', 'error');
         return;
     }
 
-    
-
-    // For now, we'll simulate file upload since backend doesn't have multer yet
-
     const fileName = certFile ? certFile.name : `${certType}_certificate.pdf`;
-
-    const fileSize = certFile ? certFile.size : 1024;
-
+    const fileSize = certFile ? certFile.size : 0;
     const mimeType = certFile ? certFile.type : 'application/pdf';
 
-    
-
-    console.log('ðŸ“¤ Uploading certificate:', certType, fileName);
-    console.log('ðŸŒ Making request to:', `${window.location.origin}/api/documents/upload`);
+    console.log('Uploading certificate:', certType, fileName);
 
     try {
         const baseUrl = window.location.origin;
+
+        // Read the actual file as base64 so it gets stored in the database
+        let fileBase64 = null;
+        if (certFile) {
+            fileBase64 = await new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = () => {
+                    // Remove the data:...;base64, prefix
+                    const base64 = reader.result.split(',')[1];
+                    resolve(base64);
+                };
+                reader.onerror = reject;
+                reader.readAsDataURL(certFile);
+            });
+            console.log('File read as base64, length:', fileBase64.length);
+        }
+
         const requestBody = {
             type: certType,
             name: `${certType} Certificate`,
             filename: fileName,
             file_size: fileSize,
             mime_type: mimeType,
+            file_base64: fileBase64,
             expiry_date: certExpiry,
             description: certDescription,
-            uploaded_by: 1 // Default user for now
+            uploaded_by: 1
         };
         
-        console.log('ðŸ“¤ Request body:', requestBody);
+        console.log('Sending upload request, file_base64:', fileBase64 ? fileBase64.length + ' chars' : 'none');
         
         const response = await fetch(`${baseUrl}/api/documents/upload`, {
-
             method: 'POST',
-
             headers: {
-
                 'Content-Type': 'application/json',
-
             },
-
             body: JSON.stringify(requestBody)
-
         });
-
-        
 
         if (response.ok) {
-
             const result = await response.json();
+            console.log('Upload response:', result);
 
-            console.log('âœ… Upload response:', result);
-            console.log('ðŸ“Š Response status:', response.status);
-            console.log('ðŸ“Š Response headers:', response.headers);
-
-            showNotification('Certificate uploaded successfully', 'success');
-
-            // Clear form
+            showNotification('Certificate uploaded successfully!', 'success');
 
             document.getElementById('certType').value = '';
-
             document.getElementById('certFile').value = '';
-
             document.getElementById('certExpiry').value = '';
-
             document.getElementById('certDescription').value = '';
 
-            // Refresh document list
-
             documentManagement();
-
         } else {
-            console.log('âŒ Upload failed with status:', response.status);
-            console.log('âŒ Response headers:', response.headers);
-            
             const errorData = await response.json().catch(() => ({}));
-            console.error('âŒ Upload error:', errorData);
-            
+            console.error('Upload error:', errorData);
             showNotification(errorData.error || 'Failed to upload certificate', 'error');
         }
-
     } catch (error) {
-        console.error('âŒ Network error uploading certificate:', error);
-        console.error('âŒ Error details:', {
-            message: error.message,
-            stack: error.stack,
-            name: error.name
-        });
+        console.error('Network error uploading certificate:', error);
         showNotification('Network error uploading certificate. Please check your connection.', 'error');
     }
-
 }
 
 

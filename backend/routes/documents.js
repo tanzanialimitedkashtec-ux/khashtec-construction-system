@@ -693,8 +693,8 @@ router.post('/test-upload', (req, res) => {
 router.post('/upload', upload.single('document'), async (req, res) => {
     try {
         console.log('📤 Certificate upload request received');
-        console.log('📋 Request body:', req.body);
-        console.log('📁 Request file:', req.file);
+        console.log('📋 Request body keys:', Object.keys(req.body));
+        console.log('📁 Request file:', req.file ? req.file.originalname : 'none (check body for base64)');
         
         const {
             type,
@@ -704,11 +704,27 @@ router.post('/upload', upload.single('document'), async (req, res) => {
             uploaded_by
         } = req.body;
         
-        // Use req.file details if a file was uploaded, otherwise fallback
-        const filename = req.file ? req.file.filename : (req.body.filename || `${type}_certificate.pdf`);
-        const file_size = req.file ? req.file.size : (req.body.file_size || 0);
-        const mime_type = req.file ? req.file.mimetype : (req.body.mime_type || 'application/pdf');
-        const filePath = req.file ? `/uploads/documents/${req.file.filename}` : null;
+        // Determine file details and binary data
+        let fileData = null;
+        let fileMime = req.body.mime_type || 'application/pdf';
+        let filename = req.body.filename || `${type}_certificate.pdf`;
+        let fileSize = parseInt(req.body.file_size, 10) || 0;
+
+        if (req.file) {
+            // Multer file upload path
+            const fsSync = require('fs');
+            const filePath = req.file.path;
+            fileData = fsSync.readFileSync(filePath);
+            fileMime = req.file.mimetype;
+            filename = req.file.originalname;
+            fileSize = req.file.size;
+            // Remove temp file after reading into memory
+            try { fsSync.unlinkSync(filePath); } catch (_) {}
+        } else if (req.body.file_base64) {
+            // Base64 upload from frontend FormData alternative
+            fileData = Buffer.from(req.body.file_base64, 'base64');
+            fileSize = fileData.length;
+        }
         
         // Validate required fields
         if (!type) {
@@ -724,7 +740,8 @@ router.post('/upload', upload.single('document'), async (req, res) => {
         }
         
         console.log('🔍 Extracted certificate data:', {
-            type, name, filename, file_size, mime_type, expiry_date, description, uploaded_by, filePath
+            type, name, filename, fileSize, fileMime, expiry_date, description, uploaded_by,
+            hasFileData: !!fileData, fileDataSize: fileData ? fileData.length : 0
         });
         
         try {
@@ -737,8 +754,11 @@ router.post('/upload', upload.single('document'), async (req, res) => {
                     title VARCHAR(255) NOT NULL,
                     description TEXT,
                     file_name VARCHAR(255) NOT NULL,
+                    file_path VARCHAR(500),
                     file_size BIGINT DEFAULT 0,
                     file_type VARCHAR(100) DEFAULT 'PDF',
+                    file_data LONGBLOB,
+                    file_mime VARCHAR(100),
                     category ENUM('Contract', 'Plan', 'Report', 'Invoice', 'Permit', 'Certificate', 'Other') DEFAULT 'Other',
                     uploaded_by INT NOT NULL,
                     status ENUM('Pending', 'Approved', 'Rejected') DEFAULT 'Pending',
@@ -753,6 +773,20 @@ router.post('/upload', upload.single('document'), async (req, res) => {
             `);
             console.log('✅ Documents table verified/created successfully');
             
+            // Ensure file_data and file_mime columns exist (for tables created before this update)
+            try {
+                await db.execute(`ALTER TABLE documents ADD COLUMN file_data LONGBLOB AFTER file_type`);
+                console.log('✅ Added file_data column');
+            } catch (e) { /* column already exists */ }
+            try {
+                await db.execute(`ALTER TABLE documents ADD COLUMN file_mime VARCHAR(100) AFTER file_data`);
+                console.log('✅ Added file_mime column');
+            } catch (e) { /* column already exists */ }
+            try {
+                await db.execute(`ALTER TABLE documents ADD COLUMN file_path VARCHAR(500) AFTER file_name`);
+                console.log('✅ Added file_path column');
+            } catch (e) { /* column already exists */ }
+
             // Check if expiry_date column exists, if not add it
             try {
                 const [columns] = await db.execute(`
@@ -788,35 +822,37 @@ router.post('/upload', upload.single('document'), async (req, res) => {
             
             const category = categoryMap[type.toLowerCase()] || 'Certificate';
             
-            // Insert certificate into documents table
+            // Insert certificate into documents table WITH file binary data
             const documentsQuery = `
                 INSERT INTO documents (
                     title,
                     description,
                     file_name,
-                    file_path,
                     file_size,
                     file_type,
+                    file_data,
+                    file_mime,
                     category,
                     uploaded_by,
                     status,
                     expiry_date
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'Pending', ?)
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'Pending', ?)
             `;
             
             const documentsValues = [
                 name,
                 description || `${type} certificate uploaded via form`,
                 filename || `${type}_certificate.pdf`,
-                filePath,
-                file_size || 0,
-                mime_type || 'application/pdf',
+                fileSize || 0,
+                fileMime || 'application/pdf',
+                fileData,
+                fileMime || 'application/pdf',
                 category,
                 uploaded_by || 1,
                 expiry_date || null
             ];
             
-            console.log('🔍 Inserting certificate with values:', documentsValues);
+            console.log('🔍 Inserting certificate (file_data size:', fileData ? fileData.length : 0, 'bytes)');
             
             const documentsResult = await db.execute(documentsQuery, documentsValues);
             console.log('✅ Certificate inserted successfully:', documentsResult);
@@ -851,6 +887,7 @@ router.post('/upload', upload.single('document'), async (req, res) => {
                 details: dbError.message
             });
         }
+
         
     } catch (error) {
         console.error('❌ Certificate upload error:', error);
@@ -1331,7 +1368,19 @@ router.get('/:id/download', async (req, res) => {
                     const doc = items[0];
                     console.log(`✅ Found document in documents table: ${doc.title}`);
                     
-                    // If we have a real file path, serve it
+                    // 1) Try BLOB data from database first (survives Railway redeploys)
+                    if (doc.file_data) {
+                        const mime = doc.file_mime || doc.file_type || 'application/octet-stream';
+                        const ext = mime.includes('pdf') ? '.pdf' : mime.includes('png') ? '.png' : mime.includes('jpeg') || mime.includes('jpg') ? '.jpg' : '';
+                        const fileName = doc.file_name || `${(doc.title || 'document').replace(/[^a-zA-Z0-9]/g, '_')}${ext}`;
+                        
+                        console.log(`📤 Serving document BLOB: ${fileName} (${mime}, ${doc.file_data.length} bytes)`);
+                        res.set('Content-Type', mime);
+                        res.set('Content-Disposition', `${req.query.view === 'true' ? 'inline' : 'attachment'}; filename="${fileName}"`);
+                        return res.send(Buffer.from(doc.file_data));
+                    }
+                    
+                    // 2) Fallback: try filesystem (works during same deploy session)
                     if (doc.file_path) {
                         const fs = require('fs');
                         const path = require('path');
@@ -1341,13 +1390,10 @@ router.get('/:id/download', async (req, res) => {
                             return req.query.view === 'true' ? res.sendFile(absolutePath) : res.download(absolutePath, doc.file_name);
                         } else {
                             console.error('❌ Physical file not found at:', absolutePath);
-                            // Do NOT fallback to PDF generation if a file_path was specified but missing, 
-                            // because it means it was a real file upload that got lost.
-                            return res.status(404).json({ error: 'The physical file is missing from the server storage.' });
                         }
                     }
                     
-                    // Otherwise, generate a PDF using metadata
+                    // 3) Last resort: generate an HTML summary page from metadata
                     const mappedItem = {
                         work_title: doc.title,
                         work_description: doc.description,
@@ -1371,6 +1417,7 @@ router.get('/:id/download', async (req, res) => {
                 console.error('❌ Database error querying documents table:', docError);
             }
         }
+
 
         let adminWorkItems;
         
