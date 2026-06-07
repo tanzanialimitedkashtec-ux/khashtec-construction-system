@@ -1358,8 +1358,12 @@ router.get('/:id/download', async (req, res) => {
                     };
                     const pdfContent = generatePDF(mappedItem);
                     const fileName = `${doc.title.replace(/[^a-zA-Z0-9\s]/g, '_').trim()}.pdf`;
-                    res.setHeader('Content-Type', 'application/pdf');
-                    res.setHeader('Content-Disposition', `${req.query.view === 'true' ? 'inline' : 'attachment'}; filename="${fileName}"`);
+                    if (req.query.view === 'true') {
+                        res.setHeader('Content-Type', 'text/html; charset=utf-8');
+                    } else {
+                        res.setHeader('Content-Type', 'application/pdf');
+                        res.setHeader('Content-Disposition', `attachment; filename="${fileName}"`);
+                    }
                     res.setHeader('Content-Length', Buffer.byteLength(pdfContent, 'utf8'));
                     return res.send(pdfContent);
                 }
@@ -1430,12 +1434,16 @@ router.get('/:id/download', async (req, res) => {
         // Create a proper filename
         const fileName = `${item.work_title.replace(/[^a-zA-Z0-9\s]/g, '_').trim()}.pdf`;
         
-        // Set headers for PDF download
-        res.setHeader('Content-Type', 'application/pdf');
-        res.setHeader('Content-Disposition', `${req.query.view === 'true' ? 'inline' : 'attachment'}; filename="${fileName}"`);
+        // Set headers - serve as HTML for QR/mobile viewing, PDF for downloads
+        if (req.query.view === 'true') {
+            res.setHeader('Content-Type', 'text/html; charset=utf-8');
+        } else {
+            res.setHeader('Content-Type', 'application/pdf');
+            res.setHeader('Content-Disposition', `attachment; filename="${fileName}"`);
+        }
         res.setHeader('Content-Length', Buffer.byteLength(pdfContent, 'utf8'));
         
-        console.log(`📤 Sending PDF: ${fileName}`);
+        console.log(`📤 Sending document: ${fileName}`);
         res.send(pdfContent);
         
     } catch (error) {
