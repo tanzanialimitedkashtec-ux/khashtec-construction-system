@@ -79752,6 +79752,12 @@ window.onScanSuccess = function(decodedText, decodedResult) {
     }
     document.getElementById('qr-scanner-container').style.display = 'none';
     
+    // If the QR code contains a full URL, open it directly so the file displays inline
+    if (decodedText.startsWith('http://') || decodedText.startsWith('https://')) {
+        window.open(decodedText, '_blank');
+        return;
+    }
+    
     let docId = decodedText;
     if (docId.includes('/')) {
         const parts = docId.split('/');
