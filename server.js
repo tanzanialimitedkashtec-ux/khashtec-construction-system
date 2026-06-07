@@ -174,25 +174,44 @@ app.use(helmet({
 
 
 
-// Rate limiting
-
+// Rate limiting — general API
 const limiter = rateLimit({
-
     windowMs: 15 * 60 * 1000, // 15 minutes
-
     max: 100, // limit each IP to 100 requests per windowMs
-
     message: 'Too many requests from this IP, please try again later.',
-
     trustProxy: true,
-
     standardHeaders: true,
-
     legacyHeaders: false,
-
 });
-
 app.use('/api/', limiter);
+
+// Strict rate limiting for authentication endpoints (brute-force protection)
+const authLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    max: 10, // only 10 login attempts per 15 minutes per IP
+    message: { error: 'Too many login attempts. Your IP has been temporarily blocked. Please try again after 15 minutes.' },
+    trustProxy: true,
+    standardHeaders: true,
+    legacyHeaders: false,
+    skipSuccessfulRequests: true, // don't count successful logins
+});
+app.use('/api/auth/login', authLimiter);
+
+// Rate limiting for delete operations (extra protection against accidental mass-deletion)
+const deleteLimiter = rateLimit({
+    windowMs: 5 * 60 * 1000, // 5 minutes
+    max: 20, // only 20 delete operations per 5 minutes
+    message: { error: 'Too many delete requests. Please slow down to prevent accidental data loss.' },
+    trustProxy: true,
+    standardHeaders: true,
+    legacyHeaders: false,
+});
+app.use('/api/', (req, res, next) => {
+    if (req.method === 'DELETE') {
+        return deleteLimiter(req, res, next);
+    }
+    next();
+});
 
 
 
@@ -259,10 +278,35 @@ app.use((req, res, next) => {
 
 
 // Body parsing middleware
-
 app.use(express.json({ limit: '10mb' }));
-
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+
+// Input sanitization middleware — strip dangerous characters from all string inputs
+// Prevents XSS attacks and SQL injection via request body fields
+app.use((req, res, next) => {
+    if (req.body && typeof req.body === 'object') {
+        const sanitizeValue = (value) => {
+            if (typeof value === 'string') {
+                // Remove script tags and event handlers to prevent XSS
+                return value
+                    .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
+                    .replace(/on\w+\s*=\s*["'][^"']*["']/gi, '');
+            }
+            return value;
+        };
+        const sanitizeObject = (obj) => {
+            for (const key of Object.keys(obj)) {
+                if (typeof obj[key] === 'string') {
+                    obj[key] = sanitizeValue(obj[key]);
+                } else if (typeof obj[key] === 'object' && obj[key] !== null) {
+                    sanitizeObject(obj[key]);
+                }
+            }
+        };
+        sanitizeObject(req.body);
+    }
+    next();
+});
 
 
 

@@ -1,0 +1,27 @@
+# Environment variables (contains secrets - NEVER commit)
+.env
+.env.local
+.env.production
+
+# Dependencies
+node_modules/
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE files
+.vscode/
+.idea/
+
+# Uploads (user-generated content)
+uploads/
+
+# Build output
+dist/
+build/

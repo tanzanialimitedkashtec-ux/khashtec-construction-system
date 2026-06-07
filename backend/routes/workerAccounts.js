@@ -720,25 +720,18 @@ router.post('/', upload.fields([
                 sql: insertError.sql
             });
             
-            // Handle data truncation or schema errors by recreating table
+            // Handle data truncation or schema errors by safely adding missing columns (DATA SAFE)
             if (insertError.message.includes('Data truncated') || 
                 insertError.message.includes('Unknown column') || 
                 insertError.message.includes("doesn't exist") ||
                 insertError.message.includes('out of range')) {
                 
-                console.log('🔧 Attempting to fix schema and recreate worker_accounts table...');
+                console.log('🔧 Attempting to fix schema safely (preserving existing data)...');
                 
                 try {
-                    await db.execute("DROP TABLE IF EXISTS worker_accounts");
-                    console.log('✅ Existing worker_accounts table dropped');
-                } catch (dropError) {
-                    console.log('⚠️ Could not drop table:', dropError.message);
-                }
-                
-                try {
-                    // Create the table with correct schema
+                    // Create the table only if it doesn't exist at all
                     await db.execute(`
-                        CREATE TABLE worker_accounts (
+                        CREATE TABLE IF NOT EXISTS worker_accounts (
                             id INT AUTO_INCREMENT PRIMARY KEY,
                             employee_id VARCHAR(50) NOT NULL UNIQUE,
                             full_name VARCHAR(255) NOT NULL,
@@ -764,7 +757,33 @@ router.post('/', upload.fields([
                         )
                     `);
                     
-                    console.log('✅ worker_accounts table recreated with correct schema');
+                    // Add any missing columns safely (won't error if they already exist)
+                    const requiredCols = [
+                        { name: 'employee_id', def: "VARCHAR(50) NOT NULL DEFAULT ''" },
+                        { name: 'full_name', def: "VARCHAR(255) NOT NULL DEFAULT ''" },
+                        { name: 'work_email', def: "VARCHAR(255) NOT NULL DEFAULT ''" },
+                        { name: 'phone_number', def: "VARCHAR(50) NULL" },
+                        { name: 'department', def: "VARCHAR(100) NULL" },
+                        { name: 'job_title', def: "VARCHAR(255) NULL" },
+                        { name: 'account_type', def: "VARCHAR(50) NOT NULL DEFAULT 'worker'" },
+                        { name: 'access_level', def: "VARCHAR(50) NOT NULL DEFAULT 'basic'" },
+                        { name: 'temporary_password', def: "VARCHAR(255) NOT NULL DEFAULT ''" },
+                        { name: 'account_notes', def: "TEXT NULL" },
+                        { name: 'profile_picture', def: "TEXT NULL" },
+                        { name: 'id_document', def: "TEXT NULL" },
+                        { name: 'contract_document', def: "TEXT NULL" },
+                        { name: 'status', def: "VARCHAR(50) DEFAULT 'active'" }
+                    ];
+                    for (const col of requiredCols) {
+                        try {
+                            await db.execute(`ALTER TABLE worker_accounts ADD COLUMN ${col.name} ${col.def}`);
+                            console.log(`✅ Added missing column: ${col.name}`);
+                        } catch (alterErr) {
+                            // Column already exists — safe to ignore
+                        }
+                    }
+                    
+                    console.log('✅ worker_accounts schema ensured safely (existing data preserved)');
                     
                     // Retry the insertion
                     console.log('🔄 Retrying worker account insertion...');
