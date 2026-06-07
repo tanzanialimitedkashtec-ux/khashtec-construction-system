@@ -2876,7 +2876,7 @@ router.post('/approvals', async (req, res) => {
             
             if (sourceTable === 'site_reports' && sourceId) {
                 try {
-                    const [srRows] = await db.execute(
+                    const srRows = await db.execute(
                         'SELECT sr.*, COALESCE(p.project_name, CONCAT(\'Project #\', sr.project_id)) AS project_name FROM site_reports sr LEFT JOIN projects p ON sr.project_id = p.id WHERE sr.id = ? LIMIT 1',
                         [sourceId]
                     );
@@ -2890,7 +2890,7 @@ router.post('/approvals', async (req, res) => {
                 }
             } else if (sourceTable === 'hr_work' && sourceId) {
                 try {
-                    const [hwRows] = await db.execute(
+                    const hwRows = await db.execute(
                         'SELECT * FROM hr_work WHERE id = ? LIMIT 1',
                         [sourceId]
                     );
@@ -2903,7 +2903,7 @@ router.post('/approvals', async (req, res) => {
                 }
             } else {
                 try {
-                    const [completions] = await db.execute(
+                    const completions = await db.execute(
                         'SELECT * FROM work_completions WHERE id = ? LIMIT 1',
                         [work_id]
                     );
@@ -2921,7 +2921,7 @@ router.post('/approvals', async (req, res) => {
             const calcScore = qualityScoreMap[quality_assessment] || 80;
 
             // Insert work approval
-            const [result] = await db.execute(`
+            const result = await db.execute(`
                 INSERT INTO work_approvals (
                     work_id, project_id, completed_by, completion_date, quality_assessment, 
                     compliance_check, approval_comments, safety_compliance, time_completion, 
@@ -3805,7 +3805,7 @@ router.get('/completions/pending', async (req, res) => {
 
         // 1) Query pending items from work_completions
         try {
-            const [wcRows] = await db.execute(
+            const wcRows = await db.execute(
                 `SELECT * FROM work_completions WHERE status = 'pending' ORDER BY completed_date DESC LIMIT 50`
             );
             if (wcRows && wcRows.length > 0) {
@@ -3818,7 +3818,7 @@ router.get('/completions/pending', async (req, res) => {
 
         // 2) Also pull submitted site reports that have not been approved yet
         try {
-            const [srRows] = await db.execute(`
+            const srRows = await db.execute(`
                 SELECT sr.id, sr.work_completed AS work_details,
                        COALESCE(p.project_name, CONCAT('Project #', sr.project_id)) AS project,
                        sr.site_supervisor AS completed_by,
@@ -3862,7 +3862,7 @@ router.get('/completions/pending', async (req, res) => {
 
         // 3) Also pull from hr_work items with status submitted/pending
         try {
-            const [hrRows] = await db.execute(`
+            const hrRows = await db.execute(`
                 SELECT hw.id, hw.work_title AS work_details,
                        hw.department_code AS project,
                        hw.submitted_by AS completed_by,
