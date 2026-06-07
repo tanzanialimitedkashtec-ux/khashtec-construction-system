@@ -28,27 +28,28 @@ router.get('/', async (req, res) => {
         console.log('🔍 Checking employee details table...');
         
         // Check if employee_details table has any records
-        let detailsCount;
+        let detailsCount = 0;
         try {
             const detailsCountResult = await db.execute('SELECT COUNT(*) as count FROM employee_details');
-            const detailsCountArray = Array.isArray(detailsCountResult) ? detailsCountResult[0] : detailsCountResult;
-            detailsCount = detailsCountArray;
-            console.log('📊 Employee details table record count:', detailsCount[0].count);
+            if (Array.isArray(detailsCountResult) && detailsCountResult.length > 0) {
+                detailsCount = Number(detailsCountResult[0].count) || 0;
+            }
+            console.log('📊 Employee details table record count:', detailsCount);
         } catch (error) {
             console.log('❌ Error checking employee_details table:', error.message);
             console.log('🔄 Skipping employee details creation due to table error');
-            detailsCount = [{ count: 0 }]; // Set to 0 to skip creation
+            detailsCount = 0;
         }
         
         // If employee_details is empty, create sample data for existing employees
-        if (detailsCount && detailsCount[0] && detailsCount[0].count === 0) {
+        if (detailsCount === 0) {
             console.log('📝 Employee details table is empty, creating sample data...');
             
             // Get all employees to create details for them
             let allEmployees;
             try {
                 const empResult = await db.execute('SELECT id, position, department FROM employees LIMIT 5');
-                allEmployees = Array.isArray(empResult) ? empResult[0] : empResult;
+                allEmployees = Array.isArray(empResult) ? empResult : [];
                 console.log(`📊 Found ${allEmployees.length} employees to create details for`);
                 
                 if (allEmployees && allEmployees.length > 0) {
@@ -80,10 +81,8 @@ router.get('/', async (req, res) => {
                 console.log('❌ Error getting employees for details creation:', empError.message);
                 console.log('🔄 Skipping employee details creation due to employees table error');
             }
-        } else if (detailsCount && detailsCount[0]) {
-            console.log('📊 Employee details table already has records');
         } else {
-            console.log('⚠️ Could not determine employee_details table status, proceeding with query...');
+            console.log('📊 Employee details table already has', detailsCount, 'records');
         }
         
         // Get employees with details
