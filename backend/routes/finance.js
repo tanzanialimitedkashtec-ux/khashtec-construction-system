@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const db = require('../../database/config/database');
+const upload = require('../middleware/upload');
 const { sendInvoiceEmail, sendExpenseEmail } = require('../services/emailService');
 
 console.log('🚀 Finance routes loaded with database connection');
@@ -180,8 +181,22 @@ router.get('/budgets', async (req, res) => {
 
 // ===== EXPENSE MANAGEMENT =====
 
-// POST - Submit new expense
-router.post('/expense', async (req, res) => {
+// Ensure receipt_file column exists on financial_transactions
+(async () => {
+    try {
+        await db.execute(`ALTER TABLE financial_transactions ADD COLUMN receipt_file VARCHAR(500) DEFAULT NULL`);
+        console.log('✅ Added receipt_file column to financial_transactions');
+    } catch (e) {
+        if (e.message && e.message.includes('Duplicate column')) {
+            // Column already exists — no action needed
+        } else {
+            console.log('ℹ️ receipt_file column check:', e.message);
+        }
+    }
+})();
+
+// POST - Submit new expense (with optional receipt file upload)
+router.post('/expense', upload.single('receipt'), async (req, res) => {
     console.log('📝 POST /api/finance/expense accessed');
     console.log('📊 Request body:', req.body);
     const {
@@ -198,6 +213,9 @@ router.post('/expense', async (req, res) => {
             required: ['category', 'amount', 'description', 'department']
         });
     }
+
+    // Get uploaded receipt file path (if any)
+    const receiptFile = req.file ? '/uploads/' + req.file.filename : null;
 
     try {
         const submitterId = await resolveUserId('Finance Manager');
@@ -224,8 +242,8 @@ router.post('/expense', async (req, res) => {
         );
 
         const txRes = await db.execute(
-            `INSERT INTO financial_transactions (type, category, description, amount, date, created_by, status)
-             VALUES (?, ?, ?, ?, ?, ?, ?)`,
+            `INSERT INTO financial_transactions (type, category, description, amount, date, created_by, status, receipt_file)
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
             [
                 'Expense',
                 category,
@@ -233,7 +251,8 @@ router.post('/expense', async (req, res) => {
                 Number(amount) || 0,
                 new Date().toISOString().slice(0, 10),
                 submitterId,
-                'Pending'
+                'Pending',
+                receiptFile
             ]
         );
 
@@ -254,7 +273,8 @@ router.post('/expense', async (req, res) => {
             work_id: workRes.insertId,
             category,
             amount: Number(amount) || 0,
-            status: 'Pending'
+            status: 'Pending',
+            receipt_file: receiptFile
         });
     } catch (error) {
         console.error('Error submitting expense:', error);
@@ -317,7 +337,7 @@ router.get('/expenses', async (req, res) => {
     console.log('📝 GET /api/finance/expenses accessed');
     try {
         const { status } = req.query;
-        let query = `SELECT id, date, category, description, amount, status, created_at
+        let query = `SELECT id, date, category, description, amount, status, receipt_file, created_at
             FROM financial_transactions
             WHERE type = 'Expense'`;
         const params = [];
