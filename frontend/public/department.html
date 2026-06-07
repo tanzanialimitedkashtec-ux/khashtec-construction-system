@@ -69067,6 +69067,7 @@ function renderExpenseCards(expenses, containerId, showConfirm) {
         el.innerHTML = '<p style="color:#666;text-align:center;padding:20px;">No expenses found.</p>';
         return;
     }
+    var appUrl = window.location.origin;
     var html = '<div class="expense-cards-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:16px;">';
     expenses.forEach(function(exp) {
         var statusColor = exp.status === 'Pending' ? '#f39c12' : (exp.status === 'Approved' ? '#28a745' : '#6c757d');
@@ -69081,6 +69082,15 @@ function renderExpenseCards(expenses, containerId, showConfirm) {
         html += '<div style="color:#888;font-size:0.8em;border-top:1px solid #eee;padding-top:8px;">';
         html += '<span>Date: ' + (exp.date || 'N/A') + '</span>';
         html += '</div>';
+        if (exp.receipt_file) {
+            var receiptUrl = appUrl + exp.receipt_file;
+            var qrUrl = 'https://api.qrserver.com/v1/create-qr-code/?size=120x120&data=' + encodeURIComponent(receiptUrl);
+            html += '<div style="margin-top:12px;padding-top:10px;border-top:1px solid #eee;text-align:center;">';
+            html += '<p style="margin:0 0 6px;font-size:0.8em;color:#555;font-weight:600;">Scan to view receipt:</p>';
+            html += '<img src="' + qrUrl + '" alt="Receipt QR Code" style="width:120px;height:120px;border:1px solid #ddd;border-radius:4px;padding:4px;background:#fff;" />';
+            html += '<div style="margin-top:6px;"><a href="' + receiptUrl + '" target="_blank" style="font-size:0.75em;color:#1a5276;text-decoration:underline;">View Receipt</a></div>';
+            html += '</div>';
+        }
         if (showConfirm && exp.status === 'Pending') {
             html += '<div style="margin-top:12px;text-align:right;">';
             html += '<button class="action" onclick="confirmExpense(' + exp.id + ')" style="background:#28a745;color:#fff;padding:6px 20px;border-radius:6px;border:none;cursor:pointer;">✓ Confirm</button>';
@@ -69205,17 +69215,31 @@ function submitNewExpense() {
 
     console.log('[Expense] Submitting new expense:', { category: category, amount: amount, description: description, department: department });
 
-    const authToken = (typeof sessionManager !== 'undefined' && sessionManager.getAuthToken) ? sessionManager.getAuthToken() : '';
+    var formData = new FormData();
+    formData.append('category', category);
+    formData.append('amount', Number(amount));
+    formData.append('description', description);
+    formData.append('department', department);
+
+    var receiptInput = document.getElementById('expenseReceipt');
+    if (receiptInput && receiptInput.files && receiptInput.files.length > 0) {
+        formData.append('receipt', receiptInput.files[0]);
+    }
+
+    var headers = {};
+    var authToken = (typeof sessionManager !== 'undefined' && sessionManager.getAuthToken) ? sessionManager.getAuthToken() : '';
+    if (authToken) headers['Authorization'] = 'Bearer ' + authToken;
+
     fetch('/api/finance/expense', {
         method: 'POST',
-        headers: Object.assign({ 'Content-Type': 'application/json' }, (authToken ? { 'Authorization': `Bearer ${authToken}` } : {})),
-        body: JSON.stringify({ category: category, amount: Number(amount), description: description, department: department })
+        headers: headers,
+        body: formData
     })
     .then(function(response) { return response.json(); })
     .then(function(data) {
         console.log('[Expense] Expense submitted:', data);
         if (data.transaction_id || data.work_id) {
-            customAlert('Expense submitted successfully!\\n\\nCategory: ' + category + '\\nAmount: TZS ' + Number(amount).toLocaleString() + '\\nStatus: Pending Confirmation', 'Expense Submitted', 'success');
+            customAlert('Expense submitted successfully!\n\nCategory: ' + category + '\nAmount: TZS ' + Number(amount).toLocaleString() + '\nStatus: Pending Confirmation', 'Expense Submitted', 'success');
             document.getElementById('newExpenseForm').reset();
             loadPendingExpenses();
             loadAllExpenses();
