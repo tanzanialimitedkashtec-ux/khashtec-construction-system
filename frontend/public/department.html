@@ -67027,6 +67027,29 @@ function getCurrentUserId() {
 
 }
 
+// Navigate back — used by the page-level Back button
+function goBack() {
+    try {
+        // Prefer history.back for SPA-like navigation
+        if (window.history && window.history.length > 1) {
+            window.history.back();
+            return;
+        }
+
+        // Fallback to referrer if history is not available
+        if (document.referrer) {
+            window.location.href = document.referrer;
+            return;
+        }
+
+        // Final fallback to the app root
+        window.location.href = '/';
+    } catch (e) {
+        console.error('goBack() failed:', e);
+        try { window.location.href = '/'; } catch (_) {}
+    }
+}
+
 
 
 async function viewCampaignDetails(campaignId) {
