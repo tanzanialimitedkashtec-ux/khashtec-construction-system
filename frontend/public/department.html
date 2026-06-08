@@ -66959,9 +66959,20 @@ async function loadPurchasesForTracking() {
     try {
 
         const purchaseSelect = document.getElementById('purchaseSelect');
+        const trackingAmountInput = document.getElementById('trackingAmount');
 
         purchaseSelect.innerHTML = '<option value="">Choose a purchase...</option>';
 
+        purchaseSelect.onchange = function () {
+            const purchaseId = parseInt(this.value, 10);
+            const selectedPurchase = (window._trackingPurchasesCache || []).find(p => p.id === purchaseId);
+            if (selectedPurchase && trackingAmountInput) {
+                const amount = parseFloat(selectedPurchase.amount || selectedPurchase.total_amount || 0);
+                trackingAmountInput.value = Number.isFinite(amount) ? amount : '';
+            } else if (trackingAmountInput) {
+                trackingAmountInput.value = '';
+            }
+        };
         
 
         const response = await KashTecAPI.get('/luggage-purchases/for-tracking');
