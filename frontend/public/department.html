@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 
 <html lang="en">
 
@@ -12738,7 +12738,7 @@ font-weight: bold;
 
     color: white;
 
-    padding: 4px 5px;
+    padding: 12px 9px;
 
     text-align: left;
 
@@ -20795,7 +20795,7 @@ font-size: 12px;
 
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
 
-    color: white;
+    color: #666;
 
     padding: 1px 2px;
 
@@ -20807,7 +20807,7 @@ font-size: 12px;
 
     transition: transform 0.3s ease;
 
-    font-size: 6px;
+    font-size: 8px;
 
 }
 
@@ -37015,6 +37015,8 @@ function toggleSiteReportForm() {
 
         toggleBtn.style.background = '#dc3545';
 
+        loadProjectsForReport();
+
         
 
         // Smooth scroll to form
@@ -39525,6 +39527,51 @@ async function loadProjectsForAssignment() {
 
 
 
+// Load projects for site report dropdown
+async function loadProjectsForReport() {
+    try {
+        const baseUrl = window.location.origin;
+        const token = typeof sessionManager !== 'undefined' && sessionManager.getAuthToken ? sessionManager.getAuthToken() : null;
+        const headers = { 'Content-Type': 'application/json' };
+        if (token) headers['Authorization'] = `Bearer ${token}`;
+
+        const response = await fetch(`${baseUrl}/api/projects`, {
+            method: 'GET',
+            headers: headers
+        });
+
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+
+        const data = await response.json();
+        const projects = Array.isArray(data) ? data : (data.projects || []);
+
+        const select = document.getElementById('reportProject');
+        if (!select) return;
+
+        select.innerHTML = '<option value="">Select Project</option>';
+
+        projects.forEach(project => {
+            const option = document.createElement('option');
+            option.value = project.id;
+            const projectName = project.name || project.projectName || project.project_name || `Project ${project.id}`;
+            const status = project.status ? ` (${project.status})` : '';
+            option.textContent = projectName + status;
+            option.setAttribute('data-name', projectName);
+            select.appendChild(option);
+        });
+
+        console.log(`Project report dropdown populated with ${projects.length} projects`);
+    } catch (error) {
+        console.error('Error loading projects for report:', error);
+        const select = document.getElementById('reportProject');
+        if (select) {
+            select.innerHTML = '<option value="">Error loading projects - check connection</option>';
+        }
+    }
+}
+
 function attendance(){
 
     showContent(`
@@ -40968,12 +41015,6 @@ function displayAttendanceRecords(records) {
 
     records.forEach(record => {
 
-        let dept = record.department;
-        if (!dept && typeof officePortalUsers !== 'undefined') {
-            const userMatch = officePortalUsers.find(u => u.id == record.employee_id || u.name === record.employee_name);
-            if (userMatch && userMatch.department) dept = userMatch.department;
-        }
-
         // Map backend fields to frontend expected fields
 
         const mappedRecord = {
@@ -40982,7 +41023,7 @@ function displayAttendanceRecords(records) {
 
             employee_name: record.employee_name,
 
-            department: dept,
+            department: record.department,
 
             attendance_date: record.attendance_date,
 
@@ -41149,6 +41190,10 @@ function displayAttendanceRecords(records) {
                 <td>
 
                     <div class="attendance-actions">
+
+                        <button class="action-btn view" onclick="viewAttendanceDetails('${mappedRecord.id}')" title="View Details">👁️</button>
+
+                        <button class="action-btn edit" onclick="editAttendance('${mappedRecord.id}')" title="Edit Attendance">✏️</button>
 
                         <button class="action-btn delete" onclick="deleteAttendance('${mappedRecord.id}')" title="Delete Record">🗑️</button>
 
@@ -45336,8 +45381,7 @@ function displayPpeRecords(ppeRecords) {
                 </td>
                 <td>
                     <div class="ppe-actions">
-                        <button class="action-btn view" onclick="viewPpeDetails('${ppe.id}')" title="View Details">View</button>
-                        <button class="action-btn edit" onclick="editPpeRecord('${ppe.id}')" title="Edit Record">Edit</button>
+                        <button class="action-btn delete" onclick="deletePpeRecord('${ppe.id}')" title="Delete Record">Delete</button>
                         <button class="action-btn return" onclick="recordPpeReturn('${ppe.id}')" title="Record Return">Return</button>
                     </div>
                 </td>
@@ -45361,6 +45405,39 @@ function viewPpeDetails(ppeId) {
 
 function editPpeRecord(ppeId) {
     customAlert('Editing PPE record for ID: ' + ppeId, "Edit PPE Record", "info");
+}
+
+
+
+function deletePpeRecord(ppeId) {
+    if (confirm('Are you sure you want to delete this PPE record? This action cannot be undone.')) {
+        try {
+            const baseUrl = window.location.origin;
+            const token = typeof sessionManager !== 'undefined' && sessionManager.getAuthToken ? sessionManager.getAuthToken() : null;
+            const headers = { 'Content-Type': 'application/json' };
+            if (token) headers['Authorization'] = `Bearer ${token}`;
+
+            fetch(`${baseUrl}/api/work/hse/ppe/${ppeId}`, {
+                method: 'DELETE',
+                headers: headers
+            })
+            .then(response => {
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                customAlert('PPE record deleted successfully', "Delete Successful", "success");
+                // Reload the PPE list after deletion
+                if (typeof loadPpeRecords === 'function') {
+                    loadPpeRecords();
+                }
+            })
+            .catch(error => {
+                console.error('Error deleting PPE record:', error);
+                customAlert('Failed to delete PPE record: ' + error.message, "Delete Error", "error");
+            });
+        } catch (error) {
+            console.error('Error in deletePpeRecord:', error);
+            customAlert('An error occurred while deleting the PPE record', "Error", "error");
+        }
+    }
 }
 
 
@@ -71966,7 +72043,7 @@ function displayProjects(projects) {
         const projId = project.projectId || project.project_code || project.id || 'N/A';
         const projName = project.name || 'Not specified';
         const projCode = project.projectCode || project.project_code || 'N/A';
-        const clientName = project.client || project.client_name || project.client_id || 'Not specified';
+        const clientName = project.client || project.client_id || 'Not specified';
 
         // Get project type display safely
 
@@ -72012,19 +72089,19 @@ function displayProjects(projects) {
 
         // Format contract value
 
-        const rawBudget = parseFloat(project.contractValue || project.contract_value || project.budget || 0);
+        const rawBudget = parseFloat(project.contractValue || project.budget || 0);
         const contractValue = rawBudget ? (rawBudget / 1000000).toFixed(1) + 'M TZS' : 'N/A';
 
         
 
         // Get priority display safely
 
-        const priorityVal = (project.priority_level || project.priorityLevel || project.priority || '').toLowerCase();
+        const priorityVal = (project.priorityLevel || project.priority || project.priority_level || '').toString().toLowerCase();
         const priorityDisplay = priorityVal === 'high' ? '🔴 High' : 
 
                                priorityVal === 'medium' ? '🟡 Medium' : 
 
-                               priorityVal === 'low' ? '🟢 Low' : (project.priorityLevel || project.priority || 'Medium');
+                               priorityVal === 'low' ? '🟢 Low' : (project.priorityLevel || project.priority || project.priority_level || 'Medium');
 
         
 
@@ -72043,17 +72120,14 @@ function displayProjects(projects) {
 
         
 
-        const rawDeliverables = project.key_deliverables || project.keyDeliverables || '';
-        const deliverables = rawDeliverables || 'Not specified';
-        const keyDeliverables = rawDeliverables
-            ? (rawDeliverables.length > 40 ? rawDeliverables.substring(0, 40) + '...' : rawDeliverables)
-            : 'Not specified';
+        const deliverables = project.keyDeliverables || project.key_deliverables || project.deliverables || 'Not specified';
+        const keyDeliverables = deliverables.length > 40 ? deliverables.substring(0, 40) + '...' : deliverables;
 
         
 
         // Get progress bar
 
-        const progress = project.progress || project.progress_percentage || 0;
+        const progress = Number(project.progress ?? project.project_progress ?? project.progress_percentage ?? 0);
 
         const progressBar = `
 
@@ -72068,8 +72142,8 @@ function displayProjects(projects) {
         `;
 
         
-        const siteLocation = project.siteLocation || project.site_location || project.location || 'Not specified';
-        const managerName = project.manager || project.manager_name || project.manager_id || 'Not assigned';
+        const siteLocation = project.siteLocation || project.location || project.site_location || 'Not specified';
+        const managerName = project.manager || project.manager_id || project.project_manager || 'Not assigned';
 
         // Parse dates safely to avoid Invalid Date / RangeError
         const formatDate = (dateVal) => {
@@ -72221,9 +72295,7 @@ function displayProjects(projects) {
 
                         <button class="action-btn view" onclick="viewProject('${project.id}')" title="View Details">👁️</button>
 
-                        <button class="action-btn edit" onclick="editProject('${project.id}')" title="Edit Project">✏️</button>
-
-                        <button class="action-btn progress" onclick="updateProgress('${project.id}')" title="Update Progress">📊</button>
+                        <button class="action-btn delete" onclick="deleteProject('${project.id}')" title="Delete Project">🗑️</button>
 
                     </div>
 
@@ -72265,6 +72337,39 @@ function updateProgress(projectId) {
 
     customAlert(`Updating progress for project ${projectId}...\n\nProgress update form will open for recording completed milestones, updating percentage complete, and documenting current project status.`, "Update Progress", "info");
 
+}
+
+
+// Delete project with confirmation and reload list
+async function deleteProject(projectId) {
+    try {
+        const confirmed = confirm(`Delete project ${projectId}? This action cannot be undone.`);
+        if (!confirmed) return;
+
+        const baseUrl = window.location.origin;
+        const resp = await fetch(`${baseUrl}/api/projects/${projectId}`, {
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${sessionManager.getAuthToken()}`
+            }
+        });
+
+        const data = await resp.json().catch(() => ({}));
+
+        if (resp.ok && (data.success === undefined || data.success === true)) {
+            customAlert(`Project ${projectId} deleted successfully.`, 'Deleted', 'success');
+            // Reload projects list
+            if (typeof loadProjects === 'function') loadProjects();
+            return;
+        }
+
+        const errMsg = data.error || data.message || resp.statusText || 'Unknown error';
+        customAlert(`Failed to delete project: ${errMsg}`, 'Error', 'error');
+    } catch (e) {
+        console.error('Error deleting project:', e);
+        customAlert('Failed to delete project. See console for details.', 'Error', 'error');
+    }
 }
 
 
@@ -74341,12 +74446,6 @@ function recordSiteReports(){
                             <select id="reportProject" required>
 
                                 <option value="">Select Project</option>
-
-                                <option value="prj001">Port Modernization Phase 1</option>
-
-                                <option value="prj002">Warehouse Construction</option>
-
-                                <option value="prj003">Road Infrastructure</option>
 
                             </select>
 
@@ -83124,7 +83223,6 @@ function displaySalesRecords(records) {
 
                     <div class="sales-actions">
                         <button class="action-btn view" onclick="viewSalesTransaction('${record.id}')" title="View Details">👁️</button>
-                        <button class="action-btn download" onclick="downloadSalesContract('${record.id}')" title="Download Contract">📄</button>
                     </div>
 
                 </td>
@@ -108759,6 +108857,142 @@ window.showDocumentQR = function(docId, docName) {
     } else {
         renderQR();
     }
+}
+
+// Load Claims Management Module
+async function loadClaimsManagement() {
+    try {
+        const baseUrl = window.location.origin;
+        const token = typeof sessionManager !== 'undefined' && sessionManager.getAuthToken ? sessionManager.getAuthToken() : null;
+        const headers = { 'Content-Type': 'application/json' };
+        if (token) headers['Authorization'] = `Bearer ${token}`;
+
+        const response = await fetch(`${baseUrl}/api/claimsManagement`, {
+            method: 'GET',
+            headers: headers
+        });
+
+        const claims = await response.json();
+        const claimsArray = Array.isArray(claims) ? claims : (claims.data || []);
+
+        const claimsHTML = `
+            <div class="card">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                    <h3>Claims Management</h3>
+                    <button type="button" onclick="toggleClaimsForm()" class="action" style="background: #007bff;">
+                        📝 File New Claim
+                    </button>
+                </div>
+
+                <div class="claims-table-container" style="background: white; border: 1px solid #dee2e6; border-radius: 4px; overflow-x: auto; box-shadow: 0 2px 4px rgba(0,0,0,0.1); margin-top: 15px;">
+                    <table class="claims-table" style="width: 100%; border-collapse: collapse; font-size: 12px; background: white; min-width: 900px;">
+                        <thead>
+                            <tr style="background: #0b3d91; color: white;">
+                                <th style="padding: 12px; text-align: left; border-bottom: 2px solid #093278; font-weight: 600;">Claim #</th>
+                                <th style="padding: 12px; text-align: left; border-bottom: 2px solid #093278; font-weight: 600;">Employee</th>
+                                <th style="padding: 12px; text-align: left; border-bottom: 2px solid #093278; font-weight: 600;">Type</th>
+                                <th style="padding: 12px; text-align: left; border-bottom: 2px solid #093278; font-weight: 600;">Title</th>
+                                <th style="padding: 12px; text-align: left; border-bottom: 2px solid #093278; font-weight: 600;">Amount Claimed</th>
+                                <th style="padding: 12px; text-align: left; border-bottom: 2px solid #093278; font-weight: 600;">Priority</th>
+                                <th style="padding: 12px; text-align: left; border-bottom: 2px solid #093278; font-weight: 600;">Status</th>
+                                <th style="padding: 12px; text-align: left; border-bottom: 2px solid #093278; font-weight: 600;">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${claimsArray.map(claim => {
+                                const statusClass = claim.status === 'Approved' ? 'success' : claim.status === 'Rejected' ? 'danger' : 'warning';
+                                const priorityClass = claim.priority === 'High' ? 'danger' : claim.priority === 'Medium' ? 'warning' : 'info';
+                                return `
+                                    <tr style="border-bottom: 1px solid #e9ecef;">
+                                        <td style="padding: 10px 12px;">${claim.claim_number || '—'}</td>
+                                        <td style="padding: 10px 12px;">${claim.full_name || '—'}</td>
+                                        <td style="padding: 10px 12px;">${claim.claim_type || '—'}</td>
+                                        <td style="padding: 10px 12px;">${claim.title || '—'}</td>
+                                        <td style="padding: 10px 12px; font-weight: 500;">${claim.amount_claimed ? 'TZS ' + parseFloat(claim.amount_claimed).toLocaleString() : '—'}</td>
+                                        <td style="padding: 10px 12px;"><span style="background: ${priorityClass === 'danger' ? '#dc3545' : priorityClass === 'warning' ? '#ffc107' : '#17a2b8'}; color: white; padding: 3px 8px; border-radius: 12px; font-size: 11px;">${claim.priority || '—'}</span></td>
+                                        <td style="padding: 10px 12px;"><span style="background: ${statusClass === 'success' ? '#28a745' : statusClass === 'danger' ? '#dc3545' : '#ff9800'}; color: white; padding: 3px 8px; border-radius: 12px; font-size: 11px;">${claim.status || 'Pending'}</span></td>
+                                        <td style="padding: 10px 12px;">
+                                            <button class="action-btn view" onclick="viewClaimDetails('${claim.id}')" title="View Details" style="background: #17a2b8; color: white; border: none; padding: 4px 8px; border-radius: 3px; cursor: pointer; font-size: 11px;">View</button>
+                                        </td>
+                                    </tr>
+                                `;
+                            }).join('')}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        `;
+
+        showContent(claimsHTML);
+    } catch (error) {
+        console.error('Error loading claims management:', error);
+        customAlert('Failed to load claims: ' + error.message, 'Error', 'error');
+    }
+}
+
+// View Claim Details
+async function viewClaimDetails(claimId) {
+    try {
+        const baseUrl = window.location.origin;
+        const token = typeof sessionManager !== 'undefined' && sessionManager.getAuthToken ? sessionManager.getAuthToken() : null;
+        const headers = { 'Content-Type': 'application/json' };
+        if (token) headers['Authorization'] = `Bearer ${token}`;
+
+        const response = await fetch(`${baseUrl}/api/claimsManagement/${claimId}`, {
+            method: 'GET',
+            headers: headers
+        });
+
+        if (!response.ok) throw new Error('Claim not found');
+        const claim = await response.json();
+
+        const modal = document.createElement('div');
+        modal.style.cssText = 'position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.4); display: flex; align-items: center; justify-content: center; z-index: 10000;';
+        modal.id = 'claimDetailModal';
+        
+        modal.innerHTML = `
+            <div style="background: white; border-radius: 8px; padding: 30px; max-width: 700px; width: 90%; max-height: 80vh; overflow-y: auto; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 2px solid #2196F3; padding-bottom: 10px;">
+                    <h3 style="margin: 0; color: #2196F3;">Claim Details - ${claim.claim_number || '—'}</h3>
+                    <button onclick="document.getElementById('claimDetailModal').remove()" style="background: none; border: none; font-size: 24px; cursor: pointer; color: #666;">×</button>
+                </div>
+                <table style="width: 100%; border-collapse: collapse;">
+                    <tbody>
+                        <tr><td style="padding: 8px 12px; font-weight: bold; color: #555; white-space: nowrap; vertical-align: top;">Claim #</td><td style="padding: 8px 12px;">${claim.claim_number || '—'}</td></tr>
+                        <tr><td style="padding: 8px 12px; font-weight: bold; color: #555; white-space: nowrap; vertical-align: top;">Employee</td><td style="padding: 8px 12px;">${claim.full_name || '—'}</td></tr>
+                        <tr><td style="padding: 8px 12px; font-weight: bold; color: #555; white-space: nowrap; vertical-align: top;">Type</td><td style="padding: 8px 12px;">${claim.claim_type || '—'}</td></tr>
+                        <tr><td style="padding: 8px 12px; font-weight: bold; color: #555; white-space: nowrap; vertical-align: top;">Title</td><td style="padding: 8px 12px;">${claim.title || '—'}</td></tr>
+                        <tr><td style="padding: 8px 12px; font-weight: bold; color: #555; white-space: nowrap; vertical-align: top;">Description</td><td style="padding: 8px 12px;">${claim.description || '—'}</td></tr>
+                        <tr><td style="padding: 8px 12px; font-weight: bold; color: #555; white-space: nowrap; vertical-align: top;">Claim Date</td><td style="padding: 8px 12px;">${claim.claim_date ? new Date(claim.claim_date).toLocaleDateString() : '—'}</td></tr>
+                        <tr><td style="padding: 8px 12px; font-weight: bold; color: #555; white-space: nowrap; vertical-align: top;">Incident Date</td><td style="padding: 8px 12px;">${claim.incident_date ? new Date(claim.incident_date).toLocaleDateString() : '—'}</td></tr>
+                        <tr><td style="padding: 8px 12px; font-weight: bold; color: #555; white-space: nowrap; vertical-align: top;">Incident Location</td><td style="padding: 8px 12px;">${claim.incident_location || '—'}</td></tr>
+                        <tr><td style="padding: 8px 12px; font-weight: bold; color: #555; white-space: nowrap; vertical-align: top;">Amount Claimed</td><td style="padding: 8px 12px;">${claim.amount_claimed ? 'TZS ' + parseFloat(claim.amount_claimed).toLocaleString() : '—'}</td></tr>
+                        <tr><td style="padding: 8px 12px; font-weight: bold; color: #555; white-space: nowrap; vertical-align: top;">Amount Approved</td><td style="padding: 8px 12px;">${claim.amount_approved ? 'TZS ' + parseFloat(claim.amount_approved).toLocaleString() : '—'}</td></tr>
+                        <tr><td style="padding: 8px 12px; font-weight: bold; color: #555; white-space: nowrap; vertical-align: top;">Priority</td><td style="padding: 8px 12px;"><span style="background: ${claim.priority === 'High' ? '#dc3545' : claim.priority === 'Medium' ? '#ffc107' : '#17a2b8'}; color: white; padding: 3px 10px; border-radius: 12px; font-size: 12px;">${claim.priority || '—'}</span></td></tr>
+                        <tr><td style="padding: 8px 12px; font-weight: bold; color: #555; white-space: nowrap; vertical-align: top;">Status</td><td style="padding: 8px 12px;"><span style="background: ${claim.status === 'Approved' ? '#28a745' : claim.status === 'Rejected' ? '#dc3545' : '#ff9800'}; color: white; padding: 3px 10px; border-radius: 12px; font-size: 12px;">${claim.status || 'Pending'}</span></td></tr>
+                        <tr><td style="padding: 8px 12px; font-weight: bold; color: #555; white-space: nowrap; vertical-align: top;">Witness Names</td><td style="padding: 8px 12px;">${claim.witness_names || '—'}</td></tr>
+                        <tr><td style="padding: 8px 12px; font-weight: bold; color: #555; white-space: nowrap; vertical-align: top;">Approved By</td><td style="padding: 8px 12px;">${claim.approved_by || '—'}</td></tr>
+                        <tr><td style="padding: 8px 12px; font-weight: bold; color: #555; white-space: nowrap; vertical-align: top;">Approved Date</td><td style="padding: 8px 12px;">${claim.approved_date ? new Date(claim.approved_date).toLocaleDateString() : '—'}</td></tr>
+                        <tr><td style="padding: 8px 12px; font-weight: bold; color: #555; white-space: nowrap; vertical-align: top;">Payment Date</td><td style="padding: 8px 12px;">${claim.payment_date ? new Date(claim.payment_date).toLocaleDateString() : '—'}</td></tr>
+                        <tr><td style="padding: 8px 12px; font-weight: bold; color: #555; white-space: nowrap; vertical-align: top;">Notes</td><td style="padding: 8px 12px;">${claim.notes || '—'}</td></tr>
+                        <tr><td style="padding: 8px 12px; font-weight: bold; color: #555; white-space: nowrap; vertical-align: top;">Created</td><td style="padding: 8px 12px;">${claim.created_at ? new Date(claim.created_at).toLocaleDateString() : '—'}</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        `;
+
+        document.body.appendChild(modal);
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) modal.remove();
+        });
+    } catch (error) {
+        console.error('Error viewing claim:', error);
+        customAlert('Failed to load claim details: ' + error.message, 'Error', 'error');
+    }
+}
+
+function toggleClaimsForm() {
+    customAlert('New claim form - Coming soon', 'Feature', 'info');
 }
 </script>
 
