@@ -319,5 +319,66 @@
     }
   };
 
+  // Global helper to record PPE returns (used by inline onclick buttons)
+  window.recordPpeReturn = async function(ppeId) {
+    if (!confirm(`Are you sure you want to record return for PPE ID: ${ppeId}?`)) return;
+
+    try {
+      // Prefer centralized API helper when available
+      if (window.KashTecAPI && typeof window.KashTecAPI.put === 'function') {
+        try {
+          const payload = { status: 'Returned', return_date: new Date().toISOString() };
+          // Try HSE-scoped endpoint first
+          let resp = await window.KashTecAPI.put(`/work/hse/ppe/${ppeId}`, payload).catch(() => null);
+          if (!resp) {
+            resp = await window.KashTecAPI.put(`/work/ppe/${ppeId}`, payload).catch(() => null);
+          }
+          console.log('🔁 recordPpeReturn response via KashTecAPI:', resp);
+          if (resp && (resp.success || resp.message)) {
+            alert('PPE return recorded successfully!');
+            if (typeof window.loadPpeRecords === 'function') await window.loadPpeRecords(); else window.location.reload();
+            return;
+          }
+        } catch (e) {
+          console.warn('⚠️ KashTecAPI.put attempts failed:', e.message);
+        }
+      }
+
+      // Fallback: call API directly
+      const base = (window.KashTecAPI && window.KashTecAPI.baseUrl) ? window.KashTecAPI.baseUrl : (window.location.origin + '/api');
+      const url = `${base}/work/hse/ppe/${ppeId}`;
+      const token = (window.sessionManager && window.sessionManager.getAuthToken && window.sessionManager.getAuthToken()) || localStorage.getItem('authToken') || '';
+      const headers = { 'Content-Type': 'application/json' };
+      if (token) headers['Authorization'] = `Bearer ${token}`;
+
+      const response = await fetch(url, {
+        method: 'PUT',
+        headers,
+        body: JSON.stringify({ status: 'Returned', return_date: new Date().toISOString() })
+      });
+
+      const text = await response.text();
+      let json = null;
+      try { json = text ? JSON.parse(text) : null; } catch (e) { json = { raw: text }; }
+
+      console.log('🔁 recordPpeReturn fetch fallback:', response.status, response.statusText, json);
+
+      if (!response.ok) {
+        throw new Error((json && (json.error || json.message)) || `HTTP ${response.status}`);
+      }
+
+      if (json && (json.success || json.message)) {
+        alert('PPE return recorded successfully!');
+        if (typeof window.loadPpeRecords === 'function') await window.loadPpeRecords(); else window.location.reload();
+        return;
+      }
+
+      throw new Error((json && (json.error || json.message)) || 'Failed to record PPE return');
+    } catch (err) {
+      console.error('❌ Error recording PPE return:', err);
+      alert('Error recording PPE return: ' + (err.message || err));
+    }
+  };
+
   // Optional: if contentArea exists and a global flag set later, we could auto-run
 })();
