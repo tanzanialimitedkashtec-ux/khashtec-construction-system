@@ -40968,6 +40968,12 @@ function displayAttendanceRecords(records) {
 
     records.forEach(record => {
 
+        let dept = record.department;
+        if (!dept && typeof officePortalUsers !== 'undefined') {
+            const userMatch = officePortalUsers.find(u => u.id == record.employee_id || u.name === record.employee_name);
+            if (userMatch && userMatch.department) dept = userMatch.department;
+        }
+
         // Map backend fields to frontend expected fields
 
         const mappedRecord = {
@@ -40976,7 +40982,7 @@ function displayAttendanceRecords(records) {
 
             employee_name: record.employee_name,
 
-            department: record.department,
+            department: dept,
 
             attendance_date: record.attendance_date,
 
@@ -41143,10 +41149,6 @@ function displayAttendanceRecords(records) {
                 <td>
 
                     <div class="attendance-actions">
-
-                        <button class="action-btn view" onclick="viewAttendanceDetails('${mappedRecord.id}')" title="View Details">👁️</button>
-
-                        <button class="action-btn edit" onclick="editAttendance('${mappedRecord.id}')" title="Edit Attendance">✏️</button>
 
                         <button class="action-btn delete" onclick="deleteAttendance('${mappedRecord.id}')" title="Delete Record">🗑️</button>
 
