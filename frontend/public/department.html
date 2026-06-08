@@ -25503,9 +25503,9 @@ window.KashTecAPI = {
     baseUrl: (function() {
         const origin = window.location.origin;
         if (origin && origin !== 'null' && window.location.protocol !== 'file:') {
-            return origin;
+            return `${origin}/api`;
         }
-        return 'http://localhost:8080';
+        return 'http://localhost:8080/api';
     })(),
 
     
@@ -66472,12 +66472,16 @@ async function loadPaymentTracking() {
 
         const response = await window.KashTecAPI.get('/luggage-payment-tracking');
 
-        
+        const trackingItems = Array.isArray(response.tracking) ? response.tracking
+            : Array.isArray(response.data) ? response.data
+            : Array.isArray(response.trackings) ? response.trackings
+            : [];
 
-        if (response.success && response.tracking.length > 0) {
+        if (response.success && trackingItems.length > 0) {
 
-            recordsList.innerHTML = response.tracking.map(raw => {
-                // Map backend fields to template fields
+            recordsList.innerHTML = trackingItems.map(raw => {
+                // Map backend fields to template fields (backend returns
+                // tracking_reference / payment_status / total_amount / course_name etc.)
                 const tracking = {
                     ...raw,
                     tracking_number: raw.tracking_number || raw.tracking_reference || `LPT-${raw.id}`,
