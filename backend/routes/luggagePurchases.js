@@ -133,7 +133,7 @@ router.get('/for-tracking', async (req, res) => {
         const db = require('../../database/config/database');
         
         const purchasesResult = await db.execute(`
-            SELECT lp.*, lc.name AS campaign_name 
+            SELECT lp.*, lc.campaign_name AS campaign_display_name
             FROM luggage_purchases lp
             LEFT JOIN luggage_campaigns lc ON lp.campaign_id = lc.id
             ORDER BY lp.purchase_date DESC, lp.created_at DESC

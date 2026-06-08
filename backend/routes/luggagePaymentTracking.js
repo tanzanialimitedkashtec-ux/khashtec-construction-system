@@ -90,7 +90,7 @@ router.get('/', async (req, res) => {
             
             const trackingResult = await db.execute(`
                 SELECT lpt.*, lp.purchase_reference AS lp_reference, 
-                       lc.name AS purchase_name
+                       lc.campaign_name AS purchase_name
                 FROM luggage_payment_tracking lpt
                 LEFT JOIN luggage_purchases lp ON lpt.purchase_id = lp.id
                 LEFT JOIN luggage_campaigns lc ON lp.campaign_id = lc.id
