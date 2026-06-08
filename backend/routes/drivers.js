@@ -100,26 +100,7 @@ router.get('/', async (req, res) => {
         let finalDrivers = drivers;
         
         if (finalDrivers.length === 0) {
-            console.log('🌱 Database is empty. Seeding mock drivers...');
-            const seedDrivers = [
-                ['KTC-DRV-773986', 'John Michael Smith', 'Experienced heavy vehicle driver with excellent safety record', 8, 'class-a', '+255 712 345 678', 'john.smith@khashtec.com', 'active', '1985-03-15', 'Male', 'Mwenge, Kinondoni', 'dar-es-salaam', 'O+', 'Toyota Hilux - T 1234 ABC', '500000', 'Jane Smith', '+255 712 345 679', 'spouse'],
-                ['KTC-DRV-773987', 'Sarah Johnson', 'Professional light vehicle driver with customer service experience', 5, 'class-b', '+255 755 987 654', 'sarah.johnson@khashtec.com', 'active', '1990-07-22', 'Female', 'Masaki, Kinondoni', 'dar-es-salaam', 'A+', 'Nissan Patrol - T 5678 DEF', '450000', 'Robert Johnson', '+255 755 987 655', 'parent'],
-                ['KTC-DRV-773988', 'Robert Kimaro', 'Skilled motorcycle driver with delivery experience', 3, 'class-c', '+255 765 432 109', 'robert.kimaro@khashtec.com', 'active', '1995-11-10', 'Male', 'Kariakoo, Ilala', 'dar-es-salaam', 'B+', 'Unassigned', '350000', 'Grace Kimaro', '+255 765 432 110', 'sibling']
-            ];
-            for (const d of seedDrivers) {
-                await db.execute(`
-                    INSERT INTO drivers (
-                        driver_id, full_name, description, years_of_experience, license_type, phone_number, email_address, driver_status, date_of_birth, gender, residential_address, region, blood_group, assigned_vehicle, salary, emergency_contact_name, emergency_contact_number, emergency_relationship, created_at, updated_at
-                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())
-                `, d);
-            }
-            
-            // Re-fetch drivers after seeding
-            const [newDrivers] = await db.execute(`
-                SELECT * FROM drivers ORDER BY created_at DESC
-            `);
-            finalDrivers = newDrivers;
-            console.log('✅ Seeded drivers successfully!');
+            console.log('🌱 Drivers table exists but contains no records. Returning an empty list.');
         }
         
         console.log('📊 Drivers data structure:', {
@@ -137,40 +118,11 @@ router.get('/', async (req, res) => {
         
     } catch (error) {
         console.error('Error fetching drivers:', error);
-        
-        // Fallback to mock data if database fails
-        const mockDrivers = [
-            {
-                id: 1,
-                driver_id: 'KTC-DRV-773986',
-                full_name: 'Chrispin Golden',
-                description: 'Experienced driver with excellent safety record',
-                years_of_experience: 2,
-                license_type: 'class-d',
-                phone_number: '+255 712 345 678',
-                email_address: 'chrispin.golden@khashtec.com',
-                driver_status: 'active',
-                created_at: new Date().toISOString()
-            },
-            {
-                id: 2,
-                driver_id: 'KTC-DRV-773987',
-                full_name: 'John Smith',
-                description: 'Professional driver with 5 years experience',
-                years_of_experience: 5,
-                license_type: 'class-c',
-                phone_number: '+255 713 456 789',
-                email_address: 'john.smith@khashtec.com',
-                driver_status: 'active',
-                created_at: new Date().toISOString()
-            }
-        ];
-        
-        res.status(200).json({
-            success: true,
-            drivers: mockDrivers,
-            count: mockDrivers.length,
-            note: 'Using mock data - database unavailable'
+        res.status(500).json({
+            success: false,
+            drivers: [],
+            count: 0,
+            message: 'Unable to load drivers from database'
         });
     }
 });
@@ -189,8 +141,7 @@ router.get('/all', async (req, res) => {
         let finalDrivers = drivers;
         
         if (finalDrivers.length === 0) {
-            console.log('🌱 Database is empty in /all. Reusing logic from / to fetch...');
-            // In a real app this logic should be abstracted, but we just fallback safely.
+            console.log('🌱 Drivers table exists but contains no records in /all. Returning an empty list.');
         }
         
         res.status(200).json({
@@ -200,41 +151,12 @@ router.get('/all', async (req, res) => {
         });
         
     } catch (error) {
-        console.error('Error fetching drivers:', error);
-        
-        // Fallback to mock data if database fails
-        const mockDrivers = [
-            {
-                id: 1,
-                driver_id: 'KTC-DRV-773986',
-                full_name: 'Chrispin Golden',
-                description: 'Experienced driver with excellent safety record',
-                years_of_experience: 2,
-                license_type: 'class-d',
-                phone_number: '+255 712 345 678',
-                email_address: 'chrispin.golden@khashtec.com',
-                driver_status: 'active',
-                created_at: new Date().toISOString()
-            },
-            {
-                id: 2,
-                driver_id: 'KTC-DRV-773987',
-                full_name: 'John Smith',
-                description: 'Professional driver with 5 years experience',
-                years_of_experience: 5,
-                license_type: 'class-c',
-                phone_number: '+255 713 456 789',
-                email_address: 'john.smith@khashtec.com',
-                driver_status: 'active',
-                created_at: new Date().toISOString()
-            }
-        ];
-        
-        res.status(200).json({
-            success: true,
-            drivers: mockDrivers,
-            count: mockDrivers.length,
-            note: 'Using mock data - database unavailable'
+        console.error('Error fetching drivers /all:', error);
+        res.status(500).json({
+            success: false,
+            drivers: [],
+            count: 0,
+            message: 'Unable to load drivers from database'
         });
     }
 });
