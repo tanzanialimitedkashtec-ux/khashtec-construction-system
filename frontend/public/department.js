@@ -3536,7 +3536,7 @@ function showWorkforceBudgetForm(budgets) {
 
             
 
-            <div id="workforceBudgetFormContainer" style="display: block;">
+            <div id="workforceBudgetFormContainer" style="display: block;" class="show">
 
                 <div class="form-header">
 
