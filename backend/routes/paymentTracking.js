@@ -77,14 +77,91 @@ router.get('/', async (req, res) => {
                 console.log('⚠️ Could not create payment_tracking table:', tableError.message);
             }
             
+            // Fetch from payment_tracking table
             const trackingResult = await db.execute(`
                 SELECT * FROM payment_tracking 
                 ORDER BY created_at DESC
             `);
-            
             tracking = normalizeRows(trackingResult);
-            
             console.log('✅ Payment Tracking records fetched from database:', tracking.length);
+            
+            // Also pull real estate sales with installment data from financial_transactions
+            try {
+                const salesResult = await db.execute(`
+                    SELECT id, description, amount, transaction_date, status,
+                           payment_method, installment_period, down_payment,
+                           monthly_installment, interest_rate, created_at
+                    FROM financial_transactions 
+                    WHERE transaction_type = 'income' 
+                      AND (payment_method = 'installments' OR payment_method = 'installment')
+                    ORDER BY created_at DESC
+                `);
+                const salesRows = normalizeRows(salesResult);
+                
+                if (salesRows && salesRows.length > 0) {
+                    const saleMapped = salesRows.map(sale => {
+                        const totalAmt = parseFloat(sale.amount) || 0;
+                        const downPmt = parseFloat(sale.down_payment) || 0;
+                        const monthlyAmt = parseFloat(sale.monthly_installment) || 0;
+                        const period = parseInt(sale.installment_period) || 12;
+                        const saleDate = sale.transaction_date || sale.created_at;
+                        const monthsElapsed = saleDate ? Math.max(0, Math.floor((Date.now() - new Date(saleDate).getTime()) / (30.44 * 24 * 60 * 60 * 1000))) : 0;
+                        const paidSoFar = Math.min(totalAmt, downPmt + (monthlyAmt * Math.min(monthsElapsed, period)));
+                        const outstanding = Math.max(0, totalAmt - paidSoFar);
+                        const isCompleted = outstanding <= 0 || sale.status === 'completed';
+                        
+                        // Parse client/property from description "Property Sale: {property} to {client}"
+                        let clientName = 'Client';
+                        let propertyName = 'Property';
+                        const desc = sale.description || '';
+                        if (desc.startsWith('Property Sale: ')) {
+                            const parts = desc.replace('Property Sale: ', '').split(' to ');
+                            propertyName = parts[0] || 'Property';
+                            clientName = parts[1] || 'Client';
+                        }
+                        
+                        // Calculate next payment date
+                        let nextPaymentDate = null;
+                        if (!isCompleted && saleDate) {
+                            const nextMonth = new Date(saleDate);
+                            nextMonth.setMonth(nextMonth.getMonth() + monthsElapsed + 1);
+                            nextPaymentDate = nextMonth.toISOString().split('T')[0];
+                        }
+                        
+                        return {
+                            id: sale.id,
+                            tracking_reference: `SALE-${sale.id}`,
+                            transaction_type: 'sale',
+                            amount: totalAmt,
+                            currency: 'TZS',
+                            payment_method: 'installments',
+                            payment_status: isCompleted ? 'completed' : (monthsElapsed > 0 && paidSoFar > downPmt ? 'processing' : 'pending'),
+                            paid_by: clientName,
+                            paid_to: 'KashTec Real Estate',
+                            payment_date: saleDate,
+                            due_date: nextPaymentDate,
+                            description: desc,
+                            category: 'Real Estate Sale',
+                            department: 'Real Estate',
+                            total_amount: totalAmt,
+                            paid_amount: paidSoFar,
+                            outstanding_balance: outstanding,
+                            installment_amount: monthlyAmt,
+                            installment_period: period,
+                            down_payment: downPmt,
+                            next_payment_date: nextPaymentDate,
+                            client_name: clientName,
+                            property_title: propertyName,
+                            source: 'financial_transactions'
+                        };
+                    });
+                    tracking = tracking.concat(saleMapped);
+                    console.log(`✅ Added ${saleMapped.length} real estate installment records`);
+                }
+            } catch (salesErr) {
+                console.log('⚠️ Could not fetch financial_transactions for sales:', salesErr.message);
+            }
+            
         } catch (dbError) {
             console.error('❌ Database error fetching payment tracking:', dbError);
         }
@@ -92,6 +169,7 @@ router.get('/', async (req, res) => {
         res.json({
             success: true,
             tracking: tracking,
+            data: tracking,
             total: tracking.length
         });
         
@@ -493,6 +571,72 @@ router.get('/statistics', async (req, res) => {
             
             statistics.recent_transactions = normalizeRows(recentResult);
             
+            // Compute real estate specific metrics from financial_transactions
+            try {
+                // Active installments: sales with installment payment that are not completed
+                const activeResult = await db.execute(`
+                    SELECT COUNT(*) as active_count,
+                           SUM(amount) as total_sale_amount,
+                           SUM(COALESCE(down_payment, 0)) as total_down_payments,
+                           SUM(COALESCE(monthly_installment, 0)) as total_monthly
+                    FROM financial_transactions
+                    WHERE transaction_type = 'income'
+                      AND (payment_method = 'installments' OR payment_method = 'installment')
+                      AND (status != 'completed' OR status IS NULL)
+                `);
+                const activeRows = normalizeRows(activeResult);
+                if (activeRows && activeRows.length > 0) {
+                    statistics.active_installments = parseInt(activeRows[0].active_count) || 0;
+                    const totalSales = parseFloat(activeRows[0].total_sale_amount) || 0;
+                    const totalDown = parseFloat(activeRows[0].total_down_payments) || 0;
+                    statistics.total_outstanding = Math.max(0, totalSales - totalDown);
+                }
+                
+                // This month's collections from payment_tracking
+                const monthStart = new Date();
+                monthStart.setDate(1);
+                const monthCollResult = await db.execute(`
+                    SELECT COALESCE(SUM(amount), 0) as month_total
+                    FROM payment_tracking
+                    WHERE payment_status = 'completed'
+                      AND payment_date >= ?
+                `, [monthStart.toISOString().split('T')[0]]);
+                const monthCollRows = normalizeRows(monthCollResult);
+                if (monthCollRows && monthCollRows.length > 0) {
+                    statistics.this_month_collections = parseFloat(monthCollRows[0].month_total) || 0;
+                }
+                
+                // Overdue payments: pending/processing past due_date
+                const overdueResult = await db.execute(`
+                    SELECT COUNT(*) as overdue_count
+                    FROM payment_tracking
+                    WHERE payment_status IN ('pending', 'processing')
+                      AND due_date < CURDATE()
+                      AND due_date IS NOT NULL
+                `);
+                const overdueRows = normalizeRows(overdueResult);
+                if (overdueRows && overdueRows.length > 0) {
+                    statistics.overdue_count = parseInt(overdueRows[0].overdue_count) || 0;
+                }
+                
+                // Monthly collections summary (last 6 months)
+                const monthlySummaryResult = await db.execute(`
+                    SELECT DATE_FORMAT(payment_date, '%Y-%m') as month,
+                           SUM(amount) as amount,
+                           COUNT(*) as count
+                    FROM payment_tracking
+                    WHERE payment_status = 'completed'
+                      AND payment_date >= DATE_SUB(CURDATE(), INTERVAL 6 MONTH)
+                    GROUP BY DATE_FORMAT(payment_date, '%Y-%m')
+                    ORDER BY month DESC
+                `);
+                statistics.monthly_collections = normalizeRows(monthlySummaryResult);
+                statistics.monthly_summary = statistics.monthly_collections;
+                
+            } catch (reErr) {
+                console.log('⚠️ Could not compute real estate metrics:', reErr.message);
+            }
+            
             console.log('✅ Payment tracking statistics fetched from database');
             
         } catch (dbError) {
@@ -502,6 +646,7 @@ router.get('/statistics', async (req, res) => {
         res.json({
             success: true,
             statistics: statistics,
+            data: { statistics: statistics },
             generated_at: new Date().toISOString()
         });
         
