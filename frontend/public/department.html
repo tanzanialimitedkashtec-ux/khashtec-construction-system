@@ -27598,7 +27598,7 @@ function showWorkforceBudgetForm(budgets) {
 
                     <div class="budget-id">#${budget.id}</div>
 
-                    <div class="budget-department">${budget.department || 'Not specified'}</div>
+                    <div class="budget-department">${budget.submitted_by || 'Not specified'}</div>
 
                 </td>
 
@@ -27608,7 +27608,7 @@ function showWorkforceBudgetForm(budgets) {
 
                         <div class="submitter-name">Department Head</div>
 
-                        <div class="submitter-role">${budget.department || 'Not specified'} Manager</div>
+                        <div class="submitter-role">${budget.submitted_by_role || 'Not specified'}</div>
 
                     </div>
 
@@ -28006,7 +28006,7 @@ function displayWorkforceBudgets(budgets) {
 
                     <div class="budget-id">#${budget.id}</div>
 
-                    <div class="budget-department">${budget.budget_period || 'Not specified'}</div>
+                    <div class="budget-department">${budget.submitted_by || 'Not specified'}</div>
 
                 </td>
 
@@ -28014,7 +28014,7 @@ function displayWorkforceBudgets(budgets) {
 
                     <div class="submitter-info">
 
-                        <div class="submitter-name">${budget.submitted_by || 'Not specified'}</div>
+                        <div class="submitter-name">Department Head</div>
 
                         <div class="submitter-role">${budget.submitted_by_role || 'Not specified'}</div>
 
@@ -74006,10 +74006,6 @@ function displayWorkforceRequests(requests) {
                 <td>
 
                     <div class="request-actions">
-
-                        <button class="action-btn view" onclick="viewWorkforceRequest('${request.id}')" title="View Details">👁️</button>
-
-                        <button class="action-btn edit" onclick="editWorkforceRequest('${request.id}')" title="Edit Request">✏️</button>
 
                         ${request.status === 'pending' ? `<button class="action-btn approve" onclick="approveWorkforceRequest('${request.id}')" title="Approve">✅</button>
                         <button class="action-btn reject" onclick="rejectWorkforceRequest('${request.id}')" title="Reject">🚫</button>` : ''}

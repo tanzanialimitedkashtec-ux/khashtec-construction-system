@@ -3396,7 +3396,7 @@ function showWorkforceBudgetForm(budgets) {
 
                     <div class="budget-id">#${budget.id}</div>
 
-                    <div class="budget-department">${budget.department || 'Not specified'}</div>
+                    <div class="budget-department">${budget.submitted_by || 'Not specified'}</div>
 
                 </td>
 
@@ -3406,7 +3406,7 @@ function showWorkforceBudgetForm(budgets) {
 
                         <div class="submitter-name">Department Head</div>
 
-                        <div class="submitter-role">${budget.department || 'Not specified'} Manager</div>
+                        <div class="submitter-role">${budget.submitted_by_role || 'Not specified'}</div>
 
                     </div>
 
@@ -3830,7 +3830,7 @@ function displayWorkforceBudgets(budgets) {
 
                     <div class="budget-id">#${budget.id}</div>
 
-                    <div class="budget-department">${budget.budget_period || 'Not specified'}</div>
+                    <div class="budget-department">${budget.submitted_by || 'Not specified'}</div>
 
                 </td>
 
@@ -3838,7 +3838,7 @@ function displayWorkforceBudgets(budgets) {
 
                     <div class="submitter-info">
 
-                        <div class="submitter-name">${budget.submitted_by || 'Not specified'}</div>
+                        <div class="submitter-name">Department Head</div>
 
                         <div class="submitter-role">${budget.submitted_by_role || 'Not specified'}</div>
 
