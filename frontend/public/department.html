@@ -75831,53 +75831,16 @@ function approveCompletedWork(){
 
                 <h3>Approve Completed Work</h3>
 
-                <button type="button" id="toggleApprovalFormBtn" onclick="toggleApprovalForm()" class="action" style="background: #007bff;">
-
-                    ✅ Work Approval Form
-
-                </button>
+                <button type="button" id="toggleApprovalFormBtn" onclick="toggleApprovalForm()" class="action" style="background: rgb(0, 123, 255);">✅ Work Approval Form</button>
 
             </div>
-
             
-
-            <div class="table-responsive">
-
-                <table class="modern-table">
-
-                    <thead>
-
-                        <tr>
-
-                            <th>Work Details</th>
-
-                            <th>Project</th>
-
-                            <th>Completed By</th>
-
-                            <th>Completed Date</th>
-
-                            <th>Quality Score</th>
-
-                            <th>Actions</th>
-
-                        </tr>
-
-                    </thead>
-
-                    <tbody id="pendingWorkTableBody">
-
-                        <tr><td colspan="6" style="text-align:center;">Loading pending work...</td></tr>
-
-                    </tbody>
-
-                </table>
-
+            <div class="tabs" style="margin-bottom: 20px; border-bottom: 1px solid #dee2e6; padding-bottom: 10px;">
+                <button class="tab-btn active" onclick="showApproveWorkTab('pending', this)" style="padding: 10px 20px; border: none; background: none; font-weight: bold; font-size: 16px; cursor: pointer; color: #0b3d91; border-bottom: 3px solid #0b3d91;">Pending Approvals</button>
+                <button class="tab-btn" onclick="showApproveWorkTab('history', this)" style="padding: 10px 20px; border: none; background: none; font-weight: bold; font-size: 16px; cursor: pointer; color: #6c757d;">Recent Approvals</button>
             </div>
 
-            
-
-            <div id="approvalFormContainer" style="display: none;">
+            <div id="approvalFormContainer" style="display: none; margin-bottom: 20px;">
 
                 <div class="form-header">
 
@@ -76033,17 +75996,48 @@ function approveCompletedWork(){
 
             </div>
 
-            
+            <div id="pendingWorkTab" class="tab-content" style="display: block;">
+                <div class="table-responsive" style="max-height: 500px; overflow-y: auto; border: 1px solid #e2e8f0; border-radius: 8px;">
 
-            <div class="approval-history">
+                    <table class="modern-table" style="margin: 0; width: 100%;">
 
-                <h4>Recent Approvals</h4>
+                        <thead style="position: sticky; top: 0; z-index: 1; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
 
-                <div class="table-responsive">
+                            <tr>
 
-                    <table class="modern-table">
+                                <th>Work Details</th>
 
-                        <thead>
+                                <th>Project</th>
+
+                                <th>Completed By</th>
+
+                                <th>Completed Date</th>
+
+                                <th>Quality Score</th>
+
+                                <th>Actions</th>
+
+                            </tr>
+
+                        </thead>
+
+                        <tbody id="pendingWorkTableBody">
+
+                            <tr><td colspan="6" style="text-align:center;">Loading pending work...</td></tr>
+
+                        </tbody>
+
+                    </table>
+
+                </div>
+            </div>
+
+            <div id="recentApprovalsTab" class="tab-content" style="display: none;">
+                <div class="table-responsive" style="max-height: 500px; overflow-y: auto; border: 1px solid #e2e8f0; border-radius: 8px;">
+
+                    <table class="modern-table" style="margin: 0; width: 100%;">
+
+                        <thead style="position: sticky; top: 0; z-index: 1; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
 
                             <tr>
 
@@ -76070,12 +76064,10 @@ function approveCompletedWork(){
                     </table>
 
                 </div>
-
             </div>
 
         </div>
-
-    `);
+`);
 
     loadPendingWorkCompletions();
 
@@ -76085,6 +76077,32 @@ function approveCompletedWork(){
 
 // Store loaded work items for dropdown selection
 var _pendingWorkItems = [];
+
+
+function showApproveWorkTab(tabId, btn) {
+    // Hide both tabs
+    document.getElementById('pendingWorkTab').style.display = 'none';
+    document.getElementById('recentApprovalsTab').style.display = 'none';
+    
+    // Show selected tab
+    if (tabId === 'pending') {
+        document.getElementById('pendingWorkTab').style.display = 'block';
+    } else {
+        document.getElementById('recentApprovalsTab').style.display = 'block';
+    }
+    
+    // Update button styles
+    const buttons = btn.parentElement.querySelectorAll('.tab-btn');
+    buttons.forEach(b => {
+        b.style.color = '#6c757d';
+        b.style.borderBottom = 'none';
+        b.classList.remove('active');
+    });
+    
+    btn.style.color = '#0b3d91';
+    btn.style.borderBottom = '3px solid #0b3d91';
+    btn.classList.add('active');
+}
 
 function loadPendingWorkCompletions() {
 
