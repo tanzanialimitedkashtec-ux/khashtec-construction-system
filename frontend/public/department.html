@@ -65878,27 +65878,6 @@ function viewCampaignDetails(campaignId) {
 
 
 
-function editCampaign(campaignId) {
-
-    customAlert(`Editing campaign: ${campaignId}`, 'Edit Campaign', 'info');
-
-}
-
-
-
-function deleteCampaign(campaignId) {
-
-    if (confirm(`Are you sure you want to delete campaign: ${campaignId}?`)) {
-
-        customAlert(`Campaign ${campaignId} deleted successfully!`, 'Success', 'success');
-
-        loadLuggageCampaigns();
-
-    }
-
-}
-
-
 
 async function loadLuggagePurchases() {
 
