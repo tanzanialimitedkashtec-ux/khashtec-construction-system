@@ -76049,6 +76049,12 @@ function approveCompletedWork(){
 
                                 <th>Compliance Status</th>
 
+                                <th>Approval Comments</th>
+
+                                <th>Safety Compliance</th>
+
+                                <th>Time Completion</th>
+
                                 <th>Approved By</th>
 
                             </tr>
@@ -76057,7 +76063,7 @@ function approveCompletedWork(){
 
                         <tbody id="approvalHistoryTableBody">
 
-                            <tr><td colspan="5" style="text-align:center;">Loading approval history...</td></tr>
+                            <tr><td colspan="8" style="text-align:center;">Loading approval history...</td></tr>
 
                         </tbody>
 
@@ -76335,7 +76341,7 @@ function loadApprovalHistory() {
 
         if (!items.length) {
 
-            tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">No approval history found.</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;">No approval history found.</td></tr>';
 
             return;
 
@@ -76355,6 +76361,18 @@ function loadApprovalHistory() {
 
             var complianceClass = approval.compliance_check || 'fully-compliant';
 
+            var safetyDisplay = (approval.safety_compliance || 'compliant').replace(/-/g, ' ');
+
+            safetyDisplay = safetyDisplay.charAt(0).toUpperCase() + safetyDisplay.slice(1);
+
+            var safetyClass = approval.safety_compliance || 'compliant';
+
+            var timeDisplay = (approval.time_completion || 'on-time').replace(/-/g, ' ');
+
+            timeDisplay = timeDisplay.charAt(0).toUpperCase() + timeDisplay.slice(1);
+
+            var timeClass = approval.time_completion || 'on-time';
+
             html += '<tr>' +
 
                 '<td><strong>' + (approval.work_id || 'N/A') + '</strong></td>' +
@@ -76364,6 +76382,12 @@ function loadApprovalHistory() {
                 '<td><span class="quality-score ' + (approval.quality_assessment || '') + '">' + qualityDisplay + '</span></td>' +
 
                 '<td><span class="compliance-status ' + complianceClass + '">' + complianceDisplay + '</span></td>' +
+
+                '<td>' + (approval.approval_comments || 'N/A') + '</td>' +
+
+                '<td><span class="safety-status ' + safetyClass + '">' + safetyDisplay + '</span></td>' +
+
+                '<td><span class="time-status ' + timeClass + '">' + timeDisplay + '</span></td>' +
 
                 '<td>' + (approval.approved_by || 'N/A') + '</td>' +
 
@@ -76379,7 +76403,7 @@ function loadApprovalHistory() {
 
         console.error('Error loading approval history:', error);
 
-        tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; color: #dc3545;">Failed to load approval history.</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="8" style="text-align:center; color: #dc3545;">Failed to load approval history.</td></tr>';
 
     });
 
