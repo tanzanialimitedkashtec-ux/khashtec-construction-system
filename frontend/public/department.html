@@ -88380,35 +88380,13 @@ function goBack() {
 
         } else {
 
-            // If no history, go back to main menu
+            // If no history, redirect to app root instead of rendering the main menu card
 
-            console.log('🏠 No history available, returning to main menu');
+            console.log('🏠 No history available, redirecting to root');
 
-            showContent(`
-
-                <div class="card">
-
-                    <h3>🏠 Main Menu</h3>
-
-                    <p>Welcome back to the main menu. Select an option from the navigation menu.</p>
-
-                    <div class="form-actions">
-
-                        <button class="action" onclick="officePortal()">🏢 Office Portal</button>
-
-                        <button class="action" onclick="showContent('')">📋 Dashboard</button>
-
-                        <button class="action" onclick="showCreateProjectForm()">🚀 Project Manage</button>
-
-                    </div>
-
-                </div>
-
-            `);
+            try { window.location.href = '/'; } catch (e) { console.error(e); }
 
         }
-
-        
 
         // Clear timeout after execution
 
