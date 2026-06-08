@@ -130,116 +130,26 @@ router.get('/for-tracking', async (req, res) => {
         console.log('📝 Luggage purchases for tracking endpoint accessed');
         
         let purchases = [];
+        const db = require('../../database/config/database');
         
-        try {
-            const db = require('../../database/config/database');
-            
-            const purchasesResult = await db.execute(`
-                SELECT * FROM luggage_purchases 
-                WHERE payment_status = 'paid' 
-                ORDER BY purchase_date DESC, created_at DESC
-            `);
-            
-            // Handle different MySQL2 return formats
-            if (Array.isArray(purchasesResult)) {
-                purchases = purchasesResult;
-            } else if (purchasesResult && Array.isArray(purchasesResult[0])) {
-                purchases = purchasesResult[0];
-            } else if (purchasesResult && purchasesResult.rows) {
-                purchases = purchasesResult.rows;
-            } else {
-                purchases = [];
-            }
-            
-            console.log('✅ Luggage purchases for tracking fetched from database:', purchases.length);
-        } catch (dbError) {
-            console.error('❌ Database error, using fallback luggage purchases for tracking:', dbError);
-            
-            // Fallback to mock luggage purchases for tracking
-            purchases = [
-                {
-                    id: 1,
-                    purchase_reference: 'LP202605001',
-                    campaign_id: 1,
-                    campaign_name: 'English Proficiency Program',
-                    employee_id: 'EMP001',
-                    employee_name: 'John Doe',
-                    department: 'IT',
-                    luggage: 'English',
-                    course_type: 'basic',
-                    purchase_date: '2026-05-01',
-                    amount: 1500.00,
-                    currency: 'USD',
-                    payment_method: 'company_sponsored',
-                    payment_status: 'paid',
-                    enrollment_status: 'completed',
-                    start_date: '2026-05-01',
-                    end_date: '2026-06-30',
-                    instructor: 'Sarah Johnson',
-                    location: 'Training Room A',
-                    schedule: 'Mon-Wed-Fri 09:00-11:00',
-                    progress_percentage: 100.0,
-                    certificate_issued: true,
-                    certificate_date: '2026-06-30T00:00:00Z',
-                    created_at: '2026-05-01T09:00:00Z',
-                    updated_at: '2026-06-30T17:00:00Z'
-                },
-                {
-                    id: 2,
-                    purchase_reference: 'LP202605002',
-                    campaign_id: 2,
-                    campaign_name: 'Swahili Communication Skills',
-                    employee_id: 'EMP002',
-                    employee_name: 'Jane Smith',
-                    department: 'HR',
-                    luggage: 'Swahili',
-                    course_type: 'intermediate',
-                    purchase_date: '2026-04-15',
-                    amount: 800.00,
-                    currency: 'USD',
-                    payment_method: 'company_sponsored',
-                    payment_status: 'paid',
-                    enrollment_status: 'completed',
-                    start_date: '2026-04-15',
-                    end_date: '2026-05-15',
-                    instructor: 'Joseph Mwangi',
-                    location: 'Conference Room B',
-                    schedule: 'Tue-Thu 14:00-16:00',
-                    progress_percentage: 100.0,
-                    certificate_issued: true,
-                    certificate_date: '2026-05-15T00:00:00Z',
-                    created_at: '2026-04-15T09:00:00Z',
-                    updated_at: '2026-05-15T17:00:00Z'
-                },
-                {
-                    id: 3,
-                    purchase_reference: 'LP202605003',
-                    campaign_id: 1,
-                    campaign_name: 'English Proficiency Program',
-                    employee_id: 'EMP005',
-                    employee_name: 'Robert Chen',
-                    department: 'Finance',
-                    luggage: 'English',
-                    course_type: 'advanced',
-                    purchase_date: '2026-05-03',
-                    amount: 2000.00,
-                    currency: 'USD',
-                    payment_method: 'card',
-                    payment_status: 'paid',
-                    enrollment_status: 'in_progress',
-                    start_date: '2026-05-03',
-                    end_date: '2026-07-03',
-                    instructor: 'Michael Brown',
-                    location: 'Training Room C',
-                    schedule: 'Mon-Wed-Fri 10:00-12:00',
-                    progress_percentage: 65.0,
-                    certificate_issued: false,
-                    certificate_date: null,
-                    created_at: '2026-05-03T11:00:00Z',
-                    updated_at: '2026-05-04T00:00:00Z'
-                }
-            ];
+        const purchasesResult = await db.execute(`
+            SELECT lp.*, lc.name AS campaign_name 
+            FROM luggage_purchases lp
+            LEFT JOIN luggage_campaigns lc ON lp.campaign_id = lc.id
+            ORDER BY lp.purchase_date DESC, lp.created_at DESC
+        `);
+        
+        if (Array.isArray(purchasesResult)) {
+            purchases = purchasesResult;
+        } else if (purchasesResult && Array.isArray(purchasesResult[0])) {
+            purchases = purchasesResult[0];
+        } else if (purchasesResult && purchasesResult.rows) {
+            purchases = purchasesResult.rows;
+        } else {
+            purchases = [];
         }
+        
+        console.log('✅ Luggage purchases for tracking fetched from database:', purchases.length);
         
         res.json({
             success: true,
