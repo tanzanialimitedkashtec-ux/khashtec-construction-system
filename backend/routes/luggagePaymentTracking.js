@@ -49,6 +49,12 @@ router.get('/', async (req, res) => {
                         next_payment_date DATE NULL,
                         next_payment_amount DECIMAL(10,2) NULL,
                         payment_history JSON NULL,
+                        payment_stage VARCHAR(100) NULL,
+                        payment_reference VARCHAR(255) NULL,
+                        bank_reference VARCHAR(255) NULL,
+                        transaction_id VARCHAR(255) NULL,
+                        notes TEXT NULL,
+                        payment_date DATE NULL,
                         approval_status ENUM('pending_approval', 'approved', 'rejected', 'processed') DEFAULT 'pending_approval',
                         approved_by VARCHAR(100) NULL,
                         approved_date TIMESTAMP NULL,
@@ -67,12 +73,30 @@ router.get('/', async (req, res) => {
                 console.log('⚠️ Could not create luggage_payment_tracking table:', tableError.message);
             }
             
+            // Ensure new tracking columns exist (for existing tables)
+            const newCols = [
+                { name: 'payment_stage', def: 'VARCHAR(100) NULL' },
+                { name: 'payment_reference', def: 'VARCHAR(255) NULL' },
+                { name: 'bank_reference', def: 'VARCHAR(255) NULL' },
+                { name: 'transaction_id', def: 'VARCHAR(255) NULL' },
+                { name: 'notes', def: 'TEXT NULL' },
+                { name: 'payment_date', def: 'DATE NULL' }
+            ];
+            for (const col of newCols) {
+                try {
+                    await db.execute(`ALTER TABLE luggage_payment_tracking ADD COLUMN ${col.name} ${col.def}`);
+                } catch (e) { /* column already exists */ }
+            }
+            
             const trackingResult = await db.execute(`
-                SELECT * FROM luggage_payment_tracking 
-                ORDER BY created_at DESC
+                SELECT lpt.*, lp.purchase_reference AS lp_reference, 
+                       lc.name AS purchase_name
+                FROM luggage_payment_tracking lpt
+                LEFT JOIN luggage_purchases lp ON lpt.purchase_id = lp.id
+                LEFT JOIN luggage_campaigns lc ON lp.campaign_id = lc.id
+                ORDER BY lpt.created_at DESC
             `);
             
-            // Handle different database response formats
             if (Array.isArray(trackingResult)) {
                 tracking = trackingResult;
             } else if (trackingResult && Array.isArray(trackingResult[0])) {
@@ -85,236 +109,8 @@ router.get('/', async (req, res) => {
             
             console.log('✅ Luggage Payment Tracking records fetched from database:', tracking.length);
         } catch (dbError) {
-            console.error('❌ Database error, using fallback luggage payment tracking:', dbError);
-            
-            // Fallback to mock luggage payment tracking
-            tracking = [
-                {
-                    id: 1,
-                    tracking_reference: 'LPT202605001',
-                    purchase_id: 1,
-                    purchase_reference: 'LP202605001',
-                    employee_id: 'EMP001',
-                    employee_name: 'John Doe',
-                    department: 'IT',
-                    luggage: 'English',
-                    course_name: 'English Proficiency Program - Intermediate',
-                    total_amount: 1500.00,
-                    currency: 'USD',
-                    payment_method: 'company_sponsored',
-                    payment_status: 'paid',
-                    amount_paid: 1500.00,
-                    balance_amount: 0.00,
-                    payment_schedule: 'full_payment',
-                    total_installments: 1,
-                    paid_installments: 1,
-                    next_payment_date: null,
-                    next_payment_amount: null,
-                    payment_history: JSON.stringify([
-                        {
-                            date: '2026-05-01',
-                            amount: 1500.00,
-                            method: 'company_sponsored',
-                            status: 'paid',
-                            reference: 'PAY001',
-                            notes: 'Full payment processed'
-                        }
-                    ]),
-                    approval_status: 'approved',
-                    approved_by: 'HR Manager',
-                    approved_date: '2026-05-01T08:00:00Z',
-                    finance_notes: 'Approved for full company sponsorship',
-                    hr_notes: 'Employee enrolled in intermediate English course',
-                    created_at: '2026-05-01T08:00:00Z',
-                    updated_at: '2026-05-01T08:00:00Z'
-                },
-                {
-                    id: 2,
-                    tracking_reference: 'LPT202604002',
-                    purchase_id: 2,
-                    purchase_reference: 'LP202604002',
-                    employee_id: 'EMP002',
-                    employee_name: 'Jane Smith',
-                    department: 'Operations',
-                    luggage: 'Swahili',
-                    course_name: 'Swahili Communication Skills - Basic',
-                    total_amount: 800.00,
-                    currency: 'USD',
-                    payment_method: 'company_sponsored',
-                    payment_status: 'paid',
-                    amount_paid: 800.00,
-                    balance_amount: 0.00,
-                    payment_schedule: 'full_payment',
-                    total_installments: 1,
-                    paid_installments: 1,
-                    next_payment_date: null,
-                    next_payment_amount: null,
-                    payment_history: JSON.stringify([
-                        {
-                            date: '2026-04-15',
-                            amount: 800.00,
-                            method: 'company_sponsored',
-                            status: 'paid',
-                            reference: 'PAY002',
-                            notes: 'Full payment for Swahili course'
-                        }
-                    ]),
-                    approval_status: 'approved',
-                    approved_by: 'Operations Manager',
-                    approved_date: '2026-04-15T09:00:00Z',
-                    finance_notes: 'Approved for operations department training',
-                    hr_notes: 'Basic Swahili course for expatriate staff',
-                    created_at: '2026-04-15T09:00:00Z',
-                    updated_at: '2026-04-15T09:00:00Z'
-                },
-                {
-                    id: 3,
-                    tracking_reference: 'LPT202606003',
-                    purchase_id: 3,
-                    purchase_reference: 'LP202606003',
-                    employee_id: 'EMP003',
-                    employee_name: 'Mike Johnson',
-                    department: 'Projects',
-                    luggage: 'French',
-                    course_name: 'French for Project Management - Business',
-                    total_amount: 2500.00,
-                    currency: 'USD',
-                    payment_method: 'monthly_installments',
-                    payment_status: 'partial',
-                    amount_paid: 833.33,
-                    balance_amount: 1666.67,
-                    payment_schedule: 'monthly_installments',
-                    total_installments: 3,
-                    paid_installments: 1,
-                    next_payment_date: '2026-07-01',
-                    next_payment_amount: 833.33,
-                    payment_history: JSON.stringify([
-                        {
-                            date: '2026-06-01',
-                            amount: 833.33,
-                            method: 'company_sponsored',
-                            status: 'paid',
-                            reference: 'PAY003',
-                            notes: 'First installment payment'
-                        }
-                    ]),
-                    approval_status: 'approved',
-                    approved_by: 'Project Director',
-                    approved_date: '2026-06-01T10:00:00Z',
-                    finance_notes: 'Approved for 3-month installment plan',
-                    hr_notes: 'French business course for project manager',
-                    created_at: '2026-06-01T10:00:00Z',
-                    updated_at: '2026-06-01T10:00:00Z'
-                },
-                {
-                    id: 4,
-                    tracking_reference: 'LPT202607004',
-                    purchase_id: 4,
-                    purchase_reference: 'LP202607004',
-                    employee_id: 'EMP004',
-                    employee_name: 'Sarah Wilson',
-                    department: 'Management',
-                    luggage: 'Mandarin',
-                    course_name: 'Mandarin Business Basics',
-                    total_amount: 3000.00,
-                    currency: 'USD',
-                    payment_method: 'quarterly_installments',
-                    payment_status: 'pending',
-                    amount_paid: 0.00,
-                    balance_amount: 3000.00,
-                    payment_schedule: 'quarterly_installments',
-                    total_installments: 3,
-                    paid_installments: 0,
-                    next_payment_date: '2026-07-15',
-                    next_payment_amount: 1000.00,
-                    payment_history: JSON.stringify([]),
-                    approval_status: 'pending_approval',
-                    approved_by: null,
-                    approved_date: null,
-                    finance_notes: 'Pending finance approval for quarterly installments',
-                    hr_notes: 'Senior management priority enrollment',
-                    created_at: '2026-07-01T08:00:00Z',
-                    updated_at: '2026-07-01T08:00:00Z'
-                },
-                {
-                    id: 5,
-                    tracking_reference: 'LPT202605005',
-                    purchase_id: 5,
-                    purchase_reference: 'LP202605005',
-                    employee_id: 'EMP005',
-                    employee_name: 'Robert Chen',
-                    department: 'Finance',
-                    luggage: 'English',
-                    course_name: 'English Proficiency Program - Advanced',
-                    total_amount: 2000.00,
-                    currency: 'USD',
-                    payment_method: 'card',
-                    payment_status: 'partial',
-                    amount_paid: 500.00,
-                    balance_amount: 1500.00,
-                    payment_schedule: 'custom',
-                    total_installments: 4,
-                    paid_installments: 1,
-                    next_payment_date: '2026-06-03',
-                    next_payment_amount: 500.00,
-                    payment_history: JSON.stringify([
-                        {
-                            date: '2026-05-03',
-                            amount: 500.00,
-                            method: 'card',
-                            status: 'paid',
-                            reference: 'PAY005',
-                            notes: 'Self-funded - first installment'
-                        }
-                    ]),
-                    approval_status: 'approved',
-                    approved_by: 'Finance Manager',
-                    approved_date: '2026-05-03T11:00:00Z',
-                    finance_notes: 'Self-funded payment plan approved',
-                    hr_notes: 'Advanced English course for finance staff',
-                    created_at: '2026-05-03T11:00:00Z',
-                    updated_at: '2026-05-03T11:00:00Z'
-                },
-                {
-                    id: 6,
-                    tracking_reference: 'LPT202605006',
-                    purchase_id: null,
-                    purchase_reference: null,
-                    employee_id: 'EMP006',
-                    employee_name: 'David Kim',
-                    department: 'HR',
-                    luggage: 'Spanish',
-                    course_name: 'Spanish for HR Management',
-                    total_amount: 1200.00,
-                    currency: 'USD',
-                    payment_method: 'company_sponsored',
-                    payment_status: 'refunded',
-                    amount_paid: 0.00,
-                    balance_amount: 0.00,
-                    payment_schedule: 'full_payment',
-                    total_installments: 1,
-                    paid_installments: 0,
-                    next_payment_date: null,
-                    next_payment_amount: null,
-                    payment_history: JSON.stringify([
-                        {
-                            date: '2026-05-10',
-                            amount: 1200.00,
-                            method: 'company_sponsored',
-                            status: 'refunded',
-                            reference: 'REF001',
-                            notes: 'Course cancelled - full refund processed'
-                        }
-                    ]),
-                    approval_status: 'rejected',
-                    approved_by: 'HR Director',
-                    approved_date: '2026-05-10T14:00:00Z',
-                    finance_notes: 'Refund processed due to course cancellation',
-                    hr_notes: 'Course not available - employee will take alternative course',
-                    created_at: '2026-05-10T14:00:00Z',
-                    updated_at: '2026-05-10T14:00:00Z'
-                }
-            ];
+            console.error('❌ Database error fetching luggage payment tracking:', dbError.message);
+            tracking = [];
         }
         
         res.json({
@@ -442,7 +238,13 @@ router.post('/', async (req, res) => {
             total_installments,
             finance_notes,
             hr_notes,
-            approved_by
+            approved_by,
+            payment_stage,
+            payment_reference: paymentRef,
+            bank_reference,
+            transaction_id,
+            notes,
+            amount
         } = req.body;
         
         // Validate required fields
@@ -487,8 +289,9 @@ router.post('/', async (req, res) => {
                     department, luggage, course_name, total_amount, currency, payment_method,
                     payment_status, amount_paid, balance_amount, payment_schedule, total_installments,
                     paid_installments, next_payment_date, next_payment_amount, payment_history,
+                    payment_stage, payment_reference, bank_reference, transaction_id, notes, payment_date,
                     approval_status, finance_notes, hr_notes, approved_by, approved_date, created_at
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())
             `;
             
             const values = [
@@ -501,7 +304,7 @@ router.post('/', async (req, res) => {
                 luggage,
                 course_name,
                 total_amount,
-                currency || 'USD',
+                currency || 'TZS',
                 payment_method || 'company_sponsored',
                 amount_paid > 0 ? 'paid' : 'pending',
                 amount_paid,
@@ -512,6 +315,12 @@ router.post('/', async (req, res) => {
                 next_payment_date,
                 next_payment_amount,
                 JSON.stringify([]),
+                payment_stage || null,
+                paymentRef || null,
+                bank_reference || null,
+                transaction_id || null,
+                notes || null,
+                new Date().toISOString().split('T')[0],
                 approved_by ? 'approved' : 'pending_approval',
                 finance_notes || null,
                 hr_notes || null,

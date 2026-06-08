@@ -41554,13 +41554,16 @@ async function loadPaymentTracking() {
         if (response.success && response.tracking.length > 0) {
 
             recordsList.innerHTML = response.tracking.map(raw => {
-                // Map backend fields to template fields (backend returns
-                // tracking_reference / payment_status / total_amount / course_name etc.)
+                // Map backend fields to template fields
                 const tracking = {
                     ...raw,
                     tracking_number: raw.tracking_number || raw.tracking_reference || `LPT-${raw.id}`,
-                    purchase_name: raw.purchase_name || raw.course_name || raw.employee_name || 'N/A',
+                    purchase_name: raw.purchase_name || raw.course_name || raw.employee_name || '-',
                     payment_stage: raw.payment_stage || raw.approval_status || raw.payment_status || 'pending',
+                    payment_reference: raw.payment_reference || '-',
+                    bank_reference: raw.bank_reference || '-',
+                    transaction_id: raw.transaction_id || '-',
+                    notes: raw.notes || raw.finance_notes || '-',
                     amount: raw.amount != null ? raw.amount : (raw.total_amount != null ? raw.total_amount : 0),
                     payment_date: raw.payment_date || raw.next_payment_date || raw.created_at || null
                 };
@@ -41589,9 +41592,9 @@ async function loadPaymentTracking() {
 
                         <div class="purchase-info">
 
-                            <div class="purchase-name">${tracking.purchase_name || 'N/A'}</div>
+                            <div class="purchase-name">${tracking.purchase_name}</div>
 
-                            <div class="purchase-id">Purchase ID: ${tracking.purchase_id || 'N/A'}</div>
+                            <div class="purchase-id">Purchase ID: ${tracking.purchase_id || '-'}</div>
 
                         </div>
 
@@ -41611,9 +41614,9 @@ async function loadPaymentTracking() {
 
                         <div class="references-info">
 
-                            <div class="payment-ref">Payment: ${tracking.payment_reference || 'N/A'}</div>
+                            <div class="payment-ref">Payment: ${tracking.payment_reference}</div>
 
-                            <div class="bank-ref">Bank: ${tracking.bank_reference || 'N/A'}</div>
+                            <div class="bank-ref">Bank: ${tracking.bank_reference}</div>
 
                         </div>
 
@@ -41623,7 +41626,7 @@ async function loadPaymentTracking() {
 
                         <div class="transaction-info">
 
-                            <div class="transaction-id">ID: ${tracking.transaction_id || 'N/A'}</div>
+                            <div class="transaction-id">ID: ${tracking.transaction_id}</div>
 
                         </div>
 
@@ -41643,7 +41646,7 @@ async function loadPaymentTracking() {
 
                         <div class="notes-info">
 
-                            <div class="tracking-notes">${tracking.notes || 'No notes'}</div>
+                            <div class="tracking-notes">${tracking.notes}</div>
 
                         </div>
 
