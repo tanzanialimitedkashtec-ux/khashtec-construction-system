@@ -1,4 +1,4 @@
-// Disabled: Allow localhost development
+﻿// Disabled: Allow localhost development
 
         // const PRODUCTION_FRONTEND_URL = 'https://khashtec-construction-system-production-e7b5.up.railway.app/frontend/public/department.html';
 
@@ -44949,7 +44949,9 @@ function loadSampleProjects() {
 
             location: 'Upper Msimbazi Valley',
 
-            priority: 'high'
+            priority_level: 'high',
+
+            key_deliverables: ['Filtration system', 'Pumping station']
 
         },
 
@@ -44969,7 +44971,7 @@ function loadSampleProjects() {
 
             endDate: '2027-03-31',
 
-            contractValue: 5200000000,
+            contract_value: 5200000000,
 
             status: 'planning',
 
@@ -44981,7 +44983,9 @@ function loadSampleProjects() {
 
             location: 'Masaki Peninsula',
 
-            priority: 'medium'
+            priority_level: 'medium',
+
+            key_deliverables: ['Main structure', 'Parking facilities']
 
         },
 
@@ -45247,11 +45251,11 @@ function displayProjects(projects) {
         const projId = project.projectId || project.project_code || project.id || 'N/A';
         const projName = project.name || 'Not specified';
         const projCode = project.projectCode || project.project_code || 'N/A';
-        const clientName = project.client || project.client_id || 'Not specified';
+        const clientName = project.client || project.client_name || project.client_id || 'Not specified';
 
         // Get project type display safely
 
-        const rawType = (project.type || project.project_type || '').toLowerCase();
+        const rawType = (project.type || project.project_type || project.projectType || '').toLowerCase();
         const typeDisplay = rawType === 'construction' ? 'ðŸ—ï¸ Construction' : 
 
                            rawType === 'renovation' ? 'ðŸ”§ Renovation' : 
@@ -45293,14 +45297,14 @@ function displayProjects(projects) {
 
         // Format contract value
 
-        const rawBudget = parseFloat(project.contractValue || project.budget || 0);
+        const rawBudget = parseFloat(project.contractValue || project.contract_value || project.budget || 0);
         const contractValue = rawBudget ? (rawBudget / 1000000).toFixed(1) + 'M TZS' : 'N/A';
 
         
 
         // Get priority display safely
 
-        const priorityVal = (project.priorityLevel || project.priority || '').toLowerCase();
+        const priorityVal = (project.priority_level || project.priorityLevel || project.priority || '').toLowerCase();
         const priorityDisplay = priorityVal === 'high' ? 'ðŸ”´ High' : 
 
                                priorityVal === 'medium' ? 'ðŸŸ¡ Medium' : 
@@ -45324,14 +45328,18 @@ function displayProjects(projects) {
 
         
 
-        const deliverables = project.keyDeliverables || 'Not specified';
-        const keyDeliverables = deliverables.length > 40 ? deliverables.substring(0, 40) + '...' : deliverables;
+        // Key deliverables — check both camelCase (mock data) and snake_case (API/DB)
+        const rawDeliverables = project.key_deliverables || project.keyDeliverables || '';
+        const deliverables = rawDeliverables || 'Not specified';
+        const keyDeliverables = rawDeliverables
+            ? (rawDeliverables.length > 40 ? rawDeliverables.substring(0, 40) + '...' : rawDeliverables)
+            : 'Not specified';
 
         
 
-        // Get progress bar
+        // Get progress — check both camelCase and snake_case
 
-        const progress = project.progress || 0;
+        const progress = project.progress || project.progress_percentage || 0;
 
         const progressBar = `
 
@@ -45346,8 +45354,8 @@ function displayProjects(projects) {
         `;
 
         
-        const siteLocation = project.siteLocation || project.location || 'Not specified';
-        const managerName = project.manager || project.manager_id || 'Not assigned';
+        const siteLocation = project.siteLocation || project.site_location || project.location || 'Not specified';
+        const managerName = project.manager || project.manager_name || project.manager_id || 'Not assigned';
 
         // Parse dates safely to avoid Invalid Date / RangeError
         const formatDate = (dateVal) => {
