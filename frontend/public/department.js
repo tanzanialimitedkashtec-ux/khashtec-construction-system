@@ -17263,11 +17263,29 @@ function deleteAttendance(recordId) {
 
         })
 
-        .then(response => response.json())
+        .then(async response => {
+            const contentType = response.headers.get('content-type') || '';
+            if (!response.ok) {
+                let errMsg = response.statusText || `HTTP ${response.status}`;
+                try {
+                    if (contentType.includes('application/json')) {
+                        const errData = await response.json();
+                        errMsg = errData.error || errData.message || JSON.stringify(errData);
+                    } else {
+                        const text = await response.text();
+                        errMsg = text || errMsg;
+                    }
+                } catch (e) {
+                    // ignore parse errors
+                }
+                throw new Error(errMsg || 'Failed to delete record');
+            }
+            return response.json();
+        })
 
         .then(data => {
 
-            if (data.success) {
+            if (data && data.success) {
 
                 customAlert('Attendance record deleted successfully.', "Record Deleted", "success");
 
@@ -17275,7 +17293,7 @@ function deleteAttendance(recordId) {
 
             } else {
 
-                throw new Error(data.error || 'Failed to delete record');
+                throw new Error((data && (data.error || data.message)) || 'Failed to delete record');
 
             }
 

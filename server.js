@@ -49,6 +49,7 @@ const projectRoutes = require('./backend/routes/projects');
 const documentRoutes = require('./backend/routes/documents');
 
 const notificationRoutes = require('./backend/routes/notifications');
+const attendanceRoutes = require('./backend/routes/attendance');
 
 const apiRoutes = require('./backend/routes/api');
 
@@ -869,6 +870,13 @@ app.use('/api/documents', asyncHandler(async (req, res, next) => {
 app.use('/api/notifications', asyncHandler(async (req, res, next) => {
 
     return notificationRoutes(req, res, next);
+
+}));
+
+
+app.use('/api/attendance', asyncHandler(async (req, res, next) => {
+
+    return attendanceRoutes(req, res, next);
 
 }));
 
