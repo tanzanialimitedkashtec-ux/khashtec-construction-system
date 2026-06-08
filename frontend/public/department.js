@@ -65457,82 +65457,85 @@ function renderOfficePortal(officePortalUsers, documents, policies, contracts) {
 
     const registeredUsersHTML = `
 
-        <div class="personnel-table-container">
-
-            <table class="personnel-table compact">
-
-                <thead>
-
-                    <tr>
-
-                        <th style="width: 60px;">Photo</th>
-
-                        <th>Name</th>
-
-                        <th>Position</th>
-
-                        <th>Department</th>
-
-                        <th>Contact</th>
-
-                    </tr>
-
-                </thead>
-
-                <tbody>
-
-                    ${officePortalUsers.map(user => `
-
-                        <tr class="personnel-row compact" data-department="${user.department}" data-role="${user.position}" data-person-id="${user.id}">
-
-                            <td>
-
-                                <div class="personnel-avatar-small">
-
-                                    <img src="${user.profileImage}" alt="${user.name}" onerror="this.src='https://picsum.photos/seed/default/40/40.jpg'" />
-
-                                </div>
-
-                            </td>
-
-                            <td>
-
-                                <div class="personnel-info-compact">
-
-                                    <div class="personnel-name-compact">${user.name}</div>
-
-                                    <div class="personnel-role-compact">${user.position}</div>
-
-                                </div>
-
-                            </td>
-
-                            <td>
-
-                                <span class="department-badge-compact">${user.department}</span>
-
-                            </td>
-
-                            <td>
-
-                                <div class="contact-info-compact">
-
-                                    <div class="contact-item-compact">ðŸ“§ ${user.email}</div>
-
-                                    <div class="contact-item-compact">ðŸ“± ${user.phone}</div>
-
-                                </div>
-
-                            </td>
-
-                        </tr>
-
-                    `).join('')}
-
-                </tbody>
-
-            </table>
-
+        <style>
+        .personnel-grid-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 15px;
+            padding: 10px 0;
+        }
+        .personnel-card {
+            background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+            border-radius: 2px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            border: 1px solid #eee;
+            font-size: 12px;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        .personnel-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        .personnel-card .avatar {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            object-fit: cover;
+            margin-bottom: 10px;
+            border: 2px solid #ddd;
+        }
+        .personnel-card .name {
+            font-weight: bold;
+            font-size: 13px;
+            margin-bottom: 3px;
+            color: #333;
+        }
+        .personnel-card .role {
+            color: #666;
+            margin-bottom: 8px;
+            text-transform: capitalize;
+        }
+        .personnel-card .dept {
+            background: #e9ecef;
+            padding: 2px 6px;
+            border-radius: 2px;
+            font-size: 10px;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            color: #495057;
+        }
+        .personnel-card .contact {
+            width: 100%;
+            text-align: left;
+            border-top: 1px solid #eee;
+            padding-top: 8px;
+            color: #555;
+        }
+        .personnel-card .contact-item {
+            margin-bottom: 3px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        </style>
+        <div class="personnel-grid-cards">
+            ${officePortalUsers.map(user => `
+                <div class="personnel-card" data-department="${user.department}" data-role="${user.position}" data-person-id="${user.id}">
+                    <img class="avatar" src="${user.profileImage}" alt="${user.name}" onerror="this.src='https://picsum.photos/seed/default/40/40.jpg'" />
+                    <div class="name">${user.name}</div>
+                    <div class="role">${user.position}</div>
+                    <div class="dept">${user.department}</div>
+                    <div class="contact">
+                        <div class="contact-item" title="${user.email}">📧 ${user.email}</div>
+                        <div class="contact-item" title="${user.phone}">📱 ${user.phone}</div>
+                    </div>
+                </div>
+            `).join('')}
         </div>
 
     `;
