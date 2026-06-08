@@ -64169,6 +64169,8 @@ async function documentManagement(){
 
                                     <th>Expiry Date</th>
 
+                                    <th>QR Code</th>
+
                                     <th>Actions</th>
 
                                 </tr>
@@ -64203,14 +64205,20 @@ async function documentManagement(){
 
                                             <td>${formatDate(doc.expiry_date)}</td>
 
+                                            <td style="text-align:center;">
+                                                <img src="https://api.qrserver.com/v1/create-qr-code/?size=80x80&data=${encodeURIComponent(window.location.origin + '/api/documents/' + doc.id + '/download?view=true')}" alt="QR" style="width:60px;height:60px;border:2px solid #e0e0e0;border-radius:6px;cursor:pointer;" onclick="showDocumentQR('${doc.id}', '${(doc.name || doc.filename || 'Document').replace(/'/g, "\\'")}')" title="Scan to view: ${(doc.name || doc.filename || 'Document').replace(/"/g, '&quot;')}">
+                                                <div style="font-size:10px;color:#666;margin-top:3px;">Scan to view</div>
+                                            </td>
+
                                             <td>
 
                                                 <div class="action-buttons">
 
                                                     <button class="action-btn view-btn" onclick="viewDocument('${doc.id}')">View</button>
 
-                                                    
-                                                    <button class="action-btn qr-btn" style="background: #28a745; color: white;" onclick="showDocumentQR('${doc.id}', '${doc.name ? doc.name.replace(/'/g, "\\'") : doc.filename ? doc.filename.replace(/'/g, "\\'") : 'Document'}')">QR Code</button>
+                                                    <button class="action-btn download-btn" onclick="downloadDocument('${doc.id}')">Download</button>
+
+                                                    <button class="action-btn qr-btn" style="background: #28a745; color: white;" onclick="showDocumentQR('${doc.id}', '${(doc.name || doc.filename || 'Document').replace(/'/g, "\\'")}')" title="Show larger QR Code">QR</button>
 
                                                 </div>
 
@@ -64220,7 +64228,7 @@ async function documentManagement(){
 
                                     `).join('') : 
 
-                                    `<tr><td colspan="6" style="text-align: center; padding: 20px;">No documents found</td></tr>`
+                                    `<tr><td colspan="8" style="text-align: center; padding: 20px;">No documents found</td></tr>`
 
                                 }
 
