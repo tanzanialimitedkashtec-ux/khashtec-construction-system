@@ -906,6 +906,40 @@ app.use('/api/hr/work', authenticateToken, asyncHandler(async (req, res, next) =
 
 
 
+// Public route: receipt viewing via QR code (no auth required)
+app.get('/api/finance/receipt/:id', async (req, res) => {
+    try {
+        const { id } = req.params;
+        const fs = require('fs');
+        const path = require('path');
+        const db = require('./database/config/database');
+        const rows = await db.execute(
+            `SELECT receipt_data, receipt_mimetype, receipt_file FROM financial_transactions WHERE id = ? LIMIT 1`,
+            [id]
+        );
+        const row = Array.isArray(rows) && rows.length > 0 ? rows[0] : null;
+        
+        if (!row || !row.receipt_data) {
+            if (row && row.receipt_file) {
+                const filePath = path.join(__dirname, row.receipt_file.replace(/^\//, ''));
+                if (fs.existsSync(filePath)) {
+                    return res.sendFile(filePath);
+                }
+            }
+            return res.status(404).json({ error: 'Receipt not found', message: 'No receipt file stored for this expense' });
+        }
+        
+        const buffer = Buffer.from(row.receipt_data, 'base64');
+        const mimetype = row.receipt_mimetype || 'application/pdf';
+        res.setHeader('Content-Type', mimetype);
+        res.setHeader('Content-Disposition', 'inline; filename="receipt-' + id + '"');
+        res.send(buffer);
+    } catch (error) {
+        console.error('❌ Error serving receipt (public):', error.message);
+        res.status(500).json({ error: 'Failed to serve receipt file' });
+    }
+});
+
 app.use('/api/finance', authenticateToken, asyncHandler(async (req, res, next) => {
 
     return financeRoutes(req, res, next);
