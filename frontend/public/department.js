@@ -3494,9 +3494,7 @@ function showWorkforceBudgetForm(budgets) {
 
                         <button class="action-btn reject" onclick="rejectBudget('${budget.id}')" title="Reject Budget">âŒ</button>
 
-                        <button class="action-btn view" onclick="viewBudgetDetails('${budget.id}')" title="View Details">ðŸ‘ï¸</button>
-
-                    </div>
+                        </div>
 
                 </td>
 
@@ -3942,9 +3940,7 @@ function displayWorkforceBudgets(budgets) {
 
                         `}
 
-                        <button class="action-btn view" onclick="viewBudgetDetails('${budget.id}')" title="View Details">ðŸ‘ï¸</button>
-
-                    </div>
+                        </div>
 
                 </td>
 
@@ -15132,10 +15128,6 @@ function displayUpcomingMeetings(meetings) {
 
                     <div class="meeting-actions">
 
-                        <button class="action-btn view" onclick="viewMeetingDetails('${meeting.id}')" title="View Details">ðŸ‘ï¸</button>
-
-                        <button class="action-btn edit" onclick="editMeeting('${meeting.id}')" title="Edit Meeting">âœï¸</button>
-
                         <button class="action-btn delete" onclick="deleteMeeting('${meeting.id}')" title="Delete Meeting">ðŸ—‘ï¸</button>
 
                     </div>
@@ -17031,6 +17023,12 @@ function displayAttendanceRecords(records) {
 
     records.forEach(record => {
 
+        let dept = record.department;
+        if (!dept && typeof officePortalUsers !== 'undefined') {
+            const userMatch = officePortalUsers.find(u => u.id == record.employee_id || u.name === record.employee_name);
+            if (userMatch && userMatch.department) dept = userMatch.department;
+        }
+
         // Map backend fields to frontend expected fields
 
         const mappedRecord = {
@@ -17039,7 +17037,7 @@ function displayAttendanceRecords(records) {
 
             employee_name: record.employee_name,
 
-            department: record.department,
+            department: dept,
 
             attendance_date: record.attendance_date,
 
@@ -17107,17 +17105,17 @@ function displayAttendanceRecords(records) {
 
         
 
-        const statusBadge = mappedRecord.attendance_status === 'present' ? 'âœ… Present' : 
+        const statusBadge = mappedRecord.attendance_status === 'present' ? '✅ Present' : 
 
-                           mappedRecord.attendance_status === 'absent' ? 'âŒ Absent' : 
+                           mappedRecord.attendance_status === 'absent' ? '❌ Absent' : 
 
-                           mappedRecord.attendance_status === 'late' ? 'â° Late' : 
+                           mappedRecord.attendance_status === 'late' ? '⏱ Late' : 
 
-                           mappedRecord.attendance_status === 'sick' ? 'ðŸ¤’ Sick Leave' : 
+                           mappedRecord.attendance_status === 'sick' ? '🤒 Sick Leave' : 
 
-                           mappedRecord.attendance_status === 'annual' ? 'ðŸ–ï¸ Annual Leave' : 
+                           mappedRecord.attendance_status === 'annual' ? '🏖️ Annual Leave' : 
 
-                           mappedRecord.attendance_status === 'permission' ? 'ðŸ“‹ Permission' : 'â“ Unknown';
+                           mappedRecord.attendance_status === 'permission' ? '📋 Permission' : '❓ Unknown';
 
         
 
@@ -17206,10 +17204,6 @@ function displayAttendanceRecords(records) {
                 <td>
 
                     <div class="attendance-actions">
-
-                        <button class="action-btn view" onclick="viewAttendanceDetails('${mappedRecord.id}')" title="View Details">ðŸ‘ï¸</button>
-
-                        <button class="action-btn edit" onclick="editAttendance('${mappedRecord.id}')" title="Edit Attendance">âœï¸</button>
 
                         <button class="action-btn delete" onclick="deleteAttendance('${mappedRecord.id}')" title="Delete Record">ðŸ—‘ï¸</button>
 
@@ -21114,8 +21108,6 @@ function displayIncidents(incidents) {
                 <td><span class="status-badge ${statusClass}">${statusDisplay}</span></td>
                 <td>
                     <div class="incident-actions">
-                        <button class="action-btn view" onclick="viewIncidentDetails('${incident.id}')" title="View Details">ðŸ‘ï¸</button>
-                        <button class="action-btn edit" onclick="updateIncidentStatus('${incident.id}')" title="Update Status">âœï¸</button>
                         <button class="action-btn download" onclick="downloadIncidentReport('${incident.id}')" title="Download Report">ðŸ“„</button>
                     </div>
                 </td>
@@ -21400,8 +21392,6 @@ function displayPpeRecords(ppeRecords) {
                 </td>
                 <td>
                     <div class="ppe-actions">
-                        <button class="action-btn view" onclick="viewPpeDetails('${ppe.id}')" title="View Details">ud83dudc41ufe0f</button>
-                        <button class="action-btn edit" onclick="editPpeRecord('${ppe.id}')" title="Edit Record">u270fufe0f</button>
                         <button class="action-btn return" onclick="recordPpeReturn('${ppe.id}')" title="Record Return">ud83dudd04</button>
                     </div>
                 </td>
@@ -22347,8 +22337,6 @@ function displayToolboxMeetings(toolboxMeetings) {
                 <td>
 
                     <div class="toolbox-actions">
-
-                        <button class="action-btn view" onclick="viewMeetingDetails('${meetingId}')" title="View Details">ðŸ‘ï¸</button>
 
                         <button class="action-btn download" onclick="downloadAttendance('${meetingId}')" title="Download Attendance">ðŸ“¥</button>
 
@@ -26115,10 +26103,6 @@ async function loadCompanyCars() {
 
                         <div class="car-actions">
 
-                            <button class="action-btn view" onclick="viewCarDetails('${mappedCar.track_number}')" title="View Details">ðŸ‘ï¸</button>
-
-                            <button class="action-btn edit" onclick="editCar('${mappedCar.track_number}')" title="Edit Vehicle">âœï¸</button>
-
                             <button class="action-btn delete" onclick="deleteCar('${mappedCar.track_number}')" title="Delete Vehicle">ðŸ—‘ï¸</button>
 
                         </div>
@@ -26510,10 +26494,6 @@ function loadSampleCars() {
             <td>
 
                 <div class="car-actions">
-
-                    <button class="action-btn view" onclick="viewCarDetails('${car.track_number}')" title="View Details">ðŸ‘ï¸</button>
-
-                    <button class="action-btn edit" onclick="editCar('${car.track_number}')" title="Edit Vehicle">âœï¸</button>
 
                     <button class="action-btn delete" onclick="deleteCar('${car.track_number}')" title="Delete Vehicle">ðŸ—‘ï¸</button>
 
@@ -27728,8 +27708,8 @@ function renderDriverTable(drivers, recordsList) {
                     '<span class="status-badge ' + statusClass + '">' + statusText + '</span>' +
                 '</div></td>' +
                 '<td><div class="driver-actions">' +
-                    '<button class="action-btn view" onclick="viewDriverDetails(\'' + driverId + '\')" title="View Details">👁️</button>' +
-                    '<button class="action-btn edit" onclick="editDriver(\'' + driverId + '\')" title="Edit Driver">✏️</button>' +
+                    '' +
+                    '' +
                     '<button class="action-btn delete" onclick="deleteDriver(\'' + driverId + '\')" title="Delete Driver">🗑️</button>' +
                 '</div></td>' +
             '</tr>';
@@ -29766,7 +29746,6 @@ function displayViolations(violations) {
 
                     <div class="violation-actions">
 
-                        <button class="action-btn view" onclick="viewViolationDetails('${violation.id}')" title="View Details">ðŸ‘ï¸</button>
                         <button class="action-btn approve" onclick="approveViolation('${violation.id}')" title="Approve Violation">✅</button>
                         <button class="action-btn reject" onclick="rejectViolation('${violation.id}')" title="Reject Violation">❌</button>
 
@@ -31006,13 +30985,9 @@ function displayInspectionRecords(data) {
 
                     <div class="inspection-actions">
 
-                        <button class="action-btn view" onclick="viewInspectionReport('${record.id}')" title="View Report">ðŸ‘ï¸</button>
-
                         <button class="action-btn download" onclick="downloadInspectionReport('${record.id}')" title="Download Report">ðŸ“¥</button>
 
-                        <button class="action-btn edit" onclick="editInspectionReport('${record.id}')" title="Edit Report">âœï¸</button>
-
-                    </div>
+                        </div>
 
                 </td>
 
@@ -34668,8 +34643,6 @@ function displayPolicyRecords(records, policyStatuses) {
 
                     <div class="policy-actions">
 
-                        <button class="action-btn view" onclick="viewPolicy('${record.id}')" title="View Policy">ðŸ‘ï¸</button>
-
                         <button class="action-btn download" onclick="downloadPolicy('${record.id}')" title="Download Policy">ðŸ“¥</button>
 
                         <button class="action-btn delete" onclick="deletePolicy('${record.id}')" title="Delete Policy">ðŸ—‘ï¸</button>
@@ -37057,10 +37030,6 @@ function displayFinancialRecords(records) {
                 <td>
 
                     <div class="financial-actions">
-
-                        <button class="action-btn view" onclick="viewTransaction('${record.id}')" title="View Transaction">ðŸ‘ï¸</button>
-
-                        <button class="action-btn edit" onclick="editTransaction('${record.id}')" title="Edit Transaction">âœï¸</button>
 
                         <button class="action-btn download" onclick="downloadTransaction('${record.id}')" title="Download Receipt">ðŸ“¥</button>
 
@@ -40884,10 +40853,6 @@ async function loadLuggageCampaigns() {
 
                         <div class="campaign-actions">
 
-                            <button class="action-btn view" onclick="viewCampaignDetails('${campaign.id}')" title="View Details">ðŸ‘ï¸</button>
-
-                            <button class="action-btn edit" onclick="editCampaign('${campaign.id}')" title="Edit Campaign">âœï¸</button>
-
                             <button class="action-btn delete" onclick="deleteCampaign('${campaign.id}')" title="Delete Campaign">ðŸ—‘ï¸</button>
 
                         </div>
@@ -41180,10 +41145,6 @@ function loadSampleCampaigns() {
 
                 <div class="campaign-actions">
 
-                    <button class="action-btn view" onclick="viewCampaignDetails('${campaign.id}')" title="View Details">ðŸ‘ï¸</button>
-
-                    <button class="action-btn edit" onclick="editCampaign('${campaign.id}')" title="Edit Campaign">âœï¸</button>
-
                     <button class="action-btn delete" onclick="deleteCampaign('${campaign.id}')" title="Delete Campaign">ðŸ—‘ï¸</button>
 
                 </div>
@@ -41442,10 +41403,6 @@ async function loadLuggagePurchases() {
 
                         <div class="purchase-actions">
 
-                            <button class="action-btn view" onclick="viewPurchaseDetails('${mappedPurchase.record_id}')" title="View Details">👁️</button>
-
-                            <button class="action-btn edit" onclick="editPurchase('${mappedPurchase.record_id}')" title="Edit Purchase">✏️</button>
-
                             <button class="action-btn delete" onclick="deletePurchase_API('${mappedPurchase.record_id}')" title="Delete Purchase">🗑️</button>
 
                         </div>
@@ -41665,10 +41622,6 @@ async function loadPaymentTracking() {
                     <td>
 
                         <div class="tracking-actions">
-
-                            <button class="action-btn view" onclick="viewTrackingDetails('${tracking.id}')" title="View Details">ðŸ‘ï¸</button>
-
-                            <button class="action-btn edit" onclick="editTracking('${tracking.id}')" title="Edit Tracking">âœï¸</button>
 
                             <button class="action-btn delete" onclick="deleteTracking('${tracking.id}')" title="Delete Tracking">ðŸ—‘ï¸</button>
 
@@ -41940,10 +41893,6 @@ function loadSampleTracking() {
             <td>
 
                 <div class="tracking-actions">
-
-                    <button class="action-btn view" onclick="viewTrackingDetails('${tracking.id}')" title="View Details">ðŸ‘ï¸</button>
-
-                    <button class="action-btn edit" onclick="editTracking('${tracking.id}')" title="Edit Tracking">âœï¸</button>
 
                     <button class="action-btn delete" onclick="deleteTracking('${tracking.id}')" title="Delete Tracking">ðŸ—‘ï¸</button>
 
@@ -43400,10 +43349,6 @@ function displayBudgetRecords(records) {
                 <td>
 
                     <div class="budget-actions">
-
-                        <button class="action-btn view" onclick="viewBudgetDetails('${record.id}')" title="View Details">ðŸ‘ï¸</button>
-
-                        <button class="action-btn edit" onclick="editBudget('${record.id}')" title="Edit Budget">âœï¸</button>
 
                         <button class="action-btn delete" onclick="deleteBudget('${record.id}')" title="Delete Budget">ðŸ—‘ï¸</button>
 
@@ -45552,10 +45497,6 @@ function displayProjects(projects) {
 
                     <div class="project-actions">
 
-                        <button class="action-btn view" onclick="viewProject('${project.id}')" title="View Details">ðŸ‘ï¸</button>
-
-                        <button class="action-btn edit" onclick="editProject('${project.id}')" title="Edit Project">âœï¸</button>
-
                         <button class="action-btn progress" onclick="updateProgress('${project.id}')" title="Update Progress">ðŸ“Š</button>
 
                     </div>
@@ -47296,10 +47237,6 @@ function displayWorkforceRequests(requests) {
 
                     <div class="request-actions">
 
-                        <button class="action-btn view" onclick="viewWorkforceRequest('${request.id}')" title="View Details">ðŸ‘ï¸</button>
-
-                        <button class="action-btn edit" onclick="editWorkforceRequest('${request.id}')" title="Edit Request">âœï¸</button>
-
                         <button class="action-btn approve" onclick="approveWorkforceRequest('${request.id}')" title="Approve">âœ…</button>
 
                     </div>
@@ -48604,10 +48541,6 @@ function displaySiteReports(reports, _retry) {
                 <td>
 
                     <div class="report-actions">
-
-                        <button class="action-btn view" onclick="viewSiteReport('${report.id}')" title="View Details">ðŸ‘ï¸</button>
-
-                        <button class="action-btn edit" onclick="editSiteReport('${report.id}')" title="Edit Report">âœï¸</button>
 
                         <button class="action-btn download" onclick="downloadSiteReport('${report.id}')" title="Download PDF">ðŸ“¥</button>
 
@@ -52215,10 +52148,6 @@ function displayPropertiesRecords(records) {
 
                     <div class="property-actions">
 
-                        <button class="action-btn view" onclick="viewPropertyDetails('${record.id}')" title="View Details">ðŸ‘ï¸</button>
-
-                        <button class="action-btn edit" onclick="editProperty('${record.id}')" title="Edit Property">âœï¸</button>
-
                         <button class="action-btn download" onclick="downloadPropertyDocs('${record.id}')" title="Download Documents">ðŸ“„</button>
 
                     </div>
@@ -53230,10 +53159,6 @@ function displayClientsRecords(data) {
 
                     <div class="client-actions">
 
-                        <button class="action-btn view" onclick="viewClientDetails('${record.id}')" title="View Details">ðŸ‘ï¸</button>
-
-                        <button class="action-btn edit" onclick="editClient('${record.id}')" title="Edit Client">âœï¸</button>
-
                         <button class="action-btn contact" onclick="contactClient('${record.id}')" title="Contact">ðŸ“ž</button>
 
                     </div>
@@ -53948,10 +53873,6 @@ async function loadSales() {
 
                         <div class="sales-actions">
 
-                            <button class="action-btn view" onclick="viewSaleDetails('${saleId}')" title="View Details">ðŸ‘ï¸</button>
-
-                            <button class="action-btn edit" onclick="editSale('${saleId}')" title="Edit Sale">âœï¸</button>
-
                             <button class="action-btn delete" onclick="deleteSale('${saleId}')" title="Delete Sale">ðŸ—‘ï¸</button>
 
                         </div>
@@ -54321,10 +54242,6 @@ function loadSampleSales() {
             <td>
 
                 <div class="sales-actions">
-
-                    <button class="action-btn view" onclick="viewSaleDetails('${sale.saleId}')" title="View Details">ðŸ‘ï¸</button>
-
-                    <button class="action-btn edit" onclick="editSale('${sale.saleId}')" title="Edit Sale">âœï¸</button>
 
                     <button class="action-btn delete" onclick="deleteSale('${sale.saleId}')" title="Delete Sale">ðŸ—‘ï¸</button>
 
@@ -56403,13 +56320,9 @@ function displaySalesRecords(records) {
 
                     <div class="sales-actions">
 
-                        <button class="action-btn view" onclick="viewSalesTransaction('${record.id}')" title="View Details">ðŸ‘ï¸</button>
-
                         <button class="action-btn download" onclick="downloadSalesContract('${record.id}')" title="Download Contract">ðŸ“„</button>
 
-                        <button class="action-btn edit" onclick="editSalesTransaction('${record.id}')" title="Edit Transaction">âœï¸</button>
-
-                    </div>
+                        </div>
 
                 </td>
 
@@ -58129,13 +58042,9 @@ function displayDocuments(documents) {
 
                     <div class="document-actions">
 
-                        <button class="action-btn view" onclick="viewDocument('${doc.id}')" title="View Document">ðŸ‘ï¸</button>
-
                         <button class="action-btn download" onclick="downloadDocument('${doc.id}')" title="Download Document">ðŸ“¥</button>
 
-                        <button class="action-btn edit" onclick="editDocument('${doc.id}')" title="Edit Document">âœï¸</button>
-
-                    </div>
+                        </div>
 
                 </td>
 
@@ -59881,8 +59790,6 @@ function displayNotifications(notifications) {
                 <td>
 
                     <div class="notification-actions">
-
-                        <button class="action-btn view" onclick="viewNotification('${mappedNotif.id}')" title="View Notification">ðŸ‘ï¸</button>
 
                         <button class="action-btn resend" onclick="resendNotification('${mappedNotif.id}')" title="Resend Notification">ðŸ“¤</button>
 
