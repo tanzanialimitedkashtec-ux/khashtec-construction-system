@@ -65289,15 +65289,15 @@ async function savePaymentTracking() {
 
             purchase_id: purchaseId,
 
-            employee_id: selectedPurchase.employee_id || '',
+            employee_id: selectedPurchase.employee_id || selectedPurchase.buyer_email || String(purchaseId),
 
-            employee_name: selectedPurchase.employee_name || '',
+            employee_name: selectedPurchase.employee_name || selectedPurchase.buyer_name || '',
 
-            luggage: selectedPurchase.luggage || '',
+            luggage: selectedPurchase.luggage || selectedPurchase.luggage_name || selectedPurchase.campaign_display_name || '-',
 
-            course_name: selectedPurchase.campaign_name || selectedPurchase.course_name || '',
+            course_name: selectedPurchase.course_name || selectedPurchase.campaign_name || selectedPurchase.campaign_display_name || selectedPurchase.luggage_name || '-',
 
-            total_amount: selectedPurchase.amount || selectedPurchase.total_amount || trackingAmount,
+            total_amount: selectedPurchase.total_amount || selectedPurchase.amount || trackingAmount,
 
             payment_stage: document.getElementById('paymentStage').value,
 
