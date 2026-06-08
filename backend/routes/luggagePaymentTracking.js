@@ -90,7 +90,7 @@ router.get('/', async (req, res) => {
             }
             
             const trackingResult = await db.execute(`
-                SELECT lpt.*, lp.purchase_reference AS lp_reference, 
+                SELECT lpt.*, lp.id AS purchase_id, 
                        lc.campaign_name AS purchase_name
                 FROM luggage_payment_tracking lpt
                 LEFT JOIN luggage_purchases lp ON lpt.purchase_id = lp.id
@@ -111,7 +111,11 @@ router.get('/', async (req, res) => {
             console.log('✅ Luggage Payment Tracking records fetched from database:', tracking.length);
         } catch (dbError) {
             console.error('❌ Database error fetching luggage payment tracking:', dbError.message);
-            tracking = [];
+            return res.status(500).json({
+                success: false,
+                error: 'Failed to fetch luggage payment tracking',
+                details: dbError.message
+            });
         }
         
         res.json({
