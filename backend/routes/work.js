@@ -2977,40 +2977,40 @@ router.post('/approvals', async (req, res) => {
             if (sourceTable === 'site_reports' && sourceId) {
                 try {
                     await db.execute(
-                        `UPDATE site_reports SET status = 'approved' WHERE id = ?`,
+                        `UPDATE site_reports SET status = 'Approved' WHERE id = ?`,
                         [sourceId]
                     );
-                    console.log(`✅ Updated site_reports status to approved for ID ${sourceId}`);
+                    console.log(`✅ Updated site_reports status to Approved for ID ${sourceId}`);
                 } catch (updateError) {
                     console.log('⚠️ Failed to update site_reports status:', updateError.message);
                 }
             } else if (sourceTable === 'hr_work' && sourceId) {
                 try {
                     await db.execute(
-                        `UPDATE hr_work SET status = 'Resolved' WHERE id = ?`,
+                        `UPDATE hr_work SET status = 'Approved' WHERE id = ?`,
                         [sourceId]
                     );
-                    console.log(`✅ Updated hr_work status to Resolved for ID ${sourceId}`);
+                    console.log(`✅ Updated hr_work status to Approved for ID ${sourceId}`);
                 } catch (updateError) {
                     console.log('⚠️ Failed to update hr_work status:', updateError.message);
                 }
             } else if (sourceTable === 'projects_work' && sourceId) {
                 try {
                     await db.execute(
-                        `UPDATE projects_work SET status = 'Completed' WHERE id = ?`,
+                        `UPDATE projects_work SET status = 'Approved' WHERE id = ?`,
                         [sourceId]
                     );
-                    console.log(`✅ Updated projects_work status to Completed for ID ${sourceId}`);
+                    console.log(`✅ Updated projects_work status to Approved for ID ${sourceId}`);
                 } catch (updateError) {
                     console.log('⚠️ Failed to update projects_work status:', updateError.message);
                 }
             } else if (sourceTable === 'finance_work' && sourceId) {
                 try {
                     await db.execute(
-                        `UPDATE finance_work SET status = 'Completed' WHERE id = ?`,
+                        `UPDATE finance_work SET status = 'Approved' WHERE id = ?`,
                         [sourceId]
                     );
-                    console.log(`✅ Updated finance_work status to Completed for ID ${sourceId}`);
+                    console.log(`✅ Updated finance_work status to Approved for ID ${sourceId}`);
                 } catch (updateError) {
                     console.log('⚠️ Failed to update finance_work status:', updateError.message);
                 }
@@ -3029,6 +3029,22 @@ router.post('/approvals', async (req, res) => {
                 console.log(`✅ Updated status to approved in work_completions for ID ${work_id}`);
             } catch (updateError) {
                 console.log('⚠️ Failed to update work_completions status:', updateError.message);
+            }
+
+            // Create notification for the submitter about approval
+            try {
+                await db.execute(`
+                    INSERT INTO notifications (title, message, type, priority, recipient_type, recipients, sent_by, status, is_read, created_at)
+                    VALUES (?, ?, 'success', 'High', 'individual', ?, ?, 'sent', 0, NOW())
+                `, [
+                    'Work Approved: ' + work_id,
+                    `Your work item ${work_id} has been approved by ${approved_by || 'Managing Director'}. Quality: ${quality_assessment}. Comments: ${approval_comments || 'None'}`,
+                    completedBy || 'all',
+                    approved_by || 'Managing Director'
+                ]);
+                console.log(`📢 Notification sent for work approval ${work_id}`);
+            } catch (notifErr) {
+                console.log('⚠️ Could not create approval notification:', notifErr.message);
             }
             
             res.json({
@@ -4253,6 +4269,23 @@ router.post('/completions/:workId/rework', async (req, res) => {
         
         console.log(`🔄 Requesting rework for work ${workId}...`);
         
+        // Determine source table from workId prefix
+        let sourceTable = null;
+        let sourceId = null;
+        if (typeof workId === 'string' && workId.startsWith('PW-')) {
+            sourceTable = 'projects_work';
+            sourceId = parseInt(workId.replace('PW-', ''), 10);
+        } else if (typeof workId === 'string' && workId.startsWith('FW-')) {
+            sourceTable = 'finance_work';
+            sourceId = parseInt(workId.replace('FW-', ''), 10);
+        } else if (typeof workId === 'string' && workId.startsWith('SR-')) {
+            sourceTable = 'site_reports';
+            sourceId = parseInt(workId.replace('SR-', ''), 10);
+        } else if (typeof workId === 'string' && workId.startsWith('HW-')) {
+            sourceTable = 'hr_work';
+            sourceId = parseInt(workId.replace('HW-', ''), 10);
+        }
+        
         try {
             await db.execute(`
                 UPDATE work_completions 
@@ -4263,8 +4296,31 @@ router.post('/completions/:workId/rework', async (req, res) => {
                 WHERE id = ?
             `, [reworkReason || '', requestedBy || 'System', workId]);
         } catch (dbError) {
-            console.log('⚠️ Database not available, accepting mock rework request');
+            console.log('⚠️ work_completions update:', dbError.message);
         }
+
+        // Update source table status to Rework
+        if (sourceTable && sourceId) {
+            try {
+                await db.execute(
+                    `UPDATE ${sourceTable} SET status = 'Rework' WHERE id = ?`,
+                    [sourceId]
+                );
+                console.log(`✅ Updated ${sourceTable} status to Rework for ID ${sourceId}`);
+            } catch (e) { console.log(`⚠️ ${sourceTable} rework update:`, e.message); }
+        }
+
+        // Create notification for submitter
+        try {
+            await db.execute(`
+                INSERT INTO notifications (title, message, type, priority, recipient_type, recipients, sent_by, status, is_read, created_at)
+                VALUES (?, ?, 'warning', 'High', 'individual', 'all', ?, 'sent', 0, NOW())
+            `, [
+                'Rework Requested: ' + workId,
+                `Your work item ${workId} requires rework. Reason: ${reworkReason || 'Not specified'}. Requested by: ${requestedBy || 'Managing Director'}`,
+                requestedBy || 'Managing Director'
+            ]);
+        } catch (notifErr) { console.log('⚠️ Rework notification:', notifErr.message); }
         
         res.json({
             success: true,
@@ -4290,6 +4346,23 @@ router.post('/completions/:workId/reject', async (req, res) => {
         
         console.log(`❌ Rejecting work ${workId}...`);
         
+        // Determine source table from workId prefix
+        let sourceTable = null;
+        let sourceId = null;
+        if (typeof workId === 'string' && workId.startsWith('PW-')) {
+            sourceTable = 'projects_work';
+            sourceId = parseInt(workId.replace('PW-', ''), 10);
+        } else if (typeof workId === 'string' && workId.startsWith('FW-')) {
+            sourceTable = 'finance_work';
+            sourceId = parseInt(workId.replace('FW-', ''), 10);
+        } else if (typeof workId === 'string' && workId.startsWith('SR-')) {
+            sourceTable = 'site_reports';
+            sourceId = parseInt(workId.replace('SR-', ''), 10);
+        } else if (typeof workId === 'string' && workId.startsWith('HW-')) {
+            sourceTable = 'hr_work';
+            sourceId = parseInt(workId.replace('HW-', ''), 10);
+        }
+        
         try {
             await db.execute(`
                 UPDATE work_completions 
@@ -4300,8 +4373,31 @@ router.post('/completions/:workId/reject', async (req, res) => {
                 WHERE id = ?
             `, [rejectionReason || '', rejectedBy || 'System', workId]);
         } catch (dbError) {
-            console.log('⚠️ Database not available, accepting mock rejection');
+            console.log('⚠️ work_completions reject update:', dbError.message);
         }
+
+        // Update source table status to Rejected
+        if (sourceTable && sourceId) {
+            try {
+                await db.execute(
+                    `UPDATE ${sourceTable} SET status = 'Rejected' WHERE id = ?`,
+                    [sourceId]
+                );
+                console.log(`✅ Updated ${sourceTable} status to Rejected for ID ${sourceId}`);
+            } catch (e) { console.log(`⚠️ ${sourceTable} reject update:`, e.message); }
+        }
+
+        // Create notification for submitter
+        try {
+            await db.execute(`
+                INSERT INTO notifications (title, message, type, priority, recipient_type, recipients, sent_by, status, is_read, created_at)
+                VALUES (?, ?, 'error', 'High', 'individual', 'all', ?, 'sent', 0, NOW())
+            `, [
+                'Work Rejected: ' + workId,
+                `Your work item ${workId} has been rejected. Reason: ${rejectionReason || 'Not specified'}. Rejected by: ${rejectedBy || 'Managing Director'}`,
+                rejectedBy || 'Managing Director'
+            ]);
+        } catch (notifErr) { console.log('⚠️ Rejection notification:', notifErr.message); }
         
         res.json({
             success: true,

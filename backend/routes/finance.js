@@ -348,12 +348,26 @@ router.put('/expense/:id/confirm', async (req, res) => {
             console.error('Could not fetch expense for email:', emailErr.message);
         }
 
+        // Create notification for expense approval
+        try {
+            const expRow = await db.execute(`SELECT category, amount, description FROM financial_transactions WHERE id = ?`, [id]);
+            const expInfo = expRow && expRow.length > 0 ? expRow[0] : {};
+            await db.execute(`
+                INSERT INTO notifications (title, message, type, priority, recipient_type, recipients, sent_by, status, is_read, created_at)
+                VALUES (?, ?, 'success', 'Medium', 'all', 'all', 'Finance Manager', 'sent', 0, NOW())
+            `, [
+                'Expense Approved: ' + (expInfo.category || 'EXP-' + id),
+                `Expense #${id} (${expInfo.category || 'N/A'}) for TZS ${expInfo.amount || 0} has been approved. Description: ${expInfo.description || 'N/A'}`
+            ]);
+        } catch (notifErr) { console.log('⚠️ Expense approval notification:', notifErr.message); }
+
         console.log('  ✅ Expense confirmed: id=' + id + ', tx_updated=' + result.affectedRows + ', work_updated=' + (workRes.affectedRows || 0));
         res.json({
             message: 'Expense confirmed successfully',
             transaction_updated: Boolean(result.affectedRows),
             work_updated: Boolean(workRes.affectedRows),
-            id
+            id,
+            status: 'Approved'
         });
     } catch (error) {
         console.error('❌ Error confirming expense:', error);
