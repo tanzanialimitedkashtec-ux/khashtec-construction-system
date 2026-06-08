@@ -1527,25 +1527,28 @@ function showViewModal(title, bodyHtml) {
 }
 
 function detailRow(label, value) {
-    var display = (value !== null && value !== undefined && value !== '') ? value : 'N/A';
+    var isEmpty = value === null || value === undefined || value === '' || (typeof value === 'string' && value.trim().toUpperCase() === 'N/A');
+    var display = isEmpty ? '<span style="color:#999">—</span>' : value;
     return '<tr><td style="padding:8px 12px;font-weight:bold;color:#555;white-space:nowrap;vertical-align:top;">' + label + '</td>' +
            '<td style="padding:8px 12px;">' + display + '</td></tr>';
 }
 
 function formatDate(val) {
-    if (!val) return 'N/A';
+    if (!val) return '';
     var d = new Date(val);
     if (isNaN(d.getTime())) return val;
     return d.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
 }
 
 function formatCurrency(val) {
-    if (!val && val !== 0) return 'N/A';
-    return parseFloat(val).toLocaleString('en-US', { style: 'currency', currency: 'TZS' });
+    if (val === null || val === undefined || val === '') return '';
+    var num = Number(val);
+    if (isNaN(num)) return val;
+    return 'TZS ' + num.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
 
 function statusBadge(status) {
-    if (!status) return 'N/A';
+    if (!status) return '';
     var colors = {
         'Pending': '#ff9800', 'Under Review': '#2196F3', 'Approved': '#4CAF50', 'Rejected': '#f44336',
         'Paid': '#4CAF50', 'Open': '#ff9800', 'Under Investigation': '#2196F3', 'Closed': '#9E9E9E',
