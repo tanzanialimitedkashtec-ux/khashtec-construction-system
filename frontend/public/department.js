@@ -54569,6 +54569,28 @@ async function loadPaymentTrackingData() {
         
         // Transform database records to match table expectations
         const transformedPayments = trackingRecords.map((transaction, index) => {
+            // If record already has full installment data (from financial_transactions), use it directly
+            if (transaction.source === 'financial_transactions') {
+                return {
+                    sale_id: transaction.id || (index + 1),
+                    sale_reference: transaction.tracking_reference || `SALE-${transaction.id}`,
+                    client_name: transaction.client_name || transaction.paid_by || 'Client',
+                    client_email: transaction.invoice_number || '',
+                    property_title: transaction.property_title || 'Property',
+                    property_location: transaction.department || transaction.category || 'N/A',
+                    total_amount: parseFloat(transaction.total_amount) || parseFloat(transaction.amount) || 0,
+                    paid_amount: parseFloat(transaction.paid_amount) || 0,
+                    outstanding_balance: parseFloat(transaction.outstanding_balance) || 0,
+                    installment_amount: parseFloat(transaction.installment_amount) || 0,
+                    next_payment_date: transaction.next_payment_date || transaction.due_date,
+                    payment_status: transaction.payment_status,
+                    payment_method: transaction.payment_method,
+                    paid_by: transaction.paid_by,
+                    paid_to: transaction.paid_to,
+                    transaction_type: transaction.transaction_type
+                };
+            }
+            
             const isPaid = transaction.payment_status === 'completed';
             const amount = parseFloat(transaction.amount) || 0;
             
@@ -54584,7 +54606,7 @@ async function loadPaymentTrackingData() {
                 total_amount: amount,
                 paid_amount: isPaid ? amount : 0,
                 outstanding_balance: isPaid ? 0 : amount,
-                installment_amount: Math.ceil(amount / 3), // Default to 3 installments
+                installment_amount: Math.ceil(amount / 3),
                 next_payment_date: transaction.payment_date || transaction.due_date,
                 payment_status: transaction.payment_status,
                 payment_method: transaction.payment_method,
