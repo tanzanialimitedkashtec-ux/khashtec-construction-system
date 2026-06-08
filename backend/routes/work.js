@@ -1011,6 +1011,60 @@ router.post('/hse/ppe', async (req, res) => {
     }
 });
 
+// Update an existing PPE issuance record
+router.put('/hse/ppe/:id', async (req, res) => {
+    try {
+        await ensurePpeIssuanceTable();
+
+        const id = req.params.id;
+        const rows = await db.execute('SELECT * FROM ppe_issuance WHERE id = ?', [id]);
+        const existing = Array.isArray(rows) ? rows[0] : rows;
+        if (!existing) {
+            return res.status(404).json({ error: 'PPE record not found' });
+        }
+
+        // Only update columns that actually exist in the table
+        const colRows = await db.execute('SHOW COLUMNS FROM ppe_issuance');
+        const existingCols = new Set((Array.isArray(colRows) ? colRows : []).map(c => c.Field));
+
+        const candidate = {
+            issuance_id: req.body.issuance_id,
+            issue_date: req.body.issue_date,
+            worker_name: req.body.worker_name,
+            worker_id: req.body.worker_id,
+            project: req.body.project,
+            department: req.body.department,
+            ppe_items: req.body.ppe_items !== undefined ? JSON.stringify(req.body.ppe_items || []) : undefined,
+            ppe_condition: req.body.ppe_condition,
+            return_date: req.body.return_date,
+            worker_signature: req.body.worker_signature,
+            issued_by: req.body.issued_by,
+            status: req.body.status
+        };
+
+        const updates = [];
+        const params = [];
+        for (const [col, val] of Object.entries(candidate)) {
+            if (val === undefined) continue;
+            if (!existingCols.has(col)) continue;
+            updates.push(`${col} = ?`);
+            params.push(val);
+        }
+
+        if (updates.length === 0) {
+            return res.status(400).json({ error: 'No updatable fields provided or columns missing' });
+        }
+
+        params.push(id);
+        await db.execute(`UPDATE ppe_issuance SET ${updates.join(', ')} WHERE id = ?`, params);
+
+        return res.json({ success: true, message: 'PPE record updated successfully' });
+    } catch (error) {
+        console.error('❌ Error updating PPE record:', error);
+        return res.status(500).json({ error: 'Failed to update PPE record', details: error.message });
+    }
+});
+
 // Get PPE statistics
 router.get('/hse/ppe/stats', async (req, res) => {
     try {
