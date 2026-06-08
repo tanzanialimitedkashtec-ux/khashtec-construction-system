@@ -27548,161 +27548,139 @@ function manageDrivers() {
 
 
 async function loadDrivers() {
-
-    try {
-
-        const recordsList = document.getElementById('driverRecordsList');
-
-        recordsList.innerHTML = '<tr><td colspan="9" class="loading">Loading driver records...</td></tr>';
-
-
-        console.log('ðŸ“¡ Fetching drivers from API...');
-
-        const response = await KashTecAPI.get('/api/drivers');
-        console.log('ðŸ“Š API Response:', response);
-
-
-
-        if (response && response.success && response.drivers && response.drivers.length > 0) {
-
-            recordsList.innerHTML = response.drivers.map(driver => `
-
-                <tr>
-
-                    <td>
-
-                        <div class="driver-info">
-
-                            <div class="driver-id">${driver.driver_id}</div>
-
-                            <div class="driver-name">${driver.full_name}</div>
-
-                            <div class="driver-description">${driver.description || 'No description'}</div>
-
-                        </div>
-
-                    </td>
-
-                    <td>
-
-                        <div class="personal-details">
-
-                            <div class="experience">Experience: ${driver.years_of_experience} years</div>
-
-                            <div class="license">License: ${driver.license_type}</div>
-
-                            <div class="phone">Phone: ${driver.phone_number}</div>
-
-                            <div class="email">Email: ${driver.email_address}</div>
-
-                            <div class="status">Status: ${driver.driver_status}</div>
-
-                        </div>
-
-                    </td>
-
-                    <td>
-
-                        <div class="contact-info">
-
-                            <div class="phone">ðŸ“± ${driver.phone_number}</div>
-
-                            <div class="email">ðŸ“§ ${driver.email_address}</div>
-
-                        </div>
-
-                    </td>
-
-                    <td>
-
-                        <div class="license-info">
-
-                            <div class="license-type">Type: ${driver.license_type}</div>
-
-                        </div>
-
-                    </td>
-
-                    <td>
-
-                        <div class="employment-info">
-
-                            <div class="status">Status: ${driver.driver_status}</div>
-
-                        </div>
-
-                    </td>
-
-                    <td>
-
-                        <div class="emergency-info">
-
-                            <div class="emergency-name">Emergency Contact</div>
-
-                            <div class="emergency-phone">ðŸ“± ${driver.phone_number}</div>
-
-                        </div>
-
-                    </td>
-
-                    <td>
-
-                        <div class="vehicle-info">
-
-                            <div class="assigned-vehicle">${driver.assigned_vehicle || 'Unassigned'}</div>
-
-                        </div>
-
-                    </td>
-
-                    <td>
-
-                        <div class="status-info">
-
-                            <span class="status-badge status-${String(driver.driver_status).toLowerCase().replace(/s+/g, '-')}">${driver.driver_status}</span>
-
-                        </div>
-
-                    </td>
-
-                    <td>
-
-                        <div class="driver-actions">
-
-                            <button class="action-btn view" onclick="viewDriverDetails('${driver.driver_id}')" title="View Details">ðŸ‘ï¸</button>
-
-                            <button class="action-btn edit" onclick="editDriver('${driver.driver_id}')" title="Edit Driver">âœï¸</button>
-
-                            <button class="action-btn delete" onclick="deleteDriver('${driver.driver_id}')" title="Delete Driver">ðŸ—‘ï¸</button>
-
-                        </div>
-
-                    </td>
-
-                </tr>
-
-            `).join('');
-
-        } else if (response && response.success && Array.isArray(response.drivers)) {
-            // Empty database - show message
-            recordsList.innerHTML = '<tr><td colspan="9" class="no-records">No driver records found. Register your first driver!</td></tr>';
-        } else {
-            // Unexpected response format
-            console.warn('âš ï¸ Unexpected API response format:', response);
-            loadSampleDrivers();
-        }
-
-    } catch (error) {
-
-        console.error('âŒ Error loading driver records:', error);
-        console.error('âŒ Error details:', error.message, error.stack);
-
-        // Load sample data on error
-
-        loadSampleDrivers();
-
+    console.log('loadDrivers() called');
+    var recordsList = document.getElementById('driverRecordsList');
+    if (!recordsList) {
+        console.error('driverRecordsList element not found in DOM');
+        return;
     }
+    recordsList.innerHTML = '<tr><td colspan="9" class="loading">Loading driver records...</td></tr>';
+    var drivers = null;
+    try {
+        console.log('Fetching drivers from API...');
+        var controller = new AbortController();
+        var timeoutId = setTimeout(function() { controller.abort(); }, 10000);
+        var apiUrl = (window.KashTecAPI ? window.KashTecAPI.baseUrl : window.location.origin) + '/api/drivers';
+        console.log('Fetching URL:', apiUrl);
+        var fetchResponse = await fetch(apiUrl, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+                'Authorization': 'Bearer ' + (window.sessionManager ? sessionManager.getAuthToken() : (localStorage.getItem('authToken') || ''))
+            },
+            signal: controller.signal
+        });
+        clearTimeout(timeoutId);
+        console.log('API response status:', fetchResponse.status);
+        if (!fetchResponse.ok) {
+            throw new Error('HTTP ' + fetchResponse.status + ': ' + fetchResponse.statusText);
+        }
+        var response = await fetchResponse.json();
+        console.log('API response data:', JSON.stringify(response).substring(0, 500));
+        drivers = Array.isArray(response) ? response : (response.drivers || response.data || []);
+        console.log('Drivers extracted, count:', drivers.length);
+    } catch (error) {
+        console.error('Error fetching drivers from API:', error.name, error.message);
+        drivers = null;
+    }
+    if (Array.isArray(drivers) && drivers.length > 0) {
+        console.log('Rendering', drivers.length, 'drivers from database');
+        try {
+            renderDriverTable(drivers, recordsList);
+            return;
+        } catch (renderError) {
+            console.error('Error rendering driver table:', renderError);
+        }
+    } else if (drivers !== null && Array.isArray(drivers) && drivers.length === 0) {
+        console.log('Database returned 0 drivers');
+    }
+    console.log('Loading sample driver data as fallback');
+    loadSampleDrivers();
+}
 
+function renderDriverTable(drivers, recordsList) {
+    recordsList.innerHTML = drivers.map(function(driver) {
+        var statusText = (driver.driver_status || 'Active');
+        var statusClass = 'status-' + String(statusText).toLowerCase().replace(/\s+/g, '-');
+        var assignedVehicle = driver.assigned_vehicle || 'Unassigned';
+        var phone = driver.phone_number || '-';
+        var email = driver.email_address || '-';
+        var licenseType = driver.license_type || '-';
+        var experienceYears = driver.years_of_experience != null ? driver.years_of_experience : '-';
+        var dob = driver.date_of_birth ? new Date(driver.date_of_birth).toLocaleDateString() : '-';
+        var gender = driver.gender || '-';
+        var address = driver.residential_address || driver.address || '-';
+        var region = driver.region || '-';
+        var bloodGroup = driver.blood_group || '-';
+        var nida = driver.nida_number || '-';
+        var passport = driver.passport_number || '-';
+        var licenseIssue = driver.license_issue_date ? new Date(driver.license_issue_date).toLocaleDateString() : '-';
+        var licenseExpiry = driver.license_expiry ? new Date(driver.license_expiry).toLocaleDateString() : '-';
+        var medicalCert = driver.medical_certificate || '-';
+        var medicalExpiry = driver.medical_expiry_date ? new Date(driver.medical_expiry_date).toLocaleDateString() : '-';
+        var employmentStatus = driver.employment_status || '-';
+        var hireDate = driver.hire_date ? new Date(driver.hire_date).toLocaleDateString() : '-';
+        var salary = driver.salary ? ('TZS ' + Number(driver.salary).toLocaleString()) : '-';
+        var paymentMethod = driver.payment_method || '-';
+        var skills = driver.skills || '-';
+        var emergencyName = driver.emergency_contact_name || driver.emergency_contact || '-';
+        var emergencyPhone = driver.emergency_contact_number || driver.emergency_phone || '-';
+        var emergencyRelation = driver.emergency_relationship || '-';
+        var driverId = driver.driver_id || '';
+        return '<tr>' +
+            '<td><div class="driver-info">' +
+                '<div class="driver-id">' + driverId + '</div>' +
+                '<div class="driver-name">' + (driver.full_name || '') + '</div>' +
+                '<div class="driver-description">' + (driver.description || 'No description') + '</div>' +
+            '</div></td>' +
+            '<td><div class="personal-details">' +
+                '<div class="experience">Experience: ' + experienceYears + ' years</div>' +
+                '<div class="dob">DOB: ' + dob + '</div>' +
+                '<div class="gender">Gender: ' + gender + '</div>' +
+                '<div class="address">' + address + '</div>' +
+                '<div class="region">Region: ' + region + '</div>' +
+                '<div class="blood-group">Blood: ' + bloodGroup + '</div>' +
+            '</div></td>' +
+            '<td><div class="contact-info">' +
+                '<div class="phone">Phone: ' + phone + '</div>' +
+                '<div class="email">Email: ' + email + '</div>' +
+                '<div class="nida">NIDA: ' + nida + '</div>' +
+                '<div class="passport">Passport: ' + passport + '</div>' +
+            '</div></td>' +
+            '<td><div class="license-info">' +
+                '<div class="license-type">Type: ' + licenseType + '</div>' +
+                '<div class="license-issue">Issue: ' + licenseIssue + '</div>' +
+                '<div class="license-expiry">Expiry: ' + licenseExpiry + '</div>' +
+                '<div class="medical">Medical: ' + medicalCert + '</div>' +
+                '<div class="medical-expiry">Medical Exp: ' + medicalExpiry + '</div>' +
+            '</div></td>' +
+            '<td><div class="employment-info">' +
+                '<div class="status">Status: ' + employmentStatus + '</div>' +
+                '<div class="hire-date">Hired: ' + hireDate + '</div>' +
+                '<div class="salary">Salary: ' + salary + '</div>' +
+                '<div class="payment">Payment: ' + paymentMethod + '</div>' +
+                '<div class="skills">Skills: ' + skills + '</div>' +
+            '</div></td>' +
+            '<td><div class="emergency-info">' +
+                '<div class="emergency-name">' + emergencyName + '</div>' +
+                '<div class="emergency-phone">Phone: ' + emergencyPhone + '</div>' +
+                '<div class="emergency-relation">Relation: ' + emergencyRelation + '</div>' +
+            '</div></td>' +
+            '<td><div class="vehicle-info">' +
+                '<div class="assigned-vehicle">' + assignedVehicle + '</div>' +
+            '</div></td>' +
+            '<td><div class="status-info">' +
+                '<span class="status-badge ' + statusClass + '">' + statusText + '</span>' +
+            '</div></td>' +
+            '<td><div class="driver-actions">' +
+                '<button class="action-btn view" onclick="viewDriverDetails(\'' + driverId + '\')" title="View Details">View</button>' +
+                '<button class="action-btn edit" onclick="editDriver(\'' + driverId + '\')" title="Edit Driver">Edit</button>' +
+                '<button class="action-btn delete" onclick="deleteDriver(\'' + driverId + '\')" title="Delete Driver">Delete</button>' +
+            '</div></td>' +
+        '</tr>';
+    }).join('');
+    console.log('Driver table rendered with', drivers.length, 'rows');
 }
 
 
