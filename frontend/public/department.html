@@ -51483,13 +51483,11 @@ function manageDrivers() {
 
 
 async function loadDrivers() {
-
-    console.log('🚗 loadDrivers() called');
-
+    console.log('🚗 [DEBUG] loadDrivers() called in department.html');
     const recordsList = document.getElementById('driverRecordsList');
 
     if (!recordsList) {
-        console.error('❌ driverRecordsList element not found in DOM');
+        console.error('❌ [DEBUG] driverRecordsList element not found in DOM');
         return;
     }
 
@@ -51497,16 +51495,14 @@ async function loadDrivers() {
 
     let drivers = null;
 
-    // Try fetching from database API
     try {
-        console.log('📡 Fetching drivers from API...');
-        console.log('📡 KashTecAPI available:', typeof KashTecAPI !== 'undefined');
+        console.log('📡 [DEBUG] Fetching drivers from API...');
+        console.log('📡 [DEBUG] KashTecAPI available:', typeof KashTecAPI !== 'undefined');
 
-        // Use fetch with timeout to prevent hanging
         const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 10000);
+        const timeoutId = setTimeout(() => controller.abort(), 15000);
         const apiUrl = (window.KashTecAPI ? window.KashTecAPI.baseUrl : window.location.origin) + '/api/drivers';
-        console.log('📡 Fetching URL:', apiUrl);
+        console.log('📡 [DEBUG] Fetching URL:', apiUrl);
 
         const fetchResponse = await fetch(apiUrl, {
             method: 'GET',
@@ -51519,130 +51515,171 @@ async function loadDrivers() {
         });
         clearTimeout(timeoutId);
 
-        console.log('📡 API response status:', fetchResponse.status);
+        console.log('📡 [DEBUG] API response status:', fetchResponse.status);
 
         if (!fetchResponse.ok) {
             throw new Error('HTTP ' + fetchResponse.status + ': ' + fetchResponse.statusText);
         }
 
         const response = await fetchResponse.json();
-        console.log('📡 API response data:', JSON.stringify(response).substring(0, 500));
+        console.log('📡 [DEBUG] Raw JSON response keys:', Object.keys(response));
 
-        // Normalize response shape
         drivers = Array.isArray(response)
             ? response
             : (response.drivers || response.data || []);
 
-        console.log('📊 Drivers extracted:', Array.isArray(drivers), 'count:', drivers.length);
+        console.log('📊 [DEBUG] Drivers extracted. IsArray:', Array.isArray(drivers), '| Count:', drivers ? drivers.length : 0);
+        
+        if (drivers && drivers.length > 0) {
+            console.log('📊 [DEBUG] First driver item keys:', Object.keys(drivers[0]));
+            console.log('📊 [DEBUG] First driver item full_name:', drivers[0].full_name, 'driver_id:', drivers[0].driver_id);
+        }
 
     } catch (error) {
-        console.error('❌ Error fetching drivers from API:', error.name, error.message);
-        console.log('⚠️ Will fall back to sample data');
+        console.error('❌ [DEBUG] Error fetching drivers from API:', error.name, error.message);
+        console.error(error);
         drivers = null;
     }
 
-    // Render database drivers if available
     if (Array.isArray(drivers) && drivers.length > 0) {
-        console.log('✅ Rendering', drivers.length, 'drivers from database');
+        console.log('✅ [DEBUG] Rendering', drivers.length, 'drivers from database');
         try {
             renderDriverTable(drivers, recordsList);
             return;
         } catch (renderError) {
-            console.error('❌ Error rendering driver table:', renderError);
+            console.error('❌ [DEBUG] Error rendering database driver table:', renderError);
+            console.error(renderError.stack);
+            alert("Error displaying driver table. Check console.");
         }
     } else if (drivers !== null && Array.isArray(drivers) && drivers.length === 0) {
-        console.log('⚠️ Database returned 0 drivers, loading sample data');
+        console.log('⚠️ [DEBUG] Database returned 0 drivers, fallback to sample data');
     }
 
-    // Fallback to sample data
-    console.log('📋 Loading sample driver data as fallback');
-    loadSampleDrivers();
-
+    console.log('📋 [DEBUG] Loading sample driver data as fallback');
+    try {
+        if (typeof loadSampleDrivers === "function") {
+            loadSampleDrivers();
+        } else {
+            console.error("❌ [DEBUG] loadSampleDrivers is not defined!");
+            recordsList.innerHTML = '<tr><td colspan="9" class="error">Failed to load drivers and no sample data available.</td></tr>';
+        }
+    } catch(err) {
+        console.error("❌ [DEBUG] Failed to run loadSampleDrivers:", err);
+    }
 }
 
 function renderDriverTable(drivers, recordsList) {
-    recordsList.innerHTML = drivers.map(driver => {
-        const statusText = (driver.driver_status || 'Active');
-        const statusClass = 'status-' + String(statusText).toLowerCase().replace(/\s+/g, '-');
-        const assignedVehicle = driver.assigned_vehicle || 'Unassigned';
-        const phone = driver.phone_number || '-';
-        const email = driver.email_address || '-';
-        const licenseType = driver.license_type || '-';
-        const experienceYears = driver.years_of_experience != null ? driver.years_of_experience : '-';
-        const dob = driver.date_of_birth ? new Date(driver.date_of_birth).toLocaleDateString() : '-';
-        const gender = driver.gender || '-';
-        const address = driver.residential_address || driver.address || '-';
-        const region = driver.region || '-';
-        const bloodGroup = driver.blood_group || '-';
-        const nida = driver.nida_number || '-';
-        const passport = driver.passport_number || '-';
-        const licenseIssue = driver.license_issue_date ? new Date(driver.license_issue_date).toLocaleDateString() : '-';
-        const licenseExpiry = driver.license_expiry ? new Date(driver.license_expiry).toLocaleDateString() : '-';
-        const medicalCert = driver.medical_certificate || '-';
-        const medicalExpiry = driver.medical_expiry_date ? new Date(driver.medical_expiry_date).toLocaleDateString() : '-';
-        const employmentStatus = driver.employment_status || '-';
-        const hireDate = driver.hire_date ? new Date(driver.hire_date).toLocaleDateString() : '-';
-        const salary = driver.salary ? ('TZS ' + Number(driver.salary).toLocaleString()) : '-';
-        const paymentMethod = driver.payment_method || '-';
-        const skills = driver.skills || '-';
-        const emergencyName = driver.emergency_contact_name || driver.emergency_contact || '-';
-        const emergencyPhone = driver.emergency_contact_number || driver.emergency_phone || '-';
-        const emergencyRelation = driver.emergency_relationship || '-';
-        const driverId = driver.driver_id || '';
+    if (!drivers || drivers.length === 0) {
+        recordsList.innerHTML = '<tr><td colspan="9" class="error">No drivers found.</td></tr>';
+        return;
+    }
 
-        return '<tr>' +
-            '<td><div class="driver-info">' +
-                '<div class="driver-id">' + driverId + '</div>' +
-                '<div class="driver-name">' + (driver.full_name || '') + '</div>' +
-                '<div class="driver-description">' + (driver.description || 'No description') + '</div>' +
-            '</div></td>' +
-            '<td><div class="personal-details">' +
-                '<div class="experience">Experience: ' + experienceYears + ' years</div>' +
-                '<div class="dob">DOB: ' + dob + '</div>' +
-                '<div class="gender">Gender: ' + gender + '</div>' +
-                '<div class="address">' + address + '</div>' +
-                '<div class="region">Region: ' + region + '</div>' +
-                '<div class="blood-group">Blood: ' + bloodGroup + '</div>' +
-            '</div></td>' +
-            '<td><div class="contact-info">' +
-                '<div class="phone">📱 ' + phone + '</div>' +
-                '<div class="email">📧 ' + email + '</div>' +
-                '<div class="nida">NIDA: ' + nida + '</div>' +
-                '<div class="passport">Passport: ' + passport + '</div>' +
-            '</div></td>' +
-            '<td><div class="license-info">' +
-                '<div class="license-type">Type: ' + licenseType + '</div>' +
-                '<div class="license-issue">Issue: ' + licenseIssue + '</div>' +
-                '<div class="license-expiry">Expiry: ' + licenseExpiry + '</div>' +
-                '<div class="medical">Medical: ' + medicalCert + '</div>' +
-                '<div class="medical-expiry">Medical Exp: ' + medicalExpiry + '</div>' +
-            '</div></td>' +
-            '<td><div class="employment-info">' +
-                '<div class="status">Status: ' + employmentStatus + '</div>' +
-                '<div class="hire-date">Hired: ' + hireDate + '</div>' +
-                '<div class="salary">Salary: ' + salary + '</div>' +
-                '<div class="payment">Payment: ' + paymentMethod + '</div>' +
-                '<div class="skills">Skills: ' + skills + '</div>' +
-            '</div></td>' +
-            '<td><div class="emergency-info">' +
-                '<div class="emergency-name">' + emergencyName + '</div>' +
-                '<div class="emergency-phone">📱 ' + emergencyPhone + '</div>' +
-                '<div class="emergency-relation">Relation: ' + emergencyRelation + '</div>' +
-            '</div></td>' +
-            '<td><div class="vehicle-info">' +
-                '<div class="assigned-vehicle">' + assignedVehicle + '</div>' +
-            '</div></td>' +
-            '<td><div class="status-info">' +
-                '<span class="status-badge ' + statusClass + '">' + statusText + '</span>' +
-            '</div></td>' +
-            '<td><div class="driver-actions">' +
-                '<button class="action-btn view" onclick="viewDriverDetails(\'' + driverId + '\')" title="View Details">👁️</button>' +
-                '<button class="action-btn edit" onclick="editDriver(\'' + driverId + '\')" title="Edit Driver">✏️</button>' +
-                '<button class="action-btn delete" onclick="deleteDriver(\'' + driverId + '\')" title="Delete Driver">🗑️</button>' +
-            '</div></td>' +
-        '</tr>';
-    }).join('');
-    console.log('✅ Driver table rendered with', drivers.length, 'rows');
+    let html = '';
+    for (let i = 0; i < drivers.length; i++) {
+        let driver = drivers[i];
+        try {
+            const statusText = (driver.driver_status || 'Active');
+            const statusClass = 'status-' + String(statusText).toLowerCase().replace(/\s+/g, '-');
+            const assignedVehicle = driver.assigned_vehicle || 'Unassigned';
+            const phone = driver.phone_number || '-';
+            const email = driver.email_address || '-';
+            const licenseType = driver.license_type || '-';
+            const experienceYears = driver.years_of_experience != null ? driver.years_of_experience : '-';
+            let dob = driver.date_of_birth ? new Date(driver.date_of_birth).toLocaleDateString() : '-';
+            if (dob === 'Invalid Date') dob = driver.date_of_birth;
+            const gender = driver.gender || '-';
+            const address = driver.residential_address || driver.address || '-';
+            const region = driver.region || '-';
+            const bloodGroup = driver.blood_group || '-';
+            const nida = driver.nida_number || '-';
+            const passport = driver.passport_number || '-';
+            let licenseIssue = driver.license_issue_date ? new Date(driver.license_issue_date).toLocaleDateString() : '-';
+            if (licenseIssue === 'Invalid Date') licenseIssue = driver.license_issue_date;
+            let licenseExpiry = driver.license_expiry ? new Date(driver.license_expiry).toLocaleDateString() : '-';
+            if (licenseExpiry === 'Invalid Date') licenseExpiry = driver.license_expiry;
+            const medicalCert = driver.medical_certificate || '-';
+            let medicalExpiry = driver.medical_expiry_date ? new Date(driver.medical_expiry_date).toLocaleDateString() : '-';
+            if (medicalExpiry === 'Invalid Date') medicalExpiry = driver.medical_expiry_date;
+            const employmentStatus = driver.employment_status || '-';
+            let hireDate = driver.hire_date ? new Date(driver.hire_date).toLocaleDateString() : '-';
+            if (hireDate === 'Invalid Date') hireDate = driver.hire_date;
+            
+            let salary = '-';
+            if (driver.salary) {
+                let numSalary = Number(driver.salary);
+                if (!isNaN(numSalary)) {
+                    salary = 'TZS ' + numSalary.toLocaleString();
+                } else {
+                    salary = 'TZS ' + driver.salary;
+                }
+            }
+            
+            const paymentMethod = driver.payment_method || '-';
+            const skills = driver.skills || '-';
+            const emergencyName = driver.emergency_contact_name || driver.emergency_contact || '-';
+            const emergencyPhone = driver.emergency_contact_number || driver.emergency_phone || '-';
+            const emergencyRelation = driver.emergency_relationship || '-';
+            const driverId = driver.driver_id || '';
+            const fullName = driver.full_name || driver.driverName || 'Unknown Driver';
+            const desc = driver.description || 'No description';
+
+            html += '<tr>' +
+                '<td><div class="driver-info">' +
+                    '<div class="driver-id">' + driverId + '</div>' +
+                    '<div class="driver-name">' + fullName + '</div>' +
+                    '<div class="driver-description">' + desc + '</div>' +
+                '</div></td>' +
+                '<td><div class="personal-details">' +
+                    '<div class="experience">Experience: ' + experienceYears + ' years</div>' +
+                    '<div class="dob">DOB: ' + dob + '</div>' +
+                    '<div class="gender">Gender: ' + gender + '</div>' +
+                    '<div class="address">' + address + '</div>' +
+                    '<div class="region">Region: ' + region + '</div>' +
+                    '<div class="blood-group">Blood: ' + bloodGroup + '</div>' +
+                '</div></td>' +
+                '<td><div class="contact-info">' +
+                    '<div class="phone">📱 ' + phone + '</div>' +
+                    '<div class="email">📧 ' + email + '</div>' +
+                    '<div class="nida">NIDA: ' + nida + '</div>' +
+                    '<div class="passport">Passport: ' + passport + '</div>' +
+                '</div></td>' +
+                '<td><div class="license-info">' +
+                    '<div class="license-type">Type: ' + licenseType + '</div>' +
+                    '<div class="license-issue">Issue: ' + licenseIssue + '</div>' +
+                    '<div class="license-expiry">Expiry: ' + licenseExpiry + '</div>' +
+                    '<div class="medical">Medical: ' + medicalCert + '</div>' +
+                    '<div class="medical-expiry">Medical Exp: ' + medicalExpiry + '</div>' +
+                '</div></td>' +
+                '<td><div class="employment-info">' +
+                    '<div class="status">Status: ' + employmentStatus + '</div>' +
+                    '<div class="hire-date">Hired: ' + hireDate + '</div>' +
+                    '<div class="salary">Salary: ' + salary + '</div>' +
+                    '<div class="payment">Payment: ' + paymentMethod + '</div>' +
+                    '<div class="skills">Skills: ' + skills + '</div>' +
+                '</div></td>' +
+                '<td><div class="emergency-info">' +
+                    '<div class="emergency-name">' + emergencyName + '</div>' +
+                    '<div class="emergency-phone">📱 ' + emergencyPhone + '</div>' +
+                    '<div class="emergency-relation">Relation: ' + emergencyRelation + '</div>' +
+                '</div></td>' +
+                '<td><div class="vehicle-info">' +
+                    '<div class="assigned-vehicle">' + assignedVehicle + '</div>' +
+                '</div></td>' +
+                '<td><div class="status-info">' +
+                    '<span class="status-badge ' + statusClass + '">' + statusText + '</span>' +
+                '</div></td>' +
+                '<td><div class="driver-actions">' +
+                    '<button class="action-btn view" onclick="viewDriverDetails(\\'' + driverId + '\\')" title="View Details">👁️</button>' +
+                    '<button class="action-btn edit" onclick="editDriver(\\'' + driverId + '\\')" title="Edit Driver">✏️</button>' +
+                    '<button class="action-btn delete" onclick="deleteDriver(\\'' + driverId + '\\')" title="Delete Driver">🗑️</button>' +
+                '</div></td>' +
+            '</tr>';
+        } catch (e) {
+            console.error("❌ [DEBUG] Failed parsing row index", i, "Driver:", driver, "Error:", e);
+        }
+    }
+    recordsList.innerHTML = html;
+    console.log('✅ [DEBUG] Driver table rendered successfully with', drivers.length, 'rows');
 }
 
 
