@@ -14,6 +14,55 @@ router.get('/test', (req, res) => {
     });
 });
 
+async function ensureLuggagePaymentTrackingTable(db) {
+    await db.execute(`
+        CREATE TABLE IF NOT EXISTS luggage_payment_tracking (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            tracking_reference VARCHAR(50) UNIQUE NOT NULL,
+            purchase_id INT NULL,
+            purchase_reference VARCHAR(50) NULL,
+            employee_id VARCHAR(50) NOT NULL,
+            employee_name VARCHAR(255) NOT NULL,
+            department VARCHAR(100) NULL,
+            luggage VARCHAR(100) NOT NULL,
+            course_name VARCHAR(255) NOT NULL,
+            total_amount DECIMAL(20,2) NOT NULL,
+            currency VARCHAR(10) DEFAULT 'TZS',
+            payment_method VARCHAR(50) DEFAULT 'company_sponsored',
+            payment_status ENUM('pending', 'partial', 'paid', 'refunded', 'cancelled') DEFAULT 'pending',
+            amount_paid DECIMAL(20,2) DEFAULT 0.00,
+            balance_amount DECIMAL(20,2) DEFAULT 0.00,
+            payment_schedule ENUM('full_payment', 'monthly_installments', 'quarterly_installments', 'custom') DEFAULT 'full_payment',
+            total_installments INT DEFAULT 1,
+            paid_installments INT DEFAULT 0,
+            next_payment_date DATE NULL,
+            next_payment_amount DECIMAL(20,2) NULL,
+            payment_history JSON NULL,
+            payment_stage VARCHAR(100) NULL,
+            payment_reference VARCHAR(255) NULL,
+            bank_reference VARCHAR(255) NULL,
+            transaction_id VARCHAR(255) NULL,
+            notes TEXT NULL,
+            payment_date DATE NULL,
+            approval_status ENUM('pending_approval', 'approved', 'rejected', 'processed') DEFAULT 'pending_approval',
+            approved_by VARCHAR(100) NULL,
+            approved_date TIMESTAMP NULL,
+            finance_notes TEXT NULL,
+            hr_notes TEXT NULL,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+            INDEX idx_employee (employee_id),
+            INDEX idx_purchase (purchase_id),
+            INDEX idx_status (payment_status, approval_status),
+            INDEX idx_payment_date (next_payment_date)
+        )
+    `);
+    await db.execute(`ALTER TABLE luggage_payment_tracking MODIFY COLUMN total_amount DECIMAL(20,2) NOT NULL`);
+    await db.execute(`ALTER TABLE luggage_payment_tracking MODIFY COLUMN amount_paid DECIMAL(20,2) NOT NULL`);
+    await db.execute(`ALTER TABLE luggage_payment_tracking MODIFY COLUMN balance_amount DECIMAL(20,2) NOT NULL`);
+    await db.execute(`ALTER TABLE luggage_payment_tracking MODIFY COLUMN next_payment_amount DECIMAL(20,2) NULL`);
+}
+
 // Root endpoint - get all payment tracking records
 router.get('/', async (req, res) => {
     try {
@@ -23,55 +72,7 @@ router.get('/', async (req, res) => {
         
         try {
             const db = require('../../database/config/database');
-            
-            // Ensure luggage_payment_tracking table exists
-            try {
-                await db.execute(`
-                    CREATE TABLE IF NOT EXISTS luggage_payment_tracking (
-                        id INT AUTO_INCREMENT PRIMARY KEY,
-                        tracking_reference VARCHAR(50) UNIQUE NOT NULL,
-                        purchase_id INT NULL,
-                        purchase_reference VARCHAR(50) NULL,
-                        employee_id VARCHAR(50) NOT NULL,
-                        employee_name VARCHAR(255) NOT NULL,
-                        department VARCHAR(100) NULL,
-                        luggage VARCHAR(100) NOT NULL,
-                        course_name VARCHAR(255) NOT NULL,
-                        total_amount DECIMAL(10,2) NOT NULL,
-                        currency VARCHAR(10) DEFAULT 'USD',
-                        payment_method ENUM('cash', 'card', 'bank_transfer', 'company_sponsored', 'installment') DEFAULT 'company_sponsored',
-                        payment_status ENUM('pending', 'partial', 'paid', 'refunded', 'cancelled') DEFAULT 'pending',
-                        amount_paid DECIMAL(10,2) DEFAULT 0.00,
-                        balance_amount DECIMAL(10,2) DEFAULT 0.00,
-                        payment_schedule ENUM('full_payment', 'monthly_installments', 'quarterly_installments', 'custom') DEFAULT 'full_payment',
-                        total_installments INT DEFAULT 1,
-                        paid_installments INT DEFAULT 0,
-                        next_payment_date DATE NULL,
-                        next_payment_amount DECIMAL(10,2) NULL,
-                        payment_history JSON NULL,
-                        payment_stage VARCHAR(100) NULL,
-                        payment_reference VARCHAR(255) NULL,
-                        bank_reference VARCHAR(255) NULL,
-                        transaction_id VARCHAR(255) NULL,
-                        notes TEXT NULL,
-                        payment_date DATE NULL,
-                        approval_status ENUM('pending_approval', 'approved', 'rejected', 'processed') DEFAULT 'pending_approval',
-                        approved_by VARCHAR(100) NULL,
-                        approved_date TIMESTAMP NULL,
-                        finance_notes TEXT NULL,
-                        hr_notes TEXT NULL,
-                        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-                        INDEX idx_employee (employee_id),
-                        INDEX idx_purchase (purchase_id),
-                        INDEX idx_status (payment_status, approval_status),
-                        INDEX idx_payment_date (next_payment_date)
-                    )
-                `);
-                console.log('✅ Luggage Payment Tracking table verified/created successfully');
-            } catch (tableError) {
-                console.log('⚠️ Could not create luggage_payment_tracking table:', tableError.message);
-            }
+            await ensureLuggagePaymentTrackingTable(db);
             
             // Ensure new tracking columns exist (for existing tables)
             const newCols = [
@@ -139,6 +140,7 @@ router.get('/:id', async (req, res) => {
         
         try {
             const db = require('../../database/config/database');
+            await ensureLuggagePaymentTrackingTable(db);
             const trackingResult = await db.execute('SELECT * FROM luggage_payment_tracking WHERE id = ?', [trackingId]);
             const trackingData = Array.isArray(trackingResult) ? trackingResult[0] : trackingResult;
             
@@ -147,52 +149,12 @@ router.get('/:id', async (req, res) => {
                 console.log('✅ Luggage payment tracking found:', tracking);
             }
         } catch (dbError) {
-            console.error('❌ Database error, using fallback tracking:', dbError);
-            
-            // Fallback to mock tracking data (using first few from the main mock data)
-            const mockTracking = [
-                {
-                    id: 1,
-                    tracking_reference: 'LPT202605001',
-                    purchase_id: 1,
-                    purchase_reference: 'LP202605001',
-                    employee_id: 'EMP001',
-                    employee_name: 'John Doe',
-                    department: 'IT',
-                    luggage: 'English',
-                    course_name: 'English Proficiency Program - Intermediate',
-                    total_amount: 1500.00,
-                    currency: 'USD',
-                    payment_method: 'company_sponsored',
-                    payment_status: 'paid',
-                    amount_paid: 1500.00,
-                    balance_amount: 0.00,
-                    payment_schedule: 'full_payment',
-                    total_installments: 1,
-                    paid_installments: 1,
-                    next_payment_date: null,
-                    next_payment_amount: null,
-                    payment_history: JSON.stringify([
-                        {
-                            date: '2026-05-01',
-                            amount: 1500.00,
-                            method: 'company_sponsored',
-                            status: 'paid',
-                            reference: 'PAY001',
-                            notes: 'Full payment processed'
-                        }
-                    ]),
-                    approval_status: 'approved',
-                    approved_by: 'HR Manager',
-                    approved_date: '2026-05-01T08:00:00Z',
-                    finance_notes: 'Approved for full company sponsorship',
-                    hr_notes: 'Employee enrolled in intermediate English course',
-                    created_at: '2026-05-01T08:00:00Z',
-                    updated_at: '2026-05-01T08:00:00Z'
-                }
-            ];
-            
-            tracking = mockTracking.find(t => t.id == trackingId);
+            console.error('❌ Database error fetching luggage payment tracking:', dbError);
+            return res.status(500).json({
+                success: false,
+                error: 'Failed to fetch luggage payment tracking',
+                details: dbError.message
+            });
         }
         
         if (!tracking) {
@@ -279,9 +241,10 @@ router.post('/', async (req, res) => {
             next_payment_date = nextDate.toISOString().split('T')[0];
         }
         
-        // Try database first, fallback to mock
         try {
             const db = require('../../database/config/database');
+
+            await ensureLuggagePaymentTrackingTable(db);
             
             const query = `
                 INSERT INTO luggage_payment_tracking (
@@ -345,44 +308,11 @@ router.post('/', async (req, res) => {
             });
             
         } catch (dbError) {
-            console.error('❌ Database error, using mock tracking creation:', dbError);
-            
-            // Fallback to mock tracking creation
-            const trackingId = `LPT${Date.now().toString().slice(-6)}`;
-            
-            res.status(201).json({
-                success: true,
-                message: 'Luggage payment tracking created successfully (mock)',
-                trackingId: trackingId,
-                tracking: {
-                    id: trackingId,
-                    tracking_reference,
-                    purchase_id,
-                    purchase_reference,
-                    employee_id,
-                    employee_name,
-                    department,
-                    luggage,
-                    course_name,
-                    total_amount,
-                    currency,
-                    payment_method,
-                    payment_status: amount_paid > 0 ? 'paid' : 'pending',
-                    amount_paid,
-                    balance_amount,
-                    payment_schedule,
-                    total_installments,
-                    paid_installments,
-                    next_payment_date,
-                    next_payment_amount,
-                    payment_history: JSON.stringify([]),
-                    approval_status: approved_by ? 'approved' : 'pending_approval',
-                    finance_notes,
-                    hr_notes,
-                    approved_by,
-                    created_at: new Date().toISOString(),
-                    mock: true
-                }
+            console.error('❌ Database error creating luggage payment tracking:', dbError);
+            return res.status(500).json({
+                success: false,
+                error: 'Failed to create luggage payment tracking',
+                details: dbError.message
             });
         }
         
@@ -405,9 +335,9 @@ router.put('/:id', async (req, res) => {
         console.log('🔄 Updating luggage payment tracking:', trackingId);
         console.log('📝 Update data:', updateData);
         
-        // Try database first, fallback to mock
         try {
             const db = require('../../database/config/database');
+            await ensureLuggagePaymentTrackingTable(db);
             
             // Build dynamic update query
             const updateFields = [];
@@ -444,14 +374,11 @@ router.put('/:id', async (req, res) => {
             });
             
         } catch (dbError) {
-            console.error('❌ Database error, using mock update:', dbError);
-            
-            // Fallback to mock update
-            res.json({
-                success: true,
-                message: 'Luggage payment tracking updated successfully (mock)',
-                affected_rows: 1,
-                mock: true
+            console.error('❌ Database error updating luggage payment tracking:', dbError);
+            return res.status(500).json({
+                success: false,
+                error: 'Failed to update luggage payment tracking',
+                details: dbError.message
             });
         }
         
@@ -471,9 +398,9 @@ router.delete('/:id', async (req, res) => {
         const trackingId = req.params.id;
         console.log('🗑️ Deleting luggage payment tracking:', trackingId);
         
-        // Try database first, fallback to mock
         try {
             const db = require('../../database/config/database');
+            await ensureLuggagePaymentTrackingTable(db);
             
             // Check if tracking exists
             const trackingResult = await db.execute('SELECT tracking_reference FROM luggage_payment_tracking WHERE id = ?', [trackingId]);
@@ -502,17 +429,11 @@ router.delete('/:id', async (req, res) => {
             });
             
         } catch (dbError) {
-            console.error('❌ Database error, using mock delete:', dbError);
-            
-            // Fallback to mock delete
-            res.json({
-                success: true,
-                message: 'Luggage payment tracking deleted successfully (mock)',
-                deleted_tracking: {
-                    id: trackingId,
-                    tracking_reference: 'Mock Tracking'
-                },
-                mock: true
+            console.error('❌ Database error deleting luggage payment tracking:', dbError);
+            return res.status(500).json({
+                success: false,
+                error: 'Failed to delete luggage payment tracking',
+                details: dbError.message
             });
         }
         
