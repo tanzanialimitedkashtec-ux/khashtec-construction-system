@@ -51476,14 +51476,14 @@ function manageDrivers() {
 
     // Load driver records when the page loads
 
-    loadDrivers();
+    loadDriverRecords();
 
 }
 
 
 
-async function loadDrivers() {
-    console.log('🚗 [DEBUG] loadDrivers() called in department.html');
+async function loadDriverRecords() {
+    console.log('🚗 [DEBUG] loadDriverRecords() called in department.html');
     const recordsList = document.getElementById('driverRecordsList');
 
     if (!recordsList) {
@@ -52278,7 +52278,7 @@ async function deleteDriver(driverId) {
 
             customAlert(`Driver ${driverId} deleted successfully!`, 'Success', 'success');
 
-            loadDrivers();
+            loadDriverRecords();
 
         } catch (error) {
 
@@ -90706,7 +90706,7 @@ async function updateDriver(driverId) {
 
         document.querySelector('.modal-overlay').remove();
 
-        loadDrivers(); // Refresh the driver list
+        loadDriverRecords(); // Refresh the driver list
 
     } catch (error) {
 

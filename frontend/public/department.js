@@ -27541,14 +27541,14 @@ function manageDrivers() {
 
     // Load driver records when the page loads
 
-    loadDrivers();
+    loadDriverRecords();
 
 }
 
 
 
-async function loadDrivers() {
-    console.log('🚗 [DEBUG] loadDrivers() called in department.js');
+async function loadDriverRecords() {
+    console.log('🚗 [DEBUG] loadDriverRecords() called in department.js');
     var recordsList = document.getElementById('driverRecordsList');
     if (!recordsList) {
         console.error('❌ [DEBUG] driverRecordsList element not found in DOM');
@@ -28408,7 +28408,7 @@ async function deleteDriver(driverId) {
 
             customAlert(`Driver ${driverId} deleted successfully!`, 'Success', 'success');
 
-            loadDrivers();
+            loadDriverRecords();
 
         } catch (error) {
 
