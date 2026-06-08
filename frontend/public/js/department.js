@@ -263,5 +263,61 @@
     }
   };
 
+  // Global helper to delete luggage campaigns (used by inline onclick buttons)
+  window.deleteCampaign = async function(campaignId) {
+    if (!confirm(`Are you sure you want to delete campaign: ${campaignId}? This action cannot be undone.`)) return;
+
+    try {
+      // Prefer centralized API helper when available
+      if (window.KashTecAPI && typeof window.KashTecAPI.delete === 'function') {
+        const resp = await window.KashTecAPI.delete(`/luggage-campaigns/${campaignId}`);
+        console.log('🗑️ deleteCampaign via KashTecAPI:', resp);
+        if (resp && resp.success) {
+          alert('Campaign deleted successfully!');
+          if (typeof window.loadLuggageCampaigns === 'function') {
+            await window.loadLuggageCampaigns();
+          } else {
+            window.location.reload();
+          }
+          return;
+        }
+        throw new Error((resp && (resp.error || resp.message)) || 'Failed to delete campaign');
+      }
+
+      // Fallback: call DELETE directly
+      const base = (window.KashTecAPI && window.KashTecAPI.baseUrl) ? window.KashTecAPI.baseUrl : (window.location.origin + '/api');
+      const url = `${base}/luggage-campaigns/${campaignId}`;
+      const token = (window.sessionManager && window.sessionManager.getAuthToken && window.sessionManager.getAuthToken()) || localStorage.getItem('authToken') || '';
+      const headers = { 'Content-Type': 'application/json' };
+      if (token) headers['Authorization'] = `Bearer ${token}`;
+
+      const response = await fetch(url, { method: 'DELETE', headers });
+      const text = await response.text();
+      let json = null;
+      try { json = text ? JSON.parse(text) : null; } catch (e) { json = { raw: text }; }
+
+      console.log('🗑️ deleteCampaign fetch fallback:', response.status, response.statusText, json);
+
+      if (!response.ok) {
+        throw new Error((json && (json.error || json.message)) || `HTTP ${response.status}`);
+      }
+
+      if (json && json.success) {
+        alert('Campaign deleted successfully!');
+        if (typeof window.loadLuggageCampaigns === 'function') {
+          await window.loadLuggageCampaigns();
+        } else {
+          window.location.reload();
+        }
+        return;
+      }
+
+      throw new Error((json && (json.error || json.message)) || 'Failed to delete campaign');
+    } catch (err) {
+      console.error('❌ Error deleting campaign:', err);
+      alert('Error deleting campaign: ' + (err.message || err));
+    }
+  };
+
   // Optional: if contentArea exists and a global flag set later, we could auto-run
 })();
