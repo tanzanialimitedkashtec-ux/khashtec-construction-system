@@ -51526,7 +51526,11 @@ async function loadDriverRecords() {
 
         drivers = Array.isArray(response)
             ? response
-            : (response.drivers || response.data || []);
+            : (Array.isArray(response.drivers)
+                ? response.drivers
+                : (response.drivers && typeof response.drivers === 'object'
+                    ? [response.drivers]
+                    : (Array.isArray(response.data) ? response.data : [])));
 
         console.log('📊 [DEBUG] Drivers extracted. IsArray:', Array.isArray(drivers), '| Count:', drivers ? drivers.length : 0);
         

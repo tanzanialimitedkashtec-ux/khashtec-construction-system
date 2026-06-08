@@ -27586,7 +27586,13 @@ async function loadDriverRecords() {
         console.log('📡 [DEBUG] Raw JSON response keys:', Object.keys(response));
         
         // Normalize response shape safely
-        drivers = Array.isArray(response) ? response : (response.drivers || response.data || []);
+        drivers = Array.isArray(response)
+            ? response
+            : (Array.isArray(response.drivers)
+                ? response.drivers
+                : (response.drivers && typeof response.drivers === 'object'
+                    ? [response.drivers]
+                    : (Array.isArray(response.data) ? response.data : [])));
         console.log('📊 [DEBUG] Drivers extracted. IsArray:', Array.isArray(drivers), '| Count:', drivers ? drivers.length : 0);
         
         if (drivers && drivers.length > 0) {

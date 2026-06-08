@@ -96,8 +96,16 @@ router.get('/', async (req, res) => {
             ORDER BY created_at DESC
         `);
         
-        console.log(`✅ Found ${drivers.length} drivers in database`);
         let finalDrivers = drivers;
+        if (!Array.isArray(finalDrivers)) {
+            if (finalDrivers && typeof finalDrivers === 'object') {
+                finalDrivers = [finalDrivers];
+            } else {
+                finalDrivers = [];
+            }
+        }
+        
+        console.log(`✅ Found ${finalDrivers.length} drivers in database`);
         
         if (finalDrivers.length === 0) {
             console.log('🌱 Drivers table exists but contains no records. Returning an empty list.');
@@ -139,6 +147,13 @@ router.get('/all', async (req, res) => {
         `);
         
         let finalDrivers = drivers;
+        if (!Array.isArray(finalDrivers)) {
+            if (finalDrivers && typeof finalDrivers === 'object') {
+                finalDrivers = [finalDrivers];
+            } else {
+                finalDrivers = [];
+            }
+        }
         
         if (finalDrivers.length === 0) {
             console.log('🌱 Drivers table exists but contains no records in /all. Returning an empty list.');
