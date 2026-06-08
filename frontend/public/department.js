@@ -43628,9 +43628,9 @@ function renderExpenseCards(expenses, containerId, showConfirm) {
         html += '<div style="color:#888;font-size:0.8em;border-top:1px solid #eee;padding-top:8px;">';
         html += '<span>Date: ' + (exp.date || 'N/A') + '</span>';
         html += '</div>';
-        // QR code for receipt file
+        // QR code for receipt file — use persistent API endpoint instead of static file path
         if (exp.receipt_file) {
-            var receiptUrl = appUrl + exp.receipt_file;
+            var receiptUrl = appUrl + '/api/finance/receipt/' + exp.id;
             var qrUrl = 'https://api.qrserver.com/v1/create-qr-code/?size=120x120&data=' + encodeURIComponent(receiptUrl);
             html += '<div style="margin-top:12px;padding-top:10px;border-top:1px solid #eee;text-align:center;">';
             html += '<p style="margin:0 0 6px;font-size:0.8em;color:#555;font-weight:600;">Scan to view receipt:</p>';

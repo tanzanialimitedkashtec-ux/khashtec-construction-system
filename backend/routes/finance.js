@@ -1,5 +1,7 @@
 const express = require('express');
 const router = express.Router();
+const fs = require('fs');
+const path = require('path');
 const db = require('../../database/config/database');
 const upload = require('../middleware/upload');
 const { sendInvoiceEmail, sendExpenseEmail } = require('../services/emailService');
@@ -181,16 +183,30 @@ router.get('/budgets', async (req, res) => {
 
 // ===== EXPENSE MANAGEMENT =====
 
-// Ensure receipt_file column exists on financial_transactions
+// Ensure receipt columns exist on financial_transactions
 (async () => {
     try {
         await db.execute(`ALTER TABLE financial_transactions ADD COLUMN receipt_file VARCHAR(500) DEFAULT NULL`);
         console.log('✅ Added receipt_file column to financial_transactions');
     } catch (e) {
-        if (e.message && e.message.includes('Duplicate column')) {
-            // Column already exists — no action needed
-        } else {
+        if (!e.message || !e.message.includes('Duplicate column')) {
             console.log('ℹ️ receipt_file column check:', e.message);
+        }
+    }
+    try {
+        await db.execute(`ALTER TABLE financial_transactions ADD COLUMN receipt_data LONGTEXT DEFAULT NULL`);
+        console.log('✅ Added receipt_data column to financial_transactions');
+    } catch (e) {
+        if (!e.message || !e.message.includes('Duplicate column')) {
+            console.log('ℹ️ receipt_data column check:', e.message);
+        }
+    }
+    try {
+        await db.execute(`ALTER TABLE financial_transactions ADD COLUMN receipt_mimetype VARCHAR(100) DEFAULT NULL`);
+        console.log('✅ Added receipt_mimetype column to financial_transactions');
+    } catch (e) {
+        if (!e.message || !e.message.includes('Duplicate column')) {
+            console.log('ℹ️ receipt_mimetype column check:', e.message);
         }
     }
 })();
@@ -214,8 +230,19 @@ router.post('/expense', upload.single('receipt'), async (req, res) => {
         });
     }
 
-    // Get uploaded receipt file path (if any)
+    // Get uploaded receipt file path and read content for database storage
     const receiptFile = req.file ? '/uploads/' + req.file.filename : null;
+    let receiptData = null;
+    let receiptMimetype = null;
+    if (req.file) {
+        try {
+            const filePath = path.join(process.cwd(), 'uploads', req.file.filename);
+            receiptData = fs.readFileSync(filePath).toString('base64');
+            receiptMimetype = req.file.mimetype || 'application/octet-stream';
+        } catch (readErr) {
+            console.log('⚠️ Could not read receipt file for DB storage:', readErr.message);
+        }
+    }
 
     try {
         const submitterId = await resolveUserId('Finance Manager');
@@ -242,8 +269,8 @@ router.post('/expense', upload.single('receipt'), async (req, res) => {
         );
 
         const txRes = await db.execute(
-            `INSERT INTO financial_transactions (type, category, description, amount, date, created_by, status, receipt_file)
-             VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+            `INSERT INTO financial_transactions (type, category, description, amount, date, created_by, status, receipt_file, receipt_data, receipt_mimetype)
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
             [
                 'Expense',
                 category,
@@ -252,7 +279,9 @@ router.post('/expense', upload.single('receipt'), async (req, res) => {
                 new Date().toISOString().slice(0, 10),
                 submitterId,
                 'Pending',
-                receiptFile
+                receiptFile,
+                receiptData,
+                receiptMimetype
             ]
         );
 
@@ -352,6 +381,38 @@ router.get('/expenses', async (req, res) => {
     } catch (error) {
         console.error('❌ Error fetching expenses:', error);
         res.status(500).json({ error: 'Failed to fetch expenses' });
+    }
+});
+
+// GET - Serve receipt file from database (persists across deployments)
+router.get('/receipt/:id', async (req, res) => {
+    try {
+        const { id } = req.params;
+        const rows = await db.execute(
+            `SELECT receipt_data, receipt_mimetype, receipt_file FROM financial_transactions WHERE id = ? LIMIT 1`,
+            [id]
+        );
+        const row = Array.isArray(rows) && rows.length > 0 ? rows[0] : null;
+        
+        if (!row || !row.receipt_data) {
+            // Fallback: try to serve from disk if receipt_file path exists
+            if (row && row.receipt_file) {
+                const filePath = path.join(process.cwd(), row.receipt_file.replace(/^\//, ''));
+                if (fs.existsSync(filePath)) {
+                    return res.sendFile(filePath);
+                }
+            }
+            return res.status(404).json({ error: 'Receipt not found', message: 'No receipt file stored for this expense' });
+        }
+        
+        const buffer = Buffer.from(row.receipt_data, 'base64');
+        const mimetype = row.receipt_mimetype || 'application/pdf';
+        res.setHeader('Content-Type', mimetype);
+        res.setHeader('Content-Disposition', 'inline; filename="receipt-' + id + '"');
+        res.send(buffer);
+    } catch (error) {
+        console.error('❌ Error serving receipt:', error.message);
+        res.status(500).json({ error: 'Failed to serve receipt file' });
     }
 });
 
