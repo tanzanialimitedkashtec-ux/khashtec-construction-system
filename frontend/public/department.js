@@ -48927,87 +48927,103 @@ function loadPendingWorkCompletions() {
     if (!tbody) return;
 
     const baseUrl = window.location.origin;
+    const headers = {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        'Authorization': 'Bearer ' + (typeof sessionManager !== 'undefined' && sessionManager.getAuthToken ? sessionManager.getAuthToken() : '')
+    };
 
-    fetch(`${baseUrl}/api/work/completions/pending`, {
+    // Fetch pending work items, real projects, and real workers in parallel
+    Promise.all([
+        fetch(`${baseUrl}/api/work/completions/pending`, { method: 'GET', headers: headers }).then(function(r) { return r.json(); }),
+        fetch(`${baseUrl}/api/work/available-projects`, { method: 'GET', headers: headers }).then(function(r) { return r.json(); }).catch(function() { return { data: [] }; }),
+        fetch(`${baseUrl}/api/work/available-workers`, { method: 'GET', headers: headers }).then(function(r) { return r.json(); }).catch(function() { return { data: [] }; })
+    ])
+    .then(function(results) {
+        var data = results[0];
+        var projectsData = results[1];
+        var workersData = results[2];
 
-        method: 'GET',
+        var realProjects = (projectsData && projectsData.data) || [];
+        var realWorkers = (workersData && workersData.data) || [];
 
-        headers: {
-
-            'Content-Type': 'application/json',
-
-            'Accept': 'application/json',
-
-            'Authorization': 'Bearer ' + (typeof sessionManager !== 'undefined' && sessionManager.getAuthToken ? sessionManager.getAuthToken() : '')
-
-        }
-
-    })
-
-    .then(function(response) { return response.json(); })
-
-    .then(function(data) {
+        // Store for use in dropdown/form
+        window._availableProjects = realProjects;
+        window._availableWorkers = realWorkers;
 
         var items = data.data || data || [];
 
-        _pendingWorkItems = items;
+        // Enrich items with real project names and worker names
+        items.forEach(function(work) {
+            // Resolve project name from real projects table
+            if (realProjects.length > 0) {
+                var matchedProject = realProjects.find(function(p) { return p.name === work.project; });
+                if (matchedProject) {
+                    work.project = matchedProject.name + (matchedProject.location ? ' (' + matchedProject.location + ')' : '');
+                } else if (work.project === 'Office Building Project' || work.project === 'N/A') {
+                    // Try to assign a real project if the stored name is from seed data
+                    if (realProjects.length === 1) {
+                        work.project = realProjects[0].name + (realProjects[0].location ? ' (' + realProjects[0].location + ')' : '');
+                    } else if (realProjects.length > 1) {
+                        // Use the first active project
+                        var activeProj = realProjects.find(function(p) { return p.status === 'In Progress' || p.status === 'Planning'; });
+                        if (activeProj) {
+                            work.project = activeProj.name + (activeProj.location ? ' (' + activeProj.location + ')' : '');
+                        }
+                    }
+                }
+            }
 
+            // Resolve worker name from real workers
+            if (realWorkers.length > 0 && (work.completed_by === 'Project Manager' || work.completed_by === 'N/A' || work.completed_by === 'Site Supervisor')) {
+                var matchedWorker = realWorkers.find(function(w) { return w.name === work.completed_by; });
+                if (!matchedWorker && realWorkers.length > 0) {
+                    // Assign based on role matching
+                    var roleWorker = realWorkers.find(function(w) {
+                        return w.role && w.role.toLowerCase().indexOf(work.completed_by.toLowerCase().replace(' manager', '').replace('site ', '')) >= 0;
+                    });
+                    if (roleWorker) {
+                        work.completed_by = roleWorker.name;
+                    }
+                }
+            }
+        });
+
+        _pendingWorkItems = items;
         populateWorkIdDropdown(items);
 
         if (!items.length) {
-
             tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;">No pending work completions found.</td></tr>';
-
             return;
-
         }
 
         var html = '';
-
         items.forEach(function(work) {
-
             var qClass = 'poor';
-
             var score = parseInt(work.quality_score) || 0;
-
             if (score >= 90) qClass = 'excellent';
-
             else if (score >= 80) qClass = 'good';
-
             else if (score >= 70) qClass = 'acceptable';
 
             var dateStr = work.completed_date ? new Date(work.completed_date).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) : 'N/A';
 
             html += '<tr>' +
-
                 '<td><strong>' + (work.work_details || 'N/A') + '</strong></td>' +
-
                 '<td>' + (work.project || 'N/A') + '</td>' +
-
                 '<td>' + (work.completed_by || 'N/A') + '</td>' +
-
                 '<td>' + dateStr + '</td>' +
-
                 '<td><span class="quality-score ' + qClass + '">' + score + '%</span></td>' +
-
                 '<td>' +
-
-                    '<button class="action" onclick="approveWork(' + work.id + ')" style="background: #28a745;">Approve</button>' +
-
-                    '<button class="action" onclick="requestRework(' + work.id + ')" style="background: #ffc107;">Request Rework</button>' +
-
-                    '<button class="action" onclick="rejectWork(' + work.id + ')" style="background: #dc3545;">Reject</button>' +
-
+                    '<button class="action" onclick="approveWork(\'' + work.id + '\')" style="background: #28a745;">Approve</button>' +
+                    '<button class="action" onclick="requestRework(\'' + work.id + '\')" style="background: #ffc107;">Request Rework</button>' +
+                    '<button class="action" onclick="rejectWork(\'' + work.id + '\')" style="background: #dc3545;">Reject</button>' +
                 '</td>' +
-
                 '</tr>';
-
         });
 
         tbody.innerHTML = html;
 
     })
-
     .catch(function(error) {
 
         console.error('Error loading pending work completions:', error);

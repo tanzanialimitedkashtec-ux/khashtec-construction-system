@@ -2912,11 +2912,14 @@ router.post('/approvals', async (req, res) => {
             } else if (sourceTable === 'projects_work' && sourceId) {
                 try {
                     const pwRows = await db.execute(
-                        'SELECT * FROM projects_work WHERE id = ? LIMIT 1',
+                        `SELECT pw.*, COALESCE(wa.full_name, pw.assigned_to, pw.submitted_by) AS resolved_worker
+                         FROM projects_work pw
+                         LEFT JOIN worker_accounts wa ON wa.full_name = pw.assigned_to OR wa.full_name = pw.submitted_by
+                         WHERE pw.id = ? LIMIT 1`,
                         [sourceId]
                     );
                     if (pwRows && pwRows.length > 0) {
-                        completedBy = pwRows[0].submitted_by || 'Project Manager';
+                        completedBy = pwRows[0].resolved_worker || pwRows[0].submitted_by || 'N/A';
                         completionDate = pwRows[0].submitted_date ? new Date(pwRows[0].submitted_date).toISOString().split('T')[0] : completionDate;
                     }
                 } catch (err) {
@@ -3958,12 +3961,12 @@ router.get('/completions/pending', async (req, res) => {
             console.log('⚠️ hr_work query:', hrErr.message);
         }
 
-        // 4) Also pull from projects_work (has real project names)
+        // 4) Also pull from projects_work — join with projects table for real names
         try {
             const pwRows = await db.execute(`
                 SELECT pw.id, pw.work_title AS work_details,
-                       pw.project_name AS project,
-                       pw.submitted_by AS completed_by,
+                       COALESCE(p.name, pw.project_name) AS project,
+                       COALESCE(pw.assigned_to, wa.full_name, pw.submitted_by) AS completed_by,
                        pw.submitted_date AS completed_date,
                        CASE pw.priority
                            WHEN 'Low' THEN 90
@@ -3976,10 +3979,13 @@ router.get('/completions/pending', async (req, res) => {
                        'projects_work' AS source_table,
                        pw.id AS source_id
                 FROM projects_work pw
+                LEFT JOIN projects p ON p.name = pw.project_name OR p.id = pw.id
+                LEFT JOIN worker_accounts wa ON wa.full_name = pw.assigned_to OR wa.full_name = pw.submitted_by
                 WHERE (pw.status = 'Pending' OR pw.status = 'In Progress')
                   AND pw.id NOT IN (
                       SELECT COALESCE(source_id, 0) FROM work_completions WHERE source_table = 'projects_work'
                   )
+                GROUP BY pw.id
                 ORDER BY pw.submitted_date DESC
                 LIMIT 50
             `);
@@ -4007,8 +4013,8 @@ router.get('/completions/pending', async (req, res) => {
         try {
             const fwRows = await db.execute(`
                 SELECT fw.id, fw.work_title AS work_details,
-                       COALESCE(fw.work_type, 'Finance') AS project,
-                       fw.submitted_by AS completed_by,
+                       COALESCE(fw.work_type, fw.department_code, 'Finance') AS project,
+                       COALESCE(wa.full_name, fw.submitted_by) AS completed_by,
                        fw.submitted_date AS completed_date,
                        CASE fw.priority
                            WHEN 'Low' THEN 90
@@ -4021,6 +4027,7 @@ router.get('/completions/pending', async (req, res) => {
                        'finance_work' AS source_table,
                        fw.id AS source_id
                 FROM finance_work fw
+                LEFT JOIN worker_accounts wa ON wa.full_name = fw.submitted_by
                 WHERE (fw.status = 'Pending' OR fw.status = 'submitted')
                   AND fw.id NOT IN (
                       SELECT COALESCE(source_id, 0) FROM work_completions WHERE source_table = 'finance_work'
@@ -4062,6 +4069,72 @@ router.get('/completions/pending', async (req, res) => {
             error: 'Unexpected error fetching work completions',
             details: error.message
         });
+    }
+});
+
+// Get real projects list for approval form
+router.get('/available-projects', async (req, res) => {
+    try {
+        const rows = await db.execute(`
+            SELECT id, name, location, status, budget
+            FROM projects
+            ORDER BY name ASC
+        `);
+        const projects = Array.isArray(rows) && rows.length > 0 && Array.isArray(rows[0]) ? rows[0] : (Array.isArray(rows) ? rows : []);
+        res.json({ success: true, data: projects });
+    } catch (error) {
+        console.error('❌ Error fetching projects:', error.message);
+        res.json({ success: true, data: [] });
+    }
+});
+
+// Get real workers list for approval form
+router.get('/available-workers', async (req, res) => {
+    try {
+        let workers = [];
+        // Try worker_accounts first
+        try {
+            const waRows = await db.execute(`
+                SELECT id, employee_id, full_name, designation, department
+                FROM worker_accounts
+                WHERE status = 'active' OR status IS NULL
+                ORDER BY full_name ASC
+            `);
+            const waList = Array.isArray(waRows) && waRows.length > 0 && Array.isArray(waRows[0]) ? waRows[0] : (Array.isArray(waRows) ? waRows : []);
+            workers = workers.concat(waList.map(w => ({
+                id: w.id,
+                name: w.full_name,
+                employee_id: w.employee_id,
+                role: w.designation || w.department || 'Worker',
+                source: 'worker_accounts'
+            })));
+        } catch (e) { console.log('⚠️ worker_accounts query:', e.message); }
+        
+        // Also try users table for staff
+        try {
+            const uRows = await db.execute(`
+                SELECT id, full_name, role, department
+                FROM users
+                WHERE status = 'Active' AND role != 'Customer'
+                ORDER BY full_name ASC
+            `);
+            const uList = Array.isArray(uRows) && uRows.length > 0 && Array.isArray(uRows[0]) ? uRows[0] : (Array.isArray(uRows) ? uRows : []);
+            uList.forEach(u => {
+                if (!workers.find(w => w.name === u.full_name)) {
+                    workers.push({
+                        id: 'U-' + u.id,
+                        name: u.full_name,
+                        role: u.role || u.department || 'Staff',
+                        source: 'users'
+                    });
+                }
+            });
+        } catch (e) { console.log('⚠️ users query:', e.message); }
+        
+        res.json({ success: true, data: workers });
+    } catch (error) {
+        console.error('❌ Error fetching workers:', error.message);
+        res.json({ success: true, data: [] });
     }
 });
 
