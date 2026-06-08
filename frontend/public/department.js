@@ -51032,29 +51032,30 @@ function requestRework(workId) {
 
     showRevisionModal(workId, 'Work Item', function(formData) {
 
-        // Here you would normally send this data to your backend API
-
-        console.log('Requesting rework:', formData);
-
-        
-
-        // Show success message
-
-        customAlert(`Work ${workId} sent for rework.nnType: ${formData.revisionType}nDetails: ${formData.revisionDetails}nPriority: ${formData.revisionPriority}nnWorker has been notified.`, "Rework Requested", "warning");
-
-        
-
-        // In a real application, you would make an API call here:
-
-        // fetch('/work/request-revision', {
-
-        //     method: 'POST',
-
-        //     headers: { 'Content-Type': 'application/json' },
-
-        //     body: JSON.stringify(formData)
-
-        // });
+        var baseUrl = window.location.origin;
+        fetch(baseUrl + '/api/work/completions/' + workId + '/rework', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': 'Bearer ' + (typeof sessionManager !== 'undefined' && sessionManager.getAuthToken ? sessionManager.getAuthToken() : '')
+            },
+            body: JSON.stringify({
+                reworkReason: (formData.revisionType || '') + ': ' + (formData.revisionDetails || ''),
+                requestedBy: (typeof sessionManager !== 'undefined' && sessionManager.getCurrentUser) ? (sessionManager.getCurrentUser().name || 'Managing Director') : 'Managing Director'
+            })
+        })
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+            if (data.success) {
+                customAlert('Work ' + workId + ' sent for rework. Worker has been notified.', 'Rework Requested', 'warning');
+                if (typeof loadPendingWorkCompletions === 'function') loadPendingWorkCompletions();
+            } else {
+                customAlert('Failed to request rework: ' + (data.message || 'Unknown error'), 'Error', 'error');
+            }
+        })
+        .catch(function(err) {
+            customAlert('Error requesting rework: ' + err.message, 'Error', 'error');
+        });
 
     });
 
@@ -51066,29 +51067,30 @@ function rejectWork(workId) {
 
     showRejectModal(workId, 'Work Item', function(formData) {
 
-        // Here you would normally send this data to your backend API
-
-        console.log('Rejecting work:', formData);
-
-        
-
-        // Show success message
-
-        customAlert(`Work ${workId} rejected successfully.nnReason: ${formData.rejectionReason}nDetails: ${formData.rejectionDetails}nnSubmitter has been notified.`, "Work Rejected", "error");
-
-        
-
-        // In a real application, you would make an API call here:
-
-        // fetch('/work/reject', {
-
-        //     method: 'POST',
-
-        //     headers: { 'Content-Type': 'application/json' },
-
-        //     body: JSON.stringify(formData)
-
-        // });
+        var baseUrl = window.location.origin;
+        fetch(baseUrl + '/api/work/completions/' + workId + '/reject', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': 'Bearer ' + (typeof sessionManager !== 'undefined' && sessionManager.getAuthToken ? sessionManager.getAuthToken() : '')
+            },
+            body: JSON.stringify({
+                rejectionReason: (formData.rejectionReason || '') + (formData.rejectionDetails ? ': ' + formData.rejectionDetails : ''),
+                rejectedBy: (typeof sessionManager !== 'undefined' && sessionManager.getCurrentUser) ? (sessionManager.getCurrentUser().name || 'Managing Director') : 'Managing Director'
+            })
+        })
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+            if (data.success) {
+                customAlert('Work ' + workId + ' rejected successfully. Submitter has been notified.', 'Work Rejected', 'error');
+                if (typeof loadPendingWorkCompletions === 'function') loadPendingWorkCompletions();
+            } else {
+                customAlert('Failed to reject work: ' + (data.message || 'Unknown error'), 'Error', 'error');
+            }
+        })
+        .catch(function(err) {
+            customAlert('Error rejecting work: ' + err.message, 'Error', 'error');
+        });
 
     });
 
