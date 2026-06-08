@@ -327,7 +327,8 @@
       // Prefer centralized API helper when available
       if (window.KashTecAPI && typeof window.KashTecAPI.put === 'function') {
         try {
-          const payload = { status: 'Returned', return_date: new Date().toISOString() };
+          const returnDate = new Date().toISOString().split('T')[0];
+          const payload = { status: 'Returned', return_date: returnDate };
           // Try HSE-scoped endpoint first
           let resp = await window.KashTecAPI.put(`/work/hse/ppe/${ppeId}`, payload).catch(() => null);
           if (!resp) {
@@ -351,10 +352,11 @@
       const headers = { 'Content-Type': 'application/json' };
       if (token) headers['Authorization'] = `Bearer ${token}`;
 
+      const returnDate = new Date().toISOString().split('T')[0];
       const response = await fetch(url, {
         method: 'PUT',
         headers,
-        body: JSON.stringify({ status: 'Returned', return_date: new Date().toISOString() })
+        body: JSON.stringify({ status: 'Returned', return_date: returnDate })
       });
 
       const text = await response.text();
