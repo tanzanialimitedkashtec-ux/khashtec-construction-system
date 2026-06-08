@@ -1527,7 +1527,11 @@ function showViewModal(title, bodyHtml) {
 }
 
 function detailRow(label, value) {
-    var isEmpty = value === null || value === undefined || value === '' || (typeof value === 'string' && value.trim().toUpperCase() === 'N/A');
+    var isEmpty = value === null || value === undefined || value === '';
+    if (!isEmpty && typeof value === 'string') {
+        var norm = value.trim().toUpperCase();
+        if (norm === 'N/A' || norm === 'NA' || norm === 'NONE' || norm === 'NULL') isEmpty = true;
+    }
     var display = isEmpty ? '<span style="color:#999">—</span>' : value;
     return '<tr><td style="padding:8px 12px;font-weight:bold;color:#555;white-space:nowrap;vertical-align:top;">' + label + '</td>' +
            '<td style="padding:8px 12px;">' + display + '</td></tr>';
