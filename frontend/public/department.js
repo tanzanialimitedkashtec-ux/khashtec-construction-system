@@ -65117,6 +65117,13 @@ async function loadOfficePortalData() {
         } catch (error) {
 
             console.error('âŒ Error loading policies:', error);
+                console.log(`✅ Loaded ${policies.length} policies`);
+
+            }
+
+        } catch (error) {
+
+            console.error('❌ Error loading policies:', error);
 
         }
 
@@ -65128,7 +65135,7 @@ async function loadOfficePortalData() {
 
         try {
 
-            console.log('ðŸ”„ Attempting to load contracts...');
+            console.log('🔄 Attempting to load contracts...');
 
             const contractsResponse = await fetch(`${baseUrl}/api/contracts`, {
 
@@ -65146,7 +65153,7 @@ async function loadOfficePortalData() {
 
             
 
-            console.log('ðŸ“¡ Contracts API Response status:', contractsResponse.status);
+            console.log('📡 Contracts API Response status:', contractsResponse.status);
 
             
 
@@ -65156,13 +65163,13 @@ async function loadOfficePortalData() {
 
                 contracts = contractsData.contracts || contractsData || [];
 
-                console.log(`âœ… Loaded ${contracts.length} contracts`);
+                console.log(`✅ Loaded ${contracts.length} contracts`);
 
-                console.log('ðŸ” Contracts data:', contracts);
+                console.log('🔄 Contracts data:', contracts);
 
             } else {
 
-                console.log(`âš ï¸ Contracts API returned ${contractsResponse.status}`);
+                console.log(`⚠️ Contracts API returned ${contractsResponse.status}`);
 
                 // Try the test endpoint to see if API is working
 
@@ -65172,13 +65179,13 @@ async function loadOfficePortalData() {
 
                     if (testResponse.ok) {
 
-                        console.log('âœ… Contracts API test endpoint works, main endpoint may have table issues');
+                        console.log('✅ Contracts API test endpoint works, main endpoint may have table issues');
 
                     }
 
                 } catch (testError) {
 
-                    console.log('âŒ Contracts API test endpoint also failed:', testError.message);
+                    console.log('❌ Contracts API test endpoint also failed:', testError.message);
 
                 }
 
@@ -65186,9 +65193,9 @@ async function loadOfficePortalData() {
 
         } catch (error) {
 
-            console.log('âŒ Error loading contracts:', error.message);
+            console.log('❌ Error loading contracts:', error.message);
 
-            console.log('ðŸ”„ Using mock contracts data as fallback');
+            console.log('🔄 Using mock contracts data as fallback');
 
             
 
@@ -65270,7 +65277,47 @@ async function loadOfficePortalData() {
 
             ];
 
-            console.log(`âœ… Loaded ${contracts.length} mock contracts as fallback`);
+            console.log(`✅ Loaded ${contracts.length} mock contracts as fallback`);
+
+        }
+
+        
+
+        // Load clients
+
+        let clients = [];
+
+        try {
+
+            const clientsResponse = await fetch(`${baseUrl}/api/clients`, {
+
+                method: 'GET',
+
+                headers: {
+
+                    'Content-Type': 'application/json',
+
+                    'Authorization': `Bearer ${sessionManager.getAuthToken()}`
+
+                }
+
+            });
+
+            
+
+            if (clientsResponse.ok) {
+
+                const clientsData = await clientsResponse.json();
+
+                clients = clientsData.clients || clientsData || [];
+
+                console.log(`✅ Loaded ${clients.length} clients`);
+
+            }
+
+        } catch (error) {
+
+            console.error('❌ Error loading clients:', error);
 
         }
 
@@ -65281,6 +65328,8 @@ async function loadOfficePortalData() {
         window.currentPortalData = {
 
             personnel: officePortalUsers,
+
+            clients: clients,
 
             documents: documents,
 
@@ -65294,13 +65343,13 @@ async function loadOfficePortalData() {
 
         // Render the portal with real data
 
-        renderOfficePortal(officePortalUsers, documents, policies, contracts);
+        renderOfficePortal(officePortalUsers, clients, documents, policies, contracts);
 
         
 
     } catch (error) {
 
-        console.error('âŒ Error loading office portal data:', error);
+        console.error('❌ Error loading office portal data:', error);
 
         // Show error message
 
@@ -65308,13 +65357,13 @@ async function loadOfficePortalData() {
 
             <div class="card">
 
-                <h3>ðŸ¢ KASHTEC Office Portal</h3>
+                <h3>🏢 KASHTEC Office Portal</h3>
 
                 <div class="error-message">
 
-                    <p>âŒ Failed to load office portal data. Please try refreshing the page.</p>
+                    <p>❌ Failed to load office portal data. Please try refreshing the page.</p>
 
-                    <button class="action-btn" onclick="officePortal()">ðŸ”„ Retry</button>
+                    <button class="action-btn" onclick="officePortal()">🔄 Retry</button>
 
                 </div>
 
@@ -65330,7 +65379,7 @@ async function loadOfficePortalData() {
 
 // Render office portal with loaded data
 
-function renderOfficePortal(officePortalUsers, documents, policies, contracts) {
+function renderOfficePortal(officePortalUsers, clients, documents, policies, contracts) {
 
     
 
@@ -65487,6 +65536,42 @@ function renderOfficePortal(officePortalUsers, documents, policies, contracts) {
                     </div>
                 </div>
             `).join('')}
+        </div>
+
+    `;
+
+    
+
+    // Generate HTML for clients
+
+    const clientsHTML = `
+
+        <div class="personnel-grid-cards">
+
+            ${clients.map(client => `
+
+                <div class="personnel-card" data-department="clients" data-role="${client.client_type || client.type || 'Client'}" data-person-id="${client.id}">
+
+                    <img class="avatar" src="/api/profile-image/${client.id}?type=client&t=${Date.now()}" alt="${client.full_name}" onerror="this.onerror=null;this.src='/assets/images/default-avatar.png';">
+
+                    <div class="name">${client.full_name}</div>
+
+                    <div class="role">${client.client_type || client.type || 'Client'}</div>
+
+                    <div class="dept">${client.company_name || 'Individual'}</div>
+
+                    <div class="contact">
+
+                        <div class="contact-item" title="${client.email_address || client.email || 'N/A'}">📧 ${client.email_address || client.email || 'N/A'}</div>
+
+                        <div class="contact-item" title="${client.phone_number || client.phone || 'N/A'}">📱 ${client.phone_number || client.phone || 'N/A'}</div>
+
+                    </div>
+
+                </div>
+
+            `).join('')}
+
         </div>
 
     `;
@@ -65718,6 +65803,42 @@ function renderOfficePortal(officePortalUsers, documents, policies, contracts) {
                 <div class="personnel-grid">
 
                     ${registeredUsersHTML}
+
+                </div>
+
+            </div>
+
+            
+
+            <!-- Clients Section -->
+
+            <div id="clients-section" class="portal-section" style="display: none;">
+
+                <div class="section-header compact">
+
+                    <div class="section-title">
+
+                        <span class="section-icon">🤝</span>
+
+                        <h4>Registered Clients</h4>
+
+                    </div>
+
+                    <div class="section-stats compact">
+
+                        <span class="stat-compact">${clients.length}</span>
+
+                        <span class="stat-compact">${clients.filter(c => c.client_type === 'Corporate' || c.type === 'Corporate').length} Corporate</span>
+
+                        <span class="stat-compact">${clients.filter(c => c.client_type === 'Individual' || c.type === 'Individual').length} Individual</span>
+
+                    </div>
+
+                </div>
+
+                <div class="personnel-grid">
+
+                    ${clientsHTML}
 
                 </div>
 
