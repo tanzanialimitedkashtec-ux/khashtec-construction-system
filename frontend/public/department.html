@@ -18898,7 +18898,7 @@ font-size: 12px;
 
 .portal-search.compact input {
 
-    padding: 8px 12px;
+    padding: 4px 6px;
 
     font-size: 0.85rem;
 
@@ -39026,10 +39026,6 @@ function displayUpcomingMeetings(meetings) {
 
                     <div class="meeting-actions">
 
-                        <button class="action-btn view" onclick="viewMeetingDetails('${meeting.id}')" title="View Details">👁️</button>
-
-                        <button class="action-btn edit" onclick="editMeeting('${meeting.id}')" title="Edit Meeting">✏️</button>
-
                         <button class="action-btn delete" onclick="deleteMeeting('${meeting.id}')" title="Delete Meeting">🗑️</button>
 
                     </div>
@@ -50069,10 +50065,6 @@ async function loadCompanyCars() {
 
                         <div class="car-actions">
 
-                            <button class="action-btn view" onclick="viewCarDetails('${mappedCar.track_number}')" title="View Details">👁️</button>
-
-                            <button class="action-btn edit" onclick="editCar('${mappedCar.track_number}')" title="Edit Vehicle">✏️</button>
-
                             <button class="action-btn delete" onclick="deleteCar('${mappedCar.track_number}')" title="Delete Vehicle">🗑️</button>
 
                         </div>
@@ -50464,10 +50456,6 @@ function loadSampleCars() {
             <td>
 
                 <div class="car-actions">
-
-                    <button class="action-btn view" onclick="viewCarDetails('${car.track_number}')" title="View Details">👁️</button>
-
-                    <button class="action-btn edit" onclick="editCar('${car.track_number}')" title="Edit Vehicle">✏️</button>
 
                     <button class="action-btn delete" onclick="deleteCar('${car.track_number}')" title="Delete Vehicle">🗑️</button>
 
@@ -54065,7 +54053,6 @@ function displayViolations(violations) {
 
                     <div class="violation-actions">
 
-                        <button class="action-btn view" onclick="viewViolationDetails('${violation.id}')" title="View Details">👁️</button>
                         <button class="action-btn approve" onclick="approveViolation('${violation.id}')" title="Approve Violation" style="background:#28a745;color:white;">✅</button>
                         <button class="action-btn reject" onclick="rejectViolation('${violation.id}')" title="Reject Violation" style="background:#dc3545;color:white;">❌</button>
 
@@ -59320,10 +59307,6 @@ function displayPolicyRecords(records, policyStatuses) {
 
                     <div class="policy-actions">
 
-                        <button class="action-btn view" onclick="viewPolicy('${record.id}')" title="View Policy">👁️</button>
-
-                        <button class="action-btn download" onclick="downloadPolicy('${record.id}')" title="Download Policy">📥</button>
-
                         <button class="action-btn delete" onclick="deletePolicy('${record.id}')" title="Delete Policy">🗑️</button>
 
                     </div>
@@ -61707,10 +61690,6 @@ function displayFinancialRecords(records) {
                     <div class="financial-actions">
 
                         <button class="action-btn view" onclick="viewTransaction('${record.id}')" title="View Transaction">👁️</button>
-
-                        <button class="action-btn edit" onclick="editTransaction('${record.id}')" title="Edit Transaction">✏️</button>
-
-                        <button class="action-btn download" onclick="downloadTransaction('${record.id}')" title="Download Receipt">📥</button>
 
                     </div>
 
@@ -68378,8 +68357,6 @@ function displayBudgetRecords(records) {
                     <div class="budget-actions">
 
                         <button class="action-btn view" onclick="viewBudgetDetails('${record.id}')" title="View Details">👁️</button>
-
-                        <button class="action-btn edit" onclick="editBudget('${record.id}')" title="Edit Budget">✏️</button>
 
                         <button class="action-btn delete" onclick="deleteBudget('${record.id}')" title="Delete Budget">🗑️</button>
 
@@ -103136,7 +103113,7 @@ function displayTransportCosts(costs) {
 
                     <button onclick="viewTransportCostDetails(${cost.id})" class="action-btn view" title="View Details">👁️</button>
 
-                    <button onclick="editTransportCost(${cost.id})" class="action-btn edit" title="Edit Cost">✏️</button>
+                    
 
                     <button onclick="deleteTransportCost(${cost.id})" class="action-btn delete" title="Delete Cost">🗑️</button>
 
